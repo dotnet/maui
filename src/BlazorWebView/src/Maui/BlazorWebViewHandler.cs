@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 		}
 
-		internal BlazorWebViewSettings WebviewSettings => MauiContext!.Services.GetRequiredService<BlazorWebViewSettings>();
+		internal BlazorWebViewDeveloperTools WebviewSettings => MauiContext!.Services.GetRequiredService<BlazorWebViewDeveloperTools>();
 
 		/// <summary>
 		/// Maps the <see cref="IBlazorWebView.HostPage"/> property to the specified handler.

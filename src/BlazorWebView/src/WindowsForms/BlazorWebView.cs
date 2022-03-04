@@ -170,8 +170,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				fileProvider,
 				RootComponents.JSComponents,
 				hostPageRelativePath,
-				(args) => ExternalNavigationStarting?.Invoke(this, args),
-				Services.GetRequiredService<BlazorWebViewSettings>());
+				(args) => ExternalNavigationStarting?.Invoke(this, args));
 
 			foreach (var rootComponent in RootComponents)
 			{

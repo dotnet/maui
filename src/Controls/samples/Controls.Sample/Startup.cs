@@ -88,17 +88,12 @@ namespace Maui.Controls.Sample
 					});
 
 #if NET6_0_OR_GREATER
-			services.AddMauiBlazorWebView(new()
-			{
+			services.AddMauiBlazorWebView();
 #if DEBUG
-				DevelopmentMode = true
-#else
-				DevelopmentMode = false
-#endif
-			});
+			services.AddBlazorWebViewDeveloperTools();
 #endif
 
-				services.AddLogging(logging =>
+			services.AddLogging(logging =>
 			{
 #if WINDOWS
 				logging.AddDebug();

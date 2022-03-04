@@ -23,21 +23,19 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// Configures <see cref="IServiceCollection"/> to add support for <see cref="BlazorWebView"/>.
 		/// </summary>
 		/// <param name="services">The <see cref="IServiceCollection"/>.</param>
-		/// <param name="settings">The <see cref="BlazorWebViewSettings"/> for the underlying WebView control.</param>
 		/// <returns>The <see cref="IServiceCollection"/>.</returns>
 #if WEBVIEW2_WINFORMS
-		public static IServiceCollection AddWindowsFormsBlazorWebView(this IServiceCollection services, BlazorWebViewSettings settings)
+		public static IServiceCollection AddWindowsFormsBlazorWebView(this IServiceCollection services)
 #elif WEBVIEW2_WPF
-		public static IServiceCollection AddWpfBlazorWebView(this IServiceCollection services, BlazorWebViewSettings settings)
+		public static IServiceCollection AddWpfBlazorWebView(this IServiceCollection services)
 #elif WEBVIEW2_MAUI
-		public static IServiceCollection AddMauiBlazorWebView(this IServiceCollection services, BlazorWebViewSettings settings)
+		public static IServiceCollection AddMauiBlazorWebView(this IServiceCollection services)
 #else
 #error Must define WEBVIEW2_WINFORMS, WEBVIEW2_WPF, WEBVIEW2_MAUI
 #endif
 		{
 			services.AddBlazorWebView();
-			services.TryAddSingleton(settings);
-
+			services.TryAddSingleton(new BlazorWebViewDeveloperTools { Enabled = false });
 #if WEBVIEW2_WINFORMS
 #elif WEBVIEW2_WPF
 #elif WEBVIEW2_MAUI
@@ -46,6 +44,16 @@ namespace Microsoft.Extensions.DependencyInjection
 #error Must define WEBVIEW2_WINFORMS, WEBVIEW2_WPF, WEBVIEW2_MAUI
 #endif
 			return services;
+		}
+
+		/// <summary>
+		/// Enables Developer tools on the underlying WebView controls.
+		/// </summary>
+		/// <param name="services">The <see cref="IServiceCollection"/>.</param>
+		/// <returns>The <see cref="IServiceCollection"/>.</returns>
+		public static IServiceCollection AddBlazorWebViewDeveloperTools(this IServiceCollection services)
+		{
+			return services.AddSingleton<BlazorWebViewDeveloperTools>(new BlazorWebViewDeveloperTools { Enabled = true });
 		}
 	}
 }

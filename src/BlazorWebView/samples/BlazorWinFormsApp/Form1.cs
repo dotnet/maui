@@ -17,25 +17,17 @@ namespace BlazorWinFormsApp
 		public Form1()
 		{
 			var services1 = new ServiceCollection();
-			services1.AddWindowsFormsBlazorWebView(new()
-			{
+			services1.AddWindowsFormsBlazorWebView();
 #if DEBUG
-				DevelopmentMode = true
-#else
-				DevelopmentMode = false
+			services1.AddBlazorWebViewDeveloperTools();
 #endif
-			});
 			services1.AddSingleton<AppState>(_appState);
 
 			var services2 = new ServiceCollection();
-			services2.AddWindowsFormsBlazorWebView(new()
-			{
+			services2.AddWindowsFormsBlazorWebView();
 #if DEBUG
-				DevelopmentMode = true
-#else
-				DevelopmentMode = false
+			services2.AddBlazorWebViewDeveloperTools();
 #endif
-			});
 
 			services2.AddSingleton<AppState>(_appState);
 

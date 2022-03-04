@@ -18,27 +18,19 @@ namespace BlazorWpfApp
 		public MainWindow()
 		{
 			var services1 = new ServiceCollection();
-			services1.AddWpfBlazorWebView(new()
-			{
+			services1.AddWpfBlazorWebView();
 #if DEBUG
-				DevelopmentMode = true
-#else
-				DevelopmentMode = false
+			services1.AddBlazorWebViewDeveloperTools();
 #endif
-			});
 
 			services1.AddSingleton<AppState>(_appState);
 			Resources.Add("services1", services1.BuildServiceProvider());
 
 			var services2 = new ServiceCollection();
-			services2.AddWpfBlazorWebView(new()
-			{
+			services2.AddWpfBlazorWebView();
 #if DEBUG
-				DevelopmentMode = true
-#else
-				DevelopmentMode = false
+			services2.AddBlazorWebViewDeveloperTools();
 #endif
-			});
 
 			services2.AddSingleton<AppState>(_appState);
 			Resources.Add("services2", services2.BuildServiceProvider());
