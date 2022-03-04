@@ -4,8 +4,8 @@
     <ParameterGroup>
       <InputFilename ParameterType="System.String" Required="true" />
       <OutputFilename ParameterType="System.String" Required="true" />
-      <MatchExpression ParameterType="System.String" Required="true" />
-      <ReplacementText ParameterType="System.String" Required="true" />
+      <MatchExpression ParameterType="System.String[]" Required="true" />
+      <ReplacementText ParameterType="System.String[]" Required="true" />
     </ParameterGroup>
     <Task>
       <Using Namespace="System" />
@@ -13,11 +13,16 @@
       <Using Namespace="System.Text.RegularExpressions" />
       <Code Type="Fragment" Language="cs">
         <![CDATA[
-            File.WriteAllText(
-                OutputFilename,
-                Regex.Replace(File.ReadAllText(InputFilename), MatchExpression, ReplacementText)
-                );
-            //Console.WriteLine("Saved modified '{0}' to {1}'.", InputFilename, OutputFilename);
+            if (MatchExpression.Length != ReplacementText.Length) throw new Exception("The number of MatchExpression items must match the number of ReplacementText items.");
+
+            for (int i = 0; i < MatchExpression.Length; i++)
+            {
+                File.WriteAllText(
+                    OutputFilename,
+                    Regex.Replace(File.ReadAllText(InputFilename), MatchExpression[i], ReplacementText[i])
+                    );
+                Console.WriteLine($"Processing file '{InputFilename}' --> '{OutputFilename}', replacing match '{MatchExpression[i]}' with text '{ReplacementText[i]}'.");
+            }
           ]]>
       </Code>
     </Task>
@@ -62,26 +67,12 @@
         SourceFiles="%(TemplateJsonInput.Fullpath)"
         DestinationFiles="%(TemplateJsonInput.IntermediateLocation)" />
 
-    <!-- Replace WinAppSDK version -->
+    <!-- Replace WinAppSDK, Win2D, .NET TFM versions -->
     <ReplaceFileText
         InputFilename="%(TemplateJsonInput.IntermediateLocation)"
         OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
-        MatchExpression="WINDOWSAPPSDK_VERSION_VALUE"
-        ReplacementText="$(MicrosoftWindowsAppSDKPackageVersion)" />
-
-    <!-- Replace Win2D version -->
-    <ReplaceFileText
-        InputFilename="%(TemplateJsonInput.IntermediateLocation)"
-        OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
-        MatchExpression="WIN2D_VERSION_VALUE"
-        ReplacementText="$(MicrosoftGraphicsWin2DPackageVersion)" />
-
-    <!-- Replace .NET TFM version -->
-    <ReplaceFileText
-        InputFilename="%(TemplateJsonInput.IntermediateLocation)"
-        OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
-        MatchExpression="DOTNET_TFM_VALUE"
-        ReplacementText="$(_MauiDotNetTfm)" />
+        MatchExpression="WINDOWSAPPSDK_VERSION_VALUE;WIN2D_VERSION_VALUE;DOTNET_TFM_VALUE"
+        ReplacementText="$(MicrosoftWindowsAppSDKPackageVersion);$(MicrosoftGraphicsWin2DPackageVersion);$(_MauiDotNetTfm)" />
 
     <ItemGroup>
       <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />
