@@ -267,9 +267,10 @@ namespace Microsoft.Maui.Controls
 			{
 				if (services != null)
 				{
-					return (services.GetService(_type) ?? Activator.CreateInstance(_type)) as Element;
+					return (Element)(services.GetService(_type) ?? Activator.CreateInstance(_type));
 				}
-				return Activator.CreateInstance(_type) as Element;
+
+				return (Element)Activator.CreateInstance(_type);
 			}
 
 			public override bool Equals(object obj)
