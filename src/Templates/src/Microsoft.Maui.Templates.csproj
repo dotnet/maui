@@ -21,7 +21,7 @@
                     OutputFilename,
                     Regex.Replace(File.ReadAllText(InputFilename), MatchExpression[i], ReplacementText[i])
                     );
-                Console.WriteLine($"Processing file '{InputFilename}' --> '{OutputFilename}', replacing match '{MatchExpression[i]}' with text '{ReplacementText[i]}'.");
+                //Console.WriteLine($"Processing file '{InputFilename}' --> '{OutputFilename}', replacing match '{MatchExpression[i]}' with text '{ReplacementText[i]}'.");
             }
           ]]>
       </Code>
