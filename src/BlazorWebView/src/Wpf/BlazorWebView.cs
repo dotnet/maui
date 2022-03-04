@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 
@@ -196,7 +197,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				fileProvider,
 				RootComponents.JSComponents,
 				hostPageRelativePath,
-				(args) => ExternalNavigationStarting?.Invoke(this, args));
+				(args) => ExternalNavigationStarting?.Invoke(this, args),
+				Services.GetRequiredService<BlazorWebViewSettings>());
 
 			foreach (var rootComponent in RootComponents)
 			{

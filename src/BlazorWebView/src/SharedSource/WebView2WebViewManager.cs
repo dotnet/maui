@@ -17,11 +17,13 @@ using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.FileProviders;
 #if WEBVIEW2_WINFORMS
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 #elif WEBVIEW2_WPF
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.WebView.Wpf;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
@@ -58,6 +60,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment _coreWebView2Environment;
 		private readonly Action<ExternalLinkNavigationEventArgs> _externalNavigationStarting;
+		private readonly BlazorWebViewSettings _settings;
 
 		/// <summary>
 		/// Constructs an instance of <see cref="WebView2WebViewManager"/>.
@@ -69,6 +72,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="externalNavigationStarting">Callback invoked when external navigation starts.</param>
+		/// <param name="settings">Settings for the underlying WebView control configuration.</param>
 		public WebView2WebViewManager(
 			WebView2Control webview!!,
 			IServiceProvider services,
@@ -76,12 +80,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			IFileProvider fileProvider,
 			JSComponentConfigurationStore jsComponents,
 			string hostPageRelativePath,
-			Action<ExternalLinkNavigationEventArgs> externalNavigationStarting)
+			Action<ExternalLinkNavigationEventArgs> externalNavigationStarting,
+			BlazorWebViewSettings settings)
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 
 		{
 			_webview = webview;
 			_externalNavigationStarting = externalNavigationStarting;
+			_settings = settings;
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
@@ -145,7 +151,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #endif
 				.ConfigureAwait(true);
 			await _webview.EnsureCoreWebView2Async();
-			ApplyDefaultWebViewSettings();
+
+#if WEBVIEW2_MAUI
+            var settings = _blazorWebViewHandler.WebviewSettings;
+#elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+			var settings = _settings;
+#endif
+			ApplyDefaultWebViewSettings(settings);
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
 
@@ -263,8 +275,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		private protected static string GetHeaderString(IDictionary<string, string> headers) =>
 			string.Join(Environment.NewLine, headers.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
 
-		private void ApplyDefaultWebViewSettings()
+		private void ApplyDefaultWebViewSettings(BlazorWebViewSettings settings)
 		{
+			_webview.CoreWebView2.Settings.AreDevToolsEnabled = settings.DevelopmentMode;
+
 			// Desktop applications typically don't want the default web browser context menu
 			_webview.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
 

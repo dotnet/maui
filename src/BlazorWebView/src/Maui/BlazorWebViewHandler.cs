@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.AspNetCore.Components.WebView;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <summary>
 		/// Initializes a new instance of <see cref="BlazorWebViewHandler"/> with default mappings.
 		/// </summary>
-		public BlazorWebViewHandler() : base(BlazorWebViewMapper)
+		public BlazorWebViewHandler() : this(BlazorWebViewMapper)
 		{
 		}
 
@@ -29,9 +30,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// Initializes a new instance of <see cref="BlazorWebViewHandler"/> using the specified mappings.
 		/// </summary>
 		/// <param name="mapper">The property mappings.</param>
-		public BlazorWebViewHandler(PropertyMapper? mapper) : base(mapper ?? BlazorWebViewMapper)
+		internal BlazorWebViewHandler(PropertyMapper? mapper) : base(mapper ?? BlazorWebViewMapper)
 		{
 		}
+
+		internal BlazorWebViewSettings WebviewSettings => MauiContext!.Services.GetRequiredService<BlazorWebViewSettings>();
 
 		/// <summary>
 		/// Maps the <see cref="IBlazorWebView.HostPage"/> property to the specified handler.

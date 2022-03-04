@@ -10,12 +10,19 @@ namespace Microsoft.Maui.Hosting
 	{
 		public static MauiAppBuilder ConfigureMauiHandlers(this MauiAppBuilder builder, Action<IMauiHandlersCollection>? configureDelegate)
 		{
-			builder.Services.TryAddSingleton<IMauiHandlersFactory, MauiHandlersFactory>();
+			ConfigureMauiHandlers(builder.Services, configureDelegate);
+			return builder;
+		}
+
+		public static IServiceCollection ConfigureMauiHandlers(this IServiceCollection services, Action<IMauiHandlersCollection>? configureDelegate)
+		{
+			services.TryAddSingleton<IMauiHandlersFactory, MauiHandlersFactory>();
 			if (configureDelegate != null)
 			{
-				builder.Services.AddSingleton<HandlerRegistration>(new HandlerRegistration(configureDelegate));
+				services.AddSingleton<HandlerRegistration>(new HandlerRegistration(configureDelegate));
 			}
-			return builder;
+
+			return services;
 		}
 
 		internal class HandlerRegistration
