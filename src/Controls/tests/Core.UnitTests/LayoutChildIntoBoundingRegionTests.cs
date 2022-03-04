@@ -31,12 +31,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void Default(int margin)
 		{
 			var layout = new StackLayout();
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 
 			var view = new MockView(margin);
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -60,13 +60,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void Default_RTL(int margin)
 		{
 			var layout = new StackLayout { FlowDirection = FlowDirection.RightToLeft };
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 
 			var view = new MockView(margin);
 
 			layout.Children.Add(view);
 
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -93,12 +93,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void HorizontalCenter(int margin)
 		{
 			var layout = new StackLayout();
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 
 			var view = new MockView(margin) { HorizontalOptions = LayoutOptions.Center };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -124,12 +124,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void HorizontalCenter_RTL(int margin)
 		{
 			var layout = new StackLayout { FlowDirection = FlowDirection.RightToLeft };
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 
 			var view = new MockView(margin) { HorizontalOptions = LayoutOptions.Center };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -156,11 +156,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void HorizontalCenterAndExpand(int margin)
 		{
 			var layout = new StackLayout();
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { HorizontalOptions = LayoutOptions.CenterAndExpand };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -186,11 +186,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void HorizontalCenterAndExpand_RTL(int margin)
 		{
 			var layout = new StackLayout { FlowDirection = FlowDirection.RightToLeft };
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { HorizontalOptions = LayoutOptions.CenterAndExpand };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -216,11 +216,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void HorizontalEnd(int margin)
 		{
 			var layout = new StackLayout();
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { HorizontalOptions = LayoutOptions.End };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -246,11 +246,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void HorizontalEnd_RTL(int margin)
 		{
 			var layout = new StackLayout { FlowDirection = FlowDirection.RightToLeft };
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { HorizontalOptions = LayoutOptions.End };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -276,11 +276,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void HorizontalEndAndExpand(int margin)
 		{
 			var layout = new StackLayout();
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { HorizontalOptions = LayoutOptions.EndAndExpand };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -306,11 +306,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void HorizontalEndAndExpand_RTL(int margin)
 		{
 			var layout = new StackLayout { FlowDirection = FlowDirection.RightToLeft };
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { HorizontalOptions = LayoutOptions.EndAndExpand };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -336,11 +336,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void HorizontalStart(int margin)
 		{
 			var layout = new StackLayout();
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { HorizontalOptions = LayoutOptions.Start };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -366,11 +366,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void HorizontalStart_RTL(int margin)
 		{
 			var layout = new StackLayout { FlowDirection = FlowDirection.RightToLeft };
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { HorizontalOptions = LayoutOptions.Start };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -396,11 +396,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void HorizontalStartAndExpand(int margin)
 		{
 			var layout = new StackLayout();
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { HorizontalOptions = LayoutOptions.StartAndExpand };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -426,11 +426,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void HorizontalStartAndExpand_RTL(int margin)
 		{
 			var layout = new StackLayout { FlowDirection = FlowDirection.RightToLeft };
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { HorizontalOptions = LayoutOptions.StartAndExpand };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -456,12 +456,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerticalCenter(int margin)
 		{
 			var layout = new StackLayout();
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 
 			var view = new MockView(margin) { VerticalOptions = LayoutOptions.Center };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -487,12 +487,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerticalCenter_RTL(int margin)
 		{
 			var layout = new StackLayout { FlowDirection = FlowDirection.RightToLeft };
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 
 			var view = new MockView(margin) { VerticalOptions = LayoutOptions.Center };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -518,11 +518,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerticalCenterAndExpand(int margin)
 		{
 			var layout = new StackLayout();
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { VerticalOptions = LayoutOptions.CenterAndExpand };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -548,11 +548,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerticalCenterAndExpand_RTL(int margin)
 		{
 			var layout = new StackLayout { FlowDirection = FlowDirection.RightToLeft };
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { VerticalOptions = LayoutOptions.CenterAndExpand };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -578,11 +578,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerticalEnd(int margin)
 		{
 			var layout = new StackLayout();
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { VerticalOptions = LayoutOptions.End };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -608,11 +608,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerticalEnd_RTL(int margin)
 		{
 			var layout = new StackLayout { FlowDirection = FlowDirection.RightToLeft };
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { VerticalOptions = LayoutOptions.End };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -638,11 +638,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerticalEndAndExpand(int margin)
 		{
 			var layout = new StackLayout();
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { VerticalOptions = LayoutOptions.EndAndExpand };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -668,11 +668,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerticalEndAndExpand_RTL(int margin)
 		{
 			var layout = new StackLayout { FlowDirection = FlowDirection.RightToLeft };
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { VerticalOptions = LayoutOptions.EndAndExpand };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -698,11 +698,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerticalStart(int margin)
 		{
 			var layout = new StackLayout();
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { VerticalOptions = LayoutOptions.Start };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -728,11 +728,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerticalStart_RTL(int margin)
 		{
 			var layout = new StackLayout { FlowDirection = FlowDirection.RightToLeft };
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { VerticalOptions = LayoutOptions.Start };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -758,11 +758,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerticalStartAndExpand(int margin)
 		{
 			var layout = new StackLayout();
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { VerticalOptions = LayoutOptions.StartAndExpand };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 
@@ -788,11 +788,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerticalStartAndExpand_RTL(int margin)
 		{
 			var layout = new StackLayout { FlowDirection = FlowDirection.RightToLeft };
-			layout.MockBounds(new Rectangle(0, 0, Layout_Width, double.PositiveInfinity));
+			layout.MockBounds(new Rect(0, 0, Layout_Width, double.PositiveInfinity));
 			var view = new MockView(margin) { VerticalOptions = LayoutOptions.StartAndExpand };
 
 			layout.Children.Add(view);
-			var region = new Rectangle(Region_X, Region_Y, Region_Width, Region_Height);
+			var region = new Rect(Region_X, Region_Y, Region_Width, Region_Height);
 
 			Compatibility.Layout.LayoutChildIntoBoundingRegion(view, region);
 

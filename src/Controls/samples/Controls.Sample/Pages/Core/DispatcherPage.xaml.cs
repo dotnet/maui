@@ -89,6 +89,7 @@ namespace Maui.Controls.Sample.Pages
 
 		bool keepRunning;
 
+		[Obsolete]
 		void OnObsoleteClicked(object sender, EventArgs e)
 		{
 			if (keepRunning)

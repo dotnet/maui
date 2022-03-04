@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element is not IVisualTreeElement vte || mauiContext == null)
 				return finalSize;
 
-			var mauiRect = new Graphics.Rectangle(0, 0, finalSize.Width, finalSize.Height);
+			var mauiRect = new Graphics.Rect(0, 0, finalSize.Width, finalSize.Height);
 			foreach (var child in vte.GetVisualChildren())
 			{
 				if (child is Maui.IElement childElement && childElement.Handler is IPlatformViewHandler nvh)

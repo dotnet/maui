@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			CGRect rect;
 
-			if (request.PresentationSourceBounds != Rectangle.Zero)
+			if (request.PresentationSourceBounds != Rect.Zero)
 			{
 				rect = request.PresentationSourceBounds.AsCGRect();
 			}

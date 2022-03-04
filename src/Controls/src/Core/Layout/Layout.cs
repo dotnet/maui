@@ -211,6 +211,9 @@ namespace Microsoft.Maui.Controls
 		{
 			NotifyHandler(nameof(ILayoutHandler.Add), index, view);
 
+			// Make sure CascadeInputTransparent is applied, if necessary
+			Handler?.UpdateValue(nameof(CascadeInputTransparent));
+
 			// Take care of the Element internal bookkeeping
 			if (view is Element element)
 			{
@@ -238,6 +241,9 @@ namespace Microsoft.Maui.Controls
 		{
 			NotifyHandler(nameof(ILayoutHandler.Insert), index, view);
 
+			// Make sure CascadeInputTransparent is applied, if necessary
+			Handler?.UpdateValue(nameof(CascadeInputTransparent));
+
 			// Take care of the Element internal bookkeeping
 			if (view is Element element)
 			{
@@ -248,6 +254,9 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnUpdate(int index, IView view, IView oldView)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Update), index, view);
+
+			// Make sure CascadeInputTransparent is applied, if necessary
+			Handler?.UpdateValue(nameof(CascadeInputTransparent));
 		}
 
 		void NotifyHandler(string action, int index, IView view)
@@ -275,9 +284,47 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='CrossPlatformArrange']/Docs" />
-		public Graphics.Size CrossPlatformArrange(Graphics.Rectangle bounds)
+		public Graphics.Size CrossPlatformArrange(Graphics.Rect bounds)
 		{
 			return LayoutManager.ArrangeChildren(bounds);
+		}
+
+		internal static new void RemapForControls()
+		{
+			ViewHandler.ViewMapper = ControlsLayoutMapper;
+		}
+
+		public static readonly BindableProperty CascadeInputTransparentProperty =
+			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true);
+
+		public bool CascadeInputTransparent
+		{
+			get => (bool)GetValue(CascadeInputTransparentProperty);
+			set => SetValue(CascadeInputTransparentProperty, value);
+		}
+
+		public static IPropertyMapper<IView, IViewHandler> ControlsLayoutMapper = new PropertyMapper<Layout, LayoutHandler>(ControlsVisualElementMapper)
+		{
+			[nameof(CascadeInputTransparent)] = MapInputTransparent,
+			[nameof(IView.InputTransparent)] = MapInputTransparent,
+		};
+
+		void UpdateDescendantInputTransparent() 
+		{
+			if (!InputTransparent || !CascadeInputTransparent)
+			{
+				// We only need to propagate values if the layout is InputTransparent AND Cascade is true
+				return;
+			}
+
+			// Set all the child InputTransparent values to match this one
+			for (int n = 0; n < Count; n++)
+			{
+				if (this[n] is VisualElement visualElement)
+				{
+					visualElement.InputTransparent = true;
+				}
+			}
 		}
 	}
 }

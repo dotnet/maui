@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AppCompatEditText CreatePlatformView()
 		{
-			var editText = new MauiEditText(Context)
+			var editText = new AppCompatEditText(Context)
 			{
 				ImeOptions = ImeAction.Done,
 				Gravity = GravityFlags.Top,
@@ -29,12 +29,14 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
+			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusedChange;
 		}
 
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
+			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusedChange;
 		}
@@ -86,6 +88,16 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor) =>
 			handler.PlatformView?.UpdateSelectionLength(editor);
+
+		void OnPlatformViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)
+		{
+			if (PlatformView.IsAlive() && PlatformView.Enabled)
+			{
+				// https://issuetracker.google.com/issues/37095917
+				PlatformView.Enabled = false;
+				PlatformView.Enabled = true;
+			}
+		}
 
 		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
 			VirtualView?.UpdateText(e);

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		bool _watchingPlatformLoaded;
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Frame']/Docs" />
-		public Rectangle Frame
+		public Rect Frame
 		{
 			get => Bounds;
 			set
@@ -113,19 +113,19 @@ namespace Microsoft.Maui.Controls
 		public Size DesiredSize { get; protected set; }
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Arrange']/Docs" />
-		public void Arrange(Rectangle bounds)
+		public void Arrange(Rect bounds)
 		{
 			Layout(bounds);
 		}
 
-		Size IView.Arrange(Rectangle bounds)
+		Size IView.Arrange(Rect bounds)
 		{
 			return ArrangeOverride(bounds);
 		}
 
 		// ArrangeOverride provides a way to allow subclasses (e.g., ScrollView) to override Arrange even though
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
-		protected virtual Size ArrangeOverride(Rectangle bounds)
+		protected virtual Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
 			Handler?.PlatformArrange(Frame);
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Layout']/Docs" />
-		public void Layout(Rectangle bounds)
+		public void Layout(Rect bounds)
 		{
 			Bounds = bounds;
 		}

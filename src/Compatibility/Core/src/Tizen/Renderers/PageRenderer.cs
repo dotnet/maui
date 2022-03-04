@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected override void OnElementReady()
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				_moreOption = new Lazy<MoreOption>(CreateMoreOption);
 				if (Element.ToolbarItems is INotifyCollectionChanged items)
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					_page.LayoutUpdated -= OnLayoutUpdated;
 				}
 
-				if (Device.Idiom == TargetIdiom.Watch)
+				if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				{
 					if (Element.ToolbarItems is INotifyCollectionChanged items)
 					{

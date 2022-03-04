@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// It wont crash but the way its programmed doesn't really anticipate re-entrancy around that method
 				// and it ends up going to the wrong location. Thus we must invoke.
 
-				Device.BeginInvokeOnMainThread(() =>
+				_viewPager.Post(() =>
 				{
 					if (currentPosition < _viewPager.ChildCount && _toolbarTracker != null)
 					{

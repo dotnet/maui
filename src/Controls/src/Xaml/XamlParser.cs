@@ -32,6 +32,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -288,16 +289,16 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				var prefix = kvp.Key;
 
-				string typeName = null, ns = null, asm = null, targetPlatform = null;
-				XmlnsHelper.ParseXmlns(kvp.Value, out typeName, out ns, out asm, out targetPlatform);
+				XmlnsHelper.ParseXmlns(kvp.Value, out _, out _, out _, out var targetPlatform);
 				if (targetPlatform == null)
 					continue;
+
 				try
 				{
-					if (targetPlatform != Device.RuntimePlatform)
+					if (targetPlatform != DeviceInfo.Platform.ToString())
 					{
 						// Special case for Windows backward compatibility
-						if (targetPlatform == "Windows" && Device.RuntimePlatform == Device.UWP)
+						if (targetPlatform == "Windows" && DeviceInfo.Platform == DevicePlatform.WinUI)
 							continue;
 
 						prefixes.Add(prefix);
