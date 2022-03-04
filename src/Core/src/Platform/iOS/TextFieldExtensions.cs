@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Platform
 			textField.UserInteractionEnabled = !(entry.IsReadOnly || entry.InputTransparent);
 		}
 
-		public static void UpdateInputTransparent(this UITextField textField, IViewHandler handler, IEntry entry)
+		public static void UpdateInputTransparent(this UITextField textField, IEntryHandler handler, IEntry entry)
 		{
 			textField.UserInteractionEnabled = !(entry.IsReadOnly || entry.InputTransparent);
 		}

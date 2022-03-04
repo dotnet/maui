@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Platform
 			textView.UserInteractionEnabled = !(editor.IsReadOnly || editor.InputTransparent);
 		}
 
-		public static void UpdateInputTransparent(this UITextView textView, IViewHandler handler, IEditor editor)
+		public static void UpdateInputTransparent(this UITextView textView, IEditorHandler handler, IEditor editor)
 		{
 			textView.UserInteractionEnabled = !(editor.IsReadOnly || editor.InputTransparent);
 		}
