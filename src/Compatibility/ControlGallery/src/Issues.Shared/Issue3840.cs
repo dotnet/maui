@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 
 			var mainLayout = new AbsoluteLayout();
-			mainLayout.Children.Add(scroll, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
+			mainLayout.Children.Add(scroll, new Rect(0, 0, 1, 1), AbsoluteLayoutFlags.All);
 			Content = mainLayout;
 		}
 

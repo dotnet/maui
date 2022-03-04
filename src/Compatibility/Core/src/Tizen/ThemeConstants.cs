@@ -384,7 +384,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			public class ColorClass
 			{
-				public static readonly EColor DefaultBorderColor = Device.Idiom == TargetIdiom.TV || Device.Idiom == TargetIdiom.Watch ? EColor.Gray : EColor.Black;
+				public static readonly EColor DefaultBorderColor = DeviceInfo.Idiom == DeviceIdiom.TV || DeviceInfo.Idiom == DeviceIdiom.Watch ? EColor.Gray : EColor.Black;
 				public static readonly EColor DefaultShadowColor = EColor.FromRgba(80, 80, 80, 50);
 			}
 		}

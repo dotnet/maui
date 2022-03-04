@@ -25,7 +25,10 @@ namespace Microsoft.Maui.Essentials
 		public static DevicePlatform Tizen { get; } = new DevicePlatform(nameof(Tizen));
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='UWP']/Docs" />
-		public static DevicePlatform UWP { get; } = new DevicePlatform(nameof(UWP));
+		[Obsolete("Use WinUI instead.")]
+		public static DevicePlatform UWP { get; } = new DevicePlatform(nameof(WinUI));
+
+		public static DevicePlatform WinUI { get; } = new DevicePlatform(nameof(WinUI));
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='watchOS']/Docs" />
 		public static DevicePlatform watchOS { get; } = new DevicePlatform(nameof(watchOS));

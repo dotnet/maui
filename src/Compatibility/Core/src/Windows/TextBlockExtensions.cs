@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 				var rect = inline.ContentStart.GetCharacterRect(LogicalDirection.Forward);
 				var endRect = inline.ContentEnd.GetCharacterRect(LogicalDirection.Forward);
 
-				var positions = new List<Rectangle>();
+				var positions = new List<Rect>();
 
 
 				var defaultLineHeight = inlineHeights[i];

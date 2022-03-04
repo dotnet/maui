@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal class ObservableGroupedSource : IGroupableItemsViewSource, ICollectionChangedNotifier, IObservableItemsViewSource
 	{
+		readonly GroupableItemsView _groupableItemsView;
 		readonly ICollectionChangedNotifier _notifier;
 		readonly IList _groupSource;
 		List<IItemsViewSource> _groups = new List<IItemsViewSource>();
@@ -37,9 +38,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public ObservableGroupedSource(GroupableItemsView groupableItemsView, ICollectionChangedNotifier notifier)
 		{
-			var groupSource = groupableItemsView.ItemsSource;
-
+			_groupableItemsView = groupableItemsView;
 			_notifier = notifier;
+			var groupSource = groupableItemsView.ItemsSource;
 			_groupSource = groupSource as IList ?? new ListSource(groupSource);
 
 			_hasGroupFooters = groupableItemsView.GroupFooterTemplate != null;
@@ -224,7 +225,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			for (int n = 0; n < _groupSource.Count; n++)
 			{
-				var source = ItemsSourceFactory.Create(_groupSource[n] as IEnumerable, this);
+				var source = ItemsSourceFactory.Create(_groupSource[n] as IEnumerable, _groupableItemsView, this);
 				source.HasFooter = _hasGroupFooters;
 				source.HasHeader = _hasGroupHeaders;
 				_groups.Add(source);
@@ -247,14 +248,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => CollectionChanged(args));
-			}
-			else
-			{
-				CollectionChanged(args);
-			}
+			_groupableItemsView.Dispatcher.DispatchIfRequired(() => CollectionChanged(args));
 		}
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)

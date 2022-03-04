@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 			_handlerCache.Clear();
 
-			if (Device.Idiom == TargetIdiom.TV)
+			if (DeviceInfo.Idiom == DeviceIdiom.TV)
 			{
 				_renderer.NativeView.KeyDown -= OnKeyDown;
 			}
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			};
 			UpdateGestureLayerEnabled();
 
-			if (Device.Idiom == TargetIdiom.TV)
+			if (DeviceInfo.Idiom == DeviceIdiom.TV)
 			{
 				_renderer.NativeView.KeyDown += OnKeyDown;
 			}

@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var contentFrame = ContentView.Frame;
 				var view = ViewCell.View;
 
-				view.Frame = new Graphics.Rectangle(0, 0, contentFrame.Width, contentFrame.Height);
+				view.Frame = new Graphics.Rect(0, 0, contentFrame.Width, contentFrame.Height);
 				view.Handler.PlatformArrangeHandler(contentFrame.ToRectangle());
 				if (_rendererRef == null)
 					return;
@@ -180,14 +180,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var oldCell = _viewCell;
 				if (oldCell != null)
 				{
-					Device.BeginInvokeOnMainThread(oldCell.SendDisappearing);
+					BeginInvokeOnMainThread(oldCell.SendDisappearing);
 					oldCell.PropertyChanged -= ViewCellPropertyChanged;
 					oldCell.View.MeasureInvalidated -= OnMeasureInvalidated;
 				}
 
 				_viewCell = cell;
 				_viewCell.PropertyChanged += ViewCellPropertyChanged;
-				Device.BeginInvokeOnMainThread(_viewCell.SendAppearing);
+				BeginInvokeOnMainThread(_viewCell.SendAppearing);
 
 				IPlatformViewHandler renderer;
 				if (_rendererRef == null || !_rendererRef.TryGetTarget(out renderer))

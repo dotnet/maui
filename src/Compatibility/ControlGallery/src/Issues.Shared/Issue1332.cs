@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					BackgroundColor = Colors.Transparent
 				}
 			};
-			AbsoluteLayout.SetLayoutBounds(red, new Rectangle(0, 0, layoutWidth, layoutHeight));
+			AbsoluteLayout.SetLayoutBounds(red, new Rect(0, 0, layoutWidth, layoutHeight));
 			AbsoluteLayout.SetLayoutFlags(red, AbsoluteLayoutFlags.XProportional | AbsoluteLayoutFlags.WidthProportional);
 
 			var stack = new StackLayout
@@ -47,13 +47,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Command = new Command(() => {
 							layoutWidth = layoutWidth == 0.3 ? 0.6 : 0.3;
 							red.IsVisible = false;
-							AbsoluteLayout.SetLayoutBounds(red, new Rectangle(0, 0, layoutWidth, 150));
+							AbsoluteLayout.SetLayoutBounds(red, new Rect(0, 0, layoutWidth, 150));
 							red.IsVisible = true;
 						})
 					}
 				}
 			};
-			AbsoluteLayout.SetLayoutBounds(stack, new Rectangle(1, 0, layoutWidth / 2, 1));
+			AbsoluteLayout.SetLayoutBounds(stack, new Rect(1, 0, layoutWidth / 2, 1));
 			AbsoluteLayout.SetLayoutFlags(stack, AbsoluteLayoutFlags.All);
 
 			var desc = new Label
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "Click on Visibility, then click on Width button few times." +
 					"The layout of the second frame must be updated to match the first."
 			};
-			AbsoluteLayout.SetLayoutBounds(desc, new Rectangle(0, 0.5, 1, 0.5));
+			AbsoluteLayout.SetLayoutBounds(desc, new Rect(0, 0.5, 1, 0.5));
 			AbsoluteLayout.SetLayoutFlags(desc, AbsoluteLayoutFlags.All);
 
 			Content = new AbsoluteLayout

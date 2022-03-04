@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public Paint Background { get; set; }
 
-		public Rectangle Frame { get; set; } = new Rectangle(0, 0, 20, 20);
+		public Rect Frame { get; set; } = new Rect(0, 0, 20, 20);
 
 		public double TranslationX { get; set; }
 
@@ -88,7 +88,9 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public int ZIndex { get; set; }
 
-		public Size Arrange(Rectangle bounds)
+		public bool InputTransparent { get; set; }
+
+		public Size Arrange(Rect bounds)
 		{
 			Frame = bounds;
 			DesiredSize = bounds.Size;
