@@ -120,6 +120,21 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.RotationY % 360, rY % 360);
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task InputTransparencyInitializesCorrectly(bool inputTransparent)
+		{
+			var view = new TStub()
+			{
+				InputTransparent = inputTransparent
+			};
+
+			var uie = await GetValueAsync(view, handler => GetHitTestVisible(handler));
+
+			// HitTestVisible should be the opposite value of InputTransparent 
+			Assert.NotEqual(inputTransparent, uie);
+		}
 
 		protected Maui.Graphics.Rect GetPlatformViewBounds(IViewHandler viewHandler) =>
 			((FrameworkElement)viewHandler.PlatformView).GetPlatformViewBounds();
@@ -235,6 +250,12 @@ namespace Microsoft.Maui.DeviceTests
 				return FlowDirection.LeftToRight;
 
 			return FlowDirection.RightToLeft;
+		}
+
+		protected bool GetHitTestVisible(IViewHandler viewHandler)
+		{
+			var platformView = (FrameworkElement)viewHandler.PlatformView;
+			return platformView.IsHitTestVisible;
 		}
 	}
 }

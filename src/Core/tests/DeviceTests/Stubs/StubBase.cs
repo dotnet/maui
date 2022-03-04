@@ -87,6 +87,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public int ZIndex { get; set; }
 
+		public bool InputTransparent { get; set; }
+
 		public Size Arrange(Rect bounds)
 		{
 			Frame = bounds;

@@ -33,8 +33,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(1, didUpdateFrame);
 		}
 
-		[Fact(DisplayName = "Subsequint PlatformArrange triggers MapFrame")]
-		public async Task SubsequintPlatformArrangeTriggersMapFrame()
+		[Fact(DisplayName = "Subsequent PlatformArrange triggers MapFrame")]
+		public async Task SubsequentPlatformArrangeTriggersMapFrame()
 		{
 			var didUpdateFrame = 0;
 

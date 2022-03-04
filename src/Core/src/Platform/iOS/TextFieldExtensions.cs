@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsReadOnly(this UITextField textField, IEntry entry)
 		{
-			textField.UserInteractionEnabled = !entry.IsReadOnly;
+			textField.UserInteractionEnabled = !(entry.IsReadOnly || entry.InputTransparent);
 		}
 
 		public static void UpdateFont(this UITextField textField, ITextStyle textStyle, IFontManager fontManager)
