@@ -1,0 +1,12 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui">
+
+    <Style TargetType="NavigationPage">
+
+        <!-- NAVIGATIONPAGE SPECIFIC PROPERTIES -->
+        <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryLightColor}, Dark={StaticResource PrimaryDarkColor}}" />
+        <!--<Setter Property="BarBackground" Value="" />-->
+        <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource PrimaryDarkColor}, Dark={StaticResource PrimaryLightColor}}" />
+        <Setter Property="IconColor" Value="{AppThemeBinding Light={StaticResource PrimaryDarkColor}, Dark={StaticResource PrimaryLightColor}}" />
+    </Style>
+
+</ResourceDictionary>

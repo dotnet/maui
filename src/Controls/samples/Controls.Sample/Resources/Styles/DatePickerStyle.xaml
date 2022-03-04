@@ -1,0 +1,32 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui">
+
+    <Style TargetType="DatePicker">
+        
+        <!-- DATEPICKER SPECIFIC PROPERTIES -->
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PrimaryDarkColor}, Dark={StaticResource PrimaryLightColor}}" />
+        <!--<Setter Property="CharacterSpacing" Value="0" />-->
+        <!--<Setter Property="FontFamily" Value="OpenSansRegular" />-->
+        <!--<Setter Property="FontSize" Value="14" />-->
+        <!--<Setter Property="FontAttributes" Value="Bold" />-->
+        <!--<Setter Property="FontAutoScalingEnabled" Value="True" />-->
+        <!--<Setter Property="TextTransform" Value="None" />-->
+        
+        <!-- VIEW INHERITED PROPERTIES -->
+        <!--<Setter Property="VerticalOptions" Value="Center" />-->
+        <!--<Setter Property="HorizontalOptions" Value="Center" />-->
+        <!--<Setter Property="Margin" Value="0" />-->
+
+        <!-- VISUALELEMENT INHERITED PROPERTIES -->
+        <!--<Setter Property="Shadow" Value="" />-->
+        <!--<Setter Property="Width" Value="100" />-->
+        <!--<Setter Property="Height" Value="25" />-->
+        <!--<Setter Property="Clip" Value="" />-->
+        <!--<Setter Property="IsVisible" Value="True" />-->
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryLightColor}, Dark={StaticResource PrimaryDarkColor}}" />
+        <!--<Setter Property="Background" Value="" />-->
+        <!--<Setter Property="WidthRequest" Value="100" />-->
+        <!--<Setter Property="HeightRequest" Value="25" />-->
+        <!--<Setter Property="FlowDirection" Value="LeftToRight" />-->
+    </Style>
+
+</ResourceDictionary>

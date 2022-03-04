@@ -8,7 +8,40 @@
         <ResourceDictionary>
 
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="AppResources.xaml" />
+                <ResourceDictionary Source="Resources/Styles/ThemeColors.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ActivityIndicatorStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/BorderStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/BoxViewStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ButtonStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/CheckBoxStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/DatePickerStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/EditorStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/EntryStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/FrameStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/GridStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ImageButtonStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ImageStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/IndicatorViewStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/LabelStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ListViewStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/NavigationPageStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/PageStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/PickerStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ProgressBarStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/RadioButtonStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/RefreshViewStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ScrollViewStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/SearchBarStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/SliderStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/StepperStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/SwipeItemStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/SwitchStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/TabbedPageStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/TableViewStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/TemplatedViewStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/TimePickerStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/WebViewStyle.xaml"/>
+                <!--<ResourceDictionary Source="AppResources.xaml" />-->
             </ResourceDictionary.MergedDictionaries>
 
         </ResourceDictionary>

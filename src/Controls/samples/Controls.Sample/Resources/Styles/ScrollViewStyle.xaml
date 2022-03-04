@@ -1,0 +1,17 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui">
+
+    <Style TargetType="ScrollView">
+        
+        <!-- SCROLLVIEW SPECIFIC PROPERTIES -->
+        <!--<Setter Property="Orientation" Value="Vertical" />-->
+        <!--<Setter Property="ContentSize" Value="" />-->
+        <!--<Setter Property="HorizontalScrollBarVisibility" Value="False" />-->
+        <!--<Setter Property="VerticalScrollBarVisibility" Value="False" />-->
+
+        <!-- PAGE INHERITED PROPERTIES -->
+        <!--<Setter Property="IsClippedToBounds" Value="False" />-->
+        <!--<Setter Property="CascadeInputTransparent" Value="False" />-->
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+</ResourceDictionary>

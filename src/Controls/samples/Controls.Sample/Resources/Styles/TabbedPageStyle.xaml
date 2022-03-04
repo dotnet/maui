@@ -1,0 +1,25 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui">
+
+    <Style TargetType="TabbedPage">
+        
+        <!-- TABBEDPAGE SPECIFIC PROPERTIES -->
+        <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryLightColor}, Dark={StaticResource PrimaryDarkColor}}" />
+        <!--<Setter Property="BarBackground" Value="" />-->
+        <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource PrimaryDarkColor}, Dark={StaticResource PrimaryLightColor}}" />
+        <Setter Property="UnselectedTabColor" Value="{AppThemeBinding Light={StaticResource SecondaryLightColor}, Dark={StaticResource SecondaryDarkColor}}" />
+        <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource DotNetColor}, Dark={StaticResource PrimaryLightColor}}" />
+
+        <!-- VISUALELEMENT INHERITED PROPERTIES -->
+        <!--<Setter Property="Shadow" Value="" />-->
+        <!--<Setter Property="Width" Value="100" />-->
+        <!--<Setter Property="Height" Value="25" />-->
+        <!--<Setter Property="Clip" Value="" />-->
+        <!--<Setter Property="IsVisible" Value="True" />-->
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryLightColor}, Dark={StaticResource PrimaryDarkColor}}" />
+        <!--<Setter Property="Background" Value="" />-->
+        <!--<Setter Property="WidthRequest" Value="100" />-->
+        <!--<Setter Property="HeightRequest" Value="25" />-->
+        <!--<Setter Property="FlowDirection" Value="LeftToRight" />-->
+    </Style>
+
+</ResourceDictionary>

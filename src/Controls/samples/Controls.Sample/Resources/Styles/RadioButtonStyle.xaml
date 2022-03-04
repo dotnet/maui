@@ -1,0 +1,18 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui">
+
+    <Style TargetType="RadioButton">
+
+        <!-- RADIOBUTTON SPECIFIC PROPERTIES -->
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PrimaryDarkColor}, Dark={StaticResource PrimaryLightColor}}" />
+        <!--<Setter Property="CharacterSpacing" Value="0" />-->
+        <!--<Setter Property="TextTransform" Value="None" />-->
+        <!--<Setter Property="FontAttributes" Value="Bold" />-->
+        <!--<Setter Property="FontFamily" Value="OpenSansRegular" />-->
+        <!--<Setter Property="FontSize" Value="14" />-->
+        <!--<Setter Property="FontAutoScalingEnabled" Value="True" />-->
+        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource DotNetColor}, Dark={StaticResource PrimaryLightColor}}" />
+        <!--<Setter Property="CornerRadius" Value="0" />-->
+        <!--<Setter Property="BorderWidth" Value="0" />-->
+    </Style>
+
+</ResourceDictionary>
