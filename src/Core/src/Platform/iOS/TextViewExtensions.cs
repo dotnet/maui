@@ -65,11 +65,6 @@ namespace Microsoft.Maui.Platform
 			textView.UserInteractionEnabled = !(editor.IsReadOnly || editor.InputTransparent);
 		}
 
-		public static void UpdateInputTransparent(this UITextView textView, IEditorHandler handler, IEditor editor)
-		{
-			textView.UserInteractionEnabled = !(editor.IsReadOnly || editor.InputTransparent);
-		}
-
 		public static void UpdateKeyboard(this UITextView textView, IEditor editor)
 		{
 			var keyboard = editor.Keyboard;

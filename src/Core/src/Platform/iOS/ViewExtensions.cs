@@ -440,14 +440,21 @@ namespace Microsoft.Maui.Platform
 			return size;
 		}
 		
-		public static void UpdateInputTransparent(this UIView nativeView, IViewHandler handler, IView view)
+		public static void UpdateInputTransparent(this UIView platformView, IViewHandler handler, IView view)
 		{
-			if (nativeView is not UIView uiView)
-				return;
+			if (view is ITextInput textInput)
+			{
+				platformView.UpdateInputTransparent(textInput.IsReadOnly, view.InputTransparent);
+			}
 
-			uiView.UserInteractionEnabled = !view.InputTransparent;
+			platformView.UserInteractionEnabled = !view.InputTransparent;
 		}
-    
+
+		public static void UpdateInputTransparent(this UIView platformView, bool isReadOnly, bool inputTransparent) 
+		{
+			platformView.UserInteractionEnabled = !(isReadOnly || inputTransparent);
+		}
+
 		internal static IWindow? GetHostedWindow(this IView? view)
 			=> GetHostedWindow(view?.Handler?.PlatformView as UIView);
 

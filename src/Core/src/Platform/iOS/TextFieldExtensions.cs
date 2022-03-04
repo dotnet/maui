@@ -90,11 +90,6 @@ namespace Microsoft.Maui.Platform
 			textField.UserInteractionEnabled = !(entry.IsReadOnly || entry.InputTransparent);
 		}
 
-		public static void UpdateInputTransparent(this UITextField textField, IEntryHandler handler, IEntry entry)
-		{
-			textField.UserInteractionEnabled = !(entry.IsReadOnly || entry.InputTransparent);
-		}
-
 		public static void UpdateFont(this UITextField textField, ITextStyle textStyle, IFontManager fontManager)
 		{
 			var uiFont = fontManager.GetFont(textStyle.Font, UIFont.LabelFontSize);

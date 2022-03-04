@@ -77,11 +77,6 @@ namespace Microsoft.Maui.Platform
 			uiSearchBar.UserInteractionEnabled = !(searchBar.IsReadOnly || searchBar.InputTransparent);
 		}
 
-		public static void UpdateInputTransparent(this UISearchBar uiSearchBar, ISearchBarHandler handler, ISearchBar searchBar)
-		{
-			uiSearchBar.UserInteractionEnabled = !(searchBar.IsReadOnly || searchBar.InputTransparent);
-		}
-
 		public static void UpdateCancelButton(this UISearchBar uiSearchBar, ISearchBar searchBar,
 			UIColor? cancelButtonTextColorDefaultNormal, UIColor? cancelButtonTextColorDefaultHighlighted, UIColor? cancelButtonTextColorDefaultDisabled)
 		{
