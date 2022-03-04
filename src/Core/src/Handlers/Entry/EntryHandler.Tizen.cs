@@ -38,7 +38,11 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		protected override Entry CreatePlatformView() => new MauiEntry();
+		protected override Entry CreatePlatformView() => new MauiEntry
+		{
+			Focusable = true,
+			FocusableInTouch = true,
+		};
 
 		protected override void ConnectHandler(Entry platformView)
 		{

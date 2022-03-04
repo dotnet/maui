@@ -7,7 +7,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override NEntry CreatePlatformView() => new NEntry
 		{
-			IsReadOnly = true
+			IsReadOnly = true,
+			Focusable = true,
 		};
 
 		protected override void ConnectHandler(NEntry platformView)

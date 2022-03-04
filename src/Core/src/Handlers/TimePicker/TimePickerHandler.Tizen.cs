@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Handlers
 		protected override NEntry CreatePlatformView() => new NEntry
 		{
 			IsReadOnly = true,
-			VerticalAlignment = VerticalAlignment.Center
+			VerticalAlignment = VerticalAlignment.Center,
+			Focusable = true,
 		};
 
 		protected override void ConnectHandler(NEntry platformView)

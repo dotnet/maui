@@ -7,7 +7,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
-		protected override Button CreatePlatformView() => new Button();
+		protected override Button CreatePlatformView() => new Button
+		{
+			Focusable = true,
+		};
 
 		protected override void ConnectHandler(Button platformView)
 		{

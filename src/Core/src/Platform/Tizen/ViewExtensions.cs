@@ -20,12 +20,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void Focus(this NView platformView, FocusRequest request)
 		{
-<<<<<<< HEAD
 			request.IsFocused = Tizen.NUI.FocusManager.Instance.SetCurrentFocusView(platformView);
-=======
-			if (request.IsFocused)
-				Tizen.NUI.FocusManager.Instance.SetCurrentFocusView(platformView);
->>>>>>> 25278e402 (Clean up code after rebase (#399))
 		}
 
 		public static void Unfocus(this NView platformView, IView view)

@@ -7,7 +7,10 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override MauiImageButton CreatePlatformView()
 		{
-			return new MauiImageButton();
+			return new MauiImageButton
+			{
+				Focusable = true,
+			};
 		}
 
 		protected override void ConnectHandler(MauiImageButton platformView)

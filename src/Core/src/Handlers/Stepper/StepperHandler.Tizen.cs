@@ -6,7 +6,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class StepperHandler : ViewHandler<IStepper, Stepper>
 	{
-		protected override Stepper CreatePlatformView() => new Stepper();
+		protected override Stepper CreatePlatformView() => new Stepper
+		{
+			Focusable = true,
+		};
 
 		protected override void ConnectHandler(Stepper platformView)
 		{

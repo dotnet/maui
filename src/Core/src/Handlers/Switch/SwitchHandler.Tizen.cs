@@ -6,7 +6,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, Switch>
 	{
-		protected override Switch CreatePlatformView() => new Switch();
+		protected override Switch CreatePlatformView() => new Switch
+		{
+			Focusable = true,
+		};
 
 		protected override void ConnectHandler(Switch nativeView)
 		{

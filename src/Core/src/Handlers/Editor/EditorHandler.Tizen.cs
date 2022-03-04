@@ -35,7 +35,11 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		protected override Editor CreatePlatformView() => new MauiEditor();
+		protected override Editor CreatePlatformView() => new MauiEditor
+		{
+			Focusable = true,
+			FocusableInTouch = true,
+		};
 
 		protected override void ConnectHandler(Editor nativeView)
 		{

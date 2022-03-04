@@ -5,7 +5,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class CheckBoxHandler : ViewHandler<ICheckBox, CheckBox>
 	{
-		protected override CheckBox CreatePlatformView() => new CheckBox();
+		protected override CheckBox CreatePlatformView() => new CheckBox
+		{
+			Focusable = true,
+		};
 
 		protected override void ConnectHandler(CheckBox platformView)
 		{

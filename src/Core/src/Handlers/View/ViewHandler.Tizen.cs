@@ -81,11 +81,19 @@ namespace Microsoft.Maui.Handlers
 
 		protected void OnFocused(object? sender, EventArgs e)
 		{
+			if (VirtualView != null)
+			{
+				VirtualView.IsFocused = true;
+			}
 			OnFocused();
 		}
 
 		protected void OnUnfocused(object? sender, EventArgs e)
 		{
+			if (VirtualView != null)
+			{
+				VirtualView.IsFocused = false;
+			}
 			OnUnfocused();
 		}
 

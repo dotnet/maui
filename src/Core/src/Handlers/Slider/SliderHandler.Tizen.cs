@@ -5,7 +5,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SliderHandler : ViewHandler<ISlider, Slider>
 	{
-		protected override Slider CreatePlatformView() => new Slider();
+		protected override Slider CreatePlatformView() => new Slider
+		{
+			Focusable = true,
+		};
 
 		protected override void ConnectHandler(Slider nativeView)
 		{
