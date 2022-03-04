@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			await ImageElementManager.UpdateSource(this).ConfigureAwait(false);
 		}
 
-
+		[PortHandler]
 		void OnImageOpened(object sender, RoutedEventArgs routedEventArgs)
 		{
 			if (_measured)
@@ -162,6 +162,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Element?.SetIsLoading(false);
 		}
 
+		[PortHandler]
 		protected virtual void OnImageFailed(object sender, ExceptionRoutedEventArgs exceptionRoutedEventArgs)
 		{
 			Application.Current?.FindMauiContext()?.CreateLogger<ImageButtonRenderer>()?.LogWarning("Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}", exceptionRoutedEventArgs.ErrorMessage);

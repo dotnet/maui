@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 	{
 		const int MaximumRadius = 100;
 
-		readonly Rect _viewBounds;
+		readonly Android.Graphics.Rect _viewBounds;
 
 		APath _currentPath;
 		SizeF _lastPathSize;
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform
 		public WrapperView(Context context)
 			: base(context)
 		{
-			_viewBounds = new Rect();
+			_viewBounds = new Android.Graphics.Rect();
 
 			SetClipChildren(false);
 			SetWillNotDraw(true);
@@ -131,12 +131,12 @@ namespace Microsoft.Maui.Platform
 			{
 				this.AddView(BorderView = new AView(Context));
 			}
-			BorderView.UpdateMauiDrawable(Border);
+			BorderView.UpdateBorderStroke(Border);
 		}
 
 		void ClipChild(Canvas canvas)
 		{
-			var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
+			var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
 
 			if (_lastPathSize != bounds.Size || _currentPath == null)
 			{
@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Platform
 					}
 					else
 					{
-						var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
+						var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
 						var path = Clip.PathForBounds(bounds)?.AsAndroidPath();
 
 						path.Offset(shadowOffsetX, shadowOffsetY);

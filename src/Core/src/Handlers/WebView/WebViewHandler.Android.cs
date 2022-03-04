@@ -17,12 +17,22 @@ namespace Microsoft.Maui.Handlers
 		bool _firstRun = true;
 		readonly HashSet<string> _loadedCookies = new HashSet<string>();
 
+		internal WebNavigationEvent _eventState;
+
+		protected internal string? UrlCanceled { get; set; }
+
 		protected override AWebView CreatePlatformView()
 		{
-			return new MauiWebView(Context!)
+			return new MauiWebView(this, Context!)
 			{
 				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent)
 			};
+		}
+
+		internal WebNavigationEvent CurrentNavigationEvent
+		{
+			get => _eventState;
+			set => _eventState = value;
 		}
 
 		public override void SetVirtualView(IView view)
@@ -41,38 +51,49 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapSource(WebViewHandler handler, IWebView webView)
+		public static void MapSource(IWebViewHandler handler, IWebView webView)
 		{
 			ProcessSourceWhenReady(handler, webView);
 		}
 	
-		public static void MapWebViewClient(WebViewHandler handler, IWebView webView)
+		public static void MapWebViewClient(IWebViewHandler handler, IWebView webView)
 		{
-			handler.PlatformView.SetWebViewClient(handler._webViewClient ??= new MauiWebViewClient(handler));
+			if (handler is WebViewHandler platformHandler)
+				handler.PlatformView.SetWebViewClient(platformHandler._webViewClient ??= new MauiWebViewClient(platformHandler));
 		}
 
-		public static void MapWebChromeClient(WebViewHandler handler, IWebView webView)
+		public static void MapWebChromeClient(IWebViewHandler handler, IWebView webView)
 		{
-			handler.PlatformView.SetWebChromeClient(handler._webChromeClient ??= new WebChromeClient());
+			if (handler is WebViewHandler platformHandler)
+				handler.PlatformView.SetWebChromeClient(platformHandler._webChromeClient ??= new WebChromeClient());
 		}
 
-		public static void MapWebViewSettings(WebViewHandler handler, IWebView webView)
+		public static void MapWebViewSettings(IWebViewHandler handler, IWebView webView)
 		{
 			handler.PlatformView.UpdateSettings(webView, true, true);
 		}
 
-		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler.PlatformView.CanGoBack() && handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Back;
+						
 			handler.PlatformView.UpdateGoBack(webView);
 		}
 
-		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapGoForward(IWebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler.PlatformView.CanGoForward() && handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Forward;
+
 			handler.PlatformView.UpdateGoForward(webView);
 		}
 
-		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapReload(IWebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Refresh;
+			
 			handler.PlatformView.UpdateReload(webView);
 
 			string? url = handler.PlatformView.Url?.ToString();
@@ -80,10 +101,11 @@ namespace Microsoft.Maui.Handlers
 			if (url == null)
 				return;
 
-			handler.SyncPlatformCookies(url);
+			if (handler is WebViewHandler platformHandler)
+				platformHandler.SyncPlatformCookies(url);
 		}
 
-		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapEval(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (arg is not string script)
 				return;
@@ -91,11 +113,36 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.Eval(webView, script);
 		}
 
-		static void ProcessSourceWhenReady(WebViewHandler handler, IWebView webView)
+		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (arg is EvaluateJavaScriptAsyncRequest request)
+			{
+				handler.PlatformView.EvaluateJavaScript(request);
+			}
+		}
+
+		protected internal bool NavigatingCanceled(string? url)
+		{
+			if (VirtualView == null || string.IsNullOrWhiteSpace(url))
+				return true;
+
+			if (url == AssetBaseUrl)
+				return false;
+
+			// TODO: Sync Cookies
+			bool cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
+			PlatformView?.UpdateCanGoBackForward(VirtualView);
+			UrlCanceled = cancel ? null : url;
+
+			return cancel;
+		}
+
+		static void ProcessSourceWhenReady(IWebViewHandler handler, IWebView webView)
 		{
 			//We want to load the source after making sure the mapper for webclients
 			//and settings were called already
-			if (handler._firstRun)
+			var platformHandler = handler as WebViewHandler;
+			if (platformHandler == null || platformHandler._firstRun)
 				return;
 
 			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
@@ -256,7 +303,7 @@ namespace Microsoft.Maui.Handlers
 			return null;
 		}
 
-		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{

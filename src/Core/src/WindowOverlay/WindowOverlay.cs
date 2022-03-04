@@ -75,7 +75,7 @@ namespace Microsoft.Maui
 		public event EventHandler<WindowOverlayTappedEventArgs>? Tapped;
 
 		/// <inheritdoc/>
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			if (!IsVisible)
 				return;

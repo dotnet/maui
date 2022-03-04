@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		event EventHandler OnScreenChanged;
 		bool IsSpanned { get; }
 		bool IsLandscape { get; }
-		Rectangle GetHinge();
+		Rect GetHinge();
 		Size ScaledScreenSize { get; }
 		Point? GetLocationOnScreen(VisualElement visualElement);
 		object WatchForChangesOnLayout(VisualElement visualElement, Action action);

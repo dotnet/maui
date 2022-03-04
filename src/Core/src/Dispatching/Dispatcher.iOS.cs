@@ -20,6 +20,68 @@ namespace Microsoft.Maui.Dispatching
 			_dispatchQueue.DispatchAsync(() => action());
 			return true;
 		}
+
+		bool DispatchDelayedImplementation(TimeSpan delay, Action action)
+		{
+			_dispatchQueue.DispatchAfter(new DispatchTime(DispatchTime.Now, delay), () => action());
+			return true;
+		}
+
+		IDispatcherTimer CreateTimerImplementation()
+		{
+			return new DispatcherTimer(_dispatchQueue);
+		}
+	}
+
+	partial class DispatcherTimer : IDispatcherTimer
+	{
+		readonly DispatchQueue _dispatchQueue;
+		DispatchBlock? _dispatchBlock;
+
+		public DispatcherTimer(DispatchQueue dispatchQueue)
+		{
+			_dispatchQueue = dispatchQueue;
+		}
+
+		public TimeSpan Interval { get; set; }
+
+		public bool IsRepeating { get; set; }
+
+		public bool IsRunning { get; private set; }
+
+		public event EventHandler? Tick;
+
+		public void Start()
+		{
+			if (IsRunning)
+				return;
+
+			IsRunning = true;
+
+			_dispatchBlock = new DispatchBlock(OnTimerTick);
+			_dispatchQueue.DispatchAfter(new DispatchTime(DispatchTime.Now, Interval), _dispatchBlock);
+		}
+
+		public void Stop()
+		{
+			if (!IsRunning)
+				return;
+
+			IsRunning = false;
+
+			_dispatchBlock?.Cancel();
+		}
+
+		void OnTimerTick()
+		{
+			if (!IsRunning)
+				return;
+
+			Tick?.Invoke(this, EventArgs.Empty);
+
+			if (IsRepeating)
+				_dispatchQueue.DispatchAfter(new DispatchTime(DispatchTime.Now, Interval), _dispatchBlock);
+		}
 	}
 
 	public partial class DispatcherProvider

@@ -25,7 +25,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp]
 			public void SetUp()
 			{
-				Device.PlatformServices = new MockPlatformServices();
 				Application.Current = new MockApplication();
 			}
 

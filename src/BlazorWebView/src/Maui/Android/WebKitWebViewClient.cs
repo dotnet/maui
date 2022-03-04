@@ -1,44 +1,67 @@
 ﻿using System;
+using Android.Content;
 using Android.Runtime;
 using Android.Webkit;
 using AWebView = Android.Webkit.WebView;
+using AUri = Android.Net.Uri;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	internal class WebKitWebViewClient : WebViewClient
 	{
-		private const string AppOrigin = "https://0.0.0.0/";
+		// Using an IP address means that WebView doesn't wait for any DNS resolution,
+		// making it substantially faster. Note that this isn't real HTTP traffic, since
+		// we intercept all the requests within this origin.
+		private static readonly string AppOrigin = $"https://{BlazorWebView.AppHostAddress}/";
 
 		private readonly BlazorWebViewHandler? _webViewHandler;
 
-		public WebKitWebViewClient(BlazorWebViewHandler webViewHandler)
+		public WebKitWebViewClient(BlazorWebViewHandler webViewHandler!!)
 		{
-			_webViewHandler = webViewHandler ?? throw new ArgumentNullException(nameof(webViewHandler));
+			_webViewHandler = webViewHandler;
 		}
 
 		protected WebKitWebViewClient(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
 			// This constructor is called whenever the .NET proxy was disposed, and it was recreated by Java. It also
 			// happens when overridden methods are called between execution of this constructor and the one above.
-			// because of these facts, we have to check
-			// all methods below for null field references and properties.
+			// because of these facts, we have to check all methods below for null field references and properties.
 		}
 
 		public override bool ShouldOverrideUrlLoading(AWebView? view, IWebResourceRequest? request)
 		{
-			// handle redirects to the app custom scheme by reloading the url in the view.
-			// otherwise they will be blocked by Android.
+			// Handle redirects to the app custom scheme by reloading the URL in the view.
+			// Handle navigation to external URLs using the system browser, unless overriden.
 			var requestUri = request?.Url?.ToString();
-			if (requestUri != null && view != null &&
-				request != null && request.IsRedirect && request.IsForMainFrame)
+			if (Uri.TryCreate(requestUri, UriKind.RelativeOrAbsolute, out var uri))
 			{
-				var uri = new Uri(requestUri);
-				if (uri.Host == "0.0.0.0")
+				if (uri.Host == BlazorWebView.AppHostAddress &&
+					view is not null && 
+					request is not null && 
+					request.IsRedirect && 
+					request.IsForMainFrame)
 				{
 					view.LoadUrl(uri.ToString());
 					return true;
 				}
+				else if (uri.Host != BlazorWebView.AppHostAddress && _webViewHandler != null)
+				{
+					var callbackArgs = new ExternalLinkNavigationEventArgs(uri);
+					_webViewHandler.ExternalNavigationStarting?.Invoke(callbackArgs);
+
+					if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
+					{
+						var intent = new Intent(Intent.ActionView, AUri.Parse(requestUri));
+						_webViewHandler.Context.StartActivity(intent);
+					}
+
+					if (callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.InsecureOpenInWebView)
+					{
+						return true;
+					}
+				}
 			}
+
 			return base.ShouldOverrideUrlLoading(view, request);
 		}
 
@@ -167,9 +190,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			private readonly Action _callback;
 
-			public JavaScriptValueCallback(Action callback)
+			public JavaScriptValueCallback(Action callback!!)
 			{
-				_callback = callback ?? throw new ArgumentNullException(nameof(callback));
+				_callback = callback;
 			}
 
 			public void OnReceiveValue(Java.Lang.Object? value)

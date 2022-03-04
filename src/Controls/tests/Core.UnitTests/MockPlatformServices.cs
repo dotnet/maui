@@ -10,81 +10,12 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
-[assembly: Dependency(typeof(MockDeserializer))]
 [assembly: Dependency(typeof(MockResourcesProvider))]
 [assembly: Dependency(typeof(MockFontNamedSizeService))]
+[assembly: Dependency(typeof(MockPlatformSizeService))]
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	internal class MockPlatformServices : Internals.IPlatformServices
-	{
-		readonly IDispatcher _dispatcher;
-		Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc;
-		readonly bool useRealisticLabelMeasure;
-
-		public MockPlatformServices(
-			IDispatcher dispatcher = null,
-			Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc = null,
-			bool useRealisticLabelMeasure = false)
-		{
-			_dispatcher = dispatcher ?? new MockDispatcher();
-			this.getNativeSizeFunc = getNativeSizeFunc;
-			this.useRealisticLabelMeasure = useRealisticLabelMeasure;
-		}
-
-		public void StartTimer(TimeSpan interval, Func<bool> callback)
-		{
-			Timer timer = null;
-			TimerCallback onTimeout = o => _dispatcher.Dispatch(() =>
-			{
-				if (callback())
-					return;
-
-				timer.Dispose();
-			});
-			timer = new Timer(onTimeout, null, interval, interval);
-		}
-
-		public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
-		{
-			if (getNativeSizeFunc != null)
-				return getNativeSizeFunc(view, widthConstraint, heightConstraint);
-			// EVERYTHING IS 100 x 20
-
-			var label = view as Label;
-			if (label != null && useRealisticLabelMeasure)
-			{
-				var letterSize = new Size(5, 10);
-				var w = label.Text.Length * letterSize.Width;
-				var h = letterSize.Height;
-				if (!double.IsPositiveInfinity(widthConstraint) && w > widthConstraint)
-				{
-					h = ((int)w / (int)widthConstraint) * letterSize.Height;
-					w = widthConstraint - (widthConstraint % letterSize.Width);
-
-				}
-				return new SizeRequest(new Size(w, h), new Size(Math.Min(10, w), h));
-			}
-
-			return new SizeRequest(new Size(100, 20));
-		}
-
-		public OSAppTheme RequestedTheme { get; set; }
-	}
-
-	internal class MockDeserializer : Internals.IDeserializer
-	{
-		public Task<IDictionary<string, object>> DeserializePropertiesAsync()
-		{
-			return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>());
-		}
-
-		public Task SerializePropertiesAsync(IDictionary<string, object> properties)
-		{
-			return Task.FromResult(false);
-		}
-	}
-
 	internal class MockResourcesProvider : Internals.ISystemResourcesProvider
 	{
 		public Internals.IResourceDictionary GetSystemResources()
@@ -177,15 +108,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			action();
 			return true;
 		}
+
+		public bool DispatchDelayed(TimeSpan delay, Action action) =>
+			throw new NotImplementedException();
+
+		public IDispatcherTimer CreateTimer() =>
+			throw new NotImplementedException();
 	}
 
 	class MockDeviceInfo : IDeviceInfo
 	{
-		DeviceIdiom _deviceIdiom;
-		TargetIdiom _targetIdiom;
-		DevicePlatform _devicePlatform;
-		string _runtimePlatform;
-
 		public MockDeviceInfo()
 		{
 			Platform = DevicePlatform.Unknown;
@@ -200,13 +132,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			DeviceType = deviceType ?? DeviceType.Unknown;
 		}
 
-		public MockDeviceInfo(string platform = null, TargetIdiom idiom = TargetIdiom.Unsupported, DeviceType? deviceType = null)
-		{
-			RuntimePlatform = platform;
-			TargetIdiom = idiom;
-			DeviceType = deviceType ?? DeviceType.Unknown;
-		}
-
 		public string Model { get; set; }
 
 		public string Manufacturer { get; set; }
@@ -217,77 +142,69 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public Version Version { get; set; }
 
-		public DevicePlatform Platform
-		{
-			get => _devicePlatform;
-			set
-			{
-				if (_devicePlatform == value)
-					return;
+		public DevicePlatform Platform { get; set; }
 
-				_devicePlatform = value;
-				_runtimePlatform = value.ToString();
-			}
-		}
-
-		public string RuntimePlatform
-		{
-			get => _runtimePlatform;
-			set
-			{
-				if (_runtimePlatform == value)
-					return;
-
-				_runtimePlatform = value;
-				_devicePlatform = DevicePlatform.Create(value);
-			}
-		}
-
-		public DeviceIdiom Idiom
-		{
-			get => _deviceIdiom;
-			set
-			{
-				if (_deviceIdiom == value)
-					return;
-
-				_deviceIdiom = value;
-				if (value == DeviceIdiom.Tablet)
-					_targetIdiom = TargetIdiom.Tablet;
-				else if (value == DeviceIdiom.Phone)
-					_targetIdiom = TargetIdiom.Phone;
-				else if (value == DeviceIdiom.Desktop)
-					_targetIdiom = TargetIdiom.Desktop;
-				else if (value == DeviceIdiom.TV)
-					_targetIdiom = TargetIdiom.TV;
-				else if (value == DeviceIdiom.Watch)
-					_targetIdiom = TargetIdiom.Watch;
-				else
-					_targetIdiom = TargetIdiom.Unsupported;
-			}
-		}
-
-		public TargetIdiom TargetIdiom
-		{
-			get => _targetIdiom;
-			set
-			{
-				if (_targetIdiom == value)
-					return;
-
-				_targetIdiom = value;
-				_deviceIdiom = value switch
-				{
-					TargetIdiom.Phone => DeviceIdiom.Phone,
-					TargetIdiom.Tablet => DeviceIdiom.Tablet,
-					TargetIdiom.Desktop => DeviceIdiom.Desktop,
-					TargetIdiom.Watch => DeviceIdiom.Watch,
-					TargetIdiom.TV => DeviceIdiom.TV,
-					_ => DeviceIdiom.Unknown,
-				};
-			}
-		}
+		public DeviceIdiom Idiom { get; set; }
 
 		public DeviceType DeviceType { get; set; }
+	}
+
+	class MockAppInfo : IAppInfo
+	{
+		public string PackageName { get; set; }
+
+		public string Name { get; set; }
+
+		public string VersionString { get; set; }
+
+		public Version Version { get; set; }
+
+		public string BuildString { get; set; }
+
+		public LayoutDirection RequestedLayoutDirection { get; set; }
+
+		public void ShowSettingsUI()
+		{
+		}
+
+		public AppTheme RequestedTheme { get; set; }
+
+		public AppPackagingModel PackagingModel { get; set; }
+	}
+
+	class MockPlatformSizeService : IPlatformSizeService
+	{
+		public static MockPlatformSizeService Current =>
+			DependencyService.Get<IPlatformSizeService>() as MockPlatformSizeService;
+
+		public bool UseRealisticLabelMeasure { get; set; }
+
+		public Func<VisualElement, double, double, SizeRequest> GetPlatformSizeFunc { get; set; }
+
+		public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
+		{
+			if (GetPlatformSizeFunc != null)
+				return GetPlatformSizeFunc(view, widthConstraint, heightConstraint);
+
+			if (view is not Label label || !UseRealisticLabelMeasure)
+				return new SizeRequest(new Size(100, 20));
+
+			var letterSize = new Size(5, 10);
+			var w = label.Text.Length * letterSize.Width;
+			var h = letterSize.Height;
+			if (!double.IsPositiveInfinity(widthConstraint) && w > widthConstraint)
+			{
+				h = ((int)w / (int)widthConstraint) * letterSize.Height;
+				w = widthConstraint - (widthConstraint % letterSize.Width);
+			}
+
+			return new SizeRequest(new Size(w, h), new Size(Math.Min(10, w), h));
+		}
+
+		public void Reset()
+		{
+			UseRealisticLabelMeasure = false;
+			GetPlatformSizeFunc = null;
+		}
 	}
 }

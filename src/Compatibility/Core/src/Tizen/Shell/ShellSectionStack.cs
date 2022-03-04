@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			SetLayoutCallback(OnLayout);
 
 			_viewStack = new SimpleViewStack(Forms.NativeParent);
-			if (Device.Idiom == TargetIdiom.Phone)
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 			{
 				_viewStack.BackgroundColor = ElmSharp.Color.White;
 			}

@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				if (CanExecuteTest())
 				{
 					await Task.Delay(100);
-					ScreenshotResult mediaFile = await Screenshot.CaptureAsync();
+					IScreenshotResult mediaFile = await Screenshot.CaptureAsync();
 					var png = await mediaFile.OpenReadAsync(ScreenshotFormat.Png);
 					Assert.True(png.Length > 0);
 				}
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				if (CanExecuteTest())
 				{
 					await Task.Delay(100);
-					ScreenshotResult mediaFile = await Screenshot.CaptureAsync();
+					IScreenshotResult mediaFile = await Screenshot.CaptureAsync();
 					var png = await mediaFile.OpenReadAsync(ScreenshotFormat.Jpeg);
 					Assert.True(png.Length > 0);
 				}

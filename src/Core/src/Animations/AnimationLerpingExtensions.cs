@@ -23,8 +23,8 @@ namespace Microsoft.Maui.Animations
 		public static PointF Lerp(this PointF start, PointF end, double progress) =>
 			new PointF(start.X.Lerp(end.X, progress), start.Y.Lerp(end.Y, progress));
 
-		public static RectangleF Lerp(this RectangleF start, RectangleF end, double progress)
-			=> new RectangleF(start.Location.Lerp(end.Location, progress), start.Size.Lerp(end.Size, progress));
+		public static RectF Lerp(this RectF start, RectF end, double progress)
+			=> new RectF(start.Location.Lerp(end.Location, progress), start.Size.Lerp(end.Size, progress));
 
 		public static Size Lerp(this Size start, Size end, double progress) =>
 			new Size(start.Width.Lerp(end.Width, progress), start.Height.Lerp(end.Height, progress));
@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Animations
 		public static Point Lerp(this Point start, Point end, double progress) =>
 			new Point(start.X.Lerp(end.X, progress), start.Y.Lerp(end.Y, progress));
 
-		public static Rectangle Lerp(this Rectangle start, Rectangle end, double progress)
-			=> new Rectangle(start.Location.Lerp(end.Location, progress), start.Size.Lerp(end.Size, progress));
+		public static Rect Lerp(this Rect start, Rect end, double progress)
+			=> new Rect(start.Location.Lerp(end.Location, progress), start.Size.Lerp(end.Size, progress));
 
 		public static float Lerp(this float start, float end, double progress) =>
 			(float)((end - start) * progress) + start;

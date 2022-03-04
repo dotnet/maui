@@ -10,20 +10,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class WindowOverlayTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void CreateAndRemoveOverlayWindow()
 		{
@@ -92,7 +78,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class TestWindowElement : IWindowOverlayElement
 	{
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 		}
 

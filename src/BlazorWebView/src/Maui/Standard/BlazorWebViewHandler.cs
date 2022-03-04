@@ -4,10 +4,15 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	/// <summary>
+	/// A <see cref="ViewHandler"/> for <see cref="BlazorWebView"/>.
+	/// </summary>
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, object>
 	{
-		protected override object CreatePlatformView() => throw new NotImplementedException();
+		/// <inheritdoc />
+		protected override object CreatePlatformView() => throw new NotSupportedException();
 
-		public virtual IFileProvider CreateFileProvider(string contentRootDir) => throw new NotImplementedException();
+		/// <inheritdoc />
+		public virtual IFileProvider CreateFileProvider(string contentRootDir) => throw new NotSupportedException();
 	}
 }

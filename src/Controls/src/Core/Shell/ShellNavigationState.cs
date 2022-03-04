@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 			uri = ShellUriHandler.FormatUri(uri, null);
 
 			// don't trim relative pushes
-			if (!uri.OriginalString.StartsWith($"{Routing.PathSeparator}{Routing.PathSeparator}"))
+			if (!uri.OriginalString.StartsWith("//", StringComparison.Ordinal))
 				return uri;
 
 			string[] parts = uri.OriginalString.TrimEnd(Routing.PathSeparator[0]).Split(Routing.PathSeparator[0]);

@@ -40,10 +40,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				result = spannable.ToString();
 #elif WINDOWS
-				var runs = formattedString.ToRuns(fontManager: fontManager);
+				var tuples = formattedString.ToRunAndColorsTuples(fontManager: fontManager);
 
-				foreach (var r in runs)
-					result += r.Text;
+				foreach (var t in tuples)
+					result += t.Item1.Text;
 #endif
 				return result;
 			});

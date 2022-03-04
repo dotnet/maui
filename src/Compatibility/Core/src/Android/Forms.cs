@@ -28,6 +28,7 @@ using Trace = System.Diagnostics.Trace;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
+	[Obsolete]
 	public struct InitializationOptions
 	{
 		public struct EffectScope
@@ -97,9 +98,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return _ColorButtonNormal;
 		}
 
+		[Obsolete]
 		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
 			Init(activationState.Context, options);
 
+		[Obsolete]
 		public static void Init(IMauiContext context, InitializationOptions? options = null)
 		{
 			Assembly resourceAssembly;
@@ -113,6 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FrameEnd();
 		}
 
+		[Obsolete]
 		public static void Init(IMauiContext context, Assembly resourceAssembly)
 		{
 			Profile.FrameBegin();
@@ -143,15 +147,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 				viewInitialized(self, new ViewInitializedEventArgs { View = self, NativeView = nativeView });
 		}
 
+		[Obsolete]
 		static bool IsInitializedRenderers;
 
 		// Once we get essentials/cg converted to using startup.cs
 		// we will delete all the renderer code inside this file
+		[Obsolete]
 		internal static void RenderersRegistered()
 		{
 			IsInitializedRenderers = true;
 		}
 
+		[Obsolete]
 		internal static void RegisterCompatRenderers(IMauiContext context, InitializationOptions? maybeOptions)
 		{
 			if (!IsInitializedRenderers)
@@ -196,6 +203,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		[Obsolete]
 		static void SetupInit(
 			IMauiContext context,
 			Assembly resourceAssembly,
@@ -227,9 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			// because AndroidPlatformServices needs a current activity to launch URIs from
 			Profile.FramePartition("Device.PlatformServices");
 
-			var androidServices = new AndroidPlatformServices(activity);
-
-			Device.PlatformServices = androidServices;
+			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
 
 			Profile.FramePartition("RegisterAll");
 
@@ -237,8 +243,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				RegisterCompatRenderers(context, maybeOptions);
 
 			Profile.FramePartition("Epilog");
-
-			Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
 
 			if (ExpressionSearch.Default == null)
 				ExpressionSearch.Default = new AndroidExpressionSearch();
@@ -315,51 +319,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 						_results.Add(value);
 				}
 				return base.VisitMember(node);
-			}
-		}
-
-		class AndroidPlatformServices : IPlatformServices
-		{
-			readonly Context _context;
-
-			public AndroidPlatformServices(Context context)
-			{
-				_context = context;
-			}
-
-			public void StartTimer(TimeSpan interval, Func<bool> callback)
-			{
-				var handler = new Handler(Looper.MainLooper);
-				handler.PostDelayed(() =>
-				{
-					if (callback())
-						StartTimer(interval, callback);
-
-					handler.Dispose();
-					handler = null;
-				}, (long)interval.TotalMilliseconds);
-			}
-
-			public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
-			{
-				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
-			}
-
-			public OSAppTheme RequestedTheme
-			{
-				get
-				{
-					var nightMode = _context.Resources.Configuration.UiMode & UiMode.NightMask;
-					switch (nightMode)
-					{
-						case UiMode.NightYes:
-							return OSAppTheme.Dark;
-						case UiMode.NightNo:
-							return OSAppTheme.Light;
-						default:
-							return OSAppTheme.Unspecified;
-					};
-				}
 			}
 		}
 	}

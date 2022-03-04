@@ -268,7 +268,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			for (int i = 0; i < indexCount; i++)
 			{
 				var item = _index.Append(i.ToString());
-				if (Device.Idiom == TargetIdiom.Watch)
+				if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 					item.SetIndexItemStyle(indexCount, i, EvenMiddleItem, OddMiddleItem);
 				_items.Add(item);
 			}

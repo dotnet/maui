@@ -418,14 +418,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 		void OnPinCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => PinCollectionChanged(e));
-			}
-			else
-			{
-				PinCollectionChanged(e);
-			}
+			Post(() => PinCollectionChanged(e));
 		}
 
 		void PinCollectionChanged(NotifyCollectionChangedEventArgs e)
@@ -557,14 +550,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 		void OnMapElementCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => MapElementCollectionChanged(e));
-			}
-			else
-			{
-				MapElementCollectionChanged(e);
-			}
+			Post(() => MapElementCollectionChanged(e));
 		}
 
 		void MapElementCollectionChanged(NotifyCollectionChangedEventArgs e)

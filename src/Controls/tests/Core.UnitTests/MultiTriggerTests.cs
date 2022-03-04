@@ -5,20 +5,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class MultiTriggerTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			Device.PlatformServices = new MockPlatformServices();
-			base.Setup();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		class MockElement : VisualElement
 		{
 		}

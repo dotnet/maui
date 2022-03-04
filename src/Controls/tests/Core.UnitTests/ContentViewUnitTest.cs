@@ -11,20 +11,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class ContentViewUnitTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void TestConstructor()
 		{
@@ -99,9 +85,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.AreEqual(new Size(120, 220), contentView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
 
-			contentView.Layout(new Rectangle(0, 0, 300, 300));
+			contentView.Layout(new Rect(0, 0, 300, 300));
 
-			Assert.AreEqual(new Rectangle(10, 10, 280, 280), child.Bounds);
+			Assert.AreEqual(new Rect(10, 10, 280, 280), child.Bounds);
 		}
 
 		[Test]
@@ -163,9 +149,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			contentView.Layout(new Rectangle(0, 0, 200, 200));
+			contentView.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(0, 50, 200, 100), child.Bounds);
+			Assert.AreEqual(new Rect(0, 50, 200, 100), child.Bounds);
 		}
 
 		[Test]
@@ -185,9 +171,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			contentView.Layout(new Rectangle(0, 0, 200, 200));
+			contentView.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(0, 0, 200, 100), child.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 200, 100), child.Bounds);
 		}
 
 		[Test]
@@ -207,9 +193,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			contentView.Layout(new Rectangle(0, 0, 200, 200));
+			contentView.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(0, 100, 200, 100), child.Bounds);
+			Assert.AreEqual(new Rect(0, 100, 200, 100), child.Bounds);
 		}
 
 		[Test]
@@ -229,9 +215,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			contentView.Layout(new Rectangle(0, 0, 200, 200));
+			contentView.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(50, 0, 100, 200), child.Bounds);
+			Assert.AreEqual(new Rect(50, 0, 100, 200), child.Bounds);
 		}
 
 		[Test]
@@ -251,9 +237,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			contentView.Layout(new Rectangle(0, 0, 200, 200));
+			contentView.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(0, 0, 100, 200), child.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 200), child.Bounds);
 		}
 
 		[Test]
@@ -273,9 +259,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			contentView.Layout(new Rectangle(0, 0, 200, 200));
+			contentView.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(100, 0, 100, 200), child.Bounds);
+			Assert.AreEqual(new Rect(100, 0, 100, 200), child.Bounds);
 		}
 
 		[Test]

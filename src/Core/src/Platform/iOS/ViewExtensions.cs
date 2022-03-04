@@ -8,7 +8,6 @@ using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
-using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Platform
 {
@@ -270,19 +269,6 @@ namespace Microsoft.Maui.Platform
 
 		public static UIImage? ConvertToImage(this UIView view)
 		{
-			if (!PlatformVersion.IsAtLeast(10))
-			{
-				UIGraphics.BeginImageContext(view.Frame.Size);
-				view.Layer.RenderInContext(UIGraphics.GetCurrentContext());
-				var image = UIGraphics.GetImageFromCurrentImageContext();
-				UIGraphics.EndImageContext();
-
-				if (image.CGImage == null)
-					return null;
-
-				return new UIImage(image.CGImage);
-			}
-
 			var imageRenderer = new UIGraphicsImageRenderer(view.Bounds.Size);
 
 			return imageRenderer.CreateImage((a) =>
@@ -369,21 +355,21 @@ namespace Microsoft.Maui.Platform
 			return platformView.RenderAsImage(skipChildren, asPng);
 		}
 
-		internal static Rectangle GetPlatformViewBounds(this IView view)
+		internal static Rect GetPlatformViewBounds(this IView view)
 		{
 			var platformView = view?.ToPlatform();
 			if (platformView == null)
 			{
-				return new Rectangle();
+				return new Rect();
 			}
 
 			return platformView.GetPlatformViewBounds();
 		}
 
-		internal static Rectangle GetPlatformViewBounds(this UIView platformView)
+		internal static Rect GetPlatformViewBounds(this UIView platformView)
 		{
 			if (platformView == null)
-				return new Rectangle();
+				return new Rect();
 
 			var superview = platformView;
 			while (superview.Superview is not null)
@@ -398,7 +384,7 @@ namespace Microsoft.Maui.Platform
 			var Width = convertPoint.Width;
 			var Height = convertPoint.Height;
 
-			return new Rectangle(X, Y, Width, Height);
+			return new Rect(X, Y, Width, Height);
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
@@ -412,19 +398,19 @@ namespace Microsoft.Maui.Platform
 		internal static Matrix4x4 GetViewTransform(this UIView view)
 			=> view.Layer.GetViewTransform();
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view)
+		internal static Graphics.Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
 
-		internal static Graphics.Rectangle GetBoundingBox(this UIView? platformView)
+		internal static Graphics.Rect GetBoundingBox(this UIView? platformView)
 		{
 			if (platformView == null)
-				return new Rectangle();
+				return new Rect();
 			var nvb = platformView.GetPlatformViewBounds();
 			var transform = platformView.GetViewTransform();
 			var radians = transform.ExtractAngleInRadians();
 			var rotation = CoreGraphics.CGAffineTransform.MakeRotation((nfloat)radians);
 			CGAffineTransform.CGRectApplyAffineTransform(nvb, rotation);
-			return new Rectangle(nvb.X, nvb.Y, nvb.Width, nvb.Height);
+			return new Rect(nvb.X, nvb.Y, nvb.Width, nvb.Height);
 		}
 
 		internal static UIView? GetParent(this UIView? view)
@@ -434,7 +420,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void LayoutToSize(this IView view, double width, double height)
 		{
-			var platformFrame = new RectangleF(0, 0, width, height);
+			var platformFrame = new CGRect(0, 0, width, height);
 
 			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
 				viewHandler.PlatformView.Frame = platformFrame;
@@ -445,7 +431,7 @@ namespace Microsoft.Maui.Platform
 		internal static Size LayoutToMeasuredSize(this IView view, double width, double height)
 		{
 			var size = view.Measure(width, height);
-			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
+			var platformFrame = new CGRect(0, 0, size.Width, size.Height);
 
 			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
 				viewHandler.PlatformView.Frame = platformFrame;

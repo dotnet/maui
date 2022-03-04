@@ -236,7 +236,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// If the presented content has LayoutAlignment Fill, we'll need to adjust the measurement to account for that
-			return fullSize.AdjustForFill(new Rectangle(0, 0, widthConstraint, heightConstraint), presentedContent);
+			return fullSize.AdjustForFill(new Rect(0, 0, widthConstraint, heightConstraint), presentedContent);
 		}
 	}
 }

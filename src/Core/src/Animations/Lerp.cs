@@ -86,23 +86,23 @@ namespace Microsoft.Maui.Animations
 					return start.Lerp(end, progress);
 				}
 			},
-			[typeof(RectangleF)] = new Lerp
+			[typeof(RectF)] = new Lerp
 			{
 				Calculate = (s, e, progress) =>
 				{
 
-					var start = (RectangleF)s;
-					var end = (RectangleF)e;
+					var start = (RectF)s;
+					var end = (RectF)e;
 					return start.Lerp(end, progress);
 				}
 			},
-			[typeof(Rectangle)] = new Lerp
+			[typeof(Rect)] = new Lerp
 			{
 				Calculate = (s, e, progress) =>
 				{
 
-					var start = (Rectangle)s;
-					var end = (Rectangle)e;
+					var start = (Rect)s;
+					var end = (Rect)e;
 					return start.Lerp(end, progress);
 				}
 			},

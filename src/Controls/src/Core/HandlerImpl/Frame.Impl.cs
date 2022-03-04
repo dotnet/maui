@@ -56,12 +56,12 @@ namespace Microsoft.Maui.Controls
 			return DesiredSize;
 		}
 
-		protected override Size ArrangeOverride(Rectangle bounds)
+		protected override Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
 			Handler?.PlatformArrange(Frame);
 
-			(this as IContentView).CrossPlatformArrange(new Rectangle(Point.Zero, Frame.Size));
+			(this as IContentView).CrossPlatformArrange(new Rect(Point.Zero, Frame.Size));
 
 			return Frame.Size;
 		}

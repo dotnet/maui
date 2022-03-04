@@ -15,8 +15,6 @@ namespace Microsoft.Maui.Controls
 			FontFileName = fontFileName;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ExportFontAttribute.xml" path="//Member[@MemberName='EmbeddedFontResourceId']/Docs" />
-		public string EmbeddedFontResourceId { get; set; }
 		/// <include file="../../docs/Microsoft.Maui.Controls/ExportFontAttribute.xml" path="//Member[@MemberName='FontFileName']/Docs" />
 		public string FontFileName { get; }
 	}

@@ -51,7 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				InitializeViewHandler(view, handler);
 
-				handler.PlatformArrange(new Rectangle(0, 0, 100, 100));
+				handler.PlatformArrange(new Rect(0, 0, 100, 100));
 			});
 
 			Assert.Equal(2, didUpdateFrame);

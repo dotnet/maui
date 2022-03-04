@@ -6,18 +6,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class WindowsTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
+		[Test]
+		public void ContentPageFlowDirectionSetsOnIWindow()
 		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
+			var app = new TestApp();
+			var window = app.CreateWindow();
+			window.Page.FlowDirection = FlowDirection.RightToLeft;
+
+			Assert.IsTrue((window as IWindow)
+				.FlowDirection == FlowDirection.RightToLeft);
 		}
 
-		[TearDown]
-		public override void TearDown()
+		[Test]
+		public void WindowFlowDirectionSetsOnPage()
 		{
-			base.TearDown();
-			Device.PlatformServices = null;
+			var app = new TestApp();
+			var window = app.CreateWindow();
+			window.FlowDirection = FlowDirection.RightToLeft;
+
+			Assert.IsTrue((window.Page as IFlowDirectionController)
+				.EffectiveFlowDirection
+				.IsRightToLeft());
+
+			window.Page = new ContentPage();
+
+			Assert.IsTrue((window.Page as IFlowDirectionController)
+				.EffectiveFlowDirection
+				.IsRightToLeft());
 		}
 
 		[Test]

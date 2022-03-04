@@ -91,7 +91,7 @@ namespace Microsoft.Maui
 
 		bool Equals(Font other)
 		{
-			return string.Equals(Family, other.Family)
+			return string.Equals(Family, other.Family, StringComparison.Ordinal)
 				&& Size.Equals(other.Size)
 				&& Weight == other.Weight
 				&& Slant == other.Slant
