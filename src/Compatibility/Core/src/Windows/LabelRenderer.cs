@@ -350,7 +350,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					{
 						var span = formatted.Spans[i];
 
-						var run = span.ToRun(fontManager);
+						var run = span.ToRunAndColorsTuple(fontManager).Item1;
 						heights.Add(Control.FindDefaultLineHeight(run));
 						textBlock.Inlines.Add(run);
 					}

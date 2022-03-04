@@ -94,7 +94,12 @@ namespace Microsoft.Maui.Controls
 					return _gradient;
 				}
 
-				_parts = css.Replace("\r\n", "").Split(new[] { '(', ')', ',' }, StringSplitOptions.RemoveEmptyEntries);
+#if NETSTANDARD2_0
+				_parts = css.Replace("\r\n", "")
+#else
+				_parts = css.Replace("\r\n", "", StringComparison.Ordinal)
+#endif
+					.Split(new[] { '(', ')', ',' }, StringSplitOptions.RemoveEmptyEntries);
 
 				while (_position < _parts.Length)
 				{
@@ -306,9 +311,7 @@ namespace Microsoft.Maui.Controls
 
 				if (parts.Length > gradientCenterPosition)
 				{
-					var at = parts[gradientCenterPosition].Trim();
-
-					if (at.Contains("at"))
+					if (parts[gradientCenterPosition].IndexOf("at", StringComparison.Ordinal) != -1)
 					{
 						gradientCenterPosition++;
 						var directionX = gradientCenterPosition < parts.Length ? parts[gradientCenterPosition].Trim() : string.Empty;

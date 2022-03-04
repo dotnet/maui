@@ -68,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			return LayoutManager.Measure(widthConstraint, heightConstraint);
 		}
 
-		public Size CrossPlatformArrange(Rectangle bounds)
+		public Size CrossPlatformArrange(Rect bounds)
 		{
 			return LayoutManager.ArrangeChildren(bounds);
 		}

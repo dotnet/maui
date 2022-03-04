@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			entry2Label2.SetBinding(Label.TextProperty, new Binding(nameof(Entry.SelectionLength), stringFormat: "SelectionLength: {0}", source: entry2));
 
 			// When the Entry is in a NavPage, the Entry doesn't get first focus on UWP
-			string uwp_instructions = Device.RuntimePlatform == Device.UWP ? "Press Tab to focus the first entry. " : "";
+			string uwp_instructions = DeviceInfo.Platform == DevicePlatform.WinUI ? "Press Tab to focus the first entry. " : "";
 
 			Content = new StackLayout()
 			{

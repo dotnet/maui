@@ -68,6 +68,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 		}
 
-		public OSAppTheme RequestedTheme => OSAppTheme.Unspecified;
+		public AppTheme RequestedTheme => AppTheme.Unspecified;
 	}
 }

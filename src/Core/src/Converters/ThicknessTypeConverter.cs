@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Converters
 			if (strValue != null)
 			{
 				strValue = strValue.Trim();
-				if (strValue.Contains(","))
+				if (strValue.IndexOf(",", StringComparison.Ordinal) != -1)
 				{ //Xaml
 					var thickness = strValue.Split(',');
 					switch (thickness.Length)
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Converters
 							break;
 					}
 				}
-				else if (strValue.Contains(" "))
+				else if (strValue.IndexOf(" ", StringComparison.Ordinal) != -1)
 				{ //CSS
 					var thickness = strValue.Split(' ');
 					switch (thickness.Length)

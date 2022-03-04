@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Paint Background { get; set; }
 
-		public Rectangle Frame { get; set; }
+		public Rect Frame { get; set; }
 
 		public new IViewHandler Handler
 		{
@@ -87,7 +87,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public int ZIndex { get; set; }
 
-		public Size Arrange(Rectangle bounds)
+		public bool InputTransparent { get; set; }
+
+		public Size Arrange(Rect bounds)
 		{
 			Frame = bounds;
 			DesiredSize = bounds.Size;

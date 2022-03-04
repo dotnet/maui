@@ -65,12 +65,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[SetUp]
-			public void SetUp()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
 			void AssertStyleApplied(Button button)
 			{
 				Assert.AreEqual(LayoutOptions.Center, button.HorizontalOptions);

@@ -270,22 +270,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				IVisualElementRenderer elementRenderer = GetRenderer(element);
 				if (elementRenderer != null)
 					return elementRenderer.GetDesiredSize(widthConstraint, heightConstraint);
-				
+
 				if (element is IView iView)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<Platform>()?.LogWarning(
+						"Someone called Platform.GetNativeSize instead of going through the Handler.");
+
 					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
+				}
 			}
 
 			return new SizeRequest();
 		}
 
-		internal virtual Rectangle ContainerBounds
+		internal virtual Rect ContainerBounds
 		{
 			get { return _bounds; }
 		}
 
 		internal void UpdatePageSizes()
 		{
-			Rectangle bounds = ContainerBounds;
+			var bounds = ContainerBounds;
 			if (bounds.IsEmpty)
 				return;
 			foreach (Page root in _navModel.Roots)
@@ -300,7 +305,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		Rectangle _bounds;
+		Rect _bounds;
 		readonly Panel _container;
 		readonly Microsoft.UI.Xaml.Window _page;
 		Microsoft.UI.Xaml.Controls.ProgressBar _busyIndicator;
@@ -464,7 +469,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateBounds()
 		{
-			_bounds = new Rectangle(0, 0, _page.Bounds.Width, _page.Bounds.Height);
+			_bounds = new Rect(0, 0, _page.Bounds.Width, _page.Bounds.Height);
 
 			if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
 			{

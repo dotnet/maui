@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			return new SizeRequest(new Size(100, 20));
 		}
 
-		public OSAppTheme RequestedTheme => OSAppTheme.Unspecified;
+		public AppTheme RequestedTheme => AppTheme.Unspecified;
 	}
 
 	internal class MockDeserializer : Internals.IDeserializer

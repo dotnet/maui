@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls
 		static int s_routeCount = 0;
 		static Dictionary<string, RouteFactory> s_routes = new Dictionary<string, RouteFactory>();
 		static Dictionary<string, Page> s_implicitPageRoutes = new Dictionary<string, Page>();
+		static HashSet<string> s_routeKeys;
 
 		const string ImplicitPrefix = "IMPL_";
 		const string DefaultPrefix = "D_FAULT_";
@@ -21,13 +22,17 @@ namespace Microsoft.Maui.Controls
 		internal static void ClearImplicitPageRoutes()
 		{
 			s_implicitPageRoutes.Clear();
+			s_routeKeys = null;
 		}
 
 		internal static void RegisterImplicitPageRoute(Page page)
 		{
 			var route = GetRoute(page);
 			if (!IsUserDefined(route))
+			{
 				s_implicitPageRoutes[route] = page;
+				s_routeKeys = null;
+			}
 		}
 
 		// Shell works much better if the entire nav stack can be represented by a string
@@ -109,6 +114,7 @@ namespace Microsoft.Maui.Controls
 		{
 			s_implicitPageRoutes.Clear();
 			s_routes.Clear();
+			s_routeKeys = null;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RouteProperty']/Docs" />
@@ -121,12 +127,22 @@ namespace Microsoft.Maui.Controls
 			return $"{DefaultPrefix}{bindable.GetType().Name}{++s_routeCount}";
 		}
 
-		internal static string[] GetRouteKeys()
+		internal static HashSet<string> GetRouteKeys()
 		{
-			string[] keys = new string[s_routes.Count + s_implicitPageRoutes.Count];
-			s_routes.Keys.CopyTo(keys, 0);
-			s_implicitPageRoutes.Keys.CopyTo(keys, s_routes.Count);
-			return keys;
+			var keys = s_routeKeys;
+			if (keys != null)
+				return keys;
+
+			keys = new HashSet<string>(StringComparer.Ordinal);
+			foreach (var key in s_routes.Keys)
+			{
+				keys.Add(ShellUriHandler.FormatUri(key));
+			}
+			foreach (var key in s_implicitPageRoutes.Keys)
+			{
+				keys.Add(ShellUriHandler.FormatUri(key));
+			}
+			return s_routeKeys = keys;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='GetOrCreateContent']/Docs" />
@@ -141,23 +157,6 @@ namespace Microsoft.Maui.Controls
 
 			if (s_routes.TryGetValue(route, out var content))
 				result = content.GetOrCreate(services);
-
-			if (result == null)
-			{
-				// okay maybe its a type, we'll try that just to be nice to the user
-				var type = Type.GetType(route);
-				if (type != null)
-				{
-					if (services != null)
-					{
-						result = (services.GetService(type) ?? Activator.CreateInstance(type)) as Element;
-					}
-					else
-					{
-						result = Activator.CreateInstance(type) as Element;
-					}
-				}
-			}
 
 			if (result != null)
 				SetRoute(result, route);
@@ -201,13 +200,16 @@ namespace Microsoft.Maui.Controls
 			ValidateRoute(route, factory);
 
 			s_routes[route] = factory;
+			s_routeKeys = null;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='UnRegisterRoute']/Docs" />
 		public static void UnRegisterRoute(string route)
 		{
-			if (s_routes.TryGetValue(route, out _))
-				s_routes.Remove(route);
+			if (s_routes.Remove(route))
+			{
+				s_routeKeys = null;
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][0]/Docs" />
@@ -265,9 +267,10 @@ namespace Microsoft.Maui.Controls
 			{
 				if (services != null)
 				{
-					return (services.GetService(_type) ?? Activator.CreateInstance(_type)) as Element;
+					return (Element)(services.GetService(_type) ?? Activator.CreateInstance(_type));
 				}
-				return Activator.CreateInstance(_type) as Element;
+
+				return (Element)Activator.CreateInstance(_type);
 			}
 
 			public override bool Equals(object obj)

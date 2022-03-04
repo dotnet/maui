@@ -21,6 +21,11 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='ClassIdProperty']/Docs" />
 		public static readonly BindableProperty ClassIdProperty = BindableProperty.Create(nameof(ClassId), typeof(string), typeof(Element), null);
 
+		internal static readonly BindablePropertyKey WindowPropertyKey = BindableProperty.CreateReadOnly(nameof(Window), typeof(IWindow), typeof(Element), null, propertyChanged: OnWindowChanged);
+
+
+		internal static readonly BindableProperty WindowProperty = WindowPropertyKey.BindableProperty;
+
 		IList<BindableObject> _bindableResources;
 
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
@@ -57,7 +62,6 @@ namespace Microsoft.Maui.Controls
 			get => (string)GetValue(ClassIdProperty);
 			set => SetValue(ClassIdProperty, value);
 		}
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Effects']/Docs" />
 		public IList<Effect> Effects
 		{
@@ -97,6 +101,15 @@ namespace Microsoft.Maui.Controls
 				_styleId = value;
 				OnPropertyChanged();
 			}
+		}
+
+		internal IWindow Window => (IWindow)GetValue(WindowProperty);
+		internal void SetWindow(IWindow window) => SetValue(WindowPropertyKey, window);
+
+		protected private virtual void OnWindowChanged(IWindow oldValue, IWindow newValue) { }
+		static void OnWindowChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			(bindable as Element)?.OnWindowChanged((IWindow)oldValue, (IWindow)newValue);
 		}
 
 		internal virtual IReadOnlyList<Element> LogicalChildrenInternal => EmptyChildren;

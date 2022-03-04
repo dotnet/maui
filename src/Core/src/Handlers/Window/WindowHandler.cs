@@ -18,9 +18,12 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IWindow.Content)] = MapContent,
 #if ANDROID || WINDOWS
 			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
-#endif	
+#endif
 #if WINDOWS || IOS
 			[nameof(IMenuBarElement.MenuBar)] = MapMenuBar,
+#endif
+#if WINDOWS
+			[nameof(IWindow.FlowDirection)] = MapFlowDirection,
 #endif
 		};
 

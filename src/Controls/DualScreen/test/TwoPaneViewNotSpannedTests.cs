@@ -9,13 +9,6 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 	[TestFixture]
 	public partial class TwoPaneViewNotSpannedTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
 		TwoPaneView CreateTwoPaneView(View pane1 = null, View pane2 = null, IDualScreenService dualScreenService = null)
 		{
 			dualScreenService = dualScreenService ?? new TestDualScreenServicePortrait();

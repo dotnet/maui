@@ -19,6 +19,8 @@ namespace Maui.Controls.Sample
 
 			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
 
+			Debug.WriteLine($"Current app theme: {RequestedTheme}");
+
 			RequestedThemeChanged += (sender, args) =>
 			{
 				// Respond to the theme change

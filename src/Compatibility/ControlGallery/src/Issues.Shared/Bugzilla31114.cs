@@ -318,7 +318,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					_masterLayout.Children.Add(_stackLayout);
 
 					AbsoluteLayout.SetLayoutFlags(_stackLayout, AbsoluteLayoutFlags.All);
-					AbsoluteLayout.SetLayoutBounds(_stackLayout, new Rectangle(0.0, 0.0, 1.0f, 1.0f));
+					AbsoluteLayout.SetLayoutBounds(_stackLayout, new Rect(0.0, 0.0, 1.0f, 1.0f));
 
 					View = _masterLayout;
 				}
