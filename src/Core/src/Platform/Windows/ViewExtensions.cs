@@ -3,26 +3,23 @@ using System;
 using System.Numerics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Win2D;
-using Microsoft.Maui.Handlers;
-using Microsoft.UI.Composition;
+using Microsoft.Maui.Primitives;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WinPoint = Windows.Foundation.Point;
-using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
+		internal static Page? ContainingPage; // Cache of containing page used for unfocusing
+
 		public static void TryMoveFocus(this FrameworkElement platformView, FocusNavigationDirection direction)
 		{
 			if (platformView?.XamlRoot?.Content is UIElement elem)
@@ -31,6 +28,17 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsEnabled(this FrameworkElement platformView, IView view) =>
 			(platformView as Control)?.UpdateIsEnabled(view.IsEnabled);
+
+		public static void Focus(this FrameworkElement platformView, FocusRequest request)
+		{
+			request.IsFocused = platformView.Focus(FocusState.Programmatic);
+		}
+
+		public static void Unfocus(this FrameworkElement platformView, IView view)
+		{
+			if (platformView is Control control)
+				UnfocusControl(control);
+		}
 
 		public static void UpdateVisibility(this FrameworkElement platformView, IView view)
 		{
@@ -245,6 +253,13 @@ namespace Microsoft.Maui.Platform
 				panel.UpdateBackground(view.Background);
 		}
 
+		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)
+		{
+			// Background and InputTransparent for Windows layouts are heavily intertwined, so setting one
+			// usuall requires setting the other at the same time
+			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
+		}
+
 		public static async Task<byte[]?> RenderAsPNG(this IView view)
 		{
 			var platformView = view?.ToPlatform();
@@ -277,10 +292,10 @@ namespace Microsoft.Maui.Platform
 
 		internal static Matrix4x4 GetViewTransform(this FrameworkElement element)
 		{
-			var root = element?.Parent as UIElement;
+			var root = element?.XamlRoot;
 			if (root == null)
 				return new Matrix4x4();
-			var offset = element?.TransformToVisual(root) as MatrixTransform;
+			var offset = element?.TransformToVisual(root.Content) as MatrixTransform;
 			if (offset == null)
 				return new Matrix4x4();
 			Matrix matrix = offset.Matrix;
@@ -294,42 +309,42 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		internal static Rectangle GetPlatformViewBounds(this IView view)
+		internal static Rect GetPlatformViewBounds(this IView view)
 		{
 			var platformView = view?.ToPlatform();
 			if (platformView != null)
 				return platformView.GetPlatformViewBounds();
-			return new Rectangle();
+			return new Rect();
 		}
 
-		internal static Rectangle GetPlatformViewBounds(this FrameworkElement platformView)
+		internal static Rect GetPlatformViewBounds(this FrameworkElement platformView)
 		{
 			if (platformView == null)
-				return new Rectangle();
+				return new Rect();
 
 			var root = platformView.XamlRoot;
 			var offset = platformView.TransformToVisual(root.Content) as UI.Xaml.Media.MatrixTransform;
 			if (offset != null)
-				return new Rectangle(offset.Matrix.OffsetX, offset.Matrix.OffsetY, platformView.ActualWidth, platformView.ActualHeight);
+				return new Rect(offset.Matrix.OffsetX, offset.Matrix.OffsetY, platformView.ActualWidth, platformView.ActualHeight);
 
-			return new Rectangle();
+			return new Rect();
 		}
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view) 
+		internal static Graphics.Rect GetBoundingBox(this IView view) 
 			=> view.ToPlatform().GetBoundingBox();
 
-		internal static Graphics.Rectangle GetBoundingBox(this FrameworkElement? platformView)
+		internal static Graphics.Rect GetBoundingBox(this FrameworkElement? platformView)
 		{
 			if (platformView == null)
-				return new Rectangle();
+				return new Rect();
 
 			var rootView = platformView.XamlRoot.Content;
 			if (platformView == rootView)
 			{
 				if (rootView is not FrameworkElement el)
-					return new Rectangle();
+					return new Rect();
 
-				return new Rectangle(0, 0, el.ActualWidth, el.ActualHeight);
+				return new Rect(0, 0, el.ActualWidth, el.ActualHeight);
 			}
 
 
@@ -343,7 +358,7 @@ namespace Microsoft.Maui.Platform
 			var x2 = new[] { topLeft.X, topRight.X, bottomLeft.X, bottomRight.X }.Max();
 			var y1 = new[] { topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y }.Min();
 			var y2 = new[] { topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y }.Max();
-			return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+			return new Rect(x1, y1, x2 - x1, y2 - y1);
 		}
 
 		internal static DependencyObject? GetParent(this FrameworkElement? view)
@@ -357,6 +372,83 @@ namespace Microsoft.Maui.Platform
 				return pv.Parent;
 
 			return null;
+		}
+
+		internal static void UnfocusControl(Control control)
+		{
+			if (control == null || !control.IsEnabled)
+				return;
+
+			// "Unfocusing" doesn't really make sense on Windows; for accessibility reasons,
+			// something always has focus. So forcing the unfocusing of a control would normally 
+			// just move focus to the next control, or leave it on the current control if no other
+			// focus targets are available. This is what happens if you use the "disable/enable"
+			// hack. What we *can* do is set the focus to the Page which contains Control;
+			// this will cause Control to lose focus without shifting focus to, say, the next Entry 
+
+			if (ContainingPage == null)
+			{
+				// Work our way up the tree to find the containing Page
+				DependencyObject parent = control;
+
+				while (parent != null && parent is not Page)
+				{
+					parent = VisualTreeHelper.GetParent(parent);
+				}
+
+				ContainingPage = parent as Page;
+			}
+
+			if (ContainingPage != null)
+			{
+				// Cache the tabstop setting
+				var wasTabStop = ContainingPage.IsTabStop;
+
+				// Controls can only get focus if they're a tabstop
+				ContainingPage.IsTabStop = true;
+				ContainingPage.Focus(FocusState.Programmatic);
+
+				// Restore the tabstop setting; that may cause the Page to lose focus,
+				// but it won't restore the focus to Control
+				ContainingPage.IsTabStop = wasTabStop;
+			}
+		}
+    
+		internal static IWindow? GetHostedWindow(this IView? view)
+			=> GetHostedWindow(view?.Handler?.PlatformView as FrameworkElement);
+
+		internal static IWindow? GetHostedWindow(this FrameworkElement? view)
+			=> GetWindowForXamlRoot(view?.XamlRoot);
+
+		internal static IWindow? GetWindowForXamlRoot(XamlRoot? root)
+		{
+			if (root is null)
+				return null;
+
+			var windows = WindowExtensions.GetWindows();
+			foreach(var window in windows)
+			{
+				if (window.Handler?.PlatformView is Microsoft.UI.Xaml.Window win)
+				{
+					if (win.Content?.XamlRoot == root)
+						return window;
+				}
+			}
+			
+			return null;
+		}
+		
+		public static void UpdateInputTransparent(this FrameworkElement nativeView, IViewHandler handler, IView view)
+		{
+			if (nativeView is UIElement element)
+			{ 
+				element.IsHitTestVisible = !view.InputTransparent;
+			}
+		}
+
+		public static void UpdateInputTransparent(this LayoutPanel layoutPanel, ILayoutHandler handler, ILayout layout)
+		{
+			// Nothing to do yet, but we might need to adjust the wrapper view 
 		}
 	}
 }

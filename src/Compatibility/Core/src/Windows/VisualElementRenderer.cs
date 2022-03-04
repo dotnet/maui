@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				IVisualElementRenderer renderer = Platform.GetRenderer(child);
 				if (renderer == null)
 					continue;
-				Rectangle bounds = child.Bounds;
+				var bounds = child.Bounds;
 
 				renderer.ContainerElement.Arrange(new WRect(bounds.X, bounds.Y, Math.Max(0, bounds.Width), Math.Max(0, bounds.Height)));
 
@@ -538,6 +538,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			SetAutomationPropertiesLabeledBy();
 		}
 
+		[PortHandler]
 		internal virtual void OnElementFocusChangeRequested(object sender, VisualElement.FocusRequestArgs args)
 		{
 			if (_control == null)
@@ -552,6 +553,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		internal void UnfocusControl(Control control)
 		{
 			if (control == null || !control.IsEnabled)
@@ -590,6 +592,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void OnControlGotFocus(object sender, RoutedEventArgs args)
 		{
 			((IVisualElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
@@ -600,6 +603,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Element.IsPlatformStateConsistent = true;
 		}
 
+		[PortHandler]
 		void OnControlLostFocus(object sender, RoutedEventArgs args)
 		{
 			((IVisualElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);

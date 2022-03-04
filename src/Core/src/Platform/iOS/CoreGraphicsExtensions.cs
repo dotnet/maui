@@ -23,12 +23,12 @@ namespace Microsoft.Maui.Platform
 			return new CGSize(size.Width, size.Height);
 		}
 
-		public static Rectangle ToRectangle(this CGRect rect)
+		public static Rect ToRectangle(this CGRect rect)
 		{
-			return new Rectangle((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
+			return new Rect((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
 		}
 
-		public static CGRect ToCGRect(this Rectangle rect)
+		public static CGRect ToCGRect(this Rect rect)
 		{
 			return new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
 		}

@@ -62,25 +62,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="EmbeddedFontResourceId">
-      <MemberSignature Language="C#" Value="public string EmbeddedFontResourceId { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string EmbeddedFontResourceId" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ExportFontAttribute.EmbeddedFontResourceId" />
-      <MemberSignature Language="F#" Value="member this.EmbeddedFontResourceId : string with get, set" Usage="Microsoft.Maui.Controls.ExportFontAttribute.EmbeddedFontResourceId" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="FontFileName">
       <MemberSignature Language="C#" Value="public string FontFileName { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string FontFileName" />

@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections.Generic;
 using System.Xml;
 
@@ -45,8 +46,8 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (isGeneric)
 			{
 				typeArguments = ParseExpression(
-					type.Substring(type.IndexOf('(') + 1, type.LastIndexOf(')') - type.IndexOf('(') - 1), resolver, lineinfo);
-				type = type.Substring(0, type.IndexOf('('));
+					type.Substring(type.IndexOf("(", StringComparison.Ordinal) + 1, type.LastIndexOf(")", StringComparison.Ordinal) - type.IndexOf("(", StringComparison.Ordinal) - 1), resolver, lineinfo);
+				type = type.Substring(0, type.IndexOf("(", StringComparison.Ordinal));
 			}
 
 			var split = type.Split(':');

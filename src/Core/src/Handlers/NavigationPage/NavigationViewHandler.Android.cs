@@ -2,12 +2,10 @@
 using Android.Runtime;
 using Android.Views;
 using AndroidX.Fragment.App;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class NavigationViewHandler :
-		ViewHandler<IStackNavigationView, View>
+	public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, View>
 	{
 		StackNavigationManager? _stackNavigationManager;
 		internal StackNavigationManager? StackNavigationManager => _stackNavigationManager;
@@ -28,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
-		public override void PlatformArrange(Graphics.Rectangle frame)
+		public override void PlatformArrange(Graphics.Rect frame)
 		{
 			base.PlatformArrange(frame);
 		}
@@ -58,10 +56,10 @@ namespace Microsoft.Maui.Handlers
 			platformView.LayoutChange -= OnLayoutChanged;
 		}
 
-		public static void RequestNavigation(NavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
+		public static void RequestNavigation(INavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
 		{
-			if (arg3 is NavigationRequest ea)
-				arg1._stackNavigationManager?.RequestNavigation(ea);
+			if (arg1 is NavigationViewHandler platformHandler && arg3 is NavigationRequest ea)
+				platformHandler._stackNavigationManager?.RequestNavigation(ea);
 		}
 	}
 }

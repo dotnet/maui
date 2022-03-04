@@ -49,7 +49,11 @@ namespace Microsoft.Maui.Controls
 						case "fn":
 						case "win":
 							modifiers.Add(modiferMaskLower);
+#if NETSTANDARD2_0
 							text = text.Replace(modifierMask, "");
+#else
+							text = text.Replace(modifierMask, "", StringComparison.Ordinal);
+#endif
 							break;
 					}
 				}
@@ -89,7 +93,11 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
 		public override int GetHashCode()
 		{
-			return ToString().GetHashCode();
+#if NETSTANDARD2_0
+			return _text.GetHashCode();
+#else
+			return _text.GetHashCode(StringComparison.Ordinal);
+#endif
 		}
 
 		public static implicit operator Accelerator(string accelerator)

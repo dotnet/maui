@@ -39,10 +39,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 
 		static void OnImageDirectoryChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-#if WINDOWS
-			var config = MauiWinUIApplication.Current.Services.GetService<IImageSourceServiceConfiguration>();
-			config?.SetImageDirectory(newValue?.ToString());
-#endif
+			// TODO: somehow pass this onto Core
 		}
 	}
 }

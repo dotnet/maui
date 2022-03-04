@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
@@ -108,7 +109,10 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='ThemeChanged']/Docs" />
 		public void ThemeChanged()
 		{
-			Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Current.RequestedTheme));
+			if (UserAppTheme != AppTheme.Unspecified)
+				return;
+
+			TriggerThemeChangedActual(new AppThemeChangedEventArgs(RequestedTheme));
 		}
 
 		protected virtual Window CreateWindow(IActivationState? activationState)

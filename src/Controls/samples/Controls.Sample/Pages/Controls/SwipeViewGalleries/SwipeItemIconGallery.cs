@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
@@ -91,21 +92,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 
 			swipeLayout.Children.Add(urlSwipeView);
 
-			var fontFamily = string.Empty;
-
-			switch (Device.RuntimePlatform)
-			{
-				case Device.iOS:
-					fontFamily = "Ionicons";
-					break;
-				case Device.UWP:
-					fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
-					break;
-				case Device.Android:
-				default:
-					fontFamily = "fonts/ionicons.ttf#";
-					break;
-			}
+			var fontFamily = DefaultFontFamily();
 
 			var fontSwipeItem = new SwipeItem
 			{
@@ -152,6 +139,18 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			scroll.Content = swipeLayout;
 
 			Content = scroll;
+		}
+
+		static string DefaultFontFamily()
+		{
+			var fontFamily = "";
+			if (DeviceInfo.Platform == DevicePlatform.iOS)
+				fontFamily = "Ionicons";
+			else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
+			else
+				fontFamily = "fonts/ionicons.ttf#";
+			return fontFamily;
 		}
 	}
 }

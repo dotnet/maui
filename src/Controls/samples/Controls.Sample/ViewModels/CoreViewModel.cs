@@ -26,15 +26,33 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(ClipPage), "Clip",
 				"Defines the outline of the contents of an element."),
+        
+			new SectionModel(typeof(DevicePage), "Device",
+				"A number of properties and methods to help developers customize layout and functionality on a per-platform basis"),
+        
+			new SectionModel(typeof(DispatcherPage), "Dispatcher",
+				"Managing UI thread access with dispatchers and timers."),
 
 			new SectionModel(typeof(EffectsPage), "Effects",
 				"Apply Effects to a View."),
 
 			new SectionModel(typeof(FlyoutPageGallery), "FlyoutPage",
 				"Demonstrates using a Flyout Page."),
+				
+			new SectionModel(typeof(FocusPage), "Focus Management",
+				"Focus and onfocus views, detect when a view gains focus and more."),
+
+			new SectionModel(typeof(FocusPage), "Focus Management",
+				"Focus and onfocus views, detect when a view gains focus and more."),
 
 			new SectionModel(typeof(GesturesPage), "Gestures",
 				"Use tap, pinch, pan, swipe, and drag and drop gestures on View instances."),
+
+			new SectionModel(typeof(InputTransparentPage), "InputTransparent",
+				"Manage whether a view participates in the user interaction cycle."),
+	
+			new SectionModel(typeof(MenuBarPage), "MenuBar",
+				"Allows you to push and pop Modal Pages."),
 
 			new SectionModel(typeof(ModalPage), "Modal",
 				"Allows you to push and pop Modal Pages."),

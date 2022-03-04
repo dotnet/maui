@@ -29,14 +29,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_cell != null)
 				{
 					_cell.PropertyChanged -= HandlePropertyChanged;
-					Device.BeginInvokeOnMainThread(_cell.SendDisappearing);
+					BeginInvokeOnMainThread(_cell.SendDisappearing);
 				}
 				_cell = value;
 
 				if (_cell != null)
 				{
 					_cell.PropertyChanged += HandlePropertyChanged;
-					Device.BeginInvokeOnMainThread(_cell.SendAppearing);
+					BeginInvokeOnMainThread(_cell.SendAppearing);
 				}
 			}
 		}

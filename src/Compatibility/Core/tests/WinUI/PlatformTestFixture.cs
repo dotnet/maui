@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using NUnit.Framework;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
@@ -73,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 
 		protected async Task<TProperty> GetControlProperty<TProperty>(Label label, Func<TextBlock, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await label.Dispatcher.DispatchAsync(() =>
 			{
 				var textBlock = GetNativeControl(label);
 				return getProperty(textBlock);
@@ -98,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 		protected async Task<TProperty> GetRendererProperty<TProperty>(View view,
 			Func<IVisualElementRenderer, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await view.Dispatcher.DispatchAsync(() =>
 			{
 				var renderer = GetRenderer(view);
 				return getProperty(renderer);

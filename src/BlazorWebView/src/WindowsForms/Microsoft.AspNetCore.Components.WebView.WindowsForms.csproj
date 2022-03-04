@@ -10,6 +10,7 @@
     <DefineConstants>$(DefineConstants);WEBVIEW2_WINFORMS</DefineConstants>
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>disable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

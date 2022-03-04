@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls
 
 		float IStroke.StrokeMiterLimit => 0;
 
-		PathF IShape.PathForBounds(Rectangle bounds)
+		PathF IShape.PathForBounds(Rect bounds)
 		{
 			var path = new PathF();
 

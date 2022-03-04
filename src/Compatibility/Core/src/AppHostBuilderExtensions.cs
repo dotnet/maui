@@ -21,7 +21,6 @@ using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.P
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.BoxViewBorderRenderer;
 using CellRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.TextCellRenderer;
-using Deserializer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsSerializer;
 using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
 using StreamImagesourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.UWP.StreamImageSourceHandler;
 using ImageLoaderSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.UWP.UriImageSourceHandler;
@@ -61,11 +60,11 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.Register<Xaml.ResourcesLoader>();
 			DependencyService.Register<NativeBindingService>();
 			DependencyService.Register<NativeValueConverterService>();
-			DependencyService.Register<Deserializer>();
 			DependencyService.Register<ResourcesProvider>();
 			DependencyService.Register<Xaml.ValueConverterProvider>();
 			DependencyService.Register<PlatformInvalidate>();
 			DependencyService.Register<FontNamedSizeService>();
+			DependencyService.Register<PlatformSizeService>();
 #endif
 
 			builder.ConfigureCompatibilityLifecycleEvents();
@@ -116,7 +115,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(ActivityIndicator), typeof(ActivityIndicatorRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CheckBox), typeof(CheckBoxRenderer));
 #if !WINDOWS
-					handlers.TryAddCompatibilityRenderer(typeof(Shell), typeof(ShellRenderer));
 #if !(MACCATALYST || MACOS)
 					handlers.TryAddCompatibilityRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer));
 #endif
@@ -144,7 +142,12 @@ namespace Microsoft.Maui.Controls.Hosting
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 					handlers.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
 					handlers.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
+					handlers.AddHandler(typeof(Shell), typeof(Handlers.Compatibility.ShellRenderer));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
+#endif
+
+#if ANDROID
+					handlers.AddHandler(typeof(Shell), typeof(Handlers.Compatibility.ShellRenderer));
 #endif
 				});
 

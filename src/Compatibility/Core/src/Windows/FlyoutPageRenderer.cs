@@ -304,8 +304,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			global::Windows.Foundation.Size masterSize = Control.FlyoutSize;
 			global::Windows.Foundation.Size detailSize = Control.DetailSize;
 
-			FlyoutPageController.FlyoutBounds = new Rectangle(0, 0, masterSize.Width, masterSize.Height);
-			FlyoutPageController.DetailBounds = new Rectangle(0, 0, detailSize.Width, detailSize.Height);
+			FlyoutPageController.FlyoutBounds = new Rect(0, 0, masterSize.Width, masterSize.Height);
+			FlyoutPageController.DetailBounds = new Rect(0, 0, detailSize.Width, detailSize.Height);
 		}
 
 		void UpdateDetail()
@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			// Ignore the IsPresented value being set to false for Split mode on desktop and allow the master
 			// view to be made initially visible
-			if (Device.Idiom == TargetIdiom.Desktop && Control.IsPaneOpen && Element.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Popover)
+			if (DeviceInfo.Idiom == DeviceIdiom.Desktop && Control.IsPaneOpen && Element.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Popover)
 				return;
 
 			Control.IsPaneOpen = Element.IsPresented;

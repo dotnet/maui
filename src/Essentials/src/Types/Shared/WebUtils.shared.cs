@@ -12,12 +12,12 @@ namespace Microsoft.Maui.Essentials
 		{
 			var d = new Dictionary<string, string>();
 
-			if (string.IsNullOrWhiteSpace(url) || (!url.Contains("?") && !url.Contains("#")))
+			if (string.IsNullOrWhiteSpace(url) || (url.IndexOf("?", StringComparison.Ordinal) == -1 && url.IndexOf("#", StringComparison.Ordinal) == -1))
 				return d;
 
-			var qsStartIndex = url.IndexOf('?');
+			var qsStartIndex = url.IndexOf("?", StringComparison.Ordinal);
 			if (qsStartIndex < 0)
-				qsStartIndex = url.IndexOf('#');
+				qsStartIndex = url.IndexOf("#", StringComparison.Ordinal);
 
 			if (url.Length - 1 < qsStartIndex + 1)
 				return d;

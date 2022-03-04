@@ -29,9 +29,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			// - An enumeration value
 			// All other cases should throw
 
-			[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
-			[TearDown] public void TearDown() => Device.PlatformServices = null;
-
 			[TestCase(false)]
 			[TestCase(true)]
 			public void ThrowOnInstanceProperty(bool useCompiledXaml)

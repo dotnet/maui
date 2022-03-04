@@ -107,6 +107,22 @@ namespace Microsoft.Maui.DeviceTests
 			expected.AssertEqual(transform);
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task InputTransparencyInitializesCorrectly(bool inputTransparent) 
+		{
+			var view = new TStub()
+			{
+				InputTransparent = inputTransparent
+			};
+
+			var uie = await GetValueAsync(view, handler => GetUserInteractionEnabled(handler));
+
+			// UserInteractionEnabled should be the opposite value of InputTransparent 
+			Assert.NotEqual(inputTransparent, uie);
+		}
+
 		// TODO: this is all kinds of wrong
 		protected Task<CATransform3D> GetLayerTransformAsync(TStub view)
 		{
@@ -115,7 +131,7 @@ namespace Microsoft.Maui.DeviceTests
 			window.Content = view;
 			view.Parent = window;
 
-			view.Frame = new Rectangle(0, 0, 100, 100);
+			view.Frame = new Rect(0, 0, 100, 100);
 
 			return GetValueAsync(view, handler => GetLayerTransform(handler));
 		}
@@ -149,10 +165,10 @@ namespace Microsoft.Maui.DeviceTests
 			return platformView.IsAccessibilityElement;
 		}
 
-		protected Maui.Graphics.Rectangle GetPlatformViewBounds(IViewHandler viewHandler) =>
+		protected Maui.Graphics.Rect GetPlatformViewBounds(IViewHandler viewHandler) =>
 			((UIView)viewHandler.PlatformView).GetPlatformViewBounds();
 
-		protected Maui.Graphics.Rectangle GetBoundingBox(IViewHandler viewHandler) =>
+		protected Maui.Graphics.Rect GetBoundingBox(IViewHandler viewHandler) =>
 			((UIView)viewHandler.PlatformView).GetBoundingBox();
 
 		protected System.Numerics.Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
@@ -193,6 +209,12 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return Visibility.Visible;
+		}
+
+		protected bool GetUserInteractionEnabled(IViewHandler viewHandler) 
+		{
+			var platformView = (UIView)viewHandler.PlatformView;
+			return platformView.UserInteractionEnabled;
 		}
 	}
 }

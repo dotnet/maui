@@ -1,11 +1,29 @@
 ﻿#nullable enable
 using System;
+using Microsoft.UI.Xaml;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
+		partial void ConnectingHandler(PlatformView? platformView)
+		{
+			if (platformView != null)
+			{
+				platformView.GotFocus += OnPlatformViewGotFocus;
+				platformView.LostFocus += OnPlatformViewLostFocus;
+			}
+		}
+
+		partial void DisconnectingHandler(PlatformView platformView)
+		{
+			UpdateIsFocused(false);
+
+			platformView.GotFocus -= OnPlatformViewGotFocus;
+			platformView.LostFocus -= OnPlatformViewLostFocus;
+		}
+
 		static partial void MappingFrame(IViewHandler handler, IView view)
 		{
 			// Both Clip and Shadow depend on the Control size.
@@ -78,6 +96,38 @@ namespace Microsoft.Maui.Handlers
 				var toolBar = toolbarElement.Toolbar.ToPlatform(handler.MauiContext);
 				handler.MauiContext.GetNavigationRootManager().SetToolbar(toolBar);
 			}
+		}
+
+		public virtual bool NeedsContainer
+		{
+			get
+			{
+				if (VirtualView is IBorderView border)
+					return border?.Shape != null || border?.Stroke != null;
+
+				return false;
+			}
+		}
+
+		void OnPlatformViewGotFocus(object sender, RoutedEventArgs args)
+		{
+			UpdateIsFocused(true);
+		}
+
+		void OnPlatformViewLostFocus(object sender, RoutedEventArgs args)
+		{
+			UpdateIsFocused(false);
+		}
+
+		void UpdateIsFocused(bool isFocused)
+		{
+			if (VirtualView == null)
+				return;
+
+			bool updateIsFocused = (isFocused && !VirtualView.IsFocused) || (!isFocused && VirtualView.IsFocused);
+
+			if (updateIsFocused)
+				VirtualView.IsFocused = isFocused;
 		}
 	}
 }

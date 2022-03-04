@@ -462,8 +462,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			foreach (MenuItem item in Cell.ContextActions)
 			{
-				var flyoutItem = new MenuFlyoutItem();
-				flyoutItem.SetBinding(MenuFlyoutItem.TextProperty, "Text");
+				var flyoutItem = new UI.Xaml.Controls.MenuFlyoutItem();
+				flyoutItem.SetBinding(UI.Xaml.Controls.MenuFlyoutItem.TextProperty, "Text");
 				//WINUI FIX
 				//flyoutItem.Command = new MenuItemCommand(item);
 				flyoutItem.DataContext = item;

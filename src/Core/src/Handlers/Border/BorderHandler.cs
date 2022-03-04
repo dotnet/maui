@@ -1,4 +1,4 @@
-﻿#nullable enable
+﻿	#nullable enable
 #if __IOS__ || MACCATALYST
 using PlatformView = Microsoft.Maui.Platform.ContentView;
 #elif __ANDROID__
@@ -11,9 +11,9 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class BorderHandler : IViewHandler
+	public partial class BorderHandler : IBorderHandler
 	{
-		public static IPropertyMapper<IBorderView, BorderHandler> BorderMapper = new PropertyMapper<IBorderView, BorderHandler>(ViewMapper)
+		public static IPropertyMapper<IBorderView, IBorderHandler> Mapper = new PropertyMapper<IBorderView, IBorderHandler>(ViewMapper)
 		{
 			[nameof(IContentView.Background)] = MapBackground,
 			[nameof(IContentView.Content)] = MapContent,
@@ -27,11 +27,11 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IBorderStroke.StrokeMiterLimit)] = MapStrokeMiterLimit
 		};
 
-		public static CommandMapper<IBorderView, BorderHandler> BorderCommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IBorderView, BorderHandler> CommandMapper = new(ViewCommandMapper)
 		{
 		};
 
-		public BorderHandler() : base(BorderMapper, BorderCommandMapper)
+		public BorderHandler() : base(Mapper, CommandMapper)
 		{
 
 		}
@@ -41,55 +41,59 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public BorderHandler(IPropertyMapper? mapper = null) : base(mapper ?? BorderMapper)
+		public BorderHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
 		{
 
 		}
 
-		public static void MapBackground(BorderHandler handler, IBorderView border)
+		IBorderView IBorderHandler.VirtualView => VirtualView;
+
+		PlatformView IBorderHandler.PlatformView => PlatformView;
+
+		public static void MapBackground(IBorderHandler handler, IBorderView border)
 		{
 			((PlatformView?)handler.PlatformView)?.UpdateBackground(border);
 		}
 
-		public static void MapStrokeShape(BorderHandler handler, IBorderView border)
+		public static void MapStrokeShape(IBorderHandler handler, IBorderView border)
 		{
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeShape(border);
 			MapBackground(handler, border);
 		}
 
-		public static void MapStroke(BorderHandler handler, IBorderView border)
+		public static void MapStroke(IBorderHandler handler, IBorderView border)
 		{
 			((PlatformView?)handler.PlatformView)?.UpdateStroke(border);
 			MapBackground(handler, border);
 		}
 
-		public static void MapStrokeThickness(BorderHandler handler, IBorderView border)
+		public static void MapStrokeThickness(IBorderHandler handler, IBorderView border)
 		{
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeThickness(border);
 			MapBackground(handler, border);
 		}
 
-		public static void MapStrokeLineCap(BorderHandler handler, IBorderView border)
+		public static void MapStrokeLineCap(IBorderHandler handler, IBorderView border)
 		{
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeLineCap(border);
 		}
 
-		public static void MapStrokeLineJoin(BorderHandler handler, IBorderView border)
+		public static void MapStrokeLineJoin(IBorderHandler handler, IBorderView border)
 		{
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeLineJoin(border);
 		}
 
-		public static void MapStrokeDashPattern(BorderHandler handler, IBorderView border)
+		public static void MapStrokeDashPattern(IBorderHandler handler, IBorderView border)
 		{
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeDashPattern(border);
 		}
 
-		public static void MapStrokeDashOffset(BorderHandler handler, IBorderView border)
+		public static void MapStrokeDashOffset(IBorderHandler handler, IBorderView border)
 		{
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeDashOffset(border);
 		}
 
-		public static void MapStrokeMiterLimit(BorderHandler handler, IBorderView border)
+		public static void MapStrokeMiterLimit(IBorderHandler handler, IBorderView border)
 		{
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeMiterLimit(border);
 		}
