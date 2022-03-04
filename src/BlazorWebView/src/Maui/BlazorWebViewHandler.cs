@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// Initializes a new instance of <see cref="BlazorWebViewHandler"/> using the specified mappings.
 		/// </summary>
 		/// <param name="mapper">The property mappings.</param>
-		internal BlazorWebViewHandler(PropertyMapper? mapper) : base(mapper ?? BlazorWebViewMapper)
+		public BlazorWebViewHandler(PropertyMapper? mapper) : base(mapper ?? BlazorWebViewMapper)
 		{
 		}
 
