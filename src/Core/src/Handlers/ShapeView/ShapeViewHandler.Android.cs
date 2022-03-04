@@ -7,6 +7,11 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiShapeView CreatePlatformView() =>
 			new MauiShapeView(Context);
 
+		public static void MapBackground(IShapeViewHandler handler, IShapeView shapeView)
+		{
+			handler.PlatformView?.InvalidateShape(shapeView);
+		}
+
 		public static void MapShape(IShapeViewHandler handler, IShapeView shapeView)
 		{
 			handler.PlatformView?.UpdateShape(shapeView);

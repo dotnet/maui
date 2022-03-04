@@ -18,6 +18,8 @@
 		{
 			var rect = dirtyRect;
 
+			DrawBackground(canvas, rect);
+
 			IShape? shape = ShapeView?.Shape;
 
 			if (shape == null)
@@ -32,6 +34,22 @@
 			DrawFillPath(canvas, rect, path);
 		}
 
+		void DrawBackground(ICanvas canvas, RectangleF dirtyRect)
+		{
+			if (ShapeView == null)
+				return;
+
+			canvas.SaveState();
+
+			// Set Background
+			var backgroundPaint = ShapeView.Background;
+			canvas.SetFillPaint(backgroundPaint, dirtyRect);
+
+			canvas.FillRectangle(dirtyRect);
+
+			canvas.RestoreState();
+		}
+	
 		void DrawStrokePath(ICanvas canvas, RectangleF dirtyRect, PathF path)
 		{
 			if (ShapeView == null || ShapeView.Shape == null || ShapeView.StrokeThickness <= 0 || ShapeView.Stroke == null)

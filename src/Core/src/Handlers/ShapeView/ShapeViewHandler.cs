@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IShapeView, IShapeViewHandler> Mapper = new PropertyMapper<IShapeView, IShapeViewHandler>(ViewHandler.ViewMapper)
 		{
+			[nameof(IShapeView.Background)] = MapBackground,
 			[nameof(IShapeView.Shape)] = MapShape,
 			[nameof(IShapeView.Aspect)] = MapAspect,
 			[nameof(IShapeView.Fill)] = MapFill,
