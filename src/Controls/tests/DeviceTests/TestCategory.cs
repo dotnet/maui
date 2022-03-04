@@ -5,6 +5,7 @@
 		public const string Button = "Button";
 		public const string Dispatcher = "Dispatcher";
 		public const string Editor = "Editor";
+		public const string Element = "Element";
 		public const string Entry = "Entry";
 		public const string FlyoutPage = "FlyoutPage";
 		public const string Gesture = "Gesture";

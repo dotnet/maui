@@ -57,6 +57,10 @@ namespace Microsoft.Maui.DeviceTests
 						await action((THandler)window.Handler);
 					else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
 						await action((THandler)window.Content.Handler);
+					else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
+						await action((THandler)cp.Content.Handler);
+					else
+						throw new Exception($"I can't work with {typeof(THandler)}");
 				}
 				finally
 				{

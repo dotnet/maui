@@ -29,6 +29,10 @@
     <Compile Remove="**\Standard\**\*.cs" />
     <None Include="**\Standard\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+  <ItemGroup Condition="'$(_MauiNoTargetPlatform)' == 'True'">
+    <Compile Remove="**\*.Platform.cs" />
+    <None Include="**\*.Platform.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' != 'True' ">
     <Compile Remove="**\*.Windows.cs" />
     <None Include="**\*.Windows.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
@@ -72,7 +76,9 @@
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
     <DefineConstants>$(DefineConstants);MONOANDROID</DefineConstants>
   </PropertyGroup>
-
+  <PropertyGroup Condition="'$(_MauiNoTargetPlatform)' != 'True'">
+    <DefineConstants>$(DefineConstants);PLATFORM</DefineConstants>
+  </PropertyGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
     <AndroidResource Include="$(MonoAndroidResourcePrefix)\*\*.xml" />
     <AndroidResource Include="$(MonoAndroidResourcePrefix)\*\*.axml" />
