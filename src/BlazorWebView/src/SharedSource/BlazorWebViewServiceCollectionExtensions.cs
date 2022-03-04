@@ -36,12 +36,8 @@ namespace Microsoft.Extensions.DependencyInjection
 		{
 			services.AddBlazorWebView();
 			services.TryAddSingleton(new BlazorWebViewDeveloperTools { Enabled = false });
-#if WEBVIEW2_WINFORMS
-#elif WEBVIEW2_WPF
-#elif WEBVIEW2_MAUI
+#if WEBVIEW2_MAUI
 			services.ConfigureMauiHandlers(static handlers => handlers.AddHandler<IBlazorWebView, BlazorWebViewHandler>());
-#else
-#error Must define WEBVIEW2_WINFORMS, WEBVIEW2_WPF, WEBVIEW2_MAUI
 #endif
 			return services;
 		}
