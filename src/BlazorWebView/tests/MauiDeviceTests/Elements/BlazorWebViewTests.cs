@@ -16,7 +16,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 		{
 			EnsureHandlerCreated(additionalCreationActions: appBuilder =>
 			{
-				appBuilder.Services.AddBlazorWebView();
+				appBuilder.Services.AddMauiBlazorWebView(new());
 			});
 
 			var bwv = new BlazorWebViewWithCustomFiles
