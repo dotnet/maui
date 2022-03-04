@@ -62,6 +62,13 @@
 			var strokeDashPattern = ShapeView.StrokeDashPattern;
 			canvas.StrokeDashPattern = strokeDashPattern;
 
+			// Set StrokeDashPattern
+			/*
+			var strokeDashOffset = ShapeView.StrokeDashOffset;
+			// TODO: Implement StrokeDashOffset in Microsoft.Maui.Graphics.
+			canvas.StrokeDashOffset = strokeDashOffset;
+			*/
+
 			// Set StrokeMiterLimit
 			var strokeMiterLimit = ShapeView.StrokeMiterLimit;
 			canvas.MiterLimit = strokeMiterLimit;
