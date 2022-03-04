@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsReadOnly(this UITextView textView, IEditor editor)
 		{
-			textView.UserInteractionEnabled = !editor.IsReadOnly;
+			textView.UserInteractionEnabled = !(editor.IsReadOnly || editor.InputTransparent);
 		}
 
 		public static void UpdateKeyboard(this UITextView textView, IEditor editor)

@@ -253,6 +253,13 @@ namespace Microsoft.Maui.Platform
 				panel.UpdateBackground(view.Background);
 		}
 
+		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)
+		{
+			// Background and InputTransparent for Windows layouts are heavily intertwined, so setting one
+			// usuall requires setting the other at the same time
+			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
+		}
+
 		public static async Task<byte[]?> RenderAsPNG(this IView view)
 		{
 			var platformView = view?.ToPlatform();
@@ -405,7 +412,7 @@ namespace Microsoft.Maui.Platform
 				// but it won't restore the focus to Control
 				ContainingPage.IsTabStop = wasTabStop;
 			}
-    }
+		}
     
 		internal static IWindow? GetHostedWindow(this IView? view)
 			=> GetHostedWindow(view?.Handler?.PlatformView as FrameworkElement);
@@ -427,8 +434,21 @@ namespace Microsoft.Maui.Platform
 						return window;
 				}
 			}
-
+			
 			return null;
+		}
+		
+		public static void UpdateInputTransparent(this FrameworkElement nativeView, IViewHandler handler, IView view)
+		{
+			if (nativeView is UIElement element)
+			{ 
+				element.IsHitTestVisible = !view.InputTransparent;
+			}
+		}
+
+		public static void UpdateInputTransparent(this LayoutPanel layoutPanel, ILayoutHandler handler, ILayout layout)
+		{
+			// Nothing to do yet, but we might need to adjust the wrapper view 
 		}
 	}
 }

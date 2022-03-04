@@ -35,8 +35,8 @@ namespace Microsoft.Maui.Controls
 				SetActive(DeviceInfo.Platform == DevicePlatform.Android);
 			else if (device == DevicePlatform.iOS)
 				SetActive(DeviceInfo.Platform == DevicePlatform.iOS);
-			else if (device == DevicePlatform.UWP)
-				SetActive(DeviceInfo.Platform == DevicePlatform.UWP);
+			else if (device == DevicePlatform.WinUI || device == DevicePlatform.Create("UWP"))
+				SetActive(DeviceInfo.Platform == DevicePlatform.WinUI);
 		}
 	}
 }

@@ -230,6 +230,9 @@ namespace Maui.Controls.Sample
 					}
 				});
 
+			// If someone wanted to completely turn off the CascadeInputTransparent behavior in their application, this next line would be an easy way to do it
+			// Microsoft.Maui.Controls.Layout.ControlsLayoutMapper.ModifyMapping(nameof(Microsoft.Maui.Controls.Layout.CascadeInputTransparent), (_, _, _) => { });
+
 			return appBuilder.Build();
 		}
 	}
