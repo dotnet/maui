@@ -2,7 +2,7 @@
 using ElmSharp;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
+using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 using TSize = Tizen.UIExtensions.Common.Size;
 
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
+		internal Func<Rect, Size>? CrossPlatformArrange { get; set; }
 
 		protected void OnLayoutUpdated(object? sender, LayoutEventArgs e)
 		{

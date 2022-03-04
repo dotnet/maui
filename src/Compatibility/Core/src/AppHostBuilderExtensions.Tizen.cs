@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 					TDeviceInfo.DisplayResolutionUnit = options.DisplayResolutionUnit.ToDeviceInfo();
 				}
 				options.Flags |= InitializationFlags.SkipRenderers;
+#pragma warning disable CS0612 // Type or member is obsolete
 				Forms.Init(state, options);
 #pragma warning disable CS0612 // Type or member is obsolete
 			})

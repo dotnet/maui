@@ -321,16 +321,16 @@ namespace Microsoft.Maui.Platform
 			var platformView = view?.ToPlatform();
 			if (platformView == null)
 			{
-				return new Rectangle();
+				return new Rect();
 			}
 
 			return platformView.GetPlatformViewBounds();
 		}
 
-		internal static Rectangle GetPlatformViewBounds(this EvasObject platformView)
+		internal static Rect GetPlatformViewBounds(this EvasObject platformView)
 		{
 			if (platformView == null)
-				return new Rectangle();
+				return new Rect();
 
 			return platformView.Geometry.ToDP();
 		}
@@ -346,13 +346,13 @@ namespace Microsoft.Maui.Platform
 		internal static Matrix4x4 GetViewTransform(this EvasObject platformView)
 			=> new Matrix4x4();
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view)
+		internal static Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
 
-		internal static Graphics.Rectangle GetBoundingBox(this EvasObject? platformView)
+		internal static Rect GetBoundingBox(this EvasObject? platformView)
 		{
 			if (platformView == null)
-				return new Rectangle();
+				return new Rect();
 
 			return platformView.Geometry.ToDP();
 		}

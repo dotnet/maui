@@ -333,7 +333,7 @@ namespace Microsoft.Maui.Platform
 
 		public ICanvas Canvas { get; set; }
 
-		public RectangleF DirtyRect { get; set; }
+		public RectF DirtyRect { get; set; }
 	}
 
 	public class SKClipperView : SKCanvasView
@@ -379,7 +379,7 @@ namespace Microsoft.Maui.Platform
 
 			if (DeviceScalingFactor > 0)
 				_scalingCanvas.Scale(DeviceScalingFactor, DeviceScalingFactor);
-			DrawClip?.Invoke(this, new DrawClipEventArgs(_scalingCanvas, new RectangleF(0, 0, width, height)));
+			DrawClip?.Invoke(this, new DrawClipEventArgs(_scalingCanvas, new RectF(0, 0, width, height)));
 			_scalingCanvas.RestoreState();
 		}
 	}
