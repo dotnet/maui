@@ -72,6 +72,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
 			handlersCollection.AddHandler<Shell, ShellHandler>();
 #endif
+#endif
 			return handlersCollection;
 		}
 

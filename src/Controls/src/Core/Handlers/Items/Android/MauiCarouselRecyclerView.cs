@@ -251,21 +251,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			Device.BeginInvokeOnMainThread(() =>
-			{
+			Carousel.
+				Handler.
+				MauiContext.
+				GetDispatcher()
+					.Dispatch(() =>
+					{
 
-				SetCurrentItem(carouselPosition);
-				UpdatePosition(carouselPosition);
+						SetCurrentItem(carouselPosition);
+						UpdatePosition(carouselPosition);
 
-				//If we are adding or removing the last item we need to update
-				//the inset that we give to items so they are centered
-				if (e.NewStartingIndex == count - 1 || removingLastElement)
-				{
-					UpdateItemDecoration();
-				}
+						//If we are adding or removing the last item we need to update
+						//the inset that we give to items so they are centered
+						if (e.NewStartingIndex == count - 1 || removingLastElement)
+						{
+							UpdateItemDecoration();
+						}
 
-				UpdateVisualStates();
-			});
+						UpdateVisualStates();
+					});
 		}
 
 		void UpdateItemDecoration()
