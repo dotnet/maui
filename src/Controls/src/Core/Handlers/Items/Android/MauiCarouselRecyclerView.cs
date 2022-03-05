@@ -540,6 +540,87 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_carouselViewLayoutListener.LayoutReady -= LayoutReady;
 			_carouselViewLayoutListener = null;
 		}
+
+		int? _forcedHeight;
+		int? _forcedWidth;
+
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		{
+			base.OnLayout(changed, left, top, right, bottom);
+
+			if (Carousel.Loop &&
+				ItemsViewAdapter is CarouselViewAdapter<CarouselView, IItemsViewSource> adapter &&
+				adapter.MeasureFirstItemForLooping)
+			{
+				_forcedHeight = bottom - top;
+				_forcedWidth = right - left;
+
+				adapter.MeasureFirstItemForLooping = false;
+				adapter.NotifyDataSetChanged();
+			}
+		}
+
+		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			if (Carousel.Loop)
+			{
+				// If the height or width are unbounded and the user is set to
+				// Loop then we can't just do an infinite measure.
+				// Looping works by setting item count to 16384 so if the 
+				// CarV has infinite room it'll generate all 16384 items.
+				// This code forces the adapter to just measure the first item
+				// And then that measure is used for the WxH of the CarouselView
+
+				// I found that "AtMost" also causes this behavior so
+				// that's why I'm turning "AtMost" into "Exactly"
+				if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost)
+				{
+					widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(widthMeasureSpec.GetSize());
+				}
+
+				if (MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.AtMost)
+				{
+					heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(heightMeasureSpec.GetSize());
+				}
+
+				if (ItemsViewAdapter is CarouselViewAdapter<CarouselView, IItemsViewSource> adapter)
+				{
+
+					if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified ||
+						MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified)
+					{
+						if (_forcedHeight != null)
+						{
+							adapter.MeasureFirstItemForLooping = false;
+
+							if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified)
+							{
+								widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(_forcedWidth.Value);
+							}
+
+							if (MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified)
+							{
+								heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(_forcedHeight.Value);
+							}
+						}
+						else
+						{
+							adapter.MeasureFirstItemForLooping = true;
+						}
+					}
+					else
+					{
+						adapter.MeasureFirstItemForLooping = false;
+					}
+				}
+			}
+			else if (ItemsViewAdapter is CarouselViewAdapter<CarouselView, IItemsViewSource> adapter)
+			{
+				adapter.MeasureFirstItemForLooping = false;
+			}
+
+			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+		}
 	}
 
 	class CarouselViewwOnGlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener

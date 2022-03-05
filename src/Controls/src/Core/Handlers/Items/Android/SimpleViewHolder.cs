@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return new SimpleViewHolder(textView, null);
 		}
 
-		public static SimpleViewHolder FromFormsView(View formsView, Context context, Func<int> width, Func<int> height, ItemsView container)
+		public static SimpleViewHolder FromFormsView(View formsView, Context context, Func<double> width, Func<double> height, ItemsView container)
 		{
 			var itemContentControl = new SizedItemContentView(context, width, height);
 

@@ -14,8 +14,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			CarouselView = itemsView;
 		}
 
-		public override int ItemCount => CarouselView.Loop && !(ItemsSource is EmptySource)
+		internal bool MeasureFirstItemForLooping { get; set; }
+
+		public override int ItemCount
+		{
+			get
+			{
+				if (MeasureFirstItemForLooping && CarouselView.Loop && ItemsSource.Count > 0)
+				{
+					return 1;
+				}
+
+				return (!MeasureFirstItemForLooping) && !(ItemsSource is EmptySource)
 			&& ItemsSource.Count > 0 ? CarouselViewLoopManager.LoopScale : ItemsSource.Count;
+			}
+		}
 
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
 		{
