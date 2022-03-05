@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #endif
 	{
 		/// <summary>
-		/// Creates the event args for the <see cref="BlazorWebView.InitializingWebViewEvent"/>
+		/// Creates the event args for the WebView2 initalization.
 		/// </summary>
 		/// <param name="coreWebView2EnvironmentOptions">The options</param>
 #if (WEBVIEW2_WPF)

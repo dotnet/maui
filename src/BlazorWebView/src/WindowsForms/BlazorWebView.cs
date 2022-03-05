@@ -119,6 +119,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		[Description("Allows customizing how external links are opened. Opens external links in the system browser by default.")]
 		public EventHandler<ExternalLinkNavigationEventArgs> ExternalNavigationStarting;
 
+		/// <summary>
+		/// Allows customizing the webview start parameters.
+		/// </summary>
+		[Category("Action")]
+		[Description("Allows customizing the webview start parameters.")]
+		public EventHandler<WebViewInitEventArgs> WebViewInitialize;
+
 		private void OnHostPagePropertyChanged() => StartWebViewCoreIfPossible();
 
 		private void OnServicesPropertyChanged() => StartWebViewCoreIfPossible();
@@ -169,7 +176,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				fileProvider,
 				RootComponents.JSComponents,
 				hostPageRelativePath,
-				(args) => ExternalNavigationStarting?.Invoke(this, args));
+				(args) => ExternalNavigationStarting?.Invoke(this, args),
+				(args) => WebViewInitialize?.Invoke(this, args)
+				);
 
 			foreach (var rootComponent in RootComponents)
 			{

@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			if (_webview == null)
 			{
-				_webview = (WebView2Control)GetTemplateChild(WebViewTemplateChildName);
+				_webview = (WebView2Control)GetTemplateChild(webViewTemplateChildName);
 				StartWebViewCoreIfPossible();
 			}
 		}
@@ -209,7 +209,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				fileProvider,
 				RootComponents.JSComponents,
 				hostPageRelativePath,
-				(args) => ExternalNavigationStarting?.Invoke(this, args));
+				(args) => ExternalNavigationStarting?.Invoke(this, args),
+				RaiseInitializingWebViewEvent);
 
 			foreach (var rootComponent in RootComponents)
 			{
