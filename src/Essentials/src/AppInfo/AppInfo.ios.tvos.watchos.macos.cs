@@ -54,8 +54,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 				if ((OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13, 0)) || (OperatingSystem.IsTvOS() && !OperatingSystem.IsTvOSVersionAtLeast(13, 0)))
 					return AppTheme.Unspecified;
 
-				var uiStyle = Platform.GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
-					UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
+				var traits =
+					MainThread.InvokeOnMainThread(() => Platform.GetCurrentUIViewController()?.TraitCollection) ??
+					UITraitCollection.CurrentTraitCollection;
+
+				var uiStyle = traits.UserInterfaceStyle;
 
 				return uiStyle switch
 				{
