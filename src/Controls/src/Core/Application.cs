@@ -168,8 +168,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		public AppTheme PlatformAppTheme => AppInfo.RequestedTheme;
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
-		public AppTheme RequestedTheme => UserAppTheme != AppTheme.Unspecified ? UserAppTheme : AppInfo.RequestedTheme;
+		public AppTheme RequestedTheme => UserAppTheme != AppTheme.Unspecified ? UserAppTheme : PlatformAppTheme;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='AccentColor']/Docs" />
 		public static Color? AccentColor { get; set; }
