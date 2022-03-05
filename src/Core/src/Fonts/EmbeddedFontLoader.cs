@@ -1,12 +1,11 @@
 #nullable enable
-using System.IO;
-using Microsoft.Extensions.Logging;
+using System;
 
 namespace Microsoft.Maui
 {
 	public partial class EmbeddedFontLoader : IEmbeddedFontLoader
 	{
-		readonly ILogger<EmbeddedFontLoader>? _logger;
+		readonly IServiceProvider? _serviceProvider;
 
 #if !NET6_0
 		// The NET6_0 linker won't need this
@@ -21,21 +20,5 @@ namespace Microsoft.Maui
 			: this(null)
 		{
 		}
-
-		public EmbeddedFontLoader(ILogger<EmbeddedFontLoader>? logger = null)
-#if __ANDROID__
-			: base(GetTempPath(), logger)
-#endif
-		{
-			_logger = logger;
-		}
-
-#if __ANDROID__
-		static string GetTempPath()
-		{
-			var ctx = Android.App.Application.Context;
-			return ctx.CacheDir?.AbsolutePath ?? Path.GetTempPath();
-		}
-#endif
 	}
 }

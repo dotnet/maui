@@ -10,6 +10,11 @@ namespace Microsoft.Maui
 {
 	public partial class EmbeddedFontLoader
 	{
+		public EmbeddedFontLoader(IServiceProvider? serviceProvider = null)
+		{
+			_serviceProvider = serviceProvider;
+		}
+
 		public string? LoadFont(EmbeddedFont font)
 		{
 			try
@@ -49,7 +54,7 @@ namespace Microsoft.Maui
 			}
 			catch (Exception ex)
 			{
-				_logger?.LogWarning(ex, "Unable register font {Font} with the system.", font.FontName);
+				_serviceProvider?.CreateLogger<EmbeddedFontLoader>()?.LogWarning(ex, "Unable register font {Font} with the system.", font.FontName);
 			}
 
 			return null;

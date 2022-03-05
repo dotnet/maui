@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -15,18 +16,12 @@ namespace Microsoft.Maui.Hosting
 	{
 		private readonly MauiApplicationServiceCollection _services = new();
 		private Func<IServiceProvider>? _createServiceProvider;
-		private MauiApp? _builtApplication;
+		private ILoggingBuilder? _logging;
 
 		internal MauiAppBuilder(bool useDefaults)
 		{
 			Configuration = new();
 			Services.AddSingleton<IConfiguration>(Configuration);
-
-			Logging = new LoggingBuilder(Services);
-			// By default, add LoggerFactory and Logger services with no providers. This way
-			// when components try to get an ILogger<> from the IServiceProvider, they don't get 'null'.
-			Services.TryAdd(ServiceDescriptor.Singleton<ILoggerFactory, LoggerFactory>());
-			Services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(Logger<>)));
 
 			if (useDefaults)
 			{
@@ -56,7 +51,20 @@ namespace Microsoft.Maui.Hosting
 		/// <summary>
 		/// A collection of logging providers for the application to compose. This is useful for adding new logging providers.
 		/// </summary>
-		public ILoggingBuilder Logging { get; }
+		public ILoggingBuilder Logging
+		{
+			get
+			{
+				return _logging ??= InitializeLogging();
+
+				ILoggingBuilder InitializeLogging()
+				{
+					// if someone accesses the Logging builder, ensure Logging has been initialized.
+					Services.AddLogging();
+					return new LoggingBuilder(Services);
+				}
+			}
+		}
 
 		/// <summary>
 		/// Registers a <see cref="IServiceProviderFactory{TBuilder}" /> instance to be used to create the <see cref="IServiceProvider" />.
@@ -98,25 +106,27 @@ namespace Microsoft.Maui.Hosting
 		/// <returns>A configured <see cref="MauiApp"/>.</returns>
 		public MauiApp Build()
 		{
+			ConfigureDefaultLogging();
+
 			IServiceProvider serviceProvider = _createServiceProvider != null
 				? _createServiceProvider()
 				: _services.BuildServiceProvider();
 
-			_builtApplication = new MauiApp(serviceProvider);
+			MauiApp builtApplication = new MauiApp(serviceProvider);
 
 			// Mark the service collection as read-only to prevent future modifications
 			_services.IsReadOnly = true;
 
-			var initServices = _builtApplication.Services.GetServices<IMauiInitializeService>();
+			var initServices = builtApplication.Services.GetServices<IMauiInitializeService>();
 			if (initServices != null)
 			{
 				foreach (var instance in initServices)
 				{
-					instance.Initialize(_builtApplication.Services);
+					instance.Initialize(builtApplication.Services);
 				}
 			}
 
-			return _builtApplication;
+			return builtApplication;
 		}
 
 		private sealed class LoggingBuilder : ILoggingBuilder
@@ -127,6 +137,37 @@ namespace Microsoft.Maui.Hosting
 			}
 
 			public IServiceCollection Services { get; }
+		}
+
+		private void ConfigureDefaultLogging()
+		{
+			// By default, if no one else has configured logging, add a "no-op" LoggerFactory
+			// and Logger services with no providers. This way when components try to get an
+			// ILogger<> from the IServiceProvider, they don't get 'null'.
+			Services.TryAdd(ServiceDescriptor.Singleton<ILoggerFactory, NullLoggerFactory>());
+			Services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(NullLogger<>)));
+		}
+
+		private sealed class NullLoggerFactory : ILoggerFactory
+		{
+			public void AddProvider(ILoggerProvider provider) { }
+
+			public ILogger CreateLogger(string categoryName) => NullLogger.Instance;
+
+			public void Dispose() { }
+		}
+
+		private sealed class NullLogger<T> : ILogger<T>, IDisposable
+		{
+			public IDisposable BeginScope<TState>(TState state) => this;
+
+			public void Dispose() { }
+
+			public bool IsEnabled(LogLevel logLevel) => false;
+
+			public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+			{
+			}
 		}
 	}
 }
