@@ -44,6 +44,8 @@ namespace Microsoft.Maui.Controls
 
 			return onPlatform.hasDefault ? onPlatform.@default : default(T);
 		}
+
+		public T GetValue() => (T)this;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="Type[@FullName='Microsoft.Maui.Controls.On']/Docs" />

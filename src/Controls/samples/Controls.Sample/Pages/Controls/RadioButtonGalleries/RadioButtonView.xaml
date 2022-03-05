@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Pages.RadioButtonGalleries.RadioButtonView"
+             Title="RadioButton Views">
+    <ContentPage.Content>
+        <StackLayout>
+            <Label Text="When RadioButton.Content is a string, it will be translated to text on each platform:" />
+            <RadioButton Content="RadioButton containing a string" />
+
+            <Label Text="When RadioButton.Content is a View, it will be displayed only on supported platforms:" />
+            <OnPlatform x:TypeArguments="RadioButton">
+                <On Platform="iOS,UWP">
+                    <!-- iOS and UWP can assign a View to RadioButton.Content. -->
+                    <RadioButton>
+                        <RadioButton.Content>
+                            <StackLayout Orientation="Horizontal">
+                                <Image Source="mic.png" />
+                                <Label Text="Monkey"
+                                    VerticalTextAlignment="Center" />
+                            </StackLayout>
+                        </RadioButton.Content>
+                    </RadioButton>
+                </On>
+                <On Platform="Android">
+                    <RadioButton Content="Android can't assign a View to RadioButton.Content." />
+                </On>
+            </OnPlatform>
+
+            <Label Text="When RadioButton.Content is a View, it will be displayed on supported platforms and will otherwise fallback to a string representation:" />
+            <RadioButton>
+                <RadioButton.Content>
+                    <StackLayout Orientation="Horizontal">
+                        <Image Source="coffee.png"/>
+                    </StackLayout>
+                </RadioButton.Content>
+            </RadioButton>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

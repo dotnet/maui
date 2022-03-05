@@ -35,6 +35,8 @@ namespace Maui.Controls.Sample.Pages.RadioButtonGalleries
 							new TemplateFromStyle(), Navigation),
 						GalleryBuilder.NavButton("RadioButton Border", () =>
 							new RadioButtonBorder(), Navigation),
+						GalleryBuilder.NavButton("RadioButton View", () =>
+							new RadioButtonView(), Navigation),
 					}
 				}
 			};

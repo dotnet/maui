@@ -145,8 +145,16 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					var addMethod =
 						Context.Types[parentElement].GetRuntimeMethods().First(mi => mi.Name == "Add" && mi.GetParameters().Length == 1);
-
-					addMethod.Invoke(source, new[] { value });
+					
+					if (node.XmlType.Name == "OnPlatform" && node.XmlType.TypeArguments.Count == 1)
+					{
+						var getValue = Context.Types[node].GetRuntimeMethods().FirstOrDefault(mi => mi.Name == "GetValue" && mi.GetParameters().Length == 0);
+						addMethod.Invoke(source, new[] { getValue.Invoke(value, null) });
+					}
+					else
+					{
+						addMethod.Invoke(source, new[] { value });
+					}
 					return;
 				}
 				if (xpe == null && (contentProperty = GetContentPropertyName(Context.Types[parentElement].GetTypeInfo())) != null)
