@@ -5,20 +5,34 @@ using System;
 using System.Windows;
 using Microsoft.Web.WebView2.Core;
 
-namespace Microsoft.AspNetCore.Components.WebView.Wpf
+namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
 	/// <summary>
 	/// Event arguments for the InitializingWebView event.
 	/// </summary>
-	public sealed class WebViewInitEventArgs : RoutedEventArgs
+	public sealed class WebViewInitEventArgs
+#if (WEBVIEW2_WPF)
+		: RoutedEventArgs
+#else
+		: EventArgs
+#endif
 	{
 		/// <summary>
 		/// Creates the event args for the <see cref="BlazorWebView.InitializingWebViewEvent"/>
 		/// </summary>
 		/// <param name="coreWebView2EnvironmentOptions">The options</param>
+#if (WEBVIEW2_WPF)
 		/// <param name="routedEvent">The <see cref="RoutedEvent"/> source. </param>
-		internal WebViewInitEventArgs(CoreWebView2EnvironmentOptions coreWebView2EnvironmentOptions, RoutedEvent routedEvent)
+#endif
+		internal WebViewInitEventArgs(CoreWebView2EnvironmentOptions coreWebView2EnvironmentOptions
+#if (WEBVIEW2_WPF)
+			, RoutedEvent routedEvent)
 			: base(routedEvent)
+#else
+			)
+			: base()
+#endif
+
 		{
 			CoreWebView2EnvironmentOptions = coreWebView2EnvironmentOptions;
 		}
@@ -58,10 +72,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// </summary>
 		public string CoreWebView2UserDataFolder { get; set; } = null;
 
+#if (WEBVIEW2_WPF)
 		protected override void InvokeEventHandler(Delegate genericHandler, object genericTarget)
 		{
 			var handler = (InitializingWebViewEventHandler)genericHandler;
 			handler(genericTarget, this);
 		}
+# endif
 	}
 }
