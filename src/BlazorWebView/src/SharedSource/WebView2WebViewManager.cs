@@ -139,7 +139,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		private async Task InitializeWebView2()
 		{
-			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync()
+			CoreWebView2EnvironmentOptions options = new CoreWebView2EnvironmentOptions();
+			var args = new WebViewInitEventArgs(options, BlazorWebView.InitializingWebViewEvent);
+
+			_blazorWebView.RaiseInitializingWebViewEvent(args);
+			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync(
+				args.CoreWebView2BrowserExecutableFolder, args.CoreWebView2UserDataFolder, args.CoreWebView2EnvironmentOptions);
+
 #if WEBVIEW2_MAUI
 				.AsTask()
 #endif
