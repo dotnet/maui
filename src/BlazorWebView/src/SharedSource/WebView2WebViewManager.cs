@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		{
 			CoreWebView2EnvironmentOptions options = new CoreWebView2EnvironmentOptions();
 #if (WEBVIEW2_WPF)
-			var args = new WebViewInitEventArgs(options, BlazorWebView.InitializingWebViewEvent);
+			var args = new WebViewInitEventArgs(options, Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.InitializingWebViewEvent);
 			_webView2Init(args);
 #else
 			var args = new WebViewInitEventArgs(options);

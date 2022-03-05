@@ -17,20 +17,21 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		: EventArgs
 #endif
 	{
+#if(WEBVIEW2_WPF)
 		/// <summary>
 		/// Creates the event args for the WebView2 initalization.
 		/// </summary>
 		/// <param name="coreWebView2EnvironmentOptions">The options</param>
-#if (WEBVIEW2_WPF)
 		/// <param name="routedEvent">The <see cref="RoutedEvent"/> source. </param>
-#endif
 		internal WebViewInitEventArgs(CoreWebView2EnvironmentOptions coreWebView2EnvironmentOptions
-#if (WEBVIEW2_WPF)
 			, RoutedEvent routedEvent)
 			: base(routedEvent)
 #else
-			)
-			: base()
+		/// <summary>
+		/// Creates the event args for the WebView2 initalization.
+		/// </summary>
+		/// <param name="coreWebView2EnvironmentOptions">The options</param>
+		internal WebViewInitEventArgs(CoreWebView2EnvironmentOptions coreWebView2EnvironmentOptions)
 #endif
 
 		{
@@ -73,11 +74,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		public string CoreWebView2UserDataFolder { get; set; } = null;
 
 #if (WEBVIEW2_WPF)
+
+		/// <inheritdoc />
 		protected override void InvokeEventHandler(Delegate genericHandler, object genericTarget)
 		{
-			var handler = (InitializingWebViewEventHandler)genericHandler;
+			var handler = (Microsoft.AspNetCore.Components.WebView.Wpf.InitializingWebViewEventHandler)genericHandler;
 			handler(genericTarget, this);
 		}
-# endif
+#endif
 	}
 }

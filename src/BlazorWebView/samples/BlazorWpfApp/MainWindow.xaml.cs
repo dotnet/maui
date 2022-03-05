@@ -3,6 +3,7 @@
 
 using System.Windows;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.DependencyInjection;
 using WebViewAppShared;
 
@@ -45,7 +46,7 @@ namespace BlazorWpfApp
 			blazorWebView1.WebView.CoreWebView2.ExecuteScriptAsync("alert('hello from native UI')");
 		}
 
-		private void OnInitializingWebView(object sender, Microsoft.AspNetCore.Components.WebView.Wpf.WebViewInitEventArgs e)
+		private void OnInitializingWebView(object sender, WebViewInitEventArgs e)
 		{
 			// Pressing F12 will make infinite load animation / not found error.
 			e.CoreWebView2EnvironmentOptions.AdditionalBrowserArguments = "--custom-devtools-frontend=http://invalid-url";

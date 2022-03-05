@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 		#endregion
 
-		private const string webViewTemplateChildName = "WebView";
+		private const string WebViewTemplateChildName = "WebView";
 		private WebView2Control _webview;
 		private WebView2WebViewManager _webviewManager;
 		private bool _isDisposed;
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			if (_webview == null)
 			{
-				_webview = (WebView2Control)GetTemplateChild(webViewTemplateChildName);
+				_webview = (WebView2Control)GetTemplateChild(WebViewTemplateChildName);
 				StartWebViewCoreIfPossible();
 			}
 		}
