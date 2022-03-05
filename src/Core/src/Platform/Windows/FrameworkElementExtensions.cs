@@ -10,6 +10,8 @@ using Microsoft.UI.Xaml.Media;
 using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using System.Threading.Tasks;
+using WPoint = Windows.Foundation.Point;
 
 namespace Microsoft.Maui.Platform
 {
@@ -77,6 +79,11 @@ namespace Microsoft.Maui.Platform
 				throw new ArgumentNullException(nameof(element));
 
 			element.SetBinding(GetForegroundProperty(element), binding);
+		}
+
+		public static void UpdateVerticalTextAlignment(this Control platformControl, ITextAlignment textAlignment)
+		{
+			platformControl.VerticalAlignment = textAlignment.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
 		internal static IEnumerable<T?> GetDescendantsByName<T>(this DependencyObject parent, string elementName) where T : DependencyObject
@@ -188,6 +195,123 @@ namespace Microsoft.Maui.Platform
 						yield return subChild;
 				}
 			}
+		}
+
+		internal static bool IsLoaded(this FrameworkElement frameworkElement) =>
+			frameworkElement.IsLoaded;
+
+		internal static IDisposable OnLoaded(this FrameworkElement frameworkElement, Action action)
+		{
+			if (frameworkElement.IsLoaded())
+			{
+				action();
+				return new ActionDisposable(() => { });
+			}
+
+			RoutedEventHandler? routedEventHandler = null;
+			ActionDisposable disposable = new ActionDisposable(() =>
+			{
+				if (routedEventHandler != null)
+					frameworkElement.Loaded -= routedEventHandler;
+			});
+
+			routedEventHandler = (_, __) =>
+			{
+				disposable.Dispose();
+				action();
+			};
+
+			frameworkElement.Loaded += routedEventHandler;
+			return disposable;
+		}
+
+		internal static IDisposable OnUnloaded(this FrameworkElement frameworkElement, Action action)
+		{
+			if (!frameworkElement.IsLoaded())
+			{
+				action();
+				return new ActionDisposable(() => { });
+			}
+
+			RoutedEventHandler? routedEventHandler = null;
+			ActionDisposable disposable = new ActionDisposable(() =>
+			{
+				if (routedEventHandler != null)
+					frameworkElement.Unloaded -= routedEventHandler;
+			});
+
+			routedEventHandler = (_, __) =>
+			{
+				disposable.Dispose();
+				action();
+			};
+
+			frameworkElement.Unloaded += routedEventHandler;
+
+			return disposable;
+		}
+
+		internal static void Arrange(this IView view, FrameworkElement frameworkElement)
+		{
+			var rect = new Graphics.Rect(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight);
+
+			if (!view.Frame.Equals(rect))
+				view.Arrange(rect);
+		}
+
+
+		internal static void SetApplicationResource(this FrameworkElement frameworkElement, string propertyKey, object? value)
+		{
+			if (value is null)
+			{
+				if (Application.Current.Resources.TryGetValue(propertyKey, out value))
+				{
+					frameworkElement.Resources[propertyKey] = value;
+				}
+				else
+				{
+					frameworkElement.Resources.Remove(propertyKey);
+				}
+			}
+			else
+			{
+				frameworkElement.Resources[propertyKey] = value;
+			}
+		}
+
+		internal static WPoint? GetLocationOnScreen(this UIElement element)
+		{
+			var ttv = element.TransformToVisual(element.XamlRoot.Content);
+			WPoint screenCoords = ttv.TransformPoint(new WPoint(0, 0));
+			return new WPoint(screenCoords.X, screenCoords.Y);
+		}
+
+		internal static WPoint? GetLocationOnScreen(this IElement element)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			var view = element.ToPlatform();
+			return
+				view.GetLocationRelativeTo(view.XamlRoot.Content);
+		}
+
+		internal static WPoint? GetLocationRelativeTo(this UIElement element, UIElement relativeTo)
+		{
+			var ttv = element.TransformToVisual(relativeTo);
+			WPoint screenCoords = ttv.TransformPoint(new WPoint(0, 0));
+			return new WPoint(screenCoords.X, screenCoords.Y);
+		}
+
+		internal static WPoint? GetLocationRelativeTo(this IElement element, UIElement relativeTo)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			return
+				element
+					.ToPlatform()
+					.GetLocationRelativeTo(relativeTo);
 		}
 	}
 }

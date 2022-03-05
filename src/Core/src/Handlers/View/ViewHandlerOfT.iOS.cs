@@ -1,15 +1,10 @@
 using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
-using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
+	public partial class ViewHandler<TVirtualView, TPlatformView> : IPlatformViewHandler
 	{
-		UIView? INativeViewHandler.NativeView => this.GetWrappedNativeView();
-		UIView? INativeViewHandler.ContainerView => ContainerView;
-
 		public new WrapperView? ContainerView
 		{
 			get => (WrapperView?)base.ContainerView;
@@ -18,90 +13,24 @@ namespace Microsoft.Maui.Handlers
 
 		public UIViewController? ViewController { get; set; }
 
-		public override void NativeArrange(Rectangle rect)
-		{
-			var nativeView = this.GetWrappedNativeView();
+		public override void PlatformArrange(Rect rect) =>
+			this.PlatformArrangeHandler(rect);
 
-			if (nativeView == null)
-				return;
-
-			// We set Center and Bounds rather than Frame because Frame is undefined if the CALayer's transform is 
-			// anything other than the identity (https://developer.apple.com/documentation/uikit/uiview/1622459-transform)
-			nativeView.Center = new CoreGraphics.CGPoint(rect.Center.X, rect.Center.Y);
-
-			// The position of Bounds is usually (0,0), but in some cases (e.g., UIScrollView) it's the content offset.
-			// So just leave it a whatever value iOS thinks it should be.
-			nativeView.Bounds = new CoreGraphics.CGRect(nativeView.Bounds.X, nativeView.Bounds.Y, rect.Width, rect.Height);
-
-			Invoke(nameof(IView.Frame), rect);
-		}
-
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			var nativeView = this.GetWrappedNativeView();
-
-			if (nativeView == null)
-			{
-				return new Size(widthConstraint, heightConstraint);
-			}
-
-			var sizeThatFits = nativeView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
-
-			var size = new Size(
-				sizeThatFits.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Width,
-				sizeThatFits.Height == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Height);
-
-			if (double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
-			{
-				nativeView.SizeToFit();
-				size = new Size(nativeView.Frame.Width, nativeView.Frame.Height);
-			}
-
-			var finalWidth = ResolveConstraints(size.Width, VirtualView.Width, VirtualView.MinimumWidth, VirtualView.MaximumWidth);
-			var finalHeight = ResolveConstraints(size.Height, VirtualView.Height, VirtualView.MinimumHeight, VirtualView.MaximumHeight);
-
-			return new Size(finalWidth, finalHeight);
-		}
-
-		double ResolveConstraints(double measured, double exact, double min, double max)
-		{
-			var resolved = measured;
-
-			if (IsExplicitSet(exact))
-			{
-				// If an exact value has been specified, try to use that
-				resolved = exact;
-			}
-
-			if (resolved > max)
-			{
-				// Apply the max value constraint (if any)
-				// If the exact value is in conflict with the max value, the max value should win
-				resolved = max;
-			}
-
-			if (resolved < min)
-			{
-				// Apply the min value constraint (if any)
-				// If the exact or max value is in conflict with the min value, the min value should win
-				resolved = min;
-			}
-
-			return resolved;
-		}
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
+			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 
 		protected override void SetupContainer()
 		{
-			if (NativeView == null || ContainerView != null)
+			if (PlatformView == null || ContainerView != null)
 				return;
 
-			var oldParent = (UIView?)NativeView.Superview;
+			var oldParent = (UIView?)PlatformView.Superview;
 
-			var oldIndex = oldParent?.IndexOfSubview(NativeView);
-			NativeView.RemoveFromSuperview();
+			var oldIndex = oldParent?.IndexOfSubview(PlatformView);
+			PlatformView.RemoveFromSuperview();
 
-			ContainerView ??= new WrapperView(NativeView.Bounds);
-			ContainerView.AddSubview(NativeView);
+			ContainerView ??= new WrapperView(PlatformView.Bounds);
+			ContainerView.AddSubview(PlatformView);
 
 			if (oldIndex is int idx && idx >= 0)
 				oldParent?.InsertSubview(ContainerView, idx);
@@ -111,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void RemoveContainer()
 		{
-			if (NativeView == null || ContainerView == null || NativeView.Superview != ContainerView)
+			if (PlatformView == null || ContainerView == null || PlatformView.Superview != ContainerView)
 				return;
 
 			var oldParent = (UIView?)ContainerView.Superview;
@@ -122,9 +51,9 @@ namespace Microsoft.Maui.Handlers
 			ContainerView = null;
 
 			if (oldIndex is int idx && idx >= 0)
-				oldParent?.InsertSubview(NativeView, idx);
+				oldParent?.InsertSubview(PlatformView, idx);
 			else
-				oldParent?.AddSubview(NativeView);
+				oldParent?.AddSubview(PlatformView);
 		}
 	}
 }

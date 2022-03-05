@@ -20,8 +20,6 @@ namespace Microsoft.Maui.Platform
 	public class MauiSwipeView : ContentViewGroup
 	{
 		const float OpenSwipeThresholdPercentage = 0.6f; // 60%
-		const int SwipeThreshold = 250;
-		internal const int SwipeItemWidth = 100;
 		const long SwipeAnimationDuration = 200;
 
 		readonly Dictionary<ISwipeItem, object> _swipeItems;
@@ -214,7 +212,7 @@ namespace Microsoft.Maui.Platform
 				return false;
 			});
 
-			if(parentFound != null)
+			if (parentFound != null)
 			{
 				itemContentView?.CallOnClick();
 			}
@@ -231,7 +229,7 @@ namespace Microsoft.Maui.Platform
 
 
 			if (Element?.PresentedContent is IView view)
-				_contentView = view.ToNative(MauiContext);
+				_contentView = view.ToPlatform(MauiContext);
 			else
 				_contentView = CreateEmptyContent();
 
@@ -241,7 +239,7 @@ namespace Microsoft.Maui.Platform
 		AView CreateEmptyContent()
 		{
 			var emptyContentView = new AView(_context);
-			emptyContentView.SetBackgroundColor(Colors.Transparent.ToNative());
+			emptyContentView.SetBackgroundColor(Colors.Transparent.ToPlatform());
 
 			return emptyContentView;
 		}
@@ -532,7 +530,7 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var item in items)
 			{
-				AView swipeItem = item.ToNative(MauiContext);
+				AView swipeItem = item.ToPlatform(MauiContext);
 
 				if (item is ISwipeItemView formsSwipeItemView)
 				{
@@ -613,7 +611,7 @@ namespace Microsoft.Maui.Platform
 
 			_swipeItems.TryGetValue(item, out object? view);
 
-			if (view != null && view is AView nativeView)
+			if (view != null && view is AView platformView)
 			{
 				_swipeThreshold = 0;
 				LayoutSwipeItems(GetNativeSwipeItems());
@@ -642,7 +640,7 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateSwipeItemViewLayout(ISwipeItemView swipeItemView)
 		{
-			swipeItemView?.Handler?.GetWrappedNativeView()?.InvalidateMeasure(swipeItemView);
+			swipeItemView?.Handler?.ToPlatform().InvalidateMeasure(swipeItemView);
 		}
 
 		internal void UpdateIsSwipeEnabled(bool isEnabled)
@@ -707,12 +705,12 @@ namespace Microsoft.Maui.Platform
 				{
 					case SwipeDirection.Left:
 						_contentView.Animate()?.TranslationX(offset)?.SetDuration(swipeAnimationDuration);
-						actionSize = (int)_context.ToPixels(Element.RightItems.Count * SwipeItemWidth);
+						actionSize = (int)_context.ToPixels(Element.RightItems.Count * SwipeViewExtensions.SwipeItemWidth);
 						_actionView.Animate()?.TranslationX(actionSize - Math.Abs(offset))?.SetDuration(swipeAnimationDuration);
 						break;
 					case SwipeDirection.Right:
 						_contentView.Animate()?.TranslationX(offset)?.SetDuration(swipeAnimationDuration);
-						actionSize = (int)_context.ToPixels(Element.LeftItems.Count * SwipeItemWidth);
+						actionSize = (int)_context.ToPixels(Element.LeftItems.Count * SwipeViewExtensions.SwipeItemWidth);
 						_actionView.Animate()?.TranslationX(-actionSize + offset)?.SetDuration(swipeAnimationDuration);
 						break;
 					case SwipeDirection.Up:
@@ -835,12 +833,12 @@ namespace Microsoft.Maui.Platform
 				{
 					case SwipeDirection.Left:
 						_contentView.Animate()?.TranslationX(-swipeThreshold)?.SetDuration(completeAnimationDuration)?.WithEndAction(new Java.Lang.Runnable(() => { _isSwiping = false; }));
-						actionSize = (int)_context.ToPixels(Element.RightItems.Count * SwipeItemWidth);
+						actionSize = (int)_context.ToPixels(Element.RightItems.Count * SwipeViewExtensions.SwipeItemWidth);
 						_actionView.Animate()?.TranslationX(actionSize - swipeThreshold)?.SetDuration(completeAnimationDuration);
 						break;
 					case SwipeDirection.Right:
 						_contentView.Animate()?.TranslationX(swipeThreshold)?.SetDuration(completeAnimationDuration)?.WithEndAction(new Java.Lang.Runnable(() => { _isSwiping = false; }));
-						actionSize = (int)_context.ToPixels(Element.LeftItems.Count * SwipeItemWidth);
+						actionSize = (int)_context.ToPixels(Element.LeftItems.Count * SwipeViewExtensions.SwipeItemWidth);
 						_actionView.Animate()?.TranslationX(-actionSize + swipeThreshold)?.SetDuration(completeAnimationDuration);
 						break;
 					case SwipeDirection.Up:
@@ -1005,7 +1003,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var swipeItems = GetSwipeItemsByDirection();
 			if (swipeItems == null)
-				return SwipeThreshold;
+				return SwipeViewExtensions.SwipeThreshold;
 
 			float swipeItemsHeight = 0;
 			float swipeItemsWidth = 0;
@@ -1041,7 +1039,7 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			return SwipeThreshold;
+			return SwipeViewExtensions.SwipeThreshold;
 		}
 
 
@@ -1050,7 +1048,7 @@ namespace Microsoft.Maui.Platform
 			var swipeItems = GetSwipeItemsByDirection();
 
 			if (swipeItems == null)
-				return SwipeThreshold;
+				return SwipeViewExtensions.SwipeThreshold;
 
 			bool isHorizontal = IsHorizontalSwipe();
 
@@ -1090,7 +1088,7 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			return SwipeThreshold;
+			return SwipeViewExtensions.SwipeThreshold;
 		}
 
 
@@ -1136,7 +1134,7 @@ namespace Microsoft.Maui.Platform
 			{
 				if (swipeItem is ISwipeItem)
 				{
-					return new Size(items.Mode == SwipeMode.Execute ? (threshold > 0 ? threshold : contentWidth) / items.Count : (threshold < SwipeItemWidth ? SwipeItemWidth : threshold), contentHeight);
+					return new Size(items.Mode == SwipeMode.Execute ? (threshold > 0 ? threshold : contentWidth) / items.Count : (threshold < SwipeViewExtensions.SwipeItemWidth ? SwipeViewExtensions.SwipeItemWidth : threshold), contentHeight);
 				}
 
 				if (swipeItem is ISwipeItemView horizontalSwipeItemView)
@@ -1148,7 +1146,7 @@ namespace Microsoft.Maui.Platform
 					if (swipeItemViewSizeRequest.Width > 0)
 						swipeItemWidth = threshold > swipeItemViewSizeRequest.Width ? threshold : (float)swipeItemViewSizeRequest.Width;
 					else
-						swipeItemWidth = threshold > SwipeItemWidth ? threshold : SwipeItemWidth;
+						swipeItemWidth = threshold > SwipeViewExtensions.SwipeItemWidth ? threshold : SwipeViewExtensions.SwipeItemWidth;
 
 					return new Size(swipeItemWidth, contentHeight);
 				}

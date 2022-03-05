@@ -14,8 +14,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		// These tests need a real collection to work with; we can't reasonably use a substitute here
 		class FakeLayout : ILayout, IList<IView>
 		{
-			#region IView stuff
+			public bool ClipsToBounds { get; set; }
 
+
+			#region IView stuff
+			
 			public string AutomationId { get; }
 			public FlowDirection FlowDirection { get; }
 			public LayoutAlignment HorizontalLayoutAlignment { get; }
@@ -24,10 +27,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			public IShape Clip { get; }
 			public IShadow Shadow { get; }
 			public bool IsEnabled { get; }
+			public bool IsFocused { get; set; }
 			public Visibility Visibility { get; }
 			public double Opacity { get; }
 			public Paint Background { get; }
-			public Rectangle Frame { get; set; }
+			public Rect Frame { get; set; }
 			public double Width { get; }
 			public double MinimumWidth { get; }
 			public double MaximumWidth { get; }
@@ -51,6 +55,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			public double AnchorY { get; }
 			public bool IgnoreSafeArea { get; }
 			public Thickness Padding { get; }
+			public bool InputTransparent { get; set; }
 			IElementHandler IElement.Handler { get; set; }
 
 			public void InvalidateArrange()
@@ -66,6 +71,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			public Size Measure(double widthConstraint, double heightConstraint)
 			{
 				throw new System.NotImplementedException();
+			}
+
+			public bool Focus() => false;
+
+			public void Unfocus()
+			{
 			}
 
 			#endregion
@@ -85,7 +96,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				_views.Add(item);
 			}
 
-			public Size Arrange(Rectangle bounds)
+			public Size Arrange(Rect bounds)
 			{
 				throw new System.NotImplementedException();
 			}
@@ -105,7 +116,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				_views.CopyTo(array, arrayIndex);
 			}
 
-			public Size CrossPlatformArrange(Rectangle bounds)
+			public Size CrossPlatformArrange(Rect bounds)
 			{
 				throw new System.NotImplementedException();
 			}

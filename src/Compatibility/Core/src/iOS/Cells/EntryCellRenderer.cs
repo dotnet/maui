@@ -9,6 +9,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.EntryCellRenderer instead")]
 	public class EntryCellRenderer : CellRenderer
 	{
 		static readonly Color DefaultTextColor = ColorExtensions.LabelColor.ToColor();
@@ -95,7 +96,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		static void UpdateHorizontalTextAlignment(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			IViewController viewController = entryCell.Parent as View;
-			cell.TextField.TextAlignment = entryCell.HorizontalTextAlignment.ToNativeTextAlignment(viewController?.EffectiveFlowDirection ?? default(EffectiveFlowDirection));
+			cell.TextField.TextAlignment = entryCell.HorizontalTextAlignment.ToPlatformTextAlignment(viewController?.EffectiveFlowDirection ?? default(EffectiveFlowDirection));
 		}
 
 		static void UpdateIsEnabled(EntryCellTableViewCell cell, EntryCell entryCell)

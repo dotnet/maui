@@ -36,7 +36,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 				return true;
 			}
 
-			return item.Date.DayOfWeek.ToString().ToLower().Contains(filter.ToLower());
+			return item.Date.DayOfWeek.ToString().Contains(filter, StringComparison.OrdinalIgnoreCase);
 		}
 	}
 

@@ -14,15 +14,12 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 		[SetUp]
 		public void SetUp()
 		{
-			Device.PlatformServices = new MockPlatformServices();
-			Internals.Registrar.RegisterAll(new Type[0]);
 			ApplicationExtensions.CreateAndSetMockApplication();
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
-			Device.PlatformServices = null;
 			Application.ClearCurrent();
 		}
 

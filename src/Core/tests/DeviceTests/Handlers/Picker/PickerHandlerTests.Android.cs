@@ -77,16 +77,16 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = picker.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
+			Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
 		}
 
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
-			pickerHandler.NativeView;
+			pickerHandler.PlatformView;
 
 		string GetNativeTitle(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Hint;

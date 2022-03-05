@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
@@ -490,6 +491,55 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			});
 		}
 
+		public static DataTemplate GroupItemTemplate()
+		{
+			return new DataTemplate(() =>
+			{
+				var templateLayout = new StackLayout();
+
+				var label = new Label
+				{
+					Margin = new Thickness(5, 0, 0, 0),
+				};
+				label.SetBinding(Label.TextProperty, new Binding("Name"));
+
+				templateLayout.Children.Add(label);
+
+				return templateLayout;
+			});
+		}
+
+		public static DataTemplate GroupHeaderTemplate()
+		{
+			return new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					BackgroundColor = Colors.LightGreen,
+					FontSize = 16,
+					FontAttributes = FontAttributes.Bold,
+				};
+				label.SetBinding(Label.TextProperty, new Binding("Name"));
+
+				return label;
+			});
+		}
+
+		public static DataTemplate GroupFooterTemplate()
+		{
+			return new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					BackgroundColor = Colors.Orange,
+					Margin = new Thickness(0, 0, 0, 15),
+				};
+				label.SetBinding(Label.TextProperty, new Binding("Count", stringFormat: "Total members: {0:D}"));
+
+				return label;
+			});
+		}
+
 		static void More_Clicked(object sender, EventArgs e)
 		{
 			throw new NotImplementedException();
@@ -498,20 +548,12 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 		static string DefaultFontFamily()
 		{
 			var fontFamily = "";
-			switch (Device.RuntimePlatform)
-			{
-				case Device.iOS:
-					fontFamily = "Ionicons";
-					break;
-				case Device.UWP:
-					fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
-					break;
-				case Device.Android:
-				default:
-					fontFamily = "fonts/ionicons.ttf#";
-					break;
-			}
-
+			if (DeviceInfo.Platform == DevicePlatform.iOS)
+				fontFamily = "Ionicons";
+			else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
+			else
+				fontFamily = "fonts/ionicons.ttf#";
 			return fontFamily;
 		}
 

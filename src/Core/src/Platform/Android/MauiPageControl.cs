@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Platform
 			if (layout == null || _indicatorView?.Handler?.MauiContext == null)
 				return;
 
-			AView? handler = layout.ToNative(_indicatorView.Handler.MauiContext);
+			AView? handler = layout.ToPlatform(_indicatorView.Handler.MauiContext);
 
 			RemoveAllViews();
 			AddView(handler);
@@ -122,14 +122,14 @@ namespace Microsoft.Maui.Platform
 			if (indicatorColor is SolidPaint indicatorPaint)
 			{
 				if (indicatorPaint.Color is Color c)
-					_pageShape = GetShape(c.ToNative());
+					_pageShape = GetShape(c.ToPlatform());
 
 			}
 			var indicatorPositionColor = _indicatorView.SelectedIndicatorColor;
 			if (indicatorPositionColor is SolidPaint indicatorPositionPaint)
 			{
 				if (indicatorPositionPaint.Color is Color c)
-					_currentPageShape = GetShape(c.ToNative());
+					_currentPageShape = GetShape(c.ToPlatform());
 			}
 		}
 

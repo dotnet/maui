@@ -1,7 +1,6 @@
-using Android.Content.Res;
 using Android.Graphics.Drawables;
+using Android.Nfc.CardEmulators;
 using Android.Widget;
-using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 
@@ -9,31 +8,43 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, ASwitch>
 	{
-		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
-		static ColorStateList? DefaultTrackColorStateList { get; set; }
-		static ColorStateList? DefaultThumbColorStateList { get; set; }
+		Drawable? _defaultTrackDrawable;
+		Drawable? _defaultThumbDrawable;
 
-		protected override ASwitch CreateNativeView()
+		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
+
+		protected override ASwitch CreatePlatformView()
 		{
 			return new ASwitch(Context);
 		}
 
-		protected override void ConnectHandler(ASwitch nativeView)
+		protected override void ConnectHandler(ASwitch platformView)
 		{
 			ChangeListener.Handler = this;
-			nativeView.SetOnCheckedChangeListener(ChangeListener);
+			platformView.SetOnCheckedChangeListener(ChangeListener);
+
+			base.ConnectHandler(platformView);
+			SetupDefaults(platformView);
 		}
 
-		protected override void DisconnectHandler(ASwitch nativeView)
+		protected override void DisconnectHandler(ASwitch platformView)
 		{
 			ChangeListener.Handler = null;
-			nativeView.SetOnCheckedChangeListener(null);
+			platformView.SetOnCheckedChangeListener(null);
+
+			_defaultTrackDrawable?.Dispose();
+			_defaultTrackDrawable = null;
+
+			_defaultThumbDrawable?.Dispose();
+			_defaultThumbDrawable = null;
+
+			base.DisconnectHandler(platformView);
 		}
 
-		void SetupDefaults(ASwitch nativeView)
+		void SetupDefaults(ASwitch platformView)
 		{
-			DefaultTrackColorStateList = nativeView.GetDefaultSwitchTrackColorStateList();
-			DefaultThumbColorStateList = nativeView.GetDefaultSwitchThumbColorStateList();
+			_defaultTrackDrawable = platformView.GetDefaultSwitchTrackDrawable();
+			_defaultThumbDrawable = platformView.GetDefaultSwitchThumbDrawable();
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -53,19 +64,21 @@ namespace Microsoft.Maui.Handlers
 			return size;
 		}
 
-		public static void MapIsOn(SwitchHandler handler, ISwitch view)
+		public static void MapIsOn(ISwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateIsOn(view);
+			handler.PlatformView?.UpdateIsOn(view);
 		}
 
-		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
+		public static void MapTrackColor(ISwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateTrackColor(view, DefaultTrackColorStateList);
+			if (handler is SwitchHandler platformHandler)
+				handler.PlatformView?.UpdateTrackColor(view, platformHandler._defaultTrackDrawable);
 		}
 
-		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
+		public static void MapThumbColor(ISwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateThumbColor(view, DefaultThumbColorStateList);
+			if (handler is SwitchHandler platformHandler)
+				handler.PlatformView?.UpdateThumbColor(view, platformHandler._defaultThumbDrawable);
 		}
 
 		void OnCheckedChanged(bool isOn)

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
@@ -69,10 +70,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					Glyph = fontImageSource.Glyph,
 					FontSize = fontImageSource.Size,
-					Foreground = fontImageSource.Color.ToNative()
+					Foreground = fontImageSource.Color.ToPlatform()
 				};
 
-				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily();
+				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily(fontImageSource.RequireFontManager());
 
 				if (!string.IsNullOrEmpty(uwpFontFamily.Source))
 					((WFontIconSource)image).FontFamily = uwpFontFamily;
@@ -91,10 +92,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					Glyph = fontImageSource.Glyph,
 					FontSize = fontImageSource.Size,
-					Foreground = fontImageSource.Color.ToNative()
+					Foreground = fontImageSource.Color.ToPlatform()
 				};
 
-				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily();
+				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily(fontImageSource.RequireFontManager());
 
 				if (!string.IsNullOrEmpty(uwpFontFamily.Source))
 					((FontIcon)image).FontFamily = uwpFontFamily;
@@ -108,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (fontImageSource == null)
 				return string.Empty;
 
-			var fontFamily = fontImageSource.FontFamily.ToFontFamily();
+			var fontFamily = fontImageSource.FontFamily.ToFontFamily(fontImageSource.RequireFontManager());
 
 			string fontSource = fontFamily.Source;
 
@@ -123,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				foreach(var family in allFamilies)
 				{
-					if(family.Contains(source))
+					if(family.Contains(source, StringComparison.Ordinal))
 					{
 						fontSource = family;
 						break;

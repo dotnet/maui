@@ -1,14 +1,13 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Compass
+	public partial class CompassImplementation : ICompass
 	{
-		internal static bool IsSupported =>
+		bool PlatformIsSupported => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter) =>
-			throw ExceptionUtils.NotSupportedOrImplementedException;
-
-		internal static void PlatformStop() =>
+		void PlatformStop() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

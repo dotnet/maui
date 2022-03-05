@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 #if UITEST
@@ -93,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			layout.Children.Add(_result);
 			layout.Children.Add(button);
 
-			if (Device.RuntimePlatform == Device.UWP)
+			if (DeviceInfo.Platform == DevicePlatform.WinUI)
 				layout.Children.Add(new Label { Text = "\xE76E", FontFamily = "Segoe MDL2 Assets", FontSize = 32 });
 
 			Content = layout;

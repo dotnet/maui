@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Android.Animation;
 using Android.Content;
+using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
@@ -119,6 +120,24 @@ namespace Microsoft.Maui.Platform
 						_hScrollView.RemoveFromParent();
 					AddView(_content);
 				}
+			}
+		}
+
+		public override void Draw(Canvas? canvas)
+		{
+			try
+			{
+				if (canvas != null)
+					canvas.ClipRect(canvas.ClipBounds);
+
+				base.Draw(canvas);
+			}
+			catch (Java.Lang.NullPointerException)
+			{
+				// This will most likely never run since UpdateScrollBars is called 
+				// when the scrollbars visibilities are updated but I left it here
+				// just in case there's an edge case that causes an exception
+				this.HandleScrollBarVisibilityChange();
 			}
 		}
 
@@ -297,6 +316,24 @@ namespace Microsoft.Maui.Platform
 
 		internal bool IsBidirectional { get; set; }
 
+		public override void Draw(Canvas? canvas)
+		{
+			try
+			{
+				if (canvas != null)
+					canvas.ClipRect(canvas.ClipBounds);
+
+				base.Draw(canvas);
+			}
+			catch (Java.Lang.NullPointerException)
+			{
+				// This will most likely never run since UpdateScrollBars is called 
+				// when the scrollbars visibilities are updated but I left it here
+				// just in case there's an edge case that causes an exception
+				this.HandleScrollBarVisibilityChange();
+			}
+		}
+
 		public override bool OnInterceptTouchEvent(MotionEvent? ev)
 		{
 			if (ev == null || _parentScrollView == null)
@@ -304,7 +341,7 @@ namespace Microsoft.Maui.Platform
 
 			// TODO ezhart 2021-07-12 The previous version of this checked _renderer.Element.InputTransparent; we don't have acces to that here,
 			// and I'm not sure it even applies. We need to determine whether touch events will get here at all if we've marked the ScrollView InputTransparent
-			// We _should_ be able to deal with it at the handler level by force-setting an OnTouchListener for the NativeView that always returns false; then we
+			// We _should_ be able to deal with it at the handler level by force-setting an OnTouchListener for the PlatformView that always returns false; then we
 			// can just stop worrying about it here because the touches _can't_ reach this.
 
 			// set the start point for the bidirectional scroll; 

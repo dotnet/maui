@@ -15,19 +15,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void Subscribe(Window window)
 		{
-			var nativeWindow = window.MauiContext.GetNativeWindow();
+			var platformWindow = window.MauiContext.GetPlatformWindow();
 
-			if (Subscriptions.Any(s => s.Window == nativeWindow))
+			if (Subscriptions.Any(s => s.Window == platformWindow))
 				return;
 
-			Subscriptions.Add(new AlertRequestHelper(nativeWindow, window.MauiContext));
+			Subscriptions.Add(new AlertRequestHelper(platformWindow, window.MauiContext));
 		}
 
 		internal void Unsubscribe(Window window)
 		{
-			var nativeWindow = window.MauiContext.GetNativeWindow();
+			var platformWindow = window.MauiContext.GetPlatformWindow();
 
-			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
+			var toRemove = Subscriptions.Where(s => s.Window == platformWindow).ToList();
 
 			foreach (AlertRequestHelper alertRequestHelper in toRemove)
 			{
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				try
 				{
-					var pageParent = sender.ToNative(MauiContext).Parent as FrameworkElement;
+					var pageParent = sender.ToPlatform(MauiContext).Parent as FrameworkElement;
 
 					if (pageParent != null)
 						actionSheet.ShowAt(pageParent);

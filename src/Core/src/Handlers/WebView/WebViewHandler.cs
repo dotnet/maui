@@ -1,29 +1,55 @@
-﻿#if __ANDROID__
+﻿#if __IOS__ || MACCATALYST
+using PlatformView = WebKit.WKWebView;
+#elif MONOANDROID
+using PlatformView = Android.Webkit.WebView;
+#elif WINDOWS
+using PlatformView = Microsoft.UI.Xaml.Controls.WebView2;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
+
+#if __ANDROID__
 using Android.Webkit;
+#elif __IOS__
+using WebKit;
 #endif
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class WebViewHandler
+	public partial class WebViewHandler : IWebViewHandler
 	{
-		public static PropertyMapper<IWebView, WebViewHandler> WebViewMapper = new PropertyMapper<IWebView, WebViewHandler>(ViewHandler.ViewMapper)
+		public static PropertyMapper<IWebView, IWebViewHandler> Mapper = new PropertyMapper<IWebView, IWebViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IWebView.Source)] = MapSource,
 #if __ANDROID__
 			[nameof(WebViewClient)] = MapWebViewClient,
 			[nameof(WebChromeClient)] = MapWebChromeClient,
 			[nameof(WebView.Settings)] =  MapWebViewSettings
+#elif __IOS__
+			[nameof(WKUIDelegate)] = MapWKUIDelegate,
 #endif
 		};
 
-		public WebViewHandler() : base(WebViewMapper)
+		public static CommandMapper<IWebView, IWebViewHandler> CommandMapper = new(ViewCommandMapper)
 		{
+			[nameof(IWebView.GoBack)] = MapGoBack,
+			[nameof(IWebView.GoForward)] = MapGoForward,
+			[nameof(IWebView.Reload)] = MapReload,
+			[nameof(IWebView.Eval)] = MapEval,
+			[nameof(IWebView.EvaluateJavaScriptAsync)] = MapEvaluateJavaScriptAsync,
+		};
 
+		public WebViewHandler() : base(Mapper, CommandMapper)
+		{
 		}
 
-		public WebViewHandler(PropertyMapper mapper) : base(mapper ?? WebViewMapper)
+		public WebViewHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
-
 		}
+
+		IWebView IWebViewHandler.VirtualView => VirtualView;
+
+		PlatformView IWebViewHandler.PlatformView => PlatformView;
 	}
 }

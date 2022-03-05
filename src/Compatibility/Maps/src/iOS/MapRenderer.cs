@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 		// For the time being, we don't want ViewRenderer handling disposal of the MKMapView
 		// if we're on iOS 9 or 10; during Dispose we'll be putting the MKMapView in a pool instead
 #if __MOBILE__
-		protected override bool ManageNativeControlLifetime => !FormsMaps.IsiOs9OrNewer;
+		protected override bool ManageNativeControlLifetime => false;
 #endif
 		protected override void Dispose(bool disposing)
 		{
@@ -89,12 +89,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				_mapClickedGestureRecognizer.Dispose();
 				_mapClickedGestureRecognizer = null;
 
-				if (FormsMaps.IsiOs9OrNewer)
-				{
-					// This renderer is done with the MKMapView; we can put it in the pool
-					// for other rendererers to use in the future
-					MapPool.Add(mkMapView);
-				}
+				// This renderer is done with the MKMapView; we can put it in the pool
+				// for other rendererers to use in the future
+				MapPool.Add(mkMapView);
 #endif
 				// For iOS versions < 9, the MKMapView will be disposed in ViewRenderer's Dispose method
 
@@ -141,11 +138,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				{
 					MKMapView mapView = null;
 #if __MOBILE__
-					if (FormsMaps.IsiOs9OrNewer)
-					{
-						// See if we've got an MKMapView available in the pool; if so, use it
-						mapView = MapPool.Get();
-					}
+					// See if we've got an MKMapView available in the pool; if so, use it
+					mapView = MapPool.Get();
 #endif
 					if (mapView == null)
 					{
@@ -415,14 +409,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 		void OnPinCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => PinCollectionChanged(e));
-			}
-			else
-			{
-				PinCollectionChanged(e);
-			}
+			BeginInvokeOnMainThread(() => PinCollectionChanged(e));
 		}
 
 		void PinCollectionChanged(NotifyCollectionChangedEventArgs e)
@@ -478,7 +465,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 		void UpdateIsShowingUser()
 		{
 #if __MOBILE__
-			if (FormsMaps.IsiOs8OrNewer && ((Map)Element).IsShowingUser)
+			if (((Map)Element).IsShowingUser)
 			{
 				_locationManager = new CLLocationManager();
 				_locationManager.RequestWhenInUseAuthorization();
@@ -505,14 +492,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 		void OnMapElementCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => MapElementCollectionChanged(e));
-			}
-			else
-			{
-				MapElementCollectionChanged(e);
-			}
+			BeginInvokeOnMainThread(() => MapElementCollectionChanged(e));
 		}
 
 		void MapElementCollectionChanged(NotifyCollectionChangedEventArgs e)

@@ -4,8 +4,8 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
-using Microsoft.AspNetCore.Components.WebView.WebView2.Internal;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
 using Windows.Storage.Streams;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
@@ -18,26 +18,46 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// </summary>
 	public class WinUIWebViewManager : WebView2WebViewManager
 	{
-		private readonly WebView2Control _nativeWebView2;
+		private readonly WebView2Control _webview;
 		private readonly string _hostPageRelativePath;
 		private readonly string _contentRootDir;
 
-		public WinUIWebViewManager(WebView2Control nativeWebView2, IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath, string contentRootDir)
-			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath)
+		/// <summary>
+		/// Initializes a new instance of <see cref="WinUIWebViewManager"/>
+		/// </summary>
+		/// <param name="webview">A <see cref="WebView2Control"/> to access platform-specific WebView2 APIs.</param>
+		/// <param name="services">A service provider containing services to be used by this class and also by application code.</param>
+		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
+		/// <param name="fileProvider">Provides static content to the webview.</param>
+		/// <param name="jsComponents">The <see cref="JSComponentConfigurationStore"/>.</param>
+		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
+		/// <param name="contentRootDir">Path to the directory containing application content files.</param>
+        /// <param name="webViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
+        public WinUIWebViewManager(
+			WebView2Control webview,
+			IServiceProvider services,
+			Dispatcher dispatcher,
+			IFileProvider fileProvider,
+			JSComponentConfigurationStore jsComponents,
+			string hostPageRelativePath,
+			string contentRootDir,
+			BlazorWebViewHandler webViewHandler)
+			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath, webViewHandler)
 		{
-			_nativeWebView2 = nativeWebView2;
+			_webview = webview;
 			_hostPageRelativePath = hostPageRelativePath;
 			_contentRootDir = contentRootDir;
 		}
 
-		protected override async Task HandleWebResourceRequest(ICoreWebView2WebResourceRequestedEventArgsWrapper eventArgs)
+		/// <inheritdoc />
+		protected override async Task HandleWebResourceRequest(CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
 			// Unlike server-side code, we get told exactly why the browser is making the request,
 			// so we can be smarter about fallback. We can ensure that 'fetch' requests never result
 			// in fallback, for example.
 			var allowFallbackOnHostPage =
-				eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Document ||
-				eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Other; // e.g., dev tools requesting page source
+				eventArgs.ResourceContext == CoreWebView2WebResourceContext.Document ||
+				eventArgs.ResourceContext == CoreWebView2WebResourceContext.Other; // e.g., dev tools requesting page source
 
 			// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
 			using var deferral = eventArgs.GetDeferral();
@@ -58,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				await ms.WriteAsync(memStream.GetWindowsRuntimeBuffer());
 
 				var headerString = GetHeaderString(headers);
-				eventArgs.SetResponse(ms, statusCode, statusMessage, headerString);
+				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(ms, statusCode, statusMessage, headerString);
 			}
 			else
 			{
@@ -71,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					{
 						relativePath = _hostPageRelativePath;
 					}
-					relativePath = Path.Combine("Assets", _contentRootDir, relativePath.Replace("/", "\\"));
+					relativePath = Path.Combine(_contentRootDir, relativePath.Replace('/', '\\'));
 
 					var winUIItem = await Package.Current.InstalledLocation.TryGetItemAsync(relativePath);
 					if (winUIItem != null)
@@ -83,7 +103,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						var headerString = GetHeaderString(headers);
 						var winUIFile = await Package.Current.InstalledLocation.GetFileAsync(relativePath);
 
-						eventArgs.SetResponse(await winUIFile.OpenReadAsync(), statusCode, statusMessage, headerString);
+						eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(await winUIFile.OpenReadAsync(), statusCode, statusMessage, headerString);
 					}
 				}
 			}
@@ -92,12 +112,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			deferral.Complete();
 		}
 
+		/// <inheritdoc />
 		protected override void QueueBlazorStart()
 		{
 			// In .NET MAUI we use autostart='false' for the Blazor script reference, so we start it up manually in this event
-			_nativeWebView2.CoreWebView2.DOMContentLoaded += async (_, __) =>
+			_webview.CoreWebView2.DOMContentLoaded += async (_, __) =>
 			{
-				await _nativeWebView2.CoreWebView2!.ExecuteScriptAsync(@"
+				await _webview.CoreWebView2!.ExecuteScriptAsync(@"
 					Blazor.start();
 					");
 			};

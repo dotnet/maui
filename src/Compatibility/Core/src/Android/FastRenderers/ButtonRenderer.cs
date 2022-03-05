@@ -72,6 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void IOnAttachStateChangeListener.OnViewDetachedFromWindow(AView detachedView) =>
 			_buttonLayoutManager.OnViewDetachedFromWindow(detachedView);
 
+		[PortHandler]
 		void IOnFocusChangeListener.OnFocusChange(AView v, bool hasFocus)
 		{
 			((IElementController)Button).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, hasFocus);
@@ -336,7 +337,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 			else
 			{
-				Typeface = font.ToTypeface();
+				Typeface = font.ToTypeface(Element.RequireFontManager());
 				SetTextSize(ComplexUnitType.Sp, (float)font.Size);
 			}
 		}

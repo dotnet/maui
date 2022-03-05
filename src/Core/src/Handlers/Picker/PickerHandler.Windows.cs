@@ -1,4 +1,6 @@
 #nullable enable
+using System;
+using System.Collections.Specialized;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 
@@ -8,87 +10,102 @@ namespace Microsoft.Maui.Handlers
 	{
 		WBrush? _defaultForeground;
 
-		protected override MauiComboBox CreateNativeView()
+		protected override MauiComboBox CreatePlatformView()
 		{
-			var nativePicker = new MauiComboBox();
+			var platformPicker = new MauiComboBox();
 
 			if (VirtualView != null)
-				nativePicker.ItemsSource = new ItemDelegateList<string>(VirtualView);
+				platformPicker.ItemsSource = new ItemDelegateList<string>(VirtualView);
 
-			return nativePicker;
+			return platformPicker;
 		}
 
-		protected override void ConnectHandler(MauiComboBox nativeView)
+		protected override void ConnectHandler(MauiComboBox platformView)
 		{
-			nativeView.SelectionChanged += OnControlSelectionChanged;
-			SetupDefaults(nativeView);
+			platformView.SelectionChanged += OnControlSelectionChanged;
+
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
+
+			SetupDefaults(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiComboBox nativeView)
+		protected override void DisconnectHandler(MauiComboBox platformView)
 		{
-			nativeView.SelectionChanged -= OnControlSelectionChanged;
+			platformView.SelectionChanged -= OnControlSelectionChanged;
+
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged -= OnRowsCollectionChanged;
 		}
 
-		void SetupDefaults(MauiComboBox nativeView)
+		void SetupDefaults(MauiComboBox platformView)
 		{
-			_defaultForeground = nativeView.Foreground;
+			_defaultForeground = platformView.Foreground;
 		}
 
-		void Reload()
+		static void Reload(IPickerHandler handler)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (handler.VirtualView == null || handler.PlatformView == null)
 				return;
-			NativeView.ItemsSource = new ItemDelegateList<string>(VirtualView);
+			handler.PlatformView.ItemsSource = new ItemDelegateList<string>(handler.VirtualView);
 		}
 
-		public static void MapReload(PickerHandler handler, IPicker picker, object? args) => handler.Reload();
+		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
-		public static void MapTitle(PickerHandler handler, IPicker picker) 
+		public static void MapTitle(IPickerHandler handler, IPicker picker) 
 		{
-			handler.NativeView?.UpdateTitle(picker);
+			handler.PlatformView?.UpdateTitle(picker);
 		}
 
-		public static void MapTitleColor(PickerHandler handler, IPicker picker)
+		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTitle(picker);
+			handler.PlatformView?.UpdateTitle(picker);
 		}
 
-		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
+		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateSelectedIndex(picker);
+			handler.PlatformView?.UpdateSelectedIndex(picker);
 		}
 
-		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker) 
+		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker) 
 		{
-			handler.NativeView?.UpdateCharacterSpacing(picker);
+			handler.PlatformView?.UpdateCharacterSpacing(picker);
 		}
 
-		public static void MapFont(PickerHandler handler, IPicker picker) 
+		public static void MapFont(IPickerHandler handler, IPicker picker) 
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(picker, fontManager);
+			handler.PlatformView?.UpdateFont(picker, fontManager);
 		}
 
-		public static void MapTextColor(PickerHandler handler, IPicker picker)
+		public static void MapTextColor(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTextColor(picker, handler._defaultForeground);
+			if (handler is PickerHandler platformHandler)
+			{
+				platformHandler.PlatformView?.UpdateTextColor(picker, platformHandler._defaultForeground);
+			}
 		}
 
-		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
+		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(picker);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(picker);
 		}
 		
-		public static void MapVerticalTextAlignment(PickerHandler handler, IPicker picker)
+		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateVerticalTextAlignment(picker);
+			handler.PlatformView?.UpdateVerticalTextAlignment(picker);
 		}
 
 		void OnControlSelectionChanged(object? sender, WSelectionChangedEventArgs e)
 		{
-			if (VirtualView != null && NativeView != null)
-				VirtualView.SelectedIndex = NativeView.SelectedIndex;
+			if (VirtualView != null && PlatformView != null)
+				VirtualView.SelectedIndex = PlatformView.SelectedIndex;
+		}
+
+		void OnRowsCollectionChanged(object? sender, EventArgs e)
+		{
+			Reload(this);
 		}
 	}
 }

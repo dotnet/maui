@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
@@ -7,6 +8,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer instead")]
 	public class TableViewRenderer : ViewRenderer<TableView, UITableView>
 	{
 		const int DefaultRowHeight = 44;
@@ -27,7 +29,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override void LayoutSubviews()
 		{
-			_insetTracker?.OnLayoutSubviews();
 			base.LayoutSubviews();
 
 			if (_previousFrame != Frame)
@@ -90,8 +91,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_originalBackgroundView = tv.BackgroundView;
 
 					SetNativeControl(tv);
-					if (Forms.IsiOS9OrNewer)
-						tv.CellLayoutMarginsFollowReadableWidth = false;
+					tv.CellLayoutMarginsFollowReadableWidth = false;
 
 					_insetTracker = new KeyboardInsetTracker(tv, () => Control.Window, insets => Control.ContentInset = Control.ScrollIndicatorInsets = insets, point =>
 					{

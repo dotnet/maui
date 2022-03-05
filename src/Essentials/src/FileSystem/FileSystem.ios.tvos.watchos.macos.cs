@@ -4,29 +4,44 @@ using System.Threading.Tasks;
 using Foundation;
 using MobileCoreServices;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class FileSystem
+	public partial class FileSystemImplementation : IFileSystem
 	{
-		static string PlatformCacheDirectory
+		string PlatformCacheDirectory
 			=> GetDirectory(NSSearchPathDirectory.CachesDirectory);
 
-		static string PlatformAppDataDirectory
+		string PlatformAppDataDirectory
 			=> GetDirectory(NSSearchPathDirectory.LibraryDirectory);
 
-		static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
+		Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
+		{
+			var file = PlatformGetFullAppPackageFilePath(filename);
+			return Task.FromResult((Stream)File.OpenRead(file));
+		}
+
+		Task<bool> PlatformAppPackageFileExistsAsync(string filename)
+		{
+			var file = PlatformGetFullAppPackageFilePath(filename);
+			return Task.FromResult(File.Exists(file));
+		}
+
+		static string PlatformGetFullAppPackageFilePath(string filename)
 		{
 			if (filename == null)
 				throw new ArgumentNullException(nameof(filename));
 
-			filename = filename.Replace('\\', Path.DirectorySeparatorChar);
+			filename = NormalizePath(filename);
+
 			var root = NSBundle.MainBundle.BundlePath;
-#if __MACOS__
-            root = Path.Combine(root, "Contents", "Resources");
+#if MACCATALYST || MACOS
+			root = Path.Combine(root, "Contents", "Resources");
 #endif
-			var file = Path.Combine(root, filename);
-			return Task.FromResult((Stream)File.OpenRead(file));
+			return Path.Combine(root, filename);
 		}
+
+		static string NormalizePath(string filename) =>
+			filename.Replace('\\', Path.DirectorySeparatorChar);
 
 		static string GetDirectory(NSSearchPathDirectory directory)
 		{
@@ -39,7 +54,10 @@ namespace Microsoft.Maui.Essentials
 			return dirs[0];
 		}
 	}
+}
 
+namespace Microsoft.Maui.Essentials
+{
 	public partial class FileBase
 	{
 		internal FileBase(NSUrl file)
@@ -48,17 +66,19 @@ namespace Microsoft.Maui.Essentials
 			FileName = NSFileManager.DefaultManager.DisplayName(file?.Path);
 		}
 
-		internal static string PlatformGetContentType(string extension)
+		string PlatformGetContentType(string extension)
 		{
 			// ios does not like the extensions
 			extension = extension?.TrimStart('.');
 
-			var id = UTType.CreatePreferredIdentifier(UTType.TagClassFilenameExtension, extension, null);
-			var mimeTypes = UTType.CopyAllTags(id, UTType.TagClassMIMEType);
-			return mimeTypes?.Length > 0 ? mimeTypes[0] : null;
+			// var id = UTType.CreatePreferredIdentifier(UTType.TagClassFilenameExtension, extension, null);
+			// var mimeTypes = UTType.CopyAllTags(id, UniformTypeIdentifiers.UTTagClass.MimeType.ToString());
+			// return mimeTypes?.Length > 0 ? mimeTypes[0] : null;
+
+			return extension;
 		}
 
-		internal void PlatformInit(FileBase file)
+		void PlatformInit(FileBase file)
 		{
 		}
 

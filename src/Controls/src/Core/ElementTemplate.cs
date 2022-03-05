@@ -1,21 +1,27 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="Type[@FullName='Microsoft.Maui.Controls.ElementTemplate']/Docs" />
 	public class ElementTemplate : IElement
 	{
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
 		Element _parent;
 		bool _canRecycle; // aka IsDeclarative
+
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		readonly Type _type;
 
 		internal ElementTemplate()
 		{
 		}
 
-		internal ElementTemplate(Type type) : this()
+		internal ElementTemplate(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+			: this()
 		{
 			if (type == null)
 				throw new ArgumentNullException("type");
@@ -28,6 +34,7 @@ namespace Microsoft.Maui.Controls
 
 		internal ElementTemplate(Func<object> loadTemplate) : this() => LoadTemplate = loadTemplate ?? throw new ArgumentNullException("loadTemplate");
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="//Member[@MemberName='LoadTemplate']/Docs" />
 		public Func<object> LoadTemplate { get; set; }
 
 		void IElement.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
@@ -37,6 +44,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal bool CanRecycle => _canRecycle;
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		internal Type Type => _type;
 
 		Element IElement.Parent
@@ -61,6 +69,7 @@ namespace Microsoft.Maui.Controls
 			_changeHandlers.Remove(onchanged);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="//Member[@MemberName='CreateContent']/Docs" />
 		public object CreateContent()
 		{
 			if (LoadTemplate == null)

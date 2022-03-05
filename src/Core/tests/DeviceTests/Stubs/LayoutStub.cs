@@ -68,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			return LayoutManager.Measure(widthConstraint, heightConstraint);
 		}
 
-		public Size CrossPlatformArrange(Rectangle bounds)
+		public Size CrossPlatformArrange(Rect bounds)
 		{
 			return LayoutManager.ArrangeChildren(bounds);
 		}
@@ -80,6 +80,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		ILayoutManager LayoutManager => _layoutManager ??= new LayoutManagerStub();
 
 		public bool IgnoreSafeArea => false;
+
+		public bool ClipsToBounds { get; set; }
 
 		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
 	}

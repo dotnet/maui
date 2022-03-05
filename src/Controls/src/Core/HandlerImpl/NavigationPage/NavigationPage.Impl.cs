@@ -12,7 +12,8 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class NavigationPage : INavigationView, IToolbarElement
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs" />
+	public partial class NavigationPage : IStackNavigationView, IToolbarElement
 	{
 		// If the user is making overlapping navigation requests this is used to fire once all navigation 
 		// events have been processed
@@ -32,36 +33,20 @@ namespace Microsoft.Maui.Controls
 
 		Thickness IView.Margin => Thickness.Zero;
 
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
-			if (Content is IView view)
-			{
-				_ = view.Measure(widthConstraint, heightConstraint);
-			}
-
-			return new Size(widthConstraint, heightConstraint);
+			// We don't want forcelayout to call the legacy
+			// Page.LayoutChildren code
 		}
 
-		protected override Size ArrangeOverride(Rectangle bounds)
+		void IStackNavigation.RequestNavigation(NavigationRequest eventArgs)
 		{
-			Frame = this.ComputeFrame(bounds);
-
-			if (Content is IView view)
-			{
-				_ = view.Arrange(Frame);
-			}
-
-			return Frame.Size;
-		}
-
-		void INavigationView.RequestNavigation(NavigationRequest eventArgs)
-		{
-			Handler?.Invoke(nameof(INavigationView.RequestNavigation), eventArgs);
+			Handler?.Invoke(nameof(IStackNavigation.RequestNavigation), eventArgs);
 		}
 
 		// If a native navigation occurs then this syncs up the NavigationStack
 		// with the new native Navigation Stack
-		void INavigationView.NavigationFinished(IReadOnlyList<IView> newStack)
+		void IStackNavigation.NavigationFinished(IReadOnlyList<IView> newStack)
 		{
 			// If the user is performing multiple overlapping navigations then we don't want to sync the native stack to our xplat stack
 			// We wait until we get to the end of the queue and then we sync up.
@@ -122,42 +107,39 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		IToolbar INavigationView.Toolbar
+		internal IToolbar FindMyToolbar()
 		{
-			get
+			if (this.Toolbar != null)
+				return Toolbar;
+
+			var rootPage = this.FindParentWith(x => (x is IWindow te || Navigation.ModalStack.Contains(x)), true);
+			if (this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), false) is IToolbarElement te)
 			{
-				if (this.Toolbar != null)
-					return Toolbar;
+				// This means I'm inside a Modal Page so we shouldn't return the Toolbar from the window
+				if (rootPage is not IWindow && te is IWindow)
+					return null;
 
-				var rootPage = this.FindParentWith(x => (x is IWindow te || Navigation.ModalStack.Contains(x)), true);
-				if (this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), false) is IToolbarElement te)
-				{
-					// This means I'm inside a Modal Page so we shouldn't return the Toolbar from the window
-					if (rootPage is not IWindow && te is IWindow)
-						return null;
-
-					return te.Toolbar;
-				}
-
-				return null;
+				return te.Toolbar;
 			}
+
+			return null;
 		}
 
 		void OnNavigatingFrom(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
-			if (this is INavigationView te && te.Toolbar is Toolbar ct)
+			if (FindMyToolbar() is NavigationPageToolbar ct)
 			{
 				// If the root page is being covered by a Modal Page then we don't worry about hiding the nav bar
-				bool coveredByModal = te.Toolbar.Parent is Window && Navigation.ModalStack.Count > 0;
-				ct.ApplyNavigationPage(this, HasAppeared || coveredByModal);
+				bool coveredByModal = ct.Parent is Window && Navigation.ModalStack.Count > 0;
+				ct.ApplyNavigationPage(this, coveredByModal);
 			}
 		}
 
 		void OnAppearing(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
-			if (this is INavigationView te && te.Toolbar is Toolbar ct)
+			if (FindMyToolbar() is NavigationPageToolbar ct)
 			{
 				ct.ApplyNavigationPage(this, HasAppeared);
 			}
@@ -170,7 +152,7 @@ namespace Microsoft.Maui.Controls
 				var flyoutPage = this.FindParentOfType<FlyoutPage>();
 				if (flyoutPage != null && flyoutPage.Parent is IWindow)
 				{
-					var toolbar = new Toolbar(flyoutPage);
+					var toolbar = new NavigationPageToolbar(flyoutPage);
 					toolbar.ApplyNavigationPage(this, true);
 					flyoutPage.Toolbar = toolbar;
 				}
@@ -182,13 +164,13 @@ namespace Microsoft.Maui.Controls
 
 					if (rootPage is Window w)
 					{
-						var toolbar = new Toolbar(w);
+						var toolbar = new NavigationPageToolbar(w);
 						toolbar.ApplyNavigationPage(this, true);
 						w.Toolbar = toolbar;
 					}
 					else if (rootPage is Page p)
 					{
-						var toolbar = new Toolbar(p);
+						var toolbar = new NavigationPageToolbar(p);
 						toolbar.ApplyNavigationPage(this, true);
 						p.Toolbar = toolbar;
 					}
@@ -206,7 +188,7 @@ namespace Microsoft.Maui.Controls
 				await SemaphoreSlim.WaitAsync();
 				var trulyReadOnlyNavigationStack = new List<IView>(NavigationStack);
 				var request = new NavigationRequest(trulyReadOnlyNavigationStack, animated);
-				((INavigationView)this).RequestNavigation(request);
+				((IStackNavigation)this).RequestNavigation(request);
 			}
 			finally
 			{
@@ -261,7 +243,7 @@ namespace Microsoft.Maui.Controls
 
 				// Create the request for the handler
 				var request = new NavigationRequest(immutableNavigationStack, animated);
-				((INavigationView)this).RequestNavigation(request);
+				((IStackNavigation)this).RequestNavigation(request);
 
 				// Wait for the handler to finish processing the navigation
 				// This task completes once the handler calls INavigationView.Finished
@@ -286,7 +268,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangedCore();
 
-			if (Handler == null && (this as INavigationView).Toolbar is IToolbar tb)
+			if (Handler == null && FindMyToolbar() is IToolbar tb)
 			{
 				tb.Handler = null;
 				if (tb.Parent is Window w)

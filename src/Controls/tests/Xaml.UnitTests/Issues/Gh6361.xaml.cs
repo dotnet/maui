@@ -17,15 +17,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[SetUp]
-			public void Setup()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-				Microsoft.Maui.Controls.Internals.Registrar.RegisterAll(new Type[0]);
-			}
-
-			[TearDown] public void TearDown() => Device.PlatformServices = null;
-
 			[Test]
 			public void CSSBorderRadiusDoesNotFail([Values(false, true)] bool useCompiledXaml)
 			{

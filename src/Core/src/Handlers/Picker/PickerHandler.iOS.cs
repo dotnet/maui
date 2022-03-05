@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Specialized;
-using Microsoft.Extensions.DependencyInjection;
-using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -11,11 +9,11 @@ namespace Microsoft.Maui.Handlers
 	{
 		UIPickerView? _pickerView;
 
-		protected override MauiPicker CreateNativeView()
+		protected override MauiPicker CreatePlatformView()
 		{
 			_pickerView = new UIPickerView();
 
-			var nativePicker = new MauiPicker(_pickerView) { BorderStyle = UITextBorderStyle.RoundedRect };
+			var platformPicker = new MauiPicker(_pickerView) { BorderStyle = UITextBorderStyle.RoundedRect };
 
 			var width = UIScreen.MainScreen.Bounds.Width;
 			var toolbar = new UIToolbar(new RectangleF(0, 0, width, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
@@ -30,45 +28,49 @@ namespace Microsoft.Maui.Handlers
 
 				if (VirtualView?.SelectedIndex == -1 && count > 0)
 				{
-					NativeView?.SetSelectedIndex(VirtualView, 0);
+					PlatformView?.SetSelectedIndex(VirtualView, 0);
 				}
 
 				UpdatePickerFromPickerSource(pickerSource);
-				nativePicker.ResignFirstResponder();
+				platformPicker.ResignFirstResponder();
 			});
 
 			toolbar.SetItems(new[] { spacer, doneButton }, false);
 
-			nativePicker.InputView = _pickerView;
-			nativePicker.InputAccessoryView = toolbar;
+			platformPicker.InputView = _pickerView;
+			platformPicker.InputAccessoryView = toolbar;
 
-			nativePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-			nativePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-
-			if (UIDevice.CurrentDevice.CheckSystemVersion(9, 0))
-			{
-				nativePicker.InputAssistantItem.LeadingBarButtonGroups = null;
-				nativePicker.InputAssistantItem.TrailingBarButtonGroups = null;
-			}
-
-			nativePicker.AccessibilityTraits = UIAccessibilityTrait.Button;
+			platformPicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+			platformPicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+			platformPicker.InputAssistantItem.LeadingBarButtonGroups = null;
+			platformPicker.InputAssistantItem.TrailingBarButtonGroups = null;
+			platformPicker.AccessibilityTraits = UIAccessibilityTrait.Button;
 
 			_pickerView.Model = new PickerSource(VirtualView);
 
-			return nativePicker;
+			return platformPicker;
 		}
 
-		protected override void ConnectHandler(MauiPicker nativeView)
+		protected override void ConnectHandler(MauiPicker platformView)
 		{
-			nativeView.EditingDidEnd += OnEnded;
-			nativeView.EditingChanged += OnEditing;
-			base.ConnectHandler(nativeView);
+			platformView.EditingDidBegin += OnStarted;
+			platformView.EditingDidEnd += OnEnded;
+			platformView.EditingChanged += OnEditing;
+
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
+
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiPicker nativeView)
+		protected override void DisconnectHandler(MauiPicker platformView)
 		{
-			nativeView.EditingDidEnd -= OnEnded;
-			nativeView.EditingChanged -= OnEditing;
+			platformView.EditingDidBegin -= OnStarted;
+			platformView.EditingDidEnd -= OnEnded;
+			platformView.EditingChanged -= OnEditing;
+
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged -= OnRowsCollectionChanged;
 
 			if (_pickerView != null)
 			{
@@ -83,60 +85,66 @@ namespace Microsoft.Maui.Handlers
 				_pickerView = null;
 			}
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
-		void Reload()
+		static void Reload(IPickerHandler handler)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (handler.VirtualView == null || handler.PlatformView == null)
 				return;
 
-			NativeView.UpdatePicker(VirtualView);
+			handler.PlatformView.UpdatePicker(handler.VirtualView);
 		}
 
-		public static void MapReload(PickerHandler handler, IPicker picker, object? args) => handler.Reload();
+		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
-		public static void MapTitle(PickerHandler handler, IPicker picker)
+		public static void MapTitle(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTitle(picker);
+			handler.PlatformView?.UpdateTitle(picker);
 		}
 
-		public static void MapTitleColor(PickerHandler handler, IPicker picker)
+		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTitleColor(picker);
+			handler.PlatformView?.UpdateTitleColor(picker);
 		}
 
-		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
+		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateSelectedIndex(picker);
+			handler.PlatformView?.UpdateSelectedIndex(picker);
 		}
 
-		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker)
+		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(picker);
+			handler.PlatformView?.UpdateCharacterSpacing(picker);
 		}
 
-		public static void MapFont(PickerHandler handler, IPicker picker)
+		public static void MapFont(IPickerHandler handler, IPicker picker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(picker, fontManager);
+			handler.PlatformView?.UpdateFont(picker, fontManager);
 		}
 
-		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
+		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(picker);
+			handler.PlatformView?.UpdateHorizontalTextAlignment(picker);
 		}
 
-		public static void MapTextColor(PickerHandler handler, IPicker picker)
+		public static void MapTextColor(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTextColor(picker);
+			handler.PlatformView?.UpdateTextColor(picker);
 		}
 
-		public static void MapVerticalTextAlignment(PickerHandler handler, IPicker picker)
+		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateVerticalTextAlignment(picker);
+			handler.PlatformView?.UpdateVerticalTextAlignment(picker);
 		}
 
+		void OnStarted(object? sender, EventArgs eventArgs)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
+		}
+		
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
 			if (_pickerView == null)
@@ -148,28 +156,36 @@ namespace Microsoft.Maui.Handlers
 			{
 				_pickerView.Select(model.SelectedIndex, 0, false);
 			}
+
+			if (VirtualView != null)
+				VirtualView.IsFocused = false;
 		}
 
 		void OnEditing(object? sender, EventArgs eventArgs)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
 			// Reset the TextField's Text so it appears as if typing with a keyboard does not work.
 			var selectedIndex = VirtualView.SelectedIndex;
 
-			NativeView.Text = VirtualView.GetItem(selectedIndex);
+			PlatformView.Text = VirtualView.GetItem(selectedIndex);
 
 			// Also clears the undo stack (undo/redo possible on iPads)
-			NativeView.UndoManager.RemoveAllActions();
+			PlatformView.UndoManager.RemoveAllActions();
+		}
+
+		void OnRowsCollectionChanged(object? sender, EventArgs e)
+		{
+			Reload(this);
 		}
 
 		void UpdatePickerFromPickerSource(PickerSource pickerSource)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
-			NativeView.Text = VirtualView.GetItem(pickerSource.SelectedIndex);
+			PlatformView.Text = VirtualView.GetItem(pickerSource.SelectedIndex);
 			VirtualView.SelectedIndex = pickerSource.SelectedIndex;
 		}
 

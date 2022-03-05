@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4187, "Picker list shows up, when focus is set on other controls", PlatformAffected.Android)]
-	public class Issue4187 : TestCarouselPage
+	internal class Issue4187 : TestCarouselPage
 	{
 		protected override void Init()
 		{

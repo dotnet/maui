@@ -55,7 +55,15 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				}";
 		}
 
-		const string TargetFramework = "net6.0";
+		static string GetTfm()
+		{
+			// Returns something like `.NET 6.0.1`
+			var fd = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
+			if (Version.TryParse(System.Text.RegularExpressions.Regex.Match(fd, @"\d+\.\d+\.\d+")?.Value, out var version))
+				return $"net{version.Major}.{version.Minor}";
+			return "net6.0";
+		}
+
 		string testDirectory;
 		string tempDirectory;
 		string intermediateDirectory;
@@ -65,7 +73,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			testDirectory = TestContext.CurrentContext.TestDirectory;
 			tempDirectory = IOPath.Combine(testDirectory, "temp", TestContext.CurrentContext.Test.Name);
-			intermediateDirectory = IOPath.Combine(tempDirectory, "obj", "Debug", TargetFramework);
+			intermediateDirectory = IOPath.Combine(tempDirectory, "obj", "Debug", GetTfm());
 			Directory.CreateDirectory(tempDirectory);
 
 			//copy _Directory.Build.[props|targets] in test/
@@ -134,7 +142,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			var propertyGroup = NewElement("PropertyGroup");
 			project.WithAttribute("Sdk", "Microsoft.NET.Sdk");
-			propertyGroup.Add(NewElement("TargetFramework").WithValue(TargetFramework));
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
 			//NOTE: we don't want SDK-style projects to auto-add files, tests should be able to control this
 			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("False"));
 			propertyGroup.Add(NewElement("EnableDefaultEmbeddedResourceItems").WithValue("False"));
@@ -291,7 +299,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void ValidateOnly_WithErrors()
 		{
 			var project = NewProject();
-			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage.Replace("</ContentPage>", "<NotARealThing/></ContentPage>")));
+			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage.Replace("</ContentPage>", "<NotARealThing/></ContentPage>", StringComparison.Ordinal)));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 
@@ -492,7 +500,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 			var log = Build(projectFile, verbosity: "diagnostic");
-			Assert.IsTrue(log.Contains("Target \"XamlC\" skipped"), "XamlC should be skipped if there are no .xaml files.");
+			Assert.IsTrue(log.Contains("Target \"XamlC\" skipped", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
 		}
 	}
 }

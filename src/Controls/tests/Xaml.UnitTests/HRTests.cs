@@ -7,18 +7,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[TestFixture]
 	public class HRTests
 	{
-		[SetUp]
-		public void Setup()
-		{
-			Device.PlatformServices = new MockPlatformServices();
-			Microsoft.Maui.Controls.Internals.Registrar.RegisterAll(new Type[0]);
-			Application.Current = null;
-		}
-
 		[TearDown]
 		public void TearDown()
 		{
-			Device.PlatformServices = null;
 			Maui.Controls.Internals.ResourceLoader.ExceptionHandler2 = null;
 			Application.ClearCurrent();
 		}

@@ -60,20 +60,20 @@ using NestedScrollView = AndroidX.Core.Widget.NestedScrollView;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
-	public class ShellWithCustomRendererDisabledAnimationsRenderer : ShellView
+	public class ShellWithCustomRendererDisabledAnimationsRenderer : Handlers.Compatibility.ShellRenderer
 	{
 		public ShellWithCustomRendererDisabledAnimationsRenderer(Context context) : base(context)
 		{
 		}
 
-		protected override IShellItemView CreateShellItemView(ShellItem shellItem)
+		protected override Controls.Platform.Compatibility.IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
 		{
 			return new ShellWithCustomRendererDisabledAnimationsShellItemRenderer(this);
 		}
 
-		public class ShellWithCustomRendererDisabledAnimationsShellItemRenderer : ShellItemView
+		public class ShellWithCustomRendererDisabledAnimationsShellItemRenderer : Controls.Platform.Compatibility.ShellItemRenderer
 		{
-			public ShellWithCustomRendererDisabledAnimationsShellItemRenderer(Controls.Platform.IShellContext shellContext) : base(shellContext)
+			public ShellWithCustomRendererDisabledAnimationsShellItemRenderer(Controls.Platform.Compatibility.IShellContext shellContext) : base(shellContext)
 			{
 			}
 
@@ -368,7 +368,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 	/// This renderer uses a view defined in /Resources/Layout/NativeAndroidCell.axml
 	/// as the cell layout
 	/// </summary>
-	public class NativeAndroidCellRenderer : ViewCellRenderer
+	public class NativeAndroidCellRenderer : Handlers.Compatibility.ViewCellRenderer
 	{
 		public NativeAndroidCellRenderer()
 		{

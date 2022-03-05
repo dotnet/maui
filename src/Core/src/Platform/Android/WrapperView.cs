@@ -3,8 +3,9 @@ using Android.Content;
 using Android.Graphics;
 using Android.Views;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 using APath = Android.Graphics.Path;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Platform
 	{
 		const int MaximumRadius = 100;
 
-		readonly Rect _viewBounds;
+		readonly Android.Graphics.Rect _viewBounds;
 
 		APath _currentPath;
 		SizeF _lastPathSize;
@@ -22,10 +23,14 @@ namespace Microsoft.Maui.Platform
 		Android.Graphics.Paint _shadowPaint;
 		bool _invalidateShadow;
 
+		AView _borderView;
+
+		public bool InputTransparent { get; set; }
+
 		public WrapperView(Context context)
 			: base(context)
 		{
-			_viewBounds = new Rect();
+			_viewBounds = new Android.Graphics.Rect();
 
 			SetClipChildren(false);
 			SetWillNotDraw(true);
@@ -34,6 +39,8 @@ namespace Microsoft.Maui.Platform
 		protected override void OnDetachedFromWindow()
 		{
 			base.OnDetachedFromWindow();
+
+			_invalidateShadow = true;
 
 			if (_shadowBitmap != null)
 			{
@@ -44,7 +51,9 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
-			if (ChildCount == 0 || GetChildAt(0) is not View child)
+			_borderView?.BringToFront();
+
+			if (ChildCount == 0 || GetChildAt(0) is not AView child)
 				return;
 
 			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(right - left);
@@ -52,6 +61,7 @@ namespace Microsoft.Maui.Platform
 
 			child.Measure(widthMeasureSpec, heightMeasureSpec);
 			child.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
+			_borderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -101,6 +111,16 @@ namespace Microsoft.Maui.Platform
 			base.DispatchDraw(canvas);
 		}
 
+		public override bool DispatchTouchEvent(MotionEvent e)
+		{
+			if (InputTransparent)
+			{
+				return false;
+			}
+
+			return base.DispatchTouchEvent(e);
+		}
+
 		partial void ClipChanged()
 		{
 			_invalidateShadow = true;
@@ -113,9 +133,26 @@ namespace Microsoft.Maui.Platform
 			PostInvalidate();
 		}
 
+		partial void BorderChanged()
+		{
+			if (Border == null)
+			{
+				if (_borderView != null)
+					this.RemoveView(_borderView);
+				_borderView = null;
+				return;
+			}
+
+			if (_borderView == null)
+			{
+				this.AddView(_borderView = new AView(Context));
+			}
+			_borderView.UpdateBorderStroke(Border);
+		}
+
 		void ClipChild(Canvas canvas)
 		{
-			var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
+			var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
 
 			if (_lastPathSize != bounds.Size || _currentPath == null)
 			{
@@ -187,7 +224,7 @@ namespace Microsoft.Maui.Platform
 					if (Shadow.Paint is SolidPaint solidPaint)
 					{
 						solidColor = solidPaint.ToColor();
-						_shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToNative();
+						_shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToPlatform();
 					}
 
 					// Apply the shadow radius 
@@ -210,7 +247,7 @@ namespace Microsoft.Maui.Platform
 					}
 					else
 					{
-						var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
+						var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
 						var path = Clip.PathForBounds(bounds)?.AsAndroidPath();
 
 						path.Offset(shadowOffsetX, shadowOffsetY);
@@ -230,7 +267,7 @@ namespace Microsoft.Maui.Platform
 
 			// Reset alpha to draw child with full alpha
 			if (solidColor != null)
-				_shadowPaint.Color = solidColor.ToNative();
+				_shadowPaint.Color = solidColor.ToPlatform();
 
 			// Draw shadow bitmap
 			if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)

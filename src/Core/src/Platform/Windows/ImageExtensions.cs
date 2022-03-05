@@ -2,8 +2,11 @@
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.Extensions.DependencyInjection;
+using System.IO;
 
 namespace Microsoft.Maui.Platform
 {
@@ -35,6 +38,39 @@ namespace Microsoft.Maui.Platform
 			}
 
 			throw new InvalidCastException($"\"{source.GetType().FullName}\" is not supported.");
+		}
+
+		public static IconSource? ToIconSource(this IImageSource source, IMauiContext mauiContext)
+		{
+			IconSource? image = null;
+
+			if (source is IFileImageSource fis)
+			{
+				image = new BitmapIconSource { UriSource = new Uri("ms-appx:///" + fis.File) };
+			}
+			else if (source is IUriImageSource uri)
+			{
+				image = new BitmapIconSource { UriSource = uri?.Uri };
+			}
+			else if (source is IFontImageSource fontImageSource)
+			{
+				image = new FontIconSource
+				{
+					Glyph = fontImageSource.Glyph,
+					FontSize = fontImageSource.Font.Size
+				};
+
+				if (fontImageSource.Color != null)
+					image.Foreground = fontImageSource.Color.ToPlatform();
+
+				var fontManager = mauiContext.Services.GetRequiredService<IFontManager>();
+				var uwpFontFamily = fontManager.GetFontFamily(fontImageSource.Font);
+
+				if (!string.IsNullOrEmpty(uwpFontFamily.Source))
+					((FontIconSource)image).FontFamily = uwpFontFamily;
+			}
+
+			return image;
 		}
 	}
 }

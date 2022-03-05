@@ -4,6 +4,7 @@ using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutPage']/Docs" />
 	public partial class FlyoutPage : IFlyoutView
 	{
 		IView IFlyoutView.Flyout => this.Flyout;
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (Device.Idiom == TargetIdiom.Phone)
+				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 					return -1;
 
 				var scaledScreenSize = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
@@ -46,7 +47,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangingCore(args);
 
-			if (Device.Idiom == TargetIdiom.Phone)
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				return;
 
 			if (args.NewHandler == null)

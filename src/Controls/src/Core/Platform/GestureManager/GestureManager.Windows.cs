@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	class GestureManager : IDisposable
 	{
-		readonly INativeViewHandler _handler;
+		readonly IPlatformViewHandler _handler;
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 		readonly List<uint> _fingers = new List<uint>();
 		FrameworkElement? _container;
@@ -33,22 +33,22 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public GestureManager(IViewHandler handler)
 		{
-			_handler = (INativeViewHandler)handler;
+			_handler = (IPlatformViewHandler)handler;
 			_collectionChangedHandler = ModelGestureRecognizersOnCollectionChanged;
 
 			if (_handler.VirtualView == null)
 				throw new ArgumentNullException(nameof(handler.VirtualView));
 
-			if (_handler.NativeView == null)
-				throw new ArgumentNullException(nameof(handler.NativeView));
+			if (_handler.PlatformView == null)
+				throw new ArgumentNullException(nameof(handler.PlatformView));
 
 			Element = (VisualElement)_handler.VirtualView;
-			Control = _handler.NativeView;
+			Control = _handler.PlatformView;
 
 			if (_handler.ContainerView != null)
 				Container = _handler.ContainerView;
 			else
-				Container = _handler.NativeView;
+				Container = _handler.PlatformView;
 		}
 
 		public FrameworkElement? Container
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (!args.Handled && handler != null)
 				{
-					if (handler.NativeView is UI.Xaml.Controls.Image nativeImage &&
+					if (handler.PlatformView is UI.Xaml.Controls.Image nativeImage &&
 						nativeImage.Source is BitmapImage bi && bi.UriSource != null)
 					{
 						e.Data.SetBitmap(RandomAccessStreamReference.CreateFromUri(bi.UriSource));
@@ -396,19 +396,24 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_isPinching = true;
 
-			global::Windows.Foundation.Point translationPoint = e.Container.TransformToVisual(Container).TransformPoint(e.Position);
-
-			var scaleOriginPoint = new Point(translationPoint.X / view.Width, translationPoint.Y / view.Height);
-			IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
-			foreach (IPinchGestureController recognizer in pinchGestures)
+			if (e.OriginalSource is UIElement container)
 			{
-				if (!_wasPinchGestureStartedSent)
+				global::Windows.Foundation.Point translationPoint = container.TransformToVisual(Container).TransformPoint(e.Position);
+				var scaleOriginPoint = new Point(translationPoint.X / view.Width, translationPoint.Y / view.Height);
+				IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
+				
+				foreach (IPinchGestureController recognizer in pinchGestures)
 				{
-					recognizer.SendPinchStarted(view, scaleOriginPoint);
+					if (!_wasPinchGestureStartedSent)
+					{
+						recognizer.SendPinchStarted(view, scaleOriginPoint);
+					}
+
+					recognizer.SendPinch(view, e.Delta.Scale, scaleOriginPoint);
 				}
-				recognizer.SendPinch(view, e.Delta.Scale, scaleOriginPoint);
+
+				_wasPinchGestureStartedSent = true;
 			}
-			_wasPinchGestureStartedSent = true;
 		}
 
 		void ModelGestureRecognizersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)

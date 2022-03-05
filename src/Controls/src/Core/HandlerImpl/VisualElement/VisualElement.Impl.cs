@@ -6,22 +6,39 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs" />
 	public partial class VisualElement : IView
 	{
 		Semantics _semantics;
+		bool _isLoadedFired;
+		EventHandler? _loaded;
+		EventHandler? _unloaded;
+		bool _watchingPlatformLoaded;
 
-		public Rectangle Frame
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Frame']/Docs" />
+		public Rect Frame
 		{
 			get => Bounds;
 			set
 			{
+				if (value.X == X && value.Y == Y && value.Height == Height && value.Width == Width)
+					return;
+
+				BatchBegin();
+
 				X = value.X;
 				Y = value.Y;
 				Width = value.Width;
 				Height = value.Height;
+
+				SizeAllocated(Width, Height);
+				SizeChanged?.Invoke(this, EventArgs.Empty);
+
+				BatchCommit();
 			}
 		}
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Handler']/Docs" />
 		new public IViewHandler? Handler
 		{
 			get => (IViewHandler?)base.Handler;
@@ -52,6 +69,7 @@ namespace Microsoft.Maui.Controls
 
 		IShadow IView.Shadow => Shadow;
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ShadowProperty']/Docs" />
 		public static readonly BindableProperty ShadowProperty =
  			BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(VisualElement), defaultValue: null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
@@ -65,6 +83,7 @@ namespace Microsoft.Maui.Controls
 						(bindable as VisualElement)?.NotifyShadowChanges();
 				});
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Shadow']/Docs" />
 		public Shadow Shadow
 		{
 			get { return (Shadow)GetValue(ShadowProperty); }
@@ -83,34 +102,38 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ZIndex']/Docs" />
 		public int ZIndex
 		{
 			get { return (int)GetValue(ZIndexProperty); }
 			set { SetValue(ZIndexProperty, value); }
 		}
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='DesiredSize']/Docs" />
 		public Size DesiredSize { get; protected set; }
 
-		public void Arrange(Rectangle bounds)
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Arrange']/Docs" />
+		public void Arrange(Rect bounds)
 		{
 			Layout(bounds);
 		}
 
-		Size IView.Arrange(Rectangle bounds)
+		Size IView.Arrange(Rect bounds)
 		{
 			return ArrangeOverride(bounds);
 		}
 
 		// ArrangeOverride provides a way to allow subclasses (e.g., ScrollView) to override Arrange even though
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
-		protected virtual Size ArrangeOverride(Rectangle bounds)
+		protected virtual Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
-			Handler?.NativeArrange(Frame);
+			Handler?.PlatformArrange(Frame);
 			return Frame.Size;
 		}
 
-		public void Layout(Rectangle bounds)
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Layout']/Docs" />
+		public void Layout(Rect bounds)
 		{
 			Bounds = bounds;
 		}
@@ -139,6 +162,12 @@ namespace Microsoft.Maui.Controls
 		{
 			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
 			return DesiredSize;
+		}
+
+		bool IView.IsFocused
+		{
+			get => (bool)GetValue(IsFocusedProperty);
+			set => SetValueCore(IsFocusedPropertyKey, value);
 		}
 
 		Maui.FlowDirection IView.FlowDirection
@@ -205,7 +234,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!IsSet(MinimumWidthRequestProperty))
 				{
-					return Primitives.Dimension.Minimum;
+					return Primitives.Dimension.Unset;
 				}
 
 				// Access once up front to avoid multiple GetValue calls
@@ -221,7 +250,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!IsSet(MinimumHeightRequestProperty))
 				{
-					return Primitives.Dimension.Minimum;
+					return Primitives.Dimension.Unset;
 				}
 
 				// Access once up front to avoid multiple GetValue calls
@@ -296,5 +325,118 @@ namespace Microsoft.Maui.Controls
 			if (Shadow != null)
 				SetInheritedBindingContext(Shadow, BindingContext);
 		}
+
+		public bool IsLoaded
+		{
+			get
+			{
+#if PLATFORM
+				bool isLoaded = (Handler as IPlatformViewHandler)?.PlatformView?.IsLoaded() == true;
+#else
+				bool isLoaded = Window != null;
+#endif
+
+				return isLoaded;
+			}
+		}
+
+		public event EventHandler? Loaded
+		{
+			add
+			{
+				_loaded += value;
+				UpdatePlatformUnloadedLoadedWiring(Window);
+			}
+			remove
+			{
+				_loaded -= value;
+				UpdatePlatformUnloadedLoadedWiring(Window);
+			}
+		}
+
+		public event EventHandler? Unloaded
+		{
+			add
+			{
+				_unloaded += value;
+				UpdatePlatformUnloadedLoadedWiring(Window);
+			}
+			remove
+			{
+				_unloaded -= value;
+				UpdatePlatformUnloadedLoadedWiring(Window);
+			}
+		}
+
+		void OnLoadedCore()
+		{
+			if (_isLoadedFired)
+				return;
+
+			_isLoadedFired = true;
+			_loaded?.Invoke(this, EventArgs.Empty);
+		}
+
+		void OnUnloadedCore()
+		{
+			if (!_isLoadedFired)
+				return;
+
+			_isLoadedFired = false;
+			_unloaded?.Invoke(this, EventArgs.Empty);
+		}
+
+		private protected override void OnWindowChanged(IWindow oldValue, IWindow newValue)
+		{
+			base.OnWindowChanged(oldValue, newValue);
+
+			if (_watchingPlatformLoaded && oldValue is Element oldWindow)
+				oldWindow.HandlerChanged -= OnWindowHandlerChanged;
+
+			UpdatePlatformUnloadedLoadedWiring(newValue);
+		}
+
+		void OnWindowHandlerChanged(object? sender, EventArgs e)
+		{
+			UpdatePlatformUnloadedLoadedWiring(Window);
+		}
+
+		// We only want to wire up to platform loaded events
+		// if the user is watching for them. Otherwise
+		// this will get wired up for every single VE that's on 
+		// the screen
+		void UpdatePlatformUnloadedLoadedWiring(IWindow? window)
+		{
+			// If I'm not attached to a window and I haven't started watching any platform events
+			// then it's not useful to wire anything up. We will just wait until
+			// This VE gets connected to the xplat Window before wiring up any events
+			if (!_watchingPlatformLoaded && window == null)
+				return;
+
+			if (_unloaded == null && _loaded == null)
+			{
+				if (window is Element elementWindow)
+					elementWindow.HandlerChanged -= OnWindowHandlerChanged;
+
+#if PLATFORM
+				_loadedUnloadedToken?.Dispose();
+				_loadedUnloadedToken = null;
+#endif
+				_watchingPlatformLoaded = false;
+				return;
+			}
+
+			if (!_watchingPlatformLoaded)
+			{
+				if (window is Element elementWindow)
+					elementWindow.HandlerChanged += OnWindowHandlerChanged;
+
+				_watchingPlatformLoaded = true;
+			}
+
+			HandlePlatformUnloadedLoaded();
+		}
+
+		partial void HandlePlatformUnloadedLoaded();
 	}
 }

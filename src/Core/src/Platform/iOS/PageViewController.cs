@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 			LoadFirstView(page);
 		}
 
-		protected override UIView CreateNativeView(IElement view)
+		protected override UIView CreatePlatformView(IElement view)
 		{
 			return new ContentView
 			{

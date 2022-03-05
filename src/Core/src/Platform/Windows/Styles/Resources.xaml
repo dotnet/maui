@@ -9,9 +9,10 @@
         <ResourceDictionary Source="MauiAutoSuggestBoxStyle.xaml" />
         <ResourceDictionary Source="MauiCheckBoxStyle.xaml" />
         <ResourceDictionary Source="MauiComboBoxStyle.xaml" />
+        <ResourceDictionary Source="MauiRadioButtonStyle.xaml" />
         <ResourceDictionary Source="MauiSliderStyle.xaml" />
         <ResourceDictionary Source="MauiStepperStyle.xaml" />
-        <ResourceDictionary Source="NavigationRootViewStyle.xaml" />
+        <ResourceDictionary Source="WindowRootViewStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <x:Boolean x:Key="MicrosoftMauiCoreIncluded">true</x:Boolean>

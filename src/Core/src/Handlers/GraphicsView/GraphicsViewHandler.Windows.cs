@@ -4,19 +4,25 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, W2DGraphicsView>
 	{
-		protected override W2DGraphicsView CreateNativeView()
+		protected override W2DGraphicsView CreatePlatformView()
 		{
 			return new W2DGraphicsView();
 		}
 
-		public static void MapDrawable(GraphicsViewHandler handler, IGraphicsView graphicsView)
+		public static void MapDrawable(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
-			handler.NativeView?.UpdateDrawable(graphicsView);
+			handler.PlatformView?.UpdateDrawable(graphicsView);
 		}
 
-		public static void MapInvalidate(GraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
+		public static void MapFlowDirection(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
-			handler.NativeView?.Invalidate();
+			handler.PlatformView?.UpdateFlowDirection(graphicsView);
+			handler.PlatformView?.Invalidate();
+		}
+
+		public static void MapInvalidate(IGraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
+		{
+			handler.PlatformView?.Invalidate();
 		}
 	}
 }

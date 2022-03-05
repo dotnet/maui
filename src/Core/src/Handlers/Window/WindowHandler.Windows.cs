@@ -8,9 +8,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		RootPanel? _rootPanel = null;
 
-		protected override void ConnectHandler(UI.Xaml.Window nativeView)
+		protected override void ConnectHandler(UI.Xaml.Window platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
 			if (_rootPanel == null)
 			{
@@ -23,29 +23,30 @@ namespace Microsoft.Maui.Handlers
 				};
 			}
 
-			nativeView.Content = _rootPanel;
+			platformView.Content = _rootPanel;
 		}
 
-		protected override void DisconnectHandler(UI.Xaml.Window nativeView)
+		protected override void DisconnectHandler(UI.Xaml.Window platformView)
 		{
-			var windowManager = MauiContext?.GetNavigationRootManager();
-			windowManager?.Disconnect(VirtualView.Content);
+			MauiContext
+				?.GetNavigationRootManager()
+				?.Disconnect();
 
 			_rootPanel?.Children?.Clear();
-			nativeView.Content = null;
+			platformView.Content = null;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapTitle(WindowHandler handler, IWindow window) =>
-			handler.NativeView?.UpdateTitle(window);
+		public static void MapTitle(IWindowHandler handler, IWindow window) =>
+			handler.PlatformView?.UpdateTitle(window);
 
-		public static void MapContent(WindowHandler handler, IWindow window)
+		public static void MapContent(IWindowHandler handler, IWindow window)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			var windowManager = handler.MauiContext.GetNavigationRootManager();
 			windowManager.Connect(handler.VirtualView.Content);
-			var rootPanel = handler._rootPanel;
+			var rootPanel = handler.PlatformView.Content as Panel;
 
 			if (rootPanel == null)
 				return;
@@ -57,10 +58,36 @@ namespace Microsoft.Maui.Handlers
 				window.VisualDiagnosticsOverlay.Initialize();
 		}
 
-		public static void MapToolbar(WindowHandler handler, IWindow view)
+		public static void MapToolbar(IWindowHandler handler, IWindow view)
 		{
 			if (view is IToolbarElement tb)
 				ViewHandler.MapToolbar(handler, tb);
+		}
+
+		public static void MapMenuBar(IWindowHandler handler, IWindow view)
+		{
+			if (view is IMenuBarElement mb)
+			{
+				_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+				var windowManager = handler.MauiContext.GetNavigationRootManager();
+				windowManager.SetMenuBar(mb.MenuBar);
+			}
+		}
+
+		public static void MapFlowDirection(IWindowHandler handler, IWindow view)
+		{
+			var WindowHandle = handler.PlatformView.GetWindowHandle();
+
+			// Retrieve current extended style
+			var extended_style = PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
+			long updated_style;
+			if (view.FlowDirection == FlowDirection.RightToLeft)
+				updated_style = extended_style | (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL;
+			else
+				updated_style = extended_style & ~((long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL);
+
+			if (updated_style != extended_style)
+				PlatformMethods.SetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE, updated_style);
 		}
 	}
 }

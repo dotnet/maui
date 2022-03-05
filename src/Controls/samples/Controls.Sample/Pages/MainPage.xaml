@@ -44,7 +44,7 @@
                 <Setter Property="FontFamily" Value="Segoe UI" />
                 <Setter Property="HorizontalOptions" Value="Center" />
                 <Setter Property="VerticalOptions" Value="End" />
-                <Setter Property="Margin" Value="0, 24" />
+                <Setter Property="Margin" Value="24" />
             </Style>
 
         </ResourceDictionary>
@@ -57,18 +57,28 @@
             <Image
                 Grid.Row="0"
                 Aspect="AspectFill"
-                Source="header_background"/>
+                Source="header_background.png"/>
             <Grid
                 RowSpacing="0"
                 Grid.Row="0"
                 RowDefinitions="Auto,*">
                 <Label
                     Text=".NET MAUI"
-                    Style="{StaticResource TitleStyle}"/>
+                    Style="{StaticResource TitleStyle}">
+                    <!-- 
+                    <Label.Shadow>
+                        <Shadow 
+                            Brush="White"
+                            Opacity="0.5"
+                            Radius="12"
+                            Offset="6, 6" />
+                    </Label.Shadow>
+                    -->
+                </Label>
                 <Label
                     Grid.Row="1"
                     Text="An open-source framework for building iOS, Android, macOS and Windows apps"
-                    Style="{StaticResource SubTitleStyle}"/>
+                    Style="{StaticResource SubTitleStyle}"/>     
             </Grid>
             <!-- SECTIONS -->
             <Grid

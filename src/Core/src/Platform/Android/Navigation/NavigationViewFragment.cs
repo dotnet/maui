@@ -56,13 +56,13 @@ namespace Microsoft.Maui.Platform
 			// Even if there's only one page on the stack
 
 			_currentView =
-				NavigationManager.CurrentPage.Handler?.NativeView as AView;
+				NavigationManager.CurrentPage.Handler?.PlatformView as AView;
 
 			if (_currentView == null)
 			{
 				var scopedContext = NavigationManager.MauiContext.MakeScoped(inflater, ChildFragmentManager);
 
-				_currentView = NavigationManager.CurrentPage.ToNative(scopedContext);
+				_currentView = NavigationManager.CurrentPage.ToPlatform(scopedContext);
 			}
 
 			_currentView.RemoveFromParent();

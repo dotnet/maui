@@ -1,39 +1,49 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 #if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIWindow;
+using PlatformView = UIKit.UIWindow;
 #elif MONOANDROID
-using NativeView = Android.App.Activity;
+using PlatformView = Android.App.Activity;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.Window;
+using PlatformView = Microsoft.UI.Xaml.Window;
 #endif
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class WindowHandler
+	public partial class WindowHandler : IWindowHandler
 	{
-		public static IPropertyMapper<IWindow, WindowHandler> WindowMapper = new PropertyMapper<IWindow, WindowHandler>(ElementHandler.ElementMapper)
+		public static IPropertyMapper<IWindow, IWindowHandler> Mapper = new PropertyMapper<IWindow, IWindowHandler>(ElementHandler.ElementMapper)
 		{
 			[nameof(IWindow.Title)] = MapTitle,
 			[nameof(IWindow.Content)] = MapContent,
 #if ANDROID || WINDOWS
 			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
+#if WINDOWS || IOS
+			[nameof(IMenuBarElement.MenuBar)] = MapMenuBar,
+#endif
+#if WINDOWS
+			[nameof(IWindow.FlowDirection)] = MapFlowDirection,
+#endif
+		};
+
+		public static CommandMapper<IWindow, IWindowHandler> CommandMapper = new(ElementCommandMapper)
+		{
 		};
 
 		public WindowHandler()
-			: base(WindowMapper)
+			: base(Mapper)
 		{
 		}
 
 		public WindowHandler(IPropertyMapper? mapper = null)
-			: base(mapper ?? WindowMapper)
+			: base(mapper ?? Mapper)
 		{
 		}
 
 #if !NETSTANDARD
-		protected override NativeView CreateNativeElement() =>
-			MauiContext?.Services.GetService<NativeView>() ?? throw new InvalidOperationException($"MauiContext did not have a valid window.");
+		protected override PlatformView CreatePlatformElement() =>
+			MauiContext?.Services.GetService<PlatformView>() ?? throw new InvalidOperationException($"MauiContext did not have a valid window.");
 #endif
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 
 #if UITEST
 using Xamarin.UITest;
@@ -41,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			KeyboardFlags spellCheckForUwp = KeyboardFlags.None;
 
-			if (Device.RuntimePlatform == Device.UWP)
+			if (DeviceInfo.Platform == DevicePlatform.WinUI)
 			{
 				spellCheckForUwp = KeyboardFlags.Spellcheck;
 			}
@@ -62,22 +63,22 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			inputViews.Add(new EntryKeyboardFlags() { ClassId = "CustomRendererCapitalizeSentence", FlagsToSet = KeyboardFlags.CapitalizeSentence, FlagsToTestFor = KeyboardFlags.CapitalizeSentence });
 			inputViews.Add(new EntryKeyboardFlags() { ClassId = "CustomRendererCapitalizeWord", FlagsToSet = KeyboardFlags.CapitalizeWord, FlagsToTestFor = KeyboardFlags.CapitalizeWord });
 
-			if (Device.RuntimePlatform != Device.UWP)
+			if (Device.RuntimePlatform != Device.WinUI)
 			{
 				inputViews.Add(new EntryKeyboardFlags() { ClassId = "CustomRendererCapitalizeCharacter", FlagsToSet = KeyboardFlags.CapitalizeCharacter });
 			}
 
-			if (Device.RuntimePlatform == Device.UWP)
+			if (DeviceInfo.Platform == DevicePlatform.WinUI)
 			{
 				layout.Children.Add(new Label() { Text = "Capitalization settings only work when using touch keyboard" });
 				layout.Children.Add(new Label() { Text = "Character doesn't do anything on UWP" });
 			}
-			else if (Device.RuntimePlatform == Device.iOS)
+			else if (DeviceInfo.Platform == DevicePlatform.iOS)
 			{
 				layout.Children.Add(new Label() { Text = "All will use Sentence" });
 				layout.Children.Add(new Label() { Text = "No Keyboard will use Sentence" });
 			}
-			else if (Device.RuntimePlatform == Device.Android)
+			else if (DeviceInfo.Platform == DevicePlatform.Android)
 			{
 				layout.Children.Add(new Label() { Text = "All will use Sentence" });
 				layout.Children.Add(new Label() { Text = "No Keyboard will use None" });

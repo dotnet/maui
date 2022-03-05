@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
@@ -8,20 +9,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class LabelTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void TextAndAttributedTextMutuallyExclusive()
 		{
@@ -93,11 +80,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void LabelResizesWhenFontChanges()
 		{
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (ve, w, h) =>
+			MockPlatformSizeService.Current.GetPlatformSizeFunc = (ve, w, h) =>
 			{
 				var l = (Label)ve;
 				return new SizeRequest(new Size(l.FontSize, l.FontSize));
-			});
+			};
 
 			var label = new Label { IsPlatformEnabled = true };
 
@@ -130,7 +117,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var label = new Label();
 
-			Assert.AreEqual(10.0, label.FontSize);
+			Assert.AreEqual(label.GetDefaultFontSize(), label.FontSize);
 
 			label.SetValue(Label.FontSizeProperty, 1.0, true);
 			Assert.AreEqual(1.0, label.FontSize);
@@ -140,7 +127,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ManuallySetFontSizeNotOverridenByStyle()
 		{
 			var label = new Label();
-			Assume.That(label.FontSize, Is.EqualTo(10.0));
+			Assume.That(label.FontSize, Is.EqualTo(label.GetDefaultFontSize()));
 
 			label.SetValue(Label.FontSizeProperty, 2.0, false);
 			Assert.AreEqual(2.0, label.FontSize);
@@ -153,7 +140,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ManuallySetFontSizeNotOverridenByFontSetInStyle()
 		{
 			var label = new Label();
-			Assume.That(label.FontSize, Is.EqualTo(10.0));
+			Assume.That(label.FontSize, Is.EqualTo(label.GetDefaultFontSize()));
 
 			label.SetValue(Label.FontSizeProperty, 2.0);
 			Assert.AreEqual(2.0, label.FontSize);

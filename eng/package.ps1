@@ -9,15 +9,18 @@ Write-Host "MSBUILD_EXE: $env:MSBUILD_EXE"
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $logsDirectory = Join-Path $artifacts logs
-$sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-net6.slnf
+$sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages.slnf
 $slnMac = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-mac.slnf
-
-# Bootstrap ./bin/dotnet/
-$csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
-& dotnet build $csproj -bl:$logsDirectory/dotnet-$configuration.binlog
 
 # Full path to dotnet folder
 $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/
+if (Test-Path -Path $dotnet) {
+    "Local workloads exist."
+} else {
+    "Local workloads don't exist. Run dotnet cake first."
+    [Environment]::Exit(1)
+}
+
 $dotnet = (Get-Item $dotnet).FullName
 
 if ($IsWindows)
@@ -39,14 +42,6 @@ if ($IsWindows)
         }
         Write-Host "Found MSBuild at ${msbuild}"
     }
-
-    # Modify global.json, so the IDE can load
-    $globaljson = Join-Path $PSScriptRoot ../global.json
-    [xml] $xml = Get-Content (Join-Path $PSScriptRoot Versions.props)
-    $json = Get-Content $globaljson | ConvertFrom-Json
-    $json | Add-Member sdk (New-Object -TypeName PSObject) -Force
-    $json.sdk | Add-Member version ([string]$xml.Project.PropertyGroup.MicrosoftDotnetSdkInternalPackageVersion).Trim() -Force
-    $json | ConvertTo-Json | Set-Content $globaljson
 
     # NOTE: I've not found a better way to do this
     # see: https://github.com/PowerShell/PowerShell/issues/3316

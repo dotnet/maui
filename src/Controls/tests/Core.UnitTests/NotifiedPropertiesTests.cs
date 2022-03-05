@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<Button, int> ("CornerRadius", v => v.CornerRadius, (v, o) => v.CornerRadius = o, () => -1, 12),
 			new PropertyTestCase<Button, Color> ("BorderColor", v => v.BorderColor, (v, o) => v.BorderColor = o, () => null, new Color (0, 1, 0)),
 			new PropertyTestCase<Button, string> ("FontFamily", v => v.FontFamily, (v, o) => v.FontFamily = o, () => null, "TestingFace"),
-			new PropertyTestCase<Button, double> ("FontSize", v => v.FontSize, (v, o) => v.FontSize = o, () => Device.GetNamedSize (NamedSize.Default, typeof (Button), true), 123.0),
+			new PropertyTestCase<Button, double> ("FontSize", v => v.FontSize, (v, o) => v.FontSize = o, () => new Button().GetDefaultFontSize(), 123.0),
 			new PropertyTestCase<Button, FontAttributes> ("FontAttributes", v => v.FontAttributes, (v, o) => v.FontAttributes = o, () => FontAttributes.None, FontAttributes.Italic),
 			new PropertyTestCase<CellTests.TestCell, double> ("Height", v => v.Height, (v, o) => v.Height = o, () => -1, 10),
 			new PropertyTestCase<DatePicker, DateTime> ("MinimumDate", v => v.MinimumDate, (v, o) => v.MinimumDate = o, () => new DateTime (1900, 1, 1), new DateTime (2014, 02, 05)),
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<Label, Color> ("TextColor", v => v.TextColor, (v, o) => v.TextColor = o, () => null, new Color (0, 1, 0)),
 			new PropertyTestCase<Label, LineBreakMode> ("LineBreakMode", v => v.LineBreakMode, (v, o) => v.LineBreakMode = o, () => LineBreakMode.WordWrap, LineBreakMode.TailTruncation),
 			new PropertyTestCase<Label, string> ("FontFamily", v => v.FontFamily, (v, o) => v.FontFamily = o, () => null, "TestingFace"),
-			new PropertyTestCase<Label, double> ("FontSize", v => v.FontSize, (v, o) => v.FontSize = o, () => Device.GetNamedSize (NamedSize.Default, typeof (Label), true), 123.0),
+			new PropertyTestCase<Label, double> ("FontSize", v => v.FontSize, (v, o) => v.FontSize = o, () => new Label().GetDefaultFontSize(), 123.0),
 			new PropertyTestCase<Label, FontAttributes> ("FontAttributes", v => v.FontAttributes, (v, o) => v.FontAttributes = o, () => FontAttributes.None, FontAttributes.Italic),
 			new PropertyTestCase<Label, FormattedString> ("FormattedText", v => v.FormattedText, (v, o) => v.FormattedText = o, () => default (FormattedString), new FormattedString()),
 			new PropertyTestCase<Map, MapType> ("MapType", v => v.MapType, (v, o) => v.MapType = o, () => MapType.Street, MapType.Satellite),
@@ -158,24 +158,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		};
 #pragma warning restore 0414
 
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test, TestCaseSource("Properties")]
 		public void DefaultValues(PropertyTestCase property)
 		{
 			var view = property.CreateView();
+			var expected = property.ExpectedDefaultValue;
+			var actual = property.PropertyGetter(view);
+
 			Assert.AreEqual(property.ExpectedDefaultValue, property.PropertyGetter(view), property.DebugName);
 		}
 

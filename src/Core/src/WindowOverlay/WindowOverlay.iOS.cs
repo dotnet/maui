@@ -2,8 +2,7 @@
 using System.Linq;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.CoreGraphics;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -12,24 +11,24 @@ namespace Microsoft.Maui
 	{
 		PassthroughView? _passthroughView;
 		IDisposable? _frameObserver;
-		NativeGraphicsView? _graphicsView;
+		PlatformGraphicsView? _graphicsView;
 
 		public virtual bool Initialize()
 		{
-			if (IsNativeViewInitialized)
+			if (IsPlatformViewInitialized)
 				return true;
 
-			var nativeLayer = Window?.ToNative();
-			if (nativeLayer is not UIWindow nativeWindow)
+			var nativeLayer = Window?.ToPlatform();
+			if (nativeLayer is not UIWindow platformWindow)
 				return false;
 
-			if (nativeWindow?.RootViewController?.View == null)
+			if (platformWindow?.RootViewController?.View == null)
 				return false;
 
 			// Create a passthrough view for holding the canvas and other diagnostics tools.
-			_passthroughView = new PassthroughView(this, nativeWindow.RootViewController.View.Frame);
+			_passthroughView = new PassthroughView(this, platformWindow.RootViewController.View.Frame);
 
-			_graphicsView = new NativeGraphicsView(_passthroughView.Frame, this, new DirectRenderer());
+			_graphicsView = new PlatformGraphicsView(_passthroughView.Frame, this, new DirectRenderer());
 			_graphicsView.AutoresizingMask = UIViewAutoresizing.All;
 
 			_passthroughView.AddSubview(_graphicsView);
@@ -49,13 +48,13 @@ namespace Microsoft.Maui
 			_graphicsView.BackgroundColor = UIColor.FromWhiteAlpha(1, 0.0f);
 
 			// Add the passthrough view to the front of the stack.
-			nativeWindow.RootViewController.View.AddSubview(_passthroughView);
-			nativeWindow.RootViewController.View.BringSubviewToFront(_passthroughView);
+			platformWindow.RootViewController.View.AddSubview(_passthroughView);
+			platformWindow.RootViewController.View.BringSubviewToFront(_passthroughView);
 
 			// Any time the passthrough view is touched, handle it.
 			_passthroughView.OnTouch += UIViewOnTouch;
-			IsNativeViewInitialized = true;
-			return IsNativeViewInitialized;
+			IsPlatformViewInitialized = true;
+			return IsPlatformViewInitialized;
 		}
 
 		/// <inheritdoc/>
@@ -68,12 +67,12 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Deinitializes the native event hooks and handlers used to drive the overlay.
 		/// </summary>
-		void DeinitializeNativeDependencies()
+		void DeinitializePlatformDependencies()
 		{
 			_frameObserver?.Dispose();
 			_passthroughView?.RemoveFromSuperview();
 			_passthroughView?.Dispose();
-			IsNativeViewInitialized = false;
+			IsPlatformViewInitialized = false;
 		}
 
 		void UIViewOnTouch(object? sender, CGPoint e) =>

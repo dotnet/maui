@@ -3,7 +3,7 @@
   <Import Project="../Shared/Common.targets" />
 
   <PropertyGroup>
-    <PackageId>$(PackageId).Manifest-$(DotNetPreviewVersionBand)</PackageId>
+    <PackageId>$(PackageId).Manifest-$(DotNetMauiManifestVersionBand)</PackageId>
     <Description>.NET MAUI workload manifest</Description>
   </PropertyGroup>
 
@@ -14,8 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- NOTE: Microsoft.Maui.Resizetizer.Sdk.csproj temporarily replaced by Resizetizer.csproj -->
-    <ProjectReference Include="../Microsoft.Maui.*/*.csproj" Exclude="../Microsoft.Maui.Resizetizer.Sdk/*" />
+    <ProjectReference Include="../Microsoft.Maui.*/*.csproj" />
     <ProjectReference Include="$(MauiRootDirectory)src/SingleProject/Resizetizer/src/Resizetizer.csproj" />
   </ItemGroup>
 
@@ -25,7 +24,11 @@
     <_JsonInputFile Include="SdkInstaller.in.json" OutputPath="$(IntermediateOutputPath)SdkInstaller.json" Pack="false" />
   </ItemGroup>
 
-  <Target Name="_GenerateWorkloadManifest" BeforeTargets="Build;AssignTargetPaths" DependsOnTargets="SetVersions" Inputs="$(MSBuildProjectFile);@(_JsonInputFile)" Outputs="@(_JsonInputFile->'%(OutputPath)')">
+  <Target Name="_GenerateWorkloadManifest"
+      BeforeTargets="Build;AssignTargetPaths"
+      DependsOnTargets="SetVersions"
+      Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/Versions.props;@(_JsonInputFile)"
+      Outputs="@(_JsonInputFile->'%(OutputPath)')">
     <ItemGroup>
       <_VersionsToReplace Include="MicrosoftDotnetSdkInternalPackageVersion" />
       <_VersionsToReplace Include="MicrosoftNETCoreAppRefPackageVersion" />
@@ -42,41 +45,8 @@
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsWebPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsWebViewPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreMetadataPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationAbstractionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationBinderPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationCommandLinePackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationFileExtensionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationJsonPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsConfigurationUserSecretsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsDependencyInjectionPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsFileProvidersAbstractionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsFileProvidersCompositePackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsFileProvidersEmbeddedPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsFileProvidersPhysicalPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsFileSystemGlobbingPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsHostingAbstractionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsHostingPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingAbstractionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingConfigurationPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingConsolePackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingDebugPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingEventLogPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingEventSourcePackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsLoggingPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsOptionsPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftExtensionsPrimitivesPackageVersion" />
       <_VersionsToReplace Include="MicrosoftJSInteropPackageVersion" />
       <_VersionsToReplace Include="MicrosoftMauiGraphicsVersion" />
-      <_VersionsToReplace Include="SystemDiagnosticsDiagnosticSourcePackageVersion" />
-      <_VersionsToReplace Include="SystemDiagnosticsEventLogPackageVersion" />
-      <_VersionsToReplace Include="SystemIOPipelinesPackageVersion" />
-      <_VersionsToReplace Include="SystemRuntimeCompilerServicesUnsafePackageVersion" />
-      <_VersionsToReplace Include="SystemTextEncodingsWebPackageVersion" />
-      <_VersionsToReplace Include="SystemTextJsonPackageVersion" />
       <_VersionsToReplace Update="@(_VersionsToReplace)" PropertyName="%(Identity)" />
       <_VersionsToReplace Include="MicrosoftMauiGraphicsWin2DWinUIDesktopPackageVersion" PropertyName="MicrosoftMauiGraphicsVersion" />
     </ItemGroup>

@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					var searchBar = new UISearchBar(RectangleF.Zero) { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
+					var searchBar = new UISearchBar(CGRect.Empty) { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
 					var cancelButton = searchBar.FindDescendantView<UIButton>();
 					_cancelButtonTextColorDefaultNormal = cancelButton.TitleColor(UIControlState.Normal);
@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_textField == null)
 				return;
 
-			_textField.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			_textField.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
 		[PortHandler]
@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_textField == null)
 				return;
 
-			_textField.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();
+			_textField.VerticalAlignment = Element.VerticalTextAlignment.ToPlatformTextAlignment();
 		}
 
 		public virtual void UpdateCancelButton()
@@ -331,13 +331,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var color = Element.IsEnabled && targetColor != null
 					? targetColor : ColorExtensions.PlaceholderColor.ToColor();
 
-				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, color);
+				_textField.AttributedPlaceholder = formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: color);
 				_textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 
 			}
 			else
 			{
-				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, targetColor == null
+				_textField.AttributedPlaceholder = formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: targetColor == null
 					? ColorExtensions.PlaceholderColor.ToColor() : targetColor);
 				_textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 			}
@@ -413,7 +413,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			// iPhone does not have an enter key on numeric keyboards
-			if (Device.Idiom == TargetIdiom.Phone && (keyboard == Keyboard.Numeric || keyboard == Keyboard.Telephone))
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone && (keyboard == Keyboard.Numeric || keyboard == Keyboard.Telephone))
 			{
 				_numericAccessoryView = _numericAccessoryView ?? CreateNumericKeyboardAccessoryView();
 				Control.InputAccessoryView = _numericAccessoryView;
@@ -440,7 +440,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateSearchBarStyle()
 		{
-			Control.SearchBarStyle = Element.OnThisPlatform().GetSearchBarStyle().ToNativeSearchBarStyle();
+			Control.SearchBarStyle = Element.OnThisPlatform().GetSearchBarStyle().ToPlatformSearchBarStyle();
 		}
 	}
 }

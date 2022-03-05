@@ -11,9 +11,9 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class NavigationViewHandlerTests
 	{
 		int GetNativeNavigationStackCount(NavigationViewHandler navigationViewHandler) =>
-			navigationViewHandler.NativeView.BackStackDepth + 1;
+			navigationViewHandler.PlatformView.BackStackDepth + 1;
 
-		Task CreateNavigationViewHandlerAsync(INavigationView navigationView, Func<NavigationViewHandler, Task> action)
+		Task CreateNavigationViewHandlerAsync(IStackNavigationView navigationView, Func<NavigationViewHandler, Task> action)
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var mauiContext = MauiContext.MakeScoped(true);
 					var handler = CreateHandler(navigationView, mauiContext);
-					frameworkElement = handler.NativeView;
+					frameworkElement = handler.PlatformView;
 					content.Children.Add(frameworkElement);
 					if (navigationView is NavigationViewStub nvs && nvs.NavigationStack?.Count > 0)
 					{

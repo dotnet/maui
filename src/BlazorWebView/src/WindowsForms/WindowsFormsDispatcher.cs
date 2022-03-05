@@ -72,8 +72,28 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				}
 				else
 				{
-					var asyncResult = _dispatchThreadControl.BeginInvoke(workItem);
-					await Task.Factory.FromAsync(asyncResult, _dispatchThreadControl.EndInvoke);
+					// See https://github.com/dotnet/winforms/issues/4631 for discussion. `Control.BeginInvoke` in WinForms
+					// does not wait for Tasks returned by the delegate. We will have to simulate this using a TCS and wait for
+					// both execution of `workItem` and the dispatcher to complete its internal operation.
+					// additional APIs are exposed by WinForms.
+
+					var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+					// BeginInvoke specifically expects an `Action` so avoid using var here.
+					Action action = async () =>
+					{
+						try
+						{
+							await workItem();
+							tcs.TrySetResult();
+						}
+						catch (Exception ex)
+						{
+							tcs.TrySetException(ex);
+						}
+					};
+
+					var asyncResult = _dispatchThreadControl.BeginInvoke(action, workItem, tcs);
+					await Task.WhenAll(tcs.Task, Task.Factory.FromAsync(asyncResult, _dispatchThreadControl.EndInvoke));
 				}
 			}
 			catch (Exception ex)
@@ -120,8 +140,29 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				}
 				else
 				{
-					var asyncResult = _dispatchThreadControl.BeginInvoke(workItem);
-					return await Task<TResult>.Factory.FromAsync(asyncResult, result => (TResult)_dispatchThreadControl.EndInvoke(result));
+					// See https://github.com/dotnet/winforms/issues/4631 for discussion. `Control.BeginInvoke` in WinForms
+					// does not wait for Tasks returned by the delegate. We will have to simulate this using a TCS and wait for
+					// both execution of `workItem` and the dispatcher to complete its internal operation.
+					// additional APIs are exposed by WinForms.
+
+					var tcs = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+					// BeginInvoke specifically expects an `Action` so avoid using var here.
+					Action action = async () =>
+					{
+						try
+						{
+							var result = await workItem();
+							tcs.TrySetResult(result);
+						}
+						catch (Exception ex)
+						{
+							tcs.TrySetException(ex);
+						}
+					};
+
+					var asyncResult = _dispatchThreadControl.BeginInvoke(action, workItem, tcs);
+					await Task.WhenAll(tcs.Task, Task.Factory.FromAsync(asyncResult, _dispatchThreadControl.EndInvoke));
+					return await tcs.Task;
 				}
 			}
 			catch (Exception ex)

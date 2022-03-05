@@ -1,22 +1,23 @@
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Clipboard
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Clipboard']/Docs" />
+	public partial class ClipboardImplementation : IClipboard
 	{
-		static Task PlatformSetTextAsync(string text)
+		public Task SetTextAsync(string text)
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static bool PlatformHasText
+		public bool HasText
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task<string> PlatformGetTextAsync()
+		public Task<string> GetTextAsync()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void StartClipboardListeners()
+		public void StartClipboardListeners()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void StopClipboardListeners()
+		public void StopClipboardListeners()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

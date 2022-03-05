@@ -623,12 +623,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual("//animals/domestic/cats/catdetails", shell.CurrentState.Location.ToString());
 		}
 
-		[TestCase(typeof(PageWithDependency), typeof(PageWithDependency))]
-		[TestCase(typeof(PageWithDependency), typeof(Dependency))]
-		public async Task GlobalRouteWithDependencyResolution(Type typeForRouteName, Type type)
+		[TestCase(typeof(PageWithDependency))]
+		[TestCase(typeof(PageWithDependencyAndMultipleConstructors))]
+		[TestCase(typeof(PageWithDependency))]
+		[TestCase(typeof(PageWithUnregisteredDependencyAndParameterlessConstructor))]
+		public async Task GlobalRouteWithDependencyResolution(Type pageType)
 		{
 			var serviceCollection = new ServiceCollection();
 			serviceCollection.AddTransient<Dependency>();
+			serviceCollection.AddTransient<PageWithDependency>();
+			serviceCollection.AddTransient<PageWithDependencyAndMultipleConstructors>();
 			IServiceProvider services = serviceCollection.BuildServiceProvider();
 			var fakeMauiContext = Substitute.For<IMauiContext>();
 			var fakeHandler = Substitute.For<IElementHandler>();
@@ -642,16 +646,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Items = { flyoutItem }
 			};
 			shell.Parent.Handler = fakeHandler;
-			var routeName = typeForRouteName.AssemblyQualifiedName;
-			Routing.RegisterRoute(routeName, type);
+			var routeName = pageType.Name;
+			Routing.RegisterRoute(routeName, pageType);
 			await shell.GoToAsync(routeName);
 
 			Assert.IsNotNull(shell.Navigation);
 			Assert.IsNotNull(shell.Navigation.NavigationStack);
 			var page = shell.Navigation.NavigationStack[1];
 			Assert.That(page, Is.Not.Null);
-			Assert.IsInstanceOf<PageWithDependency>(page);
-			Assert.That((page as PageWithDependency).TestDependency, Is.Not.Null);
+			if (pageType == typeof(PageWithDependency) || pageType == typeof(Dependency))
+			{
+				Assert.IsInstanceOf<PageWithDependency>(page);
+				Assert.That((page as PageWithDependency).TestDependency, Is.Not.Null);
+			}
+
+			if (pageType == typeof(PageWithDependencyAndMultipleConstructors))
+			{
+				Assert.IsInstanceOf<PageWithDependencyAndMultipleConstructors>(page);
+				var testPage = page as PageWithDependencyAndMultipleConstructors;
+				Assert.That(testPage.TestDependency, Is.Not.Null);
+				Assert.That(testPage.OtherTestDependency, Is.Null);
+			}
+
+			if (pageType == typeof(PageWithUnregisteredDependencyAndParameterlessConstructor))
+			{
+				Assert.IsInstanceOf<PageWithUnregisteredDependencyAndParameterlessConstructor>(page);
+			}
 		}
 
 		[Test]

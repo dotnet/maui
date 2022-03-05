@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeViewHandler : ViewHandler<ISwipeView, object>
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapContent(ISwipeViewHandler handler, ISwipeView view)
 		{
@@ -28,6 +28,19 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
+		}
+
+		public static void MapLeftItems(ISwipeViewHandler handler, ISwipeView view)
+		{
+		}
+		public static void MapTopItems(ISwipeViewHandler handler, ISwipeView view)
+		{
+		}
+		public static void MapRightItems(ISwipeViewHandler handler, ISwipeView view)
+		{
+		}
+		public static void MapBottomItems(ISwipeViewHandler handler, ISwipeView view)
+		{
 		}
 	}
 }

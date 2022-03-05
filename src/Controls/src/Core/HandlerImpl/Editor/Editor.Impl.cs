@@ -3,11 +3,12 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/Editor.xml" path="Type[@FullName='Microsoft.Maui.Controls.Editor']/Docs" />
 	public partial class Editor : IEditor
 	{
 		double _previousWidthConstraint;
 		double _previousHeightConstraint;
-		Rectangle _previousBounds;
+		Rect _previousBounds;
 
 		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
 
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls
 			(this as IEditorController).SendCompleted();
 		}
 
-		protected override Size ArrangeOverride(Rectangle bounds)
+		protected override Size ArrangeOverride(Rect bounds)
 		{
 			_previousBounds = bounds;
 			return base.ArrangeOverride(bounds);

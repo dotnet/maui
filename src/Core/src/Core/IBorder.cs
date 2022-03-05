@@ -1,9 +1,12 @@
-﻿namespace Microsoft.Maui
+﻿namespace Microsoft.Maui;
+
+/// <summary>
+/// Provides functionality to provide a border.
+/// </summary>
+public interface IBorder
 {
 	/// <summary>
-	/// Provides functionality to define a border around an element.
+	///  Define how the Shape outline is painted.
 	/// </summary>
-	public interface IBorder : IContentView, IBorderStroke
-	{
-	}
+	IBorderStroke Border { get; }
 }

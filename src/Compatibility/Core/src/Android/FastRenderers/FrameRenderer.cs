@@ -14,6 +14,7 @@ using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer instead")]
 	public class FrameRenderer : CardView, IVisualElementRenderer, IViewRenderer, ITabStop
 	{
 		float _defaultElevation = -1f;

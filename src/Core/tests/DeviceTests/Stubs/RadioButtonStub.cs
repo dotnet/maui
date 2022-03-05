@@ -18,7 +18,13 @@
 
 		public Thickness Padding { get; set; }
 
-		public Size CrossPlatformArrange(Rectangle bounds)
+		public Color StrokeColor { get; set; }
+
+		public double StrokeThickness { get; set; }
+
+		public int CornerRadius { get; set; }
+
+		public Size CrossPlatformArrange(Rect bounds)
 		{
 			return bounds.Size;
 		}

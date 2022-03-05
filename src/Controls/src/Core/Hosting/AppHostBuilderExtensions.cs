@@ -12,15 +12,9 @@ namespace Microsoft.Maui.Controls.Hosting
 	{
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
 		{
-#if __IOS__ || __ANDROID__
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
-#endif
-
 #if WINDOWS
-			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
-#endif
-#if WINDOWS || __ANDROID__
-			handlersCollection.AddHandler<Shell, ShellHandler>();
+			handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #endif
 			handlersCollection.AddHandler<Application, ApplicationHandler>();
 			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
@@ -47,30 +41,42 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<Border, BorderHandler>();
 			handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 			handlersCollection.AddHandler<Shapes.Ellipse, ShapeViewHandler>();
-			handlersCollection.AddHandler<Shapes.Line, ShapeViewHandler>();
-			handlersCollection.AddHandler<Shapes.Path, ShapeViewHandler>();
-			handlersCollection.AddHandler<Shapes.Polygon, ShapeViewHandler>();
-			handlersCollection.AddHandler<Shapes.Polyline, ShapeViewHandler>();
-			handlersCollection.AddHandler<Shapes.Rectangle, ShapeViewHandler>();
-			handlersCollection.AddHandler<Shapes.RoundRectangle, ShapeViewHandler>();
+			handlersCollection.AddHandler<Shapes.Line, LineHandler>();
+			handlersCollection.AddHandler<Shapes.Path, PathHandler>();
+			handlersCollection.AddHandler<Shapes.Polygon, PolygonHandler>();
+			handlersCollection.AddHandler<Shapes.Polyline, PolylineHandler>();
+			handlersCollection.AddHandler<Shapes.Rectangle, RectangleHandler>();
+			handlersCollection.AddHandler<Shapes.RoundRectangle, RoundRectangleHandler>();
 			handlersCollection.AddHandler<Window, WindowHandler>();
 			handlersCollection.AddHandler<ImageButton, ImageButtonHandler>();
 			handlersCollection.AddHandler<IndicatorView, IndicatorViewHandler>();
 			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
-#if __ANDROID__ || __IOS__
 			handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
-			
+			handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
+			handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
+
+			handlersCollection.AddHandler<MenuBar, MenuBarHandler>();
+			handlersCollection.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
+			handlersCollection.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
+			handlersCollection.AddHandler<MenuBarItem, MenuBarItemHandler>();
+
+#if ANDROID || IOS
+			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 #endif
 #if WINDOWS || ANDROID
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
+			handlersCollection.AddHandler<TabbedPage,  TabbedViewHandler>();
+#if WINDOWS
+			handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
+			handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
+			handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
+			handlersCollection.AddHandler<Shell, ShellHandler>();
 #endif
-#if ANDROID
-			handlersCollection.AddHandler<TabbedPage, Controls.Handlers.TabbedPageHandler>();
-			handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
-			handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
-			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
+#endif
+#if IOS
+			handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #endif
 			return handlersCollection;
 		}
@@ -79,7 +85,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			builder.ConfigureImageSources(services =>
 			{
-				services.AddService<FileImageSource>(svcs => new FileImageSourceService(svcs.GetService<IImageSourceServiceConfiguration>(), svcs.CreateLogger<FileImageSourceService>()));
+				services.AddService<FileImageSource>(svcs => new FileImageSourceService(svcs.CreateLogger<FileImageSourceService>()));
 				services.AddService<FontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
 				services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
 				services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
@@ -98,6 +104,11 @@ namespace Microsoft.Maui.Controls.Hosting
 			FlyoutPage.RemapForControls();
 			Toolbar.RemapForControls();
 			Window.RemapForControls();
+			Editor.RemapForControls();
+			Entry.RemapForControls();
+			SearchBar.RemapForControls();
+			TabbedPage.RemapForControls();
+			Layout.RemapForControls();
 
 			return builder;
 		}

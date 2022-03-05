@@ -3,20 +3,20 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class PhoneDialer
+	public partial class PhoneDialerImplementation : IPhoneDialer
 	{
 		const string noNetworkProviderCode = "65535";
 
-		internal static bool IsSupported => UIApplication.SharedApplication.CanOpenUrl(CreateNsUrl(new string('0', 10)));
+		public bool IsSupported => UIApplication.SharedApplication.CanOpenUrl(CreateNsUrl(new string('0', 10)));
 
-		static async void PlatformOpen(string number)
+		public async void Open(string number)
 		{
 			ValidateOpen(number);
 
 			var nsUrl = CreateNsUrl(number);
-			await Launcher.PlatformOpenAsync(nsUrl);
+			await Launcher.OpenAsync(nsUrl);
 		}
 
 		static NSUrl CreateNsUrl(string number) => new NSUrl(new Uri($"tel:{number}").AbsoluteUri);

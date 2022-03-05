@@ -1,24 +1,28 @@
 #nullable enable
 #if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIView;
+using PlatformView = Microsoft.Maui.Platform.LayoutView;
 #elif __ANDROID__
-using NativeView = Android.Views.View;
+using PlatformView = Microsoft.Maui.Platform.LayoutViewGroup;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using PlatformView = Microsoft.Maui.Platform.LayoutPanel;
 #elif NETSTANDARD
-using NativeView = System.Object;
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class LayoutHandler : ILayoutHandler
 	{
-		public static IPropertyMapper<ILayout, ILayoutHandler> LayoutMapper = new PropertyMapper<ILayout, ILayoutHandler>(ViewMapper)
+		public static IPropertyMapper<ILayout, ILayoutHandler> Mapper = new PropertyMapper<ILayout, ILayoutHandler>(ViewMapper)
 		{
-			[nameof(ILayout.Background)] = MapBackground
+			[nameof(ILayout.Background)] = MapBackground,
+			[nameof(ILayout.ClipsToBounds)] = MapClipsToBounds,
+#if ANDROID || WINDOWS
+			[nameof(IView.InputTransparent)] = MapInputTransparent,
+#endif
 		};
 
-		public static CommandMapper<ILayout, ILayoutHandler> LayoutCommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<ILayout, ILayoutHandler> CommandMapper = new(ViewCommandMapper)
 		{
 			[nameof(ILayoutHandler.Add)] = MapAdd,
 			[nameof(ILayoutHandler.Remove)] = MapRemove,
@@ -28,20 +32,28 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILayoutHandler.UpdateZIndex)] = MapUpdateZIndex,
 		};
 
-		public LayoutHandler() : base(LayoutMapper, LayoutCommandMapper)
+		public LayoutHandler() : base(Mapper, CommandMapper)
 		{
-
 		}
 
 		public LayoutHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
-			: base(mapper ?? LayoutMapper, commandMapper ?? LayoutCommandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 
 		}
 
+		ILayout ILayoutHandler.VirtualView => VirtualView;
+
+		PlatformView ILayoutHandler.PlatformView => PlatformView;
+
 		public static void MapBackground(ILayoutHandler handler, ILayout layout)
 		{
-			((NativeView?)handler.NativeView)?.UpdateBackground(layout);
+			((PlatformView?)handler.PlatformView)?.UpdateBackground(layout);
+		}
+
+		public static void MapClipsToBounds(ILayoutHandler handler, ILayout layout)
+		{
+			((PlatformView?)handler.PlatformView)?.UpdateClipsToBounds(layout);
 		}
 
 		public static void MapAdd(ILayoutHandler handler, ILayout layout, object? arg)
@@ -73,7 +85,7 @@ namespace Microsoft.Maui.Handlers
 			handler.Clear();
 		}
 
-		private static void MapUpdate(ILayoutHandler handler, ILayout layout, object? arg)
+		static void MapUpdate(ILayoutHandler handler, ILayout layout, object? arg)
 		{
 			if (arg is LayoutHandlerUpdate args)
 			{
@@ -81,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		private static void MapUpdateZIndex(ILayoutHandler handler, ILayout layout, object? arg)
+		static void MapUpdateZIndex(ILayoutHandler handler, ILayout layout, object? arg)
 		{
 			if (arg is IView view)
 			{

@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[Test]
 		public void RemovedMauiViewsHaveNoRowColumnInfo()
 		{
-			var gl = new GridLayout();
+			var gl = new Grid();
 			var view = NSubstitute.Substitute.For<IView>();
 
 			gl.Add(view);
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[Test]
 		public void AddedViewGetsDefaultRowAndColumn()
 		{
-			var gl = new GridLayout();
+			var gl = new Grid();
 			var view = new Label();
 
 			gl.Add(view);
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[Test]
 		public void AddedMauiViewGetsDefaultRowAndColumn()
 		{
-			var gl = new GridLayout();
+			var gl = new Grid();
 			var view = NSubstitute.Substitute.For<IView>();
 
 			gl.Add(view);
@@ -55,19 +55,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		}
 
 		[Test]
-		public void ChangingRowSpacingInvalidatesGrid() 
+		public void ChangingRowSpacingInvalidatesGrid()
 		{
-			var grid = new GridLayout();
+			var grid = new Grid();
 
 			var handler = ListenForInvalidation(grid);
 			grid.RowSpacing = 100;
-			AssertInvalidated(handler); 
+			AssertInvalidated(handler);
 		}
 
 		[Test]
 		public void ChangingColumnSpacingInvalidatesGrid()
 		{
-			var grid = new GridLayout();
+			var grid = new Grid();
 
 			var handler = ListenForInvalidation(grid);
 			grid.ColumnSpacing = 100;
@@ -77,28 +77,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[Test]
 		public void ChangingChildRowInvalidatesGrid()
 		{
-			var grid = new GridLayout() 
-			{ 
-				RowDefinitions = new RowDefinitionCollection 
-				{ 
-					new RowDefinition(), new RowDefinition() 
-				} 
+			var grid = new Grid()
+			{
+				RowDefinitions = new RowDefinitionCollection
+				{
+					new RowDefinition(), new RowDefinition()
+				}
 			};
 
 			var view = Substitute.For<IView>();
 			grid.Add(view);
 
 			var handler = ListenForInvalidation(grid);
-			
+
 			grid.SetRow(view, 1);
-			
+
 			AssertInvalidated(handler);
 		}
 
 		[Test]
 		public void ChangingChildColumnInvalidatesGrid()
 		{
-			var grid = new GridLayout()
+			var grid = new Grid()
 			{
 				ColumnDefinitions = new ColumnDefinitionCollection
 				{
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			AssertInvalidated(handler);
 		}
 
-		static IViewHandler ListenForInvalidation(IView view) 
+		static IViewHandler ListenForInvalidation(IView view)
 		{
 			var handler = Substitute.For<IViewHandler>();
 			view.Handler = handler;

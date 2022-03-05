@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Resizetizer
 		public string ProjectDirectory { get; set; }
 
 		/// <summary>
-		/// On Windows, 'Assets/' is prepended to the path
+		/// The name of any folders to prefix with
 		/// </summary>
 		public string FolderName { get; set; }
 

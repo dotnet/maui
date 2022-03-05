@@ -7,6 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.CellRenderer instead")]
 	public class CellRenderer : IRegisterable
 	{
 		static readonly BindableProperty RealCellProperty = BindableProperty.CreateAttached("RealCell", typeof(UITableViewCell), typeof(Cell), null);
@@ -87,9 +88,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
 				{
-					if (!UIDevice.CurrentDevice.CheckSystemVersion(7, 0))
-						return;
-
 					uiBgColor = ColorExtensions.GroupedBackground;
 				}
 				else

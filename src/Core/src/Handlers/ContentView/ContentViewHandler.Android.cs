@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ContentViewHandler : ViewHandler<IContentView, ContentViewGroup>
 	{
-		protected override ContentViewGroup CreateNativeView()
+		protected override ContentViewGroup CreatePlatformView()
 		{
 			if (VirtualView == null)
 			{
@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Handlers
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
 
+			viewGroup.SetClipChildren(false);
+
 			return viewGroup;
 		}
 
@@ -24,34 +26,34 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 
-			NativeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
-		void UpdateContent()
+		static void UpdateContent(IContentViewHandler handler)
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			NativeView.RemoveAllViews();
+			handler.PlatformView.RemoveAllViews();
 
-			if (VirtualView.PresentedContent is IView view)
-				NativeView.AddView(view.ToNative(MauiContext));
+			if (handler.VirtualView.PresentedContent is IView view)
+				handler.PlatformView.AddView(view.ToPlatform(handler.MauiContext));
 		}
 
-		public static void MapContent(ContentViewHandler handler, IContentView page)
+		public static void MapContent(IContentViewHandler handler, IContentView page)
 		{
-			handler.UpdateContent();
+			UpdateContent(handler);
 		}
 
-		protected override void DisconnectHandler(ContentViewGroup nativeView)
+		protected override void DisconnectHandler(ContentViewGroup platformView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
-			nativeView.RemoveAllViews();
-			base.DisconnectHandler(nativeView);
+			platformView.RemoveAllViews();
+			base.DisconnectHandler(platformView);
 		}
 	}
 }

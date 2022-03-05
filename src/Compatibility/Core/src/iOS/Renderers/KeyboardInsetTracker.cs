@@ -6,6 +6,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.KeyboardInsetTracker instead")]
 	internal class KeyboardInsetTracker : IDisposable
 	{
 		readonly Func<UIWindow> _fetchWindow;
@@ -15,7 +16,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		bool _disposed;
 		UIEdgeInsets _currentInset;
 		RectangleF _lastKeyboardRect;
-		ShellScrollViewTracker _shellScrollViewTracker;
 
 
 		public KeyboardInsetTracker(UIScrollView targetView, Func<UIWindow> fetchWindow, Action<UIEdgeInsets> setInsetAction)
@@ -36,8 +36,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_setInsetAction = setInsetAction;
 			KeyboardObserver.KeyboardWillShow += OnKeyboardShown;
 			KeyboardObserver.KeyboardWillHide += OnKeyboardHidden;
-			if (renderer != null)
-				_shellScrollViewTracker = new ShellScrollViewTracker(renderer);
 		}
 
 		public void Dispose()
@@ -49,9 +47,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			KeyboardObserver.KeyboardWillShow -= OnKeyboardShown;
 			KeyboardObserver.KeyboardWillHide -= OnKeyboardHidden;
-
-			_shellScrollViewTracker?.Dispose();
-			_shellScrollViewTracker = null;
 		}
 
 		//This method allows us to update the insets if the Frame changes
@@ -97,13 +92,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		public void OnLayoutSubviews() => _shellScrollViewTracker?.OnLayoutSubviews();
-
 		void OnKeyboardHidden(object sender, UIKeyboardEventArgs args)
 		{
-			if (_shellScrollViewTracker == null || !_shellScrollViewTracker.Reset())
-				_setInsetAction(new UIEdgeInsets(0, 0, 0, 0));
-
+			_setInsetAction(new UIEdgeInsets(0, 0, 0, 0));
 			_lastKeyboardRect = RectangleF.Empty;
 		}
 

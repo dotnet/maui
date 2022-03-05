@@ -64,7 +64,7 @@ namespace DualScreen
 		public static Button StyleButton(Button button)
 		{
 			button.FontSize = 10;
-			button.HeightRequest = Device.RuntimePlatform == Device.Android ? 40 : 30;
+			button.HeightRequest = DeviceInfo.Platform == DevicePlatform.Android ? 40 : 30;
 
 			return button;
 		}

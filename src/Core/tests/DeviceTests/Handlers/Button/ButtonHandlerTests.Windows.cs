@@ -30,35 +30,16 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = button.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
-		}
-
-		[Fact(DisplayName = "Button Padding Initializing")]
-		public async Task PaddingInitializesCorrectly()
-		{
-			var expected = new Thickness(5, 10, 15, 20);
-
-			var button = new ButtonStub()
-			{
-				Text = "Test",
-				Padding = expected
-			};
-
-			var actual = await GetValueAsync(button, GetNativePadding);
-
-			Assert.Equal(expected.Left, actual.Left);
-			Assert.Equal(expected.Top, actual.Top);
-			Assert.Equal(expected.Right, actual.Right);
-			Assert.Equal(expected.Bottom, actual.Bottom);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
 		UI.Xaml.Controls.Button GetNativeButton(ButtonHandler buttonHandler) =>
-			buttonHandler.NativeView;
+			buttonHandler.PlatformView;
 
 		string? GetNativeText(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).GetContent<TextBlock>()?.Text;
@@ -73,8 +54,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var nativeButton = GetNativeButton(CreateHandler(button));
-				var ap = new ButtonAutomationPeer(nativeButton);
+				var platformButton = GetNativeButton(CreateHandler(button));
+				var ap = new ButtonAutomationPeer(platformButton);
 				var ip = ap.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
 				ip?.Invoke();
 			});

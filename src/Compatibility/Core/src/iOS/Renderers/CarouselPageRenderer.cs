@@ -13,7 +13,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
-	public class CarouselPageRenderer : UIViewController, IVisualElementRenderer
+	internal class CarouselPageRenderer : UIViewController, IVisualElementRenderer
 	{
 		bool _appeared;
 		Dictionary<Page, UIView> _containerMap;
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetElementSize(Size size)
 		{
-			Element.Layout(new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Element.Layout(new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public UIViewController ViewController

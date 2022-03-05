@@ -7,10 +7,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public class Forms
 	{
+		[Obsolete]
 		public static void Init(IActivationState activationState)
 		{
 			throw new NotImplementedException();
 		}
+
+		internal static IMauiContext MauiContext => throw new NotImplementedException();
 	}
 }
 #endif

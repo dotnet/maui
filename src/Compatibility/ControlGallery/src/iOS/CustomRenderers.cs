@@ -31,17 +31,17 @@ using RectangleF = CoreGraphics.CGRect;
 [assembly: ExportRenderer(typeof(Issue13390), typeof(Issue13390Renderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 {
-	public class Issue13390Renderer : ShellRenderer
+	public class Issue13390Renderer : Controls.Handlers.Compatibility.ShellRenderer
 	{
-		protected override IShellFlyoutRenderer CreateFlyoutRenderer()
+		protected override Controls.Platform.Compatibility.IShellFlyoutRenderer CreateFlyoutRenderer()
 		{
-			return new ShellFlyoutRenderer()
+			return new Controls.Platform.Compatibility.ShellFlyoutRenderer()
 			{
 				FlyoutTransition = new SlideFlyoutTransition2()
 			};
 		}
 
-		public class SlideFlyoutTransition2 : IShellFlyoutTransition
+		public class SlideFlyoutTransition2 : Controls.Platform.Compatibility.IShellFlyoutTransition
 		{
 			public void LayoutViews(CGRect bounds, nfloat openPercent, UIView flyout, UIView shell, FlyoutBehavior behavior)
 			{
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 	}
 
 
-	public class NativeiOSCellRenderer : ViewCellRenderer
+	public class NativeiOSCellRenderer : Handlers.Compatibility.ViewCellRenderer
 	{
 		static NSString s_rid = new NSString("NativeCell");
 
@@ -511,8 +511,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				{
 					SectionInset = new UIEdgeInsets(20, 20, 20, 20),
 					ScrollDirection = UICollectionViewScrollDirection.Vertical,
-					MinimumInteritemSpacing = 5, // minimum spacing between cells 
-					MinimumLineSpacing = 5 // minimum spacing between rows if ScrollDirection is Vertical or between columns if Horizontal 
+					MinimumInteritemSpacing = 5, // minimum spacing between cells 
+					MinimumLineSpacing = 5 // minimum spacing between rows if ScrollDirection is Vertical or between columns if Horizontal 
 				};
 				_controller = new CollectionViewController(flowLayout, ItemSelected);
 				SetNativeControl(_controller.CollectionView);
@@ -587,7 +587,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class TabbedPageWithCustomBarColorRenderer : TabbedRenderer
+	public class TabbedPageWithCustomBarColorRenderer : Handlers.Compatibility.TabbedRenderer
 	{
 		public TabbedPageWithCustomBarColorRenderer()
 		{
@@ -599,7 +599,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class AccessoryViewCellRenderer : ViewCellRenderer
+	public class AccessoryViewCellRenderer : Handlers.Compatibility.ViewCellRenderer
 	{
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
@@ -615,7 +615,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class NoSelectionViewCellRenderer : ViewCellRenderer
+	public class NoSelectionViewCellRenderer : Handlers.Compatibility.ViewCellRenderer
 	{
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
@@ -714,7 +714,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class ExtendedEntryCellRenderer : EntryCellRenderer
+	public class ExtendedEntryCellRenderer : Handlers.Compatibility.EntryCellRenderer
 	{
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{

@@ -18,6 +18,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.List
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ListViewRenderer instead")]
 	public class ListViewRenderer : ViewRenderer<ListView, UITableView>
 	{
 		const int DefaultRowHeight = 44;
@@ -64,7 +65,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override void LayoutSubviews()
 		{
-			_insetTracker?.OnLayoutSubviews();
 			base.LayoutSubviews();
 
 			double height = Bounds.Height;
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// grow a little each time, which you weren't testing at all were you? So there you have it, the stupid reason we integer align here.
 				//
 				// The same technically applies to the footer, though that could hardly matter less. We just do it for fun.
-				Layout.LayoutChildIntoBoundingRegion(e, new Rectangle(0, 0, width, Math.Ceiling(request.Request.Height)));
+				Layout.LayoutChildIntoBoundingRegion(e, new Rect(0, 0, width, Math.Ceiling(request.Request.Height)));
 
 				Device.BeginInvokeOnMainThread(() =>
 				{
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				var e = _footerRenderer.Element;
 				var request = e.Measure(width, height, MeasureFlags.IncludeMargins);
-				Layout.LayoutChildIntoBoundingRegion(e, new Rectangle(0, 0, width, Math.Ceiling(request.Request.Height)));
+				Layout.LayoutChildIntoBoundingRegion(e, new Rect(0, 0, width, Math.Ceiling(request.Request.Height)));
 
 				Device.BeginInvokeOnMainThread(() =>
 				{
@@ -398,7 +398,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var footerView = (VisualElement)sender;
 			var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
+			Layout.LayoutChildIntoBoundingRegion(footerView, new Rect(0, 0, width, request.Request.Height));
 
 			Control.TableFooterView = _footerRenderer.NativeView;
 		}
@@ -420,7 +420,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var headerView = (VisualElement)sender;
 			var request = headerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
+			Layout.LayoutChildIntoBoundingRegion(headerView, new Rect(0, 0, width, request.Request.Height));
 
 			Control.TableHeaderView = _headerRenderer.NativeView;
 		}
@@ -491,7 +491,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				double width = Bounds.Width;
 				var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
+				Layout.LayoutChildIntoBoundingRegion(footerView, new Rect(0, 0, width, request.Request.Height));
 
 				Control.TableFooterView = _footerRenderer.NativeView;
 				footerView.MeasureInvalidated += OnFooterMeasureInvalidated;
@@ -537,7 +537,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				double width = Bounds.Width;
 				var request = headerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
+				Layout.LayoutChildIntoBoundingRegion(headerView, new Rect(0, 0, width, request.Request.Height));
 
 				Control.TableHeaderView = _headerRenderer.NativeView;
 				headerView.MeasureInvalidated += OnHeaderMeasureInvalidated;
@@ -1533,6 +1533,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ListViewRenderer.FormsUITableViewController instead")]
 	internal class FormsUITableViewController : UITableViewController
 	{
 		ListView _list;
@@ -1549,8 +1550,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			? UITableViewStyle.Plain
 			  : UITableViewStyle.Grouped)
 		{
-			if (Forms.IsiOS9OrNewer)
-				TableView.CellLayoutMarginsFollowReadableWidth = false;
+			TableView.CellLayoutMarginsFollowReadableWidth = false;
 
 			_usingLargeTitles = usingLargeTitles;
 

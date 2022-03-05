@@ -4,27 +4,20 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ActivityIndicatorHandler : ViewHandler<IActivityIndicator, MauiActivityIndicator>
 	{
-		object? _foregroundDefault;
-
-		protected override MauiActivityIndicator CreateNativeView() => new MauiActivityIndicator
+		protected override MauiActivityIndicator CreatePlatformView() => new MauiActivityIndicator
 		{
 			IsIndeterminate = true,
 			Style = UI.Xaml.Application.Current.Resources["MauiActivityIndicatorStyle"] as UI.Xaml.Style
 		};
 
-		void SetupDefaults(MauiActivityIndicator nativeView)
+		public static void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
-			_foregroundDefault = nativeView.GetForegroundCache();
+			handler.PlatformView?.UpdateIsRunning(activityIndicator);
 		}
 
-		public static void MapIsRunning(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		public static void MapColor(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
-			handler.NativeView?.UpdateIsRunning(activityIndicator);
-		}
-
-		public static void MapColor(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
-		{
-			handler.NativeView?.UpdateColor(activityIndicator, handler._foregroundDefault);
+			handler.PlatformView?.UpdateColor(activityIndicator);
 		}
 	}
 }

@@ -5,8 +5,9 @@ using System.Collections.Specialized;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	internal class ObservableGroupedSource : IGroupableItemsViewSource, ICollectionChangedNotifier
+	internal class ObservableGroupedSource : IGroupableItemsViewSource, ICollectionChangedNotifier, IObservableItemsViewSource
 	{
+		readonly GroupableItemsView _groupableItemsView;
 		readonly ICollectionChangedNotifier _notifier;
 		readonly IList _groupSource;
 		List<IItemsViewSource> _groups = new List<IItemsViewSource>();
@@ -33,12 +34,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public bool HasHeader { get; set; }
 		public bool HasFooter { get; set; }
+		public bool ObserveChanges { get; set; } = true;
 
 		public ObservableGroupedSource(GroupableItemsView groupableItemsView, ICollectionChangedNotifier notifier)
 		{
-			var groupSource = groupableItemsView.ItemsSource;
-
+			_groupableItemsView = groupableItemsView;
 			_notifier = notifier;
+			var groupSource = groupableItemsView.ItemsSource;
 			_groupSource = groupSource as IList ?? new ListSource(groupSource);
 
 			_hasGroupFooters = groupableItemsView.GroupFooterTemplate != null;
@@ -134,6 +136,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return _groups[group].GetItem(inGroup);
 		}
 
+		public object GetGroup(int groupIndex)
+		{
+			return _groupSource[groupIndex];
+		}
+
+		public IItemsViewSource GetGroupItemsViewSource(int groupIndex)
+		{
+			return _groups[groupIndex];
+		}
+
 		// The ICollectionChangedNotifier methods are called by child observable items sources (i.e., the groups)
 		// This class can then translate their local changes into global positions for upstream notification 
 		// (e.g., to the actual RecyclerView.Adapter, so that it can notify the RecyclerView and handle animating
@@ -213,7 +225,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			for (int n = 0; n < _groupSource.Count; n++)
 			{
-				var source = ItemsSourceFactory.Create(_groupSource[n] as IEnumerable, this);
+				var source = ItemsSourceFactory.Create(_groupSource[n] as IEnumerable, _groupableItemsView, this);
 				source.HasFooter = _hasGroupFooters;
 				source.HasHeader = _hasGroupHeaders;
 				_groups.Add(source);
@@ -231,14 +243,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			if (Device.IsInvokeRequired)
+			if (!ObserveChanges)
 			{
-				Device.BeginInvokeOnMainThread(() => CollectionChanged(args));
+				return;
 			}
-			else
-			{
-				CollectionChanged(args);
-			}
+
+			_groupableItemsView.Dispatcher.DispatchIfRequired(() => CollectionChanged(args));
 		}
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
@@ -394,7 +404,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return AdjustPositionForHeader(runningIndex + indexInGroup);
 		}
 
-		(int, int) GetGroupAndIndex(int absolutePosition)
+		public (int group, int index) GetGroupAndIndex(int absolutePosition)
 		{
 			absolutePosition = AdjustIndexForHeader(absolutePosition);
 

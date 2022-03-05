@@ -102,12 +102,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 					entry.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 					entry.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-
-					if (Forms.IsiOS9OrNewer)
-					{
-						entry.InputAssistantItem.LeadingBarButtonGroups = null;
-						entry.InputAssistantItem.TrailingBarButtonGroups = null;
-					}
+					entry.InputAssistantItem.LeadingBarButtonGroups = null;
+					entry.InputAssistantItem.TrailingBarButtonGroups = null;
 
 					_defaultTextColor = entry.TextColor;
 
@@ -160,6 +156,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateHorizontalTextAlignment();
 		}
 
+		[PortHandler]
 		void OnEditing(object sender, EventArgs eventArgs)
 		{
 			// Reset the TextField's Text so it appears as if typing with a keyboard does not work.
@@ -170,6 +167,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.UndoManager.RemoveAllActions();
 		}
 
+		[PortHandler]
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
 			var s = (PickerSource)_picker.Model;
@@ -180,11 +178,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
+		[PortHandler]
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
+		[PortHandler]
 		void RowsCollectionChanged(object sender, EventArgs e)
 		{
 			UpdatePicker();
@@ -226,13 +226,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_useLegacyColorManagement)
 			{
 				var color = targetColor == null || !Element.IsEnabled ? _defaultPlaceholderColor : targetColor;
-				UpdateAttributedPlaceholder(formatted.ToAttributed(Element, color));
+				UpdateAttributedPlaceholder(formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: color));
 			}
 			else
 			{
 				// Using VSM color management; take whatever is in Element.PlaceholderColor
 				var color = targetColor == null ? _defaultPlaceholderColor : targetColor;
-				UpdateAttributedPlaceholder(formatted.ToAttributed(Element, color));
+				UpdateAttributedPlaceholder(formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: color));
 			}
 
 			UpdateAttributedPlaceholder(Control.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing));
@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdatePickerNativeSize(string oldText)
 		{
 			if (oldText != Control.Text)
-				((IVisualElementController)Element).NativeSizeChanged();
+				((IVisualElementController)Element).PlatformSizeChanged();
 		}
 
 		[PortHandler]
@@ -289,11 +289,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler("Partially ported, still missing FlowDirection part.")]
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			Control.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();
+			Control.VerticalAlignment = Element.VerticalTextAlignment.ToPlatformTextAlignment();
 		}
 
 		[PortHandler]

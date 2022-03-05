@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Platform
 	{
 		IShape? _clip;
 		IShadow? _shadow;
+		IBorderStroke? _border;
 
 #if WINDOWS
 		public new IShape? Clip
@@ -38,8 +39,18 @@ namespace Microsoft.Maui.Platform
 				ShadowChanged();
 			}
 		}
+		public IBorderStroke? Border
+		{
+			get => _border;
+			set
+			{
+				_border = value;
+				BorderChanged();
+			}
+		}
 
 		partial void ClipChanged();
 		partial void ShadowChanged();
+		partial void BorderChanged();
 	}
 }

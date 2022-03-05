@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		//Graphics.Color? DefaultBackgroundColor;
 
-		public static void MapTitle(PageHandler handler, IContentView page)
+		public static void MapTitle(IPageHandler handler, IContentView page)
 		{
 		}
 	}

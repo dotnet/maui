@@ -1,7 +1,7 @@
 ﻿using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native;
+using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Platform
 	{
 		CAShapeLayer? _maskLayer;
 		CAShapeLayer? _shadowLayer;
+		UIView? BorderView;
 
 		public WrapperView()
 		{
@@ -58,6 +59,9 @@ namespace Microsoft.Maui.Platform
 			if (Subviews.Length == 0)
 				return;
 
+			if (BorderView != null)
+				BringSubviewToFront(BorderView);
+
 			var child = Subviews[0];
 
 			child.Frame = Bounds;
@@ -68,8 +72,12 @@ namespace Microsoft.Maui.Platform
 			if (ShadowLayer != null)
 				ShadowLayer.Frame = Bounds;
 
+			if (BorderView != null)
+				BorderView.Frame = Bounds;
+
 			SetClip();
 			SetShadow();
+			SetBorder();
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
@@ -99,6 +107,8 @@ namespace Microsoft.Maui.Platform
 			SetShadow();
 		}
 
+		partial void BorderChanged() => SetBorder();
+
 		void SetClip()
 		{
 			var mask = MaskLayer;
@@ -108,7 +118,7 @@ namespace Microsoft.Maui.Platform
 
 			mask ??= MaskLayer = new CAShapeLayer();
 			var frame = Frame;
-			var bounds = new RectangleF(0, 0, (float)frame.Width, (float)frame.Height);
+			var bounds = new RectF(0, 0, (float)frame.Width, (float)frame.Height);
 
 			var path = _clip?.PathForBounds(bounds);
 			var nativePath = path?.AsCGPath();
@@ -125,7 +135,7 @@ namespace Microsoft.Maui.Platform
 			shadowLayer ??= ShadowLayer = new CAShapeLayer();
 
 			var frame = Frame;
-			var bounds = new RectangleF(0, 0, (float)frame.Width, (float)frame.Height);
+			var bounds = new RectF(0, 0, (float)frame.Width, (float)frame.Height);
 
 			shadowLayer.FillColor = new CGColor(0, 0, 0, 1);
 
@@ -137,6 +147,21 @@ namespace Microsoft.Maui.Platform
 				shadowLayer.ClearShadow();
 			else
 				shadowLayer.SetShadow(Shadow);
+		}
+		void SetBorder()
+		{
+			if (Border == null)
+			{
+				BorderView?.RemoveFromSuperview();
+				return;
+			}
+
+			if (BorderView == null)
+			{
+				AddSubview(BorderView = new UIView(Bounds) { UserInteractionEnabled = false});
+			}
+
+			BorderView.UpdateMauiCALayer(Border);
 		}
 
 		CALayer? GetLayer()

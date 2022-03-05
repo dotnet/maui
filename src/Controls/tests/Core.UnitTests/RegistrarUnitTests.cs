@@ -70,19 +70,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
 			Internals.Registrar.RegisterAll(new[] {
 				typeof (TestHandlerAttribute),
 				typeof (TestHandlerLowerPriority)
 			});
 
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
 		}
 
 		[Test]
@@ -100,18 +92,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
 			Internals.Registrar.RegisterAll(new[] {
 				typeof (TestHandlerAttribute)
 			});
 
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
 		}
 
 
@@ -201,18 +185,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-			Internals.Registrar.RegisterAll(new[] {
-				typeof (TestHandlerAttribute)
-			});
-
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
+			Internals.Registrar.RegisterAll(new[] { typeof(TestHandlerAttribute) });
 		}
 
 		[Test]

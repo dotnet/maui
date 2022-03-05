@@ -14,9 +14,12 @@ using Microsoft.Maui.Controls.Internals;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.CellControl instead")]
 	public class CellControl : ContentControl
 	{
 		public static readonly DependencyProperty CellProperty = DependencyProperty.Register("Cell", typeof(object), typeof(CellControl),
@@ -181,7 +184,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				? _defaultOnColor
 				: new WSolidColorBrush(switchCell.OnColor.ToWindowsColor());
 
-			var nativeSwitch = FrameworkElementExtensions.GetFirstDescendant<ToggleSwitch>(this);
+			var nativeSwitch = this.GetFirstDescendant<ToggleSwitch>();
 
 			// change fill color in switch rectangle
 			var rects = nativeSwitch.GetDescendantsByName<Microsoft.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
@@ -230,7 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (_defaultOnColor == null && Cell is SwitchCell)
 			{
-				var nativeSwitch = FrameworkElementExtensions.GetFirstDescendant<ToggleSwitch>(this);
+				var nativeSwitch = this.GetFirstDescendant<ToggleSwitch>();
 				var rects = nativeSwitch.GetDescendantsByName<Microsoft.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
 				foreach (var rect in rects)
 					_defaultOnColor = rect.Fill;
@@ -463,8 +466,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			foreach (MenuItem item in Cell.ContextActions)
 			{
-				var flyoutItem = new MenuFlyoutItem();
-				flyoutItem.SetBinding(MenuFlyoutItem.TextProperty, "Text");
+				var flyoutItem = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem();
+				flyoutItem.SetBinding(UI.Xaml.Controls.MenuFlyoutItem.TextProperty, "Text");
 				//WINUI FIX
 				//flyoutItem.Command = new MenuItemCommand(item);
 				flyoutItem.DataContext = item;
