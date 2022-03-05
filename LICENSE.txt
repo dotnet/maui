@@ -1,8 +1,6 @@
-.NET MAUI SDK
-
 The MIT License (MIT)
 
-Copyright (c) .NET Foundation Contributors
+Copyright (c) .NET Foundation and Contributors
 
 All rights reserved.
 
