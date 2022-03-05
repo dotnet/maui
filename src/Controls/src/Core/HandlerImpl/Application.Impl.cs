@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls
 			if (UserAppTheme != AppTheme.Unspecified)
 				return;
 
-			TriggerThemeChangedActual(new AppThemeChangedEventArgs(RequestedTheme));
+			TriggerThemeChangedActual();
 		}
 
 		protected virtual Window CreateWindow(IActivationState? activationState)
