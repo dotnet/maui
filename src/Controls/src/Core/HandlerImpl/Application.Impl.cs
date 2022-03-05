@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='ThemeChanged']/Docs" />
-		public void ThemeChanged()
+		void IApplication.ThemeChanged()
 		{
 			if (UserAppTheme != AppTheme.Unspecified)
 				return;
