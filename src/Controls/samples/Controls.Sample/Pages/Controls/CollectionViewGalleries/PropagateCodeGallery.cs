@@ -19,8 +19,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Star }
 				},
-				FlowDirection = FlowDirection.RightToLeft,
-				Visual = VisualMarker.Material
+				FlowDirection = FlowDirection.RightToLeft
 			};
 
 			var itemTemplate = ExampleTemplates.PropagationTemplate();

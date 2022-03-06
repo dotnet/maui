@@ -48,6 +48,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(GesturesPage), "Gestures",
 				"Use tap, pinch, pan, swipe, and drag and drop gestures on View instances."),
 
+			new SectionModel(typeof(InputTransparentPage), "InputTransparent",
+				"Manage whether a view participates in the user interaction cycle."),
+	
 			new SectionModel(typeof(MenuBarPage), "MenuBar",
 				"Allows you to push and pop Modal Pages."),
 

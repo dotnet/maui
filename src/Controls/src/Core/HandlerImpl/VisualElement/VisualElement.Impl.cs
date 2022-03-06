@@ -10,6 +10,10 @@ namespace Microsoft.Maui.Controls
 	public partial class VisualElement : IView
 	{
 		Semantics _semantics;
+		bool _isLoadedFired;
+		EventHandler? _loaded;
+		EventHandler? _unloaded;
+		bool _watchingPlatformLoaded;
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Frame']/Docs" />
 		public Rect Frame
@@ -321,5 +325,118 @@ namespace Microsoft.Maui.Controls
 			if (Shadow != null)
 				SetInheritedBindingContext(Shadow, BindingContext);
 		}
+
+		public bool IsLoaded
+		{
+			get
+			{
+#if PLATFORM
+				bool isLoaded = (Handler as IPlatformViewHandler)?.PlatformView?.IsLoaded() == true;
+#else
+				bool isLoaded = Window != null;
+#endif
+
+				return isLoaded;
+			}
+		}
+
+		public event EventHandler? Loaded
+		{
+			add
+			{
+				_loaded += value;
+				UpdatePlatformUnloadedLoadedWiring(Window);
+			}
+			remove
+			{
+				_loaded -= value;
+				UpdatePlatformUnloadedLoadedWiring(Window);
+			}
+		}
+
+		public event EventHandler? Unloaded
+		{
+			add
+			{
+				_unloaded += value;
+				UpdatePlatformUnloadedLoadedWiring(Window);
+			}
+			remove
+			{
+				_unloaded -= value;
+				UpdatePlatformUnloadedLoadedWiring(Window);
+			}
+		}
+
+		void OnLoadedCore()
+		{
+			if (_isLoadedFired)
+				return;
+
+			_isLoadedFired = true;
+			_loaded?.Invoke(this, EventArgs.Empty);
+		}
+
+		void OnUnloadedCore()
+		{
+			if (!_isLoadedFired)
+				return;
+
+			_isLoadedFired = false;
+			_unloaded?.Invoke(this, EventArgs.Empty);
+		}
+
+		private protected override void OnWindowChanged(IWindow oldValue, IWindow newValue)
+		{
+			base.OnWindowChanged(oldValue, newValue);
+
+			if (_watchingPlatformLoaded && oldValue is Element oldWindow)
+				oldWindow.HandlerChanged -= OnWindowHandlerChanged;
+
+			UpdatePlatformUnloadedLoadedWiring(newValue);
+		}
+
+		void OnWindowHandlerChanged(object? sender, EventArgs e)
+		{
+			UpdatePlatformUnloadedLoadedWiring(Window);
+		}
+
+		// We only want to wire up to platform loaded events
+		// if the user is watching for them. Otherwise
+		// this will get wired up for every single VE that's on 
+		// the screen
+		void UpdatePlatformUnloadedLoadedWiring(IWindow? window)
+		{
+			// If I'm not attached to a window and I haven't started watching any platform events
+			// then it's not useful to wire anything up. We will just wait until
+			// This VE gets connected to the xplat Window before wiring up any events
+			if (!_watchingPlatformLoaded && window == null)
+				return;
+
+			if (_unloaded == null && _loaded == null)
+			{
+				if (window is Element elementWindow)
+					elementWindow.HandlerChanged -= OnWindowHandlerChanged;
+
+#if PLATFORM
+				_loadedUnloadedToken?.Dispose();
+				_loadedUnloadedToken = null;
+#endif
+				_watchingPlatformLoaded = false;
+				return;
+			}
+
+			if (!_watchingPlatformLoaded)
+			{
+				if (window is Element elementWindow)
+					elementWindow.HandlerChanged += OnWindowHandlerChanged;
+
+				_watchingPlatformLoaded = true;
+			}
+
+			HandlePlatformUnloadedLoaded();
+		}
+
+		partial void HandlePlatformUnloadedLoaded();
 	}
 }

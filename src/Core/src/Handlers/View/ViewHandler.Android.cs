@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (platformView != null)
 			{
-				platformView.FocusChange += OnNativeViewFocusChange;
+				platformView.FocusChange += OnPlatformViewFocusChange;
 			}
 		}
 
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (platformView.IsAlive())
 			{
-				platformView.FocusChange -= OnNativeViewFocusChange;
+				platformView.FocusChange -= OnPlatformViewFocusChange;
 
 				if (ViewCompat.GetAccessibilityDelegate(platformView) is MauiAccessibilityDelegateCompat ad)
 				{
@@ -202,7 +202,16 @@ namespace Microsoft.Maui.Handlers
 			appbarLayout.AddView(nativeToolBar, 0);
 		}
 
-		void OnNativeViewFocusChange(object? sender, PlatformView.FocusChangeEventArgs e)
+		public virtual bool NeedsContainer
+		{
+			get
+			{
+				return VirtualView?.Clip != null || VirtualView?.Shadow != null 
+					|| (VirtualView as IBorder)?.Border != null || VirtualView?.InputTransparent == true;
+			}
+		}
+		
+		void OnPlatformViewFocusChange(object? sender, PlatformView.FocusChangeEventArgs e)
 		{
 			if (VirtualView != null)
 			{

@@ -36,7 +36,6 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<LabelHandler>(label);
-				Assert.False(handler.PlatformView.UserInteractionEnabled);
 				label.GestureRecognizers.Add(new TapGestureRecognizer() { NumberOfTapsRequired = 1 });
 				Assert.True(handler.PlatformView.UserInteractionEnabled);
 			});

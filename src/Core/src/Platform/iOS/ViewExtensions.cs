@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -439,11 +440,107 @@ namespace Microsoft.Maui.Platform
 			view.Arrange(platformFrame.ToRectangle());
 			return size;
 		}
-    
+		
+		public static void UpdateInputTransparent(this UIView platformView, IViewHandler handler, IView view)
+		{
+			if (view is ITextInput textInput)
+			{
+				platformView.UpdateInputTransparent(textInput.IsReadOnly, view.InputTransparent);
+				return;
+			}
+
+			platformView.UserInteractionEnabled = !view.InputTransparent;
+		}
+
+		public static void UpdateInputTransparent(this UIView platformView, bool isReadOnly, bool inputTransparent) 
+		{
+			platformView.UserInteractionEnabled = !(isReadOnly || inputTransparent);
+		}
+
 		internal static IWindow? GetHostedWindow(this IView? view)
 			=> GetHostedWindow(view?.Handler?.PlatformView as UIView);
 
 		internal static IWindow? GetHostedWindow(this UIView? view)
 			=> GetHostedWindow(view?.Window);
+
+		internal static bool IsLoaded(this UIView uiView) =>
+			uiView.Window != null;
+
+		internal static IDisposable OnLoaded(this UIView uiView, Action action)
+		{
+			if (uiView.IsLoaded())
+			{
+				action();
+				return new ActionDisposable(() => { });
+			}
+
+			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
+			ActionDisposable? disposable = new ActionDisposable(() =>
+			{
+				foreach (var thing in observers)
+					uiView.Layer.RemoveObserver(thing.Value, thing.Key);
+			});
+
+			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
+			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.			
+			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+
+			// OnLoaded is called at the point in time where the xplat view knows it's going to be attached to the window.
+			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
+			// to get attached.
+			uiView.BeginInvokeOnMainThread(OnLoadedCheck);
+
+			void OnLoadedCheck()
+			{
+				if (uiView.IsLoaded() && disposable != null)
+				{
+					disposable.Dispose();
+					disposable = null;
+					action();
+				}
+			};
+
+			return disposable;
+		}
+
+		internal static IDisposable OnUnloaded(this UIView uiView, Action action)
+		{
+
+			if (!uiView.IsLoaded())
+			{
+				action();
+				return new ActionDisposable(() => { });
+			}
+
+			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
+			ActionDisposable? disposable = new ActionDisposable(() =>
+			{
+				foreach (var thing in observers)
+					uiView.Layer.RemoveObserver(thing.Value, thing.Key);
+			});
+
+			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
+			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.	
+			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+
+			// OnUnloaded is called at the point in time where the xplat view knows it's going to be detached from the window.
+			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
+			// to get detached.
+			uiView.BeginInvokeOnMainThread(UnLoadedCheck);
+
+			void UnLoadedCheck()
+			{
+				if (!uiView.IsLoaded() && disposable != null)
+				{
+					disposable.Dispose();
+					disposable = null;
+					action();
+				}
+			};
+
+			return disposable;
+		}
 	}
 }
