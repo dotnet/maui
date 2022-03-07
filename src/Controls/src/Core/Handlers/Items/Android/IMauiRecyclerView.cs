@@ -24,6 +24,10 @@
 
 		public void UpdateAdapter();
 
-		public void UpdateCanReorderItems();
+		public void ScrollTo(ScrollToRequestEventArgs args);
+
+		public IItemsLayout ItemsLayout { get; }
+
+    public void UpdateCanReorderItems();
 	}
 }
