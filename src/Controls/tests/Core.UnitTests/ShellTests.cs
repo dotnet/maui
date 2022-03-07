@@ -1332,5 +1332,46 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(shellCount.Count, 1);
 			Assert.AreEqual(shellItemCount.Count, 2);
 		}
+
+		[Test]
+		public void ShellToolbarTitle()
+		{
+			var shellContent = CreateShellContent();
+			TestShell testShell = new TestShell(shellContent)
+			{
+				Title = "Shell Title"
+			};
+
+			var shellToolBar = testShell.Toolbar;
+
+			Assert.IsNull(shellToolBar.Title);
+
+			shellContent.Title = "Shell Content Title";
+			Assert.AreEqual(shellContent.Title, shellToolBar.Title);
+
+			var page = testShell.CurrentPage;
+			page.Title = "ContentPage Title";
+			Assert.AreEqual(page.Title, shellToolBar.Title);
+		}
+
+		[Test]
+		public void ShellToolbarTitleChangesWithCurrentItem()
+		{
+			var shellContent = CreateShellContent();
+			var shellContent2 = CreateShellContent();
+			TestShell testShell = new TestShell(shellContent, shellContent2)
+			{
+				Title = "Shell Title"
+			};
+
+			shellContent.Title = "Content 1";
+			shellContent2.Title = "Content 2";
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual("Content 1", shellToolBar.Title);
+
+			testShell.CurrentItem = shellContent2;
+			Assert.AreEqual("Content 2", shellToolBar.Title);
+		}
 	}
 }

@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Controls
 	internal class ShellToolbar : Toolbar
 	{
 		Shell _shell;
+		Page _currentPage;
 		BackButtonBehavior _backButtonBehavior;
 		ToolbarTracker _toolbarTracker = new ToolbarTracker();
 
@@ -36,8 +37,8 @@ namespace Microsoft.Maui.Controls
 				{
 					ApplyChanges();
 				}
-
-
+				else if (p.Is(Shell.TitleProperty))
+					UpdateTitle();
 			};
 
 			shell.HandlerChanged += (_, __) => ApplyChanges();
@@ -59,14 +60,26 @@ namespace Microsoft.Maui.Controls
 
 		void ApplyChanges()
 		{
-			if (_shell.CurrentPage == null)
+
+			var currentPage = _shell.CurrentPage;
+
+			if (_currentPage != _shell.CurrentPage)
+			{
+				if (_currentPage != null)
+					_currentPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+
+				_currentPage = currentPage;
+
+				if (_currentPage != null)
+					_currentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+			}
+
+			if (currentPage == null)
 				return;
 
 			var stack = _shell.Navigation.NavigationStack;
 			if (stack.Count == 0)
 				return;
-
-			var currentPage = _shell.CurrentPage;
 
 			_toolbarTracker.Target = currentPage;
 
@@ -85,12 +98,25 @@ namespace Microsoft.Maui.Controls
 			}
 
 			BackButtonVisible = backButtonVisible && stack.Count > 1;
-			Title = (!String.IsNullOrWhiteSpace(currentPage.Title)) ? currentPage.Title : _shell.Title;
+
+			UpdateTitle();
 
 			TitleView = _shell.GetEffectiveValue<VisualElement>(Shell.TitleViewProperty, null);
 
 			if (currentPage != null)
 				DynamicOverflowEnabled = PlatformConfiguration.WindowsSpecific.Page.GetToolbarDynamicOverflowEnabled(currentPage);
+		}
+
+		void OnCurrentPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.Is(Page.TitleProperty))
+				UpdateTitle();
+		}
+
+		internal void UpdateTitle()
+		{
+			Title = _shell.CurrentPage?.Title ??
+				_shell.GetEffectiveValue<string>(BaseShellItem.TitleProperty, String.Empty);
 		}
 	}
 }
