@@ -299,7 +299,9 @@ namespace Microsoft.Maui.Graphics.Platform
 					actualDashPattern[i] = strokePattern[i] * actualStrokeSize;
 				}
 
-				_context.SetLineDash(0, actualDashPattern, actualDashPattern.Length);
+				var actualDashOffset = strokeDashOffset * actualStrokeSize;
+
+				_context.SetLineDash(actualDashOffset, actualDashPattern, actualDashPattern.Length);
 			}
 		}
 

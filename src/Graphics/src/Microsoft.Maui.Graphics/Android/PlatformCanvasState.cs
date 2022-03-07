@@ -123,14 +123,16 @@ namespace Microsoft.Maui.Graphics.Platform
 
 				if (scaledStrokeSize == 1)
 				{
-					StrokePaint.SetPathEffect(new DashPathEffect(pattern, 0));
+					StrokePaint.SetPathEffect(new DashPathEffect(pattern, strokeDashOffset));
 				}
 				else
 				{
 					var scaledPattern = new float[pattern.Length];
 					for (int i = 0; i < pattern.Length; i++)
 						scaledPattern[i] = pattern[i] * scaledStrokeSize;
-					StrokePaint.SetPathEffect(new DashPathEffect(scaledPattern, 0));
+
+					var scaledStrokeDashOffset = strokeDashOffset * scaledStrokeSize;
+					StrokePaint.SetPathEffect(new DashPathEffect(scaledPattern, scaledStrokeDashOffset));
 				}
 			}
 		}
