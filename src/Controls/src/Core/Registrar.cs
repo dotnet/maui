@@ -56,8 +56,7 @@ namespace Microsoft.Maui.Controls.Internals
 				else
 					visualRenderers[supportedVisuals[i]] = (trender, priority);
 
-				if (!_registeredVisuals.Contains(supportedVisuals[i]))
-					_registeredVisuals.Add(supportedVisuals[i]);
+				RegisterVisual(supportedVisuals[i]);
 			}
 
 			// This registers a factory into the Handler version of the registrar.
@@ -83,7 +82,6 @@ namespace Microsoft.Maui.Controls.Internals
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register']/Docs" />
 		public void Register(Type tview, Type trender) => Register(tview, trender, _defaultVisualRenderers);
 
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		HashSet<Type> _registeredVisuals = new HashSet<Type>();
 
 		internal void RegisterVisual([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type registeredVisual)
@@ -306,7 +304,6 @@ namespace Microsoft.Maui.Controls.Internals
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='ExtraAssemblies']/Docs" />
 		public static IEnumerable<Assembly> ExtraAssemblies { get; set; }
 
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		internal static HashSet<Type> VisualTypes
 		{
 			get => Registered.VisualTypes;
