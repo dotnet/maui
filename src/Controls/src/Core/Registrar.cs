@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.StyleSheets;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
@@ -78,6 +79,33 @@ namespace Microsoft.Maui.Controls.Internals
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register']/Docs" />
 		public void Register(Type tview, Type trender) => Register(tview, trender, _defaultVisualRenderers);
+
+
+		HashSet<Type> _registeredVisuals = new HashSet<Type>();
+		internal void RegisterVisual([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type registeredVisual)
+		{
+			if (!_registeredVisuals.Contains(registeredVisual))
+				_registeredVisuals.Add(registeredVisual);
+		}
+
+		internal IEnumerable<Type> VisualTypes
+		{
+			get
+			{
+				HashSet<Type> visualTypes = new HashSet<Type>(_registeredVisuals);
+
+				foreach (var item in _handlers)
+				{
+					foreach (var visualType in item.Value.Keys)
+					{
+						if (!visualTypes.Contains(visualType))
+							visualTypes.Add(visualType);
+					}
+				}
+
+				return visualTypes;
+			}
+		}
 
 		internal TRegistrable GetHandler(Type type) => GetHandler(type, _defaultVisualType);
 
@@ -288,6 +316,11 @@ namespace Microsoft.Maui.Controls.Internals
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='ExtraAssemblies']/Docs" />
 		public static IEnumerable<Assembly> ExtraAssemblies { get; set; }
+
+		internal static IEnumerable<Type> VisualTypes
+		{
+			get => Registered.VisualTypes;
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Registered']/Docs" />
 		public static Registrar<IRegisterable> Registered { get; internal set; }

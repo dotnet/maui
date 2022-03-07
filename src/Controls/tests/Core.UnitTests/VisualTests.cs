@@ -470,6 +470,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(Maui.Controls.VisualMarker.MatchParent, ((View)view).Visual);
 		}
 
+		[Test]
+		public void RegisteredVisualWorksWithTypeConverter()
+		{
+			Registrar.Registered.RegisterVisual(typeof(VisualTypeConverterTestVisual));
+			VisualTypeConverter visualTypeConverter = new VisualTypeConverter();
+
+			Assert.AreEqual(typeof(VisualTypeConverterTestVisual), visualTypeConverter.ConvertFrom("VisualTypeConverterTestVisual").GetType());
+
+			Assert.AreEqual(typeof(VisualTypeConverterTestVisual), visualTypeConverter.ConvertFrom("VisualTypeConverterTest").GetType());
+		}
+
+		[Test]
+		public void RegisteredVisualOnViewWorksWithTypeConverter()
+		{
+			Registrar.Registered.Register(
+				typeof(VisualTypeConverterTestButton),
+				typeof(VisualTypeConverterTestButtonRenderer),
+				new[] { typeof(VisualTypeConverterTestButtonVisual) });
+
+			VisualTypeConverter visualTypeConverter = new VisualTypeConverter();
+
+			Assert.AreEqual(typeof(VisualTypeConverterTestButtonVisual), visualTypeConverter.ConvertFrom("VisualTypeConverterTestButtonVisual").GetType());
+
+			Assert.AreEqual(typeof(VisualTypeConverterTestButtonVisual), visualTypeConverter.ConvertFrom("VisualTypeConverterTestButton").GetType());
+		}
+
 		static void AddExplicitLTRToScrollView(ScrollView parent, View child)
 		{
 			parent.Content = child;
@@ -620,6 +646,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assume.That(((View)view).Visual == Maui.Controls.VisualMarker.MatchParent, "New view Visual should be MatchParent");
 
 			return view;
+		}
+
+		class VisualTypeConverterTestButton : Button
+		{
+			public VisualTypeConverterTestButton() { }
+		}
+
+		class VisualTypeConverterTestButtonRenderer : IRegisterable
+		{
+			public VisualTypeConverterTestButtonRenderer() { }
+		}
+
+		class VisualTypeConverterTestButtonVisual : IVisual
+		{
+			public VisualTypeConverterTestButtonVisual() { }
+		}
+
+		class VisualTypeConverterTestVisual : IVisual
+		{
+			public VisualTypeConverterTestVisual() { }
 		}
 
 		class PropertyWatchingView : View

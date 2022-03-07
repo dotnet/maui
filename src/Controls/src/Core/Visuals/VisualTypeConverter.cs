@@ -27,16 +27,10 @@ namespace Microsoft.Maui.Controls
 		void InitMappings()
 		{
 			var mappings = new Dictionary<string, IVisual>(StringComparer.OrdinalIgnoreCase);
+			foreach (var visual in Internals.Registrar.VisualTypes)
+				Register(visual, mappings);
+
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-			// Check for IVisual Types
-			foreach (var assembly in assemblies)
-				Register(assembly, mappings);
-
-			if (Internals.Registrar.ExtraAssemblies != null)
-				foreach (var assembly in Internals.Registrar.ExtraAssemblies)
-					Register(assembly, mappings);
-
 
 			// Check for visual assembly attributes	after scanning for IVisual Types
 			// this will let users replace the default visual names if they want to
@@ -62,31 +56,6 @@ namespace Microsoft.Maui.Controls
 					if (visual != null)
 						mappings[attribute.Key] = visual;
 				}
-			}
-		}
-
-		static void Register(Assembly assembly, Dictionary<string, IVisual> mappings)
-		{
-			if (assembly.IsDynamic)
-				return;
-
-			try
-			{
-				foreach (var type in assembly.GetExportedTypes())
-					if (typeof(IVisual).IsAssignableFrom(type) && type != typeof(IVisual))
-						Register(type, mappings);
-			}
-			catch (NotSupportedException)
-			{
-				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Cannot scan assembly {assembly} for Visual types.", assembly.FullName);
-			}
-			catch (FileNotFoundException)
-			{
-				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. It cannot be scanned for Visual types.", assembly.FullName);
-			}
-			catch (ReflectionTypeLoadException)
-			{
-				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. Types cannot be loaded.", assembly.FullName);
 			}
 		}
 
@@ -140,10 +109,10 @@ namespace Microsoft.Maui.Controls
 				if (_visualTypeMappings.TryGetValue(strValue, out IVisual returnValue))
 					return returnValue;
 
-				return VisualMarker.Default;
+				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning($"Cannot convert \"{strValue}\" into {typeof(IVisual)}");
 			}
 
-			throw new XamlParseException($"Cannot convert \"{strValue}\" into {typeof(IVisual)}");
+			return VisualMarker.Default;
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualTypeConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
