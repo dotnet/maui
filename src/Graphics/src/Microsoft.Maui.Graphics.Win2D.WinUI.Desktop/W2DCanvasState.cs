@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 		private float _alpha = 1;
 		private float[] _dashes;
+		private float _dashOffset;
 
 		private ICanvasBrush _fillBrush;
 		private bool _fillBrushValid;
@@ -97,6 +98,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			_shadowColorValid = prototype._shadowColorValid;
 
 			_dashes = prototype._dashes;
+			_dashOffset = prototype._dashOffset;
 			_strokeStyle = prototype._strokeStyle;
 			_lineJoin = prototype._lineJoin;
 			_lineCap = prototype._lineCap;
@@ -127,6 +129,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			_strokeStyle = null;
 
 			_dashes = null;
+			_dashOffset = 1;	
 			_miterLimit = CanvasDefaults.DefaultMiterLimit;
 			_lineCap = CanvasCapStyle.Flat;
 			_lineJoin = CanvasLineJoin.Miter;
@@ -253,6 +256,8 @@ namespace Microsoft.Maui.Graphics.Win2D
 			{
 				_dashes = pattern;
 			}
+
+			_dashOffset = strokeDashOffset;
 
 			InvalidateStrokeStyle();
 			_needsStrokeStyle = true;
@@ -574,6 +579,7 @@ After:
 						_strokeStyle.CustomDashStyle = _emptyFloatArray;
 					}
 
+					_strokeStyle.DashOffset = _dashOffset;
 					_strokeStyle.MiterLimit = _miterLimit;
 					_strokeStyle.StartCap = _lineCap;
 					_strokeStyle.EndCap = _lineCap;
