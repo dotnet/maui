@@ -460,7 +460,7 @@ namespace Microsoft.Maui.Controls
 				var stringValue = value as string ?? string.Empty;
 				// see: https://bugzilla.xamarin.com/show_bug.cgi?id=32871
 				// do not canonicalize "*.[.]"; "1." should not update bound BindableProperty
-				if (stringValue.EndsWith(CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal) && DecimalTypes.Contains(convertTo))
+				if (stringValue.EndsWith(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal) && DecimalTypes.Contains(convertTo))
 				{
 					value = original;
 					return false;
@@ -473,7 +473,7 @@ namespace Microsoft.Maui.Controls
 					return false;
 				}
 
-				value = Convert.ChangeType(value, convertTo, CultureInfo.CurrentUICulture);
+				value = Convert.ChangeType(value, convertTo, CultureInfo.CurrentCulture);
 
 				return true;
 			}
