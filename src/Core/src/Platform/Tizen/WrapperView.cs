@@ -51,22 +51,23 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		bool NeedToUpdateCanvas => _drawableCanvas.IsValueCreated || _mauiDrawable.Background != null || _mauiDrawable.Shape != null || _mauiDrawable.Border != null || _mauiDrawable.Shadow != null;
+
 		public void UpdateBackground(Paint? paint)
 		{
 			_mauiDrawable.Background = paint;
-			_drawableCanvas.Value.Invalidate();
+			UpdateDrawableCanvas();
 		}
 
 		public void UpdateShape(IShape? shape)
 		{
 			_mauiDrawable.Shape = shape;
-			UpdateDrawableCanvas(false);
+			UpdateDrawableCanvas();
 		}
 
-		public void UpdateBorder(IBorderStroke border)
+		public void UpdateBorder(IBorderStroke? border)
 		{
-			_mauiDrawable.Border = border;
-			UpdateShape(border.Shape);
+			Border = border;
 		}
 
 		partial void ShadowChanged()
@@ -77,20 +78,28 @@ namespace Microsoft.Maui.Platform
 
 		partial void ClipChanged()
 		{
+			_mauiDrawable.Clip = Clip;
 			if (_clipperView.IsValueCreated || Clip != null)
 			{
 				_clipperView.Value.Clip = Clip;
 			}
 		}
 
-		void UpdateDrawableCanvas(bool isShadowUpdated)
+		partial void BorderChanged()
 		{
-			if (isShadowUpdated)
-			{
-				UpdateDrawableCanvasGeometry();
-			}
+			_mauiDrawable.Border = Border;
+			UpdateShape(Border?.Shape);
+			UpdateDrawableCanvas(Border != null);
+		}
 
-			_drawableCanvas.Value.Invalidate();
+		void UpdateDrawableCanvas(bool geometryUpdate = false)
+		{
+			if (NeedToUpdateCanvas)
+			{
+				if (geometryUpdate)
+					UpdateDrawableCanvasGeometry();
+				_drawableCanvas.Value.Invalidate();
+			}
 		}
 
 		void OnLayout(object? sender, LayoutEventArgs e)
@@ -105,10 +114,7 @@ namespace Microsoft.Maui.Platform
 				_clipperView.Value.UpdateBounds(new Rect(0, 0, Size.Width, Size.Height));
 			}
 
-			if (_drawableCanvas.IsValueCreated)
-			{
-				UpdateDrawableCanvas(true);
-			}
+			UpdateDrawableCanvas(true);
 		}
 
 		void SetupClipperView(MauiClipperView clipper)
@@ -150,11 +156,14 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateDrawableCanvasGeometry()
 		{
-			if (_drawableCanvas.IsValueCreated)
+			var bounds = new Rect(0, 0, SizeWidth, SizeHeight);
+			if (Shadow != null)
 			{
-				var bounds = new Rect(0, 0, SizeWidth, SizeHeight);
-				_drawableCanvas.Value.UpdateBounds(bounds.ToDP().ExpandTo(Shadow).ToPixel());
+				var shadowThinkness = Shadow.GetShadowMargin();
+				_mauiDrawable.ShadowThickness = shadowThinkness;
+				bounds = bounds.ToDP().ExpandTo(shadowThinkness).ToPixel();
 			}
+			_drawableCanvas.Value.UpdateBounds(bounds);
 		}
 	}
 }
