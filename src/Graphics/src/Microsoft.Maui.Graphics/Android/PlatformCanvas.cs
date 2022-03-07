@@ -199,9 +199,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
-		protected override void PlatformSetStrokeDashPattern(float[] patter, float linewidth)
+		protected override void PlatformSetStrokeDashPattern(float[] strokePattern, float strokeDashOffset, float strokeSize)
 		{
-			CurrentState.SetStrokeDashPattern(patter, linewidth);
+			CurrentState.SetStrokeDashPattern(strokePattern, strokeDashOffset, strokeSize);
 		}
 
 		public override void SetFillPaint(Paint paint, RectF rectangle)

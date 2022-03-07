@@ -787,9 +787,9 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			CurrentState.SetShadow(offset, blur, color);
 		}
 
-		protected override void PlatformSetStrokeDashPattern(float[] pattern, float strokeSize)
+		protected override void PlatformSetStrokeDashPattern(float[] strokePattern, float strokeDashOffset, float strokeSize)
 		{
-			CurrentState.SetStrokeDashPattern(pattern, strokeSize);
+			CurrentState.SetStrokeDashPattern(strokePattern, strokeDashOffset, strokeSize);
 		}
 
 		protected override float PlatformStrokeSize

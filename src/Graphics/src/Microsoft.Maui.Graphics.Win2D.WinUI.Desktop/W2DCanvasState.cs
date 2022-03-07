@@ -242,7 +242,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			}
 		}
 
-		public void SetStrokeDashPattern(float[] pattern, float strokeSize)
+		public void SetStrokeDashPattern(float[] pattern, float strokeDashOffset, float strokeSize)
 		{
 			if (pattern == null || pattern.Length == 0)
 			{

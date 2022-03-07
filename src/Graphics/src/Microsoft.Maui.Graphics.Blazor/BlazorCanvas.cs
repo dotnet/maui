@@ -306,14 +306,14 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_context.Scale(fx, fy);
 		}
 
-		protected override void PlatformSetStrokeDashPattern(float[] pattern, float strokeSize)
+		protected override void PlatformSetStrokeDashPattern(float[] strokePattern, float strokeDashOffset, float strokeSize)
 		{
 			float[] finalPattern = null;
-			if (pattern != null)
+			if (strokePattern != null)
 			{
-				finalPattern = new float[pattern.Length];
-				for (int i = 0; i < pattern.Length; i++)
-					finalPattern[i] = pattern[i] * strokeSize;
+				finalPattern = new float[strokePattern.Length];
+				for (int i = 0; i < strokePattern.Length; i++)
+					finalPattern[i] = strokePattern[i] * strokeSize;
 			}
 
 			CurrentState.BlazorDashPattern = finalPattern;

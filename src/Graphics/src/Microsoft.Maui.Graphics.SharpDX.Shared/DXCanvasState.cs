@@ -513,9 +513,9 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			BlurRadius = 0;
 		}
 
-		public void SetStrokeDashPattern(float[] pattern, float strokeSize)
+		public void SetStrokeDashPattern(float[] strokePattern, float strokeDashOffset, float strokeSize)
 		{
-			if (pattern == null || pattern.Length == 0)
+			if (strokePattern == null || strokePattern.Length == 0)
 			{
 				if (_needsStrokeStyle == false) return;
 				_strokeStyleProperties.DashStyle = DashStyle.Solid;
@@ -524,7 +524,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			else
 			{
 				_strokeStyleProperties.DashStyle = DashStyle.Custom;
-				_dashes = pattern;
+				_dashes = strokePattern;
 			}
 
 			InvalidateStrokeStyle();

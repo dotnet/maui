@@ -270,6 +270,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			element.Stroke = CurrentState.XamlStrokeBrush;
 			element.StrokeThickness = CurrentState.StrokeSize;
 			element.StrokeDashArray = CurrentState.XamlDashArray;
+			element.StrokeDashOffset = CurrentState.StrokeDashOffset;
 			element.StrokeEndLineCap = CurrentState.XamlLineCap;
 			element.StrokeStartLineCap = CurrentState.XamlLineCap;
 			element.StrokeMiterLimit = CurrentState.MiterLimit;
@@ -293,6 +294,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			element.Stroke = CurrentState.XamlStrokeBrush;
 			element.StrokeThickness = CurrentState.StrokeSize;
 			element.StrokeDashArray = CurrentState.XamlDashArray;
+			element.StrokeDashOffset = CurrentState.StrokeDashOffset;
 			element.StrokeEndLineCap = CurrentState.XamlLineCap;
 			element.StrokeStartLineCap = CurrentState.XamlLineCap;
 			element.StrokeMiterLimit = CurrentState.MiterLimit;
@@ -319,6 +321,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			element.Stroke = CurrentState.XamlStrokeBrush;
 			element.StrokeThickness = CurrentState.StrokeSize;
 			element.StrokeDashArray = CurrentState.XamlDashArray;
+			element.StrokeDashOffset = CurrentState.StrokeDashOffset;
 			element.StrokeEndLineCap = CurrentState.XamlLineCap;
 			element.StrokeStartLineCap = CurrentState.XamlLineCap;
 			element.StrokeMiterLimit = CurrentState.MiterLimit;
@@ -345,6 +348,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			element.Stroke = CurrentState.XamlStrokeBrush;
 			element.StrokeThickness = CurrentState.StrokeSize;
 			element.StrokeDashArray = CurrentState.XamlDashArray;
+			element.StrokeDashOffset = CurrentState.StrokeDashOffset;
 			element.StrokeEndLineCap = CurrentState.XamlLineCap;
 			element.StrokeStartLineCap = CurrentState.XamlLineCap;
 			element.StrokeMiterLimit = CurrentState.MiterLimit;
@@ -415,6 +419,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			element.Stroke = CurrentState.XamlStrokeBrush;
 			element.StrokeThickness = CurrentState.StrokeSize;
 			element.StrokeDashArray = CurrentState.XamlDashArray;
+			element.StrokeDashOffset = CurrentState.StrokeDashOffset;
 			element.StrokeEndLineCap = CurrentState.XamlLineCap;
 			element.StrokeStartLineCap = CurrentState.XamlLineCap;
 			element.StrokeMiterLimit = CurrentState.MiterLimit;
@@ -441,6 +446,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			element.Stroke = CurrentState.XamlStrokeBrush;
 			element.StrokeThickness = CurrentState.StrokeSize;
 			element.StrokeDashArray = CurrentState.XamlDashArray;
+			element.StrokeDashOffset = CurrentState.StrokeDashOffset;
 			element.StrokeEndLineCap = CurrentState.XamlLineCap;
 			element.StrokeStartLineCap = CurrentState.XamlLineCap;
 			element.StrokeMiterLimit = CurrentState.MiterLimit;
@@ -448,7 +454,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			element.Effect = CurrentState.XamlEffect;
 		}
 
-		protected override void NativeSetStrokeDashPattern(float[] pattern, float strokeSize)
+		protected override void NativeSetStrokeDashPattern(float[] strokePattern, float strokeSize)
 		{
 			CurrentState.XamlDashArray = null;
 		}

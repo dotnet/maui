@@ -71,6 +71,11 @@ namespace Microsoft.Maui.Graphics
 			set { _commands.Add(canvas => canvas.StrokeDashPattern = value); }
 		}
 
+		public float StrokeDashOffset
+		{
+			set { _commands.Add(canvas => canvas.StrokeDashOffset = value); }
+		}
+
 		public Color FillColor
 		{
 			set { _commands.Add(canvas => canvas.FillColor = value); }

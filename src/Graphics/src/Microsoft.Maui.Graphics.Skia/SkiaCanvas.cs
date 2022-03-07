@@ -215,10 +215,11 @@ namespace Microsoft.Maui.Graphics.Skia
 		}
 
 		protected override void PlatformSetStrokeDashPattern(
-			float[] pattern,
+			float[] strokePattern,
+			float strokeDashOffset,
 			float strokeSize)
 		{
-			CurrentState.SetStrokeDashPattern(pattern, strokeSize);
+			CurrentState.SetStrokeDashPattern(strokePattern, strokeDashOffset, strokeSize);
 		}
 
 		public override void SetFillPaint(Paint paint, RectF rectangle)

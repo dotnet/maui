@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			set => StrokePaint.StrokeMiter = value;
 		}
 
-		public void SetStrokeDashPattern(float[] pattern, float strokeSize)
+		public void SetStrokeDashPattern(float[] pattern, float strokeDashOffset, float strokeSize)
 		{
 			if (pattern == null || pattern.Length == 0 || strokeSize == 0)
 			{
