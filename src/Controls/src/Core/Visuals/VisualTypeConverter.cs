@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Controls
 		void InitMappings()
 		{
 			var mappings = new Dictionary<string, IVisual>(StringComparer.OrdinalIgnoreCase);
+
 			foreach (var visual in Internals.Registrar.VisualTypes)
 				Register(visual, mappings);
 

@@ -55,6 +55,9 @@ namespace Microsoft.Maui.Controls.Internals
 				}
 				else
 					visualRenderers[supportedVisuals[i]] = (trender, priority);
+
+				if (!_registeredVisuals.Contains(supportedVisuals[i]))
+					_registeredVisuals.Add(supportedVisuals[i]);
 			}
 
 			// This registers a factory into the Handler version of the registrar.
@@ -80,32 +83,18 @@ namespace Microsoft.Maui.Controls.Internals
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register']/Docs" />
 		public void Register(Type tview, Type trender) => Register(tview, trender, _defaultVisualRenderers);
 
-
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		HashSet<Type> _registeredVisuals = new HashSet<Type>();
+
 		internal void RegisterVisual([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type registeredVisual)
 		{
 			if (!_registeredVisuals.Contains(registeredVisual))
 				_registeredVisuals.Add(registeredVisual);
 		}
 
-		internal IEnumerable<Type> VisualTypes
-		{
-			get
-			{
-				HashSet<Type> visualTypes = new HashSet<Type>(_registeredVisuals);
-
-				foreach (var item in _handlers)
-				{
-					foreach (var visualType in item.Value.Keys)
-					{
-						if (!visualTypes.Contains(visualType))
-							visualTypes.Add(visualType);
-					}
-				}
-
-				return visualTypes;
-			}
-		}
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+		internal HashSet<Type> VisualTypes =>
+			_registeredVisuals;
 
 		internal TRegistrable GetHandler(Type type) => GetHandler(type, _defaultVisualType);
 
@@ -317,7 +306,8 @@ namespace Microsoft.Maui.Controls.Internals
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='ExtraAssemblies']/Docs" />
 		public static IEnumerable<Assembly> ExtraAssemblies { get; set; }
 
-		internal static IEnumerable<Type> VisualTypes
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+		internal static HashSet<Type> VisualTypes
 		{
 			get => Registered.VisualTypes;
 		}
