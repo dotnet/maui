@@ -84,11 +84,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		HashSet<Type> _registeredVisuals = new HashSet<Type>();
 
-		internal void RegisterVisual([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type registeredVisual)
-		{
-			if (!_registeredVisuals.Contains(registeredVisual))
-				_registeredVisuals.Add(registeredVisual);
-		}
+		internal void RegisterVisual([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type registeredVisual) => _registeredVisuals.Add(registeredVisual);
 
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		internal Type GetVisual(string visualName)
