@@ -4,23 +4,6 @@
              xmlns:local="clr-namespace:MauiApp._1"
              x:Class="MauiApp._1.App">
     <Application.Resources>
-        <ResourceDictionary>
-
-            <Color x:Key="PrimaryColor">#512bdf</Color>
-            <Color x:Key="SecondaryColor">White</Color>
-
-            <Style TargetType="Label">
-                <Setter Property="TextColor" Value="{DynamicResource PrimaryColor}" />
-                <Setter Property="FontFamily" Value="OpenSansRegular" />
-            </Style>
-
-            <Style TargetType="Button">
-                <Setter Property="TextColor" Value="{DynamicResource SecondaryColor}" />
-                <Setter Property="FontFamily" Value="OpenSansRegular" />
-                <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
-                <Setter Property="Padding" Value="14,10" />
-            </Style>
-
-        </ResourceDictionary>
+        <ResourceDictionary Source="Resources/Styles.xaml" />
     </Application.Resources>
 </Application>
