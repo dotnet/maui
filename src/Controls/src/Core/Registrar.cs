@@ -90,9 +90,32 @@ namespace Microsoft.Maui.Controls.Internals
 				_registeredVisuals.Add(registeredVisual);
 		}
 
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-		internal HashSet<Type> VisualTypes =>
-			_registeredVisuals;
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+		internal Type GetVisual(string visualName)
+		{
+			foreach (var visualType in _registeredVisuals)
+			{
+				string name = visualType.Name;
+				string fullName = visualType.FullName;
+
+				if (name.EndsWith("Visual", StringComparison.OrdinalIgnoreCase))
+				{
+					name = name.Substring(0, name.Length - 6);
+					fullName = fullName.Substring(0, fullName.Length - 6);
+				}
+
+				if (visualName == name ||
+					visualName == fullName ||
+					visualName == $"{name}Visual" ||
+					visualName == $"{fullName}Visual")
+				{
+					return visualType;
+				}
+
+			}
+
+			return null;
+		}
 
 		internal TRegistrable GetHandler(Type type) => GetHandler(type, _defaultVisualType);
 
@@ -303,11 +326,6 @@ namespace Microsoft.Maui.Controls.Internals
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='ExtraAssemblies']/Docs" />
 		public static IEnumerable<Assembly> ExtraAssemblies { get; set; }
-
-		internal static HashSet<Type> VisualTypes
-		{
-			get => Registered.VisualTypes;
-		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Registered']/Docs" />
 		public static Registrar<IRegisterable> Registered { get; internal set; }

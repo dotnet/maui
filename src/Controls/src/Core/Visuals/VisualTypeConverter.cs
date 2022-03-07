@@ -28,9 +28,6 @@ namespace Microsoft.Maui.Controls
 		{
 			var mappings = new Dictionary<string, IVisual>(StringComparer.OrdinalIgnoreCase);
 
-			foreach (var visual in Internals.Registrar.VisualTypes)
-				Register(visual, mappings);
-
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
 			// Check for visual assembly attributes	after scanning for IVisual Types
@@ -110,6 +107,15 @@ namespace Microsoft.Maui.Controls
 				if (_visualTypeMappings.TryGetValue(strValue, out IVisual returnValue))
 					return returnValue;
 
+				var registeredType = Internals.Registrar.Registered.GetVisual(strValue);
+
+				if (registeredType != null)
+				{
+					returnValue = CreateVisual(registeredType);
+					_visualTypeMappings[strValue] = returnValue;
+					return returnValue;
+				}
+
 				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning($"Cannot convert \"{strValue}\" into {typeof(IVisual)}");
 			}
 
@@ -130,7 +136,11 @@ namespace Microsoft.Maui.Controls
 
 			if (_visualTypeMappings.ContainsValue(visual))
 				return _visualTypeMappings.Keys.Skip(_visualTypeMappings.Values.IndexOf(visual)).First();
-			throw new NotSupportedException();
+
+			// If the Visual isn't found inside _visualTypeMappings
+			// That means it's not registered via an assembly attribute so we'll just return the
+			// type name
+			return visual.GetType().Name;
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualTypeConverter.xml" path="//Member[@MemberName='GetStandardValuesExclusive']/Docs" />
