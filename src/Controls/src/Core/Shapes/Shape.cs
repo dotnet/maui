@@ -175,10 +175,23 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
+			bool getBoundsByFlattening = false;
+
 			if (HeightRequest < 0 && WidthRequest < 0)
+			{
+				getBoundsByFlattening = true;
 				Frame = viewBounds;
+			}
 
 			var path = GetPath();
+
+			if (getBoundsByFlattening)
+			{
+				var boundsByFlattening = path.GetBoundsByFlattening();
+
+				HeightRequest = boundsByFlattening.Height;
+				WidthRequest = boundsByFlattening.Width;
+			}
 
 #if !NETSTANDARD
 
