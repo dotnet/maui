@@ -48,10 +48,10 @@ namespace BlazorWpfApp
 
 		private void OnInitializingWebView(object sender, WebViewInitializeEventArgs e)
 		{
-			// Pressing F12 will make infinite load animation / not found error.
+			// Pressing F12 will result in infinite load animation / not found error.
 			e.CoreWebView2EnvironmentOptions.AdditionalBrowserArguments = "--custom-devtools-frontend=http://invalid-url";
 
-			// Would show FPS
+			// Would show FPS Counter
 			//e.CoreWebView2EnvironmentOptions.AdditionalBrowserArguments = "--show-fps-counter --ui-show-fps-counter";
 		}
 	}
