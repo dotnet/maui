@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 	/// <summary>
 	/// Event arguments for the InitializingWebView event.
 	/// </summary>
-	public sealed class WebViewInitEventArgs
+	public sealed class WebViewInitializeEventArgs
 #if (WEBVIEW2_WPF)
 		: RoutedEventArgs
 #else
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// </summary>
 		/// <param name="coreWebView2EnvironmentOptions">The options</param>
 		/// <param name="routedEvent">The <see cref="RoutedEvent"/> source. </param>
-		internal WebViewInitEventArgs(CoreWebView2EnvironmentOptions coreWebView2EnvironmentOptions
+		internal WebViewInitializeEventArgs(CoreWebView2EnvironmentOptions coreWebView2EnvironmentOptions
 			, RoutedEvent routedEvent)
 			: base(routedEvent)
 #else
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// Creates the event args for the WebView2 initalization.
 		/// </summary>
 		/// <param name="coreWebView2EnvironmentOptions">The options</param>
-		internal WebViewInitEventArgs(CoreWebView2EnvironmentOptions coreWebView2EnvironmentOptions)
+		internal WebViewInitializeEventArgs(CoreWebView2EnvironmentOptions coreWebView2EnvironmentOptions)
 #endif
 
 		{
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <inheritdoc />
 		protected override void InvokeEventHandler(Delegate genericHandler, object genericTarget)
 		{
-			var handler = (EventHandler<WebViewInitEventArgs>)genericHandler;
+			var handler = (EventHandler<WebViewInitializeEventArgs>)genericHandler;
 			handler(genericTarget, this);
 		}
 #endif

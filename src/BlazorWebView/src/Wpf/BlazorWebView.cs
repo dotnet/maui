@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		public static readonly RoutedEvent InitializingWebViewEvent = EventManager.RegisterRoutedEvent(
 			name: "InitializingWebView", 
 			routingStrategy: RoutingStrategy.Bubble,
-			handlerType: typeof(InitializingWebViewEventHandler), 
+			handlerType: typeof(EventHandler<WebViewInitializeEventArgs>), 
 			ownerType: typeof(BlazorWebView));
 
 		#endregion
@@ -223,13 +223,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// <summary>
 		/// Is fired before the enviroment of the WebView is set.
 		/// </summary>
-		public event InitializingWebViewEventHandler InitializingWebView
+		public event EventHandler<WebViewInitializeEventArgs> InitializingWebView
 		{
 			add { AddHandler(InitializingWebViewEvent, value); }
 			remove { RemoveHandler(InitializingWebViewEvent, value);  }
 		}
 
-		internal void RaiseInitializingWebViewEvent(WebViewInitEventArgs args)
+		internal void RaiseInitializingWebViewEvent(WebViewInitializeEventArgs args)
 		{
 			RaiseEvent(args);
 		}

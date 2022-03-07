@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment _coreWebView2Environment;
 		private readonly Action<ExternalLinkNavigationEventArgs> _externalNavigationStarting;
-		private readonly Action<WebViewInitEventArgs> _webView2Init;
+		private readonly Action<WebViewInitializeEventArgs> _webView2Initialize;
 
 		/// <summary>
 		/// Constructs an instance of <see cref="WebView2WebViewManager"/>.
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="externalNavigationStarting">Callback invoked when external navigation starts.</param>
-		/// <param name="webView2Init">Callback when the webview is initialized.</param>
+		/// <param name="webView2Initialize">Callback when the webview is initialized.</param>
 		public WebView2WebViewManager(
 			WebView2Control webview!!,
 			IServiceProvider services,
@@ -79,13 +79,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			JSComponentConfigurationStore jsComponents,
 			string hostPageRelativePath,
 			Action<ExternalLinkNavigationEventArgs> externalNavigationStarting,
-			Action<WebViewInitEventArgs> webView2Init)
+			Action<WebViewInitializeEventArgs> webView2Initialize)
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 
 		{
 			_webview = webview;
 			_externalNavigationStarting = externalNavigationStarting;
-			_webView2Init = webView2Init;
+			_webView2Initialize = webView2Initialize;
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
@@ -145,19 +145,28 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		{
 			CoreWebView2EnvironmentOptions options = new CoreWebView2EnvironmentOptions();
 #if (WEBVIEW2_WPF)
-			var args = new WebViewInitEventArgs(options, Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.InitializingWebViewEvent);
-			_webView2Init(args);
+			var args = new WebViewInitializeEventArgs(options, Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.InitializingWebViewEvent);
 #else
-			var args = new WebViewInitEventArgs(options);
+			var args = new WebViewInitializeEventArgs(options);
 #endif
 
+#if(WEBVIEW2_WINFORMS || WEBVIEW2_WPF)
+			_webView2Initialize(args);
+#endif
+
+#if WEBVIEW2_MAUI
+			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync()
+				.AsTask();
+
+			await _webview.EnsureCoreWebView2Async();
+#else
 			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync(
 				args.CoreWebView2BrowserExecutableFolder, args.CoreWebView2UserDataFolder, args.CoreWebView2EnvironmentOptions)
-#if WEBVIEW2_MAUI
-				.AsTask()
-#endif
 				.ConfigureAwait(true);
-			await _webview.EnsureCoreWebView2Async();
+
+			await _webview.EnsureCoreWebView2Async(_coreWebView2Environment);
+#endif
+
 			ApplyDefaultWebViewSettings();
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);

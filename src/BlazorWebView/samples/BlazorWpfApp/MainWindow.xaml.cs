@@ -46,10 +46,13 @@ namespace BlazorWpfApp
 			blazorWebView1.WebView.CoreWebView2.ExecuteScriptAsync("alert('hello from native UI')");
 		}
 
-		private void OnInitializingWebView(object sender, WebViewInitEventArgs e)
+		private void OnInitializingWebView(object sender, WebViewInitializeEventArgs e)
 		{
 			// Pressing F12 will make infinite load animation / not found error.
 			e.CoreWebView2EnvironmentOptions.AdditionalBrowserArguments = "--custom-devtools-frontend=http://invalid-url";
+
+			// Would show FPS
+			//e.CoreWebView2EnvironmentOptions.AdditionalBrowserArguments = "--show-fps-counter --ui-show-fps-counter";
 		}
 	}
 }

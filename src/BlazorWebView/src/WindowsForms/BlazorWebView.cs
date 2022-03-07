@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		/// </summary>
 		[Category("Action")]
 		[Description("Allows customizing the webview start parameters.")]
-		public EventHandler<WebViewInitEventArgs> WebViewInitialize;
+		public EventHandler<WebViewInitializeEventArgs> WebViewInitialize;
 
 		private void OnHostPagePropertyChanged() => StartWebViewCoreIfPossible();
 

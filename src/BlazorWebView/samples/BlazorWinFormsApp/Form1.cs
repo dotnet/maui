@@ -4,6 +4,7 @@
 using System;
 using System.Windows.Forms;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Microsoft.Extensions.DependencyInjection;
 using WebViewAppShared;
@@ -30,6 +31,7 @@ namespace BlazorWinFormsApp
 			blazorWebView1.Services = services1.BuildServiceProvider();
 			blazorWebView1.RootComponents.Add<Main>("#app");
 			blazorWebView1.RootComponents.RegisterForJavaScript<MyDynamicComponent>("my-dynamic-root-component");
+			blazorWebView1.WebViewInitialize = blazorWebView_WebViewInitialize;
 
 			customFilesBlazorWebView.HostPage = @"wwwroot\customindex.html";
 			customFilesBlazorWebView.Services = services2.BuildServiceProvider();
@@ -42,6 +44,12 @@ namespace BlazorWinFormsApp
 				owner: this,
 				text: $"Current counter value is: {_appState.Counter}",
 				caption: "Counter");
+		}
+
+		private void blazorWebView_WebViewInitialize(object sender, WebViewInitializeEventArgs args)
+		{
+			// Pressing F12 will make infinite load animation / not found error.
+			args.CoreWebView2EnvironmentOptions.AdditionalBrowserArguments = "--custom-devtools-frontend=http://invalid-url";
 		}
 
 		private void _webViewActionButton_Click(object sender, EventArgs e)
