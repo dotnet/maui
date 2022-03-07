@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using Microsoft.Maui.Graphics;
 using ElmSharp;
 using ElmSharp.Accessible;
@@ -213,6 +214,60 @@ namespace Microsoft.Maui.Platform
 		internal static EvasObject? GetParent(this EvasObject? view)
 		{
 			return view?.Parent;
+		}
+
+		// TODO : Should consider a better way to determine that the view has been loaded/unloaded.
+		internal static bool IsLoaded(this EvasObject view) =>
+			view.IsRealized;
+
+		internal static IDisposable OnLoaded(this EvasObject view, Action action)
+		{
+			if (view.IsLoaded())
+			{
+				action();
+				return new ActionDisposable(() => { });
+			}
+
+			EventHandler? renderPostEventHandler = null;
+			ActionDisposable disposable = new ActionDisposable(() =>
+			{
+				if (renderPostEventHandler != null)
+					view.RenderPost -= renderPostEventHandler;
+			});
+
+			renderPostEventHandler = (_, __) =>
+			{
+				disposable.Dispose();
+				action();
+			};
+
+			view.RenderPost += renderPostEventHandler;
+			return disposable;
+		}
+
+		internal static IDisposable OnUnloaded(this EvasObject view, Action action)
+		{
+			if (!view.IsLoaded())
+			{
+				action();
+				return new ActionDisposable(() => { });
+			}
+
+			EventHandler? deletedEventHandler = null;
+			ActionDisposable disposable = new ActionDisposable(() =>
+			{
+				if (deletedEventHandler != null)
+					view.Deleted -= deletedEventHandler;
+			});
+
+			deletedEventHandler = (_, __) =>
+			{
+				disposable.Dispose();
+				action();
+			};
+
+			view.Deleted += deletedEventHandler;
+			return disposable;
 		}
 	}
 }

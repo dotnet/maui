@@ -111,6 +111,17 @@ namespace Microsoft.Maui.Handlers
 			platformView.Deleted -= OnPlatformViewDeleted;
 		}
 
+		public virtual bool NeedsContainer
+		{
+			get
+			{
+				if(VirtualView is IBorderView border)
+					return border?.Shape != null || border?.Stroke != null;
+
+				return false;
+			}
+		}
+
 		void OnPlatformViewDeleted(object? sender, EventArgs e)
 		{
 			OnPlatformViewDeleted();
