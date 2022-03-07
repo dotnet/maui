@@ -69,6 +69,7 @@ namespace GraphicsTester.Scenarios
 			{
 				canvas.StrokeSize = i;
 				canvas.StrokeDashPattern = DASHED;
+				canvas.StrokeDashOffset = 2;
 				canvas.DrawLine(50, 100 + i * 10, 200, 100 + i * 10);
 				canvas.DrawLine(250, 100.5f + i * 10, 400, 100.5f + i * 10);
 			}

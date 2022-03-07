@@ -45,6 +45,7 @@ namespace GraphicsTester.Scenarios
 			{
 				canvas.StrokeSize = i;
 				canvas.StrokeDashPattern = DASHED;
+				canvas.StrokeDashOffset = 2;
 				canvas.DrawRoundedRectangle(50f, 200f + i * 30, 150, 20, 5);
 				canvas.DrawRoundedRectangle(250.5f, 200.5f + i * 30, 150, 20, 5);
 			}
