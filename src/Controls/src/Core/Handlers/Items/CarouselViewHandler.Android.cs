@@ -77,7 +77,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemWidth = _widthConstraint;
 
 			if ((PlatformView as IMauiRecyclerView<CarouselView>)?.ItemsLayout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
-				itemWidth = (int)(PlatformView.MeasuredWidth - Context?.ToPixels(VirtualView.PeekAreaInsets.Left) - Context?.ToPixels(VirtualView.PeekAreaInsets.Right) - Context?.ToPixels(listItemsLayout.ItemSpacing));
+			{
+				var width = (PlatformView.MeasuredWidth == 0) ? _widthConstraint : PlatformView.MeasuredWidth;
+
+				if (double.IsInfinity(width))
+					return width;
+
+				itemWidth = (int)(width - Context?.ToPixels(VirtualView.PeekAreaInsets.Left) - Context?.ToPixels(VirtualView.PeekAreaInsets.Right) - Context?.ToPixels(listItemsLayout.ItemSpacing));
+			}
 
 			return itemWidth;
 		}
@@ -87,7 +94,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemHeight = _heightConstraint;
 
 			if ((PlatformView as IMauiRecyclerView<CarouselView>)?.ItemsLayout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
-				itemHeight = (int)(PlatformView.MeasuredHeight - Context?.ToPixels(VirtualView.PeekAreaInsets.Top) - Context?.ToPixels(VirtualView.PeekAreaInsets.Bottom) - Context?.ToPixels(listItemsLayout.ItemSpacing));
+			{
+				var height = (PlatformView.MeasuredHeight == 0) ? _heightConstraint : PlatformView.MeasuredHeight;
+
+				if (double.IsInfinity(height))
+					return height;
+
+				itemHeight = (int)(height - Context?.ToPixels(VirtualView.PeekAreaInsets.Top) - Context?.ToPixels(VirtualView.PeekAreaInsets.Bottom) - Context?.ToPixels(listItemsLayout.ItemSpacing));
+			}
 
 			return itemHeight;
 		}

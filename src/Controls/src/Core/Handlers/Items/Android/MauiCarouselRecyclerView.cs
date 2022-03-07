@@ -541,25 +541,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_carouselViewLayoutListener = null;
 		}
 
-		int? _forcedHeight;
-		int? _forcedWidth;
-
-		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
-		{
-			base.OnLayout(changed, left, top, right, bottom);
-
-			if (Carousel.Loop &&
-				ItemsViewAdapter is CarouselViewAdapter<CarouselView, IItemsViewSource> adapter &&
-				adapter.MeasureFirstItemForLooping)
-			{
-				_forcedHeight = bottom - top;
-				_forcedWidth = right - left;
-
-				adapter.MeasureFirstItemForLooping = false;
-				adapter.NotifyDataSetChanged();
-			}
-		}
-
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			if (Carousel.Loop)
@@ -583,40 +564,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(heightMeasureSpec.GetSize());
 				}
 
-				if (ItemsViewAdapter is CarouselViewAdapter<CarouselView, IItemsViewSource> adapter)
+				if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified ||
+					MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified)
 				{
-
-					if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified ||
-						MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified)
+					if (ItemsViewAdapter.ItemCount > 0)
 					{
-						if (_forcedHeight != null)
-						{
-							adapter.MeasureFirstItemForLooping = false;
+						// Retrieve the first item of the CarouselView and measure it
+						// This is what we'll use for the CarV WxH if the requested measure
+						// is for an infinite amount of space
 
-							if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified)
-							{
-								widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(_forcedWidth.Value);
-							}
-
-							if (MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified)
-							{
-								heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(_forcedHeight.Value);
-							}
-						}
-						else
-						{
-							adapter.MeasureFirstItemForLooping = true;
-						}
-					}
-					else
-					{
-						adapter.MeasureFirstItemForLooping = false;
+						var viewType = ItemsViewAdapter.GetItemViewType(0);
+						var viewHolder = (ViewHolder)ItemsViewAdapter.CreateViewHolder(this, viewType);
+						ItemsViewAdapter.BindViewHolder(viewHolder, 0);
+						viewHolder.ItemView.Measure(widthMeasureSpec, heightMeasureSpec);
+						widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredWidth);
+						heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredHeight);
 					}
 				}
-			}
-			else if (ItemsViewAdapter is CarouselViewAdapter<CarouselView, IItemsViewSource> adapter)
-			{
-				adapter.MeasureFirstItemForLooping = false;
 			}
 
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
