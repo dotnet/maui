@@ -151,6 +151,11 @@ namespace Microsoft.Maui.Platform
 			UpdateSize(platformView, view);
 		}
 
+		public static void UpdateInputTransparent(this EvasObject platformView, IViewHandler handler, IView view)
+		{
+			platformView.PassEvents = view.InputTransparent;
+		}
+
 		public static void UpdateSize(EvasObject platformView, IView view)
 		{
 			if (!IsExplicitSet(view.Width) || !IsExplicitSet(view.Height))
