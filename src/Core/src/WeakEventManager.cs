@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using static System.String;
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="Type[@FullName='Microsoft.Maui.Controls.WeakEventManager']/Docs" />
 	public class WeakEventManager
