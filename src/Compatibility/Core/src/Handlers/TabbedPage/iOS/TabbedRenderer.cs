@@ -122,6 +122,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (disposing)
 			{
+				_tabBarAppearance?.Dispose();
+				_tabBarAppearance = null;
+
 				Page.SendDisappearing();
 				Tabbed.PropertyChanged -= OnPropertyChanged;
 				Tabbed.PagesChanged -= OnPagesChanged;
