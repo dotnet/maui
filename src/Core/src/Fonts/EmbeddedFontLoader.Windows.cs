@@ -10,11 +10,6 @@ namespace Microsoft.Maui
 	{
 		const string FontCacheFolderName = "fonts";
 
-		public EmbeddedFontLoader(IServiceProvider? serviceProvider = null)
-		{
-			_serviceProvider = serviceProvider;
-		}
-
 		public string? LoadFont(EmbeddedFont font)
 		{
 			var tmpdir = ApplicationData.Current.LocalFolder.CreateFolderAsync(FontCacheFolderName, CreationCollisionOption.OpenIfExists).AsTask().Result;

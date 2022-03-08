@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.IO;
 
 namespace Microsoft.Maui
 {
@@ -19,6 +20,14 @@ namespace Microsoft.Maui
 		public EmbeddedFontLoader()
 			: this(null)
 		{
+		}
+
+		public EmbeddedFontLoader(IServiceProvider? serviceProvider = null)
+#if __ANDROID__
+			: base(Path.GetTempPath, serviceProvider)
+#endif
+		{
+			_serviceProvider = serviceProvider;
 		}
 	}
 }
