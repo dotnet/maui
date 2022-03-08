@@ -1213,19 +1213,28 @@ namespace Microsoft.Maui.Controls
 				(o) => rootItem = rootItem ?? o as ShellItem);
 		}
 
-		internal T GetEffectiveValue<T>(BindableProperty property, T defaultValue)
+		internal T GetEffectiveValue<T>(BindableProperty property, T defaultValue, bool ignoreImplicit = false)
 		{
-			return GetEffectiveValue<T>(property, () => defaultValue, null);
+			return GetEffectiveValue<T>(property, () => defaultValue, null, ignoreImplicit: ignoreImplicit);
 		}
 
-		internal T GetEffectiveValue<T>(BindableProperty property, Func<T> defaultValue, Action<Element> observer, Element element = null)
+		internal T GetEffectiveValue<T>(
+			BindableProperty property,
+			Func<T> defaultValue,
+			Action<Element> observer,
+			Element element = null,
+			bool ignoreImplicit = false)
 		{
 			element = element ?? GetVisiblePage() ?? CurrentContent;
 			while (element != this && element != null)
 			{
 				observer?.Invoke(element);
 
-				if (element.IsSet(property))
+				if (ignoreImplicit && Routing.IsImplicit(element))
+				{
+					// Ignore Implicit routes
+				}
+				else if (element.IsSet(property))
 					return (T)element.GetValue(property);
 
 				element = element.Parent;

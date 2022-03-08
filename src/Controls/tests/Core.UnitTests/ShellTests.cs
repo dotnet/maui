@@ -1344,14 +1344,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var shellToolBar = testShell.Toolbar;
 
-			Assert.IsNull(shellToolBar.Title);
+			Assert.AreEqual("Shell Title", shellToolBar.Title);
 
 			shellContent.Title = "Shell Content Title";
-			Assert.AreEqual(shellContent.Title, shellToolBar.Title);
+			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
 
 			var page = testShell.CurrentPage;
 			page.Title = "ContentPage Title";
-			Assert.AreEqual(page.Title, shellToolBar.Title);
+			Assert.AreEqual("ContentPage Title", shellToolBar.Title);
 		}
 
 		[Test]
@@ -1372,6 +1372,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			testShell.CurrentItem = shellContent2;
 			Assert.AreEqual("Content 2", shellToolBar.Title);
+		}
+
+		[Test]
+		public void ShellToolbarTitleEmptyStringOnNullOrEmptyPageTitle()
+		{
+			var shellContent = CreateShellContent();
+			var shellContent2 = CreateShellContent();
+			TestShell testShell = new TestShell(shellContent, shellContent2)
+			{
+				Title = "Shell Title"
+			};
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual("Shell Title", shellToolBar.Title);
+
+			var page = testShell.CurrentPage;
+			page.Title = String.Empty;
+			Assert.AreEqual(String.Empty, shellToolBar.Title);
+			page.Title = "set";
+			Assert.AreEqual("set", shellToolBar.Title);
+			page.Title = null;
+			Assert.AreEqual(String.Empty, shellToolBar.Title);
 		}
 	}
 }
