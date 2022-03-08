@@ -10,7 +10,7 @@ using PlatformView = Google.Android.Material.ImageView.ShapeableImageView;
 using System;
 using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
 using PlatformImageView = Microsoft.UI.Xaml.Controls.Image;
-using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+using PlatformView = Microsoft.UI.Xaml.Controls.Button;
 #elif TIZEN
 using PlatformImage = Tizen.UIExtensions.ElmSharp.Image;
 using PlatformImageView = Tizen.UIExtensions.ElmSharp.Image;
