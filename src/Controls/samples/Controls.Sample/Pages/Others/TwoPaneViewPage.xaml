@@ -6,6 +6,8 @@
     xmlns:foldable="clr-namespace:Microsoft.Maui.Controls.DualScreen;assembly=Microsoft.Maui.Controls.DualScreen"
     Title="TwoPaneView"
     BackgroundColor="#bbbbbb">
+    <!-- For Surface Duo and other foldable Android phones -->
+    <!-- Requires Microsoft.Maui.Controls.DualScreen NuGet -->
     <views:BasePage.Content>
         <foldable:TwoPaneView x:Name="twoPaneView"
                               MinTallModeHeight="{Binding Source={x:Reference MinTallModeHeight}, Path=Value}"

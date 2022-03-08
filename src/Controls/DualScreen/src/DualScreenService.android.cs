@@ -81,7 +81,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 			[Internals.Preserve(Conditional = true)]
 			public DualScreenServiceImpl()
 			{
-				//HACK:FOLDABLE 
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.ctor - Android detected default ctor");
 
 				_HingeService = this;
@@ -147,7 +146,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 				if (_foldableInfo == null)
 					_foldableInfo = foldableInfo;
 
-				//HACK:FOLDABLE 
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.Init - Android detected");
 
 				if (_HingeService == null)
@@ -169,7 +167,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 				var screenHelper = _HingeService._helper ?? new ScreenHelper(foldableInfo);
 
-				//HACK:FOLDABLE Hinge service is set up for every device - figure out how to NOT do that (based on hinge existing?)
+				//TODO:FOLDABLE Hinge service used to query IsDuo - this is no longer available
+				//consider how to selectively set up the hinge, although it is wired-up only when used
 				_HingeService._helper = screenHelper;
 				_HingeService.SetupHingeSensors(_mainActivity);
 
@@ -211,7 +210,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 					}
 					else
 					{
-						//TODO: zero-size hinge
+						//TODO: verify this works with zero-size hinge (foldable devices)
 						_hingeDp = new Rectangle((hinge.Left), (hinge.Top), (hinge.Width()), (hinge.Height()));
 					}
 				}
@@ -513,8 +512,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 						
 			void ConfigurationChanged(object sender, EventArgs e)
 			{
-				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.ConfigurationChanged IGNORE ConfigurationChanged");
+				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.ConfigurationChanged IGNORE ConfigurationChanged??????");
 				//TODO: do we need to update the screen here???
+				_helper?.Update();
+				_onScreenChangedEventManager.HandleEvent(this, e, nameof(OnScreenChanged));
 				return;
 				////if (IsDuo)
 				////{
@@ -547,7 +548,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				//}
 
 				//if (screenChanged)
-				//	_onScreenChangedE ventManager.HandleEvent(this, e, nameof(OnScreenChanged));
+				//	_onScreenChangedEventManager.HandleEvent(this, e, nameof(OnScreenChanged));
 			}
 
 

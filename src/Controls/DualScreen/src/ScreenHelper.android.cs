@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		/// </summary>
 		Rect GetHinge()
 		{
-			// Hinge's coordinates of its 4 edges in different mode on Surface Duo 1
+			// Hinge's coordinates of its 4 edges in different mode on Surface Duo 1, Surface Duo 2
 			// Double Portrait  Rect(1350, 0 - 1434, 1800)     Rect(1344, 0 - 1410, 1892)
 			// Double Landscape Rect(0, 1350 - 1800, 1434)     Rect(0, 1344 - 1892, 1410)
 
