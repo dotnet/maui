@@ -26,14 +26,14 @@ namespace Microsoft.Maui
 
 		readonly ConcurrentDictionary<Font, UIFont> _fonts = new();
 		readonly IFontRegistrar _fontRegistrar;
-		readonly ILogger<FontManager>? _logger;
+		readonly IServiceProvider? _serviceProvider;
 
 		UIFont? _defaultFont;
 
-		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
+		public FontManager(IFontRegistrar fontRegistrar, IServiceProvider? serviceProvider = null)
 		{
 			_fontRegistrar = fontRegistrar;
-			_logger = logger;
+			_serviceProvider = serviceProvider;
 		}
 
 		public UIFont DefaultFont =>
@@ -151,7 +151,7 @@ namespace Microsoft.Maui
 				}
 				catch (Exception ex)
 				{
-					_logger?.LogWarning(ex, "Unable to load font '{Font}'.", family);
+					_serviceProvider?.CreateLogger<FontManager>()?.LogWarning(ex, "Unable to load font '{Font}'.", family);
 				}
 			}
 
