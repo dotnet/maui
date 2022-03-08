@@ -115,8 +115,10 @@ namespace Microsoft.Maui.Controls
 
 		internal void UpdateTitle()
 		{
-			if (_shell.CurrentPage?.IsSet(Page.TitleProperty) == true)
-				Title = _shell.CurrentPage.Title ?? String.Empty;
+			var currentPage = _shell?.CurrentSection?.DisplayedPage;
+
+			if (currentPage?.IsSet(Page.TitleProperty) == true)
+				Title = currentPage.Title ?? String.Empty;
 			else
 				Title = _shell.GetEffectiveValue<string>(
 					BaseShellItem.TitleProperty, 

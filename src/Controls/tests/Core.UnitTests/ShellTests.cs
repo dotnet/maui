@@ -1395,5 +1395,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			page.Title = null;
 			Assert.AreEqual(String.Empty, shellToolBar.Title);
 		}
+
+
+		[Test]
+		public async Task ShellToolbarTitleIgnoresModalTitle()
+		{
+			var shellContent = CreateShellContent();
+			var shellContent2 = CreateShellContent();
+			TestShell testShell = new TestShell(shellContent, shellContent2)
+			{
+				Title = "Shell Title"
+			};
+
+			await testShell.CurrentSection.Navigation.PushModalAsync(new ContentPage()
+			{
+				Title = "Modal Page"
+			});
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual("Shell Title", shellToolBar.Title);
+
+			await testShell.Navigation.PopModalAsync();
+
+			Assert.AreEqual("Shell Title", shellToolBar.Title);
+		}
 	}
 }
