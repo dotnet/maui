@@ -282,6 +282,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateInitialPosition()
 		{
+			//if we don't have any items don't update position
+			if (ItemsViewAdapter.ItemsSource.Count == 0)
+				return;
+
 			int itemCount = 0;
 			int position;
 
