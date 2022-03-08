@@ -28,14 +28,12 @@ namespace Microsoft.Maui.Controls.Internals
 	{
 		readonly Dictionary<Type, Dictionary<Type, (Type target, short priority)>> _handlers = new Dictionary<Type, Dictionary<Type, (Type target, short priority)>>();
 
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		static Type _defaultVisualType = typeof(VisualMarker.DefaultVisual);
 
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		static Type _materialVisualType = typeof(VisualMarker.MaterialVisual);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register']/Docs" />
-		public void Register(Type tview, Type trender, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type[] supportedVisuals, short priority)
+		public void Register(Type tview, Type trender, Type[] supportedVisuals, short priority)
 		{
 			supportedVisuals = supportedVisuals ?? new[] { _defaultVisualType };
 			//avoid caching null renderers
@@ -79,7 +77,7 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register']/Docs" />
-		public void Register(Type tview, Type trender, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type[] supportedVisual) => Register(tview, trender, supportedVisual, 0);
+		public void Register(Type tview, Type trender, Type[] supportedVisual) => Register(tview, trender, supportedVisual, 0);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register']/Docs" />
 		public void Register(Type tview, Type trender) => Register(tview, trender, new[] { _defaultVisualType });
@@ -128,7 +126,7 @@ namespace Microsoft.Maui.Controls.Internals
 			return (TRegistrable)handler;
 		}
 
-		internal TRegistrable GetHandler(Type type, object source, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] IVisual visual, params object[] args)
+		internal TRegistrable GetHandler(Type type, object source, IVisual visual, params object[] args)
 		{
 			TRegistrable returnValue = default(TRegistrable);
 			if (args.Length == 0)
