@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 
@@ -104,6 +105,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			SearchBar.RemapForControls();
 			TabbedPage.RemapForControls();
 			Layout.RemapForControls();
+			Shape.RemapForControls();
 
 			return builder;
 		}
