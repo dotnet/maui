@@ -115,7 +115,15 @@ namespace Microsoft.Maui.Controls
 
 		internal void UpdateTitle()
 		{
-			var currentPage = _shell?.CurrentSection?.DisplayedPage;
+			var navStack = _shell?.CurrentSection?.Navigation?.NavigationStack;
+			Page currentPage = null;
+
+			if (navStack != null)
+			{
+				currentPage = navStack[navStack.Count - 1] ??
+					((IShellContentController)_shell?.CurrentContent)?.Page;
+			}
+
 
 			if (currentPage?.IsSet(Page.TitleProperty) == true)
 				Title = currentPage.Title ?? String.Empty;
