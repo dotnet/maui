@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
@@ -22,7 +23,10 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/HandlerAttribute.xml" path="//Member[@MemberName='Priority']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public short Priority { get; set; }
+
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		internal Type[] SupportedVisuals { get; private set; }
+
 		internal Type HandlerType { get; private set; }
 
 		internal Type TargetType { get; private set; }

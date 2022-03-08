@@ -27,15 +27,17 @@ namespace Microsoft.Maui.Controls.Internals
 	public class Registrar<TRegistrable> where TRegistrable : class
 	{
 		readonly Dictionary<Type, Dictionary<Type, (Type target, short priority)>> _handlers = new Dictionary<Type, Dictionary<Type, (Type target, short priority)>>();
+
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		static Type _defaultVisualType = typeof(VisualMarker.DefaultVisual);
+
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		static Type _materialVisualType = typeof(VisualMarker.MaterialVisual);
 
-		static Type[] _defaultVisualRenderers = new[] { _defaultVisualType };
-
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register']/Docs" />
-		public void Register(Type tview, Type trender, Type[] supportedVisuals, short priority)
+		public void Register(Type tview, Type trender, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type[] supportedVisuals, short priority)
 		{
-			supportedVisuals = supportedVisuals ?? _defaultVisualRenderers;
+			supportedVisuals = supportedVisuals ?? new[] { _defaultVisualType };
 			//avoid caching null renderers
 			if (trender == null)
 				return;
@@ -77,10 +79,10 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register']/Docs" />
-		public void Register(Type tview, Type trender, Type[] supportedVisual) => Register(tview, trender, supportedVisual, 0);
+		public void Register(Type tview, Type trender, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type[] supportedVisual) => Register(tview, trender, supportedVisual, 0);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register']/Docs" />
-		public void Register(Type tview, Type trender) => Register(tview, trender, _defaultVisualRenderers);
+		public void Register(Type tview, Type trender) => Register(tview, trender, new[] { _defaultVisualType });
 
 		HashSet<Type> _registeredVisuals = new HashSet<Type>();
 
@@ -115,7 +117,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		internal TRegistrable GetHandler(Type type) => GetHandler(type, _defaultVisualType);
 
-		internal TRegistrable GetHandler(Type type, Type visualType)
+		internal TRegistrable GetHandler(Type type, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type visualType)
 		{
 			Type handlerType = GetHandlerType(type, visualType ?? _defaultVisualType);
 			if (handlerType == null)
@@ -126,7 +128,7 @@ namespace Microsoft.Maui.Controls.Internals
 			return (TRegistrable)handler;
 		}
 
-		internal TRegistrable GetHandler(Type type, object source, IVisual visual, params object[] args)
+		internal TRegistrable GetHandler(Type type, object source, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] IVisual visual, params object[] args)
 		{
 			TRegistrable returnValue = default(TRegistrable);
 			if (args.Length == 0)
@@ -183,7 +185,7 @@ namespace Microsoft.Maui.Controls.Internals
 		public Type GetHandlerType(Type viewType) => GetHandlerType(viewType, _defaultVisualType);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerType']/Docs" />
-		public Type GetHandlerType(Type viewType, Type visualType)
+		public Type GetHandlerType(Type viewType, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type visualType)
 		{
 			visualType = visualType ?? _defaultVisualType;
 
@@ -240,7 +242,7 @@ namespace Microsoft.Maui.Controls.Internals
 			return false;
 		}
 
-		void RegisterRenderWithTypes(Type viewType, Type visualType)
+		void RegisterRenderWithTypes(Type viewType, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type visualType)
 		{
 			visualType = visualType ?? _defaultVisualType;
 

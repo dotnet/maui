@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Essentials;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
@@ -32,8 +33,13 @@ namespace Microsoft.Maui.Controls
 				logger?.LogWarning("Material is currently not support on {RuntimePlatform}.", DeviceInfo.Platform);
 		}
 
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		public sealed class MaterialVisual : IVisual { public MaterialVisual() { } }
+
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		public sealed class DefaultVisual : IVisual { public DefaultVisual() { } }
+
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		internal sealed class MatchParentVisual : IVisual { public MatchParentVisual() { } }
 	}
 }
