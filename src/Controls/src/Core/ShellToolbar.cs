@@ -75,7 +75,6 @@ namespace Microsoft.Maui.Controls
 				previousPage = stack[stack.Count - 1];
 
 			ToolbarItems = _toolbarTracker.ToolbarItems;
-			IsVisible = _shell.GetEffectiveValue<bool>(Shell.NavBarIsVisibleProperty, true);
 			_backButtonBehavior = _shell.GetEffectiveValue<BackButtonBehavior>(Shell.BackButtonBehaviorProperty, null);
 			bool backButtonVisible = true;
 
@@ -86,8 +85,15 @@ namespace Microsoft.Maui.Controls
 
 			BackButtonVisible = backButtonVisible && stack.Count > 1;
 			Title = (!String.IsNullOrWhiteSpace(currentPage.Title)) ? currentPage.Title : _shell.Title;
-
 			TitleView = _shell.GetEffectiveValue<VisualElement>(Shell.TitleViewProperty, null);
+
+			bool showToolBarDefault =
+				BackButtonVisible ||
+				!String.IsNullOrEmpty(Title) ||
+				TitleView != null ||
+				_toolbarTracker.ToolbarItems.Count > 0;
+
+			IsVisible = _shell.GetEffectiveValue<bool>(Shell.NavBarIsVisibleProperty, showToolBarDefault);
 
 			if (currentPage != null)
 				DynamicOverflowEnabled = PlatformConfiguration.WindowsSpecific.Page.GetToolbarDynamicOverflowEnabled(currentPage);
