@@ -1,10 +1,11 @@
 #nullable enable
 using System;
 using System.ComponentModel;
-using Xunit;
+using NUnit.Framework;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	[TestFixture]
 	public class WeakEventManagerTests : INotifyPropertyChanged
 	{
 		static int s_count;
@@ -76,7 +77,7 @@ namespace Microsoft.Maui.UnitTests
 
 			void SourceOnTestEvent(object? sender, EventArgs eventArgs)
 			{
-				throw new Exception("Fail");
+				Assert.Fail();
 			}
 		}
 
@@ -86,21 +87,21 @@ namespace Microsoft.Maui.UnitTests
 			remove => _propertyChangedWeakEventManager.RemoveEventHandler(value);
 		}
 
-		[Fact]
+		[Test]
 		public void AddHandlerWithEmptyEventNameThrowsException()
 		{
 			var wem = new WeakEventManager();
 			Assert.Throws<ArgumentNullException>(() => wem.AddEventHandler((EventHandler)((sender, args) => { }), ""));
 		}
 
-		[Fact]
+		[Test]
 		public void AddHandlerWithNullEventHandlerThrowsException()
 		{
 			var wem = new WeakEventManager();
 			Assert.Throws<ArgumentNullException>(() => wem.AddEventHandler(null, "test"));
 		}
 
-		[Fact]
+		[Test]
 		public void AddHandlerWithNullEventNameThrowsException()
 		{
 			var wem = new WeakEventManager();
@@ -109,20 +110,20 @@ namespace Microsoft.Maui.UnitTests
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		}
 
-		[Fact]
+		[Test]
 		public void CanRemoveEventHandler()
 		{
 			var source = new TestSource();
 			int beforeRun = source.Count;
 			source.Fire();
 
-			Assert.True(source.Count == 1);
+			Assert.IsTrue(source.Count == 1);
 			source.Clean();
 			source.Fire();
-			Assert.True(source.Count == 1);
+			Assert.IsTrue(source.Count == 1);
 		}
 
-		[Fact]
+		[Test]
 		public void CanRemoveStaticEventHandler()
 		{
 			int beforeRun = s_count;
@@ -133,10 +134,10 @@ namespace Microsoft.Maui.UnitTests
 
 			source.FireTestEvent();
 
-			Assert.True(s_count == beforeRun);
+			Assert.IsTrue(s_count == beforeRun);
 		}
 
-		[Fact]
+		[Test]
 		public void EventHandlerCalled()
 		{
 			var called = false;
@@ -146,17 +147,17 @@ namespace Microsoft.Maui.UnitTests
 
 			source.FireTestEvent();
 
-			Assert.True(called);
+			Assert.IsTrue(called);
 		}
 
-		[Fact]
+		[Test]
 		public void FiringEventWithoutHandlerShouldNotThrow()
 		{
 			var source = new TestEventSource();
 			source.FireTestEvent();
 		}
 
-		[Fact]
+		[Test]
 		public void MultipleHandlersCalled()
 		{
 			var called1 = false;
@@ -167,24 +168,24 @@ namespace Microsoft.Maui.UnitTests
 			source.TestEvent += (sender, args) => { called2 = true; };
 			source.FireTestEvent();
 
-			Assert.True(called1 && called2);
+			Assert.IsTrue(called1 && called2);
 		}
 
-		[Fact]
+		[Test]
 		public void RemoveHandlerWithEmptyEventNameThrowsException()
 		{
 			var wem = new WeakEventManager();
 			Assert.Throws<ArgumentNullException>(() => wem.RemoveEventHandler((EventHandler)((sender, args) => { }), ""));
 		}
 
-		[Fact]
+		[Test]
 		public void RemoveHandlerWithNullEventHandlerThrowsException()
 		{
 			var wem = new WeakEventManager();
 			Assert.Throws<ArgumentNullException>(() => wem.RemoveEventHandler(null, "test"));
 		}
 
-		[Fact]
+		[Test]
 		public void RemoveHandlerWithNullEventNameThrowsException()
 		{
 			var wem = new WeakEventManager();
@@ -193,7 +194,7 @@ namespace Microsoft.Maui.UnitTests
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		}
 
-		[Fact]
+		[Test]
 		public void RemovingNonExistentHandlersShouldNotThrow()
 		{
 			var wem = new WeakEventManager();
@@ -201,7 +202,7 @@ namespace Microsoft.Maui.UnitTests
 			wem.RemoveEventHandler((Action<object?, EventArgs>)Handler, "alsofake");
 		}
 
-		[Fact]
+		[Test]
 		public void RemoveHandlerWithMultipleSubscriptionsRemovesOne()
 		{
 			int beforeRun = s_count;
@@ -213,10 +214,10 @@ namespace Microsoft.Maui.UnitTests
 
 			source.FireTestEvent();
 
-			Assert.Equal(beforeRun + 1, s_count);
+			Assert.AreEqual(beforeRun + 1, s_count);
 		}
 
-		[Fact]
+		[Test]
 		public void StaticHandlerShouldRun()
 		{
 			int beforeRun = s_count;
@@ -226,10 +227,10 @@ namespace Microsoft.Maui.UnitTests
 
 			source.FireTestEvent();
 
-			Assert.True(s_count > beforeRun);
+			Assert.IsTrue(s_count > beforeRun);
 		}
 
-		[Fact]
+		[Test]
 		public void VerifySubscriberCanBeCollected()
 		{
 			WeakReference? wr = null;
@@ -244,15 +245,15 @@ namespace Microsoft.Maui.UnitTests
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
-			Assert.NotNull(wr);
-			Assert.False(wr?.IsAlive);
+			Assert.IsNotNull(wr);
+			Assert.IsFalse(wr?.IsAlive);
 
 			// The handler for this calls Assert.Fail, so if the subscriber has not been collected
 			// the handler will be called and the test will fail
 			source.FireTestEvent();
 		}
 
-		[Fact]
+		[Test]
 		public void VerifyPropertyChanged()
 		{
 			//Arrange
@@ -261,10 +262,10 @@ namespace Microsoft.Maui.UnitTests
 
 			void HandleDelegateTest(object? sender, PropertyChangedEventArgs e)
 			{
-				Assert.NotNull(sender);
-				Assert.Equal(this.GetType(), sender?.GetType());
+				Assert.IsNotNull(sender);
+				Assert.AreEqual(this.GetType(), sender?.GetType());
 
-				Assert.NotNull(e);
+				Assert.IsNotNull(e);
 
 				didEventFire = true;
 				PropertyChanged -= HandleDelegateTest;
@@ -274,7 +275,7 @@ namespace Microsoft.Maui.UnitTests
 			_propertyChangedWeakEventManager.HandleEvent(this, new PropertyChangedEventArgs("Test"), nameof(PropertyChanged));
 
 			//Assert
-			Assert.True(didEventFire);
+			Assert.IsTrue(didEventFire);
 		}
 	}
 }
