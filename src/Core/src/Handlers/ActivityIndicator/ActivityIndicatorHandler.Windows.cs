@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiActivityIndicator CreatePlatformView() => new MauiActivityIndicator
 		{
 			IsIndeterminate = true,
-			Style = UI.Xaml.Application.Current.Resources["MauiActivityIndicatorStyle"] as UI.Xaml.Style
+			//Style = UI.Xaml.Application.Current.Resources["MauiActivityIndicatorStyle"] as UI.Xaml.Style
 		};
 
 		public static void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)

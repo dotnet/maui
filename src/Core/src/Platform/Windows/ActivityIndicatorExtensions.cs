@@ -7,7 +7,8 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateIsRunning(this MauiActivityIndicator mauiActivityIndicator, IActivityIndicator activityIndicator)
 		{
-			mauiActivityIndicator.ElementOpacity = activityIndicator.IsRunning ? activityIndicator.Opacity : 0;
+			//mauiActivityIndicator.ElementOpacity = activityIndicator.IsRunning ? activityIndicator.Opacity : 0;
+			mauiActivityIndicator.IsActive = activityIndicator.IsRunning;
 		}
 		public static void UpdateColor(this MauiActivityIndicator mauiActivityIndicator, IActivityIndicator activityIndicator)
 		{
