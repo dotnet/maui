@@ -8,6 +8,8 @@ using PlatformView = AppKit.NSView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+#elif NET6_0 || NETSTANDARD
+using PlatformView = System.Object;
 #endif
 
 using System;
@@ -81,4 +83,14 @@ public abstract partial class BasePlatformBehavior<TView, TPlatformView> : Behav
 	/// </summary>
 	/// <param name="handler">The <see cref="IViewHandler"/> for the <see cref="VisualElement"/>.</param>
 	protected abstract void OnPlatformDeattachedBehavior(IViewHandler? handler);
+}
+
+/// <summary>
+/// Base class for generalized user-defined behaviors that can respond to arbitrary conditions and events that has influence in the Platform specif layer.
+/// </summary>
+/// <typeparam name="TView">Virtual View</typeparam>
+public abstract partial class BasePlatformBehavior<TView> : BasePlatformBehavior<TView,PlatformView>
+	where TView : VisualElement
+{
+
 }
