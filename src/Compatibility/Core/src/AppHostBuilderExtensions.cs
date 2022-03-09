@@ -44,7 +44,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 			DependencyService.SetToInitialized();
 			DependencyService.Register<NativeBindingService>();
 			DependencyService.Register<NativeValueConverterService>();
-			DependencyService.Register<ResourcesProvider>();
 			DependencyService.Register<PlatformInvalidate>();
 			DependencyService.Register<FontNamedSizeService>();
 			DependencyService.Register<PlatformSizeService>();

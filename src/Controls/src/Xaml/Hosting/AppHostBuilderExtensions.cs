@@ -10,6 +10,16 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
+
+#if ANDROID
+using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+#elif WINDOWS
+using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
+#elif IOS
+using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+#endif
+
 namespace Microsoft.Maui.Controls.Hosting
 {
 	public static partial class AppHostBuilderExtensions
@@ -78,7 +88,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
 			handlersCollection.AddHandler<MenuBarItem, MenuBarItemHandler>();
 
-#if PLATFORM
+#if WINDOWS || ANDROID || IOS
 			handlersCollection.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
 			handlersCollection.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
 			handlersCollection.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));
@@ -117,11 +127,12 @@ namespace Microsoft.Maui.Controls.Hosting
 
 		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 		{
-#if PLATFORM
+#if WINDOWS || ANDROID || IOS
 			// initialize compatibility DependencyService
 			DependencyService.SetToInitialized();
 			DependencyService.Register<Xaml.ResourcesLoader>();
 			DependencyService.Register<Xaml.ValueConverterProvider>();
+			DependencyService.Register<ResourcesProvider>();
 #endif
 
 			builder.ConfigureImageSourceHandlers();

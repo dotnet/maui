@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	internal class ResourcesProvider : ISystemResourcesProvider
 	{
 		ResourceDictionary _dictionary;
+		static global::Android.Content.Context _applicationContext;
 
 		public IResourceDictionary GetSystemResources()
 		{
@@ -27,15 +28,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			global::Android.Graphics.Color defaultColor = global::Android.Graphics.Color.Argb(0, 0, 0, 0);
 			global::Android.Graphics.Color androidColor = defaultColor;
 
-			var context = Forms.ApplicationContext;
+			_applicationContext ??= global::Android.App.Application.Context.ApplicationContext;
 			using (var value = new TypedValue())
 			{
-				if (context.Theme.ResolveAttribute(style, value, true))
+				if (_applicationContext.Theme.ResolveAttribute(style, value, true))
 				{
 					var styleattrs = new[] { global::Android.Resource.Attribute.TextSize, global::Android.Resource.Attribute.FontFamily, global::Android.Resource.Attribute.TextColor };
-					using (TypedArray array = context.ObtainStyledAttributes(value.ResourceId, styleattrs))
+					using (TypedArray array = _applicationContext.ObtainStyledAttributes(value.ResourceId, styleattrs))
 					{
-						fontSize = context.FromPixels(array.GetDimensionPixelSize(0, -1));
+						fontSize = _applicationContext.FromPixels(array.GetDimensionPixelSize(0, -1));
 						fontFamily = array.GetString(1);
 						androidColor = array.GetColor(2, defaultColor);
 					}
