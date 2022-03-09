@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		readonly ARect _clipRect = new();
 		int _height;
 		int _width;
-		readonly Controls.Compatibility.Platform.Android.MotionEventHelper _motionEventHelper = new Controls.Compatibility.Platform.Android.MotionEventHelper();
+		readonly Controls.Compatibility.Platform.Android.MotionEventHelper2 _motionEventHelper = new Controls.Compatibility.Platform.Android.MotionEventHelper2();
 		bool _disposed;
 		GradientDrawable? _backgroundDrawable;
 		private IMauiContext? _mauiContext;

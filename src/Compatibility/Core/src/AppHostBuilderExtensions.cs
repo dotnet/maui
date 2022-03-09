@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 
 #if ANDROID
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -32,59 +33,30 @@ using RadioButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.P
 using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
 #endif
 
-namespace Microsoft.Maui.Controls.Hosting
+namespace Microsoft.Maui.Controls.Compatibility.Hosting
 {
 	public static class MauiAppBuilderExtensions
 	{
-		public static MauiAppBuilder UseMauiApp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder)
-			where TApp : class, IApplication
+		public static MauiAppBuilder UseMauiCompatibility(this MauiAppBuilder builder)
 		{
-			builder.Services.TryAddSingleton<IApplication, TApp>();
-			builder.SetupDefaults();
-			return builder;
-		}
-
-		public static MauiAppBuilder UseMauiApp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
-			where TApp : class, IApplication
-		{
-			builder.Services.TryAddSingleton<IApplication>(implementationFactory);
-			builder.SetupDefaults();
-			return builder;
-		}
-
-		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
-		{
-#if ANDROID || IOS || WINDOWS
+#if PLATFORM
 			// initialize compatibility DependencyService
 			DependencyService.SetToInitialized();
-			DependencyService.Register<Xaml.ResourcesLoader>();
 			DependencyService.Register<NativeBindingService>();
 			DependencyService.Register<NativeValueConverterService>();
 			DependencyService.Register<ResourcesProvider>();
-			DependencyService.Register<Xaml.ValueConverterProvider>();
 			DependencyService.Register<PlatformInvalidate>();
 			DependencyService.Register<FontNamedSizeService>();
 			DependencyService.Register<PlatformSizeService>();
 #endif
 
 			builder.ConfigureCompatibilityLifecycleEvents();
-			builder.ConfigureImageSourceHandlers();
 			builder
 				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddMauiControlsHandlers();
 
-#if ANDROID || IOS || WINDOWS
-					handlers.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
-					handlers.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
-					handlers.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));
-					handlers.AddHandler(typeof(EntryCell), typeof(Handlers.Compatibility.EntryCellRenderer));
-					handlers.AddHandler(typeof(TextCell), typeof(Handlers.Compatibility.TextCellRenderer));
-					handlers.AddHandler(typeof(ViewCell), typeof(Handlers.Compatibility.ViewCellRenderer));
-					handlers.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
-					handlers.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
-					handlers.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
-
+#if PLATFORM
 					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Entry), typeof(EntryRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Editor), typeof(EditorRenderer));
@@ -140,19 +112,12 @@ namespace Microsoft.Maui.Controls.Hosting
 
 #if IOS || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
-					handlers.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
-					handlers.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
-					handlers.AddHandler(typeof(Shell), typeof(Handlers.Compatibility.ShellRenderer));
-					handlers.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
-#endif
-
-#if ANDROID
-					handlers.AddHandler(typeof(Shell), typeof(Handlers.Compatibility.ShellRenderer));
 #endif
 				});
 
+#if WINDOWS
 			builder.AddMauiCompat();
-			builder.RemapForControls();
+#endif
 
 			return builder;
 		}
@@ -169,67 +134,13 @@ namespace Microsoft.Maui.Controls.Hosting
 			{
 #if WINDOWS
 				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
-				if (dictionaries != null)
+				if (UI.Xaml.Application.Current?.Resources != null && dictionaries != null)
 				{
-					// WinUI
-					AddLibraryResources<UI.Xaml.Controls.XamlControlsResources>();
-
-					// Microsoft.Maui
-					AddLibraryResources("MicrosoftMauiCoreIncluded", "ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
-
-					// Microsoft.Maui.Controls
-					AddLibraryResources("MicrosoftMauiControlsIncluded", "ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
-
 					// Microsoft.Maui.Controls.Compatibility
-					AddLibraryResources("MicrosoftMauiControlsCompatibilityIncluded", "ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Resources.xbf");
+					UI.Xaml.Application.Current.Resources.AddLibraryResources("MicrosoftMauiControlsCompatibilityIncluded", "ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Resources.xbf");
 				}
 #endif
 			}
-
-#if WINDOWS
-			static void AddLibraryResources(string key, string uri)
-			{
-				var resources = UI.Xaml.Application.Current?.Resources;
-				if (resources == null)
-					return;
-
-				var dictionaries = resources.MergedDictionaries;
-				if (dictionaries == null)
-					return;
-
-				if (!resources.ContainsKey(key))
-				{
-					dictionaries.Add(new UI.Xaml.ResourceDictionary
-					{
-						Source = new Uri(uri)
-					});
-				}
-			}
-
-			static void AddLibraryResources<T>()
-				where T : UI.Xaml.ResourceDictionary, new()
-			{
-				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
-				if (dictionaries == null)
-					return;
-
-				var found = false;
-				foreach (var dic in dictionaries)
-				{
-					if (dic is T)
-					{
-						found = true;
-						break;
-					}
-				}
-
-				if (!found)
-				{
-					var dic = new T();
-					dictionaries.Add(dic);
-				}
-			}
-#endif
 		}
 	}
 }

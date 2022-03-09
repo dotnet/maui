@@ -133,14 +133,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (shellSection.CurrentItem == null)
 				throw new InvalidOperationException($"Content not found for active {shellSection}. Title: {shellSection.Title}. Route: {shellSection.Route}.");
 
-			var root = inflater.Inflate(Controls.Compatibility.Resource.Layout.rootlayout, null).JavaCast<CoordinatorLayout>();
+			var root = inflater.Inflate(Controls.Resource.Layout.rootlayout, null).JavaCast<CoordinatorLayout>();
 
-			_toolbar = root.FindViewById<AToolbar>(Controls.Compatibility.Resource.Id.main_toolbar);
+			_toolbar = root.FindViewById<AToolbar>(Controls.Resource.Id.main_toolbar);
 			if (Context.GetActivity() is AppCompatActivity aca)
 				aca.SetSupportActionBar(_toolbar);
 
-			_viewPager = root.FindViewById<ViewPager2>(Controls.Compatibility.Resource.Id.main_viewpager);
-			_tablayout = root.FindViewById<TabLayout>(Controls.Compatibility.Resource.Id.main_tablayout);
+			_viewPager = root.FindViewById<ViewPager2>(Controls.Resource.Id.main_viewpager);
+			_tablayout = root.FindViewById<TabLayout>(Controls.Resource.Id.main_tablayout);
 
 			//_viewPager.EnableGesture = false;
 

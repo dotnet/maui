@@ -80,10 +80,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					this.SetAccessibilityLabel(_item);
 			}
 
-			async void UpdateIconAndStyle()
+			void UpdateIconAndStyle()
 			{
-				Image = await _item.IconImageSource.GetNativeImageAsync();
-				Style = UIBarButtonItemStyle.Plain;
+				if (_item?.IconImageSource == null)
+				{
+					Image = null;
+					Style = UIBarButtonItemStyle.Plain;
+				}
+				else
+				{
+					_item.IconImageSource.LoadImage(_item.FindMauiContext(), result =>
+					{
+						Image = result?.Value;
+						Style = UIBarButtonItemStyle.Plain;
+					});
+				}
 			}
 
 			void UpdateIsEnabled()
@@ -141,14 +152,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					this.SetAccessibilityLabel(_item);
 			}
 
-			async void UpdateIcon()
+			void UpdateIcon()
 			{
-				UIImage image = null;
 				if (_item.IconImageSource != null && !_item.IconImageSource.IsEmpty)
 				{
-					image = await _item.IconImageSource.GetNativeImageAsync();
+					_item.IconImageSource.LoadImage(_item.FindMauiContext(), result =>
+					{
+						((SecondaryToolbarItemContent)CustomView).Image = result?.Value;
+					});
 				}
-				((SecondaryToolbarItemContent)CustomView).Image = image;
+				else
+				{
+					((SecondaryToolbarItemContent)CustomView).Image = null;
+				}
 			}
 
 			void UpdateIsEnabled()

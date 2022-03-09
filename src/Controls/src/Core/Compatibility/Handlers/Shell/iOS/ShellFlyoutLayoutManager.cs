@@ -9,6 +9,7 @@ using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
@@ -186,7 +187,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (HeaderView != null)
 				ScrollView.ContentInset = new UIEdgeInsets((nfloat)HeaderMax, 0, 0, 0);
 			else
-				ScrollView.ContentInset = new UIEdgeInsets(Controls.Compatibility.Platform.iOS.Platform.SafeAreaInsetsForWindow.Top, 0, 0, 0);
+				ScrollView.ContentInset = new UIEdgeInsets(UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top, 0, 0, 0);
 
 			offset -= ScrollView.ContentInset.Top;
 
@@ -254,7 +255,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else if (HeaderView == null)
 				{
-					topMargin = (float)Controls.Compatibility.Platform.iOS.Platform.SafeAreaInsetsForWindow.Top;
+					topMargin = (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
 				}
 
 				ContentView.Frame =

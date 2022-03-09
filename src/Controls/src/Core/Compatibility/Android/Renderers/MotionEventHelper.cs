@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 	// Also, we can probably do all that in Forms, too. 
 
-	class MotionEventHelper
+	class MotionEventHelper2
 	{
 		VisualElement _element;
 		bool _isInViewCell;
@@ -21,15 +21,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				return false;
 			}
-
-			var renderer = parent as Platform.DefaultRenderer;
-			if (renderer == null || ShouldPassThroughElement())
-			{
-				return false;
-			}
-
-			// Let the container know that we're "fake" handling this event
-			renderer.NotifyFakeHandling();
 
 			return true;
 		}
@@ -64,16 +55,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					// This is a layout, and it's transparent, and all its children are transparent, then the event
 					// can just pass through 
 					return true;
-				}
-
-				if (Platform.GetRenderer(_element) is Platform.DefaultRenderer renderer)
-				{
-					// If the event is being bubbled up from a child which is not inputtransparent, we do not want
-					// it to be passed through (just up the tree)
-					if (renderer.NotReallyHandled)
-					{
-						return false;
-					}
 				}
 
 				// This event isn't being bubbled up by a non-InputTransparent child layout

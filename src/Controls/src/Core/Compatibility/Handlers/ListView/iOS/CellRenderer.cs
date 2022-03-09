@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
 				{
-					uiBgColor = Controls.Compatibility.Platform.iOS.ColorExtensions.GroupedBackground;
+					uiBgColor = Microsoft.Maui.Platform.ColorExtensions.GroupedBackground;
 				}
 				else
 				{

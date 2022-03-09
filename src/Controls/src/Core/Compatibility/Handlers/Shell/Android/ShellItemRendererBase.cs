@@ -331,12 +331,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			switch (navSource)
 			{
 				case ShellNavigationSource.Push:
-					t.SetCustomAnimations(Controls.Compatibility.Resource.Animation.enterfromright, Controls.Compatibility.Resource.Animation.exittoleft);
+					t.SetCustomAnimations(Controls.Resource.Animation.enterfromright, Controls.Resource.Animation.exittoleft);
 					break;
 
 				case ShellNavigationSource.Pop:
 				case ShellNavigationSource.PopToRoot:
-					t.SetCustomAnimations(Controls.Compatibility.Resource.Animation.enterfromleft, Controls.Compatibility.Resource.Animation.exittoright);
+					t.SetCustomAnimations(Controls.Resource.Animation.enterfromleft, Controls.Resource.Animation.exittoright);
 					break;
 
 				case ShellNavigationSource.ShellSectionChanged:

@@ -35,11 +35,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			UIGraphics.BeginImageContext(size);
 			var context = UIGraphics.GetCurrentContext();
-			context.SetFillColor(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ColorExtensions.Red.CGColor);
+			context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.Red.CGColor);
 			context.FillRect(rect);
 			DestructiveBackground = UIGraphics.GetImageFromCurrentImageContext();
 
-			context.SetFillColor(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ColorExtensions.LightGray.CGColor);
+			context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.LightGray.CGColor);
 			context.FillRect(rect);
 
 			NormalBackground = UIGraphics.GetImageFromCurrentImageContext();

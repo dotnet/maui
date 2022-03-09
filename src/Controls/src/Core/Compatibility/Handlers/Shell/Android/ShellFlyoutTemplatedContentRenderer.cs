@@ -61,10 +61,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var context = shellContext.AndroidContext;
 			var layoutInflator = shellContext.Shell.FindMauiContext().GetLayoutInflater();
-			var coordinator = (ViewGroup)layoutInflator.Inflate(Controls.Compatibility.Resource.Layout.flyoutcontent, null);
+			var coordinator = (ViewGroup)layoutInflator.Inflate(Controls.Resource.Layout.flyoutcontent, null);
 
 			Profile.FramePartition("Find AppBar");
-			_appBar = coordinator.FindViewById<AppBarLayout>(Controls.Compatibility.Resource.Id.flyoutcontent_appbar);
+			_appBar = coordinator.FindViewById<AppBarLayout>(Controls.Resource.Id.flyoutcontent_appbar);
 
 			_rootView = coordinator as ViewGroup;
 

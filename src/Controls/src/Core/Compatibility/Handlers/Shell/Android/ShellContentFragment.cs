@@ -131,10 +131,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_page = ((IShellContentController)_shellContent).GetOrCreateContent();
 			}
 
-			_root = inflater.Inflate(Controls.Compatibility.Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
+			_root = inflater.Inflate(Controls.Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
 
 			var shellContentMauiContext = MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
-			_toolbar = _root.FindViewById<AToolbar>(Controls.Compatibility.Resource.Id.shellcontent_toolbar);
+			_toolbar = _root.FindViewById<AToolbar>(Controls.Resource.Id.shellcontent_toolbar);
 			_viewhandler = _page.ToHandler(shellContentMauiContext);
 
 			_shellPageContainer = new ShellPageContainer(Context, _viewhandler);

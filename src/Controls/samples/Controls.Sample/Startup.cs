@@ -10,11 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Controls.Compatibility.Hosting;
 
 #if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Components.WebView.Maui;
@@ -35,7 +35,7 @@ namespace Maui.Controls.Sample
 		{
 			var appBuilder = MauiApp.CreateBuilder();
 
-			appBuilder.UseMauiApp<XamlApp>();
+			appBuilder.UseMauiApp<XamlApp>().UseMauiCompatibility();
 			var services = appBuilder.Services;
 
 			if (UseMauiGraphicsSkia)

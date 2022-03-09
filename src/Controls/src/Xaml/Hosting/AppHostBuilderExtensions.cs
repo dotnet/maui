@@ -1,16 +1,35 @@
 using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{
+		public static MauiAppBuilder UseMauiApp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder)
+			where TApp : class, IApplication
+		{
+			builder.Services.TryAddSingleton<IApplication, TApp>();
+			builder.SetupDefaults();
+			return builder;
+		}
+
+		public static MauiAppBuilder UseMauiApp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
+			where TApp : class, IApplication
+		{
+			builder.Services.TryAddSingleton<IApplication>(implementationFactory);
+			builder.SetupDefaults();
+			return builder;
+		}
+
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
 		{
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
@@ -59,6 +78,24 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
 			handlersCollection.AddHandler<MenuBarItem, MenuBarItemHandler>();
 
+#if PLATFORM
+			handlersCollection.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
+			handlersCollection.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
+			handlersCollection.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));
+			handlersCollection.AddHandler(typeof(EntryCell), typeof(Handlers.Compatibility.EntryCellRenderer));
+			handlersCollection.AddHandler(typeof(TextCell), typeof(Handlers.Compatibility.TextCellRenderer));
+			handlersCollection.AddHandler(typeof(ViewCell), typeof(Handlers.Compatibility.ViewCellRenderer));
+			handlersCollection.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
+			handlersCollection.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
+			handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
+#endif
+
+#if IOS
+			handlersCollection.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
+			handlersCollection.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
+			handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
+#endif
+
 #if ANDROID || IOS
 			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 #endif
@@ -66,16 +103,57 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
-			handlersCollection.AddHandler<TabbedPage,  TabbedViewHandler>();
+			handlersCollection.AddHandler<TabbedPage, TabbedViewHandler>();
+#endif
+
 #if WINDOWS
 			handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 			handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 			handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
 			handlersCollection.AddHandler<Shell, ShellHandler>();
 #endif
-#endif
 			return handlersCollection;
 		}
+
+		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
+		{
+#if PLATFORM
+			// initialize compatibility DependencyService
+			DependencyService.SetToInitialized();
+			DependencyService.Register<Xaml.ResourcesLoader>();
+			DependencyService.Register<Xaml.ValueConverterProvider>();
+#endif
+
+			builder.ConfigureImageSourceHandlers();
+			builder
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddMauiControlsHandlers();
+				});
+
+#if WINDOWS
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiControlsInitializer>());
+#endif
+			builder.RemapForControls();
+
+			return builder;
+		}
+
+		class MauiControlsInitializer : IMauiInitializeService
+		{
+			public void Initialize(IServiceProvider services)
+			{
+#if WINDOWS
+				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
+				if (dictionaries != null)
+				{
+					// Microsoft.Maui.Controls
+					UI.Xaml.Application.Current?.Resources?.AddLibraryResources("MicrosoftMauiControlsIncluded", "ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
+				}
+#endif
+			}
+		}
+
 
 		internal static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
 		{

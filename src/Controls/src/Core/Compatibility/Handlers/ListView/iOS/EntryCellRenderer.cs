@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class EntryCellRenderer : CellRenderer
 	{
-		static readonly Color DefaultTextColor = Controls.Compatibility.Platform.iOS.ColorExtensions.LabelColor.ToColor();
+		static readonly Color DefaultTextColor = Microsoft.Maui.Platform.ColorExtensions.LabelColor.ToColor();
 
 		[Preserve(Conditional = true)]
 		public EntryCellRenderer()

@@ -8,8 +8,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class TextCellRenderer : CellRenderer
 	{
-		readonly Color DefaultDetailColor = Controls.Compatibility.Platform.iOS.ColorExtensions.SecondaryLabelColor.ToColor();
-		readonly Color DefaultTextColor = Controls.Compatibility.Platform.iOS.ColorExtensions.LabelColor.ToColor();
+		readonly Color DefaultDetailColor = Microsoft.Maui.Platform.ColorExtensions.SecondaryLabelColor.ToColor();
+		readonly Color DefaultTextColor = Microsoft.Maui.Platform.ColorExtensions.LabelColor.ToColor();
 
 		[Preserve(Conditional = true)]
 		public TextCellRenderer()

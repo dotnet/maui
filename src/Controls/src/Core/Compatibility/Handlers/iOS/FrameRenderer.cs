@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_actualView.Layer.MasksToBounds = cornerRadius > 0;
 
 			if (Element.BackgroundColor == null)
-				_actualView.Layer.BackgroundColor = Controls.Compatibility.Platform.iOS.ColorExtensions.BackgroundColor.CGColor;
+				_actualView.Layer.BackgroundColor = Microsoft.Maui.Platform.ColorExtensions.BackgroundColor.CGColor;
 			else
 			{
 				// BackgroundColor gets set on the base class too which messes with
