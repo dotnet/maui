@@ -115,24 +115,14 @@ namespace Microsoft.Maui.Controls
 
 		internal void UpdateTitle()
 		{
-			var navStack = _shell?.CurrentSection?.Navigation?.NavigationStack;
-			Page currentPage = null;
-
-			if (navStack != null)
-			{
-				currentPage = navStack[navStack.Count - 1] ??
-					((IShellContentController)_shell?.CurrentContent)?.Page;
-			}
-
+			Page currentPage = _shell.GetCurrentShellPage() as Page;
 
 			if (currentPage?.IsSet(Page.TitleProperty) == true)
 				Title = currentPage.Title ?? String.Empty;
 			else
 				Title = _shell.GetEffectiveValue<string>(
 					BaseShellItem.TitleProperty,
-					() => _shell.Title,
-					null,
-					_shell.CurrentContent,
+					_shell.Title,
 					ignoreImplicit: true) ?? String.Empty;
 		}
 	}

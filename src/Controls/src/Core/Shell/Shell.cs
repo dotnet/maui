@@ -1225,7 +1225,7 @@ namespace Microsoft.Maui.Controls
 			Element element = null,
 			bool ignoreImplicit = false)
 		{
-			element = element ?? GetVisiblePage() ?? CurrentContent;
+			element = element ?? GetCurrentShellPage() ?? CurrentContent;
 			while (element != this && element != null)
 			{
 				observer?.Invoke(element);
@@ -1360,6 +1360,22 @@ namespace Microsoft.Maui.Controls
 				return scc.PresentedPage;
 
 			return null;
+		}
+
+		// This returns the current shell page that's visible
+		// without including the modal stack
+		internal Element GetCurrentShellPage()
+		{
+			var navStack = CurrentSection?.Navigation?.NavigationStack;
+			Page currentPage = null;
+
+			if (navStack != null)
+			{
+				currentPage = navStack[navStack.Count - 1] ??
+					((IShellContentController)CurrentContent)?.Page;
+			}
+
+			return currentPage;
 		}
 
 		Element WalkToPage(Element element)
