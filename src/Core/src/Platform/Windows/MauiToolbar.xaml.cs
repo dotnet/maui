@@ -21,9 +21,6 @@ namespace Microsoft.Maui.Platform
 			textBlockBorder.Visibility = UI.Xaml.Visibility.Collapsed;
 			menuContent.Visibility = UI.Xaml.Visibility.Collapsed;
 			titleView.Visibility = UI.Xaml.Visibility.Collapsed;
-
-			titleIcon.ImageOpened += OnTitleIconImageOpened;
-			titleIcon.ImageFailed += OnTitleIconImageFailed;
 		}
 
 		internal string? Title
@@ -51,6 +48,11 @@ namespace Microsoft.Maui.Platform
 			set
 			{
 				titleIcon.Source = value;
+
+				if (value != null)
+					titleIcon.Visibility = UI.Xaml.Visibility.Visible;
+				else
+					titleIcon.Visibility = UI.Xaml.Visibility.Collapsed;
 			}
 		}
 
@@ -62,9 +64,9 @@ namespace Microsoft.Maui.Platform
 				titleView.Content = value;
 
 				if (value != null)
-					textBlockBorder.Visibility = UI.Xaml.Visibility.Visible;
+					titleView.Visibility = UI.Xaml.Visibility.Visible;
 				else
-					textBlockBorder.Visibility = UI.Xaml.Visibility.Collapsed;
+					titleView.Visibility = UI.Xaml.Visibility.Collapsed;
 			}
 		}
 
@@ -115,16 +117,6 @@ namespace Microsoft.Maui.Platform
 				menuContent.Visibility = UI.Xaml.Visibility.Collapsed;
 			else
 				menuContent.Visibility = UI.Xaml.Visibility.Visible;
-		}
-
-		void OnTitleIconImageFailed(object sender, ExceptionRoutedEventArgs e)
-		{
-			titleIcon.Visibility = UI.Xaml.Visibility.Collapsed;
-		}
-
-		void OnTitleIconImageOpened(object sender, RoutedEventArgs e)
-		{
-			titleIcon.Visibility = UI.Xaml.Visibility.Visible;
 		}
 	}
 }
