@@ -33,18 +33,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!double.IsInfinity(targetHeight))
 				targetHeight = (int)Context.FromPixels(targetHeight);
 
-			//_ = (Content.VirtualView as IView)
-			//	.Measure(targetWidth, targetHeight);
-
 			if (Content.VirtualView.Handler is IPlatformViewHandler pvh)
 			{
 				var widthSpec = Context.CreateMeasureSpec(targetWidth, 
 					double.IsInfinity(targetWidth) ? double.NaN : targetWidth
 					, targetWidth);
+					
 				var heightSpec = Context.CreateMeasureSpec(targetHeight, double.IsInfinity(targetHeight) ? double.NaN : targetHeight
 					, targetHeight);
 
 				pvh.PlatformView.Measure(widthSpec, heightSpec);
+				
 				SetMeasuredDimension(
 					pvh.PlatformView.MeasuredWidth,
 					pvh.PlatformView.MeasuredHeight);
