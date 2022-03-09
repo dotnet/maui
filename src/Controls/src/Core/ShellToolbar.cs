@@ -123,11 +123,9 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				Title = _shell.GetEffectiveValue<string>(
+				Title = _shell.GetEffectiveValue(
 					BaseShellItem.TitleProperty,
-					() => _shell.Title,
-					null,
-					_shell.CurrentContent,
+					_shell.Title,
 					ignoreImplicit: true) ?? String.Empty;
 			}
 		}

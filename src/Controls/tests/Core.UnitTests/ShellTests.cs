@@ -1450,14 +1450,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
 		}
 
-
 		[Test]
-		public async Task PushedPageUsesTitleOnShellContent()
+		public async Task PushedPageUsesTitleOnShellSection()
 		{
 			var shellContent = CreateShellContent();
 			shellContent.Title = "Shell Content Title";
 
-			TestShell testShell = new TestShell(shellContent)
+			var shellSection = new ShellSection();
+			shellSection.Title = "Shell Section Title";
+			shellSection.Items.Add(shellContent);
+
+			TestShell testShell = new TestShell(shellSection)
 			{
 				Title = "Shell Title"
 			};
@@ -1467,7 +1470,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await testShell.CurrentSection.Navigation.PushAsync(new ContentPage());
 
-			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
+			Assert.AreEqual("Shell Section Title", shellToolBar.Title);
 
 			await testShell.CurrentSection.Navigation.PopAsync();
 			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
