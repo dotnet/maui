@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		static DualScreenInfo OnCreate()
 		{
 			DualScreenInfo dualScreenInfo = new DualScreenInfo(null);
-			dualScreenInfo._twoPaneViewLayoutGuide.WatchForChanges(); // HACK: no-op!
+//			dualScreenInfo._twoPaneViewLayoutGuide.WatchForChanges(); // HACK: no-op!
 			dualScreenInfo._twoPaneViewLayoutGuide.PropertyChanged += dualScreenInfo.OnTwoPaneViewLayoutGuideChanged;
 			return dualScreenInfo;
 		}

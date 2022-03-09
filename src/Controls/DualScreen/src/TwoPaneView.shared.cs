@@ -212,12 +212,12 @@ namespace Microsoft.Maui.Controls.DualScreen
 			base.OnIsPlatformEnabledChanged();
 			if (IsPlatformEnabled)
 			{
-				_twoPaneViewLayoutGuide.WatchForChanges();
+//				_twoPaneViewLayoutGuide.WatchForChanges();
 				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuide;
 			}
 			else
 			{
-				_twoPaneViewLayoutGuide.StopWatchingForChanges();
+//				_twoPaneViewLayoutGuide.StopWatchingForChanges();
 				_twoPaneViewLayoutGuide.PropertyChanged -= OnTwoPaneViewLayoutGuide;
 			}
 		}

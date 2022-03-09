@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				UpdateLayouts(layout.Width, layout.Height);
 				_layout.PropertyChanged += OnLayoutPropertyChanged;
 				_layout.PropertyChanging += OnLayoutPropertyChanging;
-				WatchForChanges();
+//				WatchForChanges();
 			}
 		}
 
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		{
 			if (e.PropertyName == "Renderer")
 			{
-				StopWatchingForChanges();
+//				StopWatchingForChanges();
 			}
 		}
 
@@ -81,12 +81,12 @@ namespace Microsoft.Maui.Controls.DualScreen
 		{
 			if (e.PropertyName == "Renderer")
 			{
-				WatchForChanges();
+//				WatchForChanges();
 			}
 		}
 
-		public void WatchForChanges()
-		{
+		//public void WatchForChanges()
+		//{
 			//if (_layout != null && _watchHandle == null)
 			//{
 			//	_layoutChangedReference = OnLayoutChanged;
@@ -106,10 +106,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 			//{
 			//	DualScreenService.OnScreenChanged += OnScreenChanged;
 			//}
-		}
+		//}
 
-		public void StopWatchingForChanges()
-		{
+		//public void StopWatchingForChanges()
+		//{
 			//DualScreenService.OnScreenChanged -= OnScreenChanged;
 			//if (_layout != null)
 			//{
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			//_layoutChangedReference = null;
 			//_watchHandle = null;
-		}
+		//}
 
 		//void OnLayoutChanged()
 		//{
