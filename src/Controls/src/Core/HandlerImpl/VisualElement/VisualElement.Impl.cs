@@ -50,6 +50,7 @@ namespace Microsoft.Maui.Controls
 			base.OnHandlerChangedCore();
 
 			IsPlatformEnabled = Handler != null;
+			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
 		Paint? IView.Background
