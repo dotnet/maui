@@ -1,5 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <UsingTask TaskName="ReplaceFileText" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <InputFilename ParameterType="System.String" Required="true" />
+      <OutputFilename ParameterType="System.String" Required="true" />
+      <MatchExpression ParameterType="System.String[]" Required="true" />
+      <ReplacementText ParameterType="System.String[]" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+            if (MatchExpression.Length != ReplacementText.Length) throw new Exception("The number of MatchExpression items must match the number of ReplacementText items.");
+
+            for (int i = 0; i < MatchExpression.Length; i++)
+            {
+                File.WriteAllText(
+                    OutputFilename,
+                    Regex.Replace(File.ReadAllText(InputFilename), MatchExpression[i], ReplacementText[i])
+                    );
+                //Console.WriteLine($"Processing file '{InputFilename}' --> '{OutputFilename}', replacing match '{MatchExpression[i]}' with text '{ReplacementText[i]}'.");
+            }
+          ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <PackageType>Template</PackageType>
@@ -18,7 +46,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**" />
+    <TemplateJsonInput Include="templates\*\.template.config\template.in.json">
+      <PackageDestination>$([System.String]::Concat(%(RelativeDir), 'template.json'))</PackageDestination>
+      <IntermediateLocation>$(IntermediateOutputPath)$([System.String]::Concat(%(RelativeDir), 'template.json'))</IntermediateLocation>
+    </TemplateJsonInput>
+    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**;@(TemplateJsonInput)" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
@@ -26,30 +58,25 @@
     <BeforePack>_UpdateTemplateVersions</BeforePack>
   </PropertyGroup>
 
-  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions">
+  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions"
+      Inputs="@(TemplateJsonInput)"
+      Outputs="%(TemplateJsonInput.IntermediateLocation)">
+
+     <!-- Copy files to their output name -->
+    <Copy
+        SourceFiles="%(TemplateJsonInput.Fullpath)"
+        DestinationFiles="%(TemplateJsonInput.IntermediateLocation)" />
+
+    <!-- Replace WinAppSDK, Win2D, .NET TFM versions -->
+    <ReplaceFileText
+        InputFilename="%(TemplateJsonInput.IntermediateLocation)"
+        OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
+        MatchExpression="WINDOWSAPPSDK_VERSION_VALUE;WIN2D_VERSION_VALUE;DOTNET_TFM_VALUE"
+        ReplacementText="$(MicrosoftWindowsAppSDKPackageVersion);$(MicrosoftGraphicsWin2DPackageVersion);$(_MauiDotNetTfm)" />
+
     <ItemGroup>
-      <_TemplateJsonFile Include="templates\*\.template.config\template.json" />
-      <_TemplateJsonFileWithContent
-          Include="@(_TemplateJsonFile)"
-          Contents="$([System.IO.File]::ReadAllText('%(FullPath)')
-              .Replace('WINDOWSAPPSDK_VERSION_VALUE', '$(MicrosoftWindowsAppSDKPackageVersion)')
-              .Replace('WIN2D_VERSION_VALUE', '$(MicrosoftGraphicsWin2DPackageVersion)'))" />
-      <_TemplateCsprojFile Include="templates\*\*.csproj" />
-      <_TemplateCsprojFileWithContent
-          Include="@(_TemplateCsprojFile)"
-          Contents="$([System.IO.File]::ReadAllText('%(FullPath)')
-              .Replace('DOTNET_TFM_VALUE', '$(_MauiDotNetTfm)'))" />
-      <_TemplateReplacedFile Include="@(_TemplateJsonFile);@(_TemplateCsprojFile)" />
-      <_TemplateReplacedFileWithContent Include="@(_TemplateJsonFileWithContent);@(_TemplateCsprojFileWithContent)" />
-    </ItemGroup>
-    <WriteLinesToFile
-        File="@(_TemplateReplacedFileWithContent -> '$(IntermediateOutputPath)%(Identity)')"
-        Lines="%(Contents)"
-        Overwrite="true" />
-    <ItemGroup>
-      <FileWrites Include="@(_TemplateReplacedFile -> '$(IntermediateOutputPath)%(Identity)')" />
-      <Content Remove="@(_TemplateReplacedFile)" />
-      <Content Include="@(_TemplateReplacedFile -> '$(IntermediateOutputPath)%(Identity)')" PackagePath="$(ContentTargetFolders)\%(Identity)" Pack="true" />
+      <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />
+      <Content Include="%(TemplateJsonInput.IntermediateLocation)" PackagePath="$(ContentTargetFolders)\%(TemplateJsonInput.PackageDestination)" Pack="true" />
     </ItemGroup>
   </Target>
 

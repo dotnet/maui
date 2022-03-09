@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static SpannableString ToSpannableString(this Label label)
-			=> ToSpannableString(label.FormattedText, label.RequireFontManager(), (label.Handler?.NativeView as TextView)?.Paint, label.Handler?.MauiContext?.Context, label.LineHeight, label.HorizontalTextAlignment, label.ToFont(), label.TextColor, label.TextTransform);
+			=> ToSpannableString(label.FormattedText, label.RequireFontManager(), (label.Handler?.PlatformView as TextView)?.Paint, label.Handler?.MauiContext?.Context, label.LineHeight, label.HorizontalTextAlignment, label.ToFont(), label.TextColor, label.TextTransform);
 
 		public static SpannableString ToSpannableString(this FormattedString formattedString, IFontManager fontManager, TextPaint? textPaint = null, Context? context = null, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Graphics.Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
 		{
@@ -53,12 +53,12 @@ namespace Microsoft.Maui.Controls.Platform
 				var fgcolor = span.TextColor ?? defaultColor;
 				if (fgcolor != null)
 				{
-					spannable.SetSpan(new ForegroundColorSpan(fgcolor.ToNative()), start, end, SpanTypes.InclusiveExclusive);
+					spannable.SetSpan(new ForegroundColorSpan(fgcolor.ToPlatform()), start, end, SpanTypes.InclusiveExclusive);
 				}
 
 				if (span.BackgroundColor != null)
 				{
-					spannable.SetSpan(new BackgroundColorSpan(span.BackgroundColor.ToNative()), start, end, SpanTypes.InclusiveExclusive);
+					spannable.SetSpan(new BackgroundColorSpan(span.BackgroundColor.ToPlatform()), start, end, SpanTypes.InclusiveExclusive);
 				}
 
 				var lineHeight = span.LineHeight >= 0

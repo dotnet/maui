@@ -3,7 +3,7 @@
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Controls.Platform;
-using NativeView = Android.Views.View;
+using PlatformView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Handler = viewHandler;
 		}
 
-		public override void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)
+		public override void OnInitializeAccessibilityNodeInfo(PlatformView? host, AccessibilityNodeInfoCompat? info)
 		{
 			base.OnInitializeAccessibilityNodeInfo(host, info);
 

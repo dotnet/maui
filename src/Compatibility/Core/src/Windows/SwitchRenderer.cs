@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 								if (!Element.ThumbColor.IsDefault())
 								{
-									var brush = Element.ThumbColor.ToNative();
+									var brush = Element.ThumbColor.ToPlatform();
 									brush.Opacity = _originalThumbOnBrush.Opacity;
 									frame.Value = brush;
 								}
@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					_originalThumbOnBrush = thumb.Fill;
 
 				if (!Element.ThumbColor.IsDefault())
-					thumb.Fill = Element.ThumbColor.ToNative();
+					thumb.Fill = Element.ThumbColor.ToPlatform();
 				else
 					thumb.Fill = _originalThumbOnBrush;
 			}

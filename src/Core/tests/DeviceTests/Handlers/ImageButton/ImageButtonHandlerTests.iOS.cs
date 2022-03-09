@@ -25,30 +25,30 @@ namespace Microsoft.Maui.DeviceTests
 				StrokeColor = xplatStrokeColor
 			};
 
-			var expectedValue = xplatStrokeColor.ToNative();
+			var expectedValue = xplatStrokeColor.ToPlatform();
 
 			var values = await GetValueAsync(imageButton, (handler) =>
 			{
 				return new
 				{
 					ViewValue = imageButton.StrokeColor,
-					NativeViewValue = GetNativeStrokeColor(handler)
+					PlatformViewValue = GetNativeStrokeColor(handler)
 				};
 			});
 
 			Assert.Equal(xplatStrokeColor, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
-		UIButton GetNativeImageButton(ImageButtonHandler imageButtonHandler) =>
-			   imageButtonHandler.NativeView;
+		UIButton GetPlatformImageButton(ImageButtonHandler imageButtonHandler) =>
+			   imageButtonHandler.PlatformView;
 
 		UIColor GetNativeStrokeColor(ImageButtonHandler imageButtonHandler)
 		{
-			var nativeButton = GetNativeImageButton(imageButtonHandler);
+			var platformButton = GetPlatformImageButton(imageButtonHandler);
 
-			if (nativeButton.Layer != null)
-				return new UIColor(nativeButton.Layer.BorderColor);
+			if (platformButton.Layer != null)
+				return new UIColor(platformButton.Layer.BorderColor);
 
 			return UIColor.Clear;
 		}
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				GetNativeImageButton(CreateHandler(button)).SendActionForControlEvents(UIControlEvent.TouchUpInside);
+				GetPlatformImageButton(CreateHandler(button)).SendActionForControlEvents(UIControlEvent.TouchUpInside);
 			});
 		}
 	}

@@ -1,10 +1,18 @@
+#nullable enable
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface IMap
+	{
+		Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options);
+		Task OpenMapsAsync(Placemark placemark, MapLaunchOptions options);
+	}
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Map']/Docs" />
-	public static partial class Map
+	public static class Map
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][0]/Docs" />
 		public static Task OpenAsync(Location location) =>
@@ -19,7 +27,7 @@ namespace Microsoft.Maui.Essentials
 			if (options == null)
 				throw new ArgumentNullException(nameof(options));
 
-			return PlatformOpenMapsAsync(location.Latitude, location.Longitude, options);
+			return Current.OpenMapsAsync(location.Latitude, location.Longitude, options);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][2]/Docs" />
@@ -32,7 +40,7 @@ namespace Microsoft.Maui.Essentials
 			if (options == null)
 				throw new ArgumentNullException(nameof(options));
 
-			return PlatformOpenMapsAsync(latitude, longitude, options);
+			return Current.OpenMapsAsync(latitude, longitude, options);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][1]/Docs" />
@@ -48,7 +56,16 @@ namespace Microsoft.Maui.Essentials
 			if (options == null)
 				throw new ArgumentNullException(nameof(options));
 
-			return PlatformOpenMapsAsync(placemark, options);
+			return Current.OpenMapsAsync(placemark, options);
 		}
+		static IMap? currentImplementation;
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IMap Current =>
+			currentImplementation ??= new MapImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetCurrent(IMap? implementation) =>
+			currentImplementation = implementation;
 	}
 }

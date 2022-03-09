@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 		int GetNativeNavigationStackCount(NavigationViewHandler navigationViewHandler) =>
 			navigationViewHandler.StackNavigationManager.NavHost.NavController.BackStack.Size() - 1;
 
-		Task CreateNavigationViewHandlerAsync(INavigationView navigationView, Func<NavigationViewHandler, Task> action)
+		Task CreateNavigationViewHandlerAsync(IStackNavigationView navigationView, Func<NavigationViewHandler, Task> action)
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{

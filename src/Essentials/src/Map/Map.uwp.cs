@@ -2,11 +2,11 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Map
+	public class MapImplementation:IMap
 	{
-		internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
 			var lat = latitude.ToString(CultureInfo.InvariantCulture);
 			var lng = longitude.ToString(CultureInfo.InvariantCulture);
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Essentials
 			return string.Empty;
 		}
 
-		internal static Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
+		public Task OpenMapsAsync(Placemark placemark, MapLaunchOptions options)
 		{
 			var uri = string.Empty;
 

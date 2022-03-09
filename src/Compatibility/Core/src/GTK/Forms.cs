@@ -26,7 +26,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
 
-			Device.SetIdiom(TargetIdiom.Desktop);
 			Device.PlatformServices = new GtkPlatformServices();
 			Device.Info = new GtkDeviceInfo();
 			Color.SetAccent(Color.FromArgb("#3498DB"));

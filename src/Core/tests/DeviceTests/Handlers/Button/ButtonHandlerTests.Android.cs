@@ -31,16 +31,16 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = button.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
+			Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
 		}
 
 		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>
-			(AppCompatButton)buttonHandler.NativeView;
+			(AppCompatButton)buttonHandler.PlatformView;
 
 		string GetNativeText(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).Text;
@@ -86,8 +86,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool ImageSourceLoaded(ButtonHandler buttonHandler)
 		{
-			var image = buttonHandler.NativeView.Icon ??
-						TextViewCompat.GetCompoundDrawablesRelative(buttonHandler.NativeView)[3];
+			var image = buttonHandler.PlatformView.Icon ??
+						TextViewCompat.GetCompoundDrawablesRelative(buttonHandler.PlatformView)[3];
 
 			return image != null;
 		}

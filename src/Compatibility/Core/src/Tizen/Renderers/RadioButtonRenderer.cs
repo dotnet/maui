@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateTextColor(bool isInitialized)
 		{
-			_span.ForegroundColor = Element.TextColor.ToNative();
+			_span.ForegroundColor = Element.TextColor.ToPlatform();
 			if (!isInitialized)
 				ApplyTextAndStyle();
 		}

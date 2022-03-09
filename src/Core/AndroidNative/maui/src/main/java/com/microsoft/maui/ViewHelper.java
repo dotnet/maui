@@ -34,7 +34,7 @@ public class ViewHelper {
 
     public static void setContentDescriptionForAutomationId(View view, String description)
     {
-        view = getSemanticNativeElement(view);
+        view = getSemanticPlatformElement(view);
 
         // Android automatically sets ImportantForAccessibility to "Yes" when you set the ContentDescription.
 		// We are only setting the ContentDescription here for Automation testing purposes so
@@ -50,7 +50,7 @@ public class ViewHelper {
         }
     }
 
-    public static View getSemanticNativeElement(View view)
+    public static View getSemanticPlatformElement(View view)
 	{
 		if (view instanceof SearchView) {
             view = view.findViewById(androidx.appcompat.R.id.search_button);

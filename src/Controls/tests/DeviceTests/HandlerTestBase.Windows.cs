@@ -15,13 +15,14 @@ using System.Threading.Tasks;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
+using WPoint = Windows.Foundation.Point;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase
 	{
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			((AccessibilityView)((DependencyObject)viewHandler.NativeView).GetValue(NativeAutomationProperties.AccessibilityViewProperty))
+			((AccessibilityView)((DependencyObject)viewHandler.PlatformView).GetValue(NativeAutomationProperties.AccessibilityViewProperty))
 			== AccessibilityView.Content;
 
 		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)
@@ -42,13 +43,17 @@ namespace Microsoft.Maui.DeviceTests
 
 					newWindowHandler = window.ToHandler(mauiContext);
 					var content = window.Content.Handler.ToPlatform();
-					await content.LoadedAsync();
+					await content.OnLoadedAsync();
 					await Task.Delay(10);
 
 					if (typeof(THandler).IsAssignableFrom(newWindowHandler.GetType()))
 						await action((THandler)newWindowHandler);
 					else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
 						await action((THandler)window.Content.Handler);
+					else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
+						await action((THandler)cp.Content.Handler);
+					else
+						throw new Exception($"I can't work with {typeof(THandler)}");
 
 				}
 				finally
@@ -63,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 					if (testingRootPanel != null && MauiProgram.CurrentWindow.Content != testingRootPanel)
 					{
 						MauiProgram.CurrentWindow.Content = testingRootPanel;
-						await testingRootPanel.LoadedAsync();
+						await testingRootPanel.OnLoadedAsync();
 						await Task.Delay(10);
 					}
 				}
@@ -93,6 +98,14 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		protected double DistanceYFromTheBottomOfTheAppTitleBar(IElement element)
+		{
+			var handler = element.Handler;
+			var rootManager = handler.MauiContext.GetNavigationRootManager();
+			var position = element.GetLocationRelativeTo(rootManager.AppTitleBar);
+			var distance = rootManager.AppTitleBar.Height - position.Value.Y;
+			return distance;
+		}
 
 		MauiNavigationView GetMauiNavigationView(NavigationRootManager navigationRootManager)
 		{
@@ -102,30 +115,6 @@ namespace Microsoft.Maui.DeviceTests
 		protected MauiNavigationView GetMauiNavigationView(IMauiContext mauiContext)
 		{
 			return GetMauiNavigationView(mauiContext.GetNavigationRootManager());
-		}
-
-		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
-			where THandler : class, IElementHandler
-		{
-			return InvokeOnMainThreadAsync(async () =>
-			{
-				IWindow window = null;
-
-				if (view is IWindow w)
-				{
-					window = w;
-				}
-				else if (view is Page page)
-				{
-					window = new Controls.Window(page);
-				}
-				else
-				{
-					window = new Controls.Window(new ContentPage() { Content = (View)view });
-				}
-
-				await RunWindowTest<THandler>(window, (handler) => action(handler as THandler));
-			});
 		}
 	}
 }

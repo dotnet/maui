@@ -3,29 +3,29 @@ using System.Threading.Tasks;
 using Android.Content;
 using static Android.Content.ClipboardManager;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Clipboard
+	public partial class ClipboardImplementation : IClipboard
 	{
 		static readonly Lazy<ClipboardChangeListener> clipboardListener
 			= new Lazy<ClipboardChangeListener>(() => new ClipboardChangeListener());
 
-		static Task PlatformSetTextAsync(string text)
+		public Task SetTextAsync(string text)
 		{
 			Platform.ClipboardManager.PrimaryClip = ClipData.NewPlainText("Text", text);
 			return Task.CompletedTask;
 		}
 
-		static bool PlatformHasText
+		public bool HasText
 			=> Platform.ClipboardManager.HasPrimaryClip && !string.IsNullOrEmpty(Platform.ClipboardManager.PrimaryClip?.GetItemAt(0)?.Text);
 
-		static Task<string> PlatformGetTextAsync()
+		public Task<string> GetTextAsync()
 			=> Task.FromResult(Platform.ClipboardManager.PrimaryClip?.GetItemAt(0)?.Text);
 
-		static void StartClipboardListeners()
+		public void StartClipboardListeners()
 			=> Platform.ClipboardManager.AddPrimaryClipChangedListener(clipboardListener.Value);
 
-		static void StopClipboardListeners()
+		public void StopClipboardListeners()
 			=> Platform.ClipboardManager.RemovePrimaryClipChangedListener(clipboardListener.Value);
 	}
 

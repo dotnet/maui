@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class GraphicsViewHandlerTests
 	{
 		PlatformGraphicsView GetPlatformGraphicsView(GraphicsViewHandler graphicsViewHandler) =>
-			graphicsViewHandler.NativeView;
+			graphicsViewHandler.PlatformView;
 
 		Task ValidateHasColor(IGraphicsView graphicsView, Color color, Action action = null)
 		{

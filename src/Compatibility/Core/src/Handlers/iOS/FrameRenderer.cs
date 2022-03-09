@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
 			// Make sure the control adheres to changes in UI theme
-			if (NativeVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (PlatformVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				SetupLayer();
 		}
 

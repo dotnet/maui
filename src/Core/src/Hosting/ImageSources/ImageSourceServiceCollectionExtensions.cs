@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Hosting
 {
 	public static class ImageSourceServiceCollectionExtensions
 	{
-		public static IImageSourceServiceCollection AddService<TImageSource, TImageSourceService>(this IImageSourceServiceCollection services)
+		public static IImageSourceServiceCollection AddService<TImageSource, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImageSourceService>(this IImageSourceServiceCollection services)
 			where TImageSource : IImageSource
 			where TImageSourceService : class, IImageSourceService<TImageSource>
 		{

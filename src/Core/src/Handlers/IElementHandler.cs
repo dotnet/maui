@@ -12,7 +12,7 @@
 
 		void DisconnectHandler();
 
-		object? NativeView { get; }
+		object? PlatformView { get; }
 
 		IElement? VirtualView { get; }
 

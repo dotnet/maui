@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
-			handler.NativeView?.RequestNewWindow(application, args as OpenWindowRequest);
+			handler.PlatformView?.RequestNewWindow(application, args as OpenWindowRequest);
 		}
 
 		public static void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args)
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			if (args is IWindow window)
 			{
 				// See if the window's handler has an associated UIWindowScene and UISceneSession
-				var sceneSession = (window.Handler?.NativeView as UIWindow)?.WindowScene?.Session;
+				var sceneSession = (window.Handler?.PlatformView as UIWindow)?.WindowScene?.Session;
 
 				if (sceneSession != null)
 				{

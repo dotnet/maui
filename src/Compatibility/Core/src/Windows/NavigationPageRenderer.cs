@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Element.BarBackgroundColor.IsDefault() && defaultColor != null)
 				return (WBrush)defaultColor;
-			return Element.BarBackgroundColor.ToNative();
+			return Element.BarBackgroundColor.ToPlatform();
 		}
 
 		WBrush GetBarBackgroundBrush()
@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			object defaultColor = Microsoft.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
 			if (Element.BarTextColor.IsDefault())
 				return (WBrush)defaultColor;
-			return Element.BarTextColor.ToNative();
+			return Element.BarTextColor.ToPlatform();
 		}
 
 		bool GetIsNavBarPossible()
@@ -542,7 +542,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateContainerArea()
 		{
-			Element.ContainerArea = new Rectangle(0, 0, _container.ContentWidth, _container.ContentHeight);
+			Element.ContainerArea = new Rect(0, 0, _container.ContentWidth, _container.ContentHeight);
 		}
 
 		void UpdateNavigationBarBackgroundColor()

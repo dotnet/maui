@@ -8,6 +8,7 @@
 
 * [Install .NET MAUI](https://docs.microsoft.com/dotnet/maui/get-started/first-app?pivots=windows)
 * [.NET MAUI documentation](https://docs.microsoft.com/dotnet/maui)
+* [.NET Podcasts Sample Apps](https://github.com/microsoft/dotnet-podcasts)
 * [Weather '21 Sample App](https://github.com/davidortinau/WeatherTwentyOne)
 * [Development Guide](./.github/DEVELOPMENT.md)
 
@@ -19,6 +20,7 @@
 
 ## Current News
 
+* February 15, 2022 - [Announcing .NET MAUI Preview 13](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-13/)
 * January 19, 2022 - [Announcing .NET MAUI Preview 12](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-12/)
 * December 14, 2021 - [Announcing .NET MAUI Preview 11](https://devblogs.microsoft.com/dotnet/announcing-dotnet-maui-preview-11/)
 * November 8, 2021 - [Announcing .NET MAUI Preview 10](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-10/)

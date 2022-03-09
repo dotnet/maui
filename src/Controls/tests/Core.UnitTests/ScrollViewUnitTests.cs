@@ -12,20 +12,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class ScrollViewUnitTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void TestConstructor()
 		{
@@ -44,7 +30,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[TestCase(ScrollOrientation.Both)]
 		public void GetsCorrectSizeRequestWithWrappingContent(ScrollOrientation orientation)
 		{
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: null, useRealisticLabelMeasure: true);
+			MockPlatformSizeService.Current.UseRealisticLabelMeasure = true;
 
 			var scrollView = new ScrollView
 			{
@@ -82,7 +68,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = Substitute.For<IViewHandler>();
 			scroll.Handler = handler;
 
-			scroll.Layout(new Rectangle(0, 0, 50, 50));
+			scroll.Layout(new Rect(0, 0, 50, 50));
 
 			Assert.AreEqual(new Size(50, 100), scroll.ContentSize);
 
@@ -117,7 +103,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = Substitute.For<IViewHandler>();
 			scroll.Handler = handler;
 
-			scroll.Layout(new Rectangle(0, 0, 50, 50));
+			scroll.Layout(new Rect(0, 0, 50, 50));
 
 			Assert.AreEqual(new Size(100, 100), scroll.ContentSize);
 
@@ -156,7 +142,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = Substitute.For<IViewHandler>();
 			scroll.Handler = handler;
 
-			scroll.Layout(new Rectangle(0, 0, 50, 50));
+			scroll.Layout(new Rect(0, 0, 50, 50));
 
 			Assert.AreEqual(new Size(100, 50), scroll.ContentSize);
 
@@ -195,7 +181,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = Substitute.For<IViewHandler>();
 			scroll.Handler = handler;
 
-			scroll.Layout(new Rectangle(0, 0, 50, 50));
+			scroll.Layout(new Rect(0, 0, 50, 50));
 
 			Assert.AreEqual(new Size(100, 100), scroll.ContentSize);
 
@@ -231,7 +217,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = view
 			};
 
-			var originalBounds = new Rectangle(0, 0, 50, 50);
+			var originalBounds = new Rect(0, 0, 50, 50);
 
 			scroll.Layout(originalBounds);
 
@@ -264,7 +250,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Orientation = ScrollOrientation.Horizontal,
 				Content = view,
 			};
-			scroll.Layout(new Rectangle(0, 0, 50, 50));
+			scroll.Layout(new Rect(0, 0, 50, 50));
 
 			bool changed = false;
 			scroll.PropertyChanged += (sender, e) =>
@@ -519,7 +505,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = view,
 				Orientation = ScrollOrientation.Horizontal,
 			};
-			scroll.Layout(new Rectangle(0, 0, 100, 100));
+			scroll.Layout(new Rect(0, 0, 100, 100));
 
 			Assert.AreEqual(new Size(300, 100), scroll.ContentSize);
 			Assert.AreEqual(100, scroll.Height);
@@ -536,7 +522,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = view,
 				Orientation = ScrollOrientation.Vertical,
 			};
-			scroll.Layout(new Rectangle(0, 0, 100, 100));
+			scroll.Layout(new Rect(0, 0, 100, 100));
 
 			Assert.AreEqual(new Size(100, 300), scroll.ContentSize);
 			Assert.AreEqual(100, scroll.Height);
@@ -553,7 +539,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = view,
 				Orientation = ScrollOrientation.Both,
 			};
-			scroll.Layout(new Rectangle(0, 0, 100, 100));
+			scroll.Layout(new Rect(0, 0, 100, 100));
 
 			Assert.AreEqual(new Size(300, 300), scroll.ContentSize);
 			Assert.AreEqual(100, scroll.Height);

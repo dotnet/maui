@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			tvc.TextLabel.Text = textCell.Text;
 			tvc.DetailTextLabel.Text = textCell.Detail;
-			tvc.TextLabel.TextColor = (textCell.TextColor ?? DefaultTextColor).ToNative();
-			tvc.DetailTextLabel.TextColor = (textCell.DetailColor ?? DefaultDetailColor).ToNative();
+			tvc.TextLabel.TextColor = (textCell.TextColor ?? DefaultTextColor).ToPlatform();
+			tvc.DetailTextLabel.TextColor = (textCell.DetailColor ?? DefaultDetailColor).ToPlatform();
 
 			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
@@ -63,9 +63,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				tvc.DetailTextLabel.SizeToFit();
 			}
 			else if (args.PropertyName == TextCell.TextColorProperty.PropertyName)
-				tvc.TextLabel.TextColor = textCell.TextColor?.ToNative() ?? DefaultTextColor.ToNative();
+				tvc.TextLabel.TextColor = textCell.TextColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
 			else if (args.PropertyName == TextCell.DetailColorProperty.PropertyName)
-				tvc.DetailTextLabel.TextColor = textCell.DetailColor?.ToNative() ?? DefaultTextColor.ToNative();
+				tvc.DetailTextLabel.TextColor = textCell.DetailColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
 			else if (args.PropertyName == Cell.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled(tvc, textCell);
 			else if (args.PropertyName == TextCell.AutomationIdProperty.PropertyName)

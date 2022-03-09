@@ -38,10 +38,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			return layout;
 		}
 
-		static void MeasureAndArrange(Maui.ILayout layout) 
+		static void MeasureAndArrange(Maui.ILayout layout)
 		{
 			var layoutSize = new Size(TestAreaWidth, TestAreaHeight);
-			var rect = new Rectangle(Point.Zero, layoutSize);
+			var rect = new Rect(Point.Zero, layoutSize);
 
 			(layout as Maui.ILayout).CrossPlatformMeasure(layoutSize.Width, layoutSize.Height);
 			(layout as Maui.ILayout).CrossPlatformArrange(rect);
@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			stackLayout.Add(view2);
 
 			(stackLayout as Maui.ILayout).CrossPlatformMeasure(TestAreaWidth, TestAreaHeight);
-			(stackLayout as Maui.ILayout).CrossPlatformArrange(new Rectangle(0, 0, TestAreaWidth, TestAreaHeight));
+			(stackLayout as Maui.ILayout).CrossPlatformArrange(new Rect(0, 0, TestAreaWidth, TestAreaHeight));
 
 			Assert.AreEqual(0, view0.Bounds.X);
 			Assert.AreEqual(0, view0.Bounds.Y);
@@ -291,7 +291,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		{
 			public string Text { get; }
 
-			public ViewModel(string text) 
+			public ViewModel(string text)
 			{
 				Text = text;
 			}
@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		{
 			const string testText = "test text";
 
-			var vm =  new ViewModel(testText);
+			var vm = new ViewModel(testText);
 
 			var view0 = new TestView
 			{

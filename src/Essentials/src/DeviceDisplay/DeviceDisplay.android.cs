@@ -9,9 +9,9 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	partial class DeviceDisplayImplementation : IDeviceDisplay
+	public class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		OrientationEventListener? orientationListener;
 
@@ -111,19 +111,19 @@ namespace Microsoft.Maui.Essentials
 				return null;
 			}
 		}
-	}
 
-	class Listener : OrientationEventListener
-	{
-		readonly Action onChanged;
-
-		internal Listener(Context context, Action handler)
-			: base(context) => onChanged = handler;
-
-		public override async void OnOrientationChanged(int orientation)
+		class Listener : OrientationEventListener
 		{
-			await Task.Delay(500);
-			onChanged();
+			readonly Action onChanged;
+
+			internal Listener(Context context, Action handler)
+				: base(context) => onChanged = handler;
+
+			public override async void OnOrientationChanged(int orientation)
+			{
+				await Task.Delay(500);
+				onChanged();
+			}
 		}
 	}
 }

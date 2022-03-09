@@ -2,9 +2,9 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	partial class DeviceDisplayImplementation : IDeviceDisplay
+	public class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		[DllImport("libcapi-system-device.so.0", EntryPoint = "device_power_request_lock")]
 		static extern void RequestKeepScreenOn(int type = 1, int timeout = 0);

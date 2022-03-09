@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var mode = selectableItemsView.SelectionMode;
 
 			var adapter = (recyclerView.GetAdapter() as SelectableItemsViewAdapter<SelectableItemsView, IItemsViewSource>);
-			adapter?.ClearNativeSelection();
+			adapter?.ClearPlatformSelection();
 
 			switch (mode)
 			{
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				case SelectionMode.Single:
 					var selectedItem = selectableItemsView.SelectedItem;
-					adapter.MarkNativeSelection(selectedItem);
+					adapter.MarkPlatformSelection(selectedItem);
 					return;
 
 				case SelectionMode.Multiple:
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					foreach (var item in selectedItems)
 					{
-						adapter.MarkNativeSelection(item);
+						adapter.MarkPlatformSelection(item);
 					}
 					return;
 			}

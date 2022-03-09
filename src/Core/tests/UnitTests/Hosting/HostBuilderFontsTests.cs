@@ -45,13 +45,13 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			var path = registrar.GetFont(filename);
 			Assert.NotNull(path);
-			Assert.StartsWith(root, path);
+			Assert.StartsWith(root, path, StringComparison.Ordinal);
 
 			if (alias != null)
 			{
 				path = registrar.GetFont(alias);
 				Assert.NotNull(path);
-				Assert.StartsWith(root, path);
+				Assert.StartsWith(root, path, StringComparison.Ordinal);
 			}
 
 			Assert.True(File.Exists(Path.Combine(root, filename)));

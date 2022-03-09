@@ -19,18 +19,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _disposed;
 		bool _isInShell;
 		bool _isInItems;
-		INativeViewHandler _renderer;
+		IPlatformViewHandler _renderer;
 		UIScrollView _scrollView;
 		ShellSection _shellSection;
 		IShellSectionController ShellSectionController => _shellSection;
 
-		public ShellScrollViewTracker(INativeViewHandler renderer)
+		public ShellScrollViewTracker(IPlatformViewHandler renderer)
 		{
 			_renderer = renderer;
 
-			if (_renderer.NativeView is UIScrollView scrollView)
+			if (_renderer.PlatformView is UIScrollView scrollView)
 				_scrollView = scrollView;
-			else if (_renderer.NativeView.Subviews.Length > 0 && _renderer.NativeView.Subviews[0] is UIScrollView nestedScrollView)
+			else if (_renderer.PlatformView.Subviews.Length > 0 && _renderer.PlatformView.Subviews[0] is UIScrollView nestedScrollView)
 				_scrollView = nestedScrollView;
 
 			if (_scrollView == null)
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!_isInShell)
 				return;
 
-			if (NativeVersion.IsAtLeast(11))
+			if (PlatformVersion.IsAtLeast(11))
 			{
 				var newBounds = _scrollView.AdjustedContentInset.InsetRect(_scrollView.Bounds).ToRectangle();
 				newBounds.X = 0;
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_lastInset == 0 && _tabThickness == 0)
 				return false;
 
-			if (!NativeVersion.IsAtLeast(11))
+			if (!PlatformVersion.IsAtLeast(11))
 			{
 				UpdateContentInset(_lastInset, _tabThickness);
 				return true;
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_lastInset = inset;
 			_tabThickness = tabThickness;
-			if (NativeVersion.IsAtLeast(11))
+			if (PlatformVersion.IsAtLeast(11))
 			{
 				if (ShellSectionController.GetItems().Count > 1 && _isInItems)
 				{
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// If we can't bounce in that case you may not be able to expose the handler.
 			// Also the hiding behavior only depends on scroll on iOS 11. In 10 and below
 			// the search goes in the TitleView so there is nothing to collapse/expand.
-			if (!NativeVersion.IsAtLeast(11) ||
+			if (!PlatformVersion.IsAtLeast(11) ||
 				(_renderer.VirtualView is ScrollView scrollView && scrollView.Orientation == ScrollOrientation.Horizontal))
 				return;
 

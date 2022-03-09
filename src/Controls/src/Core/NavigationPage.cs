@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
 			// this routes the call there instead of through old behavior
-			if (Navigation is MauiNavigationImpl mvi && this is INavigationView)
+			if (Navigation is MauiNavigationImpl mvi && this is IStackNavigation)
 			{
 				return await mvi.PopAsync(animated);
 			}
@@ -263,7 +263,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
 			// this routes the call there instead of through old behavior
-			if (Navigation is MauiNavigationImpl mvi && this is INavigationView)
+			if (Navigation is MauiNavigationImpl mvi && this is IStackNavigation)
 			{
 				await mvi.PopToRootAsync(animated);
 				return;
@@ -297,7 +297,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
 			// this routes the call there instead of through old behavior
-			if (Navigation is MauiNavigationImpl mvi && this is INavigationView)
+			if (Navigation is MauiNavigationImpl mvi && this is IStackNavigation)
 			{
 				if (InternalChildren.Contains(page))
 					return;

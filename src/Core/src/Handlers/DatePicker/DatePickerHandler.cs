@@ -1,8 +1,18 @@
-﻿namespace Microsoft.Maui.Handlers
+﻿#if __IOS__ || MACCATALYST
+using PlatformView = Microsoft.Maui.Platform.MauiDatePicker;
+#elif MONOANDROID
+using PlatformView = Microsoft.Maui.Platform.MauiDatePicker;
+#elif WINDOWS
+using PlatformView = Microsoft.UI.Xaml.Controls.CalendarDatePicker;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
+
+namespace Microsoft.Maui.Handlers
 {
-	public partial class DatePickerHandler
+	public partial class DatePickerHandler : IDatePickerHandler
 	{
-		public static IPropertyMapper<IDatePicker, DatePickerHandler> DatePickerMapper = new PropertyMapper<IDatePicker, DatePickerHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IDatePicker, IDatePickerHandler> Mapper = new PropertyMapper<IDatePicker, IDatePickerHandler>(ViewHandler.ViewMapper)
 		{
 #if __ANDROID__
 			[nameof(IDatePicker.Background)] = MapBackground,
@@ -16,14 +26,20 @@
 			[nameof(IDatePicker.TextColor)] = MapTextColor,
 		};
 
-		public DatePickerHandler() : base(DatePickerMapper)
+		public static CommandMapper<IPicker, IDatePickerHandler> CommandMapper = new(ViewCommandMapper)
 		{
+		};
 
+		public DatePickerHandler() : base(Mapper)
+		{
 		}
 
 		public DatePickerHandler(IPropertyMapper mapper) : base(mapper)
 		{
-
 		}
+
+		IDatePicker IDatePickerHandler.VirtualView => VirtualView;
+
+		PlatformView IDatePickerHandler.PlatformView => PlatformView;
 	}
 }

@@ -43,21 +43,24 @@ namespace Microsoft.Maui.Platform
 
 			mauiTimePicker.Text = time.ToFormattedString(format, cultureInfo);
 
-			if (timePicker.Format?.Contains('H') == true)
+			if (format != null)
 			{
-				var ci = new CultureInfo("de-DE");
-				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
+				if (format.IndexOf("H", StringComparison.Ordinal) != -1)
+				{
+					var ci = new CultureInfo("de-DE");
+					NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
 
-				if (picker != null)
-					picker.Locale = locale;
-			}
-			else if (timePicker.Format?.Contains('h') == true)
-			{
-				var ci = new CultureInfo("en-US");
-				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
+					if (picker != null)
+						picker.Locale = locale;
+				}
+				else if (format.IndexOf("h", StringComparison.Ordinal) != -1)
+				{
+					var ci = new CultureInfo("en-US");
+					NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
 
-				if (picker != null)
-					picker.Locale = locale;
+					if (picker != null)
+						picker.Locale = locale;
+				}
 			}
 
 			mauiTimePicker.UpdateCharacterSpacing(timePicker);

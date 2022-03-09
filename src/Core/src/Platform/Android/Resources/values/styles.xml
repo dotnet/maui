@@ -28,7 +28,7 @@
     <style name="AppTheme" parent="Maui.MainTheme" />
     <style name="AppTheme.NoActionBar" parent="Maui.MainTheme.NoActionBar" />
 
-    <style name="MauiMaterialButton" parent="Widget.MaterialComponents.Button">
+    <style name="MauiMaterialButton" parent="Widget.MaterialComponents.Button.UnelevatedButton">
       <!-- remove all the min sizes as MAUI manages it -->
       <item name="android:minWidth">0dp</item>
       <item name="android:minHeight">0dp</item>

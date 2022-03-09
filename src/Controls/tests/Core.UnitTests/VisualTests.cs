@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			var mockDeviceInfo = new TestDeviceDisplay();
-			DeviceDisplay.SetCurrent(new TestDeviceDisplay());
+			var mockDeviceInfo = new MockDeviceDisplay();
+			DeviceDisplay.SetCurrent(new MockDeviceDisplay());
 		}
 
 
@@ -468,13 +468,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsTrue(target.IsMaterial(), "EffectiveVisual should be Material");
 			Assert.IsTrue(!target.IsDefault(), "EffectiveVisual should be Material");
 			Assert.AreEqual(Maui.Controls.VisualMarker.MatchParent, ((View)view).Visual);
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
 		}
 
 		static void AddExplicitLTRToScrollView(ScrollView parent, View child)

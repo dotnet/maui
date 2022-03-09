@@ -16,30 +16,7 @@ namespace Microsoft.Maui.Essentials
 {
 	public static partial class Screenshot
 	{
-		internal static bool PlatformIsCaptureSupported =>
-			true;
-
-		static async Task<ScreenshotResult> PlatformCaptureAsync()
-		{
-			var element = Window.Current?.Content as FrameworkElement;
-			if (element == null)
-				throw new InvalidOperationException("Unable to find main window content.");
-
-			// NOTE: Return to the main thread so we can access view properties such as
-			//       width and height. Do not ConfigureAwait!
-			var bmp = await element.RenderAsync();
-
-			// get the view information first
-			var width = bmp.PixelWidth;
-			var height = bmp.PixelHeight;
-
-			// then potentially move to a different thread
-			var pixels = await bmp.AsPixelsAsync();
-
-			return new ScreenshotResult(width, height, pixels);
-		}
-
-		public static async Task<RenderTargetBitmap> RenderAsync (this FrameworkElement element)
+		public static async Task<RenderTargetBitmap> RenderAsync(this FrameworkElement element)
 		{
 			var bitmap = new RenderTargetBitmap();
 			await bitmap.RenderAsync(element);
@@ -83,8 +60,37 @@ namespace Microsoft.Maui.Essentials
 			return result;
 		}
 	}
+}
 
-	public partial class ScreenshotResult
+namespace Microsoft.Maui.Essentials.Implementations
+{
+	internal partial class ScreenshotImplementation : IScreenshot
+	{
+		public bool IsCaptureSupported =>
+			true;
+
+		public async Task<IScreenshotResult> CaptureAsync()
+		{
+			var element = Window.Current?.Content as FrameworkElement;
+			if (element == null)
+				throw new InvalidOperationException("Unable to find main window content.");
+
+			// NOTE: Return to the main thread so we can access view properties such as
+			//       width and height. Do not ConfigureAwait!
+			var bmp = await element.RenderAsync();
+
+			// get the view information first
+			var width = bmp.PixelWidth;
+			var height = bmp.PixelHeight;
+
+			// then potentially move to a different thread
+			var pixels = await bmp.AsPixelsAsync();
+
+			return new ScreenshotResult(width, height, pixels);
+		}
+	}
+
+	internal partial class ScreenshotResult
 	{
 		readonly byte[] bytes;
 

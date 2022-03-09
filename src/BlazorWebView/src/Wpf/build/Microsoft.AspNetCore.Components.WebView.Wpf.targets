@@ -4,6 +4,9 @@
     <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
     <StaticWebAssetProjectMode>Root</StaticWebAssetProjectMode>
     <CoreCompileDependsOn Condition="'$(PublishProtocol)' == 'ClickOnce' or '$(PublishProtocol)' == 'FileSystem'">$(CoreCompileDependsOn);StaticWebAssetsPrepareForRun</CoreCompileDependsOn>
+
+    <!-- Workaround for https://github.com/dotnet/wpf/issues/5697 (fixes https://github.com/dotnet/maui/issues/3526) -->
+    <RootNamespace Condition="'$(UseWPF)' == 'true' AND $(RootNamespace.EndsWith('_wpftmp'))">$(_TargetAssemblyProjectName)</RootNamespace>
   </PropertyGroup>
 
   <Target Name="AddStaticWebAssetsForClickOnce" AfterTargets="ComputeFilesToPublish" Condition="'$(PublishProtocol)' == 'ClickOnce'">

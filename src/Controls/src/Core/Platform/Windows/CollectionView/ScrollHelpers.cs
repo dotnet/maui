@@ -159,6 +159,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static async Task<UWPPoint> GetApproximateTargetAsync(ListViewBase list, ScrollViewer scrollViewer, object targetItem)
 		{
+			if (scrollViewer == null)
+				return new UWPPoint(0, 0);
+
 			// Keep track of where we are now
 			var horizontalOffset = scrollViewer.HorizontalOffset;
 			var verticalOffset = scrollViewer.VerticalOffset;
@@ -167,6 +170,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// virtualization, but it'll be close enough to give us a direction to scroll toward
 			await JumpToItemAsync(list, targetItem, ScrollToPosition.Start);
 			var targetContainer = list.ContainerFromItem(targetItem) as UIElement;
+
 			if (targetContainer == null)
 				return new UWPPoint(0, 0);
 
@@ -265,6 +269,12 @@ namespace Microsoft.Maui.Controls.Platform
 		public static async Task AnimateToItemAsync(ListViewBase list, object targetItem, ScrollToPosition scrollToPosition)
 		{
 			var scrollViewer = list.GetFirstDescendant<ScrollViewer>();
+
+			if (scrollViewer == null)
+			{
+				// If ScrollViewer is not found, do nothing.
+				return;
+			}
 
 			// ScrollToItemAsync will only scroll to the item if it actually exists in the list (that is, it has been
 			// been realized and isn't just a virtual item)

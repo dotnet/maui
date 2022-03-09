@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Platform
 		AView CreateEmptyContent()
 		{
 			var emptyContentView = new AView(_context);
-			emptyContentView.SetBackgroundColor(Colors.Transparent.ToNative());
+			emptyContentView.SetBackgroundColor(Colors.Transparent.ToPlatform());
 
 			return emptyContentView;
 		}
@@ -611,7 +611,7 @@ namespace Microsoft.Maui.Platform
 
 			_swipeItems.TryGetValue(item, out object? view);
 
-			if (view != null && view is AView nativeView)
+			if (view != null && view is AView platformView)
 			{
 				_swipeThreshold = 0;
 				LayoutSwipeItems(GetNativeSwipeItems());

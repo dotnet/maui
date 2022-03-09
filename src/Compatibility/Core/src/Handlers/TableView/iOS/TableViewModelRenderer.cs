@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 		{
 			var cell = View.Model.GetCell(indexPath.Section, indexPath.Row);
-			var nativeCell = CellTableViewCell.GetNativeCell(tableView, cell);
+			var nativeCell = CellTableViewCell.GetPlatformCell(tableView, cell);
 
 			return nativeCell;
 		}
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				result.TableView = tableView;
 
 				var cellRenderer = result.ToHandler(View.FindMauiContext());
-				return (UIView)cellRenderer.NativeView;
+				return (UIView)cellRenderer.PlatformView;
 			}
 			return null;
 		}
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (sectionHeaderTextColor != null)
 				{
-					header.TextLabel.TextColor = sectionHeaderTextColor.ToNative();
+					header.TextLabel.TextColor = sectionHeaderTextColor.ToPlatform();
 				}
 			}
 		}

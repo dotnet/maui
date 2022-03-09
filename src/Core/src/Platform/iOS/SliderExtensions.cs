@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 					uiSlider.MinimumTrackTintColor = defaultMinTrackColor;
 			}
 			else
-				uiSlider.MinimumTrackTintColor = slider.MinimumTrackColor.ToNative();
+				uiSlider.MinimumTrackTintColor = slider.MinimumTrackColor.ToPlatform();
 		}
 
 		public static void UpdateMaximumTrackColor(this UISlider uiSlider, ISlider slider)
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Platform
 			if (slider.MaximumTrackColor == null)
 				uiSlider.MaximumTrackTintColor = defaultMaxTrackColor;
 			else
-				uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToNative();
+				uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToPlatform();
 		}
 
 		public static void UpdateThumbColor(this UISlider uiSlider, ISlider slider)
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Platform
 			if (slider.ThumbColor == null)
 				uiSlider.ThumbTintColor = defaultThumbColor;
 			else
-				uiSlider.ThumbTintColor = slider.ThumbColor.ToNative();
+				uiSlider.ThumbTintColor = slider.ThumbColor.ToPlatform();
 		}
 
 		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IImageSourceServiceProvider provider)

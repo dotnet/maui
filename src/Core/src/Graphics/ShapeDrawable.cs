@@ -14,9 +14,11 @@
 
 		public IShapeView? ShapeView { get; set; }
 
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			var rect = dirtyRect;
+
+			DrawBackground(canvas, rect);
 
 			IShape? shape = ShapeView?.Shape;
 
@@ -32,7 +34,23 @@
 			DrawFillPath(canvas, rect, path);
 		}
 
-		void DrawStrokePath(ICanvas canvas, RectangleF dirtyRect, PathF path)
+		void DrawBackground(ICanvas canvas, RectF dirtyRect)
+		{
+			if (ShapeView == null)
+				return;
+
+			canvas.SaveState();
+
+			// Set Background
+			var backgroundPaint = ShapeView.Background;
+			canvas.SetFillPaint(backgroundPaint, dirtyRect);
+
+			canvas.FillRectangle(dirtyRect);
+
+			canvas.RestoreState();
+		}
+
+		void DrawStrokePath(ICanvas canvas, RectF dirtyRect, PathF path)
 		{
 			if (ShapeView == null || ShapeView.Shape == null || ShapeView.StrokeThickness <= 0 || ShapeView.Stroke == null)
 				return;
@@ -62,6 +80,13 @@
 			var strokeDashPattern = ShapeView.StrokeDashPattern;
 			canvas.StrokeDashPattern = strokeDashPattern;
 
+			// Set StrokeDashPattern
+			/*
+			var strokeDashOffset = ShapeView.StrokeDashOffset;
+			// TODO: Implement StrokeDashOffset in Microsoft.Maui.Graphics.
+			canvas.StrokeDashOffset = strokeDashOffset;
+			*/
+
 			// Set StrokeMiterLimit
 			var strokeMiterLimit = ShapeView.StrokeMiterLimit;
 			canvas.MiterLimit = strokeMiterLimit;
@@ -71,7 +96,7 @@
 			canvas.RestoreState();
 		}
 
-		void DrawFillPath(ICanvas canvas, RectangleF dirtyRect, PathF path)
+		void DrawFillPath(ICanvas canvas, RectF dirtyRect, PathF path)
 		{
 			if (ShapeView == null || ShapeView.Shape == null)
 				return;

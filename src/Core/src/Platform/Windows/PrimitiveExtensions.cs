@@ -6,10 +6,10 @@ namespace Microsoft.Maui.Platform
 {
 	public static class PrimitiveExtensions
 	{
-		public static WPoint ToNative(this Point point) =>
+		public static WPoint ToPlatform(this Point point) =>
 			new WPoint(point.X, point.Y);
 
-		public static WThickness ToNative(this Thickness thickness) =>
+		public static WThickness ToPlatform(this Thickness thickness) =>
 			new WThickness(
 				thickness.Left,
 				thickness.Top,

@@ -1,16 +1,18 @@
 ﻿#nullable enable
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Extensions.Logging;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
+		internal string CacheDirectory = Path.Combine(Essentials.FileSystem.CacheDirectory, "com.microsoft.maui", "MauiUriImages");
+
 		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
 			GetImageAsync((IUriImageSource)imageSource, scale, cancellationToken);
 
@@ -21,20 +23,36 @@ namespace Microsoft.Maui
 
 			try
 			{
-				// TODO: use a real caching library with the URI
-				if (imageSource is not IStreamImageSource streamImageSource)
-					return null;
+				var hash = Crc64.ComputeHashString(imageSource.Uri.OriginalString);
+				var pathToImageCache = CacheDirectory + hash + ".png";
 
-				using var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+				NSData? imageData;
 
-				if (stream == null)
-					throw new InvalidOperationException($"Unable to load image stream from URI '{imageSource.Uri}'.");
+				if (imageSource.CachingEnabled && IsImageCached(pathToImageCache))
+				{
+					imageData = GetCachedImage(pathToImageCache);
+				}
+				else
+				{
+					// TODO: use a real caching library with the URI
+					if (imageSource is not IStreamImageSource streamImageSource)
+						return null;
 
-				var data = NSData.FromStream(stream);
-				if (data == null)
-					throw new InvalidOperationException("Unable to load image stream data.");
+					using var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 
-				var image = UIImage.LoadFromData(data, scale);
+					if (stream == null)
+						throw new InvalidOperationException($"Unable to load image stream from URI '{imageSource.Uri}'.");
+
+					imageData = NSData.FromStream(stream);
+
+					if (imageData == null)
+						throw new InvalidOperationException("Unable to load image stream data.");
+
+					if (imageSource.CachingEnabled)
+						CacheImage(imageData, pathToImageCache);
+				}
+
+				var image = UIImage.LoadFromData(imageData, scale);
 
 				if (image == null)
 					throw new InvalidOperationException($"Unable to decode image from URI '{imageSource.Uri}'.");
@@ -49,5 +67,36 @@ namespace Microsoft.Maui
 				throw;
 			}
 		}
+
+		public void CacheImage(NSData imageData, string path)
+		{
+			var directory = Path.GetDirectoryName(path);
+
+			if (string.IsNullOrEmpty(directory))
+				throw new InvalidOperationException($"Unable to get directory path name '{path}'.");
+
+			Directory.CreateDirectory(directory);
+
+			var result = imageData.Save(path, true);
+
+			if (result == false)
+				throw new InvalidOperationException($"Unable to cache image at '{path}'.");
+		}
+
+		public bool IsImageCached(string path)
+		{
+			return File.Exists(path);
+		}
+
+		public NSData GetCachedImage(string path)
+		{
+			var imageData = NSData.FromFile(path);
+
+			if (imageData == null)
+				throw new InvalidOperationException($"Unable to load image stream data from '{path}'.");
+
+			return imageData;
+		}
 	}
+
 }

@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 		PointerEventHandler? _pointerPressedHandler;
 		PointerEventHandler? _pointerReleasedHandler;
 
-		protected override Button CreateNativeView() =>
+		protected override Button CreatePlatformView() =>
 			new Button
 			{
 				VerticalAlignment = VerticalAlignment.Stretch,
@@ -43,76 +43,76 @@ namespace Microsoft.Maui.Handlers
 				}
 			};
 
-		protected override void ConnectHandler(Button nativeView)
+		protected override void ConnectHandler(Button platformView)
 		{
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
 
-			nativeView.Click += OnClick;
-			nativeView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
-			nativeView.AddHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
+			platformView.Click += OnClick;
+			platformView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
+			platformView.AddHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(Button nativeView)
+		protected override void DisconnectHandler(Button platformView)
 		{
-			nativeView.Click -= OnClick;
-			nativeView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
-			nativeView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
+			platformView.Click -= OnClick;
+			platformView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
+			platformView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
 
 			_pointerPressedHandler = null;
 			_pointerReleasedHandler = null;
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		// This is a Windows-specific mapping
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateBackground(button);
+			handler.PlatformView?.UpdateBackground(button);
 		}
 
 		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.NativeView?.UpdateStrokeColor(buttonStroke);
+			handler.PlatformView?.UpdateStrokeColor(buttonStroke);
 		}
 
 		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.NativeView?.UpdateStrokeThickness(buttonStroke);
+			handler.PlatformView?.UpdateStrokeThickness(buttonStroke);
 		}
 
 		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.NativeView?.UpdateCornerRadius(buttonStroke);
+			handler.PlatformView?.UpdateCornerRadius(buttonStroke);
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)
 		{
-			handler.NativeView?.UpdateText(button);
+			handler.PlatformView?.UpdateText(button);
 		}
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			handler.NativeView?.UpdateTextColor(button);
+			handler.PlatformView?.UpdateTextColor(button);
 		}
 
 		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(button);
+			handler.PlatformView?.UpdateCharacterSpacing(button);
 		}
 
 		public static void MapFont(IButtonHandler handler, ITextStyle button)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(button, fontManager);
+			handler.PlatformView?.UpdateFont(button, fontManager);
 		}
 
 		public static void MapPadding(IButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdatePadding(button);
+			handler.PlatformView?.UpdatePadding(button);
 		}
 
 		public static void MapImageSource(IButtonHandler handler, IButton image) =>
@@ -121,9 +121,9 @@ namespace Microsoft.Maui.Handlers
 				.UpdateImageSourceAsync()
 				.FireAndForget(handler);
 
-		void OnSetImageSource(ImageSource? nativeImageSource)
+		void OnSetImageSource(ImageSource? platformImageSource)
 		{
-			NativeView.UpdateImageSource(nativeImageSource);
+			PlatformView.UpdateImageSource(platformImageSource);
 		}
 
 		void OnClick(object sender, RoutedEventArgs e)

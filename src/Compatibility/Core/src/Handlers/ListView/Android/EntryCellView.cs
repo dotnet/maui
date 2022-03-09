@@ -6,6 +6,7 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.Core.Widget;
 using Java.Lang;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
@@ -124,7 +125,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			_labelTextColor = color;
-			_label.SetTextColor(color.ToNative(defaultColorResourceId, _label.Context));
+			_label.SetTextColor(color.ToPlatform(defaultColorResourceId, _label.Context));
 		}
 
 		public void SetRenderHeight(double height)

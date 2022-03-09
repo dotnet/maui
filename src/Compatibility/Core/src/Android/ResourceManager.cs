@@ -198,14 +198,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return element != null;
 		}
 
-		internal static Task ApplyDrawableAsync(this IShellContext shellContext, BindableObject bindable, BindableProperty imageSourceProperty, Action<Drawable> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
-		{
-			_ = shellContext ?? throw new ArgumentNullException(nameof(shellContext));
-			var renderer = shellContext as IVisualElementRenderer ?? throw new InvalidOperationException($"The shell context {shellContext.GetType()} must be a {typeof(IVisualElementRenderer)}.");
-
-			return renderer.ApplyDrawableAsync(bindable, imageSourceProperty, shellContext.AndroidContext, onSet, onLoading, cancellationToken);
-		}
-
 		internal static Task ApplyDrawableAsync(this IVisualElementRenderer renderer,
 										  BindableProperty imageSourceProperty,
 										  Context context,
@@ -413,7 +405,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			// When searching by reflection you would use a "_" instead of a "."
 			// So this accounts for cases where users were searching with an "_"
-			if ((id = SearchByIdentifier(name.Replace("_", "."), defType, resource, packageName)) > 0)
+			if ((id = SearchByIdentifier(name.Replace("_", ".", StringComparison.Ordinal), defType, resource, packageName)) > 0)
 				return id;
 
 			int SearchByIdentifier(string n, string d, Resources r, string p)

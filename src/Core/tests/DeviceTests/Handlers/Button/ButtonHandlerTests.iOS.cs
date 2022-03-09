@@ -28,12 +28,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = button.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
 		[Fact(DisplayName = "Default Accessibility Traits Don't Change")]
@@ -48,10 +48,10 @@ namespace Microsoft.Maui.DeviceTests
 					// a UIView is added to the visual hierarchy so we are just 
 					// initializing here and then validating that the value doesn't get cleared
 
-					handler.NativeView.AccessibilityTraits = UIAccessibilityTrait.Button;
+					handler.PlatformView.AccessibilityTraits = UIAccessibilityTrait.Button;
 					view.Semantics.Hint = "Test Hint";
 					view.Handler.UpdateValue("Semantics");
-					return handler.NativeView.AccessibilityTraits;
+					return handler.PlatformView.AccessibilityTraits;
 				});
 
 			Assert.Equal(UIAccessibilityTrait.Button, trait);
@@ -59,10 +59,10 @@ namespace Microsoft.Maui.DeviceTests
 
 
 		bool ImageSourceLoaded(ButtonHandler buttonHandler) =>
-			buttonHandler.NativeView.ImageView.Image != null;
+			buttonHandler.PlatformView.ImageView.Image != null;
 
 		UIButton GetNativeButton(ButtonHandler buttonHandler) =>
-			(UIButton)buttonHandler.NativeView;
+			(UIButton)buttonHandler.PlatformView;
 
 		string GetNativeText(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).CurrentTitle;

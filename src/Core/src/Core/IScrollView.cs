@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 		double VerticalOffset { get; set; }
 
 		/// <summary>
-		/// Allows the native ScrollView to inform that cross-platform code that a scroll operation has completed.
+		/// Allows the platform ScrollView to inform that cross-platform code that a scroll operation has completed.
 		/// </summary>
 		void ScrollFinished();
 

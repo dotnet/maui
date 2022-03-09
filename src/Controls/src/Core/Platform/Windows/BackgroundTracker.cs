@@ -30,9 +30,9 @@ namespace Microsoft.Maui.Controls.Platform
 			base.OnPropertyChanged(sender, e);
 		}
 
-		protected override void UpdateNativeControl()
+		protected override void UpdatePlatformControl()
 		{
-			base.UpdateNativeControl();
+			base.UpdatePlatformControl();
 
 			if (_backgroundNeedsUpdate)
 				UpdateBackground();
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Platform
 					Color backgroundColor = Element.BackgroundColor;
 					if (!backgroundColor.IsDefault())
 					{
-						element.SetValue(_backgroundProperty, backgroundColor.ToNative());
+						element.SetValue(_backgroundProperty, backgroundColor.ToPlatform());
 					}
 					else
 					{

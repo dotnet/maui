@@ -1,14 +1,35 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using System;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	/// <summary>
+	/// Defines a contract for a view that renders Blazor content.
+	/// </summary>
 	public interface IBlazorWebView : IView
 	{
-		string? HostPage { get; set; }
+		/// <summary>
+		/// Gets the path to the HTML file to render.
+		/// </summary>
+		string? HostPage { get; }
+
+		/// <summary>
+		/// Gets a collection of <see cref="RootComponent"/> items.
+		/// </summary>
 		RootComponentsCollection RootComponents { get; }
+
+		/// <summary>
+		/// Gets the <see cref="JSComponentConfigurationStore"/>.
+		/// </summary>
 		JSComponentConfigurationStore JSComponents { get; }
+
+		/// <summary>
+		/// Allows customizing how external links are opened.
+		/// Opens external links in the system browser by default.
+		/// </summary>
+		event EventHandler<ExternalLinkNavigationEventArgs>? ExternalNavigationStarting;
 
 		/// <summary>
 		/// Creates a file provider for static assets used in the <see cref="BlazorWebView"/>. The default implementation

@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				? _defaultOnColor
 				: new WSolidColorBrush(switchCell.OnColor.ToWindowsColor());
 
-			var nativeSwitch = FrameworkElementExtensions.GetFirstDescendant<ToggleSwitch>(this);
+			var nativeSwitch = this.GetFirstDescendant<ToggleSwitch>();
 
 			// change fill color in switch rectangle
 			var rects = nativeSwitch.GetDescendantsByName<Microsoft.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (_defaultOnColor == null && Cell is SwitchCell)
 			{
-				var nativeSwitch = FrameworkElementExtensions.GetFirstDescendant<ToggleSwitch>(this);
+				var nativeSwitch = this.GetFirstDescendant<ToggleSwitch>();
 				var rects = nativeSwitch.GetDescendantsByName<Microsoft.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
 				foreach (var rect in rects)
 					_defaultOnColor = rect.Fill;
@@ -466,8 +466,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			foreach (MenuItem item in Cell.ContextActions)
 			{
-				var flyoutItem = new MenuFlyoutItem();
-				flyoutItem.SetBinding(MenuFlyoutItem.TextProperty, "Text");
+				var flyoutItem = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem();
+				flyoutItem.SetBinding(UI.Xaml.Controls.MenuFlyoutItem.TextProperty, "Text");
 				//WINUI FIX
 				//flyoutItem.Command = new MenuItemCommand(item);
 				flyoutItem.DataContext = item;

@@ -6,11 +6,11 @@ using CoreLocation;
 using Foundation;
 using MapKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Map
+	public class MapImplementation : IMap
 	{
-		internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
 			if (string.IsNullOrWhiteSpace(options.Name))
 				options.Name = string.Empty;
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Essentials
 			return OpenPlacemark(placemark, options);
 		}
 
-		internal static async Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
+		public async Task OpenMapsAsync(Placemark placemark, MapLaunchOptions options)
 		{
 #if __IOS__
 			var address = new MKPlacemarkAddress
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Essentials
 				var uri = $"http://maps.apple.com/?q={placemark.GetEscapedAddress()}";
 				var nsurl = NSUrl.FromString(uri);
 
-				await Launcher.PlatformOpenAsync(nsurl);
+				await Launcher.OpenAsync(nsurl);
 #else
 				await OpenPlacemark(new MKPlacemark(default, address), options);
 #endif

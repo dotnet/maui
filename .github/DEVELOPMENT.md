@@ -9,7 +9,8 @@ This page contains steps to build and run the .NET MAUI repository from source. 
 In most cases, when you have Visual Studio installed with the .NET workloads checked, these steps are not required.
 
 1. Install the latest .NET 6:  
-   - [Win (x64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-win-x64.exe)   
+   <!--- [Win (x64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-win-x64.exe)   -->
+   - [Install the latest Public Preview of Visual Studio](https://docs.microsoft.com/en-us/dotnet/maui/get-started/installation/)
    - [macOS (x64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-osx-x64.pkg)  
    - [macOS (arm64)](https://aka.ms/dotnet/6.0.2xx/daily/dotnet-sdk-osx-arm64.pkg)
 2. Clear your nuget cache:  
@@ -25,32 +26,23 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 
 Install the .NET MAUI workload using the versions from a particular branch:  
 
-For example, the "preview.12" branch:
+For example, the "preview.14" branch:
+
 ```
-dotnet workload install maui `
-   --from-rollback-file https://aka.ms/dotnet/maui/preview.12.json `
-   --source https://aka.ms/dotnet6/nuget/index.json `
-   --source https://api.nuget.org/v3/index.json
-```
+iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
+.\maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
+``` 
+
+> NOTE: the branch (`-b 'release/6.0.2xx-preview14'`) and version (`-v 6.0.200-preview`) parameters. The "preview 14" branch currently requires the 6.0.200 SDK band since the manifests are all in that SDK band - this will change in the future
 
 Or, the "main" branch:
-```
-dotnet workload install maui `
-   --from-rollback-file https://aka.ms/dotnet/maui/main.json `
-   --source https://aka.ms/dotnet6/nuget/index.json `
-   --source https://api.nuget.org/v3/index.json
-```  
-
-If you are building maui yourself, then you probably want all the workloads:
 
 ```
-dotnet workload install android ios maccatalyst tvos macos maui wasm-tools `
-   --from-rollback-file https://aka.ms/dotnet/maui/main.json `
-   --source https://aka.ms/dotnet6/nuget/index.json `
-   --source https://api.nuget.org/v3/index.json
-```
+iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
+.\maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
+``` 
 
-> NOTE: Zsh and Bash on macOS expect `\` instead for spanning commands over multiple lines.  The examples above are formatted for windows/powershell
+> NOTE: the branch (`-b 'main'`) and version (`-v 6.0.200-preview`) parameters. The `main` branch currently requires the 6.0.200 SDK band since the manifests are all in that SDK band - this will change in the future
 
 ### iOS / MacCatalyst
 

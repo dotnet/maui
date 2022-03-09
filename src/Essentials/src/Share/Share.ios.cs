@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Foundation;
@@ -6,11 +7,11 @@ using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Share
+	public class ShareImplementation : IShare
 	{
-		static Task PlatformRequestAsync(ShareTextRequest request)
+		public Task RequestAsync(ShareTextRequest request)
 		{
 			var items = new List<NSObject>();
 			if (!string.IsNullOrWhiteSpace(request.Text))
@@ -31,14 +32,14 @@ namespace Microsoft.Maui.Essentials
 			{
 				activityController.PopoverPresentationController.SourceView = vc.View;
 
-				if (request.PresentationSourceBounds != Rectangle.Zero || Platform.HasOSVersion(13, 0))
+				if (request.PresentationSourceBounds != Rect.Zero || OperatingSystem.IsIOSVersionAtLeast(13, 0))
 					activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.AsCGRect();
 			}
 
 			return vc.PresentViewControllerAsync(activityController, true);
 		}
 
-		static Task PlatformRequestAsync(ShareMultipleFilesRequest request)
+		public Task RequestAsync(ShareMultipleFilesRequest request)
 		{
 			var items = new List<NSObject>();
 
@@ -60,7 +61,7 @@ namespace Microsoft.Maui.Essentials
 			{
 				activityController.PopoverPresentationController.SourceView = vc.View;
 
-				if (request.PresentationSourceBounds != Rectangle.Zero || Platform.HasOSVersion(13, 0))
+				if (request.PresentationSourceBounds != Rect.Zero || OperatingSystem.IsIOSVersionAtLeast(13, 0))
 					activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.AsCGRect();
 			}
 

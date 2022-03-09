@@ -7,6 +7,7 @@ using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -267,6 +268,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			else if ((visualElementRenderer == null || visualElementRenderer is HandlerToRendererShim) && view is IView iView)
 			{
+				Application.Current?.FindMauiContext()?.CreateLogger<Platform>()?.LogWarning(
+					"Someone called Platform.GetNativeSize instead of going through the Handler.");
+
 				returnValue = iView.Handler.GetDesiredSize(widthConstraint, heightConstraint);
 			}
 			else if (visualElementRenderer != null)
@@ -323,6 +327,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				IViewHandler handler = null;
 
 				//TODO: Handle this with AppBuilderHost
+
+				if (Forms.MauiContext?.Handlers == null)
+				{
+					throw new InvalidOperationException("Forms.MauiContext.Handlers cannot be null here");
+				}
+
 				try
 				{
 					var mauiContext = Forms.MauiContext;
@@ -333,8 +343,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					handler = mauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(mauiContext);
 				}
-				catch
+				catch (Exception e)
 				{
+					Microsoft.Extensions.Logging.LoggerExtensions
+						.LogWarning(Forms.MauiContext.CreateLogger<Platform>(), $"{e}");
+
 					// TODO define better catch response or define if this is needed?
 				}
 
@@ -358,7 +371,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 				else if (handler is IVisualElementRenderer ver)
 					renderer = ver;
-				else if (handler is INativeViewHandler vh)
+				else if (handler is IPlatformViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
 					element.Handler = handler;
@@ -579,7 +592,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void LayoutRootPage(Page page, int width, int height)
 		{
-			page.Layout(new Rectangle(0, 0, _context.FromPixels(width), _context.FromPixels(height)));
+			page.Layout(new Rect(0, 0, _context.FromPixels(width), _context.FromPixels(height)));
 		}
 
 		Task PresentModal(Page modal, bool animated)
@@ -672,7 +685,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				if (changed)
 				{
-					_modal.Layout(new Rectangle(0, 0, Context.FromPixels(r - l), Context.FromPixels(b - t)));
+					_modal.Layout(new Rect(0, 0, Context.FromPixels(r - l), Context.FromPixels(b - t)));
 					_backgroundView.Layout(0, 0, r - l, b - t);
 				}
 

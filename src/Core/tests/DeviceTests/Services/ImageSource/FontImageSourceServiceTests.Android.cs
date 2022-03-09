@@ -53,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var bitmap = bitmapDrawable.Bitmap;
 
-			bitmap.AssertContainsColor(expectedColor.ToNative());
+			bitmap.AssertContainsColor(expectedColor.ToPlatform());
 		}
 
 		[Fact]
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var bitmap = bitmapDrawable.Bitmap;
 
-			bitmap.AssertContainsColor(Colors.Red.ToNative());
+			bitmap.AssertContainsColor(Colors.Red.ToPlatform());
 		}
 	}
 }

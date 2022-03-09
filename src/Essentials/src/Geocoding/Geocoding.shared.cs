@@ -1,11 +1,19 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface IGeocoding
+	{
+		Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude);
+		Task<IEnumerable<Location>> GetLocationsAsync(string address);
+	}
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Geocoding']/Docs" />
-	public static partial class Geocoding
+	public static class Geocoding
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="//Member[@MemberName='GetPlacemarksAsync'][0]/Docs" />
 		public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(Location location)
@@ -18,10 +26,20 @@ namespace Microsoft.Maui.Essentials
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="//Member[@MemberName='GetPlacemarksAsync'][1]/Docs" />
 		public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
-			=> PlatformGetPlacemarksAsync(latitude, longitude);
+			=> Current.GetPlacemarksAsync(latitude, longitude);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="//Member[@MemberName='GetLocationsAsync']/Docs" />
 		public static Task<IEnumerable<Location>> GetLocationsAsync(string address)
-			=> PlatformGetLocationsAsync(address);
+			=> Current.GetLocationsAsync(address);
+
+		static IGeocoding? currentImplementation;
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IGeocoding Current =>
+			currentImplementation ??= new GeocodingImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetCurrent(IGeocoding? implementation) =>
+			currentImplementation = implementation;
 	}
 }

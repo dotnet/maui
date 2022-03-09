@@ -8,7 +8,7 @@ using CoreTelephony;
 using CoreFoundation;
 using SystemConfiguration;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	enum NetworkStatus
 	{
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Essentials
 
 #if !(MACCATALYST || MACOS)
 #pragma warning disable BI1234
-			Connectivity.CellularData.RestrictionDidUpdateNotifier = new Action<CTCellularDataRestrictedState>(OnRestrictedStateChanged);
+			ConnectivityImplementation.CellularData.RestrictionDidUpdateNotifier = new Action<CTCellularDataRestrictedState>(OnRestrictedStateChanged);
 #pragma warning restore BI1234
 #endif
 		}
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Essentials
 			remoteHostReachability = null;
 
 #if !(MACCATALYST || MACOS)
-			Connectivity.CellularData.RestrictionDidUpdateNotifier = null;
+			ConnectivityImplementation.CellularData.RestrictionDidUpdateNotifier = null;
 #endif
 		}
 

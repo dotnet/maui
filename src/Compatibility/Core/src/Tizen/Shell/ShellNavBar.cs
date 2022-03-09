@@ -22,9 +22,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		FlyoutBehavior _flyoutBehavior = FlyoutBehavior.Flyout;
 
-		EColor _backgroudColor = ShellRenderer.DefaultBackgroundColor.ToNative();
-		EColor _foregroudColor = ShellRenderer.DefaultForegroundColor.ToNative();
-		EColor _titleColor = ShellRenderer.DefaultTitleColor.ToNative();
+		EColor _backgroudColor = ShellRenderer.DefaultBackgroundColor.ToPlatform();
+		EColor _foregroudColor = ShellRenderer.DefaultForegroundColor.ToPlatform();
+		EColor _titleColor = ShellRenderer.DefaultTitleColor.ToPlatform();
 
 		// The source of icon resources is https://materialdesignicons.com/
 		const string _menuIconRes = ThemeConstants.Shell.Resources.MenuIcon;
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		bool _hasBackButton = false;
 		private bool disposedValue;
-		bool _isTV = Device.Idiom == TargetIdiom.TV;
+		bool _isTV = DeviceInfo.Idiom == DeviceIdiom.TV;
 
 		public ShellNavBar() : base(Forms.NativeParent)
 		{

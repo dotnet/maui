@@ -1,26 +1,27 @@
+using System;
 using Android.Hardware;
 using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class OrientationSensor
+	public partial class OrientationSensorImplementation : IOrientationSensor
 	{
-		internal static bool IsSupported =>
+		bool PlatformIsSupported =>
 			Platform.SensorManager?.GetDefaultSensor(SensorType.RotationVector) != null;
 
-		static OrientationSensorListener listener;
-		static Sensor orientationSensor;
+		OrientationSensorListener listener;
+		Sensor orientationSensor;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var delay = sensorSpeed.ToPlatform();
 
-			listener = new OrientationSensorListener();
+			listener = new OrientationSensorListener(RaiseReadingChanged);
 			orientationSensor = Platform.SensorManager.GetDefaultSensor(SensorType.RotationVector);
 			Platform.SensorManager.RegisterListener(listener, orientationSensor, delay);
 		}
 
-		internal static void PlatformStop()
+		void PlatformStop()
 		{
 			if (listener == null || orientationSensor == null)
 				return;
@@ -33,9 +34,12 @@ namespace Microsoft.Maui.Essentials
 
 	class OrientationSensorListener : Java.Lang.Object, ISensorEventListener
 	{
-		internal OrientationSensorListener()
+		internal OrientationSensorListener(Action<OrientationSensorData> callback)
 		{
+			Callback = callback;
 		}
+
+		readonly Action<OrientationSensorData> Callback;
 
 		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
 		{
@@ -57,7 +61,7 @@ namespace Microsoft.Maui.Essentials
 			else
 				data = new OrientationSensorData(e.Values[0], e.Values[1], e.Values[2], e.Values[3]);
 
-			OrientationSensor.OnChanged(data.Value);
+			Callback?.Invoke(data.Value);
 		}
 	}
 }

@@ -1,0 +1,25 @@
+stages:
+  - stage: nuget_signing
+    dependsOn: pack_net6
+    displayName: Sign Nuget
+    jobs:
+      - template: sign-artifacts/jobs/v2.yml@xamarin-templates
+        parameters:
+          signType: Real
+          teamName: $(TeamName)
+          usePipelineArtifactTasks: false
+          targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
+          signedArtifactName: nuget
+          signedArtifactPath: signed
+          displayName: Sign Phase
+          condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+
+      - template: nuget-msi-convert/job/v2.yml@xamarin-templates
+        parameters:
+          yamlResourceName: xamarin-templates
+          artifactName: nuget
+          artifactPatterns: |
+            **/signed/*.nupkg
+          artifactPath: signed
+          propsArtifactName: nuget
+          signType: Real

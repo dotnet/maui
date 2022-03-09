@@ -21,7 +21,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="bounds">The bounds in which the ILayout's children should be arranged.</param>
 		/// <returns>The actual size of the arranged ILayout.</returns>
-		Size CrossPlatformArrange(Rectangle bounds);
+		Size CrossPlatformArrange(Rect bounds);
 
 		/// <summary>
 		/// Specifies whether the ILayout clips its content to its boundaries.

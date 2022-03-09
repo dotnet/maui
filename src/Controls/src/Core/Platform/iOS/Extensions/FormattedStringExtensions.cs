@@ -90,8 +90,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var attrString = new NSAttributedString(
 				text,
 				platformFont,
-				(span.TextColor ?? defaultColor)?.ToNative(),
-				span.BackgroundColor?.ToNative(),
+				(span.TextColor ?? defaultColor)?.ToPlatform(),
+				span.BackgroundColor?.ToPlatform(),
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				paragraphStyle: style,
@@ -100,8 +100,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var attrString = new NSAttributedString(
 				text,
 				platformFont,
-				(span.TextColor ?? defaultColor)?.ToNative(),
-				span.BackgroundColor?.ToNative(),
+				(span.TextColor ?? defaultColor)?.ToPlatform(),
+				span.BackgroundColor?.ToPlatform(),
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				paragraphStyle: style,

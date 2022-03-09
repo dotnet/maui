@@ -6,9 +6,9 @@ using Windows.Graphics.Display;
 using Windows.Graphics.Display.Core;
 using Windows.System.Display;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	partial class DeviceDisplayImplementation : IDeviceDisplay
+	public class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		readonly object locker = new object();
 		DisplayRequest? displayRequest;

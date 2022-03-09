@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Platform
 			if (view.TrackColor != null)
 			{
 				toggleSwitch.TryUpdateResource(
-					view.TrackColor.ToNative() ?? originalResources?["ToggleSwitchFillOff"] as WSolidColorBrush ?? new WSolidColorBrush(),
+					view.TrackColor.ToPlatform() ?? originalResources?["ToggleSwitchFillOff"] as WSolidColorBrush ?? new WSolidColorBrush(),
 					"ToggleSwitchFillOn",
 					"ToggleSwitchFillOnPointerOver",
 					"ToggleSwitchFillOnPressed",
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Platform
 			if (view.ThumbColor != null)
 			{
 				toggleSwitch.TryUpdateResource(
-					view.ThumbColor.ToNative() ?? originalResources?["ToggleSwitchKnobFillOff"] as WSolidColorBrush ?? new WSolidColorBrush(),
+					view.ThumbColor.ToPlatform() ?? originalResources?["ToggleSwitchKnobFillOff"] as WSolidColorBrush ?? new WSolidColorBrush(),
 					"ToggleSwitchKnobFillOnPointerOver",
 					"ToggleSwitchKnobFillOn",
 					"ToggleSwitchKnobFillOnPressed",

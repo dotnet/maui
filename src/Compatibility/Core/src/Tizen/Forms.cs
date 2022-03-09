@@ -438,28 +438,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Device.Info = new Forms.TizenDeviceInfo();
 
-			string profile = ((TizenDeviceInfo)Device.Info).Profile;
-			if (profile == "mobile")
-			{
-				Device.SetIdiom(TargetIdiom.Phone);
-			}
-			else if (profile == "tv")
-			{
-				Device.SetIdiom(TargetIdiom.TV);
-			}
-			else if (profile == "desktop")
-			{
-				Device.SetIdiom(TargetIdiom.Desktop);
-			}
-			else if (profile == "wearable")
-			{
-				Device.SetIdiom(TargetIdiom.Watch);
-			}
-			else
-			{
-				Device.SetIdiom(TargetIdiom.Unsupported);
-			}
-
 			if (!Forms.IsInitialized)
 			{
 				if (options != null)

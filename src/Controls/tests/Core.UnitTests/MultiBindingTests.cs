@@ -20,20 +20,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		const string c_Fallback = "First Middle Last";
 		const string c_TargetNull = "No Name Given";
 
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void TestChildOneWayOnMultiTwoWay()
 		{

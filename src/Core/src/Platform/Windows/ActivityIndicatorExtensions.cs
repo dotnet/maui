@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				mauiActivityIndicator.Foreground = color.ToNative();
+				mauiActivityIndicator.Foreground = color.ToPlatform();
 			}
 		}
 	}

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ButtonTests
 	{
 		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>
-			(AppCompatButton)buttonHandler.NativeView;
+			(AppCompatButton)buttonHandler.PlatformView;
 
 		Task<string?> GetNativeText(ButtonHandler buttonHandler)
 		{

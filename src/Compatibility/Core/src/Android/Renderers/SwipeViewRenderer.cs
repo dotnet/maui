@@ -863,7 +863,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var swipeItemSize = GetSwipeItemSize(swipeItemView);
 
-			swipeItemView.Layout(new Rectangle(0, 0, swipeItemSize.Width, swipeItemSize.Height));
+			swipeItemView.Layout(new Rect(0, 0, swipeItemSize.Width, swipeItemSize.Height));
 		}
 
 		void UpdateIsSwipeEnabled()

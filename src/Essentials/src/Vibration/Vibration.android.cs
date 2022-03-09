@@ -4,13 +4,19 @@ using Android;
 using Android.OS;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Vibration
+	public partial class VibrationImplementation : IVibration
 	{
-		internal static bool IsSupported => true;
+		public bool IsSupported => true;
 
-		static void PlatformVibrate(TimeSpan duration)
+		public void Vibrate() 
+			=> Vibrate(TimeSpan.FromMilliseconds(500));
+
+		public void Vibrate(double duration) 
+			=> Vibrate(TimeSpan.FromMilliseconds(duration));
+
+		public void Vibrate(TimeSpan duration)
 		{
 			Permissions.EnsureDeclared<Permissions.Vibrate>();
 
@@ -28,7 +34,7 @@ namespace Microsoft.Maui.Essentials
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		static void PlatformCancel()
+		public void Cancel()
 		{
 			Permissions.EnsureDeclared<Permissions.Vibrate>();
 

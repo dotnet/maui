@@ -1,13 +1,14 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
-	class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
+	sealed class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 	{
 		public MauiHandlersFactory(IEnumerable<HandlerMauiAppBuilderExtensions.HandlerRegistration> registrationActions) :
-			base(CreateHandlerCollection(registrationActions), constructorInjection: false)
+			base(CreateHandlerCollection(registrationActions))
 		{
 		}
 
@@ -30,6 +31,7 @@ namespace Microsoft.Maui.Hosting.Internal
 		public IElementHandler? GetHandler<T>() where T : IElement
 			=> GetHandler(typeof(T));
 
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public Type? GetHandlerType(Type iview)
 		{
 			if (!TryGetServiceDescriptors(ref iview, out var single, out var enumerable))

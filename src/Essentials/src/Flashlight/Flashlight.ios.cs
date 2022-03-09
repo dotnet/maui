@@ -1,25 +1,25 @@
 using System.Threading.Tasks;
 using AVFoundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Flashlight
+	public class FlashlightImplementation : IFlashlight
 	{
-		static Task PlatformTurnOnAsync()
+		public Task TurnOnAsync()
 		{
 			Toggle(true);
 
 			return Task.CompletedTask;
 		}
 
-		static Task PlatformTurnOffAsync()
+		public Task TurnOffAsync()
 		{
 			Toggle(false);
 
 			return Task.CompletedTask;
 		}
 
-		static void Toggle(bool on)
+		void Toggle(bool on)
 		{
 			var captureDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video);
 			if (captureDevice == null || !(captureDevice.HasFlash || captureDevice.HasTorch))

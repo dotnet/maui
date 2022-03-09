@@ -13,7 +13,7 @@ namespace Microsoft.Maui.DeviceTests
 			GetNativeSwitch(switchHandler).Checked = value;
 
 		ASwitch GetNativeSwitch(SwitchHandler switchHandler) =>
-			(ASwitch)switchHandler.NativeView;
+			(ASwitch)switchHandler.PlatformView;
 
 		bool GetNativeIsOn(SwitchHandler switchHandler) =>
 			GetNativeSwitch(switchHandler).Checked;

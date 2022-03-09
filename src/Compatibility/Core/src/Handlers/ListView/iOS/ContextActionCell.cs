@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Foundation;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.iOS.Resources;
 using ObjCRuntime;
 using UIKit;
@@ -242,19 +243,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var b = _buttons[i];
 				totalWidth += b.Frame.Width;
-
-				if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))
-					_scroller.AddSubview(b);
-				else
-				{
-					if (container == null)
-					{
-						container = new iOS7ButtonContainer(b.Frame.Width);
-						_scroller.InsertSubview(container, 0);
-					}
-
-					container.AddSubview(b);
-				}
+				_scroller.AddSubview(b);
 			}
 
 			_scroller.Delegate = new ContextScrollViewDelegate(container, _buttons, isOpen);
@@ -331,71 +320,43 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var path = _tableView.IndexPathForCell(this);
 			var rowPosition = _tableView.RectForRowAtIndexPath(path);
 			var sourceRect = new RectangleF(x, rowPosition.Y, rowPosition.Width, rowPosition.Height);
+			var actionSheet = new MoreActionSheetController();
 
-			if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))
+			for (var i = 0; i < _cell.ContextActions.Count; i++)
 			{
-				var actionSheet = new MoreActionSheetController();
+				if (displayed.Contains(i))
+					continue;
 
-				for (var i = 0; i < _cell.ContextActions.Count; i++)
+				var item = _cell.ContextActions[i];
+				var weakItem = new WeakReference<MenuItem>(item);
+				var action = UIAlertAction.Create(item.Text, UIAlertActionStyle.Default, a =>
 				{
-					if (displayed.Contains(i))
-						continue;
+					if (_scroller == null)
+						return;
 
-					var item = _cell.ContextActions[i];
-					var weakItem = new WeakReference<MenuItem>(item);
-					var action = UIAlertAction.Create(item.Text, UIAlertActionStyle.Default, a =>
-					{
-						if (_scroller == null)
-							return;
+					_scroller.SetContentOffset(new PointF(0, 0), true);
+					if (weakItem.TryGetTarget(out MenuItem mi))
+						((IMenuItemController)mi).Activate();
+				});
+				actionSheet.AddAction(action);
+			}
 
-						_scroller.SetContentOffset(new PointF(0, 0), true);
-						if (weakItem.TryGetTarget(out MenuItem mi))
-							((IMenuItemController)mi).Activate();
-					});
-					actionSheet.AddAction(action);
-				}
+			var controller = GetController();
+			if (controller == null)
+				throw new InvalidOperationException("No UIViewController found to present.");
 
-				var controller = GetController();
-				if (controller == null)
-					throw new InvalidOperationException("No UIViewController found to present.");
-
-				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone)
-				{
-					var cancel = UIAlertAction.Create(StringResources.Cancel, UIAlertActionStyle.Cancel, null);
-					actionSheet.AddAction(cancel);
-				}
-				else
-				{
-					actionSheet.PopoverPresentationController.SourceView = _tableView;
-					actionSheet.PopoverPresentationController.SourceRect = sourceRect;
-				}
-
-				controller.PresentViewController(actionSheet, true, null);
+			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone)
+			{
+				var cancel = UIAlertAction.Create(StringResources.Cancel, UIAlertActionStyle.Cancel, null);
+				actionSheet.AddAction(cancel);
 			}
 			else
 			{
-				var d = new MoreActionSheetDelegate { Scroller = _scroller, Items = new List<MenuItem>() };
-
-				var actionSheet = new UIActionSheet(null, (IUIActionSheetDelegate)d);
-
-				for (var i = 0; i < _cell.ContextActions.Count; i++)
-				{
-					if (displayed.Contains(i))
-						continue;
-
-					var item = _cell.ContextActions[i];
-					d.Items.Add(item);
-					actionSheet.AddButton(item.Text);
-				}
-
-				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone)
-				{
-					var index = actionSheet.AddButton(StringResources.Cancel);
-					actionSheet.CancelButtonIndex = index;
-				}
-
-				actionSheet.ShowFrom(sourceRect, _tableView, true);
+				actionSheet.PopoverPresentationController.SourceView = _tableView;
+				actionSheet.PopoverPresentationController.SourceRect = sourceRect;
 			}
+
+			controller.PresentViewController(actionSheet, true, null);
 		}
 
 		void CullButtons(nfloat acceptableTotalWidth, ref bool needMoreButton, ref nfloat largestButtonWidth)
@@ -437,7 +398,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Element e = _cell;
 			while (e.RealParent != null)
 			{
-				var renderer = (INativeViewHandler)e.RealParent.ToHandler(e.FindMauiContext());
+				var renderer = (IPlatformViewHandler)e.RealParent.ToHandler(e.FindMauiContext());
 				if (renderer.ViewController != null)
 					return renderer.ViewController;
 
@@ -632,11 +593,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				var offset = (n + 1) * largestWidth;
-
-				var x = width - offset;
-				if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))
-					x += totalWidth;
-
+				var x = width - offset + totalWidth;
 				b.Frame = new RectangleF(x, 0, largestWidth, height);
 				if (resize)
 					b.TitleLabel.AdjustsFontSizeToFitWidth = true;
@@ -710,24 +667,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 			{
 				DismissViewController(false, null);
-			}
-		}
-
-		class MoreActionSheetDelegate : UIActionSheetDelegate
-		{
-			public List<MenuItem> Items;
-			public UIScrollView Scroller;
-
-			public override void Clicked(UIActionSheet actionSheet, nint buttonIndex)
-			{
-				if (buttonIndex == Items.Count)
-					return; // Cancel button
-
-				Scroller.SetContentOffset(new PointF(0, 0), true);
-
-				// do not activate a -1 index when dismissing by clicking outside the popover
-				if (buttonIndex >= 0)
-					((IMenuItemController)Items[(int)buttonIndex]).Activate();
 			}
 		}
 	}

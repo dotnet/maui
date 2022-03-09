@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetElementSize(Size size)
 		{
-			Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Layout.LayoutChildIntoBoundingRegion(Element, new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public UIViewController ViewController
@@ -127,7 +127,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override void LayoutSubviews()
 		{
-			_insetTracker?.OnLayoutSubviews();
 			base.LayoutSubviews();
 
 			if (Superview != null && ScrollView != null)
@@ -221,6 +220,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateHorizontalScrollBarVisibility();
 		}
 
+		[PortHandler]
 		void UpdateIsEnabled()
 		{
 			if (Element == null)

@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (isHeader)
 			{
 				if (Application.AccentColor != null)
-					bline.SetBackgroundColor(Application.AccentColor.ToNative());
+					bline.SetBackgroundColor(Application.AccentColor.ToPlatform());
 			}
 			else if (nextIsHeader)
 				bline.SetBackgroundColor(global::Android.Graphics.Color.Transparent);

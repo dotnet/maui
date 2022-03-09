@@ -21,9 +21,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
-			[TearDown] public void TearDown() => Device.PlatformServices = null;
-
 			[Test]
 			//this requirement might change, see https://github.com/xamarin/Microsoft.Maui.Controls/issues/12425
 			public void xKeyRequireStringLiteral([Values(false, true)] bool useCompiledXaml)

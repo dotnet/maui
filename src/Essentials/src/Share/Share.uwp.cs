@@ -6,11 +6,11 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using WinRT;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Share
+	public class ShareImplementation : IShare
 	{
-		static Task PlatformRequestAsync(ShareTextRequest request)
+		public Task RequestAsync(ShareTextRequest request)
 		{
 			var hwnd = Platform.CurrentWindowHandle;
 			var dataTransferManager = DataTransferManagerHelper.GetDataTransferManager(hwnd);
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Essentials
 			return Task.CompletedTask;
 		}
 
-		static async Task PlatformRequestAsync(ShareMultipleFilesRequest request)
+		public async Task RequestAsync(ShareMultipleFilesRequest request)
 		{
 			var storageFiles = new List<IStorageFile>();
 			foreach (var file in request.Files)
@@ -64,8 +64,6 @@ namespace Microsoft.Maui.Essentials
 				dataTransferManager.DataRequested -= ShareTextHandler;
 			}
 		}
-
-
 	}
 
 	static class DataTransferManagerHelper

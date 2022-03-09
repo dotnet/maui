@@ -19,9 +19,9 @@ namespace Microsoft.Maui
 
 		public IEnumerable<KeyValuePair<string, string>> GetTraits(IAttributeInfo traitAttribute)
 		{
-			var args = traitAttribute.GetConstructorArguments().ToList();
+			var args = traitAttribute.GetConstructorArguments().FirstOrDefault();
 
-			if (args[0] is string[] categories)
+			if (args is string[] categories)
 			{
 				foreach (var category in categories)
 				{
@@ -132,21 +132,33 @@ namespace Microsoft.Maui
 
 		public int Timeout => _inner.Timeout;
 
+		string? _categoryPrefix;
+
 		string GetCategoryPrefix()
 		{
-			if (!Traits.ContainsKey(CategoryDiscoverer.Category))
+			if (_categoryPrefix == null)
 			{
-				return string.Empty;
+				if (!Traits.ContainsKey(CategoryDiscoverer.Category))
+				{
+					_categoryPrefix = string.Empty;
+				}
+				else
+				{
+					_categoryPrefix = $"[{string.Join(", ", Traits[CategoryDiscoverer.Category])}] ";
+				}
 			}
 
-			return $"[{string.Join(", ", Traits[CategoryDiscoverer.Category])}] ";
+			return _categoryPrefix;
 		}
+
+		string? _displayName;
 
 		public string DisplayName
 		{
 			get
 			{
-				return $"{GetCategoryPrefix()}{_inner.DisplayName}";
+				_displayName = _displayName ?? $"{GetCategoryPrefix()}{_inner.DisplayName}";
+				return _displayName;
 			}
 		}
 

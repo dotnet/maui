@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override CGSize Measure()
 		{
-			var measure = NativeHandler.VirtualView.Measure(double.PositiveInfinity, ConstrainedDimension);
+			var measure = PlatformHandler.VirtualView.Measure(double.PositiveInfinity, ConstrainedDimension);
 
 			return new CGSize(measure.Width, ConstrainedDimension);
 		}

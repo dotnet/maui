@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		internal static void DisposeModalAndChildHandlers(this Maui.IElement view)
 		{
-			INativeViewHandler renderer;
+			IPlatformViewHandler renderer;
 			foreach (Element child in ((Element)view).Descendants())
 			{
 				if (child is VisualElement ve)
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (view is VisualElement visualElement)
 			{
-				renderer = (visualElement.Handler as INativeViewHandler);
+				renderer = (visualElement.Handler as IPlatformViewHandler);
 				if (renderer != null)
 				{
 					if (renderer.ViewController != null)
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							modalWrapper.Dispose();
 					}
 
-					renderer.NativeView?.RemoveFromSuperview();
+					renderer.PlatformView?.RemoveFromSuperview();
 
 					if (view.Handler is IDisposable disposable)
 						disposable.Dispose();
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		internal static void DisposeHandlersAndChildren(this INativeViewHandler rendererToRemove)
+		internal static void DisposeHandlersAndChildren(this IPlatformViewHandler rendererToRemove)
 		{
 			if (rendererToRemove == null)
 				return;
@@ -45,16 +45,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (rendererToRemove.VirtualView != null && rendererToRemove.VirtualView.Handler == rendererToRemove)
 				rendererToRemove.VirtualView.Handler?.DisconnectHandler();
 
-			if (rendererToRemove.NativeView != null)
+			if (rendererToRemove.PlatformView != null)
 			{
-				var subviews = rendererToRemove.NativeView.Subviews;
+				var subviews = rendererToRemove.PlatformView.Subviews;
 				for (var i = 0; i < subviews.Length; i++)
 				{
-					if (subviews[i] is INativeViewHandler childRenderer)
+					if (subviews[i] is IPlatformViewHandler childRenderer)
 						DisposeHandlersAndChildren(childRenderer);
 				}
 
-				rendererToRemove.NativeView.RemoveFromSuperview();
+				rendererToRemove.PlatformView.RemoveFromSuperview();
 			}
 
 			if (rendererToRemove is IDisposable disposable)

@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Essentials.Implementations;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				return Task.CompletedTask;
 
 #if __ANDROID__
-            Flashlight.AlwaysUseCameraApi = oldCameraApi;
+            (Flashlight.Current as FlashlightImplementation).AlwaysUseCameraApi = oldCameraApi;
 #else
 			Utils.Unused(oldCameraApi);
 #endif

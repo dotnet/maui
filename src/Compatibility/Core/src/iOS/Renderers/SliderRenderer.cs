@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				Control?.SetThumbImage(uiimage, UIControlState.Normal);
 
-				((IVisualElementController)Element).NativeSizeChanged();
+				((IVisualElementController)Element).PlatformSizeChanged();
 			});
 		}
 

@@ -1,52 +1,35 @@
 ﻿#nullable enable
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace Microsoft.Maui.Handlers
 {
-	// To avoid an issue rendering the native ProgressBar on Windows, we wrap it into a Container.
-	public partial class ProgressBarHandler : ViewHandler<IProgress, Grid>
+	public partial class ProgressBarHandler : ViewHandler<IProgress, ProgressBar>
 	{
 		object? _foregroundDefault;
 
-		protected override Grid CreateNativeView() =>
-			new Grid();
+		protected override ProgressBar CreatePlatformView() => new() { Minimum = 0, Maximum = 1 };
 
-		public ProgressBar? ProgressBar { get; internal set; }
-
-		protected override void ConnectHandler(Grid nativeView)
+		protected override void ConnectHandler(ProgressBar platformView)
 		{
-			ProgressBar = new ProgressBar { Minimum = 0, Maximum = 1 };
-			nativeView.Children.Add(ProgressBar);
-			ProgressBar.ValueChanged += OnProgressBarValueChanged;
-
-			SetupDefaults(ProgressBar);
+			SetupDefaults(platformView);
 		}
 
-		protected override void DisconnectHandler(Grid nativeView)
+		void SetupDefaults(ProgressBar platformView)
 		{
-			if (ProgressBar != null)
-				ProgressBar.ValueChanged -= OnProgressBarValueChanged;
+			_foregroundDefault = platformView.GetForegroundCache();
 		}
 
-		void SetupDefaults(ProgressBar nativeView)
+		public static void MapProgress(IProgressBarHandler handler, IProgress progress)
 		{
-			_foregroundDefault = nativeView.GetForegroundCache();
+			handler.PlatformView?.UpdateProgress(progress);
 		}
 
-		public static void MapProgress(ProgressBarHandler handler, IProgress progress)
+		public static void MapProgressColor(IProgressBarHandler handler, IProgress progress)
 		{
-			handler.ProgressBar?.UpdateProgress(progress);
-		}
-
-		public static void MapProgressColor(ProgressBarHandler handler, IProgress progress)
-		{
-			handler.ProgressBar?.UpdateProgressColor(progress, handler._foregroundDefault);
-		}
-
-		void OnProgressBarValueChanged(object? sender, RangeBaseValueChangedEventArgs rangeBaseValueChangedEventArgs)
-		{
-			VirtualView?.InvalidateMeasure();
+			if (handler is ProgressBarHandler platformHandler)
+			{
+				platformHandler.PlatformView?.UpdateProgressColor(progress, platformHandler._foregroundDefault);
+			}
 		}
 	}
 }

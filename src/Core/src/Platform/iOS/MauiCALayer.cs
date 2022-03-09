@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Platform
 			if (solidPaint.Color == null)
 				SetDefaultBackgroundColor();
 			else
-				_backgroundColor = solidPaint.Color.ToNative();
+				_backgroundColor = solidPaint.Color.ToPlatform();
 
 			_background = null;
 
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_strokeColor = solidPaint.Color == null
 				? UIColor.Clear
-				: solidPaint.Color.ToNative();
+				: solidPaint.Color.ToPlatform();
 
 			_stroke = null;
 

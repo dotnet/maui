@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				backgroundColor = Element.BackgroundColor;
 			}
 
-			Control.Background = backgroundColor.IsDefault() ? null : backgroundColor.ToNative();
+			Control.Background = backgroundColor.IsDefault() ? null : backgroundColor.ToPlatform();
 		}
 
 		protected override void UpdateBackground()
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Color backgroundColor = Element.BackgroundColor;
 
 				if (!backgroundColor.IsDefault())
-					Control.Background = backgroundColor.ToNative();
+					Control.Background = backgroundColor.ToPlatform();
 				else
 				{
 					if (Element.Color.IsDefault())
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (color.IsDefault())
 				UpdateBackground();
 			else
-				Control.Background = color.ToNative();
+				Control.Background = color.ToPlatform();
 		}
 
 		void SetCornerRadius(CornerRadius cornerRadius)

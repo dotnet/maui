@@ -14,5 +14,10 @@
 		///  Gets or sets a value that indicates whether the toolbar is visible or not.
 		/// </summary>
 		bool IsVisible { get; set; }
+
+		/// <summary>
+		/// Gets the title for the Toolbar.
+		/// </summary>
+		string Title { get; }
 	}
 }

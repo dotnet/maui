@@ -2,6 +2,7 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Microsoft.Maui.Essentials;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform
 					break;
 				case ToolbarPlacement.Default:
 				default:
-					target = Device.Idiom == TargetIdiom.Phone ? bottomCommandBarArea : topCommandBarArea;
+					target = DeviceInfo.Idiom == DeviceIdiom.Phone ? bottomCommandBarArea : topCommandBarArea;
 					break;
 			}
 

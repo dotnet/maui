@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Controls
 
 		IView? IContentView.PresentedContent => Content;
 
-		public Size CrossPlatformArrange(Graphics.Rectangle bounds)
+		public Size CrossPlatformArrange(Graphics.Rect bounds)
 		{
 			bounds = bounds.Inset(StrokeThickness / 2);
 			this.ArrangeContent(bounds);

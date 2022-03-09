@@ -36,21 +36,21 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 		double GetNativeChildCount(IElementHandler layoutHandler)
 		{
-			return GetNativeChildCount(layoutHandler.NativeView as LayoutViewGroup);
+			return GetNativeChildCount(layoutHandler.PlatformView as LayoutViewGroup);
 		}
 
-		double GetNativeChildCount(object nativeView)
+		double GetNativeChildCount(object platformView)
 		{
-			return (nativeView as LayoutViewGroup).ChildCount;
+			return (platformView as LayoutViewGroup).ChildCount;
 		}
 
 		IReadOnlyList<AView> GetNativeChildren(LayoutHandler layoutHandler)
 		{
 			var views = new List<AView>();
 
-			for (int i = 0; i < layoutHandler.NativeView.ChildCount; i++)
+			for (int i = 0; i < layoutHandler.PlatformView.ChildCount; i++)
 			{
-				views.Add(layoutHandler.NativeView.GetChildAt(i));
+				views.Add(layoutHandler.PlatformView.GetChildAt(i));
 			}
 
 			return views;
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 		LayoutViewGroup GetNativeLayout(LayoutHandler layoutHandler)
 		{
-			return layoutHandler.NativeView;
+			return layoutHandler.PlatformView;
 		}
 
 		Task ValidateHasColor(ILayout layout, Color color, Action action = null)
@@ -83,13 +83,13 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			string expected = await InvokeOnMainThreadAsync(() =>
 			{
-				return children.OrderBy(nativeView => GetNativeText(nativeView))
-					.Aggregate("", (str, nativeView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(nativeView));
+				return children.OrderBy(platformView => GetNativeText(platformView))
+					.Aggregate("", (str, platformView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(platformView));
 			});
 
 			string actual = await InvokeOnMainThreadAsync(() =>
 			{
-				return children.Aggregate("", (str, nativeView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(nativeView));
+				return children.Aggregate("", (str, platformView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(platformView));
 			});
 
 			Assert.Equal(expected, actual);

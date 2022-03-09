@@ -157,7 +157,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor) =>
-			AssertContainsColor(view, expectedColor.ToNative());
+			AssertContainsColor(view, expectedColor.ToPlatform());
 
 		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor)
 		{
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		public static TextUtils.TruncateAt? ToNative(this LineBreakMode mode) =>
+		public static TextUtils.TruncateAt? ToPlatform(this LineBreakMode mode) =>
 			mode switch
 			{
 				LineBreakMode.NoWrap => null,
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 		public static FontWeight GetFontWeight(this Typeface typeface) =>
-			NativeVersion.IsAtLeast(28)
+			PlatformVersion.IsAtLeast(28)
 				? (FontWeight)typeface.Weight
 				: typeface.IsBold ? FontWeight.Bold : FontWeight.Regular;
 	}

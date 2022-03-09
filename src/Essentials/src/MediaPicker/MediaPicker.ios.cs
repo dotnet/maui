@@ -7,28 +7,28 @@ using ObjCRuntime;
 using Photos;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class MediaPicker
+	public partial class MediaPickerImplementation : IMediaPicker
 	{
 		static UIImagePickerController picker;
 
-		static bool PlatformIsCaptureSupported
+		public bool IsCaptureSupported
 			=> UIImagePickerController.IsSourceTypeAvailable(UIImagePickerControllerSourceType.Camera);
 
-		static Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options)
+		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, true, true);
 
-		static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
+		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, true, false);
 
-		static Task<FileResult> PlatformPickVideoAsync(MediaPickerOptions options)
+		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, false, true);
 
-		static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
+		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, false, false);
 
-		static async Task<FileResult> PhotoAsync(MediaPickerOptions options, bool photo, bool pickExisting)
+		public async Task<FileResult> PhotoAsync(MediaPickerOptions options, bool photo, bool pickExisting)
 		{
 			var sourceType = pickExisting ? UIImagePickerControllerSourceType.PhotoLibrary : UIImagePickerControllerSourceType.Camera;
 			var mediaType = photo ? UTType.Image : UTType.Movie;
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Essentials
 				await Permissions.EnsureGrantedAsync<Permissions.Microphone>();
 
 			// Check if picking existing or not and ensure permission accordingly as they can be set independently from each other
-			if (pickExisting && !Platform.HasOSVersion(11, 0))
+			if (pickExisting && !OperatingSystem.IsIOSVersionAtLeast(11, 0))
 				await Permissions.EnsureGrantedAsync<Permissions.Photos>();
 
 			if (!pickExisting)
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Essentials
 			PHAsset phAsset = null;
 			NSUrl assetUrl = null;
 
-			if (Platform.HasOSVersion(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
 			{
 				assetUrl = info[UIImagePickerController.ImageUrl] as NSUrl;
 
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Essentials
 
 				if (assetUrl != null)
 				{
-					if (!assetUrl.Scheme.Equals("assets-library", StringComparison.InvariantCultureIgnoreCase))
+					if (!assetUrl.Scheme.Equals("assets-library", StringComparison.OrdinalIgnoreCase))
 						return new UIDocumentFileResult(assetUrl);
 
 					phAsset = info.ValueForKey(UIImagePickerController.PHAsset) as PHAsset;
@@ -147,13 +147,7 @@ namespace Microsoft.Maui.Essentials
 			if (phAsset == null || assetUrl == null)
 				return null;
 
-			string originalFilename;
-
-			if (Platform.HasOSVersion(9, 0))
-				originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
-			else
-				originalFilename = phAsset.ValueForKey(new NSString("filename")) as NSString;
-
+			string originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
 			return new PHAssetFileResult(assetUrl, phAsset, originalFilename);
 		}
 

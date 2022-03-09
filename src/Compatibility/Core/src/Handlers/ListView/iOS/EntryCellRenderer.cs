@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		static void UpdateLabelColor(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
-			cell.TextLabel.TextColor = entryCell.LabelColor?.ToNative() ?? DefaultTextColor.ToNative();
+			cell.TextLabel.TextColor = entryCell.LabelColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
 		}
 
 		static void UpdatePlaceholder(EntryCellTableViewCell cell, EntryCell entryCell)

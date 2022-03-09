@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	public partial class Window
 	{
 		internal Activity NativeActivity =>
-			(Handler?.NativeView as Activity) ?? throw new InvalidOperationException("Window should have an Activity set.");
+			(Handler?.PlatformView as Activity) ?? throw new InvalidOperationException("Window should have an Activity set.");
 
 		public static void MapContent(WindowHandler handler, IWindow view)
 		{
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var nativeContent = view.Content.ToContainerView(handler.MauiContext!);
-			handler.NativeView.SetContentView(nativeContent);
+			handler.PlatformView.SetContentView(nativeContent);
 
 			if (view is Window w)
 				handler?.UpdateValue(nameof(IToolbarElement.Toolbar));

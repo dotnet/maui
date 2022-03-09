@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 		public MauiPageControl()
 		{
 			ValueChanged += MauiPageControlValueChanged;
-			if (NativeVersion.IsAtLeast(14))
+			if (PlatformVersion.IsAtLeast(14))
 			{
 				AllowsContinuousInteraction = false;
 				BackgroundStyle = UIPageControlBackgroundStyle.Minimal;
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateSquareShape()
 		{
-			if (!NativeVersion.IsAtLeast(14))
+			if (!PlatformVersion.IsAtLeast(14))
 			{
 				UpdateCornerRadius();
 				return;
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Platform
 			_indicatorView.Position = (int)CurrentPage;
 			//if we are iOS13 or lower and we are using a Square shape
 			//we need to update the CornerRadius of the new shape.
-			if (IsSquare && !NativeVersion.IsAtLeast(14))
+			if (IsSquare && !PlatformVersion.IsAtLeast(14))
 				LayoutSubviews();
 
 		}

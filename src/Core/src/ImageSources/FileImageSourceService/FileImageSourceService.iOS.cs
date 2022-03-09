@@ -19,13 +19,9 @@ namespace Microsoft.Maui
 			if (imageSource.IsEmpty)
 				return FromResult(null);
 
-			var filename = imageSource.File;
-
 			try
 			{
-				var image = File.Exists(filename)
-					? UIImage.FromFile(filename)
-					: UIImage.FromBundle(filename);
+				var image = imageSource.GetPlatformImage();
 
 				if (image == null)
 					throw new InvalidOperationException("Unable to load image file.");
@@ -36,7 +32,8 @@ namespace Microsoft.Maui
 			}
 			catch (Exception ex)
 			{
-				Logger?.LogWarning(ex, "Unable to load image file '{File}'.", filename);
+				Logger?.LogWarning(ex, "Unable to load image file '{File}'.", imageSource.File);
+
 				throw;
 			}
 		}

@@ -22,21 +22,21 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 		double GetNativeChildCount(LayoutHandler layoutHandler)
 		{
-			return layoutHandler.NativeView.Children.Count;
+			return layoutHandler.PlatformView.Children.Count;
 		}
 
-		double GetNativeChildCount(object nativeView)
+		double GetNativeChildCount(object platformView)
 		{
-			return (nativeView as LayoutPanel).Children.Count;
+			return (platformView as LayoutPanel).Children.Count;
 		}
 
 		IReadOnlyList<UIElement> GetNativeChildren(LayoutHandler layoutHandler)
 		{
 			var views = new List<UIElement>();
 
-			for (int i = 0; i < layoutHandler.NativeView.Children.Count; i++)
+			for (int i = 0; i < layoutHandler.PlatformView.Children.Count; i++)
 			{
-				views.Add(layoutHandler.NativeView.Children[i]);
+				views.Add(layoutHandler.PlatformView.Children[i]);
 			}
 
 			return views;
@@ -48,12 +48,12 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			// makes it easy to give the test useful output
 
 			string expected = await InvokeOnMainThreadAsync(() => {
-				return children.OrderBy(nativeView => GetNativeText(nativeView))
-					.Aggregate("", (str, nativeView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(nativeView));
+				return children.OrderBy(platformView => GetNativeText(platformView))
+					.Aggregate("", (str, platformView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(platformView));
 			});
 
 			string actual = await InvokeOnMainThreadAsync(() => {
-				return children.Aggregate("", (str, nativeView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(nativeView));
+				return children.Aggregate("", (str, platformView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(platformView));
 			});
 
 			Assert.Equal(expected, actual);

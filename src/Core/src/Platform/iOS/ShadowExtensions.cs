@@ -8,12 +8,12 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class ShadowExtensions
 	{
-		public static void SetShadow(this UIView nativeView, IShadow? shadow)
+		public static void SetShadow(this UIView platformView, IShadow? shadow)
 		{
 			if (shadow == null || shadow.Paint == null)
 				return;
 
-			var layer = nativeView.Layer;
+			var layer = platformView.Layer;
 			layer?.SetShadow(shadow);
 		}
 
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 
 			var radius = shadow.Radius;
 			var opacity = shadow.Opacity;
-			var color = shadow.Paint.ToColor()?.ToNative();
+			var color = shadow.Paint.ToColor()?.ToPlatform();
 
 			var offset = new CGSize((double)shadow.Offset.X, (double)shadow.Offset.Y);
 
@@ -36,9 +36,9 @@ namespace Microsoft.Maui.Platform
 			layer.SetNeedsDisplay();
 		}
 
-		public static void ClearShadow(this UIView nativeView)
+		public static void ClearShadow(this UIView platformView)
 		{
-			var layer = nativeView.Layer;
+			var layer = platformView.Layer;
 			layer?.ClearShadow();
 		}
 

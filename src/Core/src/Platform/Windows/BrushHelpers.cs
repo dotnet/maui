@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 				defaultbrush = getter();
 			}
 
-			setter(color.ToNative());
+			setter(color.ToPlatform());
 		}
 
 		public static void UpdateBrush(Paint paint, ref Brush? defaultbrush, Func<Brush?> getter, Action<Brush?> setter)
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Platform
 				defaultbrush = getter();
 			}
 
-			setter(paint.ToNative());
+			setter(paint.ToPlatform());
 		}
 	}
 }

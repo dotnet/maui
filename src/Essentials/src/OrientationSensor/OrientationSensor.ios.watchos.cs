@@ -3,14 +3,14 @@ using System.Numerics;
 using CoreMotion;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class OrientationSensor
+	public partial class OrientationSensorImplementation : IOrientationSensor
 	{
-		internal static bool IsSupported =>
+		bool PlatformIsSupported =>
 			Platform.MotionManager?.DeviceMotionAvailable ?? false;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var manager = Platform.MotionManager;
 			manager.DeviceMotionUpdateInterval = sensorSpeed.ToPlatform();
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Essentials
 			manager.StartDeviceMotionUpdates(CMAttitudeReferenceFrame.XTrueNorthZVertical, Platform.GetCurrentQueue(), DataUpdated);
 		}
 
-		static void DataUpdated(CMDeviceMotion data, NSError error)
+		void DataUpdated(CMDeviceMotion data, NSError error)
 		{
 			if (data == null)
 				return;
@@ -37,10 +37,10 @@ namespace Microsoft.Maui.Essentials
 			// so that the final quaternion will take us from the earth frame in .NET MAUI convention to the phone frame
 			q = Quaternion.Multiply(qz90, q);
 			var rotationData = new OrientationSensorData(q.X, q.Y, q.Z, q.W);
-			OnChanged(rotationData);
+			RaiseReadingChanged(rotationData);
 		}
 
-		internal static void PlatformStop() =>
+		void PlatformStop() =>
 			Platform.MotionManager?.StopDeviceMotionUpdates();
 	}
 }

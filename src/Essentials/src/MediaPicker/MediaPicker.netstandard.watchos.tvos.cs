@@ -2,24 +2,24 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/MediaPicker.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MediaPicker']/Docs" />
-	public static partial class MediaPicker
+	public partial class MediaPickerImplementation : IMediaPicker
 	{
-		static bool PlatformIsCaptureSupported =>
+		public bool IsCaptureSupported =>
 			throw new NotImplementedInReferenceAssemblyException();
 
-		static Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options) =>
+		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options) =>
 			throw new NotImplementedInReferenceAssemblyException();
 
-		static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options) =>
+		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options) =>
 			throw new NotImplementedInReferenceAssemblyException();
 
-		static Task<FileResult> PlatformPickVideoAsync(MediaPickerOptions options) =>
+		public Task<FileResult> PickVideoAsync(MediaPickerOptions options) =>
 			throw new NotImplementedInReferenceAssemblyException();
 
-		static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options) =>
+		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options) =>
 			throw new NotImplementedInReferenceAssemblyException();
 	}
 }

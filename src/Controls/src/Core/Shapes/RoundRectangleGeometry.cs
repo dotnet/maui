@@ -1,5 +1,5 @@
 using Microsoft.Maui.Graphics;
-using Rect = Microsoft.Maui.Graphics.Rectangle;
+using Rect = Microsoft.Maui.Graphics.Rect;
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.RoundRectangleGeometry']/Docs" />

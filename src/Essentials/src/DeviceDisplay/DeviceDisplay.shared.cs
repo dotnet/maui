@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {

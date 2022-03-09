@@ -5,7 +5,6 @@
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="MauiControlsPageControlStyle.xaml" />
-        <ResourceDictionary Source="ShellPageWrapper.xaml" />
         <ResourceDictionary Source="ShellStyles.xaml" />
         <ResourceDictionary Source="../CollectionView/ItemsViewStyles.xaml" />
         <ResourceDictionary Source="../TabbedPage/TabbedPageStyle.xaml" />

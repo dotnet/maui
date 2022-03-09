@@ -14,36 +14,9 @@ namespace Microsoft.Maui.Platform
 			return GetFields(type).FirstOrDefault(predicate);
 		}
 
-		public static FieldInfo? GetField(this Type type, string name)
-		{
-			return type.GetField(fi => fi.Name == name);
-		}
-
 		public static IEnumerable<FieldInfo> GetFields(this Type type)
 		{
 			return GetParts(type, i => i.DeclaredFields);
-		}
-
-		public static IEnumerable<PropertyInfo> GetProperties(this Type type)
-		{
-			return GetParts(type, ti => ti.DeclaredProperties);
-		}
-
-		public static PropertyInfo? GetProperty(this Type type, string name)
-		{
-			Type? t = type;
-			while (t != null)
-			{
-				TypeInfo ti = t.GetTypeInfo();
-				PropertyInfo? property = ti.GetDeclaredProperty(name);
-
-				if (property != null)
-					return property;
-
-				t = ti.BaseType;
-			}
-
-			return null;
 		}
 
 		internal static object[]? GetCustomAttributesSafe(this Assembly assembly, Type attrType)
@@ -63,11 +36,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
-		}
-
-		public static bool IsAssignableFrom(this Type self, Type c)
-		{
-			return self.GetTypeInfo().IsAssignableFrom(c.GetTypeInfo());
 		}
 
 		public static bool IsInstanceOfType(this Type self, object o)

@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				};
 
 			protected string GetInvalidFilename(DetectInvalidResourceOutputFilenamesTask task, string path) =>
-				task.InvalidItems.Single(c => c.Replace("\\", "/").EndsWith(path));
+				task.InvalidItems.Single(c => c.Replace('\\', '/').EndsWith(path, StringComparison.Ordinal));
 
 			protected void AssertValidFilename(DetectInvalidResourceOutputFilenamesTask task, ITaskItem item)
 				=> Assert.DoesNotContain(task.InvalidItems ?? Enumerable.Empty<string>(), c => c == item.ItemSpec);

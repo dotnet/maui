@@ -4,20 +4,20 @@ using System.Threading.Tasks;
 using Windows.Media.Capture;
 using Windows.Storage.Pickers;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class MediaPicker
+	public partial class MediaPickerImplementation : IMediaPicker
 	{
-		static bool PlatformIsCaptureSupported
+		public bool IsCaptureSupported
 			=> true;
 
-		static Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options)
+		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> PickAsync(options, true);
 
-		static Task<FileResult> PlatformPickVideoAsync(MediaPickerOptions options)
+		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> PickAsync(options, false);
 
-		static async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo)
+		public async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo)
 		{
 			var picker = new FileOpenPicker();
 
@@ -43,13 +43,13 @@ namespace Microsoft.Maui.Essentials
 			return new FileResult(result);
 		}
 
-		static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
+		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
 			=> CaptureAsync(options, true);
 
-		static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
+		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
 			=> CaptureAsync(options, false);
 
-		static async Task<FileResult> CaptureAsync(MediaPickerOptions options, bool photo)
+		public async Task<FileResult> CaptureAsync(MediaPickerOptions options, bool photo)
 		{
 			var captureUi = new CameraCaptureUI();
 

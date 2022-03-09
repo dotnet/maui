@@ -2,18 +2,18 @@
 using Microsoft.Maui.Handlers;
 
 #if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIView;
+using PlatformView = UIKit.UIView;
 #elif __ANDROID__
-using NativeView = Android.Views.View;
+using PlatformView = Android.Views.View;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD
-using NativeView = System.Object;
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class StubBaseHandler : ViewHandler<StubBase, StubNativeView>
+	public class StubBaseHandler : ViewHandler<StubBase, StubPlatformView>
 	{
 		public static IPropertyMapper<StubBase, StubBaseHandler> StubMapper =
 			new PropertyMapper<StubBase, StubBaseHandler>(ViewMapper)
@@ -43,13 +43,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public PropertyMapper<StubBase, StubBaseHandler>? PropertyMapper =>
 			_mapper as PropertyMapper<StubBase, StubBaseHandler>;
 
-		protected override StubNativeView CreateNativeView() =>
-			new StubNativeView(MauiContext!);
+		protected override StubPlatformView CreatePlatformView() =>
+			new StubPlatformView(MauiContext!);
 	}
 
-	public class StubNativeView : NativeView
+	public class StubPlatformView : PlatformView
 	{
-		public StubNativeView(IMauiContext mauiContext)
+		public StubPlatformView(IMauiContext mauiContext)
 #if __ANDROID__
 			: base(mauiContext.Context)
 #endif

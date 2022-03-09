@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public void SetElement(Shell shell)
 		{
 			if(_shell != null)
-				_shell.PropertyChanged += OnShellPropertyChanged;
+				_shell.PropertyChanged -= OnShellPropertyChanged;
 
 			if(shell != null)
 			{

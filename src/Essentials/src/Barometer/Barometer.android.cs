@@ -2,39 +2,47 @@ using System;
 using Android.Hardware;
 using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Barometer
+	public partial class BarometerImplementation : IBarometer
 	{
-		internal static bool IsSupported =>
-			   DefaultBarometer != null;
+		Sensor DefaultBarometer
+			=> Platform.SensorManager?.GetDefaultSensor(SensorType.Pressure);
+		
+		Sensor barometer;
+		BarometerListener listener;
 
-		static Sensor DefaultBarometer => Platform.SensorManager?.GetDefaultSensor(SensorType.Pressure);
+		bool PlatformIsSupported
+			=> DefaultBarometer != null;
 
-		static Sensor barometer;
-
-		static BarometerListener listener;
-
-		static void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			listener = new BarometerListener();
+			listener = new BarometerListener(RaiseReadingChanged);					
 			barometer = DefaultBarometer;
 			Platform.SensorManager.RegisterListener(listener, barometer, sensorSpeed.ToPlatform());
 		}
 
-		static void PlatformStop()
+		void PlatformStop()
 		{
 			if (listener == null)
 				return;
-
+			
 			Platform.SensorManager.UnregisterListener(listener, barometer);
 			listener.Dispose();
 			listener = null;
+			barometer = null;
 		}
 	}
 
 	class BarometerListener : Java.Lang.Object, ISensorEventListener, IDisposable
 	{
+		public BarometerListener(Action<BarometerData> changeHandler)
+		{
+			ChangeHandler = changeHandler;
+		}
+
+		public readonly Action<BarometerData> ChangeHandler;
+
 		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
 		{
 		}
@@ -44,7 +52,7 @@ namespace Microsoft.Maui.Essentials
 			if ((e?.Values?.Count ?? 0) <= 0)
 				return;
 
-			Barometer.OnChanged(new BarometerData(e.Values[0]));
+			ChangeHandler?.Invoke(new BarometerData(e.Values[0]));
 		}
 	}
 }

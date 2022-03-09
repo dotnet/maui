@@ -43,10 +43,10 @@ namespace Microsoft.Maui
 		IReadOnlyCollection<IWindowOverlayElement> WindowElements { get; }
 
 		/// <summary>
-		/// Gets a value indicating whether the native touch and drawing layer has been initialized.
+		/// Gets a value indicating whether the platform touch and drawing layer has been initialized.
 		/// If it has not, you will be unable to draw or use hit testing on the Overlay.
 		/// </summary>
-		bool IsNativeViewInitialized { get; }
+		bool IsPlatformViewInitialized { get; }
 
 		/// <summary>
 		/// Event Handler for touch events on the Overlay.

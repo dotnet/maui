@@ -4,35 +4,35 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Clipboard
+	public partial class ClipboardImplementation : IClipboard
 	{
-		static Task PlatformSetTextAsync(string text)
+		public Task SetTextAsync(string text)
 		{
 			UIPasteboard.General.String = text;
 			return Task.CompletedTask;
 		}
 
-		static NSObject observer;
+		NSObject observer;
 
-		static bool PlatformHasText
+		public bool HasText
 			=> UIPasteboard.General.HasStrings;
 
-		static Task<string> PlatformGetTextAsync()
+		public Task<string> GetTextAsync()
 			=> Task.FromResult(UIPasteboard.General.String);
 
-		static void StartClipboardListeners()
+		public void StartClipboardListeners()
 		{
 			observer = NSNotificationCenter.DefaultCenter.AddObserver(
 				UIPasteboard.ChangedNotification,
 				ClipboardChangedObserver);
 		}
 
-		static void StopClipboardListeners()
+		public void StopClipboardListeners()
 			=> NSNotificationCenter.DefaultCenter.RemoveObserver(observer);
 
-		static void ClipboardChangedObserver(NSNotification notification)
-			=> ClipboardChangedInternal();
+		public void ClipboardChangedObserver(NSNotification notification)
+			=> Clipboard.ClipboardChangedInternal();
 	}
 }

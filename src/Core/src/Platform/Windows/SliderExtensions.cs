@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 			if (slider.MinimumTrackColor.IsDefault())
 				nativeSlider.Foreground = defaultForegroundColor;
 			else
-				nativeSlider.Foreground = slider.MinimumTrackColor.ToNative();
+				nativeSlider.Foreground = slider.MinimumTrackColor.ToPlatform();
 		}
 
 		public static void UpdateMaximumTrackColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultBackgroundColor)
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Platform
 			if (slider.MaximumTrackColor.IsDefault())
 				nativeSlider.BorderBrush = defaultBackgroundColor;
 			else
-				nativeSlider.BorderBrush = slider.MaximumTrackColor.ToNative();
+				nativeSlider.BorderBrush = slider.MaximumTrackColor.ToPlatform();
 		}
 
 		public static void UpdateThumbColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultThumbColor)
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Platform
 			if (thumb == null || slider?.ThumbColor == null || nativeSlider == null)
 				return;
 
-			nativeSlider.ThumbColorOver = slider.ThumbColor.ToNative();
+			nativeSlider.ThumbColorOver = slider.ThumbColor.ToPlatform();
 			BrushHelpers.UpdateColor(slider.ThumbColor, ref defaultThumbColor,
 				() => thumb.Background, brush => thumb.Background = brush);
     }

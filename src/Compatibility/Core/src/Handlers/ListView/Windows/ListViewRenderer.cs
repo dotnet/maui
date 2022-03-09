@@ -19,6 +19,7 @@ using WApp = Microsoft.UI.Xaml.Application;
 using WRect = Windows.Foundation.Rect;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Microsoft.Maui.Essentials;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.ListView;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.Platform;
@@ -565,7 +566,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return; // FIXME
 
 			// Delay until after the SemanticZoom change _actually_ finishes, fixes tons of odd issues on Phone w/ virtualization.
-			if (Device.Idiom == TargetIdiom.Phone)
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				await Task.Delay(1);
 
 			IListProxy listProxy = til.ListProxy;

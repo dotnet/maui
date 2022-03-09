@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Locations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Geocoding
+	public class GeocodingImplementation : IGeocoding
 	{
-		static async Task<IEnumerable<Placemark>> PlatformGetPlacemarksAsync(double latitude, double longitude)
+		public async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
 		{
 			using (var geocoder = new Geocoder(Platform.AppContext))
 			{
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static async Task<IEnumerable<Location>> PlatformGetLocationsAsync(string address)
+		public async Task<IEnumerable<Location>> GetLocationsAsync(string address)
 		{
 			if (address == null)
 				throw new ArgumentNullException(nameof(address));

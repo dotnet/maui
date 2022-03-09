@@ -1,3 +1,4 @@
+using System;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -6,13 +7,13 @@ using Java.Net;
 using Java.Util;
 using Uri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class PhoneDialer
+	public partial class PhoneDialerImplementation : IPhoneDialer
 	{
 		const string intentCheck = "00000000000";
 
-		internal static bool IsSupported
+		public bool IsSupported
 		{
 			get
 			{
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static void PlatformOpen(string number)
+		public void Open(string number)
 		{
 			ValidateOpen(number);
 
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Essentials
 				phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.Default.Country) ?? phoneNumber;
 
 			// if we are an extension then we need to encode
-			if (phoneNumber.Contains(',') || phoneNumber.Contains(';'))
+			if (phoneNumber.Contains(',', StringComparison.Ordinal) || phoneNumber.Contains(';', StringComparison.Ordinal))
 				phoneNumber = URLEncoder.Encode(phoneNumber, "UTF-8") ?? phoneNumber;
 
 			var dialIntent = ResolveDialIntent(phoneNumber);

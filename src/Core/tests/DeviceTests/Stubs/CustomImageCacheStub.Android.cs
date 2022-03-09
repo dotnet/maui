@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				return cacheItem.Drawable;
 			}
 
-			var drawable = new ColorDrawable(color.ToNative());
+			var drawable = new ColorDrawable(color.ToPlatform());
 			_cache[color] = (drawable, 1);
 			return drawable;
 		}

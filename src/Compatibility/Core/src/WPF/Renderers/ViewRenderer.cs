@@ -352,7 +352,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			if (view != null)
 			{
 				Control.HorizontalAlignment = view.HorizontalOptions.ToNativeHorizontalAlignment();
-				Control.VerticalAlignment = view.VerticalOptions.ToNativeVerticalAlignment();
+				Control.VerticalAlignment = view.VerticalOptions.ToPlatformHorizontalAlignment();
 			}
 		}
 

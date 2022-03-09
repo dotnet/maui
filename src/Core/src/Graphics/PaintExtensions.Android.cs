@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Graphics
 			int count = 0;
 			foreach (var orderStop in orderStops)
 			{
-				data.Colors[count] = orderStop.Color.ToNative().ToArgb();
+				data.Colors[count] = orderStop.Color.ToPlatform().ToArgb();
 				data.Offsets[count] = orderStop.Offset;
 				count++;
 			}

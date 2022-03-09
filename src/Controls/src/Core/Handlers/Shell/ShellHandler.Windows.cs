@@ -1,28 +1,127 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
+﻿using Microsoft.Maui.Controls.Platform;
+using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class ShellHandler : ViewHandler<Shell, ShellView>
 	{
-		protected override ShellView CreateNativeView()
+		protected override ShellView CreatePlatformView()
 		{
-			return new ShellView();
+			var shellView = new ShellView();
+			shellView.SetElement(VirtualView);
+			return shellView;
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		protected override void ConnectHandler(ShellView platformView)
 		{
-			return NativeView.GetDesiredSize(widthConstraint, heightConstraint);
+			base.ConnectHandler(platformView);
+			platformView.PaneOpened += OnPaneOpened;
+			platformView.PaneOpening += OnPaneOpening;
+			platformView.PaneClosing += OnPaneClosing;
+			platformView.ItemInvoked += OnMenuItemInvoked;
+		}
+
+		void OnMenuItemInvoked(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)
+		{
+			var item = args.InvokedItemContainer?.DataContext as Element;
+			if (item != null)
+				(VirtualView as IShellController)?.OnFlyoutItemSelected(item);
+		}
+
+		void OnPaneOpened(UI.Xaml.Controls.NavigationView sender, object args)
+		{
+			PlatformView.UpdateFlyoutBackdrop();
+		}
+
+		void OnPaneClosing(UI.Xaml.Controls.NavigationView sender, UI.Xaml.Controls.NavigationViewPaneClosingEventArgs args)
+		{
+			args.Cancel = true;
+			VirtualView.FlyoutIsPresented = false;
+		}
+
+		void OnPaneOpening(UI.Xaml.Controls.NavigationView sender, object args)
+		{
+			UpdateValue(nameof(Shell.FlyoutBackground));
+			UpdateValue(nameof(Shell.FlyoutVerticalScrollMode));
+			PlatformView.UpdateFlyoutBackdrop();
+			PlatformView.UpdateFlyoutPosition();
+			VirtualView.FlyoutIsPresented = true;
 		}
 
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
-			NativeView.SetElement((Shell)view);
+
+			if (PlatformView.Element != view)
+				PlatformView.SetElement((Shell)view);
+		}
+
+		public static void MapFlyoutBackdrop(ShellHandler handler, Shell view)
+		{
+			if (Brush.IsNullOrEmpty(view.FlyoutBackdrop))
+				handler.PlatformView.FlyoutBackdrop = null;
+			else
+				handler.PlatformView.FlyoutBackdrop = view.FlyoutBackdrop;
+		}
+
+		public static void MapCurrentItem(ShellHandler handler, Shell view)
+		{
+			handler.PlatformView.SwitchShellItem(view.CurrentItem, true);
+		}
+
+		public static void MapFlyoutBackground(ShellHandler handler, Shell view)
+		{
+			handler.PlatformView.UpdatePaneBackground(
+				!Brush.IsNullOrEmpty(view.FlyoutBackground) ?
+					view.FlyoutBackground :
+					view.FlyoutBackgroundColor?.AsPaint());
+		}
+
+		public static void MapFlyoutVerticalScrollMode(ShellHandler handler, Shell view)
+		{
+			handler.PlatformView.UpdateFlyoutVerticalScrollMode((WScrollMode)(int)view.FlyoutVerticalScrollMode);
+		}
+
+		public static void MapFlyout(ShellHandler handler, IFlyoutView flyoutView)
+		{
+			handler.PlatformView.ReplacePaneMenuItemsWithCustomContent(flyoutView.Flyout);
+		}
+
+		public static void MapIsPresented(ShellHandler handler, IFlyoutView flyoutView)
+		{
+			handler.PlatformView.IsPaneOpen = flyoutView.IsPresented;
+		}
+
+		public static void MapFlyoutWidth(ShellHandler handler, IFlyoutView flyoutView)
+		{
+			handler.PlatformView.UpdateFlyoutWidth(flyoutView);
+		}
+
+		public static void MapFlyoutBehavior(ShellHandler handler, IFlyoutView flyoutView)
+		{
+			handler.PlatformView.UpdateFlyoutBehavior(flyoutView);
+		}
+
+		public static void MapFlyoutFooter(ShellHandler handler, Shell view)
+		{
+			if (handler.PlatformView.PaneFooter == null)
+				handler.PlatformView.PaneFooter = new ShellFooterView(view);
+		}
+
+		public static void MapFlyoutHeader(ShellHandler handler, Shell view)
+		{
+			if (handler.PlatformView.PaneCustomContent == null)
+				handler.PlatformView.PaneCustomContent = new ShellHeaderView(view);
+		}
+
+		public static void MapItems(ShellHandler handler, Shell view)
+		{
+			handler.PlatformView.UpdateMenuItemSource();
+		}
+
+		public static void MapFlyoutItems(ShellHandler handler, Shell view)
+		{
+			handler.PlatformView.UpdateMenuItemSource();
 		}
 	}
 }

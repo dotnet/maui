@@ -37,6 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 
+			await Task.Delay(500);
 			Assert.True(dispatched);
 		}
 
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			}
 
-			protected override object CreateNativeElement() => new Object();
+			protected override object CreatePlatformElement() => new Object();
 		}
 	}
 }
