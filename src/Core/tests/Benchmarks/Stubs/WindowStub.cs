@@ -63,5 +63,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		public bool RemoveOverlay(IWindowOverlay overlay) => false;
 
 		public bool BackButtonClicked() => true;
+
+		public float DisplayDensity => 1.0f;
 	}
 }
