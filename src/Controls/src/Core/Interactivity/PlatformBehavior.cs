@@ -70,6 +70,8 @@ public abstract partial class BasePlatformBehavior<TView, TPlatformView> : Behav
 
 		if (visualElement.Handler is not null)
 			OnAttachedTo(visualElement);
+		else
+			OnDetachingFrom(visualElement);
 	}
 
 	/// <summary>
