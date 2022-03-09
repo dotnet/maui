@@ -24,6 +24,21 @@
             <ActivityIndicator
                 IsRunning="True"
                 Color="{AppThemeBinding Light={StaticResource LightAccentColor}, Dark={StaticResource DarkAccentColor}}" />
+            <Label
+                Text="Larger"
+                Style="{StaticResource Headline}" />
+            <ActivityIndicator IsRunning="True" WidthRequest="150" HeightRequest="150" />
+            <Label
+                Text="Smaller"
+                Style="{StaticResource Headline}" />
+            <ActivityIndicator IsRunning="True" WidthRequest="10" HeightRequest="10" />
+            <Label
+                Text="Not Running"
+                Style="{StaticResource Headline}" />
+            <ActivityIndicator IsRunning="False" />
+            <Label
+                Text="-- End of page --"
+                Style="{StaticResource Subhead}" />
         </VerticalStackLayout>
     </ContentPage.Content>
 </views:BasePage>
