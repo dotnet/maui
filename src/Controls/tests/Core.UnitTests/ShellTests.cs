@@ -1396,7 +1396,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(String.Empty, shellToolBar.Title);
 		}
 
-
 		[Test]
 		public async Task ShellToolbarTitleIgnoresModalTitle()
 		{
@@ -1415,9 +1414,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var shellToolBar = testShell.Toolbar;
 			Assert.AreEqual("Shell Title", shellToolBar.Title);
 
-			await testShell.Navigation.PopModalAsync();
+			await testShell.CurrentSection.Navigation.PopModalAsync();
 
 			Assert.AreEqual("Shell Title", shellToolBar.Title);
+		}
+
+		[Test]
+		public async Task ShellToolbarTitleIgnoresModalTitle_ShellContent()
+		{
+			var shellContent = CreateShellContent();
+			shellContent.Title = "Shell Content Title";
+
+			var flyoutItem = new FlyoutItem()
+			{
+				Title = "Flyout Item 1",
+				Items =
+				{
+					shellContent
+				}
+			};
+
+			TestShell testShell = new TestShell(flyoutItem)
+			{
+				Title = "Welcome to Shell"
+			};
+
+			await testShell.CurrentSection.Navigation.PushModalAsync(new ContentPage()
+			{
+				Title = "Modal Page"
+			});
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
+			await testShell.CurrentSection.Navigation.PopModalAsync();
+			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
 		}
 	}
 }
