@@ -54,8 +54,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 			builder
 				.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddMauiControlsHandlers();
-
 #if PLATFORM
 					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Entry), typeof(EntryRenderer));
