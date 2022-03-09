@@ -43,15 +43,21 @@ namespace Microsoft.Maui.Controls.DualScreen
 		}
 		public ScreenHelper(IFoldableContext activity)
 		{
-			global::Android.Util.Log.Debug("JWM", "ScreenHelper.ctor - WITH IFoldableContext");
+			global::Android.Util.Log.Debug("JWM", $"ScreenHelper.ctor - WITH IFoldableContext FoldingFeatureBounds:{FoldingFeatureBounds}");
 			Activity = activity as Activity;
 			screenDensity = activity.ScreenDensity;
+			FoldingFeatureBounds = activity.FoldingFeatureBounds;
+			WindowBounds = activity.WindowBounds;
+			IsSpanned = activity.isSeparating;
 		}
 
 		public bool Initialize(IFoldableContext activity)
 		{
 			Activity = activity as Activity;
 			screenDensity = activity.ScreenDensity;
+			FoldingFeatureBounds = activity.FoldingFeatureBounds;
+			WindowBounds = activity.WindowBounds;
+			IsSpanned = activity.isSeparating;
 			return true;
 		}
 

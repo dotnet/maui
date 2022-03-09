@@ -21,9 +21,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 			builder.Services.AddScoped(typeof(IFoldableContext), typeof(DualScreenServiceImpl));
 
 			var consumer = new Consumer();
-			AndroidX.Window.Java.Layout.WindowInfoTrackerCallbackAdapter wit = null;
-			IWindowMetricsCalculator wmc = null;
-			float screenDensity = 1f;
+			AndroidX.Window.Java.Layout.WindowInfoTrackerCallbackAdapter wit = null; // for hinge/fold
+			IWindowMetricsCalculator wmc = null; // for window dimensions
+			IFoldableContext foldContext; // DualScreenServiceImpl instance
+			float screenDensity = 1f; // for converting px to dp
 
 			builder.ConfigureLifecycleEvents(lc =>
 			{
@@ -42,21 +43,22 @@ namespace Microsoft.Maui.Controls.DualScreen
 					{
 						global::Android.Util.Log.Debug("JWM2", "~~~ HostBuilder.OnStart");
 
-						var foldContext = activity.GetWindow().Handler.MauiContext.Services.GetService(
-								typeof(IFoldableContext)) as IFoldableContext;
+						foldContext = activity.GetWindow().Handler.MauiContext.Services.GetService(
+								typeof(IFoldableContext)) as IFoldableContext; // DualScreenServiceImpl instance
 
 						screenDensity = activity?.Resources?.DisplayMetrics?.Density ?? 1;
-						foldContext.ScreenDensity = screenDensity;
+						foldContext.ScreenDensity = screenDensity; // assuming this never changes
 
 						consumer.SetFoldableContext(foldContext); // so that we can update it on each message
-																  
-						// HACK: set window size first time - confirm if required
+
+						// HACK: set window size first time - sets WindowBounds
 						var bounds = wmc.ComputeCurrentWindowMetrics(activity).Bounds;
 						global::Android.Util.Log.Debug("JWM2", $"---                               bounds:{bounds}");
 						var rect = new Rectangle(bounds.Left, bounds.Top, bounds.Width(), bounds.Height());
 						consumer.SetWindowSize(rect);
 
-						// HACK: Not sure this is the best way to pass info
+
+						// HACK: Not sure this is the best way to pass info - adds to DependencyService here too
 						Microsoft.Maui.Controls.DualScreen.DualScreenService.Init(foldContext, activity);
 
 						wit.AddWindowLayoutInfoListener(activity, runOnUiThreadExecutor(), consumer); // `consumer` is the IConsumer implementation
@@ -111,6 +113,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		public void SetWindowSize(Rectangle size)
 		{
 			WindowBounds = size;
+			foldableInfo.WindowBounds = size;
 		}
 		public void Accept(Java.Lang.Object windowLayoutInfo)
 		{
@@ -150,9 +153,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 				}
 			}
 			
-			foldableInfo.isSeparating = isSeparating;
-			foldableInfo.FoldingFeatureBounds = foldingFeatureBounds;
-			foldableInfo.WindowBounds = WindowBounds; // HACK: also invokes FoldingFeatureChanged
+			foldableInfo.isSeparating = isSeparating;// also invokes FoldingFeatureChanged
+			foldableInfo.FoldingFeatureBounds = foldingFeatureBounds;// also invokes FoldingFeatureChanged
+			foldableInfo.WindowBounds = WindowBounds; // also invokes FoldingFeatureChanged
 		}
 
 		/// <summary>

@@ -16,12 +16,21 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		internal IDualScreenService DualScreenService { 
 			get
+			{
+				//HACK:FOLDABLE System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.DualScreenService - property getter " + _dualScreenService, "JWM");
+				//var ds = _dualScreenService ?? DependencyService.Get<IDualScreenService>() ?? NoDualScreenServiceImpl.Instance;
+
+				var ds = _dualScreenService;
+				if (ds == null)
 				{
-					//HACK:FOLDABLE System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.DualScreenService - property getter " + _dualScreenService, "JWM");
-					var ds = _dualScreenService ?? DependencyService.Get<IDualScreenService>() ?? NoDualScreenServiceImpl.Instance;
-					return ds;
+					ds = DependencyService.Get<IDualScreenService>();
 				}
+				if (ds == null)
+					ds = NoDualScreenServiceImpl.Instance;
+
+				return ds;
 			}
+		}
 
 		Rectangle _hinge;
 		Rectangle _leftPage;
@@ -49,7 +58,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		internal TwoPaneViewLayoutGuide(VisualElement layout, IDualScreenService dualScreenService)
 		{
 			_layout = layout;
-			_dualScreenService = dualScreenService;
+			_dualScreenService = dualScreenService ?? DualScreenService;
 
 			if(_layout != null)
 			{
@@ -375,7 +384,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 			bool isInMultipleRegions = false;
 			var hinge = DualScreenService.GetHinge();
 			bool hingeIsVertical = Hinge.Height > Hinge.Width;
-
+			
+			if (hinge == Rectangle.Zero)
+				System.Diagnostics.Debug.Write($"hinge == Rectangle.Zero", "JWM2");
 			if (hingeIsVertical)
 			{
 				// Check that the control is over the split

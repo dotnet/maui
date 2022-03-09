@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			else
 			{
 				System.Diagnostics.Debug.Write($"     element == [{element}]", "JWM");
-				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, dualScreenService);
+				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, DualScreenService); // get if null
 				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;				
 			}
 		}
@@ -105,7 +105,11 @@ namespace Microsoft.Maui.Controls.DualScreen
 				SetProperty(ref _hingeBounds, value);
 			}
 		}
-
+		/// <summary>
+		/// Used when app is detected to be on a single screen - 
+		/// mainly on Surface Duo (although possible also on other
+		/// foldable with multi-window enabled)
+		/// </summary>
 		public bool IsLandscape
 		{
 			get => GetIsLandscape();
@@ -114,7 +118,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 				SetProperty(ref _isLandscape, value);
 			}
 		}
-
+		/// <summary>
+		/// Determines the layout direction of the panes
+		/// SinglePane, Wide, Tall
+		/// </summary>
 		public TwoPaneViewMode SpanMode
 		{
 			get => GetSpanMode();
@@ -134,9 +141,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			if (guide.Pane2 == Rectangle.Zero)
 				return new Rectangle[0];
-
-			//TODO: check the assumptions behind IsLandscape on other foldables
-			//TODO: especially Samsung Galaxy Flip which is tall & narrow with horizontal fold
+			
+			//TODO: should this be checking SpanMode==Wide ???
 			if(IsLandscape)
 				return new[] { guide.Pane1, new Rectangle(0, hinge.Height + guide.Pane1.Height, guide.Pane2.Width, guide.Pane2.Height) };
 			else
@@ -156,7 +162,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		static DualScreenInfo OnCreate()
 		{
 			DualScreenInfo dualScreenInfo = new DualScreenInfo(null);
-			dualScreenInfo._twoPaneViewLayoutGuide.WatchForChanges();
+			dualScreenInfo._twoPaneViewLayoutGuide.WatchForChanges(); // HACK: no-op!
 			dualScreenInfo._twoPaneViewLayoutGuide.PropertyChanged += dualScreenInfo.OnTwoPaneViewLayoutGuideChanged;
 			return dualScreenInfo;
 		}
@@ -188,7 +194,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 			return true;
 		}
 	}
-	//HACK:FOLDABLE for debugging
+	
+	/// <summary>
+	/// Microsoft.Maui.Graphics.Rectangle to string (for debugging)
+	/// </summary>
 	public static class BoundsExtensions
 	{
 		public static string ToRectStrings(this Rectangle[] bounds) {

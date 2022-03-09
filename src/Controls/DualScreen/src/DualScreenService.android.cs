@@ -21,12 +21,12 @@ namespace Microsoft.Maui.Controls.DualScreen
 		[Internals.Preserve(Conditional = true)]
 		public DualScreenService()
 		{
-
+			
 		}
 
 		public static void Init(IFoldableContext foldableInfo, Activity activity=null)
 		{
-			global::Android.Util.Log.Debug("JWM", "DualScreenService.Init - Android detected");
+			global::Android.Util.Log.Debug("JWM2", "DualScreenService.Init - Android detected");
 			DependencyService.Register<DualScreenServiceImpl>();
 			DualScreenServiceImpl.Init(foldableInfo, activity);
 		}
@@ -34,8 +34,22 @@ namespace Microsoft.Maui.Controls.DualScreen
 		internal class DualScreenServiceImpl : IDualScreenService, IFoldableContext
 		{
 			#region IFoldableContext properties
-			public bool isSeparating { get { return _isSpanned; } set { _isSpanned = value; } }
-			public Rectangle FoldingFeatureBounds { get { return _hingeDp; } set { _hingeDp = value; } }
+			public bool isSeparating { 
+				get { return _isSpanned; } 
+				set { _isSpanned = value;
+					FoldLayoutChanged();
+				} }
+			public Rectangle FoldingFeatureBounds { 
+				get {
+					global::Android.Util.Log.Debug("JWM2", $"DualScreenServiceImpl.getFoldingFeatureBounds _hingeDp:{_hingeDp}");
+					return _hingeDp; 
+				} 
+				set {
+					global::Android.Util.Log.Debug("JWM2", $"DualScreenServiceImpl.setFoldingFeatureBounds value:{value}");
+					_hingeDp = value;
+					FoldLayoutChanged();
+				} 
+			}
 			public float ScreenDensity { get; set; }
 			public Rectangle WindowBounds { 
 				get { return _windowBounds; } 
@@ -43,15 +57,18 @@ namespace Microsoft.Maui.Controls.DualScreen
 				{ 
 					_windowBounds = value;
 					global::Android.Util.Log.Info("JWM2", $"=== FoldingFeatureChanged?.Invoke isSeparating:{isSeparating} window:{WindowBounds}");
-					FoldingFeatureChanged?.Invoke(this, new Microsoft.Maui.Controls.DualScreen.FoldEventArgs()
-					{
-						isSeparating = isSeparating,
-						FoldingFeatureBounds = FoldingFeatureBounds,
-						WindowBounds = WindowBounds
-					});
+					FoldLayoutChanged();
 				}
 			}
-
+			void FoldLayoutChanged() 
+			{
+				FoldingFeatureChanged?.Invoke(this, new Microsoft.Maui.Controls.DualScreen.FoldEventArgs()
+				{
+					isSeparating = isSeparating,
+					FoldingFeatureBounds = FoldingFeatureBounds,
+					WindowBounds = WindowBounds
+				});
+			}
 
 			bool _isSpanned = false;
 			Rectangle _hingeDp = Rectangle.Zero;
@@ -87,6 +104,13 @@ namespace Microsoft.Maui.Controls.DualScreen
 				if (_foldableInfo != null)
 				{ 
 					Init(_foldableInfo, _mainActivity);
+					
+					_hingeDp = _foldableInfo.FoldingFeatureBounds; // convert to DP?
+					_isSpanned = _foldableInfo.isSeparating;
+					_windowBounds = _foldableInfo.WindowBounds;
+					ScreenDensity = _foldableInfo.ScreenDensity;
+					Update(); // calculate dp from px for hinge coordinates
+
 					_foldableInfo.FoldingFeatureChanged += DualScreenServiceImpl_FoldingFeatureChanged;
 				}
 			}
@@ -145,7 +169,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			{
 				if (_foldableInfo == null)
 					_foldableInfo = foldableInfo;
-
+				
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.Init - Android detected");
 
 				if (_HingeService == null)

@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		internal TwoPaneView(IDualScreenService dualScreenService)
 		{
-			dss = dualScreenService;
+			//dss = dualScreenService;
 			_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(this, dualScreenService);
 			_content1 = new ContentView();
 			_content2 = new ContentView();
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				_twoPaneViewLayoutGuide.DualScreenService.OnLayoutChanged += DualScreenService_OnFeatureChanged;
 		}
 
-		IDualScreenService dss;
+		//IDualScreenService dss;
 		private void DualScreenService_OnFeatureChanged(object sender, FoldEventArgs e)
 		{
 			System.Diagnostics.Debug.Write("TwoPaneView.DualScreenService_OnFeatureChanged - " + e, "JWM");
