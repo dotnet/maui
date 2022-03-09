@@ -73,6 +73,13 @@ namespace Microsoft.Maui
 				if (msg == WindowsPlatformMessageIds.WM_SETTINGCHANGE || msg == WindowsPlatformMessageIds.WM_THEMECHANGE)
 					MauiWinUIApplication.Current.Application?.ThemeChanged();
 
+				if (msg == WindowsPlatformMessageIds.WM_DPICHANGED)
+				{
+					var window = this.GetWindow();
+					if (window is not null)
+						window.DisplayDensityUpdated(window.DisplayDensity);
+				}
+
 				MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(
 					m => m.Invoke(this, new WindowsPlatformMessageEventArgs(hWnd, msg, wParam, lParam)));
 

@@ -108,5 +108,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public IVisualTreeElement GetVisualParent() => this.Parent as IVisualTreeElement;
 
 		public float DisplayDensity => 1.0f;
+
+		public virtual void DisplayDensityUpdated(float displayDensity) { }
 	}
 }

@@ -66,6 +66,14 @@ namespace Microsoft.Maui.Platform
 			{
 				sceneDelegate.SetWindow(window);
 				sceneDelegate.GetWindow()?.MakeKeyAndVisible();
+
+				UIScreen.Notifications.ObserveModeDidChange(window.Screen, new System.EventHandler<NSNotificationEventArgs>((sender, args) =>
+				{
+					if (args.Notification.Object is UIScreen screen)
+					{
+						window.GetWindow()?.DisplayDensityUpdated((float)screen.Scale.Value);
+					}
+				}));
 			}
 		}
 

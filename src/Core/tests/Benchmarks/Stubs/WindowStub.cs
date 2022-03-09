@@ -65,5 +65,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		public bool BackButtonClicked() => true;
 
 		public float DisplayDensity => 1.0f;
+
+		public virtual void DisplayDensityUpdated(float displayDensity) { }
 	}
 }

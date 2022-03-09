@@ -35,11 +35,19 @@ namespace Microsoft.Maui
 
 			var mauiApp = MauiApplication.Current;
 
-			if (mauiApp != null)
+			if (mauiApp is not null)
 			{
 				mauiApp.Application?.ThemeChanged();
 
 				mauiApp.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnConfigurationChanged>(del => del(this, newConfig));
+			}
+
+			var mauiWindow = this.GetWindowFromActivity();
+
+			if (mauiWindow is not null && newConfig is not null)
+			{
+				var density = newConfig.DensityDpi / 96f;
+				mauiWindow.DisplayDensityUpdated(density);
 			}
 		}
 
