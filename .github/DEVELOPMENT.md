@@ -27,39 +27,22 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 Install the .NET MAUI workload using the versions from a particular branch:  
 
 For example, the "preview.14" branch:
+
 ```
-dotnet workload install maui `
-   --from-rollback-file https://aka.ms/dotnet/maui/preview.14.json `
-   --source https://aka.ms/dotnet6/nuget/index.json `
-   --source https://api.nuget.org/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-3ba4b3f4/nuget/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-ee0a97a0-1/nuget/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-ee0a97a0/nuget/v3/index.json
-```
+iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
+.\maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
+``` 
+
+> NOTE: the branch (`-b 'release/6.0.2xx-preview14'`) and version (`-v 6.0.200-preview`) parameters. The "preview 14" branch currently requires the 6.0.200 SDK band since the manifests are all in that SDK band - this will change in the future
+
 Or, the "main" branch:
-```
-dotnet workload install maui `
-   --from-rollback-file https://aka.ms/dotnet/maui/main.json `
-   --source https://aka.ms/dotnet6/nuget/index.json `
-   --source https://api.nuget.org/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-3ba4b3f4/nuget/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-ee0a97a0-1/nuget/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-ee0a97a0/nuget/v3/index.json
-```  
-
-If you are building maui yourself, then you probably want all the workloads:
 
 ```
-dotnet workload install android ios maccatalyst tvos macos maui wasm-tools `
-   --from-rollback-file https://aka.ms/dotnet/maui/main.json `
-   --source https://aka.ms/dotnet6/nuget/index.json `
-   --source https://api.nuget.org/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-3ba4b3f4/nuget/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-ee0a97a0-1/nuget/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-ee0a97a0/nuget/v3/index.json
-```
+iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
+.\maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
+``` 
 
-> NOTE: Zsh and Bash on macOS expect `\` instead for spanning commands over multiple lines.  The examples above are formatted for windows/powershell
+> NOTE: the branch (`-b 'main'`) and version (`-v 6.0.200-preview`) parameters. The `main` branch currently requires the 6.0.200 SDK band since the manifests are all in that SDK band - this will change in the future
 
 ### iOS / MacCatalyst
 
