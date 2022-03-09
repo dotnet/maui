@@ -346,6 +346,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		float IWindow.DisplayDensity
+			=> PlatformDisplayDensity;
+
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
 			base.OnHandlerChangingCore(args);

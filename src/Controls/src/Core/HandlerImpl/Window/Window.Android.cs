@@ -12,6 +12,9 @@ namespace Microsoft.Maui.Controls
 		internal Activity NativeActivity =>
 			(Handler?.PlatformView as Activity) ?? throw new InvalidOperationException("Window should have an Activity set.");
 
+		internal float PlatformDisplayDensity
+			=> (Handler?.PlatformView as Activity)?.Resources?.DisplayMetrics?.Density ?? 1.0f;
+
 		public static void MapContent(WindowHandler handler, IWindow view)
 		{
 			if (view.Content is not Shell)

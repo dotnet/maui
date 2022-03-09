@@ -9,5 +9,19 @@ namespace Microsoft.Maui.Controls
 	{
 		internal UI.Xaml.Window NativeWindow =>
 			(Handler?.PlatformView as UI.Xaml.Window) ?? throw new InvalidOperationException("Window Handler should have a Window set.");
+
+		internal float PlatformDisplayDensity
+		{
+			get
+			{
+				var hwnd = (Handler?.PlatformView as UI.Xaml.Window)?.GetWindowHandle() ?? IntPtr.Zero;
+
+				if (hwnd == IntPtr.Zero)
+					return 1.0f;
+
+				return PlatformMethods.GetDpiForWindow(hwnd) / 96f;
+			}
+		}
+
 	}
 }
