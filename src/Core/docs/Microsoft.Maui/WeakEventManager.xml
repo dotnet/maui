@@ -4,7 +4,7 @@
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.WeakEventManager" />
   <TypeSignature Language="F#" Value="type WeakEventManager = class" />
   <AssemblyInfo>
-    <AssemblyName>Microsoft.Maui</AssemblyName>
+    <AssemblyName>Microsoft.Maui.Core</AssemblyName>
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
@@ -22,7 +22,7 @@
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.WeakEventManager.#ctor" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui</AssemblyName>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters />
@@ -38,7 +38,7 @@
       <MemberSignature Language="F#" Value="member this.AddEventHandler : EventHandler * string -&gt; unit" Usage="weakEventManager.AddEventHandler (handler, eventName)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui</AssemblyName>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
@@ -68,7 +68,7 @@
       <MemberSignature Language="F#" Value="member this.AddEventHandler : EventHandler&lt;'EventArgs (requires 'EventArgs :&gt; EventArgs)&gt; * string -&gt; unit (requires 'EventArgs :&gt; EventArgs)" Usage="weakEventManager.AddEventHandler (handler, eventName)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui</AssemblyName>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
@@ -106,7 +106,7 @@
       <MemberSignature Language="F#" Value="member this.HandleEvent : obj * obj * string -&gt; unit" Usage="weakEventManager.HandleEvent (sender, args, eventName)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui</AssemblyName>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
@@ -132,7 +132,7 @@
       <MemberSignature Language="F#" Value="member this.RemoveEventHandler : EventHandler * string -&gt; unit" Usage="weakEventManager.RemoveEventHandler (handler, eventName)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui</AssemblyName>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
@@ -162,7 +162,7 @@
       <MemberSignature Language="F#" Value="member this.RemoveEventHandler : EventHandler&lt;'EventArgs (requires 'EventArgs :&gt; EventArgs)&gt; * string -&gt; unit (requires 'EventArgs :&gt; EventArgs)" Usage="weakEventManager.RemoveEventHandler (handler, eventName)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui</AssemblyName>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
