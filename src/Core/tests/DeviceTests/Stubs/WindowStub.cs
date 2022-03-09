@@ -106,5 +106,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public IReadOnlyList<IVisualTreeElement> GetVisualChildren() => _visualChildren.AsReadOnly();
 
 		public IVisualTreeElement GetVisualParent() => this.Parent as IVisualTreeElement;
+
+		public float DisplayDensity => 1.0f;
 	}
 }
