@@ -118,12 +118,18 @@ namespace Microsoft.Maui.Controls
 			Page currentPage = _shell.GetCurrentShellPage() as Page;
 
 			if (currentPage?.IsSet(Page.TitleProperty) == true)
+			{
 				Title = currentPage.Title ?? String.Empty;
+			}
 			else
+			{
 				Title = _shell.GetEffectiveValue<string>(
 					BaseShellItem.TitleProperty,
-					_shell.Title,
+					() => _shell.Title,
+					null,
+					_shell.CurrentContent,
 					ignoreImplicit: true) ?? String.Empty;
+			}
 		}
 	}
 }
