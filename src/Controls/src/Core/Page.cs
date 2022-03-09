@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls
 
 			InternalChildren.CollectionChanged += InternalChildrenOnCollectionChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Page>>(() => new PlatformConfigurationRegistry<Page>(this));
-			this.Loaded += FlushPendingActions;
+			this.NavigatedTo += FlushPendingActions;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BackgroundImageSource']/Docs" />
@@ -261,7 +261,8 @@ namespace Microsoft.Maui.Controls
 				foreach (var pendingAction in actionsToProcess)
 					pendingAction();
 			}
-			this.Loaded -= FlushPendingActions;
+
+			this.NavigatedTo -= FlushPendingActions;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ForceLayout']/Docs" />
