@@ -52,9 +52,14 @@
     <None Include="**\*.Standard.cs"/>
     <Compile Remove="**\Standard\*.cs"/>
     <None Include="**\Standard\*.cs"/>
-    <Compile Remove="**\Standard\*.cs"/>
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+    <Compile Remove="**\*.NETCoreApp.cs"/>
+    <None Include="**\*.NETCoreApp.cs"/>
+    <Compile Remove="**\NETCoreApp\*.cs"/>
+    <None Include="**\NETCoreApp\*.cs"/>
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('netcoreapp')) != true ">
     <Compile Remove="**\*.Win32.cs"/>

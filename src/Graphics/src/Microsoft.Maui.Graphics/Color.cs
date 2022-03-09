@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Graphics
 {
 	[DebuggerDisplay("Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}")]
 	[TypeConverter(typeof(Converters.ColorTypeConverter))]
-	public class Color
+	public partial class Color
 	{
 		public readonly float Red;
 		public readonly float Green;
@@ -382,50 +382,7 @@ namespace Microsoft.Maui.Graphics
 			return FromRgba(red / 255f, green / 255f, blue / 255f, alpha / 255f);
 		}
 
-		public static Color FromArgb(string colorAsHex)
-		{
-			//Remove # if present
-			if (colorAsHex.IndexOf('#') != -1)
-				colorAsHex = colorAsHex.Replace("#", "");
-
-			int red = 0;
-			int green = 0;
-			int blue = 0;
-			int alpha = 255;
-
-			if (colorAsHex.Length == 6)
-			{
-				//#RRGGBB
-				red = int.Parse(colorAsHex.Substring(0, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				green = int.Parse(colorAsHex.Substring(2, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				blue = int.Parse(colorAsHex.Substring(4, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-			}
-			else if (colorAsHex.Length == 3)
-			{
-				//#RGB
-				red = int.Parse($"{colorAsHex[0]}{colorAsHex[0]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				green = int.Parse($"{colorAsHex[1]}{colorAsHex[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				blue = int.Parse($"{colorAsHex[2]}{colorAsHex[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-			}
-			else if (colorAsHex.Length == 4)
-			{
-				//#ARGB
-				alpha = int.Parse($"{colorAsHex[0]}{colorAsHex[0]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				red = int.Parse($"{colorAsHex[1]}{colorAsHex[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				green = int.Parse($"{colorAsHex[2]}{colorAsHex[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				blue = int.Parse($"{colorAsHex[3]}{colorAsHex[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-			}
-			else if (colorAsHex.Length == 8)
-			{
-				//#AARRGGBB
-				alpha = int.Parse(colorAsHex.Substring(0, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				red = int.Parse(colorAsHex.Substring(2, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				green = int.Parse(colorAsHex.Substring(4, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				blue = int.Parse(colorAsHex.Substring(6, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-			}
-
-			return FromRgba(red / 255f, green / 255f, blue / 255f, alpha / 255f);
-		}
+		public static Color FromArgb(string colorAsHex) => FromArgbImplementation(colorAsHex);
 
 		public static Color FromHsla(float h, float s, float l, float a = 1)
 		{
