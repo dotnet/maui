@@ -25,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 			var child = new Button() { InputTransparent = false };
 			_ = await CreateHandlerAsync<ButtonHandler>(child);
 
-			control.Add(child);
+			await InvokeOnMainThreadAsync(() => control.Add(child));
 
 			Assert.Equal(expected, child.InputTransparent);
 		}
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 			var child = new Button() { InputTransparent = false };
 			_ = await CreateHandlerAsync<ButtonHandler>(child);
 
-			control.Insert(0, child);
+			await InvokeOnMainThreadAsync(() => control.Insert(0, child));
 
 			Assert.Equal(expected, child.InputTransparent);
 		}
@@ -66,12 +66,12 @@ namespace Microsoft.Maui.DeviceTests
 			var child0 = new Button() { InputTransparent = false };
 			_ = await CreateHandlerAsync<ButtonHandler>(child0);
 
-			control.Add(child0);
+			await InvokeOnMainThreadAsync(() => control.Add(child0));
 
 			var child1 = new Button() { InputTransparent = false };
 			_ = await CreateHandlerAsync<ButtonHandler>(child1);
 
-			control[0] = child1;
+			await InvokeOnMainThreadAsync(() => control[0] = child1);
 
 			Assert.Equal(expected, child1.InputTransparent);
 		}
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.DeviceTests
 			_ = await CreateHandlerAsync<ButtonHandler>(child);
 
 			var control = new StackLayout() { InputTransparent = inputTransparent, CascadeInputTransparent = cascadeInputTransparent };
-			control.Add(child);
+			await InvokeOnMainThreadAsync(() => control.Add(child));
 			_ = await CreateHandlerAsync<LayoutHandler>(control);
 
 			Assert.Equal(expected, child.InputTransparent);

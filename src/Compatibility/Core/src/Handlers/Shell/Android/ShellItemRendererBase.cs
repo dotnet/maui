@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnShellSectionChanged()
 		{
-			HandleFragmentUpdate(ShellNavigationSource.ShellSectionChanged, ShellSection, null, false);
+			HandleFragmentUpdate(ShellNavigationSource.ShellSectionChanged, ShellSection, null, false).FireAndForget();
 		}
 
 		protected virtual void OnDisplayedPageChanged(Page newPage, Page oldPage)
