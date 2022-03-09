@@ -39,7 +39,7 @@ Or, the "main" branch:
 
 ```
 iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
-.\maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
+.\maui-install.ps1 -b 'main' -v '6.0.200-preview'
 ``` 
 
 > NOTE: the branch (`-b 'main'`) and version (`-v 6.0.200-preview`) parameters. The `main` branch currently requires the 6.0.200 SDK band since the manifests are all in that SDK band - this will change in the future
@@ -55,9 +55,7 @@ Android API-31 (Android 12) is now the default in .NET 6.
 
 ## Running
 
-### .NET 6
-
-#### Compile with globally installed `dotnet`
+### Compile with globally installed `dotnet`
 
 This will build and launch Visual Studio using global workloads
 
@@ -66,7 +64,7 @@ dotnet tool restore
 dotnet cake --target=VS-NET6 --workloads=global
 ```
 
-#### Compile using a local `bin\dotnet`
+### Compile using a local `bin\dotnet`
 
 You can run a `Cake` target to bootstrap .NET 6 in `bin\dotnet` and launch Visual Studio:
 
