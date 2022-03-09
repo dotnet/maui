@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui
 {
@@ -10,14 +9,14 @@ namespace Microsoft.Maui
 		readonly ConcurrentDictionary<(string? family, float size, FontSlant slant), string> _fonts = new();
 
 		readonly IFontRegistrar _fontRegistrar;
-		readonly ILogger<FontManager>? _logger;
+		readonly IServiceProvider? _serviceProvider;
 
 		public double DefaultFontSize => 14; // 14sp
 
-		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
+		public FontManager(IFontRegistrar fontRegistrar, IServiceProvider? serviceProvider = null)
 		{
 			_fontRegistrar = fontRegistrar;
-			_logger = logger;
+			_serviceProvider = serviceProvider;
 		}
 
 
