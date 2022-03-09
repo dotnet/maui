@@ -5,6 +5,7 @@
 // System.Threading.Tasks.Task
 // System.Net.Http.HttpClient
 
+// Opt out of this warning, because we actually *want* culture-aware string behavior in the AOT profile
 #pragma warning disable CA1307
 
 static class CommonMethods
