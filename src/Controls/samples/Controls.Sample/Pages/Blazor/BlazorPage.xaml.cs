@@ -43,7 +43,6 @@ namespace Maui.Controls.Sample.Pages
 			grid.Add(bwv);
 			Grid.SetRow(bwv, 1);
 
-
 			var footerLabel = new Label { Text = "Thank you for using Blazor and .NET MAUI!", FontSize = 24, TextColor = Colors.BlanchedAlmond, HorizontalOptions = LayoutOptions.Center, };
 			grid.Add(footerLabel);
 			Grid.SetRow(footerLabel, 2);

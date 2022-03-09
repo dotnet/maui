@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Android.Webkit;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using AWebView = Android.Webkit.WebView;
 using AUri = Android.Net.Uri;
@@ -33,6 +34,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public AndroidWebKitWebViewManager(AWebView webview!!, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
+#if WEBVIEW2_MAUI
+			if (services.GetService<MauiBlazorMarkerService>() is null)
+			{
+				throw new InvalidOperationException(
+					"Unable to find the required services. " +
+					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView)}' in the application startup code.");
+			}
+#endif
 			_webview = webview;
 		}
 

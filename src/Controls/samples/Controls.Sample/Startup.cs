@@ -88,9 +88,10 @@ namespace Maui.Controls.Sample
 					});
 
 #if NET6_0_OR_GREATER
-			appBuilder
-				.RegisterBlazorMauiWebView();
-			services.AddBlazorWebView();
+			services.AddMauiBlazorWebView();
+#if DEBUG
+			services.AddBlazorWebViewDeveloperTools();
+#endif
 #endif
 
 			services.AddLogging(logging =>

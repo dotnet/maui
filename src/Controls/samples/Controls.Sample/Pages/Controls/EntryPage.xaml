@@ -80,6 +80,16 @@
                     ReturnCommand="{Binding ReturnCommand}"
                     ReturnCommandParameter="ReturnCommandParameter"/>
                 <Label
+                    Text="Focus"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Focused="OnEntryFocused"/>
+                <Label
+                    Text="Unfocus"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Unfocused="OnEntryUnfocused"/>
+                <Label
                     Text="Completed"
                     Style="{StaticResource Headline}" />
                 <Entry 

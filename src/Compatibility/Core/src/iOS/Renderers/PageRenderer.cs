@@ -322,7 +322,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Forms.IsiOS13OrNewer &&
 				previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle &&
 				UIApplication.SharedApplication.ApplicationState != UIApplicationState.Background)
-				Application.Current?.ThemeChanged();
+				((IApplication)Application.Current)?.ThemeChanged();
 		}
 
 		bool ShouldUseSafeArea()
