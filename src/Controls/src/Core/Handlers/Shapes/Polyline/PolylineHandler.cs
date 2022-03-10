@@ -6,7 +6,9 @@ namespace Microsoft.Maui.Controls.Handlers
 	{
 		public static IPropertyMapper<Polyline, PolylineHandler> PolylineMapper = new PropertyMapper<Polyline, PolylineHandler>(Mapper)
 		{
+			[nameof(IShapeView.Shape)] = MapShape,
 			[nameof(Polyline.Points)] = MapPoints,
+			[nameof(Polyline.FillRule)] = MapFillRule,
 		};
 
 		public PolylineHandler() : base(PolylineMapper)

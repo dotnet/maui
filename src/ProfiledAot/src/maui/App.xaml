@@ -1,8 +1,8 @@
 ﻿<?xml version = "1.0" encoding = "UTF-8" ?>
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:MauiApp._1"
-             x:Class="MauiApp._1.App">
+             xmlns:local="clr-namespace:maui"
+             x:Class="maui.App">
     <Application.Resources>
         <ResourceDictionary>
 
@@ -20,7 +20,8 @@
 
             <Style TargetType="Label">
                 <Setter Property="TextColor" Value="{StaticResource PrimaryColor}" />
-                <Setter Property="FontFamily" Value="OpenSansRegular" />
+                <!-- This line is the only change from the template, to use {OnPlatform} -->
+                <Setter Property="FontFamily" Value="{OnPlatform Default=OpenSansRegular, Android=OpenSansRegular}" />
             </Style>
 
             <Style TargetType="Button">

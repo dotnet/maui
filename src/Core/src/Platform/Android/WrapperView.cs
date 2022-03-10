@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Platform
 		readonly Android.Graphics.Rect _viewBounds;
 
 		APath _currentPath;
-		SizeF _lastPathSize;
+		SizeF _lastPathSize; 
+		bool _invalidateClip;
 
 		Bitmap _shadowBitmap;
 		Canvas _shadowCanvas;
@@ -123,7 +124,7 @@ namespace Microsoft.Maui.Platform
 
 		partial void ClipChanged()
 		{
-			_invalidateShadow = true;
+			_invalidateClip = _invalidateShadow = true;
 			PostInvalidate();
 		}
 
@@ -154,8 +155,10 @@ namespace Microsoft.Maui.Platform
 		{
 			var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
 
-			if (_lastPathSize != bounds.Size || _currentPath == null)
+			if (_invalidateClip || _lastPathSize != bounds.Size || _currentPath == null)
 			{
+				_invalidateClip = false;
+
 				var path = Clip.PathForBounds(bounds);
 				_currentPath = path?.AsAndroidPath();
 				_lastPathSize = bounds.Size;

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -20,8 +21,26 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
+		public static void MapShape(PolygonHandler handler, Polygon polygon)
+		{
+			handler.PlatformView?.UpdateShape(polygon);
+		}
+
 		public static void MapPoints(PolygonHandler handler, Polygon polygon)
 		{
+			handler.PlatformView?.InvalidateShape(polygon);
+		}
+
+		public static void MapFillRule(PolygonHandler handler, Polygon polygon)
+		{
+			IDrawable drawable = handler.PlatformView?.Drawable;
+
+			if (drawable == null)
+				return;
+
+			if (drawable is ShapeDrawable shapeDrawable)
+				shapeDrawable.WindingMode = polygon.FillRule == FillRule.EvenOdd ? Graphics.WindingMode.EvenOdd : Graphics.WindingMode.NonZero;
+			
 			handler.PlatformView?.InvalidateShape(polygon);
 		}
 

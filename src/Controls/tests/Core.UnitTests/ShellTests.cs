@@ -1475,5 +1475,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await testShell.CurrentSection.Navigation.PopAsync();
 			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
 		}
+		
+		public void ShellToolbarNotVisibleWithBasicContentPage()
+		{
+			TestShell testShell = new TestShell(new ContentPage());
+			var shellToolBar = testShell.Toolbar;
+			Assert.False(shellToolBar.IsVisible);
+		}
 	}
 }
