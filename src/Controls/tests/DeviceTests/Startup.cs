@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Hosting;
+﻿using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
@@ -14,11 +12,8 @@ namespace Microsoft.Maui.DeviceTests
 		public static Microsoft.UI.Xaml.Window CurrentWindow { get; private set; }
 #endif
 
-		public static Application CurrentTestApp { get; private set; }
-
-		public static MauiApp CreateMauiApp()
-		{
-			var appBuilder = MauiApp
+		public static MauiApp CreateMauiApp() =>
+			MauiApp
 				.CreateBuilder()
 				.ConfigureLifecycleEvents(life =>
 				{
@@ -45,13 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					RequiresUIContext = true,
 				})
-				.UseVisualRunner();
-
-			var mauiApp = appBuilder.Build();
-
-			CurrentTestApp = (Application)mauiApp.Services.GetRequiredService<IApplication>();
-
-			return mauiApp;
-		}
+				.UseVisualRunner()
+				.Build();
 	}
 }
