@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -343,6 +344,126 @@ namespace Microsoft.Maui.Graphics.Tests
 			Assert.Equal(expectedComplement.Red, comp.Red, 3);
 			Assert.Equal(expectedComplement.Green, comp.Green, 3);
 			Assert.Equal(expectedComplement.Blue, comp.Blue, 3);
+		}
+
+		public static IEnumerable<object[]> TestFromRgbaValues()
+		{
+			yield return new object[] { "#111", Color.FromRgb(0x11, 0x11, 0x11) };
+			yield return new object[] { "#a222", Color.FromRgba(0xaa, 0x22, 0x22, 0x22) };
+			yield return new object[] { "#F2E2D2", Color.FromRgb(0xF2, 0xE2, 0xD2) };
+			yield return new object[] { "#C2F2E2D2", Color.FromRgba(0xC2, 0xF2, 0xE2, 0xD2) };
+			yield return new object[] { "111", Color.FromRgb(0x11, 0x11, 0x11) };
+			yield return new object[] { "a222", Color.FromRgba(0xaa, 0x22, 0x22, 0x22) };
+			yield return new object[] { "F2E2D2", Color.FromRgb(0xF2, 0xE2, 0xD2) };
+			yield return new object[] { "C2F2E2D2", Color.FromRgba(0xC2, 0xF2, 0xE2, 0xD2) };
+		}
+
+		[Theory]
+		[MemberData(nameof(TestFromRgbaValues))]
+		public void TestFromRgba(string value, Color expected)
+		{
+			Color actual = Color.FromRgba(value);
+			Assert.Equal(expected, actual);
+		}
+
+		public static IEnumerable<object[]> TestFromArgbValuesHash()
+		{
+			yield return new object[] { "#111", Color.FromRgb(0x11, 0x11, 0x11) };
+			yield return new object[] { "#a222", Color.FromRgba(0x22, 0x22, 0x22, 0xaa) };
+			yield return new object[] { "#F2E2D2", Color.FromRgb(0xF2, 0xE2, 0xD2) };
+			yield return new object[] { "#C2F2E2D2", Color.FromRgba(0xF2, 0xE2, 0xD2, 0xC2) };
+		}
+
+		public static IEnumerable<object[]> TestFromArgbValuesNoHash()
+		{
+			yield return new object[] { "111", Color.FromRgb(0x11, 0x11, 0x11) };
+			yield return new object[] { "a222", Color.FromRgba(0x22, 0x22, 0x22, 0xaa) };
+			yield return new object[] { "F2E2D2", Color.FromRgb(0xF2, 0xE2, 0xD2) };
+			yield return new object[] { "C2F2E2D2", Color.FromRgba(0xF2, 0xE2, 0xD2, 0xC2) };
+		}
+
+		[Theory]
+		[MemberData(nameof(TestFromArgbValuesHash))]
+		[MemberData(nameof(TestFromArgbValuesNoHash))]
+		public void TestFromArgb(string value, Color expected)
+		{
+			Color actual = Color.FromArgb(value);
+			Assert.Equal(expected, actual);
+		}
+
+		public static IEnumerable<object[]> TestParseValidValues()
+		{
+			foreach (object[] argb in TestFromArgbValuesHash())
+			{
+				yield return argb;
+			}
+
+			yield return new object[] { "rgb(255,0,0)", Color.FromRgb(255, 0, 0) };
+			yield return new object[] { "rgb(100%, 0%, 0%)", Color.FromRgb(255, 0, 0) };
+
+			yield return new object[] { "rgba(0, 255, 0, 0.7)", Color.FromRgba(0, 255, 0, 0.7f) };
+			yield return new object[] { "rgba(0%, 100%, 0%, 0.7)", Color.FromRgba(0, 255, 0, 0.7f) };
+
+			yield return new object[] { "hsl(120, 100%, 50%)", Color.FromHsla(120f / 360f, 1.0f, .5f) };
+			yield return new object[] { "hsl(120, 75, 20%)", Color.FromHsla(120f / 360f, .75f, .2f) };
+
+			yield return new object[] { "hsla(160, 100%, 50%, .4)", Color.FromHsla(160f / 360f, 1.0f, .5f, .4f) };
+			yield return new object[] { "hsla(160,100%,50%,.6)", Color.FromHsla(160f / 360f, 1.0f, .5f, .6f) };
+
+			yield return new object[] { "hsv(120, 85%, 35%)", Color.FromHsv(120f / 360f, .85f, .35f) };
+			yield return new object[] { "hsv(120, 85, 35)", Color.FromHsv(120f / 360f, .85f, .35f) };
+
+			yield return new object[] { "hsva(120, 100%, 50%, .8)", Color.FromHsva(120f / 360f, 1.0f, .5f, .8f) };
+			yield return new object[] { "hsva(120, 100, 50, .8)", Color.FromHsva(120f / 360f, 1.0f, .5f, .8f) };
+		}
+
+		[Theory]
+		[MemberData(nameof(TestParseValidValues))]
+		public void TestParseValid(string value, Color expected)
+		{
+			Assert.True(Color.TryParse(value, out Color actual));
+			Assert.Equal(expected, actual);
+
+			actual = Color.Parse(value);
+			Assert.Equal(expected, actual);
+		}
+
+		[Theory]
+		[InlineData(null)]
+		[InlineData("")]
+		[InlineData("default")]
+		[InlineData("notAColor")]
+		[InlineData("#ZZZ")]
+		[InlineData("#12g")]
+		[InlineData("#1g3")]
+		[InlineData("#zyxv")]
+		[InlineData("222")]
+		[InlineData("rgb)255,0,0(")]
+		[InlineData("rgb255,0,0")]
+		[InlineData("rgba(255, 0, 0, 0.8")]
+		[InlineData("hsv(120, 100#, 50#)")]
+		[InlineData("hsv(120%, 100%, 50%)")]
+		[InlineData("hsva(120, 120%, 50%, a)")]
+		public void TestParseBad(string badValue)
+		{
+			Assert.False(Color.TryParse(badValue, out Color actual));
+			Assert.Throws<InvalidOperationException>(() => Color.Parse(badValue));
+		}
+
+		[Fact]
+		public void TestParseAllBuiltInColors()
+		{
+			var fields = typeof(Colors).GetFields(BindingFlags.Public | BindingFlags.Static);
+			Assert.True(fields.Length > 100, "we should have some Color fields");
+
+			foreach (FieldInfo field in fields)
+			{
+				string colorName = field.Name;
+				Color actual = Color.Parse(colorName);
+				Color expected = (Color)field.GetValue(null);
+
+				Assert.Equal(expected, actual);
+			}
 		}
 	}
 }

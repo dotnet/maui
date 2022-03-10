@@ -20,11 +20,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.Memory" Version="4.5.4" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" Condition="$(TargetFramework.StartsWith('netstandard'))" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" Condition="$(TargetFramework.Contains('-windows'))" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Windows\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="iOS\GraphicsiOS.resx">
