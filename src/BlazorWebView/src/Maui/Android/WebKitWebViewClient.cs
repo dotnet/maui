@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Android.Content;
 using Android.Runtime;
 using Android.Webkit;
@@ -72,22 +73,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				throw new ArgumentNullException(nameof(request));
 			}
 
-			var allowFallbackOnHostPage = false;
-
 			var requestUri = request?.Url?.ToString();
-			var appBaseUri = new Uri(AppOrigin);
-			var fileUri = requestUri != null ? new Uri(requestUri) : null;
-
-			if (fileUri != null && appBaseUri.IsBaseOf(fileUri))
-			{
-				var relativePath = appBaseUri.MakeRelativeUri(fileUri).ToString();
-				if (string.IsNullOrEmpty(relativePath))
-				{
-					// For app root, use host page (something like wwwroot/index.html)
-					allowFallbackOnHostPage = true;
-				}
-			}
-
+			var allowFallbackOnHostPage = IsAppOriginPageUri(requestUri);
 			requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
 
 			if (requestUri != null &&
@@ -107,11 +94,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			base.OnPageFinished(view, url);
 
-			// TODO: How do we know this runs only once?
-			if (view != null && url == AppOrigin)
+			if (view != null && IsAppOriginPageUri(url))
 			{
-				// Startup scripts must run in OnPageFinished. If scripts are run earlier they will have no lasting
-				// effect because once the page content loads all the document state gets reset.
 				RunBlazorStartupScripts(view);
 			}
 		}
@@ -127,54 +111,73 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// Set up JS ports
 			view.EvaluateJavascript(@"
 
-        const channel = new MessageChannel();
-        var nativeJsPortOne = channel.port1;
-        var nativeJsPortTwo = channel.port2;
-        window.addEventListener('message', function (event) {
-            if (event.data != 'capturePort') {
-                nativeJsPortOne.postMessage(event.data)
-            }
-            else if (event.data == 'capturePort') {
-                if (event.ports[0] != null) {
-                    nativeJsPortTwo = event.ports[0]
-                }
-            }
-        }, false);
+		const channel = new MessageChannel();
+		var nativeJsPortOne = channel.port1;
+		var nativeJsPortTwo = channel.port2;
+		window.addEventListener('message', function (event) {
+			if (event.data != 'capturePort') {
+				nativeJsPortOne.postMessage(event.data)
+			}
+			else if (event.data == 'capturePort') {
+				if (event.ports[0] != null) {
+					nativeJsPortTwo = event.ports[0]
+				}
+			}
+		}, false);
 
-        nativeJsPortOne.addEventListener('message', function (event) {
-        }, false);
+		nativeJsPortOne.addEventListener('message', function (event) {
+		}, false);
 
-        nativeJsPortTwo.addEventListener('message', function (event) {
-            // data from native code to JS
-            if (window.external.__callback) {
-                window.external.__callback(event.data);
-            }
-        }, false);
-        nativeJsPortOne.start();
-        nativeJsPortTwo.start();
+		nativeJsPortTwo.addEventListener('message', function (event) {
+			// data from native code to JS
+			if (window.external.__callback) {
+				window.external.__callback(event.data);
+			}
+		}, false);
+		nativeJsPortOne.start();
+		nativeJsPortTwo.start();
 
-        window.external.sendMessage = function (message) {
-            // data from JS to native code
-            nativeJsPortTwo.postMessage(message);
-        };
+		window.external.sendMessage = function (message) {
+			// data from JS to native code
+			nativeJsPortTwo.postMessage(message);
+		};
 
-        window.external.receiveMessage = function (callback) {
-            window.external.__callback = callback;
-        }
+		window.external.receiveMessage = function (callback) {
+			window.external.__callback = callback;
+		}
 
-        ", new JavaScriptValueCallback(() =>
+		", new JavaScriptValueCallback(() =>
 			{
 				// Set up Server ports
 				_webViewHandler?.WebviewManager?.SetUpMessageChannel();
 
 				// Start Blazor
 				view.EvaluateJavascript(@"
-                    Blazor.start();
-                ", new JavaScriptValueCallback(() =>
+					Blazor.start();
+				", new JavaScriptValueCallback(() =>
 				{
 					// Done; no more action required
 				}));
 			}));
+		}
+
+		private static bool IsAppOriginPageUri(string? requestUriString)
+		{
+			if (string.IsNullOrEmpty(requestUriString))
+			{
+				return false;
+			}
+
+			var appBaseUri = new Uri(AppOrigin);
+			var requestUri = new Uri(requestUriString);
+
+			if (!appBaseUri.IsBaseOf(requestUri))
+			{
+				return false;
+			}
+
+			// If the path does not end in a file extension, it's most likely referring to a page.
+			return !Path.HasExtension(requestUriString);
 		}
 
 		protected override void Dispose(bool disposing)
