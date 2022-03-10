@@ -4,10 +4,10 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk {
 
 	public static class GraphicsExtensions {
 
-		public static Rect ToRectangle(this Gdk.Rectangle it)
+		public static Rect ToRect(this Gdk.Rectangle it)
 			=> new Rect(it.X, it.Y, it.Width, it.Height);
 
-		public static RectF ToRectangleF(this Gdk.Rectangle it)
+		public static RectF ToRectF(this Gdk.Rectangle it)
 			=> new RectF(it.X, it.Y, it.Width, it.Height);
 
 		public static Gdk.Rectangle ToNative(this Rect it)
