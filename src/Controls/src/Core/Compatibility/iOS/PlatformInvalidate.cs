@@ -8,14 +8,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	{
 		public void Invalidate(VisualElement visualElement)
 		{
-			var renderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.GetRenderer(visualElement);
-
-			if (renderer == null)
-			{
+			if (visualElement.Handler?.PlatformView == null)
 				return;
-			}
 
-			renderer.NativeView.SetNeedsLayout();
+			visualElement.ToPlatform().SetNeedsLayout();
 		}
 	}
 }

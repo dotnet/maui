@@ -16,8 +16,10 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 #elif WINDOWS
 using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
-#elif IOS
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+#elif IOS || MACCATALYST
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 #endif
 
 namespace Microsoft.Maui.Controls.Hosting
@@ -88,7 +90,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
 			handlersCollection.AddHandler<MenuBarItem, MenuBarItemHandler>();
 
-#if WINDOWS || ANDROID || IOS
+#if WINDOWS || ANDROID || IOS || MACCATALYST
 			handlersCollection.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
 			handlersCollection.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
 			handlersCollection.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));
@@ -100,14 +102,15 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
 #endif
 
-#if IOS
+#if IOS || MACCATALYST
 			handlersCollection.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
 			handlersCollection.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
 			handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
 
-#if ANDROID || IOS
+#if ANDROID || IOS || MACCATALYST
 			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
+			handlersCollection.AddHandler<Shell, ShellRenderer>();
 #endif
 #if WINDOWS || ANDROID
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
@@ -127,12 +130,15 @@ namespace Microsoft.Maui.Controls.Hosting
 
 		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 		{
-#if WINDOWS || ANDROID || IOS
+#if WINDOWS || ANDROID || IOS || MACCATALYST
 			// initialize compatibility DependencyService
 			DependencyService.SetToInitialized();
 			DependencyService.Register<Xaml.ResourcesLoader>();
 			DependencyService.Register<Xaml.ValueConverterProvider>();
 			DependencyService.Register<ResourcesProvider>();
+			DependencyService.Register<PlatformSizeService>();
+			DependencyService.Register<PlatformInvalidate>();
+			DependencyService.Register<FontNamedSizeService>();
 #endif
 
 			builder.ConfigureImageSourceHandlers();

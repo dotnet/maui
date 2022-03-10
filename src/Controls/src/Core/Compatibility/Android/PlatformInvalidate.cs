@@ -8,14 +8,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	{
 		public void Invalidate(VisualElement visualElement)
 		{
-			var renderer = visualElement.GetRenderer();
-			if (renderer == null || renderer.View.IsDisposed())
-			{
+			if (visualElement.Handler?.PlatformView == null)
 				return;
-			}
 
-			renderer.View.Invalidate();
-			renderer.View.RequestLayout();
+			var view = visualElement.ToPlatform();
+
+			view.Invalidate();
+			view.RequestLayout();
 		}
 	}
 }

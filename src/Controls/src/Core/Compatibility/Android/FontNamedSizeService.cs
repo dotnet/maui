@@ -112,6 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return defaultValue;
 		}
 
+		global::Android.Content.Context _applicationContext;
 		bool TryGetTextAppearance(int appearance, out double val)
 		{
 			val = 0;
@@ -119,14 +120,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				using (var value = new TypedValue())
 				{
-					var context = Forms.MauiContext.Context;
-					if (context.Theme.ResolveAttribute(appearance, value, true))
+					_applicationContext ??= global::Android.App.Application.Context.ApplicationContext;
+					if (_applicationContext.Theme.ResolveAttribute(appearance, value, true))
 					{
 						var textSizeAttr = new[] { AndroidResource.Attribute.TextSize };
 						const int indexOfAttrTextSize = 0;
-						using (TypedArray array = context.ObtainStyledAttributes(value.Data, textSizeAttr))
+						using (TypedArray array = _applicationContext.ObtainStyledAttributes(value.Data, textSizeAttr))
 						{
-							val = context.FromPixels(array.GetDimensionPixelSize(indexOfAttrTextSize, -1));
+							val = _applicationContext.FromPixels(array.GetDimensionPixelSize(indexOfAttrTextSize, -1));
 							return true;
 						}
 					}

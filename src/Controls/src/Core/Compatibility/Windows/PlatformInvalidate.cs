@@ -1,4 +1,6 @@
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
 
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.PlatformInvalidate))]
 
@@ -8,13 +10,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 	{
 		public void Invalidate(VisualElement visualElement)
 		{
-			var renderer = Platform.GetRenderer(visualElement);
-			if (renderer == null)
-			{
+			if (visualElement.Handler?.PlatformView == null)
 				return;
-			}
 
-			renderer.ContainerElement.InvalidateMeasure();
+			visualElement.ToPlatform().InvalidateMeasure();
 		}
 	}
 }

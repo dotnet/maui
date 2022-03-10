@@ -8,7 +8,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	{
 		public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
-			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+			if (widthConstraint > 0 && heightConstraint > 0)
+			{
+				return view.Handler?.GetDesiredSize(widthConstraint, heightConstraint) ??
+					new SizeRequest();
+			}
+
+			return new SizeRequest();
 		}
 	}
 }
