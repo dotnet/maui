@@ -919,7 +919,7 @@ namespace Microsoft.Maui.Graphics
 		public PointF GetRotatedPoint(int pointIndex, PointF pivotPoint, float angle)
 		{
 			var point = _points[pointIndex];
-			return Geometry.RotatePoint(pivotPoint, point, angle);
+			return GeometryUtil.RotatePoint(pivotPoint, point, angle);
 		}
 
 		public void Transform(Matrix3x2 transform)
@@ -1298,7 +1298,7 @@ namespace Microsoft.Maui.Graphics
 				for (var i = 0; i < _points.Count; i++)
 				{
 					var point = _points[i];
-					if (!point.Equals(compareTo[i], Geometry.Epsilon))
+					if (!point.Equals(compareTo[i], GeometryUtil.Epsilon))
 						return false;
 				}
 
@@ -1307,7 +1307,7 @@ namespace Microsoft.Maui.Graphics
 					for (var i = 0; i < _arcAngles.Count; i++)
 					{
 						var arcAngle = _arcAngles[i];
-						if (Math.Abs(arcAngle - compareTo.GetArcAngle(i)) > Geometry.Epsilon)
+						if (Math.Abs(arcAngle - compareTo.GetArcAngle(i)) > GeometryUtil.Epsilon)
 							return false;
 					}
 				}

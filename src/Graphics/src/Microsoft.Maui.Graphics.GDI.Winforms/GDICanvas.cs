@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Graphics.GDI
 				endAngle += 360;
 			}
 
-			float sweep = Geometry.GetSweep(startAngle, endAngle, clockwise);
+			float sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 			SetRect(x, y, width, height);
 			if (!clockwise)
 			{
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Graphics.GDI
 				endAngle += 360;
 			}
 
-			float sweep = Geometry.GetSweep(startAngle, endAngle, clockwise);
+			float sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 			SetRect(x, y, width, height);
 			if (!clockwise)
 			{

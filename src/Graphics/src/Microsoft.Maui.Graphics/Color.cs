@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Graphics
 
 		public Color WithAlpha(float alpha)
 		{
-			if (Math.Abs(alpha - Alpha) < Geometry.Epsilon)
+			if (Math.Abs(alpha - Alpha) < GeometryUtil.Epsilon)
 				return this;
 
 			return new Color(Red, Green, Blue, alpha);

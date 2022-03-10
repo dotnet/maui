@@ -29,7 +29,7 @@ namespace GraphicsTester.Scenarios
 			var point = new PointF(65, 65);
 			for (int i = -3; i < 3; i++)
 			{
-				var rotated = Geometry.RotatePoint(point, -15 * i);
+				var rotated = GeometryUtil.RotatePoint(point, -15 * i);
 				canvas.DrawLine(rotated.X - 10, rotated.Y, rotated.X + 10, rotated.Y);
 				canvas.DrawLine(rotated.X, rotated.Y - 10, rotated.X, rotated.Y + 10);
 			}

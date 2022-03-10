@@ -321,7 +321,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 						else if (_sourceFillpaint is RadialGradientPaint radialGradientPaint)
 						{
 							if(_radialGradientRadius == 0)
-							 _radialGradientRadius = Geometry.GetDistance(_fillRectangle.Left, _fillRectangle.Top, _fillRectangle.Right, _fillRectangle.Bottom);
+							 _radialGradientRadius = GeometryUtil.GetDistance(_fillRectangle.Left, _fillRectangle.Top, _fillRectangle.Right, _fillRectangle.Bottom);
 
 							var radialGradientBrushProperties = new RadialGradientBrushProperties();
 							var gradientStops = new global::SharpDX.Direct2D1.GradientStop[radialGradientPaint.GradientStops.Length];
@@ -635,14 +635,14 @@ namespace Microsoft.Maui.Graphics.SharpDX
 
 		public Matrix3x2 DxRotate(float aAngle)
 		{
-			float radians = Geometry.DegreesToRadians(aAngle);
+			float radians = GeometryUtil.DegreesToRadians(aAngle);
 			Matrix = Matrix.Rotate(radians);
 			return Matrix;
 		}
 
 		public Matrix3x2 DxRotate(float aAngle, float x, float y)
 		{
-			float radians = Geometry.DegreesToRadians(aAngle);
+			float radians = GeometryUtil.DegreesToRadians(aAngle);
 			Matrix = Matrix.Translate(x, y);
 			Matrix = Matrix.Rotate(radians);
 			Matrix = Matrix.Translate(-x, -y);

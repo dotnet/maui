@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 							endAngle += 360;
 						}
 
-						var rotation = Geometry.GetSweep(startAngle, endAngle, clockwise);
+						var rotation = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 						var absRotation = Math.Abs(rotation);
 
 						var rectX = ox + topLeft.X * ppux;
@@ -135,8 +135,8 @@ namespace Microsoft.Maui.Graphics.SharpDX
 						var rectWidth = (ox + bottomRight.X * ppux) - rectX;
 						var rectHeight = (oy + bottomRight.Y * ppuy) - rectY;
 
-						var startPoint = Geometry.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
-						var endPoint = Geometry.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
+						var startPoint = GeometryUtil.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
+						var endPoint = GeometryUtil.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
 
 
 						if (!figureOpen)

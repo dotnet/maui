@@ -539,11 +539,11 @@ namespace Microsoft.Maui.Graphics
 			if (_lastCurveControlPoint == null && _relativePoint != null)
 			{
 				// ReSharper restore ConvertIfStatementToNullCoalescingExpression
-				point1 = Geometry.GetOppositePoint((PointF)_relativePoint, point2);
+				point1 = GeometryUtil.GetOppositePoint((PointF)_relativePoint, point2);
 			}
 			else if (_relativePoint != null && _lastCurveControlPoint != null)
 			{
-				point1 = Geometry.GetOppositePoint((PointF)_relativePoint, (PointF)_lastCurveControlPoint);
+				point1 = GeometryUtil.GetOppositePoint((PointF)_relativePoint, (PointF)_lastCurveControlPoint);
 			}
 
 			var point3 = NewPoint(NextValue, NextValue, isRelative, true);

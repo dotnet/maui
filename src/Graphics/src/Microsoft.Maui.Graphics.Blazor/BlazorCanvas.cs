@@ -424,8 +424,8 @@ namespace Microsoft.Maui.Graphics.Blazor
 					float endAngle = target.GetArcAngle(arcAngleIndex++);
 					var clockwise = target.GetArcClockwise(arcClockwiseIndex++);
 
-					var startAngleInRadians = Geometry.DegreesToRadians(-startAngle);
-					var endAngleInRadians = Geometry.DegreesToRadians(-endAngle);
+					var startAngleInRadians = GeometryUtil.DegreesToRadians(-startAngle);
+					var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
 					while (startAngleInRadians < 0)
 					{

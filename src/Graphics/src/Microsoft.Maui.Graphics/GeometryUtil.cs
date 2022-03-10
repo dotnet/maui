@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Graphics
 {
-	public static class Geometry
+	public static class GeometryUtil
 	{
 		public const float Epsilon = 0.0000000001f;
 
@@ -13,8 +13,6 @@ namespace Microsoft.Maui.Graphics
 
 			return (float) Math.Sqrt(a * a + b * b);
 		}
-
-
 
 		public static float GetAngleAsDegrees(float x1, float y1, float x2, float y2)
 		{

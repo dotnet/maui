@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				float radius = (float)radialGradientPaint.Radius * Math.Max(rectangle.Height, rectangle.Width);
 
 				if (radius == 0)
-					radius = Geometry.GetDistance(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
+					radius = GeometryUtil.GetDistance(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
 
 				try
 				{
@@ -414,7 +414,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			var rectWidth = width;
 			var rectHeight = height;
 
-			var sweep = Geometry.GetSweep(startAngle, endAngle, clockwise);
+			var sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 
 			var rect = new SKRect(rectX, rectY, rectX + rectWidth, rectY + rectHeight);
 
@@ -458,7 +458,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			while (endAngle < 0)
 				endAngle += 360;
 
-			var sweep = Geometry.GetSweep(startAngle, endAngle, clockwise);
+			var sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 			var rect = new SKRect(x, y, x + width, y + height);
 
 			startAngle *= -1;

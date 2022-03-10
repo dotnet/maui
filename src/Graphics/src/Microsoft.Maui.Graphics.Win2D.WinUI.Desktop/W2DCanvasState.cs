@@ -331,7 +331,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 						}
 						else if (_sourceFillpaint is RadialGradientPaint radialGradientPaint)
 						{
-							//float radius = Geometry.GetDistance(_gradientPoint1.X, _gradientPoint1.Y, _gradientPoint2.X, _gradientPoint2.Y);
+							//float radius = GeometryUtil.GetDistance(_gradientPoint1.X, _gradientPoint1.Y, _gradientPoint2.X, _gradientPoint2.Y);
 
 							var gradientStops = new CanvasGradientStop[radialGradientPaint.GradientStops.Length];
 							for (int i = 0; i < radialGradientPaint.GradientStops.Length; i++)
@@ -442,14 +442,14 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 		public Matrix3x2 AppendRotate(float aAngle)
 		{
-			float radians = Geometry.DegreesToRadians(aAngle);
+			float radians = GeometryUtil.DegreesToRadians(aAngle);
 			Matrix = Matrix.Rotate(radians);
 			return Matrix;
 		}
 
 		public Matrix3x2 AppendRotate(float aAngle, float x, float y)
 		{
-			float radians = Geometry.DegreesToRadians(aAngle);
+			float radians = GeometryUtil.DegreesToRadians(aAngle);
 			Matrix = Matrix.Translate(x, y);
 			Matrix = Matrix.Rotate(radians);
 			Matrix = Matrix.Translate(-x, -y);

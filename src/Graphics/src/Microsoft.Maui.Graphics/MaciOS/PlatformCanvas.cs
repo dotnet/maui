@@ -409,8 +409,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			_rect.Height = height;
 
 			if (!_antialias) _context.SetShouldAntialias(false);
-			var startAngleInRadians = Geometry.DegreesToRadians(-startAngle);
-			var endAngleInRadians = Geometry.DegreesToRadians(-endAngle);
+			var startAngleInRadians = GeometryUtil.DegreesToRadians(-startAngle);
+			var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
 			while (startAngleInRadians < 0)
 				startAngleInRadians += (float) Math.PI * 2;
@@ -457,8 +457,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			_rect.Width = width;
 			_rect.Height = height;
 
-			var startAngleInRadians = Geometry.DegreesToRadians(-startAngle);
-			var endAngleInRadians = Geometry.DegreesToRadians(-endAngle);
+			var startAngleInRadians = GeometryUtil.DegreesToRadians(-startAngle);
+			var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
 			while (startAngleInRadians < 0)
 				startAngleInRadians += (float) Math.PI * 2;
