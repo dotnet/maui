@@ -77,10 +77,10 @@ namespace Microsoft.Maui
 		/// <returns>Whether or not the back navigation was handled.</returns>
 		bool BackButtonClicked();
 
-		void DisplayDensityUpdated(float displayDensity);
-
 		FlowDirection FlowDirection { get; }
 
-		float DisplayDensity { get; }
+		void DisplayDensityUpdated(float displayDensity);
+
+		float RequestDisplayDensity();
 	}
 }

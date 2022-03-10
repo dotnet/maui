@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.Eval(webView, script);
 		}
 
-		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg)
+		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{

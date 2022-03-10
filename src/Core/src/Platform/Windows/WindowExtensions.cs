@@ -36,5 +36,15 @@ namespace Microsoft.Maui.Platform
 
 			return hwnd;
 		}
+
+		public static float GetDisplayDensity(this UI.Xaml.Window platformWindow)
+		{
+			var hwnd = platformWindow.GetWindowHandle();
+
+			if (hwnd == IntPtr.Zero)
+				return 1.0f;
+
+			return PlatformMethods.GetDpiForWindow(hwnd) / 96f;
+		}
 	}
 }

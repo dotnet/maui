@@ -335,6 +335,13 @@ namespace Microsoft.Maui.Controls
 			OnDisplayDensityUpdated(displayDensity);
 		}
 
+		float IWindow.RequestDisplayDensity()
+		{
+			var request = new DisplayDensityRequest();
+			var result = Handler?.InvokeWithResult(nameof(IWindow.RequestDisplayDensity), request);
+			return result ?? 1.0f;
+		}
+
 		FlowDirection IWindow.FlowDirection
 		{
 			get
@@ -354,10 +361,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		float IWindow.DisplayDensity
-			=> PlatformDisplayDensity;
-
-		public float DisplayDensity => PlatformDisplayDensity;
+		public float DisplayDensity => ((IWindow)this).RequestDisplayDensity();
 
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
