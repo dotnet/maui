@@ -1,5 +1,5 @@
-﻿using Android.Content;
-using Microsoft.Maui.Controls.Shapes;
+﻿using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -21,8 +21,26 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
+		public static void MapShape(PolylineHandler handler, Polyline polyline)
+		{
+			handler.PlatformView?.UpdateShape(polyline);
+		}
+
 		public static void MapPoints(PolylineHandler handler, Polyline polyline)
 		{
+			handler.PlatformView?.InvalidateShape(polyline);
+		}
+
+		public static void MapFillRule(PolylineHandler handler, Polyline polyline)
+		{
+			IDrawable drawable = handler.PlatformView?.Drawable;
+
+			if (drawable == null)
+				return;
+
+			if (drawable is ShapeDrawable shapeDrawable)
+				shapeDrawable.WindingMode = polyline.FillRule == FillRule.EvenOdd ? Graphics.WindingMode.EvenOdd : Graphics.WindingMode.NonZero;
+
 			handler.PlatformView?.InvalidateShape(polyline);
 		}
 
