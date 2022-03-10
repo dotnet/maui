@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 						// set window size after rotation
 						var bounds = wmc.ComputeCurrentWindowMetrics(activity).Bounds;
 						global::Android.Util.Log.Debug("JWM2", $"~~~                               bounds:{bounds}");
-						var rect = new Rectangle(bounds.Left, bounds.Top, bounds.Width(), bounds.Height());
+						var rect = new Rect(bounds.Left, bounds.Top, bounds.Width(), bounds.Height());
 						consumer.SetWindowSize(rect);
 					})
 					.OnStart((activity) =>
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 						// HACK: set window size first time - sets WindowBounds
 						var bounds = wmc.ComputeCurrentWindowMetrics(activity).Bounds;
 						global::Android.Util.Log.Debug("JWM2", $"---                               bounds:{bounds}");
-						var rect = new Rectangle(bounds.Left, bounds.Top, bounds.Width(), bounds.Height());
+						var rect = new Rect(bounds.Left, bounds.Top, bounds.Width(), bounds.Height());
 						consumer.SetWindowSize(rect);
 
 
@@ -108,9 +108,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 		/// reference to context that is passed via dependencyservice...
 		/// </summary>
 		IFoldableContext foldableInfo;
-		Rectangle WindowBounds;
+		Rect WindowBounds;
 
-		public void SetWindowSize(Rectangle size)
+		public void SetWindowSize(Rect size)
 		{
 			WindowBounds = size;
 			foldableInfo.WindowBounds = size;
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			global::Android.Util.Log.Info("JWM2", "%%% " + newLayoutInfo.ToString());
 
 			var isSeparating = false; // we don't know if we'll find a displayFeature of not
-			var foldingFeatureBounds = Rectangle.Zero;
+			var foldingFeatureBounds = Rect.Zero;
 
 			foreach (var displayFeature in newLayoutInfo.DisplayFeatures)
 			{
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				{
 					isSeparating = foldingFeature.IsSeparating;
 
-					foldingFeatureBounds = new Rectangle(foldingFeature.Bounds.Left, foldingFeature.Bounds.Top,
+					foldingFeatureBounds = new Rect(foldingFeature.Bounds.Left, foldingFeature.Bounds.Top,
 														foldingFeature.Bounds.Width(), foldingFeature.Bounds.Height());
 
 					global::Android.Util.Log.Info("JWM2", "\n    IsSeparating: " + foldingFeature.IsSeparating

@@ -25,8 +25,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 	public class FoldEventArgs : System.EventArgs
 	{
 		public bool isSeparating { get; set; }
-		public Rectangle FoldingFeatureBounds { get; set; }
-		public Rectangle WindowBounds { get; set; }
+		public Rect FoldingFeatureBounds { get; set; }
+		public Rect WindowBounds { get; set; }
 		public override string ToString()
 		{
 			return $"FoldEventArgs:: isSeparating: {isSeparating} FoldingFeatureBounds: {FoldingFeatureBounds} WindowBounds: {WindowBounds}";

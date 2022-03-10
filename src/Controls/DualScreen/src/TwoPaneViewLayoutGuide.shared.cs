@@ -32,16 +32,16 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 		}
 
-		Rectangle _hinge;
-		Rectangle _leftPage;
-		Rectangle _rightPane;
+		Rect _hinge;
+		Rect _leftPage;
+		Rect _rightPane;
 		TwoPaneViewMode _mode;
 		VisualElement _layout;
 		readonly IDualScreenService _dualScreenService;
 		bool _isLandscape;
 		public event PropertyChangedEventHandler PropertyChanged;
 		List<string> _pendingPropertyChanges = new List<string>();
-		//Rectangle _absoluteLayoutPosition;
+		//Rect _absoluteLayoutPosition;
 		//object _watchHandle;
 		//Action _layoutChangedReference;
 
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		//		return;
 		//	}
 
-		//	var newPosition = new Rectangle(screenPosition.Value, _layout.Bounds.Size);
+		//	var newPosition = new Rect(screenPosition.Value, _layout.Bounds.Size);
 
 		//	if (newPosition != _absoluteLayoutPosition)
 		//	{
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 		}
 
-		public Rectangle Pane1
+		public Rect Pane1
 		{
 			get
 			{
@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 		}
 
-		public Rectangle Pane2
+		public Rect Pane2
 		{
 			get
 			{
@@ -210,7 +210,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 		}
 
-		public Rectangle Hinge
+		public Rect Hinge
 		{
 			get
 			{
@@ -222,36 +222,36 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 		}
 
-		Rectangle GetContainerArea(double width, double height)
+		Rect GetContainerArea(double width, double height)
 		{
 			System.Diagnostics.Debug.Write($"TwoPaneViewLayoutGuide.GetContainerArea {width},{height}", "JWM");
-			Rectangle containerArea;
+			Rect containerArea;
 			if (_layout == null)
 			{
-				containerArea = new Rectangle(Point.Zero, DualScreenService.ScaledScreenSize);
+				containerArea = new Rect(Point.Zero, DualScreenService.ScaledScreenSize);
 			}
 			else
 			{
-				containerArea = new Rectangle(_layout.X, _layout.Y, width, height);
+				containerArea = new Rect(_layout.X, _layout.Y, width, height);
 			}
 
 			return containerArea;
 		}
 
-		Rectangle GetScreenRelativeBounds(double width, double height)
+		Rect GetScreenRelativeBounds(double width, double height)
 		{
-			Rectangle containerArea;
+			Rect containerArea;
 			if (_layout == null)
 			{
-				containerArea = new Rectangle(Point.Zero, DualScreenService.ScaledScreenSize);
+				containerArea = new Rect(Point.Zero, DualScreenService.ScaledScreenSize);
 			}
 			else
 			{
 				var locationOnScreen = DualScreenService.GetLocationOnScreen(_layout);
 				if (!locationOnScreen.HasValue)
-					return Rectangle.Zero;
+					return Rect.Zero;
 
-				containerArea = new Rectangle(locationOnScreen.Value, new Size(width, height));
+				containerArea = new Rect(locationOnScreen.Value, new Size(width, height));
 			}
 
 			return containerArea;
@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			_layoutWidth = width;
 			_layoutHeight = height;
 
-			Rectangle containerArea = GetContainerArea(width, height);
+			Rect containerArea = GetContainerArea(width, height);
 			System.Diagnostics.Debug.Write($"TwoPaneViewLayoutGuide.UpdateLayouts containerArea {containerArea}", "JWM");
 			if (containerArea.Width <= 0)
 			{
@@ -273,10 +273,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 
 			// Pane dimensions are calculated relative to the layout container
-			Rectangle _newPane1 = Pane1;
-			Rectangle _newPane2 = Pane2;
+			Rect _newPane1 = Pane1;
+			Rect _newPane2 = Pane2;
 			var locationOnScreen = GetScreenRelativeBounds(width, height);
-			if (locationOnScreen == Rectangle.Zero && Hinge == Rectangle.Zero)
+			if (locationOnScreen == Rect.Zero && Hinge == Rect.Zero)
 				locationOnScreen = containerArea;
 
 			bool isSpanned = IsInMultipleRegions(locationOnScreen);
@@ -290,8 +290,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 					var containerRightX = locationOnScreen.X + locationOnScreen.Width;
 					var pane2Width = containerRightX - pane2X;
 
-					_newPane1 = new Rectangle(0, 0, Hinge.X - locationOnScreen.X, locationOnScreen.Height);
-					_newPane2 = new Rectangle(_newPane1.Width + Hinge.Width, 0, pane2Width, locationOnScreen.Height);
+					_newPane1 = new Rect(0, 0, Hinge.X - locationOnScreen.X, locationOnScreen.Height);
+					_newPane2 = new Rect(_newPane1.Width + Hinge.Width, 0, pane2Width, locationOnScreen.Height);
 				}
 				else
 				{
@@ -299,8 +299,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 					var containerBottomY = locationOnScreen.Y + locationOnScreen.Height;
 					var pane2Height = containerBottomY - pane2Y;
 
-					_newPane1 = new Rectangle(0, 0, locationOnScreen.Width, Hinge.Y - locationOnScreen.Y);
-					_newPane2 = new Rectangle(0, _newPane1.Height + Hinge.Height, locationOnScreen.Width, pane2Height);
+					_newPane1 = new Rect(0, 0, locationOnScreen.Width, Hinge.Y - locationOnScreen.Y);
+					_newPane2 = new Rect(0, _newPane1.Height + Hinge.Height, locationOnScreen.Width, pane2Height);
 				}
 			}
 
@@ -315,18 +315,18 @@ namespace Microsoft.Maui.Controls.DualScreen
 					// Right side under hinge
 					if (containerRightX > Hinge.X && containerRightX < hingeRightX)
 					{
-						_newPane1 = new Rectangle(0, 0, Hinge.X - locationOnScreen.X, locationOnScreen.Height);
+						_newPane1 = new Rect(0, 0, Hinge.X - locationOnScreen.X, locationOnScreen.Height);
 					}
 					// left side under hinge
 					else if (Hinge.X < locationOnScreen.X && hingeRightX > locationOnScreen.X)
 					{
 						var amountObscured = hingeRightX - locationOnScreen.X;
-						_newPane1 = new Rectangle(amountObscured, 0, locationOnScreen.Width - amountObscured, locationOnScreen.Height);
+						_newPane1 = new Rect(amountObscured, 0, locationOnScreen.Width - amountObscured, locationOnScreen.Height);
 					}
 					else
-						_newPane1 = new Rectangle(0, 0, locationOnScreen.Width, locationOnScreen.Height);
+						_newPane1 = new Rect(0, 0, locationOnScreen.Width, locationOnScreen.Height);
 
-					_newPane2 = Rectangle.Zero;
+					_newPane2 = Rect.Zero;
 				}
 				else // isPortrait
 				{
@@ -337,26 +337,26 @@ namespace Microsoft.Maui.Controls.DualScreen
 					// bottom under hinge
 					if (containerBottomY > Hinge.Y && containerBottomY < hingeBottomY)
 					{
-						_newPane1 = new Rectangle(0, 0, locationOnScreen.Width, Hinge.Y - locationOnScreen.Y);
+						_newPane1 = new Rect(0, 0, locationOnScreen.Width, Hinge.Y - locationOnScreen.Y);
 					}
 					// top under hinge
 					else if (Hinge.Y < locationOnScreen.Y && hingeBottomY > locationOnScreen.Y)
 					{
 						var amountObscured = hingeBottomY - locationOnScreen.Y;
-						_newPane1 = new Rectangle(0, amountObscured, locationOnScreen.Width, locationOnScreen.Height - amountObscured);
+						_newPane1 = new Rect(0, amountObscured, locationOnScreen.Width, locationOnScreen.Height - amountObscured);
 					}
 					else
-						_newPane1 = new Rectangle(0, 0, locationOnScreen.Width, locationOnScreen.Height);
+						_newPane1 = new Rect(0, 0, locationOnScreen.Width, locationOnScreen.Height);
 
-					_newPane2 = Rectangle.Zero;
+					_newPane2 = Rect.Zero;
 				}
 			}
 
 			if (_newPane2.Height < 0 || _newPane2.Width < 0)
-				_newPane2 = Rectangle.Zero;
+				_newPane2 = Rect.Zero;
 
 			if (_newPane1.Height < 0 || _newPane1.Width < 0)
-				_newPane1 = Rectangle.Zero;
+				_newPane1 = Rect.Zero;
 
 			Pane1 = _newPane1;
 			Pane2 = _newPane2;
@@ -379,14 +379,14 @@ namespace Microsoft.Maui.Controls.DualScreen
 		/// </summary>
 		/// <param name="layoutBounds">Coordinates of the view being tested</param>
 		/// <returns>true if layoutBounds intersects the hinge/fold</returns>
-		bool IsInMultipleRegions(Rectangle layoutBounds)
+		bool IsInMultipleRegions(Rect layoutBounds)
 		{
 			bool isInMultipleRegions = false;
 			var hinge = DualScreenService.GetHinge();
 			bool hingeIsVertical = Hinge.Height > Hinge.Width;
 			
-			if (hinge == Rectangle.Zero)
-				System.Diagnostics.Debug.Write($"hinge == Rectangle.Zero", "JWM2");
+			if (hinge == Rect.Zero)
+				System.Diagnostics.Debug.Write($"hinge == Rect.Zero", "JWM2");
 			if (hingeIsVertical)
 			{
 				// Check that the control is over the split
@@ -422,7 +422,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		/// Determines SinglePane, Wide, or Tall; which is used to lay out the underlying
 		/// Grid in a horizontal or vertical row.
 		/// </summary>
-		TwoPaneViewMode GetTwoPaneViewMode(double width, double height, Rectangle hinge)
+		TwoPaneViewMode GetTwoPaneViewMode(double width, double height, Rect hinge)
 		{
 			// TODO: ideally this would also return SinglePane if isSeparating were false to mimic Samsung Flex Mode
 			if (!IsInMultipleRegions(GetScreenRelativeBounds(width, height)))

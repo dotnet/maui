@@ -42,9 +42,9 @@ namespace Microsoft.Maui.Controls.DualScreen
         }
 
 		public Size ScaledScreenSize => DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
-		public Rectangle GetHinge()
+		public Rect GetHinge()
         {
-            return Rectangle.Zero;
+            return Rect.Zero;
         }
 
         public Point? GetLocationOnScreen(VisualElement visualElement)

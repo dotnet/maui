@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls.DualScreen
 {
@@ -30,10 +31,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		void OnHingeAngleChanged(object sender, HingeSensor.HingeSensorChangedEventArgs e)
 		{
-			Device.BeginInvokeOnMainThread(() =>
-			{
+			//Element?.Dispatcher?.Dispatch(() =>     //Device.BeginInvokeOnMainThread(() =>
+			//{
 				_hingeAngleChanged?.Invoke(this, new HingeAngleChangedEventArgs(e.HingeAngle));
-			});
+			//});
 		}
 	}
 }

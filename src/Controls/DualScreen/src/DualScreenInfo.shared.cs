@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 	public partial class DualScreenInfo : INotifyPropertyChanged
 	{
-		Rectangle[] _spanningBounds;
-		Rectangle _hingeBounds;
+		Rect[] _spanningBounds;
+		Rect _hingeBounds;
 		bool _isLandscape;
 		TwoPaneViewMode _spanMode;
 		TwoPaneViewLayoutGuide _twoPaneViewLayoutGuide;
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			//HACK:FOLDABLE
 			System.Diagnostics.Debug.Write("DualScreenInfo.ctor DualScreenService:" + dualScreenService, "JWM");
 
-			_spanningBounds = new Rectangle[0];
+			_spanningBounds = new Rect[0];
 			Element = element;
 			_dualScreenService = dualScreenService;
 
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		}
 
 
-		public Rectangle[] SpanningBounds
+		public Rect[] SpanningBounds
 		{
 			get => GetSpanningBounds();
 			set
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 		}
 
-		public Rectangle HingeBounds
+		public Rect HingeBounds
 		{
 			get => GetHingeBounds();
 			set
@@ -131,25 +131,25 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 		}
 
-		Rectangle[] GetSpanningBounds()
+		Rect[] GetSpanningBounds()
 		{
 			var guide = _twoPaneViewLayoutGuide;
 			var hinge = guide.Hinge;
 
-			if (hinge == Rectangle.Zero)
-				return new Rectangle[0];
+			if (hinge == Rect.Zero)
+				return new Rect[0];
 
-			if (guide.Pane2 == Rectangle.Zero)
-				return new Rectangle[0];
+			if (guide.Pane2 == Rect.Zero)
+				return new Rect[0];
 			
 			//TODO: should this be checking SpanMode==Wide ???
 			if(IsLandscape)
-				return new[] { guide.Pane1, new Rectangle(0, hinge.Height + guide.Pane1.Height, guide.Pane2.Width, guide.Pane2.Height) };
+				return new[] { guide.Pane1, new Rect(0, hinge.Height + guide.Pane1.Height, guide.Pane2.Width, guide.Pane2.Height) };
 			else
-				return new[] { guide.Pane1, new Rectangle(hinge.Width + guide.Pane1.Width, 0, guide.Pane2.Width, guide.Pane2.Height) };
+				return new[] { guide.Pane1, new Rect(hinge.Width + guide.Pane1.Width, 0, guide.Pane2.Width, guide.Pane2.Height) };
 		}
 
-		Rectangle GetHingeBounds()
+		Rect GetHingeBounds()
 		{
 			var guide = _twoPaneViewLayoutGuide;
 			return guide.Hinge;
@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 	/// </summary>
 	public static class BoundsExtensions
 	{
-		public static string ToRectStrings(this Rectangle[] bounds) {
+		public static string ToRectStrings(this Rect[] bounds) {
 			if (bounds.Length == 0)
 				return "[]";
 			string output = "";

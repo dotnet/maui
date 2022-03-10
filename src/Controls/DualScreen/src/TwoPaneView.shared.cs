@@ -35,10 +35,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 		//bool _hasMeasured = false;
 		bool _updatingMode = false;
 		bool _processPendingChange = false;
-		Rectangle _layoutGuidePane1;
-		Rectangle _layoutGuidePane2;
+		Rect _layoutGuidePane1;
+		Rect _layoutGuidePane2;
 		TwoPaneViewMode _layoutGuideMode;
-		Rectangle _layoutGuideHinge;
+		Rect _layoutGuideHinge;
 		bool _layoutGuideIsLandscape;
 		double _previousWidth = -1;
 		double _previousHeight = -1;
@@ -253,7 +253,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			return sizeRequest;
 		}
 
-		protected override Size ArrangeOverride(Rectangle bounds)
+		protected override Size ArrangeOverride(Rect bounds)
 		{
 			return base.ArrangeOverride(bounds);
 		}
@@ -410,7 +410,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			return true;
 		}
 
-		Rectangle _previousHinge = Rectangle.Zero;
+		Rect _previousHinge = Rect.Zero;
 
 		void UpdateRowsColumns(ViewMode newMode)
 		{
@@ -422,13 +422,13 @@ namespace Microsoft.Maui.Controls.DualScreen
 			var rowMiddle = RowDefinitions[1];
 			var rowBottom = RowDefinitions[2];
 
-			Rectangle pane1 = _twoPaneViewLayoutGuide.Pane1;
-			Rectangle pane2 = _twoPaneViewLayoutGuide.Pane2;
+			Rect pane1 = _twoPaneViewLayoutGuide.Pane1;
+			Rect pane2 = _twoPaneViewLayoutGuide.Pane2;
 			bool isLayoutSpanned = _twoPaneViewLayoutGuide.Mode != TwoPaneViewMode.SinglePane;
 
 			if (_twoPaneViewLayoutGuide.Mode != TwoPaneViewMode.SinglePane && newMode != ViewMode.Pane1Only && newMode != ViewMode.Pane2Only)
 			{
-				Rectangle hinge = _twoPaneViewLayoutGuide.Hinge;
+				Rect hinge = _twoPaneViewLayoutGuide.Hinge;
 				_previousHinge = hinge;
 
 				if (_twoPaneViewLayoutGuide.Mode == TwoPaneViewMode.Wide)

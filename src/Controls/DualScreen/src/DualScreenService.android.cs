@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Views;
-using Microsoft.Maui;
+//using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				set { _isSpanned = value;
 					FoldLayoutChanged();
 				} }
-			public Rectangle FoldingFeatureBounds { 
+			public Rect FoldingFeatureBounds { 
 				get {
 					global::Android.Util.Log.Debug("JWM2", $"DualScreenServiceImpl.getFoldingFeatureBounds _hingeDp:{_hingeDp}");
 					return _hingeDp; 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				} 
 			}
 			public float ScreenDensity { get; set; }
-			public Rectangle WindowBounds { 
+			public Rect WindowBounds { 
 				get { return _windowBounds; } 
 				set 
 				{ 
@@ -71,8 +71,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 
 			bool _isSpanned = false;
-			Rectangle _hingeDp = Rectangle.Zero;
-			Rectangle _windowBounds = Rectangle.Zero;
+			Rect _hingeDp = Rect.Zero;
+			Rect _windowBounds = Rect.Zero;
 			#endregion
 			static Activity _mainActivity;
 			static IFoldableContext _foldableInfo;
@@ -222,20 +222,20 @@ namespace Microsoft.Maui.Controls.DualScreen
 				// Hinge
 				if (!_isSpanned)
 				{
-					_hingeDp = Rectangle.Zero;
+					_hingeDp = Rect.Zero;
 				}
 				else // IsSpanned
 				{
 					var hinge = _helper.GetHingeBoundsDip();
 
-					if (hinge == null || !IsSpanned)
+					if (hinge == Rect.Zero || !IsSpanned)
 					{
-						_hingeDp = Rectangle.Zero;
+						_hingeDp = Rect.Zero;
 					}
 					else
 					{
 						//TODO: verify this works with zero-size hinge (foldable devices)
-						_hingeDp = new Rectangle((hinge.Left), (hinge.Top), (hinge.Width()), (hinge.Height()));
+						_hingeDp = new Rect((hinge.Left), (hinge.Top), (hinge.Width), (hinge.Height));
 					}
 				}
 				global::Android.Util.Log.Debug("JWM", "                             _hingeDp:" + _hingeDp);
@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				return returnValue;
 			}
 
-			public Rectangle GetHinge() => _hingeDp;
+			public Rect GetHinge() => _hingeDp;
 			/// <summary>
 			/// I question whether we should be basing anything on landscape-ness, and 
 			/// instead should be using the orientation of the hinge
@@ -319,7 +319,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			public Point? GetLocationOnScreen(VisualElement visualElement)
 			{
-				var androidView = visualElement.Handler?.NativeView as AView;
+				var androidView = visualElement.Handler?.PlatformView as AView;
 
 				if (!androidView.IsAlive())
 					return null;
@@ -334,7 +334,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				if (action == null)
 					return null;
 
-				var androidView = visualElement.Handler?.NativeView as AView;
+				var androidView = visualElement.Handler?.PlatformView as AView;
 
 				if (androidView == null || !androidView.IsAlive())
 					return null;
@@ -354,7 +354,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 				DualScreenGlobalLayoutListener ggl = null;
 
-				var androidView = visualElement.Handler?.NativeView as AView;
+				var androidView = visualElement.Handler?.PlatformView as AView;
 
 				if (androidView == null || !(table.TryGetValue(androidView, out ggl)))
 				{

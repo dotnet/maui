@@ -9,8 +9,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 	public interface IFoldableContext
 	{
 		bool isSeparating { get; }
-		Rectangle FoldingFeatureBounds { get; }
-		Rectangle WindowBounds { get; }
+		Rect FoldingFeatureBounds { get; }
+		Rect WindowBounds { get; }
 		float ScreenDensity { get; }
 		event System.EventHandler<FoldEventArgs> FoldingFeatureChanged;
 	}

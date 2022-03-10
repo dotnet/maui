@@ -2,7 +2,7 @@
 using Android.App;
 using Android.Content;
 using Android.Content.Res;
-using Android.Graphics;
+//using Android.Graphics;
 using Android.Runtime;
 using Android.Views;
 using Microsoft.Maui.Graphics;
@@ -16,13 +16,13 @@ namespace Microsoft.Maui.Controls.DualScreen
 		/// Dual-portrait (wide)    1350, 0 - 1434, 1800    1344, 0 - 1410, 1892
 		/// Dual-landscape (tall)   0, 1350 - 1800, 1434    0, 1344 - 1892, 1410
 		/// </summary>
-		public Rectangle FoldingFeatureBounds { get; set; } = Rectangle.Zero;
+		public Rect FoldingFeatureBounds { get; set; } = Rect.Zero;
 		/// <summary>
 		///                         Surface Duo          Surface Duo2
 		/// Dual-portrait (wide)    0, 0 - 2784, 1800    0, 0 - 2754, 1892
 		/// Dual-landscape (tall)   0, 0 - 1800, 2784    0, 0 - 1892, 2754
 		/// </summary>
-		public Rectangle WindowBounds { get; set; } = Rectangle.Zero;
+		public Rect WindowBounds { get; set; } = Rect.Zero;
 		/// <summary>
 		/// Whether the app is spanned across a hinge or fold
 		/// </summary>
@@ -86,10 +86,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 			// Double Portrait  Rect(1350, 0 - 1434, 1800)     Rect(1344, 0 - 1410, 1892)
 			// Double Landscape Rect(0, 1350 - 1800, 1434)     Rect(0, 1344 - 1892, 1410)
 
-			if (FoldingFeatureBounds == Rectangle.Zero)
+			if (FoldingFeatureBounds == Rect.Zero)
 				return new Rect();
 
-			return new Rect((int)FoldingFeatureBounds.Left, (int)FoldingFeatureBounds.Top, (int)FoldingFeatureBounds.Right, (int)FoldingFeatureBounds.Bottom);
+			return new Rect((int)FoldingFeatureBounds.Left, (int)FoldingFeatureBounds.Top, (int)FoldingFeatureBounds.Width, (int)FoldingFeatureBounds.Height);
 		}
 
 		/// <summary>
@@ -101,10 +101,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 			// Double Portrait  Rect(1350, 0 - 1434, 1800)     Rect(1344, 0 - 1410, 1892)
 			// Double Landscape Rect(0, 1350 - 1800, 1434)     Rect(0, 1344 - 1892, 1410)
 
-			if (FoldingFeatureBounds == Rectangle.Zero)
+			if (FoldingFeatureBounds == Rect.Zero)
 				return new Rect();
 
-			return new Rect((int)FoldingFeatureBounds.Left, (int)FoldingFeatureBounds.Top, (int)FoldingFeatureBounds.Right, (int)FoldingFeatureBounds.Bottom);
+			return new Rect((int)FoldingFeatureBounds.Left, (int)FoldingFeatureBounds.Top, (int)FoldingFeatureBounds.Width, (int)FoldingFeatureBounds.Height);
 		}
 
 		/// <summary>
@@ -127,12 +127,12 @@ namespace Microsoft.Maui.Controls.DualScreen
 				// Also make sure hinge has width OR height (not just Rect.Zero)
 				// Finally make sure the window rect has width AND height
 
-				if (hinge != null && windowRect != null
-					&& (hinge.Width() > 0 || hinge.Height() > 0)
-					&& windowRect.Width() > 0 && windowRect.Height() > 0)
+				if (hinge != Rect.Zero && windowRect != Rect.Zero
+					&& (hinge.Width > 0 || hinge.Height > 0)
+					&& windowRect.Width > 0 && windowRect.Height > 0)
 				{
 					// If the hinge intersects the window, dual mode is true and fold location is fixed
-					return hinge.Intersect(windowRect);
+					return hinge.IntersectsWith(windowRect);
 				}
 
 				return false;
@@ -169,6 +169,6 @@ namespace Microsoft.Maui.Controls.DualScreen
 		}
 
 		Rect RectPixelsToDip(Rect rect)
-			=> new Rect((int)PixelsToDip(rect.Left), (int)PixelsToDip(rect.Top), (int)PixelsToDip(rect.Right), (int)PixelsToDip(rect.Bottom));
+			=> new Rect((int)PixelsToDip(rect.Left), (int)PixelsToDip(rect.Top), (int)PixelsToDip(rect.Width), (int)PixelsToDip(rect.Height));
 	}
 }
