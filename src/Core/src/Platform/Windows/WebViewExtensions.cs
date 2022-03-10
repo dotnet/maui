@@ -26,8 +26,8 @@ namespace Microsoft.Maui.Platform
 			if (platformWebView == null)
 				return;
 
-			if (platformWebView.CanGoBack)
-				platformWebView.GoBack();
+			if (platformWebView.CoreWebView2.CanGoBack)
+				platformWebView.CoreWebView2.GoBack();
 
 			platformWebView.UpdateCanGoBackForward(webView);
 		}
@@ -37,16 +37,14 @@ namespace Microsoft.Maui.Platform
 			if (platformWebView == null)
 				return;
 
-			if (platformWebView.CanGoForward)
-				platformWebView.GoForward();
+			if (platformWebView.CoreWebView2.CanGoForward)
+				platformWebView.CoreWebView2.GoForward();
 
 			platformWebView.UpdateCanGoBackForward(webView);
 		}
 
 		public static void UpdateReload(this WebView2 platformWebView, IWebView webView)
 		{
-			// TODO: Sync Cookies
-
 			platformWebView?.Reload();
 		}
 				

@@ -405,7 +405,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			var barOffset = ToolbarVisible ? barHeight : 0;
 			int containerHeight = b - t - ContainerTopPadding - barOffset - ContainerBottomPadding;
 
-			PageController.ContainerArea = new Rectangle(0, 0, Context.FromPixels(r - l), Context.FromPixels(containerHeight));
+			PageController.ContainerArea = new Graphics.Rect(0, 0, Context.FromPixels(r - l), Context.FromPixels(containerHeight));
 
 			// Potential for optimization here, the exact conditions by which you don't need to do this are complex
 			// and the cost of doing when it's not needed is moderate to low since the layout will short circuit pretty fast
@@ -718,11 +718,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			// And remove the fragment from our own stack
 			_fragmentStack.Remove(fragment);
 
-			Device.StartTimer(TimeSpan.FromMilliseconds(10), () =>
-			{
-				UpdateToolbar();
-				return false;
-			});
+			PostDelayed(() => UpdateToolbar(), 10);
 		}
 
 		void ResetToolbar()
@@ -1092,7 +1088,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 		void AddTransitionTimer(TaskCompletionSource<bool> tcs, Fragment fragment, FragmentManager fragmentManager, IReadOnlyCollection<Fragment> fragmentsToRemove, int duration, bool shouldUpdateToolbar)
 		{
-			Device.StartTimer(TimeSpan.FromMilliseconds(duration), () =>
+			PostDelayed(() =>
 			{
 				tcs.TrySetResult(true);
 				Current?.SendAppearing();
@@ -1108,9 +1104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 					fragmentTransaction.CommitAllowingStateLossEx();
 				}
-
-				return false;
-			});
+			}, duration);
 		}
 
 		void PushCurrentPages()
@@ -1189,7 +1183,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				var width = (int)ctx.FromPixels(MeasureSpecFactory.GetSize(widthMeasureSpec));
 
 				SizeRequest request = _child.Element.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(_child.Element, new Rectangle(0, 0, width, request.Request.Height));
+				Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(_child.Element, new Graphics.Rect(0, 0, width, request.Request.Height));
 
 				int widthSpec = MeasureSpecFactory.MakeMeasureSpec((int)ctx.ToPixels(width), MeasureSpecMode.Exactly);
 				int heightSpec = MeasureSpecFactory.MakeMeasureSpec((int)ctx.ToPixels(request.Request.Height), MeasureSpecMode.Exactly);

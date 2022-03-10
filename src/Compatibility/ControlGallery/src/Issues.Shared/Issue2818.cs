@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 #if UITEST
@@ -73,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						},
 						new Label()
 						{
-							Text = Device.Idiom.ToString(),
+							Text = DeviceInfo.Idiom.ToString(),
 							AutomationId = "Idiom"
 						}
 					}

@@ -446,7 +446,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			// Make sure we do this after the header has a chance to react
-			Device.BeginInvokeOnMainThread(UpdateHeaderVisibility);
+			BeginInvokeOnMainThread(UpdateHeaderVisibility);
 
 			if (e.OldItems != null)
 			{

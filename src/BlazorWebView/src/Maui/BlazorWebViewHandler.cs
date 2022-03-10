@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.AspNetCore.Components.WebView;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 
@@ -8,6 +9,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public partial class BlazorWebViewHandler
 	{
+		/// <summary>
+		/// This field is part of MAUI infrastructure and is not intended for use by application code.
+		/// </summary>
 		public static readonly PropertyMapper<IBlazorWebView, BlazorWebViewHandler> BlazorWebViewMapper = new(ViewMapper)
 		{
 			[nameof(IBlazorWebView.HostPage)] = MapHostPage,
@@ -15,18 +19,28 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			[nameof(IBlazorWebView.ExternalNavigationStarting)] = MapNotifyExternalNavigationStarting,
 		};
 
-		public BlazorWebViewHandler() : base(BlazorWebViewMapper)
+		/// <summary>
+		/// Initializes a new instance of <see cref="BlazorWebViewHandler"/> with default mappings.
+		/// </summary>
+		public BlazorWebViewHandler() : this(BlazorWebViewMapper)
 		{
 		}
 
-		public BlazorWebViewHandler(PropertyMapper mapper) : base(mapper ?? BlazorWebViewMapper)
+		/// <summary>
+		/// Initializes a new instance of <see cref="BlazorWebViewHandler"/> using the specified mappings.
+		/// </summary>
+		/// <param name="mapper">The property mappings.</param>
+		public BlazorWebViewHandler(PropertyMapper? mapper) : base(mapper ?? BlazorWebViewMapper)
 		{
 		}
 
-#if !NETSTANDARD
-		private MauiDispatcher ComponentsDispatcher { get; } = new MauiDispatcher();
-#endif
+		internal BlazorWebViewDeveloperTools DeveloperTools => MauiContext!.Services.GetRequiredService<BlazorWebViewDeveloperTools>();
 
+		/// <summary>
+		/// Maps the <see cref="IBlazorWebView.HostPage"/> property to the specified handler.
+		/// </summary>
+		/// <param name="handler">The <see cref="BlazorWebViewHandler"/>.</param>
+		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
 		public static void MapHostPage(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !NETSTANDARD
@@ -35,6 +49,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #endif
 		}
 
+		/// <summary>
+		/// Maps the <see cref="IBlazorWebView.RootComponents"/> property to the specified handler.
+		/// </summary>
+		/// <param name="handler">The <see cref="BlazorWebViewHandler"/>.</param>
+		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
 		public static void MapRootComponents(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !NETSTANDARD
@@ -43,6 +62,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #endif
 		}
 
+		/// <summary>
+		/// Maps the <see cref="BlazorWebView.NotifyExternalNavigationStarting"/> property to the specified handler.
+		/// </summary>
+		/// <param name="handler">The <see cref="BlazorWebViewHandler"/>.</param>
+		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
 		public static void MapNotifyExternalNavigationStarting(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !NETSTANDARD

@@ -7,9 +7,9 @@ namespace Microsoft.Maui.Controls
 	{
 		bool CanChangeIsPresented { get; set; }
 
-		Rectangle DetailBounds { get; set; }
+		Rect DetailBounds { get; set; }
 
-		Rectangle FlyoutBounds { get; set; }
+		Rect FlyoutBounds { get; set; }
 
 		bool ShouldShowSplitMode { get; }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Platform
 		{
 			nativeTimePicker.Time = timePicker.Time;
 
-			if (timePicker.Format?.Contains('H') == true)
+			if (timePicker.Format?.Contains('H', StringComparison.Ordinal) == true)
 			{
 				nativeTimePicker.ClockIdentifier = "24HourClock";
 			}

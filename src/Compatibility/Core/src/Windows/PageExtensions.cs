@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			frameworkElement.Loaded += (sender, args) =>
 			{
-				visualElement.Layout(new Rectangle(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight));
+				visualElement.Layout(new Rect(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight));
 			};
 
 			return frameworkElement;

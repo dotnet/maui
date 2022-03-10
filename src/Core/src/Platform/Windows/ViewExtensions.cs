@@ -253,6 +253,13 @@ namespace Microsoft.Maui.Platform
 				panel.UpdateBackground(view.Background);
 		}
 
+		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)
+		{
+			// Background and InputTransparent for Windows layouts are heavily intertwined, so setting one
+			// usuall requires setting the other at the same time
+			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
+		}
+
 		public static async Task<byte[]?> RenderAsPNG(this IView view)
 		{
 			var platformView = view?.ToPlatform();
@@ -302,42 +309,42 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		internal static Rectangle GetPlatformViewBounds(this IView view)
+		internal static Rect GetPlatformViewBounds(this IView view)
 		{
 			var platformView = view?.ToPlatform();
 			if (platformView != null)
 				return platformView.GetPlatformViewBounds();
-			return new Rectangle();
+			return new Rect();
 		}
 
-		internal static Rectangle GetPlatformViewBounds(this FrameworkElement platformView)
+		internal static Rect GetPlatformViewBounds(this FrameworkElement platformView)
 		{
 			if (platformView == null)
-				return new Rectangle();
+				return new Rect();
 
 			var root = platformView.XamlRoot;
 			var offset = platformView.TransformToVisual(root.Content) as UI.Xaml.Media.MatrixTransform;
 			if (offset != null)
-				return new Rectangle(offset.Matrix.OffsetX, offset.Matrix.OffsetY, platformView.ActualWidth, platformView.ActualHeight);
+				return new Rect(offset.Matrix.OffsetX, offset.Matrix.OffsetY, platformView.ActualWidth, platformView.ActualHeight);
 
-			return new Rectangle();
+			return new Rect();
 		}
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view) 
+		internal static Graphics.Rect GetBoundingBox(this IView view) 
 			=> view.ToPlatform().GetBoundingBox();
 
-		internal static Graphics.Rectangle GetBoundingBox(this FrameworkElement? platformView)
+		internal static Graphics.Rect GetBoundingBox(this FrameworkElement? platformView)
 		{
 			if (platformView == null)
-				return new Rectangle();
+				return new Rect();
 
 			var rootView = platformView.XamlRoot.Content;
 			if (platformView == rootView)
 			{
 				if (rootView is not FrameworkElement el)
-					return new Rectangle();
+					return new Rect();
 
-				return new Rectangle(0, 0, el.ActualWidth, el.ActualHeight);
+				return new Rect(0, 0, el.ActualWidth, el.ActualHeight);
 			}
 
 
@@ -351,7 +358,7 @@ namespace Microsoft.Maui.Platform
 			var x2 = new[] { topLeft.X, topRight.X, bottomLeft.X, bottomRight.X }.Max();
 			var y1 = new[] { topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y }.Min();
 			var y2 = new[] { topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y }.Max();
-			return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+			return new Rect(x1, y1, x2 - x1, y2 - y1);
 		}
 
 		internal static DependencyObject? GetParent(this FrameworkElement? view)
@@ -405,7 +412,7 @@ namespace Microsoft.Maui.Platform
 				// but it won't restore the focus to Control
 				ContainingPage.IsTabStop = wasTabStop;
 			}
-    }
+		}
     
 		internal static IWindow? GetHostedWindow(this IView? view)
 			=> GetHostedWindow(view?.Handler?.PlatformView as FrameworkElement);
@@ -427,8 +434,21 @@ namespace Microsoft.Maui.Platform
 						return window;
 				}
 			}
-
+			
 			return null;
+		}
+		
+		public static void UpdateInputTransparent(this FrameworkElement nativeView, IViewHandler handler, IView view)
+		{
+			if (nativeView is UIElement element)
+			{ 
+				element.IsHitTestVisible = !view.InputTransparent;
+			}
+		}
+
+		public static void UpdateInputTransparent(this LayoutPanel layoutPanel, ILayoutHandler handler, ILayout layout)
+		{
+			// Nothing to do yet, but we might need to adjust the wrapper view 
 		}
 	}
 }

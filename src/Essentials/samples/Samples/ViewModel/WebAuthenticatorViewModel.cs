@@ -41,7 +41,7 @@ namespace Samples.ViewModel
 			{
 				WebAuthenticatorResult r = null;
 
-				if (scheme.Equals("Apple")
+				if (scheme.Equals("Apple", StringComparison.Ordinal)
 					&& DeviceInfo.Platform == DevicePlatform.iOS
 					&& DeviceInfo.Version.Major >= 13)
 				{

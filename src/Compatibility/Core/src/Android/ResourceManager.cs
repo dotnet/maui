@@ -405,7 +405,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			// When searching by reflection you would use a "_" instead of a "."
 			// So this accounts for cases where users were searching with an "_"
-			if ((id = SearchByIdentifier(name.Replace("_", "."), defType, resource, packageName)) > 0)
+			if ((id = SearchByIdentifier(name.Replace("_", ".", StringComparison.Ordinal), defType, resource, packageName)) > 0)
 				return id;
 
 			int SearchByIdentifier(string n, string d, Resources r, string p)

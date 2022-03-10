@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static bool IsAtLeast(int version)
 		{
-			return OperatingSystem.IsIOSVersionAtLeast(version);
+			return OperatingSystem.IsIOSVersionAtLeast(version) || OperatingSystem.IsTvOSVersionAtLeast(version);
 		}
 
 		private static bool? SetNeedsUpdateOfHomeIndicatorAutoHidden;

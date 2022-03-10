@@ -5,6 +5,27 @@ namespace Microsoft.Maui.Platform
 {
 	public static class StrokeExtensions
 	{
+		public static void UpdateBorderStroke(this AView platformView, IBorderStroke border)
+		{
+			//Always set the drawable first
+			platformView.UpdateMauiDrawable(border);
+
+			var borderShape = border.Shape;
+			MauiDrawable? mauiDrawable = platformView.Background as MauiDrawable;
+
+			if (mauiDrawable == null && borderShape == null)
+				return;
+			
+			mauiDrawable?.SetBorderBrush(border.Stroke);
+			mauiDrawable?.SetBorderWidth(border.StrokeThickness);
+			platformView.UpdateStrokeDashPattern(border);
+			platformView.UpdateStrokeDashOffset(border);
+			mauiDrawable?.SetBorderMiterLimit(border.StrokeMiterLimit);
+			mauiDrawable?.SetBorderLineCap(border.StrokeLineCap);
+			mauiDrawable?.SetBorderLineJoin(border.StrokeLineJoin);
+
+		}
+
 		public static void UpdateStrokeShape(this AView platformView, IBorderStroke border)
 		{
 			var borderShape = border.Shape;

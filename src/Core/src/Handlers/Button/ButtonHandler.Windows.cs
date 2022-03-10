@@ -13,7 +13,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override Button CreatePlatformView() =>
 			new Button
-			{
+			{	
+				AllowFocusOnInteraction = false,
 				VerticalAlignment = VerticalAlignment.Stretch,
 				HorizontalAlignment = HorizontalAlignment.Stretch,
 				Content = new StackPanel

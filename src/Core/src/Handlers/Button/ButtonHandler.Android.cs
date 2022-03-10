@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Handlers
 			return true;
 		}
 
-		public override void PlatformArrange(Rectangle frame)
+		public override void PlatformArrange(Rect frame)
 		{
 			var platformView = this.ToPlatform();
 

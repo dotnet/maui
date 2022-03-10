@@ -5,20 +5,42 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using Foundation;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using UIKit;
 using WebKit;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	/// <summary>
+	/// An implementation of <see cref="WebViewManager"/> that uses the <see cref="WKWebView"/> browser control
+	/// to render web content.
+	/// </summary>
 	public class IOSWebViewManager : WebViewManager
 	{
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
 		private readonly WKWebView _webview;
 
-		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler!!, WKWebView webview!!, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
-			: base(services, dispatcher, new Uri(BlazorWebViewHandler.AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+		/// <summary>
+		/// Initializes a new instance of <see cref="IOSWebViewManager"/>
+		/// </summary>
+		/// <param name="blazorMauiWebViewHandler">The <see cref="BlazorWebViewHandler"/>.</param>
+		/// <param name="webview">The <see cref="WKWebView"/> to render web content in.</param>
+		/// <param name="provider">The <see cref="IServiceProvider"/> for the application.</param>
+		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance instance that can marshal calls to the required thread or sync context.</param>
+		/// <param name="fileProvider">Provides static content to the webview.</param>
+		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
+		/// <param name="hostPageRelativePath">Path to the host page within the fileProvider.</param>
+		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler!!, WKWebView webview!!, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+			: base(provider, dispatcher, new Uri(BlazorWebViewHandler.AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
+			if (provider.GetService<MauiBlazorMarkerService>() is null)
+			{
+				throw new InvalidOperationException(
+					"Unable to find the required services. " +
+					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView)}' in the application startup code.");
+			}
+
 			_blazorMauiWebViewHandler = blazorMauiWebViewHandler;
 			_webview = webview;
 

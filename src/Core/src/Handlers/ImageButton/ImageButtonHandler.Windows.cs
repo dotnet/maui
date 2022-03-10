@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -7,24 +8,38 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageButtonHandler : ViewHandler<IImageButton, Button>
 	{
+		Image? _image;
+
 		PointerEventHandler? _pointerPressedHandler;
 
-		protected override Button CreatePlatformView() =>
-			new Button
+		protected override Button CreatePlatformView()
+		{
+			_image = new Image
+			{
+				VerticalAlignment = VerticalAlignment.Center,
+				HorizontalAlignment = HorizontalAlignment.Center,
+				Stretch = Stretch.Uniform,
+			};
+
+			var platformImageButton = new Button
 			{
 				VerticalAlignment = VerticalAlignment.Stretch,
 				HorizontalAlignment = HorizontalAlignment.Stretch,
-				Content = new Image
-				{
-					VerticalAlignment = VerticalAlignment.Center,
-					HorizontalAlignment = HorizontalAlignment.Center,
-					Stretch = Stretch.Uniform,
-				}
+				Content = _image
 			};
+
+			return platformImageButton;
+		}
 
 		protected override void ConnectHandler(Button platformView)
 		{
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
+
+			if (_image != null)
+			{
+				_image.ImageOpened += OnImageOpened;
+				_image.ImageFailed += OnImageFailed;
+			}
 
 			platformView.Click += OnClick;
 			platformView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
@@ -34,6 +49,12 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(Button platformView)
 		{
+			if (_image != null)
+			{
+				_image.ImageOpened -= OnImageOpened;
+				_image.ImageFailed -= OnImageFailed;
+			}
+
 			platformView.Click -= OnClick;
 			platformView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
 
@@ -78,6 +99,17 @@ namespace Microsoft.Maui.Handlers
 		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
 		{
 			VirtualView?.Pressed();
+		}
+
+		void OnImageOpened(object sender, RoutedEventArgs routedEventArgs)
+		{
+			VirtualView?.UpdateIsLoading(false);
+		}
+
+		protected virtual void OnImageFailed(object sender, ExceptionRoutedEventArgs exceptionRoutedEventArgs)
+		{
+			MauiContext?.CreateLogger<ImageButtonHandler>()?.LogWarning("Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}", exceptionRoutedEventArgs.ErrorMessage);
+			VirtualView?.UpdateIsLoading(false);
 		}
 	}
 }

@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (target == _currentFragment)
 				return Task.FromResult(true);
 
-			var t = ChildFragmentManager.BeginTransaction();
+			var t = ChildFragmentManager.BeginTransactionEx();
 
 			if (animated)
 				SetupAnimation(navSource, t, page);
@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnShellSectionChanged()
 		{
-			HandleFragmentUpdate(ShellNavigationSource.ShellSectionChanged, ShellSection, null, false);
+			HandleFragmentUpdate(ShellNavigationSource.ShellSectionChanged, ShellSection, null, false).FireAndForget();
 		}
 
 		protected virtual void OnDisplayedPageChanged(Page newPage, Page oldPage)

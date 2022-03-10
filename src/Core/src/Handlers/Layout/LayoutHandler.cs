@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILayout.Background)] = MapBackground,
 			[nameof(ILayout.ClipsToBounds)] = MapClipsToBounds,
 			[nameof(ILayout.FlowDirection)] = MapFlowDirection,
+#if ANDROID || WINDOWS
+			[nameof(IView.InputTransparent)] = MapInputTransparent,
+#endif
 		};
 
 		public static CommandMapper<ILayout, ILayoutHandler> CommandMapper = new(ViewCommandMapper)
@@ -67,6 +70,7 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateFlowDirection(layout);
 		}
 
+
 		public static void MapRemove(ILayoutHandler handler, ILayout layout, object? arg)
 		{
 			if (arg is LayoutHandlerUpdate args)
@@ -88,7 +92,7 @@ namespace Microsoft.Maui.Handlers
 			handler.Clear();
 		}
 
-		private static void MapUpdate(ILayoutHandler handler, ILayout layout, object? arg)
+		static void MapUpdate(ILayoutHandler handler, ILayout layout, object? arg)
 		{
 			if (arg is LayoutHandlerUpdate args)
 			{
@@ -96,7 +100,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		private static void MapUpdateZIndex(ILayoutHandler handler, ILayout layout, object? arg)
+		static void MapUpdateZIndex(ILayoutHandler handler, ILayout layout, object? arg)
 		{
 			if (arg is IView view)
 			{

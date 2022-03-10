@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void SetElementSize(Size size)
 		{
-			Element.Layout(new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Element.Layout(new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public UIViewController ViewController
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			// TODO MAUI: Is this correct?
 			if (Element.Width == -1 && Element.Height == -1)
-				(Element as IView).Arrange(new Rectangle(Element.X, Element.Y, View.Bounds.Width, View.Bounds.Height));
+				(Element as IView).Arrange(new Rect(Element.X, Element.Y, View.Bounds.Width, View.Bounds.Height));
 
 			LayoutChildren(false);
 		}
@@ -254,7 +254,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_flyoutController.View.Frame = flyoutFrame;
 
 			(FlyoutPage.Flyout as IView).Measure(flyoutFrame.Width, flyoutFrame.Height);
-			FlyoutPage.Flyout.Handler.PlatformArrangeHandler(new Rectangle(0, 0, flyoutFrame.Width, flyoutFrame.Height));
+			FlyoutPage.Flyout.Handler.PlatformArrangeHandler(new Rect(0, 0, flyoutFrame.Width, flyoutFrame.Height));
 
 			var target = frame;
 			if (Presented)
@@ -285,8 +285,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				detailView.Layer.Opacity = (float)opacity;
 			}
 
-			FlyoutPageController.FlyoutBounds = new Rectangle(flyoutFrame.X, 0, flyoutFrame.Width, flyoutFrame.Height);
-			FlyoutPageController.DetailBounds = new Rectangle(0, 0, frame.Width, frame.Height);
+			FlyoutPageController.FlyoutBounds = new Rect(flyoutFrame.X, 0, flyoutFrame.Width, flyoutFrame.Height);
+			FlyoutPageController.DetailBounds = new Rect(0, 0, frame.Width, frame.Height);
 
 			if (Presented)
 				_clickOffView.Frame = _detailController.View.Frame;
@@ -545,7 +545,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		UIViewController IPlatformViewHandler.ViewController => this;
 
-		void IViewHandler.PlatformArrange(Rectangle rect) =>
+		void IViewHandler.PlatformArrange(Rect rect) =>
 			_viewHandlerWrapper.PlatformArrange(rect);
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext)

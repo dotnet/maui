@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
@@ -61,7 +62,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			carouselView.SetBinding(CarouselView.PositionProperty, nameof(_viewModel.CarouselPosition));
 
 			var absolute = new Microsoft.Maui.Controls.AbsoluteLayout();
-			AbsoluteLayout.SetLayoutBounds(carouselView, new Rectangle(0, 0, 1, 1));
+			AbsoluteLayout.SetLayoutBounds(carouselView, new Rect(0, 0, 1, 1));
 			AbsoluteLayout.SetLayoutFlags(carouselView, AbsoluteLayoutFlags.All);
 			absolute.Add(carouselView);
 
@@ -90,7 +91,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 			carouselView.IndicatorView = indicators;
 
-			AbsoluteLayout.SetLayoutBounds(indicators, new Rectangle(.5, 1, -1, -1));
+			AbsoluteLayout.SetLayoutBounds(indicators, new Rect(.5, 1, -1, -1));
 			AbsoluteLayout.SetLayoutFlags(indicators, AbsoluteLayoutFlags.PositionProportional);
 			absolute.Add(indicators);
 
@@ -199,20 +200,12 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 		static string DefaultFontFamily()
 		{
 			var fontFamily = "";
-			switch (Device.RuntimePlatform)
-			{
-				case Device.iOS:
-					fontFamily = "Ionicons";
-					break;
-				case Device.UWP:
-					fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
-					break;
-				case Device.Android:
-				default:
-					fontFamily = "fonts/ionicons.ttf#";
-					break;
-			}
-
+			if (DeviceInfo.Platform == DevicePlatform.iOS)
+				fontFamily = "Ionicons";
+			else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
+			else
+				fontFamily = "fonts/ionicons.ttf#";
 			return fontFamily;
 		}
 	}

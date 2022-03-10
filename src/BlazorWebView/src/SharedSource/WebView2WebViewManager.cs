@@ -17,16 +17,21 @@ using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.FileProviders;
 #if WEBVIEW2_WINFORMS
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.WebView.WindowsForms;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 #elif WEBVIEW2_WPF
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.WebView.Wpf;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 #elif WEBVIEW2_MAUI
 using Microsoft.AspNetCore.Components.WebView.Maui;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -46,17 +51,19 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
 		internal static readonly string AppHostAddress = "0.0.0.0";
+
+		/// <summary>
+		/// Gets the application's base URI. Defaults to <c>https://0.0.0.0/</c>
+		/// </summary>
 		protected static readonly string AppOrigin = $"https://{AppHostAddress}/";
 
 		private readonly WebView2Control _webview;
 		private readonly Task _webviewReadyTask;
+
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment _coreWebView2Environment;
 		private readonly Action<ExternalLinkNavigationEventArgs> _externalNavigationStarting;
-#elif WEBVIEW2_MAUI
-		private protected CoreWebView2Environment? _coreWebView2Environment;
-		private readonly BlazorWebViewHandler _blazorWebViewHandler;
-#endif
+		private readonly BlazorWebViewDeveloperTools _developerTools;
 
 		/// <summary>
 		/// Constructs an instance of <see cref="WebView2WebViewManager"/>.
@@ -65,35 +72,86 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="services">A service provider containing services to be used by this class and also by application code.</param>
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
+		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
+		/// <param name="externalNavigationStarting">Callback invoked when external navigation starts.</param>
 		public WebView2WebViewManager(
-			WebView2Control webview!!, 
-			IServiceProvider services, 
-			Dispatcher dispatcher, 
-			IFileProvider fileProvider, 
-			JSComponentConfigurationStore jsComponents, 
+			WebView2Control webview!!,
+			IServiceProvider services,
+			Dispatcher dispatcher,
+			IFileProvider fileProvider,
+			JSComponentConfigurationStore jsComponents,
 			string hostPageRelativePath,
-#if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-			Action<ExternalLinkNavigationEventArgs> externalNavigationStarting
-#elif WEBVIEW2_MAUI
-			BlazorWebViewHandler blazorWebViewHandler
-#endif
-		)
+			Action<ExternalLinkNavigationEventArgs> externalNavigationStarting)
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+
 		{
-			_webview = webview;
-			
-#if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-			_externalNavigationStarting = externalNavigationStarting;
-#elif WEBVIEW2_MAUI
-			_blazorWebViewHandler = blazorWebViewHandler;
+#if WEBVIEW2_WINFORMS
+			if (services.GetService<WindowsFormsBlazorMarkerService>() is null)
+			{
+				throw new InvalidOperationException(
+					"Unable to find the required services. " +
+					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddWindowsFormsBlazorWebView)}' in the application startup code.");
+			}
+#elif WEBVIEW2_WPF
+			if (services.GetService<WpfBlazorMarkerService>() is null)
+			{
+				throw new InvalidOperationException(
+					"Unable to find the required services. " +
+					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddWpfBlazorWebView)}' in the application startup code.");
+			}
 #endif
+
+			_webview = webview;
+			_externalNavigationStarting = externalNavigationStarting;
+			_developerTools = services.GetRequiredService<BlazorWebViewDeveloperTools>();
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
 			// so keep track of a task we can await during LoadUri.
 			_webviewReadyTask = InitializeWebView2();
 		}
+#elif WEBVIEW2_MAUI
+		private protected CoreWebView2Environment? _coreWebView2Environment;
+		private readonly BlazorWebViewHandler _blazorWebViewHandler;
+
+		/// <summary>
+		/// Constructs an instance of <see cref="WebView2WebViewManager"/>.
+		/// </summary>
+		/// <param name="webview">A <see cref="WebView2Control"/> to access platform-specific WebView2 APIs.</param>
+		/// <param name="services">A service provider containing services to be used by this class and also by application code.</param>
+		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
+		/// <param name="fileProvider">Provides static content to the webview.</param>
+		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
+		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
+		/// <param name="blazorWebViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
+		public WebView2WebViewManager(
+			WebView2Control webview!!,
+			IServiceProvider services,
+			Dispatcher dispatcher,
+			IFileProvider fileProvider,
+			JSComponentConfigurationStore jsComponents,
+			string hostPageRelativePath,
+			BlazorWebViewHandler blazorWebViewHandler
+		)
+			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+		{
+			if (services.GetService<MauiBlazorMarkerService>() is null)
+			{
+				throw new InvalidOperationException(
+					"Unable to find the required services. " +
+					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView)}' in the application startup code.");
+			}
+
+			_webview = webview;
+			_blazorWebViewHandler = blazorWebViewHandler;
+
+			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
+			// We want the external API to behave as if initalization is synchronous,
+			// so keep track of a task we can await during LoadUri.
+			_webviewReadyTask = InitializeWebView2();
+		}
+#endif
 
 		/// <inheritdoc />
 		protected override void NavigateCore(Uri absoluteUri)
@@ -117,7 +175,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #endif
 				.ConfigureAwait(true);
 			await _webview.EnsureCoreWebView2Async();
-			ApplyDefaultWebViewSettings();
+
+#if WEBVIEW2_MAUI
+            var developerTools = _blazorWebViewHandler.DeveloperTools;
+#elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+			var developerTools = _developerTools;
+#endif
+			ApplyDefaultWebViewSettings(developerTools);
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
 
@@ -151,6 +215,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			_webview.CoreWebView2.WebMessageReceived += (s, e) => MessageReceived(new Uri(e.Source), e.TryGetWebMessageAsString());
 		}
 
+		/// <summary>
+		/// Handles outbound URL requests.
+		/// </summary>
+		/// <param name="eventArgs">The <see cref="CoreWebView2WebResourceRequestedEventArgs"/>.</param>
 		protected virtual Task HandleWebResourceRequest(CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
@@ -187,7 +255,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri) && uri.Host != AppHostAddress)
 			{
 				var callbackArgs = new ExternalLinkNavigationEventArgs(uri);
-				
+
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 				_externalNavigationStarting?.Invoke(callbackArgs);
 #elif WEBVIEW2_MAUI
@@ -231,8 +299,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		private protected static string GetHeaderString(IDictionary<string, string> headers) =>
 			string.Join(Environment.NewLine, headers.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
 
-		private void ApplyDefaultWebViewSettings()
+		private void ApplyDefaultWebViewSettings(BlazorWebViewDeveloperTools devTools)
 		{
+			_webview.CoreWebView2.Settings.AreDevToolsEnabled = devTools.Enabled;
+
 			// Desktop applications typically don't want the default web browser context menu
 			_webview.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
 

@@ -24,24 +24,18 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		void Click()
 		{
-			if (Platform.HasOSVersion(10, 0))
-			{
-				var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Light);
-				impact.Prepare();
-				impact.ImpactOccurred();
-				impact.Dispose();
-			}
+			var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Light);
+			impact.Prepare();
+			impact.ImpactOccurred();
+			impact.Dispose();
 		}
 
 		public void LongPress()
 		{
-			if (Platform.HasOSVersion(10, 0))
-			{
-				var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Medium);
-				impact.Prepare();
-				impact.ImpactOccurred();
-				impact.Dispose();
-			}
+			var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Medium);
+			impact.Prepare();
+			impact.ImpactOccurred();
+			impact.Dispose();
 		}
 	}
 }

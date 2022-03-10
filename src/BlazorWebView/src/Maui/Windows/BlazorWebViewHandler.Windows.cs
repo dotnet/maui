@@ -1,23 +1,28 @@
 ﻿using System;
 using System.IO;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	/// <summary>
+	/// A <see cref="ViewHandler"/> for <see cref="BlazorWebView"/>.
+	/// </summary>
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WebView2Control>
 	{
 		private WebView2WebViewManager? _webviewManager;
 
+		/// <inheritdoc />
 		protected override WebView2Control CreatePlatformView()
 		{
 			return new WebView2Control();
 		}
 
+		/// <inheritdoc />
 		protected override void DisconnectHandler(WebView2Control platformView)
 		{
 			if (_webviewManager != null)
@@ -57,11 +62,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
-      
+
 			_webviewManager = new WinUIWebViewManager(
 				PlatformView,
 				Services!,
-				ComponentsDispatcher,
+				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
 				fileProvider,
 				VirtualView.JSComponents,
 				hostPageRelativePath,

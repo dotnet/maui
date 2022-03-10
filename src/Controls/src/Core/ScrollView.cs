@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='LayoutAreaOverride']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Rectangle LayoutAreaOverride
+		public Rect LayoutAreaOverride
 		{
 			get => _layoutAreaOverride;
 			set
@@ -41,8 +41,8 @@ namespace Microsoft.Maui.Controls
 
 			if (position == ScrollToPosition.MakeVisible)
 			{
-				var scrollBounds = new Rectangle(ScrollX, ScrollY, Width, Height);
-				var itemBounds = new Rectangle(x, y, item.Width, item.Height);
+				var scrollBounds = new Rect(ScrollX, ScrollY, Width, Height);
+				var itemBounds = new Rect(x, y, item.Width, item.Height);
 				if (scrollBounds.Contains(itemBounds))
 					return new Point(ScrollX, ScrollY);
 				switch (Orientation)
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls
 
 		View _content;
 		TaskCompletionSource<bool> _scrollCompletionSource;
-		Rectangle _layoutAreaOverride;
+		Rect _layoutAreaOverride;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='Content']/Docs" />
 		public View Content
@@ -253,21 +253,21 @@ namespace Microsoft.Maui.Controls
 				{
 					case ScrollOrientation.Horizontal:
 						size = _content.Measure(double.PositiveInfinity, height, MeasureFlags.IncludeMargins);
-						LayoutChildIntoBoundingRegion(_content, new Rectangle(x, y, GetMaxWidth(width, size), height));
+						LayoutChildIntoBoundingRegion(_content, new Rect(x, y, GetMaxWidth(width, size), height));
 						ContentSize = new Size(GetMaxWidth(width), height);
 						break;
 					case ScrollOrientation.Vertical:
 						size = _content.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-						LayoutChildIntoBoundingRegion(_content, new Rectangle(x, y, width, GetMaxHeight(height, size)));
+						LayoutChildIntoBoundingRegion(_content, new Rect(x, y, width, GetMaxHeight(height, size)));
 						ContentSize = new Size(width, GetMaxHeight(height));
 						break;
 					case ScrollOrientation.Both:
 						size = _content.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-						LayoutChildIntoBoundingRegion(_content, new Rectangle(x, y, GetMaxWidth(width, size), GetMaxHeight(height, size)));
+						LayoutChildIntoBoundingRegion(_content, new Rect(x, y, GetMaxWidth(width, size), GetMaxHeight(height, size)));
 						ContentSize = new Size(GetMaxWidth(width), GetMaxHeight(height));
 						break;
 					case ScrollOrientation.Neither:
-						LayoutChildIntoBoundingRegion(_content, new Rectangle(x, y, width, height));
+						LayoutChildIntoBoundingRegion(_content, new Rect(x, y, width, height));
 						ContentSize = new Size(width, height);
 						break;
 				}

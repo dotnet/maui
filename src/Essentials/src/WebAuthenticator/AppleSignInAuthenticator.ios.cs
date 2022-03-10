@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticator.Options options)
 		{
-			if (DeviceInfo.Version.Major < 13)
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
 				throw new FeatureNotSupportedException();
 
 			var provider = new ASAuthorizationAppleIdProvider();

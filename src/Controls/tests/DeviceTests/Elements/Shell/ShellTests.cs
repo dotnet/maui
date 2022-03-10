@@ -29,6 +29,9 @@ namespace Microsoft.Maui.DeviceTests
 				{
 #if WINDOWS || ANDROID
 					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
+					handlers.AddHandler<Layout, LayoutHandler>();
+					handlers.AddHandler<Image, ImageHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
 #endif
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Toolbar, ToolbarHandler>();
@@ -36,9 +39,6 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<ShellItem, ShellItemHandler>();
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();
 					handlers.AddHandler<ShellContent, ShellContentHandler>();
-					handlers.AddHandler<Layout, LayoutHandler>();
-					handlers.AddHandler<Image, ImageHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
 #endif
 				});
 			});
@@ -50,22 +50,56 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var shell = await InvokeOnMainThreadAsync<Shell>(() => {
+			var shell = await InvokeOnMainThreadAsync<Shell>(() =>
+			{
 				return new Shell()
-					{
-						Items =
+				{
+					Items =
 						{
 							new ContentPage()
 						}
-					};
+				};
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
+				// TODO MAUI Fix this 
+				await Task.Delay(100);
 				Assert.NotNull(shell.Handler);
-				return Task.CompletedTask;
+			});
+		}
+
+
+		[Theory]
+		[ClassData(typeof(ShellBasicNavigationTestCases))]
+		public async Task BasicShellNavigationStructurePermutations(ShellItem[] shellItems)
+		{
+			SetupBuilder();
+			var shell = await InvokeOnMainThreadAsync<Shell>(() =>
+			{
+				var value = new Shell();
+				foreach (var item in shellItems)
+					value.Items.Add(item);
+
+				return value;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				// TODO MAUI Fix this 
+				await Task.Delay(100);
+				await shell.GoToAsync("//page2");
+				await Task.Delay(100);
 			});
 		}
 #endif
+
+		protected Task<Shell> CreateShellAsync(Action<Shell> action)=>
+			InvokeOnMainThreadAsync(() =>
+			{
+				var value = new Shell();
+				action?.Invoke(value);
+				return value;
+			});
 	}
 }

@@ -5,19 +5,15 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.TabbedPage']/Docs" />
-	public partial class TabbedPage
+	public partial class TabbedPage : ITabbedView
 	{
-		private protected override void OnHandlerChangedCore()
-		{
-			base.OnHandlerChangedCore();
-		}
-
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			// We don't want forcelayout to call the legacy
 			// Page.LayoutChildren code
 		}
 
+		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args);
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
 			base.OnHandlerChangingCore(args);
@@ -33,6 +29,7 @@ namespace Microsoft.Maui.Controls
 				WireUnwireChanges(true);
 			}
 
+			OnHandlerChangingPartial(args);
 			void OnPagesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 			{
 				WireUnwireChanges(false);

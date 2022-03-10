@@ -56,9 +56,8 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
 					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
-#if WINDOWS || ANDROID
 					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
-#endif
+					handlers.AddHandler(typeof(Controls.ContentPage), typeof(PageHandler));
 				});
 
 			additionalCreationActions?.Invoke(appBuilder);
@@ -110,16 +109,16 @@ namespace Microsoft.Maui.DeviceTests
 				// which update properties don't crash. 
 
 				var aView = viewHandler.PlatformView as Android.Views.View;
-				if(aView.LayoutParameters == null)
+				if (aView.LayoutParameters == null)
 				{
-					aView.LayoutParameters = 
+					aView.LayoutParameters =
 						new Android.Views.ViewGroup.LayoutParams(
-							Android.Views.ViewGroup.LayoutParams.WrapContent, 
+							Android.Views.ViewGroup.LayoutParams.WrapContent,
 							Android.Views.ViewGroup.LayoutParams.WrapContent);
 				}
 #endif
 
-				view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
+				view.Arrange(new Rect(0, 0, view.Width, view.Height));
 				viewHandler.PlatformArrange(view.Frame);
 			}
 
@@ -170,6 +169,65 @@ namespace Microsoft.Maui.DeviceTests
 
 				await RunWindowTest<THandler>(window, (handler) => action(handler as THandler));
 			});
+		}
+
+		protected void OnLoaded(VisualElement frameworkElement, Action action)
+		{
+			if (frameworkElement.IsLoaded)
+			{
+				action();
+				return;
+			}
+
+			EventHandler loaded = null;
+
+			loaded = (_, __) =>
+			{
+				if (loaded != null)
+					frameworkElement.Loaded -= loaded;
+
+				action();
+			};
+
+			frameworkElement.Loaded += loaded;
+		}
+
+
+		protected void OnUnloaded(VisualElement frameworkElement, Action action)
+		{
+			if (!frameworkElement.IsLoaded)
+			{
+				action();
+				return;
+			}
+
+			EventHandler unloaded = null;
+
+			unloaded = (_, __) =>
+			{
+				if (unloaded != null)
+					frameworkElement.Unloaded -= unloaded;
+
+				action();
+			};
+
+			frameworkElement.Unloaded += unloaded;
+		}
+
+		protected Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			OnUnloaded(frameworkElement, () => taskCompletionSource.SetResult(true));
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+		}
+
+		protected Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			OnLoaded(frameworkElement, () => taskCompletionSource.SetResult(true));
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 	}
 }

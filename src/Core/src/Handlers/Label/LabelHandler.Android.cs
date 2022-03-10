@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AppCompatTextView CreatePlatformView() => new AppCompatTextView(Context);
 
-		public override void PlatformArrange(Rectangle frame)
+		public override void PlatformArrange(Rect frame)
 		{
 			var platformView = this.ToPlatform();
 

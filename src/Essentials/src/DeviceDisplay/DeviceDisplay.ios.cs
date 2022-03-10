@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				density: scale,
 				orientation: CalculateOrientation(),
 				rotation: CalculateRotation(),
-				rate: Platform.HasOSVersion(10, 3) ? UIScreen.MainScreen.MaximumFramesPerSecond : 0);
+				rate: (OperatingSystem.IsIOSVersionAtLeast(10, 3) || OperatingSystem.IsTvOSVersionAtLeast(10, 3)) ? UIScreen.MainScreen.MaximumFramesPerSecond : 0);
 		}
 
 		public void StartScreenMetricsListeners()

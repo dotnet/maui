@@ -53,5 +53,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public AppPackagingModel PackagingModel => _isPackagedAppLazy.Value
 			? AppPackagingModel.Packaged
 			: AppPackagingModel.Unpackaged;
+
+		public LayoutDirection RequestedLayoutDirection =>
+			CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? LayoutDirection.RightToLeft : LayoutDirection.LeftToRight;
 	}
 }

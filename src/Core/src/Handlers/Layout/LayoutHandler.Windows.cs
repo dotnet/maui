@@ -130,5 +130,13 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.Children.Move((uint)currentIndex, (uint)targetIndex);
 			}
 		}
+
+		static void MapInputTransparent(ILayoutHandler handler, ILayout layout)
+		{
+			if (handler.PlatformView is LayoutPanel layoutPanel && layout != null)
+			{
+				layoutPanel.UpdatePlatformViewBackground(layout);
+			}
+		}
 	}
 }

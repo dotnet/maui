@@ -17,12 +17,22 @@ namespace Microsoft.Maui.Handlers
 		bool _firstRun = true;
 		readonly HashSet<string> _loadedCookies = new HashSet<string>();
 
+		internal WebNavigationEvent _eventState;
+
+		protected internal string? UrlCanceled { get; set; }
+
 		protected override AWebView CreatePlatformView()
 		{
-			return new MauiWebView(Context!)
+			return new MauiWebView(this, Context!)
 			{
 				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent)
 			};
+		}
+
+		internal WebNavigationEvent CurrentNavigationEvent
+		{
+			get => _eventState;
+			set => _eventState = value;
 		}
 
 		public override void SetVirtualView(IView view)
@@ -65,16 +75,25 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler.PlatformView.CanGoBack() && handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Back;
+						
 			handler.PlatformView.UpdateGoBack(webView);
 		}
 
 		public static void MapGoForward(IWebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler.PlatformView.CanGoForward() && handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Forward;
+
 			handler.PlatformView.UpdateGoForward(webView);
 		}
 
 		public static void MapReload(IWebViewHandler handler, IWebView webView, object? arg)
 		{
+			if (handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Refresh;
+			
 			handler.PlatformView.UpdateReload(webView);
 
 			string? url = handler.PlatformView.Url?.ToString();
@@ -92,6 +111,30 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			handler.PlatformView?.Eval(webView, script);
+		}
+
+		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (arg is EvaluateJavaScriptAsyncRequest request)
+			{
+				handler.PlatformView.EvaluateJavaScript(request);
+			}
+		}
+
+		protected internal bool NavigatingCanceled(string? url)
+		{
+			if (VirtualView == null || string.IsNullOrWhiteSpace(url))
+				return true;
+
+			if (url == AssetBaseUrl)
+				return false;
+
+			// TODO: Sync Cookies
+			bool cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
+			PlatformView?.UpdateCanGoBackForward(VirtualView);
+			UrlCanceled = cancel ? null : url;
+
+			return cancel;
 		}
 
 		static void ProcessSourceWhenReady(IWebViewHandler handler, IWebView webView)

@@ -1,23 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using Foundation;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
-using ObjCRuntime;
 using UIKit;
 using WebKit;
 using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	/// <summary>
+	/// The iOS and Mac Catalyst <see cref="ViewHandler"/> for <see cref="BlazorWebView"/>.
+	/// </summary>
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WKWebView>
 	{
 		private IOSWebViewManager? _webviewManager;
@@ -48,11 +45,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			})();
 		";
 
+		/// <inheritdoc />
 		protected override WKWebView CreatePlatformView()
 		{
 			var config = new WKWebViewConfiguration();
 
-			config.Preferences.SetValueForKey(NSObject.FromObject(true), new NSString("developerExtrasEnabled"));
+			config.Preferences.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("developerExtrasEnabled"));
 
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(MessageReceived), "webwindowinterop");
 			config.UserContentController.AddUserScript(new WKUserScript(
@@ -73,6 +71,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webviewManager?.MessageReceivedInternal(uri, message);
 		}
 
+		/// <inheritdoc />
 		protected override void DisconnectHandler(WKWebView platformView)
 		{
 			platformView.StopLoading();
@@ -115,7 +114,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
-			_webviewManager = new IOSWebViewManager(this, PlatformView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
+			_webviewManager = new IOSWebViewManager(
+				this,
+				PlatformView,
+				Services!,
+				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
+				fileProvider,
+				VirtualView.JSComponents,
+				hostPageRelativePath);
 
 			if (RootComponents != null)
 			{

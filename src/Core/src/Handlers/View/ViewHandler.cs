@@ -53,6 +53,7 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID || WINDOWS
 				[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
+				[nameof(IView.InputTransparent)] = MapInputTransparent,
 			};
 
 		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
@@ -92,21 +93,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected abstract void RemoveContainer();
 
-		public virtual bool NeedsContainer
-		{
-			get
-			{
-#if WINDOWS
-				if(VirtualView is IBorderView border)
-					return border?.Shape != null || border?.Stroke != null;
-				
-				return false;
-#else
-				return VirtualView?.Clip != null || VirtualView?.Shadow != null || (VirtualView as IBorder)?.Border != null;
-#endif
-			}
-		}
-
 		public PlatformView? ContainerView { get; private protected set; }
 
 		object? IViewHandler.ContainerView => ContainerView;
@@ -125,7 +111,7 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
-		public abstract void PlatformArrange(Rectangle frame);
+		public abstract void PlatformArrange(Rect frame);
 
 		private protected abstract PlatformView OnCreatePlatformView();
 
@@ -248,15 +234,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var shadow = view.Shadow;
 
-			if (shadow != null)
-			{
-				handler.HasContainer = true;
-			}
-			else
-			{
-				if (handler is ViewHandler viewHandler)
-					handler.HasContainer = viewHandler.NeedsContainer;
-			}
+			UpdateHasContainer(handler, shadow != null);
 
  			((PlatformView?)handler.ContainerView)?.UpdateShadow(view);
 		}
@@ -324,10 +302,39 @@ namespace Microsoft.Maui.Handlers
 				((PlatformView?)handler.PlatformView)?.Focus(request);
 			}
 		}
+		
+		public static void MapInputTransparent(IViewHandler handler, IView view)
+		{
+#if ANDROID
+			var inputTransparent = view.InputTransparent;
+
+			UpdateHasContainer(handler, inputTransparent);
+
+			if (handler.ContainerView is WrapperView wrapper)
+			{
+				wrapper.InputTransparent = inputTransparent;
+			}
+#else
+			((PlatformView?)handler.PlatformView)?.UpdateInputTransparent(handler, view);
+#endif
+		}
 
 		public static void MapUnfocus(IViewHandler handler, IView view, object? args)
 		{
 			((PlatformView?)handler.PlatformView)?.Unfocus(view);
+		}
+
+		static void UpdateHasContainer(IViewHandler handler, bool definitelyNeedsContainer) 
+		{
+			if (definitelyNeedsContainer)
+			{
+				handler.HasContainer = true;
+			}
+			else
+			{
+				if (handler is ViewHandler viewHandler)
+					handler.HasContainer = viewHandler.NeedsContainer;
+			}
 		}
 	}
 }

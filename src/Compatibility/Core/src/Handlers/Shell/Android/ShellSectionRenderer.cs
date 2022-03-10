@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// It wont crash but the way its programmed doesn't really anticipate re-entrancy around that method
 				// and it ends up going to the wrong location. Thus we must invoke.
 
-				Device.BeginInvokeOnMainThread(() =>
+				_viewPager.Post(() =>
 				{
 					if (currentPosition < _viewPager.ChildCount && _toolbarTracker != null)
 					{
@@ -147,7 +147,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			//_viewPager.AddOnPageChangeListener(this);
 			_viewPager.Id = AView.GenerateViewId();
 
-			_viewPager.Adapter = new ShellFragmentStateAdapter(shellSection, ChildFragmentManager, MauiContext);
+			var pagerContext = MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
+			_viewPager.Adapter = new ShellFragmentStateAdapter(shellSection, ChildFragmentManager, pagerContext);
 			_viewPager.OverScrollMode = OverScrollMode.Never;
 
 			new TabLayoutMediator(_tablayout, _viewPager, this)
