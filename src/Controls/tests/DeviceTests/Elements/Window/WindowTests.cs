@@ -15,15 +15,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task WindowHasReasonableDisplayDensity()
 		{
-			var density = 0f;
+			var window = MauiProgram.CurrentTestApp.Windows[0];
 
-			var control = new Controls.Window(new Controls.ContentPage());
-			var handler = await CreateHandlerAsync<WindowHandlerStub>(control);
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				density = control.DisplayDensity;
-			});
+			var density = await InvokeOnMainThreadAsync(() => window.DisplayDensity);
 
 			Assert.InRange(density, 0.1f, 4f);
 		}
