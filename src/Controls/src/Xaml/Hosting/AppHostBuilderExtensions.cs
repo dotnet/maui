@@ -9,6 +9,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.Dispatching;
 
 
 #if ANDROID
@@ -161,12 +162,20 @@ namespace Microsoft.Maui.Controls.Hosting
 			public void Initialize(IServiceProvider services)
 			{
 #if WINDOWS
-				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
-				if (dictionaries != null)
-				{
-					// Microsoft.Maui.Controls
-					UI.Xaml.Application.Current?.Resources?.AddLibraryResources("MicrosoftMauiControlsIncluded", "ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
-				}
+				var dispatcher =
+					services.GetService<IDispatcher>() ??
+					MauiWinUIApplication.Current.Services.GetRequiredService<IDispatcher>();
+
+				dispatcher
+					.DispatchIfRequired(() =>
+					{
+						var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
+						if (dictionaries != null)
+						{
+							// Microsoft.Maui.Controls
+							UI.Xaml.Application.Current?.Resources?.AddLibraryResources("MicrosoftMauiControlsIncluded", "ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
+						}
+					});
 #endif
 			}
 		}

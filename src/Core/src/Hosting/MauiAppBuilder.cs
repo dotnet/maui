@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Hosting
 {
@@ -48,14 +49,26 @@ namespace Microsoft.Maui.Hosting
 			public void Initialize(IServiceProvider services)
 			{
 #if WINDOWS
-				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
-				if (UI.Xaml.Application.Current?.Resources != null && dictionaries != null)
-				{
-					// WinUI
-					UI.Xaml.Application.Current.Resources.AddLibraryResources<UI.Xaml.Controls.XamlControlsResources>();
+				var dispatcher = 
+					services.GetService<IDispatcher>() ??
+					MauiWinUIApplication.Current.Services.GetRequiredService<IDispatcher>();
 
-					// Microsoft.Maui
-					UI.Xaml.Application.Current.Resources.AddLibraryResources("MicrosoftMauiCoreIncluded", "ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
+				if (!dispatcher.IsDispatchRequired)
+					SetupResources();
+				else
+					dispatcher.Dispatch(SetupResources);
+
+				void SetupResources()
+				{
+					var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
+					if (UI.Xaml.Application.Current?.Resources != null && dictionaries != null)
+					{
+						// WinUI
+						UI.Xaml.Application.Current.Resources.AddLibraryResources<UI.Xaml.Controls.XamlControlsResources>();
+
+						// Microsoft.Maui
+						UI.Xaml.Application.Current.Resources.AddLibraryResources("MicrosoftMauiCoreIncluded", "ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
+					}
 				}
 #endif
 			}

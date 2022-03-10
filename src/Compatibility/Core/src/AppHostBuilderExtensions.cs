@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.Dispatching;
 
 #if ANDROID
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -127,12 +128,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 			public void Initialize(IServiceProvider services)
 			{
 #if WINDOWS
-				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
-				if (UI.Xaml.Application.Current?.Resources != null && dictionaries != null)
-				{
-					// Microsoft.Maui.Controls.Compatibility
-					UI.Xaml.Application.Current.Resources.AddLibraryResources("MicrosoftMauiControlsCompatibilityIncluded", "ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Resources.xbf");
-				}
+				var dispatcher =
+					services.GetService<IDispatcher>() ??
+					MauiWinUIApplication.Current.Services.GetRequiredService<IDispatcher>();
+
+				dispatcher.DispatchIfRequired(() =>
+					{
+						var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
+						if (UI.Xaml.Application.Current?.Resources != null && dictionaries != null)
+						{
+							// Microsoft.Maui.Controls.Compatibility
+							UI.Xaml.Application.Current.Resources.AddLibraryResources("MicrosoftMauiControlsCompatibilityIncluded", "ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Resources.xbf");
+						}
+					});
 #endif
 			}
 		}
