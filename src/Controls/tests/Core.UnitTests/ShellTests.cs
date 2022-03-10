@@ -1332,5 +1332,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(shellCount.Count, 1);
 			Assert.AreEqual(shellItemCount.Count, 2);
 		}
+
+		[Test]
+		public void ShellToolbarNotVisibleWithBasicContentPage()
+		{
+			TestShell testShell = new TestShell(new ContentPage());
+			var shellToolBar = testShell.Toolbar;
+			Assert.False(shellToolBar.IsVisible);
+		}
 	}
 }
