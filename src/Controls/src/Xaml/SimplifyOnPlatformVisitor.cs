@@ -1,4 +1,6 @@
-﻿#nullable disable
+﻿using System;
+
+#nullable disable
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -34,13 +36,29 @@ namespace Microsoft.Maui.Controls.Xaml
 				return;
 
 			string target = null;
+#if NETSTANDARD2_0
 			if (TargetFramework.Contains("-android"))
+#else
+			if (TargetFramework.Contains("-android", StringComparison.Ordinal))
+#endif
 				target = nameof(OnPlatformExtension.Android);
+#if NETSTANDARD2_0
 			if (TargetFramework.Contains("-ios"))
+#else
+			if (TargetFramework.Contains("-ios", StringComparison.Ordinal))
+#endif
 				target = nameof(OnPlatformExtension.iOS);
+#if NETSTANDARD2_0
 			if (TargetFramework.Contains("-macos"))
+#else
+			if (TargetFramework.Contains("-macos", StringComparison.Ordinal))
+#endif
 				target = nameof(OnPlatformExtension.macOS);
+#if NETSTANDARD2_0
 			if (TargetFramework.Contains("-maccatalyst"))
+#else
+			if (TargetFramework.Contains("-maccatalyst", StringComparison.Ordinal))
+#endif
 				target = nameof(OnPlatformExtension.MacCatalyst);
 
 			if (target is null)
