@@ -104,6 +104,7 @@
   <!-- Tizen -->
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
     <DefineConstants>$(DefineConstants);TIZEN</DefineConstants>
+    <DisableImplicitTizenReferences>true</DisableImplicitTizenReferences>
   </PropertyGroup>
 
   <!-- Windows -->
