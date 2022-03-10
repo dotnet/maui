@@ -15,7 +15,7 @@ using Paint = Android.Graphics.Paint;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class ShellFlyoutRenderer : DrawerLayout, IShellFlyoutRenderer, DrawerLayout.IDrawerListener, IFlyoutBehaviorObserver, IAppearanceObserver
+	public class ShellFlyoutRenderer : DrawerLayout, IShellFlyoutRenderer, IFlyoutBehaviorObserver, IAppearanceObserver
 	{
 		#region IAppearanceObserver
 
@@ -68,28 +68,32 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		#region IDrawerListener
 
-		void IDrawerListener.OnDrawerClosed(AView drawerView)
+		void OnDrawerStateChanged(object sender, DrawerStateChangedEventArgs e)
 		{
-			Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, false);
+			if (_flyoutContent?.AndroidView == null)
+				return;
+
+			if (DrawerLayout.StateIdle == e.NewState)
+			{
+				Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, IsDrawerOpen(_flyoutContent.AndroidView));
+			}
 		}
 
-		void IDrawerListener.OnDrawerOpened(AView drawerView)
+		void OnDrawerOpened(object sender, DrawerOpenedEventArgs e)
 		{
 			Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, true);
 		}
 
-		void IDrawerListener.OnDrawerSlide(AView drawerView, float slideOffset)
+		void OnDrawerSlide(object sender, DrawerSlideEventArgs e)
 		{
+			var slideOffset = e.SlideOffset;
 			SlideOffset = slideOffset;
 			_scrimOpacity = (int)(slideOffset * 255);
 		}
 
-		void IDrawerListener.OnDrawerStateChanged(int newState)
+		void OnDrawerClosed(object sender, DrawerClosedEventArgs e)
 		{
-			if (DrawerLayout.StateIdle == newState)
-			{
-				Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, IsDrawerOpen(_flyoutContent.AndroidView));
-			}
+			Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, false);
 		}
 
 		#endregion IDrawerListener
@@ -98,6 +102,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void IFlyoutBehaviorObserver.OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
 		{
+			AddFlyoutContentToLayoutIfNeeded(behavior);
+
+			if (_flyoutContent?.AndroidView == null)
+				return;
+
 			bool closeAfterUpdate = (behavior == FlyoutBehavior.Flyout && _behavior == FlyoutBehavior.Locked);
 			_behavior = behavior;
 			UpdateDrawerLockMode(behavior);
@@ -134,6 +143,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			Shell.PropertyChanged += OnShellPropertyChanged;
 			ShellController.AddAppearanceObserver(this, Shell);
+
+			this.DrawerClosed += OnDrawerClosed;
+			this.DrawerSlide += OnDrawerSlide;
+			this.DrawerOpened += OnDrawerOpened;
+			this.DrawerStateChanged += OnDrawerStateChanged;
 		}
 
 		double FlyoutWidth => (_flyoutWidth == -1) ? _flyoutWidthDefault : _flyoutWidth;
@@ -145,7 +159,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			bool result = base.OnInterceptTouchEvent(ev);
 
-			if (GetDrawerLockMode(_flyoutContent.AndroidView) == LockModeLockedOpen)
+			if (_flyoutContent != null && GetDrawerLockMode(_flyoutContent.AndroidView) == LockModeLockedOpen)
 				return false;
 
 			return result;
@@ -172,12 +186,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void AttachFlyout(IShellContext context, AView content)
 		{
-			Profile.FrameBegin();
-
 			_content = content;
-
-			Profile.FramePartition("Create ContentRenderer");
-			_flyoutContent = context.CreateShellFlyoutContentRenderer();
 
 			// Depending on what you read the right edge of the drawer should be Max(56dp, actionBarSize)
 			// from the right edge of the screen. Fine. Well except that doesn't account
@@ -191,18 +200,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// this is about landscape devices and google does not perfectly follow these
 			// rules... so we'll kind of just... do our best.
 
-			Profile.FramePartition("Fudge Width");
-			var metrics = Context.Resources.DisplayMetrics;
+			var metrics = context.AndroidContext.Resources.DisplayMetrics;
 			var width = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
 
-			var actionBarHeight = (int)Context.ToPixels(56);
-			using (var tv = new TypedValue())
-			{
-				if (Context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ActionBarSize, tv, true))
-				{
-					actionBarHeight = TypedValue.ComplexToDimensionPixelSize(tv.Data, metrics);
-				}
-			}
+			var actionBarHeight = (int)context.AndroidContext.GetActionBarHeight();
 
 			width -= actionBarHeight;
 
@@ -211,35 +212,51 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_flyoutWidthDefault = width;
 
-			UpdateFlyoutSize();
+			if (context.Shell is IFlyoutView view)
+				AddFlyoutContentToLayoutIfNeeded(view.FlyoutBehavior);
 
-			Profile.FramePartition("AddView Content");
 			AddView(content);
 
-			Profile.FramePartition("AddView Flyout");
-			AddView(_flyoutContent.AndroidView);
-
-			Profile.FramePartition("Add DrawerListener");
-			AddDrawerListener(this);
-
-			Profile.FramePartition("Add BehaviorObserver");
 			((IShellController)context.Shell).AddFlyoutBehaviorObserver(this);
 
-			Profile.FrameEnd();
-
-			if (Shell.FlyoutIsPresented)
+			if (Shell.FlyoutIsPresented && _flyoutContent != null)
+			{
 				OpenDrawer(_flyoutContent.AndroidView, false);
+			}
+		}
+
+		void AddFlyoutContentToLayoutIfNeeded(FlyoutBehavior behavior)
+		{
+			if (behavior == FlyoutBehavior.Disabled)
+				return;
+
+			if (_flyoutContent == null)
+			{
+				_flyoutContent = _shellContext.CreateShellFlyoutContentRenderer();
+
+				UpdateFlyoutSize();
+
+				AddView(_flyoutContent.AndroidView);
+			}
 		}
 
 		protected virtual void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (_flyoutContent == null)
+				return;
+
 			if (e.PropertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
 			{
 				var presented = Shell.FlyoutIsPresented;
 				if (presented)
-					OpenDrawer(_flyoutContent.AndroidView, true);
+				{
+					if (!IsDrawerOpen(_flyoutContent.AndroidView))
+						OpenDrawer(_flyoutContent.AndroidView, true);
+				}
 				else
+				{
 					CloseDrawers();
+				}
 			}
 		}
 
@@ -252,6 +269,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateDrawerLockMode(FlyoutBehavior behavior)
 		{
+			AddFlyoutContentToLayoutIfNeeded(behavior);
+
 			switch (behavior)
 			{
 				case FlyoutBehavior.Disabled:
@@ -356,13 +375,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ShellController.RemoveAppearanceObserver(this);
 				Shell.PropertyChanged -= OnShellPropertyChanged;
 
-				RemoveDrawerListener(this);
+				this.DrawerClosed -= OnDrawerClosed;
+				this.DrawerSlide -= OnDrawerSlide;
+				this.DrawerOpened -= OnDrawerOpened;
+				this.DrawerStateChanged -= OnDrawerStateChanged;
+
 				((IShellController)_shellContext.Shell).RemoveFlyoutBehaviorObserver(this);
 
 				RemoveView(_content);
-				RemoveView(_flyoutContent.AndroidView);
 
-				_flyoutContent.Dispose();
+				if (_flyoutContent != null)
+					RemoveView(_flyoutContent.AndroidView);
+
+				_flyoutContent?.Dispose();
 			}
 
 			base.Dispose(disposing);

@@ -7,6 +7,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.DrawerLayout.Widget;
 using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,9 +41,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		int _actionBarHeight;
 		int _flyoutHeight;
 		int _flyoutWidth;
-
 		protected IMauiContext MauiContext => _shellContext.Shell.Handler.MauiContext;
-
+		bool _initialLayoutChangeFired;
 
 		protected IShellContext ShellContext => _shellContext;
 		protected AView FooterView => _footerView?.PlatformView;
@@ -52,32 +52,36 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public ShellFlyoutTemplatedContentRenderer(IShellContext shellContext)
 		{
 			_shellContext = shellContext;
+			_shellContext.CurrentDrawerLayout.DrawerStateChanged += OnFlyoutStateChanging;
 			LoadView(shellContext);
+		}
+
+		void OnFlyoutStateChanging(object sender, AndroidX.DrawerLayout.Widget.DrawerLayout.DrawerStateChangedEventArgs e)
+		{
+			if (e.NewState != DrawerLayout.StateIdle)
+			{
+				if (_flyoutContentView == null)
+					UpdateFlyoutContent();
+
+				_shellContext.CurrentDrawerLayout.DrawerStateChanged -= OnFlyoutStateChanging;
+			}
 		}
 
 		protected virtual void LoadView(IShellContext shellContext)
 		{
-			Profile.FrameBegin();
-
 			var context = shellContext.AndroidContext;
 			var layoutInflator = shellContext.Shell.FindMauiContext().GetLayoutInflater();
 			var coordinator = (ViewGroup)layoutInflator.Inflate(Controls.Compatibility.Resource.Layout.flyoutcontent, null);
 
-			Profile.FramePartition("Find AppBar");
 			_appBar = coordinator.FindViewById<AppBarLayout>(Controls.Compatibility.Resource.Id.flyoutcontent_appbar);
 
 			_rootView = coordinator as ViewGroup;
 
-			Profile.FramePartition("Add Listener");
 			_appBar.AddOnOffsetChangedListener(this);
 
-			Profile.FramePartition("Add HeaderView");
 			_actionBarHeight = (int)context.ToPixels(56);
 			UpdateFlyoutHeader();
 
-			UpdateFlyoutContent();
-
-			Profile.FramePartition("Initialize BgImage");
 			var metrics = context.Resources.DisplayMetrics;
 			var width = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
 
@@ -98,20 +102,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				LayoutParameters = new LP(coordinator.LayoutParameters)
 			};
 
-			Profile.FramePartition("UpdateFlyoutHeaderBehavior");
 			UpdateFlyoutHeaderBehavior();
 			_shellContext.Shell.PropertyChanged += OnShellPropertyChanged;
 
-			Profile.FramePartition("UpdateFlyoutBackground");
 			UpdateFlyoutBackground();
 
-			Profile.FramePartition(nameof(UpdateVerticalScrollMode));
 			UpdateVerticalScrollMode();
 
-			Profile.FramePartition("FlyoutFooter");
 			UpdateFlyoutFooter();
-
-			Profile.FrameEnd();
 
 			if (View is ShellFlyoutLayout sfl)
 				sfl.LayoutChanging += OnFlyoutViewLayoutChanged;
@@ -190,11 +188,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var lp = new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent);
 				lp.Behavior = new AppBarLayout.ScrollingViewBehavior();
 				var context = ShellContext.AndroidContext;
-				Profile.FramePartition("Recycler.SetAdapter");
-				var recyclerView = new RecyclerViewContainer(context, new ShellFlyoutRecyclerAdapter(ShellContext, OnElementSelected))
+				var recyclerView = new RecyclerViewContainer(context)
 				{
 					LayoutParameters = lp
 				};
+
+				recyclerView.SetAdapter(new ShellFlyoutRecyclerAdapter(ShellContext, OnElementSelected));
 
 				return recyclerView;
 			}
@@ -307,6 +306,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnFlyoutViewLayoutChanged()
 		{
+			// The second time this fires the non flyout part of the view
+			// is visible to the user. I haven't found a better
+			// mechanism to wire into in order to detect this
+			if (_initialLayoutChangeFired && _flyoutContentView == null)
+				UpdateFlyoutContent();
+
+			_initialLayoutChangeFired = true;
 
 			if (View?.MeasuredHeight > 0 &&
 				View?.MeasuredWidth > 0 &&
@@ -484,6 +490,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (View != null && View is ShellFlyoutLayout sfl)
 					sfl.LayoutChanging -= OnFlyoutViewLayoutChanged;
 
+
+				//if (_shellContext.CurrentDrawerLayout != null)
+				//	_shellContext.CurrentDrawerLayout.DrawerStateChanged -= OnFlyoutStateChanging;
+
 				_contentView?.TearDown();
 				_flyoutContentView?.Dispose();
 				_headerView.Dispose();
@@ -539,33 +549,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				var context = Context;
-				//var paddingLeft = context.FromPixels(PaddingLeft);
-				//var paddingTop = context.FromPixels(PaddingTop);
-				//var paddingRight = context.FromPixels(PaddingRight);
-				//var paddingBottom = context.FromPixels(PaddingBottom);
-
 				l -= PaddingLeft + PaddingRight;
 				t -= PaddingTop + PaddingBottom;
 
 				UpdateElevation();
 				base.OnLayout(changed, l, t, r, b);
 			}
-
-			//protected override void LayoutView(double x, double y, double width, double height)
-			//{
-			//	var context = Context;
-			//	var paddingLeft = context.FromPixels(PaddingLeft);
-			//	var paddingTop = context.FromPixels(PaddingTop);
-			//	var paddingRight = context.FromPixels(PaddingRight);
-			//	var paddingBottom = context.FromPixels(PaddingBottom);
-
-			//	width -= paddingLeft + paddingRight;
-			//	height -= paddingTop + paddingBottom;
-
-			//	UpdateElevation();
-			//	base.LayoutView(paddingLeft, paddingTop, width, height);
-			//}
 
 			protected override void Dispose(bool disposing)
 			{
@@ -589,16 +578,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	class RecyclerViewContainer : RecyclerView
 	{
 		bool _disposed;
-		ShellFlyoutRecyclerAdapter _shellFlyoutRecyclerAdapter;
 		ScrollLayoutManager _layoutManager;
 
-		public RecyclerViewContainer(Context context, ShellFlyoutRecyclerAdapter shellFlyoutRecyclerAdapter) : base(context)
+		public RecyclerViewContainer(Context context) : base(context)
 		{
-			_shellFlyoutRecyclerAdapter = shellFlyoutRecyclerAdapter;
 			SetClipToPadding(false);
 			SetLayoutManager(_layoutManager = new ScrollLayoutManager(context, (int)Orientation.Vertical, false));
 			SetLayoutManager(new LinearLayoutManager(context, (int)Orientation.Vertical, false));
-			SetAdapter(_shellFlyoutRecyclerAdapter);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -610,10 +596,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (disposing)
 			{
 				SetLayoutManager(null);
+				var adapter = this.GetAdapter();
 				SetAdapter(null);
-				_shellFlyoutRecyclerAdapter?.Dispose();
+				adapter?.Dispose();
 				_layoutManager?.Dispose();
-				_shellFlyoutRecyclerAdapter = null;
 				_layoutManager = null;
 			}
 

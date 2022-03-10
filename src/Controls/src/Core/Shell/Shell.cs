@@ -1321,7 +1321,7 @@ namespace Microsoft.Maui.Controls
 			if (CurrentItem == null || GetVisiblePage() == null)
 				return;
 
-			var behavior = GetEffectiveFlyoutBehavior();
+			var behavior = (this as IFlyoutView).FlyoutBehavior;
 			for (int i = 0; i < _flyoutBehaviorObservers.Count; i++)
 				_flyoutBehaviorObservers[i].OnFlyoutBehaviorChanged(behavior);
 
