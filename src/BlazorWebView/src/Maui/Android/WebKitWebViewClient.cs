@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		// we intercept all the requests within this origin.
 		private static readonly string AppOrigin = $"https://{BlazorWebView.AppHostAddress}/";
 
+		private static readonly Uri AppOriginUri = new(AppOrigin);
+
 		private readonly BlazorWebViewHandler? _webViewHandler;
 
 		public WebKitWebViewClient(BlazorWebViewHandler webViewHandler!!)
@@ -171,10 +173,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return false;
 			}
 
-			var appBaseUri = new Uri(AppOrigin);
 			var requestUri = new Uri(requestUriString);
-
-			if (!appBaseUri.IsBaseOf(requestUri))
+			if (!AppOriginUri.IsBaseOf(requestUri))
 			{
 				return false;
 			}
