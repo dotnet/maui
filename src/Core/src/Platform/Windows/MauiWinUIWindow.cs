@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Essentials;
 using WinRT;
 
 namespace Microsoft.Maui
@@ -75,9 +76,12 @@ namespace Microsoft.Maui
 
 				if (msg == WindowsPlatformMessageIds.WM_DPICHANGED)
 				{
+					var dpiX = (short)(long)wParam;
+					var dpiY = (short)((long)wParam >> 16);
+
 					var window = this.GetWindow();
 					if (window is not null)
-						window.DisplayDensityUpdated(window.DisplayDensity);
+						window.DisplayDensityUpdated(dpiX / DeviceDisplay.BaseLogicalDpi);
 				}
 
 				MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(

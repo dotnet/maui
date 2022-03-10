@@ -89,6 +89,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(wind1.VisualDiagnosticsOverlay.WindowElements.Count == 0);
 		}
 
+		[Test]
+		public void WindowCanRetrieveDisplayDensity()
+		{
+			var window = new Window(new ContentPage());
+			var handler = new WindowHandlerStub(commandMapper: new CommandMapper<IWindow, WindowHandlerStub>(WindowHandlerStub.CommandMapper)
+			{
+				[nameof(IWindow.RequestDisplayDensity)] = (h, v, a) => ((DisplayDensityRequest)a).SetResult(42)
+			});
+
+			window.Handler = handler;
+
+			Assert.AreEqual(42, window.DisplayDensity);
+		}
+
 		void ValidateSetup(Application app, Page page = null)
 		{
 			var window = (Window)app.Windows[0];

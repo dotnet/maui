@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -12,6 +11,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		List<IVisualTreeElement> _visualChildren = new List<IVisualTreeElement>();
+		float _displayDensity = 1.0f;
 
 		public IElementHandler Handler { get; set; }
 
@@ -107,7 +107,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IVisualTreeElement GetVisualParent() => this.Parent as IVisualTreeElement;
 
-		public float RequestDisplayDensity() => 1.0f;
+		public float RequestDisplayDensity() => _displayDensity;
+
+		public void SetDisplayDensity(float value) => _displayDensity = value;
 
 		public virtual void DisplayDensityUpdated(float displayDensity) { }
 	}

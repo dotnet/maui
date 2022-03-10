@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(() =>
 			{
-				density = handler.VirtualView.DisplayDensity;
+				density = control.DisplayDensity;
 			});
 
 			Assert.InRange(density, 0.1f, 4f);
