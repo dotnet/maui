@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Essentials
 	{
 #if WINDOWS
 		internal const float BaseLogicalDpi = 96.0f;
+#elif ANDROID
+		internal const float BaseLogicalDpi = 160.0f;
 #endif
 
 		static readonly object locker = new object();

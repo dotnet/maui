@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Platform
 			if (hwnd == IntPtr.Zero)
 				return 1.0f;
 
-			return PlatformMethods.GetDpiForWindow(hwnd) / 96f;
+			return PlatformMethods.GetDpiForWindow(hwnd) / DeviceDisplay.BaseLogicalDpi;
 		}
 	}
 }

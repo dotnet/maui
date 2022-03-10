@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 
 			if (mauiWindow is not null && newConfig is not null)
 			{
-				var density = newConfig.DensityDpi / 160f;
+				var density = newConfig.DensityDpi / DeviceDisplay.BaseLogicalDpi;
 				mauiWindow.DisplayDensityUpdated(density);
 			}
 		}
