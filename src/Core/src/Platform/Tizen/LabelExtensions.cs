@@ -2,6 +2,9 @@
 using Tizen.UIExtensions.NUI;
 using TLineBreakMode = Tizen.UIExtensions.Common.LineBreakMode;
 using TTextDecorationse = Tizen.UIExtensions.Common.TextDecorations;
+using Microsoft.Maui.Graphics;
+using Tizen.NUI;
+using NColor = Tizen.UIExtensions.Common.Color;
 
 namespace Microsoft.Maui.Platform
 {
@@ -14,7 +17,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this Label platformLabel, ILabel label)
 		{
-			platformLabel.TextColor = label.TextColor == null ? Color.Black : label.TextColor.ToPlatform();
+			platformLabel.TextColor = label.TextColor == null ? NColor.Black : label.TextColor.ToPlatform();
 		}
 
 		public static void UpdateFont(this Label platformLabel, ILabel label, IFontManager fontManager)
@@ -37,6 +40,29 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextDecorations(this Label platformLabel, ILabel label)
 		{
 			platformLabel.TextDecorations = label.TextDecorations.ToPlatform();
+		}
+
+		public static void UpdateShadow(this Label platformLabel, IView view)
+		{
+			if (view.Shadow != null)
+			{
+				var offsetX = view.Shadow.Offset.X.ToScaledPixel();
+				var offsetY = view.Shadow.Offset.Y.ToScaledPixel();
+				var radius = ((double)view.Shadow.Radius).ToScaledPixel();
+				var color = view.Shadow.Paint.ToColor() != null ? view.Shadow.Paint.ToColor()!.MultiplyAlpha(view.Shadow.Opacity) : Colors.Black.MultiplyAlpha(view.Shadow.Opacity);
+				var ncolor = color.ToPlatform().ToNative();
+
+				PropertyMap shadow = new PropertyMap();
+				shadow.Add("offset", new PropertyValue(new Vector2(offsetX, offsetY)));
+				shadow.Add("color", new PropertyValue(ncolor));
+				shadow.Add("blurRadius", new PropertyValue(radius));
+
+				platformLabel.Shadow = shadow;
+			}
+			else
+			{
+				platformLabel.Shadow = new PropertyMap();
+			}
 		}
 
 		public static FontAttributes GetFontAttributes(this Font font)

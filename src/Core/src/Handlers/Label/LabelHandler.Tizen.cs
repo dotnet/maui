@@ -43,6 +43,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateFont(label, fontManager);
 		}
 
+		public static void MapShadow(ILabelHandler handler, ILabel label)
+		{
+			handler.PlatformView?.UpdateShadow(label);
+		}
+
 		[MissingMapper]
 		public static void MapCharacterSpacing(ILabelHandler handler, ILabel label) { }
 

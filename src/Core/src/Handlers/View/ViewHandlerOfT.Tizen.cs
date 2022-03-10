@@ -114,6 +114,8 @@ namespace Microsoft.Maui.Handlers
 			var parent = ContainerView!.GetParent();
 			parent?.Remove(ContainerView!);
 			ContainerView.Content = null;
+			ContainerView.Dispose();
+			ContainerView = null;
 			parent?.Add(PlatformView);
 			PlatformView.UpdateBounds(bounds);
 		}

@@ -25,6 +25,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.Height)] = MapHeight,
 			[nameof(ILabel.Opacity)] = MapOpacity,
 #endif
+#if TIZEN
+			[nameof(ILabel.Shadow)] = MapShadow,
+#endif
 			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ITextStyle.Font)] = MapFont,
 			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
