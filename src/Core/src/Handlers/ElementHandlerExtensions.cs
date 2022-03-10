@@ -76,7 +76,7 @@ namespace Microsoft.Maui
 			return args.Task;
 		}
 
-		internal static T InvokeWithResult<T>(this IElementHandler handler, string commandName,
+		public static T InvokeWithResult<T>(this IElementHandler handler, string commandName,
 			RetrievePlatformValueRequest<T> args)
 		{
 			handler?.Invoke(commandName, args);
