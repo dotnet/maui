@@ -63,6 +63,34 @@
                     </x:Array>
                 </Picker.ItemsSource>
             </Picker>
+
+            <Label
+                Text="HorizontalTextAlignment"
+                Style="{StaticResource Headline}"/>
+            <Picker HorizontalTextAlignment="End"
+                Title="Select an item">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Item 1</x:String>
+                        <x:String>Item 2</x:String>
+                        <x:String>Item 3</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+            <Label
+                Text="VerticalTextAlignment"
+                Style="{StaticResource Headline}"/>
+            <Picker VerticalTextAlignment="Center" HeightRequest="100"
+                Title="Select an item">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Item 1</x:String>
+                        <x:String>Item 2</x:String>
+                        <x:String>Item 3</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
