@@ -36,6 +36,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphicsTester.MacCatalyst-
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphicsTester.Skia.Mac-net6", "samples\GraphicsTester.Skia.Mac\GraphicsTester.Skia.Mac-net6.csproj", "{883FB622-1BCB-437A-B20E-B5DBD3C53531}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Maui.Graphics.Benchmarks", "tests\Microsoft.Maui.Graphics.Benchmarks\Microsoft.Maui.Graphics.Benchmarks.csproj", "{52ABADFB-61CE-4124-BDFE-39A6F7465486}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,6 +90,10 @@ Global
 		{883FB622-1BCB-437A-B20E-B5DBD3C53531}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{883FB622-1BCB-437A-B20E-B5DBD3C53531}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{883FB622-1BCB-437A-B20E-B5DBD3C53531}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52ABADFB-61CE-4124-BDFE-39A6F7465486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52ABADFB-61CE-4124-BDFE-39A6F7465486}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52ABADFB-61CE-4124-BDFE-39A6F7465486}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52ABADFB-61CE-4124-BDFE-39A6F7465486}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,6 +110,7 @@ Global
 		{093D3638-F133-46B0-AE23-D35D3FBFB6DD} = {CE764F51-0699-4446-BEE2-17FBBDC99C5C}
 		{0B63725C-677E-43EE-ADD2-717CCD96DC23} = {CE764F51-0699-4446-BEE2-17FBBDC99C5C}
 		{883FB622-1BCB-437A-B20E-B5DBD3C53531} = {CE764F51-0699-4446-BEE2-17FBBDC99C5C}
+		{52ABADFB-61CE-4124-BDFE-39A6F7465486} = {D6F0522F-3BB5-4A10-953F-CA047F3D881A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B07E734-6AE2-4A12-AD60-C072F3695854}
