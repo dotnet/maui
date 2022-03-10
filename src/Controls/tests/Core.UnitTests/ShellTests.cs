@@ -1344,7 +1344,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var shellToolBar = testShell.Toolbar;
 
-			Assert.AreEqual("Shell Title", shellToolBar.Title);
+			Assert.AreEqual(String.Empty, shellToolBar.Title);
 
 			shellContent.Title = "Shell Content Title";
 			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
@@ -1385,7 +1385,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var shellToolBar = testShell.Toolbar;
-			Assert.AreEqual("Shell Title", shellToolBar.Title);
+			Assert.AreEqual(String.Empty, shellToolBar.Title);
 
 			var page = testShell.CurrentPage;
 			page.Title = String.Empty;
@@ -1400,11 +1400,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task ShellToolbarTitleIgnoresModalTitle()
 		{
 			var shellContent = CreateShellContent();
-			var shellContent2 = CreateShellContent();
-			TestShell testShell = new TestShell(shellContent, shellContent2)
-			{
-				Title = "Shell Title"
-			};
+			shellContent.Title = "Shell Title";
+			TestShell testShell = new TestShell(shellContent);
 
 			await testShell.CurrentSection.Navigation.PushModalAsync(new ContentPage()
 			{
@@ -1451,7 +1448,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public async Task PushedPageUsesTitleOnShellSection()
+		public async Task PushedPageDoesntUsesTitleOnShellSection()
 		{
 			var shellContent = CreateShellContent();
 			shellContent.Title = "Shell Content Title";
@@ -1470,7 +1467,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await testShell.CurrentSection.Navigation.PushAsync(new ContentPage());
 
-			Assert.AreEqual("Shell Section Title", shellToolBar.Title);
+			Assert.AreEqual("", shellToolBar.Title);
 
 			await testShell.CurrentSection.Navigation.PopAsync();
 			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
