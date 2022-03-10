@@ -107,6 +107,11 @@ steps:
       displayName: 'Setup MSBuild Paths'
       condition: eq(variables['provisioningVS'], 'true')
 
+    - pwsh: |
+        Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+        .\workload-install.ps1 -v 7.0.100-preview.6.19 -t 6.0.200
+      displayName: 'Install Tizen'
+
   # Prepare Both
   - pwsh: ./build.ps1 --target provision
     displayName: 'Cake Provision'
