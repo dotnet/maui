@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Essentials;
 using WinRT.Interop;
 
 namespace Microsoft.Maui.Platform
