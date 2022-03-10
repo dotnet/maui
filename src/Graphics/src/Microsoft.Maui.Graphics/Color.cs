@@ -337,46 +337,51 @@ namespace Microsoft.Maui.Graphics
 			return new Color((float)r, (float)g, (float)b, (float)a);
 		}
 
-		public static Color FromRgba(string colorAsHex)
-		{
-			//Remove # if present
-			if (colorAsHex.IndexOf('#') != -1)
-				colorAsHex = colorAsHex.Replace("#", "");
+		public static Color FromRgba(string colorAsHex) => FromRgba(colorAsHex != null ? colorAsHex.AsSpan() : default);
 
+		static Color FromRgba(ReadOnlySpan<char> colorAsHex)
+		{
 			int red = 0;
 			int green = 0;
 			int blue = 0;
 			int alpha = 255;
 
-			if (colorAsHex.Length == 6)
+			if (!colorAsHex.IsEmpty)
 			{
-				//#RRGGBB
-				red = int.Parse(colorAsHex.Substring(0, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				green = int.Parse(colorAsHex.Substring(2, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				blue = int.Parse(colorAsHex.Substring(4, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-			}
-			else if (colorAsHex.Length == 3)
-			{
-				//#RGB
-				red = int.Parse($"{colorAsHex[0]}{colorAsHex[0]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				green = int.Parse($"{colorAsHex[1]}{colorAsHex[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				blue = int.Parse($"{colorAsHex[2]}{colorAsHex[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-			}
-			else if (colorAsHex.Length == 4)
-			{
-				//#RGBA
-				red = int.Parse($"{colorAsHex[0]}{colorAsHex[0]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				green = int.Parse($"{colorAsHex[1]}{colorAsHex[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				blue = int.Parse($"{colorAsHex[2]}{colorAsHex[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				alpha = int.Parse($"{colorAsHex[3]}{colorAsHex[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-			}
-			else if (colorAsHex.Length == 8)
-			{
-				//#RRGGBBAA
-				red = int.Parse(colorAsHex.Substring(0, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				green = int.Parse(colorAsHex.Substring(2, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				blue = int.Parse(colorAsHex.Substring(4, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
-				alpha = int.Parse(colorAsHex.Substring(6, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				//Skip # if present
+				if (colorAsHex[0] == '#')
+					colorAsHex = colorAsHex.Slice(1);
+
+				if (colorAsHex.Length == 6 || colorAsHex.Length == 3)
+				{
+					//#RRGGBB or #RGB - since there is no A, use FromArgb
+
+					return FromArgb(colorAsHex);
+				}
+				else if (colorAsHex.Length == 4)
+				{
+					//#RGBA
+					Span<char> temp = stackalloc char[2];
+					temp[0] = temp[1] = colorAsHex[0];
+					red = ParseInt(temp);
+
+					temp[0] = temp[1] = colorAsHex[1];
+					green = ParseInt(temp);
+
+					temp[0] = temp[1] = colorAsHex[2];
+					blue = ParseInt(temp);
+
+					temp[0] = temp[1] = colorAsHex[3];
+					alpha = ParseInt(temp);
+				}
+				else if (colorAsHex.Length == 8)
+				{
+					//#RRGGBBAA
+					red = ParseInt(colorAsHex.Slice(0, 2));
+					green = ParseInt(colorAsHex.Slice(2, 2));
+					blue = ParseInt(colorAsHex.Slice(4, 2));
+					alpha = ParseInt(colorAsHex.Slice(6, 2));
+				}
 			}
 
 			return FromRgba(red / 255f, green / 255f, blue / 255f, alpha / 255f);
@@ -600,8 +605,7 @@ namespace Microsoft.Maui.Graphics
 					}
 					catch
 					{
-						color = default;
-						return false;
+						goto ReturnFalse;
 					}
 				}
 
@@ -613,14 +617,16 @@ namespace Microsoft.Maui.Graphics
 						out ReadOnlySpan<char> quad2,
 						out ReadOnlySpan<char> quad3))
 					{
-						color = default;
-						return false;
+						goto ReturnFalse;
 					}
 
-					var r = ParseColorValue(quad0, 255, acceptPercent: true);
-					var g = ParseColorValue(quad1, 255, acceptPercent: true);
-					var b = ParseColorValue(quad2, 255, acceptPercent: true);
-					var a = ParseOpacity(quad3);
+					bool valid = TryParseColorValue(quad0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(quad1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(quad2, 255, acceptPercent: true, out double b);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+						goto ReturnFalse;
 
 					color = new Color((float)r, (float)g, (float)b, (float)a);
 					return true;
@@ -633,13 +639,15 @@ namespace Microsoft.Maui.Graphics
 						out ReadOnlySpan<char> triplet1,
 						out ReadOnlySpan<char> triplet2))
 					{
-						color = default;
-						return false;
+						goto ReturnFalse;
 					}
 
-					var r = ParseColorValue(triplet0, 255, acceptPercent: true);
-					var g = ParseColorValue(triplet1, 255, acceptPercent: true);
-					var b = ParseColorValue(triplet2, 255, acceptPercent: true);
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+
+					if (!valid)
+						goto ReturnFalse;
 
 					color = new Color((float)r, (float)g, (float)b);
 					return true;
@@ -653,14 +661,16 @@ namespace Microsoft.Maui.Graphics
 						out ReadOnlySpan<char> quad2,
 						out ReadOnlySpan<char> quad3))
 					{
-						color = default;
-						return false;
+						goto ReturnFalse;
 					}
 
-					var h = ParseColorValue(quad0, 360, acceptPercent: false);
-					var s = ParseColorValue(quad1, 100, acceptPercent: true);
-					var l = ParseColorValue(quad2, 100, acceptPercent: true);
-					var a = ParseOpacity(quad3);
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+						goto ReturnFalse;
 
 					color = Color.FromHsla(h, s, l, a);
 					return true;
@@ -673,13 +683,15 @@ namespace Microsoft.Maui.Graphics
 						out ReadOnlySpan<char> triplet1,
 						out ReadOnlySpan<char> triplet2))
 					{
-						color = default;
-						return false;
+						goto ReturnFalse;
 					}
 
-					var h = ParseColorValue(triplet0, 360, acceptPercent: false);
-					var s = ParseColorValue(triplet1, 100, acceptPercent: true);
-					var l = ParseColorValue(triplet2, 100, acceptPercent: true);
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+
+					if (!valid)
+						goto ReturnFalse;
 
 					color = Color.FromHsla(h, s, l);
 					return true;
@@ -693,14 +705,16 @@ namespace Microsoft.Maui.Graphics
 						out ReadOnlySpan<char> quad2,
 						out ReadOnlySpan<char> quad3))
 					{
-						color = default;
-						return false;
+						goto ReturnFalse;
 					}
 
-					var h = ParseColorValue(quad0, 360, acceptPercent: false);
-					var s = ParseColorValue(quad1, 100, acceptPercent: true);
-					var v = ParseColorValue(quad2, 100, acceptPercent: true);
-					var a = ParseOpacity(quad3);
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+						goto ReturnFalse;
 
 					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
 					return true;
@@ -713,13 +727,15 @@ namespace Microsoft.Maui.Graphics
 						out ReadOnlySpan<char> triplet1,
 						out ReadOnlySpan<char> triplet2))
 					{
-						color = default;
-						return false;
+						goto ReturnFalse;
 					}
 
-					var h = ParseColorValue(triplet0, 360, acceptPercent: false);
-					var s = ParseColorValue(triplet1, 100, acceptPercent: true);
-					var v = ParseColorValue(triplet2, 100, acceptPercent: true);
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+						goto ReturnFalse;
 
 					color = Color.FromHsv((float)h, (float)s, (float)v);
 					return true;
@@ -733,6 +749,7 @@ namespace Microsoft.Maui.Graphics
 				}
 			}
 
+ReturnFalse:
 			color = default;
 			return false;
 		}
@@ -791,6 +808,7 @@ namespace Microsoft.Maui.Graphics
 			AddColor("darkgoldenrod", Colors.DarkGoldenrod);
 			AddColor("darkgray", Colors.DarkGray);
 			AddColor("darkgreen", Colors.DarkGreen);
+			AddColor("darkgrey", Colors.DarkGrey);
 			AddColor("darkkhaki", Colors.DarkKhaki);
 			AddColor("darkmagenta", Colors.DarkMagenta);
 			AddColor("darkolivegreen", Colors.DarkOliveGreen);
@@ -801,11 +819,13 @@ namespace Microsoft.Maui.Graphics
 			AddColor("darkseagreen", Colors.DarkSeaGreen);
 			AddColor("darkslateblue", Colors.DarkSlateBlue);
 			AddColor("darkslategray", Colors.DarkSlateGray);
+			AddColor("darkslategrey", Colors.DarkSlateGrey);
 			AddColor("darkturquoise", Colors.DarkTurquoise);
 			AddColor("darkviolet", Colors.DarkViolet);
 			AddColor("deeppink", Colors.DeepPink);
 			AddColor("deepskyblue", Colors.DeepSkyBlue);
 			AddColor("dimgray", Colors.DimGray);
+			AddColor("dimgrey", Colors.DimGrey);
 			AddColor("dodgerblue", Colors.DodgerBlue);
 			AddColor("firebrick", Colors.Firebrick);
 			AddColor("floralwhite", Colors.FloralWhite);
@@ -817,6 +837,7 @@ namespace Microsoft.Maui.Graphics
 			AddColor("goldenrod", Colors.Goldenrod);
 			AddColor("gray", Colors.Gray);
 			AddColor("green", Colors.Green);
+			AddColor("grey", Colors.Grey);
 			AddColor("greenyellow", Colors.GreenYellow);
 			AddColor("honeydew", Colors.Honeydew);
 			AddColor("hotpink", Colors.HotPink);
@@ -840,6 +861,7 @@ namespace Microsoft.Maui.Graphics
 			AddColor("lightseagreen", Colors.LightSeaGreen);
 			AddColor("lightskyblue", Colors.LightSkyBlue);
 			AddColor("lightslategray", Colors.LightSlateGray);
+			AddColor("lightslategrey", Colors.LightSlateGrey);
 			AddColor("lightsteelblue", Colors.LightSteelBlue);
 			AddColor("lightyellow", Colors.LightYellow);
 			AddColor("lime", Colors.Lime);
@@ -892,6 +914,7 @@ namespace Microsoft.Maui.Graphics
 			AddColor("skyblue", Colors.SkyBlue);
 			AddColor("slateblue", Colors.SlateBlue);
 			AddColor("slategray", Colors.SlateGray);
+			AddColor("slategrey", Colors.SlateGrey);
 			AddColor("snow", Colors.Snow);
 			AddColor("springgreen", Colors.SpringGreen);
 			AddColor("steelblue", Colors.SteelBlue);
@@ -1002,7 +1025,7 @@ ReturnFalse:
 			return false;
 		}
 
-		static double ParseColorValue(ReadOnlySpan<char> elem, int maxValue, bool acceptPercent)
+		static bool TryParseColorValue(ReadOnlySpan<char> elem, int maxValue, bool acceptPercent, out double value)
 		{
 			elem = elem.Trim();
 			if (!elem.IsEmpty && elem[elem.Length - 1] == '%' && acceptPercent)
@@ -1010,20 +1033,33 @@ ReturnFalse:
 				maxValue = 100;
 				elem = elem.Slice(0, elem.Length - 1);
 			}
-			return ParseDouble(elem).Clamp(0, maxValue) / maxValue;
+
+			if (TryParseDouble(elem, out value))
+			{
+				value = value.Clamp(0, maxValue) / maxValue;
+				return true;
+			}
+			return false;
 		}
 
-		static double ParseOpacity(ReadOnlySpan<char> elem)
-			=> ParseDouble(elem).Clamp(0, 1);
+		static bool TryParseOpacity(ReadOnlySpan<char> elem, out double value)
+		{
+			if (TryParseDouble(elem, out value))
+			{
+				value = value.Clamp(0, 1);
+				return true;
+			}
+			return false;
+		}
 
-		static double ParseDouble(ReadOnlySpan<char> s) =>
-			double.Parse(
+		static bool TryParseDouble(ReadOnlySpan<char> s, out double value) =>
+			double.TryParse(
 #if NETSTANDARD2_0
 				s.ToString(),
 #else
 				s, 
 #endif
-				NumberStyles.Number, CultureInfo.InvariantCulture);
+				NumberStyles.Number, CultureInfo.InvariantCulture, out value);
 
 		static int ParseInt(ReadOnlySpan<char> s) =>
 			int.Parse(
