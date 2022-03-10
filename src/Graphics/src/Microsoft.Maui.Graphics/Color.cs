@@ -756,194 +756,167 @@ ReturnFalse:
 
 		static Color GetNamedColor(ReadOnlySpan<char> value)
 		{
-			if (s_namedColors.TryGetValue(ComputeIgnoreCaseStringHash(value), out (string, Color) entry))
+			// the longest built-in Color's name is much lower than this check, so we should not allocate here in a typical usage
+			Span<char> loweredValue = value.Length <= 128 ? stackalloc char[value.Length] : new char[value.Length];
+
+			int charsWritten = value.ToLowerInvariant(loweredValue);
+			Debug.Assert(charsWritten == value.Length);
+
+			// this should use the C# feature https://github.com/dotnet/csharplang/issues/1881, when it is available
+			// for now, we need to allocate the lowered string
+			return loweredValue.ToString() switch
 			{
-				if (value.Equals(entry.Item1.AsSpan(), StringComparison.OrdinalIgnoreCase))
-				{
-					return entry.Item2;
-				}
-			}
-
-			return null;
-		}
-
-		static readonly Dictionary<uint, (string, Color)> s_namedColors = BuildNamedColorDictionary();
-
-		static Dictionary<uint, (string, Color)> BuildNamedColorDictionary()
-		{
-			Dictionary<uint, (string, Color)> namedColors = new Dictionary<uint, (string, Color)>(capacity: 149);
-			void AddColor(string name, Color color)
-			{
-				uint hash = ComputeIgnoreCaseStringHash(name.AsSpan());
-
-				// If we encounter a hash-collison on the known color names, we will need to update our hashing algorithm
-				Debug.Assert(!namedColors.ContainsKey(hash));
-				namedColors.Add(hash, (name, color));
-			}
-
-			AddColor("default", default);
-			AddColor("aliceblue", Colors.AliceBlue);
-			AddColor("antiquewhite", Colors.AntiqueWhite);
-			AddColor("aqua", Colors.Aqua);
-			AddColor("aquamarine", Colors.Aquamarine);
-			AddColor("azure", Colors.Azure);
-			AddColor("beige", Colors.Beige);
-			AddColor("bisque", Colors.Bisque);
-			AddColor("black", Colors.Black);
-			AddColor("blanchedalmond", Colors.BlanchedAlmond);
-			AddColor("blue", Colors.Blue);
-			AddColor("blueviolet", Colors.BlueViolet);
-			AddColor("brown", Colors.Brown);
-			AddColor("burlywood", Colors.BurlyWood);
-			AddColor("cadetblue", Colors.CadetBlue);
-			AddColor("chartreuse", Colors.Chartreuse);
-			AddColor("chocolate", Colors.Chocolate);
-			AddColor("coral", Colors.Coral);
-			AddColor("cornflowerblue", Colors.CornflowerBlue);
-			AddColor("cornsilk", Colors.Cornsilk);
-			AddColor("crimson", Colors.Crimson);
-			AddColor("cyan", Colors.Cyan);
-			AddColor("darkblue", Colors.DarkBlue);
-			AddColor("darkcyan", Colors.DarkCyan);
-			AddColor("darkgoldenrod", Colors.DarkGoldenrod);
-			AddColor("darkgray", Colors.DarkGray);
-			AddColor("darkgreen", Colors.DarkGreen);
-			AddColor("darkgrey", Colors.DarkGrey);
-			AddColor("darkkhaki", Colors.DarkKhaki);
-			AddColor("darkmagenta", Colors.DarkMagenta);
-			AddColor("darkolivegreen", Colors.DarkOliveGreen);
-			AddColor("darkorange", Colors.DarkOrange);
-			AddColor("darkorchid", Colors.DarkOrchid);
-			AddColor("darkred", Colors.DarkRed);
-			AddColor("darksalmon", Colors.DarkSalmon);
-			AddColor("darkseagreen", Colors.DarkSeaGreen);
-			AddColor("darkslateblue", Colors.DarkSlateBlue);
-			AddColor("darkslategray", Colors.DarkSlateGray);
-			AddColor("darkslategrey", Colors.DarkSlateGrey);
-			AddColor("darkturquoise", Colors.DarkTurquoise);
-			AddColor("darkviolet", Colors.DarkViolet);
-			AddColor("deeppink", Colors.DeepPink);
-			AddColor("deepskyblue", Colors.DeepSkyBlue);
-			AddColor("dimgray", Colors.DimGray);
-			AddColor("dimgrey", Colors.DimGrey);
-			AddColor("dodgerblue", Colors.DodgerBlue);
-			AddColor("firebrick", Colors.Firebrick);
-			AddColor("floralwhite", Colors.FloralWhite);
-			AddColor("forestgreen", Colors.ForestGreen);
-			AddColor("fuchsia", Colors.Fuchsia);
-			AddColor("gainsboro", Colors.Gainsboro);
-			AddColor("ghostwhite", Colors.GhostWhite);
-			AddColor("gold", Colors.Gold);
-			AddColor("goldenrod", Colors.Goldenrod);
-			AddColor("gray", Colors.Gray);
-			AddColor("green", Colors.Green);
-			AddColor("grey", Colors.Grey);
-			AddColor("greenyellow", Colors.GreenYellow);
-			AddColor("honeydew", Colors.Honeydew);
-			AddColor("hotpink", Colors.HotPink);
-			AddColor("indianred", Colors.IndianRed);
-			AddColor("indigo", Colors.Indigo);
-			AddColor("ivory", Colors.Ivory);
-			AddColor("khaki", Colors.Khaki);
-			AddColor("lavender", Colors.Lavender);
-			AddColor("lavenderblush", Colors.LavenderBlush);
-			AddColor("lawngreen", Colors.LawnGreen);
-			AddColor("lemonchiffon", Colors.LemonChiffon);
-			AddColor("lightblue", Colors.LightBlue);
-			AddColor("lightcoral", Colors.LightCoral);
-			AddColor("lightcyan", Colors.LightCyan);
-			AddColor("lightgoldenrodyellow", Colors.LightGoldenrodYellow);
-			AddColor("lightgrey", Colors.LightGrey);
-			AddColor("lightgray", Colors.LightGray);
-			AddColor("lightgreen", Colors.LightGreen);
-			AddColor("lightpink", Colors.LightPink);
-			AddColor("lightsalmon", Colors.LightSalmon);
-			AddColor("lightseagreen", Colors.LightSeaGreen);
-			AddColor("lightskyblue", Colors.LightSkyBlue);
-			AddColor("lightslategray", Colors.LightSlateGray);
-			AddColor("lightslategrey", Colors.LightSlateGrey);
-			AddColor("lightsteelblue", Colors.LightSteelBlue);
-			AddColor("lightyellow", Colors.LightYellow);
-			AddColor("lime", Colors.Lime);
-			AddColor("limegreen", Colors.LimeGreen);
-			AddColor("linen", Colors.Linen);
-			AddColor("magenta", Colors.Magenta);
-			AddColor("maroon", Colors.Maroon);
-			AddColor("mediumaquamarine", Colors.MediumAquamarine);
-			AddColor("mediumblue", Colors.MediumBlue);
-			AddColor("mediumorchid", Colors.MediumOrchid);
-			AddColor("mediumpurple", Colors.MediumPurple);
-			AddColor("mediumseagreen", Colors.MediumSeaGreen);
-			AddColor("mediumslateblue", Colors.MediumSlateBlue);
-			AddColor("mediumspringgreen", Colors.MediumSpringGreen);
-			AddColor("mediumturquoise", Colors.MediumTurquoise);
-			AddColor("mediumvioletred", Colors.MediumVioletRed);
-			AddColor("midnightblue", Colors.MidnightBlue);
-			AddColor("mintcream", Colors.MintCream);
-			AddColor("mistyrose", Colors.MistyRose);
-			AddColor("moccasin", Colors.Moccasin);
-			AddColor("navajowhite", Colors.NavajoWhite);
-			AddColor("navy", Colors.Navy);
-			AddColor("oldlace", Colors.OldLace);
-			AddColor("olive", Colors.Olive);
-			AddColor("olivedrab", Colors.OliveDrab);
-			AddColor("orange", Colors.Orange);
-			AddColor("orangered", Colors.OrangeRed);
-			AddColor("orchid", Colors.Orchid);
-			AddColor("palegoldenrod", Colors.PaleGoldenrod);
-			AddColor("palegreen", Colors.PaleGreen);
-			AddColor("paleturquoise", Colors.PaleTurquoise);
-			AddColor("palevioletred", Colors.PaleVioletRed);
-			AddColor("papayawhip", Colors.PapayaWhip);
-			AddColor("peachpuff", Colors.PeachPuff);
-			AddColor("peru", Colors.Peru);
-			AddColor("pink", Colors.Pink);
-			AddColor("plum", Colors.Plum);
-			AddColor("powderblue", Colors.PowderBlue);
-			AddColor("purple", Colors.Purple);
-			AddColor("red", Colors.Red);
-			AddColor("rosybrown", Colors.RosyBrown);
-			AddColor("royalblue", Colors.RoyalBlue);
-			AddColor("saddlebrown", Colors.SaddleBrown);
-			AddColor("salmon", Colors.Salmon);
-			AddColor("sandybrown", Colors.SandyBrown);
-			AddColor("seagreen", Colors.SeaGreen);
-			AddColor("seashell", Colors.SeaShell);
-			AddColor("sienna", Colors.Sienna);
-			AddColor("silver", Colors.Silver);
-			AddColor("skyblue", Colors.SkyBlue);
-			AddColor("slateblue", Colors.SlateBlue);
-			AddColor("slategray", Colors.SlateGray);
-			AddColor("slategrey", Colors.SlateGrey);
-			AddColor("snow", Colors.Snow);
-			AddColor("springgreen", Colors.SpringGreen);
-			AddColor("steelblue", Colors.SteelBlue);
-			AddColor("tan", Colors.Tan);
-			AddColor("teal", Colors.Teal);
-			AddColor("thistle", Colors.Thistle);
-			AddColor("tomato", Colors.Tomato);
-			AddColor("transparent", Colors.Transparent);
-			AddColor("turquoise", Colors.Turquoise);
-			AddColor("violet", Colors.Violet);
-			AddColor("wheat", Colors.Wheat);
-			AddColor("white", Colors.White);
-			AddColor("whitesmoke", Colors.WhiteSmoke);
-			AddColor("yellow", Colors.Yellow);
-			AddColor("yellowgreen", Colors.YellowGreen);
-
-			return namedColors;
-		}
-
-		// this algorithm was taken from Roslyn when it creates a string jump table, modified to use ToLowerInvariant
-		// https://github.com/dotnet/roslyn/blob/6920e1e044dcadbc53e0af7d1582190fdcb88ec6/src/Compilers/CSharp/Portable/Compiler/MethodBodySynthesizer.Lowered.cs#L23
-		static uint ComputeIgnoreCaseStringHash(ReadOnlySpan<char> s)
-		{
-			uint hashCode = 2166136261u;
-			for (int i = 0; i < s.Length; i++)
-			{
-				hashCode = unchecked((char.ToLowerInvariant(s[i]) ^ hashCode) * 16777619);
-			}
-			return hashCode;
+				"default" => default,
+				"aliceblue" => Colors.AliceBlue,
+				"antiquewhite" => Colors.AntiqueWhite,
+				"aqua" => Colors.Aqua,
+				"aquamarine" => Colors.Aquamarine,
+				"azure" => Colors.Azure,
+				"beige" => Colors.Beige,
+				"bisque" => Colors.Bisque,
+				"black" => Colors.Black,
+				"blanchedalmond" => Colors.BlanchedAlmond,
+				"blue" => Colors.Blue,
+				"blueviolet" => Colors.BlueViolet,
+				"brown" => Colors.Brown,
+				"burlywood" => Colors.BurlyWood,
+				"cadetblue" => Colors.CadetBlue,
+				"chartreuse" => Colors.Chartreuse,
+				"chocolate" => Colors.Chocolate,
+				"coral" => Colors.Coral,
+				"cornflowerblue" => Colors.CornflowerBlue,
+				"cornsilk" => Colors.Cornsilk,
+				"crimson" => Colors.Crimson,
+				"cyan" => Colors.Cyan,
+				"darkblue" => Colors.DarkBlue,
+				"darkcyan" => Colors.DarkCyan,
+				"darkgoldenrod" => Colors.DarkGoldenrod,
+				"darkgray" => Colors.DarkGray,
+				"darkgreen" => Colors.DarkGreen,
+				"darkgrey" => Colors.DarkGrey,
+				"darkkhaki" => Colors.DarkKhaki,
+				"darkmagenta" => Colors.DarkMagenta,
+				"darkolivegreen" => Colors.DarkOliveGreen,
+				"darkorange" => Colors.DarkOrange,
+				"darkorchid" => Colors.DarkOrchid,
+				"darkred" => Colors.DarkRed,
+				"darksalmon" => Colors.DarkSalmon,
+				"darkseagreen" => Colors.DarkSeaGreen,
+				"darkslateblue" => Colors.DarkSlateBlue,
+				"darkslategray" => Colors.DarkSlateGray,
+				"darkslategrey" => Colors.DarkSlateGrey,
+				"darkturquoise" => Colors.DarkTurquoise,
+				"darkviolet" => Colors.DarkViolet,
+				"deeppink" => Colors.DeepPink,
+				"deepskyblue" => Colors.DeepSkyBlue,
+				"dimgray" => Colors.DimGray,
+				"dimgrey" => Colors.DimGrey,
+				"dodgerblue" => Colors.DodgerBlue,
+				"firebrick" => Colors.Firebrick,
+				"floralwhite" => Colors.FloralWhite,
+				"forestgreen" => Colors.ForestGreen,
+				"fuchsia" => Colors.Fuchsia,
+				"gainsboro" => Colors.Gainsboro,
+				"ghostwhite" => Colors.GhostWhite,
+				"gold" => Colors.Gold,
+				"goldenrod" => Colors.Goldenrod,
+				"gray" => Colors.Gray,
+				"green" => Colors.Green,
+				"grey" => Colors.Grey,
+				"greenyellow" => Colors.GreenYellow,
+				"honeydew" => Colors.Honeydew,
+				"hotpink" => Colors.HotPink,
+				"indianred" => Colors.IndianRed,
+				"indigo" => Colors.Indigo,
+				"ivory" => Colors.Ivory,
+				"khaki" => Colors.Khaki,
+				"lavender" => Colors.Lavender,
+				"lavenderblush" => Colors.LavenderBlush,
+				"lawngreen" => Colors.LawnGreen,
+				"lemonchiffon" => Colors.LemonChiffon,
+				"lightblue" => Colors.LightBlue,
+				"lightcoral" => Colors.LightCoral,
+				"lightcyan" => Colors.LightCyan,
+				"lightgoldenrodyellow" => Colors.LightGoldenrodYellow,
+				"lightgrey" => Colors.LightGrey,
+				"lightgray" => Colors.LightGray,
+				"lightgreen" => Colors.LightGreen,
+				"lightpink" => Colors.LightPink,
+				"lightsalmon" => Colors.LightSalmon,
+				"lightseagreen" => Colors.LightSeaGreen,
+				"lightskyblue" => Colors.LightSkyBlue,
+				"lightslategray" => Colors.LightSlateGray,
+				"lightslategrey" => Colors.LightSlateGrey,
+				"lightsteelblue" => Colors.LightSteelBlue,
+				"lightyellow" => Colors.LightYellow,
+				"lime" => Colors.Lime,
+				"limegreen" => Colors.LimeGreen,
+				"linen" => Colors.Linen,
+				"magenta" => Colors.Magenta,
+				"maroon" => Colors.Maroon,
+				"mediumaquamarine" => Colors.MediumAquamarine,
+				"mediumblue" => Colors.MediumBlue,
+				"mediumorchid" => Colors.MediumOrchid,
+				"mediumpurple" => Colors.MediumPurple,
+				"mediumseagreen" => Colors.MediumSeaGreen,
+				"mediumslateblue" => Colors.MediumSlateBlue,
+				"mediumspringgreen" => Colors.MediumSpringGreen,
+				"mediumturquoise" => Colors.MediumTurquoise,
+				"mediumvioletred" => Colors.MediumVioletRed,
+				"midnightblue" => Colors.MidnightBlue,
+				"mintcream" => Colors.MintCream,
+				"mistyrose" => Colors.MistyRose,
+				"moccasin" => Colors.Moccasin,
+				"navajowhite" => Colors.NavajoWhite,
+				"navy" => Colors.Navy,
+				"oldlace" => Colors.OldLace,
+				"olive" => Colors.Olive,
+				"olivedrab" => Colors.OliveDrab,
+				"orange" => Colors.Orange,
+				"orangered" => Colors.OrangeRed,
+				"orchid" => Colors.Orchid,
+				"palegoldenrod" => Colors.PaleGoldenrod,
+				"palegreen" => Colors.PaleGreen,
+				"paleturquoise" => Colors.PaleTurquoise,
+				"palevioletred" => Colors.PaleVioletRed,
+				"papayawhip" => Colors.PapayaWhip,
+				"peachpuff" => Colors.PeachPuff,
+				"peru" => Colors.Peru,
+				"pink" => Colors.Pink,
+				"plum" => Colors.Plum,
+				"powderblue" => Colors.PowderBlue,
+				"purple" => Colors.Purple,
+				"red" => Colors.Red,
+				"rosybrown" => Colors.RosyBrown,
+				"royalblue" => Colors.RoyalBlue,
+				"saddlebrown" => Colors.SaddleBrown,
+				"salmon" => Colors.Salmon,
+				"sandybrown" => Colors.SandyBrown,
+				"seagreen" => Colors.SeaGreen,
+				"seashell" => Colors.SeaShell,
+				"sienna" => Colors.Sienna,
+				"silver" => Colors.Silver,
+				"skyblue" => Colors.SkyBlue,
+				"slateblue" => Colors.SlateBlue,
+				"slategray" => Colors.SlateGray,
+				"slategrey" => Colors.SlateGrey,
+				"snow" => Colors.Snow,
+				"springgreen" => Colors.SpringGreen,
+				"steelblue" => Colors.SteelBlue,
+				"tan" => Colors.Tan,
+				"teal" => Colors.Teal,
+				"thistle" => Colors.Thistle,
+				"tomato" => Colors.Tomato,
+				"transparent" => Colors.Transparent,
+				"turquoise" => Colors.Turquoise,
+				"violet" => Colors.Violet,
+				"wheat" => Colors.Wheat,
+				"white" => Colors.White,
+				"whitesmoke" => Colors.WhiteSmoke,
+				"yellow" => Colors.Yellow,
+				"yellowgreen" => Colors.YellowGreen,
+				_ => null
+			};
 		}
 
 		static bool TryParseFourColorRanges(
