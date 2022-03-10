@@ -44,6 +44,19 @@ namespace Microsoft.Maui.Controls.Handlers
 			handler.PlatformView?.InvalidateShape(polyline);
 		}
 
+		public static void MapFillRule(PolylineHandler handler, Polyline polyline)
+		{
+			IDrawable drawable = handler.PlatformView?.Drawable;
+
+			if (drawable == null)
+				return;
+
+			if (drawable is ShapeDrawable shapeDrawable)
+				shapeDrawable.WindingMode = polyline.FillRule == FillRule.EvenOdd ? Graphics.WindingMode.EvenOdd : Graphics.WindingMode.NonZero;
+
+			handler.PlatformView?.InvalidateShape(polyline);
+		}
+
 		void OnPointsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
 			PlatformView?.InvalidateShape(VirtualView);
