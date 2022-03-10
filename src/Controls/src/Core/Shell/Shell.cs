@@ -1243,7 +1243,10 @@ namespace Microsoft.Maui.Controls
 
 				if (ignoreImplicit && Routing.IsImplicit(element))
 				{
-					// Ignore Implicit routes
+					// If this is an implicitly created route.
+					// A route that the user doesn't have inside their Shell file.
+					// Then we don't want to consider it as a value to use.
+					// So we let the code just go to the next parent.
 				}
 				else if (element.IsSet(property))
 					return (T)element.GetValue(property);
