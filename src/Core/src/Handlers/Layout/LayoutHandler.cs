@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(ILayout.Background)] = MapBackground,
 			[nameof(ILayout.ClipsToBounds)] = MapClipsToBounds,
+#if WINDOWS
 			[nameof(ILayout.FlowDirection)] = MapFlowDirection,
+#endif
 #if ANDROID || WINDOWS
 			[nameof(IView.InputTransparent)] = MapInputTransparent,
 #endif
@@ -64,12 +66,6 @@ namespace Microsoft.Maui.Handlers
 				handler.Add(args.View);
 			}
 		}
-
-		public static void MapFlowDirection(ILayoutHandler handler, ILayout layout)
-		{
-			handler.UpdateFlowDirection(layout);
-		}
-
 
 		public static void MapRemove(ILayoutHandler handler, ILayout layout, object? arg)
 		{

@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Handlers
 		public void Remove(IView view) => throw new NotImplementedException();
 		public void Clear() => throw new NotImplementedException();
 		public void Insert(int index, IView view) => throw new NotImplementedException();
-		public void UpdateFlowDirection(IView view) { }
 		public void Update(int index, IView view) => throw new NotImplementedException();
 		public void UpdateZIndex(IView view) => throw new NotImplementedException();
 

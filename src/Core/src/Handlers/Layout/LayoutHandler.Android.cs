@@ -85,12 +85,6 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.AddView(child.ToPlatform(MauiContext), targetIndex);
 		}
 
-		public void UpdateFlowDirection(IView view)
-		{
-			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
-			PlatformView.UpdateFlowDirection(view);
-		}
-
 		public void Update(int index, IView child)
 		{
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
