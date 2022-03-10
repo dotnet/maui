@@ -5,39 +5,37 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="ActivityIndicator">
     <ContentPage.Content>
-        <VerticalStackLayout
-            Margin="12">
+        <VerticalStackLayout Margin="12">
             <Label
                 Text="Default"
                 Style="{StaticResource Headline}"/>
-            <Label
-                Text="IsRunning"
-                Style="{StaticResource Subhead}"/>
             <ActivityIndicator
                 IsRunning="True" />
+
             <Label
-                Text="Styled"
+                Text="Styled - Color"
                 Style="{StaticResource Headline}"/>
-            <Label
-                Text="Color"
-                Style="{StaticResource Subhead}"/>
             <ActivityIndicator
                 IsRunning="True"
                 Color="{AppThemeBinding Light={StaticResource LightAccentColor}, Dark={StaticResource DarkAccentColor}}" />
+            
             <Label
                 Text="Larger"
                 Style="{StaticResource Headline}" />
             <ActivityIndicator IsRunning="True" WidthRequest="150" HeightRequest="150" />
+            
             <Label
                 Text="Smaller"
                 Style="{StaticResource Headline}" />
             <ActivityIndicator IsRunning="True" WidthRequest="10" HeightRequest="10" />
+            
             <Label
                 Text="Not Running"
                 Style="{StaticResource Headline}" />
             <ActivityIndicator IsRunning="False" />
+            
             <Label
-                Text="-- End of page --"
+                Text="- End of page -"
                 Style="{StaticResource Subhead}" />
         </VerticalStackLayout>
     </ContentPage.Content>
