@@ -12,6 +12,29 @@ namespace Microsoft.Maui
 {
 	public partial class FileImageSourceService
 	{
+		public override Task<bool> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		{
+			if (imageSource is IFileImageSource fileImageSource)
+			{
+				try
+				{
+					Glide
+						.With(imageView.Context)
+						.Load(fileImageSource.File, imageView.Context!)
+						.Into(imageView);
+
+					return Task.FromResult(true);
+				}
+				catch (Exception ex)
+				{
+					Logger?.LogWarning(ex, "Unable to load image stream.");
+					throw;
+				}
+			}
+
+			return Task.FromResult(false);
+		}
+
 		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>
 			GetDrawableAsync((IFileImageSource)imageSource, context, cancellationToken);
 

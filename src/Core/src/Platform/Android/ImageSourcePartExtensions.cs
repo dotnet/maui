@@ -21,6 +21,9 @@ namespace Microsoft.Maui.Platform
 			if (context == null)
 				return null;
 
+			if (destinationContext is not Android.Widget.ImageView destinationImageView)
+				return null;
+
 			var imageSource = image.Source;
 			if (imageSource == null)
 				return null;
@@ -34,21 +37,13 @@ namespace Microsoft.Maui.Platform
 			{
 				var service = services.GetRequiredImageSourceService(imageSource);
 
-				var result = await service.GetDrawableAsync(imageSource, context, cancellationToken);
-				var drawable = result?.Value;
-
-				var applied = !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
-
-				// only set the image if we are still on the same one
-				if (applied)
-				{
-					setDrawable(drawable);
-					drawable.UpdateIsAnimationPlaying(image);
-				}
+				var result = await service.LoadDrawableAsync(imageSource, destinationImageView, cancellationToken);
+				
+				var applied = result && !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
 
 				events?.LoadingCompleted(applied);
 
-				return result;
+				return new ImageSourceServiceResult(null);
 			}
 			catch (OperationCanceledException)
 			{

@@ -14,6 +14,38 @@ namespace Microsoft.Maui
 {
 	public partial class StreamImageSourceService
 	{
+		public override async Task<bool> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		{
+			if (imageSource is IStreamImageSource streamImageSource)
+			{
+				try
+				{
+					var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+
+					// We can use the .NET stream directly because we register the InputStreamModelLoader.
+					// There are 2 alternatives:
+					//  - Load the bitmap manually and pass that along, but then we do not get the decoding features.
+					//  - Copy the stream into a byte array and that is double memory usage - especially for large streams.
+					var inputStream = new InputStreamAdapter(stream);
+
+					Glide
+						.With(imageView.Context)
+						.Load(inputStream)
+						.Into(imageView);
+
+					return true;
+				}
+				catch (Exception ex)
+				{
+					Logger?.LogWarning(ex, "Unable to load image stream.");
+					throw;
+				}
+			}
+
+			return false;
+		}
+
+
 		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>
 			GetDrawableAsync((IStreamImageSource)imageSource, context, cancellationToken);
 

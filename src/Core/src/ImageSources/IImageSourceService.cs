@@ -11,6 +11,11 @@ namespace Microsoft.Maui
 			IImageSource imageSource,
 			Android.Content.Context context,
 			CancellationToken cancellationToken = default);
+
+		Task<bool> LoadDrawableAsync(
+			IImageSource imageSource,
+			Android.Widget.ImageView imageView,
+			CancellationToken cancellationToken = default);
 #elif IOS
 		Task<IImageSourceServiceResult<UIKit.UIImage>?> GetImageAsync(
 			IImageSource imageSource,

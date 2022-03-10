@@ -16,19 +16,19 @@ namespace Microsoft.Maui
 	{
 		Action? _dispose;
 
-		public ImageSourceServiceResult(PlatformView image, Action? dispose = null)
+		public ImageSourceServiceResult(PlatformView? image, Action? dispose = null)
 			: this(image, false, dispose)
 		{
 		}
 
-		public ImageSourceServiceResult(PlatformView image, bool resolutionDependent, Action? dispose = null)
+		public ImageSourceServiceResult(PlatformView? image, bool resolutionDependent, Action? dispose = null)
 		{
 			Value = image;
 			IsResolutionDependent = resolutionDependent;
 			_dispose = dispose;
 		}
 
-		public PlatformView Value { get; }
+		public PlatformView? Value { get; }
 
 		public bool IsResolutionDependent { get; }
 

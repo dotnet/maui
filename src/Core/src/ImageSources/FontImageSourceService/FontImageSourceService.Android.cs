@@ -14,6 +14,39 @@ namespace Microsoft.Maui
 {
 	public partial class FontImageSourceService
 	{
+		public override Task<bool> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		{
+			if (imageSource is IFontImageSource fontImageSource)
+			{
+				if (fontImageSource.IsEmpty)
+					return Task.FromResult(false);
+
+				var glyph = fontImageSource.Glyph;
+
+				var size = FontManager.GetFontSize(fontImageSource.Font);
+				var textSize = TypedValue.ApplyDimension(size.Unit, size.Value, imageView.Context?.Resources?.DisplayMetrics);
+				var typeface = FontManager.GetTypeface(fontImageSource.Font);
+				var color = (fontImageSource.Color ?? Graphics.Colors.White).ToPlatform();
+
+				try
+				{
+					Glide
+						.With(imageView.Context)
+						.Load(new FontImageSourceModel(glyph, textSize, typeface, color))
+						.Into(imageView);
+
+					return Task.FromResult(true);
+				}
+				catch (Exception ex)
+				{
+					Logger?.LogWarning(ex, "Unable to generate font image '{Glyph}'.", glyph);
+					throw;
+				}
+			}
+
+			return Task.FromResult(false);
+		}
+
 		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>
 			GetDrawableAsync((IFontImageSource)imageSource, context, cancellationToken);
 
