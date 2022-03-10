@@ -107,6 +107,27 @@ namespace Microsoft.Maui.DeviceTests
 
 #if !IOS
 		[Fact]
+		public async Task NavigatedToFiresAfterLoaded()
+		{
+			SetupBuilder();
+
+			var navPage = new NavigationPage(new ContentPage());
+			var page = new ContentPage();
+
+			int loaded = 0;
+			bool loadedFired = false;
+
+			page.Loaded += (_, __) => loaded++;
+			page.NavigatedTo += (_, __) => loadedFired = (loaded == 1);
+
+			await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
+			{
+				await navPage.PushAsync(page);
+				Assert.True(loadedFired);
+			});
+		}
+
+		[Fact]
 		public async Task LoadedFiresOnPushedPage()
 		{
 			SetupBuilder();
