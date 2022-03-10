@@ -1213,7 +1213,7 @@ namespace Microsoft.Maui.Controls
 					//
 					// This will happen if the user only specifies a
 					// single ContentPage
-					else if (Routing.IsImplicit(rootItem))
+					else if (rootItem != null && Routing.IsImplicit(rootItem))
 					{
 						if (Items.Count <= 1)
 							return FlyoutBehavior.Disabled;
