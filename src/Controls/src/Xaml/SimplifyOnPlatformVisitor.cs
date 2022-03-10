@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using System;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -34,16 +35,15 @@ namespace Microsoft.Maui.Controls.Xaml
 				return;
 
 			string target = null;
-			if (TargetFramework.Contains("-android"))
+			if (TargetFramework.Contains("-android", StringComparison.Ordinal))
 				target = nameof(OnPlatformExtension.Android);
-			if (TargetFramework.Contains("-ios"))
+			else if (TargetFramework.Contains("-ios", StringComparison.Ordinal))
 				target = nameof(OnPlatformExtension.iOS);
-			if (TargetFramework.Contains("-macos"))
+			else if (TargetFramework.Contains("-macos", StringComparison.Ordinal))
 				target = nameof(OnPlatformExtension.macOS);
-			if (TargetFramework.Contains("-maccatalyst"))
+			else if (TargetFramework.Contains("-maccatalyst", StringComparison.Ordinal))
 				target = nameof(OnPlatformExtension.MacCatalyst);
-
-			if (target is null)
+			else if (target is null)
 				return;
 
 			if (   node.Properties.TryGetValue(new XmlName("", target), out INode targetNode)
