@@ -97,6 +97,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// TODO: How do we know this runs only once?
 			if (view != null && IsAppOriginPageUri(url))
 			{
+				// Startup scripts must run in OnPageFinished. If scripts are run earlier they will have no lasting
+				// effect because once the page content loads all the document state gets reset.
 				RunBlazorStartupScripts(view);
 			}
 		}
