@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls
 			}
 			// We only want to use the ShellContent as a title if no pages have been
 			// Pushed onto the stack
-			else if (_shell.Navigation.NavigationStack.Count <= 1)
+			else if (_shell.Navigation?.NavigationStack?.Count <= 1)
 			{
 				Title = _shell.CurrentContent?.Title ?? String.Empty;
 			}
