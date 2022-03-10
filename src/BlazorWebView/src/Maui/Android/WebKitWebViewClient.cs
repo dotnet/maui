@@ -94,6 +94,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			base.OnPageFinished(view, url);
 
+			// TODO: How do we know this runs only once?
 			if (view != null && IsAppOriginPageUri(url))
 			{
 				RunBlazorStartupScripts(view);
