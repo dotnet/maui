@@ -97,9 +97,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						header += $"{item.Key}:{item.Value}\r\n";
 					}
 					header += "\r\n";
-					var body = new StreamReader(content).ReadToEnd();
-
-					interceptor.SetResponse(header, body);
+					MemoryStream memstream = new MemoryStream();
+					content.CopyTo(memstream);
+					interceptor.SetResponse(header, memstream.ToArray());
 					return;
 				}
 			}
