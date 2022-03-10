@@ -105,6 +105,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(2, unloaded);
 		}
 
+#if !IOS
 		[Fact]
 		public async Task LoadedFiresOnPushedPage()
 		{
@@ -134,5 +135,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, unloaded);
 			});
 		}
+#endif
+
 	}
 }
