@@ -5,6 +5,6 @@ namespace Microsoft.Maui.DeviceTests
 		public const int EmCoefficientPrecision = 4;
 
 		public Android.Content.Context DefaultContext =>
-			Platform.DefaultContext;
+			MauiProgram.DefaultContext;
 	}
 }

@@ -17,7 +17,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var imageSource = (ImageSourceStub)Activator.CreateInstance(type);
 
-			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetDrawableAsync(imageSource, Platform.DefaultContext));
+			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext));
 		}
 	}
 }

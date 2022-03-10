@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -7,38 +6,17 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Window)]
 	public partial class WindowHandlerTests : HandlerTestBase
 	{
-		[Theory]
-		[InlineData(-1)]
-		[InlineData(float.NaN)]
-		public async Task WindowHandlerDoesNotUseValueFromIWindow(float testDensity)
-		{
-			var control = new WindowStub();
-
-			// set an invalid value so we know the test doesn't accidentally use it
-			control.SetDisplayDensity(testDensity);
-
-			var density = await InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler<WindowHandler>(control);
-
-				return handler.InvokeWithResult(nameof(IWindow.RequestDisplayDensity), new DisplayDensityRequest());
-			});
-
-			Assert.NotEqual(testDensity, density);
-		}
-
 		[Fact]
 		public async Task WindowHasReasonableDisplayDensity()
 		{
-			var control = new WindowStub();
+			var window = MauiProgram.DefaultTestApp.Windows[0];
+			var handler = window.Handler!;
 
-			var density = await InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler<WindowHandler>(control);
+			var req = new DisplayDensityRequest();
 
-				return handler.InvokeWithResult(nameof(IWindow.RequestDisplayDensity), new DisplayDensityRequest());
-			});
+			var density = await InvokeOnMainThreadAsync(() => handler.InvokeWithResult(nameof(IWindow.RequestDisplayDensity), req));
 
+			Assert.Equal(density, req.Result);
 			Assert.InRange(density, 0.1f, 4f);
 		}
 	}

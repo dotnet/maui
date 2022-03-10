@@ -11,7 +11,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		List<IVisualTreeElement> _visualChildren = new List<IVisualTreeElement>();
-		float _displayDensity = 1.0f;
 
 		public IElementHandler Handler { get; set; }
 
@@ -107,9 +106,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IVisualTreeElement GetVisualParent() => this.Parent as IVisualTreeElement;
 
-		public float RequestDisplayDensity() => _displayDensity;
-
-		public void SetDisplayDensity(float value) => _displayDensity = value;
+		public float RequestDisplayDensity() => 1.0f;
 
 		public virtual void DisplayDensityUpdated(float displayDensity) { }
 	}

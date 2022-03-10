@@ -7,6 +7,6 @@ namespace Microsoft.Maui.DeviceTests
 		public const int EmCoefficientPrecision = 4;
 
 		public Window DefaultWindow =>
-			Platform.DefaultWindow;
+			MauiProgram.DefaultWindow;
 	}
 }
