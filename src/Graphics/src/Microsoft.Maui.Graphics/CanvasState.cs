@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Graphics
 	public class CanvasState : IDisposable
 	{
 		public float[] StrokeDashPattern { get; set; }
+		public float StrokeDashOffset { get; set; } = 1;
 		public float StrokeSize { get; set; } = 1;
 
 		private Matrix3x2 _transform = Matrix3x2.Identity;
@@ -37,6 +38,7 @@ namespace Microsoft.Maui.Graphics
 		protected CanvasState(CanvasState prototype)
 		{
 			StrokeDashPattern = prototype.StrokeDashPattern;
+			StrokeDashOffset = prototype.StrokeDashOffset;
 			StrokeSize = prototype.StrokeSize;
 
 			this._transform = prototype._transform;

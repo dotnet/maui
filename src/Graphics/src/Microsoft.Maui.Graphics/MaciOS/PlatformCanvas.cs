@@ -274,9 +274,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
-		protected override void PlatformSetStrokeDashPattern(float[] pattern, float strokeSize)
+		protected override void PlatformSetStrokeDashPattern(float[] strokePattern, float strokeDashOffset, float strokeSize)
 		{
-			if (pattern == null)
+			if (strokePattern == null)
 			{
 				_context.SetLineDash(0, EmptyNFloatArray);
 			}
@@ -293,13 +293,15 @@ namespace Microsoft.Maui.Graphics.Platform
 						actualStrokeSize = strokeLimit / scale;
 				}
 
-				var actualDashPattern = new nfloat[pattern.Length];
-				for (var i = 0; i < pattern.Length; i++)
+				var actualDashPattern = new nfloat[strokePattern.Length];
+				for (var i = 0; i < strokePattern.Length; i++)
 				{
-					actualDashPattern[i] = pattern[i] * actualStrokeSize;
+					actualDashPattern[i] = strokePattern[i] * actualStrokeSize;
 				}
 
-				_context.SetLineDash(0, actualDashPattern, actualDashPattern.Length);
+				var actualDashOffset = strokeDashOffset * actualStrokeSize;
+
+				_context.SetLineDash(actualDashOffset, actualDashPattern, actualDashPattern.Length);
 			}
 		}
 

@@ -93,6 +93,7 @@ namespace GraphicsTester.Scenarios
 			{
 				canvas.StrokeSize = i;
 				canvas.StrokeDashPattern = DASHED;
+				canvas.StrokeDashOffset = 2;
 				canvas.DrawArc(50f, 200f + i * 30, 150, 20, 0, 180, false, false);
 				canvas.DrawArc(250.5f, 200.5f + i * 30, 150, 20, 0, 180, false, false);
 			}
