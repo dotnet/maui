@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapRequestDisplayDensity(IWindowHandler handler, object args)
+		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
 		{
 			if (args is DisplayDensityRequest request)
 				request.SetResult(handler.PlatformView.GetDisplayDensity());

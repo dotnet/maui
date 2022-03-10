@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Handlers
 				PlatformMethods.SetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE, updated_style);
 		}
 
-		public static void MapRequestDisplayDensity(IWindowHandler handler, object args)
+		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
 		{
 			if (args is DisplayDensityRequest request)
 				request.SetResult(handler.PlatformView.GetDisplayDensity());

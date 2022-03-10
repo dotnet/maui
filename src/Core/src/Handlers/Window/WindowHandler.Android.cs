@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 				ViewHandler.MapToolbar(handler, tb);
 		}
 
-		public static void MapRequestDisplayDensity(IWindowHandler handler, object args)
+		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
 		{
 			if (args is DisplayDensityRequest request)
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
