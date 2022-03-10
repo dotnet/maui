@@ -49,6 +49,16 @@
                     Text="I am read only" 
                     IsReadOnly="True"/>
                 <Label
+                    Text="Focus"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    Focused="OnEditorFocused"/>
+                <Label
+                    Text="Unfocus"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    Unfocused="OnEditorUnfocused"/>
+                <Label
                     Text="Completed"
                     Style="{StaticResource Headline}" />
                 <Editor 
