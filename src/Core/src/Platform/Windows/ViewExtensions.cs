@@ -129,15 +129,15 @@ namespace Microsoft.Maui.Platform
 		{
 			var flowDirection = view.FlowDirection;
 
-			if (flowDirection == FlowDirection.MatchParent ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			if (flowDirection == FlowDirection.MatchParent)
 			{
 				flowDirection = view?.Handler?.MauiContext?.GetFlowDirection()
 					?? FlowDirection.LeftToRight;
-			}
-			if (flowDirection == FlowDirection.MatchParent)
-			{
-				flowDirection = FlowDirection.LeftToRight;
+
+				if (flowDirection == FlowDirection.MatchParent)
+				{
+					flowDirection = FlowDirection.LeftToRight;
+				}
 			}
 
 			platformView.FlowDirection = flowDirection.ToPlatform();

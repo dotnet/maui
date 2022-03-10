@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(ILayout.Background)] = MapBackground,
 			[nameof(ILayout.ClipsToBounds)] = MapClipsToBounds,
+			[nameof(ILayout.FlowDirection)] = MapFlowDirection,
 		};
 
 		public static CommandMapper<ILayout, ILayoutHandler> CommandMapper = new(ViewCommandMapper)
@@ -59,6 +60,11 @@ namespace Microsoft.Maui.Handlers
 			{
 				handler.Add(args.View);
 			}
+		}
+
+		public static void MapFlowDirection(ILayoutHandler handler, ILayout layout)
+		{
+			handler.UpdateFlowDirection(layout);
 		}
 
 		public static void MapRemove(ILayoutHandler handler, ILayout layout, object? arg)

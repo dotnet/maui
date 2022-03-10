@@ -19,6 +19,7 @@ namespace Microsoft.Maui
 		void Remove(IView view);
 		void Clear();
 		void Insert(int index, IView view);
+		void UpdateFlowDirection(IView view);
 		void Update(int index, IView view);
 		void UpdateZIndex(IView view);
 	}

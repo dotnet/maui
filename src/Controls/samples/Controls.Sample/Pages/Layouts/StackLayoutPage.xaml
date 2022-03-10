@@ -30,6 +30,28 @@
                 <BoxView Color="Orange" />
                 <BoxView Color="Purple" />
             </StackLayout>
+            <Label Text="Horizontal alignment FlowDirection = LeftToRight (default)"/>
+            <StackLayout WidthRequest="400" BackgroundColor="AliceBlue">
+                <Button HeightRequest="50" Text="Button start" HorizontalOptions="Start" />
+                <Label HeightRequest="50" Text="Label start" HorizontalOptions="Start" />
+                <Button HeightRequest="50" Text="Button end" HorizontalOptions="End" />
+                <Label HeightRequest="50" Text="Label end" HorizontalOptions="End" />
+                <Button HeightRequest="50" Text="Button Fill" HorizontalOptions="Fill" />
+                <Label HeightRequest="50"  Text="Label Fill" HorizontalOptions="Fill" />
+                <Button HeightRequest="50" WidthRequest="100" Text="Button fill" HorizontalOptions="Fill" />
+                <Label HeightRequest="50"  WidthRequest="100" Text="Label fill" HorizontalOptions="Fill" />
+            </StackLayout>
+            <Label Text="Horizontal alignment FlowDirection = RightToLeft"/>
+            <StackLayout WidthRequest="400" FlowDirection="RightToLeft" BackgroundColor="AliceBlue">
+                <Button HeightRequest="50" Text="Button start" HorizontalOptions="Start" />
+                <Label HeightRequest="50" Text="Label start" HorizontalOptions="Start" />
+                <Button HeightRequest="50" Text="Button end" HorizontalOptions="End" />
+                <Label HeightRequest="50" Text="Label end" HorizontalOptions="End" />
+                <Button HeightRequest="50" Text="Button Fill" HorizontalOptions="Fill" />
+                <Label HeightRequest="50"  Text="Label Fill" HorizontalOptions="Fill" />
+                <Button HeightRequest="50" WidthRequest="100" Text="Button fill" HorizontalOptions="Fill" />
+                <Label HeightRequest="50"  WidthRequest="100" Text="Label fill" HorizontalOptions="Fill" />
+            </StackLayout>
         </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>
