@@ -5,7 +5,7 @@
 	{
 		protected override ReorderableItemsViewAdapter<TItemsView, IGroupableItemsViewSource> CreateAdapter() => new(VirtualView);
 
-		public static void MapCanReorderItems(ReorderableItemsViewHandler<TItemsView> handler, ReorderableItemsView itemsView)
+		public static void MapCanReorderItems(IReorderableItemsViewHandler handler, ReorderableItemsView itemsView)
 		{
 			(handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateCanReorderItems();
 		}

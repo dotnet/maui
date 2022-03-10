@@ -5,7 +5,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public partial class ReorderableItemsViewHandler<TItemsView> where TItemsView : ReorderableItemsView
+	public partial class ReorderableItemsViewHandler<TItemsView> : IReorderableItemsViewHandler where TItemsView : ReorderableItemsView
 	{
 		public ReorderableItemsViewHandler() : base(ReorderableItemsViewMapper)
 		{
@@ -41,5 +41,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 #endif
 			[ReorderableItemsView.CanReorderItemsProperty.PropertyName] = MapCanReorderItems,
 		};
+
+		ReorderableItemsView IReorderableItemsViewHandler.VirtualView => VirtualView;
 	}
 }

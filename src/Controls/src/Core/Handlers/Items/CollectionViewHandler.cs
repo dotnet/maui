@@ -5,7 +5,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public partial class CollectionViewHandler
+	public partial class CollectionViewHandler : ICollectionViewHandler
 	{
 		public CollectionViewHandler() : base(CollectionViewMapper)
 		{
@@ -37,5 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			//[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped
 			[ReorderableItemsView.IsGroupedProperty.PropertyName] = MapCanReorderItems
 		};
+
+		CollectionView ICollectionViewHandler.VirtualView => (CollectionView)VirtualView;
 	}
 }

@@ -60,15 +60,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapSelectedItem(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
+		public static void MapSelectedItem(ISelectableItemsViewHandler handler, SelectableItemsView itemsView)
 		{
 		}
 
-		public static void MapSelectedItems(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
+		public static void MapSelectedItems(ISelectableItemsViewHandler handler, SelectableItemsView itemsView)
 		{
 		}
 
-		public static void MapSelectionMode(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
+		public static void MapSelectionMode(ISelectableItemsViewHandler handler, SelectableItemsView itemsView)
 		{
 		}
 

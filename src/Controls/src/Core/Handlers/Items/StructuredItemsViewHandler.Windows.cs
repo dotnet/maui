@@ -15,22 +15,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override IItemsLayout Layout { get => ItemsView?.ItemsLayout; }
 
-		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		public static void MapHeaderTemplate(IStructuredItemsViewHandler handler, StructuredItemsView itemsView)
 		{
-			handler.UpdateHeader();
+			(handler as StructuredItemsViewHandler<TItemsView>)?.UpdateHeader();
 		}
 
-		public static void MapFooterTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		public static void MapFooterTemplate(IStructuredItemsViewHandler handler, StructuredItemsView itemsView)
 		{
-			handler.UpdateFooter();
+			(handler as StructuredItemsViewHandler<TItemsView>)?.UpdateFooter();
 		}
 
-		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		public static void MapItemsLayout(IStructuredItemsViewHandler handler, StructuredItemsView itemsView)
 		{
-			handler.UpdateItemsLayout();
+			(handler as StructuredItemsViewHandler<TItemsView>)?.UpdateItemsLayout();
 		}
 
-		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		public static void MapItemSizingStrategy(IStructuredItemsViewHandler handler, StructuredItemsView itemsView)
 		{
 			
 		}

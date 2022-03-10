@@ -11,18 +11,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override StructuredItemsViewAdapter<TItemsView, IItemsViewSource> CreateAdapter() => new(VirtualView);
 
-		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		public static void MapHeaderTemplate(IStructuredItemsViewHandler handler, StructuredItemsView itemsView)
 		{
 		}
 
-		public static void MapFooterTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		public static void MapFooterTemplate(IStructuredItemsViewHandler handler, StructuredItemsView itemsView)
 		{
 		}
 
-		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		public static void MapItemsLayout(IStructuredItemsViewHandler handler, StructuredItemsView itemsView)
 			=> (handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateLayoutManager();
 
-		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		public static void MapItemSizingStrategy(IStructuredItemsViewHandler handler, StructuredItemsView itemsView)
 			=> (handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateAdapter();
 	}
 }

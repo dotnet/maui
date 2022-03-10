@@ -27,24 +27,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return new ListViewLayout(new LinearItemsLayout(ItemsLayoutOrientation.Vertical), itemSizingStrategy);
 		}
 
-		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		public static void MapHeaderTemplate(IStructuredItemsViewHandler handler, StructuredItemsView itemsView)
 		{
-			(handler.Controller as StructuredItemsViewController<TItemsView>)?.UpdateHeaderView();
+			((handler as StructuredItemsViewHandler<TItemsView>)?.Controller as StructuredItemsViewController<TItemsView>)?.UpdateHeaderView();
 		}
 
-		public static void MapFooterTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		public static void MapFooterTemplate(IStructuredItemsViewHandler handler, StructuredItemsView itemsView)
 		{
-			(handler.Controller as StructuredItemsViewController<TItemsView>)?.UpdateFooterView();
+			((handler as StructuredItemsViewHandler<TItemsView>)?.Controller as StructuredItemsViewController<TItemsView>)?.UpdateFooterView();
 		}
 
-		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		public static void MapItemsLayout(IStructuredItemsViewHandler handler, StructuredItemsView itemsView)
 		{
-			handler.UpdateLayout();
+			(handler as StructuredItemsViewHandler<TItemsView>)?.UpdateLayout();
 		}
 
-		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		public static void MapItemSizingStrategy(IStructuredItemsViewHandler handler, StructuredItemsView itemsView)
 		{
-			handler.UpdateLayout();
+			(handler as StructuredItemsViewHandler<TItemsView>)?.UpdateLayout();
 		}
 	}
 }

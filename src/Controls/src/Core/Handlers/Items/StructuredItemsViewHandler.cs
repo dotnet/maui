@@ -5,7 +5,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public partial class StructuredItemsViewHandler<TItemsView> where TItemsView : StructuredItemsView
+	public partial class StructuredItemsViewHandler<TItemsView> : IStructuredItemsViewHandler where TItemsView : StructuredItemsView
 	{
 		public StructuredItemsViewHandler() : base(StructuredItemsViewMapper)
 		{
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		}
 
-		public static PropertyMapper<TItemsView, StructuredItemsViewHandler<TItemsView>> StructuredItemsViewMapper = new PropertyMapper<TItemsView, StructuredItemsViewHandler<TItemsView>>(ViewMapper)
+		public static PropertyMapper<TItemsView, IStructuredItemsViewHandler> StructuredItemsViewMapper = new PropertyMapper<TItemsView, IStructuredItemsViewHandler>(ViewMapper)
 		{
 			[Controls.ItemsView.ItemsSourceProperty.PropertyName] = MapItemsSource,
 			[Controls.ItemsView.HorizontalScrollBarVisibilityProperty.PropertyName] = MapHorizontalScrollBarVisibility,
@@ -33,5 +33,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy
 		};
 
+		StructuredItemsView IStructuredItemsViewHandler.VirtualView => VirtualView;
 	}
 }

@@ -5,7 +5,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public partial class GroupableItemsViewHandler<TItemsView> where TItemsView : GroupableItemsView
+	public partial class GroupableItemsViewHandler<TItemsView> : IGroupableItemsViewHandler where TItemsView : GroupableItemsView
 	{
 		public GroupableItemsViewHandler() : base(GroupableItemsViewMapper)
 		{
@@ -40,5 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapIsGrouped,
 #endif
 		};
+
+		GroupableItemsView IGroupableItemsViewHandler.VirtualView => VirtualView;
 	}
 }

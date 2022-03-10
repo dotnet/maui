@@ -25,27 +25,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return new MauiCarouselRecyclerView(Context, GetItemsLayout, CreateAdapter);
 		}
 
-		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapIsSwipeEnabled(ICarouselViewHandler handler, CarouselView carouselView)
 		{
 			(handler.PlatformView as IMauiCarouselRecyclerView).IsSwipeEnabled = carouselView.IsSwipeEnabled;
 		}
 
-		public static void MapIsBounceEnabled(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapIsBounceEnabled(ICarouselViewHandler handler, CarouselView carouselView)
 		{
 			handler.PlatformView.OverScrollMode = carouselView?.IsBounceEnabled == true ? OverScrollMode.Always : OverScrollMode.Never;
 		}
 
-		public static void MapPeekAreaInsets(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapPeekAreaInsets(ICarouselViewHandler handler, CarouselView carouselView)
 		{
 			(handler.PlatformView as IMauiRecyclerView<CarouselView>).UpdateAdapter();
 		}
 
-		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapPosition(ICarouselViewHandler handler, CarouselView carouselView)
 		{
 			(handler.PlatformView as IMauiCarouselRecyclerView).UpdateFromPosition();
 		}
 
-		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapCurrentItem(ICarouselViewHandler handler, CarouselView carouselView)
 		{
 			(handler.PlatformView as IMauiCarouselRecyclerView).UpdateFromCurrentItem();
 		}

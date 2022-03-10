@@ -13,9 +13,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override ItemsViewController<TItemsView> CreateController(TItemsView itemsView, ItemsViewLayout layout)
 			 => new ReorderableItemsViewController<TItemsView>(itemsView, layout);
 
-		public static void MapCanReorderItems(ReorderableItemsViewHandler<TItemsView> handler, ReorderableItemsView itemsView)
+		public static void MapCanReorderItems(IReorderableItemsViewHandler handler, ReorderableItemsView itemsView)
 		{
-			(handler.Controller as ReorderableItemsViewController<TItemsView>)?.UpdateCanReorderItems();
+			((handler as ReorderableItemsViewHandler<TItemsView>)?.Controller as ReorderableItemsViewController<TItemsView>)?.UpdateCanReorderItems();
 		}
 	}
 }

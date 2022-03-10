@@ -5,7 +5,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public partial class SelectableItemsViewHandler<TItemsView> where TItemsView : SelectableItemsView
+	public partial class SelectableItemsViewHandler<TItemsView> : ISelectableItemsViewHandler where TItemsView : SelectableItemsView
 	{
 		public SelectableItemsViewHandler() : base(SelectableItemsViewMapper)
 		{
@@ -37,5 +37,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
 		};
 
+		SelectableItemsView ISelectableItemsViewHandler.VirtualView => VirtualView;
 	}
 }

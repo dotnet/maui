@@ -171,34 +171,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return listView;
 		}
 
-		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapCurrentItem(ICarouselViewHandler handler, CarouselView carouselView)
 		{
-			handler.UpdateCurrentItem();
+			(handler as CarouselViewHandler)?.UpdateCurrentItem();
 		}
 
-		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapPosition(ICarouselViewHandler handler, CarouselView carouselView)
 		{
-			handler.UpdatePosition();
+			(handler as CarouselViewHandler)?.UpdatePosition();
 		}
 
-		public static void MapIsBounceEnabled(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapIsBounceEnabled(ICarouselViewHandler handler, CarouselView carouselView)
 		{
-			handler.UpdateIsBounceEnabled();
+			(handler as CarouselViewHandler)?.UpdateIsBounceEnabled();
 		}
 
-		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapIsSwipeEnabled(ICarouselViewHandler handler, CarouselView carouselView)
 		{
-			handler.UpdateIsSwipeEnabled();
+			(handler as CarouselViewHandler)?.UpdateIsSwipeEnabled();
 		}
 
-		public static void MapPeekAreaInsets(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapPeekAreaInsets(ICarouselViewHandler handler, CarouselView carouselView)
 		{
-			handler.UpdatePeekAreaInsets();
+			(handler as CarouselViewHandler)?.UpdatePeekAreaInsets();
 		}
 
-		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView) 
+		public static void MapLoop(ICarouselViewHandler handler, CarouselView carouselView) 
 		{
-			handler.UpdateLoop();
+			(handler as CarouselViewHandler)?.UpdateLoop();
 		}
 
 		void UpdateIsBounceEnabled()

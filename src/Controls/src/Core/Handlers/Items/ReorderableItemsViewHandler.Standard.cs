@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			throw new NotImplementedException();
 		}
 
-		public static void MapCanReorderItems(ReorderableItemsViewHandler<TItemsView> handler, ReorderableItemsView itemsView)
+		public static void MapCanReorderItems(IReorderableItemsViewHandler handler, ReorderableItemsView itemsView)
 		{
 		}
 	}

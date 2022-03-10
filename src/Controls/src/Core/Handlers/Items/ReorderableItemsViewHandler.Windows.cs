@@ -50,9 +50,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			Element?.SendReorderCompleted();
 		}
 
-		public static void MapCanReorderItems(ReorderableItemsViewHandler<TItemsView> handler, ReorderableItemsView itemsView)
+		public static void MapCanReorderItems(IReorderableItemsViewHandler handler, ReorderableItemsView itemsView)
 		{
-			handler.UpdateCanReorderItems();
+			(handler as ReorderableItemsViewHandler<TItemsView>)?.UpdateCanReorderItems();
 		}
 
 		void UpdateCanReorderItems()

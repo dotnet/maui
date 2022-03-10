@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, UIView> where TItemsView : ItemsView
 	{
-		ItemsViewLayout _layout;
+		protected ItemsViewLayout Layout { get; private set; }
 
 		protected override void DisconnectHandler(UIView platformView)
 		{
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		private protected override UIView OnCreatePlatformView()
 		{
 			UpdateLayout();
-			Controller = CreateController(ItemsView, _layout);
+			Controller = CreateController(ItemsView, Layout);
 			return base.OnCreatePlatformView();
 		}
 
@@ -42,56 +42,57 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override UIView CreatePlatformView() => Controller?.View;
 
-		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapItemsSource(IItemsViewHandler handler, ItemsView itemsView)
 		{
 			MapItemsUpdatingScrollMode(handler, itemsView);
-			handler.Controller?.UpdateItemsSource();
+			(handler as ItemsViewHandler<TItemsView>)?.Controller?.UpdateItemsSource();
 		}
 
-		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapHorizontalScrollBarVisibility(IItemsViewHandler handler, ItemsView itemsView)
 		{
-			handler.Controller?.CollectionView?.UpdateHorizontalScrollBarVisibility(itemsView.HorizontalScrollBarVisibility);
+			(handler as ItemsViewHandler<TItemsView>)?.Controller?.CollectionView?.UpdateHorizontalScrollBarVisibility(itemsView.HorizontalScrollBarVisibility);
 		}
 
-		public static void MapVerticalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapVerticalScrollBarVisibility(IItemsViewHandler handler, ItemsView itemsView)
 		{
-			handler.Controller?.CollectionView?.UpdateVerticalScrollBarVisibility(itemsView.VerticalScrollBarVisibility);
+			(handler as ItemsViewHandler<TItemsView>)?.Controller?.CollectionView?.UpdateVerticalScrollBarVisibility(itemsView.VerticalScrollBarVisibility);
 		}
 
-		public static void MapItemTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapItemTemplate(IItemsViewHandler handler, ItemsView itemsView)
 		{
-			handler.UpdateLayout();
+			(handler as ItemsViewHandler<TItemsView>)?.UpdateLayout();
 		}
 
-		public static void MapEmptyView(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapEmptyView(IItemsViewHandler handler, ItemsView itemsView)
 		{
-			handler.Controller?.UpdateEmptyView();
+			(handler as ItemsViewHandler<TItemsView>)?.Controller?.UpdateEmptyView();
 		}
 
-		public static void MapEmptyViewTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapEmptyViewTemplate(IItemsViewHandler handler, ItemsView itemsView)
 		{
-			handler.Controller?.UpdateEmptyView();
+			(handler as ItemsViewHandler<TItemsView>)?.Controller?.UpdateEmptyView();
 		}
 
-		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapFlowDirection(IItemsViewHandler handler, ItemsView itemsView)
 		{
-			handler.Controller?.UpdateFlowDirection();
+			(handler as ItemsViewHandler<TItemsView>)?.Controller?.UpdateFlowDirection();
 		}
 
-		public static void MapIsVisible(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapIsVisible(IItemsViewHandler handler, ItemsView itemsView)
 		{
-			handler.Controller?.UpdateVisibility();
+			(handler as ItemsViewHandler<TItemsView>)?.Controller?.UpdateVisibility();
 		}
 
-		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapItemsUpdatingScrollMode(IItemsViewHandler handler, ItemsView itemsView)
 		{
-			handler._layout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
+			if (handler is ItemsViewHandler<TItemsView> itemsViewHandler)
+				itemsViewHandler.Layout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
 		}
 
 		protected virtual void UpdateLayout()
 		{
-			_layout = SelectLayout();
-			Controller?.UpdateLayout(_layout);
+			Layout = SelectLayout();
+			Controller?.UpdateLayout(Layout);
 		}
 
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
@@ -105,7 +106,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 
 				Controller.CollectionView.ScrollToItem(indexPath,
-					args.ScrollToPosition.ToCollectionViewScrollPosition(_layout.ScrollDirection), args.IsAnimated);
+					args.ScrollToPosition.ToCollectionViewScrollPosition(Layout.ScrollDirection), args.IsAnimated);
 			}
 
 			NSIndexPath DetermineIndex(ScrollToRequestEventArgs args)

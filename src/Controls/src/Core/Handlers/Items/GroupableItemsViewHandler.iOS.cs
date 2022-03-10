@@ -30,9 +30,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.ScrollToRequested(sender, args);
 		}
 
-		public static void MapIsGrouped(GroupableItemsViewHandler<TItemsView> handler, GroupableItemsView itemsView)
+		public static void MapIsGrouped(IGroupableItemsViewHandler handler, GroupableItemsView itemsView)
 		{
-			handler.Controller?.UpdateItemsSource();
+			(handler as GroupableItemsViewHandler<TItemsView>)?.Controller?.UpdateItemsSource();
 		}
 
 		bool WillNeedScrollAdjustment(ScrollToRequestEventArgs args)

@@ -58,47 +58,47 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView) 
+		public static void MapItemsSource(IItemsViewHandler handler, ItemsView itemsView) 
 		{
-			handler.UpdateItemsSource();
+			(handler as ItemsViewHandler<ItemsView>)?.UpdateItemsSource();
 		}
 
-		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapHorizontalScrollBarVisibility(IItemsViewHandler handler, ItemsView itemsView)
 		{
-			handler.UpdateHorizontalScrollBarVisibility();
+			(handler as ItemsViewHandler<ItemsView>)?.UpdateHorizontalScrollBarVisibility();
 		}
 
-		public static void MapVerticalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapVerticalScrollBarVisibility(IItemsViewHandler handler, ItemsView itemsView)
 		{
-			handler.UpdateVerticalScrollBarVisibility();
+			(handler as ItemsViewHandler<ItemsView>)?.UpdateVerticalScrollBarVisibility();
 		}
 
-		public static void MapItemTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapItemTemplate(IItemsViewHandler handler, ItemsView itemsView)
 		{
-			handler.UpdateItemTemplate();
+			(handler as ItemsViewHandler<ItemsView>)?.UpdateItemTemplate();
 		}
 
-		public static void MapEmptyView(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapEmptyView(IItemsViewHandler handler, ItemsView itemsView)
 		{
-			handler.UpdateEmptyView();
+			(handler as ItemsViewHandler<ItemsView>)?.UpdateEmptyView();
 		}
 
-		public static void MapEmptyViewTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapEmptyViewTemplate(IItemsViewHandler handler, ItemsView itemsView)
 		{
-			handler.UpdateEmptyView();
+			(handler as ItemsViewHandler<ItemsView>)?.UpdateEmptyView();
 		}
 
-		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapFlowDirection(IItemsViewHandler handler, ItemsView itemsView)
 		{
 			handler.PlatformView.UpdateFlowDirection(itemsView);
 		}
 
-		public static void MapIsVisible(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapIsVisible(IItemsViewHandler handler, ItemsView itemsView)
 		{
 			handler.PlatformView.UpdateVisibility(itemsView);
 		}
 
-		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		public static void MapItemsUpdatingScrollMode(IItemsViewHandler handler, ItemsView itemsView)
 		{
 			
 		}

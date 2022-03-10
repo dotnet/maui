@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public partial class CarouselViewHandler
+	public partial class CarouselViewHandler : ICarouselViewHandler
 	{
 		public CarouselViewHandler() : base(CarouselViewMapper)
 		{
@@ -28,5 +28,7 @@
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
 			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem
 		};
+
+		CarouselView ICarouselViewHandler.VirtualView => VirtualView;
 	}
 }

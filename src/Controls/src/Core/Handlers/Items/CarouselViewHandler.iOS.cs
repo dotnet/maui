@@ -33,35 +33,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapIsSwipeEnabled(ICarouselViewHandler handler, CarouselView carouselView)
 		{
-			handler.Controller.CollectionView.ScrollEnabled = carouselView.IsSwipeEnabled;
+			if(handler is CarouselViewHandler carouselViewHandler)
+				carouselViewHandler.Controller.CollectionView.ScrollEnabled = carouselView.IsSwipeEnabled;
 		}
 
-		public static void MapIsBounceEnabled(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapIsBounceEnabled(ICarouselViewHandler handler, CarouselView carouselView)
 		{
-			handler.Controller.CollectionView.Bounces = carouselView.IsBounceEnabled;
+			if (handler is CarouselViewHandler carouselViewHandler)
+				carouselViewHandler.Controller.CollectionView.Bounces = carouselView.IsBounceEnabled;
 		}
 
-		public static void MapPeekAreaInsets(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapPeekAreaInsets(ICarouselViewHandler handler, CarouselView carouselView)
 		{
-			(handler.Controller.Layout as CarouselViewLayout)?.UpdateConstraints(handler.PlatformView.Frame.Size);
-			handler.Controller.Layout.InvalidateLayout();
+			((handler as CarouselViewHandler)?.Controller.Layout as CarouselViewLayout)?.UpdateConstraints(handler.PlatformView.Frame.Size);
+			(handler as CarouselViewHandler)?.Controller.Layout.InvalidateLayout();
 		}
 
-		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapCurrentItem(ICarouselViewHandler handler, CarouselView carouselView)
 		{
-			(handler.Controller as CarouselViewController)?.UpdateFromCurrentItem();
+			if (handler is CarouselViewHandler carouselViewHandler)
+				(carouselViewHandler.Controller as CarouselViewController)?.UpdateFromCurrentItem();
 		}
 
-		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapPosition(ICarouselViewHandler handler, CarouselView carouselView)
 		{
-			(handler.Controller as CarouselViewController)?.UpdateFromPosition();
+			if (handler is CarouselViewHandler carouselViewHandler)
+				(carouselViewHandler.Controller as CarouselViewController)?.UpdateFromPosition();
 		}
 
-		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapLoop(ICarouselViewHandler handler, CarouselView carouselView)
 		{
-			(handler.Controller as CarouselViewController)?.UpdateLoop();
+			if (handler is CarouselViewHandler carouselViewHandler)
+				(carouselViewHandler.Controller as CarouselViewController)?.UpdateLoop();
 		}
 	}
 }
