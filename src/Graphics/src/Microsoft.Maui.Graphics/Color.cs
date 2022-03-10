@@ -1054,7 +1054,7 @@ ReturnFalse:
 
 		static bool TryParseDouble(ReadOnlySpan<char> s, out double value) =>
 			double.TryParse(
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || TIZEN
 				s.ToString(),
 #else
 				s, 
@@ -1063,7 +1063,7 @@ ReturnFalse:
 
 		static int ParseInt(ReadOnlySpan<char> s) =>
 			int.Parse(
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || TIZEN
 				s.ToString(),
 #else
 				s,
