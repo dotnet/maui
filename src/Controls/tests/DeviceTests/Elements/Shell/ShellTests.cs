@@ -93,5 +93,13 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		protected Task<Shell> CreateShellAsync(Action<Shell> action)=>
+			InvokeOnMainThreadAsync(() =>
+			{
+				var value = new Shell();
+				action?.Invoke(value);
+				return value;
+			});
 	}
 }
