@@ -212,10 +212,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_flyoutWidthDefault = width;
 
-			if (context.Shell is IFlyoutView view)
-				AddFlyoutContentToLayoutIfNeeded(view.FlyoutBehavior);
 
 			AddView(content);
+
+			if (context.Shell is IFlyoutView view)
+				AddFlyoutContentToLayoutIfNeeded(view.FlyoutBehavior);
 
 			((IShellController)context.Shell).AddFlyoutBehaviorObserver(this);
 
@@ -230,7 +231,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (behavior == FlyoutBehavior.Disabled)
 				return;
 
-			if (_flyoutContent == null)
+			if (_flyoutContent == null && ChildCount > 0)
 			{
 				_flyoutContent = _shellContext.CreateShellFlyoutContentRenderer();
 

@@ -81,7 +81,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_actionBarHeight = context.GetActionBarHeight();
 			UpdateFlyoutHeader();
-			UpdateFlyoutContent();
 
 			var metrics = context.Resources.DisplayMetrics;
 			var width = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
