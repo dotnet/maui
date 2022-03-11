@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS
 			[nameof(IActivityIndicator.Width)] = MapWidth,
 			[nameof(IActivityIndicator.Height)] = MapHeight,
+			[nameof(IActivityIndicator.Background)] = MapBackground,
 #endif
 		};
 
