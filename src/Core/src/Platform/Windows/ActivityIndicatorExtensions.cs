@@ -1,65 +1,53 @@
 ﻿#nullable enable
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class ActivityIndicatorExtensions
 	{
-		public static void UpdateIsRunning(this MauiActivityIndicator mauiActivityIndicator, IActivityIndicator activityIndicator)
+		public static void UpdateIsRunning(this ProgressRing platformActivityIndicator, IActivityIndicator virtualView)
 		{
-			//mauiActivityIndicator.ElementOpacity = activityIndicator.IsRunning ? activityIndicator.Opacity : 0;
-			mauiActivityIndicator.IsActive = activityIndicator.IsRunning;
+			platformActivityIndicator.IsActive = virtualView.IsRunning;
 		}
-		public static void UpdateColor(this MauiActivityIndicator mauiActivityIndicator, IActivityIndicator activityIndicator)
+		public static void UpdateColor(this ProgressRing platformActivityIndicator, IActivityIndicator activityIndicator)
 		{
-			mauiActivityIndicator.UpdateColor(activityIndicator, null);
+			platformActivityIndicator.UpdateColor(activityIndicator, null);
 		}
 
-		public static void UpdateColor(this MauiActivityIndicator mauiActivityIndicator, IActivityIndicator activityIndicator, object? foregroundDefault)
+		public static void UpdateColor(this ProgressRing platformActivityIndicator, IActivityIndicator activityIndicator, object? foregroundDefault)
 		{
 			Color color = activityIndicator.Color;
 
 			if (color.IsDefault())
 			{
 				if (foregroundDefault != null)
-					mauiActivityIndicator.RestoreForegroundCache(foregroundDefault);
+					platformActivityIndicator.RestoreForegroundCache(foregroundDefault);
 			}
 			else
 			{
-				mauiActivityIndicator.Foreground = color.ToPlatform();
+				platformActivityIndicator.Foreground = color.ToPlatform();
 			}
 		}
 
-		public static void UpdateWidth(this MauiActivityIndicator platformView, IActivityIndicator view)
+		public static void UpdateWidth(this ProgressRing platformActivityIndicator, IActivityIndicator activityIndicator)
 		{
-			if (Dimension.IsExplicitSet(view.Width))
+			if (Dimension.IsExplicitSet(activityIndicator.Width))
 			{
-				platformView.Width = view.Width;
+				// Only set a value for this if it's been explicitly set in the platform code.
+				platformActivityIndicator.Width = activityIndicator.Width;
 			}
-
-			//if (Dimension.IsExplicitSet(view.Width) || !double.IsNaN(platformView.Width))
-			//{
-			//	// Only set a value for this if it's been explicitly set in the platform code
-			//	platformView.Width = view.Width;
-			//}
-
 			// Otherwise, don't set it to anything (even NaN) because it will try to fill all the space you give it
 		}
 
-		public static void UpdateHeight(this MauiActivityIndicator platformView, IActivityIndicator view)
+		public static void UpdateHeight(this ProgressRing platformActivityIndicator, IActivityIndicator activityIndicator)
 		{
-			if (Dimension.IsExplicitSet(view.Height))
+			if (Dimension.IsExplicitSet(activityIndicator.Height))
 			{
-				platformView.Height = view.Height;
+				// Only set a value for this if it's been explicitly set in the platform code.
+				platformActivityIndicator.Height = activityIndicator.Height;
 			}
-
-			//if (Dimension.IsExplicitSet(view.Height) || !double.IsNaN(platformView.Height))
-			//{
-			//	// Only set a value for this if it's been explicitly set in the platform code
-			//	platformView.Height = view.Height;
-			//}
-
 			// Otherwise, don't set it to anything (even NaN) because it will try to fill all the space you give it
 		}
 	}

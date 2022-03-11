@@ -3,7 +3,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiActivityIndicator;
 #elif MONOANDROID
 using PlatformView = Android.Widget.ProgressBar;
 #elif WINDOWS
-using PlatformView = Microsoft.Maui.Platform.MauiActivityIndicator;
+using PlatformView = Microsoft.UI.Xaml.Controls.ProgressRing;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
