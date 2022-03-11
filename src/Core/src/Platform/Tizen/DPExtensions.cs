@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class DPExtensions
 	{
-		public static Rectangle ToDP(this TRect rect)
+		public static Rect ToDP(this TRect rect)
 		{
 			return new Rect(ConvertToScaledDP(rect.X), ConvertToScaledDP(rect.Y), ConvertToScaledDP(rect.Width), ConvertToScaledDP(rect.Height));
 		}

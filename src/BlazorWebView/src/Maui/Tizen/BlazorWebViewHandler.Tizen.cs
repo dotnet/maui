@@ -10,6 +10,9 @@ using NWebView = Tizen.NUI.BaseComponents.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	/// <summary>
+	/// The Tizen <see cref="ViewHandler"/> for <see cref="BlazorWebView"/>.
+	/// </summary>
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, NWebView>
 	{
 		private const string AppOrigin = "http://0.0.0.0/";
@@ -45,6 +48,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			HostPage != null &&
 			Services != null;
 
+		/// <inheritdoc />
 		protected override NWebView CreatePlatformView()
 		{
 			return new NWebView()
@@ -54,6 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			};
 		}
 
+		/// <inheritdoc />
 		protected override void ConnectHandler(NWebView platformView)
 		{
 			PlatformView.PageLoadFinished += OnLoadFinished;
@@ -61,6 +66,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			PlatformView.AddJavaScriptMessageHandler("BlazorHandler", PostMessageFromJS);
 		}
 
+		/// <inheritdoc />
 		protected override void DisconnectHandler(NWebView platformView)
 		{
 			PlatformView.PageLoadFinished -= OnLoadFinished;
@@ -68,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 
-		public void PostMessageFromJS(string message)
+		private void PostMessageFromJS(string message)
 		{
 			_webviewManager!.MessageReceivedInternal(new Uri(PlatformView.Url), message);
 		}

@@ -7,13 +7,13 @@ namespace Microsoft.Maui.Handlers
 		protected override NView CreatePlatformView() => new();
 
 		[MissingMapper]
-		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapIsChecked(IRadioButtonHandler handler, IRadioButton radioButton) { }
 
 		[MissingMapper]
 		public static void MapContent(IRadioButtonHandler handler, IRadioButton radioButton) { }
 
 		[MissingMapper]
-		public static void MapTextColor(RadioButtonHandler handler, ITextStyle textStyle) { }
+		public static void MapTextColor(IRadioButtonHandler handler, ITextStyle textStyle) { }
 
 		[MissingMapper]
 		public static void MapCharacterSpacing(IRadioButtonHandler handler, ITextStyle textStyle) { }
@@ -28,6 +28,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapStrokeThickness(IRadioButtonHandler handler, IRadioButton radioButton) { }
 
 		[MissingMapper]
-		public static void MapCornerRadius(RadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapCornerRadius(IRadioButtonHandler handler, IRadioButton radioButton) { }
 	}
 }

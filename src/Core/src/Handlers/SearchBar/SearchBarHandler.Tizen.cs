@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Handlers
+﻿using TEntry = Tizen.UIExtensions.NUI.Entry;
+
+namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
@@ -22,11 +24,7 @@
 			base.DisconnectHandler(platformView);
 		}
 
-		// TODO: NET7 make this public
-		internal static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
-		{
-			handler.PlatformView?.UpdateBackground(searchBar);
-		}
+		public TEntry? QueryEditor => PlatformView.Entry;
 
 		public static void MapText(ISearchBarHandler handler, ISearchBar searchBar)
 		{
@@ -84,7 +82,7 @@
 		}
 
 		[MissingMapper]
-		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar) { }
+		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar) { }
 
 		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
@@ -92,7 +90,7 @@
 		}
 
 		[MissingMapper]
-		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar) { }
+		public static void MapCharacterSpacing(ISearchBarHandler handler, ISearchBar searchBar) { }
 
 		void OnTextChanged(object? sender, Tizen.NUI.BaseComponents.TextField.TextChangedEventArgs e)
 		{

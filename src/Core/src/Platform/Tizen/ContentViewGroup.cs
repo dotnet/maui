@@ -1,7 +1,7 @@
 ﻿using System;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.NUI;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
+using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 using TSize = Tizen.UIExtensions.Common.Size;
 
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		public Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
+		public Func<Rect, Size>? CrossPlatformArrange { get; set; }
 
 		public TSize Measure(double availableWidth, double availableHeight)
 		{

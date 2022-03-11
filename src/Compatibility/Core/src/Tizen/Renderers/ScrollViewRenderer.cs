@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				y = itemPosition.Y;
 			}
 
-			var region = new Rectangle(x, y, Element.Width, Element.Height).ToPixel();
+			var region = new Rect(x, y, Element.Width, Element.Height).ToPixel();
 			Control.ScrollTo((float)(Element.Orientation == ScrollOrientation.Horizontal ? region.X : region.Y), e.ShouldAnimate);
 			Element.SendScrollFinished();
 		}

@@ -2,6 +2,7 @@
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Skia;
 using Tizen.UIExtensions.Common;
+using Rect = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Platform
 			_scalingCanvas.Scale((float)DeviceInfo.ScalingFactor, (float)DeviceInfo.ScalingFactor);
 
 			_scalingCanvas.FillColor = Colors.White;
-			var clipPath = Clip.PathForBounds(new Rectangle(0, 0, width, height));
+			var clipPath = Clip.PathForBounds(new Rect(0, 0, width, height));
 			_scalingCanvas.FillPath(clipPath);
 			_scalingCanvas.RestoreState();
 		}

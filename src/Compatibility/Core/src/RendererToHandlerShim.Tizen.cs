@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public override bool NeedsContainer => false;
 
-		public override void PlatformArrange(Rectangle frame)
+		public override void PlatformArrange(Rect frame)
 		{
 			base.PlatformArrange(frame);
 			VisualElementRenderer.UpdateLayout();

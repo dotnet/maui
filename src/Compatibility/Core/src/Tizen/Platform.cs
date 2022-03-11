@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			_pageMap[pageRenderer.NativeView] = newRoot;
 			_viewStack.Push(pageRenderer.NativeView, false);
 
-			Device.BeginInvokeOnMainThread(() => CurrentPageController?.SendAppearing());
+			Application.Current.Dispatcher.Dispatch(() => CurrentPageController?.SendAppearing());
 		}
 
 		public bool SendBackButtonPressed()

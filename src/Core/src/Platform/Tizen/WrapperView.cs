@@ -4,6 +4,7 @@ using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.NUI;
 using Tizen.UIExtensions.NUI.GraphicsView;
 using NView = Tizen.NUI.BaseComponents.View;
+using TRect = Tizen.UIExtensions.Common.Rect;
 
 namespace Microsoft.Maui.Platform
 {
@@ -106,12 +107,12 @@ namespace Microsoft.Maui.Platform
 		{
 			if (Content != null)
 			{
-				Content.UpdateBounds(new Rect(0, 0, Size.Width, Size.Height));
+				Content.UpdateBounds(new TRect(0, 0, Size.Width, Size.Height));
 			}
 
 			if (_clipperView.IsValueCreated)
 			{
-				_clipperView.Value.UpdateBounds(new Rect(0, 0, Size.Width, Size.Height));
+				_clipperView.Value.UpdateBounds(new TRect(0, 0, Size.Width, Size.Height));
 			}
 
 			UpdateDrawableCanvas(true);
@@ -156,7 +157,7 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateDrawableCanvasGeometry()
 		{
-			var bounds = new Rect(0, 0, SizeWidth, SizeHeight);
+			var bounds = new TRect(0, 0, SizeWidth, SizeHeight);
 			if (Shadow != null)
 			{
 				var shadowThinkness = Shadow.GetShadowMargin();

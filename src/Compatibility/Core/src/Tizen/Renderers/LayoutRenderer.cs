@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize)
 			{
 				// On initialize time, GestureDetector was not created even if GestureRecognizer was existed
-				Device.BeginInvokeOnMainThread(() => UpdateInputTransparent(false));
+				Application.Current.Dispatcher.Dispatch(() => UpdateInputTransparent(false));
 				return;
 			}
 

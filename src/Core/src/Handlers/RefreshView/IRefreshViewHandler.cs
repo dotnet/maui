@@ -5,7 +5,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiSwipeRefreshLayout;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.RefreshContainer;
 #elif TIZEN
-using PlatformView = ElmSharp.EvasObject;
+using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif

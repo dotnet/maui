@@ -1,22 +1,19 @@
 ﻿using System;
-using PlatformView = Microsoft.Maui.Platform.ContentCanvas;
+using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 
 namespace Microsoft.Maui.Handlers
 {
-	public class SwipeItemViewHandler : ViewHandler<ISwipeItemView, LayoutViewGroup>
+	public partial class SwipeItemViewHandler : ViewHandler<ISwipeItemView, PlatformView>, ISwipeItemViewHandler
 	{
 		IPlatformViewHandler? _contentHandler;
 
-		protected override LayoutViewGroup CreatePlatformView()
+		protected override ContentViewGroup CreatePlatformView()
 		{
-			var view = new LayoutViewGroup(VirtualView)
+			return new ContentViewGroup(VirtualView)
 			{
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
-
-			view.Show();
-			return view;
 		}
 
 		public override void SetVirtualView(IView view)
