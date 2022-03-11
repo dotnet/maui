@@ -7,7 +7,7 @@ using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Foldable
 {
-    internal class NoDualScreenServiceImpl : IDualScreenService
+    internal class NoDualScreenServiceImpl : IFoldableService
     {
 		static Lazy<NoDualScreenServiceImpl> _Instance = new Lazy<NoDualScreenServiceImpl>(() => new NoDualScreenServiceImpl());
         public static NoDualScreenServiceImpl Instance => _Instance.Value;

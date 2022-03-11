@@ -13,14 +13,14 @@ using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 using Microsoft.Maui.Platform;
 
-[assembly: Dependency(typeof(DualScreenService.DualScreenServiceImpl))]
+[assembly: Dependency(typeof(FoldableService.FoldableServiceImpl))]
 
 namespace Microsoft.Maui.Foldable
 {
-	public class DualScreenService
+	public class FoldableService
 	{
 		[Controls.Internals.Preserve(Conditional = true)]
-		public DualScreenService()
+		public FoldableService()
 		{
 			
 		}
@@ -28,11 +28,11 @@ namespace Microsoft.Maui.Foldable
 		public static void Init(IFoldableContext foldableInfo, Activity activity=null)
 		{
 			global::Android.Util.Log.Debug("JWM2", "DualScreenService.Init - Android detected");
-			DependencyService.Register<DualScreenServiceImpl>();
-			DualScreenServiceImpl.Init(foldableInfo, activity);
+			DependencyService.Register<FoldableServiceImpl>();
+			FoldableServiceImpl.Init(foldableInfo, activity);
 		}
 
-		internal class DualScreenServiceImpl : IDualScreenService, IFoldableContext
+		internal class FoldableServiceImpl : IFoldableService, IFoldableContext
 		{
 			#region IFoldableContext properties
 			public bool isSeparating { 
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Foldable
 			object _hingeAngleLock = new object();
 			HingeSensor _singleUseHingeSensor;
 			TaskCompletionSource<int> _gettingHingeAngle;
-			static DualScreenServiceImpl _HingeService; 
+			static FoldableServiceImpl _HingeService; 
 			static HingeSensor DefaultHingeSensor;
 			#endregion
 
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Foldable
 			public event EventHandler<FoldEventArgs> FoldingFeatureChanged;
 
 			[Controls.Internals.Preserve(Conditional = true)]
-			public DualScreenServiceImpl()
+			public FoldableServiceImpl()
 			{
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.ctor - Android detected default ctor");
 

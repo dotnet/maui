@@ -27,9 +27,9 @@ namespace Microsoft.Maui.Foldable
 		bool _isLandscape;
 		TwoPaneViewMode _spanMode;
 		TwoPaneViewLayoutGuide _twoPaneViewLayoutGuide;
-		IDualScreenService _dualScreenService;		
-		IDualScreenService DualScreenService =>
-			_dualScreenService ?? DependencyService.Get<IDualScreenService>() ?? NoDualScreenServiceImpl.Instance;
+		IFoldableService _dualScreenService;		
+		IFoldableService DualScreenService =>
+			_dualScreenService ?? DependencyService.Get<IFoldableService>() ?? NoDualScreenServiceImpl.Instance;
 
 		internal VisualElement Element { get; }
 
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Foldable
 		{
 		}
 
-		internal DualScreenInfo(VisualElement element, IDualScreenService dualScreenService)
+		internal DualScreenInfo(VisualElement element, IFoldableService dualScreenService)
 		{
 			//HACK:FOLDABLE
 			System.Diagnostics.Debug.Write("DualScreenInfo.ctor DualScreenService:" + dualScreenService, "JWM");

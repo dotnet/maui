@@ -9,17 +9,17 @@ using Microsoft.Maui.Graphics;
 using Android.Runtime;
 using AndroidX.Window.Layout;
 using Microsoft.Maui.Foldable;
-using static Microsoft.Maui.Foldable.DualScreenService;
+using static Microsoft.Maui.Foldable.FoldableService;
 #endif
 
 namespace Microsoft.Maui.Foldable
 {
 	public static class HostBuilderExtensions
 	{
-		public static MauiAppBuilder UseDualScreen(this MauiAppBuilder builder)
+		public static MauiAppBuilder UseFoldable(this MauiAppBuilder builder)
 		{
 #if ANDROID
-			builder.Services.AddScoped(typeof(IFoldableContext), typeof(DualScreenServiceImpl));
+			builder.Services.AddScoped(typeof(IFoldableContext), typeof(FoldableServiceImpl));
 
 			var consumer = new Consumer();
 			AndroidX.Window.Java.Layout.WindowInfoTrackerCallbackAdapter wit = null; // for hinge/fold
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Foldable
 
 
 						// HACK: Not sure this is the best way to pass info - adds to DependencyService here too
-						Microsoft.Maui.Foldable.DualScreenService.Init(foldContext, activity);
+						Microsoft.Maui.Foldable.FoldableService.Init(foldContext, activity);
 
 						wit.AddWindowLayoutInfoListener(activity, runOnUiThreadExecutor(), consumer); // `consumer` is the IConsumer implementation
 

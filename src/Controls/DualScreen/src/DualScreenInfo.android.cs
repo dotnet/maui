@@ -14,11 +14,11 @@ namespace Microsoft.Maui.Foldable
 			{
 				if (newCount == 1)
 				{
-					Foldable.DualScreenService.DualScreenServiceImpl.HingeAngleChanged += OnHingeAngleChanged;
+					Foldable.FoldableService.FoldableServiceImpl.HingeAngleChanged += OnHingeAngleChanged;
 				}
 				else if (newCount == 0)
 				{
-					Foldable.DualScreenService.DualScreenServiceImpl.HingeAngleChanged -= OnHingeAngleChanged;
+					Foldable.FoldableService.FoldableServiceImpl.HingeAngleChanged -= OnHingeAngleChanged;
 				}
 			}
 		}

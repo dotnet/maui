@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Foldable
 {
-	internal interface IDualScreenService
+	internal interface IFoldableService
 	{
 		event EventHandler OnScreenChanged;
 		bool IsSpanned { get; }

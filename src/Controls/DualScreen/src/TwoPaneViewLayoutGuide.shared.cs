@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Foldable
 		public static TwoPaneViewLayoutGuide Instance => _twoPaneViewLayoutGuide.Value;
 		static Lazy<TwoPaneViewLayoutGuide> _twoPaneViewLayoutGuide = new Lazy<TwoPaneViewLayoutGuide>(() => new TwoPaneViewLayoutGuide());
 
-		internal IDualScreenService DualScreenService { 
+		internal IFoldableService DualScreenService { 
 			get
 			{
 				//HACK:FOLDABLE System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.DualScreenService - property getter " + _dualScreenService, "JWM");
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Foldable
 				var ds = _dualScreenService;
 				if (ds == null)
 				{
-					ds = DependencyService.Get<IDualScreenService>();
+					ds = DependencyService.Get<IFoldableService>();
 				}
 				if (ds == null)
 					ds = NoDualScreenServiceImpl.Instance;
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Foldable
 		Rect _rightPane;
 		TwoPaneViewMode _mode;
 		VisualElement _layout;
-		readonly IDualScreenService _dualScreenService;
+		readonly IFoldableService _dualScreenService;
 		bool _isLandscape;
 		public event PropertyChangedEventHandler PropertyChanged;
 		List<string> _pendingPropertyChanges = new List<string>();
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Foldable
 		}
 
 
-		internal TwoPaneViewLayoutGuide(VisualElement layout, IDualScreenService dualScreenService)
+		internal TwoPaneViewLayoutGuide(VisualElement layout, IFoldableService dualScreenService)
 		{
 			_layout = layout;
 			_dualScreenService = dualScreenService ?? DualScreenService;
