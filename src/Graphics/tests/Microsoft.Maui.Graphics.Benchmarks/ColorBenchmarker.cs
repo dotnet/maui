@@ -10,5 +10,8 @@ namespace Microsoft.Maui.Graphics.Benchmarks
 
 		[Benchmark]
 		public Color ParseBlack() => Color.Parse("Black");
+
+		[Benchmark]
+		public Color ParseLightGoldenrodYellowWithSpace() => Color.Parse(" LightGoldenrodYellow ");
 	}
 }
