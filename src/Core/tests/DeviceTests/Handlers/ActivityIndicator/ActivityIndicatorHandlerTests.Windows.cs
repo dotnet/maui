@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 			activityIndicatorHandler.PlatformView;
 
 		bool GetNativeIsRunning(ActivityIndicatorHandler activityIndicatorHandler) =>
-			GetNativeActivityIndicator(activityIndicatorHandler).ElementOpacity == 1;
+			GetNativeActivityIndicator(activityIndicatorHandler).IsActive;
 
 		Task ValidateHasColor(IActivityIndicator activityIndicator, Color color, Action action = null)
 		{
