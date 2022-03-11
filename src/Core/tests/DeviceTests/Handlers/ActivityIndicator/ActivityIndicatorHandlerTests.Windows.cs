@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ActivityIndicatorHandlerTests
 	{
-		MauiActivityIndicator GetNativeActivityIndicator(ActivityIndicatorHandler activityIndicatorHandler) =>
+		ProgressRing GetNativeActivityIndicator(ActivityIndicatorHandler activityIndicatorHandler) =>
 			activityIndicatorHandler.PlatformView;
 
 		bool GetNativeIsRunning(ActivityIndicatorHandler activityIndicatorHandler) =>
