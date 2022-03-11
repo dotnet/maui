@@ -7,6 +7,6 @@ namespace Microsoft.Maui.Controls.Design
 		}
 
 		protected override string[] KnownValues
-			=> new string[] { "Default", "Material" };
+			=> new string[] { "Default" /*, "Material" */ };
 	}
 }

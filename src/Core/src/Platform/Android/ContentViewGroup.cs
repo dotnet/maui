@@ -66,13 +66,13 @@ namespace Microsoft.Maui.Platform
 			var deviceIndependentRight = Context.FromPixels(r);
 			var deviceIndependentBottom = Context.FromPixels(b);
 
-			var destination = Rectangle.FromLTRB(0, 0,
+			var destination = Rect.FromLTRB(0, 0,
 				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
 
 			CrossPlatformArrange(destination);
 		}
 
 		internal Func<double, double, Graphics.Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Graphics.Rectangle, Graphics.Size>? CrossPlatformArrange { get; set; }
+		internal Func<Graphics.Rect, Graphics.Size>? CrossPlatformArrange { get; set; }
 	}
 }

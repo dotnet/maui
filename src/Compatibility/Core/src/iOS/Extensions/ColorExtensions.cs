@@ -293,12 +293,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 	public static class RectangleExtensions
 	{
-		public static Rectangle ToRectangle(this RectangleF rect)
+		public static Rect ToRectangle(this RectangleF rect)
 		{
-			return new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
+			return new Rect(rect.X, rect.Y, rect.Width, rect.Height);
 		}
 
-		public static RectangleF ToRectangleF(this Rectangle rect)
+		public static RectangleF ToRectangleF(this Rect rect)
 		{
 			return new RectangleF((nfloat)rect.X, (nfloat)rect.Y, (nfloat)rect.Width, (nfloat)rect.Height);
 		}

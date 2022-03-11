@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		protected override void Init()
 		{
 			// android needs firebase for this to work, so skip it unless iOS
-			if (Device.RuntimePlatform == Device.iOS)
+			if (DeviceInfo.Platform == DevicePlatform.iOS)
 				Application.Current.AppLinks.RegisterLink(GetEntry());
 
 			// Initialize ui here instead of ctor

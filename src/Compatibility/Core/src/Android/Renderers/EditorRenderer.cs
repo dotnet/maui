@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_textColorSwitcher.UpdateTextColor(EditText, Element.TextColor);
 		}
 
+		[PortHandler]
 		protected override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();

@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class TestWindowElement : IWindowOverlayElement
 	{
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 		}
 

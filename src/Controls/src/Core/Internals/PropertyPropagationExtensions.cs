@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Internals
 				SetFlowDirectionFromParent(element);
 
 			if (propertyName == null || propertyName == VisualElement.VisualProperty.PropertyName)
-				SetVisualfromParent(element);
+				SetVisualFromParent(element);
 
 			if (propertyName == null || propertyName == Shell.NavBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.NavBarIsVisibleProperty, element);
@@ -24,6 +24,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 			if (propertyName == null || propertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.TabBarIsVisibleProperty, element);
+
+			if (propertyName == null || propertyName == Element.WindowProperty.PropertyName)
+				SetWindowFromParent(element);
 
 			foreach (var child in children)
 			{
@@ -89,9 +92,19 @@ namespace Microsoft.Maui.Controls.Internals
 				targetController.EffectiveVisual = sourceController.EffectiveVisual;
 		}
 
-		internal static void SetVisualfromParent(Element child)
+		internal static void SetVisualFromParent(Element child)
 		{
 			PropagateVisual(child, child.Parent);
+		}
+
+		internal static void PropagateWindow(Element target, Element source)
+		{
+			target.SetWindow(source?.Window);
+		}
+
+		internal static void SetWindowFromParent(Element child)
+		{
+			PropagateWindow(child, child.Parent);
 		}
 	}
 }

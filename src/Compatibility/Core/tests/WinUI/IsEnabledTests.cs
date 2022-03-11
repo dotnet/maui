@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 		[Description("View enabled should match renderer enabled")]
 		public async Task EnabledConsistent(VisualElement element)
 		{
-			await Device.InvokeOnMainThreadAsync(() =>
+			await element.Dispatcher.DispatchAsync(() =>
 			{
 				using (var renderer = GetRenderer(element))
 				{

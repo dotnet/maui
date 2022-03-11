@@ -362,7 +362,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) => new Size(100, 100);
 
-		void IViewHandler.PlatformArrange(Rectangle rect)
+		void IViewHandler.PlatformArrange(Graphics.Rect rect)
 		{
 			//TODO I don't think we need this
 		}

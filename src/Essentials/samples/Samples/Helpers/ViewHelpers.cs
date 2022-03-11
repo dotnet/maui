@@ -6,7 +6,7 @@ namespace Samples.Helpers
 {
 	public static class ViewHelpers
 	{
-		public static Rectangle GetAbsoluteBounds(this Microsoft.Maui.Controls.View element)
+		public static Rect GetAbsoluteBounds(this Microsoft.Maui.Controls.View element)
 		{
 			Element looper = element;
 
@@ -25,7 +25,7 @@ namespace Samples.Helpers
 				}
 			}
 
-			return new Rectangle(absoluteX, absoluteY, element.Width, element.Height);
+			return new Rect(absoluteX, absoluteY, element.Width, element.Height);
 		}
 	}
 }

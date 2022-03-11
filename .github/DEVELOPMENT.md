@@ -26,36 +26,23 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 
 Install the .NET MAUI workload using the versions from a particular branch:  
 
-For example, the "preview.13" branch:
+For example, the "preview.14" branch:
+
 ```
-dotnet workload install maui `
-   --from-rollback-file https://aka.ms/dotnet/maui/preview.13.json `
-   --source https://aka.ms/dotnet6/nuget/index.json `
-   --source https://api.nuget.org/v3/index.json
-```
+iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
+.\maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
+``` 
+
+> NOTE: the branch (`-b 'release/6.0.2xx-preview14'`) and version (`-v 6.0.200-preview`) parameters. The "preview 14" branch currently requires the 6.0.200 SDK band since the manifests are all in that SDK band - this will change in the future
 
 Or, the "main" branch:
-```
-dotnet workload install maui `
-   --from-rollback-file https://aka.ms/dotnet/maui/main.json `
-   --source https://aka.ms/dotnet6/nuget/index.json `
-   --source https://api.nuget.org/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-6dd808ff-1/nuget/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-ee0a97a0/nuget/v3/index.json
-```  
-
-If you are building maui yourself, then you probably want all the workloads:
 
 ```
-dotnet workload install android ios maccatalyst tvos macos maui wasm-tools `
-   --from-rollback-file https://aka.ms/dotnet/maui/main.json `
-   --source https://aka.ms/dotnet6/nuget/index.json `
-   --source https://api.nuget.org/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-6dd808ff-1/nuget/v3/index.json `
-   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-ee0a97a0/nuget/v3/index.json
-```
+iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
+.\maui-install.ps1 -b 'main' -v '6.0.200-preview'
+``` 
 
-> NOTE: Zsh and Bash on macOS expect `\` instead for spanning commands over multiple lines.  The examples above are formatted for windows/powershell
+> NOTE: the branch (`-b 'main'`) and version (`-v 6.0.200-preview`) parameters. The `main` branch currently requires the 6.0.200 SDK band since the manifests are all in that SDK band - this will change in the future
 
 ### iOS / MacCatalyst
 
@@ -68,9 +55,7 @@ Android API-31 (Android 12) is now the default in .NET 6.
 
 ## Running
 
-### .NET 6
-
-#### Compile with globally installed `dotnet`
+### Compile with globally installed `dotnet`
 
 This will build and launch Visual Studio using global workloads
 
@@ -79,7 +64,7 @@ dotnet tool restore
 dotnet cake --target=VS-NET6 --workloads=global
 ```
 
-#### Compile using a local `bin\dotnet`
+### Compile using a local `bin\dotnet`
 
 You can run a `Cake` target to bootstrap .NET 6 in `bin\dotnet` and launch Visual Studio:
 

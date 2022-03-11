@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Shapes;
 //using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
+using Rect = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Controls
 {
@@ -424,9 +424,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Bounds']/Docs" />
-		public Rectangle Bounds
+		public Rect Bounds
 		{
-			get { return new Rectangle(X, Y, Width, Height); }
+			get { return new Rect(X, Y, Width, Height); }
 			private set
 			{
 				if (value.X == X && value.Y == Y && value.Height == Height && value.Width == Width)
@@ -979,7 +979,7 @@ namespace Microsoft.Maui.Controls
 					}
 		}
 
-		internal void MockBounds(Rectangle bounds)
+		internal void MockBounds(Rect bounds)
 		{
 #if NETSTANDARD2_0 || NET6_0
 			(_mockX, _mockY, _mockWidth, _mockHeight) = bounds;
@@ -1166,7 +1166,7 @@ namespace Microsoft.Maui.Controls
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IElementController)this).LogicalChildren);
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
 		void SetSize(double width, double height)

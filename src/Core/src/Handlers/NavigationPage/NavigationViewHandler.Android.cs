@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
-		public override void PlatformArrange(Graphics.Rectangle frame)
+		public override void PlatformArrange(Graphics.Rect frame)
 		{
 			base.PlatformArrange(frame);
 		}

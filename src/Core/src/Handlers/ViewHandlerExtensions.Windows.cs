@@ -25,7 +25,7 @@ namespace Microsoft.Maui
 			return new Size(platformView.DesiredSize.Width, platformView.DesiredSize.Height);
 		}
 
-		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rectangle rect)
+		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rect rect)
 		{
 			var platformView = viewHandler.ToPlatform();
 

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 			return DesiredSize;
 		}
 
-		protected override Size ArrangeOverride(Rectangle bounds)
+		protected override Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
 			Handler?.PlatformArrange(Frame);
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 			return new Size(widthConstraint, heightConstraint);
 		}
 
-		Size IContentView.CrossPlatformArrange(Rectangle bounds)
+		Size IContentView.CrossPlatformArrange(Rect bounds)
 		{
 			Frame = bounds;
 			this.ArrangeContent(bounds);
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls
 
 		void HotReload.IHotReloadableView.Reload()
 		{
-			Device.BeginInvokeOnMainThread(() =>
+			Dispatcher.Dispatch(() =>
 			{
 				this.CheckHandlers();
 				var reloadHandler = ((IHotReloadableView)this).ReloadHandler;

@@ -30,6 +30,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ContentPageGallery), "ContentPage",
 				"Demonstrates using a Content Page."),
 
+			new SectionModel(typeof(DevicePage), "Device",
+				"A number of properties and methods to help developers customize layout and functionality on a per-platform basis"),
+
 			new SectionModel(typeof(DispatcherPage), "Dispatcher",
 				"Managing UI thread access with dispatchers and timers."),
 
@@ -48,6 +51,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(GesturesPage), "Gestures",
 				"Use tap, pinch, pan, swipe, and drag and drop gestures on View instances."),
 
+			new SectionModel(typeof(InputTransparentPage), "InputTransparent",
+				"Manage whether a view participates in the user interaction cycle."),
+	
 			new SectionModel(typeof(MenuBarPage), "MenuBar",
 				"Allows you to push and pop Modal Pages."),
 

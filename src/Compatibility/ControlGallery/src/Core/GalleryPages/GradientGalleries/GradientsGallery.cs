@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries
+﻿using Microsoft.Maui.Essentials;
+
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries
 {
 	public class GradientsGallery : ContentPage
 	{
@@ -12,7 +14,7 @@
 			var navigationBarButton = new Button
 			{
 				FontSize = 10,
-				HeightRequest = Device.RuntimePlatform == Device.Android ? 40 : 30,
+				HeightRequest = DeviceInfo.Platform == DevicePlatform.Android ? 40 : 30,
 				Text = "Gradient NavigationPage Gallery"
 			};
 
@@ -24,7 +26,7 @@
 			var tabsButton = new Button
 			{
 				FontSize = 10,
-				HeightRequest = Device.RuntimePlatform == Device.Android ? 40 : 30,
+				HeightRequest = DeviceInfo.Platform == DevicePlatform.Android ? 40 : 30,
 				Text = "Gradient Tabs Gallery"
 			};
 
@@ -67,7 +69,7 @@
 				}
 			};
 
-			if (Device.RuntimePlatform == Device.Android || Device.RuntimePlatform == Device.iOS)
+			if (DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.iOS)
 			{
 				layout.Children.Add(GalleryBuilder.NavButton("Gradient Views (Visual)", () =>
 				new VisualGradientViewsGallery(), Navigation));

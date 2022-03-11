@@ -518,7 +518,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetFlexFrame']/Docs" />
-		public Graphics.Rectangle GetFlexFrame(IView view)
+		public Graphics.Rect GetFlexFrame(IView view)
 		{
 			return view switch
 			{

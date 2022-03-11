@@ -354,7 +354,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
 			_footerRenderer.PlatformView.Frame = platformFrame;
 			_footerRenderer.VirtualView.Arrange(platformFrame.ToRectangle());
-			Device.BeginInvokeOnMainThread(() =>
+			BeginInvokeOnMainThread(() =>
 			{
 				if (_headerRenderer != null)
 					Control.TableFooterView = _footerRenderer.PlatformView;
@@ -382,7 +382,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// grow a little each time, which you weren't testing at all were you? So there you have it, the stupid reason we integer align here.
 			//
 			// The same technically applies to the footer, though that could hardly matter less. We just do it for fun.
-			Device.BeginInvokeOnMainThread(() =>
+			BeginInvokeOnMainThread(() =>
 			{
 				if (_headerRenderer != null)
 					Control.TableHeaderView = _headerRenderer.PlatformView;
