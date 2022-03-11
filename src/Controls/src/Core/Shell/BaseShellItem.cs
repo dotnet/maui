@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.BaseShellItem']/Docs" />
 	[DebuggerDisplay("Title = {Title}, Route = {Route}")]
-	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController
+	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController, IWindowController
 	{
 		public event EventHandler Appearing;
 		public event EventHandler Disappearing;
@@ -264,6 +264,19 @@ namespace Microsoft.Maui.Controls
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
 		double IFlowDirectionController.Width => (Parent as VisualElement)?.Width ?? 0;
+
+		static readonly BindablePropertyKey WindowPropertyKey = BindableProperty.CreateReadOnly(
+			nameof(Window), typeof(Window), typeof(BaseShellItem), null);
+
+		public static readonly BindableProperty WindowProperty = WindowPropertyKey.BindableProperty;
+
+		public Window Window => (Window)GetValue(WindowProperty);
+
+		Window IWindowController.Window
+		{
+			get => (Window)GetValue(WindowProperty);
+			set => SetValue(WindowPropertyKey, value);
+		}
 
 		internal virtual void ApplyQueryAttributes(ShellRouteParameters query)
 		{
