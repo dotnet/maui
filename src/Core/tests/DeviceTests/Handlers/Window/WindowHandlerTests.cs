@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -6,20 +7,23 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Window)]
 	public partial class WindowHandlerTests : HandlerTestBase
 	{
-		// TODO: think of how to set up windows for the headless runner which is not
-		//       a real maui app because we are trying to test a maui app
-		// [Fact]
-		// public async Task WindowHasReasonableDisplayDensity()
-		// {
-		// 	var window = MauiProgram.DefaultTestApp.Windows[0];
-		// 	var handler = window.Handler!;
+		[Fact]
+		public async Task WindowHasReasonableDisplayDensity()
+		{
+			var handler = new WindowHandlerProxyStub(
+				commandMapper: new()
+				{
+					[nameof(IWindow.RequestDisplayDensity)] = WindowHandler.MapRequestDisplayDensity
+				});
 
-		// 	var req = new DisplayDensityRequest();
+			InitializeViewHandler(new WindowStub(), handler);
 
-		// 	var density = await InvokeOnMainThreadAsync(() => handler.InvokeWithResult(nameof(IWindow.RequestDisplayDensity), req));
+			var req = new DisplayDensityRequest();
 
-		// 	Assert.Equal(density, req.Result);
-		// 	Assert.InRange(density, 0.1f, 4f);
-		// }
+			var density = await InvokeOnMainThreadAsync(() => handler.InvokeWithResult(nameof(IWindow.RequestDisplayDensity), req));
+
+			Assert.Equal(density, req.Result);
+			Assert.InRange(density, 0.1f, 4f);
+		}
 	}
 }

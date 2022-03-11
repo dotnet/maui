@@ -224,7 +224,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = new LabelHandler();
-				InitializeViewHandler(label, handler, MauiContext);
+				InitializeViewHandler(label, handler);
 			});
 		}
 
