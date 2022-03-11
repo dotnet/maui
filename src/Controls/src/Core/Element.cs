@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs" />
 	public abstract partial class Element : BindableObject, IElement, INameScope, IElementController, IVisualTreeElement
 	{
-		internal static readonly ReadOnlyCollection<Element> EmptyChildren = new ReadOnlyCollection<Element>(new Element[0]);
+		internal static readonly ReadOnlyCollection<Element> EmptyChildren = new ReadOnlyCollection<Element>(Array.Empty<Element>());
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='AutomationIdProperty']/Docs" />
 		public static readonly BindableProperty AutomationIdProperty = BindableProperty.Create(nameof(AutomationId), typeof(string), typeof(Element), null);

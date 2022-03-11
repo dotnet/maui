@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
@@ -40,10 +39,13 @@ namespace Microsoft.Maui.Controls
 			if (IsReadOnly)
 				throw new NotSupportedException("The collection is read-only.");
 
-			foreach (TRestrict item in _list.OfType<TRestrict>().ToArray())
+			for (int i = _list.Count - 1; i >= 0; i--)
 			{
-				_list.Remove(item);
-				item.Owned = false;
+				if (_list[i] is TRestrict item)
+				{
+					item.Owned = false;
+					_list.RemoveAt(i);
+				}
 			}
 		}
 
@@ -65,7 +67,6 @@ namespace Microsoft.Maui.Controls
 
 		public int Count
 		{
-			//get { return _list.Where(i => i.Owned).OfType<TRestrict>().Count(); }
 			get
 			{
 				int result = 0;
@@ -106,7 +107,13 @@ namespace Microsoft.Maui.Controls
 
 		public IEnumerator<TRestrict> GetEnumerator()
 		{
-			return _list.Where(i => i.Owned).OfType<TRestrict>().GetEnumerator();
+			foreach (TRestrict item in _list)
+			{
+				if (item.Owned)
+				{
+					yield return item;
+				}
+			}
 		}
 
 		public int IndexOf(TRestrict value)
@@ -291,10 +298,7 @@ namespace Microsoft.Maui.Controls
 			Remove((TRestrict)value);
 		}
 
-		public void CopyTo(Array array, int index)
-		{
-			CopyTo(array.Cast<TRestrict>().ToArray(), index);
-		}
+		public void CopyTo(Array array, int index) => _list.CopyTo((TTrack[])array, index);
 
 		public bool IsFixedSize => ((IList)_list).IsFixedSize;
 

@@ -406,5 +406,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(child1, oldItem);
 			Assert.AreEqual(child2, newItem);
 		}
+
+		[Test]
+		public void Clear()
+		{
+			var oc = new ObservableCollection<View>();
+			var wrapper = new ObservableWrapper<View, Button>(oc);
+
+			oc.Add(new Stepper());
+
+			wrapper.Add(new Button());
+			wrapper.Add(new Button());
+
+			wrapper.Clear();
+			Assert.AreEqual(1, oc.Count);
+			Assert.AreEqual(0, wrapper.Count);
+		}
 	}
 }
