@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 			_children.CollectionChanged += OnChildrenChanged;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableSectionBase.xml" path="//Member[@MemberName='Add']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableSectionBase.xml" path="//Member[@MemberName='Add' and position()=0]/Docs" />
 		public void Add(T item)
 		{
 			_children.Add(item);
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls
 			remove { _children.CollectionChanged -= value; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableSectionBase.xml" path="//Member[@MemberName='Add']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableSectionBase.xml" path="//Member[@MemberName='Add' and position()=1]/Docs" />
 		public void Add(IEnumerable<T> items)
 		{
 			items.ForEach(_children.Add);

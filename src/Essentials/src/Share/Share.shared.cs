@@ -157,21 +157,21 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public ShareMultipleFilesRequest(IEnumerable<ShareFile> files) =>
 			Files = files.ToList();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='.ctor' and position()=1]/Docs" />
 		public ShareMultipleFilesRequest(IEnumerable<FileBase> files)
 			: this(ConvertList(files))
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='.ctor' and position()=2]/Docs" />
 		public ShareMultipleFilesRequest(string title, IEnumerable<ShareFile> files)
 			: this(files) => Title = title;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='.ctor' and position()=3]/Docs" />
 		public ShareMultipleFilesRequest(string title, IEnumerable<FileBase> files)
 			: this(title, ConvertList(files))
 		{

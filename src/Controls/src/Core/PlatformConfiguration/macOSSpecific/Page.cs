@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 			return (VisualElement[])element.GetValue(TabOrderProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='SetTabOrder']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='SetTabOrder' and position()=0]/Docs" />
 		public static void SetTabOrder(BindableObject element, params VisualElement[] value)
 		{
 			element.SetValue(TabOrderProperty, value);
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 			return GetTabOrder(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='SetTabOrder']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='SetTabOrder' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<macOS, FormsElement> SetTabOrder(this IPlatformElementConfiguration<macOS, FormsElement> config, params VisualElement[] value)
 		{
 			SetTabOrder(config.Element, value);

@@ -69,13 +69,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			element.SetValue(CollapsedPaneWidthProperty, collapsedPaneWidth);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='CollapsedPaneWidth']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='CollapsedPaneWidth' and position()=0]/Docs" />
 		public static double CollapsedPaneWidth(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (double)config.Element.GetValue(CollapsedPaneWidthProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='CollapsedPaneWidth']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='CollapsedPaneWidth' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> CollapsedPaneWidth(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, double value)
 		{

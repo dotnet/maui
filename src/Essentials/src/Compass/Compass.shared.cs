@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Essentials
 		public static void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 			=> Current.Start(sensorSpeed, applyLowPassFilter);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop' and position()=0]/Docs" />
 		public static void Stop()
 			=> Current.Stop();
 
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop' and position()=1]/Docs" />
 		public void Stop()
 		{
 			if (!PlatformIsSupported)

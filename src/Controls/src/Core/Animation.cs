@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 			return this;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='WithConcurrent']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='WithConcurrent' and position()=0]/Docs" />
 		public Animation WithConcurrent(Animation animation, double beginAt = 0.0f, double finishAt = 1.0f)
 		{
 			animation.StartDelay = beginAt;
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls
 			return this;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='WithConcurrent']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='WithConcurrent' and position()=1]/Docs" />
 		public Animation WithConcurrent(Action<double> callback, double start = 0.0f, double end = 1.0f, Easing easing = null, double beginAt = 0.0f, double finishAt = 1.0f)
 		{
 			var child = new Animation(callback, start, end, easing);

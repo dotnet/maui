@@ -65,13 +65,13 @@ namespace Microsoft.Maui
 			return new Font(Family, Size, fontSlant, Weight, AutoScalingEnabled);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithWeight']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithWeight' and position()=0]/Docs" />
 		public Font WithWeight(FontWeight weight)
 		{
 			return new Font(Family, Size, Slant, weight, AutoScalingEnabled);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithWeight']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithWeight' and position()=1]/Docs" />
 		public Font WithWeight(FontWeight weight, FontSlant fontSlant)
 		{
 			return new Font(Family, Size, fontSlant, weight, AutoScalingEnabled);
