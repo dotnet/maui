@@ -42,7 +42,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS
 		[Fact(DisplayName = "Empty Shell")]
 		public async Task DetailsViewUpdates()
 		{
@@ -90,7 +89,6 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(100);
 			});
 		}
-#endif
 
 		protected Task<Shell> CreateShellAsync(Action<Shell> action)=>
 			InvokeOnMainThreadAsync(() =>
