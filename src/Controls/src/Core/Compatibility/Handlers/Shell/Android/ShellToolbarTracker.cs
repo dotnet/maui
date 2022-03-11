@@ -79,6 +79,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_appBar.ViewTreeObserver.AddOnGlobalLayoutListener(_globalLayoutListener);
 			_toolbar.SetNavigationOnClickListener(this);
 			((IShellController)ShellContext.Shell).AddFlyoutBehaviorObserver(this);
+			ShellContext.Shell.Toolbar.PropertyChanged += OnToolbarPropertyChanged;
 		}
 
 		public bool CanNavigateBack
@@ -170,7 +171,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_toolbar.DisposeMenuItems(_currentToolbarItems, OnToolbarItemPropertyChanged);
 
 				((IShellController)ShellContext.Shell)?.RemoveFlyoutBehaviorObserver(this);
-
+				ShellContext.Shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
 				UpdateTitleView(ShellContext.AndroidContext, _toolbar, null);
 
 				if (_searchView != null)
@@ -518,9 +519,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+
+		void OnToolbarPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			UpdatePageTitle(_toolbar, Page);
+		}
+
 		protected virtual void UpdatePageTitle(AToolbar toolbar, Page page)
 		{
-			_toolbar.Title = page.Title;
+			_toolbar.Title = ShellContext.Shell.Toolbar.Title;
 		}
 
 		protected virtual void UpdateTitleView(Context context, AToolbar toolbar, View titleView)

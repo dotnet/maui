@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='TitleProperty']/Docs" />
 		public static readonly BindableProperty TitleProperty =
-			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.OneTime);
+			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.OneTime, propertyChanged: OnTitlePropertyChanged);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='IsVisibleProperty']/Docs" />
 		public static readonly BindableProperty IsVisibleProperty =
@@ -189,6 +189,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 		IVisual IVisualController.Visual => Microsoft.Maui.Controls.VisualMarker.MatchParent;
+
+
+		static void OnTitlePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var shellItem = (BaseShellItem)bindable;
+			if (shellItem.FindParentOfType<Shell>()?.Toolbar is ShellToolbar st)
+				st.UpdateTitle();
+		}
 
 		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
 		{

@@ -14,11 +14,13 @@ Push-Location "$SourcesDirectory"
 $projectObject = Get-Content $LocProjectPath | ConvertFrom-Json
 $jsonFiles | ForEach-Object {
     $sourceFile = ($_.FullName | Resolve-Path -Relative)
+    $sourceFile2 = $sourceFile.TrimStart(".")
     $outputPath = "$(($_.DirectoryName | Resolve-Path -Relative) + "\")"
     $projectObject.Projects[0].LocItems += (@{
         SourceFile = $sourceFile
         CopyOption = "LangIDOnName"
         OutputPath = $outputPath
+        LclFile =  "loc\{Lang}$sourceFile2.lcl"
     })
 }
 Pop-Location
