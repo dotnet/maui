@@ -490,10 +490,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (View != null && View is ShellFlyoutLayout sfl)
 					sfl.LayoutChanging -= OnFlyoutViewLayoutChanged;
 
-
-				//if (_shellContext.CurrentDrawerLayout != null)
-				//	_shellContext.CurrentDrawerLayout.DrawerStateChanged -= OnFlyoutStateChanging;
-
 				_contentView?.TearDown();
 				_flyoutContentView?.Dispose();
 				_headerView.Dispose();
