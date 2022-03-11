@@ -51,11 +51,17 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
-			if (_picker != null)
+			if (_picker is UIDatePicker picker)
 			{
-				_picker.EditingDidBegin += OnStarted;
-				_picker.EditingDidEnd += OnEnded;
-				_picker.ValueChanged += OnValueChanged;
+				picker.EditingDidBegin += OnStarted;
+				picker.EditingDidEnd += OnEnded;
+				picker.ValueChanged += OnValueChanged;
+
+				var date = VirtualView?.Date;
+				if (date is DateTime dt)
+				{
+					picker.Date = dt.ToNSDate();
+				}
 			}
 
 			base.ConnectHandler(platformView);
