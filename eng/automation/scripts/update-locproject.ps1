@@ -19,7 +19,7 @@ $jsonFiles | ForEach-Object {
         SourceFile = $sourceFile
         CopyOption = "LangIDOnName"
         OutputPath = $outputPath
-        LclFile =  "loc\\{Lang}\\$sourceFile"
+        LclFile =  "loc\{Lang}\$sourceFile"
     })
 }
 Pop-Location
