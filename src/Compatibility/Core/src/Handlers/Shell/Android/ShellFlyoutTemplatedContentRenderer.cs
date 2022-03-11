@@ -79,19 +79,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_appBar.AddOnOffsetChangedListener(this);
 
-			_actionBarHeight = (int)context.ToPixels(56);
+			_actionBarHeight = context.GetActionBarHeight();
 			UpdateFlyoutHeader();
+			UpdateFlyoutContent();
 
 			var metrics = context.Resources.DisplayMetrics;
 			var width = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
-
-			using (TypedValue tv = new TypedValue())
-			{
-				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ActionBarSize, tv, true))
-				{
-					_actionBarHeight = TypedValue.ComplexToDimensionPixelSize(tv.Data, metrics);
-				}
-			}
 
 			width -= _actionBarHeight;
 

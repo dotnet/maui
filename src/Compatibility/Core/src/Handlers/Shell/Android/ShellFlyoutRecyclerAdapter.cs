@@ -109,75 +109,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			elementHolder.Element = item.Element;
 		}
 
-		class LinearLayoutWithFocus : LinearLayout, ITabStop//, INativeViewHandler
+		class LinearLayoutWithFocus : LinearLayout, ITabStop
 		{
 			public LinearLayoutWithFocus(global::Android.Content.Context context) : base(context)
 			{
 			}
 
 			AView ITabStop.TabStop => this;
-
-			//			#region INativeViewHandler
-
-			//			VisualElement INativeViewHandler.Element => Content?.BindingContext as VisualElement;
-
-			//			VisualElementTracker INativeViewHandler.Tracker => null;
-
-			//			ViewGroup INativeViewHandler.ViewGroup => this;
-
-			//			AView INativeViewHandler.View => this;
-
-			//			SizeRequest INativeViewHandler.GetDesiredSize(int widthConstraint, int heightConstraint) => new SizeRequest(new Size(100, 100));
-
-			//			void INativeViewHandler.SetElement(VisualElement element) { }
-
-			//			void INativeViewHandler.SetLabelFor(int? id) { }
-
-			//			void INativeViewHandler.UpdateLayout() { }
-
-			//#pragma warning disable 67
-			//			public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
-			//			public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
-			//#pragma warning restore 67
-
-			//			#endregion INativeViewHandler
-
 			internal View Content { get; set; }
-
-
-			// TODO MAUI Is this right for focus order?
-			//	public override AView FocusSearch([GeneratedEnum] FocusSearchDirection direction)
-			//	{
-			//		var element = Content?.BindingContext as ITabStopElement;
-			//		if (element == null)
-			//			return base.FocusSearch(direction);
-
-			//		int maxAttempts = 0;
-			//		var tabIndexes = element?.GetTabIndexesOnParentPage(out maxAttempts);
-			//		if (tabIndexes == null)
-			//			return base.FocusSearch(direction);
-
-			//		// use OS default--there's no need for us to keep going if there's one or fewer tab indexes!
-			//		if (tabIndexes.Count <= 1)
-			//			return base.FocusSearch(direction);
-
-			//		int tabIndex = element.TabIndex;
-			//		AView control = null;
-			//		int attempt = 0;
-			//		bool forwardDirection = !(
-			//			(direction & FocusSearchDirection.Backward) != 0 ||
-			//			(direction & FocusSearchDirection.Left) != 0 ||
-			//			(direction & FocusSearchDirection.Up) != 0);
-
-			//		do
-			//		{
-			//			element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
-			//			var renderer = (element as BindableObject).GetValue(AppCompat.Platform.RendererProperty);
-			//			control = (renderer as ITabStop)?.TabStop;
-			//		} while (!(control?.Focusable == true || ++attempt >= maxAttempts));
-
-			//		return control?.Focusable == true ? control : null;
-			//	}
 		}
 
 		public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
@@ -299,16 +238,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			AView _itemView;
 			bool _disposed;
 			Shell _shell;
-
-			[Obsolete]
-			public ElementViewHolder(View view, AView itemView, AView bar, Action<Element> selectedCallback) : this(view, itemView, bar, selectedCallback, null)
-			{
-				_itemView = itemView;
-				itemView.Click += OnClicked;
-				View = view;
-				Bar = bar;
-				_selectedCallback = selectedCallback;
-			}
 
 			public ElementViewHolder(View view, AView itemView, AView bar, Action<Element> selectedCallback, Shell shell) : base(itemView)
 			{
