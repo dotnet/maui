@@ -8,13 +8,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='SeparatorStyleProperty']/Docs" />
 		public static readonly BindableProperty SeparatorStyleProperty = BindableProperty.Create(nameof(SeparatorStyle), typeof(SeparatorStyle), typeof(FormsElement), SeparatorStyle.Default);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='GetSeparatorStyle'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='GetSeparatorStyle' and position()=0]/Docs" />
 		public static SeparatorStyle GetSeparatorStyle(BindableObject element)
 		{
 			return (SeparatorStyle)element.GetValue(SeparatorStyleProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='SetSeparatorStyle'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='SetSeparatorStyle' and position()=0]/Docs" />
 		public static void SetSeparatorStyle(BindableObject element, SeparatorStyle value)
 		{
 			element.SetValue(SeparatorStyleProperty, value);
@@ -36,13 +36,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='GroupHeaderStyleProperty']/Docs" />
 		public static readonly BindableProperty GroupHeaderStyleProperty = BindableProperty.Create(nameof(GroupHeaderStyle), typeof(GroupHeaderStyle), typeof(FormsElement), GroupHeaderStyle.Plain);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='GetGroupHeaderStyle'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='GetGroupHeaderStyle' and position()=0]/Docs" />
 		public static GroupHeaderStyle GetGroupHeaderStyle(BindableObject element)
 		{
 			return (GroupHeaderStyle)element.GetValue(GroupHeaderStyleProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='SetGroupHeaderStyle'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='SetGroupHeaderStyle' and position()=0]/Docs" />
 		public static void SetGroupHeaderStyle(BindableObject element, GroupHeaderStyle value)
 		{
 			element.SetValue(GroupHeaderStyleProperty, value);
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(RowAnimationsEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='SetRowAnimationsEnabled'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='SetRowAnimationsEnabled' and position()=0]/Docs" />
 		public static void SetRowAnimationsEnabled(BindableObject element, bool value)
 		{
 			element.SetValue(RowAnimationsEnabledProperty, value);

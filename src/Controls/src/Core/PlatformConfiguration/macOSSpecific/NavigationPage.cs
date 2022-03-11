@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 		public static readonly BindableProperty NavigationTransitionPopStyleProperty = BindableProperty.Create("NavigationTransitionPopStyle", typeof(NavigationTransitionStyle), typeof(NavigationPage), NavigationTransitionStyle.SlideBackward);
 
 		#region PushStyle
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetNavigationTransitionPushStyle'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetNavigationTransitionPushStyle' and position()=0]/Docs" />
 		public static NavigationTransitionStyle GetNavigationTransitionPushStyle(BindableObject element)
 		{
 			return (NavigationTransitionStyle)element.GetValue(NavigationTransitionPushStyleProperty);
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 		#endregion
 
 		#region PopStyle
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetNavigationTransitionPopStyle'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetNavigationTransitionPopStyle' and position()=0]/Docs" />
 		public static NavigationTransitionStyle GetNavigationTransitionPopStyle(BindableObject element)
 		{
 			return (NavigationTransitionStyle)element.GetValue(NavigationTransitionPopStyleProperty);
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 		}
 		#endregion
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetNavigationTransitionStyle'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetNavigationTransitionStyle' and position()=0]/Docs" />
 		public static void SetNavigationTransitionStyle(BindableObject element, NavigationTransitionStyle pushStyle, NavigationTransitionStyle popStyle)
 		{
 			SetNavigationTransitionPushStyle(element, pushStyle);

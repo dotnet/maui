@@ -379,7 +379,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler Refreshing;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='ScrollTo'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='ScrollTo' and position()=0]/Docs" />
 		public void ScrollTo(object item, ScrollToPosition position, bool animated)
 		{
 			if (!Enum.IsDefined(typeof(ScrollToPosition), position))
@@ -392,7 +392,7 @@ namespace Microsoft.Maui.Controls
 				_pendingScroll = args;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='ScrollTo'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='ScrollTo' and position()=1]/Docs" />
 		public void ScrollTo(object item, object group, ScrollToPosition position, bool animated)
 		{
 			if (!IsGroupingEnabled)
@@ -520,7 +520,7 @@ namespace Microsoft.Maui.Controls
 			ItemTapped?.Invoke(this, new ItemTappedEventArgs(ItemsSource.Cast<object>().ElementAt(groupIndex), cell?.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped' and position()=3]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void NotifyRowTapped(int groupIndex, int inGroupIndex, Cell cell, bool isContextMenuRequested)
 		{
@@ -575,7 +575,7 @@ namespace Microsoft.Maui.Controls
 				NotifyRowTapped(0, index, cell);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped' and position()=2]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void NotifyRowTapped(int index, Cell cell, bool isContextmenuRequested)
 		{

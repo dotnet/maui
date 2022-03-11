@@ -108,15 +108,15 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='AltitudeReferenceSystem']/Docs" />
 		public AltitudeReferenceSystem AltitudeReferenceSystem { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance' and position()=1]/Docs" />
 		public static double CalculateDistance(double latitudeStart, double longitudeStart, Location locationEnd, DistanceUnits units) =>
 			CalculateDistance(latitudeStart, longitudeStart, locationEnd.Latitude, locationEnd.Longitude, units);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance' and position()=2]/Docs" />
 		public static double CalculateDistance(Location locationStart, double latitudeEnd, double longitudeEnd, DistanceUnits units) =>
 		   CalculateDistance(locationStart.Latitude, locationStart.Longitude, latitudeEnd, longitudeEnd, units);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance' and position()=0]/Docs" />
 		public static double CalculateDistance(Location locationStart, Location locationEnd, DistanceUnits units) =>
 			CalculateDistance(locationStart.Latitude, locationStart.Longitude, locationEnd.Latitude, locationEnd.Longitude, units);
 

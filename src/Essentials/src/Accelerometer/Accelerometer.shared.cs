@@ -97,11 +97,11 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Acceleration']/Docs" />
 		public Vector3 Acceleration { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Equals' and position()=0]/Docs" />
 		public override bool Equals(object? obj) =>
 			(obj is AccelerometerData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Equals' and position()=1]/Docs" />
 		public bool Equals(AccelerometerData other) =>
 			Acceleration.Equals(other.Acceleration);
 

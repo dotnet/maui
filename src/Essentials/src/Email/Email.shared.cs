@@ -22,15 +22,15 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Email']/Docs" />
 	public static partial class Email
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync' and position()=0]/Docs" />
 		public static Task ComposeAsync()
 			=> ComposeAsync(null);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync' and position()=2]/Docs" />
 		public static Task ComposeAsync(string subject, string body, params string[] to)
 			=> ComposeAsync(new EmailMessage(subject, body, to));
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync' and position()=1]/Docs" />
 		public static Task ComposeAsync(EmailMessage message)
 		{
 			if (!Current.IsComposeSupported)

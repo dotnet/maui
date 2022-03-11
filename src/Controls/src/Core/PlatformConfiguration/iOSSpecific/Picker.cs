@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (UpdateMode)element.GetValue(UpdateModeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Picker.xml" path="//Member[@MemberName='SetUpdateMode'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Picker.xml" path="//Member[@MemberName='SetUpdateMode' and position()=0]/Docs" />
 		public static void SetUpdateMode(BindableObject element, UpdateMode value)
 		{
 			element.SetValue(UpdateModeProperty, value);

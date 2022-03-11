@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (bool)element.GetValue(UseDefaultPaddingProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetUseDefaultPadding'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetUseDefaultPadding' and position()=0]/Docs" />
 		public static void SetUseDefaultPadding(BindableObject element, bool value)
 		{
 			element.SetValue(UseDefaultPaddingProperty, value);
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (bool)element.GetValue(UseDefaultShadowProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetUseDefaultShadow'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetUseDefaultShadow' and position()=0]/Docs" />
 		public static void SetUseDefaultShadow(BindableObject element, bool value)
 		{
 			element.SetValue(UseDefaultShadowProperty, value);

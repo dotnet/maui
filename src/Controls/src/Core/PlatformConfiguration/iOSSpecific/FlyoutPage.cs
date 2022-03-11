@@ -10,13 +10,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='ApplyShadowProperty']/Docs" />
 		public static readonly BindableProperty ApplyShadowProperty = BindableProperty.Create("ApplyShadow", typeof(bool), typeof(FlyoutPage), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetApplyShadow'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetApplyShadow' and position()=0]/Docs" />
 		public static bool GetApplyShadow(BindableObject element)
 		{
 			return (bool)element.GetValue(ApplyShadowProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetApplyShadow'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetApplyShadow' and position()=0]/Docs" />
 		public static void SetApplyShadow(BindableObject element, bool value)
 		{
 			element.SetValue(ApplyShadowProperty, value);

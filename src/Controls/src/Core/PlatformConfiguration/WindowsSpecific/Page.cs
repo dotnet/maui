@@ -18,13 +18,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			BindableProperty.CreateAttached("ToolbarPlacement", typeof(ToolbarPlacement),
 				typeof(FormsElement), ToolbarPlacement.Default);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='GetToolbarPlacement'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='GetToolbarPlacement' and position()=0]/Docs" />
 		public static ToolbarPlacement GetToolbarPlacement(BindableObject element)
 		{
 			return (ToolbarPlacement)element.GetValue(ToolbarPlacementProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='SetToolbarPlacement'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='SetToolbarPlacement' and position()=0]/Docs" />
 		public static void SetToolbarPlacement(BindableObject element, ToolbarPlacement toolbarPlacement)
 		{
 			element.SetValue(ToolbarPlacementProperty, toolbarPlacement);
@@ -53,13 +53,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			BindableProperty.CreateAttached("ToolbarDynamicOverflowEnabled", typeof(bool),
 				typeof(FormsElement), true);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='GetToolbarDynamicOverflowEnabled'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='GetToolbarDynamicOverflowEnabled' and position()=0]/Docs" />
 		public static bool GetToolbarDynamicOverflowEnabled(BindableObject element)
 		{
 			return (bool)element.GetValue(ToolbarDynamicOverflowEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='SetToolbarDynamicOverflowEnabled'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='SetToolbarDynamicOverflowEnabled' and position()=0]/Docs" />
 		public static void SetToolbarDynamicOverflowEnabled(BindableObject element, bool value)
 		{
 			element.SetValue(ToolbarDynamicOverflowEnabledProperty, value);

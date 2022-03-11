@@ -8,13 +8,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="//Member[@MemberName='SwipeTransitionModeProperty']/Docs" />
 		public static readonly BindableProperty SwipeTransitionModeProperty = BindableProperty.Create("SwipeTransitionMode", typeof(SwipeTransitionMode), typeof(SwipeView), SwipeTransitionMode.Reveal);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="//Member[@MemberName='GetSwipeTransitionMode'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="//Member[@MemberName='GetSwipeTransitionMode' and position()=0]/Docs" />
 		public static SwipeTransitionMode GetSwipeTransitionMode(BindableObject element)
 		{
 			return (SwipeTransitionMode)element.GetValue(SwipeTransitionModeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="//Member[@MemberName='SetSwipeTransitionMode'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="//Member[@MemberName='SetSwipeTransitionMode' and position()=0]/Docs" />
 		public static void SetSwipeTransitionMode(BindableObject element, SwipeTransitionMode value)
 		{
 			element.SetValue(SwipeTransitionModeProperty, value);

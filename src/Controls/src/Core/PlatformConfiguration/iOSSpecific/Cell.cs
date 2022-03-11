@@ -13,7 +13,7 @@
 		public static Color GetDefaultBackgroundColor(BindableObject element)
 			=> (Color)element.GetValue(DefaultBackgroundColorProperty);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Cell.xml" path="//Member[@MemberName='SetDefaultBackgroundColor'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Cell.xml" path="//Member[@MemberName='SetDefaultBackgroundColor' and position()=0]/Docs" />
 		public static void SetDefaultBackgroundColor(BindableObject element, Color value)
 			=> element.SetValue(DefaultBackgroundColorProperty, value);
 

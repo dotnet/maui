@@ -15,13 +15,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			cell.IsContextActionsLegacyModeEnabled = (bool)newValue;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ViewCell.xml" path="//Member[@MemberName='GetIsContextActionsLegacyModeEnabled'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ViewCell.xml" path="//Member[@MemberName='GetIsContextActionsLegacyModeEnabled' and position()=0]/Docs" />
 		public static bool GetIsContextActionsLegacyModeEnabled(BindableObject element)
 		{
 			return (bool)element.GetValue(IsContextActionsLegacyModeEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ViewCell.xml" path="//Member[@MemberName='SetIsContextActionsLegacyModeEnabled'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ViewCell.xml" path="//Member[@MemberName='SetIsContextActionsLegacyModeEnabled' and position()=0]/Docs" />
 		public static void SetIsContextActionsLegacyModeEnabled(BindableObject element, bool value)
 		{
 			element.SetValue(IsContextActionsLegacyModeEnabledProperty, value);

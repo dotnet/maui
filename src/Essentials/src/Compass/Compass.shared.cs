@@ -45,10 +45,10 @@ namespace Microsoft.Maui.Essentials
 		public static bool IsMonitoring
 			=> Current.IsMonitoring;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start' and position()=0]/Docs" />
 		public static void Start(SensorSpeed sensorSpeed) => Start(sensorSpeed, true);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start' and position()=1]/Docs" />
 		public static void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 			=> Current.Start(sensorSpeed, applyLowPassFilter);
 
@@ -109,11 +109,11 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='HeadingMagneticNorth']/Docs" />
 		public double HeadingMagneticNorth { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals' and position()=0]/Docs" />
 		public override bool Equals(object obj) =>
 			(obj is CompassData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals' and position()=1]/Docs" />
 		public bool Equals(CompassData other) =>
 			HeadingMagneticNorth.Equals(other.HeadingMagneticNorth);
 

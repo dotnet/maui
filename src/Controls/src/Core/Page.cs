@@ -204,13 +204,13 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert' and position()=0]/Docs" />
 		public Task DisplayAlert(string title, string message, string cancel)
 		{
 			return DisplayAlert(title, message, null, cancel, FlowDirection.MatchParent);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert' and position()=1]/Docs" />
 		public Task<bool> DisplayAlert(string title, string message, string accept, string cancel)
 		{
 			return DisplayAlert(title, message, accept, cancel, FlowDirection.MatchParent);

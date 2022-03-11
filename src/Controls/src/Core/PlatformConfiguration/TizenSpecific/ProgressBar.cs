@@ -11,13 +11,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			BindableProperty.Create("ProgressBarPulsingStatus", typeof(bool),
 			typeof(FormsElement), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBar.xml" path="//Member[@MemberName='GetPulsingStatus'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBar.xml" path="//Member[@MemberName='GetPulsingStatus' and position()=0]/Docs" />
 		public static bool GetPulsingStatus(BindableObject element)
 		{
 			return (bool)element.GetValue(ProgressBarPulsingStatusProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBar.xml" path="//Member[@MemberName='SetPulsingStatus'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBar.xml" path="//Member[@MemberName='SetPulsingStatus' and position()=0]/Docs" />
 		public static void SetPulsingStatus(BindableObject element, bool isPulsing)
 		{
 			string style = VisualElement.GetStyle(element);

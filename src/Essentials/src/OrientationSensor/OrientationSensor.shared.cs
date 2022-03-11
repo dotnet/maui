@@ -90,11 +90,11 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='Orientation']/Docs" />
 		public Quaternion Orientation { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='Equals' and position()=0]/Docs" />
 		public override bool Equals(object obj) =>
 			(obj is OrientationSensorData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='Equals' and position()=1]/Docs" />
 		public bool Equals(OrientationSensorData other) =>
 			Orientation.Equals(other.Orientation);
 

@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/TabbedPage.xml" path="//Member[@MemberName='TabsStyleProperty']/Docs" />
 		public static readonly BindableProperty TabsStyleProperty = BindableProperty.Create("TabsStyle", typeof(TabsStyle), typeof(TabbedPage), TabsStyle.Default);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTabsStyle'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTabsStyle' and position()=0]/Docs" />
 		public static TabsStyle GetTabsStyle(BindableObject element)
 		{
 			return (TabsStyle)element.GetValue(TabsStyleProperty);

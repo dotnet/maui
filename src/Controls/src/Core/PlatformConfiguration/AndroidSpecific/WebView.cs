@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (MixedContentHandling)element.GetValue(MixedContentModeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/WebView.xml" path="//Member[@MemberName='SetMixedContentMode'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/WebView.xml" path="//Member[@MemberName='SetMixedContentMode' and position()=0]/Docs" />
 		public static void SetMixedContentMode(BindableObject element, MixedContentHandling value)
 		{
 			element.SetValue(MixedContentModeProperty, value);

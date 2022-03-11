@@ -10,13 +10,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 			BindableProperty.Create("TabPosition", typeof(TabPosition),
 				typeof(TabbedPage), TabPosition.Default);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTabPosition'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTabPosition' and position()=0]/Docs" />
 		public static TabPosition GetTabPosition(BindableObject element)
 		{
 			return (TabPosition)element.GetValue(TabPositionProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="//Member[@MemberName='SetTabPosition'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="//Member[@MemberName='SetTabPosition' and position()=0]/Docs" />
 		public static void SetTabPosition(BindableObject element, TabPosition tabPosition)
 		{
 			element.SetValue(TabPositionProperty, tabPosition);

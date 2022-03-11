@@ -10,13 +10,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='UseBezelInteractionProperty']/Docs" />
 		public static readonly BindableProperty UseBezelInteractionProperty = BindableProperty.Create("UseBezelInteraction", typeof(bool), typeof(FormsElement), true);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetUseBezelInteraction'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetUseBezelInteraction' and position()=0]/Docs" />
 		public static bool GetUseBezelInteraction(BindableObject element)
 		{
 			return (bool)element.GetValue(UseBezelInteractionProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='SetUseBezelInteraction'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='SetUseBezelInteraction' and position()=0]/Docs" />
 		public static void SetUseBezelInteraction(BindableObject element, bool value)
 		{
 			element.SetValue(UseBezelInteractionProperty, value);
@@ -38,13 +38,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='OverlayContentProperty']/Docs" />
 		public static readonly BindableProperty OverlayContentProperty = BindableProperty.CreateAttached("OverlayContent", typeof(View), typeof(FormsElement), default(View));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetOverlayContent'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetOverlayContent' and position()=0]/Docs" />
 		public static View GetOverlayContent(BindableObject application)
 		{
 			return (View)application.GetValue(OverlayContentProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='SetOverlayContent'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='SetOverlayContent' and position()=0]/Docs" />
 		public static void SetOverlayContent(BindableObject application, View value)
 		{
 			application.SetValue(OverlayContentProperty, value);
@@ -66,13 +66,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='ActiveBezelInteractionElementPropertyKey']/Docs" />
 		public static readonly BindablePropertyKey ActiveBezelInteractionElementPropertyKey = BindableProperty.CreateAttachedReadOnly("ActiveBezelInteractionElement", typeof(Element), typeof(FormsElement), default(Element));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetActiveBezelInteractionElement'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetActiveBezelInteractionElement' and position()=0]/Docs" />
 		public static Element GetActiveBezelInteractionElement(BindableObject application)
 		{
 			return (Element)application.GetValue(ActiveBezelInteractionElementPropertyKey.BindableProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='SetActiveBezelInteractionElement'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='SetActiveBezelInteractionElement' and position()=0]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetActiveBezelInteractionElement(BindableObject application, Element value)
 		{

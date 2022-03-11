@@ -12,13 +12,13 @@
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='FileProperty']/Docs" />
 		public static readonly BindableProperty FileProperty = BindableProperty.Create("File", typeof(string), typeof(FormsElement), default(string));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='GetBlendColor'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='GetBlendColor' and position()=0]/Docs" />
 		public static Color GetBlendColor(BindableObject element)
 		{
 			return (Color)element.GetValue(BlendColorProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='SetBlendColor'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='SetBlendColor' and position()=0]/Docs" />
 		public static void SetBlendColor(BindableObject element, Color color)
 		{
 			element.SetValue(BlendColorProperty, color);
@@ -37,13 +37,13 @@
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='GetFile'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='GetFile' and position()=0]/Docs" />
 		public static string GetFile(BindableObject element)
 		{
 			return (string)element.GetValue(FileProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='SetFile'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='SetFile' and position()=0]/Docs" />
 		public static void SetFile(BindableObject element, string file)
 		{
 			element.SetValue(FileProperty, file);

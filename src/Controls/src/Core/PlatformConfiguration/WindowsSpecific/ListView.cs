@@ -14,13 +14,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			BindableProperty.CreateAttached("WindowsSelectionMode", typeof(ListViewSelectionMode),
 				typeof(ListView), ListViewSelectionMode.Accessible);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="//Member[@MemberName='GetSelectionMode'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="//Member[@MemberName='GetSelectionMode' and position()=0]/Docs" />
 		public static ListViewSelectionMode GetSelectionMode(BindableObject element)
 		{
 			return (ListViewSelectionMode)element.GetValue(SelectionModeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="//Member[@MemberName='SetSelectionMode'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="//Member[@MemberName='SetSelectionMode' and position()=0]/Docs" />
 		public static void SetSelectionMode(BindableObject element, ListViewSelectionMode value)
 		{
 			element.SetValue(SelectionModeProperty, value);

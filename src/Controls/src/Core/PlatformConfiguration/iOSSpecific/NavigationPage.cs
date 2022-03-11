@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(IsNavigationBarTranslucentProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetIsNavigationBarTranslucent'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetIsNavigationBarTranslucent' and position()=0]/Docs" />
 		public static void SetIsNavigationBarTranslucent(BindableObject element, bool value)
 		{
 			element.SetValue(IsNavigationBarTranslucentProperty, value);
@@ -59,13 +59,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			BindableProperty.Create("StatusBarColorTextMode", typeof(StatusBarTextColorMode),
 			typeof(NavigationPage), StatusBarTextColorMode.MatchNavigationBarTextLuminosity);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetStatusBarTextColorMode'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetStatusBarTextColorMode' and position()=0]/Docs" />
 		public static StatusBarTextColorMode GetStatusBarTextColorMode(BindableObject element)
 		{
 			return (StatusBarTextColorMode)element.GetValue(StatusBarTextColorModeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetStatusBarTextColorMode'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetStatusBarTextColorMode' and position()=0]/Docs" />
 		public static void SetStatusBarTextColorMode(BindableObject element, StatusBarTextColorMode value)
 		{
 			element.SetValue(StatusBarTextColorModeProperty, value);
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(PrefersLargeTitlesProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetPrefersLargeTitles'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetPrefersLargeTitles' and position()=0]/Docs" />
 		public static void SetPrefersLargeTitles(BindableObject element, bool value)
 		{
 			element.SetValue(PrefersLargeTitlesProperty, value);
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(HideNavigationBarSeparatorProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetHideNavigationBarSeparator'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetHideNavigationBarSeparator' and position()=0]/Docs" />
 		public static void SetHideNavigationBarSeparator(BindableObject element, bool value)
 		{
 			element.SetValue(HideNavigationBarSeparatorProperty, value);

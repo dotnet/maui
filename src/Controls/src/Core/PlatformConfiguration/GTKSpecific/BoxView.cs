@@ -10,13 +10,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 			BindableProperty.Create("HasCornerRadius", typeof(bool),
 				typeof(BoxView), default(bool));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="//Member[@MemberName='GetHasCornerRadius'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="//Member[@MemberName='GetHasCornerRadius' and position()=0]/Docs" />
 		public static bool GetHasCornerRadius(BindableObject element)
 		{
 			return (bool)element.GetValue(HasCornerRadiusProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="//Member[@MemberName='SetHasCornerRadius'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="//Member[@MemberName='SetHasCornerRadius' and position()=0]/Docs" />
 		public static void SetHasCornerRadius(BindableObject element, bool tabPosition)
 		{
 			element.SetValue(HasCornerRadiusProperty, tabPosition);

@@ -90,11 +90,11 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/MagnetometerData.xml" path="//Member[@MemberName='MagneticField']/Docs" />
 		public Vector3 MagneticField { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MagnetometerData.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MagnetometerData.xml" path="//Member[@MemberName='Equals' and position()=0]/Docs" />
 		public override bool Equals(object obj) =>
 			(obj is MagnetometerData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MagnetometerData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MagnetometerData.xml" path="//Member[@MemberName='Equals' and position()=1]/Docs" />
 		public bool Equals(MagnetometerData other) =>
 			MagneticField.Equals(other.MagneticField);
 

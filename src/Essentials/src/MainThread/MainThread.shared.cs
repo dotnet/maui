@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync' and position()=0]/Docs" />
 		public static Task InvokeOnMainThreadAsync(Action action)
 		{
 			if (IsMainThread)

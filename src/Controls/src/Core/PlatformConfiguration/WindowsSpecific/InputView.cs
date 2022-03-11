@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/InputView.xml" path="//Member[@MemberName='DetectReadingOrderFromContentProperty']/Docs" />
 		public static readonly BindableProperty DetectReadingOrderFromContentProperty = BindableProperty.Create("DetectReadingOrderFromContent", typeof(bool), typeof(FormsElement), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/InputView.xml" path="//Member[@MemberName='SetDetectReadingOrderFromContent'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/InputView.xml" path="//Member[@MemberName='SetDetectReadingOrderFromContent' and position()=0]/Docs" />
 		public static void SetDetectReadingOrderFromContent(BindableObject element, bool value)
 		{
 			element.SetValue(DetectReadingOrderFromContentProperty, value);
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return (bool)config.Element.GetValue(DetectReadingOrderFromContentProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/InputView.xml" path="//Member[@MemberName='GetDetectReadingOrderFromContent'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/InputView.xml" path="//Member[@MemberName='GetDetectReadingOrderFromContent' and position()=0]/Docs" />
 		public static bool GetDetectReadingOrderFromContent(BindableObject element)
 		{
 			return (bool)element.GetValue(DetectReadingOrderFromContentProperty);

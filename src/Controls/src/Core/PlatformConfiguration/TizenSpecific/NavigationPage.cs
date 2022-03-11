@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			return (bool)element.GetValue(HasBreadCrumbsBarProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/NavigationPage.xml" path="//Member[@MemberName='SetHasBreadCrumbsBar'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/NavigationPage.xml" path="//Member[@MemberName='SetHasBreadCrumbsBar' and position()=0]/Docs" />
 		public static void SetHasBreadCrumbsBar(BindableObject element, bool value)
 		{
 			element.SetValue(HasBreadCrumbsBarProperty, value);

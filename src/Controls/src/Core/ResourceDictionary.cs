@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls
 			return ((ICollection<KeyValuePair<string, object>>)_innerDictionary).Remove(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add' and position()=3]/Docs" />
 		public void Add(string key, object value)
 		{
 			if (ContainsKey(key))
@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Controls
 			remove { ValuesChanged -= value; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add' and position()=1]/Docs" />
 		public void Add(Style style)
 		{
 			if (string.IsNullOrEmpty(style.Class))
@@ -301,7 +301,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add' and position()=0]/Docs" />
 		public void Add(ResourceDictionary mergedResourceDictionary)
 		{
 			MergedDictionaries.Add(mergedResourceDictionary);

@@ -17,15 +17,15 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Share']/Docs" />
 	public static partial class Share
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync' and position()=0]/Docs" />
 		public static Task RequestAsync(string text) =>
 			RequestAsync(new ShareTextRequest(text));
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][4]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync' and position()=4]/Docs" />
 		public static Task RequestAsync(string text, string title) =>
 			RequestAsync(new ShareTextRequest(text, title));
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync' and position()=3]/Docs" />
 		public static Task RequestAsync(ShareTextRequest request)
 		{
 			if (request == null)
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Essentials
 			return Current.RequestAsync(request);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync' and position()=1]/Docs" />
 		public static Task RequestAsync(ShareFileRequest request)
 		{
 			if (request == null)
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Essentials
 			return Current.RequestAsync((ShareMultipleFilesRequest)request);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync' and position()=2]/Docs" />
 		public static Task RequestAsync(ShareMultipleFilesRequest request)
 		{
 			if (request == null)

@@ -10,13 +10,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Switch.xml" path="//Member[@MemberName='ColorProperty']/Docs" />
 		public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(FormsElement), null);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Switch.xml" path="//Member[@MemberName='GetColor'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Switch.xml" path="//Member[@MemberName='GetColor' and position()=0]/Docs" />
 		public static Color GetColor(BindableObject element)
 		{
 			return (Color)element.GetValue(ColorProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Switch.xml" path="//Member[@MemberName='SetColor'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Switch.xml" path="//Member[@MemberName='SetColor' and position()=0]/Docs" />
 		public static void SetColor(BindableObject element, Color color)
 		{
 			element.SetValue(ColorProperty, color);

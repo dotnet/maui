@@ -52,11 +52,11 @@ namespace Microsoft.Maui.Essentials
 		public static bool operator !=(DisplayInfo left, DisplayInfo right) =>
 			!left.Equals(right);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfo.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfo.xml" path="//Member[@MemberName='Equals' and position()=0]/Docs" />
 		public override bool Equals(object obj) =>
 			(obj is DisplayInfo metrics) && Equals(metrics);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfo.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfo.xml" path="//Member[@MemberName='Equals' and position()=1]/Docs" />
 		public bool Equals(DisplayInfo other) =>
 			Width.Equals(other.Width) &&
 			Height.Equals(other.Height) &&

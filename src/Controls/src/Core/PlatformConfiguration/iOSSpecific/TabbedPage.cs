@@ -10,11 +10,11 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			BindableProperty.Create("TranslucencyMode",
 				typeof(TranslucencyMode), typeof(TabbedPage), TranslucencyMode.Default);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTranslucencyMode'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTranslucencyMode' and position()=0]/Docs" />
 		public static TranslucencyMode GetTranslucencyMode(BindableObject element)
 			=> (TranslucencyMode)element.GetValue(TranslucencyModeProperty);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="//Member[@MemberName='SetTranslucencyMode'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="//Member[@MemberName='SetTranslucencyMode' and position()=0]/Docs" />
 		public static void SetTranslucencyMode(BindableObject element, TranslucencyMode value)
 			=> element.SetValue(TranslucencyModeProperty, value);
 

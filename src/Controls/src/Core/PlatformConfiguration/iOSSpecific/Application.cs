@@ -9,13 +9,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='PanGestureRecognizerShouldRecognizeSimultaneouslyProperty']/Docs" />
 		public static readonly BindableProperty PanGestureRecognizerShouldRecognizeSimultaneouslyProperty = BindableProperty.Create("PanGestureRecognizerShouldRecognizeSimultaneously", typeof(bool), typeof(Application), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetPanGestureRecognizerShouldRecognizeSimultaneously'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetPanGestureRecognizerShouldRecognizeSimultaneously' and position()=0]/Docs" />
 		public static bool GetPanGestureRecognizerShouldRecognizeSimultaneously(BindableObject element)
 		{
 			return (bool)element.GetValue(PanGestureRecognizerShouldRecognizeSimultaneouslyProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='SetPanGestureRecognizerShouldRecognizeSimultaneously'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='SetPanGestureRecognizerShouldRecognizeSimultaneously' and position()=0]/Docs" />
 		public static void SetPanGestureRecognizerShouldRecognizeSimultaneously(BindableObject element, bool value)
 		{
 			element.SetValue(PanGestureRecognizerShouldRecognizeSimultaneouslyProperty, value);
@@ -39,13 +39,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='HandleControlUpdatesOnMainThreadProperty']/Docs" />
 		public static readonly BindableProperty HandleControlUpdatesOnMainThreadProperty = BindableProperty.Create("HandleControlUpdatesOnMainThread", typeof(bool), typeof(Application), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetHandleControlUpdatesOnMainThread'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetHandleControlUpdatesOnMainThread' and position()=0]/Docs" />
 		public static bool GetHandleControlUpdatesOnMainThread(BindableObject element)
 		{
 			return (bool)element.GetValue(HandleControlUpdatesOnMainThreadProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='SetHandleControlUpdatesOnMainThread'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='SetHandleControlUpdatesOnMainThread' and position()=0]/Docs" />
 		public static void SetHandleControlUpdatesOnMainThread(BindableObject element, bool value)
 		{
 			element.SetValue(HandleControlUpdatesOnMainThreadProperty, value);
@@ -69,13 +69,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='EnableAccessibilityScalingForNamedFontSizesProperty']/Docs" />
 		public static readonly BindableProperty EnableAccessibilityScalingForNamedFontSizesProperty = BindableProperty.Create("EnableAccessibilityScalingForNamedFontSizes", typeof(bool), typeof(Application), true);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetEnableAccessibilityScalingForNamedFontSizes'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetEnableAccessibilityScalingForNamedFontSizes' and position()=0]/Docs" />
 		public static bool GetEnableAccessibilityScalingForNamedFontSizes(BindableObject element)
 		{
 			return (bool)element.GetValue(EnableAccessibilityScalingForNamedFontSizesProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='SetEnableAccessibilityScalingForNamedFontSizes'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='SetEnableAccessibilityScalingForNamedFontSizes' and position()=0]/Docs" />
 		public static void SetEnableAccessibilityScalingForNamedFontSizes(BindableObject element, bool value)
 		{
 			element.SetValue(EnableAccessibilityScalingForNamedFontSizesProperty, value);

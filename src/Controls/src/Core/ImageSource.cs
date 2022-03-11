@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls
 			return new FileImageSource { File = file };
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromResource'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromResource' and position()=1]/Docs" />
 		public static ImageSource FromResource(string resource, Type resolvingType)
 		{
 			return FromResource(resource, resolvingType.GetTypeInfo().Assembly);

@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='RefreshPullDirectionProperty']/Docs" />
 		public static readonly BindableProperty RefreshPullDirectionProperty = BindableProperty.Create("RefreshPullDirection", typeof(RefreshPullDirection), typeof(FormsElement), RefreshPullDirection.TopToBottom);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='SetRefreshPullDirection'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='SetRefreshPullDirection' and position()=0]/Docs" />
 		public static void SetRefreshPullDirection(BindableObject element, RefreshPullDirection value)
 		{
 			element.SetValue(RefreshPullDirectionProperty, value);
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return GetRefreshPullDirection(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='GetRefreshPullDirection'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='GetRefreshPullDirection' and position()=0]/Docs" />
 		public static RefreshPullDirection GetRefreshPullDirection(BindableObject element)
 		{
 			return (RefreshPullDirection)element.GetValue(RefreshPullDirectionProperty);

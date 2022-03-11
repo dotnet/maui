@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='TabOrderProperty']/Docs" />
 		public static readonly BindableProperty TabOrderProperty = BindableProperty.Create("TabOrder", typeof(VisualElement[]), typeof(Page), null);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='GetTabOrder'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='GetTabOrder' and position()=0]/Docs" />
 		public static VisualElement[] GetTabOrder(BindableObject element)
 		{
 			return (VisualElement[])element.GetValue(TabOrderProperty);

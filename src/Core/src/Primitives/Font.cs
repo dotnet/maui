@@ -53,7 +53,7 @@ namespace Microsoft.Maui
 			return new Font(Family, Size, Slant, Weight, enabled);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithSize'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithSize' and position()=0]/Docs" />
 		public Font WithSize(double size)
 		{
 			return new Font(Family, size, Slant, Weight, AutoScalingEnabled);

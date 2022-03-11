@@ -13,13 +13,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		public static readonly BindableProperty IsSpellCheckEnabledProperty =
 			BindableProperty.Create("IsSpellCheckEnabled ", typeof(bool), typeof(SearchBar), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/SearchBar.xml" path="//Member[@MemberName='SetIsSpellCheckEnabled'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/SearchBar.xml" path="//Member[@MemberName='SetIsSpellCheckEnabled' and position()=0]/Docs" />
 		public static void SetIsSpellCheckEnabled(BindableObject element, bool value)
 		{
 			element.SetValue(IsSpellCheckEnabledProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/SearchBar.xml" path="//Member[@MemberName='GetIsSpellCheckEnabled'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/SearchBar.xml" path="//Member[@MemberName='GetIsSpellCheckEnabled' and position()=0]/Docs" />
 		public static bool GetIsSpellCheckEnabled(BindableObject element)
 		{
 			return (bool)element.GetValue(IsSpellCheckEnabledProperty);

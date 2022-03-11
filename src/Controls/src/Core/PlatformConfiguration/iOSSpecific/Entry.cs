@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(AdjustsFontSizeToFitWidthProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='SetAdjustsFontSizeToFitWidth'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='SetAdjustsFontSizeToFitWidth' and position()=0]/Docs" />
 		public static void SetAdjustsFontSizeToFitWidth(BindableObject element, bool value)
 		{
 			element.SetValue(AdjustsFontSizeToFitWidthProperty, value);
@@ -57,13 +57,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='GetCursorColor'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='GetCursorColor' and position()=0]/Docs" />
 		public static Color GetCursorColor(BindableObject element)
 		{
 			return (Color)element.GetValue(CursorColorProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='SetCursorColor'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='SetCursorColor' and position()=0]/Docs" />
 		public static void SetCursorColor(BindableObject element, Color value)
 		{
 			element.SetValue(CursorColorProperty, value);

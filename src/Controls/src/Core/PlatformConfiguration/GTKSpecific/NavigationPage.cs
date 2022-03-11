@@ -10,13 +10,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 			BindableProperty.Create("BackButtonIcon", typeof(string),
 				typeof(NavigationPage), default(string));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="//Member[@MemberName='GetBackButtonIcon'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="//Member[@MemberName='GetBackButtonIcon' and position()=0]/Docs" />
 		public static string GetBackButtonIcon(BindableObject element)
 		{
 			return (string)element.GetValue(BackButtonIconProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="//Member[@MemberName='SetBackButtonIcon'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="//Member[@MemberName='SetBackButtonIcon' and position()=0]/Docs" />
 		public static void SetBackButtonIcon(BindableObject element, string backButtonIcon)
 		{
 			element.SetValue(BackButtonIconProperty, backButtonIcon);

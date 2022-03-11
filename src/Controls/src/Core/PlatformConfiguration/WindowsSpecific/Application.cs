@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			BindableProperty.Create("ImageDirectory", typeof(string), typeof(FormsElement), string.Empty,
 				propertyChanged: OnImageDirectoryChanged);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='SetImageDirectory'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='SetImageDirectory' and position()=0]/Docs" />
 		public static void SetImageDirectory(BindableObject element, string value)
 		{
 			element.SetValue(ImageDirectoryProperty, value);
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return (string)config.Element.GetValue(ImageDirectoryProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='GetImageDirectory'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='GetImageDirectory' and position()=0]/Docs" />
 		public static string GetImageDirectory(BindableObject element)
 		{
 			return (string)element.GetValue(ImageDirectoryProperty);

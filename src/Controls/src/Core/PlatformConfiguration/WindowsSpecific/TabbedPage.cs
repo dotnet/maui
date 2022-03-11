@@ -18,13 +18,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		public static readonly BindableProperty HeaderIconsSizeProperty =
 			BindableProperty.Create(nameof(HeaderIconsSizeProperty), typeof(Size), typeof(TabbedPage), new Size(16, 16));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='SetHeaderIconsEnabled'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='SetHeaderIconsEnabled' and position()=0]/Docs" />
 		public static void SetHeaderIconsEnabled(BindableObject element, bool value)
 		{
 			element.SetValue(HeaderIconsEnabledProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='GetHeaderIconsEnabled'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='GetHeaderIconsEnabled' and position()=0]/Docs" />
 		public static bool GetHeaderIconsEnabled(BindableObject element)
 		{
 			return (bool)element.GetValue(HeaderIconsEnabledProperty);
@@ -62,13 +62,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			SetHeaderIconsEnabled(config.Element, false);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='SetHeaderIconsSize'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='SetHeaderIconsSize' and position()=0]/Docs" />
 		public static void SetHeaderIconsSize(BindableObject element, Size value)
 		{
 			element.SetValue(HeaderIconsSizeProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='GetHeaderIconsSize'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='GetHeaderIconsSize' and position()=0]/Docs" />
 		public static Size GetHeaderIconsSize(BindableObject element)
 		{
 			return (Size)element.GetValue(HeaderIconsSizeProperty);

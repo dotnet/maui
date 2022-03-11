@@ -186,13 +186,13 @@ namespace Microsoft.Maui.Controls
 			return route;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='FormatRoute'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='FormatRoute' and position()=1]/Docs" />
 		public static string FormatRoute(string route)
 		{
 			return route;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute' and position()=1]/Docs" />
 		public static void RegisterRoute(string route, RouteFactory factory)
 		{
 			if (!String.IsNullOrWhiteSpace(route))
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute' and position()=0]/Docs" />
 		public static void RegisterRoute(
 			string route,
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)

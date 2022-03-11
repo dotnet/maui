@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
 			Application.Current.FindDispatcher().DispatchAsync(func);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync' and position()=0]/Docs" />
 		[Obsolete("Use BindableObject.Dispatcher.DispatchAsync() instead.")]
 		public static Task InvokeOnMainThreadAsync(Action action) =>
 			Application.Current.FindDispatcher().DispatchAsync(action);
@@ -116,13 +116,13 @@ namespace Microsoft.Maui.Controls
 		public static Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync() =>
 			Application.Current.FindDispatcher().GetSynchronizationContextAsync();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize' and position()=1]/Docs" />
 		public static double GetNamedSize(NamedSize size, Element targetElement)
 		{
 			return GetNamedSize(size, targetElement.GetType());
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize' and position()=0]/Docs" />
 		public static double GetNamedSize(NamedSize size, Type targetElementType)
 		{
 			return GetNamedSize(size, targetElementType, false);
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls
 			dispatcher.StartTimer(interval, callback);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize' and position()=2]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes) =>
 			DependencyService.Get<IFontNamedSizeService>()?.GetNamedSize(size, targetElementType, useOldSizes) ??

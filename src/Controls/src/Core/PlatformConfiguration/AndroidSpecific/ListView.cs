@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (bool)element.GetValue(IsFastScrollEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ListView.xml" path="//Member[@MemberName='SetIsFastScrollEnabled'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ListView.xml" path="//Member[@MemberName='SetIsFastScrollEnabled' and position()=0]/Docs" />
 		public static void SetIsFastScrollEnabled(BindableObject element, bool value)
 		{
 			element.SetValue(IsFastScrollEnabledProperty, value);

@@ -90,11 +90,11 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='AngularVelocity']/Docs" />
 		public Vector3 AngularVelocity { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals' and position()=0]/Docs" />
 		public override bool Equals(object obj) =>
 			(obj is GyroscopeData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals' and position()=1]/Docs" />
 		public bool Equals(GyroscopeData other) =>
 			AngularVelocity.Equals(other.AngularVelocity);
 

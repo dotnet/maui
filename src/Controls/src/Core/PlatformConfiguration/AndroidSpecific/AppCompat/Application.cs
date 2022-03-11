@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='SendDisappearingEventOnPauseProperty']/Docs" />
 		public static readonly BindableProperty SendDisappearingEventOnPauseProperty = BindableProperty.Create(nameof(SendDisappearingEventOnPause), typeof(bool), typeof(Application), true);
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetSendDisappearingEventOnPause'][0]/Docs" />
+		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetSendDisappearingEventOnPause' and position()=0]/Docs" />
 		public static bool GetSendDisappearingEventOnPause(BindableObject element)
 		{
 			return (bool)element.GetValue(SendDisappearingEventOnPauseProperty);
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='SendAppearingEventOnResumeProperty']/Docs" />
 		public static readonly BindableProperty SendAppearingEventOnResumeProperty = BindableProperty.Create(nameof(SendAppearingEventOnResume), typeof(bool), typeof(Application), true);
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetSendAppearingEventOnResume'][0]/Docs" />
+		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetSendAppearingEventOnResume' and position()=0]/Docs" />
 		public static bool GetSendAppearingEventOnResume(BindableObject element)
 		{
 			return (bool)element.GetValue(SendAppearingEventOnResumeProperty);
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='ShouldPreserveKeyboardOnResumeProperty']/Docs" />
 		public static readonly BindableProperty ShouldPreserveKeyboardOnResumeProperty = BindableProperty.Create(nameof(ShouldPreserveKeyboardOnResume), typeof(bool), typeof(Application), false);
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetShouldPreserveKeyboardOnResume'][0]/Docs" />
+		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetShouldPreserveKeyboardOnResume' and position()=0]/Docs" />
 		public static bool GetShouldPreserveKeyboardOnResume(BindableObject element)
 		{
 			return (bool)element.GetValue(ShouldPreserveKeyboardOnResumeProperty);

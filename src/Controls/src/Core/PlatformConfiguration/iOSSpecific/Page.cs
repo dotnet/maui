@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (StatusBarHiddenMode)element.GetValue(PrefersStatusBarHiddenProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersStatusBarHidden'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersStatusBarHidden' and position()=0]/Docs" />
 		public static void SetPrefersStatusBarHidden(BindableObject element, StatusBarHiddenMode value)
 		{
 			element.SetValue(PrefersStatusBarHiddenProperty, value);
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (UIStatusBarAnimation)element.GetValue(PreferredStatusBarUpdateAnimationProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPreferredStatusBarUpdateAnimation'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPreferredStatusBarUpdateAnimation' and position()=0]/Docs" />
 		public static void SetPreferredStatusBarUpdateAnimation(BindableObject element, UIStatusBarAnimation value)
 		{
 			if (value == UIStatusBarAnimation.Fade)
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(UseSafeAreaProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetUseSafeArea'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetUseSafeArea' and position()=0]/Docs" />
 		public static void SetUseSafeArea(BindableObject element, bool value)
 		{
 			element.SetValue(UseSafeAreaProperty, value);
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (LargeTitleDisplayMode)element.GetValue(LargeTitleDisplayProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetLargeTitleDisplay'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetLargeTitleDisplay' and position()=0]/Docs" />
 		public static void SetLargeTitleDisplay(BindableObject element, LargeTitleDisplayMode value)
 		{
 			element.SetValue(LargeTitleDisplayProperty, value);
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(PrefersHomeIndicatorAutoHiddenProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersHomeIndicatorAutoHidden'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersHomeIndicatorAutoHidden' and position()=0]/Docs" />
 		public static void SetPrefersHomeIndicatorAutoHidden(BindableObject element, bool value)
 		{
 			element.SetValue(PrefersHomeIndicatorAutoHiddenProperty, value);
