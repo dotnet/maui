@@ -12,8 +12,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial interface IImageHandler : IViewHandler
 	{
-		IImage TypedVirtualView { get; }
+		new IImage VirtualView { get; }
 		ImageSourcePartLoader SourceLoader { get; }
-		PlatformView TypedPlatformView { get; }
+		new PlatformView PlatformView { get; }
 	}
 }

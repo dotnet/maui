@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial interface ISwipeViewHandler : IViewHandler
 	{
-		ISwipeView TypedVirtualView { get; }
-		PlatformView TypedPlatformView { get; }
+		new ISwipeView VirtualView { get; }
+		new PlatformView PlatformView { get; }
 	}
 }

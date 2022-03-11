@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls.Internals;
@@ -55,7 +56,9 @@ namespace Microsoft.Maui.Controls.Hosting
 			return this;
 		}
 
-		public IEffectsBuilder Add(Type TEffect, Type TPlatformEffect)
+		public IEffectsBuilder Add(
+			Type TEffect, 
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type TPlatformEffect)
 		{
 			RegisteredEffects.Add(TEffect, () =>
 			{

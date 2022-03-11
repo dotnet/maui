@@ -12,14 +12,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholderColor(IViewHandler handler, IEditor editor) { }
 		public static void MapCharacterSpacing(IViewHandler handler, IEditor editor) { }
 		public static void MapMaxLength(IViewHandler handler, IEditor editor) { }
-		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) { }
+		public static void MapIsTextPredictionEnabled(IEditorHandler handler, IEditor editor) { }
 		public static void MapFont(IViewHandler handler, IEditor editor) { }
 		public static void MapIsReadOnly(IViewHandler handler, IEditor editor) { }
-		public static void MapTextColor(EditorHandler handler, IEditor editor) { }
-		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor) { }
-		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor) { }
-		public static void MapKeyboard(EditorHandler handler, IEditor editor) { }
-		public static void MapCursorPosition(EditorHandler handler, ITextInput editor) { }
-		public static void MapSelectionLength(EditorHandler handler, ITextInput editor) { }
+		public static void MapTextColor(IEditorHandler handler, IEditor editor) { }
+		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor) { }
+		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor) { }
+		public static void MapKeyboard(IEditorHandler handler, IEditor editor) { }
+		public static void MapCursorPosition(IEditorHandler handler, ITextInput editor) { }
+		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor) { }
 	}
 }

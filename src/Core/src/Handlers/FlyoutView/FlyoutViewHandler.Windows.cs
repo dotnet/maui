@@ -32,38 +32,38 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.IsPresented = sender.IsPaneOpen;
 		}
 
-		void UpdateDetail()
+		static void UpdateDetail(IFlyoutViewHandler handler)
 		{
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = VirtualView.Detail.ToPlatform(MauiContext);
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = handler.VirtualView.Detail.ToPlatform(handler.MauiContext);
 
-			PlatformView.Content = VirtualView.Detail.ToPlatform();
+			handler.PlatformView.Content = handler.VirtualView.Detail.ToPlatform();
 		}
 
-		void UpdateFlyout()
+		static void UpdateFlyout(IFlyoutViewHandler handler)
 		{
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = VirtualView.Flyout.ToPlatform(MauiContext);
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = handler.VirtualView.Flyout.ToPlatform(handler.MauiContext);
 
-			PlatformView.ReplacePaneMenuItemsWithCustomContent(VirtualView.Flyout);
+			handler.PlatformView.ReplacePaneMenuItemsWithCustomContent(handler.VirtualView.Flyout);
 		}
 
-		public static void MapDetail(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapDetail(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			handler.UpdateDetail();
+			UpdateDetail(handler);
 		}
 
-		public static void MapFlyout(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapFlyout(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			handler.UpdateFlyout();
+			UpdateFlyout(handler);
 		}
 
-		public static void MapIsPresented(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapIsPresented(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
 			handler.PlatformView.IsPaneOpen = flyoutView.IsPresented;
 		}
 
-		public static void MapFlyoutWidth(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapFlyoutWidth(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
 			if (flyoutView.Width >= 0)
 				handler.PlatformView.OpenPaneLength = flyoutView.Width;
@@ -74,12 +74,12 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public static void MapFlyoutBehavior(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapFlyoutBehavior(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
 			handler.PlatformView.UpdateFlyoutBehavior(flyoutView);
 		}
 
-		public static void MapIsGestureEnabled(FlyoutViewHandler handler, IFlyoutView view)
+		public static void MapIsGestureEnabled(IFlyoutViewHandler handler, IFlyoutView view)
 		{
 		}
 	}

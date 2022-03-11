@@ -1,3 +1,5 @@
+using Microsoft.Maui.Essentials;
+
 namespace Microsoft.Maui.Controls
 {
 	public class OnIdiom<T>
@@ -72,20 +74,17 @@ namespace Microsoft.Maui.Controls
 
 		public static implicit operator T(OnIdiom<T> onIdiom)
 		{
-			switch (Device.Idiom)
-			{
-				default:
-				case TargetIdiom.Phone:
-					return onIdiom._isPhoneSet ? onIdiom.Phone : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
-				case TargetIdiom.Tablet:
-					return onIdiom._isTabletSet ? onIdiom.Tablet : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
-				case TargetIdiom.Desktop:
-					return onIdiom._isDesktopSet ? onIdiom.Desktop : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
-				case TargetIdiom.TV:
-					return onIdiom._isTVSet ? onIdiom.TV : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
-				case TargetIdiom.Watch:
-					return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
-			}
+			var idiom = DeviceInfo.Idiom;
+			if (idiom == DeviceIdiom.Tablet)
+				return onIdiom._isTabletSet ? onIdiom.Tablet : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			else if (idiom == DeviceIdiom.Desktop)
+				return onIdiom._isDesktopSet ? onIdiom.Desktop : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			else if (idiom == DeviceIdiom.TV)
+				return onIdiom._isTVSet ? onIdiom.TV : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			else if (idiom == DeviceIdiom.Watch)
+				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			else
+				return onIdiom._isPhoneSet ? onIdiom.Phone : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
 		}
 	}
 }

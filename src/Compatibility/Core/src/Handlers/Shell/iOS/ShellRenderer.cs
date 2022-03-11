@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public virtual void SetElementSize(Size size)
 		{
-			Element.Layout(new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Element.Layout(new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) => new Size(100, 100);
 
-		void IViewHandler.PlatformArrange(Rectangle rect)
+		void IViewHandler.PlatformArrange(Rect rect)
 		{
 			//TODO I don't think we need this
 		}

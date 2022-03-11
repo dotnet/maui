@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreatePlatformView() => throw new NotImplementedException();
 
-		public static void MapContent(BorderHandler handler, IBorderView border)
+		public static void MapContent(IBorderHandler handler, IBorderView border)
 		{
 		}
 	}

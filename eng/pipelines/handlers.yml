@@ -174,74 +174,28 @@ stages:
     displayName: Pack .NET 6
     dependsOn: []
     jobs:
-      - ${{ each BuildPlatform in parameters.PackPlatforms }}:
-        - job: pack_net6_${{ BuildPlatform.name }}
+      - ${{ each PackPlatform in parameters.PackPlatforms }}:
+        - job: pack_net6_${{ PackPlatform.name }}
           workspace:
             clean: all
-          displayName: ${{ BuildPlatform.name }}
+          displayName: ${{ PackPlatform.name }}
           timeoutInMinutes: 120
           pool:
-            name: ${{ BuildPlatform.poolName }}
-            vmImage: ${{ BuildPlatform.vmImage }}
-            ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+            name: ${{ PackPlatform.poolName }}
+            vmImage: ${{ PackPlatform.vmImage }}
+            ${{ if startsWith(PackPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
               demands:
                 - macOS.Name -equals BigSur
                 - macOS.Architecture -equals x64
                 - Agent.HasDevices -equals False
                 - Agent.IsPaired -equals False
           steps:
-            - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-              - template: agent-cleanser/v1.yml@xamarin-templates
-                parameters:
-                  UninstallMono: false
-                  UninstallXamarinMac: false
-                  CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
-            - template: common/provision.yml
+            - template: common/pack.yml
               parameters:
-                platform: ${{ BuildPlatform.name }}
-                poolName: ${{ BuildPlatform.poolName }}
+                platform: ${{ PackPlatform.name }}
+                poolName: ${{ PackPlatform.poolName }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
-            - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
-              displayName: 'Pack .NET Maui'
-              env:
-                DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-                PRIVATE_BUILD: $(PrivateBuild)
-            - ${{ if eq(BuildPlatform.name, 'Windows') }}:
-              - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
-                displayName: 'Diff .NET Maui artifacts with NuGet'
-            - task: CopyFiles@2
-              condition: always()
-              displayName: 'Copy files to staging'
-              inputs:
-                Contents: |
-                  artifacts/**/*.*nupkg
-                  artifacts/**/*.zip
-                  artifacts/vs-workload.props
-                  eng/automation/SignList.xml
-                TargetFolder: $(build.artifactstagingdirectory)
-                flattenFolders: true
-            - task: CopyFiles@2
-              condition: always()
-              displayName: 'Copy metadata to staging'
-              inputs:
-                SourceFolder: artifacts
-                Contents: |
-                  metadata/**
-                  api-diff/**
-                TargetFolder: $(build.artifactstagingdirectory)
-            - task: CopyFiles@2
-              displayName: 'Copy Log Files'
-              condition: always()
-              inputs:
-                Contents: |
-                  artifacts/logs/**
-                TargetFolder: $(build.artifactstagingdirectory)/logs
-                flattenFolders: true
-            - task: PublishBuildArtifacts@1
-              condition: always()
-              displayName: publish artifacts
-              inputs:
-                ArtifactName: ${{ BuildPlatform.artifact }}
+                artifact:  ${{ PackPlatform.artifact }}
 
   - stage: samples_net6
     displayName: Build .NET 6 Samples
@@ -359,109 +313,10 @@ stages:
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
-  - template: common/security_compliance.yml
+  - template: common/security-compliance.yml
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
     - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
     - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
-
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # Sign only using the private server
-    - stage: nuget_signing
-      dependsOn: pack_net6
-      displayName: Sign Nuget
-      jobs:
-        - template: sign-artifacts/jobs/v2.yml@xamarin-templates
-          parameters:
-            signType: Real
-            teamName: $(TeamName)
-            usePipelineArtifactTasks: false
-            targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
-            signedArtifactName: nuget
-            signedArtifactPath: signed
-            displayName: Sign Phase
-            condition: ${{ variables.signingCondition }}
-
-        - template: nuget-msi-convert/job/v2.yml@xamarin-templates
-          parameters:
-            yamlResourceName: xamarin-templates
-            dependsOn: signing
-            artifactName: nuget
-            artifactPatterns: |
-              **/signed/*.nupkg
-            artifactPath: signed
-            propsArtifactName: nuget
-            signType: Real
-
-        - job: create_artifact_statuses
-          displayName: Create GitHub Artifact Status
-          dependsOn: nuget_convert
-          timeoutInMinutes: 60
-          pool:
-            vmImage: windows-latest
-          steps:
-          - checkout: self
-
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              artifactName: nuget
-              downloadPath: $(Build.StagingDirectory)\nuget
-              patterns: |
-                **/signed/*.nupkg
-                **/*.snupkg
-                **/additional-assets.zip
-
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              artifactName: vs-msi-nugets
-              downloadPath: $(Build.StagingDirectory)\nuget
-
-          - template: templates\common\upload-vs-insertion-artifacts.yml@sdk-insertions
-            parameters:
-              githubToken: $(github--pat--vs-mobiletools-engineering-service2)
-              githubContext: $(NupkgCommitStatusName)
-              blobName: $(NupkgCommitStatusName)
-              packagePrefix: maui
-              artifactsPath: $(Build.StagingDirectory)\nuget
-              yamlResourceName: xamarin-templates
-
-          - template: templates\common\upload-vs-insertion-artifacts.yml@sdk-insertions
-            parameters:
-              githubToken: $(github--pat--vs-mobiletools-engineering-service2)
-              githubContext: $(VSDropCommitStatusName)
-              blobName: $(VSDropCommitStatusName)
-              packagePrefix: maui
-              artifactsPath: $(Build.StagingDirectory)/$(VSDropCommitStatusName)
-              yamlResourceName: xamarin-templates
-              downloadSteps:
-              - task: DownloadPipelineArtifact@2
-                inputs:
-                  artifactName: vsdrop-signed
-                  downloadPath: $(Build.StagingDirectory)/$(VSDropCommitStatusName)
-
-    - template: vs-insertion/stage/v1.yml@xamarin-templates
-      parameters:
-        dependsOn: nuget_signing
-        approvalTimeoutInMinutes: 30
-        symbolArtifactName: nuget
-        symbolArtifactPatterns: |
-          **/signed/*.nupkg
-          **/*.snupkg
-          **/additional-assets.zip
-        pushToShippingFeed: true
-        nupkgArtifactName: nuget
-        nupkgArtifactPatterns: |
-          **/signed/*.nupkg
-        msiNupkgArtifactName: vs-msi-nugets
-
-    - stage: sbom
-      displayName: 'Software Bill of Materials'
-      dependsOn: nuget_signing
-      jobs:
-      - template: compliance/sbom/job.v1.yml@xamarin-templates
-        parameters:
-          artifactNames: [ nuget, vs-msi-nugets, vsdrop-signed ]
-          artifactMap: [ nuget/signed ]                           # Use artifacts that match the filter from the signed directory and not the top-level directory for the nuget artifact
-          packageName: 'Microsoft Maui'
-          packageFilter: '*.msi;*.nupkg'
-          condition: ${{ variables.signingCondition }}
+    - template: common/sign.yml                                     # Sign only using the private server

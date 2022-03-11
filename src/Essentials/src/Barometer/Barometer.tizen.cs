@@ -1,32 +1,35 @@
+using System;
 using Tizen.Sensor;
 using TizenBarometerSensor = Tizen.Sensor.PressureSensor;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Barometer
+	public class BarometerImplementation : IBarometer
 	{
-		static TizenBarometerSensor DefaultSensor
-			=> (TizenBarometerSensor)Platform.GetDefaultSensor(SensorType.Barometer);
-
-		internal static bool IsSupported
+		bool PlatformIsSupported
 			=> TizenBarometerSensor.IsSupported;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		TizenBarometerSensor DefaultSensor
+			=> (TizenBarometerSensor)Platform.GetDefaultSensor(SensorType.Barometer);
+
+		TizenBarometerSensor sensor = null;
+
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			DefaultSensor.Interval = sensorSpeed.ToPlatform();
-			DefaultSensor.DataUpdated += DataUpdated;
-			DefaultSensor.Start();
+			sensor = DefaultSensor;
+			sensor.Interval = sensorSpeed.ToPlatform();
+			sensor.DataUpdated += DataUpdated;
+			sensor.Start();
 		}
 
-		internal static void PlatformStop()
-		{
-			DefaultSensor.DataUpdated -= DataUpdated;
-			DefaultSensor.Stop();
-		}
+		void DataUpdated(object sender, PressureSensorDataUpdatedEventArgs e)
+			=> RaiseDataChanged(new BarometerData(e.Pressure));
 
-		static void DataUpdated(object sender, PressureSensorDataUpdatedEventArgs e)
+		void PlatformStop()
 		{
-			OnChanged(new BarometerData(e.Pressure));
+			sensor.DataUpdated -= DataUpdated;
+			sensor.Stop();
+			sensor = null;
 		}
 	}
 }

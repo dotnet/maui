@@ -89,8 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_originalBackgroundView = tv.BackgroundView;
 
 					SetNativeControl(tv);
-					if (PlatformVersion.IsAtLeast(9))
-						tv.CellLayoutMarginsFollowReadableWidth = false;
+					tv.CellLayoutMarginsFollowReadableWidth = false;
 
 					_insetTracker = new KeyboardInsetTracker(tv, () => Control.Window, insets => Control.ContentInset = Control.ScrollIndicatorInsets = insets, point =>
 					{

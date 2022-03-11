@@ -42,8 +42,8 @@ namespace Microsoft.Maui.Handlers
 
 
 		// TODO MAUI: Should we remove all shadowing? 
-		IImage IImageHandler.TypedVirtualView => VirtualView;
+		IImage IImageHandler.VirtualView => VirtualView;
 
-		PlatformView IImageHandler.TypedPlatformView => PlatformView;
+		PlatformView IImageHandler.PlatformView => PlatformView;
 	}
 }

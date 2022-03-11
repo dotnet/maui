@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 			var actual = await GetRendererProperty(view, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
 
-			await expected.AssertEqualsAsync(actual);
+			expected.AssertEquals(actual);
 		}
 	}
 }

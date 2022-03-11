@@ -51,24 +51,34 @@
     </views:BasePage.Resources>
     <ScrollView>
         <Grid
-            RowDefinitions="150, *, Auto, Auto"
+            RowDefinitions="150, *, Auto"
             RowSpacing="0">
             <!-- HEADER -->
             <Image
                 Grid.Row="0"
                 Aspect="AspectFill"
-                Source="header_background"/>
+                Source="header_background.png"/>
             <Grid
                 RowSpacing="0"
                 Grid.Row="0"
                 RowDefinitions="Auto,*">
                 <Label
                     Text=".NET MAUI"
-                    Style="{StaticResource TitleStyle}"/>
+                    Style="{StaticResource TitleStyle}">
+                    <!-- 
+                    <Label.Shadow>
+                        <Shadow 
+                            Brush="White"
+                            Opacity="0.5"
+                            Radius="12"
+                            Offset="6, 6" />
+                    </Label.Shadow>
+                    -->
+                </Label>
                 <Label
                     Grid.Row="1"
                     Text="An open-source framework for building iOS, Android, macOS and Windows apps"
-                    Style="{StaticResource SubTitleStyle}"/>
+                    Style="{StaticResource SubTitleStyle}"/>     
             </Grid>
             <!-- SECTIONS -->
             <Grid
@@ -118,14 +128,6 @@
                 Grid.Row="2"
                 Text="Microsoft Corporation © 2021"
                 Style="{StaticResource FooterStyle}" />
-            <StackLayout Orientation="Horizontal" Grid.Row="3" HorizontalOptions="Center">
-                <Label
-                    Text="{OnPlatform Default='Default Platform', Android='Android', iOS='iOS', macOS='macOS', MacCatalyst='MacCatalyst', Tizen='Tizen', UWP='UWP'}"
-                    Style="{StaticResource FooterStyle}" />
-                <Label
-                    Text="{OnIdiom Default='Default Idiom', Phone='Phone', Tablet='Tablet', Desktop='Desktop', TV='TV', Watch='Watch'}"
-                    Style="{StaticResource FooterStyle}" />
-            </StackLayout>
         </Grid>
     </ScrollView>
 </views:BasePage>

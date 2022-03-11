@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		public static void MapTitle(PageHandler handler, IContentView page)
+		public static void MapTitle(IPageHandler handler, IContentView page)
 		{
 			if (handler is IPlatformViewHandler invh && invh.ViewController != null)
 			{

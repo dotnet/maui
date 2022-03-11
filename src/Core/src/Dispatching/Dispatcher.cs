@@ -16,5 +16,17 @@ namespace Microsoft.Maui.Dispatching
 
 			return DispatchImplementation(action);
 		}
+
+		public bool DispatchDelayed(TimeSpan delay, Action action)
+		{
+			_ = action ?? throw new ArgumentNullException(nameof(action));
+
+			return DispatchDelayedImplementation(delay, action);
+		}
+
+		public IDispatcherTimer CreateTimer()
+		{
+			return CreateTimerImplementation();
+		}
 	}
 }

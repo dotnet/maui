@@ -25,7 +25,7 @@ namespace Microsoft.Maui.UnitTests
 
 		public double Opacity { get; set; }
 
-		public Rectangle Frame { get; set; }
+		public Rect Frame { get; set; }
 
 		public IViewHandler Handler { get; set; }
 
@@ -85,19 +85,19 @@ namespace Microsoft.Maui.UnitTests
 
 		public int ZIndex { get; set; }
 
-		public Size Arrange(Rectangle bounds) => Size.Zero;
+		public bool InputTransparent { get; set; }
+
+		public Size Arrange(Rect bounds) => Size.Zero;
 
 		public void InvalidateArrange() { }
 
 		public void InvalidateMeasure() { }
 
-		public Size Measure(double widthConstraint, double heightConstraint) =>
-			Size.Zero; 
-		
 		public bool Focus() => false;
 
-		public void Unfocus()
-		{
-		}
+		public void Unfocus() { }
+
+		public Size Measure(double widthConstraint, double heightConstraint) =>
+			Size.Zero;
 	}
 }

@@ -43,28 +43,28 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = handler.TypedVirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			handler.TypedPlatformView.UpdateContent();
+			handler.PlatformView.UpdateContent();
 		}
 
 		public static void MapIsEnabled(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
-			handler.TypedPlatformView.UpdateIsSwipeEnabled(swipeView.IsEnabled);
+			handler.PlatformView.UpdateIsSwipeEnabled(swipeView.IsEnabled);
 			ViewHandler.MapIsEnabled(handler, swipeView);
 		}
 
 		public static void MapBackground(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
 			if (swipeView.Background == null)
-				handler.TypedPlatformView.Control?.SetWindowBackground();
+				handler.PlatformView.Control?.SetWindowBackground();
 			else
 				ViewHandler.MapBackground(handler, swipeView);
 		}
 
 		public static void MapSwipeTransitionMode(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
-			handler.TypedPlatformView.UpdateSwipeTransitionMode(swipeView.SwipeTransitionMode);
+			handler.PlatformView.UpdateSwipeTransitionMode(swipeView.SwipeTransitionMode);
 		}
 
 		public static void MapRequestOpen(ISwipeViewHandler handler, ISwipeView swipeView, object? args)
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			handler.TypedPlatformView.OnOpenRequested(request);
+			handler.PlatformView.OnOpenRequested(request);
 		}
 
 		public static void MapRequestClose(ISwipeViewHandler handler, ISwipeView swipeView, object? args)
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			handler.TypedPlatformView.OnCloseRequested(request);
+			handler.PlatformView.OnCloseRequested(request);
 		}
 	}
 }

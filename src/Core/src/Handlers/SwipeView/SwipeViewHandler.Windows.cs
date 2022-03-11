@@ -22,13 +22,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = handler.TypedVirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
 
-			if (handler.TypedVirtualView.PresentedContent is not IView presentedView)
+			if (handler.VirtualView.PresentedContent is not IView presentedView)
 				return;
 
-			handler.TypedPlatformView.Content = presentedView.ToPlatform(handler.MauiContext);
+			handler.PlatformView.Content = presentedView.ToPlatform(handler.MauiContext);
 		}
 
 		public static void MapSwipeTransitionMode(ISwipeViewHandler handler, ISwipeView swipeView)
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapRequestClose(ISwipeViewHandler handler, ISwipeView swipeView, object? args)
 		{
-			handler.TypedPlatformView.Close();
+			handler.PlatformView.Close();
 		}
 
 
@@ -76,28 +76,28 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapLeftItems(ISwipeViewHandler handler, ISwipeView view)
 		{
-			if (!handler.TypedPlatformView.IsLoaded)
+			if (!handler.PlatformView.IsLoaded)
 				return;
 
-			UpdateSwipeItems(SwipeDirection.Left, handler, view, (items) => handler.TypedPlatformView.LeftItems = items, view.LeftItems, handler.TypedPlatformView.LeftItems);
+			UpdateSwipeItems(SwipeDirection.Left, handler, view, (items) => handler.PlatformView.LeftItems = items, view.LeftItems, handler.PlatformView.LeftItems);
 		}
 
 		public static void MapTopItems(ISwipeViewHandler handler, ISwipeView view)
 		{
-			UpdateSwipeItems(SwipeDirection.Up, handler, view, (items) => handler.TypedPlatformView.TopItems = items, view.TopItems, handler.TypedPlatformView.TopItems);
+			UpdateSwipeItems(SwipeDirection.Up, handler, view, (items) => handler.PlatformView.TopItems = items, view.TopItems, handler.PlatformView.TopItems);
 		}
 
 		public static void MapRightItems(ISwipeViewHandler handler, ISwipeView view)
 		{
-			if (!handler.TypedPlatformView.IsLoaded)
+			if (!handler.PlatformView.IsLoaded)
 				return;
 
-			UpdateSwipeItems(SwipeDirection.Right, handler, view, (items) => handler.TypedPlatformView.RightItems = items, view.RightItems, handler.TypedPlatformView.RightItems);
+			UpdateSwipeItems(SwipeDirection.Right, handler, view, (items) => handler.PlatformView.RightItems = items, view.RightItems, handler.PlatformView.RightItems);
 		}
 
 		public static void MapBottomItems(ISwipeViewHandler handler, ISwipeView view)
 		{
-			UpdateSwipeItems(SwipeDirection.Down, handler, view, (items) => handler.TypedPlatformView.BottomItems = items, view.BottomItems, handler.TypedPlatformView.BottomItems);
+			UpdateSwipeItems(SwipeDirection.Down, handler, view, (items) => handler.PlatformView.BottomItems = items, view.BottomItems, handler.PlatformView.BottomItems);
 		}
 
 		static void UpdateSwipeItems(
@@ -120,8 +120,8 @@ namespace Microsoft.Maui.Handlers
 				//https://github.com/microsoft/microsoft-ui-xaml/issues/6571			
 			}
 
-			UpdateSwipeMode(swipeItems, view, handler.TypedPlatformView);
-			UpdateSwipeBehaviorOnInvoked(swipeItems, view, handler.TypedPlatformView);
+			UpdateSwipeMode(swipeItems, view, handler.PlatformView);
+			UpdateSwipeBehaviorOnInvoked(swipeItems, view, handler.PlatformView);
 		}
 
 		static void UpdateSwipeMode(ISwipeItems swipeItems, ISwipeView swipeView, WSwipeControl swipeControl)
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Handlers
 		static WSwipeItems CreateSwipeItems(SwipeDirection swipeDirection, ISwipeViewHandler handler)
 		{
 			var swipeItems = new WSwipeItems();
-			var swipeView = handler.TypedVirtualView;
+			var swipeView = handler.VirtualView;
 
 			ISwipeItems? items = null;
 

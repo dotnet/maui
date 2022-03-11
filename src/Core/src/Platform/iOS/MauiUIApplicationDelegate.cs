@@ -8,7 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public abstract class MauiUIApplicationDelegate : UIResponder, IUIApplicationDelegate, IPlatformApplication
+	public abstract partial class MauiUIApplicationDelegate : UIResponder, IUIApplicationDelegate, IPlatformApplication
 	{
 		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
 		internal const string GetConfigurationSelectorName = "application:configurationForConnectingSceneSession:options:";
@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 		IMauiContext _applicationContext = null!;
 
 		protected MauiUIApplicationDelegate() : base()
-		{
+		{	
 			Current = this;
 			IPlatformApplication.Current = this;
 		}

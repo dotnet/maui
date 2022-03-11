@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					emptyView.EmptyViewVisibility = WVisibility.Visible;
 
 					if (PlatformView.ActualWidth >= 0 && PlatformView.ActualHeight >= 0)
-						_formsEmptyView?.Layout(new Rectangle(0, 0, PlatformView.ActualWidth, PlatformView.ActualHeight));
+						_formsEmptyView?.Layout(new Rect(0, 0, PlatformView.ActualWidth, PlatformView.ActualHeight));
 				}
 
 				_emptyViewDisplayed = true;

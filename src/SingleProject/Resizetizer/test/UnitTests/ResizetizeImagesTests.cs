@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				};
 
 			protected ITaskItem GetCopiedResource(ResizetizeImages task, string path) =>
-				task.CopiedResources.Single(c => c.ItemSpec.Replace("\\", "/").EndsWith(path));
+				task.CopiedResources.Single(c => c.ItemSpec.Replace('\\', '/').EndsWith(path, StringComparison.Ordinal));
 
 			protected void AssertFileSize(string file, int width, int height)
 			{
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var content = File.ReadAllText(file);
 
 				foreach (var snip in snippet)
-					Assert.Contains(snip, content);
+					Assert.Contains(snip, content, StringComparison.Ordinal);
 			}
 		}
 

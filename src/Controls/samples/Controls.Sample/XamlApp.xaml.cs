@@ -19,6 +19,8 @@ namespace Maui.Controls.Sample
 
 			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
 
+			Debug.WriteLine($"Current app theme: {RequestedTheme}");
+
 			RequestedThemeChanged += (sender, args) =>
 			{
 				// Respond to the theme change
@@ -47,7 +49,6 @@ namespace Maui.Controls.Sample
 		protected override Window CreateWindow(IActivationState activationState)
 		{
 			var window = new Window(Services.GetRequiredService<Page>());
-
 			window.Title = ".NET MAUI Samples Gallery";
 			return window;
 		}

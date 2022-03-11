@@ -72,7 +72,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the bounds of the View within its container.
 		/// </summary>
-		Rectangle Frame { get; set; }
+		Rect Frame { get; set; }
 
 		/// <summary>
 		/// Gets the specified width of the IView. 
@@ -110,6 +110,16 @@ namespace Microsoft.Maui
 		Thickness Margin { get; }
 
 		/// <summary>
+		/// Gets the current desired Size of this View. 
+		/// </summary>
+		Size DesiredSize { get; }
+
+		/// <summary>
+		/// Determines the drawing order of this IView within an ILayout; higher z-indexes will draw over lower z-indexes.
+		/// </summary>
+		int ZIndex { get; }
+
+		/// <summary>
 		/// Gets or sets the View Handler of the View.
 		/// </summary>
 		new IViewHandler? Handler { get; set; }
@@ -119,7 +129,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="bounds">The size that the parent computes for the child element.</param>
 		/// <returns>Return the actual arranged Size for this element.</returns>
-		Size Arrange(Rectangle bounds);
+		Size Arrange(Rect bounds);
 
 		/// <summary>
 		/// Updates the size of an View.
@@ -128,11 +138,6 @@ namespace Microsoft.Maui
 		/// <param name="heightConstraint">The height that a parent element can allocate a child element.</param>
 		/// <returns>Return the desired Size for this element.</returns>
 		Size Measure(double widthConstraint, double heightConstraint);
-
-		/// <summary>
-		/// Gets the current desired Size of this View. 
-		/// </summary>
-		Size DesiredSize { get; }
 
 		/// <summary>
 		/// Signals that the current measure value of this View is no longer valid and must be recomputed during the next measure pass.
@@ -145,11 +150,6 @@ namespace Microsoft.Maui
 		void InvalidateArrange();
 
 		/// <summary>
-		/// Determines the drawing order of this IView within an ILayout; higher z-indexes will draw over lower z-indexes.
-		/// </summary>
-		int ZIndex { get; }
-
-		/// <summary>
 		/// Attempts to set focus to this View.
 		/// </summary>
 		/// <returns>true if the keyboard focus was set to this element; false if the call to this method did not force a focus change.</returns>
@@ -159,5 +159,10 @@ namespace Microsoft.Maui
 		/// Unsets focus to this View.
 		/// </summary>
 		void Unfocus();
+
+		/// <summary>
+		/// Gets a value indicating whether this element should be involved in the user interaction cycle.
+		/// </summary>
+		bool InputTransparent { get; }
 	}
 }

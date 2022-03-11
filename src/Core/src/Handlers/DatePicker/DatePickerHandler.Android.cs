@@ -1,6 +1,8 @@
-﻿using Android.App;
+﻿using System;
+using Android.App;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -32,6 +34,8 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
 			base.ConnectHandler(platformView);
+			
+			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 
 			SetupDefaults(platformView);
 		}
@@ -46,10 +50,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog != null)
 			{
+				_dialog.CancelEvent -= OnCancelButtonClicked;
 				_dialog.Hide();
 				_dialog.Dispose();
 				_dialog = null;
 			}
+			
+			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -69,46 +76,50 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// This is a Android-specific mapping
-		public static void MapBackground(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateBackground(datePicker, handler._defaultBackground);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateBackground(datePicker, platformHandler._defaultBackground);
 		}
 
-		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateFormat(datePicker);
 		}
 
-		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateDate(datePicker);
 		}
 
-		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateMinimumDate(datePicker, handler._dialog);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._dialog);
 		}
 
-		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateMaximumDate(datePicker, handler._dialog);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._dialog);
 		}
 
-		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateCharacterSpacing(datePicker);
 		}
 
-		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateTextColor(datePicker, handler._defaultTextColors);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateTextColor(datePicker, platformHandler._defaultTextColors);
 		}
 
 		void ShowPickerDialog()
@@ -130,12 +141,32 @@ namespace Microsoft.Maui.Handlers
 			else
 				_dialog.UpdateDate(year, month, day);
 
+			_dialog.CancelEvent += OnCancelButtonClicked;
+
 			_dialog.Show();
 		}
 
 		void HidePickerDialog()
 		{
 			_dialog?.Hide();
+		}
+
+		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+		{
+			DatePickerDialog? currentDialog = _dialog;
+
+			if (currentDialog != null && currentDialog.IsShowing)
+			{
+				currentDialog.Dismiss();
+				currentDialog.CancelEvent -= OnCancelButtonClicked;
+
+				ShowPickerDialog(currentDialog.DatePicker.Year, currentDialog.DatePicker.Month, currentDialog.DatePicker.DayOfMonth);
+			}
+		}
+
+		void OnCancelButtonClicked(object? sender, EventArgs e)
+		{
+			// TODO: Update IsFocused Property
 		}
 	}
 }

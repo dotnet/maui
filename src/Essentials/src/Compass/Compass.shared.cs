@@ -1,75 +1,91 @@
 using System;
+using System.ComponentModel;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface ICompass
+	{
+		bool IsSupported { get; }
+
+		bool IsMonitoring { get; }
+
+		SensorSpeed SensorSpeed { get; }
+
+		void Start(SensorSpeed sensorSpeed);
+
+		void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter);
+		
+		void Stop();
+
+		event EventHandler<CompassChangedEventArgs> ReadingChanged;
+	}
+
+	public interface IPlatformCompass
+	{
+#if IOS || MACCATALYST
+		bool ShouldDisplayHeadingCalibration { get; set; }
+#endif
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Compass']/Docs" />
 	public static partial class Compass
 	{
-		static bool useSyncContext;
-
-		public static event EventHandler<CompassChangedEventArgs> ReadingChanged;
+		public static event EventHandler<CompassChangedEventArgs> ReadingChanged
+		{
+			add => Current.ReadingChanged += value;
+			remove => Current.ReadingChanged -= value;
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
-		public static bool IsMonitoring { get; private set; }
+		public static bool IsSupported 
+			=> Current.IsSupported;
+
+		public static bool IsMonitoring
+			=> Current.IsMonitoring;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][0]/Docs" />
 		public static void Start(SensorSpeed sensorSpeed) => Start(sensorSpeed, true);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][1]/Docs" />
 		public static void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
-		{
-			if (!IsSupported)
-				throw new FeatureNotSupportedException();
-
-			if (IsMonitoring)
-				throw new InvalidOperationException("Compass has already been started.");
-
-			IsMonitoring = true;
-			useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
-
-			try
-			{
-				PlatformStart(sensorSpeed, applyLowPassFilter);
-			}
-			catch
-			{
-				IsMonitoring = false;
-				throw;
-			}
-		}
+			=> Current.Start(sensorSpeed, applyLowPassFilter);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop']/Docs" />
 		public static void Stop()
+			=> Current.Stop();
+
+#if IOS || MACCATALYST
+		public static bool ShouldDisplayHeadingCalibration
 		{
-			if (!IsSupported)
-				throw new FeatureNotSupportedException();
-
-			if (!IsMonitoring)
-				return;
-
-			IsMonitoring = false;
-
-			try
+			get
 			{
-				PlatformStop();
+				if (Current is IPlatformCompass c)
+					return c.ShouldDisplayHeadingCalibration;
+				return false;
 			}
-			catch
+			set
 			{
-				IsMonitoring = true;
-				throw;
+				if (Current is IPlatformCompass c)
+					c.ShouldDisplayHeadingCalibration = value;
 			}
 		}
+#endif
 
-		internal static void OnChanged(CompassData reading) =>
-			OnChanged(new CompassChangedEventArgs(reading));
+#nullable enable
+		static ICompass? currentImplementation;
+#nullable disable
 
-		internal static void OnChanged(CompassChangedEventArgs e)
-		{
-			if (useSyncContext)
-				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
-			else
-				ReadingChanged?.Invoke(null, e);
-		}
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static ICompass Current =>
+			currentImplementation ??= new CompassImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#nullable enable
+		public static void SetCurrent(ICompass? implementation) =>
+			currentImplementation = implementation;
+#nullable disable
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/CompassChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.CompassChangedEventArgs']/Docs" />
@@ -114,5 +130,78 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='ToString']/Docs" />
 		public override string ToString() =>
 			$"{nameof(HeadingMagneticNorth)}: {HeadingMagneticNorth}";
+	}
+}
+
+namespace Microsoft.Maui.Essentials.Implementations
+{
+	public partial class CompassImplementation : ICompass
+	{
+		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
+
+		public event EventHandler<CompassChangedEventArgs> ReadingChanged;
+
+		public bool IsSupported
+			=> PlatformIsSupported;
+
+		public bool IsMonitoring { get; private set; }
+
+		public SensorSpeed SensorSpeed { get; private set; }
+
+		public void Start(SensorSpeed sensorSpeed) => Start(sensorSpeed, true);
+
+		public void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
+		{
+			if (!PlatformIsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (IsMonitoring)
+				throw new InvalidOperationException("Compass has already been started.");
+
+			IsMonitoring = true;
+			
+
+			try
+			{
+				PlatformStart(sensorSpeed, applyLowPassFilter);
+			}
+			catch
+			{
+				IsMonitoring = false;
+				throw;
+			}
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop']/Docs" />
+		public void Stop()
+		{
+			if (!PlatformIsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (!IsMonitoring)
+				return;
+
+			IsMonitoring = false;
+
+			try
+			{
+				PlatformStop();
+			}
+			catch
+			{
+				IsMonitoring = true;
+				throw;
+			}
+		}
+
+		internal void RaiseReadingChanged(CompassData data)
+		{
+			var args = new CompassChangedEventArgs(data);
+
+			if (UseSyncContext)
+				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, args));
+			else
+				ReadingChanged?.Invoke(null, args);
+		}
 	}
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Threading;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.UnitTests;
@@ -18,16 +19,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 			_defaultUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
-			Device.PlatformServices = new MockPlatformServices();
+			MockPlatformSizeService.Current?.Reset();
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			DeviceDisplay.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
+			AppInfo.SetCurrent(null);
 		}
 
 		[TearDown]
 		public virtual void TearDown()
 		{
-			Device.PlatformServices = null;
+			MockPlatformSizeService.Current?.Reset();
+			AppInfo.SetCurrent(null);
 			DeviceDisplay.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;

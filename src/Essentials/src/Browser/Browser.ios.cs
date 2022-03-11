@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 					await vc.PresentViewControllerAsync(sfViewController, true);
 					break;
 				case BrowserLaunchMode.External:
-					return await Launcher.PlatformOpenAsync(uri);
+					return await Launcher.OpenAsync(uri);
 			}
 
 			return true;

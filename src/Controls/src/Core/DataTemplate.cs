@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.Maui.Controls.Internals;
 
@@ -20,7 +21,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
-		public DataTemplate(Type type) : base(type)
+		public DataTemplate(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type) 
+			: base(type)
 		{
 			_id = Interlocked.Increment(ref idCounter);
 			_idString = type.FullName;

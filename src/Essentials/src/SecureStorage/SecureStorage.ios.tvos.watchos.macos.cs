@@ -5,14 +5,13 @@ using System.Threading.Tasks;
 using Foundation;
 using Security;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class SecureStorage
+	public partial class SecureStorageImplementation : ISecureStorage, IPlatformSecureStorage
 	{
-		public static SecAccessible DefaultAccessible { get; set; } =
-			SecAccessible.AfterFirstUnlock;
+		public SecAccessible DefaultAccessible { get; set; }
 
-		public static Task SetAsync(string key, string value, SecAccessible accessible)
+		public Task SetAsync(string key, string value, SecAccessible accessible)
 		{
 			if (string.IsNullOrWhiteSpace(key))
 				throw new ArgumentNullException(nameof(key));
@@ -26,7 +25,7 @@ namespace Microsoft.Maui.Essentials
 			return Task.CompletedTask;
 		}
 
-		static Task<string> PlatformGetAsync(string key)
+		Task<string> PlatformGetAsync(string key)
 		{
 			var kc = new KeyChain(DefaultAccessible);
 			var value = kc.ValueForKey(key, Alias);
@@ -34,17 +33,17 @@ namespace Microsoft.Maui.Essentials
 			return Task.FromResult(value);
 		}
 
-		static Task PlatformSetAsync(string key, string data) =>
+		Task PlatformSetAsync(string key, string data) =>
 			SetAsync(key, data, DefaultAccessible);
 
-		static bool PlatformRemove(string key)
+		bool PlatformRemove(string key)
 		{
 			var kc = new KeyChain(DefaultAccessible);
 
 			return kc.Remove(key, Alias);
 		}
 
-		static void PlatformRemoveAll()
+		void PlatformRemoveAll()
 		{
 			var kc = new KeyChain(DefaultAccessible);
 

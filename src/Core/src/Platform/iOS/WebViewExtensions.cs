@@ -45,8 +45,6 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateReload(this WKWebView platformWebView, IWebView webView)
 		{
-			// TODO: Sync Cookies
-
 			platformWebView?.Reload();
 		}
 

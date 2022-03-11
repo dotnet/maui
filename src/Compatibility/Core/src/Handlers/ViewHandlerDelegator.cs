@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			VisualElementRenderer<TElement>.GetDesiredSize(_viewHandler, widthConstraint, heightConstraint, minimumSize);
 #endif
 
-		public void PlatformArrange(Rectangle rect) =>
+		public void PlatformArrange(Rect rect) =>
 			_viewHandler.PlatformArrangeHandler(rect);
 
 		public void SetVirtualView(

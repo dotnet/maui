@@ -11,15 +11,15 @@ namespace Microsoft.Maui.Controls
 		// As such the internals of how it keeps shapes is hidden, so that future internal changes can occur to support shapes
 		// such as circles if required, without affecting anything else.
 
-		IReadOnlyList<Rectangle> Regions { get; }
+		IReadOnlyList<Rect> Regions { get; }
 		readonly Thickness? _inflation;
 
-		Region(IList<Rectangle> positions) : this()
+		Region(IList<Rect> positions) : this()
 		{
-			Regions = new ReadOnlyCollection<Rectangle>(positions);
+			Regions = new ReadOnlyCollection<Rect>(positions);
 		}
 
-		Region(IList<Rectangle> positions, Thickness inflation) : this(positions)
+		Region(IList<Rect> positions, Thickness inflation) : this(positions)
 		{
 			_inflation = inflation;
 		}
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='FromLines']/Docs" />
 		public static Region FromLines(double[] lineHeights, double maxWidth, double startX, double endX, double startY)
 		{
-			var positions = new List<Rectangle>();
+			var positions = new List<Rect>();
 			var endLine = lineHeights.Length - 1;
 			var lineHeightTotal = startY;
 
@@ -35,18 +35,18 @@ namespace Microsoft.Maui.Controls
 				if (endLine != 0) // MultiLine
 				{
 					if (i == 0) // First Line
-						positions.Add(new Rectangle(startX, lineHeightTotal, maxWidth - startX, lineHeights[i]));
+						positions.Add(new Rect(startX, lineHeightTotal, maxWidth - startX, lineHeights[i]));
 
 					else if (i != endLine) // Middle Line
-						positions.Add(new Rectangle(0, lineHeightTotal, maxWidth, lineHeights[i]));
+						positions.Add(new Rect(0, lineHeightTotal, maxWidth, lineHeights[i]));
 
 					else // End Line
-						positions.Add(new Rectangle(0, lineHeightTotal, endX, lineHeights[i]));
+						positions.Add(new Rect(0, lineHeightTotal, endX, lineHeights[i]));
 
 					lineHeightTotal += lineHeights[i];
 				}
 				else // SingleLine
-					positions.Add(new Rectangle(startX, lineHeightTotal, endX - startX, lineHeights[i]));
+					positions.Add(new Rect(startX, lineHeightTotal, endX - startX, lineHeights[i]));
 
 			return new Region(positions);
 		}
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls
 			if (Regions == null)
 				return this;
 
-			Rectangle[] rectangles = new Rectangle[Regions.Count];
+			Rect[] rectangles = new Rect[Regions.Count];
 			for (int i = 0; i < Regions.Count; i++)
 			{
 				var region = Regions[i];

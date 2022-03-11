@@ -8,20 +8,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class DataTemplateSelectorTests : BaseTestFixture
 	{
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
 		class TemplateOne : DataTemplate
 		{
 			public TemplateOne() : base(typeof(ViewCell))

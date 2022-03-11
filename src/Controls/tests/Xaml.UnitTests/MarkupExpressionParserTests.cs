@@ -349,24 +349,24 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		public int FontSize { get; set; }
 
-		[TestCase("{OnPlatform 20, Android=23}", Device.Android, 23)]
-		[TestCase("{OnPlatform Android=20, iOS=25}", Device.iOS, 25)]
-		[TestCase("{OnPlatform Android=20, GTK=25}", Device.GTK, 25)]
-		[TestCase("{OnPlatform Android=20, macOS=25}", Device.macOS, 25)]
-		[TestCase("{OnPlatform Android=20, Tizen=25}", Device.Tizen, 25)]
-		[TestCase("{OnPlatform Android=20, UWP=25}", Device.UWP, 25)]
-		[TestCase("{OnPlatform Android=20, WPF=25}", Device.WPF, 25)]
-		[TestCase("{OnPlatform 20}", Device.iOS, 20)]
-		[TestCase("{OnPlatform 20}", Device.GTK, 20)]
-		[TestCase("{OnPlatform 20}", Device.macOS, 20)]
-		[TestCase("{OnPlatform 20}", Device.Tizen, 20)]
-		[TestCase("{OnPlatform 20}", Device.UWP, 20)]
-		[TestCase("{OnPlatform 20}", Device.WPF, 20)]
+		[TestCase("{OnPlatform 20, Android=23}", "Android", 23)]
+		[TestCase("{OnPlatform Android=20, iOS=25}", "iOS", 25)]
+		[TestCase("{OnPlatform Android=20, MacCatalyst=25}", "MacCatalyst", 25)]
+		[TestCase("{OnPlatform Android=20, Tizen=25}", "Tizen", 25)]
+		[TestCase("{OnPlatform Android=20, WinUI=25}", "WinUI", 25)]
+		[TestCase("{OnPlatform Android=20, UWP=25}", "WinUI", 25)]
+		[TestCase("{OnPlatform Android=20, WinUI=25, UWP=20}", "WinUI", 25)]
+		[TestCase("{OnPlatform Android=20, UWP=25}", "UWP", 25)]
+		[TestCase("{OnPlatform 20}", "Android", 20)]
+		[TestCase("{OnPlatform 20}", "iOS", 20)]
+		[TestCase("{OnPlatform 20}", "Tizen", 20)]
+		[TestCase("{OnPlatform 20}", "WinUI", 20)]
+		[TestCase("{OnPlatform 20}", "UWP", 20)]
 		[TestCase("{OnPlatform 20}", "Foo", 20)]
 		[TestCase("{OnPlatform Android=23, Default=20}", "Foo", 20)]
 		public void OnPlatformExtension(string markup, string platform, int expected)
 		{
-			mockDeviceInfo.RuntimePlatform = platform;
+			mockDeviceInfo.Platform = DevicePlatform.Create(platform);
 
 			var actual = (new MarkupExtensionParser()).ParseExpression(ref markup, new Internals.XamlServiceProvider(null, null)
 			{
@@ -380,16 +380,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.AreEqual(expected, actual);
 		}
 
-		[TestCase("{OnIdiom Phone=23, Tablet=25, Default=20}", TargetIdiom.Phone, 23)]
-		[TestCase("{OnIdiom Phone=23, Tablet=25, Default=20}", TargetIdiom.Tablet, 25)]
-		[TestCase("{OnIdiom 20, Phone=23, Tablet=25}", TargetIdiom.Desktop, 20)]
-		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", TargetIdiom.Desktop, 26)]
-		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", TargetIdiom.TV, 30)]
-		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", TargetIdiom.Watch, 10)]
-		[TestCase("{OnIdiom Phone=23}", TargetIdiom.Desktop, default(int))]
-		public void OnIdiomExtension(string markup, TargetIdiom idiom, int expected)
+		[TestCase("{OnIdiom Phone=23, Tablet=25, Default=20}", "Phone", 23)]
+		[TestCase("{OnIdiom Phone=23, Tablet=25, Default=20}", "Tablet", 25)]
+		[TestCase("{OnIdiom 20, Phone=23, Tablet=25}", "Desktop", 20)]
+		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Desktop", 26)]
+		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "TV", 30)]
+		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Watch", 10)]
+		[TestCase("{OnIdiom Phone=23}", "Desktop", default(int))]
+		public void OnIdiomExtension(string markup, string idiom, int expected)
 		{
-			mockDeviceInfo.TargetIdiom = idiom;
+			mockDeviceInfo.Idiom = DeviceIdiom.Create(idiom);
 
 			var actual = (new MarkupExtensionParser()).ParseExpression(ref markup, new Internals.XamlServiceProvider(null, null)
 			{

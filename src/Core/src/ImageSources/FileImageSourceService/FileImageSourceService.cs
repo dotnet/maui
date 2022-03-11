@@ -6,16 +6,13 @@ namespace Microsoft.Maui
 	public partial class FileImageSourceService : ImageSourceService, IImageSourceService<IFileImageSource>
 	{
 		public FileImageSourceService()
-			: this(null, null)
+			: this(null)
 		{
 		}
 
-		public FileImageSourceService(IImageSourceServiceConfiguration? configuration = null, ILogger<FileImageSourceService>? logger = null)
+		public FileImageSourceService(ILogger<FileImageSourceService>? logger = null)
 			: base(logger)
 		{
-			Configuration = configuration;
 		}
-
-		public IImageSourceServiceConfiguration? Configuration { get; }
 	}
 }

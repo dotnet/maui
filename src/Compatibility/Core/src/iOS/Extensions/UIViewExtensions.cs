@@ -75,23 +75,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 						view.AddObserver(nativePropertyListener, key, Foundation.NSKeyValueObservingOptions.New, IntPtr.Zero);
 					}
 				}
-#if __MOBILE__
-				catch (Foundation.MonoTouchException ex)
+				catch (ObjCRuntime.ObjCException ex) when (ex.Name == "NSUnknownKeyException")
 				{
 					nativePropertyListener = null;
-					if (ex.Name == "NSUnknownKeyException")
-					{
-						System.Diagnostics.Debug.WriteLine("KVO not supported, try specify a UpdateSourceEventName instead.");
-						return;
-					}
-					throw ex;
+					System.Diagnostics.Debug.WriteLine("KVO not supported, try specify a UpdateSourceEventName instead.");
+					return;
 				}
-#else
-				catch (Exception ex)
-				{
-					throw ex;
-				}
-#endif
 			}
 
 			PlatformBindingHelpers.SetBinding(view, propertyName, bindingBase, nativePropertyListener);

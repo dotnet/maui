@@ -5,7 +5,7 @@ namespace Maui.Controls.Sample.Controls
 {
 	class BordelessEntryHandler : EntryHandler
 	{
-		public static PropertyMapper<BordelessEntry, BordelessEntryHandler> BorderlessEntryMapper = new PropertyMapper<BordelessEntry, BordelessEntryHandler>(EntryHandler.EntryMapper)
+		public static PropertyMapper<BordelessEntry, BordelessEntryHandler> BorderlessEntryMapper = new PropertyMapper<BordelessEntry, BordelessEntryHandler>(EntryHandler.Mapper)
 		{
 			["Border"] = MapBorder
 		};

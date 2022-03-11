@@ -320,7 +320,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		AView? IPlatformViewHandler.ContainerView => this;
 
-		void IViewHandler.PlatformArrange(Rectangle rect) =>
+		void IViewHandler.PlatformArrange(Graphics.Rect rect) =>
 			this.PlatformArrangeHandler(rect);
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext) =>

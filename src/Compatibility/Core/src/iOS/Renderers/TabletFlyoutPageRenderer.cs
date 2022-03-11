@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetElementSize(Size size)
 		{
-			Element.Layout(new Rectangle(Element.X, Element.Width, size.Width, size.Height));
+			Element.Layout(new Rect(Element.X, Element.Width, size.Width, size.Height));
 		}
 
 		public UIViewController ViewController
@@ -283,14 +283,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_flyoutWidth = (nfloat)Math.Max(_flyoutWidth, flyoutBounds.Width);
 
 				if (!flyoutBounds.IsEmpty)
-					FlyoutPageController.FlyoutBounds = new Rectangle(0, 0, _flyoutWidth, flyoutBounds.Height);
+					FlyoutPageController.FlyoutBounds = new Rect(0, 0, _flyoutWidth, flyoutBounds.Height);
 			}
 
 			if (layoutDetails)
 			{
 				var detailsBounds = _detailController.View.Frame;
 				if (!detailsBounds.IsEmpty)
-					FlyoutPageController.DetailBounds = new Rectangle(0, 0, detailsBounds.Width, detailsBounds.Height);
+					FlyoutPageController.DetailBounds = new Rect(0, 0, detailsBounds.Width, detailsBounds.Height);
 			}
 
 			if (_previousViewDidLayoutSize == CGSize.Empty)

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected override UITextField CreateNativeControl()
 		{
-			var textField = new UITextField(RectangleF.Zero);
+			var textField = new UITextField(CGRect.Empty);
 			textField.BorderStyle = UITextBorderStyle.RoundedRect;
 			textField.ClipsToBounds = true;
 			return textField;

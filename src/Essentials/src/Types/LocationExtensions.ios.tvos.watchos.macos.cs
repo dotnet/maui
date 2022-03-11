@@ -55,13 +55,10 @@ namespace Microsoft.Maui.Essentials
 
 		internal static CLAuthorizationStatus GetAuthorizationStatus(this CLLocationManager locationManager)
 		{
-#if __MACOS__
-            if (DeviceInfo.Version >= new Version(11, 0))
-#elif __WATCHOS__
-            if (Platform.HasOSVersion(7, 0))
-#else
-			if (Platform.HasOSVersion(14, 0))
-#endif
+			if (OperatingSystem.IsIOSVersionAtLeast(14, 0) ||
+				OperatingSystem.IsMacOSVersionAtLeast(11, 0) ||
+				OperatingSystem.IsWatchOSVersionAtLeast(7, 0) ||
+				OperatingSystem.IsTvOSVersionAtLeast(14, 0))
 			{
 				// return locationManager.AuthorizationStatus;
 

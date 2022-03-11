@@ -1,16 +1,22 @@
 using System;
 using AudioToolbox;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Vibration
+	public partial class VibrationImplementation : IVibration
 	{
-		internal static bool IsSupported => true;
+		public bool IsSupported => true;
 
-		static void PlatformVibrate(TimeSpan duration) =>
+		public void Vibrate() 
+			=> Vibrate(TimeSpan.FromMilliseconds(500));
+
+		public void Vibrate(double duration) 
+			=> Vibrate(TimeSpan.FromMilliseconds(duration));
+
+		public void Vibrate(TimeSpan duration) =>
 			SystemSound.Vibrate.PlaySystemSound();
 
-		static void PlatformCancel()
+		public void Cancel()
 		{
 		}
 	}

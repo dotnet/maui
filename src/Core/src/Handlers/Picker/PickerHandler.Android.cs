@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using Android.App;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
@@ -23,6 +24,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange += OnFocusChange;
 			platformView.Click += OnClick;
 
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
+
 			base.ConnectHandler(platformView);
 
 			SetupDefaults(platformView);
@@ -32,6 +36,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.FocusChange -= OnFocusChange;
 			platformView.Click -= OnClick;
+
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged -= OnRowsCollectionChanged;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -44,51 +51,51 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// This is a Android-specific mapping
-		public static void MapBackground(PickerHandler handler, IPicker picker)
+		public static void MapBackground(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateBackground(picker, s_defaultBackground);
 		}
 
-		public static void MapReload(PickerHandler handler, IPicker picker, object? args) => handler.Reload();
+		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
-		public static void MapTitle(PickerHandler handler, IPicker picker)
+		public static void MapTitle(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateTitle(picker);
 		}
 
-		public static void MapTitleColor(PickerHandler handler, IPicker picker)
+		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateTitleColor(picker, s_defaultTitleColors);
 		}
 
-		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
+		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateSelectedIndex(picker);
 		}
 
-		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker)
+		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateCharacterSpacing(picker);
 		}
 
-		public static void MapFont(PickerHandler handler, IPicker picker)
+		public static void MapFont(IPickerHandler handler, IPicker picker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(picker, fontManager);
 		}
 
-		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
+		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment);
 		}
 
-		public static void MapTextColor(PickerHandler handler, IPicker picker)
+		public static void MapTextColor(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView.UpdateTextColor(picker, s_defaultTextColors);
 		}
 
-		public static void MapVerticalTextAlignment(PickerHandler handler, IPicker picker)
+		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 		}
@@ -159,12 +166,17 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void Reload()
+		void OnRowsCollectionChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || PlatformView == null)
+			Reload(this);
+		}
+
+		static void Reload(IPickerHandler handler)
+		{
+			if (handler.VirtualView == null || handler.PlatformView == null)
 				return;
 
-			PlatformView.UpdatePicker(VirtualView);
+			handler.PlatformView.UpdatePicker(handler.VirtualView);
 		}
 	}
 }

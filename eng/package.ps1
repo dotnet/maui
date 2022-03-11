@@ -12,12 +12,15 @@ $logsDirectory = Join-Path $artifacts logs
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages.slnf
 $slnMac = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-mac.slnf
 
-# Bootstrap ./bin/dotnet/
-$csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
-& dotnet build $csproj -bl:$logsDirectory/dotnet-$configuration.binlog
-
 # Full path to dotnet folder
 $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/
+if (Test-Path -Path $dotnet) {
+    "Local workloads exist."
+} else {
+    "Local workloads don't exist. Run dotnet cake first."
+    [Environment]::Exit(1)
+}
+
 $dotnet = (Get-Item $dotnet).FullName
 
 if ($IsWindows)

@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls
 
 				if (_navStack.Count > 1)
 					return _navStack[_navStack.Count - 1];
+
 				return ((IShellContentController)CurrentItem)?.Page;
 			}
 		}
@@ -262,6 +263,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_displayedPage == value)
 					return;
+
 				_displayedPage = value;
 
 				foreach (var item in _displayedPageObservers)

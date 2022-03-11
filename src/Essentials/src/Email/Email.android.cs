@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
@@ -7,17 +8,17 @@ using Android.Text;
 using Android.Webkit;
 using Uri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Email
+	public partial class EmailImplementation : IEmail
 	{
-		static readonly EmailMessage testEmail =
-			new EmailMessage("Testing Microsoft.Maui.Essentials", "This is a test email.", "Microsoft.Maui.Essentials@example.org");
+		static EmailMessage testEmail =>
+			new ("Testing Microsoft.Maui.Essentials", "This is a test email.", "Microsoft.Maui.Essentials@example.org");
 
-		internal static bool IsComposeSupported
+		public bool IsComposeSupported
 			=> Platform.IsIntentSupported(CreateIntent(testEmail));
 
-		static Task PlatformComposeAsync(EmailMessage message)
+		public Task ComposeAsync(EmailMessage message)
 		{
 			var intent = CreateIntent(message);
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
@@ -31,6 +32,18 @@ namespace Microsoft.Maui.Essentials
 
 			return Task.FromResult(true);
 		}
+
+		public Task ComposeAsync(string subject, string body, params string[] to)
+			=> ComposeAsync(
+				new EmailMessage()
+				{
+					Subject = subject,
+					Body = body,
+					To = to.ToList()
+				});
+
+		public Task ComposeAsync()
+			=> ComposeAsync(null);
 
 		static Intent CreateIntent(EmailMessage message)
 		{

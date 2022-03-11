@@ -3,16 +3,14 @@ using Android.App;
 using Android.Content;
 using AndroidX.Security.Crypto;
 using Javax.Crypto;
-using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class SecureStorage
+	public partial class SecureStorageImplementation : ISecureStorage
 	{
-
 		static readonly object locker = new object();
 
-		static Task<string> PlatformGetAsync(string key)
+		Task<string> PlatformGetAsync(string key)
 		{
 			return Task.Run(() =>
 			{
@@ -40,7 +38,7 @@ namespace Microsoft.Maui.Essentials
 			});
 		}
 
-		static Task PlatformSetAsync(string key, string data)
+		Task PlatformSetAsync(string key, string data)
 		{
 			return Task.Run(() =>
 			{
@@ -62,7 +60,7 @@ namespace Microsoft.Maui.Essentials
 			});
 		}
 
-		static bool PlatformRemove(string key)
+		bool PlatformRemove(string key)
 		{
 			lock (locker)
 			{
@@ -75,7 +73,7 @@ namespace Microsoft.Maui.Essentials
 			return true;
 		}
 
-		static void PlatformRemoveAll()
+		void PlatformRemoveAll()
 		{
 			lock (locker)
 			{
@@ -86,7 +84,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static ISharedPreferences GetEncryptedSharedPreferences()
+		ISharedPreferences GetEncryptedSharedPreferences()
 		{
 			var context = Application.Context;
 

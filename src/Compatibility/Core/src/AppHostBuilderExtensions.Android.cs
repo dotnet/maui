@@ -22,14 +22,18 @@ namespace Microsoft.Maui.Controls.Hosting
 					var services = MauiApplication.Current.Services;
 					var mauiContext = new MauiContext(services, app);
 					var state = new ActivationState(mauiContext);
+#pragma warning disable CS0612 // Type or member is obsolete
 					Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
+#pragma warning restore CS0612 // Type or member is obsolete
 				})
 				.OnMauiContextCreated((mauiContext) =>
 				{
 					// This is the final Init that sets up the real context from the activity.
 
 					var state = new ActivationState(mauiContext);
+#pragma warning disable CS0612 // Type or member is obsolete
 					Forms.Init(state);
+#pragma warning restore CS0612 // Type or member is obsolete
 				});
 		}
 	}

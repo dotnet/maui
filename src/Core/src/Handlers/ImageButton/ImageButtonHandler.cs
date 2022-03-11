@@ -10,7 +10,7 @@ using PlatformView = Google.Android.Material.ImageView.ShapeableImageView;
 using System;
 using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
 using PlatformImageView = Microsoft.UI.Xaml.Controls.Image;
-using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+using PlatformView = Microsoft.UI.Xaml.Controls.Button;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using PlatformImage = System.Object;
 using PlatformImageView = System.Object;
@@ -34,6 +34,10 @@ namespace Microsoft.Maui.Handlers
 #endif
 		};
 
+		public static CommandMapper<IImageButton, IImageButtonHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
+		{
+		};
+
 		ImageSourcePartLoader? _imageSourcePartLoader;
 		public ImageSourcePartLoader SourceLoader =>
 			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => VirtualView, OnSetImageSource);
@@ -46,11 +50,11 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		IImageButton IImageButtonHandler.TypedVirtualView => VirtualView;
+		IImageButton IImageButtonHandler.VirtualView => VirtualView;
 
-		IImage IImageHandler.TypedVirtualView => VirtualView;
+		IImage IImageHandler.VirtualView => VirtualView;
 
-		PlatformImageView IImageHandler.TypedPlatformView =>
+		PlatformImageView IImageHandler.PlatformView =>
 #if __IOS__
 			PlatformView.ImageView;
 #elif WINDOWS
@@ -58,6 +62,9 @@ namespace Microsoft.Maui.Handlers
 #else
 			PlatformView;
 #endif
+
+		PlatformView IImageButtonHandler.PlatformView => PlatformView;
+
 		ImageSourcePartLoader IImageHandler.SourceLoader => SourceLoader;
 	}
 }

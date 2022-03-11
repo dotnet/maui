@@ -28,22 +28,22 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
-		void UpdateContent()
+		static void UpdateContent(IContentViewHandler handler)
 		{
-			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
+			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			// Cleanup the old view when reused
-			PlatformView.ClearSubviews();
+			handler.PlatformView.ClearSubviews();
 
-			if (VirtualView.PresentedContent is IView view)
-				PlatformView.AddSubview(view.ToPlatform(MauiContext));
+			if (handler.VirtualView.PresentedContent is IView view)
+				handler.PlatformView.AddSubview(view.ToPlatform(handler.MauiContext));
 		}
 
-		public static void MapContent(ContentViewHandler handler, IContentView page)
+		public static void MapContent(IContentViewHandler handler, IContentView page)
 		{
-			handler.UpdateContent();
+			UpdateContent(handler);
 		}
 	}
 }

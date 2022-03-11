@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidBegin += OnStarted;
 				platformView.EditingDidEnd += OnEnded;
 				platformView.ValueChanged += OnValueChanged;
+				platformView.UpdateTime(VirtualView.Time);
 			}
 		}
 
@@ -48,29 +49,29 @@ namespace Microsoft.Maui.Handlers
 			DefaultTextColor = platformView.TextColor;
 		}
 
-		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateFormat(timePicker);
 		}
 
-		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapTime(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateTime(timePicker);
 		}
 
-		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapCharacterSpacing(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateCharacterSpacing(timePicker);
 		}
 
-		public static void MapFont(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapFont(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(timePicker, fontManager);
 		}
 
-		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateTextColor(timePicker, DefaultTextColor);
 		}
@@ -97,7 +98,8 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || PlatformView == null)
 				return;
 
-			VirtualView.Time = PlatformView.Date.ToDateTime() - new DateTime(1, 1, 1);
+			var datetime = PlatformView.Date.ToDateTime();
+			VirtualView.Time = new TimeSpan(datetime.Hour, datetime.Minute, 0);
 		}
 	}
 }

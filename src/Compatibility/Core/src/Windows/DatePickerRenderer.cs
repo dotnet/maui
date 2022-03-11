@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		bool CheckDateFormat()
 		{
-			return String.IsNullOrWhiteSpace(Element.Format) || Element.Format.Equals("d");
+			return String.IsNullOrWhiteSpace(Element.Format) || Element.Format.Equals("d", StringComparison.Ordinal);
 		}
 
 		[PortHandler]
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				Control.MonthFormat = "month";
 			}
-			else if (Element.Format.Equals("D"))
+			else if (Element.Format.Equals("D", StringComparison.Ordinal))
 			{
 				Control.MonthFormat = "month.full";
 			}
@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				Control.DayFormat = "day";
 			}
-			else if (Element.Format.Equals("D"))
+			else if (Element.Format.Equals("D", StringComparison.Ordinal))
 			{
 				Control.DayFormat = "dayofweek.full";
 			}
@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				Control.YearFormat = "year";
 			}
-			else if (Element.Format.Equals("D"))
+			else if (Element.Format.Equals("D", StringComparison.Ordinal))
 			{
 				Control.YearFormat = "year.full";
 			}

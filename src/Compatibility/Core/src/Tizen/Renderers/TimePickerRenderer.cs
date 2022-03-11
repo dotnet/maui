@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual IDateTimeDialog CreateDialog()
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				return new WatchDateTimePickerDialog(Forms.NativeParent);
 			}
