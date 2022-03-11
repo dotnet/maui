@@ -17,6 +17,11 @@ namespace Microsoft.Maui.Foldable
 	/// //and must be used with a comparison to the `sensor.StringType`
 	/// const string HINGE_SENSOR_TYPE = "microsoft.sensor.hinge_angle";
 	/// </code>
+	/// Removed LINQ too:
+	/// <code>
+	/// // Replaced "microsoft.sensor.hinge_angle"-specific comparison
+	///  hingeSensor = sensors.FirstOrDefault(s => s.StringType.Equals(HINGE_SENSOR_TYPE, StringComparison.OrdinalIgnoreCase));
+	/// </code>
 	/// </remarks>
 	public partial class HingeSensor
 	{
@@ -36,10 +41,14 @@ namespace Microsoft.Maui.Foldable
 
 			var sensors = sensorManager.GetSensorList(SensorType.All);
 
-			// Replaced "microsoft.sensor.hinge_angle"-specific comparison
-			//hingeSensor = sensors.FirstOrDefault(s => s.StringType.Equals(HINGE_SENSOR_TYPE, StringComparison.OrdinalIgnoreCase));
-			// Use generic "hinge" sensor name instead, for a variety of folding device types
-			hingeSensor = sensors.FirstOrDefault(s => s.Name.Contains(HINGE_SENSOR_NAME, StringComparison.InvariantCultureIgnoreCase));
+			foreach (var sensor in sensors)
+			{ // Use generic "hinge" sensor name, to match on a variety of folding device types
+				if (sensor.Name.Contains(HINGE_SENSOR_NAME, StringComparison.InvariantCultureIgnoreCase))
+				{
+					hingeSensor = sensor;
+					break;
+				}
+			}
 		}
 
 		public bool HasHinge
@@ -49,17 +58,14 @@ namespace Microsoft.Maui.Foldable
 		{
 			if (sensorManager != null && hingeSensor != null)
 			{
-				if (sensorListener == null)
+				sensorListener ??= new HingeSensorEventListener
 				{
-					sensorListener = new HingeSensorEventListener
+					SensorChangedHandler = se =>
 					{
-						SensorChangedHandler = se =>
-						{
-							if (se.Sensor == hingeSensor)
-								OnSensorChanged?.Invoke(hingeSensor, new HingeSensorChangedEventArgs(se));
-						}
-					};
-				}
+						if (se.Sensor == hingeSensor)
+							OnSensorChanged?.Invoke(hingeSensor, new HingeSensorChangedEventArgs(se));
+					}
+				};
 
 				sensorManager.RegisterListener(sensorListener, hingeSensor, SensorDelay.Normal);
 			}
