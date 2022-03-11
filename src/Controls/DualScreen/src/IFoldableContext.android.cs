@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.DualScreen
+namespace Microsoft.Maui.Foldable
 {
 	public delegate void FoldingFeatureChangedHandler(object sender, System.EventArgs ea);
 

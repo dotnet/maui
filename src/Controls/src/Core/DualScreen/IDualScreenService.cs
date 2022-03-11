@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.DualScreen
+namespace Microsoft.Maui.Foldable
 {
 	internal interface IDualScreenService
 	{

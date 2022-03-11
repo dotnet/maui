@@ -8,10 +8,11 @@ using Microsoft.Maui.Graphics;
 #if ANDROID
 using Android.Runtime;
 using AndroidX.Window.Layout;
-using static Microsoft.Maui.Controls.DualScreen.DualScreenService;
+using Microsoft.Maui.Foldable;
+using static Microsoft.Maui.Foldable.DualScreenService;
 #endif
 
-namespace Microsoft.Maui.Controls.DualScreen
+namespace Microsoft.Maui.Foldable
 {
 	public static class HostBuilderExtensions
 	{
@@ -59,7 +60,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 
 						// HACK: Not sure this is the best way to pass info - adds to DependencyService here too
-						Microsoft.Maui.Controls.DualScreen.DualScreenService.Init(foldContext, activity);
+						Microsoft.Maui.Foldable.DualScreenService.Init(foldContext, activity);
 
 						wit.AddWindowLayoutInfoListener(activity, runOnUiThreadExecutor(), consumer); // `consumer` is the IConsumer implementation
 

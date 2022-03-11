@@ -1,6 +1,7 @@
 using System.ComponentModel;
+using Microsoft.Maui.Foldable;
 
-namespace Microsoft.Maui.Controls.DualScreen
+namespace Microsoft.Maui.Controls.Foldable
 {
 	public sealed class SpanModeStateTrigger : StateTriggerBase
 	{

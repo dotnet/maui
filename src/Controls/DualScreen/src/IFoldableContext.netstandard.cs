@@ -2,7 +2,7 @@
 /*
  See the IFoldableContext.android.cs for implementation
  */
-namespace Microsoft.Maui.Controls.DualScreen
+namespace Microsoft.Maui.Foldable
 {
 	public delegate void FoldingFeatureChangedHandler(object sender, System.EventArgs ea);
 

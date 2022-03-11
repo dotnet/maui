@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Maui.Dispatching;
 
-namespace Microsoft.Maui.Controls.DualScreen
+namespace Microsoft.Maui.Foldable
 {
 	public partial class DualScreenInfo : INotifyPropertyChanged
 	{
@@ -20,21 +14,18 @@ namespace Microsoft.Maui.Controls.DualScreen
 			{
 				if (newCount == 1)
 				{
-					DualScreen.DualScreenService.DualScreenServiceImpl.HingeAngleChanged += OnHingeAngleChanged;
+					Foldable.DualScreenService.DualScreenServiceImpl.HingeAngleChanged += OnHingeAngleChanged;
 				}
 				else if (newCount == 0)
 				{
-					DualScreen.DualScreenService.DualScreenServiceImpl.HingeAngleChanged -= OnHingeAngleChanged;
+					Foldable.DualScreenService.DualScreenServiceImpl.HingeAngleChanged -= OnHingeAngleChanged;
 				}
 			}
 		}
 
 		void OnHingeAngleChanged(object sender, HingeSensor.HingeSensorChangedEventArgs e)
 		{
-			//Element?.Dispatcher?.Dispatch(() =>     //Device.BeginInvokeOnMainThread(() =>
-			//{
-				_hingeAngleChanged?.Invoke(this, new HingeAngleChangedEventArgs(e.HingeAngle));
-			//});
+			_hingeAngleChanged?.Invoke(this, new HingeAngleChangedEventArgs(e.HingeAngle));
 		}
 	}
 }

@@ -6,8 +6,9 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Foldable;
 
-namespace Microsoft.Maui.Controls.DualScreen
+namespace Microsoft.Maui.Controls.Foldable
 {
 	internal class TwoPaneViewLayoutGuide : INotifyPropertyChanged
 	{

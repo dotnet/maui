@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Controls.DualScreen
+namespace Microsoft.Maui.Controls.Foldable
 {
 	public enum TwoPaneViewMode
 	{

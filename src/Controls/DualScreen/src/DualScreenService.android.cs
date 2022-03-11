@@ -3,22 +3,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Views;
-//using Microsoft.Maui;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
-using Microsoft.Maui.Controls.DualScreen;
+using Microsoft.Maui.Controls.Foldable;
+using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 using Microsoft.Maui.Platform;
 
 [assembly: Dependency(typeof(DualScreenService.DualScreenServiceImpl))]
 
-namespace Microsoft.Maui.Controls.DualScreen
+namespace Microsoft.Maui.Foldable
 {
 	public class DualScreenService
 	{
-		[Internals.Preserve(Conditional = true)]
+		[Controls.Internals.Preserve(Conditional = true)]
 		public DualScreenService()
 		{
 			
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 			void FoldLayoutChanged() 
 			{
-				FoldingFeatureChanged?.Invoke(this, new Microsoft.Maui.Controls.DualScreen.FoldEventArgs()
+				FoldingFeatureChanged?.Invoke(this, new Microsoft.Maui.Foldable.FoldEventArgs()
 				{
 					isSeparating = isSeparating,
 					FoldingFeatureBounds = FoldingFeatureBounds,
@@ -95,7 +96,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			public event EventHandler<FoldEventArgs> OnLayoutChanged;
 			public event EventHandler<FoldEventArgs> FoldingFeatureChanged;
 
-			[Internals.Preserve(Conditional = true)]
+			[Controls.Internals.Preserve(Conditional = true)]
 			public DualScreenServiceImpl()
 			{
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.ctor - Android detected default ctor");

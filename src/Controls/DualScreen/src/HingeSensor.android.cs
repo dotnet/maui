@@ -4,7 +4,7 @@ using Android.Content;
 using Android.Hardware;
 using Android.Runtime;
 
-namespace Microsoft.Maui.Controls.DualScreen
+namespace Microsoft.Maui.Foldable
 {
 	/// <summary>
 	/// Sensor associated with the hinge angle between two halves of a folding device

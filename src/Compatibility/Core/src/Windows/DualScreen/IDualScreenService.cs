@@ -1,8 +1,9 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.DualScreen.UWP
+namespace Microsoft.Maui.Foldable.UWP
 {
 	internal interface IDualScreenService
 	{
