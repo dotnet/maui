@@ -56,6 +56,12 @@
     <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" BaseSize="168,208" />
   </ItemGroup>
 
+  <ItemGroup>
+    <MauiXaml Update="Resources\Styles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
+
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
 </Project>

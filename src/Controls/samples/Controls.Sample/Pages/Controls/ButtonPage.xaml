@@ -14,7 +14,7 @@
                 <Label
                     Text="Disabled"
                     Style="{StaticResource Headline}"/>
-                <Button Text="Button"/>
+                <Button Text="Button" IsEnabled="False"/>
                 <Label
                     Text="Clicked"
                     Style="{StaticResource Headline}"/>

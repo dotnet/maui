@@ -5,10 +5,11 @@
     xmlns:converters="clr-namespace:Controls.Sample.Converters"
     x:Class="Maui.Controls.Sample.XamlApp">
     <Application.Resources>
-        <ResourceDictionary>
+        <ResourceDictionary Source="Resources/Styles.xaml" />
+        <!--<ResourceDictionary>
 
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources/Styles/ThemeColors.xaml"/>
+            <ResourceDictionary.MergedDictionaries>-->
+                <!--<ResourceDictionary Source="Resources/Styles/ThemeColors.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ActivityIndicatorStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/BorderStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/BoxViewStyle.xaml"/>
@@ -40,10 +41,10 @@
                 <ResourceDictionary Source="Resources/Styles/TableViewStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/TemplatedViewStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/TimePickerStyle.xaml"/>
-                <ResourceDictionary Source="Resources/Styles/WebViewStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/WebViewStyle.xaml"/>-->
                 <!--<ResourceDictionary Source="AppResources.xaml" />-->
-            </ResourceDictionary.MergedDictionaries>
+            <!--</ResourceDictionary.MergedDictionaries>
 
-        </ResourceDictionary>
+        </ResourceDictionary>-->
     </Application.Resources>
 </Application>

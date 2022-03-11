@@ -59,6 +59,19 @@
                     Source="settings.png"
                     BorderColor="Red"
                     BackgroundColor="Green"/>
+                <Label       
+                    Text="Disabled"
+                    Style="{StaticResource Headline}"/>
+                <ImageButton 
+                    IsEnabled="False"
+                    HorizontalOptions="Center" 
+                    WidthRequest="200"
+                    HeightRequest="100" 
+                    Clicked="OnImageButtonClicked"
+                    Aspect="AspectFit" 
+                    Background="Green"
+                    Source="settings.png"
+                    Padding="16, 9, 16, 9" />
                 <Label
                     Text="BorderWidth"
                     Style="{StaticResource Headline}"/>

@@ -11,6 +11,10 @@
                 Text="Default"
                 Style="{StaticResource Headline}"/>
             <CheckBox/>
+            <Label
+                Text="Disabled"
+                Style="{StaticResource Headline}"/>
+            <CheckBox IsEnabled="False"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

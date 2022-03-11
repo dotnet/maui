@@ -21,6 +21,20 @@
                 </Picker.ItemsSource>
             </Picker>
             <Label
+                Text="Disabled"
+                Style="{StaticResource Headline}"/>
+            <Picker 
+                IsEnabled="False"
+                Title="Select an item">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Item 1</x:String>
+                        <x:String>Item 2</x:String>
+                        <x:String>Item 3</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+            <Label
                 Text="SelectedIndex"
                 Style="{StaticResource Headline}"/>
             <Picker 
