@@ -361,6 +361,21 @@ namespace Microsoft.Maui.Controls
 
 		EffectiveFlowDirection IVisualElementController.EffectiveFlowDirection => FlowController.EffectiveFlowDirection;
 
+
+		static readonly BindablePropertyKey WindowPropertyKey = BindableProperty.CreateReadOnly(
+			nameof(Window), typeof(Window), typeof(VisualElement), null, propertyChanged: OnWindowChanged);
+
+		public static readonly BindableProperty WindowProperty = WindowPropertyKey.BindableProperty;
+
+		public Window Window => (Window)GetValue(WindowProperty);
+
+		Window IWindowController.Window
+		{
+			get => (Window)GetValue(WindowProperty);
+			set => SetValue(WindowPropertyKey, value);
+		}
+
+
 		readonly Dictionary<Size, SizeRequest> _measureCache = new Dictionary<Size, SizeRequest>();
 
 

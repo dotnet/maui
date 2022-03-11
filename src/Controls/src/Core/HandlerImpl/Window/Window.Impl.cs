@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Controls
 
 		public Window()
 		{
-			SetWindow(this);
 			_visualChildren = new List<IVisualTreeElement>();
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
@@ -374,11 +373,15 @@ namespace Microsoft.Maui.Controls
 				window.InternalChildren.Remove(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
+
+				((IWindowController)oldPage).Window = null;
 			}
 
 			var newPage = newValue as Page;
 			if (newPage != null)
 			{
+				((IWindowController)newPage).Window = window;
+
 				window.InternalChildren.Add(newPage);
 				newPage.NavigationProxy.Inner = window.NavigationProxy;
 				window._menuBarTracker.Target = newPage;
