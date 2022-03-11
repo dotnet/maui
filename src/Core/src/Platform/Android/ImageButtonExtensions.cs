@@ -30,21 +30,21 @@ namespace Microsoft.Maui.Platform
 				.Build();
 		}
 
-		public static void UpdatePadding(this ShapeableImageView nativeButton, IImageButton imageButton)
+		public static void UpdatePadding(this ShapeableImageView platformButton, IImageButton imageButton)
 		{
-			var context = nativeButton.Context;
+			var padding = imageButton.Padding;
 
-			if (context == null)
+			// NOTE(jpr): post on handler to get around an Android Framework bug.
+			// see: https://github.com/material-components/material-components-android/issues/2063
+			platformButton.Post(() =>
 			{
-				return;
-			}
-
-			nativeButton.SetContentPadding(		
-				(int)context.ToPixels(imageButton.Padding.Left),
-				(int)context.ToPixels(imageButton.Padding.Top),
-				(int)context.ToPixels(imageButton.Padding.Right),
-				(int)context.ToPixels(imageButton.Padding.Bottom)
+				platformButton.SetContentPadding(
+					(int)platformButton.Context.ToPixels(padding.Left),
+					(int)platformButton.Context.ToPixels(padding.Top),
+					(int)platformButton.Context.ToPixels(padding.Right),
+					(int)platformButton.Context.ToPixels(padding.Bottom)
 				);
+			});
 		}
 	}
 }
