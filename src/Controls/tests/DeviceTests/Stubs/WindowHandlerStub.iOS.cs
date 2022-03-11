@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -14,10 +15,17 @@ namespace Microsoft.Maui.DeviceTests
 
 		private static void MapContent(WindowHandlerStub handler, IWindow window)
 		{
+			var view = window.Content.ToPlatform(handler.MauiContext);
+			handler.PlatformView.RootViewController.View.AddSubview(view);
 		}
 
 		protected override void DisconnectHandler(UIWindow platformView)
 		{
+			VirtualView
+				.Content
+				.ToPlatform()
+				.RemoveFromSuperview();
+				
 			base.DisconnectHandler(platformView);
 		}
 
@@ -28,7 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected override UIWindow CreatePlatformElement()
 		{
-			throw new NotImplementedException();
+			return MauiContext.Services.GetService<UIWindow>();
 		}
 	}
 }

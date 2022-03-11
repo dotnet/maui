@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			var config = new WKWebViewConfiguration();
 
-			config.Preferences.SetValueForKey(NSObject.FromObject(true), new NSString("developerExtrasEnabled"));
+			config.Preferences.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("developerExtrasEnabled"));
 
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(MessageReceived), "webwindowinterop");
 			config.UserContentController.AddUserScript(new WKUserScript(

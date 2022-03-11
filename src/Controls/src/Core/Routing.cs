@@ -158,23 +158,6 @@ namespace Microsoft.Maui.Controls
 			if (s_routes.TryGetValue(route, out var content))
 				result = content.GetOrCreate(services);
 
-			if (result == null)
-			{
-				// okay maybe its a type, we'll try that just to be nice to the user
-				var type = Type.GetType(route);
-				if (type != null)
-				{
-					if (services != null)
-					{
-						result = (services.GetService(type) ?? Activator.CreateInstance(type)) as Element;
-					}
-					else
-					{
-						result = Activator.CreateInstance(type) as Element;
-					}
-				}
-			}
-
 			if (result != null)
 				SetRoute(result, route);
 
@@ -284,9 +267,10 @@ namespace Microsoft.Maui.Controls
 			{
 				if (services != null)
 				{
-					return (services.GetService(_type) ?? Activator.CreateInstance(_type)) as Element;
+					return (Element)(services.GetService(_type) ?? Activator.CreateInstance(_type));
 				}
-				return Activator.CreateInstance(_type) as Element;
+
+				return (Element)Activator.CreateInstance(_type);
 			}
 
 			public override bool Equals(object obj)

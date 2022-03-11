@@ -88,9 +88,10 @@ namespace Maui.Controls.Sample
 					});
 
 #if NET6_0_OR_GREATER
-			appBuilder
-				.RegisterBlazorMauiWebView();
-			services.AddBlazorWebView();
+			services.AddMauiBlazorWebView();
+#if DEBUG
+			services.AddBlazorWebViewDeveloperTools();
+#endif
 #endif
 
 			services.AddLogging(logging =>
@@ -229,6 +230,9 @@ namespace Maui.Controls.Sample
 						return true;
 					}
 				});
+
+			// If someone wanted to completely turn off the CascadeInputTransparent behavior in their application, this next line would be an easy way to do it
+			// Microsoft.Maui.Controls.Layout.ControlsLayoutMapper.ModifyMapping(nameof(Microsoft.Maui.Controls.Layout.CascadeInputTransparent), (_, _, _) => { });
 
 			return appBuilder.Build();
 		}

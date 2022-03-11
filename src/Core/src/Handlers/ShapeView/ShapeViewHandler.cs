@@ -15,12 +15,14 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IShapeView, IShapeViewHandler> Mapper = new PropertyMapper<IShapeView, IShapeViewHandler>(ViewHandler.ViewMapper)
 		{
+			[nameof(IShapeView.Background)] = MapBackground,
 			[nameof(IShapeView.Shape)] = MapShape,
 			[nameof(IShapeView.Aspect)] = MapAspect,
 			[nameof(IShapeView.Fill)] = MapFill,
 			[nameof(IShapeView.Stroke)] = MapStroke,
 			[nameof(IShapeView.StrokeThickness)] = MapStrokeThickness,
 			[nameof(IShapeView.StrokeDashPattern)] = MapStrokeDashPattern,
+			[nameof(IShapeView.StrokeDashOffset)] = MapStrokeDashOffset,
 			[nameof(IShapeView.StrokeLineCap)] = MapStrokeLineCap,
 			[nameof(IShapeView.StrokeLineJoin)] = MapStrokeLineJoin,
 			[nameof(IShapeView.StrokeMiterLimit)] = MapStrokeMiterLimit

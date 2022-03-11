@@ -70,6 +70,12 @@
         "replaces": "WIN2D_VERSION",
         "defaultValue": "WIN2D_VERSION_VALUE"
       },
+      "DotNetTfm": {
+        "type": "parameter",
+        "dataType": "string",
+        "replaces": "DOTNET_TFM",
+        "defaultValue": "DOTNET_TFM_VALUE"
+      },
       "HostIdentifier": {
         "type": "bind",
         "binding": "HostIdentifier"

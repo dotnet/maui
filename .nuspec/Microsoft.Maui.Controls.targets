@@ -152,8 +152,9 @@
 			OptimizeIL = "true"
 			DebugSymbols = "$(DebugSymbols)"
 			DebugType = "$(DebugType)"
-      DefaultCompile = "true"
+			DefaultCompile = "true"
 			ValidateOnly = "$(_MauiXamlCValidateOnly)"
+			TargetFramework = "$(TargetFramework)"
 			KeepXamlResources = "$(MauiKeepXamlResources)" />
 		<Touch Files="$(IntermediateOutputPath)XamlC.stamp" AlwaysCreate="True" />
 		<ItemGroup>

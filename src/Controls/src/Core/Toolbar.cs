@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Maui.Graphics;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Toolbar : Maui.IToolbar
+	public partial class Toolbar : Maui.IToolbar, INotifyPropertyChanged
 	{
 		VisualElement _titleView;
 		string _title;
@@ -45,6 +46,9 @@ namespace Microsoft.Maui.Controls
 		public IElementHandler Handler { get; set; }
 
 		Maui.IElement _parent;
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
 		public Maui.IElement Parent => _parent;
 
 		private protected void SetProperty<T>(ref T backingStore, T value,
@@ -55,6 +59,7 @@ namespace Microsoft.Maui.Controls
 
 			backingStore = value;
 			Handler?.UpdateValue(propertyName);
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 	}
 }
