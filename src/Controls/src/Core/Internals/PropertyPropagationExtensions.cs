@@ -104,10 +104,8 @@ namespace Microsoft.Maui.Controls.Internals
 				return;
 
 			var sourceController = source as IWindowController;
-			if (sourceController == null)
-				return;
 
-			controller.Window = sourceController.Window;
+			controller.Window = sourceController?.Window;
 		}
 
 		internal static void SetWindowFromParent(Element child)

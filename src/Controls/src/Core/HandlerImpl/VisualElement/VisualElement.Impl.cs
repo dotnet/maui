@@ -7,7 +7,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs" />
-	public partial class VisualElement : IView, IWindowController
+	public partial class VisualElement : IView
 	{
 		Semantics _semantics;
 		bool _isLoadedFired;

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -105,12 +106,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ListViewWindowIsInheritedByLabelInViewCells()
 		{
 			var lv = new ListView { ItemTemplate = new DataTemplate(() => new ViewCell { View = new Label() }) };
-			var window = new Window(new ContentPage { Content = lv });
+			var cp = new ContentPage { Content = lv };
+			var window = new Window(cp);
+
+			Assert.AreEqual(window, lv.Window);
+			Assert.AreEqual(window, cp.Window);
 
 			lv.ItemsSource = Enumerable.Range(0, 10);
 
-			ViewCell cell = lv.TemplatedItems[0] as ViewCell;
+			var cell = lv.TemplatedItems[0] as ViewCell;
+
 			Assert.AreEqual(window, cell.View.Window);
+		}
+
+		[Test]
+		public void ListViewWindowIsInheritedByLayoutsInViewCells()
+		{
+			var lv = new ListView { ItemTemplate = new DataTemplate(() => new ViewCell { View = new Grid { new Label() } }) };
+			var cp = new ContentPage { Content = lv };
+			var window = new Window(cp);
+
+			Assert.AreEqual(window, lv.Window);
+			Assert.AreEqual(window, cp.Window);
+
+			lv.ItemsSource = Enumerable.Range(0, 10);
+
+			var cell = lv.TemplatedItems[0] as ViewCell;
+			var grid = cell.View as Grid;
+			var label = grid.Children[0] as Label;
+
+			Assert.AreEqual(window, ((IWindowController)cell).Window);
+			Assert.AreEqual(window, cell.View.Window);
+			Assert.AreEqual(window, label.Window);
 		}
 
 		[Test]
@@ -127,7 +154,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void NestedControlsAllHaveTheSameWindowWhenAddedLater()
+		public void PageHasTheSameWindowWhenAddedLater()
 		{
 			var btn = new Button();
 			var grid = new Grid { btn };
@@ -145,6 +172,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(window, cp.Window);
 		}
 
+		[Test]
+		public void NestedControlsAllHaveTheSameWindowWhenAddedLater()
+		{
+			var btn = new Button();
+			var grid = new Grid();
+			var cp = new ContentPage { Content = grid };
+			var window = new Window(cp);
+
+			Assert.Null(btn.Window);
+			Assert.AreEqual(window, grid.Window);
+			Assert.AreEqual(window, cp.Window);
+
+			grid.Children.Add(btn);
+
+			Assert.AreEqual(window, btn.Window);
+			Assert.AreEqual(window, grid.Window);
+			Assert.AreEqual(window, cp.Window);
+		}
 
 		[Test]
 		public void SwappingPagesUpdatesTheWindow()
@@ -152,7 +197,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var btn = new Button();
 			var grid = new Grid { btn };
 			var cp = new ContentPage { Content = grid };
-			
+
 			var window = new Window(cp);
 			var window2 = new Window(cp);
 
