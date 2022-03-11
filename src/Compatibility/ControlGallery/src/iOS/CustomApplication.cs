@@ -1,4 +1,5 @@
 ﻿using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 		public override void MotionEnded(UIEventSubtype motion, UIEvent evt)
 		{
-			if(motion == UIEventSubtype.MotionShake)
+			if (motion == UIEventSubtype.MotionShake)
 			{
 				(Delegate as AppDelegate)?.Reset(string.Empty);
 			}

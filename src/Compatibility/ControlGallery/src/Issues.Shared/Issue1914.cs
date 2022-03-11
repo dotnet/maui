@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			public Rotator()
 			{
 				var image = new Image { Aspect = Aspect.AspectFit, Source = "bank.png" };
-				Children.Add(image, new Rectangle(.5, .5, .5, .5), AbsoluteLayoutFlags.All);
+				Children.Add(image, new Rect(.5, .5, .5, .5), AbsoluteLayoutFlags.All);
 				VerticalOptions = HorizontalOptions = LayoutOptions.Center;
 				image.RotateTo(3600, 10000);
 			}

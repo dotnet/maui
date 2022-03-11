@@ -3,10 +3,12 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Foundation;
-using UIKit;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
+using UIKit;
 using RectangleF = CoreGraphics.CGRect;
-using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -154,16 +156,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateFlowDirection();
 		}
 
+		[PortHandler]
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
+		[PortHandler]
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
+		[PortHandler]
 		void OnValueChanged(object sender, EventArgs e)
 		{
 			if (Element.OnThisPlatform().UpdateMode() == UpdateMode.Immediately)
@@ -183,6 +188,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.Font = Element.ToUIFont();
 		}
 
+		[PortHandler]
 		protected internal virtual void UpdateTextColor()
 		{
 			var textColor = Element.TextColor;
@@ -214,7 +220,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 							  .Where(c => c.Name.EndsWith("-" + iOSLocale)).FirstOrDefault();
 			if (cultureInfos == null)
 				cultureInfos = CultureInfo.InvariantCulture;
-			
+
 			if (String.IsNullOrEmpty(Element.Format))
 			{
 				string timeformat = cultureInfos.DateTimeFormat.ShortTimePattern;
@@ -227,13 +233,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Control.Text = DateTime.Today.Add(Element.Time).ToString(Element.Format, cultureInfos);
 			}
 
-			if (Element.Format?.Contains('H') == true)
+			if (Element.Format?.Contains('H', StringComparison.Ordinal) == true)
 			{
 				var ci = new System.Globalization.CultureInfo("de-DE");
 				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
 				_picker.Locale = locale;
 			}
-			else if (Element.Format?.Contains('h') == true)
+			else if (Element.Format?.Contains('h', StringComparison.Ordinal) == true)
 			{
 				var ci = new System.Globalization.CultureInfo("en-US");
 				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);

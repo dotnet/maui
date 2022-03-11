@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.CustomAttributes;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using Microsoft.Maui.Controls.CustomAttributes;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
-	public class CollectionViewTests : PlatformTestFixture 
+	public class CollectionViewTests : PlatformTestFixture
 	{
 		[Issue(IssueTracker.Github, 9030, "[Bug] ClassNotFoundException when using snap points on API < 23")]
 		[Test(Description = "CollectionView with SnapPointsType set should not crash")]

@@ -1,86 +1,189 @@
-using System;
+using System.Threading.Tasks;
+using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Android.Views;
-using AndroidX.AppCompat.Widget;
-using Microsoft.Extensions.DependencyInjection;
+using Google.Android.Material.Button;
+using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : ViewHandler<IButton, AppCompatButton>
+	public partial class ButtonHandler : ViewHandler<IButton, MaterialButton>
 	{
-		static Thickness? DefaultPadding;
+		// The padding value has to be done here because in the Material Components,
+		// there is a minumum size of the buttons: 88dp x 48dp
+		// So, this is calculated:
+		//   - Vertical: 6dp*2 (inset) + 8.5dp*2 (padding) + 2.5dp*2 (text magic) + 14dp (text size) = 48dp
+		//   - Horizontal: 16dp (from the styles)
+		public readonly static Thickness DefaultPadding = new Thickness(16, 8.5);
+
+		static ColorStateList TransparentColorStateList = Colors.Transparent.ToDefaultColorStateList();
+
+		// not static and each button has a new instance
+		Drawable? DefaultBackground;
+
+		void SetupDefaults(MaterialButton platformView)
+		{
+			DefaultBackground ??= platformView.Background;
+		}
 
 		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
 		ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();
 
-		protected override AppCompatButton CreateNativeView()
+		protected override MaterialButton CreatePlatformView()
 		{
-			AppCompatButton nativeButton = new AppCompatButton(Context)
+			MaterialButton platformButton = new MauiMaterialButton(Context)
 			{
+				IconGravity = MaterialButton.IconGravityTextStart,
+				IconTintMode = Android.Graphics.PorterDuff.Mode.Add,
+				IconTint = TransparentColorStateList,
 				SoundEffectsEnabled = false
 			};
 
-			return nativeButton;
+			return platformButton;
 		}
 
-		protected override void SetupDefaults(AppCompatButton nativeView)
+		protected override void ConnectHandler(MaterialButton platformView)
 		{
-			DefaultPadding = new Thickness(
-				nativeView.PaddingLeft,
-				nativeView.PaddingTop,
-				nativeView.PaddingRight,
-				nativeView.PaddingBottom);
+			SetupDefaults(platformView);
 
-			base.SetupDefaults(nativeView);
-		}
-
-		protected override void ConnectHandler(AppCompatButton nativeView)
-		{
 			ClickListener.Handler = this;
-			nativeView.SetOnClickListener(ClickListener);
+			platformView.SetOnClickListener(ClickListener);
 
 			TouchListener.Handler = this;
-			nativeView.SetOnTouchListener(TouchListener);
+			platformView.SetOnTouchListener(TouchListener);
 
-			base.ConnectHandler(nativeView);
+			platformView.FocusChange += OnNativeViewFocusChange;
+
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(AppCompatButton nativeView)
+		protected override void DisconnectHandler(MaterialButton platformView)
 		{
 			ClickListener.Handler = null;
-			nativeView.SetOnClickListener(null);
+			platformView.SetOnClickListener(null);
 
 			TouchListener.Handler = null;
-			nativeView.SetOnTouchListener(null);
+			platformView.SetOnTouchListener(null);
 
-			base.DisconnectHandler(nativeView);
+			platformView.FocusChange -= OnNativeViewFocusChange;
+
+			ImageSourceLoader.Reset();
+
+			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapText(ButtonHandler handler, IButton button)
+		// This is a Android-specific mapping
+		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateText(button);
+			handler.PlatformView?.UpdateBackground(button, (handler as ButtonHandler)?.DefaultBackground);
 		}
 
-		public static void MapTextColor(ButtonHandler handler, IButton button)
+		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.NativeView?.UpdateTextColor(button);
+			handler.PlatformView?.UpdateStrokeColor(buttonStroke);
 		}
 
-		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)
+		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(button);
+			handler.PlatformView?.UpdateStrokeThickness(buttonStroke);
 		}
 
-		public static void MapFont(ButtonHandler handler, IButton button)
+		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.PlatformView?.UpdateCornerRadius(buttonStroke);
+		}
+
+		public static void MapText(IButtonHandler handler, IText button)
+		{
+			handler.PlatformView?.UpdateTextPlainText(button);
+		}
+
+		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
+		{
+			handler.PlatformView?.UpdateTextColor(button);
+		}
+
+		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
+		{
+			handler.PlatformView?.UpdateCharacterSpacing(button);
+		}
+
+		public static void MapFont(IButtonHandler handler, ITextStyle button)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(button, fontManager);
+			handler.PlatformView?.UpdateFont(button, fontManager);
 		}
 
-		public static void MapPadding(ButtonHandler handler, IButton button)
+		public static void MapPadding(IButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdatePadding(button, DefaultPadding);
+			handler.PlatformView?.UpdatePadding(button, DefaultPadding);
+		}
+
+		public static void MapImageSource(IButtonHandler handler, IImageButton image) =>
+			MapImageSourceAsync(handler, image).FireAndForget(handler);
+
+		public static Task MapImageSourceAsync(IButtonHandler handler, IImageButton image)
+		{
+			return handler.ImageSourceLoader.UpdateImageSourceAsync();
+		}
+
+		void OnSetImageSource(Drawable? obj)
+		{
+			PlatformView.Icon = obj;
+		}
+
+		bool NeedsExactMeasure()
+		{
+			if (VirtualView.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill
+				&& VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill)
+			{
+				// Layout Alignments of Start, Center, and End will be laying out the TextView at its measured size,
+				// so we won't need another pass with MeasureSpecMode.Exactly
+				return false;
+			}
+
+			if (VirtualView.Width >= 0 && VirtualView.Height >= 0)
+			{
+				// If the Width and Height are both explicit, then we've already done MeasureSpecMode.Exactly in 
+				// both dimensions; no need to do it again
+				return false;
+			}
+
+			// We're going to need a second measurement pass so TextView can properly handle alignments
+			return true;
+		}
+
+		public override void PlatformArrange(Rect frame)
+		{
+			var platformView = this.ToPlatform();
+
+			if (platformView == null || Context == null)
+			{
+				return;
+			}
+
+			if (frame.Width < 0 || frame.Height < 0)
+			{
+				return;
+			}
+
+			// Depending on our layout situation, the TextView may need an additional measurement pass at the final size
+			// in order to properly handle any TextAlignment properties.
+			if (NeedsExactMeasure())
+			{
+				platformView.Measure(MakeMeasureSpecExact(frame.Width), MakeMeasureSpecExact(frame.Height));
+			}
+
+			base.PlatformArrange(frame);
+		}
+
+		int MakeMeasureSpecExact(double size)
+		{
+			// Convert to a platform size to create the spec for measuring
+			var deviceSize = (int)Context!.ToPixels(size);
+			return MeasureSpecMode.Exactly.MakeMeasureSpec(deviceSize);
 		}
 
 		bool OnTouch(IButton? button, AView? v, MotionEvent? e)
@@ -101,6 +204,12 @@ namespace Microsoft.Maui.Handlers
 		void OnClick(IButton? button, AView? v)
 		{
 			button?.Clicked();
+		}
+
+		void OnNativeViewFocusChange(object? sender, AView.FocusChangeEventArgs e)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = e.HasFocus;
 		}
 
 		class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener

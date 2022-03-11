@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.CustomAttributes;
+using NUnit.Framework;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 

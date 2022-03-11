@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		void Init()
 		{
 
-			BarBackgroundColor = Color.FromHex("#03A9F4");
+			BarBackgroundColor = Color.FromArgb("#03A9F4");
 			BarTextColor = Colors.White;
 		}
 	}

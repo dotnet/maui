@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var grid = new Grid
 			{
-				BackgroundColor = Color.FromHex("#32d2c8")
+				BackgroundColor = Color.FromArgb("#32d2c8")
 			};
 
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });

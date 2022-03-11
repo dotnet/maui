@@ -2,14 +2,14 @@ using System;
 using System.Threading.Tasks;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Launcher
+	public partial class LauncherImplementation
 	{
-		static Task<bool> PlatformCanOpenAsync(Uri uri)
+		Task<bool> PlatformCanOpenAsync(Uri uri)
 			=> Task.FromResult(uri.IsWellFormedOriginalString());
 
-		static Task PlatformOpenAsync(Uri uri)
+		Task<bool> PlatformOpenAsync(Uri uri)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
@@ -32,10 +32,10 @@ namespace Microsoft.Maui.Essentials
 
 			AppControl.SendLaunchRequest(appControl);
 
-			return Task.CompletedTask;
+			return Task.FromResult(true);
 		}
 
-		static Task PlatformOpenAsync(OpenFileRequest request)
+		Task<bool> PlatformOpenAsync(OpenFileRequest request)
 		{
 			if (string.IsNullOrEmpty(request.File.FullPath))
 				throw new ArgumentNullException(nameof(request.File.FullPath));
@@ -51,10 +51,10 @@ namespace Microsoft.Maui.Essentials
 
 			AppControl.SendLaunchRequest(appControl);
 
-			return Task.CompletedTask;
+			return Task.FromResult(true);
 		}
 
-		static async Task<bool> PlatformTryOpenAsync(Uri uri)
+		async Task<bool> PlatformTryOpenAsync(Uri uri)
 		{
 			var canOpen = await PlatformCanOpenAsync(uri);
 

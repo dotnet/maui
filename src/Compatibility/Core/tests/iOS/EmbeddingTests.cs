@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
 using NUnit.Framework;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
@@ -8,10 +10,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 	public class EmbeddingTests
 	{
 		[Test]
-		public async Task CanCreateViewControllerFromContentPage() 
+		public async Task CanCreateViewControllerFromContentPage()
 		{
 			var contentPage = new ContentPage { Title = "Embedded Page" };
-			await Device.InvokeOnMainThreadAsync(() => {
+			await contentPage.Dispatcher.DispatchAsync(() =>
+			{
 				UIViewController controller = contentPage.CreateViewController();
 			});
 		}

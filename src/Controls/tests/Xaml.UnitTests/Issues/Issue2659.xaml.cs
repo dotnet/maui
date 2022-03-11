@@ -65,12 +65,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[SetUp]
-			public void SetUp()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
 			void AssertStyleApplied(Button button)
 			{
 				Assert.AreEqual(LayoutOptions.Center, button.HorizontalOptions);
@@ -84,7 +78,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				Assert.AreEqual(View.HorizontalOptionsProperty.DefaultValue, button.HorizontalOptions);
 				Assert.AreEqual(View.VerticalOptionsProperty.DefaultValue, button.VerticalOptions);
-				Assert.AreEqual(10, button.FontSize);
+				Assert.AreEqual(new Button().GetDefaultFontSize(), button.FontSize);
 				Assert.AreEqual(Button.TextColorProperty.DefaultValue, button.TextColor);
 				Assert.AreEqual(Button.FontAttributesProperty.DefaultValue, button.FontAttributes);
 			}

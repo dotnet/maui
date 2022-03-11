@@ -1,33 +1,22 @@
 using System.Collections;
 using System.Linq;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using NUnit.Framework;
 
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[TestFixture]
 	public class StackLayoutUnitTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void EmptyLayoutDoesntCrash()
 		{
 			var stackLayout = new StackLayout();
-			stackLayout.Layout(new Rectangle(0, 0, 200, 200));
+			stackLayout.Layout(new Rect(0, 0, 200, 200));
 		}
 
 		[Test]
@@ -43,7 +32,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var r = stack.GetSizeRequest(100, 100);
+			var r = stack.Measure(100, 100);
 
 			Assert.AreEqual(new SizeRequest(new Size(20, 20)), r);
 		}
@@ -61,10 +50,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			stack.Layout(new Rectangle(0, 0, 100, 100));
+			stack.Layout(new Rect(0, 0, 100, 100));
 
-			Assert.AreEqual(new Rectangle(0, 0, 100, 20), child1.Bounds);
-			Assert.AreEqual(new Rectangle(0, 26, 100, 30), child2.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 20), child1.Bounds);
+			Assert.AreEqual(new Rect(0, 26, 100, 30), child2.Bounds);
 		}
 
 		[Test]
@@ -92,16 +81,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Children = { child1, child2 }
 			};
 
-			stack.Layout(new Rectangle(0, 0, 100, 100));
+			stack.Layout(new Rect(0, 0, 100, 100));
 
-			Assert.AreEqual(new Rectangle(0, 0, 100, 60), child1.Bounds);
-			Assert.AreEqual(new Rectangle(0, 60, 100, 40), child2.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 60), child1.Bounds);
+			Assert.AreEqual(new Rect(0, 60, 100, 40), child2.Bounds);
 
-			stack.GetSizeRequest(100, 100);
-			stack.Layout(new Rectangle(0, 0, 100, 500));
+			stack.Measure(100, 100);
+			stack.Layout(new Rect(0, 0, 100, 500));
 
-			Assert.AreEqual(new Rectangle(0, 0, 100, 460), child1.Bounds);
-			Assert.AreEqual(new Rectangle(0, 460, 100, 40), child2.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 460), child1.Bounds);
+			Assert.AreEqual(new Rect(0, 460, 100, 40), child2.Bounds);
 		}
 
 		[Test]
@@ -118,10 +107,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			stack.Layout(new Rectangle(0, 0, 100, 100));
+			stack.Layout(new Rect(0, 0, 100, 100));
 
-			Assert.AreEqual(new Rectangle(0, 0, 20, 100), child1.Bounds);
-			Assert.AreEqual(new Rectangle(26, 0, 30, 100), child2.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 20, 100), child1.Bounds);
+			Assert.AreEqual(new Rect(26, 0, 30, 100), child2.Bounds);
 		}
 
 		[Test]
@@ -145,11 +134,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			stack.Padding = new Thickness(10, 5);
-			stack.Layout(new Rectangle(0, 0, 100, 100));
+			stack.Layout(new Rect(0, 0, 100, 100));
 
-			Assert.AreEqual(new Rectangle(10, 5, 80, 20), child1.Bounds);
-			Assert.AreEqual(new Rectangle(10, 31, 80, 100 - 2 * 31), child2.Bounds);
-			Assert.AreEqual(new Rectangle(10, 75, 80, 20), child3.Bounds);
+			Assert.AreEqual(new Rect(10, 5, 80, 20), child1.Bounds);
+			Assert.AreEqual(new Rect(10, 31, 80, 100 - 2 * 31), child2.Bounds);
+			Assert.AreEqual(new Rect(10, 75, 80, 20), child3.Bounds);
 		}
 
 		[Test]
@@ -172,11 +161,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			stack.Layout(new Rectangle(0, 0, 100, 100));
+			stack.Layout(new Rect(0, 0, 100, 100));
 
-			Assert.AreEqual(new Rectangle(0, 0, 20, 100), child1.Bounds);
-			Assert.AreEqual(new Rectangle(26, 0, 100 - 2 * 26, 100), child2.Bounds);
-			Assert.AreEqual(new Rectangle(80, 0, 20, 100), child3.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 20, 100), child1.Bounds);
+			Assert.AreEqual(new Rect(26, 0, 100 - 2 * 26, 100), child2.Bounds);
+			Assert.AreEqual(new Rect(80, 0, 20, 100), child3.Bounds);
 		}
 
 		[Test]
@@ -191,7 +180,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var size = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
+			var size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
 			Assert.AreEqual(new Size(30, 56), size);
 		}
 
@@ -208,7 +197,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var size = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
+			var size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
 			Assert.AreEqual(new Size(56, 30), size);
 		}
 
@@ -230,11 +219,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			stack.Layout(new Rectangle(0, 0, 200, 200));
+			stack.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(0, 0, 20, 30), stack.Children[0].Bounds);
-			Assert.AreEqual(new Rectangle(90, 36, 20, 30), stack.Children[1].Bounds);
-			Assert.AreEqual(new Rectangle(180, 72, 20, 30), stack.Children[2].Bounds);
+			Assert.AreEqual(new Rect(0, 0, 20, 30), stack.Children[0].Frame);
+			Assert.AreEqual(new Rect(90, 36, 20, 30), stack.Children[1].Frame);
+			Assert.AreEqual(new Rect(180, 72, 20, 30), stack.Children[2].Frame);
 		}
 
 		[Test]
@@ -251,11 +240,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			stack.Layout(new Rectangle(0, 0, 200, 200));
+			stack.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(0, 0, 20, 30), stack.Children.Cast<View>().ToArray()[0].Bounds);
-			Assert.AreEqual(new Rectangle(26, 85, 20, 30), stack.Children.Cast<View>().ToArray()[1].Bounds);
-			Assert.AreEqual(new Rectangle(52, 170, 20, 30), stack.Children.Cast<View>().ToArray()[2].Bounds);
+			Assert.AreEqual(new Rect(0, 0, 20, 30), stack.Children.Cast<View>().ToArray()[0].Bounds);
+			Assert.AreEqual(new Rect(26, 85, 20, 30), stack.Children.Cast<View>().ToArray()[1].Bounds);
+			Assert.AreEqual(new Rect(52, 170, 20, 30), stack.Children.Cast<View>().ToArray()[2].Bounds);
 		}
 
 		[Test]
@@ -272,11 +261,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			stack.Layout(new Rectangle(0, 0, 100, 250));
+			stack.Layout(new Rect(0, 0, 100, 250));
 
-			Assert.That(stack.Children.ToArray()[0].Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(stack.Children.ToArray()[1].Bounds, Is.EqualTo(new Rectangle(0, 110, 100, 100)));
-			Assert.That(stack.Children.ToArray()[2].Bounds, Is.EqualTo(new Rectangle(0, 220, 100, 30)));
+			Assert.That(stack.Children.ToArray()[0].Frame, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(stack.Children.ToArray()[1].Frame, Is.EqualTo(new Rect(0, 110, 100, 100)));
+			Assert.That(stack.Children.ToArray()[2].Frame, Is.EqualTo(new Rect(0, 220, 100, 30)));
 		}
 
 		[Test]
@@ -294,11 +283,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			stack.Layout(new Rectangle(0, 0, 250, 100));
+			stack.Layout(new Rect(0, 0, 250, 100));
 
-			Assert.That(stack.Children.ToArray()[0].Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(stack.Children.ToArray()[1].Bounds, Is.EqualTo(new Rectangle(110, 0, 100, 100)));
-			Assert.That(stack.Children.ToArray()[2].Bounds, Is.EqualTo(new Rectangle(220, 0, 30, 100)));
+			Assert.That(stack.Children.ToArray()[0].Frame, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(stack.Children.ToArray()[1].Frame, Is.EqualTo(new Rect(110, 0, 100, 100)));
+			Assert.That(stack.Children.ToArray()[2].Frame, Is.EqualTo(new Rect(220, 0, 30, 100)));
 		}
 
 		[Test]
@@ -315,7 +304,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var result = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var result = stack.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.That(result.Minimum, Is.EqualTo(new Size(100, 230)));
 		}
 
@@ -334,7 +323,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var result = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var result = stack.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.That(result.Minimum, Is.EqualTo(new Size(230, 100)));
 		}
 
@@ -351,19 +340,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			stack.Layout(new Rectangle(0, 0, 100, 100));
+			var handler = Substitute.For<IViewHandler>();
+			stack.Handler = handler;
 
-			var size = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
-			Assert.AreEqual(new Rectangle(0, 0, 100, 20), child1.Bounds);
-			Assert.AreEqual(new Rectangle(0, 26, 100, 20), child2.Bounds);
+			stack.Layout(new Rect(0, 0, 100, 100));
+
+			var size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+			Assert.AreEqual(new Rect(0, 0, 100, 20), child1.Bounds);
+			Assert.AreEqual(new Rect(0, 26, 100, 20), child2.Bounds);
 			Assert.AreEqual(new Size(100, 46), size);
 
 			child1.IsVisible = false;
-			Assert.False(child1.IsVisible);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 20), child2.Bounds);
-			size = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
-			Assert.AreEqual(new Size(100, 20), size);
 
+			// Verify that the visibility change invalidated the layout, and simulate a native layout update 
+			AssertInvalidated(handler);
+			stack.ForceLayout();
+
+			Assert.False(child1.IsVisible);
+			Assert.AreEqual(new Rect(0, 0, 100, 20), child2.Bounds);
+			size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+			Assert.AreEqual(new Size(100, 20), size);
 		}
 
 		[Test]
@@ -384,7 +380,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				MinimumHeightRequest = 10
 			});
 
-			var result = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var result = stack.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(new Size(10, 10), result.Minimum);
 		}
 
@@ -425,10 +421,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			stack.Children.Add(hbox);
 
-			stack.Layout(new Rectangle(0, 0, 70, 70));
-			Assert.AreEqual(new Rectangle(0, 0, 70, 70), stack.Bounds);
-			Assert.AreEqual(new Rectangle(0, 0, 35, 70), child1.Bounds);
-			Assert.AreEqual(new Rectangle(35, 0, 35, 70), child2.Bounds);
+			stack.Layout(new Rect(0, 0, 70, 70));
+			Assert.AreEqual(new Rect(0, 0, 70, 70), stack.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 35, 70), child1.Bounds);
+			Assert.AreEqual(new Rect(35, 0, 35, 70), child2.Bounds);
 		}
 
 		[TestCase(StackOrientation.Vertical, LayoutAlignment.Start, false, 0, 0, 200, 100, 0, 100, 200, 10)]
@@ -473,10 +469,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				HeightRequest = 10
 			});
 
-			stack.Layout(new Rectangle(0, 0, 200, 200));
+			stack.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(x1, y1, w1, h1), child1.Bounds);
-			Assert.AreEqual(new Rectangle(x2, y2, w2, h2), child2.Bounds);
+			Assert.AreEqual(new Rect(x1, y1, w1, h1), child1.Bounds);
+			Assert.AreEqual(new Rect(x2, y2, w2, h2), child2.Bounds);
 		}
 
 		[Test]
@@ -498,14 +494,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Children = { child1, child2 }
 			};
 
-			stack.Layout(new Rectangle(0, 0, 200, 200));
+			stack.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(0, 0, 200, 40), child1.Bounds);
-			Assert.AreEqual(new Rectangle(0, 46, 200, 40), child2.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 200, 40), child1.Bounds);
+			Assert.AreEqual(new Rect(0, 46, 200, 40), child2.Bounds);
 
 			stack.Children.RemoveAt(0);
 
-			Assert.AreEqual(new Rectangle(0, 0, 200, 40), child2.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 200, 40), child2.Bounds);
 		}
 
 		[Test]
@@ -529,7 +525,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Children = { child1, child2 }
 			};
 
-			stack.Layout(new Rectangle(0, 0, 200, 200));
+			stack.Layout(new Rect(0, 0, 200, 200));
 
 			Assert.AreEqual(LayoutConstraint.Fixed, child2.Constraint);
 		}
@@ -555,7 +551,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Children = { child1, child2 }
 			};
 
-			stack.Layout(new Rectangle(0, 0, 200, 200));
+			stack.Layout(new Rect(0, 0, 200, 200));
 
 			Assert.AreEqual(LayoutConstraint.HorizontallyFixed, child2.Constraint);
 		}
@@ -582,7 +578,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Children = { child1, child2 }
 			};
 
-			stack.Layout(new Rectangle(0, 0, 200, 200));
+			stack.Layout(new Rect(0, 0, 200, 200));
 
 			Assert.AreEqual(LayoutConstraint.Fixed, child2.Constraint);
 		}
@@ -609,7 +605,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Children = { child1, child2 }
 			};
 
-			stack.Layout(new Rectangle(0, 0, 200, 200));
+			stack.Layout(new Rect(0, 0, 200, 200));
 
 			Assert.AreEqual(LayoutConstraint.VerticallyFixed, child2.Constraint);
 		}
@@ -634,7 +630,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Children = { child1 }
 			};
 
-			stack.Layout(new Rectangle(0, 0, 100, 100));
+			stack.Layout(new Rect(0, 0, 100, 100));
 		}
 
 		[Test]
@@ -655,7 +651,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Children = { child }
 			};
 
-			var outterLayout = new StackLayout
+			var outerLayout = new StackLayout
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
@@ -663,9 +659,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Children = { innerStack }
 			};
 
-			outterLayout.Layout(new Rectangle(0, 0, 100, 100));
+
+			var handler = Substitute.For<IViewHandler>();
+			outerLayout.Handler = handler;
+
+			outerLayout.Layout(new Rect(0, 0, 100, 100));
 			var beforeSize = innerStack.Bounds.Size;
 			innerStack.Padding = new Thickness(30);
+
+			// Verify that the Padding change invalidated the layout, and simulate a native layout update 
+			AssertInvalidated(handler);
+			outerLayout.ForceLayout();
+
 			var afterSize = innerStack.Bounds.Size;
 			Assert.AreNotEqual(beforeSize, afterSize, "Padding was grow, so Size should be bigger");
 		}
@@ -696,11 +701,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Children = { innerStack }
 			};
 
-			outterLayout.Layout(new Rectangle(0, 0, 100, 100));
+			outterLayout.Layout(new Rect(0, 0, 100, 100));
 			var before = child.Bounds;
 			innerStack.Padding = new Thickness(30);
 			var after = child.Bounds;
 			Assert.AreNotEqual(before, after, "child should be moved within padding size");
+		}
+
+		void AssertInvalidated(IViewHandler handler)
+		{
+			handler.Received().Invoke(Arg.Is(nameof(IView.InvalidateMeasure)), Arg.Any<object>());
+			handler.ClearReceivedCalls();
 		}
 	}
 }

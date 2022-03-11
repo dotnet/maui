@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (_element != null)
 			{
 				var value = string.IsNullOrWhiteSpace(ValueText) ? string.Empty : $"{ValueText}. ";
-				host.ContentDescription = $"{value}{AutomationPropertiesProvider.ConcatenateNameAndHelpText(_element)}";
+				host.ContentDescription = $"{value}{Controls.Platform.AutomationPropertiesProvider.ConcatenateNameAndHelpText(_element)}";
 			}
 		}
 	}

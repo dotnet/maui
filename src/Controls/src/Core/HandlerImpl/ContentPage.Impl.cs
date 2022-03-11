@@ -1,49 +1,47 @@
-﻿using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Hosting;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class ContentPage : IPage, HotReload.IHotReloadableView
+	/// <include file="../../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPage']/Docs" />
+	public partial class ContentPage : IContentView, HotReload.IHotReloadableView
 	{
-		// TODO ezhart That there's a layout alignment here tells us this hierarchy needs work :) 
-		public Primitives.LayoutAlignment HorizontalLayoutAlignment => Primitives.LayoutAlignment.Fill;
-
-		IView IPage.Content => Content;
-
-
+		object IContentView.Content => Content;
+		IView IContentView.PresentedContent => Content;
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (Content is IFrameworkElement frameworkElement)
-			{
-				frameworkElement.Measure(widthConstraint, heightConstraint);
-			}
+			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
+			return DesiredSize;
+		}
 
+		protected override Size ArrangeOverride(Rect bounds)
+		{
+			Frame = this.ComputeFrame(bounds);
+			Handler?.PlatformArrange(Frame);
+			return Frame.Size;
+		}
+
+		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			_ = this.MeasureContent(widthConstraint, heightConstraint);
 			return new Size(widthConstraint, heightConstraint);
 		}
 
-		protected override Size ArrangeOverride(Rectangle bounds)
+		Size IContentView.CrossPlatformArrange(Rect bounds)
 		{
-			// Update the Bounds (Frame) for this page
-			Layout(bounds);
-
-			if (Content is IFrameworkElement element)
-			{
-				element.Arrange(bounds);
-				element.Handler?.NativeArrange(element.Frame);
-			}
-
-			return Frame.Size;
+			Frame = bounds;
+			this.ArrangeContent(bounds);
+			return bounds.Size;
 		}
 
 		protected override void InvalidateMeasureOverride()
 		{
 			base.InvalidateMeasureOverride();
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView view)
 			{
-				frameworkElement.InvalidateMeasure();
+				view.InvalidateMeasure();
 			}
 		}
 
@@ -63,7 +61,7 @@ namespace Microsoft.Maui.Controls
 
 		void HotReload.IHotReloadableView.Reload()
 		{
-			Device.BeginInvokeOnMainThread(() =>
+			Dispatcher.Dispatch(() =>
 			{
 				this.CheckHandlers();
 				var reloadHandler = ((IHotReloadableView)this).ReloadHandler;

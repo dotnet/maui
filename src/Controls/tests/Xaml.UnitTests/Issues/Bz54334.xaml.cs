@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					}
 				}
 			};
-			MainPage = new Bz54334(useCompiledXaml);
+			this.LoadPage(new Bz54334(useCompiledXaml));
 			MessagingCenter.Subscribe<ContentPage>(this, "ChangeTheme", (s) =>
 			{
 				ToggleTheme();
@@ -59,17 +59,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[SetUp]
-			public void Setup()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
 			[TearDown]
 			public void TearDown()
 			{
 				Application.Current = null;
-				Device.PlatformServices = null;
 			}
 
 			[TestCase(true)]

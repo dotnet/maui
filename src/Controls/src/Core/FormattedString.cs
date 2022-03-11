@@ -7,12 +7,14 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="Type[@FullName='Microsoft.Maui.Controls.FormattedString']/Docs" />
 	[ContentProperty("Spans")]
 	public class FormattedString : Element
 	{
 		readonly SpanCollection _spans = new SpanCollection();
 		internal event NotifyCollectionChangedEventHandler SpansCollectionChanged;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public FormattedString() => _spans.CollectionChanged += OnCollectionChanged;
 
 		protected override void OnBindingContextChanged()
@@ -22,12 +24,14 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(Spans[i], BindingContext);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='Spans']/Docs" />
 		public IList<Span> Spans => _spans;
 
 		public static explicit operator string(FormattedString formatted) => formatted.ToString();
 
 		public static implicit operator FormattedString(string text) => new FormattedString { Spans = { new Span { Text = text } } };
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='ToString']/Docs" />
 		public override string ToString() => string.Concat(Spans.Select(span => span.Text));
 
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

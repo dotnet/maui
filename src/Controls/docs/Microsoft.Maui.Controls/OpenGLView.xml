@@ -1,0 +1,314 @@
+<Type Name="OpenGLView" FullName="Microsoft.Maui.Controls.OpenGLView">
+  <TypeSignature Language="C#" Value="public sealed class OpenGLView : Microsoft.Maui.Controls.View, Microsoft.Maui.Controls.IElementConfiguration&lt;Microsoft.Maui.Controls.OpenGLView&gt;, Microsoft.Maui.Controls.IOpenGlViewController" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit OpenGLView extends Microsoft.Maui.Controls.View implements class Microsoft.Maui.Controls.IElementConfiguration`1&lt;class Microsoft.Maui.Controls.OpenGLView&gt;, class Microsoft.Maui.Controls.IElementController, class Microsoft.Maui.Controls.IOpenGlViewController, class Microsoft.Maui.Controls.IViewController, class Microsoft.Maui.Controls.IVisualElementController" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.OpenGLView" />
+  <TypeSignature Language="F#" Value="type OpenGLView = class&#xA;    inherit View&#xA;    interface IOpenGlViewController&#xA;    interface IViewController&#xA;    interface IVisualElementController&#xA;    interface IElementController&#xA;    interface IElementConfiguration&lt;OpenGLView&gt;" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Microsoft.Maui.Controls.View</BaseTypeName>
+  </Base>
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Microsoft.Maui.Controls.IElementConfiguration&lt;Microsoft.Maui.Controls.OpenGLView&gt;</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>Microsoft.Maui.Controls.IElementController</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>Microsoft.Maui.Controls.IOpenGlViewController</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>Microsoft.Maui.Controls.IViewController</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>Microsoft.Maui.Controls.IVisualElementController</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Attributes>
+    <Attribute>
+      <AttributeName>Microsoft.Maui.Controls.RenderWith(typeof(Microsoft.Maui.Controls.Platform._OpenGLViewRenderer))</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>A <see cref="T:Microsoft.Maui.Controls.View" /> that displays OpenGL content.</summary>
+    <remarks>
+      <para>
+        <see cref="T:Microsoft.Maui.Controls.OpenGLView" />s are easiest to program using Shared Projects, in which case the reference to OpenTK is straightforward. The following example shows a simple OpenGL app with a render loop:</para>
+      <example>
+        <code lang="csharp lang-csharp"><![CDATA[
+using Microsoft.Maui.Controls;
+using OpenTK.Graphics.ES30;
+    
+namespace opengl
+{
+    public class OpenGLPage : ContentPage
+    {
+        float red, green, blue;
+    
+        public OpenGLPage ()
+        {
+            Title = "OpenGL";
+            var view = new OpenGLView { HasRenderLoop = true };
+            var toggle = new Switch { IsToggled = true };
+            var button = new Button { Text = "Display" };
+    
+            view.HeightRequest = 300;
+            view.WidthRequest = 300;
+    
+            view.OnDisplay = r => {
+    
+                GL.ClearColor (red, green, blue, 1.0f);
+                GL.Clear ((ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
+    
+                red += 0.01f;
+                if (red >= 1.0f)
+                    red -= 1.0f;
+                green += 0.02f;
+                if (green >= 1.0f)
+                    green -= 1.0f;
+                blue += 0.03f;
+                if (blue >= 1.0f)
+                    blue -= 1.0f;
+            };
+    
+            toggle.Toggled += (s, a) => {
+                view.HasRenderLoop = toggle.IsToggled;
+            };
+            button.Clicked += (s, a) => view.Display ();
+    
+            var stack = new StackLayout { 
+                Padding = new Size (20, 20),
+                Children = {view, toggle, button}
+            };
+    
+            Content = stack;
+        }
+    }
+}
+    
+          ]]></code>
+      </example>
+      <para>
+        <img href="~/Microsoft.Maui.Controls/_images/OpenGLView.Example.png" />
+      </para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public OpenGLView ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.OpenGLView.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.OpenGLView" /> object with default values.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Display">
+      <MemberSignature Language="C#" Value="public void Display ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Display() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.OpenGLView.Display" />
+      <MemberSignature Language="F#" Value="member this.Display : unit -&gt; unit" Usage="openGLView.Display " />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Called prior to rendering.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="DisplayRequested">
+      <MemberSignature Language="C#" Value="public event EventHandler DisplayRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler DisplayRequested" />
+      <MemberSignature Language="DocId" Value="E:Microsoft.Maui.Controls.OpenGLView.DisplayRequested" />
+      <MemberSignature Language="F#" Value="member this.DisplayRequested : EventHandler " Usage="member this.DisplayRequested : System.EventHandler " />
+      <MemberType>Event</MemberType>
+      <Implements>
+        <InterfaceMember>E:Microsoft.Maui.Controls.IOpenGlViewController.DisplayRequested</InterfaceMember>
+      </Implements>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.EventHandler</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HasRenderLoop">
+      <MemberSignature Language="C#" Value="public bool HasRenderLoop { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool HasRenderLoop" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.OpenGLView.HasRenderLoop" />
+      <MemberSignature Language="F#" Value="member this.HasRenderLoop : bool with get, set" Usage="Microsoft.Maui.Controls.OpenGLView.HasRenderLoop" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Whether this <see cref="T:Microsoft.Maui.Controls.OpenGLView" /> has a custom rendering loop.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HasRenderLoopProperty">
+      <MemberSignature Language="C#" Value="public static readonly Microsoft.Maui.Controls.BindableProperty HasRenderLoopProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Microsoft.Maui.Controls.BindableProperty HasRenderLoopProperty" />
+      <MemberSignature Language="DocId" Value="F:Microsoft.Maui.Controls.OpenGLView.HasRenderLoopProperty" />
+      <MemberSignature Language="F#" Value=" staticval mutable HasRenderLoopProperty : Microsoft.Maui.Controls.BindableProperty" Usage="Microsoft.Maui.Controls.OpenGLView.HasRenderLoopProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Identifies the <see cref="P:Microsoft.Maui.Controls.OpenGLView.HasRenderLoop" /> bindable property.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="On&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;T,Microsoft.Maui.Controls.OpenGLView&gt; On&lt;T&gt; () where T : Microsoft.Maui.Controls.IConfigPlatform;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;!!T, class Microsoft.Maui.Controls.OpenGLView&gt; On&lt;(class Microsoft.Maui.Controls.IConfigPlatform) T&gt;() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.OpenGLView.On``1" />
+      <MemberSignature Language="F#" Value="abstract member On : unit -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;'T, Microsoft.Maui.Controls.OpenGLView (requires 'T :&gt; Microsoft.Maui.Controls.IConfigPlatform)&gt; (requires 'T :&gt; Microsoft.Maui.Controls.IConfigPlatform)&#xA;override this.On : unit -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;'T, Microsoft.Maui.Controls.OpenGLView (requires 'T :&gt; Microsoft.Maui.Controls.IConfigPlatform)&gt; (requires 'T :&gt; Microsoft.Maui.Controls.IConfigPlatform)" Usage="openGLView.On " />
+      <MemberType>Method</MemberType>
+      <Implements>
+        <InterfaceMember>M:Microsoft.Maui.Controls.IElementConfiguration`1.On``1</InterfaceMember>
+      </Implements>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;T,Microsoft.Maui.Controls.OpenGLView&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <InterfaceName>Microsoft.Maui.Controls.IConfigPlatform</InterfaceName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.OpenGLView" />, on which a platform-specific method may be called.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OnDisplay">
+      <MemberSignature Language="C#" Value="public Action&lt;Microsoft.Maui.Controls.Rectangle&gt; OnDisplay { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Action`1&lt;valuetype Microsoft.Maui.Controls.Rectangle&gt; OnDisplay" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.OpenGLView.OnDisplay" />
+      <MemberSignature Language="F#" Value="member this.OnDisplay : Action&lt;Microsoft.Maui.Controls.Rectangle&gt; with get, set" Usage="Microsoft.Maui.Controls.OpenGLView.OnDisplay" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Action&lt;Microsoft.Maui.Controls.Rectangle&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Overridden to create a custom rendering loop.</summary>
+        <value>To be added.</value>
+        <remarks>
+          <para>When overridden, creates a custom renderer: </para>
+          <example>
+            <code lang="csharp lang-csharp"><![CDATA[
+    var view = new OpenGLView { HasRenderLoop = true };
+    view.OnDisplay = r => {
+    
+        GL.ClearColor (red, green, blue, 1.0f);
+        GL.Clear ((ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
+    
+        red += 0.01f;
+        if (red >= 1.0f)
+            red -= 1.0f;
+        green += 0.02f;
+        if (green >= 1.0f)
+            green -= 1.0f;
+        blue += 0.03f;
+        if (blue >= 1.0f)
+            blue -= 1.0f;
+    };
+          ]]></code>
+          </example>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

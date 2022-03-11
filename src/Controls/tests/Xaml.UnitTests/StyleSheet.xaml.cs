@@ -21,13 +21,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[SetUp]
-			public void SetUp()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-				Microsoft.Maui.Controls.Internals.Registrar.RegisterAll(new Type[0]);
-			}
-
 			[TestCase(false), TestCase(true)]
 			public void EmbeddedStyleSheetsAreLoaded(bool useCompiledXaml)
 			{

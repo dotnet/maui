@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 39624, "CarouselPage.Children Appear Out of Order", PlatformAffected.WinRT)]
-	public class Bugzilla39624 : TestCarouselPage
+	internal class Bugzilla39624 : TestCarouselPage
 	{
 		protected override void Init()
 		{

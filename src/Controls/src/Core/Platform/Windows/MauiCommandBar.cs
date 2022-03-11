@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -60,26 +61,26 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				// If there's no title to display (e.g., toolbarplacement is set to bottom)
 				// or the title is collapsed (e.g., because it's empty)
-				if (frameworkElement == null || frameworkElement.Visibility != Visibility.Visible)
+				if (frameworkElement == null || frameworkElement.Visibility != WVisibility.Visible)
 				{
 					// Just collapse the whole thing
-					Visibility = Visibility.Collapsed;
+					Visibility = WVisibility.Collapsed;
 					return;
 				}
 			
 				// The title needs to be visible, but we're not allowed to show a toolbar
 				// So we need to hide the toolbar items
 
-				Visibility = Visibility.Visible;
+				Visibility = WVisibility.Visible;
 
 				if (_moreButton != null)
 				{
-					_moreButton.Visibility = Visibility.Collapsed;
+					_moreButton.Visibility = WVisibility.Collapsed;
 				}
 
 				if (_primaryItemsControl != null)
 				{
-					_primaryItemsControl.Visibility = Visibility.Collapsed;
+					_primaryItemsControl.Visibility = WVisibility.Collapsed;
 				}
 
 				return;
@@ -90,11 +91,11 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_primaryItemsControl != null)
 			{
 				// This is normally visible by default, but it might have been collapsed by the toolbar consistency rules above
-				_primaryItemsControl.Visibility = Visibility.Visible;
+				_primaryItemsControl.Visibility = WVisibility.Visible;
 			}
 
 			// Are there any commands to display?
-			var visibility = PrimaryCommands.Count + SecondaryCommands.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+			var visibility = PrimaryCommands.Count + SecondaryCommands.Count > 0 ? WVisibility.Visible : WVisibility.Collapsed;
 
 			if (_moreButton != null)
 			{
@@ -105,10 +106,10 @@ namespace Microsoft.Maui.Controls.Platform
 				// but it became available in 10.0.14393.0 and we have to support 10.0.10240
 			}
 			
-			if (frameworkElement != null && frameworkElement.Visibility != Visibility.Collapsed)
+			if (frameworkElement != null && frameworkElement.Visibility != WVisibility.Collapsed)
 			{
 				// If there's a title to display, we have to be visible whether or not we have commands
-				Visibility = Visibility.Visible;
+				Visibility = WVisibility.Visible;
 			}
 			else
 			{

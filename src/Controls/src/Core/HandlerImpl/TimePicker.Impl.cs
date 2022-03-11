@@ -1,9 +1,8 @@
 ﻿namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="Type[@FullName='Microsoft.Maui.Controls.TimePicker']/Docs" />
 	public partial class TimePicker : ITimePicker
 	{
-		Font? _font;
-
-		Font ITextStyle.Font => _font ??= Font.OfSize(FontFamily, FontSize).WithAttributes(FontAttributes);
+		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
 	}
 }

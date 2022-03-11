@@ -3,7 +3,7 @@ using Microsoft.UI;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public sealed class ColorConverter : UI.Xaml.Data.IValueConverter
 	{
@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 				(WBrush)UI.Xaml.Application.Current.Resources[defaultColorKey] : 
 				new WSolidColorBrush(Colors.Transparent);
 
-			return color.IsDefault() ? defaultBrush : color.ToNative();
+			return color.IsDefault() ? defaultBrush : color.ToPlatform();
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)

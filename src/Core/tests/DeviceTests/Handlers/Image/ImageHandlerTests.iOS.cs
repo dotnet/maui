@@ -3,12 +3,13 @@ using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using ObjCRuntime;
 using UIKit;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ImageHandlerTests
+	public partial class ImageHandlerTests<TImageHandler, TStub>
 	{
 		[Theory]
 		[InlineData("#FF0000")]
@@ -16,11 +17,11 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task InitializingNullSourceOnlyUpdatesNull(string colorHex)
 		{
-			var expectedColor = Color.FromHex(colorHex);
+			var expectedColor = Color.FromArgb(colorHex);
 
-			var image = new ImageStub
+			var image = new TStub
 			{
-				BackgroundColor = expectedColor,
+				Background = new SolidPaintStub(expectedColor),
 			};
 
 			await InvokeOnMainThreadAsync(async () =>
@@ -33,16 +34,16 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal("Image", handler.ImageEvents[0].Member);
 				Assert.Null(handler.ImageEvents[0].Value);
 
-				await handler.NativeView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor);
 			});
 		}
 
 		[Fact]
 		public async Task InitializingSourceOnlyUpdatesImageOnce()
 		{
-			var image = new ImageStub
+			var image = new TStub
 			{
-				BackgroundColor = Colors.Black,
+				Background = new SolidPaintStub(Colors.Black),
 				Source = new FileImageSourceStub("red.png"),
 			};
 
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.NativeView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
 
 				Assert.Equal(2, handler.ImageEvents.Count);
 				Assert.Equal("Image", handler.ImageEvents[0].Member);
@@ -65,9 +66,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task UpdatingSourceOnlyUpdatesDrawableTwice()
 		{
-			var image = new ImageStub
+			var image = new TStub
 			{
-				BackgroundColor = Colors.Black,
+				Background = new SolidPaintStub(Colors.Black),
 				Source = new FileImageSourceStub("red.png"),
 			};
 
@@ -77,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.NativeView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
 
 				handler.ImageEvents.Clear();
 
@@ -86,7 +87,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.NativeView.AssertContainsColor(Colors.Blue);
+				await handler.PlatformView.AssertContainsColor(Colors.Blue);
 
 				Assert.Equal(2, handler.ImageEvents.Count);
 				Assert.Equal("Image", handler.ImageEvents[0].Member);
@@ -106,7 +107,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Null(events[0].Value);
 			Assert.Equal("Image", events[1].Member);
 			var image = Assert.IsType<UIImage>(events[1].Value);
-			image.AssertContainsColor(Colors.Blue.ToNative());
+			image.AssertContainsColor(Colors.Blue.ToPlatform());
 		}
 
 		[Fact]
@@ -121,17 +122,17 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Null(events[1].Value);
 			Assert.Equal("Image", events[2].Member);
 			var image = Assert.IsType<UIImage>(events[2].Value);
-			image.AssertContainsColor(Colors.Red.ToNative());
+			image.AssertContainsColor(Colors.Red.ToPlatform());
 		}
 
-		UIImageView GetNativeImageView(ImageHandler imageHandler) =>
-			(UIImageView)imageHandler.NativeView;
+		UIImageView GetPlatformImageView(IImageHandler imageHandler) =>
+			imageHandler.PlatformView;
 
-		bool GetNativeIsAnimationPlaying(ImageHandler imageHandler) =>
-			GetNativeImageView(imageHandler).IsAnimating;
+		bool GetNativeIsAnimationPlaying(IImageHandler imageHandler) =>
+			GetPlatformImageView(imageHandler).IsAnimating;
 
-		Aspect GetNativeAspect(ImageHandler imageHandler) =>
-			GetNativeImageView(imageHandler).ContentMode switch
+		Aspect GetNativeAspect(IImageHandler imageHandler) =>
+			GetPlatformImageView(imageHandler).ContentMode switch
 			{
 				UIViewContentMode.ScaleAspectFit => Aspect.AspectFit,
 				UIViewContentMode.ScaleAspectFill => Aspect.AspectFill,

@@ -2,11 +2,13 @@
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.TextCellRenderer instead")]
 	public class TextCellRenderer : CellRenderer
 	{
 		internal TextCellView View { get; private set; }

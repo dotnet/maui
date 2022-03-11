@@ -1,28 +1,53 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.TypeConversion(typeof(FontAttributes))]
+	/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributes.xml" path="Type[@FullName='Microsoft.Maui.Controls.FontAttributes']/Docs" />
+	[Flags]
+	public enum FontAttributes
+	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributes.xml" path="//Member[@MemberName='None']/Docs" />
+		None = 0,
+		/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributes.xml" path="//Member[@MemberName='Bold']/Docs" />
+		Bold = 1 << 0,
+		/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributes.xml" path="//Member[@MemberName='Italic']/Docs" />
+		Italic = 1 << 1
+	}
+
+	/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributesConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.FontAttributesConverter']/Docs" />
 	public sealed class FontAttributesConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributesConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributesConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs" />
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributesConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs" />
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (string.IsNullOrEmpty(value))
+			var strValue = value?.ToString();
+
+			if (string.IsNullOrEmpty(strValue))
 				return FontAttributes.None;
 
 			FontAttributes attributes = FontAttributes.None;
-			value = value.Trim();
-			if (value.Contains(","))
+			strValue = strValue.Trim();
+			if (strValue.IndexOf(",", StringComparison.Ordinal) != -1)
 			{ //Xaml
-				foreach (var part in value.Split(','))
-					attributes |= ParseSingleAttribute(part, value);
+				foreach (var part in strValue.Split(','))
+					attributes |= ParseSingleAttribute(part, strValue);
 
 			}
 			else
 			{ //CSS or single value
-				foreach (var part in value.Split(' '))
-					attributes |= ParseSingleAttribute(part, value);
+				foreach (var part in strValue.Split(' '))
+					attributes |= ParseSingleAttribute(part, strValue);
 			}
 			return attributes;
 		}
@@ -40,9 +65,10 @@ namespace Microsoft.Maui.Controls
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", originalvalue, typeof(FontAttributes)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributesConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is FontAttributes attr))
+			if (value is not FontAttributes attr)
 				throw new NotSupportedException();
 			if (attr == FontAttributes.None)
 				return "";

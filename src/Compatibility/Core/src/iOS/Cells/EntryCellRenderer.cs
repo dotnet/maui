@@ -2,12 +2,14 @@ using System;
 using System.ComponentModel;
 using Foundation;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform.iOS;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.EntryCellRenderer instead")]
 	public class EntryCellRenderer : CellRenderer
 	{
 		static readonly Color DefaultTextColor = ColorExtensions.LabelColor.ToColor();
@@ -94,7 +96,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		static void UpdateHorizontalTextAlignment(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			IViewController viewController = entryCell.Parent as View;
-			cell.TextField.TextAlignment = entryCell.HorizontalTextAlignment.ToNativeTextAlignment(viewController?.EffectiveFlowDirection ?? default(EffectiveFlowDirection));
+			cell.TextField.TextAlignment = entryCell.HorizontalTextAlignment.ToPlatformTextAlignment(viewController?.EffectiveFlowDirection ?? default(EffectiveFlowDirection));
 		}
 
 		static void UpdateIsEnabled(EntryCellTableViewCell cell, EntryCell entryCell)
@@ -164,33 +166,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			static bool OnShouldReturn(UITextField view)
 			{
-                var realCell = GetRealCell<EntryCellTableViewCell>(view);
-                var handler = realCell?.KeyboardDoneButtonPressed;
-                if (handler != null)
-                    handler(realCell, EventArgs.Empty);
+				var realCell = GetRealCell<EntryCellTableViewCell>(view);
+				var handler = realCell?.KeyboardDoneButtonPressed;
+				if (handler != null)
+					handler(realCell, EventArgs.Empty);
 
-                view.ResignFirstResponder();
+				view.ResignFirstResponder();
 				return true;
 			}
 
-            static void TextFieldOnEditingChanged(object sender, EventArgs eventArgs)
+			static void TextFieldOnEditingChanged(object sender, EventArgs eventArgs)
 			{
-                var realCell = GetRealCell<EntryCellTableViewCell>(sender as UIView);
-                var handler = realCell?.TextFieldTextChanged;
-                if (handler != null)
-                    handler(realCell, EventArgs.Empty);
-            }
+				var realCell = GetRealCell<EntryCellTableViewCell>(sender as UIView);
+				var handler = realCell?.TextFieldTextChanged;
+				if (handler != null)
+					handler(realCell, EventArgs.Empty);
+			}
 
-            static T GetRealCell<T>(UIView view) where T : UIView
-            {
-                T realCell = null;
-                while (view.Superview != null && realCell == null)
-                {
-                    view = view.Superview;
-                    realCell = view as T;
-                }
-                return realCell;
-            }
+			static T GetRealCell<T>(UIView view) where T : UIView
+			{
+				T realCell = null;
+				while (view.Superview != null && realCell == null)
+				{
+					view = view.Superview;
+					realCell = view as T;
+				}
+				return realCell;
+			}
 		}
 	}
 }

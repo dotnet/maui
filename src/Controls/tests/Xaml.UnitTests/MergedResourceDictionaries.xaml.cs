@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
@@ -20,18 +20,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[SetUp]
-			public void Setup()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				Device.PlatformServices = null;
-			}
-
 			[TestCase(false)]
 			[TestCase(true)]
 			public void MergedResourcesAreFound(bool useCompiledXaml)
@@ -40,7 +28,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var layout = new MergedResourceDictionaries(useCompiledXaml);
 				Assert.That(layout.label0.Text, Is.EqualTo("Foo"));
 				Assert.That(layout.label0.TextColor, Is.EqualTo(Colors.Pink));
-				Assert.That(layout.label0.BackgroundColor, Is.EqualTo(Color.FromHex("#111")));
+				Assert.That(layout.label0.BackgroundColor, Is.EqualTo(Color.FromArgb("#111")));
 			}
 		}
 	}

@@ -1,9 +1,0 @@
-<Project>
-  <!-- NOTE: we can eventually remove these settings when MAUI is a .NET workload -->
-  <PropertyGroup>
-    <_KeepLaunchProfiles>true</_KeepLaunchProfiles>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectCapability Include="MauiSingleProject" />
-  </ItemGroup>
-</Project>

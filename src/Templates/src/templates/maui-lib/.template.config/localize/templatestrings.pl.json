@@ -1,0 +1,6 @@
+{
+  "author": "Microsoft",
+  "name": ".NET MAUI Class Library (Preview)",
+  "description": "A project for creating a .NET MAUI class library",
+  "postActions/openInEditor/description": "Opens Class1.cs in the editor."
+}

@@ -139,10 +139,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Tracker?.UpdateLayout();
 		}
 
-		public ViewGroup ViewGroup => this;
-
 		AView IVisualElementRenderer.View => this;
 
+		[PortHandler]
 		public override void Draw(Canvas canvas)
 		{
 			try
@@ -275,10 +274,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			// if the target sdk >= 17 then setting the LayoutDirection on the scroll view natively takes care of the scroll
 			if (!_checkedForRtlScroll && _hScrollView != null && Element is IVisualElementController controller && controller.EffectiveFlowDirection.IsRightToLeft())
 			{
-				if (Context.TargetSdkVersion() < 17)
-					_hScrollView.ScrollX = _container.MeasuredWidth - _hScrollView.MeasuredWidth - _hScrollView.ScrollX;
-				else
-					Device.BeginInvokeOnMainThread(() => UpdateScrollPosition(_hScrollView.ScrollX, ScrollY));
+				Post(() => UpdateScrollPosition(_hScrollView.ScrollX, ScrollY));
 			}
 
 			_checkedForRtlScroll = true;
@@ -320,8 +316,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.SetContainer(this);
-			effect.SetControl(this);
+			effect.Container = this;
+			effect.Control = this;
 		}
 
 		static int GetDistance(double start, double position, double v)

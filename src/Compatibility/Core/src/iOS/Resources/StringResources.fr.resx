@@ -122,7 +122,7 @@
     <comment>ContextActionCell Cancel button</comment>
   </data>
   <data name="More" xml:space="preserve">
-    <value>Options</value>
+    <value>Plus</value>
     <comment>ContextActionCell More button</comment>
   </data>
 </root>

@@ -2,6 +2,7 @@
 using System.Linq;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Platform;
 using AColor = Android.Graphics.Color;
 using APath = Android.Graphics.Path;
@@ -264,7 +265,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			catch (Exception ex)
 			{
-				Internals.Log.Warning(nameof(BorderDrawable), $"Unable to create circle image: {ex}");
+				Application.Current?.FindMauiContext()?.CreateLogger<BorderDrawable>()?.LogWarning(ex, "Unable to create circle image");
 			}
 
 			finishDraw(canvas);

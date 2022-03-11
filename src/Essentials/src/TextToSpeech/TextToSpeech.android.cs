@@ -10,26 +10,29 @@ using AndroidTextToSpeech = Android.Speech.Tts.TextToSpeech;
 using Debug = System.Diagnostics.Debug;
 using JavaLocale = Java.Util.Locale;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class TextToSpeech
+	public partial class TextToSpeechImplementation : ITextToSpeech
 	{
 		const int maxSpeechInputLengthDefault = 4000;
 
-		static WeakReference<TextToSpeechImplementation> textToSpeechRef = null;
+		static WeakReference<TextToSpeechInternalImplementation> textToSpeechRef = null;
 
-		static TextToSpeechImplementation GetTextToSpeech()
+		static TextToSpeechInternalImplementation GetTextToSpeech()
 		{
 			if (textToSpeechRef == null || !textToSpeechRef.TryGetTarget(out var tts))
 			{
-				tts = new TextToSpeechImplementation();
-				textToSpeechRef = new WeakReference<TextToSpeechImplementation>(tts);
+				tts = new TextToSpeechInternalImplementation();
+				textToSpeechRef = new WeakReference<TextToSpeechInternalImplementation>(tts);
 			}
 
 			return tts;
 		}
 
-		internal static Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
+		public Task SpeakAsync(string text, CancellationToken cancelToken)
+			=> SpeakAsync(text, default, cancelToken);
+
+		public Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken)
 		{
 			var textToSpeech = GetTextToSpeech();
 
@@ -37,13 +40,13 @@ namespace Microsoft.Maui.Essentials
 				throw new PlatformNotSupportedException("Unable to start text-to-speech engine, not supported on device.");
 
 			var max = maxSpeechInputLengthDefault;
-			if (Platform.HasApiLevel(BuildVersionCodes.JellyBeanMr2))
+			if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.JellyBeanMr2))
 				max = AndroidTextToSpeech.MaxSpeechInputLength;
 
 			return textToSpeech.SpeakAsync(text, max, options, cancelToken);
 		}
 
-		internal static Task<IEnumerable<Locale>> PlatformGetLocalesAsync()
+		public Task<IEnumerable<Locale>> GetLocalesAsync()
 		{
 			var textToSpeech = GetTextToSpeech();
 
@@ -54,7 +57,7 @@ namespace Microsoft.Maui.Essentials
 		}
 	}
 
-	class TextToSpeechImplementation : Java.Lang.Object, AndroidTextToSpeech.IOnInitListener,
+	class TextToSpeechInternalImplementation : Java.Lang.Object, AndroidTextToSpeech.IOnInitListener,
 #pragma warning disable CS0618
 		AndroidTextToSpeech.IOnUtteranceCompletedListener
 #pragma warning restore CS0618
@@ -109,6 +112,8 @@ namespace Microsoft.Maui.Essentials
 			if (tcsUtterances?.Task != null)
 				await tcsUtterances.Task;
 
+			tcsUtterances = new TaskCompletionSource<bool>();
+
 			if (cancelToken != default)
 			{
 				cancelToken.Register(() =>
@@ -150,7 +155,6 @@ namespace Microsoft.Maui.Essentials
 			var parts = text.SplitSpeak(max);
 
 			numExpectedUtterances = parts.Count;
-			tcsUtterances = new TaskCompletionSource<bool>();
 
 			var guid = Guid.NewGuid().ToString();
 
@@ -187,16 +191,13 @@ namespace Microsoft.Maui.Essentials
 		{
 			await Initialize();
 
-			if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
+			try
 			{
-				try
-				{
-					return tts.AvailableLanguages.Select(a => new Locale(a.Language, a.Country, a.DisplayName, string.Empty));
-				}
-				catch (Exception ex)
-				{
-					Debug.WriteLine("Unable to query language on new API, attempting older api: " + ex);
-				}
+				return tts.AvailableLanguages.Select(a => new Locale(a.Language, a.Country, a.DisplayName, string.Empty));
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine("Unable to query language on new API, attempting older api: " + ex);
 			}
 
 			return JavaLocale.GetAvailableLocales()
@@ -233,22 +234,14 @@ namespace Microsoft.Maui.Essentials
 #pragma warning disable 0618
 		void SetDefaultLanguage()
 		{
-			if (Platform.HasApiLevel(BuildVersionCodes.JellyBeanMr2))
+			try
 			{
-				try
-				{
-					if (tts.DefaultLanguage == null && tts.Language != null)
-						tts.SetLanguage(tts.Language);
-					else if (tts.DefaultLanguage != null)
-						tts.SetLanguage(tts.DefaultLanguage);
-				}
-				catch
-				{
-					if (tts.Language != null)
-						tts.SetLanguage(tts.Language);
-				}
+				if (tts.DefaultLanguage == null && tts.Language != null)
+					tts.SetLanguage(tts.Language);
+				else if (tts.DefaultLanguage != null)
+					tts.SetLanguage(tts.DefaultLanguage);
 			}
-			else
+			catch
 			{
 				if (tts.Language != null)
 					tts.SetLanguage(tts.Language);

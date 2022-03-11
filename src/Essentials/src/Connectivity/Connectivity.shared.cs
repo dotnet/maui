@@ -1,9 +1,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
+	public interface IConnectivity
+	{
+		IEnumerable<ConnectionProfile> ConnectionProfiles { get; }
+
+		NetworkAccess NetworkAccess { get; }
+
+		void StartListeners();
+
+		void StopListeners();
+	}
+
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
 	public static partial class Connectivity
 	{
 		static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChangedInternal;
@@ -13,9 +28,11 @@ namespace Microsoft.Maui.Essentials
 		static NetworkAccess currentAccess;
 		static List<ConnectionProfile> currentProfiles;
 
-		public static NetworkAccess NetworkAccess => PlatformNetworkAccess;
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='NetworkAccess']/Docs" />
+		public static NetworkAccess NetworkAccess => Current.NetworkAccess;
 
-		public static IEnumerable<ConnectionProfile> ConnectionProfiles => PlatformConnectionProfiles.Distinct();
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='ConnectionProfiles']/Docs" />
+		public static IEnumerable<ConnectionProfile> ConnectionProfiles => Current.ConnectionProfiles.Distinct();
 
 		public static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged
 		{
@@ -28,7 +45,7 @@ namespace Microsoft.Maui.Essentials
 				if (!wasRunning && ConnectivityChangedInternal != null)
 				{
 					SetCurrent();
-					StartListeners();
+					Current.StartListeners();
 				}
 			}
 
@@ -39,7 +56,7 @@ namespace Microsoft.Maui.Essentials
 				ConnectivityChangedInternal -= value;
 
 				if (wasRunning && ConnectivityChangedInternal == null)
-					StopListeners();
+					Current.StopListeners();
 			}
 		}
 
@@ -49,13 +66,13 @@ namespace Microsoft.Maui.Essentials
 			currentProfiles = new List<ConnectionProfile>(ConnectionProfiles);
 		}
 
-		static void OnConnectivityChanged(NetworkAccess access, IEnumerable<ConnectionProfile> profiles)
+		internal static void OnConnectivityChanged(NetworkAccess access, IEnumerable<ConnectionProfile> profiles)
 			=> OnConnectivityChanged(new ConnectivityChangedEventArgs(access, profiles));
 
-		static void OnConnectivityChanged()
+		internal static void OnConnectivityChanged()
 			=> OnConnectivityChanged(NetworkAccess, ConnectionProfiles);
 
-		static void OnConnectivityChanged(ConnectivityChangedEventArgs e)
+		internal static void OnConnectivityChanged(ConnectivityChangedEventArgs e)
 		{
 			if (currentAccess != e.NetworkAccess || !currentProfiles.SequenceEqual(e.ConnectionProfiles))
 			{
@@ -63,20 +80,39 @@ namespace Microsoft.Maui.Essentials
 				MainThread.BeginInvokeOnMainThread(() => ConnectivityChangedInternal?.Invoke(null, e));
 			}
 		}
+
+#nullable enable
+		static IConnectivity? currentImplementation;
+#nullable disable
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IConnectivity Current =>
+			currentImplementation ??= new ConnectivityImplementation();
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#nullable enable
+		public static void SetCurrent(IConnectivity? implementation) =>
+			currentImplementation = implementation;
+#nullable disable
 	}
 
+	/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ConnectivityChangedEventArgs']/Docs" />
 	public class ConnectivityChangedEventArgs : EventArgs
 	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public ConnectivityChangedEventArgs(NetworkAccess access, IEnumerable<ConnectionProfile> connectionProfiles)
 		{
 			NetworkAccess = access;
 			ConnectionProfiles = connectionProfiles;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='NetworkAccess']/Docs" />
 		public NetworkAccess NetworkAccess { get; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='ConnectionProfiles']/Docs" />
 		public IEnumerable<ConnectionProfile> ConnectionProfiles { get; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='ToString']/Docs" />
 		public override string ToString() =>
 			$"{nameof(NetworkAccess)}: {NetworkAccess}, " +
 			$"{nameof(ConnectionProfiles)}: [{string.Join(", ", ConnectionProfiles)}]";

@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ImageHandlerTests
+	public partial class ImageHandlerTests<TImageHandler, TStub>
 	{
 		[Theory]
 		[InlineData("#FF0000")]
@@ -17,11 +17,11 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task InitializingNullSourceOnlyUpdatesTransparent(string colorHex)
 		{
-			var expectedColor = Color.FromHex(colorHex);
+			var expectedColor = Color.FromArgb(colorHex);
 
-			var image = new ImageStub
+			var image = new TStub
 			{
-				BackgroundColor = expectedColor,
+				Background = new SolidPaintStub(expectedColor)
 			};
 
 			await InvokeOnMainThreadAsync(async () =>
@@ -34,16 +34,16 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal("SetImageResource", handler.ImageEvents[0].Member);
 				Assert.Equal(Android.Resource.Color.Transparent, handler.ImageEvents[0].Value);
 
-				await handler.NativeView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor);
 			});
 		}
 
 		[Fact]
 		public async Task InitializingSourceOnlyUpdatesDrawableOnce()
 		{
-			var image = new ImageStub
+			var image = new TStub
 			{
-				BackgroundColor = Colors.Black,
+				Background = new SolidPaintStub(Colors.Black),
 				Source = new FileImageSourceStub("red.png"),
 			};
 
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.NativeView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
 
 				Assert.Equal(2, handler.ImageEvents.Count);
 				Assert.Equal("SetImageResource", handler.ImageEvents[0].Member);
@@ -66,9 +66,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task UpdatingSourceOnlyUpdatesDrawableTwice()
 		{
-			var image = new ImageStub
+			var image = new TStub
 			{
-				BackgroundColor = Colors.Black,
+				Background = new SolidPaintStub(Colors.Black),
 				Source = new FileImageSourceStub("red.png"),
 			};
 
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.NativeView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
 
 				handler.ImageEvents.Clear();
 
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.NativeView.AssertContainsColor(Colors.Blue);
+				await handler.PlatformView.AssertContainsColor(Colors.Blue);
 
 				Assert.Equal(2, handler.ImageEvents.Count);
 				Assert.Equal("SetImageResource", handler.ImageEvents[0].Member);
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(Android.Resource.Color.Transparent, events[0].Value);
 			Assert.Equal("SetImageDrawable", events[1].Member);
 			var drawable = Assert.IsType<ColorDrawable>(events[1].Value);
-			drawable.Color.IsEquivalent(Colors.Blue.ToNative());
+			drawable.Color.IsEquivalent(Colors.Blue.ToPlatform());
 		}
 
 		[Fact]
@@ -122,18 +122,18 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(Android.Resource.Color.Transparent, events[1].Value);
 			Assert.Equal("SetImageDrawable", events[2].Member);
 			var drawable = Assert.IsType<ColorDrawable>(events[2].Value);
-			drawable.Color.IsEquivalent(Colors.Red.ToNative());
+			drawable.Color.IsEquivalent(Colors.Red.ToPlatform());
 		}
 
-		ImageView GetNativeImageView(ImageHandler imageHandler) =>
-			(ImageView)imageHandler.NativeView;
+		ImageView GetPlatformImageView(IImageHandler imageHandler) =>
+			imageHandler.PlatformView;
 
-		bool GetNativeIsAnimationPlaying(ImageHandler imageHandler) =>
-			GetNativeImageView(imageHandler).Drawable is IAnimatable animatable && animatable.IsRunning;
+		bool GetNativeIsAnimationPlaying(IImageHandler imageHandler) =>
+			GetPlatformImageView(imageHandler).Drawable is IAnimatable animatable && animatable.IsRunning;
 
-		Aspect GetNativeAspect(ImageHandler imageHandler)
+		Aspect GetNativeAspect(IImageHandler imageHandler)
 		{
-			var scaleType = GetNativeImageView(imageHandler).GetScaleType();
+			var scaleType = GetPlatformImageView(imageHandler).GetScaleType();
 			if (scaleType == ImageView.ScaleType.Center)
 				return Aspect.Center;
 			if (scaleType == ImageView.ScaleType.CenterCrop)

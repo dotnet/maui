@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using CoreSpotlight;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

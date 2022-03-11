@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls.Internals
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Profile']/Docs" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public struct Profile : IDisposable
 	{
@@ -20,8 +21,10 @@ namespace Microsoft.Maui.Controls.Internals
 			public int Depth;
 			public int Line;
 		}
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Data']/Docs" />
 		public static List<Datum> Data;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='IsEnabled']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool IsEnabled { get; private set; } = false;
 
@@ -34,6 +37,7 @@ namespace Microsoft.Maui.Controls.Internals
 		readonly string _name;
 		readonly int _slot;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Enable']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void Enable()
 		{
@@ -46,6 +50,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Start']/Docs" />
 		public static void Start()
 		{
 			if (!IsEnabled)
@@ -54,6 +59,7 @@ namespace Microsoft.Maui.Controls.Internals
 			Running = true;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Stop']/Docs" />
 		public static void Stop()
 		{
 			if (!IsEnabled)
@@ -65,6 +71,7 @@ namespace Microsoft.Maui.Controls.Internals
 				Stack.Pop();
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='FrameBegin']/Docs" />
 		public static void FrameBegin(
 			[CallerMemberName] string name = "",
 			[CallerLineNumber] int line = 0)
@@ -75,6 +82,7 @@ namespace Microsoft.Maui.Controls.Internals
 			FrameBeginBody(name, null, line);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='FrameEnd']/Docs" />
 		public static void FrameEnd(
 			[CallerMemberName] string name = "")
 		{
@@ -84,6 +92,7 @@ namespace Microsoft.Maui.Controls.Internals
 			FrameEndBody(name);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='FramePartition']/Docs" />
 		public static void FramePartition(
 			string id,
 			[CallerLineNumber] int line = 0)
@@ -148,6 +157,7 @@ namespace Microsoft.Maui.Controls.Internals
 			Depth++;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Dispose']/Docs" />
 		public void Dispose()
 		{
 			if (!IsEnabled)

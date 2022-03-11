@@ -1,10 +1,12 @@
 using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/BindingBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindingBase']/Docs" />
 	public abstract class BindingBase
 	{
 		static readonly ConditionalWeakTable<IEnumerable, CollectionSynchronizationContext> SynchronizedCollections = new ConditionalWeakTable<IEnumerable, CollectionSynchronizationContext>();
@@ -19,6 +21,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindingBase.xml" path="//Member[@MemberName='Mode']/Docs" />
 		public BindingMode Mode
 		{
 			get { return _mode; }
@@ -37,6 +40,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindingBase.xml" path="//Member[@MemberName='StringFormat']/Docs" />
 		public string StringFormat
 		{
 			get { return _stringFormat; }
@@ -47,6 +51,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindingBase.xml" path="//Member[@MemberName='TargetNullValue']/Docs" />
 		public object TargetNullValue
 		{
 			get { return _targetNullValue; }
@@ -57,6 +62,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindingBase.xml" path="//Member[@MemberName='FallbackValue']/Docs" />
 		public object FallbackValue
 		{
 			get => _fallbackValue;
@@ -90,6 +96,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindingBase.xml" path="//Member[@MemberName='DisableCollectionSynchronization']/Docs" />
 		public static void DisableCollectionSynchronization(IEnumerable collection)
 		{
 			if (collection == null)
@@ -98,6 +105,7 @@ namespace Microsoft.Maui.Controls
 			SynchronizedCollections.Remove(collection);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindingBase.xml" path="//Member[@MemberName='EnableCollectionSynchronization']/Docs" />
 		public static void EnableCollectionSynchronization(IEnumerable collection, object context, CollectionSynchronizationCallback callback)
 		{
 			if (collection == null)
@@ -142,7 +150,7 @@ namespace Microsoft.Maui.Controls
 			catch (FormatException)
 			{
 				value = null;
-				Log.Warning("Binding", "FormatException");
+				Application.Current?.FindMauiContext()?.CreateLogger<BindingBase>()?.LogWarning("FormatException");
 				return false;
 			}
 		}
@@ -157,7 +165,7 @@ namespace Microsoft.Maui.Controls
 			catch (FormatException)
 			{
 				value = null;
-				Log.Warning("Binding", "FormatException");
+				Application.Current?.FindMauiContext()?.CreateLogger<BindingBase>()?.LogWarning("FormatException");
 				return false;
 			}
 		}

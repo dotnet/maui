@@ -1,10 +1,12 @@
-using UIKit;
-using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls;
 using System.Collections.Generic;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Platform;
+using ObjCRuntime;
+using UIKit;
 
 [assembly: ExportRenderer(typeof(Button), typeof(CustomRenderer40251))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
@@ -39,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			if (e.NewElement != null)
 			{
 				if (Control != null)
-					Control.TitleShadowOffset = new CoreGraphics.CGSize(2, 2);
+					Control.TitleLabel.ShadowOffset = new CoreGraphics.CGSize(2, 2);
 			}
 		}
 

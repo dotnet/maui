@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	public abstract class Gh3260MyGLayout<T> : Layout<T> where T : View
+	public abstract class Gh3260MyGLayout<T> : Controls.Compatibility.Layout<T> where T : View
 	{
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
@@ -38,18 +38,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[SetUp]
-			public void Setup()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				Device.PlatformServices = null;
-			}
-
 			[TestCase(false), TestCase(true)]
 			public void AssignContentWithNoContentAttributeDoesNotThrow(bool useCompiledXaml)
 			{

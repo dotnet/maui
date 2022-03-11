@@ -79,8 +79,8 @@ namespace Microsoft.Maui.Controls.Platform
 				return _defaultAutomationPropertiesLabeledBy;
 
 			// TODO Maui: this is a bit of a hack because Elements
-			// currently don't implement IFrameworkElement but they should
-			mauiContext ??= (Element as IFrameworkElement)?.Handler?.MauiContext;
+			// currently don't implement IView but they should
+			mauiContext ??= (Element as IView)?.Handler?.MauiContext;
 
 			if (_defaultAutomationPropertiesLabeledBy == null)
 				_defaultAutomationPropertiesLabeledBy = (UIElement)Control.GetValue(NativeAutomationProperties.LabeledByProperty);
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Platform
 			FrameworkElement nativeElement = null;
 
 			if(mauiContext != null)
-				nativeElement = (elemValue as IView)?.GetOrCreateHandler(mauiContext)?.NativeView as FrameworkElement;
+				nativeElement = (elemValue as IView)?.ToHandler(mauiContext)?.PlatformView as FrameworkElement;
 
 			if (nativeElement != null)
 				Control.SetValue(AutomationProperties.LabeledByProperty, nativeElement);

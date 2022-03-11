@@ -8,9 +8,9 @@ using Android.Provider;
 using CommonDataKinds = Android.Provider.ContactsContract.CommonDataKinds;
 using StructuredName = Android.Provider.ContactsContract.CommonDataKinds.StructuredName;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Contacts
+	public class ContactsImplementation : IContacts
 	{
 		const string idCol = ContactsContract.Contacts.InterfaceConsts.Id;
 		const string displayNameCol = ContactsContract.Contacts.InterfaceConsts.DisplayName;
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Essentials
 
 		const string contactIdCol = CommonDataKinds.Phone.InterfaceConsts.ContactId;
 
-		static async Task<Contact> PlatformPickContactAsync()
+		public async Task<Contact> PickContactAsync()
 		{
 			var intent = new Intent(Intent.ActionPick, ContactsContract.Contacts.ContentUri);
 			var result = await IntermediateActivity.StartAsync(intent, Platform.requestCodePickContact).ConfigureAwait(false);
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Essentials
 			return GetContact(cursor);
 		}
 
-		static Task<IEnumerable<Contact>> PlatformGetAllAsync(CancellationToken cancellationToken)
+		public Task<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			var cursor = Platform.ContentResolver.Query(ContactsContract.Contacts.ContentUri, null, null, null, null);
 			return Task.FromResult(GetEnumerable());

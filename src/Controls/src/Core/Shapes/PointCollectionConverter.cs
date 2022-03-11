@@ -1,15 +1,28 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PointCollectionConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PointCollectionConverter']/Docs" />
 	public class PointCollectionConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PointCollectionConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PointCollectionConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs" />
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PointCollectionConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs" />
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			string[] points = value.Split(new char[] { ' ', ',' });
+			var strValue = value?.ToString();
+			string[] points = strValue.Split(new char[] { ' ', ',' });
 			var pointCollection = new PointCollection();
 			double x = 0;
 			bool hasX = false;
@@ -42,9 +55,10 @@ namespace Microsoft.Maui.Controls.Shapes
 			return pointCollection;
 		}
 
-		public override string ConvertToInvariantString(object value)
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PointCollectionConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is PointCollection pc))
+			if (value is not PointCollection pc)
 				throw new NotSupportedException();
 
 			var converter = new PointTypeConverter();

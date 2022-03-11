@@ -1,7 +1,7 @@
 using System;
 using Microsoft.UI.Xaml;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public sealed class TextAlignmentToHorizontalAlignmentConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 			switch (alignment)
 			{
 				case Microsoft.UI.Xaml.TextAlignment.Center:
-					return HorizontalAlignment.Center;
+					return HorizontalAlignment.Center; 
 				case Microsoft.UI.Xaml.TextAlignment.Left:
 					return HorizontalAlignment.Left;
 				case Microsoft.UI.Xaml.TextAlignment.Right:

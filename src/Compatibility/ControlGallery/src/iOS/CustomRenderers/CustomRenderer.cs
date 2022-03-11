@@ -1,8 +1,10 @@
 ﻿using System;
-using UIKit;
-using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
+using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Platform;
+using ObjCRuntime;
+using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue6368;
 
 [assembly: ExportRenderer(typeof(CustomView), typeof(CustomRenderer))]

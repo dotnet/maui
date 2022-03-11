@@ -2,39 +2,37 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
+using NSubstitute;
 using NUnit.Framework;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	[TestFixture]
 	public class ViewUnitTests : BaseTestFixture
 	{
+		MockDeviceInfo mockDeviceInfo;
+
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (ve, widthConstraint, heightConstraint) =>
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+			MockPlatformSizeService.Current.GetPlatformSizeFunc = (ve, widthConstraint, heightConstraint) =>
 			{
 				if (widthConstraint < 30)
 					return new SizeRequest(new Size(40, 50));
 				return new SizeRequest(new Size(20, 100));
-			});
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
+			};
 		}
 
 		[Test]
 		public void TestLayout()
 		{
 			View view = new View();
-			view.Layout(new Rectangle(50, 25, 100, 200));
+			view.Layout(new Rect(50, 25, 100, 200));
 
 			Assert.AreEqual(view.X, 50);
 			Assert.AreEqual(view.Y, 25);
@@ -58,7 +56,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(fired);
 
-			var result = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
+			var result = view.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
 			Assert.AreEqual(new Size(200, 300), result);
 		}
 
@@ -70,7 +68,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool fired = false;
 			view.SizeChanged += (sender, e) => fired = true;
 
-			view.Layout(new Rectangle(0, 0, 100, 100));
+			view.Layout(new Rect(0, 0, 100, 100));
 
 			Assert.True(fired);
 		}
@@ -105,11 +103,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var view = new View { IsPlatformEnabled = true };
 
-			Assert.True(view.IsNativeStateConsistent);
+			Assert.True(view.IsPlatformStateConsistent);
 
-			view.IsNativeStateConsistent = false;
+			view.IsPlatformStateConsistent = false;
 
-			Assert.False(view.IsNativeStateConsistent);
+			Assert.False(view.IsPlatformStateConsistent);
 
 			bool sizeChanged = false;
 			view.MeasureInvalidated += (sender, args) =>
@@ -117,12 +115,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				sizeChanged = true;
 			};
 
-			view.IsNativeStateConsistent = true;
+			view.IsPlatformStateConsistent = true;
 
 			Assert.True(sizeChanged);
 
 			sizeChanged = false;
-			view.IsNativeStateConsistent = true;
+			view.IsPlatformStateConsistent = true;
 
 			Assert.False(sizeChanged);
 		}
@@ -130,8 +128,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestFadeTo()
 		{
-			var view = new View { IsPlatformEnabled = true };
-			Ticker.Default = new BlockingTicker();
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.FadeTo(0.1);
 
@@ -141,8 +138,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestTranslateTo()
 		{
-			var view = new View { IsPlatformEnabled = true };
-			Ticker.Default = new BlockingTicker();
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.TranslateTo(100, 50);
 
@@ -153,8 +149,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task ScaleTo()
 		{
-			var view = new View { IsPlatformEnabled = true };
-			Ticker.Default = new BlockingTicker();
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.ScaleTo(2);
 
@@ -162,14 +157,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void TestNativeSizeChanged()
+		public void TestPlatformSizeChanged()
 		{
 			var view = new View();
 
 			bool sizeChanged = false;
 			view.MeasureInvalidated += (sender, args) => sizeChanged = true;
 
-			((IVisualElementController)view).NativeSizeChanged();
+			((IVisualElementController)view).PlatformSizeChanged();
 
 			Assert.True(sizeChanged);
 		}
@@ -177,8 +172,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRotateTo()
 		{
-			var view = new View { IsPlatformEnabled = true };
-			Ticker.Default = new BlockingTicker();
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.RotateTo(25);
 
@@ -188,8 +182,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRotateYTo()
 		{
-			var view = new View { IsPlatformEnabled = true };
-			Ticker.Default = new BlockingTicker();
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.RotateYTo(25);
 
@@ -199,8 +192,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRotateXTo()
 		{
-			var view = new View { IsPlatformEnabled = true };
-			Ticker.Default = new BlockingTicker();
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.RotateXTo(25);
 
@@ -210,8 +202,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRelRotateTo()
 		{
-			var view = new View { Rotation = 30, IsPlatformEnabled = true };
-			Ticker.Default = new BlockingTicker();
+			var view = AnimationReadyHandler.Prepare(new View { Rotation = 30 });
 
 			await view.RelRotateTo(20);
 
@@ -221,8 +212,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRelScaleTo()
 		{
-			var view = new View { Scale = 1, IsPlatformEnabled = true };
-			Ticker.Default = new BlockingTicker();
+			var view = AnimationReadyHandler.Prepare(new View { Scale = 1 });
 
 			await view.RelScaleTo(1);
 
@@ -283,9 +273,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestOnIdiomDefault()
 		{
-			Device.Idiom = TargetIdiom.Tablet;
+			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 			Assert.That((int)(new OnIdiom<int> { Tablet = 12, Default = 42 }), Is.EqualTo(12));
-			Device.Idiom = TargetIdiom.Watch;
+			mockDeviceInfo.Idiom = DeviceIdiom.Watch;
 			Assert.That((int)(new OnIdiom<int> { Tablet = 12, Default = 42 }), Is.EqualTo(42));
 		}
 
@@ -521,7 +511,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.WidthRequest = 200;
 			view.MinimumWidthRequest = 100;
 
-			var result = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var result = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(new Size(200, 20), result.Request);
 			Assert.AreEqual(new Size(100, 20), result.Minimum);
 		}
@@ -538,7 +528,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.WidthRequest = 20;
 			view.MinimumHeightRequest = 100;
 
-			var result = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var result = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(new Size(20, 200), result.Request);
 			Assert.AreEqual(new Size(20, 100), result.Minimum);
 		}
@@ -546,7 +536,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void StartTimerSimple()
 		{
-			Device.PlatformServices = new MockPlatformServices();
 			var task = new TaskCompletionSource<bool>();
 
 			Task.Factory.StartNew(() => Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
@@ -557,13 +546,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			task.Task.Wait();
 			Assert.False(task.Task.Result);
-			Device.PlatformServices = null;
 		}
 
 		[Test]
 		public void StartTimerMultiple()
 		{
-			Device.PlatformServices = new MockPlatformServices();
 			var task = new TaskCompletionSource<int>();
 
 			int steps = 0;
@@ -578,7 +565,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			task.Task.Wait();
 			Assert.AreEqual(2, task.Task.Result);
-			Device.PlatformServices = null;
 		}
 
 		[Test]
@@ -609,7 +595,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void MockBounds()
 		{
 			var view = new View();
-			view.Layout(new Rectangle(10, 20, 30, 40));
+			view.Layout(new Rect(10, 20, 30, 40));
 
 			bool changed = false;
 			view.PropertyChanged += (sender, args) =>
@@ -623,14 +609,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			view.SizeChanged += (sender, args) => changed = true;
 
-			view.MockBounds(new Rectangle(5, 10, 15, 20));
+			view.MockBounds(new Rect(5, 10, 15, 20));
 
-			Assert.AreEqual(new Rectangle(5, 10, 15, 20), view.Bounds);
+			Assert.AreEqual(new Rect(5, 10, 15, 20), view.Bounds);
 			Assert.False(changed);
 
 			view.UnmockBounds();
 
-			Assert.AreEqual(new Rectangle(10, 20, 30, 40), view.Bounds);
+			Assert.AreEqual(new Rect(10, 20, 30, 40), view.Bounds);
 			Assert.False(changed);
 		}
 
@@ -668,13 +654,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(gestureRecognizer.Parent);
 		}
 
+
+		[Test]
+		public void ClearingGestureRecognizers()
+		{
+			var view = new View();
+			var gestureRecognizer = new TapGestureRecognizer();
+
+			view.GestureRecognizers.Add(gestureRecognizer);
+			view.GestureRecognizers.Clear();
+
+
+			Assert.AreEqual(0, (view as IGestureController).CompositeGestureRecognizers.Count);
+			Assert.Null(gestureRecognizer.Parent);
+		}
+
 		[Test]
 		public void WidthRequestEffectsGetSizeRequest()
 		{
 			var view = new View();
 			view.IsPlatformEnabled = true;
 			view.WidthRequest = 20;
-			var request = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var request = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.AreEqual(new Size(20, 50), request.Request);
 		}
@@ -682,17 +683,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void HeightRequestEffectsGetSizeRequest()
 		{
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (ve, widthConstraint, heightConstraint) =>
+			MockPlatformSizeService.Current.GetPlatformSizeFunc = (ve, widthConstraint, heightConstraint) =>
 			{
 				if (heightConstraint < 30)
 					return new SizeRequest(new Size(40, 50));
 				return new SizeRequest(new Size(20, 100));
-			});
+			};
 
 			var view = new View();
 			view.IsPlatformEnabled = true;
 			view.HeightRequest = 20;
-			var request = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var request = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.AreEqual(new Size(40, 20), request.Request);
 		}
@@ -707,7 +708,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				Clip = new RectangleGeometry
 				{
-					Rect = new Rectangle(0, 0, 50, 50)
+					Rect = new Rect(0, 0, 50, 50)
 				}
 			};
 
@@ -724,7 +725,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				Clip = new RectangleGeometry
 				{
-					Rect = new Rectangle(0, 0, 50, 50)
+					Rect = new Rect(0, 0, 50, 50)
 				}
 			};
 
@@ -733,6 +734,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.Clip = null;
 
 			Assert.Null(view.Clip);
+		}
+
+		[Test]
+		public void AssigningElementHandlerThrowsException()
+		{
+			Maui.IElement view = new View();
+			Assert.Throws(typeof(InvalidOperationException), () => view.Handler = new ElementHandlerStub());
 		}
 	}
 }

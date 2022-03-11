@@ -5,14 +5,19 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
-using UIKit;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
-using IOPath = System.IO.Path;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
+using UIKit;
+using IOPath = System.IO.Path;
 using Size = Microsoft.Maui.Graphics.Size;
 
 [assembly: Dependency(typeof(TestCloudService))]
@@ -84,7 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		{
 			var isInTestCloud = Environment.GetEnvironmentVariable("XAMARIN_TEST_CLOUD");
 
-			return isInTestCloud != null && isInTestCloud.Equals("1");
+			return isInTestCloud != null && isInTestCloud.Equals("1", StringComparison.Ordinal);
 		}
 
 		public string GetTestCloudDeviceName()
@@ -99,9 +104,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 	}
 
 	[Register("AppDelegate")]
-	public partial class AppDelegate : FormsApplicationDelegate
+	public partial class AppDelegate : MauiUIApplicationDelegate
 	{
-		App _app;
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 
 		public override bool FinishedLaunching(UIApplication uiApplication, NSDictionary launchOptions)
 		{
@@ -110,11 +115,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			App.IOSVersion = int.Parse(versionPart[0]);
 
 #if ENABLE_TEST_CLOUD
-			Xamarin.Calabash.Start();
+			//Xamarin.Calabash.Start();
 #endif
 
-			Forms.Init();
-			FormsMaps.Init();
+			//Forms.Init();
+			//FormsMaps.Init();
 			//FormsMaterial.Init();
 
 			Forms.ViewInitialized += (object sender, ViewInitializedEventArgs e) =>
@@ -136,9 +141,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				};
 			}
 
-			var app = new App();
-			_app = app;
-
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
 			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
 			MessagingCenter.Subscribe<Bugzilla40911>(this, Bugzilla40911.ReadyToSetUp40911Test, SetUp40911Test);
@@ -149,8 +151,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
 			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
-
-			LoadApplication(app);
 
 			return base.FinishedLaunching(uiApplication, launchOptions);
 		}
@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			// Create and add a native Button 
 			var uibutton = new UIButton(UIButtonType.System);
 			uibutton.SetTitle("Toggle Text Amount", UIControlState.Normal);
-			uibutton.Font = UIFont.FromName("Helvetica", 14f);
+			uibutton.TitleLabel.Font = UIFont.FromName("Helvetica", 14f);
 
 
 			uibutton.TouchUpInside += (sender, args) =>
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 			var uibuttonColor = new UIButton(UIButtonType.System);
 			uibuttonColor.SetTitle("Toggle Text Color Binding", UIControlState.Normal);
-			uibuttonColor.Font = UIFont.FromName("Helvetica", 14f);
+			uibuttonColor.TitleLabel.Font = UIFont.FromName("Helvetica", 14f);
 			uibuttonColor.TouchUpInside += (sender, args) => uilabel.TextColor = UIColor.Blue;
 
 			var nativeColorConverter = new ColorConverter();
@@ -300,13 +300,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			uiView.Add(uilabel);
 			sl?.Children.Add(uiView);
 			sl?.Children.Add(uibuttonColor.ToView());
-			var colorPicker = new AdvancedColorPicker.ColorPickerView(new CGRect(0, 0, width, 300));
-			colorPicker.SetBinding("SelectedColor", new Binding("NativeLabelColor", BindingMode.TwoWay, nativeColorConverter), "ColorPicked");
-			sl?.Children.Add(colorPicker);
+			// TODO: Replace with a new plugin or API
+			//var colorPicker = new AdvancedColorPicker.ColorPickerView(new CGRect(0, 0, width, 300));
+			//colorPicker.SetBinding("SelectedColor", new Binding("NativeLabelColor", BindingMode.TwoWay, nativeColorConverter), "ColorPicked");
+			//sl?.Children.Add(colorPicker);
 			page.NativeControlsAdded = true;
 		}
 
-#region Stuff for repro of Bugzilla case 40911
+		#region Stuff for repro of Bugzilla case 40911
 
 		void SetUp40911Test(Bugzilla40911 page)
 		{
@@ -344,20 +345,20 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			vc.PresentViewController(loginViewController, true, null);
 		}
 
-#endregion
+		#endregion
 
 		[Export("navigateToTest:")]
 		public string NavigateToTest(string test)
 		{
 			// According to https://developer.xamarin.com/guides/testcloud/uitest/working-with/backdoors/
 			// this method has to return a string
-			return _app.NavigateToTestPage(test).ToString();
+			return (Microsoft.Maui.Controls.Application.Current as App).NavigateToTestPage(test).ToString();
 		}
 
 		[Export("reset:")]
 		public string Reset(string str)
 		{
-			_app.Reset();
+			(Microsoft.Maui.Controls.Application.Current as App).Reset();
 			return String.Empty;
 		}
 

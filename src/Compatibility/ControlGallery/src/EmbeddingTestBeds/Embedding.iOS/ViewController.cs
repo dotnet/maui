@@ -1,5 +1,6 @@
 using Foundation;
 using System;
+using ObjCRuntime;
 using UIKit;
 
 namespace Embedding.iOS

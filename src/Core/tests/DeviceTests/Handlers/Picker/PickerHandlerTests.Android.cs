@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Android.Views;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using AColor = Android.Graphics.Color;
 using ATextAlignment = Android.Views.TextAlignment;
 
 namespace Microsoft.Maui.DeviceTests
@@ -18,6 +21,32 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(picker, () => picker.Title, GetNativeTitle, picker.Title);
+		}
+
+		[Fact(DisplayName = "Title Color Initializes Correctly")]
+		public async Task TitleColorInitializesCorrectly()
+		{
+			var picker = new PickerStub
+			{
+				Title = "Select an Item",
+				TitleColor = Colors.CadetBlue
+			};
+
+			await ValidatePropertyInitValue(picker, () => picker.TitleColor, GetNativeTitleColor, picker.TitleColor);
+		}
+
+		[Fact(DisplayName = "Text Color Initializes Correctly")]
+		public async Task TextColorInitializesCorrectly()
+		{
+			var picker = new PickerStub
+			{
+				Title = "Select an Item",
+				TextColor = Colors.CadetBlue,
+				Items = new[] { "Item 1", "Item2", "Item3" },
+				SelectedIndex = 1
+			};
+
+			await ValidatePropertyInitValue(picker, () => picker.TextColor, GetNativeTextColor, picker.TextColor);
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
@@ -48,16 +77,16 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = picker.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
+			Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
 		}
 
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
-			(MauiPicker)pickerHandler.NativeView;
+			pickerHandler.PlatformView;
 
 		string GetNativeTitle(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Hint;
@@ -74,19 +103,24 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
-		double GetNativeUnscaledFontSize(PickerHandler pickerHandler)
-		{
-			var mauiPicker = GetNativePicker(pickerHandler);
-			return mauiPicker.TextSize / mauiPicker.Resources.DisplayMetrics.Density;
-		}
-
-		bool GetNativeIsBold(PickerHandler pickerHandler) =>
-			GetNativePicker(pickerHandler).Typeface.IsBold;
-
-		bool GetNativeIsItalic(PickerHandler pickerHandler) =>
-			GetNativePicker(pickerHandler).Typeface.IsItalic;
-
 		ATextAlignment GetNativeHorizontalTextAlignment(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).TextAlignment;
+
+		Color GetNativeTitleColor(PickerHandler pickerHandler)
+		{
+			var currentTextColorInt = GetNativePicker(pickerHandler).CurrentHintTextColor;
+			var currentTextColor = new AColor(currentTextColorInt);
+			return currentTextColor.ToColor();
+		}
+
+		Color GetNativeTextColor(PickerHandler pickerHandler)
+		{
+			var currentTextColorInt = GetNativePicker(pickerHandler).CurrentTextColor;
+			var currentTextColor = new AColor(currentTextColorInt);
+			return currentTextColor.ToColor();
+		}
+
+		GravityFlags GetNativeVerticalTextAlignment(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).Gravity;
 	}
 }

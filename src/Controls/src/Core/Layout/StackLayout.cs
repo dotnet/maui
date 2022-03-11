@@ -1,8 +1,31 @@
-﻿// This is a temporary namespace until we rename everything and move the legacy layouts
-namespace Microsoft.Maui.Controls.Layout2
+﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
+
+namespace Microsoft.Maui.Controls
 {
-	public abstract class StackLayout : Layout, IStackLayout
+	/// <include file="../../../docs/Microsoft.Maui.Controls/StackLayout.xml" path="Type[@FullName='Microsoft.Maui.Controls.StackLayout']/Docs" />
+	public class StackLayout : StackBase, IStackLayout
 	{
-		public int Spacing { get; set; }
+		/// <include file="../../../docs/Microsoft.Maui.Controls/StackLayout.xml" path="//Member[@MemberName='OrientationProperty']/Docs" />
+		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(StackOrientation), typeof(StackLayout), StackOrientation.Vertical,
+			propertyChanged: OrientationChanged);
+
+		/// <include file="../../../docs/Microsoft.Maui.Controls/StackLayout.xml" path="//Member[@MemberName='Orientation']/Docs" />
+		public StackOrientation Orientation
+		{
+			get { return (StackOrientation)GetValue(OrientationProperty); }
+			set { SetValue(OrientationProperty, value); }
+		}
+
+		static void OrientationChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var layout = (StackLayout)bindable;
+			layout.InvalidateMeasure();
+		}
+
+		protected override ILayoutManager CreateLayoutManager()
+		{
+			return new StackLayoutManager(this);
+		}
 	}
 }

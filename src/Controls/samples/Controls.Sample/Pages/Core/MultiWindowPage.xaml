@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"   
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.MultiWindowPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
+    <views:BasePage.Content>
+        <StackLayout
+            Margin="12">
+            <Button 
+                Clicked="OnNewWindowClicked"
+                Text="Open new Window" />
+
+            <Button 
+                Clicked="OnCloseWindowClicked"
+                Text="Close this Window" />
+
+            <Label Text="Window Count: 0" x:Name="label" />
+        </StackLayout>
+    </views:BasePage.Content>
+</views:BasePage>

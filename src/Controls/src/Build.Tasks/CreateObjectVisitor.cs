@@ -89,7 +89,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						node.SkipProperties.Add(prop.Key);
 				node.CollectionItems.Clear();
 
-				Context.IL.Append(RegisterSourceInfo(Context, node));
 				return;
 			}
 
@@ -242,11 +241,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						if (!node.SkipProperties.Contains(prop.Key))
 							node.SkipProperties.Add(prop.Key);
 					node.CollectionItems.Clear();
-					Context.IL.Append(RegisterSourceInfo(Context, node));
 
 					return;
 				}
-				Context.IL.Append(RegisterSourceInfo(Context, node));
 			}
 		}
 
@@ -263,7 +260,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			Context.Body.Variables.Add(vardef);
 			Context.IL.Emit(OpCodes.Ldarg_0);
 			Context.IL.Emit(OpCodes.Stloc, vardef);
-			Context.IL.Append(RegisterSourceInfo(Context, node));
 		}
 
 		public void Visit(ListNode node, INode parentNode)
@@ -574,54 +570,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					}
 					break;
 			}
-		}
-
-		internal static IEnumerable<Instruction> RegisterSourceInfo(ILContext context, INode valueNode)
-		{
-			if (!context.DefineDebug)
-				yield break;
-			if (!(valueNode is IXmlLineInfo lineInfo))
-				yield break;
-			if (!(valueNode is IElementNode elementNode))
-				yield break;
-			if (context.Variables[elementNode].VariableType.IsValueType)
-				yield break;
-
-			var module = context.Body.Method.Module;
-
-			yield return Create(Ldloc, context.Variables[elementNode]);     //target
-
-			yield return Create(Ldstr, context.XamlFilePath);
-			yield return Create(Ldstr, ";assembly=");
-			yield return Create(Ldstr, context.Module.Assembly.Name.Name);
-			yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "String"),
-																   methodName: "Concat",
-																   parameterTypes: new[] {
-																	   ("mscorlib", "System", "String"),
-																	   ("mscorlib", "System", "String"),
-																	   ("mscorlib", "System", "String"),
-																   },
-																   isStatic: true));
-
-
-			yield return Create(Ldc_I4, (int)UriKind.RelativeOrAbsolute);
-			yield return Create(Newobj, module.ImportCtorReference(("System", "System", "Uri"),
-																   parameterTypes: new[] {
-																	   ("mscorlib", "System", "String"),
-																	   ("System", "System", "UriKind"),
-																   }));     //uri
-
-			yield return Create(Ldc_I4, lineInfo.LineNumber);               //lineNumber
-			yield return Create(Ldc_I4, lineInfo.LinePosition);             //linePosition
-
-			yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml.Diagnostics", "VisualDiagnostics"),
-																   methodName: "RegisterSourceInfo",
-																   parameterTypes: new[] {
-																	   ("mscorlib", "System", "Object"),
-																	   ("System", "System", "Uri"),
-																	   ("mscorlib", "System", "Int32"),
-																	   ("mscorlib", "System", "Int32")},
-																   isStatic: true));
 		}
 	}
 }

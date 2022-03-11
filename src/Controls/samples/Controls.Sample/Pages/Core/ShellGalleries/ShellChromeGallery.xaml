@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.ShellGalleries.ShellChromeGallery"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"    
+    Title="Chrome Gallery">
+    <views:BasePage.Content>
+        <StackLayout
+            Margin="12">
+            <Label
+                Text="Flyout Behavior"
+                Style="{StaticResource Headline}"/>
+            <Picker x:Name="flyoutBehavior" />
+            <Label
+                Text="Flyout Background Color"
+                Style="{StaticResource Headline}"/>
+            <Button Text="Toggle Flyout Background" x:Name="flyoutBackgroundColor" Clicked="OnToggleFlyoutBackgroundColor" />
+            <Label
+                Text="Toggle Navbar Visibility"
+                Style="{StaticResource Headline}"/>
+            <Button Text="Toggle Navbar Visibility" Clicked="OnToggleNavBarIsVisible" />
+            <Label
+                Text="Toggle BackButton Visibility"
+                Style="{StaticResource Headline}"/>
+            <Button Text="Toggle Back Button Visibility" Clicked="OnToggleBackButtonIsVisible" />
+            <Label
+                Text="Push Page"
+                Style="{StaticResource Headline}"/>
+            <Button Text="Push Page" Clicked="OnPushPage" />
+            <Label
+                Text="Pop Page"
+                Style="{StaticResource Headline}"/>
+            <Button Text="Pop Page" Clicked="OnPopPage" />
+             <Label
+                Text="Toogle SearchHandler"
+                Style="{StaticResource Headline}"/>
+            <Button Text="Toogle SearchHandler" Clicked="OnToggleSearchHandler" />
+        </StackLayout>
+    </views:BasePage.Content>
+</views:BasePage>

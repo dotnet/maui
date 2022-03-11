@@ -3,90 +3,102 @@ using System;
 
 namespace Microsoft.Maui
 {
-	public struct Font
+	/// <include file="../../docs/Microsoft.Maui/Font.xml" path="Type[@FullName='Microsoft.Maui.Font']/Docs" />
+	public readonly struct Font : IEquatable<Font>
 	{
-		public string FontFamily { get; private set; }
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='Family']/Docs" />
+		public string? Family { get; }
 
-		public double FontSize { get; private set; }
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='Size']/Docs" />
+		public double Size { get; }
 
-		public NamedSize NamedSize { get; private set; }
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='Slant']/Docs" />
+		public FontSlant Slant { get; }
 
-		public FontAttributes FontAttributes { get; private set; }
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='IsDefault']/Docs" />
+		public bool IsDefault => Family == null && (Size == 0 || Size == double.NaN) && Slant == FontSlant.Default && Weight == FontWeight.Regular;
 
-		public bool IsDefault
+		static Font _default = default(Font).WithWeight(FontWeight.Regular);
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='Default']/Docs" />
+		public static Font Default => _default;
+
+		readonly FontWeight _weight;
+
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='Weight']/Docs" />
+		public FontWeight Weight
 		{
-			get { return FontFamily == null && FontSize == 0 && NamedSize == NamedSize.Default && FontAttributes == FontAttributes.None; }
+			get => _weight <= 0 ? FontWeight.Regular : _weight;
 		}
 
-		public bool UseNamedSize
+		private Font(string? family, double size, FontSlant slant, FontWeight weight, bool enableScaling) : this()
 		{
-			get { return FontSize <= 0; }
+			Family = family;
+			Size = size;
+			Slant = slant;
+			_weight = weight;
+			_disableScaling = !enableScaling;
 		}
 
-		public static Font Default
+
+		readonly bool _disableScaling;
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='AutoScalingEnabled']/Docs" />
+		public bool AutoScalingEnabled
 		{
-			get { return default(Font); }
+			get => !_disableScaling;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithAutoScaling']/Docs" />
+		public Font WithAutoScaling(bool enabled)
+		{
+			return new Font(Family, Size, Slant, Weight, enabled);
+		}
+
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithSize'][0]/Docs" />
 		public Font WithSize(double size)
 		{
-			return new Font { FontFamily = FontFamily, FontSize = size, NamedSize = 0, FontAttributes = FontAttributes };
+			return new Font(Family, size, Slant, Weight, AutoScalingEnabled);
 		}
 
-		public Font WithSize(NamedSize size)
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithSlant']/Docs" />
+		public Font WithSlant(FontSlant fontSlant)
 		{
-			if (size <= 0)
-				throw new ArgumentOutOfRangeException("size");
-
-			return new Font { FontFamily = FontFamily, FontSize = 0, NamedSize = size, FontAttributes = FontAttributes };
+			return new Font(Family, Size, fontSlant, Weight, AutoScalingEnabled);
 		}
 
-		public Font WithAttributes(FontAttributes fontAttributes)
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithWeight']/Docs" />
+		public Font WithWeight(FontWeight weight)
 		{
-			return new Font { FontFamily = FontFamily, FontSize = FontSize, NamedSize = NamedSize, FontAttributes = fontAttributes };
+			return new Font(Family, Size, Slant, weight, AutoScalingEnabled);
 		}
 
-		public static Font OfSize(string name, double size)
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithWeight']/Docs" />
+		public Font WithWeight(FontWeight weight, FontSlant fontSlant)
 		{
-			var result = new Font { FontFamily = name, FontSize = size };
-			return result;
+			return new Font(Family, Size, fontSlant, weight, AutoScalingEnabled);
 		}
 
-		public static Font OfSize(string name, NamedSize size)
-		{
-			var result = new Font { FontFamily = name, NamedSize = size };
-			return result;
-		}
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='OfSize']/Docs" />
+		public static Font OfSize(string? name, double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
+			new(name, size, fontSlant, weight, enableScaling);
 
-		public static Font SystemFontOfSize(double size)
-		{
-			var result = new Font { FontSize = size };
-			return result;
-		}
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='SystemFontOfSize']/Docs" />
+		public static Font SystemFontOfSize(double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
+			new(null, size, fontSlant, weight, enableScaling);
 
-		public static Font SystemFontOfSize(NamedSize size)
-		{
-			var result = new Font { NamedSize = size };
-			return result;
-		}
-
-		public static Font SystemFontOfSize(double size, FontAttributes attributes)
-		{
-			var result = new Font { FontSize = size, FontAttributes = attributes };
-			return result;
-		}
-
-		public static Font SystemFontOfSize(NamedSize size, FontAttributes attributes)
-		{
-			var result = new Font { NamedSize = size, FontAttributes = attributes };
-			return result;
-		}
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='SystemFontOfWeight']/Docs" />
+		public static Font SystemFontOfWeight(FontWeight weight, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
+			new(null, default(double), fontSlant, weight, enableScaling);
 
 		bool Equals(Font other)
 		{
-			return string.Equals(FontFamily, other.FontFamily) && FontSize.Equals(other.FontSize) && NamedSize == other.NamedSize && FontAttributes == other.FontAttributes;
+			return string.Equals(Family, other.Family, StringComparison.Ordinal)
+				&& Size.Equals(other.Size)
+				&& Weight == other.Weight
+				&& Slant == other.Slant
+				&& AutoScalingEnabled == other.AutoScalingEnabled;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='Equals']/Docs" />
 		public override bool Equals(object? obj)
 		{
 			if (ReferenceEquals(null, obj))
@@ -100,18 +112,8 @@ namespace Microsoft.Maui
 			return Equals((Font)obj);
 		}
 
-		public override int GetHashCode()
-		{
-			unchecked
-			{
-				int hashCode = FontFamily != null ? FontFamily.GetHashCode() : 0;
-				hashCode = (hashCode * 397) ^ FontSize.GetHashCode();
-				hashCode = (hashCode * 397) ^ NamedSize.GetHashCode();
-				hashCode = (hashCode * 397) ^ FontAttributes.GetHashCode();
-
-				return hashCode;
-			}
-		}
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
+		public override int GetHashCode() => (Family, Size, Weight, Slant, AutoScalingEnabled).GetHashCode();
 
 		public static bool operator ==(Font left, Font right)
 		{
@@ -123,9 +125,13 @@ namespace Microsoft.Maui
 			return !left.Equals(right);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='ToString']/Docs" />
 		public override string ToString()
+			=> $"Family: {Family}, Size: {Size}, Weight: {Weight}, Slant: {Slant}, AutoScalingEnabled: {AutoScalingEnabled}";
+
+		bool IEquatable<Font>.Equals(Font other)
 		{
-			return string.Format("FontFamily: {0}, FontSize: {1}, NamedSize: {2}, FontAttributes: {3}", FontFamily, FontSize, NamedSize, FontAttributes);
+			return Equals(other);
 		}
 	}
 }

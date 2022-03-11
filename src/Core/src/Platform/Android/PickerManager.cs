@@ -6,7 +6,7 @@ using Android.Widget;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	internal static class PickerManager
 	{
@@ -60,7 +60,7 @@ namespace Microsoft.Maui
 				return new Java.Lang.String(title);
 
 			var spannableTitle = new SpannableString(title ?? string.Empty);
-			spannableTitle.SetSpan(new ForegroundColorSpan(titleColor.ToNative()), 0, spannableTitle.Length(), SpanTypes.ExclusiveExclusive);
+			spannableTitle.SetSpan(new ForegroundColorSpan(titleColor.ToPlatform()), 0, spannableTitle.Length(), SpanTypes.ExclusiveExclusive);
 			return spannableTitle;
 		}
 	}

@@ -1,6 +1,10 @@
+#nullable enable
 using System;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
+using WSize = Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -46,5 +50,36 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static void DetermineTruncatedTextWrapping(TextBlock textBlock) =>
 			textBlock.TextWrapping = textBlock.MaxLines > 1 ? TextWrapping.Wrap : TextWrapping.NoWrap;
+
+		public static void UpdateText(this TextBlock platformControl, Label label)
+		{
+			switch (label.TextType)
+			{
+				case TextType.Html:
+					platformControl.UpdateTextHtml(label);
+					break;
+
+				default:
+					if (label.FormattedText != null)
+						platformControl.UpdateInlines(label);
+					else
+						platformControl.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+					break;
+			}
+		}
+
+		public static double FindDefaultLineHeight(this TextBlock control, Inline inline)
+		{
+			control.Inlines.Add(inline);
+
+			control.Measure(new WSize(double.PositiveInfinity, double.PositiveInfinity));
+
+			var height = control.DesiredSize.Height;
+
+			control.Inlines.Remove(inline);
+
+			return height;
+		}
 	}
+
 }

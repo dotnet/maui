@@ -3,7 +3,10 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Platform.iOS;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -108,7 +111,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_disposed || _renderer == null || _element == null || control == null)
 				return;
 
-			control.TitleLabel.LineBreakMode = _element.LineBreakMode switch {
+			control.TitleLabel.LineBreakMode = _element.LineBreakMode switch
+			{
 				LineBreakMode.NoWrap => UILineBreakMode.Clip,
 				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
 				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
@@ -259,7 +263,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			catch (Exception ex)
 			{
-				Controls.Internals.Log.Warning(nameof(ImageRenderer), "Error loading image: {0}", ex);
+				Forms.MauiContext?.CreateLogger<ButtonLayoutManager>()?.LogWarning(ex, "Error loading image");
 			}
 		}
 

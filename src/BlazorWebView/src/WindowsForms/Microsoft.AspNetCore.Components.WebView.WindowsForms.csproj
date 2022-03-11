@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Use TargetFrameworks (plural) instead of TargetFramework (singular) here even though there is only one target
+      framework. This is to work around an issue with the Microsoft.Web.WebView2 package:
+      https://github.com/MicrosoftEdge/WebView2Feedback/issues/710 -->
+    <TargetFrameworks>$(_MauiDotNetTfm)-windows</TargetFrameworks>
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+    <Description>Build Windows Forms applications with Blazor and WebView2.</Description>
+    <DefineConstants>$(DefineConstants);WEBVIEW2_WINFORMS</DefineConstants>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>disable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\SharedSource\**\*.cs" Link="SharedSource\%(Filename)%(Extension)"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="build\**\*" />
+    <None Include="build\**\*" Pack="True" PackagePath="build\%(RecursiveDir)%(FileName)%(Extension)" />
+  </ItemGroup>
+
+</Project>

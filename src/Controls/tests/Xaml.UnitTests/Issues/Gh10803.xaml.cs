@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -24,9 +26,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp]
 			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices();
+				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 				VisualDiagnostics.VisualTreeChanged += VTChanged;
-				debuggerinitialstate = Microsoft.Maui.Controls.Xaml.Diagnostics.DebuggerHelper._mockDebuggerIsAttached;
+				debuggerinitialstate = DebuggerHelper._mockDebuggerIsAttached;
 				DebuggerHelper._mockDebuggerIsAttached = true;
 			}
 
@@ -34,13 +36,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void TearDown()
 			{
 				DebuggerHelper._mockDebuggerIsAttached = debuggerinitialstate;
-				Device.PlatformServices = null;
+				DispatcherProvider.SetCurrent(null);
 				VisualDiagnostics.VisualTreeChanged -= VTChanged;
 				failures = 0;
 			}
 
 			[Test]
-			public void SourceInfoForElementsInDT([Values(false, true)] bool useCompiledXaml)
+			public void SourceInfoForElementsInDT([Values(false)] bool useCompiledXaml)
 			{
 				var layout = new Gh10803(useCompiledXaml);
 				var listview = layout.listview;
@@ -50,8 +52,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			void VTChanged(object sender, VisualTreeChangeEventArgs e)
 			{
-				var parentSourInfo = e.Parent == null ? null : VisualDiagnostics.GetXamlSourceInfo(e.Parent);
-				var childSourceInfo = VisualDiagnostics.GetXamlSourceInfo(e.Child);
+				var parentSourInfo = e.Parent == null ? null : VisualDiagnostics.GetSourceInfo(e.Parent);
+				var childSourceInfo = VisualDiagnostics.GetSourceInfo(e.Child);
 				if (childSourceInfo == null)
 					failures++;
 				if (e.Parent != null && parentSourInfo == null)

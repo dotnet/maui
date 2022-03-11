@@ -8,6 +8,7 @@ using Android.Text;
 using Android.Text.Style;
 using Android.Util;
 using Android.Widget;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {
@@ -109,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			}
 		}
 
-		[PortHandler("Partially ported, still missing code related to TitleColor, etc.")]
+		[PortHandler("Partially ported, still missing code related to Focus, etc.")]
 		void IPickerRenderer.OnClick()
 		{
 			Picker model = Element;
@@ -165,10 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		[PortHandler]
 		protected void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
-			{
-				EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
-			}
+			EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
 		[PortHandler("Partially ported, still missing code related to TitleColor, etc.")]
@@ -207,12 +205,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 		protected override EditText EditText => Control;
 
+		[PortHandler]
 		protected override void UpdateTitleColor()
 		{
 			_hintColorSwitcher = _hintColorSwitcher ?? new TextColorSwitcher(EditText.HintTextColors, Element.UseLegacyColorManagement());
 			_hintColorSwitcher.UpdateTextColor(EditText, Element.TitleColor, EditText.SetHintTextColor);
 		}
 
+		[PortHandler]
 		protected override void UpdateTextColor()
 		{
 			_textColorSwitcher = _textColorSwitcher ?? new TextColorSwitcher(EditText.TextColors, Element.UseLegacyColorManagement());

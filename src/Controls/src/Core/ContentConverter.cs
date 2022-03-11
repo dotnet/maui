@@ -8,14 +8,16 @@ namespace Microsoft.Maui.Controls
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
+			var presenter = parameter as ContentPresenter;
+
 			if (value is View view)
 			{
-				return ConfigureView(view);
+				return ConfigureView(view, presenter);
 			}
 
 			if (value is string textContent)
 			{
-				return ConvertToLabel(textContent);
+				return ConvertToLabel(textContent, presenter);
 			}
 
 			return value;
@@ -26,14 +28,14 @@ namespace Microsoft.Maui.Controls
 			throw new NotImplementedException();
 		}
 
-		View ConfigureView(View view)
+		static View ConfigureView(View view, ContentPresenter presenter)
 		{
-			if (view is ITextElement)
+			if (view is ITextElement && HasTemplateAncestor(presenter, typeof(ITextElement)))
 			{
 				BindTextProperties(view);
 			}
 
-			if (view is IFontElement)
+			if (view is IFontElement && HasTemplateAncestor(presenter, typeof(IFontElement)))
 			{
 				BindFontProperties(view);
 			}
@@ -41,15 +43,22 @@ namespace Microsoft.Maui.Controls
 			return view;
 		}
 
-		Label ConvertToLabel(string textContent)
+		static Label ConvertToLabel(string textContent, ContentPresenter presenter)
 		{
 			var label = new Label
 			{
 				Text = textContent
 			};
 
-			BindTextProperties(label);
-			BindFontProperties(label);
+			if (HasTemplateAncestor(presenter, typeof(ITextElement)))
+			{
+				BindTextProperties(label);
+			}
+
+			if (HasTemplateAncestor(presenter, typeof(IFontElement)))
+			{
+				BindFontProperties(label);
+			}
 
 			return label;
 		}
@@ -79,6 +88,28 @@ namespace Microsoft.Maui.Controls
 			content.SetBinding(property,
 					new Binding(property.PropertyName,
 					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, type)));
+		}
+
+		static bool HasTemplateAncestor(ContentPresenter presenter, Type type)
+		{
+			var parent = presenter?.Parent;
+
+			while (parent != null)
+			{
+				if (type.IsAssignableFrom(parent.GetType()))
+				{
+					return true;
+				}
+
+				if (parent is ContentView)
+				{
+					break;
+				}
+
+				parent = parent.Parent;
+			}
+
+			return false;
 		}
 	}
 }

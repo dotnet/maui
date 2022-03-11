@@ -4,11 +4,13 @@ using Android.Content;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer instead")]
 	public class TableViewModelRenderer : CellAdapter
 	{
 		readonly TableView _view;
@@ -110,7 +112,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else
 				layout = new ConditionalFocusLayout(Context) { Orientation = Orientation.Vertical };
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			AView aview = CellFactory.GetCell(item, convertView, parent, Context, _view);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (!makeBline)
 			{

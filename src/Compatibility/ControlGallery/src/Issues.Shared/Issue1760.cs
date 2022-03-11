@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					var _headerLabel = new Label
 					{
 						Text = Title,
-						TextColor = Color.FromHex("333333"),
+						TextColor = Color.FromArgb("333333"),
 						HeightRequest = 25,
 					};
 
@@ -126,9 +126,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					};
 
 					headerLayout.Children.Add(_headerLabel,
-						Microsoft.Maui.Controls.Constraint.Constant(0),
-						Microsoft.Maui.Controls.Constraint.Constant(0),
-						Microsoft.Maui.Controls.Constraint.RelativeToParent(parent => parent.Width));
+						Compatibility.Constraint.Constant(0),
+						Compatibility.Constraint.Constant(0),
+						Compatibility.Constraint.RelativeToParent(parent => parent.Width));
 
 					Content = new StackLayout
 					{

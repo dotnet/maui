@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using NUnit.Framework;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Dispatching;
+using Microsoft.UI.Xaml.Controls;
+using NUnit.Framework;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
@@ -53,18 +55,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 			return GetRenderer(element).GetNativeElement() as Control;
 		}
 
-		protected Panel GetPanel(VisualElement element) 
+		protected Panel GetPanel(VisualElement element)
 		{
 			return GetRenderer(element).ContainerElement as Panel;
 		}
 
-		protected Border GetBorder(VisualElement element) 
+		protected WBorder GetBorder(VisualElement element)
 		{
 			var renderer = GetRenderer(element);
 			var nativeElement = renderer.GetNativeElement();
-			return nativeElement as Border;
+			return nativeElement as WBorder;
 		}
-		
+
 		protected TextBlock GetNativeControl(Label label)
 		{
 			return GetRenderer(label).GetNativeElement() as TextBlock;
@@ -72,7 +74,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 
 		protected async Task<TProperty> GetControlProperty<TProperty>(Label label, Func<TextBlock, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() => {
+			return await label.Dispatcher.DispatchAsync(() =>
+			{
 				var textBlock = GetNativeControl(label);
 				return getProperty(textBlock);
 			});
@@ -96,7 +99,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 		protected async Task<TProperty> GetRendererProperty<TProperty>(View view,
 			Func<IVisualElementRenderer, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() => {
+			return await view.Dispatcher.DispatchAsync(() =>
+			{
 				var renderer = GetRenderer(view);
 				return getProperty(renderer);
 			});

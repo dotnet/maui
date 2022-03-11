@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -10,6 +11,8 @@ namespace Microsoft.Maui.Resizetizer
 {
 	public class ResizetizeImages : MauiAsyncTask, ILogger
 	{
+		internal bool AllowVectorAdaptiveIcons = false;
+
 		[Required]
 		public string PlatformType { get; set; } = "android";
 
@@ -31,7 +34,7 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			Svg.SvgDocument.SkipGdiPlusCapabilityCheck = true;
 
-			var images = ParseImageTaskItems(Images);
+			var images = ResizeImageInfo.Parse(Images);
 
 			var dpis = DpiPath.GetDpis(PlatformType);
 
@@ -101,7 +104,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				// Add DPI info to the itemspec so we can use it in the targets
 				attr.Add("_ResizetizerDpiPath", img.Dpi.Path);
-				attr.Add("_ResizetizerDpiScale", img.Dpi.Scale.ToString());
+				attr.Add("_ResizetizerDpiScale", img.Dpi.Scale.ToString("0.0", CultureInfo.InvariantCulture));
 
 				copiedResources.Add(new TaskItem(itemSpec, attr));
 			}
@@ -127,7 +130,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				appIconName = appIconName.ToLowerInvariant();
 
-				var adaptiveIconGen = new AndroidAdaptiveIconGenerator(img, appIconName, IntermediateOutputPath, this);
+				var adaptiveIconGen = new AndroidAdaptiveIconGenerator(img, appIconName, IntermediateOutputPath, this, AllowVectorAdaptiveIcons);
 				var iconsGenerated = adaptiveIconGen.Generate();
 
 				foreach (var iconGenerated in iconsGenerated)
@@ -194,57 +197,6 @@ namespace Microsoft.Maui.Resizetizer
 		void ILogger.Log(string message)
 		{
 			Log?.LogMessage(message);
-		}
-
-		List<ResizeImageInfo> ParseImageTaskItems(ITaskItem[] images)
-		{
-			var r = new List<ResizeImageInfo>();
-
-			if (images == null)
-				return r;
-
-			foreach (var image in images)
-			{
-				var info = new ResizeImageInfo();
-
-				var fileInfo = new FileInfo(image.GetMetadata("FullPath"));
-				if (!fileInfo.Exists)
-					throw new FileNotFoundException("Unable to find background file: " + fileInfo.FullName, fileInfo.FullName);
-
-				info.Filename = fileInfo.FullName;
-
-				info.Alias = image.GetMetadata("Link");
-
-				info.BaseSize = Utils.ParseSizeString(image.GetMetadata("BaseSize"));
-
-				if (bool.TryParse(image.GetMetadata("Resize"), out var rz))
-					info.Resize = rz;
-
-				info.TintColor = Utils.ParseColorString(image.GetMetadata("TintColor"));
-
-				if (bool.TryParse(image.GetMetadata("IsAppIcon"), out var iai))
-					info.IsAppIcon = iai;
-
-				if (float.TryParse(image.GetMetadata("ForegroundScale"), out var fsc))
-					info.ForegroundScale = fsc;
-
-				var fgFile = image.GetMetadata("ForegroundFile");
-				if (!string.IsNullOrEmpty(fgFile))
-				{
-					var fgFileInfo = new FileInfo(fgFile);
-					if (!fgFileInfo.Exists)
-						throw new FileNotFoundException("Unable to find foreground file: " + fgFileInfo.FullName, fgFileInfo.FullName);
-
-					info.ForegroundFilename = fgFileInfo.FullName;
-				}
-
-				// TODO:
-				// - Parse out custom DPI's
-
-				r.Add(info);
-			}
-
-			return r;
 		}
 	}
 }

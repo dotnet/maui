@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using Windows.Devices.Geolocation;
 using Windows.Services.Maps;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Geocoding
+	public class GeocodingImplementation: IGeocoding
 	{
-		static async Task<IEnumerable<Placemark>> PlatformGetPlacemarksAsync(double latitude, double longitude)
+		public async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
 		{
 			ValidateMapServiceToken();
 
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Essentials
 			return queryResults?.Locations?.ToPlacemarks();
 		}
 
-		static async Task<IEnumerable<Location>> PlatformGetLocationsAsync(string address)
+		public async Task<IEnumerable<Location>> GetLocationsAsync(string address)
 		{
 			ValidateMapServiceToken();
 

@@ -1,27 +1,32 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.UI.Xaml;
+using WinRT;
 
 namespace Microsoft.Maui
 {
 	public class MauiWinUIWindow : UI.Xaml.Window
 	{
+		bool _enableResumeEvent;
 		public MauiWinUIWindow()
 		{
 			Activated += OnActivated;
 			Closed += OnClosed;
 			VisibilityChanged += OnVisibilityChanged;
 
-			if (!Application.Current.Resources.ContainsKey("MauiRootContainerStyle"))
-			{
-				var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
-				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
-			}
+			SubClassingWin32();
 		}
 
 		protected virtual void OnActivated(object sender, UI.Xaml.WindowActivatedEventArgs args)
 		{
+			if (args.WindowActivationState != UI.Xaml.WindowActivationState.Deactivated)
+			{
+				if (_enableResumeEvent)
+					MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnResumed>(del => del(this));
+				else
+					_enableResumeEvent = true;
+			}
+
 			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnActivated>(del => del(this, args));
 		}
 
@@ -34,5 +39,47 @@ namespace Microsoft.Maui
 		{
 			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnVisibilityChanged>(del => del(this, args));
 		}
+
+		#region Native Window
+
+		IntPtr _hwnd = IntPtr.Zero;
+
+		/// <summary>
+		/// Returns a pointer to the underlying platform window handle (hWnd).
+		/// </summary>
+		public IntPtr WindowHandle
+		{
+			get
+			{
+				if (_hwnd == IntPtr.Zero)
+					_hwnd = this.GetWindowHandle();
+				return _hwnd;
+			}
+		}
+
+		PlatformMethods.WindowProc? newWndProc = null;
+		IntPtr oldWndProc = IntPtr.Zero;
+
+		void SubClassingWin32()
+		{
+			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformWindowSubclassed>(
+				del => del(this, new WindowsPlatformWindowSubclassedEventArgs(WindowHandle)));
+
+			newWndProc = new PlatformMethods.WindowProc(NewWindowProc);
+			oldWndProc = PlatformMethods.SetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_WNDPROC, newWndProc);
+
+			IntPtr NewWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+			{
+				if (msg == WindowsPlatformMessageIds.WM_SETTINGCHANGE || msg == WindowsPlatformMessageIds.WM_THEMECHANGE)
+					MauiWinUIApplication.Current.Application?.ThemeChanged();
+
+				MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(
+					m => m.Invoke(this, new WindowsPlatformMessageEventArgs(hWnd, msg, wParam, lParam)));
+
+				return PlatformMethods.CallWindowProc(oldWndProc, hWnd, msg, wParam, lParam);
+			}
+		}
+
+		#endregion
 	}
 }

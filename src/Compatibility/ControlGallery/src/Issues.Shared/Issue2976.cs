@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 
 #if UITEST
 using Xamarin.UITest;
@@ -78,11 +80,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			// The root page of your application
 			Content = new StackLayout
 			{
-				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
+				Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Children = {
 					new Label {
 						HorizontalTextAlignment = TextAlignment.Center,
-						Text = Device.RuntimePlatform == Device.iOS ? "Custom renderer UITableView" : Device.RuntimePlatform == Device.Android ? "Custom renderer ListView" : "Custom renderer todo"
+						Text = DeviceInfo.Platform == DevicePlatform.iOS ? "Custom renderer UITableView" : DeviceInfo.Platform == DevicePlatform.Android ? "Custom renderer ListView" : "Custom renderer todo"
 					},
 					fasterListView
 				}
@@ -111,7 +113,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 
 			if (ItemSelected != null)
-				ItemSelected(this, new SelectedItemChangedEventArgs(item, Items?.IndexOf(item) ?? -1));
+				ItemSelected(this, new SelectedItemChangedEventArgs(item, Items?.ToList().IndexOf($"{item}") ?? -1));
 		}
 
 		public NativeListView()
@@ -151,7 +153,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			Content = new StackLayout
 			{
-				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(5, 20, 5, 0) : new Thickness(5, 0),
+				Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(5, 20, 5, 0) : new Thickness(5, 0),
 				Children = {
 					new Label {
 						HorizontalTextAlignment = TextAlignment.Center,
@@ -193,7 +195,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			Content = new StackLayout
 			{
-				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
+				Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Children = {
 					new Label {
 						HorizontalTextAlignment = TextAlignment.Center,
@@ -263,7 +265,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			Content = new StackLayout
 			{
-				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
+				Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
 				Children = {
@@ -304,11 +306,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			// The root page of your application
 			Content = new StackLayout
 			{
-				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
+				Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Children = {
 					new Label {
 						HorizontalTextAlignment = TextAlignment.Center,
-						Text = Device.RuntimePlatform == Device.iOS ? "Custom UITableView+UICell" : Device.RuntimePlatform == Device.Android ? "Custom ListView+Cell" : "Custom renderer todo"
+						Text = DeviceInfo.Platform == DevicePlatform.iOS ? "Custom UITableView+UICell" : DeviceInfo.Platform == DevicePlatform.Android ? "Custom ListView+Cell" : "Custom renderer todo"
 					},
 					nativeListView2
 				}
@@ -337,7 +339,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 
 			if (ItemSelected != null)
-				ItemSelected(this, new SelectedItemChangedEventArgs(item, Items?.IndexOf(item) ?? -1));
+				ItemSelected(this, new SelectedItemChangedEventArgs(item, Items?.ToList().IndexOf((DataSource)item) ?? -1));
 		}
 
 		public NativeListView2()

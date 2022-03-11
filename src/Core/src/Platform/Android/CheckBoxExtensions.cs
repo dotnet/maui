@@ -2,33 +2,49 @@
 using Android.Graphics;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
-using AAttribute = Android.Resource.Attribute;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
-using XColor = Microsoft.Maui.Graphics.Color;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class CheckBoxExtensions
 	{
-		static readonly int[][] CheckedStates = new int[][]
+		public static void UpdateBackground(this AppCompatCheckBox platformCheckBox, ICheckBox check)
 		{
-			new int[] { AAttribute.StateEnabled, AAttribute.StateChecked },
-			new int[] { AAttribute.StateEnabled, -AAttribute.StateChecked },
-			new int[] { -AAttribute.StateEnabled, AAttribute.StateChecked },
-			new int[] { -AAttribute.StateEnabled, -AAttribute.StatePressed },
-		};
+			var paint = check.Background;
 
-		public static void UpdateBackgroundColor(this AppCompatCheckBox nativeCheckBox, ICheckBox check)
-		{
-			if (check.BackgroundColor == null)
-				nativeCheckBox.SetBackgroundColor(AColor.Transparent);
+			if (paint.IsNullOrEmpty())
+				platformCheckBox.SetBackgroundColor(AColor.Transparent);
 			else
-				nativeCheckBox.SetBackgroundColor(check.BackgroundColor.ToNative());
+				platformCheckBox.UpdateBackground((IView)check);
 		}
 
-		public static void UpdateIsChecked(this AppCompatCheckBox nativeCheckBox, ICheckBox check)
+		public static void UpdateIsChecked(this AppCompatCheckBox platformCheckBox, ICheckBox check)
 		{
-			nativeCheckBox.Checked = check.IsChecked;
+			platformCheckBox.Checked = check.IsChecked;
+		}
+
+		public static void UpdateForeground(this AppCompatCheckBox platformCheckBox, ICheckBox check)
+		{
+			// TODO: Delete when implementing the logic to set the system accent color. 
+			Graphics.Color accent = Graphics.Color.FromArgb("#ff33b5e5");
+
+			var targetColor = accent;
+
+			// For the moment, we're only supporting solid color Paint for the Android Checkbox
+			if (check.Foreground is SolidPaint solid)
+			{
+				targetColor = solid.Color;
+			}
+
+			var tintColor = targetColor.ToPlatform();
+
+			var tintList = ColorStateListExtensions.CreateCheckBox(tintColor);
+
+			var tintMode = PorterDuff.Mode.SrcIn;
+
+			CompoundButtonCompat.SetButtonTintList(platformCheckBox, tintList);
+			CompoundButtonCompat.SetButtonTintMode(platformCheckBox, tintMode);
 		}
 	}
 }

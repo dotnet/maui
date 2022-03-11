@@ -1,11 +1,12 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
+	using RelativeLayout = Microsoft.Maui.Controls.Compatibility.RelativeLayout;
+
 	public partial class Unreported007 : ContentPage
 	{
 		public Unreported007()
@@ -23,13 +24,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp]
 			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices { RuntimePlatform = Device.iOS };
+				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
-				Device.PlatformServices = null;
+				DeviceInfo.SetCurrent(null);
 			}
 
 			[TestCase(true), TestCase(false)]

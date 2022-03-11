@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls
 
 				BindingExpressionPart indexer = null;
 
-				int lbIndex = part.IndexOf('[');
+				int lbIndex = part.IndexOf("[", StringComparison.Ordinal);
 				if (lbIndex != -1)
 				{
 					int rbIndex = part.LastIndexOf(']');
@@ -745,7 +745,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (part.IsIndexer)
 					{
-						if (name.Contains("["))
+						if (name.IndexOf("[", StringComparison.Ordinal) != -1)
 						{
 							if (name != string.Format("{0}[{1}]", part.IndexerName, part.Content))
 								return;
@@ -759,20 +759,10 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 
-				Action action = () => _expression.Apply();
-				if (_expression._weakTarget != null && _expression._weakTarget.TryGetTarget(out BindableObject obj) && obj.Dispatcher != null && obj.Dispatcher.IsInvokeRequired)
-				{
-					obj.Dispatcher.BeginInvokeOnMainThread(action);
-				}
-				else if (Device.IsInvokeRequired)
-				{
-					Device.BeginInvokeOnMainThread(action);
-				}
+				if (_expression._weakTarget is not null && _expression._weakTarget.TryGetTarget(out BindableObject obj))
+					obj.Dispatcher.DispatchIfRequired(() => _expression.Apply());
 				else
-				{
-					action();
-				}
-
+					_expression.Apply();
 			}
 
 			public bool TryGetValue(object source, out object value)

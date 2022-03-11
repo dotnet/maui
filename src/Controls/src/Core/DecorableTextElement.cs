@@ -1,5 +1,6 @@
 using System;
-
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
@@ -8,19 +9,30 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TextDecorationsProperty = BindableProperty.Create(nameof(IDecorableTextElement.TextDecorations), typeof(TextDecorations), typeof(IDecorableTextElement), TextDecorations.None);
 	}
 
-	[Xaml.TypeConversion(typeof(TextDecorations))]
+	/// <include file="../../docs/Microsoft.Maui.Controls/TextDecorationConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.TextDecorationConverter']/Docs" />
 	public class TextDecorationConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
-		{
-			TextDecorations result = TextDecorations.None;
-			if (value == null)
-				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(TextDecorations)));
+		/// <include file="../../docs/Microsoft.Maui.Controls/TextDecorationConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
 
-			var valueArr = value.Split(',');
+		/// <include file="../../docs/Microsoft.Maui.Controls/TextDecorationConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs" />
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/TextDecorationConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs" />
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		{
+			var strValue = value?.ToString();
+
+			TextDecorations result = TextDecorations.None;
+			if (strValue == null)
+				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(TextDecorations)));
+
+			var valueArr = strValue.Split(',');
 
 			if (valueArr.Length <= 1)
-				valueArr = value.Split(' ');
+				valueArr = strValue.Split(' ');
 
 			foreach (var item in valueArr)
 			{
@@ -35,9 +47,10 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		public override string ConvertToInvariantString(object value)
+		/// <include file="../../docs/Microsoft.Maui.Controls/TextDecorationConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is TextDecorations td))
+			if (value is not TextDecorations td)
 				throw new NotSupportedException();
 			if (td == TextDecorations.None)
 				return nameof(TextDecorations.None);

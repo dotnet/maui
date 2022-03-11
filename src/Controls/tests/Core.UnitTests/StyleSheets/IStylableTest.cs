@@ -7,13 +7,6 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 	[TestFixture]
 	public class IStylableTest
 	{
-		[SetUp]
-		public void SetUp()
-		{
-			Device.PlatformServices = new MockPlatformServices();
-			Internals.Registrar.RegisterAll(new Type[0]);
-		}
-
 		[TestCase]
 		public void GetPropertyDefinedOnParent()
 		{

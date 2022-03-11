@@ -1,11 +1,12 @@
 using System;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Converters;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TypeConverter(typeof(ThicknessTypeConverter))]
+	[System.ComponentModel.TypeConverter(typeof(ThicknessTypeConverter))]
 	public struct Bz55862Bar
 	{
 	}
@@ -27,21 +28,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[SetUp]
-			public void Setup()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				Device.PlatformServices = null;
-			}
-
-			[TestCase(true)]
-			[TestCase(false)]
-			public void BindingContextWithConverter(bool useCompiledXaml)
+			[Test]
+			public void BindingContextWithConverter([Values(false/*, true*/)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Bz55862)));

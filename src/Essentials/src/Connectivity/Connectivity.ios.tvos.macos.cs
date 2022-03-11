@@ -1,44 +1,50 @@
-#if __IOS__
+#if !(MACCATALYST || MACOS)
 using CoreTelephony;
 #endif
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Connectivity
+	public partial class ConnectivityImplementation : IConnectivity
 	{
-#if __IOS__
-        static readonly Lazy<CTCellularData> cellularData = new Lazy<CTCellularData>(() => new CTCellularData());
+#if !(MACCATALYST || MACOS)
+		// TODO: Use NWPathMonitor on > iOS 12
+#pragma warning disable BI1234
+		static readonly Lazy<CTCellularData> cellularData = new Lazy<CTCellularData>(() => new CTCellularData());
 
-        internal static CTCellularData CellularData => cellularData.Value;
+		internal static CTCellularData CellularData => cellularData.Value;
+#pragma warning restore BI1234
 #endif
 
 		static ReachabilityListener listener;
 
-		static void StartListeners()
+		public void StartListeners()
 		{
 			listener = new ReachabilityListener();
-			listener.ReachabilityChanged += OnConnectivityChanged;
+			listener.ReachabilityChanged += Connectivity.OnConnectivityChanged;
 		}
 
-		static void StopListeners()
+		public void StopListeners()
 		{
 			if (listener == null)
 				return;
 
-			listener.ReachabilityChanged -= OnConnectivityChanged;
+			listener.ReachabilityChanged -= Connectivity.OnConnectivityChanged;
 			listener.Dispose();
 			listener = null;
 		}
 
-		static NetworkAccess PlatformNetworkAccess
+		public NetworkAccess NetworkAccess
 		{
 			get
 			{
 				var restricted = false;
-#if __IOS__
-                restricted = CellularData.RestrictedState == CTCellularDataRestrictedState.Restricted;
+#if !(MACCATALYST || MACOS)
+				// TODO: Use NWPathMonitor on > iOS 12
+#pragma warning disable BI1234
+				restricted = CellularData.RestrictedState == CTCellularDataRestrictedState.Restricted;
+#pragma warning restore BI1234
 #endif
 				var internetStatus = Reachability.InternetConnectionStatus();
 				if ((internetStatus == NetworkStatus.ReachableViaCarrierDataNetwork && !restricted) || internetStatus == NetworkStatus.ReachableViaWiFiNetwork)
@@ -52,7 +58,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static IEnumerable<ConnectionProfile> PlatformConnectionProfiles
+		public IEnumerable<ConnectionProfile> ConnectionProfiles
 		{
 			get
 			{

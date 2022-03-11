@@ -42,12 +42,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				case Device.Android:
 					fontName = "sans-serif-light";
 					break;
-				case Device.UWP:
+				case Device.WinUI:
 					fontName = "Comic Sans MS";
 					break;
 			}
-
-			var font = Font.OfSize(fontName, NamedSize.Medium);
 
 			var themedButton = new Button
 			{
@@ -55,8 +53,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				//BackgroundColor = Colors.Accent,
 				TextColor = Colors.White,
 				ClassId = "AccentButton",
-				Font = font
+				FontFamily = fontName,
+				FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Button), false)
 			};
+
 			var borderButton = new Button
 			{
 				Text = "Border Button",
@@ -78,7 +78,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var autoLabel = new Label { Text = "Label Text" };
 			AutomationProperties.SetLabeledBy(labeledBy, autoLabel);
 
-			themedButton.Clicked += (sender, args) => themedButton.Font = Font.Default;
+			themedButton.Clicked += (sender, args) =>
+			{
+				themedButton.FontFamily = Font.Default.Family;
+				themedButton.FontSize = Font.Default.Size;
+			};
 
 			alertSingle.Clicked += (sender, args) => DisplayAlert("Foo", "Bar", "Cancel");
 

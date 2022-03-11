@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -8,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	public class SelectableItemsViewController<TItemsView> : StructuredItemsViewController<TItemsView>
 		where TItemsView : SelectableItemsView
 	{
-		public SelectableItemsViewController(TItemsView selectableItemsView, ItemsViewLayout layout) 
+		public SelectableItemsViewController(TItemsView selectableItemsView, ItemsViewLayout layout)
 			: base(selectableItemsView, layout)
 		{
 		}
@@ -110,7 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						// SelectedItem has been set to null; if an item is selected, we need to de-select it
 						ClearSelection();
 					}
-				
+
 					return;
 				case SelectionMode.Multiple:
 					SynchronizeNativeSelectionWithSelectedItems();

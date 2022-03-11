@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				AutomationId = Black
 			};
 
-			mainLayout.Children.Add(view, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
+			mainLayout.Children.Add(view, new Rect(0, 0, 1, 1), AbsoluteLayoutFlags.All);
 			Content = thePage;
 
 		}

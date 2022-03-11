@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ObjCRuntime;
 using UIKit;
 using NSAction = System.Action;
 using PointF = CoreGraphics.CGPoint;
@@ -35,6 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[Obsolete]
 	internal class ContextScrollViewDelegate : UIScrollViewDelegate
 	{
 		readonly nfloat _finalButtonSize;
@@ -76,7 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			s_scrollViewBeingScrolled = new WeakReference<UIScrollView>(scrollView);
-			
+
 			if (!IsOpen)
 				SetButtonsShowing(true);
 
@@ -100,22 +102,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var width = _finalButtonSize;
 			var count = _buttons.Count;
+			var ioffset = scrollView.ContentOffset.X / (float)count;
 
-			if (!UIDevice.CurrentDevice.CheckSystemVersion(8, 0))
-				_container.Frame = new RectangleF(scrollView.Frame.Width, 0, scrollView.ContentOffset.X, scrollView.Frame.Height);
-			else
+			if (ioffset > width)
+				width = ioffset + 1;
+
+			for (var i = count - 1; i >= 0; i--)
 			{
-				var ioffset = scrollView.ContentOffset.X / (float)count;
-
-				if (ioffset > width)
-					width = ioffset + 1;
-
-				for (var i = count - 1; i >= 0; i--)
-				{
-					var b = _buttons[i];
-					var rect = b.Frame;
-					b.Frame = new RectangleF(scrollView.Frame.Width + (count - (i + 1)) * ioffset, 0, width, rect.Height);
-				}
+				var b = _buttons[i];
+				var rect = b.Frame;
+				b.Frame = new RectangleF(scrollView.Frame.Width + (count - (i + 1)) * ioffset, 0, width, rect.Height);
 			}
 
 			if (scrollView.ContentOffset.X == 0)
@@ -164,9 +160,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 							ContextActionsCell contentCell = GetContextCell(scrollView);
 							NSAction close = () =>
 							{
-								if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))
-									RestoreHighlight(scrollView);
-
+								RestoreHighlight(scrollView);
 								IsOpen = false;
 								scrollView.SetContentOffset(new PointF(0, 0), true);
 								ClearCloserRecognizer(contentCell);
@@ -190,9 +184,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				IsOpen = false;
 				targetContentOffset = new PointF(0, 0);
-
-				if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))
-					RestoreHighlight(scrollView);
+				RestoreHighlight(scrollView);
 			}
 		}
 
@@ -202,8 +194,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return false;
 
 			UIScrollView scrollViewBeingScrolled;
-			if (!s_scrollViewBeingScrolled.TryGetTarget(out scrollViewBeingScrolled) 
-				|| ReferenceEquals(scrollViewBeingScrolled, scrollView) 
+			if (!s_scrollViewBeingScrolled.TryGetTarget(out scrollViewBeingScrolled)
+				|| ReferenceEquals(scrollViewBeingScrolled, scrollView)
 				|| !ReferenceEquals(((ContextScrollViewDelegate)scrollViewBeingScrolled.Delegate)?._table, ((ContextScrollViewDelegate)scrollView.Delegate)?._table))
 				return false;
 

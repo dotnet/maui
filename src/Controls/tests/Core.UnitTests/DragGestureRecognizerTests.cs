@@ -10,20 +10,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class DragGestureRecognizerTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void PropertySetters()
 		{
@@ -125,7 +111,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[TestCase(typeof(Label), "LabelTest")]
 		[TestCase(typeof(Editor), "EditorTest")]
 		[TestCase(typeof(TimePicker), "01:00:00")]
-		[TestCase(typeof(DatePicker), "12/12/2020 12:00:00 AM")]
 		[TestCase(typeof(CheckBox), "True")]
 		[TestCase(typeof(Switch), "True")]
 		[TestCase(typeof(RadioButton), "True")]
@@ -136,6 +121,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsTrue(element.TrySetValue(result));
 			var args = dragRec.SendDragStarting((IView)element);
 			Assert.AreEqual(result, args.Data.Text);
+		}
+
+		[TestCase(typeof(DatePicker), "12/12/2020 12:00:00 AM")]
+		public void DateTextPackageCorrectlyExtractedFromCompatibleElement(Type fieldType, string result)
+		{
+			var date = DateTime.Parse(result);
+			result = date.ToString();
+			TextPackageCorrectlyExtractedFromCompatibleElement(fieldType, result);
 		}
 
 		[Test]

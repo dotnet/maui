@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var ex = Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new FileImageSourceStub()));
 
-			Assert.Contains(nameof(IFileImageSource), ex.Message);
+			Assert.Contains(nameof(IFileImageSource), ex.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]
@@ -57,17 +58,17 @@ namespace Microsoft.Maui.DeviceTests
 
 			var ex = Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new InvalidImageSourceStub()));
 
-			Assert.Contains(nameof(InvalidImageSourceStub), ex.Message);
-			Assert.Contains(nameof(IImageSource), ex.Message);
+			Assert.Contains(nameof(InvalidImageSourceStub), ex.Message, StringComparison.Ordinal);
+			Assert.Contains(nameof(IImageSource), ex.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]
-		public void ResultsDisposeCorrectlyAndOnce()
+		public async Task ResultsDisposeCorrectlyAndOnce()
 		{
 			var dispose = 0;
 
 			var cache = new CustomImageCacheStub();
-			var image = cache.Get(Colors.Red);
+			var image = await InvokeOnMainThreadAsync(() => cache.Get(Colors.Red));
 
 			var result = new ImageSourceServiceResult(image, () => dispose++);
 
@@ -89,14 +90,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		private IImageSourceServiceProvider CreateImageSourceServiceProvider(Action<IImageSourceServiceCollection> configure)
 		{
-			var host = new AppHostBuilder()
-				.UseMauiServiceProviderFactory(true)
+			var mauiApp = MauiApp.CreateBuilder(useDefaults: false)
 				.ConfigureImageSources(configure)
 				.Build();
 
-			var services = host.Services;
-
-			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
+			var provider = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
 
 			return provider;
 		}

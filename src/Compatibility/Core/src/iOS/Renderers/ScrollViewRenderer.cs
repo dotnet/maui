@@ -1,13 +1,14 @@
 using System;
 using System.ComponentModel;
+using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
-using UIKit;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
+using ObjCRuntime;
+using UIKit;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
-using CoreGraphics;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -15,7 +16,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	public class ScrollViewRenderer : UIScrollView, IVisualElementRenderer, IEffectControlProvider
 	{
 		EventTracker _events;
+#pragma warning disable CS0618 // Type or member is obsolete
 		KeyboardInsetTracker _insetTracker;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		VisualElementPackager _packager;
 
@@ -78,16 +81,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_events.LoadEvents(this);
 
 
+#pragma warning disable CS0618 // Type or member is obsolete
 					_insetTracker = new KeyboardInsetTracker(this, () => Window, insets =>
 					{
 						ContentInset = ScrollIndicatorInsets = insets;
-					}, 
+					},
 					point =>
 					{
 						var offset = ContentOffset;
 						offset.Y += point.Y;
 						SetContentOffset(offset, true);
 					}, this);
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 
 				UpdateDelaysContentTouches();
@@ -112,20 +117,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetElementSize(Size size)
 		{
-			Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Layout.LayoutChildIntoBoundingRegion(Element, new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public UIViewController ViewController
 		{
 			get { return null; }
 		}
-				
+
 		public override void LayoutSubviews()
 		{
-			_insetTracker?.OnLayoutSubviews();
 			base.LayoutSubviews();
 
-			if(Superview != null && ScrollView != null)
+			if (Superview != null && ScrollView != null)
 			{
 				if (_requestedScroll != null)
 				{
@@ -196,7 +200,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.Dispose(disposing);
 		}
 
-		protected virtual void OnElementChanged(VisualElementChangedEventArgs e) => ElementChanged?.Invoke(this, e); 
+		protected virtual void OnElementChanged(VisualElementChangedEventArgs e) => ElementChanged?.Invoke(this, e);
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
@@ -216,6 +220,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateHorizontalScrollBarVisibility();
 		}
 
+		[PortHandler]
 		void UpdateIsEnabled()
 		{
 			if (Element == null)
@@ -229,15 +234,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateVerticalScrollBarVisibility()
 		{
 			var verticalScrollBarVisibility = ScrollView.VerticalScrollBarVisibility;
-			ShowsVerticalScrollIndicator = verticalScrollBarVisibility == ScrollBarVisibility.Always 
-			                               || verticalScrollBarVisibility == ScrollBarVisibility.Default;
+			ShowsVerticalScrollIndicator = verticalScrollBarVisibility == ScrollBarVisibility.Always
+										   || verticalScrollBarVisibility == ScrollBarVisibility.Default;
 		}
 
 		void UpdateHorizontalScrollBarVisibility()
 		{
 			var horizontalScrollBarVisibility = ScrollView.HorizontalScrollBarVisibility;
 			ShowsHorizontalScrollIndicator = horizontalScrollBarVisibility == ScrollBarVisibility.Always
-			                               || horizontalScrollBarVisibility == ScrollBarVisibility.Default;
+										   || horizontalScrollBarVisibility == ScrollBarVisibility.Default;
 		}
 
 		void HandleScrollAnimationEnded(object sender, EventArgs e)

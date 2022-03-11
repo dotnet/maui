@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
@@ -8,18 +9,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class FlyoutPageUnitTests : BaseTestFixture
 	{
+		MockDeviceDisplay mockDeviceDisplay;
+		MockDeviceInfo mockDeviceInfo;
+
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
-			var mockDeviceInfo = new TestDeviceInfo();
-			Device.Info = mockDeviceInfo;
+			DeviceDisplay.SetCurrent(mockDeviceDisplay = new MockDeviceDisplay());
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
 		[Test]
 		public void TestConstructor()
 		{
-
 			FlyoutPage page = new FlyoutPage();
 
 			Assert.Null(page.Flyout);
@@ -173,9 +176,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Detail = new ContentPage { Content = new View() }
 			};
 
-			((IFlyoutPageController)page).FlyoutBounds = new Rectangle(0, 0, 100, 100);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 100), page.Flyout.Bounds);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 100), ((IFlyoutPageController)page).FlyoutBounds);
+			((IFlyoutPageController)page).FlyoutBounds = new Rect(0, 0, 100, 100);
+			Assert.AreEqual(new Rect(0, 0, 100, 100), page.Flyout.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 100), ((IFlyoutPageController)page).FlyoutBounds);
 		}
 
 		[Test]
@@ -187,9 +190,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Detail = new ContentPage { Content = new View() }
 			};
 
-			((IFlyoutPageController)page).DetailBounds = new Rectangle(0, 0, 100, 100);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 100), page.Detail.Bounds);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 100), ((IFlyoutPageController)page).DetailBounds);
+			((IFlyoutPageController)page).DetailBounds = new Rect(0, 0, 100, 100);
+			Assert.AreEqual(new Rect(0, 0, 100, 100), page.Detail.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 100), ((IFlyoutPageController)page).DetailBounds);
 		}
 
 		[Test]
@@ -202,16 +205,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			((IFlyoutPageController)page).FlyoutBounds = new Rectangle(0, 0, 100, 200);
-			((IFlyoutPageController)page).DetailBounds = new Rectangle(0, 0, 100, 100);
+			((IFlyoutPageController)page).FlyoutBounds = new Rect(0, 0, 100, 200);
+			((IFlyoutPageController)page).DetailBounds = new Rect(0, 0, 100, 100);
 
-			page.Flyout.Layout(new Rectangle(0, 0, 1, 1));
-			page.Detail.Layout(new Rectangle(0, 0, 1, 1));
+			page.Flyout.Layout(new Rect(0, 0, 1, 1));
+			page.Detail.Layout(new Rect(0, 0, 1, 1));
 
-			page.Layout(new Rectangle(0, 0, 200, 200));
+			page.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(0, 0, 100, 200), page.Flyout.Bounds);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 100), page.Detail.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 200), page.Flyout.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 100), page.Detail.Bounds);
 		}
 
 		[Test]
@@ -223,7 +226,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			Assert.Throws<InvalidOperationException>(() => page.Layout(new Rectangle(0, 0, 200, 200)));
+			Assert.Throws<InvalidOperationException>(() => page.Layout(new Rect(0, 0, 200, 200)));
 		}
 
 		[Test]
@@ -235,7 +238,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			Assert.Throws<InvalidOperationException>(() => page.Layout(new Rectangle(0, 0, 200, 200)));
+			Assert.Throws<InvalidOperationException>(() => page.Layout(new Rect(0, 0, 200, 200)));
 		}
 
 		[Test]
@@ -247,7 +250,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			Assert.Throws<InvalidOperationException>(() => ((IFlyoutPageController)page).DetailBounds = new Rectangle(0, 0, 200, 200));
+			Assert.Throws<InvalidOperationException>(() => ((IFlyoutPageController)page).DetailBounds = new Rect(0, 0, 200, 200));
 		}
 
 		[Test]
@@ -259,13 +262,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			Assert.Throws<InvalidOperationException>(() => ((IFlyoutPageController)page).FlyoutBounds = new Rectangle(0, 0, 200, 200));
+			Assert.Throws<InvalidOperationException>(() => ((IFlyoutPageController)page).FlyoutBounds = new Rect(0, 0, 200, 200));
 		}
 
 		[Test]
 		public void ThrowsInSetIsPresentOnSplitModeOnTablet()
 		{
-			Device.Idiom = TargetIdiom.Tablet;
+			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 			var page = new FlyoutPage
 			{
 				Flyout = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
@@ -280,8 +283,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void ThorwsInSetIsPresentOnSplitPortraitModeOnTablet()
 		{
-			Device.Idiom = TargetIdiom.Tablet;
-			Device.Info.CurrentOrientation = DeviceOrientation.Portrait;
+			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
+			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Portrait);
 
 			var page = new FlyoutPage
 			{
@@ -297,7 +300,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestSetIsPresentedOnPopoverMode()
 		{
-			Device.Info.CurrentOrientation = DeviceOrientation.Landscape;
+			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Landscape);
 
 			var page = new FlyoutPage
 			{

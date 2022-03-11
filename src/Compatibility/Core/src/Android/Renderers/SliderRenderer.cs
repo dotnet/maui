@@ -5,6 +5,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Widget;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -66,25 +67,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				seekBar.Max = 1000;
 				seekBar.SetOnSeekBarChangeListener(this);
 
-				if (Forms.SdkInt > BuildVersionCodes.Kitkat)
-				{
-					defaultthumbcolorfilter = seekBar.Thumb.GetColorFilter();
-					defaultprogresstintmode = seekBar.ProgressTintMode;
-					defaultprogressbackgroundtintmode = seekBar.ProgressBackgroundTintMode;
-					defaultprogresstintlist = seekBar.ProgressTintList;
-					defaultprogressbackgroundtintlist = seekBar.ProgressBackgroundTintList;
-					defaultthumb = seekBar.Thumb;
-				}
+				defaultthumbcolorfilter = seekBar.Thumb.GetColorFilter();
+				defaultprogresstintmode = seekBar.ProgressTintMode;
+				defaultprogressbackgroundtintmode = seekBar.ProgressBackgroundTintMode;
+				defaultprogresstintlist = seekBar.ProgressTintList;
+				defaultprogressbackgroundtintlist = seekBar.ProgressBackgroundTintList;
+				defaultthumb = seekBar.Thumb;
 			}
 
 			Slider slider = e.NewElement;
 			_min = slider.Minimum;
 			_max = slider.Maximum;
 			Value = slider.Value;
-			if (Forms.SdkInt > BuildVersionCodes.Kitkat)
-			{
-				UpdateSliderColors();
-			}
+			UpdateSliderColors();
 		}
 
 		SeekBar NativeSeekbar
@@ -117,17 +112,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					break;
 			}
 
-			if (Forms.SdkInt > BuildVersionCodes.Kitkat)
-			{
-				if (e.PropertyName == Slider.MinimumTrackColorProperty.PropertyName)
-					UpdateMinimumTrackColor();
-				else if (e.PropertyName == Slider.MaximumTrackColorProperty.PropertyName)
-					UpdateMaximumTrackColor();
-				else if (e.PropertyName == Slider.ThumbImageSourceProperty.PropertyName)
-					UpdateThumbImage();
-				else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
-					UpdateThumbColor();
-			}
+			if (e.PropertyName == Slider.MinimumTrackColorProperty.PropertyName)
+				UpdateMinimumTrackColor();
+			else if (e.PropertyName == Slider.MaximumTrackColorProperty.PropertyName)
+				UpdateMaximumTrackColor();
+			else if (e.PropertyName == Slider.ThumbImageSourceProperty.PropertyName)
+				UpdateThumbImage();
+			else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
+				UpdateThumbColor();
 		}
 
 		private void UpdateSliderColors()
@@ -198,10 +190,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			base.OnLayout(changed, l, t, r, b);
-
-			BuildVersionCodes androidVersion = Forms.SdkInt;
-			if (androidVersion < BuildVersionCodes.JellyBean)
-				return;
 
 			// Thumb only supported JellyBean and higher
 

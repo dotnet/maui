@@ -12,11 +12,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		public static bool IsInitialized { get; private set; }
 
-		static bool FlagsSet { get; set; }
-
-		static IReadOnlyList<string> s_flags;
-		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new List<string>().AsReadOnly());
-
 		public static void Init(IEnumerable<Assembly> rendererAssemblies = null)
 		{
 			if (IsInitialized)
@@ -43,26 +38,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Registrar.RegisterAll(new[] { typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute), typeof(ExportFontAttribute) });
 
 			Ticker.SetDefault(new WPFTicker());
-			Device.SetIdiom(TargetIdiom.Desktop);
-			Device.SetFlags(s_flags);
 
 			IsInitialized = true;
-		}
-
-		public static void SetFlags(params string[] flags)
-		{
-			if (FlagsSet)
-			{
-				return;
-			}
-
-			if (IsInitialized)
-			{
-				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
-			}
-
-			s_flags = flags.ToList().AsReadOnly();
-			FlagsSet = true;
 		}
 	}
 }

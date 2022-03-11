@@ -26,21 +26,64 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.AnimationExtensions']/Docs" />
 	public static class AnimationExtensions
 	{
+		static readonly Dictionary<int, Animation> s_tweeners;
 		static readonly Dictionary<AnimatableKey, Info> s_animations;
 		static readonly Dictionary<AnimatableKey, int> s_kinetics;
+		static int s_currentTweener = 1;
 
 		static AnimationExtensions()
 		{
 			s_animations = new Dictionary<AnimatableKey, Info>();
 			s_kinetics = new Dictionary<AnimatableKey, int>();
+			s_tweeners = new Dictionary<int, Animation>();
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Add']/Docs" />
+		public static int Add(this IAnimationManager animationManager, Action<double> step)
+		{
+			var id = s_currentTweener++;
+			var animation = new Animation
+			{
+				Name = $"{id}",
+				Easing = Easing.Linear,
+				Step = step
+			};
+			s_tweeners[id] = animation;
+			animation.Commit(animationManager);
+			return id;
+		}
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Insert']/Docs" />
+		public static int Insert(this IAnimationManager animationManager, Func<long, bool> step)
+		{
+			var id = s_currentTweener++;
+			Animation animation = null;
+			animation = new TweenerAnimation(step)
+			{
+				Name = $"{id}",
+				Easing = Easing.Linear,
+			};
+			s_tweeners[id] = animation;
+			animation.Commit(animationManager);
+			return id;
+		}
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Remove']/Docs" />
+		public static void Remove(this IAnimationManager animationManager, int tickerId)
+		{
+			var animation = s_tweeners[tickerId];
+			s_tweeners.Remove(tickerId);
+			animationManager.Remove(animation);
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='AbortAnimation']/Docs" />
 		public static bool AbortAnimation(this IAnimatable self, string handle)
 		{
 			var key = new AnimatableKey(self, handle);
@@ -61,6 +104,7 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Animate']/Docs" />
 		public static void Animate(this IAnimatable self, string name, Animation animation, uint rate = 16, uint length = 250, Easing easing = null, Action<double, bool> finished = null,
 								   Func<bool> repeat = null)
 		{
@@ -79,21 +123,24 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Animate']/Docs" />
 		public static void Animate(this IAnimatable self, string name, Action<double> callback, double start, double end, uint rate = 16, uint length = 250, Easing easing = null,
 								   Action<double, bool> finished = null, Func<bool> repeat = null)
 		{
 			self.Animate(name, Interpolate(start, end), callback, rate, length, easing, finished, repeat);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Animate']/Docs" />
 		public static void Animate(this IAnimatable self, string name, Action<double> callback, uint rate = 16, uint length = 250, Easing easing = null, Action<double, bool> finished = null,
 								   Func<bool> repeat = null)
 		{
 			self.Animate(name, x => x, callback, rate, length, easing, finished, repeat);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Animate']/Docs" />
 		public static void Animate<T>(this IAnimatable self, string name, Func<double, T> transform, Action<T> callback,
 			uint rate = 16, uint length = 250, Easing easing = null,
-			Action<T, bool> finished = null, Func<bool> repeat = null)
+			Action<T, bool> finished = null, Func<bool> repeat = null, IAnimationManager animationManager = null)
 		{
 			if (transform == null)
 				throw new ArgumentNullException(nameof(transform));
@@ -102,29 +149,37 @@ namespace Microsoft.Maui.Controls
 			if (self == null)
 				throw new ArgumentNullException(nameof(self));
 
-			Action animate = () => AnimateInternal(self, name, transform, callback, rate, length, easing, finished, repeat);
+			animationManager ??= self.GetAnimationManager();
+
+			Action animate = () => AnimateInternal(self, animationManager, name, transform, callback, rate, length, easing, finished, repeat);
 			DoAction(self, animate);
 		}
 
 
-		public static void AnimateKinetic(this IAnimatable self, string name, Func<double, double, bool> callback, double velocity, double drag, Action finished = null)
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='AnimateKinetic']/Docs" />
+		public static void AnimateKinetic(this IAnimatable self, string name, Func<double, double, bool> callback, double velocity, double drag, Action finished = null, IAnimationManager animationManager = null)
 		{
-			Action animate = () => AnimateKineticInternal(self, name, callback, velocity, drag, finished);
+			animationManager ??= self.GetAnimationManager();
+
+			Action animate = () => AnimateKineticInternal(self, animationManager, name, callback, velocity, drag, finished);
 			DoAction(self, animate);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='AnimationIsRunning']/Docs" />
 		public static bool AnimationIsRunning(this IAnimatable self, string handle)
 		{
 			var key = new AnimatableKey(self, handle);
 			return s_animations.ContainsKey(key);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Interpolate']/Docs" />
 		public static Func<double, double> Interpolate(double start, double end = 1.0f, double reverseVal = 0.0f, bool reverse = false)
 		{
 			double target = reverse ? reverseVal : end;
 			return x => start + (target - start) * x;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Batch']/Docs" />
 		public static IDisposable Batch(this IAnimatable self) => new BatchObject(self);
 
 		static void AbortAnimation(AnimatableKey key)
@@ -154,16 +209,19 @@ namespace Microsoft.Maui.Controls
 
 		static void AbortKinetic(AnimatableKey key)
 		{
+			if (s_kinetics.TryGetValue(key, out var ticker))
+			{
+				var animation = s_tweeners[ticker];
+				animation.AnimationManager?.Remove(ticker);
+				s_kinetics.Remove(key);
+			}
 			if (!s_kinetics.ContainsKey(key))
 			{
 				return;
 			}
-
-			Ticker.Default.Remove(s_kinetics[key]);
-			s_kinetics.Remove(key);
 		}
 
-		static void AnimateInternal<T>(IAnimatable self, string name, Func<double, T> transform, Action<T> callback,
+		static void AnimateInternal<T>(IAnimatable self, IAnimationManager animationManager, string name, Func<double, T> transform, Action<T> callback,
 			uint rate, uint length, Easing easing, Action<T, bool> finished, Func<bool> repeat)
 		{
 			var key = new AnimatableKey(self, name);
@@ -175,9 +233,9 @@ namespace Microsoft.Maui.Controls
 			if (finished != null)
 				final = (f, b) => finished(transform(f), b);
 
-			var info = new Info { Rate = rate, Length = length, Easing = easing ?? Easing.Linear };
+			var info = new Info { Rate = rate, Length = length, Easing = easing ?? Easing.Linear, AnimationManager = animationManager };
 
-			var tweener = new Tweener(info.Length, info.Rate);
+			var tweener = new Tweener(info.Length, info.Rate, animationManager);
 			tweener.Handle = key;
 			tweener.ValueUpdated += HandleTweenerUpdated;
 			tweener.Finished += HandleTweenerFinished;
@@ -194,7 +252,7 @@ namespace Microsoft.Maui.Controls
 			tweener.Start();
 		}
 
-		static void AnimateKineticInternal(IAnimatable self, string name, Func<double, double, bool> callback, double velocity, double drag, Action finished = null)
+		static void AnimateKineticInternal(IAnimatable self, IAnimationManager animationManager, string name, Func<double, double, bool> callback, double velocity, double drag, Action finished = null)
 		{
 			var key = new AnimatableKey(self, name);
 
@@ -202,8 +260,8 @@ namespace Microsoft.Maui.Controls
 
 			double sign = velocity / Math.Abs(velocity);
 			velocity = Math.Abs(velocity);
-
-			int tick = Ticker.Default.Insert(step =>
+			int tick = 0;
+			tick = animationManager.Insert(step =>
 			{
 				long ms = step;
 
@@ -220,11 +278,13 @@ namespace Microsoft.Maui.Controls
 				{
 					finished?.Invoke();
 					s_kinetics.Remove(key);
+					animationManager.Remove(tick);
 				}
 				return result;
 			});
-
 			s_kinetics[key] = tick;
+			if (!animationManager.Ticker.IsRunning)
+				animationManager.Ticker.Start();
 		}
 
 		static void HandleTweenerFinished(object o, EventArgs args)
@@ -241,7 +301,7 @@ namespace Microsoft.Maui.Controls
 				var repeat = false;
 
 				// If the Ticker has been disabled (e.g., by power save mode), then don't repeat the animation
-				var animationsEnabled = Ticker.Default.SystemEnabled;
+				var animationsEnabled = info.AnimationManager.Ticker.SystemEnabled;
 
 				if (info.Repeat != null && animationsEnabled)
 					repeat = info.Repeat();
@@ -251,6 +311,7 @@ namespace Microsoft.Maui.Controls
 					s_animations.Remove(tweener.Handle);
 					tweener.ValueUpdated -= HandleTweenerUpdated;
 					tweener.Finished -= HandleTweenerFinished;
+					tweener.Stop();
 				}
 
 				info.Finished?.Invoke(tweener.Value, !animationsEnabled);
@@ -281,28 +342,12 @@ namespace Microsoft.Maui.Controls
 
 		static void DoAction(IAnimatable self, Action action)
 		{
+			IDispatcher dispatcher = null;
 			if (self is BindableObject element)
-			{
-				if (element.Dispatcher.IsInvokeRequired)
-				{
-					element.Dispatcher.BeginInvokeOnMainThread(action);
-				}
-				else
-				{
-					action();
-				}
+				dispatcher = element.Dispatcher;
 
-				return;
-			}
-
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(action);
-			}
-			else
-			{
-				action();
-			}
+			// a null dispatcher is OK as we will find one in Dispatch
+			dispatcher.DispatchIfRequired(action);
 		}
 
 		class Info
@@ -315,7 +360,7 @@ namespace Microsoft.Maui.Controls
 			public Easing Easing { get; set; }
 
 			public uint Length { get; set; }
-
+			public IAnimationManager AnimationManager { get; set; }
 			public WeakReference<IAnimatable> Owner { get; set; }
 
 			public uint Rate { get; set; }

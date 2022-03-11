@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -27,12 +28,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = datePicker.MinimumDate,
-					NativeViewValue = GetNativeMinimumDate(handler)
+					PlatformViewValue = GetNativeMinimumDate(handler)
 				};
 			});
 
 			Assert.Equal(xplatMinimumDate, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
 		[Fact(DisplayName = "Maximum Date Initializes Correctly")]
@@ -54,12 +55,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = datePicker.MaximumDate,
-					NativeViewValue = GetNativeMaximumDate(handler)
+					PlatformViewValue = GetNativeMaximumDate(handler)
 				};
 			});
 
 			Assert.Equal(xplatMaximumDate, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
@@ -78,42 +79,16 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = datePicker.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
-		}
-
-		[Theory(DisplayName = "Font Family Initializes Correctly")]
-		[InlineData(null)]
-		[InlineData("Times New Roman")]
-		[InlineData("Dokdo")]
-		public async Task FontFamilyInitializesCorrectly(string family)
-		{
-			var datePicker = new DatePickerStub()
-			{
-				Date = DateTime.Today,
-				Font = Font.OfSize(family, 10)
-			};
-
-			var handler = await CreateHandlerAsync(datePicker);
-			var nativeFont = await GetValueAsync(datePicker, handler => GetNativeDatePicker(handler).Font);
-
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
-
-			var expectedNativeFont = fontManager.GetFont(Font.OfSize(family, 0.0));
-
-			Assert.Equal(expectedNativeFont.FamilyName, nativeFont.FamilyName);
-			if (string.IsNullOrEmpty(family))
-				Assert.Equal(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
-			else
-				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
+			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
 		MauiDatePicker GetNativeDatePicker(DatePickerHandler datePickerHandler) =>
-			(MauiDatePicker)datePickerHandler.NativeView;
+			datePickerHandler.PlatformView;
 
 		DateTime GetNativeDate(DatePickerHandler datePickerHandler)
 		{
@@ -122,6 +97,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			return result;
 		}
+
+		Color GetNativeTextColor(DatePickerHandler datePickerHandler) =>
+			GetNativeDatePicker(datePickerHandler).TextColor.ToColor();
 
 		DateTime GetNativeMinimumDate(DatePickerHandler datePickerHandler)
 		{

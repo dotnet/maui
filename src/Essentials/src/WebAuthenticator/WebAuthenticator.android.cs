@@ -3,14 +3,14 @@ using System.Threading.Tasks;
 using Android.Content;
 using AndroidX.Browser.CustomTabs;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class WebAuthenticator
+	public partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{
-		static TaskCompletionSource<WebAuthenticatorResult> tcsResponse = null;
-		static Uri currentRedirectUri = null;
+		TaskCompletionSource<WebAuthenticatorResult> tcsResponse = null;
+		Uri currentRedirectUri = null;
 
-		internal static bool OnResume(Intent intent)
+		public bool OnResumeCallback(Intent intent)
 		{
 			// If we aren't waiting on a task, don't handle the url
 			if (tcsResponse?.Task?.IsCompleted ?? true)
@@ -43,8 +43,10 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
+			var url = webAuthenticatorOptions?.Url;
+			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
 			var packageName = Platform.AppContext.PackageName;
 
 			// Create an intent to see if the app developer wired up the callback activity correctly

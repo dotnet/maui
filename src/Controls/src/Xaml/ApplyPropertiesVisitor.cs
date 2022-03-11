@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
@@ -140,12 +141,21 @@ namespace Microsoft.Maui.Controls.Xaml
 					return;
 
 				// Collection element, implicit content, or implicit collection element.
-				if (xpe == null && typeof(IEnumerable).IsAssignableFrom(Context.Types[parentElement]) && Context.Types[parentElement].GetRuntimeMethods().Any(mi => mi.Name == "Add" && mi.GetParameters().Length == 1))
+				if (   xpe == null
+					&& typeof(IEnumerable).IsAssignableFrom(Context.Types[parentElement])
+					&& Context.Types[parentElement].GetRuntimeMethods().Any(mi => mi.Name == "Add" && mi.GetParameters().Length == 1))
 				{
 					var addMethod =
 						Context.Types[parentElement].GetRuntimeMethods().First(mi => mi.Name == "Add" && mi.GetParameters().Length == 1);
+					try
+					{
+						addMethod.Invoke(source, new[] { value.ConvertTo(addMethod.GetParameters()[0].ParameterType, (Func<TypeConverter>)null, new XamlServiceProvider(node, Context), out xpe) });
+					}
+					catch (Exception e)
+					{
+						xpe ??= e;
+					}
 
-					addMethod.Invoke(source, new[] { value });
 					return;
 				}
 				if (xpe == null && (contentProperty = GetContentPropertyName(Context.Types[parentElement].GetTypeInfo())) != null)
@@ -295,7 +305,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		static bool GetRealNameAndType(ref Type elementType, string namespaceURI, ref string localname,
 			object rootElement, IXmlLineInfo lineInfo)
 		{
-			var dotIdx = localname.IndexOf('.');
+			var dotIdx = localname.IndexOf(".", StringComparison.Ordinal);
 			if (dotIdx > 0)
 			{
 				var typename = localname.Substring(0, dotIdx);
@@ -774,10 +784,8 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		void SetTemplate(ElementTemplate dt, INode node)
 		{
-#pragma warning disable 0612
-			((IDataTemplate)dt).LoadTemplate = () =>
+			dt.LoadTemplate = () =>
 			{
-#pragma warning restore 0612
 				var cnode = node.Clone();
 				var context = new HydrationContext { ParentContext = Context, RootAssembly = Context.RootAssembly, RootElement = Context.RootElement, ExceptionHandler = Context.ExceptionHandler };
 				cnode.Accept(new XamlNodeVisitor((n, parent) => n.Parent = parent), node.Parent); //set parents for {StaticResource}

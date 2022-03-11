@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 {

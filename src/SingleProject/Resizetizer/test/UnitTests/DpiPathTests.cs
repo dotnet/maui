@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[Theory]
 			[InlineData("android", "drawable")]
 			[InlineData("ios", "Resources")]
-			[InlineData("uwp", "Assets")]
+			[InlineData("uwp", "")]
 			[InlineData("wpf", "")]
 			public void ReturnsCorrectFolder(string platform, string folder)
 			{

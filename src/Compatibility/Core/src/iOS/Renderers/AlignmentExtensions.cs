@@ -1,3 +1,4 @@
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -5,7 +6,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	[PortHandler]
 	internal static class AlignmentExtensions
 	{
-		internal static UITextAlignment ToNativeTextAlignment(this TextAlignment alignment, EffectiveFlowDirection flowDirection)
+		internal static UITextAlignment ToPlatformTextAlignment(this TextAlignment alignment, EffectiveFlowDirection flowDirection)
 		{
 			var isLtr = flowDirection.IsLeftToRight();
 			switch (alignment)
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		internal static UIControlContentVerticalAlignment ToNativeTextAlignment(this TextAlignment alignment)
+		internal static UIControlContentVerticalAlignment ToPlatformTextAlignment(this TextAlignment alignment)
 		{
 			switch (alignment)
 			{

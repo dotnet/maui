@@ -4,10 +4,19 @@ using System;
 
 namespace Microsoft.Maui
 {
+	/// <summary>
+	/// Represents a View that holds an image.
+	/// </summary>
 	public interface IImage : IView, IImageSourcePart
 	{
+		/// <summary>
+		/// Gets the scaling mode for the image.
+		/// </summary>
 		Aspect Aspect { get; }
 
+		/// <summary>
+		/// Gets or sets a Boolean value that, if true hints to the rendering engine that it may safely omit drawing visual elements behind the image.
+		/// </summary>
 		bool IsOpaque { get; }
 	}
 

@@ -1,8 +1,9 @@
 ﻿using System;
 using CoreGraphics;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Platform.iOS
+namespace Microsoft.Maui.Platform
 {
 	public class MauiImageView : UIImageView
 	{

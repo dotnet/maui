@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -30,7 +29,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				};
 
 			protected ITaskItem GetCopiedResource(ResizetizeImages task, string path) =>
-				task.CopiedResources.Single(c => c.ItemSpec.Replace("\\", "/").EndsWith(path));
+				task.CopiedResources.Single(c => c.ItemSpec.Replace('\\', '/').EndsWith(path, StringComparison.Ordinal));
 
 			protected void AssertFileSize(string file, int width, int height)
 			{
@@ -50,6 +49,13 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(File.Exists(file), $"File did not exist: {file}");
 			}
 
+			protected void AssertFileNotExists(string file)
+			{
+				file = Path.Combine(DestinationDirectory, file);
+
+				Assert.False(File.Exists(file), $"File existed: {file}");
+			}
+
 			protected void AssertFileContains(string file, params string[] snippet)
 			{
 				file = Path.Combine(DestinationDirectory, file);
@@ -57,7 +63,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var content = File.ReadAllText(file);
 
 				foreach (var snip in snippet)
-					Assert.Contains(snip, content);
+					Assert.Contains(snip, content, StringComparison.Ordinal);
 			}
 		}
 
@@ -201,7 +207,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success);
 
 				var copied = task.CopiedResources;
-				Assert.Equal(items.Length * DpiPath.Android.Length, copied.Length);
+				Assert.Equal(items.Length * DpiPath.Android.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "drawable-mdpi/camera.png");
 				Assert.Equal("drawable-mdpi", mdpi.GetMetadata("_ResizetizerDpiPath"));
@@ -226,7 +232,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success);
 
 				var copied = task.CopiedResources;
-				Assert.Equal(items.Length * DpiPath.Android.Length, copied.Length);
+				Assert.Equal(items.Length * DpiPath.Android.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "drawable-mdpi/camera.png");
 				Assert.Equal("drawable-mdpi", mdpi.GetMetadata("_ResizetizerDpiPath"));
@@ -326,7 +332,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[InlineData("camera_color", "the_alias", "the_alias")]
 			[InlineData("camera_color", "the_alias.png", "the_alias")]
 			[InlineData("camera_color", "folder/the_alias.png", "the_alias")]
-			public void SingleRasterAppIconWithOnlyPathSucceedsWithoutVectors(string name, string alias, string outputName)
+			public void SingleRasterAppIconWithOnlyPathSucceedsWithVectors(string name, string alias, string outputName)
 			{
 				var items = new[]
 				{
@@ -338,14 +344,31 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				};
 
 				var task = GetNewTask(items);
+				task.AllowVectorAdaptiveIcons = true;
 				var success = task.Execute();
 				Assert.True(success);
 
 				AssertFileSize($"mipmap-mdpi/{outputName}.png", 48, 48);
-				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileSize($"mipmap-mdpi/{outputName}_background.png", 108, 108);
+				AssertFileNotExists($"mipmap-mdpi/{outputName}_foreground.png");
 
-				var vectors = Directory.GetFiles(DestinationDirectory, "*.xml", SearchOption.AllDirectories);
-				Assert.Empty(vectors);
+				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileSize($"mipmap-xhdpi/{outputName}_background.png", 216, 216);
+				AssertFileNotExists($"mipmap-xhdpi/{outputName}_foreground.png");
+
+				AssertFileExists($"drawable/{outputName}_foreground.xml");
+				AssertFileNotExists($"drawable-v24/{outputName}_background.xml");
+
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}.xml");
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}_round.xml");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}.xml",
+					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
+					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 			}
 
 			[Theory]
@@ -377,11 +400,17 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				};
 
 				var task = GetNewTask(items);
+				task.AllowVectorAdaptiveIcons = true;
 				var success = task.Execute();
 				Assert.True(success);
 
 				AssertFileSize($"mipmap-mdpi/{outputName}.png", 48, 48);
+				AssertFileNotExists($"mipmap-mdpi/{outputName}_background.png");
+				AssertFileNotExists($"mipmap-mdpi/{outputName}_foreground.png");
+
 				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileNotExists($"mipmap-xhdpi/{outputName}_background.png");
+				AssertFileNotExists($"mipmap-xhdpi/{outputName}_foreground.png");
 
 				AssertFileExists($"drawable/{outputName}_foreground.xml");
 				AssertFileExists($"drawable-v24/{outputName}_background.xml");
@@ -396,6 +425,170 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
 					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
 					$"<background android:drawable=\"@drawable/{outputName}_background\"/>");
+			}
+
+			[Theory]
+			[InlineData("camera", null, "camera")]
+			[InlineData("camera", "", "camera")]
+			[InlineData("camera", "camera", "camera")]
+			[InlineData("camera", "camera.png", "camera")]
+			[InlineData("camera", "folder/camera.png", "camera")]
+			[InlineData("camera", "the_alias", "the_alias")]
+			[InlineData("camera", "the_alias.png", "the_alias")]
+			[InlineData("camera", "folder/the_alias.png", "the_alias")]
+			[InlineData("camera_color", null, "camera_color")]
+			[InlineData("camera_color", "", "camera_color")]
+			[InlineData("camera_color", "camera_color", "camera_color")]
+			[InlineData("camera_color", "camera_color.png", "camera_color")]
+			[InlineData("camera_color", "folder/camera_color.png", "camera_color")]
+			[InlineData("camera_color", "the_alias", "the_alias")]
+			[InlineData("camera_color", "the_alias.png", "the_alias")]
+			[InlineData("camera_color", "folder/the_alias.png", "the_alias")]
+			public void SingleRasterAppIconWithOnlyPathSucceedsWithoutVectors(string name, string alias, string outputName)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{name}.png", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = alias,
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"mipmap-mdpi/{outputName}.png", 48, 48);
+				AssertFileSize($"mipmap-mdpi/{outputName}_background.png", 108, 108);
+				AssertFileNotExists($"mipmap-mdpi/{outputName}_foreground.png");
+
+				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileSize($"mipmap-xhdpi/{outputName}_background.png", 216, 216);
+				AssertFileNotExists($"mipmap-xhdpi/{outputName}_foreground.png");
+
+				AssertFileExists($"drawable/{outputName}_foreground.xml");
+				AssertFileNotExists($"drawable-v24/{outputName}_background.xml");
+
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}.xml");
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}_round.xml");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}.xml",
+					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
+					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
+			}
+
+			[Theory]
+			[InlineData("appicon", null, "appicon")]
+			[InlineData("appicon", "", "appicon")]
+			[InlineData("appicon", "appicon", "appicon")]
+			[InlineData("appicon", "appicon.png", "appicon")]
+			[InlineData("appicon", "folder/appicon.png", "appicon")]
+			[InlineData("appicon", "the_alias", "the_alias")]
+			[InlineData("appicon", "the_alias.png", "the_alias")]
+			[InlineData("appicon", "folder/the_alias.png", "the_alias")]
+			[InlineData("camera", null, "camera")]
+			[InlineData("camera", "", "camera")]
+			[InlineData("camera", "camera", "camera")]
+			[InlineData("camera", "camera.png", "camera")]
+			[InlineData("camera", "folder/camera.png", "camera")]
+			[InlineData("camera", "the_alias", "the_alias")]
+			[InlineData("camera", "the_alias.png", "the_alias")]
+			[InlineData("camera", "folder/the_alias.png", "the_alias")]
+			public void SingleVectorAppIconWithOnlyPathSucceedsWithoutVectors(string name, string alias, string outputName)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{name}.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = alias,
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"mipmap-mdpi/{outputName}.png", 48, 48);
+				AssertFileSize($"mipmap-mdpi/{outputName}_background.png", 108, 108);
+				AssertFileNotExists($"mipmap-mdpi/{outputName}_foreground.png");
+
+				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileSize($"mipmap-xhdpi/{outputName}_background.png", 216, 216);
+				AssertFileNotExists($"mipmap-xhdpi/{outputName}_foreground.png");
+
+				AssertFileExists($"drawable/{outputName}_foreground.xml");
+				AssertFileNotExists($"drawable-v24/{outputName}_background.xml");
+
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}.xml");
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}_round.xml");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}.xml",
+					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
+					$"<foreground android:drawable=\"@drawable/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
+			}
+
+			[Theory]
+			[InlineData("appicon", null, "dotnet_background")]
+			[InlineData("appicon", "", "dotnet_background")]
+			[InlineData("appicon", "appicon", "appicon")]
+			[InlineData("appicon", "appicon.png", "appicon")]
+			[InlineData("appicon", "folder/appicon.png", "appicon")]
+			[InlineData("appicon", "the_alias", "the_alias")]
+			[InlineData("appicon", "the_alias.png", "the_alias")]
+			[InlineData("appicon", "folder/the_alias.png", "the_alias")]
+			[InlineData("camera", null, "dotnet_background")]
+			[InlineData("camera", "", "dotnet_background")]
+			[InlineData("camera", "camera", "camera")]
+			[InlineData("camera", "camera.png", "camera")]
+			[InlineData("camera", "folder/camera.png", "camera")]
+			[InlineData("camera", "the_alias", "the_alias")]
+			[InlineData("camera", "the_alias.png", "the_alias")]
+			[InlineData("camera", "folder/the_alias.png", "the_alias")]
+			[InlineData("prismicon", "rasters", "rasters")]
+			public void MultipleVectorAppIconWithOnlyPathConvertsToRaster(string name, string alias, string outputName)
+			{
+				var items = new[]
+				{
+					new TaskItem("images/dotnet_background.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["ForegroundFile"] = $"images/{name}.svg",
+						["Link"] = alias,
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"mipmap-mdpi/{outputName}.png", 48, 48);
+				AssertFileSize($"mipmap-mdpi/{outputName}_background.png", 108, 108);
+				AssertFileSize($"mipmap-mdpi/{outputName}_foreground.png", 108, 108);
+
+				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileSize($"mipmap-xhdpi/{outputName}_background.png", 216, 216);
+				AssertFileSize($"mipmap-xhdpi/{outputName}_foreground.png", 216, 216);
+
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}.xml");
+				AssertFileExists($"mipmap-anydpi-v26/{outputName}_round.xml");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}.xml",
+					$"<foreground android:drawable=\"@mipmap/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
+
+				AssertFileContains($"mipmap-anydpi-v26/{outputName}_round.xml",
+					$"<foreground android:drawable=\"@mipmap/{outputName}_foreground\"/>",
+					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 			}
 		}
 
@@ -508,7 +701,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success);
 
 				var copied = task.CopiedResources;
-				Assert.Equal(items.Length * DpiPath.Ios.Length, copied.Length);
+				Assert.Equal(items.Length * DpiPath.Ios.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "camera.png");
 				Assert.Equal("", mdpi.GetMetadata("_ResizetizerDpiPath"));
@@ -533,7 +726,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success);
 
 				var copied = task.CopiedResources;
-				Assert.Equal(items.Length * DpiPath.Ios.Length, copied.Length);
+				Assert.Equal(items.Length * DpiPath.Ios.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "camera.png");
 				Assert.Equal("", mdpi.GetMetadata("_ResizetizerDpiPath"));
@@ -676,6 +869,314 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileContains($"Assets.xcassets/{outputName}.appiconset/Contents.json",
 					$"\"filename\": \"{outputName}20x20@2x.png\"",
 					$"\"size\": \"20x20\",");
+			}
+		}
+
+		public class ExecuteForWindows : ExecuteForApp
+		{
+			public ExecuteForWindows()
+				: base("Windows")
+			{
+			}
+
+			ResizetizeImages GetNewTask(params ITaskItem[] items) =>
+				GetNewTask("uwp", items);
+
+			[Fact]
+			public void NoItemsSucceed()
+			{
+				var task = GetNewTask();
+
+				var success = task.Execute();
+
+				Assert.True(success);
+			}
+
+			[Fact]
+			public void NullItemsSucceed()
+			{
+				var task = GetNewTask(null);
+
+				var success = task.Execute();
+
+				Assert.True(success);
+			}
+
+			[Fact]
+			public void NonExistantFileFails()
+			{
+				var items = new[]
+				{
+					new TaskItem("non-existant.png"),
+				};
+
+				var task = GetNewTask(items);
+
+				var success = task.Execute();
+
+				Assert.False(success);
+			}
+
+			[Fact]
+			public void ValidFileSucceeds()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.png"),
+				};
+
+				var task = GetNewTask(items);
+
+				var success = task.Execute();
+
+				Assert.True(success);
+			}
+
+			[Fact]
+			public void SingleImageWithOnlyPathSucceeds()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.png"),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize("camera.scale-100.png", 1792, 1792);
+				AssertFileSize("camera.scale-200.png", 3584, 3584);
+			}
+
+			[Fact]
+			public void TwoImagesWithOnlyPathSucceed()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera_color.png"),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize("camera.scale-100.png", 1792, 1792);
+				AssertFileSize("camera_color.scale-100.png", 256, 256);
+
+				AssertFileSize("camera.scale-200.png", 3584, 3584);
+				AssertFileSize("camera_color.scale-200.png", 512, 512);
+			}
+
+			[Fact]
+			public void ImageWithOnlyPathHasMetadata()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.png"),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				var copied = task.CopiedResources;
+				Assert.Equal(items.Length * DpiPath.Windows.Image.Length, copied.Length);
+
+				var mdpi = GetCopiedResource(task, "camera.scale-100.png");
+				Assert.Equal("", mdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("1.0", mdpi.GetMetadata("_ResizetizerDpiScale"));
+
+				var xhdpi = GetCopiedResource(task, "camera.scale-200.png");
+				Assert.Equal("", xhdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("2.0", xhdpi.GetMetadata("_ResizetizerDpiScale"));
+			}
+
+			[Fact]
+			public void TwoImagesWithOnlyPathHasMetadata()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera_color.png"),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				var copied = task.CopiedResources;
+				Assert.Equal(items.Length * DpiPath.Windows.Image.Length, copied.Length);
+
+				var mdpi = GetCopiedResource(task, "camera.scale-100.png");
+				Assert.Equal("", mdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("1.0", mdpi.GetMetadata("_ResizetizerDpiScale"));
+
+				var xhdpi = GetCopiedResource(task, "camera.scale-200.png");
+				Assert.Equal("", xhdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("2.0", xhdpi.GetMetadata("_ResizetizerDpiScale"));
+
+				mdpi = GetCopiedResource(task, "camera_color.scale-100.png");
+				Assert.Equal("", mdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("1.0", mdpi.GetMetadata("_ResizetizerDpiScale"));
+
+				xhdpi = GetCopiedResource(task, "camera_color.scale-200.png");
+				Assert.Equal("", xhdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("2.0", xhdpi.GetMetadata("_ResizetizerDpiScale"));
+			}
+
+			[Theory]
+			[InlineData(null, "camera")]
+			[InlineData("", "camera")]
+			[InlineData("camera", "camera")]
+			[InlineData("camera.png", "camera")]
+			[InlineData("folder/camera.png", "camera")]
+			[InlineData("the_alias", "the_alias")]
+			[InlineData("the_alias.png", "the_alias")]
+			[InlineData("folder/the_alias.png", "the_alias")]
+			public void SingleImageWithBaseSizeSucceeds(string alias, string outputName)
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.png", new Dictionary<string, string>
+					{
+						["BaseSize"] = "44",
+						["Link"] = alias,
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"{outputName}.scale-100.png", 44, 44);
+				AssertFileSize($"{outputName}.scale-200.png", 88, 88);
+			}
+
+			[Theory]
+			[InlineData("camera", null, "camera")]
+			[InlineData("camera", "", "camera")]
+			[InlineData("camera", "camera", "camera")]
+			[InlineData("camera", "camera.png", "camera")]
+			[InlineData("camera", "folder/camera.png", "camera")]
+			[InlineData("camera", "the_alias", "the_alias")]
+			[InlineData("camera", "the_alias.png", "the_alias")]
+			[InlineData("camera", "folder/the_alias.png", "the_alias")]
+			[InlineData("camera_color", null, "camera_color")]
+			[InlineData("camera_color", "", "camera_color")]
+			[InlineData("camera_color", "camera_color", "camera_color")]
+			[InlineData("camera_color", "camera_color.png", "camera_color")]
+			[InlineData("camera_color", "folder/camera_color.png", "camera_color")]
+			[InlineData("camera_color", "the_alias", "the_alias")]
+			[InlineData("camera_color", "the_alias.png", "the_alias")]
+			[InlineData("camera_color", "folder/the_alias.png", "the_alias")]
+			public void SingleRasterAppIconWithOnlyPathSucceedsWithoutVectors(string name, string alias, string outputName)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{name}.png", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = alias,
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"{outputName}Logo.scale-100.png", 44, 44);
+				AssertFileSize($"{outputName}Logo.scale-125.png", 55, 55);
+				AssertFileSize($"{outputName}Logo.scale-200.png", 88, 88);
+
+				AssertFileSize($"{outputName}StoreLogo.scale-100.png", 50, 50);
+				AssertFileSize($"{outputName}StoreLogo.scale-200.png", 100, 100);
+
+				AssertFileSize($"{outputName}MediumTile.scale-100.png", 150, 150);
+				AssertFileSize($"{outputName}MediumTile.scale-150.png", 225, 225);
+			}
+
+			[Theory]
+			[InlineData("appicon", null, "appicon")]
+			[InlineData("appicon", "", "appicon")]
+			[InlineData("appicon", "appicon", "appicon")]
+			[InlineData("appicon", "appicon.png", "appicon")]
+			[InlineData("appicon", "folder/appicon.png", "appicon")]
+			[InlineData("appicon", "the_alias", "the_alias")]
+			[InlineData("appicon", "the_alias.png", "the_alias")]
+			[InlineData("appicon", "folder/the_alias.png", "the_alias")]
+			[InlineData("camera", null, "camera")]
+			[InlineData("camera", "", "camera")]
+			[InlineData("camera", "camera", "camera")]
+			[InlineData("camera", "camera.png", "camera")]
+			[InlineData("camera", "folder/camera.png", "camera")]
+			[InlineData("camera", "the_alias", "the_alias")]
+			[InlineData("camera", "the_alias.png", "the_alias")]
+			[InlineData("camera", "folder/the_alias.png", "the_alias")]
+			[InlineData("camera_color", null, "camera_color")]
+			[InlineData("camera_color", "", "camera_color")]
+			[InlineData("camera_color", "camera_color", "camera_color")]
+			[InlineData("camera_color", "camera_color.png", "camera_color")]
+			[InlineData("camera_color", "folder/camera_color.png", "camera_color")]
+			[InlineData("camera_color", "the_alias", "the_alias")]
+			[InlineData("camera_color", "the_alias.png", "the_alias")]
+			[InlineData("camera_color", "folder/the_alias.png", "the_alias")]
+			public void SingleVectorAppIconWithOnlyPathSucceedsWithVectors(string name, string alias, string outputName)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{name}.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = alias,
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"{outputName}Logo.scale-100.png", 44, 44);
+				AssertFileSize($"{outputName}Logo.scale-125.png", 55, 55);
+				AssertFileSize($"{outputName}Logo.scale-200.png", 88, 88);
+
+				AssertFileSize($"{outputName}StoreLogo.scale-100.png", 50, 50);
+				AssertFileSize($"{outputName}StoreLogo.scale-200.png", 100, 100);
+
+				AssertFileSize($"{outputName}MediumTile.scale-100.png", 150, 150);
+				AssertFileSize($"{outputName}MediumTile.scale-150.png", 225, 225);
+			}
+
+			[Theory]
+			[InlineData("dotnet_logo", "dotnet_background")]
+			public void AppIconWithBackgroundSucceedsWithVectors(string fg, string bg)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{bg}.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["ForegroundFile"] = $"images/{fg}.svg",
+						["Color"] = $"#512BD4",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"{bg}Logo.scale-100.png", 44, 44);
+				AssertFileSize($"{bg}Logo.scale-125.png", 55, 55);
+				AssertFileSize($"{bg}Logo.scale-200.png", 88, 88);
+
+				AssertFileSize($"{bg}StoreLogo.scale-100.png", 50, 50);
+				AssertFileSize($"{bg}StoreLogo.scale-200.png", 100, 100);
+
+				AssertFileSize($"{bg}MediumTile.scale-100.png", 150, 150);
+				AssertFileSize($"{bg}MediumTile.scale-150.png", 225, 225);
+
+				AssertFileSize($"{bg}WideTile.scale-100.png", 310, 150);
+				AssertFileSize($"{bg}WideTile.scale-200.png", 620, 300);
 			}
 		}
 	}

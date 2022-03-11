@@ -2,9 +2,9 @@
 using System;
 using System.Threading;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui
 {
-	class ImageSourceServiceResultManager
+	internal class ImageSourceServiceResultManager
 	{
 		CancellationTokenSource? _sourceCancellation;
 		IDisposable? _sourceResult;

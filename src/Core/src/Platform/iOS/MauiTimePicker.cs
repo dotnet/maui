@@ -1,9 +1,10 @@
 ﻿using System;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiTimePicker : NoCaretField
 	{
@@ -17,7 +18,7 @@ namespace Microsoft.Maui
 			_picker = new UIDatePicker { Mode = UIDatePickerMode.Time, TimeZone = new NSTimeZone("UTC") };
 			_dateSelected = dateSelected;
 
-			if (NativeVersion.IsAtLeast(14))
+			if (PlatformVersion.IsAtLeast(14))
 			{
 				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}
@@ -43,6 +44,11 @@ namespace Microsoft.Maui
 			InputAssistantItem.TrailingBarButtonGroups = null;
 
 			AccessibilityTraits = UIAccessibilityTrait.Button;
+		}
+
+		public void UpdateTime(TimeSpan time)
+		{
+			_picker.Date = new DateTime(1, 1, 1, time.Hours, time.Minutes, time.Seconds).ToNSDate();
 		}
 
 		public NSDate Date => _picker.Date;

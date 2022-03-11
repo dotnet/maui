@@ -24,18 +24,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		class Tests
 		{
 
-			[SetUp]
-			public void Setup()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				Device.PlatformServices = null;
-			}
-
 			[TestCase(true)]
 			public void ErrorOnUnknownXmlnsForDataType(bool useCompiledXaml)
 			{

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using NUnit.Framework;
 using Microsoft.Maui.Graphics;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {

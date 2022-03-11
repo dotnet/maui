@@ -1,22 +1,58 @@
-﻿using System;
-using Microsoft.UI.Xaml.Controls;
+﻿#nullable disable
+using System;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : ViewHandler<IStepper, Button>
+	public partial class StepperHandler : ViewHandler<IStepper, MauiStepper>
 	{
-		protected override Button CreateNativeView() => new Button();
+		protected override MauiStepper CreatePlatformView() => new MauiStepper();
 
-		[MissingMapper]
-		public static void MapMinimum(IViewHandler handler, IStepper stepper) { }
+		protected override void ConnectHandler(MauiStepper platformView)
+		{
+			platformView.ValueChanged += OnValueChanged;
 
-		[MissingMapper]
-		public static void MapMaximum(IViewHandler handler, IStepper stepper) { }
+			base.ConnectHandler(platformView);
+		}
 
-		[MissingMapper]
-		public static void MapIncrement(IViewHandler handler, IStepper stepper) { }
+		protected override void DisconnectHandler(MauiStepper platformView)
+		{
+			platformView.ValueChanged -= OnValueChanged;
 
-		[MissingMapper]
-		public static void MapValue(IViewHandler handler, IStepper stepper) { }
+			base.DisconnectHandler(platformView);
+		}
+
+		public static void MapMinimum(IStepperHandler handler, IStepper stepper) 
+		{ 
+			handler.PlatformView?.UpdateMinimum(stepper); 
+		}
+
+		public static void MapMaximum(IStepperHandler handler, IStepper stepper) 
+		{ 
+			handler.PlatformView?.UpdateMaximum(stepper); 
+		}
+
+		public static void MapIncrement(IStepperHandler handler, IStepper stepper) 
+		{ 
+			handler.PlatformView?.UpdateInterval(stepper); 
+		}
+
+		public static void MapValue(IStepperHandler handler, IStepper stepper) 
+		{ 
+			handler.PlatformView?.UpdateValue(stepper); 
+		}
+
+		// This is a Windows-specific mapping
+		public static void MapBackground(IStepperHandler handler, IStepper view)
+		{
+			handler.PlatformView?.UpdateBackground(view);
+		}
+
+		void OnValueChanged(object sender, EventArgs e)
+		{
+			if (VirtualView == null || PlatformView == null)
+				return;
+
+			VirtualView.Value = PlatformView.Value;
+		}
 	}
 }

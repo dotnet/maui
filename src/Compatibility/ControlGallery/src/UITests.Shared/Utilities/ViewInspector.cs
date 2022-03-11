@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public static void LogPropertiesForView(this IApp app, string query, bool isOnParent = false)
 		{
 #if __ANDROID__
-			LogPropertiesForAndroidView (app, query, isOnParent);
+			LogPropertiesForAndroidView(app, query, isOnParent);
 #endif
 #if __IOS__
 

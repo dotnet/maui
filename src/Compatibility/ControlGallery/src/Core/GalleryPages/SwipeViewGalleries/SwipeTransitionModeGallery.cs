@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			var swipeItemSwipeTransitionModePicker = new Picker();
 
-			var swipeTransitionModes = Enum.GetNames(typeof(PlatformConfiguration.AndroidSpecific.SwipeTransitionMode)).Select(t => t).ToList();
+			var swipeTransitionModes = Enum.GetNames(typeof(SwipeTransitionMode)).Select(t => t).ToList();
 
 			swipeItemSwipeTransitionModePicker.ItemsSource = swipeTransitionModes;
 			swipeItemSwipeTransitionModePicker.SelectedIndex = 0;   // Reveal
@@ -164,30 +164,30 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 				switch (swipeTransitionMode)
 				{
 					case "Drag":
-						leftSwipeView.On<Android>().SetSwipeTransitionMode(PlatformConfiguration.AndroidSpecific.SwipeTransitionMode.Drag);
-						leftSwipeView.On<iOS>().SetSwipeTransitionMode(PlatformConfiguration.iOSSpecific.SwipeTransitionMode.Drag);
+						leftSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						leftSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 
-						rightSwipeView.On<Android>().SetSwipeTransitionMode(PlatformConfiguration.AndroidSpecific.SwipeTransitionMode.Drag);
-						rightSwipeView.On<iOS>().SetSwipeTransitionMode(PlatformConfiguration.iOSSpecific.SwipeTransitionMode.Drag);
+						rightSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						rightSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 
-						topSwipeView.On<Android>().SetSwipeTransitionMode(PlatformConfiguration.AndroidSpecific.SwipeTransitionMode.Drag);
-						topSwipeView.On<iOS>().SetSwipeTransitionMode(PlatformConfiguration.iOSSpecific.SwipeTransitionMode.Drag);
+						topSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						topSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 
-						bottomSwipeView.On<Android>().SetSwipeTransitionMode(PlatformConfiguration.AndroidSpecific.SwipeTransitionMode.Drag);
-						bottomSwipeView.On<iOS>().SetSwipeTransitionMode(PlatformConfiguration.iOSSpecific.SwipeTransitionMode.Drag);
+						bottomSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						bottomSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 						break;
 					case "Reveal":
-						leftSwipeView.On<Android>().SetSwipeTransitionMode(PlatformConfiguration.AndroidSpecific.SwipeTransitionMode.Reveal);
-						leftSwipeView.On<iOS>().SetSwipeTransitionMode(PlatformConfiguration.iOSSpecific.SwipeTransitionMode.Reveal);
+						leftSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Reveal);
+						leftSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Reveal);
 
-						rightSwipeView.On<Android>().SetSwipeTransitionMode(PlatformConfiguration.AndroidSpecific.SwipeTransitionMode.Drag);
-						rightSwipeView.On<iOS>().SetSwipeTransitionMode(PlatformConfiguration.iOSSpecific.SwipeTransitionMode.Drag);
+						rightSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						rightSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 
-						topSwipeView.On<Android>().SetSwipeTransitionMode(PlatformConfiguration.AndroidSpecific.SwipeTransitionMode.Drag);
-						topSwipeView.On<iOS>().SetSwipeTransitionMode(PlatformConfiguration.iOSSpecific.SwipeTransitionMode.Drag);
+						topSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						topSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 
-						bottomSwipeView.On<Android>().SetSwipeTransitionMode(PlatformConfiguration.AndroidSpecific.SwipeTransitionMode.Drag);
-						bottomSwipeView.On<iOS>().SetSwipeTransitionMode(PlatformConfiguration.iOSSpecific.SwipeTransitionMode.Drag);
+						bottomSwipeView.On<Android>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
+						bottomSwipeView.On<iOS>().SetSwipeTransitionMode(SwipeTransitionMode.Drag);
 						break;
 				}
 			};

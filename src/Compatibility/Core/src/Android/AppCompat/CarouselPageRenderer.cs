@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {
 
-	public class CarouselPageRenderer : VisualElementRenderer<CarouselPage>, ViewPager.IOnPageChangeListener, IManageFragments
+	internal class CarouselPageRenderer : VisualElementRenderer<CarouselPage>, ViewPager.IOnPageChangeListener, IManageFragments
 	{
 		bool _disposed;
 		FormsViewPager _viewPager;
@@ -33,6 +33,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		IPageController PageController => Element as IPageController;
 
 		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = Context.GetFragmentManager());
+
+		ViewGroup ViewGroup => ((IVisualElementRenderer)this).View as ViewGroup;
 
 		void IManageFragments.SetFragmentManager(FragmentManager childFragmentManager)
 		{
@@ -116,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		{
 			base.OnElementChanged(e);
 
-			var activity = (FormsAppCompatActivity)Context.GetActivity();
+			var activity = Context.GetActivity();
 
 			if (e.OldElement != null)
 				((IPageController)e.OldElement).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
@@ -173,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			if (width > 0 && height > 0)
 			{
-				PageController.ContainerArea = new Rectangle(0, 0, context.FromPixels(width), context.FromPixels(height));
+				PageController.ContainerArea = new Rect(0, 0, context.FromPixels(width), context.FromPixels(height));
 				pager.Layout(0, 0, width, b);
 			}
 

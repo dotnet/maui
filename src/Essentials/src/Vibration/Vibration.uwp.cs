@@ -1,20 +1,27 @@
 using System;
 using Windows.Devices.Haptics;
+using Windows.Foundation.Metadata;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Vibration
+	public partial class VibrationImplementation : IVibration
 	{
-		internal static bool IsSupported
-			=> Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Phone.Devices.Notification.VibrationDevice") && DefaultDevice != null;
+		public bool IsSupported
+			=> ApiInformation.IsTypePresent("Windows.Phone.Devices.Notification.VibrationDevice") && DefaultDevice != null;
 
 		static VibrationDevice DefaultDevice =>
 			throw new NotImplementedException("WINUI"); //VibrationDevice.GetDefault();
 
-		static void PlatformVibrate(TimeSpan duration) =>
+		public void Vibrate() 
+			=> throw new NotImplementedException("WINUI");// DefaultDevice.Vibrate(duration);
+
+		public void Vibrate(double duration) 
+			=> throw new NotImplementedException("WINUI");// DefaultDevice.Vibrate(duration);
+
+		public void Vibrate(TimeSpan duration) =>
 			throw new NotImplementedException("WINUI");// DefaultDevice.Vibrate(duration);
 
-		static void PlatformCancel() =>
+		public void Cancel() =>
 			throw new NotImplementedException("WINUI");//DefaultDevice.Cancel();
 	}
 }

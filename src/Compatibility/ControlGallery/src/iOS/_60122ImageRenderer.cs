@@ -1,10 +1,12 @@
 using System;
-using UIKit;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
-using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Platform;
+using ObjCRuntime;
+using UIKit;
 
 [assembly: ExportRenderer(typeof(Bugzilla60122._60122Image), typeof(_60122ImageRenderer))]
 
@@ -24,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 				if (e.OldElement == null)
 				{
-					UILongPressGestureRecognizer longp = new UILongPressGestureRecognizer(LongPress); 
+					UILongPressGestureRecognizer longp = new UILongPressGestureRecognizer(LongPress);
 					AddGestureRecognizer(longp);
 				}
 			}
@@ -33,6 +35,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		public void LongPress()
 		{
 			_customControl?.HandleLongPress(_customControl, new EventArgs());
-		}  
+		}
 	}
 }

@@ -1,17 +1,17 @@
-﻿using CoreGraphics;
-using Foundation;
-using ObjCRuntime;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using UIKit;
+using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
-using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.Maps.iOS;
+using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Maps;
+using ObjCRuntime;
+using UIKit;
 
 [assembly: ExportRenderer(typeof(PerformanceTracker), typeof(PerformanceTrackerRenderer))]
 [assembly: ExportRenderer(typeof(ActivityIndicator), typeof(PerformanceTrackingActivityIndicator))]
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class PerformanceTrackingFrame : FrameRenderer, IDrawnObservable
+	public class PerformanceTrackingFrame : Handlers.Compatibility.FrameRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingFrame> _watcher;
 		int _Drawn;
@@ -677,7 +677,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class PerformanceTrackingListView : ListViewRenderer, IDrawnObservable
+	public class PerformanceTrackingListView : Handlers.Compatibility.ListViewRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingListView> _watcher;
 		int _Drawn;
@@ -1070,7 +1070,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class PerformanceTrackingTableView : TableViewRenderer, IDrawnObservable
+	public class PerformanceTrackingTableView : Handlers.Compatibility.TableViewRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingTableView> _watcher;
 		int _Drawn;

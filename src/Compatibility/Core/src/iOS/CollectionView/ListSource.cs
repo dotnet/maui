@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public ListSource(IEnumerable<object> enumerable) : base(enumerable)
 		{
-			
+
 		}
 
 		public ListSource(IEnumerable enumerable)

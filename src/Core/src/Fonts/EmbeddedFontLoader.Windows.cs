@@ -10,13 +10,13 @@ namespace Microsoft.Maui
 	{
 		const string FontCacheFolderName = "fonts";
 
-		public (bool success, string? filePath) LoadFont(EmbeddedFont font)
+		public string? LoadFont(EmbeddedFont font)
 		{
 			var tmpdir = ApplicationData.Current.LocalFolder.CreateFolderAsync(FontCacheFolderName, CreationCollisionOption.OpenIfExists).AsTask().Result;
 
 			var file = tmpdir.TryGetItemAsync(font.FontName).AsTask().Result;
 			if (file != null)
-				return (true, CleanseFilePath(file.Path));
+				return CleanseFilePath(file.Path);
 
 			StorageFile? newFile = null;
 			try
@@ -30,17 +30,17 @@ namespace Microsoft.Maui
 					font.ResourceStream.CopyTo(fileStream);
 				}
 
-				return (true, CleanseFilePath(newFile.Path));
+				return CleanseFilePath(newFile.Path);
 			}
 			catch (Exception ex)
 			{
-				_logger?.LogWarning(ex, "Unable copy font {Font} to local file system.", font.FontName);
+				_serviceProvider?.CreateLogger<FontManager>()?.LogWarning(ex, "Unable copy font {Font} to local file system.", font.FontName);
 
 				if (newFile != null)
 					newFile.DeleteAsync().AsTask().Wait();
 			}
 
-			return (false, null);
+			return null;
 		}
 
 		static string CleanseFilePath(string filePath)

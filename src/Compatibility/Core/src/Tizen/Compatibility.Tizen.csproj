@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SkiaSharp.Views" Version="2.80.2" />
+    <PackageReference Include="SkiaSharp.Views" Version="2.88.0-preview.127" />
     <PackageReference Include="Tizen.NET" Version="4.0.0" />
   </ItemGroup>
 

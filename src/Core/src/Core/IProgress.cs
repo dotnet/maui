@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a View that show progress as a horizontal bar that is filled to a percentage 
@@ -11,5 +13,10 @@
 		/// Progress values less than 0 will be clamped to 0, values greater than 1 will be clamped to 1.
 		/// </summary>
 		double Progress { get; }
+
+		/// <summary>
+		/// Get the color of the progress bar.
+		/// </summary>
+		Color ProgressColor { get; }
 	}
 }

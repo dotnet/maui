@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using Microsoft.Build.Framework;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
@@ -26,6 +28,8 @@ namespace Microsoft.Maui.Resizetizer
 
 		public SKColor? TintColor { get; set; }
 
+		public SKColor? Color { get; set; }
+
 		public bool IsVector => IsVectorFilename(Filename);
 
 		public bool IsAppIcon { get; set; }
@@ -38,5 +42,60 @@ namespace Microsoft.Maui.Resizetizer
 
 		private static bool IsVectorFilename(string filename)
 			=> Path.GetExtension(filename)?.Equals(".svg", StringComparison.OrdinalIgnoreCase) ?? false;
+
+		public static ResizeImageInfo Parse(ITaskItem image)
+			=> Parse(new[] { image })[0];
+
+		public static List<ResizeImageInfo> Parse(IEnumerable<ITaskItem> images)
+		{
+			var r = new List<ResizeImageInfo>();
+
+			if (images == null)
+				return r;
+
+			foreach (var image in images)
+			{
+				var info = new ResizeImageInfo();
+
+				var fileInfo = new FileInfo(image.GetMetadata("FullPath"));
+				if (!fileInfo.Exists)
+					throw new FileNotFoundException("Unable to find background file: " + fileInfo.FullName, fileInfo.FullName);
+
+				info.Filename = fileInfo.FullName;
+
+				info.Alias = image.GetMetadata("Link");
+
+				info.BaseSize = Utils.ParseSizeString(image.GetMetadata("BaseSize"));
+
+				if (bool.TryParse(image.GetMetadata("Resize"), out var rz))
+					info.Resize = rz;
+
+				info.TintColor = Utils.ParseColorString(image.GetMetadata("TintColor"));
+				info.Color = Utils.ParseColorString(image.GetMetadata("Color"));
+
+				if (bool.TryParse(image.GetMetadata("IsAppIcon"), out var iai))
+					info.IsAppIcon = iai;
+
+				if (float.TryParse(image.GetMetadata("ForegroundScale"), out var fsc))
+					info.ForegroundScale = fsc;
+
+				var fgFile = image.GetMetadata("ForegroundFile");
+				if (!string.IsNullOrEmpty(fgFile))
+				{
+					var fgFileInfo = new FileInfo(fgFile);
+					if (!fgFileInfo.Exists)
+						throw new FileNotFoundException("Unable to find foreground file: " + fgFileInfo.FullName, fgFileInfo.FullName);
+
+					info.ForegroundFilename = fgFileInfo.FullName;
+				}
+
+				// TODO:
+				// - Parse out custom DPI's
+
+				r.Add(info);
+			}
+
+			return r;
+		}
 	}
 }

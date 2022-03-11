@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
 using MobileCoreServices;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Essentials
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Essentials
 			// Use Open instead of Import so that we can attempt to use the original file.
 			// If the file is from an external provider, then it will be downloaded.
 			using var documentPicker = new UIDocumentPickerViewController(allowedUtis, UIDocumentPickerMode.Open);
-			if (Platform.HasOSVersion(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
 				documentPicker.AllowsMultipleSelection = allowMultiple;
 			documentPicker.Delegate = new PickerDelegate
 			{
@@ -34,10 +35,8 @@ namespace Microsoft.Maui.Essentials
 
 			if (documentPicker.PresentationController != null)
 			{
-				documentPicker.PresentationController.Delegate = new PickerPresentationControllerDelegate
-				{
-					PickHandler = urls => GetFileResults(urls, tcs)
-				};
+				documentPicker.PresentationController.Delegate =
+					new Platform.UIPresentationControllerDelegate(() => GetFileResults(null, tcs));
 			}
 
 			var parentController = Platform.GetCurrentViewController();
@@ -75,13 +74,6 @@ namespace Microsoft.Maui.Essentials
 				=> PickHandler?.Invoke(new NSUrl[] { url });
 		}
 
-		class PickerPresentationControllerDelegate : UIAdaptivePresentationControllerDelegate
-		{
-			public Action<NSUrl[]> PickHandler { get; set; }
-
-			public override void DidDismiss(UIPresentationController presentationController) =>
-				PickHandler?.Invoke(null);
-		}
 	}
 
 	public partial class FilePickerFileType

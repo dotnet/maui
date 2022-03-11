@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
+using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
@@ -37,16 +40,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SetElement(null, view);
 
 			renderer.View.SetCameraDistance(3600);
+			_attachTracker = AttachTracker.Instance;
+			renderer.View.AddOnAttachStateChangeListener(_attachTracker);
 
-			if (!_context.IsDesignerContext())
-			{
-				_attachTracker = AttachTracker.Instance;
-				renderer.View.AddOnAttachStateChangeListener(_attachTracker);
-			}
-			else
-			{
-				_attachTracker = new AttachTracker();
-			}
 		}
 
 		public void Dispose()
@@ -102,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				formsViewGroup.MeasureAndLayout(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.Exactly), x, y, x + width, y + height);
 				Performance.Stop(reference, "MeasureAndLayout");
 			}
-			else if (aview is LayoutViewGroup && width == 0 && height == 0)
+			else if ((aview is LayoutViewGroup || aview is ContentViewGroup || aview is CoordinatorLayout || aview is FragmentContainerView) && width == 0 && height == 0)
 			{
 				// Nothing to do here; just chill.
 			}
@@ -117,13 +113,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Performance.Stop(reference, "Layout");
 			}
 
-			// If we're running sufficiently new Android, we have to make sure to update the ClipBounds to
-			// match the new size of the ViewGroup
-			if ((int)Forms.SdkInt >= 18)
-			{
-				UpdateClipToBounds();
-			}
-
+			// We have to make sure to update the ClipBounds to match the new size of the ViewGroup
+			UpdateClipToBounds();
 			UpdateClip();
 
 			Performance.Stop(reference);
@@ -267,6 +258,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		void UpdateAnchorX()
 		{
 			VisualElement view = _renderer.Element;
@@ -278,6 +270,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				aview.PivotX = target;
 		}
 
+		[PortHandler]
 		void UpdateAnchorY()
 		{
 			VisualElement view = _renderer.Element;
@@ -298,32 +291,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			bool shouldClip = layout.IsClippedToBounds;
 
-			// setClipBounds is only available in API 18 +	
-			if ((int)Forms.SdkInt >= 18)
+			if (!(_renderer.View is ViewGroup viewGroup))
 			{
-				if (!(_renderer.View is ViewGroup viewGroup))
-				{
-					return;
-				}
-
-				// Forms layouts should not impose clipping on their children	
-				viewGroup.SetClipChildren(false);
-
-				// But if IsClippedToBounds is true, they _should_ enforce clipping at their own edges	
-				viewGroup.ClipBounds = shouldClip ? new global::Android.Graphics.Rect(0, 0, viewGroup.Width, viewGroup.Height) : null;
+				return;
 			}
-			else
-			{
-				// For everything in 17 and below, use the setClipChildren method	
-				if (!(_renderer.View.Parent is ViewGroup parent))
-					return;
 
-				if ((int)Forms.SdkInt >= 18 && parent.ClipChildren == shouldClip)
-					return;
+			// Forms layouts should not impose clipping on their children	
+			viewGroup.SetClipChildren(false);
 
-				parent.SetClipChildren(shouldClip);
-				parent.Invalidate();
-			}
+			// But if IsClippedToBounds is true, they _should_ enforce clipping at their own edges	
+			viewGroup.ClipBounds = shouldClip ? new global::Android.Graphics.Rect(0, 0, viewGroup.Width, viewGroup.Height) : null;
 		}
 
 		void UpdateClip()
@@ -332,6 +309,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aView?.Invalidate();
 		}
 
+		[PortHandler]
 		void UpdateIsVisible()
 		{
 			VisualElement view = _renderer.Element;
@@ -388,6 +366,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Performance.Stop(reference);
 		}
 
+		[PortHandler]
 		void UpdateOpacity()
 		{
 			Performance.Start(out string reference);
@@ -400,6 +379,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Performance.Stop(reference);
 		}
 
+		[PortHandler]
 		void UpdateRotation()
 		{
 			VisualElement view = _renderer.Element;
@@ -408,6 +388,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aview.Rotation = (float)view.Rotation;
 		}
 
+		[PortHandler]
 		void UpdateRotationX()
 		{
 			VisualElement view = _renderer.Element;
@@ -416,6 +397,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aview.RotationX = (float)view.RotationX;
 		}
 
+		[PortHandler]
 		void UpdateRotationY()
 		{
 			VisualElement view = _renderer.Element;
@@ -424,6 +406,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aview.RotationY = (float)view.RotationY;
 		}
 
+		[PortHandler]
 		void UpdateScale()
 		{
 			VisualElement view = _renderer.Element;
@@ -433,6 +416,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aview.ScaleY = (float)view.Scale * (float)view.ScaleY;
 		}
 
+		[PortHandler]
 		void UpdateTranslationX()
 		{
 			VisualElement view = _renderer.Element;
@@ -441,6 +425,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aview.TranslationX = _context.ToPixels(view.TranslationX);
 		}
 
+		[PortHandler]
 		void UpdateTranslationY()
 		{
 			VisualElement view = _renderer.Element;

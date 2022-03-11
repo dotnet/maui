@@ -1,8 +1,8 @@
 ﻿using Android.Content;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
-using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
 [assembly: ExportRenderer(typeof(CustomEntry), typeof(CustomEntryRenderer))]
@@ -10,19 +10,19 @@ using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class CustomEntryRenderer : EntryRenderer
-    {
-        public CustomEntryRenderer(Context context) : base(context)
-        {
-            System.Diagnostics.Debug.WriteLine("Create CustomEntry");
-        }
-    }
+	{
+		public CustomEntryRenderer(Context context) : base(context)
+		{
+			System.Diagnostics.Debug.WriteLine("Create CustomEntry");
+		}
+	}
 
-    public class CustomSwipeViewRenderer : SwipeViewRenderer
-    {
+	public class CustomSwipeViewRenderer : SwipeViewRenderer
+	{
 
-        public CustomSwipeViewRenderer(Context context) : base(context)
-        {
+		public CustomSwipeViewRenderer(Context context) : base(context)
+		{
 
-        }
-    }
+		}
+	}
 }

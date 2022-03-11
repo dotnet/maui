@@ -1,6 +1,7 @@
 <Project>
   <Import Project="..\.nuspec\Microsoft.Maui.Controls.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll')" />
   <Import Project="..\.nuspec\Microsoft.Maui.Controls.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
+  <Import Project="..\.nuspec\Microsoft.Maui.Controls.DefaultItems.targets" />
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <ProjectReference Include="..\Microsoft.Maui.Controls\Microsoft.Maui.Controls.csproj" />

@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual EButton CreateNativeControl()
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				return new Native.Watch.WatchButton(Forms.NativeParent);
 			else
 				return new Native.Button(Forms.NativeParent);
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control is IButton ib)
 			{
-				ib.TextColor = Element.TextColor.ToNative();
+				ib.TextColor = Element.TextColor.ToPlatform();
 			}
 		}
 

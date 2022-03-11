@@ -1,8 +1,9 @@
-using System.Threading.Tasks;
-using NUnit.Framework;
-using WTextAlignment = Microsoft.UI.Xaml.TextAlignment;
-using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
+using NUnit.Framework;
+using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
+using WTextAlignment = Microsoft.UI.Xaml.TextAlignment;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
@@ -26,7 +27,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 				contentPage.FlowDirection = flowDirection;
 			}
 
-			var nativeAlignment = await Device.InvokeOnMainThreadAsync(() => {
+			var nativeAlignment = await contentPage.Dispatcher.DispatchAsync(() =>
+			{
 				if (!isExplicit)
 				{
 					GetRenderer(contentPage);
@@ -38,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 			return nativeAlignment;
 		}
 
-		async Task<Tuple<WTextAlignment, WFlowDirection>> GetEditorAlignmentAndFlowDirection(bool isExplicit, FlowDirection flowDirection) 
+		async Task<Tuple<WTextAlignment, WFlowDirection>> GetEditorAlignmentAndFlowDirection(bool isExplicit, FlowDirection flowDirection)
 		{
 			var editor = new Editor { Text = " تسجيل الدخول" };
 			var contentPage = new ContentPage { Title = "Flow Direction", Content = editor };
@@ -52,7 +54,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 				contentPage.FlowDirection = flowDirection;
 			}
 
-			var (nativeAlignment, nativeFlowDirection) = await Device.InvokeOnMainThreadAsync(() => {
+			var (nativeAlignment, nativeFlowDirection) = await contentPage.Dispatcher.DispatchAsync(() =>
+			{
 				if (!isExplicit)
 				{
 					GetRenderer(contentPage);

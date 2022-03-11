@@ -7,9 +7,11 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class BlogPage : ContentPage
 	{
 

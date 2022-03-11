@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 #if UITEST
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	[Ignore("This test is looking for an invalid behavior; the second tap *should* keep the drawer open.")] 
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 2961, "MasterDetail NavigationDrawer Does Not Hide On DoubleTap of Item", PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 2961, "FlyoutPage NavigationDrawer Does Not Hide On DoubleTap of Item", PlatformAffected.Android)]
 	public class Issue2961 : TestFlyoutPage
 	{
 		static FlyoutPage s_mdp;
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			_slidingPage = new SliderMenuPage
 			{
 				Title = "Menu",
-				BackgroundColor = Color.FromHex("1e1e1e")
+				BackgroundColor = Color.FromArgb("1e1e1e")
 			};
 			_slidingPage.MenuListView.ItemTapped += (sender, e) => OnMenuSelected(e.Item as SliderMenuItem);
 			Padding = new Thickness(0);
@@ -114,7 +115,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					if (_isSelected != value)
 					{
 						_isSelected = value;
-						Background = _isSelected ? Color.FromHex("101010") : Colors.Transparent;
+						Background = _isSelected ? Color.FromArgb("101010") : Colors.Transparent;
 						NotifyPropertyChanged("Background");
 					}
 				}
@@ -138,7 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					HorizontalOptions = LayoutOptions.StartAndExpand,
 					ItemTemplate = new DataTemplate(typeof(MenuCell)),
 					ItemsSource = data,
-					BackgroundColor = Color.FromHex("1e1e1e"),
+					BackgroundColor = Color.FromArgb("1e1e1e"),
 				};
 
 				MenuListView.SelectedItem = data[0];
@@ -157,11 +158,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					Children = { logoImg }
 				};
 
-				var paddingTop = Device.RuntimePlatform == Device.iOS ? 40 : 2;
+				var paddingTop = DeviceInfo.Platform == DevicePlatform.iOS ? 40 : 2;
 				Content = new StackLayout
 				{
 					Spacing = 0,
-					BackgroundColor = Color.FromHex("1e1e1e"),
+					BackgroundColor = Color.FromArgb("1e1e1e"),
 					Padding = new Thickness(0, paddingTop, 0, 10),
 					VerticalOptions = LayoutOptions.FillAndExpand,
 					HorizontalOptions = LayoutOptions.FillAndExpand,

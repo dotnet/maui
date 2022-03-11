@@ -11,6 +11,7 @@
 		<Compile Update="**\*.xaml$(DefaultLanguageSourceExtension)" DependentUpon="%(Filename)" SubType="Code" />
 		<None Remove="**\*.xaml" Condition="'$(EnableDefaultNoneItems)'=='True'" />
 	</ItemGroup>
+  
 	<ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultCssItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
 		<None Remove="**\*.css" Condition="'$(EnableDefaultNoneItems)'=='True'" />
 	</ItemGroup>

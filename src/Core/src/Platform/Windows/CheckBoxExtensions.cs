@@ -1,13 +1,26 @@
-﻿using Microsoft.UI.Xaml.Controls;
-using XColor = Microsoft.Maui.Graphics.Color;
+﻿using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml.Media;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class CheckBoxExtensions
 	{
-		public static void UpdateIsChecked(this CheckBox nativeCheckBox, ICheckBox check)
+		public static void UpdateIsChecked(this MauiCheckBox platformCheckBox, ICheckBox check)
 		{
-			nativeCheckBox.IsChecked = check.IsChecked;
+			platformCheckBox.IsChecked = check.IsChecked;
+		}
+
+		public static void UpdateForeground(this MauiCheckBox platformCheckBox, ICheckBox check) 
+		{
+			var tintBrush = check.Foreground?.ToPlatform();
+
+			if (tintBrush == null)
+			{
+				platformCheckBox.TintBrush = new SolidColorBrush(UI.Colors.Black);
+				return;
+			}
+
+			platformCheckBox.TintBrush = tintBrush;
 		}
 	}
 }

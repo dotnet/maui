@@ -1,13 +1,14 @@
-﻿using Android.Content.Res;
+﻿using System.Threading.Tasks;
+using Android.Content.Res;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Widget;
-using Microsoft.Maui;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class SliderExtensions
 	{
-		public const double NativeMaxValue = int.MaxValue;
+		public const double PlatformMaxValue = int.MaxValue;
 
 		public static void UpdateMinimum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
@@ -19,7 +20,7 @@ namespace Microsoft.Maui
 			var max = slider.Maximum;
 			var value = slider.Value;
 
-			seekBar.Progress = (int)((value - min) / (max - min) * NativeMaxValue);
+			seekBar.Progress = (int)((value - min) / (max - min) * PlatformMaxValue);
 		}
 
 		public static void UpdateMinimumTrackColor(this SeekBar seekBar, ISlider slider) =>
@@ -37,7 +38,7 @@ namespace Microsoft.Maui
 			}
 			else
 			{
-				seekBar.ProgressTintList = ColorStateList.ValueOf(slider.MinimumTrackColor.ToNative());
+				seekBar.ProgressTintList = ColorStateList.ValueOf(slider.MinimumTrackColor.ToPlatform());
 				seekBar.ProgressTintMode = PorterDuff.Mode.SrcIn;
 			}
 		}
@@ -57,7 +58,7 @@ namespace Microsoft.Maui
 			}
 			else
 			{
-				seekBar.ProgressBackgroundTintList = ColorStateList.ValueOf(slider.MaximumTrackColor.ToNative());
+				seekBar.ProgressBackgroundTintList = ColorStateList.ValueOf(slider.MaximumTrackColor.ToPlatform());
 				seekBar.ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
 			}
 		}
@@ -67,5 +68,25 @@ namespace Microsoft.Maui
 
 		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider, ColorFilter? defaultThumbColorFilter) =>
 			seekBar.Thumb?.SetColorFilter(slider.ThumbColor, FilterMode.SrcIn, defaultThumbColorFilter);
+
+		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider, Drawable? defaultThumb)
+		{
+			var context = seekBar.Context;
+
+			if (context == null)
+				return;
+
+			var thumbImageSource = slider.ThumbImageSource;
+
+			if (thumbImageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(thumbImageSource);
+				var result = await service.GetDrawableAsync(thumbImageSource, context);
+				Drawable? thumbDrawable = result?.Value;
+
+				if (seekBar.IsAlive())
+					seekBar.SetThumb(thumbDrawable ?? defaultThumb);
+			}
+		}
 	}
 }

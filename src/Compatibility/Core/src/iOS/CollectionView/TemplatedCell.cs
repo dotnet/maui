@@ -1,9 +1,10 @@
 using System;
 using CoreGraphics;
 using Foundation;
-using UIKit;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -75,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return preferredAttributes;
 		}
 
-		CGSize UpdateCellSize() 
+		CGSize UpdateCellSize()
 		{
 			// Measure this cell (including the Forms element) if there is no constrained size
 			var size = ConstrainedSize == default ? Measure() : ConstrainedSize;
@@ -107,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					oldElement.MeasureInvalidated -= MeasureInvalidated;
 					oldElement.BindingContext = null;
 					itemsView.RemoveLogicalChild(oldElement);
-					ClearSubviews();
+					ContentView.ClearSubviews();
 					_size = Size.Zero;
 				}
 
@@ -166,7 +167,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var nativeView = VisualElementRenderer.NativeView;
 
 			// Clear out any old views if this cell is being reused
-			ClearSubviews();
+			ContentView.ClearSubviews();
 
 			InitializeContentConstraints(nativeView);
 
@@ -187,14 +188,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var rectangle = nativeView.Frame.ToRectangle();
 			VisualElementRenderer.Element.Layout(rectangle);
 			_size = rectangle.Size;
-		}
-
-		void ClearSubviews()
-		{
-			for (int n = ContentView.Subviews.Length - 1; n >= 0; n--)
-			{
-				ContentView.Subviews[n].RemoveFromSuperview();
-			}
 		}
 
 		internal void UseContent(TemplatedCell measurementCell)

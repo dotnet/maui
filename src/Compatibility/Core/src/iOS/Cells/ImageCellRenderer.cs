@@ -1,10 +1,13 @@
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ImageCellRenderer instead")]
 	public class ImageCellRenderer : TextCellRenderer
 	{
 		[Preserve(Conditional = true)]

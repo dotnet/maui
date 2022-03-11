@@ -1,49 +1,55 @@
 #nullable enable
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
+	public abstract partial class ViewHandler<TVirtualView, TPlatformView> : IPlatformViewHandler
 	{
-		FrameworkElement? INativeViewHandler.NativeView => (FrameworkElement?)base.NativeView;
+		public override void PlatformArrange(Rect rect) =>
+			this.PlatformArrangeHandler(rect);
 
-		public override void NativeArrange(Rectangle rect)
-		{
-			var nativeView = NativeView;
-
-			if (nativeView == null)
-				return;
-
-			if (rect.Width < 0 || rect.Height < 0)
-				return;
-
-			nativeView.Arrange(new Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
-		}
-
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			if (NativeView == null || VirtualView == null)
-				return Size.Zero;
-
-			if (widthConstraint < 0 || heightConstraint < 0)
-				return Size.Zero;
-
-			var measureConstraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
-
-			NativeView.Measure(measureConstraint);
-
-			return new Size(NativeView.DesiredSize.Width, NativeView.DesiredSize.Height);
-		}
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
+			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 
 		protected override void SetupContainer()
 		{
+			if (PlatformView == null || ContainerView != null)
+				return;
 
+			var oldParent = (Panel?)PlatformView.Parent;
+
+			var oldIndex = oldParent?.Children.IndexOf(PlatformView);
+			oldParent?.Children.Remove(PlatformView);
+
+			ContainerView ??= new WrapperView();
+			((WrapperView)ContainerView).Child = PlatformView;
+
+			if (oldIndex is int idx && idx >= 0)
+				oldParent?.Children.Insert(idx, ContainerView);
+			else
+				oldParent?.Children.Add(ContainerView);
 		}
 
 		protected override void RemoveContainer()
 		{
+			if (PlatformView == null || ContainerView == null || PlatformView.Parent != ContainerView)
+				return;
 
+			var oldParent = (Panel?)ContainerView.Parent;
+
+			var oldIndex = oldParent?.Children.IndexOf(ContainerView);
+			oldParent?.Children.Remove(ContainerView);
+
+			((WrapperView)ContainerView).Child = null;
+			ContainerView = null;
+
+			if (oldIndex is int idx && idx >= 0)
+				oldParent?.Children.Insert(idx, PlatformView);
+			else
+				oldParent?.Children.Add(PlatformView);
 		}
 	}
 }

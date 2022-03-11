@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Reflection;
-using System.IO.IsolatedStorage;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using System.Security.Cryptography;
@@ -22,27 +21,22 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 	internal class MockPlatformServices : Internals.IPlatformServices
 	{
 		Action<Action> invokeOnMainThread;
-		Action<Uri> openUriAction;
 		Func<Uri, CancellationToken, Task<Stream>> getStreamAsync;
 		Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc;
 		readonly bool useRealisticLabelMeasure;
 		readonly bool _isInvokeRequired;
 
-		public MockPlatformServices(Action<Action> invokeOnMainThread = null, Action<Uri> openUriAction = null,
+		public MockPlatformServices(Action<Action> invokeOnMainThread = null,
 			Func<Uri, CancellationToken, Task<Stream>> getStreamAsync = null,
 			Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc = null,
 			bool useRealisticLabelMeasure = false, bool isInvokeRequired = false)
 		{
 			this.invokeOnMainThread = invokeOnMainThread;
-			this.openUriAction = openUriAction;
 			this.getStreamAsync = getStreamAsync;
 			this.getNativeSizeFunc = getNativeSizeFunc;
 			this.useRealisticLabelMeasure = useRealisticLabelMeasure;
 			_isInvokeRequired = isInvokeRequired;
 		}
-
-		public string GetHash(string input) => Internals.Crc64.GetHash(input);
-		string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
 
 		static int hex(int v)
 		{
@@ -70,26 +64,10 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			}
 		}
 
-		public Color GetNamedColor(string name)
-		{
-			// Not supported on this platform
-			return Color.Default;
-		}
-
-		public void OpenUriAction(Uri uri)
-		{
-			if (openUriAction != null)
-				openUriAction(uri);
-			else
-				throw new NotImplementedException();
-		}
-
 		public bool IsInvokeRequired
 		{
 			get { return _isInvokeRequired; }
 		}
-
-		public string RuntimePlatform { get; set; }
 
 		public void BeginInvokeOnMainThread(Action action)
 		{
@@ -124,63 +102,6 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			return getStreamAsync(uri, cancellationToken);
 		}
 
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
-		public Internals.IIsolatedStorageFile GetUserStoreForApplication()
-		{
-			return new MockIsolatedStorageFile(IsolatedStorageFile.GetUserStoreForAssembly());
-		}
-
-		public class MockIsolatedStorageFile : Internals.IIsolatedStorageFile
-		{
-			readonly IsolatedStorageFile isolatedStorageFile;
-			public MockIsolatedStorageFile(IsolatedStorageFile isolatedStorageFile)
-			{
-				this.isolatedStorageFile = isolatedStorageFile;
-			}
-
-			public Task<bool> GetDirectoryExistsAsync(string path)
-			{
-				return Task.FromResult(isolatedStorageFile.DirectoryExists(path));
-			}
-
-			public Task CreateDirectoryAsync(string path)
-			{
-				isolatedStorageFile.CreateDirectory(path);
-				return Task.FromResult(true);
-			}
-
-			public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
-			{
-				Stream stream = isolatedStorageFile.OpenFile(path, mode, access);
-				return Task.FromResult(stream);
-			}
-
-			public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
-			{
-				Stream stream = isolatedStorageFile.OpenFile(path, mode, access, share);
-				return Task.FromResult(stream);
-			}
-
-			public Task<bool> GetFileExistsAsync(string path)
-			{
-				return Task.FromResult(isolatedStorageFile.FileExists(path));
-			}
-
-			public Task<DateTimeOffset> GetLastWriteTimeAsync(string path)
-			{
-				return Task.FromResult(isolatedStorageFile.GetLastWriteTime(path));
-			}
-		}
-
-		public void QuitApplication()
-		{
-
-		}
-
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			if (getNativeSizeFunc != null)
@@ -205,7 +126,7 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			return new SizeRequest(new Size(100, 20));
 		}
 
-		public OSAppTheme RequestedTheme => OSAppTheme.Unspecified;
+		public AppTheme RequestedTheme => AppTheme.Unspecified;
 	}
 
 	internal class MockDeserializer : Internals.IDeserializer

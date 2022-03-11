@@ -1,21 +1,34 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/UriTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.UriTypeConverter']/Docs" />
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.UriTypeConverter")]
-	[Xaml.TypeConversion(typeof(Uri))]
 	public class UriTypeConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		/// <include file="../../docs/Microsoft.Maui.Controls/UriTypeConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/UriTypeConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs" />
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/UriTypeConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs" />
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (string.IsNullOrWhiteSpace(value))
+			var strValue = value?.ToString();
+			if (string.IsNullOrWhiteSpace(strValue))
 				return null;
-			return new Uri(value, UriKind.RelativeOrAbsolute);
+			return new Uri(strValue, UriKind.RelativeOrAbsolute);
 		}
 
-		public override string ConvertToInvariantString(object value)
+		/// <include file="../../docs/Microsoft.Maui.Controls/UriTypeConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is Uri uri))
+			if (value is not Uri uri)
 				throw new NotSupportedException();
 			return uri.ToString();
 		}

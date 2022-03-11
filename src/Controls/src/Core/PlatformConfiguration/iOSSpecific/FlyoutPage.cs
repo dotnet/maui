@@ -3,57 +3,34 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Maui.Controls.FlyoutPage;
 
+	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.FlyoutPage']/Docs" />
 	public static class FlyoutPage
 	{
 		#region ApplyShadow
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='ApplyShadowProperty']/Docs" />
 		public static readonly BindableProperty ApplyShadowProperty = BindableProperty.Create("ApplyShadow", typeof(bool), typeof(FlyoutPage), false);
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetApplyShadow'][0]/Docs" />
 		public static bool GetApplyShadow(BindableObject element)
 		{
 			return (bool)element.GetValue(ApplyShadowProperty);
 		}
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetApplyShadow'][0]/Docs" />
 		public static void SetApplyShadow(BindableObject element, bool value)
 		{
 			element.SetValue(ApplyShadowProperty, value);
 		}
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetApplyShadow']/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetApplyShadow(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetApplyShadow(config.Element, value);
 			return config;
 		}
 
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetApplyShadow']/Docs" />
 		public static bool GetApplyShadow(this IPlatformElementConfiguration<iOS, FormsElement> config)
-		{
-			return GetApplyShadow(config.Element);
-		}
-		#endregion
-	}
-
-	[global::System.Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
-	public static class MasterDetailPage
-	{
-		#region ApplyShadow
-		public static readonly BindableProperty ApplyShadowProperty = FlyoutPage.ApplyShadowProperty;
-
-		public static bool GetApplyShadow(BindableObject element)
-		{
-			return (bool)element.GetValue(ApplyShadowProperty);
-		}
-
-		public static void SetApplyShadow(BindableObject element, bool value)
-		{
-			element.SetValue(ApplyShadowProperty, value);
-		}
-
-		public static IPlatformElementConfiguration<iOS, Maui.Controls.MasterDetailPage> SetApplyShadow(this IPlatformElementConfiguration<iOS, Maui.Controls.MasterDetailPage> config, bool value)
-		{
-			SetApplyShadow(config.Element, value);
-			return config;
-		}
-
-		public static bool GetApplyShadow(this IPlatformElementConfiguration<iOS, Maui.Controls.MasterDetailPage> config)
 		{
 			return GetApplyShadow(config.Element);
 		}

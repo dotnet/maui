@@ -4,27 +4,30 @@ using AppKit;
 using AuthenticationServices;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class WebAuthenticator
+	public partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{
 		const int asWebAuthenticationSessionErrorCodeCanceledLogin = 1;
 		const string asWebAuthenticationSessionErrorDomain = "com.apple.AuthenticationServices.WebAuthenticationSession";
 
-		static readonly CallBackHelper callbackHelper = new CallBackHelper();
+		readonly CallBackHelper callbackHelper = new CallBackHelper();
 
-		static TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
-		static Uri redirectUri;
+		TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
+		Uri redirectUri;
 
-		static ASWebAuthenticationSession was;
+		ASWebAuthenticationSession was;
 
-		static WebAuthenticator()
+		WebAuthenticatorImplementation()
 		{
 			callbackHelper.Register();
 		}
 
-		internal static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
+			var url = webAuthenticatorOptions?.Url;
+			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
+
 			if (!AppInfo.VerifyHasUrlScheme(callbackUrl.Scheme))
 				throw new InvalidOperationException("You must register your URL Scheme handler in your app's Info.plist!");
 
@@ -36,12 +39,12 @@ namespace Microsoft.Maui.Essentials
 			redirectUri = callbackUrl;
 			var scheme = redirectUri.Scheme;
 
-			if (DeviceInfo.Version >= new Version(10, 15))
+			if (OperatingSystem.IsMacOSVersionAtLeast(10, 15))
 			{
 				static void AuthSessionCallback(NSUrl cbUrl, NSError error)
 				{
 					if (error == null)
-						OpenUrl(cbUrl);
+						OpenUrlCallback(cbUrl);
 					else if (error.Domain == asWebAuthenticationSessionErrorDomain && error.Code == asWebAuthenticationSessionErrorCodeCanceledLogin)
 						tcsResponse.TrySetCanceled();
 					else
@@ -56,6 +59,7 @@ namespace Microsoft.Maui.Essentials
 				{
 					var ctx = new ContextProvider(Platform.GetCurrentWindow());
 					was.PresentationContextProvider = ctx;
+					was.PrefersEphemeralWebBrowserSession = webAuthenticatorOptions?.PrefersEphemeralWebBrowserSession ?? false;
 
 					was.Start();
 					return await tcsResponse.Task;
@@ -69,7 +73,7 @@ namespace Microsoft.Maui.Essentials
 			return await tcsResponse.Task;
 		}
 
-		static bool OpenUrl(NSUrl uri)
+		public bool OpenUrlCallback(Uri uri)
 		{
 			// If we aren't waiting on a task, don't handle the url
 			if (tcsResponse?.Task?.IsCompleted ?? true)
@@ -118,7 +122,7 @@ namespace Microsoft.Maui.Essentials
 			{
 				var url = evt.ParamDescriptorForKeyword(DirectObject).StringValue;
 				var uri = new Uri(url);
-				OpenUrl(WebUtils.GetNativeUrl(uri));
+				OpenUrlCallback(WebUtils.GetNativeUrl(uri));
 			}
 
 			static uint GetDescriptor(string s) =>

@@ -7,6 +7,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using NativeColor = UIKit.UIColor;
 using NativeControl = UIKit.UIControl;
@@ -35,6 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		string _defaultAccessibilityLabel;
 		string _defaultAccessibilityHint;
 		bool? _defaultIsAccessibilityElement;
+		bool? _defaultAccessibilityElementsHidden;
 
 		NativeColor _defaultColor;
 
@@ -138,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (Control != null && e.OldElement != null && e.OldElement.BackgroundColor != e.NewElement.BackgroundColor || e.NewElement.BackgroundColor != null)
 					SetBackgroundColor(e.NewElement.BackgroundColor);
 
-				if(Control != null && e.OldElement != null && e.OldElement.Background != e.NewElement.Background)
+				if (Control != null && e.OldElement != null && e.OldElement.Background != e.NewElement.Background)
 					SetBackground(e.NewElement.Background);
 
 				e.NewElement.FocusChangeRequested += ViewOnFocusChangeRequested;
@@ -169,7 +171,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected override void OnRegisterEffect(PlatformEffect effect)
 		{
 			base.OnRegisterEffect(effect);
-			effect.SetControl(Control);
+			effect.Control = Control;
 		}
 
 		protected override void SetAccessibilityHint()
@@ -185,6 +187,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected override void SetIsAccessibilityElement()
 		{
 			_defaultIsAccessibilityElement = Control.SetIsAccessibilityElement(Element, _defaultIsAccessibilityElement);
+		}
+		protected override void SetAccessibilityElementsHidden()
+		{
+			_defaultAccessibilityElementsHidden = Control.SetAccessibilityElementsHidden(Element, _defaultAccessibilityElementsHidden);
 		}
 
 		protected override void SetAutomationId(string id)
@@ -290,6 +296,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			uiControl.Enabled = Element.IsEnabled;
 		}
 
+		[PortHandler]
 		void UpdateFlowDirection()
 		{
 			if (IsElementOrControlEmpty)
@@ -298,11 +305,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			Control.UpdateFlowDirection(Element);
 		}
 
+		[PortHandler]
 		void ViewOnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs focusRequestArgs)
 		{
 			if (Control == null)
 				return;
-				
+
 #if __MOBILE__
 			focusRequestArgs.Result = focusRequestArgs.Focus ? Control.BecomeFirstResponder() : Control.ResignFirstResponder();
 #else

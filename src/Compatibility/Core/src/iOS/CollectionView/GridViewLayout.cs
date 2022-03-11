@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -17,12 +18,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected override void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
 		{
-			if(propertyChanged.IsOneOf(GridItemsLayout.SpanProperty, GridItemsLayout.HorizontalItemSpacingProperty, 
+			if (propertyChanged.IsOneOf(GridItemsLayout.SpanProperty, GridItemsLayout.HorizontalItemSpacingProperty,
 				GridItemsLayout.VerticalItemSpacingProperty))
 			{
 				// Update the constraints; ConstrainTo will pick up the new span
 				ConstrainTo(CollectionView.Frame.Size);
-				
+
 				// And force the UICollectionView to reload everything with the new span
 				CollectionView.ReloadData();
 			}
@@ -195,7 +196,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return ReduceSpacingToFitIfNeeded(availableSpace, requestedSpacing, _itemsLayout.Span);
 		}
 
-		void CenterAlignCellsInColumn(UICollectionViewLayoutAttributes preferredAttributes) 
+		void CenterAlignCellsInColumn(UICollectionViewLayoutAttributes preferredAttributes)
 		{
 			// Determine the set of cells above this one
 			var index = preferredAttributes.IndexPath;
@@ -229,7 +230,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		bool NeedsSingleItemHorizontalAlignmentAdjustment(UICollectionViewLayoutAttributes[] layoutAttributesForRectElements) 
+		bool NeedsSingleItemHorizontalAlignmentAdjustment(UICollectionViewLayoutAttributes[] layoutAttributesForRectElements)
 		{
 			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 			{
@@ -254,7 +255,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (ScrollDirection == UICollectionViewScrollDirection.Vertical)
 			{
 				// The bug only occurs with Horizontal scrolling
-				return false; 
+				return false;
 			}
 
 			if (CollectionView.NumberOfSections() == 0)
@@ -289,7 +290,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return true;
 		}
 
-		static nfloat ReduceSpacingToFitIfNeeded(nfloat available, nfloat requestedSpacing, int span) 
+		static nfloat ReduceSpacingToFitIfNeeded(nfloat available, nfloat requestedSpacing, int span)
 		{
 			if (span == 1)
 			{

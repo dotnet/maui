@@ -4,8 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
 using CoreAnimation;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Extensions.Logging;
 
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using NativeImage = UIKit.UIImage;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -243,7 +246,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					imageController?.SetIsLoading(false);
 			}
 
-			(imageElement as IViewController)?.NativeSizeChanged();
+			(imageElement as IViewController)?.PlatformSizeChanged();
 		}
 
 #if __MOBILE__
@@ -281,25 +284,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 			catch (OperationCanceledException)
 			{
-				Controls.Internals.Log.Warning("Image loading", "Image load cancelled");
+				Forms.MauiContext?.CreateLogger<ImageRenderer>()?.LogWarning("Image load cancelled");
 			}
 			catch (Exception ex)
 			{
-				Controls.Internals.Log.Warning("Image loading", $"Image load failed: {ex}");
+				Forms.MauiContext?.CreateLogger<ImageRenderer>()?.LogWarning(ex, "Image load failed");
 			}
 
 			return null;
 		}
 
-#if __MOBILE__
-		internal static Task ApplyNativeImageAsync(this IShellContext shellContext, BindableObject bindable, BindableProperty imageSourceProperty, Action<UIImage> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
-		{
-			_ = shellContext ?? throw new ArgumentNullException(nameof(shellContext));
-			var renderer = shellContext as IVisualElementRenderer ?? throw new InvalidOperationException($"The shell context {shellContext.GetType()} must be a {typeof(IVisualElementRenderer)}.");
-
-			return renderer.ApplyNativeImageAsync(bindable, imageSourceProperty, onSet, onLoading, cancellationToken);
-		}
-#endif
 		internal static Task ApplyNativeImageAsync(this IVisualElementRenderer renderer, BindableProperty imageSourceProperty, Action<NativeImage> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return renderer.ApplyNativeImageAsync(null, imageSourceProperty, onSet, onLoading, cancellationToken);

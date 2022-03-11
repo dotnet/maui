@@ -1,21 +1,41 @@
-﻿namespace Microsoft.Maui.Handlers
+﻿#if __IOS__ || MACCATALYST
+using PlatformView = Microsoft.Maui.Platform.MauiActivityIndicator;
+#elif MONOANDROID
+using PlatformView = Android.Widget.ProgressBar;
+#elif WINDOWS
+using PlatformView = Microsoft.Maui.Platform.MauiActivityIndicator;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
+
+namespace Microsoft.Maui.Handlers
 {
-	public partial class ActivityIndicatorHandler
+	public partial class ActivityIndicatorHandler : IActivityIndicatorHandler
 	{
-		public static PropertyMapper<IActivityIndicator, ActivityIndicatorHandler> ActivityIndicatorMapper = new PropertyMapper<IActivityIndicator, ActivityIndicatorHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IActivityIndicator, IActivityIndicatorHandler> Mapper = new PropertyMapper<IActivityIndicator, IActivityIndicatorHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IActivityIndicator.Color)] = MapColor,
 			[nameof(IActivityIndicator.IsRunning)] = MapIsRunning,
+#if __ANDROID__
+			// Android does not have the concept of IsRunning, so we are leveraging the Visibility
+			[nameof(IActivityIndicator.Visibility)] = MapIsRunning,
+#endif
 		};
 
-		public ActivityIndicatorHandler() : base(ActivityIndicatorMapper)
+		public static CommandMapper<IActivityIndicator, IActivityIndicatorHandler> CommandMapper = new(ViewCommandMapper);
+
+		public ActivityIndicatorHandler() : base(Mapper, CommandMapper)
 		{
 
 		}
 
-		public ActivityIndicatorHandler(PropertyMapper mapper) : base(mapper ?? ActivityIndicatorMapper)
+		public ActivityIndicatorHandler(IPropertyMapper mapper) : base(mapper ?? Mapper, CommandMapper)
 		{
 
 		}
+
+		IActivityIndicator IActivityIndicatorHandler.VirtualView => VirtualView;
+
+		PlatformView IActivityIndicatorHandler.PlatformView => PlatformView;
 	}
 }

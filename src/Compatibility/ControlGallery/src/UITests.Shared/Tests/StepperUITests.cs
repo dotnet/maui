@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using Microsoft.Maui.Controls.CustomAttributes;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		[Ignore("This is covered by the platform tests")]
 		public override void _IsVisible() { }
 #else
-		[Category(UITestCategories.UwpIgnore)] 
+		[Category(UITestCategories.UwpIgnore)]
 		public override void _IsVisible()
 		{
 			base._IsVisible();

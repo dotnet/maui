@@ -1,12 +1,11 @@
 using System;
 using Android.Graphics;
-using Microsoft.Maui;
 using AColor = Android.Graphics.Color;
 using AColorFilter = Android.Graphics.ColorFilter;
 using ADrawable = Android.Graphics.Drawables.Drawable;
 using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class DrawableExtensions
 	{
@@ -69,7 +68,7 @@ namespace Microsoft.Maui
 			if (color == null)
 				SetColorFilter(drawable, defaultColorFilter);
 			else
-				drawable.SetColorFilter(color.ToNative(), mode);
+				drawable.SetColorFilter(color.ToPlatform(), mode);
 		}
 
 		public static void SetColorFilter(this ADrawable drawable, Graphics.Color color, FilterMode mode)
@@ -77,7 +76,7 @@ namespace Microsoft.Maui
 			if (drawable == null)
 				return;
 
-			drawable.SetColorFilter(color.ToNative(), mode);
+			drawable.SetColorFilter(color.ToPlatform(), mode);
 		}
 
 		public static void SetColorFilter(this ADrawable drawable, AColor color, FilterMode mode)
@@ -85,7 +84,7 @@ namespace Microsoft.Maui
 			if (drawable == null)
 				return;
 
-			if (NativeVersion.Supports(NativeApis.BlendModeColorFilter))
+			if (PlatformVersion.Supports(PlatformApis.BlendModeColorFilter))
 			{
 				BlendMode? filterMode29 = GetFilterMode(mode);
 

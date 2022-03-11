@@ -1,73 +1,109 @@
 <Project>
-  <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' == 'true'">
-    <_MicrosoftHostingVersion>6.0.0-preview.3.21174.7</_MicrosoftHostingVersion>
-    <_MicrosoftDependencyInjectionVersion>$(_MicrosoftHostingVersion)</_MicrosoftDependencyInjectionVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' != 'true'">
-    <_MicrosoftHostingVersion>5.0.0</_MicrosoftHostingVersion>
-    <_MicrosoftDependencyInjectionVersion>5.0.1</_MicrosoftDependencyInjectionVersion>
-  </PropertyGroup>
-  <PropertyGroup>
-    <_MicrosoftProjectReunionVersion>0.5.0</_MicrosoftProjectReunionVersion>
-    <_MicrosoftGraphicsWin2DVersion>0.5.0.13</_MicrosoftGraphicsWin2DVersion>
-    <_MicrosoftMauiGraphics>6.0.100-preview.3.61</_MicrosoftMauiGraphics>
-    <_XamarinAndroidGlideVersion>4.11.0.1</_XamarinAndroidGlideVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
-    <!-- Debugger workaround -->
-    <MtouchExtraArgs>$(MtouchExtraArgs) --setenv:MONO_THREADS_SUSPEND=preemptive</MtouchExtraArgs>
-  </PropertyGroup>
   <ItemGroup>
     <PackageReference
         Update="Microsoft.Maui.Graphics"
-        Version="$(_MicrosoftMauiGraphics)" />
+        Version="$(MicrosoftMauiGraphicsVersion)"
+    />
+    <PackageReference
+         Update="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
+         Version="$(MicrosoftMauiGraphicsVersion)"
+    />
+    <PackageReference
+         Update="Microsoft.Maui.Graphics.Skia"
+         Version="$(MicrosoftMauiGraphicsVersion)"
+    />
+    <PackageReference
+         Update="System.Numerics.Vectors"
+         Version="$(SystemNumericsVectorsVersion)"
+    />
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsServicingPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.Configuration.Abstractions"
+        Version="$(MicrosoftExtensionsPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.Configuration.Json"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
-        Version="$(_MicrosoftDependencyInjectionVersion)"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
-        Update="Microsoft.Extensions.Hosting.Abstractions"
-        Version="$(_MicrosoftHostingVersion)"
+        Update="Microsoft.Extensions.DependencyInjection.Abstractions"
+        Version="$(MicrosoftExtensionsPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.FileProviders.Abstractions"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Abstractions"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsServicingPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Console"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Debug"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
-        Update="Microsoft.ProjectReunion"
-        Version="$(_MicrosoftProjectReunionVersion)"
+        Update="Microsoft.Extensions.Primitives"
+        Version="$(MicrosoftExtensionsPackageVersion)"
     />
     <PackageReference
-        Update="Microsoft.ProjectReunion.Foundation"
-        Version="$(_MicrosoftProjectReunionVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.ProjectReunion.WinUI"
-        Version="$(_MicrosoftProjectReunionVersion)"
+        Update="Microsoft.WindowsAppSDK"
+        Version="$(MicrosoftWindowsAppSDKPackageVersion)"
+        NoWarn="NU1605"
     />
     <PackageReference
         Update="Microsoft.Graphics.Win2D"
-        Version="$(_MicrosoftGraphicsWin2DVersion)"
+        Version="$(MicrosoftGraphicsWin2DPackageVersion)"
     />
     <PackageReference
         Update="Xamarin.Android.Glide"
         Version="$(_XamarinAndroidGlideVersion)"
+    />
+    <PackageReference
+        Update="Xamarin.AndroidX.Security.SecurityCrypto"
+        Version="$(_XamarinAndroidXSecurityVersion)"
+    />
+    <PackageReference
+        Update="Xamarin.Google.Crypto.Tink.Android"
+        Version="$(_XamarinGoogleCryptoTinkAndroidVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Authorization"
+        Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.WebView"
+        Version="$(MicrosoftAspNetCoreComponentsWebViewPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.Web"
+        Version="$(MicrosoftAspNetCoreComponentsWebPackageVersion)" />
+
+    <PackageReference
+        Update="Microsoft.JSInterop"
+        Version="$(MicrosoftJSInteropPackageVersion)"
+    />
+    <PackageReference
+        Update="System.CodeDom"
+        Version="$(SystemCodeDomPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Web.WebView2"
+        Version="$(_MicrosoftWebWebView2Version)"
     />
   </ItemGroup>
 </Project>

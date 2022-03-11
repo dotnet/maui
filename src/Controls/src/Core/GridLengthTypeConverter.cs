@@ -1,32 +1,45 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.TypeConversion(typeof(GridLength))]
+	/// <include file="../../docs/Microsoft.Maui.Controls/GridLengthTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.GridLengthTypeConverter']/Docs" />
 	public class GridLengthTypeConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		/// <include file="../../docs/Microsoft.Maui.Controls/GridLengthTypeConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/GridLengthTypeConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs" />
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/GridLengthTypeConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs" />
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value == null)
+			var strValue = value?.ToString();
+
+			if (strValue == null)
 				return null;
 
-			value = value.Trim();
-			if (string.Compare(value, "auto", StringComparison.OrdinalIgnoreCase) == 0)
+			strValue = strValue.Trim();
+			if (string.Compare(strValue, "auto", StringComparison.OrdinalIgnoreCase) == 0)
 				return GridLength.Auto;
-			if (string.Compare(value, "*", StringComparison.OrdinalIgnoreCase) == 0)
+			if (string.Compare(strValue, "*", StringComparison.OrdinalIgnoreCase) == 0)
 				return new GridLength(1, GridUnitType.Star);
-			if (value.EndsWith("*", StringComparison.Ordinal) && double.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out var length))
+			if (strValue.EndsWith("*", StringComparison.Ordinal) && double.TryParse(strValue.Substring(0, strValue.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out var length))
 				return new GridLength(length, GridUnitType.Star);
-			if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out length))
+			if (double.TryParse(strValue, NumberStyles.Number, CultureInfo.InvariantCulture, out length))
 				return new GridLength(length);
 
 			throw new FormatException();
 		}
 
-		public override string ConvertToInvariantString(object value)
+		/// <include file="../../docs/Microsoft.Maui.Controls/GridLengthTypeConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is GridLength length))
+			if (value is not GridLength length)
 				throw new NotSupportedException();
 			if (length.IsAuto)
 				return "auto";

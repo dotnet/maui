@@ -1,13 +1,16 @@
 using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using NUnit.Framework;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WColor = Windows.UI.Color;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
@@ -49,14 +52,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 			return (panel.Background as WSolidColorBrush).Color;
 		}
 
-		WColor GetBackgroundColor(Border border)
+		WColor GetBackgroundColor(WBorder border)
 		{
 			return (border.Background as WSolidColorBrush).Color;
 		}
 
 		async Task<WColor> GetNativeColor(View view)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await view.Dispatcher.DispatchAsync(() =>
 			{
 				var control = GetNativeControl(view);
 
@@ -93,10 +96,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 			var frame = new Frame() { BackgroundColor = Colors.Orange };
 			var expectedColor = frame.BackgroundColor.ToWindowsColor();
 
-			var actualColor = await Device.InvokeOnMainThreadAsync(() =>
+			var actualColor = await frame.Dispatcher.DispatchAsync(() =>
 			{
 				var renderer = GetRenderer(frame);
-				var nativeElement = renderer.GetNativeElement() as Border;
+				var nativeElement = renderer.GetNativeElement() as WBorder;
 
 				var backgroundBrush = nativeElement.Background as WSolidColorBrush;
 				return backgroundBrush.Color;

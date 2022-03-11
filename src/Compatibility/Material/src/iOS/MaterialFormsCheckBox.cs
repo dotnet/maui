@@ -1,5 +1,6 @@
 using System;
 using CoreGraphics;
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Platform.iOS;
 

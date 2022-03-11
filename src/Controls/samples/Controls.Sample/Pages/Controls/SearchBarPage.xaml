@@ -1,0 +1,79 @@
+﻿<views:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.SearchBarPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    Title="SearchBar">
+    <views:BasePage.BindingContext>
+        <viewmodels:SearchBarViewModel />
+    </views:BasePage.BindingContext>
+    <views:BasePage.Content>
+        <ScrollView>
+            <VerticalStackLayout
+            Margin="12">
+                <Label
+                Text="Default"
+                Style="{StaticResource Headline}"/>
+                <SearchBar/>
+                <Label
+                Text="Disabled"
+                Style="{StaticResource Headline}"/>
+                <SearchBar
+                IsEnabled="False"/>
+                <Label
+                Text="TextColor"
+                Style="{StaticResource Headline}"/>
+                <SearchBar
+                TextColor="Green"/>
+                <Label
+                Text="With Placeholder"
+                Style="{StaticResource Headline}" />
+                <SearchBar 
+                Placeholder="Placeholder"/>
+                <Label
+                Text="Using PlaceholderColor"
+                Style="{StaticResource Headline}" />
+                <SearchBar 
+                PlaceholderColor="Pink"
+                Placeholder="Placeholder"/>
+                <Label
+                Text="Fonts"
+                Style="{StaticResource Headline}"/>
+                <SearchBar
+                FontSize="24"
+                FontAttributes="Italic"/>
+                <Label
+                Text="SearchCommand"
+                Style="{StaticResource Headline}"/>
+                <SearchBar
+                SearchCommand="{Binding SearchCommand}"
+                SearchCommandParameter="SearchCommandParameter"/>
+                <Label
+                Text="HorizontalTextAlignment"
+                Style="{StaticResource Headline}" />
+                <SearchBar 
+                HorizontalTextAlignment="End"
+                Text="end of the line"
+                />
+                <Label
+                Text="VerticalTextAlignment"
+                Style="{StaticResource Headline}" />
+                <SearchBar 
+                VerticalTextAlignment="Start"
+                Text="at the bottom"
+                HeightRequest="100"/>
+                <Label
+                Text="IsTextPredictionEnabled=True"
+                Style="{StaticResource Headline}"/>
+                <SearchBar
+                IsTextPredictionEnabled="True"/>
+                <Label
+                Text="IsTextPredictionEnabled=False"
+                Style="{StaticResource Headline}"/>
+                <SearchBar
+                IsTextPredictionEnabled="False"/>
+            </VerticalStackLayout>
+        </ScrollView>
+    </views:BasePage.Content>
+</views:BasePage>

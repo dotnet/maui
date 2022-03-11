@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Webkit;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Graphics;
 using AWebView = Android.Webkit.WebView;
@@ -141,13 +142,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_webChromeClient = GetFormsWebChromeClient();
 				_webChromeClient.SetContext(Context);
 				webView.SetWebChromeClient(_webChromeClient);
-
-				if (Context.IsDesignerContext())
-				{
-					SetNativeControl(webView);
-					return;
-				}
-
 				webView.Settings.JavaScriptEnabled = true;
 				webView.Settings.DomStorageEnabled = true;
 				SetNativeControl(webView);
@@ -201,8 +195,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		HashSet<string> _loadedCookies = new HashSet<string>();
 
+		[PortHandler]
 		Uri CreateUriForCookies(string url)
 		{
 			if (url == null)
@@ -224,6 +220,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return null;
 		}
 
+		[PortHandler]
 		CookieCollection GetCookiesFromNativeStore(string url)
 		{
 			CookieContainer existingCookies = new CookieContainer();
@@ -240,6 +237,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return existingCookies.GetCookies(uri);
 		}
 
+		[PortHandler]
 		void InitialCookiePreloadIfNecessary(string url)
 		{
 			var myCookieJar = Element.Cookies;
@@ -266,6 +264,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		internal void SyncNativeCookiesToElement(string url)
 		{
 			var myCookieJar = Element.Cookies;
@@ -290,7 +289,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			SyncNativeCookies(url);
 		}
-
+		
+		[PortHandler]
 		void SyncNativeCookies(string url)
 		{
 			var uri = CreateUriForCookies(url);
@@ -380,6 +380,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Control.Reload();
 		}
 
+		[PortHandler]
 		protected internal void UpdateCanGoBackForward()
 		{
 			if (Element == null || Control == null)
@@ -390,7 +391,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void UpdateMixedContentMode()
 		{
-			if (Control != null && ((int)Forms.SdkInt >= 21))
+			if (Control != null)
 			{
 				Control.Settings.MixedContentMode = (MixedContentHandling)Element.OnThisPlatform().MixedContentMode();
 			}

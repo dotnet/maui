@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 
 		public Task WaitForTestToComplete()
 		{
-			return Task.WhenAny( new Task[] { _testCompleted.Task, Task.Delay(3000) });
+			return Task.WhenAny(new Task[] { _testCompleted.Task, Task.Delay(3000) });
 		}
 	}
 }

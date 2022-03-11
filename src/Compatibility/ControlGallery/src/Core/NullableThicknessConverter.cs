@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using Microsoft.Maui.Converters;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {

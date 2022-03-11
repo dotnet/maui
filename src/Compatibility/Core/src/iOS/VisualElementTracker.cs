@@ -4,9 +4,11 @@ using System.Threading;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
@@ -29,9 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		// Track these by hand because the calls down into iOS are too expensive
 		bool _isInteractive;
-		Rectangle _lastBounds;
+		Rect _lastBounds;
 #if !__MOBILE__
-		Rectangle _lastParentBounds;
+		Rect _lastParentBounds;
 #endif
 		CALayer _layer;
 		CGPoint _originalAnchor;
@@ -258,15 +260,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (shouldUpdate && TrackFrame)
 				{
 #if __MOBILE__
-					var target = new RectangleF(x, y, width, height);
+					var target = new RectF(x, y, width, height);
 #else
 					var visualParent = parent as VisualElement;
 					float newY = visualParent == null ? y : Math.Max(0, (float)(visualParent.Height - y - view.Height));
-					var target = new RectangleF(x, newY, width, height);
+					var target = new RectF(x, newY, width, height);
 #endif
 
 					// must reset transform prior to setting frame...
-					if(caLayer.AnchorPoint != _originalAnchor)
+					if (caLayer.AnchorPoint != _originalAnchor)
 						caLayer.AnchorPoint = _originalAnchor;
 
 					caLayer.Transform = transform;
@@ -315,9 +317,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (Math.Abs(translationX) > epsilon || Math.Abs(translationY) > epsilon)
 					transform = transform.Translate(translationX, translationY, 0);
 
-				// not just an optimization, iOS will not "pixel align" a view which has m34 set
+				// not just an optimization, iOS will not "pixel align" a view which has M34 set
 				if (Math.Abs(rotationY % 180) > epsilon || Math.Abs(rotationX % 180) > epsilon)
-					transform.m34 = 1.0f / -400f;
+					transform.M34 = 1.0f / -400f;
 
 				if (Math.Abs(rotationX % 360) > epsilon)
 					transform = transform.Rotate(rotationX * (float)Math.PI / 180.0f, 1.0f, 0.0f, 0.0f);
@@ -342,7 +344,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 #if __MOBILE__
 			if (thread)
-				CADisplayLinkTicker.Default.Invoke(update);
+				view.Dispatcher.DispatchIfRequired(update);
 			else
 				update();
 #else
@@ -374,6 +376,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateNativeControl()
 		{
 			Performance.Start(out string reference);
@@ -489,6 +492,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				return true;
 
 			return false;
-		}	
+		}
 	}
 }

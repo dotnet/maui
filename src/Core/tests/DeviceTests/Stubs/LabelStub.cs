@@ -6,6 +6,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		public string Text { get; set; }
 
+		public TextType TextType { get; set; } = TextType.Text;
+
 		public Color TextColor { get; set; }
 
 		public double CharacterSpacing { get; set; }
@@ -15,6 +17,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Font Font { get; set; }
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
+
+		public TextAlignment VerticalTextAlignment { get; set; }
 
 		public LineBreakMode LineBreakMode { get; set; } = LineBreakMode.WordWrap;
 

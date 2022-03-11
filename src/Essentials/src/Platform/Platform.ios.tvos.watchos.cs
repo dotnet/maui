@@ -10,35 +10,36 @@ using UIKit;
 using CoreMotion;
 #elif __WATCHOS__
 using CoreMotion;
-using UIDevice = WatchKit.WKInterfaceDevice;
 #endif
+
+using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
 	public static partial class Platform
 	{
 #if __IOS__ || __TVOS__
-        public static bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
-            => WebAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
+		public static bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
+			=> WebAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
 
-        public static bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
-            => WebAuthenticator.OpenUrl(new Uri(userActivity?.WebPageUrl?.AbsoluteString));
+		public static bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
+			=> WebAuthenticator.OpenUrl(new Uri(userActivity?.WebPageUrl?.AbsoluteString));
 #endif
 
 #if __IOS__
-        public static void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
-        {
-            if (shortcutItem.Type == AppActions.Type)
-            {
-                var appAction = shortcutItem.ToAppAction();
+		public static void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
+		{
+			if (shortcutItem.Type == AppActions.Type)
+			{
+				var appAction = shortcutItem.ToAppAction();
 
-                AppActions.InvokeOnAppAction(application, shortcutItem.ToAppAction());
-            }
-        }
+				AppActions.InvokeOnAppAction(application, shortcutItem.ToAppAction());
+			}
+		}
 #endif
 
 #if __IOS__
-        [DllImport(Constants.SystemLibrary, EntryPoint = "sysctlbyname")]
+		[DllImport(Constants.SystemLibrary, EntryPoint = "sysctlbyname")]
 #else
 		[DllImport(Constants.libSystemLibrary, EntryPoint = "sysctlbyname")]
 #endif
@@ -68,75 +69,102 @@ namespace Microsoft.Maui.Essentials
 			return returnValue;
 		}
 
-		internal static bool HasOSVersion(int major, int minor) =>
-			UIDevice.CurrentDevice.CheckSystemVersion(major, minor);
-
 #if __IOS__ || __TVOS__
 
-        public static UIViewController GetCurrentUIViewController() =>
-            GetCurrentViewController(false);
+		static Func<UIViewController> getCurrentController;
 
-        internal static UIViewController GetCurrentViewController(bool throwIfNull = true)
-        {
-            UIViewController viewController = null;
+		public static void Init(Func<UIViewController> getCurrentUIViewController)
+			=> getCurrentController = getCurrentUIViewController;
 
-            var window = UIApplication.SharedApplication.KeyWindow;
+		public static UIViewController GetCurrentUIViewController() =>
+			GetCurrentViewController(false);
 
-            if (window != null && window.WindowLevel == UIWindowLevel.Normal)
-                viewController = window.RootViewController;
+		internal static UIViewController GetCurrentViewController(bool throwIfNull = true)
+		{
+			var viewController = getCurrentController?.Invoke();
 
-            if (viewController == null)
-            {
-                window = UIApplication.SharedApplication
-                    .Windows
-                    .OrderByDescending(w => w.WindowLevel)
-                    .FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
+			if (viewController != null)
+				return viewController;
 
-                if (window == null && throwIfNull)
-                    throw new InvalidOperationException("Could not find current view controller.");
-                else
-                    viewController = window?.RootViewController;
-            }
+			var window = UIApplication.SharedApplication.KeyWindow;
 
-            while (viewController?.PresentedViewController != null)
-                viewController = viewController.PresentedViewController;
+			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
+				viewController = window.RootViewController;
 
-            if (throwIfNull && viewController == null)
-                throw new InvalidOperationException("Could not find current view controller.");
+			if (viewController == null)
+			{
+				window = UIApplication.SharedApplication
+					.Windows
+					.OrderByDescending(w => w.WindowLevel)
+					.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
 
-            return viewController;
-        }
+				if (window == null && throwIfNull)
+					throw new InvalidOperationException("Could not find current view controller.");
+				else
+					viewController = window?.RootViewController;
+			}
 
-        internal static UIWindow GetCurrentWindow(bool throwIfNull = true)
-        {
-            var window = UIApplication.SharedApplication.KeyWindow;
+			while (viewController?.PresentedViewController != null)
+				viewController = viewController.PresentedViewController;
 
-            if (window != null && window.WindowLevel == UIWindowLevel.Normal)
-                return window;
+			if (throwIfNull && viewController == null)
+				throw new InvalidOperationException("Could not find current view controller.");
 
-            if (window == null)
-            {
-                window = UIApplication.SharedApplication
-                    .Windows
-                    .OrderByDescending(w => w.WindowLevel)
-                    .FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
-            }
+			return viewController;
+		}
 
-            if (throwIfNull && window == null)
-                throw new InvalidOperationException("Could not find current window.");
+		internal static UIWindow GetCurrentWindow(bool throwIfNull = true)
+		{
+			var window = UIApplication.SharedApplication.KeyWindow;
 
-            return window;
-        }
+			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
+				return window;
+
+			if (window == null)
+			{
+				window = UIApplication.SharedApplication
+					.Windows
+					.OrderByDescending(w => w.WindowLevel)
+					.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
+			}
+
+			if (throwIfNull && window == null)
+				throw new InvalidOperationException("Could not find current window.");
+
+			return window;
+		}
 #endif
 
 #if __IOS__ || __WATCHOS__
-        static CMMotionManager motionManager;
+		static CMMotionManager motionManager;
 
-        internal static CMMotionManager MotionManager =>
-            motionManager ?? (motionManager = new CMMotionManager());
+		internal static CMMotionManager MotionManager =>
+			motionManager ?? (motionManager = new CMMotionManager());
 #endif
 
 		internal static NSOperationQueue GetCurrentQueue() =>
 			NSOperationQueue.CurrentQueue ?? new NSOperationQueue();
+
+#if __IOS__
+		internal class UIPresentationControllerDelegate : UIAdaptivePresentationControllerDelegate
+		{
+			Action dismissHandler;
+
+			internal UIPresentationControllerDelegate(Action dismissHandler)
+				=> this.dismissHandler = dismissHandler;
+
+			public override void DidDismiss(UIPresentationController presentationController)
+			{
+				dismissHandler?.Invoke();
+				dismissHandler = null;
+			}
+
+			protected override void Dispose(bool disposing)
+			{
+				dismissHandler?.Invoke();
+				base.Dispose(disposing);
+			}
+		}
+#endif
 	}
 }

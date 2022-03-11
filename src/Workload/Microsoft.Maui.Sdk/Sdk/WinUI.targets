@@ -1,0 +1,11 @@
+<!-- Workarounds for WinUI -->
+<Project>
+  <Target Name="_AddMauiPriFiles" AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <_ReferenceRelatedPaths
+          Include="@(ReferencePath->'%(RootDir)%(Directory)%(FileName).pri')"
+          Condition="Exists('%(RootDir)%(Directory)%(FileName).pri')"
+      />
+    </ItemGroup>
+  </Target>
+</Project>

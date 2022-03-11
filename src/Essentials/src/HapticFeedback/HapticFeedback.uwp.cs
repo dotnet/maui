@@ -2,20 +2,21 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.Devices.Haptics;
+using Windows.Foundation.Metadata;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class HapticFeedback
+	public partial class HapticFeedbackImplementation : IHapticFeedback
 	{
 		const string vibrationDeviceApiType = "Windows.Devices.Haptics.VibrationDevice";
 
-		internal static bool IsSupported => true;
+		public bool IsSupported => true;
 
-		static async void PlatformPerform(HapticFeedbackType type)
+		public async void Perform(HapticFeedbackType type)
 		{
 			try
 			{
-				if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent(vibrationDeviceApiType)
+				if (ApiInformation.IsTypePresent(vibrationDeviceApiType)
 					&& await VibrationDevice.RequestAccessAsync() == VibrationAccessStatus.Allowed)
 				{
 					var controller = (await VibrationDevice.GetDefaultAsync())?.SimpleHapticsController;

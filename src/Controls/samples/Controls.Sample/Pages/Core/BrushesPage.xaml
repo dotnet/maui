@@ -1,0 +1,269 @@
+﻿<TabbedPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.BrushesPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="Brushes">
+    <ContentPage
+        Title="SolidColorBrush">
+        <ScrollView>
+            <StackLayout
+                Margin="12">
+                <Label
+                    Text="SolidColorBrush (Predefined Brush)"
+                    Style="{StaticResource Headline}" />
+                <Frame
+                    Background="{x:Static Brush.Indigo}"
+                    BorderColor="LightGray"
+                    HasShadow="True"
+                    CornerRadius="12"
+                    HeightRequest="120"
+                    WidthRequest="120" />
+                <Label
+                    Text="SolidColorBrush (Color)"
+                    Style="{StaticResource Headline}" />
+                <Frame                 
+                    Background="DarkBlue"
+                    BorderColor="LightGray"
+                    HasShadow="True"
+                    CornerRadius="12"
+                    HeightRequest="120"
+                    WidthRequest="120" />
+                <Label 
+                    Text="SolidColorBrush (Hex)"
+                    FontAttributes="Bold" />
+                <Frame 
+                    BorderColor="LightGray"
+                    Background="#FF9988"
+                    HasShadow="True"
+                    CornerRadius="12"
+                    HeightRequest="120"
+                    WidthRequest="120" />
+                <Label 
+                    Text="SolidColorBrush (Property Tag Syntax)"
+                    Style="{StaticResource Headline}" />
+                <Frame 
+                    BorderColor="LightGray"
+                    HasShadow="True"
+                    CornerRadius="12"
+                    HeightRequest="120"
+                    WidthRequest="120">
+                    <Frame.Background>
+                        <SolidColorBrush Color="LightSteelBlue" />
+                    </Frame.Background>
+                </Frame>
+            </StackLayout>
+        </ScrollView>
+    </ContentPage>
+    <ContentPage
+        Title="LinearGradientBrush">
+        <ScrollView>
+            <StackLayout 
+                Margin="12">
+                <Label 
+                    Text="LinearGradientBrush (Horizontal)"
+                    Style="{StaticResource Headline}" />
+                <Frame 
+                    BorderColor="LightGray"
+                    HasShadow="True"
+                    CornerRadius="12"
+                    HeightRequest="120"
+                    WidthRequest="120">
+                    <Frame.Background>
+                        <!-- StartPoint defaults to (0,0) -->
+                        <LinearGradientBrush EndPoint="1,0">
+                            <GradientStop Color="Yellow"
+                                      Offset="0.1" />
+                            <GradientStop Color="Green"
+                                      Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Frame.Background>
+                </Frame>
+                <Label 
+                   Text="LinearGradientBrush (Vertical)"
+                   Style="{StaticResource Headline}" />
+                <Frame 
+                    BorderColor="LightGray"
+                    HasShadow="True"
+                    CornerRadius="12"
+                    HeightRequest="120"
+                    WidthRequest="120">
+                    <Frame.Background>
+                        <!-- StartPoint defaults to (0,0) -->
+                        <LinearGradientBrush EndPoint="0,1">
+                            <GradientStop Color="Yellow"
+                                      Offset="0.1" />
+                            <GradientStop Color="Green"
+                                      Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Frame.Background>
+                </Frame>
+                <Label 
+                   Text="LinearGradientBrush (Diagonal)"
+                   Style="{StaticResource Headline}" />
+                <Frame 
+                    BorderColor="LightGray"
+                    HasShadow="True"
+                    CornerRadius="12"
+                    HeightRequest="120"
+                    WidthRequest="120">
+                    <Frame.Background>
+                        <!-- StartPoint defaults to (0,0)      
+                         Endpoint defaults to (1,1) -->
+                        <LinearGradientBrush>
+                            <GradientStop Color="Yellow"
+                                      Offset="0.1" />
+                            <GradientStop Color="Green"
+                                      Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Frame.Background>
+                </Frame>
+            </StackLayout>
+        </ScrollView>
+    </ContentPage>
+    <ContentPage
+        Title="RadialGradientBrush">
+        <ScrollView>
+            <StackLayout
+                Margin="12">
+                <Label 
+                    Text="RadialGradientBrush (Upper left)"
+                    Style="{StaticResource Headline}" />
+                <Frame
+                    BorderColor="LightGray"
+                    HasShadow="True"
+                    CornerRadius="12"
+                    HeightRequest="120"
+                    WidthRequest="120">
+                    <Frame.Background>
+                        <!-- Radius defaults to (0.5) -->
+                        <RadialGradientBrush Center="0.0,0.0">
+                            <GradientStop Color="Red"
+                                      Offset="0.1" />
+                            <GradientStop Color="DarkBlue"
+                                      Offset="1.0" />
+                        </RadialGradientBrush>
+                    </Frame.Background>
+                </Frame>
+                <Label 
+                   Text="RadialGradientBrush (Center)"
+                   Style="{StaticResource Headline}" />
+                <Frame
+                    BorderColor="LightGray"
+                    HasShadow="True"
+                    CornerRadius="12"
+                    HeightRequest="120"
+                    WidthRequest="120">
+                    <Frame.Background>
+                        <!-- Center defaults to (0.5,0.5)
+                         Radius defaults to (0.5) -->
+                        <RadialGradientBrush>
+                            <GradientStop Color="Red"
+                                      Offset="0.1" />
+                            <GradientStop Color="DarkBlue"
+                                      Offset="1.0" />
+                        </RadialGradientBrush>
+                    </Frame.Background>
+                </Frame>
+                <Label    
+                    Text="RadialGradientBrush (Lower right)"
+                    Style="{StaticResource Headline}" />
+                <Frame 
+                    BorderColor="LightGray"
+                    HasShadow="True"
+                    CornerRadius="12"
+                    HeightRequest="120"
+                    WidthRequest="120">
+                    <Frame.Background>
+                        <!-- Radius defaults to (0.5) -->
+                        <RadialGradientBrush Center="1.0,1.0">
+                            <GradientStop Color="Red"
+                                      Offset="0.1" />
+                            <GradientStop Color="DarkBlue"
+                                      Offset="1.0" />
+                        </RadialGradientBrush>
+                    </Frame.Background>
+                </Frame>
+            </StackLayout>
+        </ScrollView>
+    </ContentPage>
+    <ContentPage
+        Title="Using CSS">
+        <ContentPage.Resources>
+
+            <StyleSheet>
+                <![CDATA[
+            .linearGradientStyleWithCss90deg {
+                background: linear-gradient(90deg, rgb(255, 0, 0) 0%,rgb(255, 153, 51) 60%);
+            }
+
+            .linearGradientStyleWithCss180deg {
+                background: linear-gradient(180deg, rgb(255, 0, 0) 0%,rgb(255, 153, 51) 60%);
+            }
+
+            .linearGradientStyleWithCss270deg {
+                background: linear-gradient(270deg, rgb(255, 0, 0) 0%,rgb(255, 153, 51) 60%);
+            }
+
+            .radialGradientStyleWithCss {
+                background: radial-gradient(circle, rgb(255, 0, 0) 25%, rgb(0, 255, 0) 50%, rgb(0, 0, 255) 75%);
+            }
+
+            .radialGradientStyleWithCssLeft {
+                background: radial-gradient(circle at left, rgb(255, 0, 0) 25%, rgb(0, 255, 0) 50%, rgb(0, 0, 255) 75%);
+            }
+
+            .radialGradientStyleWithCssRight {
+                background: radial-gradient(circle at right, rgb(255, 0, 0) 25%, rgb(0, 255, 0) 50%, rgb(0, 0, 255) 75%);
+            }
+            ]]>
+            </StyleSheet>
+
+            <Style TargetType="Grid">
+                <Setter Property="HeightRequest"
+                    Value="60" />
+            </Style>
+            
+        </ContentPage.Resources>
+        <ScrollView>
+            <StackLayout Margin="12">
+                <Label 
+                    Text="linear-gradient(90deg, rgb(255, 0, 0),rgb(255, 153, 51))" />
+                <Grid 
+                    HeightRequest="120"
+                    WidthRequest="120"
+                    StyleClass="linearGradientStyleWithCss90deg" />
+                <Label 
+                    Text="linear-gradient(180deg, rgb(255, 0, 0),rgb(255, 153, 51))" />
+                <Grid 
+                    HeightRequest="120"
+                    WidthRequest="120"
+                    StyleClass="linearGradientStyleWithCss180deg" />
+                <Label 
+                    Text="linear-gradient(270deg, rgb(255, 0, 0),rgb(255, 153, 51))" />
+                <Grid 
+                    HeightRequest="120"
+                    WidthRequest="120"
+                    StyleClass="linearGradientStyleWithCss270deg" />
+                <Label 
+                    Text="radial-gradient(circle, rgb(255, 0, 0) 25%, rgb(0, 255, 0) 50%, rgb(0, 0, 255) 75%)" />
+                <Grid 
+                    HeightRequest="120"
+                    WidthRequest="120"
+                    StyleClass="radialGradientStyleWithCss" />
+                <Label 
+                    Text="radial-gradient(circle at left, rgb(255, 0, 0) 25%, rgb(0, 255, 0) 50%, rgb(0, 0, 255) 75%)" />
+                <Grid 
+                    HeightRequest="120"
+                    WidthRequest="120"
+                    StyleClass="radialGradientStyleWithCssLeft" />
+                <Label 
+                    Text="radial-gradient(circle at right, rgb(255, 0, 0) 25%, rgb(0, 255, 0) 50%, rgb(0, 0, 255) 75%)" />
+                <Grid 
+                    HeightRequest="120"
+                    WidthRequest="120"
+                    StyleClass="radialGradientStyleWithCssRight" />
+            </StackLayout>
+        </ScrollView>
+    </ContentPage>
+</TabbedPage>

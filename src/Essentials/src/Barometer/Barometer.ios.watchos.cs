@@ -1,28 +1,34 @@
+using System;
 using CoreMotion;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Barometer
+	public partial class BarometerImplementation : IBarometer
 	{
-		internal static bool IsSupported =>
-			CMAltimeter.IsRelativeAltitudeAvailable;
+		CMAltimeter altitudeManager;
 
-		static CMAltimeter altitudeManager;
+		bool PlatformIsSupported
+			=> CMAltimeter.IsRelativeAltitudeAvailable;
 
-		static void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			altitudeManager = new CMAltimeter();
 			altitudeManager.StartRelativeAltitudeUpdates(Platform.GetCurrentQueue(), LocationManagerUpdatedHeading);
 
-			void LocationManagerUpdatedHeading(CMAltitudeData e, NSError error) =>
-				OnChanged(new BarometerData(UnitConverters.KilopascalsToHectopascals(e.Pressure.DoubleValue)));
+			void LocationManagerUpdatedHeading(CMAltitudeData e, NSError error)
+			{
+				var reading = new BarometerData(UnitConverters.KilopascalsToHectopascals(e.Pressure.DoubleValue));
+
+				RaiseReadingChanged(reading);
+			}
 		}
 
-		static void PlatformStop()
+		void PlatformStop()
 		{
 			if (altitudeManager == null)
 				return;
+
 			altitudeManager.StopRelativeAltitudeUpdates();
 			altitudeManager.Dispose();
 			altitudeManager = null;

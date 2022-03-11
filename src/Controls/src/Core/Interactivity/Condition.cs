@@ -2,6 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Condition.xml" path="Type[@FullName='Microsoft.Maui.Controls.Condition']/Docs" />
 	public abstract class Condition
 	{
 		Action<BindableObject, bool, bool> _conditionChanged;

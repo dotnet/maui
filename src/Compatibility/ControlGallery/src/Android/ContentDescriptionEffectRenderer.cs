@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel;
-using AViews = Android.Views;
+using AndroidX.Core.View;
+using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
-using AndroidX.Core.View;
-using AndroidX.Core.View.Accessibility;
+using Microsoft.Maui.Controls.Platform;
+using AViews = Android.Views;
 
 [assembly: ExportEffect(typeof(ContentDescriptionEffectRenderer), ContentDescriptionEffect.EffectName)]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android

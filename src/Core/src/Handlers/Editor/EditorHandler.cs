@@ -1,10 +1,21 @@
 ﻿#nullable enable
+#if __IOS__ || MACCATALYST
+using PlatformView = Microsoft.Maui.Platform.MauiTextView;
+#elif MONOANDROID
+using PlatformView = AndroidX.AppCompat.Widget.AppCompatEditText;
+#elif WINDOWS
+using PlatformView = Microsoft.UI.Xaml.Controls.TextBox;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
+
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler
+	public partial class EditorHandler : IEditorHandler
 	{
-		public static PropertyMapper<IEditor, EditorHandler> EditorMapper = new PropertyMapper<IEditor, EditorHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IEditor, IEditorHandler> Mapper = new PropertyMapper<IEditor, IEditorHandler>(ViewHandler.ViewMapper)
 		{
+			[nameof(IEditor.Background)] = MapBackground,
 			[nameof(IEditor.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEditor.Font)] = MapFont,
 			[nameof(IEditor.IsReadOnly)] = MapIsReadOnly,
@@ -14,15 +25,27 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.PlaceholderColor)] = MapPlaceholderColor,
 			[nameof(IEditor.Text)] = MapText,
 			[nameof(IEditor.TextColor)] = MapTextColor,
+			[nameof(IEditor.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(IEditor.VerticalTextAlignment)] = MapVerticalTextAlignment,
+			[nameof(IEditor.Keyboard)] = MapKeyboard,
+			[nameof(IEditor.CursorPosition)] = MapCursorPosition,
+			[nameof(IEditor.SelectionLength)] = MapSelectionLength
 		};
 
-		public EditorHandler() : base(EditorMapper)
+		public static CommandMapper<IPicker, IEditorHandler> CommandMapper = new(ViewCommandMapper)
+		{
+		};
+
+		public EditorHandler() : base(Mapper)
 		{
 		}
 
-		public EditorHandler(PropertyMapper? mapper = null) : base(mapper ?? EditorMapper)
+		public EditorHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
 		{
-
 		}
+
+		IEditor IEditorHandler.VirtualView => VirtualView;
+
+		PlatformView IEditorHandler.PlatformView => PlatformView;
 	}
 }

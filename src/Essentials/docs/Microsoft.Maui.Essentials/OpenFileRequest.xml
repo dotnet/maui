@@ -1,0 +1,128 @@
+<Type Name="OpenFileRequest" FullName="Microsoft.Maui.Essentials.OpenFileRequest">
+  <TypeSignature Language="C#" Value="public class OpenFileRequest" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit OpenFileRequest extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Essentials.OpenFileRequest" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Standard request for opening a file to another application.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public OpenFileRequest ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.OpenFileRequest.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Open request with an existing file.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public OpenFileRequest (string title, Microsoft.Maui.Essentials.FileBase file);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, class Microsoft.Maui.Essentials.FileBase file) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.OpenFileRequest.#ctor(System.String,Microsoft.Maui.Essentials.FileBase)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="title" Type="System.String" />
+        <Parameter Name="file" Type="Microsoft.Maui.Essentials.FileBase" />
+      </Parameters>
+      <Docs>
+        <param name="title">Title to display on open dialog if available.</param>
+        <param name="file">File to open.</param>
+        <summary>Open request with an existing file.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public OpenFileRequest (string title, Microsoft.Maui.Essentials.ReadOnlyFile file);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, class Microsoft.Maui.Essentials.ReadOnlyFile file) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.OpenFileRequest.#ctor(System.String,Microsoft.Maui.Essentials.ReadOnlyFile)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="title" Type="System.String" />
+        <Parameter Name="file" Type="Microsoft.Maui.Essentials.ReadOnlyFile" />
+      </Parameters>
+      <Docs>
+        <param name="title">Title to display on open dialog if available.</param>
+        <param name="file">File to open.</param>
+        <summary>Open request with an existing file.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="File">
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Essentials.ReadOnlyFile File { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Essentials.ReadOnlyFile File" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.OpenFileRequest.File" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Essentials.ReadOnlyFile</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>File to open.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PresentationSourceBounds">
+      <MemberSignature Language="C#" Value="public System.Drawing.Rectangle PresentationSourceBounds { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Drawing.Rectangle PresentationSourceBounds" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.OpenFileRequest.PresentationSourceBounds" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Rectangle</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the source rectangle to display the Share UI from.</summary>
+        <value></value>
+        <remarks>This is only used on iOS currently.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Title">
+      <MemberSignature Language="C#" Value="public string Title { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Title" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.OpenFileRequest.Title" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Title to display on open dialog if available.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

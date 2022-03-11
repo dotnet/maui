@@ -6,6 +6,8 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 
 [assembly: ExportEffect(typeof(GradientEffect), Issue6334.EffectName)]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS

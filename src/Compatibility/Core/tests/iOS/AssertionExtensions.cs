@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using CoreGraphics;
 using NUnit.Framework;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
@@ -72,7 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			return pixel;
 		}
 
-		
+
 
 		public static UIImage AssertColorAtPoint(this UIImage bitmap, UIColor expectedColor, int x, int y)
 		{
@@ -90,7 +91,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 				return bitmap;
 			}
-			catch (Exception ex) 
+			catch (Exception ex)
 			{
 				System.Diagnostics.Debug.WriteLine(ex);
 			}
@@ -182,12 +183,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			return bitmap;
 		}
 
-		public static async Task AssertEqualsAsync(this UIImage expectedBitmap, UIImage actualBitmap)
+		public static void AssertEquals(this UIImage expectedBitmap, UIImage actualBitmap)
 		{
-			if(!actualBitmap.AsPNG().IsEqual(expectedBitmap.AsPNG()))
+			if (!actualBitmap.AsPNG().IsEqual(expectedBitmap.AsPNG()))
 			{
 				string failureMessage = null;
-				await Device.InvokeOnMainThreadAsync(() =>
+				expectedBitmap.InvokeOnMainThread(() =>
 				{
 					var view = new UIView();
 					UIImageView actualView = new UIImageView() { Image = actualBitmap };

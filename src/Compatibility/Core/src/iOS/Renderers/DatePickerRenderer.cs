@@ -3,8 +3,10 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Foundation;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Platform.iOS;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -156,11 +158,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
+		[PortHandler]
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
@@ -172,12 +176,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_picker.SetDate(Element.Date.ToNSDate(), animate);
 
 			// Can't use Element.Format because it won't display the correct format if the region and language are set differently
-			if (string.IsNullOrWhiteSpace(Element.Format) || Element.Format.Equals("d") || Element.Format.Equals("D"))
+			if (string.IsNullOrWhiteSpace(Element.Format) || Element.Format.Equals("d", StringComparison.OrdinalIgnoreCase))
 			{
 				NSDateFormatter dateFormatter = new NSDateFormatter();
 				dateFormatter.TimeZone = NSTimeZone.FromGMT(0);
 
-				if (Element.Format?.Equals("D") == true)
+				if (Element.Format?.Equals("D", StringComparison.Ordinal) == true)
 				{
 					dateFormatter.DateStyle = NSDateFormatterStyle.Long;
 					var strDate = dateFormatter.StringFor(_picker.Date);
@@ -190,7 +194,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					Control.Text = strDate;
 				}
 			}
-			else if (Element.Format.Contains("/"))
+			else if (Element.Format.Contains('/', StringComparison.Ordinal))
 			{
 				Control.Text = Element.Date.ToString(Element.Format, CultureInfo.InvariantCulture);
 			}

@@ -46,8 +46,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 
 			_polygon = new Maps.Polygon
 			{
-				StrokeColor = Color.FromHex("#002868"),
-				FillColor = Color.FromHex("#88BF0A30"),
+				StrokeColor = Color.FromArgb("#002868"),
+				FillColor = Color.FromArgb("#88BF0A30"),
 				Geopath =
 				{
 					new Position(37, -102.05),

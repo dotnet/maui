@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Diagnostics;
+using System.IO;
 using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Essentials;
 
 namespace Maui.Controls.Sample
 {
@@ -15,16 +17,42 @@ namespace Maui.Controls.Sample
 
 			Services = services;
 
-			Debug.WriteLine($"The .NET Purple color is {Resources["DotNetPurple"]}");
 			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
+
+			Debug.WriteLine($"Current app theme: {RequestedTheme}");
+
+			RequestedThemeChanged += (sender, args) =>
+			{
+				// Respond to the theme change
+				Debug.WriteLine($"Requested theme changed: {args.RequestedTheme}");
+			};
+
+			LoadAsset();
+		}
+
+		async void LoadAsset()
+		{
+			try
+			{
+				using var stream = await FileSystem.OpenAppPackageFileAsync("RawAsset.txt");
+				using var reader = new StreamReader(stream);
+
+				Debug.WriteLine($"The raw Maui asset contents: '{reader.ReadToEnd().Trim()}'");
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Error loading the raw Maui asset contents: {ex}");
+			}
+		}
+
+		// Must not use MainPage for multi-window
+		protected override Window CreateWindow(IActivationState activationState)
+		{
+			var window = new Window(Services.GetRequiredService<Page>());
+			window.Title = ".NET MAUI Samples Gallery";
+			return window;
 		}
 
 		public IServiceProvider Services { get; }
-
-		protected override IWindow CreateWindow(IActivationState activationState)
-		{
-			Microsoft.Maui.Controls.Compatibility.Forms.Init(activationState);
-			return Services.GetRequiredService<IWindow>();
-		}
 	}
 }

@@ -14,7 +14,7 @@
 			android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
 				>
 
-		<androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.MaterialToolbar
 				android:id="@+id/main.toolbar"
 				android:layout_width="match_parent"
 				android:layout_height="?attr/actionBarSize"
@@ -29,7 +29,7 @@
 		
 	</com.google.android.material.appbar.AppBarLayout>
 
-	<microsoft.maui.controls.compatibility.platform.android.appcompat.FormsViewPager
+    <androidx.viewpager2.widget.ViewPager2
 		android:id="@+id/main.viewpager"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"

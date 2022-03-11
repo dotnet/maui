@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json.schemastore.org/vs-2017.3.host",
+    "appliesTo": "UseMaui",
+    "defaultItemExtension": "xaml",
+    "itemHierarchyPaths": [ ".NET MAUI" ],
+    "icon": "ide/MauiPageXamlFile.ico",
+    "unsupportedHosts": [
+        {
+            "id": "vs",
+            "version": "(,17.1)"
+        }
+    ]
+}

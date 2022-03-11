@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

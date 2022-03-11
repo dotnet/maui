@@ -26,8 +26,8 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		public void SetUp()
 		{
 			resolver = new XamlCAssemblyResolver();
-			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(ModuleDefinitionExtensionsTests).Assembly.CodeBase)).Path));
-			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(byte).Assembly.CodeBase)).Path));
+			resolver.AddAssembly(typeof(ModuleDefinitionExtensionsTests).Assembly.Location);
+			resolver.AddAssembly(typeof(byte).Assembly.Location);
 
 			module = ModuleDefinition.CreateModule("foo", new ModuleParameters
 			{

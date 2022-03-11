@@ -32,7 +32,7 @@
       </Parameters>
       <Docs>
         <param name="options">File picker options to use; may be null</param>
-        <summary>Starts file picker for selecting a single file.</summary>
+        <summary>Starts file picker for selecting files.</summary>
         <returns>File picking result object, or null when picking was cancelled by the user.</returns>
         <remarks>
           File types can be specified in order to limit files that can be selected, using a

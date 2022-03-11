@@ -10,33 +10,49 @@ namespace Microsoft.Maui
 {
 	public partial class EmbeddedFontLoader
 	{
-		public (bool success, string? filePath) LoadFont(EmbeddedFont font)
+		public string? LoadFont(EmbeddedFont font)
 		{
 			try
 			{
+				CGFont? cgFont;
+
 				if (font.ResourceStream == null)
-					throw new InvalidOperationException("ResourceStream was null.");
+				{
+					if (!System.IO.File.Exists(font.FontName))
+						throw new InvalidOperationException("ResourceStream was null.");
 
-				var data = NSData.FromStream(font.ResourceStream);
-				var provider = new CGDataProvider(data);
-				var cGFont = CGFont.CreateFromProvider(provider);
-				var name = cGFont.PostScriptName;
+					var provider = new CGDataProvider(font.FontName);
+					cgFont = CGFont.CreateFromProvider(provider);
+				}
+				else
+				{
+					var data = NSData.FromStream(font.ResourceStream);
+					if (data == null)
+						throw new InvalidOperationException("Unable to load font stream data.");
+					var provider = new CGDataProvider(data);
+					cgFont = CGFont.CreateFromProvider(provider);
+				}
 
-				if (CTFontManager.RegisterGraphicsFont(cGFont, out var error))
-					return (true, name);
+				if (cgFont == null)
+					throw new InvalidOperationException("Unable to load font from the stream.");
+
+				var name = cgFont.PostScriptName;
+
+				if (CTFontManager.RegisterGraphicsFont(cgFont, out var error))
+					return name;
 
 				var uiFont = UIFont.FromName(name, 10);
 				if (uiFont != null)
-					return (true, name);
+					return name;
 
 				throw new NSErrorException(error);
 			}
 			catch (Exception ex)
 			{
-				_logger?.LogWarning(ex, "Unable register font {Font} with the system.", font.FontName);
+				_serviceProvider?.CreateLogger<EmbeddedFontLoader>()?.LogWarning(ex, "Unable register font {Font} with the system.", font.FontName);
 			}
 
-			return (false, null);
+			return null;
 		}
 	}
 }

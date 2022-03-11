@@ -1,6 +1,7 @@
 using System;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -54,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				ReMeasure();
 				return true;
 			}
-			
+
 			return false;
 		}
 
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void ReMeasure()
 		{
-			if(Height != null && MatchHeight)
+			if (Height != null && MatchHeight)
 			{
 				MeasuredHeight = Height.Value;
 			}
@@ -92,7 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override void LayoutSubviews()
 		{
-			_view.Layout(new Rectangle(0, Margin.Top, Width ?? Frame.Width, Height ?? MeasuredHeight));
+			_view.Layout(new Rect(0, Margin.Top, Width ?? Frame.Width, Height ?? MeasuredHeight));
 		}
 
 		protected override void Dispose(bool disposing)

@@ -1,91 +1,52 @@
-﻿#nullable enable
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using WImage = Microsoft.UI.Xaml.Controls.Image;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ImageHandler : ViewHandler<IImage, FrameworkElement>
+	public partial class ImageHandler : ViewHandler<IImage, Image>
 	{
-		double _lastScale = 0.0;
+		protected override Image CreatePlatformView() => new Image();
 
-		protected Image? RealNativeView { get; set; }
-
-		protected override FrameworkElement CreateNativeView()
+		protected override void DisconnectHandler(Image platformView)
 		{
-			RealNativeView = new Image();
-			return new Border { Child = RealNativeView };
+			base.DisconnectHandler(platformView);
+			SourceLoader.Reset();
 		}
 
-		protected override void ConnectHandler(FrameworkElement nativeView)
-		{
-			base.ConnectHandler(nativeView);
+		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
+			base.NeedsContainer;
 
-			_lastScale = 0.0;
-			nativeView.Loaded += OnNativeViewLoaded;
-			nativeView.Unloaded += OnNativeViewUnloaded;
+		public static void MapBackground(IImageHandler handler, IImage image)
+		{
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.ToPlatform().UpdateBackground(image);
 		}
 
-		protected override void DisconnectHandler(FrameworkElement nativeView)
-		{
-			base.DisconnectHandler(nativeView);
+		public static void MapAspect(IImageHandler handler, IImage image) =>
+			handler.PlatformView?.UpdateAspect(image);
 
-			if (nativeView.XamlRoot != null)
-				nativeView.XamlRoot.Changed -= OnXamlRootChanged;
+		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) =>
+			handler.PlatformView?.UpdateIsAnimationPlaying(image);
 
-			_lastScale = 0.0;
-			nativeView.Loaded -= OnNativeViewLoaded;
-			nativeView.Unloaded -= OnNativeViewUnloaded;
-
-			_sourceManager.Reset();
-		}
-
-		public static void MapAspect(ImageHandler handler, IImage image) =>
-			handler.RealNativeView?.UpdateAspect(image);
-
-		public static void MapIsAnimationPlaying(ImageHandler handler, IImage image) =>
-			handler.RealNativeView?.UpdateIsAnimationPlaying(image);
-
-		public static void MapSource(ImageHandler handler, IImage image) =>
+		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static async Task MapSourceAsync(ImageHandler handler, IImage image)
+		public static Task MapSourceAsync(IImageHandler handler, IImage image)
 		{
-			if (handler.RealNativeView == null)
-				return;
+			if (handler.PlatformView == null)
+				return Task.CompletedTask;
 
-			var token = handler._sourceManager.BeginLoad();
-
-			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-			var result = await handler.RealNativeView.UpdateSourceAsync(image, provider, token);
-
-			handler._sourceManager.CompleteLoad(result);
+			handler.PlatformView.Clear();
+			return handler.SourceLoader.UpdateImageSourceAsync();
 		}
 
-		void OnNativeViewLoaded(object sender = null!, RoutedEventArgs e = null!)
+		void OnSetImageSource(ImageSource? obj)
 		{
-			if (NativeView?.XamlRoot != null)
-			{
-				_lastScale = NativeView.XamlRoot.RasterizationScale;
-				NativeView.XamlRoot.Changed += OnXamlRootChanged;
-			}
-		}
-
-		void OnNativeViewUnloaded(object sender = null!, RoutedEventArgs e = null!)
-		{
-			if (NativeView?.XamlRoot != null)
-				NativeView.XamlRoot.Changed -= OnXamlRootChanged;
-		}
-
-		void OnXamlRootChanged(XamlRoot sender, XamlRootChangedEventArgs args)
-		{
-			if (_lastScale == sender.RasterizationScale)
-				return;
-
-			_lastScale = sender.RasterizationScale;
-
-			if (_sourceManager.IsResolutionDependent)
-				UpdateValue(nameof(IImage.Source));
+			PlatformView.Source = obj;
 		}
 	}
 }

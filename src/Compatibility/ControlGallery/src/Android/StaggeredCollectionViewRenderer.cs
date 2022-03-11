@@ -2,10 +2,11 @@
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries;
-using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Platform;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class StaggeredCollectionViewRenderer : CollectionViewRenderer
 	{
-		public StaggeredCollectionViewRenderer(Context context) : base(context)	{ }
+		public StaggeredCollectionViewRenderer(Context context) : base(context) { }
 
 		protected override LayoutManager SelectLayoutManager(IItemsLayout layoutSpecification)
 		{
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		public override void GetItemOffsets(ARect outRect, AView view, RecyclerView parent, RecyclerView.State state)
 		{
 			base.GetItemOffsets(outRect, view, parent, state);
-			
+
 			var position = parent.GetChildAdapterPosition(view);
 
 			if (_adjustedVerticalSpacing == -1)

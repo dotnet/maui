@@ -62,15 +62,5 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests
 			var collectionView = new CollectionView { ItemsSource = null, IsGrouped = true };
 			await TestingPlatform.CreateRenderer(collectionView);
 		}
-
-		[Test]
-		[Description("[Bug] [UWP] NullReferenceException when call SavePropertiesAsync method off the main thread")]
-		public async Task GitHub8682()
-		{
-			await Task.Run(async () =>
-			{
-				await Application.Current.SavePropertiesAsync();
-			});
-		}
 	}
 }

@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 using Xunit;
 
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task GetImageAsync(string colorHex)
 		{
-			var expectedColor = Color.FromHex(colorHex).ToNative();
+			var expectedColor = Color.FromArgb(colorHex).ToPlatform();
 
 			var service = new StreamImageSourceService();
 

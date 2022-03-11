@@ -1,9 +1,8 @@
 ﻿#nullable enable
 using Microsoft.Maui.Graphics;
-using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class PickerExtensions
 	{
@@ -20,14 +19,14 @@ namespace Microsoft.Maui
 		{
 			nativeComboBox.UpdateTextColor(picker, null);
 		}
-		
+
 		public static void UpdateTextColor(this MauiComboBox nativeComboBox, IPicker picker, WBrush? defaultForeground)
 		{
 			Color color = picker.TextColor;
 			if (color.IsDefault() && defaultForeground == null)
 				return;
 
-			nativeComboBox.Foreground = color.IsDefault() ? (defaultForeground ?? color.ToNative()) : color.ToNative();
+			nativeComboBox.Foreground = color.IsDefault() ? (defaultForeground ?? color.ToPlatform()) : color.ToPlatform();
 		}
 
 		public static void UpdateSelectedIndex(this MauiComboBox nativeComboBox, IPicker picker)
@@ -41,6 +40,16 @@ namespace Microsoft.Maui
 		}
 
 		public static void UpdateFont(this MauiComboBox nativeComboBox, IPicker picker, IFontManager fontManager) =>
-			nativeComboBox.UpdateFont(picker.Font, fontManager);
+			nativeComboBox.UpdateFont(picker.Font, fontManager); 
+		
+		public static void UpdateHorizontalTextAlignment(this MauiComboBox nativeComboBox, IPicker picker)
+		{
+			nativeComboBox.HorizontalContentAlignment = picker.HorizontalTextAlignment.ToPlatformHorizontalAlignment();
+		}
+
+		public static void UpdateVerticalTextAlignment(this MauiComboBox nativeComboBox, IPicker picker)
+		{
+			nativeComboBox.VerticalContentAlignment = picker.VerticalTextAlignment.ToPlatformVerticalAlignment();
+		}
 	}
 }

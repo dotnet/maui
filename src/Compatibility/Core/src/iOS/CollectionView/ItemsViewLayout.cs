@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
-using UIKit;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -105,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateCellConstraints();
 		}
 
-		internal void SetInitialConstraints(CGSize size) 
+		internal void SetInitialConstraints(CGSize size)
 		{
 			_currentSize = size;
 			ConstrainTo(size);
@@ -120,10 +123,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 				{
-					return new UIEdgeInsets(0, 0, 0, (nfloat)gridItemsLayout.HorizontalItemSpacing * collectionView.NumberOfItemsInSection(section));
+					return new UIEdgeInsets(0, 0, 0, new nfloat(gridItemsLayout.HorizontalItemSpacing * collectionView.NumberOfItemsInSection(section)));
 				}
 
-				return new UIEdgeInsets(0,0, (nfloat)gridItemsLayout.VerticalItemSpacing * collectionView.NumberOfItemsInSection(section), 0);
+				return new UIEdgeInsets(0, 0, new nfloat(gridItemsLayout.VerticalItemSpacing * collectionView.NumberOfItemsInSection(section)), 0);
 			}
 
 			return UIEdgeInsets.Zero;
@@ -247,7 +250,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			PrepareCellsForLayout(CollectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Footer));
 		}
 
-		void PrepareCellsForLayout(UICollectionReusableView[] cells) 
+		void PrepareCellsForLayout(UICollectionReusableView[] cells)
 		{
 			for (int n = 0; n < cells.Length; n++)
 			{
@@ -384,9 +387,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					var defaultContext = base.GetInvalidationContext(preferredAttributes, originalAttributes);
 					return defaultContext;
 				}
-				catch (MonoTouchException ex) when (ex.Name == "NSRangeException") 
+				catch (ObjCRuntime.ObjCException ex) when (ex.Name == "NSRangeException")
 				{
-					Controls.Internals.Log.Warning("ItemsViewLayout", ex.ToString());
+					Application.Current?.FindMauiContext()?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSRangeException");
 				}
 
 				UICollectionViewFlowLayoutInvalidationContext context = new UICollectionViewFlowLayoutInvalidationContext();
@@ -569,7 +572,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return true;
 		}
 
-		internal bool TryGetCachedCellSize(object item, out CGSize size) 
+		internal bool TryGetCachedCellSize(object item, out CGSize size)
 		{
 			if (_cellSizeCache.TryGetValue(item, out CGSize internalSize))
 			{
@@ -581,12 +584,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return false;
 		}
 
-		internal void CacheCellSize(object item, CGSize size) 
+		internal void CacheCellSize(object item, CGSize size)
 		{
 			_cellSizeCache[item] = size;
 		}
 
-		internal void ClearCellSizeCache() 
+		internal void ClearCellSizeCache()
 		{
 			_cellSizeCache.Clear();
 		}

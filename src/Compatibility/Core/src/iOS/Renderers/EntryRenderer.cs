@@ -1,12 +1,15 @@
 ﻿using System;
 using System.ComponentModel;
-using Microsoft.Maui.Graphics;
 using CoreGraphics;
 using Foundation;
-using UIKit;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
+using UIKit;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry;
-using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -20,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected override UITextField CreateNativeControl()
 		{
-			var textField = new UITextField(RectangleF.Zero);
+			var textField = new UITextField(CGRect.Empty);
 			textField.BorderStyle = UITextBorderStyle.RoundedRect;
 			textField.ClipsToBounds = true;
 			return textField;
@@ -210,6 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 		}
 
+		[PortHandler("Pending to port setting the IsFocused property")]
 		void OnEditingBegan(object sender, EventArgs e)
 		{
 			if (!_cursorPositionChangePending && !_selectionLengthChangePending)
@@ -227,7 +231,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateCursorFromControl(null);
 		}
 
-		[PortHandler("Ported Text setter")]
+		[PortHandler("Pending to port setting the IsFocused property")]
 		void OnEditingEnded(object sender, EventArgs e)
 		{
 			// Typing aid changes don't always raise EditingChanged event
@@ -244,15 +248,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
+		[PortHandler("Still pending the code related to Focus.")]
 		protected virtual bool OnShouldReturn(UITextField view)
 		{
 			Control.ResignFirstResponder();
 			((IEntryController)Element).SendCompleted();
-
-			if (Element != null && Element.ReturnType == ReturnType.Next)
-			{
-				FocusSearch(true);
-			}
 
 			return false;
 		}
@@ -260,12 +260,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			Control.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
+		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();
+			Control.VerticalAlignment = Element.VerticalTextAlignment.ToPlatformTextAlignment();
 		}
 
 		[PortHandler]
@@ -351,13 +352,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_useLegacyColorManagement)
 			{
 				var color = targetColor == null || !Element.IsEnabled ? _defaultPlaceholderColor : targetColor;
-				UpdateAttributedPlaceholder(formatted.ToAttributed(Element, color));
+				UpdateAttributedPlaceholder(formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: color));
 			}
 			else
 			{
 				// Using VSM color management; take whatever is in Element.PlaceholderColor
 				var color = targetColor == null ? _defaultPlaceholderColor : targetColor;
-				UpdateAttributedPlaceholder(formatted.ToAttributed(Element, color));
+				UpdateAttributedPlaceholder(formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: color));
 			}
 
 			UpdateAttributedPlaceholder(Control.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing));
@@ -375,7 +376,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Control.Text = text;
 		}
 
-		[PortHandler ("Partially ported ...")]
+		[PortHandler("Partially ported ...")]
 		void UpdateCharacterSpacing()
 		{
 			var textAttr = Control.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
@@ -461,7 +462,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				catch (Exception ex)
 				{
-					Microsoft.Maui.Controls.Internals.Log.Warning("Entry", $"Failed to set Control.SelectedTextRange from CursorPosition/SelectionLength: {ex}");
+					Forms.MauiContext?.CreateLogger<EntryRenderer>()?.LogWarning(ex, "Failed to set Control.SelectedTextRange from CursorPosition/SelectionLength");
 				}
 				finally
 				{
@@ -531,7 +532,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			catch (Exception ex)
 			{
-				Controls.Internals.Log.Warning("Entry", $"Failed to set CursorPosition from renderer: {ex}");
+				Forms.MauiContext?.CreateLogger<EntryRenderer>()?.LogWarning(ex, "FFailed to set CursorPosition from renderer");
 			}
 			finally
 			{
@@ -548,7 +549,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			catch (Exception ex)
 			{
-				Controls.Internals.Log.Warning("Entry", $"Failed to set SelectionLength from renderer: {ex}");
+				Forms.MauiContext?.CreateLogger<EntryRenderer>()?.LogWarning(ex, "Failed to set SelectionLength from renderer");
 			}
 			finally
 			{

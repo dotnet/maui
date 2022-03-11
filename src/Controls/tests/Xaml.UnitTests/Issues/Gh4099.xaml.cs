@@ -10,10 +10,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class Gh4099 : ContentPage
 	{
-		public Gh4099()
-		{
-			InitializeComponent();
-		}
+		public Gh4099() => InitializeComponent();
 
 		public Gh4099(bool useCompiledXaml)
 		{
@@ -23,19 +20,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[SetUp]
-			public void Setup()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				Device.PlatformServices = null;
-			}
-
 			[TestCase(true)]
+			[Ignore("Ignore for now, Compiled Converters are disabled")]
 			public void BetterExceptionReport(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)

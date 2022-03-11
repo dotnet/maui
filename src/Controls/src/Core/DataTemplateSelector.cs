@@ -3,10 +3,12 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplateSelector.xml" path="Type[@FullName='Microsoft.Maui.Controls.DataTemplateSelector']/Docs" />
 	public abstract class DataTemplateSelector : DataTemplate
 	{
 		Dictionary<Type, DataTemplate> _dataTemplates = new Dictionary<Type, DataTemplate>();
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplateSelector.xml" path="//Member[@MemberName='SelectTemplate']/Docs" />
 		public DataTemplate SelectTemplate(object item, BindableObject container)
 		{
 			var listView = container as ListView;

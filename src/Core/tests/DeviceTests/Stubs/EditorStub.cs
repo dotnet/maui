@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public partial class EditorStub : StubBase, IEditor
+	public partial class EditorStub : StubBase, IEditor, ITextInputStub
 	{
 		private string _text;
 
@@ -31,9 +31,22 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Keyboard Keyboard { get; set; }
 
+		public TextAlignment HorizontalTextAlignment { get; set; }
+
+		public TextAlignment VerticalTextAlignment { get; set; }
+
+		public int CursorPosition { get; set; }
+
+		public int SelectionLength { get; set; }
+
 		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
 
 		void OnTextChanged(string oldValue, string newValue) =>
 			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));
+
+		public event EventHandler Completed;
+
+		void IEditor.Completed() =>
+			Completed?.Invoke(this, EventArgs.Empty);
 	}
 }

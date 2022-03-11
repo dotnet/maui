@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 #if UITEST
 using Xamarin.UITest;
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 
 			AbsoluteLayout.SetLayoutFlags(image, AbsoluteLayoutFlags.All);
-			AbsoluteLayout.SetLayoutBounds(image, new Rectangle(0, 0, 1, 1));
+			AbsoluteLayout.SetLayoutBounds(image, new Rect(0, 0, 1, 1));
 			absolute.Children.Add(image);
 
 			var stack = new StackLayout();

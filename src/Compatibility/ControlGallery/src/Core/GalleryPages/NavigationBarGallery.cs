@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var titleView = new StackLayout
 			{
 				Children = { control },
-				BackgroundColor = Color.FromHex("#ccc"),
+				BackgroundColor = Color.FromArgb("#ccc"),
 				Margin = new Thickness(15, 0),
 			};
 			return titleView;

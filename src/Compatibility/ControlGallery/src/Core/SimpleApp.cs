@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -8,15 +9,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			var label = new Label { VerticalOptions = LayoutOptions.CenterAndExpand };
 
-			if (Current.Properties.ContainsKey("LabelText"))
+			var labelText = Preferences.Get("LabelText", string.Empty);
+			if (!string.IsNullOrEmpty(labelText))
 			{
-				label.Text = (string)Current.Properties["LabelText"] + " Restored!";
+				label.Text = labelText + " Restored!";
 				Debug.WriteLine("Initialized");
 			}
 			else
 			{
-				Current.Properties["LabelText"] = "Wowza";
-				label.Text = (string)Current.Properties["LabelText"] + " Set!";
+				Preferences.Set("LabelText", "Wowza");
+				label.Text = Preferences.Get("LabelText", string.Empty) + " Set!";
 				Debug.WriteLine("Saved");
 			}
 
@@ -30,13 +32,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					}
 				}
 			};
-
-			SerializeProperties();
-		}
-
-		static async void SerializeProperties()
-		{
-			await Current.SavePropertiesAsync();
 		}
 	}
 }

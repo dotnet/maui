@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			Testing = new ObservableCollection<Grouping<string, SamplePack>>(sorted);
 
-			var groupLabel = new Label { FontSize = 18, TextColor = Color.FromHex("#1f1f1f"), HorizontalOptions = LayoutOptions.Start, HorizontalTextAlignment = TextAlignment.Start };
+			var groupLabel = new Label { FontSize = 18, TextColor = Color.FromArgb("#1f1f1f"), HorizontalOptions = LayoutOptions.Start, HorizontalTextAlignment = TextAlignment.Start };
 			groupLabel.SetBinding(Label.TextProperty, new Binding("Key", stringFormat: "{0} Music"));
 
 			var itemLabel = new Label { TextColor = Colors.Black };

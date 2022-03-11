@@ -1,47 +1,41 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-#pragma warning disable 612
-	public class ElementTemplate : IElement, IDataTemplate
-#pragma warning restore 612
+	/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="Type[@FullName='Microsoft.Maui.Controls.ElementTemplate']/Docs" />
+	public class ElementTemplate : IElement
 	{
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
 		Element _parent;
 		bool _canRecycle; // aka IsDeclarative
 
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+		readonly Type _type;
+
 		internal ElementTemplate()
 		{
 		}
 
-		internal ElementTemplate(Type type) : this()
+		internal ElementTemplate(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+			: this()
 		{
 			if (type == null)
 				throw new ArgumentNullException("type");
 
 			_canRecycle = true;
+			_type = type;
 
 			LoadTemplate = () => Activator.CreateInstance(type);
 		}
 
-		internal ElementTemplate(Func<object> loadTemplate) : this()
-		{
-			if (loadTemplate == null)
-				throw new ArgumentNullException("loadTemplate");
+		internal ElementTemplate(Func<object> loadTemplate) : this() => LoadTemplate = loadTemplate ?? throw new ArgumentNullException("loadTemplate");
 
-			LoadTemplate = loadTemplate;
-		}
-
-		Func<object> LoadTemplate { get; set; }
-#pragma warning disable 0612
-		Func<object> IDataTemplate.LoadTemplate
-		{
-#pragma warning restore 0612
-			get { return LoadTemplate; }
-			set { LoadTemplate = value; }
-		}
+		/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="//Member[@MemberName='LoadTemplate']/Docs" />
+		public Func<object> LoadTemplate { get; set; }
 
 		void IElement.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
@@ -50,6 +44,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal bool CanRecycle => _canRecycle;
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+		internal Type Type => _type;
+
 		Element IElement.Parent
 		{
 			get { return _parent; }
@@ -72,10 +69,17 @@ namespace Microsoft.Maui.Controls
 			_changeHandlers.Remove(onchanged);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="//Member[@MemberName='CreateContent']/Docs" />
 		public object CreateContent()
 		{
 			if (LoadTemplate == null)
-				throw new InvalidOperationException("LoadTemplate should not be null");
+			{
+				// Returning a Label here instead of throwing an exception because HotReload may temporarily be in state
+				// where the user is creating a template; this keeps everything else (which expects a result from CreateContent)
+				// from crashing during that time. 
+				return new Label();
+			}
+
 			if (this is DataTemplateSelector)
 				throw new InvalidOperationException("Cannot call CreateContent directly on a DataTemplateSelector");
 

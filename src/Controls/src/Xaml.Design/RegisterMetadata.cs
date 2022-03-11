@@ -1,4 +1,4 @@
-using Microsoft.Windows.Design.Metadata;
+using Microsoft.VisualStudio.DesignTools.Extensibility.Metadata;
 
 namespace Microsoft.Maui.Controls.Xaml.Design
 {

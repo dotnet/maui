@@ -4,13 +4,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
-using UIKit;
-using IOPath = System.IO.Path;
-using CGRect = CoreGraphics.CGRect;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform.iOS;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
+using UIKit;
+using CGRect = CoreGraphics.CGRect;
+using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -22,12 +25,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #if DEBUG
 				if (oldvalue != null && newvalue != null)
 				{
-					Log.Warning("Renderer", $"{bindable} already has a renderer attached to it: {oldvalue}. Please figure out why and then fix it.");
+					Forms.MauiContext?.CreateLogger("Renderer")?.LogWarning("{bindable} already has a renderer attached to it: {oldvalue}. Please figure out why and then fix it.", bindable, oldvalue);
 				}
 #endif
 				var view = bindable as VisualElement;
 				if (view != null)
 					view.IsPlatformEnabled = newvalue != null;
+
+				if (bindable is IView mauiView)
+				{
+					if (mauiView.Handler == null && newvalue is IVisualElementRenderer ver)
+						mauiView.Handler = new RendererToHandlerShim(ver);
+				}
 			});
 
 		readonly int _alertPadding = 10;
@@ -163,7 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var elementConfiguration = modal as IElementConfiguration<Page>;
 
-			var presentationStyle = elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle().ToNativeModalPresentationStyle();
+			var presentationStyle = elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle().ToPlatformModalPresentationStyle();
 
 			bool shouldFire = true;
 
@@ -209,7 +218,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (renderView == null || renderView.NativeView == null)
 			{
 				if (view is IView iView)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<Platform>()?.LogWarning(
+						"Someone called Platform.GetNativeSize instead of going through the Handler.");
+
 					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
+				}
 
 				Performance.Stop(reference);
 				return new SizeRequest(Size.Zero);
@@ -240,7 +254,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				//TODO: Handle this with AppBuilderHost
 				try
 				{
-					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType());
+					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(Forms.MauiContext);
 				}
 				catch
@@ -268,9 +282,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				else if (handler is IVisualElementRenderer ver)
 					renderer = ver;
-				else if (handler is INativeViewHandler vh)
+				else if (handler is IPlatformViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
+					element.Handler = handler;
+					SetRenderer(element, renderer);
 				}
 			}
 
@@ -510,12 +526,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
 			}
 
-			if (!Forms.IsiOS9OrNewer)
-			{
-				// For iOS 8, we need to explicitly set the size of the window
-				window.Frame = new CGRect(0, 0, UIScreen.MainScreen.Bounds.Width, UIScreen.MainScreen.Bounds.Height);
-			}
-
 			window.RootViewController.PresentViewController(alert, true, null);
 		}
 
@@ -528,7 +538,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				SetRenderer(modal, modalRenderer);
 			}
 
-			var wrapper = new ModalWrapper(modalRenderer);
+			var wrapper = new ModalWrapper(modalRenderer.Element.Handler as IPlatformViewHandler);
 
 			if (_modals.Count > 1)
 			{

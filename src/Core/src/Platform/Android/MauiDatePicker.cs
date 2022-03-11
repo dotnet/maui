@@ -8,7 +8,7 @@ using Android.Widget;
 using AndroidX.Core.Graphics.Drawable;
 using static Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiDatePicker : EditText, IOnClickListener
 	{
@@ -49,7 +49,6 @@ namespace Microsoft.Maui
 					CallOnClick();
 			}
 		}
-
 
 		void Initialize()
 		{

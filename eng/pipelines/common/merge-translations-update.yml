@@ -8,7 +8,7 @@ stages:
       - job : validate_merge
         displayName: 'Validate and Merge Translations'
         pool:
-          name: XamarinForms
+          name: $(HostedWinVS2019)
         variables:
           pull_request_number: $(System.PullRequest.PullRequestNumber)
         workspace:

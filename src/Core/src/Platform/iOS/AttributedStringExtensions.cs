@@ -1,8 +1,9 @@
 ﻿using System;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class AttributedStringExtensions
 	{

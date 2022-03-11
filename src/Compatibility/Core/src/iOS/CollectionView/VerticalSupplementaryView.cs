@@ -1,5 +1,6 @@
 using CoreGraphics;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -21,10 +22,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return CGSize.Empty;
 			}
 
-			var measure = VisualElementRenderer.Element.Measure(ConstrainedDimension, 
+			var measure = VisualElementRenderer.Element.Measure(ConstrainedDimension,
 				double.PositiveInfinity, MeasureFlags.IncludeMargins);
 
-			var height = VisualElementRenderer.Element.Height > 0 
+			var height = VisualElementRenderer.Element.Height > 0
 				? VisualElementRenderer.Element.Height : measure.Request.Height;
 
 			return new CGSize(ConstrainedDimension, height);

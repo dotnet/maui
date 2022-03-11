@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Samples.Model;
@@ -12,16 +13,16 @@ namespace Samples.View
 			InitializeComponent();
 		}
 
-		async void OnSampleTapped(object sender, ItemTappedEventArgs e)
+		async void OnSampleTapped(object sender, SelectionChangedEventArgs e)
 		{
-			var item = e.Item as SampleItem;
+			var item = e.CurrentSelection?.FirstOrDefault() as SampleItem;
 			if (item == null)
 				return;
 
 			await Navigation.PushAsync((Page)Activator.CreateInstance(item.PageType));
 
 			// deselect Item
-			((ListView)sender).SelectedItem = null;
+			((CollectionView)sender).SelectedItem = null;
 		}
 	}
 }

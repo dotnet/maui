@@ -7,36 +7,47 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement
+	/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.Page']/Docs" />
+	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BusySetSignalName']/Docs" />
 		public const string BusySetSignalName = "Microsoft.Maui.Controls.BusySet";
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='AlertSignalName']/Docs" />
 		public const string AlertSignalName = "Microsoft.Maui.Controls.SendAlert";
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='PromptSignalName']/Docs" />
 		public const string PromptSignalName = "Microsoft.Maui.Controls.SendPrompt";
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ActionSheetSignalName']/Docs" />
 		public const string ActionSheetSignalName = "Microsoft.Maui.Controls.ShowActionSheet";
 
 		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create("IgnoresContainerArea", typeof(bool), typeof(Page), false);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BackgroundImageSourceProperty']/Docs" />
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='IsBusyProperty']/Docs" />
 		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create("IsBusy", typeof(bool), typeof(Page), false, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='PaddingProperty']/Docs" />
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='TitleProperty']/Docs" />
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create("Title", typeof(string), typeof(Page), null);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='IconImageSourceProperty']/Docs" />
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
 
 		bool _allocatedFlag;
-		Rectangle _containerArea;
+		Rect _containerArea;
 
 		bool _containerAreaSet;
 
@@ -49,11 +60,16 @@ namespace Microsoft.Maui.Controls
 
 		List<Action> _pendingActions = new List<Action>();
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public Page()
 		{
 			var toolbarItems = new ObservableCollection<ToolbarItem>();
 			toolbarItems.CollectionChanged += OnToolbarItemsCollectionChanged;
 			ToolbarItems = toolbarItems;
+
+			var menuBarItems = new ObservableCollection<MenuBarItem>();
+			menuBarItems.CollectionChanged += OnToolbarItemsCollectionChanged;
+			MenuBarItems = menuBarItems;
 
 			//if things were added in base ctor (through implicit styles), the items added aren't properly parented
 			if (InternalChildren.Count > 0)
@@ -61,26 +77,31 @@ namespace Microsoft.Maui.Controls
 
 			InternalChildren.CollectionChanged += InternalChildrenOnCollectionChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Page>>(() => new PlatformConfigurationRegistry<Page>(this));
+			this.NavigatedTo += FlushPendingActions;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BackgroundImageSource']/Docs" />
 		public ImageSource BackgroundImageSource
 		{
 			get { return (ImageSource)GetValue(BackgroundImageSourceProperty); }
 			set { SetValue(BackgroundImageSourceProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='IconImageSource']/Docs" />
 		public ImageSource IconImageSource
 		{
 			get { return (ImageSource)GetValue(IconImageSourceProperty); }
 			set { SetValue(IconImageSourceProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='IsBusy']/Docs" />
 		public bool IsBusy
 		{
 			get { return (bool)GetValue(IsBusyProperty); }
 			set { SetValue(IsBusyProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='Padding']/Docs" />
 		public Thickness Padding
 		{
 			get { return (Thickness)GetValue(PaddingElement.PaddingProperty); }
@@ -97,16 +118,21 @@ namespace Microsoft.Maui.Controls
 			UpdateChildrenLayout();
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='Title']/Docs" />
 		public string Title
 		{
 			get { return (string)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ToolbarItems']/Docs" />
 		public IList<ToolbarItem> ToolbarItems { get; internal set; }
 
+		public IList<MenuBarItem> MenuBarItems { get; internal set; }
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ContainerArea']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Rectangle ContainerArea
+		public Rect ContainerArea
 		{
 			get { return _containerArea; }
 			set
@@ -119,6 +145,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='IgnoresContainerArea']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool IgnoresContainerArea
 		{
@@ -126,6 +153,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IgnoresContainerAreaProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='InternalChildren']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
@@ -144,8 +172,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			_logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
+
+		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
 
 		public event EventHandler LayoutChanged;
 
@@ -153,11 +183,13 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler Disappearing;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayActionSheet']/Docs" />
 		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, params string[] buttons)
 		{
 			return DisplayActionSheet(title, cancel, destruction, FlowDirection.MatchParent, buttons);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayActionSheet']/Docs" />
 		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
 		{
 			var args = new ActionSheetArguments(title, cancel, destruction, buttons);
@@ -172,21 +204,25 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][0]/Docs" />
 		public Task DisplayAlert(string title, string message, string cancel)
 		{
 			return DisplayAlert(title, message, null, cancel, FlowDirection.MatchParent);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][1]/Docs" />
 		public Task<bool> DisplayAlert(string title, string message, string accept, string cancel)
 		{
 			return DisplayAlert(title, message, accept, cancel, FlowDirection.MatchParent);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert']/Docs" />
 		public Task DisplayAlert(string title, string message, string cancel, FlowDirection flowDirection)
 		{
 			return DisplayAlert(title, message, null, cancel, flowDirection);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert']/Docs" />
 		public Task<bool> DisplayAlert(string title, string message, string accept, string cancel, FlowDirection flowDirection)
 		{
 			if (string.IsNullOrEmpty(cancel))
@@ -203,6 +239,7 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayPromptAsync']/Docs" />
 		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
 		{
 			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
@@ -215,23 +252,26 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
-		internal override void OnIsPlatformEnabledChanged()
+		void FlushPendingActions(object sender, EventArgs e)
 		{
-			base.OnIsPlatformEnabledChanged();
-			if (IsPlatformEnabled && _pendingActions.Count > 0)
+			if (_pendingActions.Count > 0)
 			{
 				var actionsToProcess = _pendingActions.ToList();
 				_pendingActions.Clear();
 				foreach (var pendingAction in actionsToProcess)
 					pendingAction();
 			}
+
+			this.NavigatedTo -= FlushPendingActions;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ForceLayout']/Docs" />
 		public void ForceLayout()
 		{
 			SizeAllocated(Width, Height);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='SendBackButtonPressed']/Docs" />
 		public bool SendBackButtonPressed()
 		{
 			return OnBackButtonPressed();
@@ -239,8 +279,8 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void LayoutChildren(double x, double y, double width, double height)
 		{
-			var area = new Rectangle(x, y, width, height);
-			Rectangle originalArea = area;
+			var area = new Rect(x, y, width, height);
+			Rect originalArea = area;
 			if (_containerAreaSet)
 			{
 				area = ContainerArea;
@@ -252,17 +292,18 @@ namespace Microsoft.Maui.Controls
 				area.Height = Math.Max(0, area.Height);
 			}
 
-			List<Element> elements = LogicalChildren.ToList();
+			List<Element> elements = ((IElementController)this).LogicalChildren.ToList();
 			foreach (Element element in elements)
 			{
 				var child = element as VisualElement;
 				if (child == null)
 					continue;
+
 				var page = child as Page;
 				if (page != null && page.IgnoresContainerArea)
-					Maui.Controls.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
+					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
 				else
-					Maui.Controls.Layout.LayoutChildIntoBoundingRegion(child, area);
+					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, area);
 			}
 		}
 
@@ -275,16 +316,19 @@ namespace Microsoft.Maui.Controls
 			if (RealParent is BaseShellItem || RealParent is Shell)
 				return false;
 
-			var application = RealParent as Application;
-			if (application == null || this == application.MainPage)
+
+			var window = RealParent as Window;
+			if (window == null || this == window.Page)
 				return false;
 
 			var canceled = false;
 			EventHandler handler = (sender, args) => { canceled = true; };
-			application.PopCanceled += handler;
-			Navigation.PopModalAsync().ContinueWith(t => { throw t.Exception; }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.FromCurrentSynchronizationContext());
+			window.PopCanceled += handler;
+			Navigation
+				.PopModalAsync()
+				.FireAndForget(Handler);
 
-			application.PopCanceled -= handler;
+			window.PopCanceled -= handler;
 			return !canceled;
 		}
 
@@ -294,6 +338,11 @@ namespace Microsoft.Maui.Controls
 			foreach (ToolbarItem toolbarItem in ToolbarItems)
 			{
 				SetInheritedBindingContext(toolbarItem, BindingContext);
+			}
+
+			foreach (MenuBarItem menubarItem in MenuBarItems)
+			{
+				SetInheritedBindingContext(menubarItem, BindingContext);
 			}
 
 			if (_titleView != null)
@@ -312,7 +361,7 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnParentSet()
 		{
-			if (!Application.IsApplicationOrNull(RealParent) && !(RealParent is Page) && !(RealParent is BaseShellItem) && !(RealParent is IWindow))
+			if (!Application.IsApplicationOrWindowOrNull(RealParent) && !(RealParent is Page) && !(RealParent is BaseShellItem))
 				throw new InvalidOperationException("Parent of a Page must also be a Page");
 			base.OnParentSet();
 		}
@@ -329,8 +378,9 @@ namespace Microsoft.Maui.Controls
 			if (!ShouldLayoutChildren())
 				return;
 
-			var startingLayout = new List<Rectangle>(LogicalChildren.Count);
-			foreach (Element el in LogicalChildren)
+			var logicalChildren = ((IElementController)this).LogicalChildren;
+			var startingLayout = new List<Rect>(logicalChildren.Count);
+			foreach (Element el in logicalChildren)
 			{
 				if (el is VisualElement c)
 					startingLayout.Add(c.Bounds);
@@ -343,9 +393,9 @@ namespace Microsoft.Maui.Controls
 
 			LayoutChildren(x, y, w, h);
 
-			for (var i = 0; i < LogicalChildren.Count; i++)
+			for (var i = 0; i < logicalChildren.Count; i++)
 			{
-				var element = LogicalChildren[i];
+				var element = logicalChildren[i];
 				if (element is VisualElement c)
 				{
 					if (startingLayout.Count <= i || c.Bounds != startingLayout[i])
@@ -363,15 +413,16 @@ namespace Microsoft.Maui.Controls
 			if (container != null)
 			{
 				Page page = container.CurrentPage;
-				if (page != null && page.IsVisible && (!page.IsPlatformEnabled || !page.IsNativeStateConsistent))
+				if (page != null && page.IsVisible && (!page.IsPlatformEnabled || !page.IsPlatformStateConsistent))
 					return;
 			}
 			else
 			{
-				for (var i = 0; i < LogicalChildren.Count; i++)
+				var logicalChildren = ((IElementController)this).LogicalChildren;
+				for (var i = 0; i < logicalChildren.Count; i++)
 				{
-					var v = LogicalChildren[i] as VisualElement;
-					if (v != null && v.IsVisible && (!v.IsPlatformEnabled || !v.IsNativeStateConsistent))
+					var v = logicalChildren[i] as VisualElement;
+					if (v != null && v.IsVisible && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
 						return;
 				}
 			}
@@ -402,9 +453,18 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='SendAppearing']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendAppearing()
 		{
+			// Only fire appearing if the page has been added to the windows
+			// Visual Hierarchy
+			var window = this.FindParentOfType<Window>();
+			if (window == null)
+			{
+				return;
+			}
+
 			if (_hasAppeared)
 				return;
 
@@ -427,6 +487,7 @@ namespace Microsoft.Maui.Controls
 			FindApplication(this)?.OnPageAppearing(this);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='SendDisappearing']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendDisappearing()
 		{
@@ -506,22 +567,23 @@ namespace Microsoft.Maui.Controls
 
 		bool ShouldLayoutChildren()
 		{
-			if (!LogicalChildren.Any() || Width <= 0 || Height <= 0 || !IsNativeStateConsistent)
+			var logicalChildren = ((IElementController)this).LogicalChildren;
+			if (logicalChildren.Count == 0 || Width <= 0 || Height <= 0 || !IsPlatformStateConsistent)
 				return false;
 
 			var container = this as IPageContainer<Page>;
 			if (container?.CurrentPage != null)
 			{
 				if (InternalChildren.Contains(container.CurrentPage))
-					return container.CurrentPage.IsPlatformEnabled && container.CurrentPage.IsNativeStateConsistent;
+					return container.CurrentPage.IsPlatformEnabled && container.CurrentPage.IsPlatformStateConsistent;
 				return true;
 			}
 
 			var any = false;
-			for (var i = 0; i < LogicalChildren.Count; i++)
+			for (var i = 0; i < logicalChildren.Count; i++)
 			{
-				var v = LogicalChildren[i] as VisualElement;
-				if (v != null && (!v.IsPlatformEnabled || !v.IsNativeStateConsistent))
+				var v = logicalChildren[i] as VisualElement;
+				if (v != null && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
 				{
 					any = true;
 					break;
@@ -530,6 +592,7 @@ namespace Microsoft.Maui.Controls
 			return !any;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='On']/Docs" />
 		public IPlatformElementConfiguration<T, Page> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

@@ -384,7 +384,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			public class ColorClass
 			{
-				public static readonly EColor DefaultBorderColor = Device.Idiom == TargetIdiom.TV || Device.Idiom == TargetIdiom.Watch ? EColor.Gray : EColor.Black;
+				public static readonly EColor DefaultBorderColor = DeviceInfo.Idiom == DeviceIdiom.TV || DeviceInfo.Idiom == DeviceIdiom.Watch ? EColor.Gray : EColor.Black;
 				public static readonly EColor DefaultShadowColor = EColor.FromRgba(80, 80, 80, 50);
 			}
 		}
@@ -521,7 +521,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			public class ColorClass
 			{
-				public static readonly Color DefaultColor = Color.FromHex("#6200EE");
+				public static readonly Color DefaultColor = Color.FromArgb("#6200EE");
 			}
 		}
 		#endregion
@@ -624,10 +624,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			public class ColorClass
 			{
-				public static readonly Color DefaultProgressLabelColor = Color.FromHex("#eeeeeeee");
-				public static readonly Color DefaultProgressBarColor = Color.FromHex($"#4286f4");
-				public static readonly Color DefaultProgressAreaColor = Color.FromHex("#80000000");
-				public static readonly Color DefaultProgressAreaBackgroundColor = Color.FromHex("#50000000");
+				public static readonly Color DefaultProgressLabelColor = Color.FromArgb("#eeeeeeee");
+				public static readonly Color DefaultProgressBarColor = Color.FromArgb($"#4286f4");
+				public static readonly Color DefaultProgressAreaColor = Color.FromArgb("#80000000");
+				public static readonly Color DefaultProgressAreaBackgroundColor = Color.FromArgb("#50000000");
 			}
 		}
 		#endregion

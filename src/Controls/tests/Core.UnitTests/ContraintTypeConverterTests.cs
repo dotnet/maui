@@ -1,7 +1,10 @@
+using Microsoft.Maui.Controls.Compatibility;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
+
 	[TestFixture]
 	public class ContraintTypeConverterTests : BaseTestFixture
 	{

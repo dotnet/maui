@@ -2,8 +2,10 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellGroupItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellGroupItem']/Docs" />
 	public class ShellGroupItem : BaseShellItem
 	{
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellGroupItem.xml" path="//Member[@MemberName='FlyoutDisplayOptionsProperty']/Docs" />
 		public static readonly BindableProperty FlyoutDisplayOptionsProperty =
 			BindableProperty.Create(nameof(FlyoutDisplayOptions), typeof(FlyoutDisplayOptions), typeof(ShellGroupItem), FlyoutDisplayOptions.AsSingleItem, BindingMode.OneTime, propertyChanged: OnFlyoutDisplayOptionsPropertyChanged);
 
@@ -12,6 +14,7 @@ namespace Microsoft.Maui.Controls
 			((Element)bindable).FindParentOfType<Shell>()?.SendFlyoutItemsChanged();
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellGroupItem.xml" path="//Member[@MemberName='FlyoutDisplayOptions']/Docs" />
 		public FlyoutDisplayOptions FlyoutDisplayOptions
 		{
 			get { return (FlyoutDisplayOptions)GetValue(FlyoutDisplayOptionsProperty); }

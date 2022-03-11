@@ -260,7 +260,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			bool PageIsInThisContext(Page page)
 			{
-				var renderer = AppCompat.Platform.GetRenderer(page);
+				var renderer = Platform.GetRenderer(page);
 
 				if (renderer?.View?.Context == null)
 				{

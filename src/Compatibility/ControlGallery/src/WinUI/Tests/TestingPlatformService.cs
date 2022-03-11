@@ -1,7 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.Tests;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.Tests;
+using Microsoft.Maui.Dispatching;
 
 [assembly: Dependency(typeof(TestingPlatformService))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.Tests
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.Tests
 	{
 		public async Task CreateRenderer(VisualElement visualElement)
 		{
-			await Device.InvokeOnMainThreadAsync(() => Platform.UWP.Platform.CreateRenderer(visualElement));
+			await visualElement.Dispatcher.DispatchAsync(() => Platform.UWP.Platform.CreateRenderer(visualElement));
 		}
 	}
 }

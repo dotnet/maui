@@ -11,10 +11,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 
-        protected override FormsCheckBox CreateNativeControl()
-        {
-            return new FormsCheckBox();
-        }
+		protected override FormsCheckBox CreateNativeControl()
+		{
+			return new FormsCheckBox();
+		}
 
-    }
+	}
 }

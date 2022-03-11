@@ -1,6 +1,7 @@
 #if __MOBILE__
-using UIKit;
 using Microsoft.Maui.Controls.Internals;
+using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else

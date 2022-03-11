@@ -1,0 +1,73 @@
+<Type Name="EmbeddedFont" FullName="Microsoft.Maui.EmbeddedFont">
+  <TypeSignature Language="C#" Value="public class EmbeddedFont" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit EmbeddedFont extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.EmbeddedFont" />
+  <TypeSignature Language="F#" Value="type EmbeddedFont = class" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public EmbeddedFont ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.EmbeddedFont.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FontName">
+      <MemberSignature Language="C#" Value="public string FontName { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string FontName" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.EmbeddedFont.FontName" />
+      <MemberSignature Language="F#" Value="member this.FontName : string with get, set" Usage="Microsoft.Maui.EmbeddedFont.FontName" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ResourceStream">
+      <MemberSignature Language="C#" Value="public System.IO.Stream ResourceStream { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.IO.Stream ResourceStream" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.EmbeddedFont.ResourceStream" />
+      <MemberSignature Language="F#" Value="member this.ResourceStream : System.IO.Stream with get, set" Usage="Microsoft.Maui.EmbeddedFont.ResourceStream" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.IO.Stream</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

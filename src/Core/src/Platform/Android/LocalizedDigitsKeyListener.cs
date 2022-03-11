@@ -4,7 +4,7 @@ using Android.Text.Method;
 using Java.Lang;
 using Java.Text;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class LocalizedDigitsKeyListener : NumberKeyListener
 	{

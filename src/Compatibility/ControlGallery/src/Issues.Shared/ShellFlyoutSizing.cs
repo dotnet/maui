@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 
@@ -67,8 +68,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var scale = 10d;
 
-			if (Device.RuntimePlatform == Device.Android)
-				scale = scale / Device.info.ScalingFactor;
+			if (DeviceInfo.Platform == DevicePlatform.Android)
+				scale = scale / DeviceDisplay.MainDisplayInfo.Density;
 
 			var increaseMenuItem = new MenuItem()
 			{

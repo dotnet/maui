@@ -1,5 +1,8 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.SwipeViewGalleries
+﻿using Microsoft.Maui.Controls.Xaml;
+
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.SwipeViewGalleries
 {
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class VerticalSwipeThresholdGallery : ContentPage
 	{
 		public VerticalSwipeThresholdGallery()

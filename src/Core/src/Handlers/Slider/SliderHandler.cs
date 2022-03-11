@@ -1,26 +1,43 @@
 #nullable enable
+#if __IOS__ || MACCATALYST
+using PlatformView = UIKit.UISlider;
+#elif MONOANDROID
+using PlatformView = Android.Widget.SeekBar;
+#elif WINDOWS
+using PlatformView = Microsoft.Maui.Platform.MauiSlider;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
+
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SliderHandler
+	public partial class SliderHandler : ISliderHandler
 	{
-		public static PropertyMapper<ISlider, SliderHandler> SliderMapper = new PropertyMapper<ISlider, SliderHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<ISlider, ISliderHandler> Mapper = new PropertyMapper<ISlider, ISliderHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(ISlider.Maximum)] = MapMaximum,
 			[nameof(ISlider.MaximumTrackColor)] = MapMaximumTrackColor,
 			[nameof(ISlider.Minimum)] = MapMinimum,
 			[nameof(ISlider.MinimumTrackColor)] = MapMinimumTrackColor,
 			[nameof(ISlider.ThumbColor)] = MapThumbColor,
+			[nameof(ISlider.ThumbImageSource)] = MapThumbImageSource,
 			[nameof(ISlider.Value)] = MapValue,
 		};
 
-		public SliderHandler() : base(SliderMapper)
+		public static CommandMapper<ISlider, ISliderHandler> CommandMapper = new(ViewCommandMapper)
 		{
+		};
 
+		public SliderHandler() : base(Mapper)
+		{
 		}
 
-		public SliderHandler(PropertyMapper? mapper = null) : base(mapper ?? SliderMapper)
+		public SliderHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
 		{
-
 		}
+
+		ISlider ISliderHandler.VirtualView => VirtualView;
+
+		PlatformView ISliderHandler.PlatformView => PlatformView;
 	}
 }

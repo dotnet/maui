@@ -2,6 +2,9 @@ using System;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
+using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Fragment.App;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -11,7 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public PageContainer(Context context, IVisualElementRenderer child, bool inFragment = false) : base(context)
 		{
-			Id = AppCompat.Platform.GenerateViewId();
+			Id = Platform.GenerateViewId();
 			Child = child;
 			IsInFragment = inFragment;
 			AddView(child.View);
@@ -28,6 +31,32 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			Child.UpdateLayout();
+
+			if (Child.View is ContentViewGroup ||
+				Child.View is CoordinatorLayout ||
+				Child.View is FragmentContainerView)
+			{
+				// This is a way to handle situations where the root page is shimmed and uses fragments to host other pages (e.g., NavigationPageRenderer)
+				// The old layout system would have set the width/height of the contained Page by now; the xplat layout call would have come
+				// down the tree from PlatformRenderer and Platform's OnLayout. 
+
+				// But if we're not using PlatformRenderer at the root, then this never happens. We're relying on native OnLayout calls, which 
+				// PageContainer (in its override of ViewGroup's OnLayout) _should_ be doing, under normal circumstances. So we're special-casing
+				// things here for PageViewGroup (the backing View for MAUI pages) and calling Layout. We'll skip calling it for any other types,
+				// because we don't want to interfere with un-shimmed legacy renderers.
+
+				if (Child.Element.Parent is IPageController ipc && !ipc.ContainerArea.IsEmpty)
+				{
+					(l, t, r, b) = Context.ToPixels(ipc.ContainerArea);
+				}
+
+				var mode = MeasureSpecMode.Exactly;
+				var widthSpec = mode.MakeMeasureSpec(r - l);
+				var heightSpec = mode.MakeMeasureSpec(b - t);
+
+				Child.View.Measure(widthSpec, heightSpec);
+				Child.View.Layout(l, t, r, b);
+			}
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)

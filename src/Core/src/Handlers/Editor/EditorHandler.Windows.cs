@@ -1,38 +1,85 @@
-﻿using System;
+#nullable enable
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : ViewHandler<IEditor, MauiTextBox>
+	public partial class EditorHandler : ViewHandler<IEditor, TextBox>
 	{
-		protected override MauiTextBox CreateNativeView() => new MauiTextBox();
+		protected override TextBox CreatePlatformView() =>
+			new TextBox
+			{
+				AcceptsReturn = true,
+				TextWrapping = TextWrapping.Wrap,
+			};
 
-		[MissingMapper]
-		public static void MapText(IViewHandler handler, IEditor editor) { }
+		protected override void ConnectHandler(TextBox platformView)
+		{
+			platformView.TextChanged += OnTextChanged;
+			platformView.LostFocus += OnLostFocus;
+			platformView.Loaded += OnPlatformLoaded;
+		}
 
-		[MissingMapper]
-		public static void MapPlaceholder(IViewHandler handler, IEditor editor) { }
+		protected override void DisconnectHandler(TextBox platformView)
+		{
+			platformView.Loaded -= OnPlatformLoaded;
+			platformView.TextChanged -= OnTextChanged;
+			platformView.LostFocus -= OnLostFocus;
+		}
 
-		[MissingMapper]
-		public static void MapPlaceholderColor(IViewHandler handler, IEditor editor) { }
+		public static void MapText(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateText(editor);
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(IViewHandler handler, IEditor editor) { }
+		public static void MapPlaceholder(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdatePlaceholder(editor);
 
-		[MissingMapper]
-		public static void MapMaxLength(IViewHandler handler, IEditor editor) { }
+		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdatePlaceholderColor(editor);
 
-		[MissingMapper]
-		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) { }
+		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateCharacterSpacing(editor);
 
-		[MissingMapper]
-		public static void MapFont(IViewHandler handler, IEditor editor) { }
+		public static void MapMaxLength(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateMaxLength(editor);
 
-		[MissingMapper]
-		public static void MapIsReadOnly(IViewHandler handler, IEditor editor) { }
+		public static void MapIsTextPredictionEnabled(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateIsTextPredictionEnabled(editor);
 
-		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateTextColor(editor);
+		public static void MapFont(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());
+
+		public static void MapIsReadOnly(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateIsReadOnly(editor);
+
+		public static void MapBackground(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateBackground(editor);
+
+		public static void MapTextColor(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateTextColor(editor);
+
+		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateHorizontalTextAlignment(editor);
+
+		public static void MapCursorPosition(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateCursorPosition(editor);
+
+		public static void MapSelectionLength(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateSelectionLength(editor);
+
+		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateVerticalTextAlignment(editor);
+
+		public static void MapKeyboard(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateKeyboard(editor);
+
+		void OnTextChanged(object sender, TextChangedEventArgs args) =>
+			VirtualView?.UpdateText(PlatformView.Text);
+
+		void OnLostFocus(object? sender, RoutedEventArgs e) =>
+			VirtualView?.Completed();
+
+		void OnPlatformLoaded(object sender, RoutedEventArgs e) =>
+			MauiTextBox.InvalidateAttachedProperties(PlatformView);
 	}
 }

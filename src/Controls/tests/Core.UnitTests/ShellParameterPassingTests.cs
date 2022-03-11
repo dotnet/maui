@@ -301,5 +301,82 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync($"//content");
 			Assert.AreEqual(null, page.SomeQueryParameter);
 		}
+
+		[Test]
+		public async Task BasicShellParameterTest()
+		{
+			var shell = new Shell();
+
+			var item = CreateShellItem(shellSectionRoute: "section2");
+			Routing.RegisterRoute("details", typeof(ShellTestPage));
+			shell.Items.Add(item);
+			var obj = new object();
+			var parameter = new ShellRouteParameters
+			{
+				{"DoubleQueryParameter", 2d },
+				{ "ComplexObject", obj}
+			};
+
+			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1234"), parameter);
+			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+			Assert.AreEqual("1234", testPage.SomeQueryParameter);
+			Assert.AreEqual(2d, testPage.DoubleQueryParameter);
+			Assert.AreEqual(obj, testPage.ComplexObject);
+		}
+
+		[Test]
+		public async Task DotDotNavigationPassesShellParameters()
+		{
+			Routing.RegisterRoute(nameof(DotDotNavigationPassesParameters), typeof(ContentPage));
+			var shell = new Shell();
+			var one = new ShellItem { Route = "one" };
+
+			var tabone = MakeSimpleShellSection("tabone", "content");
+
+			one.Items.Add(tabone);
+
+			shell.Items.Add(one);
+
+			one.CurrentItem.CurrentItem.ContentTemplate = new DataTemplate(() =>
+			{
+				ShellTestPage pagetoTest = new ShellTestPage();
+				pagetoTest.BindingContext = pagetoTest;
+				return pagetoTest;
+			});
+
+			var obj = new object();
+			var parameter = new ShellRouteParameters
+			{
+				{"DoubleQueryParameter", 2d },
+				{ "ComplexObject", obj}
+			};
+
+			var page = (ShellTestPage)(one.CurrentItem.CurrentItem as IShellContentController).GetOrCreateContent();
+			Assert.AreEqual(null, page.SomeQueryParameter);
+			await shell.GoToAsync(nameof(DotDotNavigationPassesParameters));
+			await shell.GoToAsync($"..?{nameof(ShellTestPage.SomeQueryParameter)}=1234", parameter);
+			Assert.AreEqual("1234", page.SomeQueryParameter);
+			Assert.AreEqual(2d, page.DoubleQueryParameter);
+			Assert.AreEqual(obj, page.ComplexObject);
+		}
+
+		[Test]
+		public async Task PassesUrlInShellParameter()
+		{
+			var shell = new Shell();
+			var item = CreateShellItem();
+			Routing.RegisterRoute("details", typeof(ShellTestPage));
+			shell.Items.Add(item);
+			string urlTest = @"https://www.somewebsite.com/id/545/800/600.jpg";
+
+			var parameter = new ShellRouteParameters
+			{
+				{ nameof(ShellTestPage.SomeQueryParameter) ,urlTest }
+			};
+
+			await shell.GoToAsync(new ShellNavigationState($"details"), parameter);
+			var testPage = shell.CurrentPage as ShellTestPage;
+			Assert.AreEqual(urlTest, testPage.SomeQueryParameter);
+		}
 	}
 }

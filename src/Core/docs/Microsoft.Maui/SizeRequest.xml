@@ -1,0 +1,167 @@
+<Type Name="SizeRequest" FullName="Microsoft.Maui.SizeRequest">
+  <TypeSignature Language="C#" Value="public struct SizeRequest" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit SizeRequest extends System.ValueType" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.SizeRequest" />
+  <TypeSignature Language="F#" Value="type SizeRequest = struct" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Core</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <AssemblyVersion>1.3.4.0</AssemblyVersion>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>System.Diagnostics.DebuggerDisplay("Request={Request.Width}x{Request.Height}, Minimum={Minimum.Width}x{Minimum.Height}")</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>Struct that defines minimum and maximum <see cref="T:Microsoft.Maui.Size" />s.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SizeRequest (Microsoft.Maui.Size request);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Microsoft.Maui.Size request) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.SizeRequest.#ctor(Microsoft.Maui.Size)" />
+      <MemberSignature Language="F#" Value="new Microsoft.Maui.SizeRequest : Microsoft.Maui.Size -&gt; Microsoft.Maui.SizeRequest" Usage="new Microsoft.Maui.SizeRequest request" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.4.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="request" Type="Microsoft.Maui.Size" />
+      </Parameters>
+      <Docs>
+        <param name="request">The size of the request.</param>
+        <summary>Creates a new <see cref="T:Microsoft.Maui.SizeRequest" /> with the specified <paramref name="request" /> size.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SizeRequest (Microsoft.Maui.Size request, Microsoft.Maui.Size minimum);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Microsoft.Maui.Size request, valuetype Microsoft.Maui.Size minimum) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.SizeRequest.#ctor(Microsoft.Maui.Size,Microsoft.Maui.Size)" />
+      <MemberSignature Language="F#" Value="new Microsoft.Maui.SizeRequest : Microsoft.Maui.Size * Microsoft.Maui.Size -&gt; Microsoft.Maui.SizeRequest" Usage="new Microsoft.Maui.SizeRequest (request, minimum)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.4.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="request" Type="Microsoft.Maui.Size" />
+        <Parameter Name="minimum" Type="Microsoft.Maui.Size" />
+      </Parameters>
+      <Docs>
+        <param name="request">The size of the request.</param>
+        <param name="minimum">The minimum size for the request.</param>
+        <summary>Creates a new <see cref="T:Microsoft.Maui.SizeRequest" /> object that requests at least the size <paramref name="minimum" />, but preferably the size <paramref name="request" />.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Minimum">
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Size Minimum { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Size Minimum" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.SizeRequest.Minimum" />
+      <MemberSignature Language="F#" Value="member this.Minimum : Microsoft.Maui.Size with get, set" Usage="Microsoft.Maui.SizeRequest.Minimum" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.4.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Size</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The minimum acceptable size.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Request">
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Size Request { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Size Request" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.SizeRequest.Request" />
+      <MemberSignature Language="F#" Value="member this.Request : Microsoft.Maui.Size with get, set" Usage="Microsoft.Maui.SizeRequest.Request" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.4.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Size</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The requested size.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.SizeRequest.ToString" />
+      <MemberSignature Language="F#" Value="override this.ToString : unit -&gt; string" Usage="sizeRequest.ToString " />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.4.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Returns a string representation of the size request.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

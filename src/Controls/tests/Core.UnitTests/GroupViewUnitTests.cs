@@ -7,14 +7,14 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	internal class NaiveLayout : Layout<View>
+	internal class NaiveLayout : Compatibility.Layout<View>
 	{
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			foreach (var child in ((IElementController)this).LogicalChildren.Cast<View>())
 			{
-				var result = new Rectangle(x, y, 0, 0);
-				var request = child.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+				var result = new Rect(x, y, 0, 0);
+				var request = child.Measure(double.PositiveInfinity, double.PositiveInfinity);
 				result.Width = request.Request.Width;
 				result.Height = request.Request.Height;
 
@@ -261,9 +261,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			group.Layout(new Rectangle(0, 0, 400, 400));
+			group.Layout(new Rect(0, 0, 400, 400));
 
-			Assert.AreEqual(new Rectangle(0, 0, 50, 20), view.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 50, 20), view.Bounds);
 		}
 
 		[Test]

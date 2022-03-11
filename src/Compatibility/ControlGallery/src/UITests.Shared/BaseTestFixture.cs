@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using NUnit.Framework;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 

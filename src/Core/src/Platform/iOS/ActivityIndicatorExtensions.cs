@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui
+﻿namespace Microsoft.Maui.Platform
 {
 	public static class ActivityIndicatorExtensions
 	{
@@ -11,6 +11,6 @@
 		}
 
 		public static void UpdateColor(this MauiActivityIndicator activityIndicatorView, IActivityIndicator activityIndicator)
-			=> activityIndicatorView.Color = activityIndicator.Color?.ToNative();
+			=> activityIndicatorView.Color = activityIndicator.Color?.ToPlatform();
 	}
 }

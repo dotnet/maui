@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Content.PM;
@@ -69,6 +70,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			}
 		}
 
+		protected MauiContext MauiContext
+		{
+			get
+			{
+				throw new InvalidOperationException("MauiContext not wired up into Control Gallery yet");
+				//if (_mauiContext == null)
+				//{
+				//	_mauiContext = DependencyService.Resolve<Context>();
+				//}
+
+				//return _mauiContext;
+			}
+		}
+
 		[SetUp]
 		public virtual void Setup()
 		{
@@ -81,12 +96,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 
 		}
 
-		protected static void ToggleRTLSupport(Context context, bool enabled)
+		static readonly Lazy<FieldInfo> isSupported = new Lazy<FieldInfo>(() =>
 		{
-			context.ApplicationInfo.Flags = enabled
-				? context.ApplicationInfo.Flags | ApplicationInfoFlags.SupportsRtl
-				: context.ApplicationInfo.Flags & ~ApplicationInfoFlags.SupportsRtl;
-		}
+			var type = Type.GetType("Microsoft.Maui.Platform.Rtl, Microsoft.Maui", throwOnError: true);
+			var field = type.GetField("IsSupported");
+			Assert.IsNotNull(field, "Microsoft.Maui.Platform.Rtl.IsSupported not found!");
+			return field;
+		});
+
+		protected static bool IsRTLSupported => (bool)isSupported.Value.GetValue(null);
+
+		protected static void SetIsRTLSupported(bool value) => isSupported.Value.SetValue(null, value);
 
 		protected IVisualElementRenderer GetRenderer(VisualElement element)
 		{
@@ -98,8 +118,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			var renderer = element.GetRenderer();
 			if (renderer == null)
 			{
-				renderer = AppCompat.Platform.CreateRendererWithContext(element, context);
-				AppCompat.Platform.SetRenderer(element, renderer);
+				renderer = Platform.CreateRendererWithContext(element, context);
+				Platform.SetRenderer(element, renderer);
 			}
 
 			return renderer;
@@ -287,7 +307,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			var size = element.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 			var width = size.Request.Width;
 			var height = size.Request.Height;
-			element.Layout(new Rectangle(0, 0, width, height));
+			element.Layout(new Rect(0, 0, width, height));
 
 			int widthSpec = AView.MeasureSpec.MakeMeasureSpec((int)width, MeasureSpecMode.Exactly);
 			int heightSpec = AView.MeasureSpec.MakeMeasureSpec((int)height, MeasureSpecMode.Exactly);

@@ -3,36 +3,54 @@ using System.IO;
 using System.Threading.Tasks;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class FileSystem
+	public partial class FileSystemImplementation : IFileSystem
 	{
-		static string PlatformCacheDirectory
+		string PlatformCacheDirectory
 			=> Application.Current.DirectoryInfo.Cache;
 
-		static string PlatformAppDataDirectory
+		string PlatformAppDataDirectory
 			=> Application.Current.DirectoryInfo.Data;
 
-		static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
+		Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
+		{
+			var file = PlatformGetFullAppPackageFilePath(filename);
+			return Task.FromResult((Stream)File.OpenRead(file));
+		}
+
+		Task<bool> PlatformAppPackageFileExistsAsync(string filename)
+		{
+			var file = PlatformGetFullAppPackageFilePath(filename);
+			return Task.FromResult(File.Exists(file));
+		}
+
+		static string PlatformGetFullAppPackageFilePath(string filename)
 		{
 			if (string.IsNullOrWhiteSpace(filename))
 				throw new ArgumentNullException(nameof(filename));
 
-			filename = filename.Replace('\\', Path.DirectorySeparatorChar);
-			Stream fs = File.OpenRead(Path.Combine(Application.Current.DirectoryInfo.Resource, filename));
-			return Task.FromResult(fs);
-		}
-	}
+			filename = NormalizePath(filename);
 
+			return Path.Combine(Application.Current.DirectoryInfo.Resource, filename);
+		}
+
+		static string NormalizePath(string filename) =>
+			filename.Replace('\\', Path.DirectorySeparatorChar);
+	}
+}
+
+namespace Microsoft.Maui.Essentials
+{
 	public partial class FileBase
 	{
-		static string PlatformGetContentType(string extension)
+		string PlatformGetContentType(string extension)
 		{
 			extension = extension.TrimStart('.');
 			return Tizen.Content.MimeType.MimeUtil.GetMimeType(extension);
 		}
 
-		internal void PlatformInit(FileBase file)
+		void PlatformInit(FileBase file)
 		{
 		}
 

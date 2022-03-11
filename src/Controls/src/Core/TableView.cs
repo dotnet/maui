@@ -1,17 +1,23 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	[ContentProperty("Root")]
-	public class TableView : View, ITableViewController, IElementConfiguration<TableView>
+	/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableView']/Docs" />
+	[ContentProperty(nameof(Root))]
+	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, IVisualTreeElement
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='RowHeightProperty']/Docs" />
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create("RowHeight", typeof(int), typeof(TableView), -1);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='HasUnevenRowsProperty']/Docs" />
 		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create("HasUnevenRows", typeof(bool), typeof(TableView), false);
 
 		readonly Lazy<PlatformConfigurationRegistry<TableView>> _platformConfigurationRegistry;
@@ -22,23 +28,29 @@ namespace Microsoft.Maui.Controls
 
 		TableModel _model;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
 		public TableView() : this(null)
 		{
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public TableView(TableRoot root)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			VerticalOptions = HorizontalOptions = LayoutOptions.FillAndExpand;
+#pragma warning restore CS0618 // Type or member is obsolete
 			Model = _tableModel = new TableSectionModel(this, root);
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<TableView>>(() => new PlatformConfigurationRegistry<TableView>(this));
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='HasUnevenRows']/Docs" />
 		public bool HasUnevenRows
 		{
 			get { return (bool)GetValue(HasUnevenRowsProperty); }
 			set { SetValue(HasUnevenRowsProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='Intent']/Docs" />
 		public TableIntent Intent
 		{
 			get { return _intent; }
@@ -53,6 +65,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='Root']/Docs" />
 		public TableRoot Root
 		{
 			get { return _tableModel.Root; }
@@ -62,8 +75,10 @@ namespace Microsoft.Maui.Controls
 				{
 					_tableModel.Root.SectionCollectionChanged -= OnSectionCollectionChanged;
 					_tableModel.Root.PropertyChanged -= OnTableModelRootPropertyChanged;
+					VisualDiagnostics.OnChildRemoved(this, _tableModel.Root, 0);
 				}
 				_tableModel.Root = value ?? new TableRoot();
+				VisualDiagnostics.OnChildAdded(this, _tableModel.Root);
 				SetInheritedBindingContext(_tableModel.Root, BindingContext);
 
 				Root.SelectMany(r => r).ForEach(cell => cell.Parent = this);
@@ -73,12 +88,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='RowHeight']/Docs" />
 		public int RowHeight
 		{
 			get { return (int)GetValue(RowHeightProperty); }
 			set { SetValue(RowHeightProperty, value); }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='Model']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TableModel Model
 		{
@@ -113,13 +130,12 @@ namespace Microsoft.Maui.Controls
 			ModelChanged?.Invoke(this, EventArgs.Empty);
 		}
 
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			var minimumSize = new Size(40, 40);
-			double width = Math.Min(Device.Info.ScaledScreenSize.Width, Device.Info.ScaledScreenSize.Height);
-			var request = new Size(width, Math.Max(Device.Info.ScaledScreenSize.Width, Device.Info.ScaledScreenSize.Height));
+			var scaled = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+			double width = Math.Min(scaled.Width, scaled.Height);
+			var request = new Size(width, Math.Max(scaled.Width, scaled.Height));
 
 			return new SizeRequest(request, minimumSize);
 		}
@@ -127,6 +143,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler ModelChanged;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='On']/Docs" />
 		public IPlatformElementConfiguration<T, TableView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
@@ -149,6 +166,8 @@ namespace Microsoft.Maui.Controls
 			if (e.PropertyName == TableSectionBase.TitleProperty.PropertyName)
 				OnModelChanged();
 		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => new List<Maui.IVisualTreeElement>() { this.Root };
 
 		internal class TableSectionModel : TableModel
 		{

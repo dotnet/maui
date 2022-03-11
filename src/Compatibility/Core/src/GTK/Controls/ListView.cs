@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK.Controls
 			base.Destroy();
 		}
 
-		public static Gdk.Color DefaultSelectionColor = Color.FromHex("#3498DB").ToGtkColor();
+		public static Gdk.Color DefaultSelectionColor = Color.FromArgb("#3498DB").ToGtkColor();
 
 		public Widget Header
 		{

@@ -700,6 +700,15 @@
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/Photos" Id="T:Xamarin.Essentials.Permissions.Photos">
       <Member Id="M:Xamarin.Essentials.Permissions.Photos.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.Photos.CheckStatusAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.Photos.RequestAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.Photos.RequiredInfoPlistKeys" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/PhotosAddOnly" Id="T:Xamarin.Essentials.Permissions.PhotosAddOnly">
+      <Member Id="M:Xamarin.Essentials.Permissions.PhotosAddOnly.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.PhotosAddOnly.CheckStatusAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.PhotosAddOnly.RequestAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.PhotosAddOnly.RequiredInfoPlistKeys" />
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/Reminders" Id="T:Xamarin.Essentials.Permissions.Reminders">
       <Member Id="M:Xamarin.Essentials.Permissions.Reminders.#ctor" />
@@ -726,6 +735,7 @@
       <Member Id="F:Xamarin.Essentials.PermissionStatus.Denied" />
       <Member Id="F:Xamarin.Essentials.PermissionStatus.Disabled" />
       <Member Id="F:Xamarin.Essentials.PermissionStatus.Granted" />
+      <Member Id="F:Xamarin.Essentials.PermissionStatus.Limited" />
       <Member Id="F:Xamarin.Essentials.PermissionStatus.Restricted" />
       <Member Id="F:Xamarin.Essentials.PermissionStatus.Unknown" />
     </Type>

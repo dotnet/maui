@@ -1,7 +1,7 @@
 ﻿using Android.Widget;
 using AButton = Android.Widget.Button;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class StepperExtensions
 	{

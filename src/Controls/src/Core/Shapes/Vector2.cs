@@ -4,9 +4,11 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Vector2']/Docs" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public struct Vector2
 	{
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public Vector2(double x, double y)
 			: this()
 		{
@@ -14,6 +16,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			Y = y;
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public Vector2(Point p)
 			: this()
 		{
@@ -21,6 +24,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			Y = p.Y;
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
 		public Vector2(double angle)
 			: this()
 		{
@@ -28,19 +32,24 @@ namespace Microsoft.Maui.Controls.Shapes
 			Y = Math.Sin(Math.PI * angle / 180);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='X']/Docs" />
 		public double X { private set; get; }
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='Y']/Docs" />
 		public double Y { private set; get; }
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='LengthSquared']/Docs" />
 		public double LengthSquared
 		{
 			get { return X * X + Y * Y; }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='Length']/Docs" />
 		public double Length
 		{
 			get { return Math.Sqrt(LengthSquared); }
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='Normalized']/Docs" />
 		public Vector2 Normalized
 		{
 			get
@@ -55,6 +64,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='AngleBetween']/Docs" />
 		public static double AngleBetween(Vector2 v1, Vector2 v2)
 		{
 			return 180 * (Math.Atan2(v2.Y, v2.X) - Math.Atan2(v1.Y, v1.X)) / Math.PI;
@@ -110,6 +120,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			return new Point(v.X, v.Y);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='ToString']/Docs" />
 		public override string ToString()
 		{
 			return string.Format("({0} {1})", X, Y);

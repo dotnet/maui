@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			public Resize()
 			{
-				DestinationFilename = Path.GetTempFileName();
+				DestinationFilename = Path.GetTempFileName() + ".png";
 				Logger = new TestLogger();
 			}
 
@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[InlineData(0.5, 2, "appicon.svg", "appiconfg.svg")]
 			[InlineData(1, 0.5, "appicon.svg", "appiconfg.svg")]
 			[InlineData(1, 1, "appicon.svg", "appiconfg.svg")]
+			[InlineData(1, 1, "dotnet_background.svg", "dotnet_logo.svg")]
 			[InlineData(1, 2, "appicon.svg", "appiconfg.svg")]
 			[InlineData(2, 0.5, "appicon.svg", "appiconfg.svg")]
 			[InlineData(2, 1, "appicon.svg", "appiconfg.svg")]
@@ -54,6 +55,24 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[InlineData(0.3, 1, "appicon.svg", "appiconfg-red-512.svg")]
 			[InlineData(0.3, 2, "appicon.svg", "appiconfg-red-512.svg")]
 			public void BasicTest(double dpi, double fgScale, string bg, string fg)
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/" + bg;
+				info.ForegroundFilename = "images/" + fg;
+				info.ForegroundScale = fgScale;
+				info.IsAppIcon = true;
+
+				var tools = new SkiaSharpAppIconTools(info, Logger);
+				var dpiPath = new DpiPath("", (decimal)dpi);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				//File.Copy(DestinationFilename, $"output-{dpi}-{fgScale}-{bg}-{fg}.png", true);
+			}
+
+			[Theory]
+			[InlineData(1, 1, "appicon.svg", "prismicon.svg")]
+			public void ComplexIconTest(double dpi, double fgScale, string bg, string fg)
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/" + bg;

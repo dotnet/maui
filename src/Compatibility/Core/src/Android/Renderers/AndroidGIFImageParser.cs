@@ -6,6 +6,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -48,9 +49,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public FormsAnimationDrawable()
 		{
 			RepeatCount = 1;
-
-			if (!Forms.IsLollipopOrNewer)
-				base.SetVisible(false, true);
 		}
 
 		public int RepeatCount { get; set; }
@@ -78,9 +76,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			base.Start();
 
-			if (!Forms.IsLollipopOrNewer)
-				base.SetVisible(true, true);
-
 			_isRunning = true;
 			AnimationStarted?.Invoke(this, null);
 		}
@@ -88,9 +83,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override void Stop()
 		{
 			base.Stop();
-
-			if (!Forms.IsLollipopOrNewer)
-				base.SetVisible(false, true);
 
 			_isRunning = false;
 			AnimationStopped?.Invoke(this, new FormsAnimationDrawableStateEventArgs(_finished));
@@ -178,7 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (animation == null)
 			{
-				Internals.Log.Warning(nameof(ImageLoaderSourceHandler), "Image data was invalid: {0}", streamSource);
+				Application.Current?.FindMauiContext()?.CreateLogger<ImageLoaderSourceHandler>()?.LogWarning("Image data was invalid: {streamSource}", streamSource);
 			}
 
 			return animation;
@@ -210,7 +202,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (animation == null)
 			{
-				Internals.Log.Warning(nameof(FileImageSourceHandler), "Could not retrieve image or image data was invalid: {0}", imagesource);
+				Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>()?.LogWarning("Could not retrieve image or image data was invalid: {imagesource}", imagesource);
 			}
 
 			return animation;
@@ -250,7 +242,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					if (animation == null)
 					{
-						Log.Warning(nameof(FileImageSourceHandler), "Could not retrieve image or image data was invalid: {0}", imagesource);
+						Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>()?.LogWarning("Could not retrieve image or image data was invalid: {imagesource}", imagesource);
 					}
 				}
 			}

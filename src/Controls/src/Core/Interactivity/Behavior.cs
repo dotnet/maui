@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Behavior.xml" path="Type[@FullName='Microsoft.Maui.Controls.Behavior']/Docs" />
 	public abstract class Behavior : BindableObject, IAttachedObject
 	{
 		protected Behavior() : this(typeof(BindableObject))
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Behavior.xml" path="Type[@FullName='Microsoft.Maui.Controls.Behavior']/Docs" />
 	public abstract class Behavior<T> : Behavior where T : BindableObject
 	{
 		protected Behavior() : base(typeof(T))

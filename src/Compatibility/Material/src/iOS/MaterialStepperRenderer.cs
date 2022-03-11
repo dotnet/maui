@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using CoreGraphics;
 using MaterialComponents;
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Platform.iOS;
 using MButton = MaterialComponents.Button;

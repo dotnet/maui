@@ -2,7 +2,9 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Widget;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using ARect = Android.Graphics.Rect;
 using AScaleType = Android.Widget.ImageView.ScaleType;
 using AViewCompat = AndroidX.Core.View.ViewCompat;
@@ -141,7 +143,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 			catch (Exception ex)
 			{
-				Log.Warning(nameof(ImageElementManager), "Error loading image: {0}", ex);
+				Application.Current?.FindMauiContext()?.CreateLogger<IImageRendererController>()?.LogWarning(ex, "Error loading image");
 			}
 			finally
 			{

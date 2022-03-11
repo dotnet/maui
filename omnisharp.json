@@ -1,0 +1,43 @@
+{
+  "fileOptions": {
+    "systemExcludeSearchPatterns": [
+      "**/node_modules/**/*",
+      "**/bin/**/*",
+      "**/obj/**/*"
+    ],
+    "excludeSearchPatterns": [
+      "**/*.csx",
+      "src/BlazorWebView/src/WindowsForms/Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj",
+      "src/BlazorWebView/samples/BlazorWpfApp/BlazorWpfApp.csproj",
+      "src/BlazorWebView/src/WindowsForms/Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj",
+      "src/BlazorWebView/src/Wpf/Microsoft.AspNetCore.Components.WebView.Wpf.csproj",
+
+      "src/Compatibility/ControlGallery/**",
+      "src/Compatibility/Maps/**",
+      "src/Compatibility/Material/**",
+      "src/Controls/samples/Controls.Sample.Profiling/Maui.Controls.Sample.Profiling.csproj",
+      "src/Controls/src/BuildTasks/Controls.BuildTasks.csproj",
+      "src/Controls/src/Core.Design/Controls.Core.Design.csproj",
+      "src/Controls/src/SourceGen/Controls.SourceGen.csproj",
+      "src/Controls/src/Xaml/Controls.Xaml.csproj",
+      "src/Controls/src/Xaml.Design/Controls.Xaml.Design.csproj",
+      "src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj",
+      "src/Controls/DualScreen/**",
+      "src/Core/tests/Benchmarks/Core.Benchmarks.csproj",
+      "src/Templates/**",
+      "src/Workload/Microsoft.Maui.Controls.Ref/Microsoft.Maui.Controls.Ref.csproj",
+      "src/Workload/Microsoft.Maui.Controls.Runtime/Microsoft.Maui.Controls.Runtime.csproj",
+      "src/Workload/Microsoft.Maui.Core.Runtime/Microsoft.Maui.Core.Runtime.csproj",
+      "src/Workload/Microsoft.Maui.Essentials.Ref/Microsoft.Maui.Essentials.Ref.csproj",
+      "src/Workload/Microsoft.Maui.Dependencies/Microsoft.Maui.Dependencies.csproj",
+      "src/Workload/Microsoft.Maui.Extensions/Microsoft.Maui.Extensions.csproj",
+
+      "Microsoft.Maui.Packages.slnf",
+      "Microsoft.Maui.Samples.slnf",
+      "Microsoft.Maui.sln",
+      "Microsoft.Maui.Packages-mac.slnf",
+      "Microsoft.Maui.BuildTasks.slnf",
+      "Microsoft.Maui-mac.slnf"
+    ]
+  }
+}

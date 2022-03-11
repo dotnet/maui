@@ -9,6 +9,7 @@ using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
 using Java.Lang;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -46,6 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_textColorSwitcher.UpdateTextColor(EditText, Element.TextColor);
 		}
 
+		[PortHandler]
 		protected override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
@@ -121,8 +123,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			EditText.SetSingleLine(false);
 			EditText.Gravity = GravityFlags.Top;
-			if ((int)Forms.SdkInt > 16)
-				EditText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
+			EditText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
 			EditText.SetHorizontallyScrolling(false);
 
 			UpdateText();
@@ -250,10 +251,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
-			{
-				EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
-			}
+			EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
 		[PortHandler]

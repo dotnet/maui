@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.CustomAttributes;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using Microsoft.Maui.Controls.CustomAttributes;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {

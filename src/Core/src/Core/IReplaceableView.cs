@@ -1,5 +1,4 @@
-﻿using System;
-namespace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
 	public interface IReplaceableView
 	{

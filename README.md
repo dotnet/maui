@@ -1,95 +1,33 @@
-# Introducing .NET Multi-platform App UI (MAUI)
+# .NET Multi-platform App UI (.NET MAUI)
 
-.NET MAUI is:
+[![Build Status](https://dev.azure.com/xamarin/public/_apis/build/status/MAUI-public?repoName=dotnet%2Fmaui&branchName=main&label=Public)](https://dev.azure.com/xamarin/public/_build/latest?definitionId=57&repoName=dotnet%2Fmaui&branchName=main) [![Build Status](https://devdiv.visualstudio.com/DevDiv/_apis/build/status/MAUI?repoName=dotnet%2Fmaui&branchName=main&label=Private)](https://devdiv.visualstudio.com/DevDiv/_build/latest?definitionId=13330&repoName=dotnet%2Fmaui&branchName=main)
 
-* Multi-platform native UI
-* Deploy to multiple devices across mobile & desktop
-* Using a single project, single codebase
-* Evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms)
-* .NET 6
+.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
 
-## Build Status ##
+## Getting Started ##
 
+* [Install .NET MAUI](https://docs.microsoft.com/dotnet/maui/get-started/first-app?pivots=windows)
+* [.NET MAUI documentation](https://docs.microsoft.com/dotnet/maui)
+* [.NET Podcasts Sample Apps](https://github.com/microsoft/dotnet-podcasts)
+* [Weather '21 Sample App](https://github.com/davidortinau/WeatherTwentyOne)
+* [Development Guide](./.github/DEVELOPMENT.md)
 
-| Private  | Public |
-|--|--|
-|  [![Build Status](https://devdiv.visualstudio.com/DevDiv/_apis/build/status/MAUI?repoName=dotnet%2Fmaui&branchName=main)](https://devdiv.visualstudio.com/DevDiv/_build/latest?definitionId=13330&repoName=dotnet%2Fmaui&branchName=main) |   [![Build Status](https://dev.azure.com/xamarin/public/_apis/build/status/MAUI-public?repoName=dotnet%2Fmaui&branchName=main)](https://dev.azure.com/xamarin/public/_build/latest?definitionId=57&repoName=dotnet%2Fmaui&branchName=main) |
+## Overview
 
+.NET Multi-platform App UI (.NET MAUI) is the evolution of Xamarin.Forms that expands capabilities beyond mobile Android and iOS into native desktop apps for Windows and macOS. With .NET MAUI, you can build native apps that perform great for any device that runs Windows, macOS, Android, & iOS from a single codebase. Coupled with Visual Studio productivity tools and emulators, .NET and Visual Studio significantly speed up the development process for building apps that target the widest possible set of native devices. Use a single development stack that supports the best of breed solutions for all modern workloads with a unified SDK, base class libraries, and toolchain. [Read More](https://docs.microsoft.com/dotnet/maui/what-is-maui)
 
-## Maui.sln
-
-### SDKS required
-- Install the SDKs listed here https://github.com/dotnet/net6-mobile-samples
-
-- And/or run the following
-
-```
-dotnet tool install Cake.Tool -g
-```
-
-### Running
-
-#### IDE
-- If you have Visual Studio 16.9 P4 installed you can open `Maui.sln` and run it from there.
-
-#### .NET 6
-
-You can run a `Cake` target to bootstrap .NET 6 in `bin\dotnet` and launch Visual Studio:
-
-```dotnetcli
-dotnet cake --target=VS-NET6
-```
-_NOTE: VS Mac is not yet supported._
-
-You can also run commands individually:
-```dotnetcli
-# Provision .NET 6 in bin\dotnet
-dotnet build src\DotNet\DotNet.csproj
-# Builds Maui MSBuild tasks
-.\bin\dotnet\dotnet build Microsoft.Maui.BuildTasks-net6.sln
-# Builds the rest of Maui
-.\bin\dotnet\dotnet build Microsoft.Maui-net6.sln
-# (Windows-only) to launch Visual Studio
-dotnet cake --target=VS-DOGFOOD
-```
-
-To build & run .NET 6 sample apps, you will also need to use `.\bin\dotnet\dotnet`:
-```dotnetcli
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.Droid\Maui.Controls.Sample.Droid-net6.csproj -t:Run
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.iOS\Maui.Controls.Sample.iOS-net6.csproj -t:Run
-```
-
-Try out a "single project", you will need the `-f` switch to choose the platform:
-
-```dotnetcli
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-android
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-ios
-```
+![.NET MAUI Weather App on all platforms](Assets/maui-weather-hero-sm.png)
 
 ## Current News
 
-[April 21, 2021 - WinUI Community Live Stream](https://youtu.be/SyLXctia1B0?t=777)
+* February 15, 2022 - [Announcing .NET MAUI Preview 13](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-13/)
+* January 19, 2022 - [Announcing .NET MAUI Preview 12](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-12/)
+* December 14, 2021 - [Announcing .NET MAUI Preview 11](https://devblogs.microsoft.com/dotnet/announcing-dotnet-maui-preview-11/)
+* November 8, 2021 - [Announcing .NET MAUI Preview 10](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-10/)
+* October 12, 2021 - [Announcing .NET MAUI Preview 9](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-9/)
+* September 14, 2021 - [Update on .NET Multi-platform App UI (.NET MAUI)](https://aka.ms/maui-update/)
 
-[April 21, 2021 - InfoQ Interview with David Ortinau](https://www.infoq.com/articles/net-maui/)
-
-[April 9, 2021 - Announcing .NET Multi-platform App UI Preview 3](https://devblogs.microsoft.com/dotnet/announcing-net-multi-platform-app-ui-preview-3/)
-
-[April 9, 2021 - Xamarin Podcast - .NET MAUI Q&A](https://www.xamarinpodcast.com/90)
-
-[April 6, 2021 - On .NET with guest Maddy Leger - A Journey to .NET MAUI](https://www.youtube.com/watch?v=hoC5FIblKz8)
-
-[April 1, 2021 - Xamarin Community Standup with Guest Jonathan Peppers discussing .NET 6 Project System updates](https://www.youtube.com/watch?v=su3ntRjEN1I)
-
-Additional live streams and presentations:
-
-* March 11, 2021 - [Announcing .NET 6 Preview 2](https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-2/)
-* March 2021 - [.NET Community Standup report](https://youtu.be/NEbRo0ltniM?t=1242) 
-* February 25, 2021 - David Ortinau and Maddy Leger at .NET Conf: Focus on Windows: [The Future of Client App Development in .NET 6](https://www.youtube.com/watch?v=fPEdgXeqhE4)
-* January 28, 2021 - David Ortinau at .NET Frontend Day: [A .NET MAUI Progress Report](https://youtu.be/RnyZZKjdUxk)
-* September 19, 2020 - Shane Neuville at ReactiveUI Virtual Conference: [Dual Screen, .NET MAUI, and RxUI](https://www.youtube.com/watch?v=Rkz6Dkk1uWU)
-* October 3, 2020 - James Clancey at Xamarin Expert Day: [.NET MAUI MVU](https://www.youtube.com/watch?v=9kwrgm_-FCk)
-* October 3, 2020 - David Ortinau at Xamarin Expert Day: [Introducing .NET MAUI](https://youtu.be/qbHO8J3bId0)
-* December 2, 2020 - Javier Suarez Ruiz at MonkeyConf: [.NET MAUI Handlers](https://youtu.be/TBMauxRGkiI) (Spanish)
+Follow the [.NET MAUI Blog](https://devblogs.microsoft.com/dotnet/category/net-maui/) and visit the [News](https://github.com/dotnet/maui/wiki/News) wiki page for more news and updates.
 
 ## FAQs
 
@@ -105,3 +43,6 @@ See [CONTRIBUTING](./.github/CONTRIBUTING.md)
 ## Code of conduct
 
 See [CODE-OF-CONDUCT](./.github/CODE_OF_CONDUCT.md)
+
+## Stats
+<img src="https://repobeats.axiom.co/api/embed/f917a77cbbdeee19b87fa1f2f932895d1df18b71.svg" />

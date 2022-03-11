@@ -1,0 +1,68 @@
+<Type Name="FlowDirectionConverter" FullName="Microsoft.Maui.Controls.FlowDirectionConverter">
+  <TypeSignature Language="C#" Value="public class FlowDirectionConverter : Microsoft.Maui.Controls.TypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit FlowDirectionConverter extends Microsoft.Maui.Controls.TypeConverter" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.FlowDirectionConverter" />
+  <TypeSignature Language="F#" Value="type FlowDirectionConverter = class&#xA;    inherit TypeConverter" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Microsoft.Maui.Controls.Xaml.TypeConversion(typeof(Microsoft.Maui.Controls.FlowDirection))</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>Converts a string representation of a flow direction to a <see cref="T:Microsoft.Maui.Controls.FlowDirection" />.</summary>
+    <remarks>
+      <para>This converter recognizes and converts string representations of the <see cref="T:Microsoft.Maui.Controls.FlowDirection" /> enumeration, as well as the following strings, regardless of case: "ltr", "rtl", and "inherit".</para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public FlowDirectionConverter ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.FlowDirectionConverter.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Creates a new default converter.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ConvertFromInvariantString">
+      <MemberSignature Language="C#" Value="public override object ConvertFromInvariantString (string value);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance object ConvertFromInvariantString(string value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.FlowDirectionConverter.ConvertFromInvariantString(System.String)" />
+      <MemberSignature Language="F#" Value="override this.ConvertFromInvariantString : string -&gt; obj" Usage="flowDirectionConverter.ConvertFromInvariantString value" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Object</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="value">The value to convert.</param>
+        <summary>Returns the object for the string representation.</summary>
+        <returns>The object for the string representation.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

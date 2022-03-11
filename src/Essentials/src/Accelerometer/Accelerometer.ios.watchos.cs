@@ -1,21 +1,21 @@
 using CoreMotion;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Accelerometer
+	public partial class AccelerometerImplementation
 	{
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			Platform.MotionManager?.AccelerometerAvailable ?? false;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var manager = Platform.MotionManager;
 			manager.AccelerometerUpdateInterval = sensorSpeed.ToPlatform();
 			manager.StartAccelerometerUpdates(Platform.GetCurrentQueue(), DataUpdated);
 		}
 
-		static void DataUpdated(CMAccelerometerData data, NSError error)
+		void DataUpdated(CMAccelerometerData data, NSError error)
 		{
 			if (data == null)
 				return;
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Essentials
 			OnChanged(accelData);
 		}
 
-		internal static void PlatformStop() =>
+		void PlatformStop() =>
 			Platform.MotionManager?.StopAccelerometerUpdates();
 	}
 }

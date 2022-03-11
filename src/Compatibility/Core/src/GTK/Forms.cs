@@ -16,10 +16,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		const string LogFormat = "[{0}] {1}";
 
 		public static bool IsInitialized { get; private set; }
-		static bool FlagsSet { get; set; }
-
-		static IReadOnlyList<string> s_flags;
-		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new List<string>().AsReadOnly());
 
 		public static void Init(IEnumerable<Assembly> rendererAssemblies = null)
 		{
@@ -30,11 +26,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
 
-			Device.SetIdiom(TargetIdiom.Desktop);
-			Device.SetFlags(s_flags);
 			Device.PlatformServices = new GtkPlatformServices();
 			Device.Info = new GtkDeviceInfo();
-			Color.SetAccent(Color.FromHex("#3498DB"));
+			Color.SetAccent(Color.FromArgb("#3498DB"));
 			ExpressionSearch.Default = new GtkExpressionSearch();
 
 			Registrar.RegisterAll(new[]
@@ -45,22 +39,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			});
 
 			IsInitialized = true;
-		}
-
-		public static void SetFlags(params string[] flags)
-		{
-			if (FlagsSet)
-			{
-				return;
-			}
-
-			if (IsInitialized)
-			{
-				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
-			}
-
-			s_flags = flags.ToList().AsReadOnly();
-			FlagsSet = true;
 		}
 	}
 }

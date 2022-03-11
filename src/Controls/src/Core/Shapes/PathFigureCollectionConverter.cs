@@ -1,12 +1,22 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigureCollectionConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PathFigureCollectionConverter']/Docs" />
 	public class PathFigureCollectionConverter : TypeConverter
 	{
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigureCollectionConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigureCollectionConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs" />
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> false;
+
 		const bool AllowSign = true;
 		const bool AllowComma = true;
 
@@ -19,15 +29,18 @@ namespace Microsoft.Maui.Controls.Shapes
 		static Point _secondLastPoint;
 		static char _token;
 
-		public override object ConvertFromInvariantString(string value)
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigureCollectionConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs" />
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			var strValue = value?.ToString();
 			PathFigureCollection pathFigureCollection = new PathFigureCollection();
 
-			ParseStringToPathFigureCollection(pathFigureCollection, value);
+			ParseStringToPathFigureCollection(pathFigureCollection, strValue);
 
 			return pathFigureCollection;
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigureCollectionConverter.xml" path="//Member[@MemberName='ParseStringToPathFigureCollection']/Docs" />
 		public static void ParseStringToPathFigureCollection(PathFigureCollection pathFigureCollection, string pathString)
 		{
 			if (pathString != null)
@@ -565,6 +578,8 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		public override string ConvertToInvariantString(object value) => throw new NotSupportedException();
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigureCollectionConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+			=> throw new NotSupportedException();
 	}
 }

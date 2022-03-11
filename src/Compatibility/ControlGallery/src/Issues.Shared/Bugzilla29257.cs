@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			_menu.SelectedItem = null;
 		}
 
-		public class TestPage : CarouselPage
+		internal class TestPage : CarouselPage
 		{
 			public TestPage()
 			{

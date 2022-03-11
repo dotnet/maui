@@ -1,24 +1,37 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/ListStringTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ListStringTypeConverter']/Docs" />
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.ListStringTypeConverter")]
-	[Xaml.TypeConversion(typeof(List<string>))]
 	public class ListStringTypeConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListStringTypeConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListStringTypeConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs" />
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListStringTypeConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs" />
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value == null)
+			var strValue = value?.ToString();
+			if (strValue == null)
 				return null;
 
-			return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+			return strValue.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
 		}
 
-		public override string ConvertToInvariantString(object value)
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListStringTypeConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is List<string> list))
+			if (value is not List<string> list)
 				throw new NotSupportedException();
 			return string.Join(", ", list);
 		}

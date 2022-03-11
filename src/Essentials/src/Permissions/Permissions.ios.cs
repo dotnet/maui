@@ -93,35 +93,25 @@ namespace Microsoft.Maui.Essentials
 
 			internal static PermissionStatus GetAddressBookPermissionStatus()
 			{
-				var status = ABAddressBook.GetAuthorizationStatus();
+				var status = global::Contacts.CNContactStore.GetAuthorizationStatus(global::Contacts.CNEntityType.Contacts);
 				return status switch
 				{
-					ABAuthorizationStatus.Authorized => PermissionStatus.Granted,
-					ABAuthorizationStatus.Denied => PermissionStatus.Denied,
-					ABAuthorizationStatus.Restricted => PermissionStatus.Restricted,
+					global::Contacts.CNAuthorizationStatus.Authorized => PermissionStatus.Granted,
+					global::Contacts.CNAuthorizationStatus.Denied => PermissionStatus.Denied,
+					global::Contacts.CNAuthorizationStatus.Restricted => PermissionStatus.Restricted,
 					_ => PermissionStatus.Unknown,
 				};
 			}
 
-			internal static Task<PermissionStatus> RequestAddressBookPermission()
+			internal static async Task<PermissionStatus> RequestAddressBookPermission()
 			{
-				var addressBook = ABAddressBook.Create(out var createError);
+				var contactStore = new global::Contacts.CNContactStore();
+				var result = await contactStore.RequestAccessAsync(global::Contacts.CNEntityType.Contacts);
 
-				// if the permission was denied, then we can't create the object
-				if (createError?.Code == (int)ABAddressBookError.OperationNotPermittedByUserError)
-					return Task.FromResult(PermissionStatus.Denied);
+				if (result.Item2 != null)
+					return PermissionStatus.Denied;
 
-				var tcs = new TaskCompletionSource<PermissionStatus>();
-
-				addressBook.RequestAccess((success, error) =>
-				{
-					tcs.TrySetResult(success ? PermissionStatus.Granted : PermissionStatus.Denied);
-
-					addressBook?.Dispose();
-					addressBook = null;
-				});
-
-				return tcs.Task;
+				return result.Item1 ? PermissionStatus.Granted : PermissionStatus.Denied;
 			}
 		}
 
@@ -178,10 +168,6 @@ namespace Microsoft.Maui.Essentials
 
 			internal static PermissionStatus GetMediaPermissionStatus()
 			{
-				// Only available in 9.3+
-				if (!Platform.HasOSVersion(9, 3))
-					return PermissionStatus.Unknown;
-
 				var status = MPMediaLibrary.AuthorizationStatus;
 				return status switch
 				{
@@ -194,10 +180,6 @@ namespace Microsoft.Maui.Essentials
 
 			internal static Task<PermissionStatus> RequestMediaPermission()
 			{
-				// Only available in 9.3+
-				if (!Platform.HasOSVersion(9, 3))
-					return Task.FromResult(PermissionStatus.Unknown);
-
 				var tcs = new TaskCompletionSource<PermissionStatus>();
 
 				MPMediaLibrary.RequestAuthorization(s =>
@@ -288,9 +270,6 @@ namespace Microsoft.Maui.Essentials
 
 			internal static Task<PermissionStatus> RequestSpeechPermission()
 			{
-				if (!Platform.HasOSVersion(10, 0))
-					return Task.FromResult(PermissionStatus.Unknown);
-
 				var tcs = new TaskCompletionSource<PermissionStatus>();
 
 				SFSpeechRecognizer.RequestAuthorization(s =>

@@ -1,7 +1,8 @@
-using Microsoft.Maui;
+using System.Threading.Tasks;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class SliderExtensions
 	{
@@ -34,7 +35,7 @@ namespace Microsoft.Maui
 					uiSlider.MinimumTrackTintColor = defaultMinTrackColor;
 			}
 			else
-				uiSlider.MinimumTrackTintColor = slider.MinimumTrackColor.ToNative();
+				uiSlider.MinimumTrackTintColor = slider.MinimumTrackColor.ToPlatform();
 		}
 
 		public static void UpdateMaximumTrackColor(this UISlider uiSlider, ISlider slider)
@@ -47,7 +48,7 @@ namespace Microsoft.Maui
 			if (slider.MaximumTrackColor == null)
 				uiSlider.MaximumTrackTintColor = defaultMaxTrackColor;
 			else
-				uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToNative();
+				uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToPlatform();
 		}
 
 		public static void UpdateThumbColor(this UISlider uiSlider, ISlider slider)
@@ -60,7 +61,21 @@ namespace Microsoft.Maui
 			if (slider.ThumbColor == null)
 				uiSlider.ThumbTintColor = defaultThumbColor;
 			else
-				uiSlider.ThumbTintColor = slider.ThumbColor.ToNative();
+				uiSlider.ThumbTintColor = slider.ThumbColor.ToPlatform();
+		}
+
+		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IImageSourceServiceProvider provider)
+		{
+			var thumbImageSource = slider.ThumbImageSource;
+
+			if (thumbImageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(thumbImageSource);
+				var result = await service.GetImageAsync(thumbImageSource);
+				var thumbImage = result?.Value;
+
+				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);
+			}
 		}
 	}
 }

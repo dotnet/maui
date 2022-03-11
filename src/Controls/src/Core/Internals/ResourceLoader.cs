@@ -4,28 +4,12 @@ using System.Reflection;
 
 namespace Microsoft.Maui.Controls.Internals
 {
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ResourceLoader.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.ResourceLoader']/Docs" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class ResourceLoader
 	{
-		static Func<AssemblyName, string, string> resourceProvider;
-
-		[Obsolete("You shouldn't have used this one to begin with, don't use the other one either")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		//takes a resource path, returns string content
-		public static Func<AssemblyName, string, string> ResourceProvider
-		{
-			get => resourceProvider;
-			internal set
-			{
-				resourceProvider = value;
-				if (value != null)
-					ResourceProvider2 = rlq => new ResourceLoadingResponse { ResourceContent = value(rlq.AssemblyName, rlq.ResourcePath) };
-				else
-					ResourceProvider2 = null;
-			}
-		}
-
 		static Func<ResourceLoadingQuery, ResourceLoadingResponse> _resourceProvider2;
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ResourceLoader.xml" path="//Member[@MemberName='ResourceProvider2']/Docs" />
 		public static Func<ResourceLoadingQuery, ResourceLoadingResponse> ResourceProvider2
 		{
 			get => _resourceProvider2;
@@ -35,14 +19,6 @@ namespace Microsoft.Maui.Controls.Internals
 				_resourceProvider2 = value;
 			}
 		}
-
-		[Obsolete("Can't touch this")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static bool IsEnabled => _resourceProvider2 != null;
-
-		[Obsolete("Can't touch this")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static bool CanProvideContentFor(ResourceLoadingQuery rlq) => _resourceProvider2?.Invoke(rlq) != null;
 
 		public class ResourceLoadingQuery
 		{
@@ -55,19 +31,6 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			public string ResourceContent { get; set; }
 			public bool UseDesignProperties { get; set; }
-		}
-
-		static Action<Exception> exceptionHandler1;
-
-		[Obsolete("2 is better than 1")]
-		internal static Action<Exception> ExceptionHandler
-		{
-			get => exceptionHandler1;
-			set
-			{
-				exceptionHandler1 = value;
-				ExceptionHandler2 = value != null ? ((Exception exception, string filepath) err) => exceptionHandler1(err.exception) : (Action<(Exception, string)>)null;
-			}
 		}
 
 		internal static Action<(Exception exception, string filepath)> ExceptionHandler2 { get; set; }

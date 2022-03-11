@@ -4,11 +4,23 @@ using System.Linq;
 
 namespace Microsoft.Maui.LifecycleEvents
 {
-	public class LifecycleEventService : ILifecycleEventService
+	public class LifecycleEventService : ILifecycleEventService, ILifecycleBuilder
 	{
 		readonly Dictionary<string, List<Delegate>> _mapper = new Dictionary<string, List<Delegate>>();
 
-		public void AddEvent(string eventName, Delegate action)
+		public LifecycleEventService(IEnumerable<LifecycleEventRegistration> registrations)
+		{
+			if (registrations != null)
+			{
+				foreach (var registrationAction in registrations)
+				{
+					registrationAction.AddRegistration(this);
+				}
+			}
+		}
+
+		public void AddEvent<TDelegate>(string eventName, TDelegate action)
+			where TDelegate : Delegate
 		{
 			if (!_mapper.TryGetValue(eventName, out var delegates) && delegates == null)
 				_mapper[eventName] = delegates = new List<Delegate>();

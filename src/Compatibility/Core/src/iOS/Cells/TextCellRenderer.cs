@@ -1,10 +1,13 @@
+using System;
 using System.ComponentModel;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.TextCellRenderer instead")]
 	public class TextCellRenderer : CellRenderer
 	{
 		readonly Color DefaultDetailColor = ColorExtensions.SecondaryLabelColor.ToColor();

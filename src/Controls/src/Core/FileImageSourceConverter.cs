@@ -1,21 +1,34 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.TypeConversion(typeof(FileImageSource))]
+	/// <include file="../../docs/Microsoft.Maui.Controls/FileImageSourceConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.FileImageSourceConverter']/Docs" />
 	public sealed class FileImageSourceConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
-		{
-			if (value != null)
-				return (FileImageSource)ImageSource.FromFile(value);
+		/// <include file="../../docs/Microsoft.Maui.Controls/FileImageSourceConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
 
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FileImageSource)));
+		/// <include file="../../docs/Microsoft.Maui.Controls/FileImageSourceConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs" />
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/FileImageSourceConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs" />
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		{
+			var strValue = value?.ToString();
+			if (strValue != null)
+				return (FileImageSource)ImageSource.FromFile(strValue);
+
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FileImageSource)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		/// <include file="../../docs/Microsoft.Maui.Controls/FileImageSourceConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is FileImageSource fis))
+			if (value is not FileImageSource fis)
 				throw new NotSupportedException();
 			return fis.File;
 		}

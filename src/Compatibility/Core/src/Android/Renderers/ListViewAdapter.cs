@@ -14,7 +14,8 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	internal class ListViewAdapter : CellAdapter
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ListViewAdapter instead")]
+	internal class ListViewAdapter : Handlers.Compatibility.CellAdapter
 	{
 		bool _disposed;
 		static readonly object DefaultItemTypeOrDataTemplate = new object();
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected readonly ListView _listView;
 		readonly AListView _realListView;
 		readonly Dictionary<DataTemplate, int> _templateToId = new Dictionary<DataTemplate, int>();
-		readonly List<ConditionalFocusLayout> _layoutsCreated = new List<ConditionalFocusLayout>();
+		readonly List<Handlers.Compatibility.ConditionalFocusLayout> _layoutsCreated = new List<Handlers.Compatibility.ConditionalFocusLayout>();
 		int _dataTemplateIncrementer = 2; // lets start at not 0 because ... 
 
 		// We will use _dataTemplateIncrementer to get the proper ViewType key for the item's DataTemplate and store these keys in  _templateToId.
@@ -64,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			realListView.OnItemClickListener = this;
 			realListView.OnItemLongClickListener = this;
 
-			MessagingCenter.Subscribe<ListViewAdapter>(this, AppCompat.Platform.CloseContextActionsSignalName, lva => CloseContextActions());
+			MessagingCenter.Subscribe<ListViewAdapter>(this, Platform.CloseContextActionsSignalName, lva => CloseContextActions());
 
 			InvalidateCount();
 		}
@@ -235,7 +236,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			var cellIsBeingReused = false;
-			var layout = convertView as ConditionalFocusLayout;
+			var layout = convertView as Handlers.Compatibility.ConditionalFocusLayout;
 			if (layout != null)
 			{
 				cellIsBeingReused = true;
@@ -243,7 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			else
 			{
-				layout = new ConditionalFocusLayout(_context) { Orientation = Orientation.Vertical };
+				layout = new Handlers.Compatibility.ConditionalFocusLayout(_context) { Orientation = Orientation.Vertical };
 				_layoutsCreated.Add(layout);
 			}
 
@@ -436,7 +437,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				CloseContextActions();
 
-				MessagingCenter.Unsubscribe<ListViewAdapter>(this, AppCompat.Platform.CloseContextActionsSignalName);
+				MessagingCenter.Unsubscribe<ListViewAdapter>(this, Platform.CloseContextActionsSignalName);
 
 				_realListView.OnItemClickListener = null;
 				_realListView.OnItemLongClickListener = null;
@@ -470,7 +471,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if ((Controller.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
 			{
 				AView cellOwner = view;
-				var layout = cellOwner as ConditionalFocusLayout;
+				var layout = cellOwner as Handlers.Compatibility.ConditionalFocusLayout;
 				if (layout != null)
 					cellOwner = layout.GetChildAt(0);
 				cell = (Cell)(cellOwner as INativeElementView)?.Element;
@@ -506,7 +507,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_layoutsCreated.Clear();
 		}
 
-		void DisposeOfConditionalFocusLayout(ConditionalFocusLayout layout)
+		void DisposeOfConditionalFocusLayout(Handlers.Compatibility.ConditionalFocusLayout layout)
 		{
 			var renderedView = layout?.GetChildAt(0);
 
@@ -515,10 +516,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (view != null)
 			{
-				var renderer = AppCompat.Platform.GetRenderer(view);
+				var renderer = Platform.GetRenderer(view);
 
 				if (renderer == renderedView)
-					element.ClearValue(AppCompat.Platform.RendererProperty);
+					element.ClearValue(Platform.RendererProperty);
 
 				renderer?.Dispose();
 				renderer = null;
@@ -671,7 +672,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Select(position, view);
 		}
 
-		void UpdateSeparatorVisibility(Cell cell, bool cellIsBeingReused, bool isHeader, bool nextCellIsHeader, bool isSeparatorVisible, ConditionalFocusLayout layout, out AView bline)
+		void UpdateSeparatorVisibility(Cell cell, bool cellIsBeingReused, bool isHeader, bool nextCellIsHeader, bool isSeparatorVisible, Handlers.Compatibility.ConditionalFocusLayout layout, out AView bline)
 		{
 			bline = null;
 			if (cellIsBeingReused && layout.ChildCount > 1)

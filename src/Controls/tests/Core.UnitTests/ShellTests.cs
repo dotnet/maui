@@ -3,10 +3,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[TestFixture]
 	public class ShellTests : ShellTestBase
 	{
@@ -55,7 +58,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var item2 = shell.Items[1];
 
-			Assert.AreEqual(FindParentOfType<ShellItem>(shellElement), item2);
+			Assert.AreEqual(shellElement.FindParentOfType<ShellItem>(), item2);
 
 			if (useShellContent)
 				shell.CurrentItem = (ShellContent)shellElement;
@@ -63,7 +66,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				shell.CurrentItem = (ShellSection)shellElement;
 
 			Assert.AreEqual(2, shell.Items.Count);
-			Assert.AreEqual(FindParentOfType<ShellItem>(shellElement), item2);
+			Assert.AreEqual(shellElement.FindParentOfType<ShellItem>(), item2);
 			Assert.AreEqual(item2, shell.CurrentItem);
 		}
 
@@ -257,13 +260,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task CaseIgnoreRouting()
 		{
 			var routes = new[] { "Tab1", "TAB2", "@-_-@", "+:~", "=%", "Super_Simple+-Route.doc", "1/2", @"1\2/3", "app://tab" };
+			var services = Substitute.For<IServiceProvider>();
 
 			foreach (var route in routes)
 			{
 				var formattedRoute = Routing.FormatRoute(route);
 				Routing.RegisterRoute(formattedRoute, typeof(ShellItem));
 
-				var content1 = Routing.GetOrCreateContent(formattedRoute);
+				var content1 = Routing.GetOrCreateContent(formattedRoute, services);
 				Assert.IsNotNull(content1);
 				Assert.AreEqual(Routing.GetRoute(content1), formattedRoute);
 			}
@@ -1176,7 +1180,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public async Task GetCurrentPageInShellNavigation()
 		{
-			Shell shell = new Shell();
+			Shell shell = new TestShell();
 			var item1 = CreateShellItem(asImplicit: true, shellContentRoute: "rootlevelcontent1");
 
 			shell.Items.Add(item1);
@@ -1316,5 +1320,164 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Greater(count, previousCount, "StructureChanged not fired when adding Shell Content");
 		}
 
+		[Test]
+		public void VisualTreeHelperCount()
+		{
+			Shell shell = new Shell();
+			shell.Items.Add(CreateShellItem());
+			shell.CurrentItem.Items.Add(CreateShellSection());
+			shell.CurrentItem.CurrentItem.Items.Add(CreateShellContent());
+			var shellCount = (shell as IVisualTreeElement).GetVisualChildren();
+			var shellItemCount = (shell.CurrentItem as IVisualTreeElement).GetVisualChildren();
+			Assert.AreEqual(shellCount.Count, 1);
+			Assert.AreEqual(shellItemCount.Count, 2);
+		}
+
+		[Test]
+		public void ShellToolbarTitle()
+		{
+			var shellContent = CreateShellContent();
+			TestShell testShell = new TestShell(shellContent)
+			{
+				Title = "Shell Title"
+			};
+
+			var shellToolBar = testShell.Toolbar;
+
+			Assert.AreEqual(String.Empty, shellToolBar.Title);
+
+			shellContent.Title = "Shell Content Title";
+			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
+
+			var page = testShell.CurrentPage;
+			page.Title = "ContentPage Title";
+			Assert.AreEqual("ContentPage Title", shellToolBar.Title);
+		}
+
+		[Test]
+		public void ShellToolbarTitleChangesWithCurrentItem()
+		{
+			var shellContent = CreateShellContent();
+			var shellContent2 = CreateShellContent();
+			TestShell testShell = new TestShell(shellContent, shellContent2)
+			{
+				Title = "Shell Title"
+			};
+
+			shellContent.Title = "Content 1";
+			shellContent2.Title = "Content 2";
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual("Content 1", shellToolBar.Title);
+
+			testShell.CurrentItem = shellContent2;
+			Assert.AreEqual("Content 2", shellToolBar.Title);
+		}
+
+		[Test]
+		public void ShellToolbarTitleEmptyStringOnNullOrEmptyPageTitle()
+		{
+			var shellContent = CreateShellContent();
+			var shellContent2 = CreateShellContent();
+			TestShell testShell = new TestShell(shellContent, shellContent2)
+			{
+				Title = "Shell Title"
+			};
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual(String.Empty, shellToolBar.Title);
+
+			var page = testShell.CurrentPage;
+			page.Title = String.Empty;
+			Assert.AreEqual(String.Empty, shellToolBar.Title);
+			page.Title = "set";
+			Assert.AreEqual("set", shellToolBar.Title);
+			page.Title = null;
+			Assert.AreEqual(String.Empty, shellToolBar.Title);
+		}
+
+		[Test]
+		public async Task ShellToolbarTitleIgnoresModalTitle()
+		{
+			var shellContent = CreateShellContent();
+			shellContent.Title = "Shell Title";
+			TestShell testShell = new TestShell(shellContent);
+
+			await testShell.CurrentSection.Navigation.PushModalAsync(new ContentPage()
+			{
+				Title = "Modal Page"
+			});
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual("Shell Title", shellToolBar.Title);
+
+			await testShell.CurrentSection.Navigation.PopModalAsync();
+
+			Assert.AreEqual("Shell Title", shellToolBar.Title);
+		}
+
+		[Test]
+		public async Task ShellToolbarTitleIgnoresModalTitle_ShellContent()
+		{
+			var shellContent = CreateShellContent();
+			shellContent.Title = "Shell Content Title";
+
+			var flyoutItem = new FlyoutItem()
+			{
+				Title = "Flyout Item 1",
+				Items =
+				{
+					shellContent
+				}
+			};
+
+			TestShell testShell = new TestShell(flyoutItem)
+			{
+				Title = "Welcome to Shell"
+			};
+
+			await testShell.CurrentSection.Navigation.PushModalAsync(new ContentPage()
+			{
+				Title = "Modal Page"
+			});
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
+			await testShell.CurrentSection.Navigation.PopModalAsync();
+			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
+		}
+
+		[Test]
+		public async Task PushedPageDoesntUsesTitleOnShellSection()
+		{
+			var shellContent = CreateShellContent();
+			shellContent.Title = "Shell Content Title";
+
+			var shellSection = new ShellSection();
+			shellSection.Title = "Shell Section Title";
+			shellSection.Items.Add(shellContent);
+
+			TestShell testShell = new TestShell(shellSection)
+			{
+				Title = "Shell Title"
+			};
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
+
+			await testShell.CurrentSection.Navigation.PushAsync(new ContentPage());
+
+			Assert.AreEqual("", shellToolBar.Title);
+
+			await testShell.CurrentSection.Navigation.PopAsync();
+			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
+		}
+		
+		public void ShellToolbarNotVisibleWithBasicContentPage()
+		{
+			TestShell testShell = new TestShell(new ContentPage());
+			var shellToolBar = testShell.Toolbar;
+			Assert.False(shellToolBar.IsVisible);
+		}
 	}
 }

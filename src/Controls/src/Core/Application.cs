@@ -1,43 +1,61 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>
+	/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.Application']/Docs" />
+	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeElement
 	{
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
-		Task<IDictionary<string, object>> _propertiesTask;
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
+		readonly Lazy<IResourceDictionary> _systemResources;
 
-		public override IDispatcher Dispatcher => this.GetDispatcher();
-
-		IAppIndexingProvider _appIndexProvider;
-		ReadOnlyCollection<Element> _logicalChildren;
+		IAppIndexingProvider? _appIndexProvider;
+		ReadOnlyCollection<Element>? _logicalChildren;
+		bool _isStarted;
 
 		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
-		public Application()
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		public Application() : this(true)
 		{
-			SetCurrentApplication(this);
-			NavigationProxy = new NavigationImpl(this);
-			SystemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
-			SystemResources.ValuesChanged += OnParentResourcesChanged;
-			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
-			// Initialize this value, when the app loads
-			_lastAppTheme = RequestedTheme;
 		}
 
+		internal Application(bool setCurrentApplication)
+		{			
+			if (setCurrentApplication)
+				SetCurrentApplication(this);
+
+			_systemResources = new Lazy<IResourceDictionary>(() =>
+			{
+				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
+				systemResources.ValuesChanged += OnParentResourcesChanged;
+				return systemResources;
+			});
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
+
+			_lastAppTheme = PlatformAppTheme;
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Quit']/Docs" />
 		public void Quit()
 		{
-			Device.PlatformServices?.QuitApplication();
+			Handler?.Invoke(ApplicationHandler.TerminateCommandKey);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='AppLinks']/Docs" />
 		public IAppLinks AppLinks
 		{
 			get
@@ -50,124 +68,71 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SetCurrentApplication']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetCurrentApplication(Application value) => Current = value;
 
-		public static Application Current { get; set; }
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Current']/Docs" />
+		public static Application? Current { get; set; }
 
-		// TODO MAUI. What should this be?
-		public Page MainPage
+		Page? _pendingMainPage;
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='MainPage']/Docs" />
+		public Page? MainPage
 		{
 			get
 			{
 				if (Windows.Count == 0)
-					return null;
+					return _pendingMainPage;
 
-				return Windows[0].View as Page;
+				return Windows[0].Page;
 			}
 			set
 			{
-				if (value == null)
-					throw new ArgumentNullException("value");
-
 				if (MainPage == value)
 					return;
 
+				OnPropertyChanging();
+
 				if (Windows.Count == 0)
 				{
-					OnPropertyChanging();
-					AddWindow(new Window(value));
-					OnPropertyChanged();
+					_pendingMainPage = value;
 				}
 				else
 				{
-					var mainPage = MainPage;
-
-					if (mainPage == value)
-						return;
-
-					OnPropertyChanging();
-					if (mainPage != null)
-						mainPage.Parent = null;
-
-					Windows[0].View = (IView)value;
-
-					if (mainPage != null)
-						mainPage.NavigationProxy.Inner = NavigationProxy;
-
-					OnPropertyChanged();
+					Windows[0].Page = value;
 				}
+
+				OnPropertyChanged();
 			}
 		}
 
-		//public Page MainPage
-		//{
-		//	get { return _mainPage; }
-		//	set
-		//	{
-		//		if (value == null)
-		//			throw new ArgumentNullException("value");
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Properties']/Docs" />
+		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.", error: true)]
+		public IDictionary<string, object> Properties => throw new NotSupportedException("Properties API is obsolete, use Essentials.Preferences instead.");
 
-		//		if (_mainPage == value)
-		//			return;
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
+			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
 
-		//		OnPropertyChanging();
-		//		if (_mainPage != null)
-		//		{
-		//			InternalChildren.Remove(_mainPage);
-		//			_mainPage.Parent = null;
-		//		}
-
-		//		_mainPage = value;
-
-		//		if (_mainPage != null)
-		//		{
-		//			_mainPage.Parent = this;
-		//			_mainPage.NavigationProxy.Inner = NavigationProxy;
-		//			InternalChildren.Add(_mainPage);
-		//		}
-
-		//		OnPropertyChanged();
-		//	}
-		//}
-
-		public IDictionary<string, object> Properties
-		{
-			get
-			{
-				if (_propertiesTask == null)
-				{
-					_propertiesTask = GetPropertiesAsync();
-				}
-
-				return _propertiesTask.Result;
-			}
-		}
-
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal
-		{
-			get { return _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren)); }
-		}
-
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='NavigationProxy']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public NavigationProxy NavigationProxy { get; private set; }
+		public NavigationProxy? NavigationProxy { get; private set; }
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public int PanGestureId { get; set; }
-
-		internal IResourceDictionary SystemResources { get; }
+		internal IResourceDictionary SystemResources => _systemResources.Value;
 
 		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SetAppIndexingProvider']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetAppIndexingProvider(IAppIndexingProvider provider)
 		{
 			_appIndexProvider = provider;
 		}
 
-		ResourceDictionary _resources;
+		ResourceDictionary? _resources;
 		bool IResourcesProvider.IsResourcesCreated => _resources != null;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Resources']/Docs" />
 		public ResourceDictionary Resources
 		{
 			get
@@ -194,18 +159,24 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public OSAppTheme UserAppTheme
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='UserAppTheme']/Docs" />
+		public AppTheme UserAppTheme
 		{
 			get => _userAppTheme;
 			set
 			{
 				_userAppTheme = value;
-				TriggerThemeChangedActual(new AppThemeChangedEventArgs(value));
+				TriggerThemeChangedActual();
 			}
 		}
-		public OSAppTheme RequestedTheme => UserAppTheme == OSAppTheme.Unspecified ? Device.PlatformServices.RequestedTheme : UserAppTheme;
 
-		public static Color AccentColor { get; set; }
+		public AppTheme PlatformAppTheme => AppInfo.RequestedTheme;
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
+		public AppTheme RequestedTheme => UserAppTheme != AppTheme.Unspecified ? UserAppTheme : PlatformAppTheme;
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='AccentColor']/Docs" />
+		public static Color? AccentColor { get; set; }
 
 		public event EventHandler<AppThemeChangedEventArgs> RequestedThemeChanged
 		{
@@ -214,31 +185,24 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool _themeChangedFiring;
-		OSAppTheme _lastAppTheme;
-		OSAppTheme _userAppTheme = OSAppTheme.Unspecified;
+		AppTheme _lastAppTheme = AppTheme.Unspecified;
+		AppTheme _userAppTheme = AppTheme.Unspecified;
 
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void TriggerThemeChanged(AppThemeChangedEventArgs args)
+		void TriggerThemeChangedActual()
 		{
-			if (UserAppTheme != OSAppTheme.Unspecified)
-				return;
-			TriggerThemeChangedActual(args);
-		}
+			var newTheme = RequestedTheme;
 
-		void TriggerThemeChangedActual(AppThemeChangedEventArgs args)
-		{
 			// On iOS the event is triggered more than once.
 			// To minimize that for us, we only do it when the theme actually changes and it's not currently firing
-			if (_themeChangedFiring || RequestedTheme == _lastAppTheme)
+			if (_themeChangedFiring || newTheme == _lastAppTheme)
 				return;
 
 			try
 			{
 				_themeChangedFiring = true;
-				_lastAppTheme = RequestedTheme;
+				_lastAppTheme = newTheme;
 
-				_weakEventManager.HandleEvent(this, args, nameof(RequestedThemeChanged));
+				_weakEventManager.HandleEvent(this, new AppThemeChangedEventArgs(newTheme), nameof(RequestedThemeChanged));
 			}
 			finally
 			{
@@ -246,55 +210,44 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public event EventHandler<ModalPoppedEventArgs> ModalPopped;
+		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
 
-		public event EventHandler<ModalPoppingEventArgs> ModalPopping;
+		public event EventHandler<ModalPoppingEventArgs>? ModalPopping;
 
-		public event EventHandler<ModalPushedEventArgs> ModalPushed;
+		public event EventHandler<ModalPushedEventArgs>? ModalPushed;
 
-		public event EventHandler<ModalPushingEventArgs> ModalPushing;
+		public event EventHandler<ModalPushingEventArgs>? ModalPushing;
 
-		public event EventHandler<Page> PageAppearing;
-
-		public event EventHandler<Page> PageDisappearing;
-
-		async void SaveProperties()
+		internal void NotifyOfWindowModalEvent(EventArgs eventArgs)
 		{
-			try
+			switch (eventArgs)
 			{
-				await SetPropertiesAsync();
-			}
-			catch (Exception exc)
-			{
-				Internals.Log.Warning(nameof(Application), $"Exception while saving Application Properties: {exc}");
+				case ModalPoppedEventArgs poppedEvents:
+					ModalPopped?.Invoke(this, poppedEvents);
+					break;
+				case ModalPoppingEventArgs poppingEvents:
+					ModalPopping?.Invoke(this, poppingEvents);
+					break;
+				case ModalPushedEventArgs pushedEvents:
+					ModalPushed?.Invoke(this, pushedEvents);
+					break;
+				case ModalPushingEventArgs pushingEvents:
+					ModalPushing?.Invoke(this, pushingEvents);
+					break;
+				default:
+					break;
 			}
 		}
 
-		public async Task SavePropertiesAsync()
-		{
-			if (Dispatcher.IsInvokeRequired)
-			{
-				Dispatcher.BeginInvokeOnMainThread(SaveProperties);
-			}
-			else
-			{
-				await SetPropertiesAsync();
-			}
-		}
+		public event EventHandler<Page>? PageAppearing;
 
-		// Don't use this unless there really is no better option
-		internal void SavePropertiesAsFireAndForget()
-		{
-			if (Dispatcher.IsInvokeRequired)
-			{
-				Dispatcher.BeginInvokeOnMainThread(SaveProperties);
-			}
-			else
-			{
-				SaveProperties();
-			}
-		}
+		public event EventHandler<Page>? PageDisappearing;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SavePropertiesAsync']/Docs" />
+		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.", error: true)]
+		public Task SavePropertiesAsync() => throw new NotSupportedException("Properties API is obsolete, use Essentials.Preferences instead.");
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='On']/Docs" />
 		public IPlatformElementConfiguration<T, Application> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
@@ -323,7 +276,10 @@ namespace Microsoft.Maui.Controls
 
 		internal static void ClearCurrent() => Current = null;
 
-		internal static bool IsApplicationOrNull(object element) =>
+		internal static bool IsApplicationOrNull(object? element) =>
+			element == null || element is IApplication;
+
+		internal static bool IsApplicationOrWindowOrNull(object? element) =>
 			element == null || element is IApplication || element is IWindow;
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
@@ -346,55 +302,31 @@ namespace Microsoft.Maui.Controls
 			OnResourcesChanged(changedResources);
 		}
 
-		internal event EventHandler PopCanceled;
-
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SendOnAppLinkRequestReceived']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendOnAppLinkRequestReceived(Uri uri)
 		{
 			OnAppLinkRequestReceived(uri);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendResume()
+		internal void SendResume()
 		{
 			Current = this;
 			OnResume();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendSleep()
+		internal void SendSleep()
 		{
 			OnSleep();
-			SavePropertiesAsFireAndForget();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Task SendSleepAsync()
+		internal void SendStart()
 		{
-			OnSleep();
-			return SavePropertiesAsync();
-		}
+			if (_isStarted)
+				return;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendStart()
-		{
+			_isStarted = true;
 			OnStart();
-		}
-
-		async Task<IDictionary<string, object>> GetPropertiesAsync()
-		{
-			var deserializer = DependencyService.Get<IDeserializer>();
-			if (deserializer == null)
-			{
-				Log.Warning("Startup", "No IDeserialzier was found registered");
-				return new Dictionary<string, object>(4);
-			}
-
-			IDictionary<string, object> properties = await deserializer.DeserializePropertiesAsync().ConfigureAwait(false);
-			if (properties == null)
-				properties = new Dictionary<string, object>(4);
-
-			return properties;
 		}
 
 		internal void OnPageAppearing(Page page)
@@ -402,39 +334,6 @@ namespace Microsoft.Maui.Controls
 
 		internal void OnPageDisappearing(Page page)
 			=> PageDisappearing?.Invoke(this, page);
-
-		void OnModalPopped(Page modalPage)
-			=> ModalPopped?.Invoke(this, new ModalPoppedEventArgs(modalPage));
-
-		bool OnModalPopping(Page modalPage)
-		{
-			var args = new ModalPoppingEventArgs(modalPage);
-			ModalPopping?.Invoke(this, args);
-			return args.Cancel;
-		}
-
-		void OnModalPushed(Page modalPage)
-			=> ModalPushed?.Invoke(this, new ModalPushedEventArgs(modalPage));
-
-		void OnModalPushing(Page modalPage)
-			=> ModalPushing?.Invoke(this, new ModalPushingEventArgs(modalPage));
-
-		void OnPopCanceled()
-			=> PopCanceled?.Invoke(this, EventArgs.Empty);
-
-		async Task SetPropertiesAsync()
-		{
-			await SaveSemaphore.WaitAsync();
-			try
-			{
-				await DependencyService.Get<IDeserializer>().SerializePropertiesAsync(Properties);
-			}
-			finally
-			{
-				SaveSemaphore.Release();
-			}
-
-		}
 
 		protected internal virtual void CleanUp()
 		{
@@ -452,48 +351,6 @@ namespace Microsoft.Maui.Controls
 			NavigationProxy = null;
 		}
 
-		class NavigationImpl : NavigationProxy
-		{
-			readonly Application _owner;
-
-			public NavigationImpl(Application owner)
-			{
-				_owner = owner;
-			}
-
-			protected override async Task<Page> OnPopModal(bool animated)
-			{
-				Page modal = ModalStack[ModalStack.Count - 1];
-				if (_owner.OnModalPopping(modal))
-				{
-					_owner.OnPopCanceled();
-					return null;
-				}
-				Page result = await base.OnPopModal(animated);
-				result.Parent = null;
-				_owner.OnModalPopped(result);
-				return result;
-			}
-
-			protected override async Task OnPushModal(Page modal, bool animated)
-			{
-				_owner.OnModalPushing(modal);
-
-				modal.Parent = _owner;
-
-				if (modal.NavigationProxy.ModalStack.Count == 0)
-				{
-					modal.NavigationProxy.Inner = this;
-					await base.OnPushModal(modal, animated);
-				}
-				else
-				{
-					await base.OnPushModal(modal, animated);
-					modal.NavigationProxy.Inner = this;
-				}
-
-				_owner.OnModalPushed(modal);
-			}
-		}
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => this.Windows;
 	}
 }

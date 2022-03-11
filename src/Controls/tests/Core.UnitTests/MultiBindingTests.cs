@@ -12,25 +12,13 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using Grid = Microsoft.Maui.Controls.Compatibility.Grid;
+
 	[TestFixture]
 	public class MultiBindingTests : BaseTestFixture
 	{
 		const string c_Fallback = "First Middle Last";
 		const string c_TargetNull = "No Name Given";
-
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
 
 		[Test]
 		public void TestChildOneWayOnMultiTwoWay()

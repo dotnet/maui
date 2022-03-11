@@ -6,11 +6,11 @@ using Android.Content.PM;
 using AndroidUri = Android.Net.Uri;
 using Uri = System.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Launcher
+	public partial class LauncherImplementation
 	{
-		static Task<bool> PlatformCanOpenAsync(Uri uri)
+		Task<bool> PlatformCanOpenAsync(Uri uri)
 		{
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri.OriginalString));
 
@@ -22,21 +22,21 @@ namespace Microsoft.Maui.Essentials
 			return Task.FromResult(supportedResolvedInfos.Any());
 		}
 
-		static Task PlatformOpenAsync(Uri uri)
+		Task<bool> PlatformOpenAsync(Uri uri)
 		{
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri.OriginalString));
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 #if __ANDROID_24__
-            if (Platform.HasApiLevelN)
-                flags |= ActivityFlags.LaunchAdjacent;
+			if (Platform.HasApiLevelN)
+				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			intent.SetFlags(flags);
 
 			Platform.AppContext.StartActivity(intent);
-			return Task.CompletedTask;
+			return Task.FromResult(true);
 		}
 
-		static Task PlatformOpenAsync(OpenFileRequest request)
+		Task<bool> PlatformOpenAsync(OpenFileRequest request)
 		{
 			var contentUri = Platform.GetShareableFileUri(request.File);
 
@@ -47,17 +47,17 @@ namespace Microsoft.Maui.Essentials
 			var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 #if __ANDROID_24__
-            if (Platform.HasApiLevelN)
-                flags |= ActivityFlags.LaunchAdjacent;
+			if (Platform.HasApiLevelN)
+				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			chooserIntent.SetFlags(flags);
 
 			Platform.AppContext.StartActivity(chooserIntent);
 
-			return Task.CompletedTask;
+			return Task.FromResult(true);
 		}
 
-		static async Task<bool> PlatformTryOpenAsync(Uri uri)
+		async Task<bool> PlatformTryOpenAsync(Uri uri)
 		{
 			var canOpen = await PlatformCanOpenAsync(uri);
 

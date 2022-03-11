@@ -32,25 +32,25 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 #if __ANDROID__ || __MACOS__
 		[Test]
-		public void ContextActionsShow ()
+		public void ContextActionsShow()
 		{
 			// mark is an icon on android
-			App.TouchAndHold (q => q.Marked (cell0));
-			App.WaitForElement (q => q.Marked (delete));
-			App.Screenshot ("I have actions!");
+			App.TouchAndHold(q => q.Marked(cell0));
+			App.WaitForElement(q => q.Marked(delete));
+			App.Screenshot("I have actions!");
 		}
 
 		[Test]
-		public void ContextActionsDelete ()
+		public void ContextActionsDelete()
 		{
 			// mark is an icon on android
-			App.TouchAndHold (q => q.Marked (cell1));
-			App.WaitForElement (q => q.Marked (delete));
-			App.Screenshot ("I have actions!");
+			App.TouchAndHold(q => q.Marked(cell1));
+			App.WaitForElement(q => q.Marked(delete));
+			App.Screenshot("I have actions!");
 
-			App.Tap (q => q.Marked (delete));
-			App.WaitForNoElement (q => q.Marked (cell1));
-			App.Screenshot ("Deleted cell 0");
+			App.Tap(q => q.Marked(delete));
+			App.WaitForNoElement(q => q.Marked(cell1));
+			App.Screenshot("Deleted cell 0");
 		}
 #endif
 
@@ -106,16 +106,16 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 #if __ANDROID__ || __MACOS__
 		[Test]
-		public void ContextActionsShowAndReset ()
+		public void ContextActionsShowAndReset()
 		{
 			// mark is an icon on android
-			App.TouchAndHold (q => q.Marked (cell0));
-			App.WaitForElement (q => q.Marked (delete));
-			App.Screenshot ("I have actions!");
-				
-			App.Tap (q => q.Marked (cellWithNoContextActions));
-			App.WaitForNoElement (q => q.Marked (delete));
-			App.Screenshot ("Actions should be gone");
+			App.TouchAndHold(q => q.Marked(cell0));
+			App.WaitForElement(q => q.Marked(delete));
+			App.Screenshot("I have actions!");
+
+			App.Tap(q => q.Marked(cellWithNoContextActions));
+			App.WaitForNoElement(q => q.Marked(delete));
+			App.Screenshot("Actions should be gone");
 		}
 #endif
 	}

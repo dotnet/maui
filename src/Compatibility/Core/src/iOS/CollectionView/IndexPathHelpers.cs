@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public static class IndexPathHelpers
 	{
-		public static NSIndexPath[] GenerateIndexPathRange(int section, int startIndex, int count) 
+		public static NSIndexPath[] GenerateIndexPathRange(int section, int startIndex, int count)
 		{
 			var result = new NSIndexPath[count];
 
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return result;
 		}
 
-		public static bool IsIndexPathValid(this IItemsViewSource source, NSIndexPath indexPath) 
+		public static bool IsIndexPathValid(this IItemsViewSource source, NSIndexPath indexPath)
 		{
 			if (indexPath.Section >= source.GroupCount)
 			{

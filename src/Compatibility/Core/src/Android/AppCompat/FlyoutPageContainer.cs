@@ -5,8 +5,9 @@ using Android.Views;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
-using APlatform = Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform;
+using APlatform = Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform;
 using Fragment = AndroidX.Fragment.App.Fragment;
 using FragmentContainer = Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.FragmentContainer;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (_childView == null)
 				return;
 
-			Rectangle bounds = GetBounds(_isFlyout, l, t, r, b);
+			var bounds = GetBounds(_isFlyout, l, t, r, b);
 			if (_isFlyout)
 				FlyoutPageController.FlyoutBounds = bounds;
 			else
@@ -265,7 +266,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_childView?.ClearValue(APlatform.RendererProperty);
 		}
 
-		Rectangle GetBounds(bool isFlyoutPage, int left, int top, int right, int bottom)
+		Rect GetBounds(bool isFlyoutPage, int left, int top, int right, int bottom)
 		{
 			double width = Context.FromPixels(right - left);
 			double height = Context.FromPixels(bottom - top);
@@ -285,11 +286,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				//if we are showing the normal popover master doesn't have padding
 				supressPadding = isFlyoutPage;
 				//popover make the master smaller
-				width = isFlyoutPage && (Device.Info.CurrentOrientation.IsLandscape() || Device.Idiom == TargetIdiom.Tablet) ? DefaultWidthFlyout : width;
+				width = isFlyoutPage && (DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape() || DeviceInfo.Idiom == DeviceIdiom.Tablet) ? DefaultWidthFlyout : width;
 			}
 
 			double padding = supressPadding ? 0 : Context.FromPixels(TopPadding);
-			return new Rectangle(xPos, padding, width, height - padding);
+			return new Rect(xPos, padding, width, height - padding);
 		}
 
 		protected void SetDefaultBackgroundColor(IVisualElementRenderer renderer)

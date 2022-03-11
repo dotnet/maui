@@ -1,46 +1,103 @@
-﻿using CoreGraphics;
+﻿using System;
+using CoreGraphics;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Platform.iOS
+namespace Microsoft.Maui.Platform
 {
 	public class MauiTextView : UITextView
 	{
-		UILabel PlaceholderLabel { get; } = new UILabel
-		{
-			BackgroundColor = UIColor.Clear,
-			Lines = 0
-		};
+		readonly UILabel _placeholderLabel;
 
-		public MauiTextView(CGRect frame) : base(frame)
+		public MauiTextView()
 		{
-			InitPlaceholderLabel();
+			_placeholderLabel = InitPlaceholderLabel();
+			Changed += OnChanged;
 		}
+
+		public MauiTextView(CGRect frame)
+			: base(frame)
+		{
+			_placeholderLabel = InitPlaceholderLabel();
+			Changed += OnChanged;
+		}
+
+		// Native Changed doesn't fire when the Text Property is set in code
+		// We use this event as a way to fire changes whenever the Text changes
+		// via code or user interaction.
+		public event EventHandler? TextSetOrChanged;
 
 		public string? PlaceholderText
 		{
-			get => PlaceholderLabel.Text;
+			get => _placeholderLabel.Text;
 			set
 			{
-				PlaceholderLabel.Text = value;
-				PlaceholderLabel.SizeToFit();
+				_placeholderLabel.Text = value;
+				_placeholderLabel.SizeToFit();
+			}
+		}
+
+		public NSAttributedString? AttributedPlaceholderText
+		{
+			get => _placeholderLabel.AttributedText;
+			set
+			{
+				_placeholderLabel.AttributedText = value;
+				_placeholderLabel.SizeToFit();
 			}
 		}
 
 		public UIColor? PlaceholderTextColor
 		{
-			get => PlaceholderLabel.TextColor;
-			set => PlaceholderLabel.TextColor = value;
+			get => _placeholderLabel.TextColor;
+			set => _placeholderLabel.TextColor = value;
 		}
 
-		public void HidePlaceholder(bool hide)
+		public override string? Text
 		{
-			PlaceholderLabel.Hidden = hide;
+			get => base.Text;
+			set
+			{
+				var old = base.Text;
+
+				base.Text = value;
+
+				if (old != value)
+				{
+					HidePlaceholderIfTextIsPresent(value);
+					TextSetOrChanged?.Invoke(this, EventArgs.Empty);
+				}
+			}
 		}
 
-		void InitPlaceholderLabel()
+		public override NSAttributedString AttributedText
 		{
-			AddSubview(PlaceholderLabel);
+			get => base.AttributedText;
+			set
+			{
+				var old = base.AttributedText;
+
+				base.AttributedText = value;
+
+				if (old?.Value != value?.Value)
+				{
+					HidePlaceholderIfTextIsPresent(value?.Value);
+					TextSetOrChanged?.Invoke(this, EventArgs.Empty);
+				}
+			}
+		}
+
+		UILabel InitPlaceholderLabel()
+		{
+			var placeholderLabel = new UILabel
+			{
+				BackgroundColor = UIColor.Clear,
+				TextColor = ColorExtensions.PlaceholderColor,
+				Lines = 0
+			};
+
+			AddSubview(placeholderLabel);
 
 			var edgeInsets = TextContainerInset;
 			var lineFragmentPadding = TextContainer.LineFragmentPadding;
@@ -48,20 +105,33 @@ namespace Microsoft.Maui.Platform.iOS
 			var vConstraints = NSLayoutConstraint.FromVisualFormat(
 				"V:|-" + edgeInsets.Top + "-[PlaceholderLabel]-" + edgeInsets.Bottom + "-|", 0, new NSDictionary(),
 				NSDictionary.FromObjectsAndKeys(
-					new NSObject[] { PlaceholderLabel }, new NSObject[] { new NSString("PlaceholderLabel") })
+					new NSObject[] { placeholderLabel }, new NSObject[] { new NSString("PlaceholderLabel") })
 			);
 
 			var hConstraints = NSLayoutConstraint.FromVisualFormat(
 				"H:|-" + lineFragmentPadding + "-[PlaceholderLabel]-" + lineFragmentPadding + "-|",
 				0, new NSDictionary(),
 				NSDictionary.FromObjectsAndKeys(
-					new NSObject[] { PlaceholderLabel }, new NSObject[] { new NSString("PlaceholderLabel") })
+					new NSObject[] { placeholderLabel }, new NSObject[] { new NSString("PlaceholderLabel") })
 			);
 
-			PlaceholderLabel.TranslatesAutoresizingMaskIntoConstraints = false;
+			placeholderLabel.TranslatesAutoresizingMaskIntoConstraints = false;
 
 			AddConstraints(hConstraints);
 			AddConstraints(vConstraints);
+
+			return placeholderLabel;
+		}
+
+		void HidePlaceholderIfTextIsPresent(string? value)
+		{
+			_placeholderLabel.Hidden = !string.IsNullOrEmpty(value);
+		}
+
+		void OnChanged(object? sender, EventArgs e)
+		{
+			HidePlaceholderIfTextIsPresent(Text);
+			TextSetOrChanged?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

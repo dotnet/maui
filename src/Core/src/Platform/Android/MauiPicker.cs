@@ -5,7 +5,7 @@ using Android.Widget;
 using AndroidX.Core.Graphics.Drawable;
 using ARect = Android.Graphics.Rect;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiPicker : MauiPickerBase
 	{

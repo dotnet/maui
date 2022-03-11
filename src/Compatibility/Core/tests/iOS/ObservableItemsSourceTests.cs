@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 	public class IndexPathTests
 	{
 		[Test]
-		public void GenerateIndexPathRange() 
+		public void GenerateIndexPathRange()
 		{
 			var result = IndexPathHelpers.GenerateIndexPathRange(0, 0, 5);
 
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			// 2, 3, 4, 7, 8, 9, 12, 13, 14
 
 			Assert.That(result.Length, Is.EqualTo(9));
-			
+
 			Assert.That(result[0].Section, Is.EqualTo(0));
 			Assert.That(result[1].Section, Is.EqualTo(0));
 			Assert.That(result[2].Section, Is.EqualTo(0));
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		}
 
 		[Test]
-		public void IndexPathValidTest() 
+		public void IndexPathValidTest()
 		{
 			var list = new List<string>
 			{

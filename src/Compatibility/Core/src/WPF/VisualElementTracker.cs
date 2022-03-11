@@ -197,12 +197,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 				view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _touchPoints))
 			{
 				if (!_isPanning)
-					((IPanGestureController)recognizer).SendPanStarted(view, Application.Current.PanGestureId);
+					((IPanGestureController)recognizer).SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 
 				double totalX = 0;
 				double totalY = 0;
 
-				((IPanGestureController)recognizer).SendPan(view, totalX, totalY, Application.Current.PanGestureId);
+				((IPanGestureController)recognizer).SendPan(view, totalX, totalY, PanGestureRecognizer.CurrentId.Value);
 				_isPanning = true;
 			}
 		}
@@ -225,8 +225,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 
 			IEnumerable<PanGestureRecognizer> panGestures = view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _touchPoints);
 			foreach (PanGestureRecognizer recognizer in panGestures)
-				((IPanGestureController)recognizer).SendPanCompleted(view, Application.Current.PanGestureId);
-			Application.Current.PanGestureId++;
+				((IPanGestureController)recognizer).SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
+			PanGestureRecognizer.CurrentId.Increment();
 			_isPanning = false;
 		}
 

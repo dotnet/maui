@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 using Xunit;
 
@@ -36,8 +37,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var uiimage = Assert.IsType<UIImage>(result.Value);
 
-			var expectedColor = Color.FromHex(colorHex);
-			uiimage.AssertColorAtCenter(expectedColor.ToNative());
+			var expectedColor = Color.FromArgb(colorHex);
+			uiimage.AssertColorAtCenter(expectedColor.ToPlatform());
 		}
 
 		[Theory]
@@ -46,7 +47,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task GetImageAsyncWithFile(string colorHex)
 		{
-			var expectedColor = Color.FromHex(colorHex);
+			var expectedColor = Color.FromArgb(colorHex);
 
 			var service = new FileImageSourceService();
 
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var uiimage = Assert.IsType<UIImage>(drawable.Value);
 
-			uiimage.AssertColorAtCenter(expectedColor.ToNative());
+			uiimage.AssertColorAtCenter(expectedColor.ToPlatform());
 		}
 	}
 }

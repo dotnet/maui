@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
+using ObjCRuntime;
 using UIKit;
 using Xunit;
 
@@ -30,20 +31,20 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task GetImageAsync(string colorHex)
 		{
-			var expectedColor = Color.FromHex(colorHex);
+			var expectedColor = Color.FromArgb(colorHex);
 
-			var host = new AppHostBuilder()
+			var mauiApp = MauiApp.CreateBuilder()
 				.ConfigureFonts()
 				.ConfigureImageSources()
 				.Build();
 
-			var images = host.Services.GetRequiredService<IImageSourceServiceProvider>();
+			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
 			var service = images.GetRequiredImageSourceService<FontImageSourceStub>();
 
 			var imageSource = new FontImageSourceStub
 			{
 				Glyph = "X",
-				Font = Font.Default,
+				Font = Font.Default.WithSize(30),
 				Color = expectedColor,
 			};
 
@@ -51,13 +52,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			var uiimage = Assert.IsType<UIImage>(drawable.Value);
 
-			uiimage.AssertContainsColor(expectedColor.ToNative());
+			uiimage.AssertContainsColor(expectedColor.ToPlatform());
 		}
 
 		[Fact]
 		public async Task GetImageAsyncWithCustomFont()
 		{
-			var host = new AppHostBuilder()
+			var mauiApp = MauiApp.CreateBuilder()
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 				.ConfigureImageSources()
 				.Build();
 
-			var images = host.Services.GetRequiredService<IImageSourceServiceProvider>();
+			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
 			var service = images.GetRequiredImageSourceService<FontImageSourceStub>();
 
 			var imageSource = new FontImageSourceStub
@@ -79,7 +80,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var uiimage = Assert.IsType<UIImage>(drawable.Value);
 
-			uiimage.AssertContainsColor(Colors.Red.ToNative());
+			uiimage.AssertContainsColor(Colors.Red.ToPlatform());
 		}
 	}
 }

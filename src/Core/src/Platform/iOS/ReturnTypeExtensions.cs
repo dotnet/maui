@@ -1,11 +1,12 @@
 ﻿using System;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ReturnTypeExtensions
 	{
-		public static UIReturnKeyType ToNative(this ReturnType returnType)
+		public static UIReturnKeyType ToPlatform(this ReturnType returnType)
 		{
 			switch (returnType)
 			{

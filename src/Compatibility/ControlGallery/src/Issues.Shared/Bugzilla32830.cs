@@ -62,13 +62,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 							TextColor = Colors.White
 						}
 					}
-				}, yConstraint: Microsoft.Maui.Controls.Constraint.RelativeToParent(parent => { return parent.Y; }));
+				}, yConstraint: Compatibility.Constraint.RelativeToParent(parent => { return parent.Y; }));
 
 				relativeLayout.Children.Add(new Label
 				{
 					Text = BottomLabel,
 					TextColor = Colors.White
-				}, yConstraint: Microsoft.Maui.Controls.Constraint.RelativeToParent(parent => { return parent.Height - 30; }));
+				}, yConstraint: Compatibility.Constraint.RelativeToParent(parent => { return parent.Height - 30; }));
 
 				Content = relativeLayout;
 
@@ -105,13 +105,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 								TextColor = Colors.White
 							}
 						}
-				}, yConstraint: Microsoft.Maui.Controls.Constraint.RelativeToParent(parent => { return parent.Y; }));
+				}, yConstraint: Compatibility.Constraint.RelativeToParent(parent => { return parent.Y; }));
 
 				relativeLayout.Children.Add(new Label
 				{
 					Text = BottomLabel,
 					TextColor = Colors.White
-				}, yConstraint: Microsoft.Maui.Controls.Constraint.RelativeToParent(parent => { return parent.Height - 30; }));
+				}, yConstraint: Compatibility.Constraint.RelativeToParent(parent => { return parent.Height - 30; }));
 
 				Content = relativeLayout;
 			}

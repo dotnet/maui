@@ -10,45 +10,44 @@ namespace Microsoft.Maui.UnitTests.Hosting
 	public class HostBuilderAppConfigurationTests
 	{
 		[Fact]
-		public void ConfigureAppConfigurationConfiguresValues()
+		public void CanConfigureAppConfiguration()
 		{
-			var host = new AppHostBuilder()
-				.ConfigureAppConfiguration((_, builder) =>
+			var builder = MauiApp.CreateBuilder();
+			builder
+				.Configuration
+				.AddInMemoryCollection(new Dictionary<string, string>
 				{
-					builder.AddInMemoryCollection(new Dictionary<string, string>
-					{
-						{ "key 1", "value 1" },
-					});
-				})
-				.Build();
+					{ "key 1", "value 1" },
+				});
+			var mauiApp = builder.Build();
 
-			var configuration = host.Services.GetRequiredService<IConfiguration>();
+			var configuration = mauiApp.Services.GetRequiredService<IConfiguration>();
 
 			Assert.Equal("value 1", configuration["key 1"]);
 		}
 
 		[Fact]
-		public void ConfigureAppConfigurationOverwritesValues()
+		public void AppConfigurationOverwritesValues()
 		{
-			var host = new AppHostBuilder()
-				.ConfigureAppConfiguration((_, builder) =>
+			var builder = MauiApp.CreateBuilder();
+			builder
+				.Configuration
+				.AddInMemoryCollection(new Dictionary<string, string>
 				{
-					builder.AddInMemoryCollection(new Dictionary<string, string>
-					{
-						{ "key 1", "value 1" },
-						{ "key 2", "value 2" },
-					});
-				})
-				.ConfigureAppConfiguration((_, builder) =>
-				{
-					builder.AddInMemoryCollection(new Dictionary<string, string>
-					{
-						{ "key 1", "value a" },
-					});
-				})
-				.Build();
+					{ "key 1", "value 1" },
+					{ "key 2", "value 2" },
+				});
 
-			var configuration = host.Services.GetRequiredService<IConfiguration>();
+			builder
+				.Configuration
+				.AddInMemoryCollection(new Dictionary<string, string>
+				{
+					{ "key 1", "value a" },
+				});
+
+			var mauiApp = builder.Build();
+
+			var configuration = mauiApp.Services.GetRequiredService<IConfiguration>();
 
 			Assert.Equal("value a", configuration["key 1"]);
 			Assert.Equal("value 2", configuration["key 2"]);
@@ -57,23 +56,15 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		[Fact]
 		public void ConfigureServicesCanUseConfig()
 		{
-			string value = null;
-
-			var host = new AppHostBuilder()
-				.ConfigureAppConfiguration((_, builder) =>
+			var builder = MauiApp.CreateBuilder();
+			builder
+				.Configuration
+				.AddInMemoryCollection(new Dictionary<string, string>
 				{
-					builder.AddInMemoryCollection(new Dictionary<string, string>
-					{
-						{ "key 1", "value 1" },
-					});
-				})
-				.ConfigureServices((context, services) =>
-				{
-					value = context.Configuration["key 1"];
-				})
-				.Build();
+					{ "key 1", "value 1" },
+				});
 
-			Assert.Equal("value 1", value);
+			Assert.Equal("value 1", builder.Configuration["key 1"]);
 		}
 	}
 }

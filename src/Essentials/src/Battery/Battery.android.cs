@@ -2,27 +2,21 @@ using System;
 using Android.Content;
 using Android.OS;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Battery
+	public partial class BatteryImplementation : IBattery
 	{
-		static BatteryBroadcastReceiver batteryReceiver;
-		static EnergySaverBroadcastReceiver powerReceiver;
+		BatteryBroadcastReceiver batteryReceiver;
+		EnergySaverBroadcastReceiver powerReceiver;
 
-		static void StartEnergySaverListeners()
+		public void StartEnergySaverListeners()
 		{
-			if (!Platform.HasApiLevel(BuildVersionCodes.Lollipop))
-				return;
-
-			powerReceiver = new EnergySaverBroadcastReceiver(OnEnergySaverChanged);
+			powerReceiver = new EnergySaverBroadcastReceiver(Battery.OnEnergySaverChanged);
 			Platform.AppContext.RegisterReceiver(powerReceiver, new IntentFilter(PowerManager.ActionPowerSaveModeChanged));
 		}
 
-		static void StopEnergySaverListeners()
+		public void StopEnergySaverListeners()
 		{
-			if (!Platform.HasApiLevel(BuildVersionCodes.Lollipop))
-				return;
-
 			try
 			{
 				Platform.AppContext.UnregisterReceiver(powerReceiver);
@@ -35,27 +29,24 @@ namespace Microsoft.Maui.Essentials
 			powerReceiver = null;
 		}
 
-		static EnergySaverStatus PlatformEnergySaverStatus
+		public EnergySaverStatus EnergySaverStatus
 		{
 			get
 			{
-				var status = false;
-				if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
-					status = Platform.PowerManager?.IsPowerSaveMode ?? false;
-
+				var status = Platform.PowerManager?.IsPowerSaveMode ?? false;
 				return status ? EnergySaverStatus.On : EnergySaverStatus.Off;
 			}
 		}
 
-		static void StartBatteryListeners()
+		public void StartBatteryListeners()
 		{
 			Permissions.EnsureDeclared<Permissions.Battery>();
 
-			batteryReceiver = new BatteryBroadcastReceiver(OnBatteryInfoChanged);
+			batteryReceiver = new BatteryBroadcastReceiver(Battery.OnBatteryInfoChanged);
 			Platform.AppContext.RegisterReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged));
 		}
 
-		static void StopBatteryListeners()
+		public void StopBatteryListeners()
 		{
 			try
 			{
@@ -69,7 +60,7 @@ namespace Microsoft.Maui.Essentials
 			batteryReceiver = null;
 		}
 
-		static double PlatformChargeLevel
+		public double ChargeLevel
 		{
 			get
 			{
@@ -89,7 +80,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static BatteryState PlatformState
+		public BatteryState State
 		{
 			get
 			{
@@ -116,7 +107,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static BatteryPowerSource PlatformPowerSource
+		public BatteryPowerSource PowerSource
 		{
 			get
 			{

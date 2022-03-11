@@ -1,122 +1,162 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
-using Maui.Controls.Sample.ViewModel;
-#if NET6_0_OR_GREATER
-using Microsoft.AspNetCore.Components.WebView.Maui;
-#endif
+using Maui.Controls.Sample.ViewModels;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Controls;
+
+#if NET6_0_OR_GREATER
+using Microsoft.AspNetCore.Components.WebView.Maui;
+#endif
 
 namespace Maui.Controls.Sample
 {
-	public class Startup : IStartup
+	public class CustomButton : Button { }
+
+	public static class MauiProgram
 	{
-		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage }
-		private PageType _pageType = PageType.NavigationPage;
+		static bool UseMauiGraphicsSkia = false;
 
-		public readonly static bool UseXamlApp = true;
-		public readonly static bool UseFullDI = false;
+		enum PageType { Main, Blazor, Shell, Template, FlyoutPage, TabbedPage }
+		readonly static PageType _pageType = PageType.Main;
 
-		public void Configure(IAppHostBuilder appBuilder)
+		public static MauiApp CreateMauiApp()
 		{
-			appBuilder
-				.UseFormsCompatibility()
-				.UseMauiControlsHandlers();
+			var appBuilder = MauiApp.CreateBuilder();
 
-			if (UseXamlApp)
-				appBuilder.UseMauiApp<XamlApp>();
-			else
-				appBuilder.UseMauiApp<MyApp>();
+			appBuilder.UseMauiApp<XamlApp>();
+			var services = appBuilder.Services;
 
-			if (UseFullDI)
-				appBuilder.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory());
-			else
-				appBuilder.UseMauiServiceProviderFactory(true);
-
-#if DEBUG && !WINDOWS
-			appBuilder.EnableHotReload();
-#endif
-
-#if NET6_0_OR_GREATER
-			appBuilder.RegisterBlazorMauiWebView();
-#endif
-			appBuilder
-				.ConfigureAppConfiguration(config =>
+			if (UseMauiGraphicsSkia)
+			{
+				/*
+				appBuilder.ConfigureMauiHandlers(handlers =>
 				{
-					config.AddInMemoryCollection(new Dictionary<string, string>
+					handlers.AddHandler<GraphicsView, SkiaGraphicsViewHandler>();
+					handlers.AddHandler<BoxView, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Ellipse, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Line, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Path, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polygon, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Polyline, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.Rectangle, SkiaShapeViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.Shapes.RoundRectangle, SkiaShapeViewHandler>();
+				});
+				*/
+			}
+
+			appBuilder
+				.ConfigureMauiHandlers(handlers =>
+				{
+#if __ANDROID__
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer));
+#elif __IOS__
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
+#elif WINDOWS
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
+#endif
+				});
+
+			// Use a "third party" library that brings in a massive amount of controls
+			appBuilder.UseBordelessEntry();
+			appBuilder.ConfigureEffects(builder =>
+			{
+				builder.Add<FocusRoutingEffect, FocusPlatformEffect>();
+			});
+
+			appBuilder.Configuration.AddInMemoryCollection(
+				new Dictionary<string, string>
 					{
 						{"MyKey", "Dictionary MyKey Value"},
 						{":Title", "Dictionary_Title"},
 						{"Position:Name", "Dictionary_Name" },
 						{"Logging:LogLevel:Default", "Warning"}
 					});
-				})
-				.ConfigureServices(services =>
-				{
-					// The MAUI DI does not support generic argument resolution
-					if (UseFullDI)
-					{
-						services.AddLogging(logging =>
-						{
-#if WINDOWS
-							logging.AddDebug();
-#else
-							logging.AddConsole();
-#endif
-						});
-					}
 
-					services.AddSingleton<ITextService, TextService>();
-					services.AddTransient<MainPageViewModel>();
-
-					services.AddTransient(
-						serviceType: typeof(Page),
-						implementationType: _pageType switch
-						{
-							PageType.NavigationPage => typeof(NavPage),
-							PageType.Xaml => typeof(XamlPage),
-							PageType.Semantics => typeof(SemanticsPage),
-							PageType.Blazor =>
 #if NET6_0_OR_GREATER
-								typeof(BlazorPage),
-#else
-								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
+			services.AddMauiBlazorWebView();
+#if DEBUG
+			services.AddBlazorWebViewDeveloperTools();
 #endif
-							PageType.Main => typeof(MainPage),
-							_ => throw new Exception(),
-						});
+#endif
 
-					services.AddTransient<IWindow, Window>();
-				})
+			services.AddLogging(logging =>
+			{
+#if WINDOWS
+				logging.AddDebug();
+#else
+				logging.AddConsole();
+#endif
+			});
+
+			services.AddSingleton<ITextService, TextService>();
+			services.AddTransient<MainViewModel>();
+
+			services.AddTransient<IWindow, Window>();
+			services.AddTransient<CustomFlyoutPage, CustomFlyoutPage>();
+			services.AddTransient<CustomNavigationPage, CustomNavigationPage>();
+
+			services.AddTransient(
+				serviceType: typeof(Page),
+				implementationType: _pageType switch
+				{
+					PageType.Template => typeof(TemplatePage),
+					PageType.Shell => typeof(AppShell),
+					PageType.Main => typeof(CustomNavigationPage),
+					PageType.FlyoutPage => typeof(CustomFlyoutPage),
+					PageType.TabbedPage => typeof(Pages.TabbedPageGallery),
+					PageType.Blazor =>
+#if NET6_0_OR_GREATER
+						typeof(BlazorPage),
+#else
+						throw new NotSupportedException("Blazor requires .NET 6 or higher."),
+#endif
+					_ => throw new Exception(),
+				});
+
+			appBuilder
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
+					fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
+					fonts.AddFont("LobsterTwo-Bold.ttf", "Lobster Two Bold");
+					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
+					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 					fonts.AddFont("ionicons.ttf", "Ionicons");
+					fonts.AddFont("SegoeUI.ttf", "Segoe UI");
+					fonts.AddFont("SegoeUI-Bold.ttf", "Segoe UI Bold");
+					fonts.AddFont("SegoeUI-Italic.ttf", "Segoe UI Italic");
+					fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
 				})
-				//.ConfigureEssentials(essentials =>
-				//{
-				//	essentials
-				//		.UseVersionTracking()
-				//		.UseMapServiceToken("YOUR-KEY-HERE")
-				//		.AddAppAction("test_action", "Test App Action")
-				//		.AddAppAction("second_action", "Second App Action")
-				//		.OnAppAction(appAction =>
-				//		{
-				//			Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
-				//		});
-				//})
+				.ConfigureEssentials(essentials =>
+				{
+					essentials
+						.UseMapServiceToken("YOUR-KEY-HERE")
+						.AddAppAction("test_action", "Test App Action")
+						.AddAppAction("second_action", "Second App Action")
+						.OnAppAction(appAction =>
+						{
+							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
+						});
+
+					// TODO: Unpackaged apps need to know the package ID and local data locations
+					if (AppInfo.PackagingModel == AppPackagingModel.Packaged)
+						essentials.UseVersionTracking();
+				})
 				.ConfigureLifecycleEvents(events =>
 				{
 					events.AddEvent<Action<string>>("CustomEventName", value => LogEvent("CustomEventName"));
@@ -125,7 +165,7 @@ namespace Maui.Controls.Sample
 					// Log everything in this one
 					events.AddAndroid(android => android
 						.OnActivityResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnActivityResult), b.ToString()))
-						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)))
+						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)) && false)
 						.OnConfigurationChanged((a, b) => LogEvent(nameof(AndroidLifecycle.OnConfigurationChanged)))
 						.OnCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnCreate)))
 						.OnDestroy((a) => LogEvent(nameof(AndroidLifecycle.OnDestroy)))
@@ -133,7 +173,6 @@ namespace Maui.Controls.Sample
 						.OnPause((a) => LogEvent(nameof(AndroidLifecycle.OnPause)))
 						.OnPostCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnPostCreate)))
 						.OnPostResume((a) => LogEvent(nameof(AndroidLifecycle.OnPostResume)))
-						.OnPressingBack((a) => LogEvent(nameof(AndroidLifecycle.OnPressingBack)) && false)
 						.OnRequestPermissionsResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnRequestPermissionsResult)))
 						.OnRestart((a) => LogEvent(nameof(AndroidLifecycle.OnRestart)))
 						.OnRestoreInstanceState((a, b) => LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState)))
@@ -149,13 +188,7 @@ namespace Maui.Controls.Sample
 						{
 							LogEvent(nameof(AndroidLifecycle.OnResume), "shortcut");
 						})
-						.OnPressingBack(a =>
-						{
-							LogEvent(nameof(AndroidLifecycle.OnPressingBack), "shortcut");
-
-							return shouldPreventBack-- > 0;
-						})
-						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut"))
+						.OnBackPressed(a => LogEvent(nameof(AndroidLifecycle.OnBackPressed), "shortcut") && (shouldPreventBack-- > 0))
 						.OnRestoreInstanceState((a, b) =>
 						{
 							LogEvent(nameof(AndroidLifecycle.OnRestoreInstanceState), "shortcut");
@@ -184,6 +217,7 @@ namespace Maui.Controls.Sample
 #elif WINDOWS
 					// Log everything in this one
 					events.AddWindows(windows => windows
+						//.OnNativeMessage((a, b) => LogEvent(nameof(WindowsLifecycle.OnNativeMessage)))
 						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
@@ -196,16 +230,11 @@ namespace Maui.Controls.Sample
 						return true;
 					}
 				});
-		}
 
-		// To use the Microsoft.Extensions.DependencyInjection ServiceCollection and not the MAUI one
-		class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
-		{
-			public ServiceCollection CreateBuilder(IServiceCollection services)
-				=> new ServiceCollection { services };
+			// If someone wanted to completely turn off the CascadeInputTransparent behavior in their application, this next line would be an easy way to do it
+			// Microsoft.Maui.Controls.Layout.ControlsLayoutMapper.ModifyMapping(nameof(Microsoft.Maui.Controls.Layout.CascadeInputTransparent), (_, _, _) => { });
 
-			public IServiceProvider CreateServiceProvider(ServiceCollection containerBuilder)
-				=> containerBuilder.BuildServiceProvider();
+			return appBuilder.Build();
 		}
 	}
 }

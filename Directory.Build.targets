@@ -1,19 +1,65 @@
 <Project>
+
+  <Import Condition="'$(SampleProject)' == 'true' or '$(CI)' != 'true' " Project="eng\Versions.dev.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true'" Project="eng\Git.Build.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true' " Project="eng\Versions.targets" />
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\Microsoft.Extensions.targets" />
 
-  <!-- Temporarily disable the linker for net6.0-ios and net6.0-maccatalyst until we get machine pools with Big Sur and Xcode 12.5 is stable -->
   <PropertyGroup>
-    <PublishTrimmed Condition=" '$(TargetFramework)' == 'net6.0-ios' or '$(TargetFramework)' == 'net6.0-maccatalyst' ">false</PublishTrimmed>
+     <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
+    <IgnoreMauiXamlHotReloadCompatibilityCheck>True</IgnoreMauiXamlHotReloadCompatibilityCheck>
   </PropertyGroup>
 
-  <Target Name="Net6WinUIPackagingWorkaround" BeforeTargets="GetPackagingOutputs" Condition="$(TargetFramework.Contains('-windows')) == true AND '$(DisableEmbeddedXbf)' != 'true' ">
-    <PropertyGroup>
-      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-      <_SupportEmbedFileResources>true</_SupportEmbedFileResources>
-      <_EmbedFileResfilePath>$(IntermediateOutputPath)$(AppxSubfolderWithFilesToBeEmbedded)\embed.resfiles</_EmbedFileResfilePath>
-    </PropertyGroup>
-  </Target>
+  <!-- platform version number information -->
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
+    <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIstvOS)' == 'True'">
+    <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsMacCatalyst)' == 'True'">
+    <SupportedOSPlatformVersion>13.1</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>13.1</TargetPlatformMinVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsmacOS)' == 'True'">
+    <SupportedOSPlatformVersion>10.14</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.14</TargetPlatformMinVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True'">
+    <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>21.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <!-- 
+    NOTE: The Contains('-windows10') is a bit of a hack 
+    because we don't want to set these properties for WPF projects...
+    There's probably a better way we should find to infer this
+  -->
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True' AND $(TargetFramework.Contains('-windows10'))">
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <!--
+    Comment out this section if you need to update Resource.designer.cs files.
+    See .github/DEVELOPMENT.md#Android for details.
+  -->
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True' AND '$(AndroidApplication)' != 'true'">
+    <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+    <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
+  </PropertyGroup>
+
+  <!-- semi HACK: by default, WinUI includes all @(None) with .bmp/.png as @(Content) and adds that to the .pri -->
+  <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
+    <Content Remove="@(None->WithMetadataValue('Pack','true'))" />
+  </ItemGroup>
+
+  <!-- Until we get a new enough dotnet -->
+  <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.18362.18" TargetingPackVersion="10.0.18362.18" />
+  </ItemGroup>
+
 </Project>

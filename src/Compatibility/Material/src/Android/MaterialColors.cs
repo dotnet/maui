@@ -199,23 +199,16 @@ internal static class MaterialColors
 		{
 			seekBar.ApplyProgressBarColors(progressColor, backgroundColor);
 
-			if (Forms.IsLollipopOrNewer)
+			if (thumbColor.IsDefault)
 			{
-				if (thumbColor.IsDefault)
-				{
-					// reset everything to defaults
-					seekBar.ThumbTintList = seekBar.ProgressTintList;
-				}
-				else
-				{
-					// handle the case where the thumb is set
-					var thumb = thumbColor.ToAndroid();
-					seekBar.ThumbTintList = ColorStateList.ValueOf(thumb);
-				}
+				// reset everything to defaults
+				seekBar.ThumbTintList = seekBar.ProgressTintList;
 			}
 			else
 			{
-				seekBar.Thumb.SetColorFilter(thumbColor.ToAndroid(), FilterMode.SrcIn);
+				// handle the case where the thumb is set
+				var thumb = thumbColor.ToAndroid();
+				seekBar.ThumbTintList = ColorStateList.ValueOf(thumb);
 			}
 		}
 
@@ -236,17 +229,11 @@ internal static class MaterialColors
 				if (progressDrawable.GetDrawable(2) is AScaleDrawable layer2)
 					layer2.SetColorFilter(progressColor, FilterMode.SrcIn);
 			}
-			else if (Forms.IsLollipopOrNewer)
+			else
 			{
 				progressBar.ProgressTintList = ColorStateList.ValueOf(progressColor);
 				progressBar.ProgressBackgroundTintList = ColorStateList.ValueOf(backgroundColor);
 				progressBar.ProgressBackgroundTintMode = mode;
-			}
-			else
-			{
-				(progressBar.Indeterminate ? progressBar.IndeterminateDrawable :
-						   progressBar.ProgressDrawable).SetColorFilter(progressColor, FilterMode.SrcIn);
-
 			}
 		}
 
@@ -417,7 +404,7 @@ internal static class MaterialColors
 #elif __IOS__
 			return color.ToUIColor();
 #elif __TIZEN__
-			return color.ToNative();
+			return color.ToPlatform();
 #endif
 	}
 
@@ -450,7 +437,7 @@ internal static class MaterialColors
 #if __ANDROID__
 			return color.A;
 #elif __IOS__
-			System.nfloat alpha;
+			ObjCRuntime.nfloat alpha;
 			color.GetRGBA(out _, out _, out _, out alpha);
 			return (int)alpha;
 

@@ -1,11 +1,13 @@
-﻿using UIKit;
+﻿using System;
+using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui
 {
-	public interface IFontManager
+	public partial interface IFontManager
 	{
 		UIFont DefaultFont { get; }
 
-		UIFont GetFont(Font font);
+		UIFont GetFont(Font font, double defaultFontSize = 0);
 	}
 }

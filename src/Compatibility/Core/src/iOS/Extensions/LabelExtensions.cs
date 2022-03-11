@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using Microsoft.Maui.Controls.Internals;
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 using NativeLabel = UIKit.UILabel;
 #else
@@ -111,14 +112,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			var glyphRange = new NSRange();
 
-#if __MOBILE__
-			layoutManager.CharacterRangeForGlyphRange(characterRange, ref glyphRange);
-#else
-#pragma warning disable CS0618 // Type or member is obsolete
-			layoutManager.CharacterRangeForGlyphRange(characterRange, out glyphRange);
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
-			return layoutManager.BoundingRectForGlyphRange(glyphRange, textContainer);
+			layoutManager.GetCharacterRange(characterRange, out glyphRange);
+
+			return layoutManager.GetBoundingRect(glyphRange, textContainer);
 		}
 
 		static double FindDefaultLineHeight(this NativeLabel control, int start, int length)

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public partial class ImageStub : StubBase, IImage, IImageSourcePartEvents
+	public partial class ImageStub : StubBase, IImageStub, IImageSourcePartEvents
 	{
 		public Aspect Aspect { get; set; }
 
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		static readonly Random rnd = new Random();
 
-		public static async Task Wait(this ImageStub image, int timeout = 1000)
+		public static async Task Wait(this IImageStub image, int timeout = 1000)
 		{
 			while ((timeout -= 100) > 0)
 			{

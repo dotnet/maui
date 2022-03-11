@@ -1,56 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.BrushTypeConverter']/Docs" />
 	public class BrushTypeConverter : TypeConverter
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='LinearGradient']/Docs" />
 		public const string LinearGradient = "linear-gradient";
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='RadialGradient']/Docs" />
 		public const string RadialGradient = "radial-gradient";
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Rgb']/Docs" />
 		public const string Rgb = "rgb";
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Rgba']/Docs" />
 		public const string Rgba = "rgba";
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Hsl']/Docs" />
 		public const string Hsl = "hsl";
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Hsla']/Docs" />
 		public const string Hsla = "hsla";
 
 		readonly ColorTypeConverter _colorTypeConverter = new ColorTypeConverter();
 
-		public override object ConvertFromInvariantString(string value)
-		{
-			if (value != null)
-			{
-				value = value.Trim();
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
 
-				if (value.StartsWith(LinearGradient) || value.StartsWith(RadialGradient))
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs" />
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> false;
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs" />
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		{
+			var strValue = value?.ToString();
+
+			if (strValue != null)
+			{
+				strValue = strValue.Trim();
+
+				if (strValue.StartsWith(LinearGradient) || strValue.StartsWith(RadialGradient))
 				{
 					var gradientBrushParser = new GradientBrushParser(_colorTypeConverter);
-					var brush = gradientBrushParser.Parse(value);
+					var brush = gradientBrushParser.Parse(strValue);
 
 					if (brush != null)
 						return brush;
 				}
 
-				if (value.StartsWith(Rgb) || value.StartsWith(Rgba) || value.StartsWith(Hsl) || value.StartsWith(Hsla))
+				if (strValue.StartsWith(Rgb, StringComparison.InvariantCulture) || strValue.StartsWith(Rgba, StringComparison.InvariantCulture) || strValue.StartsWith(Hsl, StringComparison.InvariantCulture) || strValue.StartsWith(Hsla))
 				{
-					var color = (Color)_colorTypeConverter.ConvertFromInvariantString(value);
+					var color = (Color)_colorTypeConverter.ConvertFromInvariantString(strValue);
 					return new SolidColorBrush(color);
 				}
 			}
 
-			string[] parts = value.Split('.');
+			string[] parts = strValue.Split('.');
 
 			if (parts.Length == 1 || (parts.Length == 2 && parts[0] == "Color"))
 			{
-				var color = (Color)_colorTypeConverter.ConvertFromInvariantString(value);
+				var color = (Color)_colorTypeConverter.ConvertFromInvariantString(strValue);
 				return new SolidColorBrush(color);
 			}
 
 			return new SolidColorBrush(null);
 		}
 
-		public override string ConvertToInvariantString(object value) => throw new NotSupportedException();
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+			=> throw new NotSupportedException();
 
 		public class GradientBrushParser
 		{
@@ -71,7 +94,12 @@ namespace Microsoft.Maui.Controls
 					return _gradient;
 				}
 
-				_parts = css.Replace("\r\n", "").Split(new[] { '(', ')', ',' }, StringSplitOptions.RemoveEmptyEntries);
+#if NETSTANDARD2_0
+				_parts = css.Replace("\r\n", "")
+#else
+				_parts = css.Replace("\r\n", "", StringComparison.Ordinal)
+#endif
+					.Split(new[] { '(', ')', ',' }, StringSplitOptions.RemoveEmptyEntries);
 
 				while (_position < _parts.Length)
 				{
@@ -283,9 +311,7 @@ namespace Microsoft.Maui.Controls
 
 				if (parts.Length > gradientCenterPosition)
 				{
-					var at = parts[gradientCenterPosition].Trim();
-
-					if (at.Contains("at"))
+					if (parts[gradientCenterPosition].IndexOf("at", StringComparison.Ordinal) != -1)
 					{
 						gradientCenterPosition++;
 						var directionX = gradientCenterPosition < parts.Length ? parts[gradientCenterPosition].Trim() : string.Empty;

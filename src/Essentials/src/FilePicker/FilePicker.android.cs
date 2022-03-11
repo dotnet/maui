@@ -11,10 +11,6 @@ namespace Microsoft.Maui.Essentials
 	{
 		static async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
 		{
-			// we only need the permission when accessing the file, but it's more natural
-			// to ask the user first, then show the picker.
-			await Permissions.EnsureGrantedAsync<Permissions.StorageRead>();
-
 			// Essentials supports >= API 19 where this action is available
 			var action = Intent.ActionOpenDocument;
 

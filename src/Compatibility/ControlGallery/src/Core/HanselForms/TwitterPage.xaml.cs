@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class TwitterPage : ContentPage
 	{
 

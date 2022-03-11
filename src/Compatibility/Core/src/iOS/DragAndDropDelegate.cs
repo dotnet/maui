@@ -6,13 +6,16 @@ using System.Linq;
 using System.Text;
 
 using Foundation;
+using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	internal class DragAndDropDelegate : NSObject, IUIDragInteractionDelegate, IUIDropInteractionDelegate
 	{
-		#region UIDragInteractionDelegate
+#region UIDragInteractionDelegate
 
 
 		[Export("dragInteraction:session:willEndWithOperation:")]
@@ -35,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			return new UIDragItem[0];
 		}
-		#endregion
+#endregion
 
 		[Export("dropInteraction:canHandleSession:")]
 		[Preserve(Conditional = true)]
@@ -49,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				return true;
 			}
-			
+
 			return false;
 		}
 
@@ -85,8 +88,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (interaction.View is IVisualElementRenderer renderer)
 			{
 				DataPackage package = null;
-					
-				if(session.LocalDragSession.Items.Length > 0 &&
+
+				if (session.LocalDragSession.Items.Length > 0 &&
 					session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi)
 				{
 					package = cdi.DataPackage;
@@ -108,9 +111,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (session.LocalDragSession == null)
 				return;
 
-			if(session.LocalDragSession.Items.Length > 0 && 
+			if (session.LocalDragSession.Items.Length > 0 &&
 				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi &&
-				interaction.View is IVisualElementRenderer renderer && 
+				interaction.View is IVisualElementRenderer renderer &&
 				renderer.Element is View view)
 			{
 				HandleDrop(view, cdi.DataPackage);
@@ -130,7 +133,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			foreach (var gesture in gestures)
 			{
-				if(gesture is TRecognizer recognizer)
+				if (gesture is TRecognizer recognizer)
 					func(recognizer);
 			}
 		}
@@ -189,7 +192,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 					returnValue = new UIDragItem[] { dragItem };
 				}
-			}, 
+			},
 			element);
 
 			return returnValue ?? new UIDragItem[0];
@@ -249,7 +252,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				catch (Exception e)
 				{
-					Controls.Internals.Log.Warning(nameof(DropGestureRecognizer), $"{e}");
+					Forms.MauiContext?.CreateLogger<DropGestureRecognizer>()?.LogWarning(e, null);
 				}
 			}, (View)element);
 		}
@@ -264,4 +267,3 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 }
 #endif
-	  

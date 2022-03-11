@@ -1,0 +1,72 @@
+<Type Name="DeviceDisplay" FullName="Microsoft.Maui.Essentials.DeviceDisplay">
+  <TypeSignature Language="C#" Value="public static class DeviceDisplay" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit DeviceDisplay extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Essentials.DeviceDisplay" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Represents information about the device screen.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="KeepScreenOn">
+      <MemberSignature Language="C#" Value="public static bool KeepScreenOn { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool KeepScreenOn" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.DeviceDisplay.KeepScreenOn" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets if the screen shold be kept on.</summary>
+        <value>If the screen keep on is set.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MainDisplayInfo">
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Essentials.DisplayInfo MainDisplayInfo { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Microsoft.Maui.Essentials.DisplayInfo MainDisplayInfo" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.DeviceDisplay.MainDisplayInfo" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Essentials.DisplayInfo</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the main screens display info.</summary>
+        <value>The main screen display info.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MainDisplayInfoChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Microsoft.Maui.Essentials.DisplayInfoChangedEventArgs&gt; MainDisplayInfoChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Microsoft.Maui.Essentials.DisplayInfoChangedEventArgs&gt; MainDisplayInfoChanged" />
+      <MemberSignature Language="DocId" Value="E:Microsoft.Maui.Essentials.DeviceDisplay.MainDisplayInfoChanged" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Microsoft.Maui.Essentials.DisplayInfoChangedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Event that is triggered when the main display info changes.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

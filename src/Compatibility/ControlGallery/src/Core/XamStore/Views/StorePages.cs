@@ -333,9 +333,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 							linearGradientBrush.StartPoint = new Point(0, 0);
 							linearGradientBrush.EndPoint = new Point(1, 1);
 
-							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromHex("#8A2387"), 0.1f));
-							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromHex("#E94057"), 0.6f));
-							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromHex("#F27121"), 1.0f));
+							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb("#8A2387"), 0.1f));
+							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb("#E94057"), 0.6f));
+							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb("#F27121"), 1.0f));
 
 							nextBrush = linearGradientBrush;
 						}

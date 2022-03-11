@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Maui.Controls.Internals;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -114,11 +115,11 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			catch (OperationCanceledException)
 			{
-				Log.Warning("Image loading", "Image load cancelled");
+				Application.Current?.FindMauiContext()?.CreateLogger<Image>()?.LogWarning("Image load cancelled");
 			}
 			catch (Exception ex)
 			{
-				Log.Warning("Image loading", $"Image load failed: {ex}");
+				Application.Current?.FindMauiContext()?.CreateLogger<Image>()?.LogWarning(ex, "Image load failed");
 #if DEBUG
 				throw;
 #endif

@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void TestProgramaticallyOpen()
+		public void TestProgrammaticallyOpen()
 		{
 			bool isOpen = false;
 
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void TestProgramaticallyClose()
+		public void TestProgrammaticallyClose()
 		{
 			bool isOpen = false;
 

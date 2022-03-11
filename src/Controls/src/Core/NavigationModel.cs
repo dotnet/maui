@@ -1,31 +1,45 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class NavigationModel
+	internal class NavigationModel
 	{
 		readonly List<Page> _modalStack = new List<Page>();
 		readonly List<List<Page>> _navTree = new List<List<Page>>();
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='CurrentPage']/Docs" />
 		public Page CurrentPage
 		{
 			get
 			{
-				if (_navTree.Any())
+				if (_navTree.Count > 0)
 					return _navTree.Last().Last();
 				return null;
 			}
 		}
 
-		public IEnumerable<Page> Modals
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='LastRoot']/Docs" />
+		public Page LastRoot
 		{
-			get { return _modalStack; }
+			get
+			{
+				if (_navTree.Count == 0)
+					return null;
+
+				return _navTree.Last()[0];
+			}
 		}
 
+
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='Modals']/Docs" />
+		public IReadOnlyList<Page> Modals
+		{
+			get { return _modalStack.AsReadOnly(); }
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='Roots']/Docs" />
 		public IEnumerable<Page> Roots
 		{
 			get
@@ -37,17 +51,20 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='Tree']/Docs" />
 		public IReadOnlyList<IReadOnlyList<Page>> Tree
 		{
 			get { return _navTree; }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='Clear']/Docs" />
 		public void Clear()
 		{
 			_navTree.Clear();
 			_modalStack.Clear();
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='InsertPageBefore']/Docs" />
 		public void InsertPageBefore(Page page, Page before)
 		{
 			List<Page> currentStack = _navTree.Last();
@@ -59,6 +76,7 @@ namespace Microsoft.Maui.Controls.Internals
 			currentStack.Insert(index, page);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='Pop']/Docs" />
 		public Page Pop(Page ancestralNav)
 		{
 			ancestralNav = ancestralNav.AncestorToRoot();
@@ -77,16 +95,33 @@ namespace Microsoft.Maui.Controls.Internals
 			throw new InvalidNavigationException("Popped from unpushed item?");
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='PopModal']/Docs" />
 		public Page PopModal()
 		{
 			if (_navTree.Count <= 1)
 				throw new InvalidNavigationException("Can't pop modal without any modals pushed");
-			Page modal = _navTree.Last().First();
+
+			var previousPage = CurrentPage;
+			Page modal = _navTree.Last()[0];
 			_modalStack.Remove(modal);
 			_navTree.Remove(_navTree.Last());
+
+			// Shell handles its own page life cycle events
+			// because you can pop multiple pages in a single
+			// request
+			if (_navTree.Count > 0 &&
+				_navTree[0].Count > 0 &&
+				_navTree[0][0] is not Shell)
+			{
+				previousPage.SendNavigatingFrom(new NavigatingFromEventArgs());
+				previousPage.SendDisappearing();
+				CurrentPage.SendAppearing();
+			}
+
 			return modal;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='PopTopPage']/Docs" />
 		public Page PopTopPage()
 		{
 			Page itemToRemove;
@@ -102,13 +137,14 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 			itemToRemove = _navTree.Last().Last();
 			_navTree.Last().Remove(itemToRemove);
-			if (!_navTree.Last().Any())
+			if (_navTree.Last().Count == 0)
 			{
 				_navTree.RemoveAt(_navTree.Count - 1);
 			}
 			return itemToRemove;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='PopToRoot']/Docs" />
 		public void PopToRoot(Page ancestralNav)
 		{
 			ancestralNav = ancestralNav.AncestorToRoot();
@@ -126,11 +162,12 @@ namespace Microsoft.Maui.Controls.Internals
 			throw new InvalidNavigationException("Popped from unpushed item?");
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='Push']/Docs" />
 		public void Push(Page page, Page ancestralNav)
 		{
 			if (ancestralNav == null)
 			{
-				if (_navTree.Any())
+				if (_navTree.Count > 0)
 					throw new InvalidNavigationException("Ancestor must be provided for all pushes except first");
 				_navTree.Add(new List<Page> { page });
 				return;
@@ -150,12 +187,27 @@ namespace Microsoft.Maui.Controls.Internals
 			throw new InvalidNavigationException("Invalid ancestor passed");
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='PushModal']/Docs" />
 		public void PushModal(Page page)
 		{
+			var previousPage = CurrentPage;
 			_navTree.Add(new List<Page> { page });
 			_modalStack.Add(page);
+
+			// Shell handles its own page life cycle events
+			// because you can push multiple pages in a single
+			// request
+			if (_navTree.Count > 0 &&
+				_navTree[0].Count > 0 &&
+				_navTree[0][0] is not Shell)
+			{
+				previousPage.SendNavigatingFrom(new NavigatingFromEventArgs());
+				previousPage.SendDisappearing();
+				page.SendAppearing();
+			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='RemovePage']/Docs" />
 		public bool RemovePage(Page page)
 		{
 			bool found;

@@ -1,87 +1,121 @@
 ﻿using System;
 using System.Collections.Specialized;
-using System.Linq;
 using Android.App;
+using Android.Content.Res;
+using Android.Graphics.Drawables;
+using Android.Text;
+using Android.Text.Style;
 using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
+		static Drawable? s_defaultBackground;
+		static ColorStateList? s_defaultTitleColors { get; set; }
+		static ColorStateList? s_defaultTextColors { get; set; }
 		AlertDialog? _dialog;
 
-		protected override MauiPicker CreateNativeView() =>
+		protected override MauiPicker CreatePlatformView() =>
 			new MauiPicker(Context);
 
-		protected override void ConnectHandler(MauiPicker nativeView)
+		protected override void ConnectHandler(MauiPicker platformView)
 		{
-			nativeView.FocusChange += OnFocusChange;
-			nativeView.Click += OnClick;
+			platformView.FocusChange += OnFocusChange;
+			platformView.Click += OnClick;
 
-			if (VirtualView != null && VirtualView.Items is INotifyCollectionChanged notifyCollection)
-				notifyCollection.CollectionChanged += OnCollectionChanged;
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
 
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
+
+			SetupDefaults(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiPicker nativeView)
+		protected override void DisconnectHandler(MauiPicker platformView)
 		{
-			nativeView.FocusChange -= OnFocusChange;
-			nativeView.Click -= OnClick;
+			platformView.FocusChange -= OnFocusChange;
+			platformView.Click -= OnClick;
 
-			if (VirtualView != null && VirtualView.Items is INotifyCollectionChanged notifyCollection)
-				notifyCollection.CollectionChanged -= OnCollectionChanged;
+			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
+				notifyCollection.CollectionChanged -= OnRowsCollectionChanged;
 
-			base.DisconnectHandler(nativeView);
-		}
-		public static void MapTitle(PickerHandler handler, IPicker picker)
-		{
-			handler.NativeView?.UpdateTitle(picker);
+			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
+		void SetupDefaults(MauiPicker platformView)
 		{
-			handler.NativeView?.UpdateSelectedIndex(picker);
+			s_defaultBackground = platformView.Background;
+			s_defaultTitleColors = platformView.HintTextColors;
+			s_defaultTextColors = platformView.TextColors;
 		}
 
-		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker)
+		// This is a Android-specific mapping
+		public static void MapBackground(IPickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(picker);
+			handler.PlatformView?.UpdateBackground(picker, s_defaultBackground);
 		}
 
-		public static void MapFont(PickerHandler handler, IPicker picker)
+		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
+
+		public static void MapTitle(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView?.UpdateTitle(picker);
+		}
+
+		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView?.UpdateTitleColor(picker, s_defaultTitleColors);
+		}
+
+		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView?.UpdateSelectedIndex(picker);
+		}
+
+		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView?.UpdateCharacterSpacing(picker);
+		}
+
+		public static void MapFont(IPickerHandler handler, IPicker picker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(picker, fontManager);
+			handler.PlatformView?.UpdateFont(picker, fontManager);
 		}
 
-		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
+		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
-			var nativePicker = handler.NativeView;
-			var hasRtlSupport = nativePicker?.Context!.HasRtlSupport() ?? false;
-			nativePicker?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment, hasRtlSupport);
+			handler.PlatformView?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(PickerHandler handler, IPicker view) { }
+		public static void MapTextColor(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView.UpdateTextColor(picker, s_defaultTextColors);
+		}
+
+		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
+		}
 
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
 		{
-			if (NativeView == null)
+			if (PlatformView == null)
 				return;
 
 			if (e.HasFocus)
 			{
-				if (NativeView.Clickable)
-					NativeView.CallOnClick();
+				if (PlatformView.Clickable)
+					PlatformView.CallOnClick();
 				else
-					OnClick(NativeView, EventArgs.Empty);
+					OnClick(PlatformView, EventArgs.Empty);
 			}
 			else if (_dialog != null)
 			{
 				_dialog.Hide();
-				NativeView.ClearFocus();
+				PlatformView.ClearFocus();
 				_dialog = null;
 			}
 		}
@@ -92,16 +126,25 @@ namespace Microsoft.Maui.Handlers
 			{
 				using (var builder = new AlertDialog.Builder(Context))
 				{
-					builder.SetTitle(VirtualView.Title ?? string.Empty);
+					if (VirtualView.TitleColor == null)
+					{
+						builder.SetTitle(VirtualView.Title ?? string.Empty);
+					}
+					else
+					{
+						var title = new SpannableString(VirtualView.Title ?? string.Empty);
+						title.SetSpan(new ForegroundColorSpan(VirtualView.TitleColor.ToPlatform()), 0, title.Length(), SpanTypes.ExclusiveExclusive);
+						builder.SetTitle(title);
+					}
 
-					string[] items = VirtualView.Items.ToArray();
+					string[] items = VirtualView.GetItemsAsArray();
 
-					builder.SetItems(items, (EventHandler<Android.Content.DialogClickEventArgs>)((s, e) =>
+					builder.SetItems(items, (s, e) =>
 					{
 						var selectedIndex = e.Which;
 						VirtualView.SelectedIndex = selectedIndex;
-						base.NativeView?.UpdatePicker(VirtualView);
-					}));
+						base.PlatformView?.UpdatePicker(VirtualView);
+					});
 
 					builder.SetNegativeButton(AResource.String.Cancel, (o, args) => { });
 
@@ -115,7 +158,7 @@ namespace Microsoft.Maui.Handlers
 
 				_dialog.DismissEvent += (sender, args) =>
 				{
-					_dialog.Dispose();
+					_dialog?.Dispose();
 					_dialog = null;
 				};
 
@@ -123,12 +166,17 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void OnCollectionChanged(object? sender, EventArgs e)
+		void OnRowsCollectionChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || NativeView == null)
+			Reload(this);
+		}
+
+		static void Reload(IPickerHandler handler)
+		{
+			if (handler.VirtualView == null || handler.PlatformView == null)
 				return;
 
-			NativeView.UpdatePicker(VirtualView);
+			handler.PlatformView.UpdatePicker(handler.VirtualView);
 		}
 	}
 }

@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public class Issue1250AspectRatioContainer : ContentView
 	{
-		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			return new SizeRequest(new Size(widthConstraint, widthConstraint * AspectRatio));
 		}

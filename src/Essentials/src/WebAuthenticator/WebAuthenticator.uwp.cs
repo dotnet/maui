@@ -10,12 +10,15 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using Windows.Security.Authentication.Web;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class WebAuthenticator
+	public partial class WebAuthenticatorImplementation : IWebAuthenticator
 	{
-		static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
+			var url = webAuthenticatorOptions?.Url;
+			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
+
 			if (!IsUriProtocolDeclared(callbackUrl.Scheme))
 				throw new InvalidOperationException($"You need to declare the windows.protocol usage of the protocol/scheme `{callbackUrl.Scheme}` in your AppxManifest.xml file");
 

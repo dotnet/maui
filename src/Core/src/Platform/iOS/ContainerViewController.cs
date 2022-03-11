@@ -1,36 +1,39 @@
 ﻿using System;
 using Microsoft.Maui.HotReload;
+using ObjCRuntime;
 using UIKit;
-namespace Microsoft.Maui
+
+namespace Microsoft.Maui.Platform
 {
 	public class ContainerViewController : UIViewController, IReloadHandler
 	{
-		IView? _view;
-		public IView? CurrentView
-		{
-			get => _view;
-			set => SetView(value);
-		}
-
-		public UIView? CurrentNativeView
-			=> _pendingLoadedView ?? currentNativeView;
-
-		public IMauiContext? Context { get; set; }
-
-		UIView? currentNativeView;
+		IElement? _view;
+		UIView? currentPlatformView;
 
 		// The handler needs this view before LoadView is called on the controller
 		// So this is used to create the first view that the handler will use
 		// without forcing the VC to call LoadView
 		UIView? _pendingLoadedView;
 
-		void SetView(IView? view, bool forceRefresh = false)
+		public IElement? CurrentView
+		{
+			get => _view;
+			set => SetView(value);
+		}
+
+		public UIView? CurrentPlatformView
+			=> _pendingLoadedView ?? currentPlatformView;
+
+		public IMauiContext? Context { get; set; }
+
+		void SetView(IElement? view, bool forceRefresh = false)
 		{
 			if (view == _view && !forceRefresh)
 				return;
+
 			_view = view;
 
-			if (view is IPage page)
+			if (view is ITitledElement page)
 				Title = page.Title;
 
 			if (_view is IHotReloadableView ihr)
@@ -38,15 +41,17 @@ namespace Microsoft.Maui
 				ihr.ReloadHandler = this;
 				MauiHotReloadHelper.AddActiveView(ihr);
 			}
-			currentNativeView?.RemoveFromSuperview();
-			currentNativeView = null;
+
+			currentPlatformView?.RemoveFromSuperview();
+			currentPlatformView = null;
+
 			if (IsViewLoaded && _view != null)
-				LoadNativeView(_view);
+				LoadPlatformView(_view);
 		}
 
-		internal UIView LoadFirstView(IView view)
+		internal UIView LoadFirstView(IElement view)
 		{
-			_pendingLoadedView = CreateNativeView(view);
+			_pendingLoadedView = CreatePlatformView(view);
 			return _pendingLoadedView;
 		}
 
@@ -54,32 +59,34 @@ namespace Microsoft.Maui
 		{
 			base.LoadView();
 			if (_view != null && Context != null)
-				LoadNativeView(_view);
+				LoadPlatformView(_view);
 		}
 
-		void LoadNativeView(IView view)
+		void LoadPlatformView(IElement view)
 		{
-			currentNativeView = _pendingLoadedView ?? CreateNativeView(view);
+			currentPlatformView = _pendingLoadedView ?? CreatePlatformView(view);
 			_pendingLoadedView = null;
-			View!.AddSubview(currentNativeView);
-			if (view.BackgroundColor == null)
-				View.BackgroundColor = UIColor.SystemBackgroundColor;
+
+			View!.AddSubview(currentPlatformView);
+
+			if (view is IView v && v.Background == null)
+				View.BackgroundColor = ColorExtensions.BackgroundColor;
 		}
 
-		protected virtual UIView CreateNativeView(IView view)
+		protected virtual UIView CreatePlatformView(IElement view)
 		{
 			_ = Context ?? throw new ArgumentNullException(nameof(Context));
 			_ = _view ?? throw new ArgumentNullException(nameof(view));
 
-			return _view.ToNative(Context);
+			return _view.ToPlatform(Context);
 		}
 
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			if (currentNativeView == null)
+			if (currentPlatformView == null)
 				return;
-			currentNativeView.Frame = View!.Bounds;
+			currentPlatformView.Frame = View!.Bounds;
 		}
 
 		public void Reload() => SetView(CurrentView, true);

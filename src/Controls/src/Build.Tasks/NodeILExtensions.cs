@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.Xaml.Internals;
+using Microsoft.Maui.Controls.XamlC;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using static Mono.Cecil.Cil.Instruction;
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (
 					(typeConverterAttribute =
 						attributeProvider.CustomAttributes.FirstOrDefault(
-							cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName))) != null)
+							cad => cad.AttributeType.FullName == "System.ComponentModel.TypeConverterAttribute")) != null)
 				{
 					typeConverter = typeConverterAttribute.ConstructorArguments[0].Value as TypeReference;
 					break;
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			if (typeConverter == null)
-				foreach (var (t, tc) in TypeConverterAttribute.KnownConverters)
+				foreach (var (t, tc) in TypeConversionExtensions.KnownConverters)
 				{
 					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef))
 					{
@@ -56,15 +57,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var str = (string)node.Value;
 			var module = context.Body.Method.Module;
 
-			//If there's a [TypeConverter], use it
+			//If there's a [TypeConverter], assume we can convert
 			if (typeConverter != null && str != null)
-			{
-				var typeConvAttribute = typeConverter.GetCustomAttribute(module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "TypeConversionAttribute"));
-				if (typeConvAttribute == null) //trust the unattributed TypeConverter
-					return true;
-				var toType = typeConvAttribute.ConstructorArguments.First().Value as TypeReference;
-				return toType.InheritsFromOrImplements(targetTypeRef);
-			}
+				return true;
 
 			//check if it's assignable from a string
 			if (targetTypeRef.ResolveCached().FullName == "System.Nullable`1")
@@ -122,7 +117,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (
 					(typeConverterAttribute =
 						attributeProvider.CustomAttributes.FirstOrDefault(
-							cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName))) != null)
+							cad => cad.AttributeType.FullName == "System.ComponentModel.TypeConverterAttribute")) != null)
 				{
 					typeConverter = typeConverterAttribute.ConstructorArguments[0].Value as TypeReference;
 					break;
@@ -130,7 +125,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			if (typeConverter == null)
-				foreach (var (t, tc) in TypeConverterAttribute.KnownConverters)
+				foreach (var (t, tc) in TypeConversionExtensions.KnownConverters)
 				{
 					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef))
 					{
@@ -166,15 +161,28 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 		}
 
+		static Dictionary<TypeReference, Type> KnownCompiledTypeConverters;
+
 		public static IEnumerable<Instruction> PushConvertedValue(this ValueNode node, ILContext context,
 			TypeReference targetTypeRef, TypeReference typeConverter, IEnumerable<Instruction> pushServiceProvider,
 			bool boxValueTypes, bool unboxValueTypes)
 		{
 			var module = context.Body.Method.Module;
+			if (KnownCompiledTypeConverters == null)
+			{
+				KnownCompiledTypeConverters = new Dictionary<TypeReference, Type>(TypeRefComparer.Default)
+				{
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "ThicknessTypeConverter")), typeof(ThicknessTypeConverter) },
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "CornerRadiusTypeConverter")), typeof(CornerRadiusTypeConverter) },
+					{ module.ImportReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics.Converters", "ColorTypeConverter")), typeof(ColorTypeConverter) }
+				};
+			}
+
 			var str = (string)node.Value;
 			//If the TypeConverter has a ProvideCompiledAttribute that can be resolved, shortcut this
 			Type compiledConverterType;
-			if (typeConverter?.GetCustomAttribute(module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName && (compiledConverterType = Type.GetType(compiledConverterName)) != null)
+			if (typeConverter?.GetCustomAttribute(module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName && (compiledConverterType = Type.GetType(compiledConverterName)) != null
+				|| (typeConverter != null && KnownCompiledTypeConverters.TryGetValue(typeConverter, out compiledConverterType)))
 			{
 				var compiledConverter = Activator.CreateInstance(compiledConverterType);
 				var converter = typeof(ICompiledTypeConverter).GetMethods().FirstOrDefault(md => md.Name == "ConvertFromString");

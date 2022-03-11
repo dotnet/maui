@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -10,6 +11,8 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Button)]
 	public partial class ButtonHandlerTests : HandlerTestBase<ButtonHandler, ButtonStub>
 	{
+		const int Precision = 4;
+
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
 		{
@@ -33,6 +36,18 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(button, () => button.TextColor, GetNativeTextColor, button.TextColor);
 		}
 
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
+		{
+			var button = new ButtonStub()
+			{
+				Text = "Test",
+				TextColor = null
+			};
+
+			await CreateHandlerAsync(button);
+		}
+
 		[Fact(DisplayName = "Click event fires Correctly")]
 		public async Task ClickEventFires()
 		{
@@ -49,37 +64,63 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(clicked);
 		}
 
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
-		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
+		[Theory()]
+		[InlineData("red.png", "#FF0000")]
+		[InlineData("green.png", "#00FF00")]
+		[InlineData("black.png", "#000000")]
+		public async Task ImageSourceInitializesCorrectly(string filename, string colorHex)
 		{
-			var button = new ButtonStub()
+			var image = new ButtonStub
 			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", fontSize)
+				Background = new SolidPaintStub(Colors.Black),
+				ImageSource = new FileImageSourceStub(filename),
 			};
 
-			await ValidatePropertyInitValue(button, () => button.Font.FontSize, GetNativeUnscaledFontSize, button.Font.FontSize);
+			var order = new List<string>();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(image);
+
+				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
+
+				Assert.True(imageLoaded);
+				var expectedColor = Color.FromArgb(colorHex);
+				await handler.PlatformView.AssertContainsColor(expectedColor);
+			});
 		}
 
-		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontAttributes.None, false, false)]
-		[InlineData(FontAttributes.Bold, true, false)]
-		[InlineData(FontAttributes.Italic, false, true)]
-		[InlineData(FontAttributes.Bold | FontAttributes.Italic, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontAttributes attributes, bool isBold, bool isItalic)
+		[Theory(DisplayName = "Padding Initializes Correctly")]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(1, 1, 1, 1)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(5, 10, 15, 20)]
+		public async Task PaddingInitializesCorrectly(double left, double top, double right, double bottom)
 		{
-			var button = new ButtonStub()
+			var user = new Thickness(left, top, right, bottom);
+
+			var button = new ButtonStub
 			{
 				Text = "Test",
-				Font = Font.OfSize("Arial", 10).WithAttributes(attributes)
+				Padding = user
 			};
 
-			await ValidatePropertyInitValue(button, () => button.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(button, () => button.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
+			var (expected, native) = await GetValueAsync(button, handler =>
+			{
+				var native = GetNativePadding(handler);
+				var scaled = user;
+
+#if __ANDROID__
+				scaled = handler.PlatformView.Context!.ToPixels(scaled);
+#endif
+
+				return (scaled, native);
+			});
+
+			Assert.Equal(expected.Left, native.Left, Precision);
+			Assert.Equal(expected.Top, native.Top, Precision);
+			Assert.Equal(expected.Right, native.Right, Precision);
+			Assert.Equal(expected.Bottom, native.Bottom, Precision);
 		}
 	}
 }

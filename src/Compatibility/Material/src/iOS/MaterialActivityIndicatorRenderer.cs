@@ -3,6 +3,7 @@ using System.ComponentModel;
 using CoreAnimation;
 using CoreGraphics;
 using MaterialComponents;
+using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Platform.iOS;
 using MActivityIndicator = MaterialComponents.ActivityIndicator;

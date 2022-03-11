@@ -76,10 +76,24 @@ namespace Microsoft.Maui.Controls
 				if (_current == value)
 					return;
 
+				var previousPage = _current;
 				OnPropertyChanging();
+
+				// TODO: MAUI refine this to fire earlier
+				_current?.SendNavigatingFrom(new NavigatingFromEventArgs());
+
 				_current = value;
+
+				previousPage?.SendDisappearing();
+
 				OnPropertyChanged();
 				OnCurrentPageChanged();
+
+				if (HasAppeared)
+					_current?.SendAppearing();
+
+				previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(_current));
+				_current?.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
 			}
 		}
 

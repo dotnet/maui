@@ -5,6 +5,7 @@ using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Graphics;
 #if __MOBILE__
+using ObjCRuntime;
 using UIKit;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			get
 			{
 				if (Forms.IsiOS13OrNewer)
-					return UIColor.LabelColor;
+					return UIColor.Label;
 
 				return UIColor.Black;
 			}
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			get
 			{
 				if (Forms.IsiOS13OrNewer)
-					return UIColor.PlaceholderTextColor;
+					return UIColor.PlaceholderText;
 
 				return SeventyPercentGrey;
 			}
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			get
 			{
 				if (Forms.IsiOS13OrNewer)
-					return UIColor.SecondaryLabelColor;
+					return UIColor.SecondaryLabel;
 
 				return new Color(.32f, .4f, .57f).ToUIColor();
 			}
@@ -58,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			get
 			{
 				if (Forms.IsiOS13OrNewer)
-					return UIColor.SystemBackgroundColor;
+					return UIColor.SystemBackground;
 
 				return UIColor.White;
 			}
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			get
 			{
 				if (Forms.IsiOS13OrNewer)
-					return UIColor.SeparatorColor;
+					return UIColor.Separator;
 
 				return UIColor.Gray;
 			}
@@ -80,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			get
 			{
 				if (Forms.IsiOS13OrNewer)
-					return UIColor.OpaqueSeparatorColor;
+					return UIColor.OpaqueSeparator;
 
 				return UIColor.Black;
 			}
@@ -91,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			get
 			{
 				if (Forms.IsiOS13OrNewer)
-					return UIColor.SystemGroupedBackgroundColor;
+					return UIColor.SystemGroupedBackground;
 
 				return new UIColor(247f / 255f, 247f / 255f, 247f / 255f, 1);
 			}
@@ -102,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			get
 			{
 				if (Forms.IsiOS13OrNewer)
-					return UIColor.SystemBlueColor;
+					return UIColor.SystemBlue;
 
 				return Color.FromRgba(50, 79, 133, 255).ToUIColor();
 			}
@@ -113,7 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			get
 			{
 				if (Forms.IsiOS13OrNewer)
-					return UIColor.SystemRedColor;
+					return UIColor.SystemRed;
 
 				return UIColor.FromRGBA(255, 0, 0, 255);
 			}
@@ -124,7 +125,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			get
 			{
 				if (Forms.IsiOS13OrNewer)
-					return UIColor.SystemGrayColor;
+					return UIColor.SystemGray;
 
 				return UIColor.Gray;
 			}
@@ -135,7 +136,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			get
 			{
 				if (Forms.IsiOS13OrNewer)
-					return UIColor.SystemGray2Color;
+					return UIColor.SystemGray2;
 				return UIColor.LightGray;
 
 			}
@@ -224,15 +225,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 #endif
 
-		public static CGColor ToCGColor(this Color color)
-		{
-#if __MOBILE__
-			return color.ToUIColor().CGColor;
-#else
-            return color.ToNSColor().CGColor;
-#endif
-		}
-
 #if __MOBILE__
 		public static UIColor FromPatternImageFromBundle(string bgImage)
 		{
@@ -243,23 +235,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return UIColor.FromPatternImage(image);
 		}
 #endif
-
-		public static Color ToColor(this UIColor color)
-		{
-			nfloat red;
-			nfloat green;
-			nfloat blue;
-			nfloat alpha;
-#if __MOBILE__
-			color.GetRGBA(out red, out green, out blue, out alpha);
-#else
-			if (color.Type == NSColorType.Catalog)
-				throw new InvalidOperationException("Cannot convert a NSColorType.Catalog color without specifying the color space, use the overload to specify an NSColorSpace");
-
-			color.GetRgba(out red, out green, out blue, out alpha);
-#endif
-			return new Color((float)red, (float)green, (float)blue, (float)alpha);
-		}
 
 #if __MACOS__
 		public static Color ToColor(this UIColor color, NSColorSpace colorSpace)
@@ -318,12 +293,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 	public static class RectangleExtensions
 	{
-		public static Rectangle ToRectangle(this RectangleF rect)
+		public static Rect ToRectangle(this RectangleF rect)
 		{
-			return new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
+			return new Rect(rect.X, rect.Y, rect.Width, rect.Height);
 		}
 
-		public static RectangleF ToRectangleF(this Rectangle rect)
+		public static RectangleF ToRectangleF(this Rect rect)
 		{
 			return new RectangleF((nfloat)rect.X, (nfloat)rect.Y, (nfloat)rect.Width, (nfloat)rect.Height);
 		}

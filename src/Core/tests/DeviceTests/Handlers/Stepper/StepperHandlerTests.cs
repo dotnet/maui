@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 				Value = 50
 			};
 
-			await ValidatePropertyInitValue(stepper, () => stepper.Value, GetNativeValue, stepper.Value);
+			await ValidatePropertyInitValue(stepper, () => stepper.Value, GetPlatformValue, stepper.Value);
 		}
 
 		[Fact(DisplayName = "Is Maximum Initializes Correctly")]
@@ -46,15 +46,15 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(stepper, () => stepper.Minimum, GetNativeMinimum, stepper.Minimum);
 		}
 
-		[Fact(DisplayName = "Background Color Initializes Correctly")]
-		public async Task BackgroundColorInitializesCorrectly()
+		[Fact(DisplayName = "Background Initializes Correctly")]
+		public async Task BackgroundInitializesCorrectly()
 		{
 			var stepper = new StepperStub()
 			{
-				BackgroundColor = Colors.Red
+				Background = new SolidPaintStub(Colors.Red)
 			};
 
-			await ValidateNativeBackgroundColor(stepper, Colors.Red);
+			await ValidateHasColor(stepper, Colors.Red);
 		}
 	}
 }

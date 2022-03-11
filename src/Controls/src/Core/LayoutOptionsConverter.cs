@@ -1,23 +1,37 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.LayoutOptionsConverter']/Docs" />
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.LayoutOptionsConverter")]
-	[Xaml.TypeConversion(typeof(LayoutOptions))]
 	public sealed class LayoutOptionsConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs" />
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
+#pragma warning disable CS0618 // Type or member is obsolete (AndExpand options)
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs" />
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+
+			if (strValue != null)
 			{
-				var parts = value.Split('.');
+				var parts = strValue.Split('.');
 				if (parts.Length > 2 || (parts.Length == 2 && parts[0] != "LayoutOptions"))
-					throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(LayoutOptions)}");
-				value = parts[parts.Length - 1];
-				switch (value)
+					throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(LayoutOptions)}");
+				strValue = parts[parts.Length - 1];
+				switch (strValue)
 				{
 					case "Start":
 						return LayoutOptions.Start;
@@ -36,17 +50,19 @@ namespace Microsoft.Maui.Controls
 					case "FillAndExpand":
 						return LayoutOptions.FillAndExpand;
 				}
-				FieldInfo field = typeof(LayoutOptions).GetFields().FirstOrDefault(fi => fi.IsStatic && fi.Name == value);
+				FieldInfo field = typeof(LayoutOptions).GetFields().FirstOrDefault(fi => fi.IsStatic && fi.Name == strValue);
 				if (field != null)
 					return (LayoutOptions)field.GetValue(null);
 			}
 
-			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(LayoutOptions)}");
+			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(LayoutOptions)}");
 		}
+#pragma warning restore CS0618 // Type or member is obsolete
 
-		public override string ConvertToInvariantString(object value)
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs" />
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is LayoutOptions options))
+			if (value is not LayoutOptions options)
 				throw new NotSupportedException();
 			if (options.Alignment == LayoutAlignment.Start)
 				return $"{nameof(LayoutAlignment.Start)}{(options.Expands ? "AndExpand" : "")}";
@@ -58,5 +74,26 @@ namespace Microsoft.Maui.Controls
 				return $"{nameof(LayoutAlignment.Fill)}{(options.Expands ? "AndExpand" : "")}";
 			throw new NotSupportedException();
 		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='GetStandardValuesSupported']/Docs" />
+		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
+			=> true;
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='GetStandardValuesExclusive']/Docs" />
+		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
+			=> false;
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='GetStandardValues']/Docs" />
+		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+			=> new(new[] {
+				"Start",
+				"Center",
+				"End",
+				"Fill",
+				"StartAndExpand",
+				"CenterAndExpand",
+				"EndAndExpand",
+				"FillAndExpand"
+			});
 	}
 }

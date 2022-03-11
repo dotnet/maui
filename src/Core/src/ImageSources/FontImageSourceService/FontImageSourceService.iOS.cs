@@ -6,6 +6,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -23,7 +24,7 @@ namespace Microsoft.Maui
 			try
 			{
 				// TODO: use a cached way
-				var image = RenderImage(imageSource, scale);
+				var image = imageSource.GetPlatformImage(FontManager, scale);
 
 				if (image == null)
 					throw new InvalidOperationException("Unable to generate font image.");
@@ -41,30 +42,5 @@ namespace Microsoft.Maui
 
 		static Task<IImageSourceServiceResult<UIImage>?> FromResult(IImageSourceServiceResult<UIImage>? result) =>
 			Task.FromResult(result);
-
-		internal UIImage RenderImage(IFontImageSource imageSource, float scale)
-		{
-			var font = FontManager.GetFont(imageSource.Font);
-			var color = (imageSource.Color ?? Colors.White).ToNative();
-			var glyph = (NSString)imageSource.Glyph;
-
-			var attString = new NSAttributedString(glyph, font, color);
-			var imagesize = glyph.GetSizeUsingAttributes(attString.GetUIKitAttributes(0, out _));
-
-			UIGraphics.BeginImageContextWithOptions(imagesize, false, scale);
-			var ctx = new NSStringDrawingContext();
-
-			var boundingRect = attString.GetBoundingRect(imagesize, 0, ctx);
-			attString.DrawString(new CGRect(
-				imagesize.Width / 2 - boundingRect.Size.Width / 2,
-				imagesize.Height / 2 - boundingRect.Size.Height / 2,
-				imagesize.Width,
-				imagesize.Height));
-
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			return image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
-		}
 	}
 }

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -14,20 +15,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class ListViewTests : BaseTestFixture
 	{
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-			Device.Info = null;
-		}
+		MockDeviceInfo mockDeviceInfo;
 
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-			Device.Info = new TestDeviceInfo();
+			DeviceDisplay.SetCurrent(new MockDeviceDisplay());
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
 		[Test]
@@ -417,7 +412,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 
-			var sizeRequest = listView.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeRequest = listView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(40, sizeRequest.Minimum.Width);
 			Assert.AreEqual(40, sizeRequest.Minimum.Height);
 			Assert.AreEqual(50, sizeRequest.Request.Width);
@@ -436,7 +431,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 
-			var sizeRequest = listView.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeRequest = listView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(40, sizeRequest.Minimum.Width);
 			Assert.AreEqual(40, sizeRequest.Minimum.Height);
 			Assert.AreEqual(50, sizeRequest.Request.Width);
@@ -1603,19 +1598,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.That(cell.Parent, Is.Null);
 		}
 
-		[TestCase(Device.Android, ListViewCachingStrategy.RecycleElement)]
-		[TestCase(Device.iOS, ListViewCachingStrategy.RecycleElement)]
-		[TestCase(Device.UWP, ListViewCachingStrategy.RetainElement)]
+		[TestCase("Android", ListViewCachingStrategy.RecycleElement)]
+		[TestCase("iOS", ListViewCachingStrategy.RecycleElement)]
+		[TestCase("UWP", ListViewCachingStrategy.RetainElement)]
 		[TestCase("Other", ListViewCachingStrategy.RetainElement)]
 		public void EnforcesCachingStrategy(string platform, ListViewCachingStrategy expected)
 		{
-			var oldOS = Device.RuntimePlatform;
 			// we need to do this because otherwise we cant set the caching strategy
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = platform;
+			mockDeviceInfo.Platform = DevicePlatform.Create(platform);
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement);
 
 			Assert.AreEqual(expected, listView.CachingStrategy);
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = oldOS;
 		}
 
 		[Test]
@@ -1634,9 +1627,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"Bar"
 			};
 
-			var oldOS = Device.RuntimePlatform;
 			// we need to do this because otherwise we cant set the caching strategy
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+			mockDeviceInfo.Platform = DevicePlatform.Android;
 
 			var bindable = new ListView(ListViewCachingStrategy.RecycleElement);
 			bindable.ItemTemplate = new DataTemplate(typeof(TextCell))
@@ -1651,8 +1643,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var item2 = bindable.TemplatedItems[0];
 
 			Assert.False(ReferenceEquals(item1, item2));
-
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = oldOS;
 		}
 	}
 }

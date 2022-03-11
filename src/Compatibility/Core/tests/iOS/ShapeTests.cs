@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.UITests.NumericExtensions;
 using static Microsoft.Maui.Controls.Compatibility.UITests.ParsingUtils;
+using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
@@ -30,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 			var actual = await GetRendererProperty(view, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
 
-			await expected.AssertEqualsAsync(actual);
+			expected.AssertEquals(actual);
 		}
 	}
 }

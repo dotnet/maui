@@ -1,7 +1,8 @@
 using System.Threading.Tasks;
-using NUnit.Framework;
-using Microsoft.UI.Xaml;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Dispatching;
+using Microsoft.UI.Xaml;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
@@ -12,7 +13,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 		public async Task CanCreateFrameworkElementFromContentPage()
 		{
 			var contentPage = new ContentPage { Title = "Embedded Page" };
-			await Device.InvokeOnMainThreadAsync(() => {
+			await contentPage.Dispatcher.DispatchAsync(() =>
+			{
 				FrameworkElement frameworkElement = contentPage.CreateFrameworkElement();
 			});
 		}

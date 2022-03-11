@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -69,8 +70,9 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			double buttonWidth = 0;
+
 			foreach (var item in CommandBar.GetDescendantsByName<Microsoft.UI.Xaml.Controls.Button>("MoreButton"))
-				if (item.Visibility == Visibility.Visible)
+				if (item.Visibility == WVisibility.Visible)
 					buttonWidth += item.ActualWidth;
 
 			if (!CommandBar.IsDynamicOverflowEnabled)

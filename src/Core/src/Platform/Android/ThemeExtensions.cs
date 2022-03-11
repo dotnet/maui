@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Android.Content.Res;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class ThemeExtensions
 	{
@@ -23,6 +23,21 @@ namespace Microsoft.Maui
 					else
 						value = true;
 
+					return true;
+				}
+			}
+
+			value = null;
+			return false;
+		}
+
+		public static bool TryResolveAttribute(this Resources.Theme? theme, int id, out float? value)
+		{
+			using (var tv = new Android.Util.TypedValue())
+			{
+				if (theme != null && theme.ResolveAttribute(id, tv, resolveRefs: true))
+				{
+					value = tv.Data;
 					return true;
 				}
 			}

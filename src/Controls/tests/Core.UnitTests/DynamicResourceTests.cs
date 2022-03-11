@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
 			Application.Current = new MockApplication();
 		}
 
@@ -43,13 +42,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			label.SetDynamicResource(Label.TextColorProperty, "GreenColor");
 
-			Application.Current.MainPage = new ContentPage
+			Application.Current.LoadPage(new ContentPage
 			{
 				Content = new StackLayout
 				{
 					Children = { label }
 				}
-			};
+			});
 
 			Assert.AreEqual(Colors.Green, label.TextColor);
 		}

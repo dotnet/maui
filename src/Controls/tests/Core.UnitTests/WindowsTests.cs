@@ -1,22 +1,38 @@
-﻿using NUnit.Framework;
+﻿using System.Linq;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	[TestFixture]
 	public class WindowsTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
+		[Test]
+		public void ContentPageFlowDirectionSetsOnIWindow()
 		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
+			var app = new TestApp();
+			var window = app.CreateWindow();
+			window.Page.FlowDirection = FlowDirection.RightToLeft;
+
+			Assert.IsTrue((window as IWindow)
+				.FlowDirection == FlowDirection.RightToLeft);
 		}
 
-		[TearDown]
-		public override void TearDown()
+		[Test]
+		public void WindowFlowDirectionSetsOnPage()
 		{
-			base.TearDown();
-			Device.PlatformServices = null;
+			var app = new TestApp();
+			var window = app.CreateWindow();
+			window.FlowDirection = FlowDirection.RightToLeft;
+
+			Assert.IsTrue((window.Page as IFlowDirectionController)
+				.EffectiveFlowDirection
+				.IsRightToLeft());
+
+			window.Page = new ContentPage();
+
+			Assert.IsTrue((window.Page as IFlowDirectionController)
+				.EffectiveFlowDirection
+				.IsRightToLeft());
 		}
 
 		[Test]
@@ -30,27 +46,50 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void SetMainPage()
 		{
-			var app = new TestApp();
-			app.MainPage = new ContentPage();
+			var app = new Application();
+			app.LoadPage(new ContentPage());
 			ValidateSetup(app);
 		}
 
 		[Test]
 		public void SetMainPageTwice()
 		{
-			var app = new TestApp();
+			var app = new Application();
 			var firstPage = new ContentPage();
 			var secondPage = new ContentPage();
 
-			app.MainPage = firstPage;
-			app.MainPage = secondPage;
+			var wind1 = app.LoadPage(firstPage);
+			var wind2 = app.LoadPage(secondPage);
 
 			ValidateSetup(app, secondPage);
 			Assert.IsNull(firstPage.Parent);
+			Assert.AreEqual(wind1, wind2);
 		}
 
+		[Test]
+		public void AddAndRemoveVisualDiagnosticAdorner()
+		{
+			var app = new Application();
+			var contentPage = new ContentPage();
+			var wind1 = app.LoadPage(contentPage);
+			ValidateSetup(app);
+			var visualElement = contentPage as IVisualTreeElement;
+			Assert.True(wind1.VisualDiagnosticsOverlay.AddAdorner(visualElement, false));
+			Assert.True(wind1.VisualDiagnosticsOverlay.WindowElements.Count > 0);
+			// Can't add existing IVisualTreeElement twice.
+			Assert.False(wind1.VisualDiagnosticsOverlay.AddAdorner(visualElement, false));
 
-		void ValidateSetup(TestApp app, Page page = null)
+			var adorner = wind1.VisualDiagnosticsOverlay.WindowElements.First() as IAdorner;
+
+			// Can't add existing Adorner twice.
+			Assert.False(wind1.VisualDiagnosticsOverlay.AddAdorner(adorner, false));
+
+			Assert.True(wind1.VisualDiagnosticsOverlay.RemoveAdorner(adorner));
+
+			Assert.True(wind1.VisualDiagnosticsOverlay.WindowElements.Count == 0);
+		}
+
+		void ValidateSetup(Application app, Page page = null)
 		{
 			var window = (Window)app.Windows[0];
 			page ??= window.Page;
@@ -72,7 +111,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public TestWindow CreateWindow() =>
 				(TestWindow)(this as IApplication).CreateWindow(null);
 
-			protected override IWindow CreateWindow(IActivationState activationState)
+			protected override Window CreateWindow(IActivationState activationState)
 			{
 				return new TestWindow(new ContentPage());
 			}

@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -111,9 +112,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var taps = 0;
 
-			abs.Children.Add(box, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
+			abs.Children.Add(box, new Rect(0, 0, 1, 1), AbsoluteLayoutFlags.All);
 
-			abs.Children.Add(label, new Rectangle(0, 0, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), AbsoluteLayoutFlags.PositionProportional);
+			abs.Children.Add(label, new Rect(0, 0, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), AbsoluteLayoutFlags.PositionProportional);
 
 			box.GestureRecognizers.Add(new TapGestureRecognizer
 			{
@@ -125,7 +126,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			});
 
 			view.InputTransparent = false;
-			abs.Children.Add(view, new Rectangle(.5, .5, .5, .5), AbsoluteLayoutFlags.All);
+			abs.Children.Add(view, new Rect(.5, .5, .5, .5), AbsoluteLayoutFlags.All);
 
 			var toggleButton = new Button { AutomationId = "Toggle", Text = $"Toggle InputTransparent (now {view.InputTransparent})" };
 			toggleButton.Clicked += (sender, args) =>

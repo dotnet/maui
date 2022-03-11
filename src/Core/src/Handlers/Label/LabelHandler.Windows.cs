@@ -1,53 +1,65 @@
 #nullable enable
-using System;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : ViewHandler<ILabel, FrameworkElement>
+	public partial class LabelHandler : ViewHandler<ILabel, TextBlock>
 	{
-		protected TextBlock? RealNativeView { get; set; }
+		protected override TextBlock CreatePlatformView() => new TextBlock();
 
-		protected override FrameworkElement CreateNativeView()
+		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
+			base.NeedsContainer;
+
+		public static void MapBackground(ILabelHandler handler, ILabel label)
 		{
-			RealNativeView = new TextBlock();
-			return new Border { Child = RealNativeView };
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+
+			handler.ToPlatform().UpdateBackground(label);
 		}
 
-		public static void MapText(LabelHandler handler, ILabel label) =>
-			handler.RealNativeView?.UpdateText(label);
+		public static void MapOpacity(ILabelHandler handler, ILabel label)
+		{
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.PlatformView.UpdateOpacity(label);
+			handler.ToPlatform().UpdateOpacity(label);
+		}
 
-		public static void MapTextColor(LabelHandler handler, ILabel label) =>
-			handler.RealNativeView?.UpdateTextColor(label);
+		public static void MapText(ILabelHandler handler, ILabel label) =>
+			handler.PlatformView?.UpdateText(label);
 
-		public static void MapCharacterSpacing(LabelHandler handler, ILabel label) =>	
-			handler.RealNativeView?.UpdateCharacterSpacing(label);
+		public static void MapTextColor(ILabelHandler handler, ILabel label) =>
+			handler.PlatformView?.UpdateTextColor(label);
 
-		public static void MapFont(LabelHandler handler, ILabel label)
+		public static void MapCharacterSpacing(ILabelHandler handler, ILabel label) =>
+			handler.PlatformView?.UpdateCharacterSpacing(label);
+
+		public static void MapFont(ILabelHandler handler, ILabel label)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.RealNativeView?.UpdateFont(label, fontManager);
+			handler.PlatformView?.UpdateFont(label, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label) { }
+		public static void MapHorizontalTextAlignment(ILabelHandler handler, ILabel label) =>
+			handler.PlatformView?.UpdateHorizontalTextAlignment(label);
 
-		[MissingMapper]
-		public static void MapLineBreakMode(LabelHandler handler, ILabel label) { }
+		public static void MapVerticalTextAlignment(ILabelHandler handler, ILabel label) =>
+			handler.PlatformView?.UpdateVerticalTextAlignment(label);
 
-		public static void MapTextDecorations(LabelHandler handler, ILabel label) =>	
-			handler.RealNativeView?.UpdateTextDecorations(label);
+		public static void MapLineBreakMode(ILabelHandler handler, ILabel label) =>
+			handler.PlatformView?.UpdateLineBreakMode(label);
 
-		public static void MapMaxLines(LabelHandler handler, ILabel label) =>
-			handler.RealNativeView?.UpdateMaxLines(label);
+		public static void MapTextDecorations(ILabelHandler handler, ILabel label) =>
+			handler.PlatformView?.UpdateTextDecorations(label);
 
-		public static void MapPadding(LabelHandler handler, ILabel label) =>
-			handler.RealNativeView?.UpdatePadding(label);
+		public static void MapMaxLines(ILabelHandler handler, ILabel label) =>
+			handler.PlatformView?.UpdateMaxLines(label);
 
-		[MissingMapper]
-		public static void MapLineHeight(LabelHandler handler, ILabel label) { }
+		public static void MapPadding(ILabelHandler handler, ILabel label) =>
+			handler.PlatformView?.UpdatePadding(label);
+
+		public static void MapLineHeight(ILabelHandler handler, ILabel label) =>
+			handler.PlatformView?.UpdateLineHeight(label);
 	}
 }

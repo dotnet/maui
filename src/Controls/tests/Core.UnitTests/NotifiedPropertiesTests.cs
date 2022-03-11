@@ -7,6 +7,9 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using Grid = Microsoft.Maui.Controls.Compatibility.Grid;
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[TestFixture]
 	public class NotifiedPropertiesTests : BaseTestFixture
 	{
@@ -77,12 +80,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<ActivityIndicator, Color> ("Color", v => v.Color, (v, o) => v.Color = o, () => null, new Color (0, 1, 0)),
 			new PropertyTestCase<Button, string> ("Text", v => v.Text, (v, o) => v.Text = o, () => null, "Foo"),
 			new PropertyTestCase<Button, Color> ("TextColor", v => v.TextColor, (v, o) => v.TextColor = o, () => null, new Color (0, 1, 0)),
-			new PropertyTestCase<Button, Font> ("Font", v => v.Font, (v, o) => v.Font = o, () => default (Font), Font.SystemFontOfSize (20)),
 			new PropertyTestCase<Button, double> ("BorderWidth", v => v.BorderWidth, (v, o) => v.BorderWidth = o, () => -1d, 16d),
 			new PropertyTestCase<Button, int> ("CornerRadius", v => v.CornerRadius, (v, o) => v.CornerRadius = o, () => -1, 12),
 			new PropertyTestCase<Button, Color> ("BorderColor", v => v.BorderColor, (v, o) => v.BorderColor = o, () => null, new Color (0, 1, 0)),
 			new PropertyTestCase<Button, string> ("FontFamily", v => v.FontFamily, (v, o) => v.FontFamily = o, () => null, "TestingFace"),
-			new PropertyTestCase<Button, double> ("FontSize", v => v.FontSize, (v, o) => v.FontSize = o, () => Device.GetNamedSize (NamedSize.Default, typeof (Button), true), 123.0),
+			new PropertyTestCase<Button, double> ("FontSize", v => v.FontSize, (v, o) => v.FontSize = o, () => new Button().GetDefaultFontSize(), 123.0),
 			new PropertyTestCase<Button, FontAttributes> ("FontAttributes", v => v.FontAttributes, (v, o) => v.FontAttributes = o, () => FontAttributes.None, FontAttributes.Italic),
 			new PropertyTestCase<CellTests.TestCell, double> ("Height", v => v.Height, (v, o) => v.Height = o, () => -1, 10),
 			new PropertyTestCase<DatePicker, DateTime> ("MinimumDate", v => v.MinimumDate, (v, o) => v.MinimumDate = o, () => new DateTime (1900, 1, 1), new DateTime (2014, 02, 05)),
@@ -106,7 +108,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<Label, Color> ("TextColor", v => v.TextColor, (v, o) => v.TextColor = o, () => null, new Color (0, 1, 0)),
 			new PropertyTestCase<Label, LineBreakMode> ("LineBreakMode", v => v.LineBreakMode, (v, o) => v.LineBreakMode = o, () => LineBreakMode.WordWrap, LineBreakMode.TailTruncation),
 			new PropertyTestCase<Label, string> ("FontFamily", v => v.FontFamily, (v, o) => v.FontFamily = o, () => null, "TestingFace"),
-			new PropertyTestCase<Label, double> ("FontSize", v => v.FontSize, (v, o) => v.FontSize = o, () => Device.GetNamedSize (NamedSize.Default, typeof (Label), true), 123.0),
+			new PropertyTestCase<Label, double> ("FontSize", v => v.FontSize, (v, o) => v.FontSize = o, () => new Label().GetDefaultFontSize(), 123.0),
 			new PropertyTestCase<Label, FontAttributes> ("FontAttributes", v => v.FontAttributes, (v, o) => v.FontAttributes = o, () => FontAttributes.None, FontAttributes.Italic),
 			new PropertyTestCase<Label, FormattedString> ("FormattedText", v => v.FormattedText, (v, o) => v.FormattedText = o, () => default (FormattedString), new FormattedString()),
 			new PropertyTestCase<Map, MapType> ("MapType", v => v.MapType, (v, o) => v.MapType = o, () => MapType.Street, MapType.Satellite),
@@ -150,31 +152,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<TapGestureRecognizer, int> ("NumberOfTapsRequired", t => t.NumberOfTapsRequired, (t, o) => t.NumberOfTapsRequired = o, () => 1, 3),
 			new PropertyTestCase<TapGestureRecognizer, object> ("CommandParameter", t => t.CommandParameter, (t, o) => t.CommandParameter = o, () => null, "Test"),
 			new PropertyTestCase<TapGestureRecognizer, ICommand> ("Command", t => t.Command, (t, o) => t.Command = o, () => null, new Command(()=>{})),
-			new PropertyTestCase<MasterDetailPage, bool> ("IsGestureEnabled", md => md.IsGestureEnabled, (md, v) => md.IsGestureEnabled = v, () => true, false),
 			new PropertyTestCase<FlyoutPage, bool> ("IsGestureEnabled", fp => fp.IsGestureEnabled, (fp, v) => fp.IsGestureEnabled = v, () => true, false),
 			new PropertyTestCase<Entry, bool> ("IsReadOnly", v => v.IsReadOnly, (v, o) => v.IsReadOnly = o, () => false, true),
 			new PropertyTestCase<Editor, bool> ("IsReadOnly", v => v.IsReadOnly, (v, o) => v.IsReadOnly = o, () => false, true)
 		};
 #pragma warning restore 0414
 
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test, TestCaseSource("Properties")]
 		public void DefaultValues(PropertyTestCase property)
 		{
 			var view = property.CreateView();
+			var expected = property.ExpectedDefaultValue;
+			var actual = property.PropertyGetter(view);
+
 			Assert.AreEqual(property.ExpectedDefaultValue, property.PropertyGetter(view), property.DebugName);
 		}
 

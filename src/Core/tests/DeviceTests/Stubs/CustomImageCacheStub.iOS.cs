@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			UIGraphics.BeginImageContextWithOptions(rect.Size, false, 1);
 			var context = UIGraphics.GetCurrentContext();
 
-			color.ToNative().SetFill();
+			color.ToPlatform().SetFill();
 			context.FillRect(rect);
 
 			var image = UIGraphics.GetImageFromCurrentImageContext();

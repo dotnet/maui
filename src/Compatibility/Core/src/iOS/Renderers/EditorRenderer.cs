@@ -2,9 +2,12 @@ using System;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Platform.iOS;
-using UIKit;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -77,12 +80,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var textAttr = TextView.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
-			if(textAttr != null)
+			if (textAttr != null)
 				TextView.AttributedText = textAttr;
 
 			var placeHolder = _placeholderLabel.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
-			if(placeHolder != null)
+			if (placeHolder != null)
 				_placeholderLabel.AttributedText = placeHolder;
 		}
 
@@ -152,7 +155,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					TextView.Started -= OnStarted;
 					TextView.Ended -= OnEnded;
 					TextView.ShouldChangeText -= ShouldChangeText;
-					if(Control is IFormsUITextView formsUITextView)
+					if (Control is IFormsUITextView formsUITextView)
 						formsUITextView.FrameChanged -= OnFrameChanged;
 				}
 			}
@@ -172,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				SetNativeControl(CreateNativeControl());
 
-				if (Device.Idiom == TargetIdiom.Phone)
+				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				{
 					// iPhone does not have a dismiss keyboard button
 					var keyboardWidth = UIScreen.MainScreen.Bounds.Width;
@@ -278,6 +281,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
 			if (TextView.Text != Element.Text)
@@ -287,6 +291,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ElementController.SendCompleted();
 		}
 
+		[PortHandler]
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);

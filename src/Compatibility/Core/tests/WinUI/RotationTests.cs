@@ -1,14 +1,14 @@
 using System;
 using System.Collections;
 using System.Threading.Tasks;
-using NUnit.Framework;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
 	[TestFixture]
-	public class RotationTests : PlatformTestFixture 
+	public class RotationTests : PlatformTestFixture
 	{
 		static IEnumerable RotationXCases
 		{
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 
-		double GetRotationX(FrameworkElement fe) 
+		double GetRotationX(FrameworkElement fe)
 		{
 			if (fe.Projection is PlaneProjection planeProjection)
 			{

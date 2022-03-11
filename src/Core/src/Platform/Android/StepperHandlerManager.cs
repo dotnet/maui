@@ -3,32 +3,30 @@ using Android.Views;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
-	public interface IStepperHandler
+	public interface IAndroidStepperHandler : IStepperHandler
 	{
 		AButton? UpButton { get; }
 
 		AButton? DownButton { get; }
 
 		AButton CreateButton();
-
-		IStepper? VirtualView { get; }
 	}
 
 	public class StepperHandlerHolder : Java.Lang.Object
 	{
-		public StepperHandlerHolder(IStepperHandler handler)
+		public StepperHandlerHolder(IAndroidStepperHandler handler)
 		{
 			StepperHandler = handler;
 		}
 
-		public IStepperHandler StepperHandler { get; set; }
+		public IAndroidStepperHandler StepperHandler { get; set; }
 	}
 
 	public static class StepperHandlerManager
 	{
-		public static void CreateStepperButtons<TButton>(IStepperHandler handler, out TButton? downButton, out TButton? upButton)
+		public static void CreateStepperButtons<TButton>(IAndroidStepperHandler handler, out TButton? downButton, out TButton? upButton)
 			where TButton : AButton
 		{
 			downButton = (TButton)handler.CreateButton();

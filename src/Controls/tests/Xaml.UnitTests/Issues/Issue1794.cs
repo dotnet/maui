@@ -1,5 +1,6 @@
 using System;
-
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -7,12 +8,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[TestFixture]
 	public class Issue1794
 	{
+		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+
 		[Test]
 		public void FindNameInDT()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 				<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+						 xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
 						 xmlns:local=""clr-namespace:Microsoft.Maui.ControlsFormsXamlSample;assembly=Microsoft.Maui.ControlsFormsXamlSample""
 						 xmlns:constants=""clr-namespace:Microsoft.Maui.ControlsFormsSample;assembly=Microsoft.Maui.ControlsFormsXamlSample""
 						 x:Class=""UxDemoAppXF.Layouts.Menu""
@@ -26,23 +31,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 						<ListView.ItemTemplate>
 							<DataTemplate>
 								<ViewCell>
-									<RelativeLayout>
+									<cmp:RelativeLayout>
 										<Label x:Name=""LinkText""
 													 Text=""{Binding Name}""
-													 RelativeLayout.XConstraint=
-														""{ConstraintExpression  Type=RelativeToParent, 
+													 cmp:RelativeLayout.XConstraint=
+														""{cmp:ConstraintExpression  Type=RelativeToParent, 
 																										Property=Width, 
 																										Factor=0.5}""/>
 										<Image x:Name=""LinkImage"" 
 													 Source=""{Binding ImageSource}""
-													 RelativeLayout.XConstraint=
-														""{ConstraintExpression  Type=RelativeToView,
+													 cmp:RelativeLayout.XConstraint=
+														""{cmp:ConstraintExpression  Type=RelativeToView,
 																				Property=Width, 
 																				ElementName=LinkText,
 																				Constant=5}""/>
 									 
 				 
-									</RelativeLayout>
+									</cmp:RelativeLayout>
 								</ViewCell>
 							</DataTemplate>
 						</ListView.ItemTemplate>

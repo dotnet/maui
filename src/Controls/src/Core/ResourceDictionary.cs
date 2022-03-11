@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -13,6 +14,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="Type[@FullName='Microsoft.Maui.Controls.ResourceDictionary']/Docs" />
 	public class ResourceDictionary : IResourceDictionary, IDictionary<string, object>
 	{
 		static ConditionalWeakTable<Type, ResourceDictionary> s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
@@ -20,7 +22,8 @@ namespace Microsoft.Maui.Controls
 		ResourceDictionary _mergedInstance;
 		Uri _source;
 
-		[TypeConverter(typeof(RDSourceTypeConverter))]
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Source']/Docs" />
+		[System.ComponentModel.TypeConverter(typeof(RDSourceTypeConverter))]
 		public Uri Source
 		{
 			get { return _source; }
@@ -33,6 +36,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		//Used by the XamlC compiled converter
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='SetAndLoadSource']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetAndLoadSource(Uri value, string resourcePath, Assembly assembly, global::System.Xml.IXmlLineInfo lineInfo)
 		{
@@ -48,6 +52,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		ObservableCollection<ResourceDictionary> _mergedDictionaries;
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='MergedDictionaries']/Docs" />
 		public ICollection<ResourceDictionary> MergedDictionaries
 		{
 			get
@@ -127,6 +132,7 @@ namespace Microsoft.Maui.Controls
 			OnValuesChanged(item);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Clear']/Docs" />
 		public void Clear()
 		{
 			_innerDictionary.Clear();
@@ -143,6 +149,7 @@ namespace Microsoft.Maui.Controls
 			((ICollection<KeyValuePair<string, object>>)_innerDictionary).CopyTo(array, arrayIndex);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Count']/Docs" />
 		public int Count
 		{
 			get { return _innerDictionary.Count + (_mergedInstance?.Count ?? 0); }
@@ -158,6 +165,7 @@ namespace Microsoft.Maui.Controls
 			return ((ICollection<KeyValuePair<string, object>>)_innerDictionary).Remove(item);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][3]/Docs" />
 		public void Add(string key, object value)
 		{
 			if (ContainsKey(key))
@@ -166,6 +174,7 @@ namespace Microsoft.Maui.Controls
 			OnValueChanged(key, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='ContainsKey']/Docs" />
 		public bool ContainsKey(string key)
 		{
 			return _innerDictionary.ContainsKey(key);
@@ -193,16 +202,19 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Keys']/Docs" />
 		public ICollection<string> Keys
 		{
 			get { return _innerDictionary.Keys; }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Remove']/Docs" />
 		public bool Remove(string key)
 		{
 			return _innerDictionary.Remove(key) || (_mergedInstance?.Remove(key) ?? false);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Values']/Docs" />
 		public ICollection<object> Values
 		{
 			get { return _innerDictionary.Values; }
@@ -213,6 +225,7 @@ namespace Microsoft.Maui.Controls
 			return GetEnumerator();
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='GetEnumerator']/Docs" />
 		public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
 		{
 			return _innerDictionary.GetEnumerator();
@@ -240,6 +253,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='TryGetValue']/Docs" />
 		public bool TryGetValue(string key, out object value)
 			=> TryGetValueAndSource(key, out value, out _);
 
@@ -271,6 +285,7 @@ namespace Microsoft.Maui.Controls
 			remove { ValuesChanged -= value; }
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][1]/Docs" />
 		public void Add(Style style)
 		{
 			if (string.IsNullOrEmpty(style.Class))
@@ -286,11 +301,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][0]/Docs" />
 		public void Add(ResourceDictionary mergedResourceDictionary)
 		{
 			MergedDictionaries.Add(mergedResourceDictionary);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add']/Docs" />
 		public void Add(StyleSheets.StyleSheet styleSheet)
 		{
 			StyleSheets = StyleSheets ?? new List<StyleSheets.StyleSheet>(2);
@@ -322,9 +339,14 @@ namespace Microsoft.Maui.Controls
 		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 
 		[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.RDSourceTypeConverter")]
-		[TypeConversion(typeof(Uri))]
 		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
 		{
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+				=> sourceType == typeof(string);
+
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+				=> true;
+
 			object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 			{
 				if (serviceProvider == null)
@@ -341,7 +363,7 @@ namespace Microsoft.Maui.Controls
 				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
 				var assembly = rootObjectType.GetTypeInfo().Assembly;
 
-				if (value.Contains(";assembly="))
+				if (value.IndexOf(";assembly=", StringComparison.Ordinal) != -1)
 				{
 					var parts = value.Split(new[] { ";assembly=" }, StringSplitOptions.RemoveEmptyEntries);
 					value = parts[0];
@@ -370,14 +392,12 @@ namespace Microsoft.Maui.Controls
 				return resourceUri.AbsolutePath.Substring(1);
 			}
 
-			public override object ConvertFromInvariantString(string value)
-			{
-				throw new NotImplementedException();
-			}
+			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+				=> throw new NotImplementedException();
 
-			public override string ConvertToInvariantString(object value)
+			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 			{
-				if (!(value is Uri uri))
+				if (value is not Uri uri)
 					throw new NotSupportedException();
 				return uri.ToString();
 			}

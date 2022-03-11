@@ -21,13 +21,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			get { return System.Windows.Application.Current == null ? false : !System.Windows.Application.Current.Dispatcher.CheckAccess(); }
 		}
 
-		public string RuntimePlatform => Device.WPF;
-
-		public void OpenUriAction(Uri uri)
-		{
-			System.Diagnostics.Process.Start(uri.AbsoluteUri);
-		}
-
 		public void BeginInvokeOnMainThread(Action action)
 		{
 			System.Windows.Application.Current?.Dispatcher.BeginInvoke(action);
@@ -36,54 +29,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 		public Ticker CreateTicker()
 		{
 			return new WPFTicker();
-		}
-
-		public Assembly[] GetAssemblies()
-		{
-			return AppDomain.CurrentDomain.GetAssemblies();
-		}
-
-		public string GetHash(string input) => Crc64.GetHash(input);
-
-		string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
-
-		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
-		{
-			switch (size)
-			{
-				case NamedSize.Default:
-					if (typeof(Label).IsAssignableFrom(targetElementType))
-						return (double)System.Windows.Application.Current.Resources["FontSizeNormal"];
-					return (double)System.Windows.Application.Current.Resources["FontSizeMedium"];
-				case NamedSize.Micro:
-					return (double)System.Windows.Application.Current.Resources["FontSizeSmall"] - 3;
-				case NamedSize.Small:
-					return (double)System.Windows.Application.Current.Resources["FontSizeSmall"];
-				case NamedSize.Medium:
-					if (useOldSizes)
-						goto case NamedSize.Default;
-					return (double)System.Windows.Application.Current.Resources["FontSizeMedium"];
-				case NamedSize.Large:
-					return (double)System.Windows.Application.Current.Resources["FontSizeLarge"];
-				case NamedSize.Body:
-					return (double)System.Windows.Application.Current.Resources["FontSizeBody"];
-				case NamedSize.Caption:
-					return (double)System.Windows.Application.Current.Resources["FontSizeCaption"];
-				case NamedSize.Header:
-					return (double)System.Windows.Application.Current.Resources["FontSizeHeader"];
-				case NamedSize.Subtitle:
-					return (double)System.Windows.Application.Current.Resources["FontSizeSubtitle"];
-				case NamedSize.Title:
-					return (double)System.Windows.Application.Current.Resources["FontSizeTitle"];
-				default:
-					throw new ArgumentOutOfRangeException("size");
-			}
-		}
-
-		public Color GetNamedColor(string name)
-		{
-			// Not supported on this platform
-			return Color.Default;
 		}
 
 		public Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
@@ -147,6 +92,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 		}
 
-		public OSAppTheme RequestedTheme => OSAppTheme.Unspecified;
+		public AppTheme RequestedTheme => AppTheme.Unspecified;
 	}
 }

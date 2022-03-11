@@ -1,4 +1,7 @@
+#nullable enable
 using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Android.Content;
 using Android.Content.Res;
 using Android.Provider;
@@ -6,13 +9,15 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class DeviceDisplay
+	public class DeviceDisplayImplementation : IDeviceDisplay
 	{
-		static OrientationEventListener orientationListener;
+		OrientationEventListener? orientationListener;
 
-		static bool PlatformKeepScreenOn
+		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged;
+
+		public bool KeepScreenOn
 		{
 			get
 			{
@@ -31,11 +36,13 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static DisplayInfo GetMainDisplayInfo()
+		public DisplayInfo GetMainDisplayInfo()
 		{
 			using var displayMetrics = new DisplayMetrics();
 			var display = GetDefaultDisplay();
+#pragma warning disable CS0618 // Type or member is obsolete
 			display?.GetRealMetrics(displayMetrics);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return new DisplayInfo(
 				width: displayMetrics?.WidthPixels ?? 0,
@@ -46,26 +53,26 @@ namespace Microsoft.Maui.Essentials
 				rate: display?.RefreshRate ?? 0);
 		}
 
-		static void StartScreenMetricsListeners()
+		public void StartScreenMetricsListeners()
 		{
 			orientationListener = new Listener(Platform.AppContext, OnScreenMetricsChanged);
 			orientationListener.Enable();
 		}
 
-		static void StopScreenMetricsListeners()
+		public void StopScreenMetricsListeners()
 		{
 			orientationListener?.Disable();
 			orientationListener?.Dispose();
 			orientationListener = null;
 		}
 
-		static void OnScreenMetricsChanged()
+		void OnScreenMetricsChanged()
 		{
 			var metrics = GetMainDisplayInfo();
-			OnMainDisplayInfoChanged(metrics);
+			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(metrics));
 		}
 
-		static DisplayRotation CalculateRotation()
+		DisplayRotation CalculateRotation()
 		{
 			var display = GetDefaultDisplay();
 
@@ -79,7 +86,7 @@ namespace Microsoft.Maui.Essentials
 			};
 		}
 
-		static DisplayOrientation CalculateOrientation()
+		DisplayOrientation CalculateOrientation()
 		{
 			return Platform.AppContext.Resources?.Configuration?.Orientation switch
 			{
@@ -90,21 +97,33 @@ namespace Microsoft.Maui.Essentials
 			};
 		}
 
-		static Display GetDefaultDisplay()
+		Display? GetDefaultDisplay()
 		{
-			using var service = Platform.AppContext.GetSystemService(Context.WindowService);
-			using var windowManager = service?.JavaCast<IWindowManager>();
-			return windowManager?.DefaultDisplay;
+			try
+			{
+				using var service = Platform.AppContext.GetSystemService(Context.WindowService);
+				using var windowManager = service?.JavaCast<IWindowManager>();
+				return windowManager?.DefaultDisplay;
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Unable to get default display: {ex}");
+				return null;
+			}
 		}
-	}
 
-	class Listener : OrientationEventListener
-	{
-		readonly Action onChanged;
+		class Listener : OrientationEventListener
+		{
+			readonly Action onChanged;
 
-		internal Listener(Context context, Action handler)
-			: base(context) => onChanged = handler;
+			internal Listener(Context context, Action handler)
+				: base(context) => onChanged = handler;
 
-		public override void OnOrientationChanged(int orientation) => onChanged();
+			public override async void OnOrientationChanged(int orientation)
+			{
+				await Task.Delay(500);
+				onChanged();
+			}
+		}
 	}
 }

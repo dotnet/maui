@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public partial class CountedImageHandler : ImageHandler
+	public partial class CountedImageHandler : ImageHandler, IImageHandler
 	{
 	}
 }

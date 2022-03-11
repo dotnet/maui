@@ -38,8 +38,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var bitmap = bitmapDrawable.Bitmap;
 
-			var expectedColor = Color.FromHex(colorHex);
-			bitmap.AssertColorAtCenter(expectedColor.ToNative());
+			var expectedColor = Color.FromArgb(colorHex);
+			bitmap.AssertColorAtCenter(expectedColor.ToPlatform());
 		}
 
 		[Theory]
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task GetDrawableAsyncWithFile(string colorHex)
 		{
-			var expectedColor = Color.FromHex(colorHex);
+			var expectedColor = Color.FromArgb(colorHex);
 
 			var service = new FileImageSourceService();
 
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var bitmap = bitmapDrawable.Bitmap;
 
-			bitmap.AssertColorAtCenter(expectedColor.ToNative());
+			bitmap.AssertColorAtCenter(expectedColor.ToPlatform());
 		}
 	}
 }

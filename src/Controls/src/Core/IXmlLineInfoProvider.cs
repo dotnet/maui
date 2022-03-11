@@ -1,3 +1,4 @@
+#nullable disable
 using System.Xml;
 
 namespace Microsoft.Maui.Controls.Xaml

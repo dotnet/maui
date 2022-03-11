@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			var size = Context.FromPixels(r - l, b - t);
 
-			Content.Element.Layout(new Rectangle(Point.Zero, size));
+			Content.Element.Layout(new Rect(Point.Zero, size));
 
 			Content.UpdateLayout();
 		}
@@ -124,8 +124,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		static IVisualElementRenderer CreateRenderer(View view, Context context)
 		{
-			var renderer = AppCompat.Platform.CreateRenderer(view, context);
-			AppCompat.Platform.SetRenderer(view, renderer);
+			var renderer = Platform.CreateRenderer(view, context);
+			Platform.SetRenderer(view, renderer);
 
 			return renderer;
 		}

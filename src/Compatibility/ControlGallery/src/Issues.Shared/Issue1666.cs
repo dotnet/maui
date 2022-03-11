@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				webView.Eval(js);
 			};
 
-			webView.EvalRequested += (s, e) =>
+			(webView as IWebViewController).EvalRequested += (s, e) =>
 			{
 				log($"EvalRequested: {e.Script}");
 			};

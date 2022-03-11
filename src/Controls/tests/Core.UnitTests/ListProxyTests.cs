@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -13,20 +14,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class ListProxyTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void ListCount()
 		{
@@ -257,14 +244,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void SynchronizedCollectionAdd()
+		public Task SynchronizedCollectionAdd() => DispatcherTest.Run(() =>
 		{
 			bool invoked = false;
-			Device.PlatformServices = new MockPlatformServices(isInvokeRequired: true, invokeOnMainThread: action =>
+
+			DispatcherProviderStubOptions.IsInvokeRequired = () => true;
+			DispatcherProviderStubOptions.InvokeOnMainThread = action =>
 			{
 				invoked = true;
 				action();
-			});
+			};
 
 			var collection = new ObservableCollection<string> { "foo" };
 			var context = new object();
@@ -290,6 +279,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Task.Factory.StartNew(() =>
 			{
+				DispatcherProviderStubOptions.IsInvokeRequired = () => true;
+				DispatcherProviderStubOptions.InvokeOnMainThread = action =>
+				{
+					invoked = true;
+					action();
+				};
+
 				lock (collection)
 					collection.Add("foo");
 
@@ -300,7 +296,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.IsTrue(executed, "Callback was not executed");
 			Assert.IsTrue(invoked, "Callback was not executed on the UI thread");
-		}
+		});
 
 		[Test]
 		public void ClearEnumerable()
@@ -437,7 +433,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		ListProxy _proxyForWeakToWeakTest;
 #pragma warning restore 0414
 
-		[Test]
+		[Test, Ignore("https://github.com/dotnet/maui/issues/1524")]
 		public void WeakToWeak()
 		{
 			WeakCollectionChangedList list = new WeakCollectionChangedList();

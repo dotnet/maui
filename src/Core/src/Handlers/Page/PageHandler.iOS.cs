@@ -1,53 +1,74 @@
 ﻿using System;
-using System.Linq;
-
-#if __IOS__ || IOS || MACCATALYST
-using NativeView = UIKit.UIView;
+using System.Collections.Generic;
 using UIKit;
-#else
-using NativeView = AppKit.NSView;
-#endif
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, PageView>, INativeViewHandler
+	public partial class PageHandler : ContentViewHandler, IPlatformViewHandler
 	{
-		PageViewController? _pageViewController;
-		UIViewController? INativeViewHandler.ViewController => _pageViewController;
-
-		protected override PageView CreateNativeView()
+		protected override ContentView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a LayoutView");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 
-			_pageViewController = new PageViewController(VirtualView, this.MauiContext);
+			if (ViewController == null)
+				ViewController = new PageViewController(VirtualView, MauiContext);
 
-			if (_pageViewController.CurrentNativeView is PageView pv)
+			if (ViewController is PageViewController pc && pc.CurrentPlatformView is ContentView pv)
 				return pv;
 
-			throw new InvalidOperationException($"PageViewController.View must be a PageView");
+			if (ViewController.View is ContentView cv)
+				return cv;
+
+			throw new InvalidOperationException($"PageViewController.View must be a {nameof(ContentView)}");
 		}
 
-		public override void SetVirtualView(IView view)
+		protected override void ConnectHandler(ContentView nativeView)
 		{
-			base.SetVirtualView(view);
+			var uiTapGestureRecognizer = new UITapGestureRecognizer(a => nativeView?.EndEditing(true));
 
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			uiTapGestureRecognizer.ShouldRecognizeSimultaneously = (recognizer, gestureRecognizer) => true;
+			uiTapGestureRecognizer.ShouldReceiveTouch = OnShouldReceiveTouch;
+			uiTapGestureRecognizer.DelaysTouchesBegan =
+				uiTapGestureRecognizer.DelaysTouchesEnded = uiTapGestureRecognizer.CancelsTouchesInView = false;
+			nativeView.AddGestureRecognizer(uiTapGestureRecognizer);
 
-			//Cleanup the old view when reused
-			var oldChildren = NativeView.Subviews.ToList();
-			oldChildren.ForEach(x => x.RemoveFromSuperview());
-
-			NativeView.CrossPlatformArrange = VirtualView.Arrange;
-			NativeView.AddSubview(VirtualView.Content.ToNative(MauiContext));
+			base.ConnectHandler(nativeView);
 		}
 
-		public static void MapTitle(PageHandler handler, IPage page)
+		protected override void DisconnectHandler(ContentView nativeView)
 		{
-			if (handler._pageViewController != null)
-				handler._pageViewController.Title = page.Title;
+			base.DisconnectHandler(nativeView);
+		}
+
+		public static void MapTitle(IPageHandler handler, IContentView page)
+		{
+			if (handler is IPlatformViewHandler invh && invh.ViewController != null)
+			{
+				if (page is ITitledElement titled)
+				{
+					invh.ViewController.Title = titled.Title;
+				}
+			}
+		}
+
+		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
+		{
+			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
+			{
+				if (v != null && (v is UITableView || v is UITableViewCell || v.CanBecomeFirstResponder))
+					return false;
+			}
+			return true;
+		}
+
+		IEnumerable<UIView> ViewAndSuperviewsOfView(UIView view)
+		{
+			while (view != null)
+			{
+				yield return view;
+				view = view.Superview;
+			}
 		}
 	}
 }

@@ -1,0 +1,55 @@
+﻿<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.ImagePage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="Image">
+    <views:BasePage.Content>
+        <ScrollView>
+            <VerticalStackLayout
+                Margin="12">
+                <Label
+                    Text="UriSource"
+                    Style="{StaticResource Headline}"/>
+                <Image 
+                    Source="https://aka.ms/campus.jpg"
+                    HeightRequest="200" 
+                    WidthRequest="200"/>
+                <Label
+                    Text="FileSource"
+                    Style="{StaticResource Headline}"/>
+                <Image 
+                    Background="Purple"
+                    Source="dotnet_bot.png"
+                    HeightRequest="200" 
+                    WidthRequest="200"/>
+                <Label
+                    Text="Font Image Source"
+                    Style="{StaticResource Headline}"/>
+                <Image
+                    Background="Green">
+                    <Image.Source>
+                        <FontImageSource
+                            FontAutoScalingEnabled="True"
+                            FontFamily = "Ionicons" 
+                            Glyph = "&#xf30c;">
+                        </FontImageSource>
+                    </Image.Source>
+                </Image>
+                <Label
+                    Text="Font Image Source Scaling Disabled"
+                    Style="{StaticResource Headline}"/>
+                <Image
+                    Background="Green">
+                    <Image.Source>
+                        <FontImageSource
+                            FontAutoScalingEnabled="False"
+                            FontFamily = "Ionicons" 
+                            Glyph = "&#xf30c;">
+                        </FontImageSource>
+                    </Image.Source>
+                </Image>
+            </VerticalStackLayout>
+        </ScrollView>
+    </views:BasePage.Content>
+</views:BasePage>

@@ -1,5 +1,5 @@
-﻿#nullable enable
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Android.Graphics.Drawables;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 
@@ -7,35 +7,43 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
-		protected override ImageView CreateNativeView() => new AppCompatImageView(Context);
+		protected override ImageView CreatePlatformView() => new AppCompatImageView(Context);
 
-		protected override void DisconnectHandler(ImageView nativeView)
+		protected override void DisconnectHandler(ImageView platformView)
 		{
-			base.DisconnectHandler(nativeView);
-
-			_sourceManager.Reset();
+			base.DisconnectHandler(platformView);
+			SourceLoader.Reset();
 		}
 
-		public static void MapAspect(ImageHandler handler, IImage image) =>
-			handler.NativeView?.UpdateAspect(image);
+		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
+			base.NeedsContainer;
 
-		public static void MapIsAnimationPlaying(ImageHandler handler, IImage image) =>
-			handler.NativeView?.UpdateIsAnimationPlaying(image);
+		public static void MapBackground(IImageHandler handler, IImage image)
+		{
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
-		public static void MapSource(ImageHandler handler, IImage image) =>
+			handler.ToPlatform().UpdateBackground(image);
+		}
+
+		public static void MapAspect(IImageHandler handler, IImage image) =>
+			handler.PlatformView?.UpdateAspect(image);
+
+		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) =>
+			handler.PlatformView?.UpdateIsAnimationPlaying(image);
+
+		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static async Task MapSourceAsync(ImageHandler handler, IImage image)
+		public static Task MapSourceAsync(IImageHandler handler, IImage image)
 		{
-			if (handler.NativeView == null)
-				return;
+			handler.PlatformView.Clear();
+			return handler.SourceLoader.UpdateImageSourceAsync();
+		}
 
-			var token = handler._sourceManager.BeginLoad();
-
-			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-			var result = await handler.NativeView.UpdateSourceAsync(image, provider, token);
-
-			handler._sourceManager.CompleteLoad(result);
+		void OnSetImageSource(Drawable? obj)
+		{
+			PlatformView.SetImageDrawable(obj);
 		}
 	}
 }

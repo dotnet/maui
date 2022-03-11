@@ -1,9 +1,10 @@
 ﻿using System;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public class MauiCheckBox : UIButton
 	{
@@ -13,6 +14,7 @@ namespace Microsoft.Maui
 
 		static UIImage? Checked;
 		static UIImage? Unchecked;
+		UIAccessibilityTrait _accessibilityTraits;
 
 		Color? _tintColor;
 		bool _isChecked;
@@ -21,6 +23,23 @@ namespace Microsoft.Maui
 		bool _disposed;
 
 		public EventHandler? CheckedChanged;
+
+		public MauiCheckBox()
+		{
+			ContentMode = UIViewContentMode.Center;
+			ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
+			HorizontalAlignment = UIControlContentHorizontalAlignment.Left;
+			VerticalAlignment = UIControlContentVerticalAlignment.Center;
+			AdjustsImageWhenDisabled = false;
+			AdjustsImageWhenHighlighted = false;
+			TouchUpInside += OnTouchUpInside;
+		}
+
+		void OnTouchUpInside(object? sender, EventArgs e)
+		{
+			IsChecked = !IsChecked;
+			CheckedChanged?.Invoke(this, EventArgs.Empty);
+		}
 
 		internal float MinimumViewSize
 		{
@@ -31,24 +50,6 @@ namespace Microsoft.Maui
 				var xOffset = (value - DefaultSize + LineWidth) / 4;
 				ContentEdgeInsets = new UIEdgeInsets(0, xOffset, 0, 0);
 			}
-		}
-
-		public MauiCheckBox()
-		{
-			ContentMode = UIViewContentMode.Center;
-			ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
-			HorizontalAlignment = UIControlContentHorizontalAlignment.Left;
-			VerticalAlignment = UIControlContentVerticalAlignment.Center;
-			AdjustsImageWhenDisabled = false;
-			AdjustsImageWhenHighlighted = false;
-
-			TouchUpInside += OnTouchUpInside;
-		}
-
-		void OnTouchUpInside(object? sender, EventArgs e)
-		{
-			IsChecked = !IsChecked;
-			CheckedChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		public bool IsChecked
@@ -87,7 +88,7 @@ namespace Microsoft.Maui
 					return;
 
 				_tintColor = value;
-				CheckBoxTintUIColor = CheckBoxTintColor?.ToNative();
+				CheckBoxTintUIColor = CheckBoxTintColor?.ToPlatform();
 			}
 		}
 
@@ -260,6 +261,38 @@ namespace Microsoft.Maui
 		{
 			SetImage(GetCheckBoximage(), UIControlState.Normal);
 			SetNeedsDisplay();
+		}
+
+		static UIKit.UIAccessibilityTrait? s_switchAccessibilityTraits;
+		UIKit.UIAccessibilityTrait SwitchAccessibilityTraits
+		{
+			get
+			{
+				// Accessibility Traits are none if VO is off
+				// So we return None until we detect that it's been turned on
+				if (base.AccessibilityTraits == UIAccessibilityTrait.None)
+					return UIAccessibilityTrait.None;
+
+				if (s_switchAccessibilityTraits == null ||
+					s_switchAccessibilityTraits == UIKit.UIAccessibilityTrait.None)
+				{
+					s_switchAccessibilityTraits = new UIKit.UISwitch().AccessibilityTraits;
+				}
+
+				return s_switchAccessibilityTraits ?? UIKit.UIAccessibilityTrait.None;
+			}
+		}
+
+		public override UIAccessibilityTrait AccessibilityTraits
+		{
+			get => _accessibilityTraits |= SwitchAccessibilityTraits;
+			set => _accessibilityTraits = value | SwitchAccessibilityTraits;
+		}
+
+		public override string? AccessibilityValue
+		{
+			get => (IsChecked) ? "1" : "0";
+			set { }
 		}
 	}
 }

@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 
-	public class CarouselPageGallery : CarouselPage
+	internal class CarouselPageGallery : CarouselPage
 	{
 		public CarouselPageGallery()
 		{

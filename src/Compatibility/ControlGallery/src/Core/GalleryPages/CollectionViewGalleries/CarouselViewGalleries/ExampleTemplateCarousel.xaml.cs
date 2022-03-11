@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
 	[Preserve(AllMembers = true)]
-	public partial class ExampleTemplateCarousel : Grid
+	public partial class ExampleTemplateCarousel : Microsoft.Maui.Controls.Grid
 	{
 		double _initialY = -1;
 		bool _delete;

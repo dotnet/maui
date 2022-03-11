@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var color = SpecificSwitch.GetColor(Element);
 			if (color != Color.Default)
 			{
-				Control.Color = color.ToNative();
+				Control.Color = color.ToPlatform();
 			}
 		}
 
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 			else
 			{
-				Control.SetOnColors(Element.OnColor.ToNative());
+				Control.SetOnColors(Element.OnColor.ToPlatform());
 			}
 		}
 

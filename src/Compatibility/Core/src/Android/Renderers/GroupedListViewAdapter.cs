@@ -7,7 +7,7 @@ using AListView = Android.Widget.ListView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.GroupedListViewAdapter instead")]
 	internal class GroupedListViewAdapter : ListViewAdapter, ISectionIndexer
 	{
 		class SectionData

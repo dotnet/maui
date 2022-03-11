@@ -3,19 +3,23 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.CompareStateTrigger']/Docs" />
 	public sealed class CompareStateTrigger : StateTriggerBase
 	{
+		/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public CompareStateTrigger()
 		{
 			UpdateState();
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="//Member[@MemberName='Property']/Docs" />
 		public object Property
 		{
 			get => GetValue(PropertyProperty);
 			set => SetValue(PropertyProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="//Member[@MemberName='PropertyProperty']/Docs" />
 		public static readonly BindableProperty PropertyProperty =
 		BindableProperty.Create(nameof(Property), typeof(object), typeof(CompareStateTrigger), null,
 			propertyChanged: OnPropertyChanged);
@@ -25,12 +29,14 @@ namespace Microsoft.Maui.Controls
 			((CompareStateTrigger)bindable).UpdateState();
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="//Member[@MemberName='Value']/Docs" />
 		public object Value
 		{
 			get => GetValue(ValueProperty);
 			set => SetValue(ValueProperty, value);
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="//Member[@MemberName='ValueProperty']/Docs" />
 		public static readonly BindableProperty ValueProperty =
 		BindableProperty.Create(nameof(Value), typeof(object), typeof(CompareStateTrigger), null,
 			propertyChanged: OnValueChanged);

@@ -30,18 +30,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[SetUp]
-			public void Setup()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				Device.PlatformServices = null;
-			}
-
 			[TestCase(true)]
 			[TestCase(false)]
 			public void CorrectlyResolveBPOnSubClasses(bool useCompiledXaml)
@@ -53,7 +41,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var button = new Button();
 				button.Style = style;
 
-				Assert.AreEqual(Color.FromHex("#dddddd"), button.GetValue(ShadowColorProperty));
+				Assert.AreEqual(Color.FromArgb("#dddddd"), button.GetValue(ShadowColorProperty));
 			}
 		}
 	}

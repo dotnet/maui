@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 
 		void SetValueFromRenderer(BindableProperty property, object value);
 		void SetValueFromRenderer(BindablePropertyKey propertyKey, object value);
-		ReadOnlyCollection<Element> LogicalChildren { get; }
+		IReadOnlyList<Element> LogicalChildren { get; }
 		Element RealParent { get; }
 		IEnumerable<Element> Descendants();
 	}

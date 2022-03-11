@@ -70,6 +70,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				{
 					Items[0].Items.Clear();
 					Items.Clear();
+
+					ContentPage parent = _stackContent.Parent as ContentPage;
+					parent.Content = null;
+
 					AddTopTab(TopTab).Content = _stackContent;
 					CurrentItem = Items.Last();
 
