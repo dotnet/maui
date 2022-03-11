@@ -20,6 +20,10 @@ namespace Microsoft.Maui.Handlers
 			// Android does not have the concept of IsRunning, so we are leveraging the Visibility
 			[nameof(IActivityIndicator.Visibility)] = MapIsRunning,
 #endif
+#if WINDOWS
+			[nameof(IActivityIndicator.Width)] = MapWidth,
+			[nameof(IActivityIndicator.Height)] = MapHeight,
+#endif
 		};
 
 		public static CommandMapper<IActivityIndicator, IActivityIndicatorHandler> CommandMapper = new(ViewCommandMapper);

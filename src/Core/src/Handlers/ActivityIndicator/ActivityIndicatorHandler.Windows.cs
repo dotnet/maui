@@ -19,5 +19,21 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateColor(activityIndicator);
 		}
+
+		public static void MapWidth(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		{
+			if (handler.PlatformView is MauiActivityIndicator platformView)
+			{
+				platformView.UpdateWidth(activityIndicator);
+			}
+		}
+
+		public static void MapHeight(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		{
+			if (handler.PlatformView is MauiActivityIndicator platformView)
+			{
+				platformView.UpdateHeight(activityIndicator);
+			}
+		}
 	}
 }
