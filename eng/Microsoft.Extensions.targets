@@ -109,5 +109,9 @@
         Update="Microsoft.CodeAnalysis.PublicApiAnalyzers"
         Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)"
     />
+    <PackageReference
+        Update="Tizen.UIExtensions.ElmSharp"
+        Version="$(TizenUIExtensionsVersion)"
+    />
   </ItemGroup>
 </Project>

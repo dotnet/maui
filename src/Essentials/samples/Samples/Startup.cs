@@ -26,20 +26,6 @@ namespace Samples
 					essentials.OnAppAction(App.HandleAppActions);
 				});
 
-#if TIZEN
-			var services = builder.Services;
-
-			services
-				.AddTransient<InitializationOptions>((_) =>
-				{
-					var option = new InitializationOptions
-					{
-						DisplayResolutionUnit = DisplayResolutionUnit.DP(true),
-						UseSkiaSharp = true
-					};
-					return option;
-				});
-#endif
 			return builder.Build();
 		}
 	}

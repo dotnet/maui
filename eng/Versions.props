@@ -50,6 +50,7 @@
     <MicrosoftDotNetXHarnessTestRunnersCommonVersion>1.0.0-prerelease.22211.4</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
     <MicrosoftDotNetXHarnessTestRunnersXunitVersion>1.0.0-prerelease.22211.4</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
     <MicrosoftDotNetXHarnessCLIVersion>1.0.0-prerelease.22211.4</MicrosoftDotNetXHarnessCLIVersion>
+    <TizenUIExtensionsVersion>0.6.0-pre1</TizenUIExtensionsVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Match the first three version numbers and append 00 -->
