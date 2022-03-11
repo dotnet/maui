@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 {
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 		public static Button NavButton(string galleryName, Func<Page> gallery, INavigation nav)
 		{
 			var automationId = System.Text.RegularExpressions.Regex.Replace(galleryName, " |\\(|\\)", string.Empty);
-			var button = new Button { Text = $"{galleryName}", AutomationId = automationId, FontSize = 10, HeightRequest = Device.RuntimePlatform == Device.Android ? 40 : 30 };
+			var button = new Button { Text = $"{galleryName}", AutomationId = automationId, FontSize = 10, HeightRequest = DeviceInfo.Platform == DevicePlatform.Android ? 40 : 30 };
 			button.Clicked += (sender, args) => { nav.PushAsync(gallery()); };
 			return button;
 		}

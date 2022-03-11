@@ -197,48 +197,63 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void OnLoaded(this FrameworkElement frameworkElement, Action action)
+		internal static bool IsLoaded(this FrameworkElement frameworkElement) =>
+			frameworkElement.IsLoaded;
+
+		internal static IDisposable OnLoaded(this FrameworkElement frameworkElement, Action action)
 		{
-			if (frameworkElement.IsLoaded)
+			if (frameworkElement.IsLoaded())
 			{
 				action();
+				return new ActionDisposable(() => { });
 			}
 
-			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
-			routedEventHandler = (_, __) =>
+			RoutedEventHandler? routedEventHandler = null;
+			ActionDisposable disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
 					frameworkElement.Loaded -= routedEventHandler;
+			});
 
+			routedEventHandler = (_, __) =>
+			{
+				disposable.Dispose();
 				action();
 			};
 
 			frameworkElement.Loaded += routedEventHandler;
+			return disposable;
 		}
 
-		internal static void OnUnloaded(this FrameworkElement frameworkElement, Action action)
+		internal static IDisposable OnUnloaded(this FrameworkElement frameworkElement, Action action)
 		{
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-
-			if (!frameworkElement.IsLoaded)
+			if (!frameworkElement.IsLoaded())
 			{
-				taskCompletionSource.SetResult(true);
 				action();
+				return new ActionDisposable(() => { });
 			}
 
-			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
-			routedEventHandler = (_, __) =>
+			RoutedEventHandler? routedEventHandler = null;
+			ActionDisposable disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
 					frameworkElement.Unloaded -= routedEventHandler;
+			});
 
+			routedEventHandler = (_, __) =>
+			{
+				disposable.Dispose();
 				action();
 			};
+
+			frameworkElement.Unloaded += routedEventHandler;
+
+			return disposable;
 		}
 
 		internal static void Arrange(this IView view, FrameworkElement frameworkElement)
 		{
-			var rect = new Graphics.Rectangle(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight);
+			var rect = new Graphics.Rect(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight);
 
 			if (!view.Frame.Equals(rect))
 				view.Arrange(rect);

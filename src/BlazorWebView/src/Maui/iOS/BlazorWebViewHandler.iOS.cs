@@ -2,7 +2,9 @@
 using System.Globalization;
 using System.IO;
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using UIKit;
 using WebKit;
@@ -48,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			var config = new WKWebViewConfiguration();
 
-			config.Preferences.SetValueForKey(NSObject.FromObject(true), new NSString("developerExtrasEnabled"));
+			config.Preferences.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("developerExtrasEnabled"));
 
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(MessageReceived), "webwindowinterop");
 			config.UserContentController.AddUserScript(new WKUserScript(
@@ -112,7 +114,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
-			_webviewManager = new IOSWebViewManager(this, PlatformView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
+			_webviewManager = new IOSWebViewManager(
+				this,
+				PlatformView,
+				Services!,
+				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
+				fileProvider,
+				VirtualView.JSComponents,
+				hostPageRelativePath);
 
 			if (RootComponents != null)
 			{

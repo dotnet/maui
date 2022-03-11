@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui
@@ -7,7 +8,7 @@ namespace Microsoft.Maui
 	{
 		public double DefaultFontSize => -1;
 
-		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
+		public FontManager(IFontRegistrar fontRegistrar, IServiceProvider? serviceProvider = null)
 		{
 		}
 	}

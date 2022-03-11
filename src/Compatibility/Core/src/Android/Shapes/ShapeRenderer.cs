@@ -189,8 +189,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected float _density;
 
 		APath _path;
-		readonly RectF _pathFillBounds;
-		readonly RectF _pathStrokeBounds;
+		readonly global::Android.Graphics.RectF _pathFillBounds;
+		readonly global::Android.Graphics.RectF _pathStrokeBounds;
 
 		Brush _stroke;
 		Brush _fill;
@@ -213,8 +213,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			_density = Resources.DisplayMetrics.Density;
 
-			_pathFillBounds = new RectF();
-			_pathStrokeBounds = new RectF();
+			_pathFillBounds = new global::Android.Graphics.RectF();
+			_pathStrokeBounds = new global::Android.Graphics.RectF();
 
 			_aspect = Stretch.None;
 		}
@@ -435,7 +435,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			AMatrix matrix = new AMatrix();
 
-			RectF drawableBounds = new RectF(_drawable.Bounds);
+			var drawableBounds = new global::Android.Graphics.RectF(_drawable.Bounds);
 			float halfStrokeWidth = _drawable.Paint.StrokeWidth / 2;
 
 			drawableBounds.Left += halfStrokeWidth;
@@ -487,7 +487,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Invalidate();
 		}
 
-		LinearGradient CreateLinearGradient(LinearGradientBrush linearGradientBrush, RectF pathBounds)
+		LinearGradient CreateLinearGradient(LinearGradientBrush linearGradientBrush, global::Android.Graphics.RectF pathBounds)
 		{
 			if (_path == null)
 				return null;
@@ -503,7 +503,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			Shader.TileMode tilemode = Shader.TileMode.Clamp;
 
-			using (RectF gradientBounds = new RectF(pathBounds))
+			using (var gradientBounds = new global::Android.Graphics.RectF(pathBounds))
 			{
 				return new
 					LinearGradient(
@@ -517,7 +517,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
-		RadialGradient CreateRadialGradient(RadialGradientBrush radialGradientBrush, RectF pathBounds)
+		RadialGradient CreateRadialGradient(RadialGradientBrush radialGradientBrush, global::Android.Graphics.RectF pathBounds)
 		{
 			if (_path == null)
 				return null;
@@ -533,7 +533,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			Shader.TileMode tilemode = Shader.TileMode.Clamp;
 
-			using (RectF gradientBounds = new RectF(pathBounds))
+			using (var gradientBounds = new global::Android.Graphics.RectF(pathBounds))
 			{
 				return new RadialGradient(
 					(float)radialGradientBrush.Center.X * gradientBounds.Width() + gradientBounds.Left,

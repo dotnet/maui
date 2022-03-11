@@ -6,7 +6,7 @@
     xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
 	x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Gh11551">
     <ContentPage.Resources>
-		<mg:Rectangle x:Key="rect" Height="22" Width="{x:Static cmp:AbsoluteLayout.AutoSize}" X="1" Y="0.5"/>
+		<mg:Rect x:Key="rect" Height="22" Width="{x:Static cmp:AbsoluteLayout.AutoSize}" X="1" Y="0.5"/>
     </ContentPage.Resources>
     <Label x:Name="label">
 		<Label.Style>

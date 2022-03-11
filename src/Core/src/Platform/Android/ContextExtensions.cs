@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Platform
 			return (float)Math.Ceiling(dp * s_displayDensity);
 		}
 
-		public static (int left, int top, int right, int bottom) ToPixels(this Context context, Graphics.Rectangle rectangle)
+		public static (int left, int top, int right, int bottom) ToPixels(this Context context, Graphics.Rect rectangle)
 		{
 			return
 			(

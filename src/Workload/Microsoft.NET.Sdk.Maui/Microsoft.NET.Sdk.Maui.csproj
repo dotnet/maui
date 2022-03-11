@@ -3,7 +3,7 @@
   <Import Project="../Shared/Common.targets" />
 
   <PropertyGroup>
-    <PackageId>$(PackageId).Manifest-$(DotNetPreviewVersionBand)</PackageId>
+    <PackageId>$(PackageId).Manifest-$(DotNetMauiManifestVersionBand)</PackageId>
     <Description>.NET MAUI workload manifest</Description>
   </PropertyGroup>
 

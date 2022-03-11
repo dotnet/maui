@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Layouts
 				measureWithMargins.Height + margin.VerticalThickness);
 		}
 
-		public static Rectangle ComputeFrame(this IView view, Rectangle bounds)
+		public static Rect ComputeFrame(this IView view, Rect bounds)
 		{
 			Thickness margin = view.Margin;
 
@@ -63,10 +63,10 @@ namespace Microsoft.Maui.Layouts
 			var frameX = AlignHorizontal(view, bounds, margin);
 			var frameY = AlignVertical(view, bounds, margin);
 
-			return new Rectangle(frameX, frameY, frameWidth, frameHeight);
+			return new Rect(frameX, frameY, frameWidth, frameHeight);
 		}
 
-		static double AlignHorizontal(IView view, Rectangle bounds, Thickness margin)
+		static double AlignHorizontal(IView view, Rect bounds, Thickness margin)
 		{
 			var alignment = view.HorizontalLayoutAlignment;
 			var desiredWidth = view.DesiredSize.Width;
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Layouts
 			return frameX;
 		}
 
-		static double AlignVertical(IView view, Rectangle bounds, Thickness margin)
+		static double AlignVertical(IView view, Rect bounds, Thickness margin)
 		{
 			double frameY = bounds.Y + margin.Top;
 
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Layouts
 			return new Size(contentSize.Width + inset.HorizontalThickness, contentSize.Height + inset.VerticalThickness);
 		}
 
-		public static void ArrangeContent(this IContentView contentView, Rectangle bounds)
+		public static void ArrangeContent(this IContentView contentView, Rect bounds)
 		{
 			if (contentView.PresentedContent == null)
 			{
@@ -159,13 +159,13 @@ namespace Microsoft.Maui.Layouts
 
 			var padding = contentView.Padding;
 
-			var targetBounds = new Rectangle(bounds.Left + padding.Left, bounds.Top + padding.Top,
+			var targetBounds = new Rect(bounds.Left + padding.Left, bounds.Top + padding.Top,
 				bounds.Width - padding.HorizontalThickness, bounds.Height - padding.VerticalThickness);
 
 			_ = contentView.PresentedContent.Arrange(targetBounds);
 		}
 
-		public static Size AdjustForFill(this Size size, Rectangle bounds, IView view)
+		public static Size AdjustForFill(this Size size, Rect bounds, IView view)
 		{
 			if (view.HorizontalLayoutAlignment == LayoutAlignment.Fill)
 			{

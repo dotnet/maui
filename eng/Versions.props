@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>6.0.200-rtm.22107.3</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>6.0.300-preview.22151.9</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>6.0.3</MicrosoftNETCoreAppRefPackageVersion>
     <!-- NOTE: should eventually revert back to $(MicrosoftNETCoreAppRefPackageVersion) in .NET 7 -->
@@ -9,12 +9,12 @@
     <MicrosoftExtensionsServicingPackageVersion>6.0.1</MicrosoftExtensionsServicingPackageVersion>
     <SystemCodeDomPackageVersion>6.0.0</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.200-preview.14.104</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.200-preview.14.109</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftiOSSdkPackageVersion>15.2.302-preview.14.56</MicrosoftiOSSdkPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>15.2.302-preview.14.56</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>12.1.302-preview.14.56</MicrosoftmacOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>15.2.302-preview.14.56</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>15.2.302-preview.14.116</MicrosoftiOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>15.2.302-preview.14.116</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>12.1.302-preview.14.116</MicrosoftmacOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>15.2.302-preview.14.116</MicrosofttvOSSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.2</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
     <!-- wasdk -->
@@ -32,21 +32,25 @@
     <MicrosoftJSInteropPackageVersion>6.0.1</MicrosoftJSInteropPackageVersion>
     <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.1</MicrosoftWindowsDesktopAppRuntimewinx64Version>
     <!-- Other packages -->
-    <MicrosoftMauiGraphicsVersion>6.0.200-preview.14.1005</MicrosoftMauiGraphicsVersion>
+    <MicrosoftMauiGraphicsVersion>6.0.200-preview.14.1092</MicrosoftMauiGraphicsVersion>
     <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
     <_MicrosoftWebWebView2Version>1.0.1020.30</_MicrosoftWebWebView2Version>
     <_XamarinAndroidGlideVersion>4.12.0.2</_XamarinAndroidGlideVersion>
     <_XamarinAndroidXSecurityVersion>1.1.0-alpha03</_XamarinAndroidXSecurityVersion>
     <_XamarinGoogleCryptoTinkAndroidVersion>1.6.1.2</_XamarinGoogleCryptoTinkAndroidVersion>
-    <_SkiaSharpVersion>2.88.0-preview.179</_SkiaSharpVersion>
-    <_HarfBuzzSharpVersion>2.8.2-preview.179</_HarfBuzzSharpVersion>
-    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.fffae82cf6ec1c4a6f490ddb780709ce9211725e.179</_SkiaSharpNativeAssetsVersion>
+    <_SkiaSharpVersion>2.88.0-preview.232</_SkiaSharpVersion>
+    <_HarfBuzzSharpVersion>2.8.2-preview.232</_HarfBuzzSharpVersion>
+    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.ccc64cdd4950b5056444be8b915929500f548fee.232</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.100-preview.2.22102.8</MicrosoftTemplateEngineTasksVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <DotNetVersionBandMaciOS>6.0.200</DotNetVersionBandMaciOS>
     <!-- Match the first three version numbers and append 00 -->
-    <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</DotNetPreviewVersionBand>
-    <DotNetVersionBandMaciOS Condition=" '$(DotNetVersionBandMaciOS)' == '' ">$(DotNetPreviewVersionBand)</DotNetVersionBandMaciOS>
+    <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</DotNetVersionBand>
+    <!-- NOTE: temporarily hardcode these to 6.0.200 -->
+    <DotNetMauiManifestVersionBand>6.0.200</DotNetMauiManifestVersionBand>
+    <DotNetMonoManifestVersionBand>6.0.200</DotNetMonoManifestVersionBand>
+    <DotNetEmscriptenManifestVersionBand>6.0.200</DotNetEmscriptenManifestVersionBand>
+    <DotNetAndroidManifestVersionBand>6.0.200</DotNetAndroidManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>6.0.200</DotNetMaciOSManifestVersionBand>
   </PropertyGroup>
 </Project>

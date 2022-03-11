@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Android.OS;
 using Java.Lang;
+using Microsoft.Maui.Dispatching;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 
@@ -21,13 +22,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			source.Add(1);
 			source.Add(2);
 
-			var ois = ItemsSourceFactory.Create(source, new MockCollectionChangedNotifier());
+			var ois = ItemsSourceFactory.Create(source, Application.Current, new MockCollectionChangedNotifier());
 
 			Assert.That(ois.Count, Is.EqualTo(2));
 
 			source.Add(3);
 
-			var count = await Device.InvokeOnMainThreadAsync(() => ois.Count);
+			var count = await Application.Current.Dispatcher.DispatchAsync(() => ois.Count);
 
 			Assert.That(ois.Count, Is.EqualTo(3));
 		}
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		{
 			var notifier = new MockCollectionChangedNotifier();
 			var source = new ObservableCollection<int>();
-			IItemsViewSource ois = ItemsSourceFactory.Create(source, notifier);
+			IItemsViewSource ois = ItemsSourceFactory.Create(source, Application.Current, notifier);
 
 			int countBeforeNotify = -1;
 
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadCount = await Device.InvokeOnMainThreadAsync(() => ois.Count);
+			var onMainThreadCount = await Application.Current.Dispatcher.DispatchAsync(() => ois.Count);
 
 			Assert.That(countBeforeNotify, Is.EqualTo(0), "Count should still be reporting no items before the notify resolves");
 			Assert.That(onMainThreadCount, Is.EqualTo(1));
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		{
 			var notifier = new MockCollectionChangedNotifier();
 			var source = new ObservableCollection<int> { 1 };
-			IItemsViewSource ois = ItemsSourceFactory.Create(source, notifier);
+			IItemsViewSource ois = ItemsSourceFactory.Create(source, Application.Current, notifier);
 
 			int countBeforeNotify = -1;
 
@@ -82,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadCount = await Device.InvokeOnMainThreadAsync(() => ois.Count);
+			var onMainThreadCount = await Application.Current.Dispatcher.DispatchAsync(() => ois.Count);
 
 			Assert.That(countBeforeNotify, Is.EqualTo(1));
 			Assert.That(onMainThreadCount, Is.EqualTo(0));
@@ -101,7 +102,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				"two"
 			};
 
-			IItemsViewSource ois = ItemsSourceFactory.Create(source, notifier);
+			IItemsViewSource ois = ItemsSourceFactory.Create(source, Application.Current, notifier);
 
 			string itemAtPosition2BeforeNotify = string.Empty;
 
@@ -115,7 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadGetItem = await Device.InvokeOnMainThreadAsync(() => (string)ois.GetItem(2));
+			var onMainThreadGetItem = await Application.Current.Dispatcher.DispatchAsync(() => (string)ois.GetItem(2));
 
 			Assert.That(itemAtPosition2BeforeNotify, Is.EqualTo("two"));
 			Assert.That(onMainThreadGetItem, Is.EqualTo("one"));
@@ -134,7 +135,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				"two"
 			};
 
-			IItemsViewSource ois = ItemsSourceFactory.Create(source, notifier);
+			IItemsViewSource ois = ItemsSourceFactory.Create(source, Application.Current, notifier);
 
 			int positionBeforeNotify = -1;
 
@@ -148,7 +149,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			});
 
 			// Check the result on the main thread
-			var onMainThreadGetItem = await Device.InvokeOnMainThreadAsync(() => ois.GetPosition("zero"));
+			var onMainThreadGetItem = await Application.Current.Dispatcher.DispatchAsync(() => ois.GetPosition("zero"));
 
 			Assert.That(positionBeforeNotify, Is.EqualTo(0));
 			Assert.That(onMainThreadGetItem, Is.EqualTo(1));

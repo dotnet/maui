@@ -19,7 +19,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.Width.Returns(Dimension.Unset);
 			element.Height.Returns(Dimension.Unset);
 
-			var bounds = new Rectangle(0, 0, 100, 100);
+			var bounds = new Rect(0, 0, 100, 100);
 			var frame = element.ComputeFrame(bounds);
 
 			// With a margin of 20 all the way around, we expect the actual frame
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.HorizontalLayoutAlignment.Returns(layoutAlignment);
 			element.VerticalLayoutAlignment.Returns(layoutAlignment);
 
-			var bounds = new Rectangle(0, 0, 100, 100);
+			var bounds = new Rect(0, 0, 100, 100);
 			var frame = element.ComputeFrame(bounds);
 
 			// The margin is simply too large for the bounds; since negative widths/heights on a frame don't make sense,
@@ -147,7 +147,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.Height.Returns(Dimension.Unset);
 			element.FlowDirection.Returns(FlowDirection.LeftToRight);
 
-			var frame = element.ComputeFrame(new Rectangle(offset.X, offset.Y, widthConstraint, heightConstraint));
+			var frame = element.ComputeFrame(new Rect(offset.X, offset.Y, widthConstraint, heightConstraint));
 
 			Assert.Equal(expectedX, frame.Left);
 			Assert.Equal(expectedWidth, frame.Width);
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.Height.Returns(Dimension.Unset);
 			element.FlowDirection.Returns(FlowDirection.LeftToRight);
 
-			var frame = element.ComputeFrame(new Rectangle(offset.X, offset.Y, widthConstraint, heightConstraint));
+			var frame = element.ComputeFrame(new Rect(offset.X, offset.Y, widthConstraint, heightConstraint));
 
 			Assert.Equal(expectedY, frame.Top);
 			Assert.Equal(expectedHeight, frame.Height);
@@ -231,7 +231,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.Width.Returns(Dimension.Unset);
 			element.Height.Returns(Dimension.Unset);
 
-			var frame = element.ComputeFrame(new Rectangle(offset.X, offset.Y, widthConstraint, heightConstraint));
+			var frame = element.ComputeFrame(new Rect(offset.X, offset.Y, widthConstraint, heightConstraint));
 
 			Assert.Equal(expectedX, frame.Left);
 			Assert.Equal(expectedWidth, frame.Width);

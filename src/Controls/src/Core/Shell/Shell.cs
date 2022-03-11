@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='NavBarHasShadowProperty']/Docs" />
 		public static readonly BindableProperty NavBarHasShadowProperty =
 			BindableProperty.CreateAttached("NavBarHasShadow", typeof(bool), typeof(Shell), default(bool),
-				defaultValueCreator: (b) => Device.RuntimePlatform == Device.Android);
+				defaultValueCreator: (b) => DeviceInfo.Platform == DevicePlatform.Android);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SearchHandlerProperty']/Docs" />
 		public static readonly BindableProperty SearchHandlerProperty =
@@ -1206,25 +1207,48 @@ namespace Microsoft.Maui.Controls
 						return FlyoutBehavior.Flyout;
 					else if (rootItem is TabBar)
 						return FlyoutBehavior.Disabled;
+					// This means the user hasn't specified
+					// a ShellItem so we don't want the flyout to show up
+					// if there is only one ShellItem.
+					//
+					// This will happen if the user only specifies a
+					// single ContentPage
+					else if (rootItem != null && Routing.IsImplicit(rootItem))
+					{
+						if (Items.Count <= 1)
+							return FlyoutBehavior.Disabled;
+					}
 
 					return FlyoutBehavior;
 				},
 				(o) => rootItem = rootItem ?? o as ShellItem);
 		}
 
-		internal T GetEffectiveValue<T>(BindableProperty property, T defaultValue)
+		internal T GetEffectiveValue<T>(BindableProperty property, T defaultValue, bool ignoreImplicit = false)
 		{
-			return GetEffectiveValue<T>(property, () => defaultValue, null);
+			return GetEffectiveValue<T>(property, () => defaultValue, null, ignoreImplicit: ignoreImplicit);
 		}
 
-		internal T GetEffectiveValue<T>(BindableProperty property, Func<T> defaultValue, Action<Element> observer, Element element = null)
+		internal T GetEffectiveValue<T>(
+			BindableProperty property,
+			Func<T> defaultValue,
+			Action<Element> observer,
+			Element element = null,
+			bool ignoreImplicit = false)
 		{
-			element = element ?? GetVisiblePage() ?? CurrentContent;
+			element = element ?? GetCurrentShellPage() ?? CurrentContent;
 			while (element != this && element != null)
 			{
 				observer?.Invoke(element);
 
-				if (element.IsSet(property))
+				if (ignoreImplicit && Routing.IsImplicit(element))
+				{
+					// If this is an implicitly created route.
+					// A route that the user doesn't have inside their Shell file.
+					// Then we don't want to consider it as a value to use.
+					// So we let the code just go to the next parent.
+				}
+				else if (element.IsSet(property))
 					return (T)element.GetValue(property);
 
 				element = element.Parent;
@@ -1300,6 +1324,8 @@ namespace Microsoft.Maui.Controls
 			var behavior = GetEffectiveFlyoutBehavior();
 			for (int i = 0; i < _flyoutBehaviorObservers.Count; i++)
 				_flyoutBehaviorObservers[i].OnFlyoutBehaviorChanged(behavior);
+
+			Handler?.UpdateValue(nameof(IFlyoutView.FlyoutBehavior));
 		}
 
 		void OnFlyoutHeaderChanged(object oldVal, object newVal)
@@ -1350,6 +1376,22 @@ namespace Microsoft.Maui.Controls
 				return scc.PresentedPage;
 
 			return null;
+		}
+
+		// This returns the current shell page that's visible
+		// without including the modal stack
+		internal Element GetCurrentShellPage()
+		{
+			var navStack = CurrentSection?.Navigation?.NavigationStack;
+			Page currentPage = null;
+
+			if (navStack != null)
+			{
+				currentPage = navStack[navStack.Count - 1] ??
+					((IShellContentController)CurrentContent)?.Page;
+			}
+
+			return currentPage;
 		}
 
 		Element WalkToPage(Element element)
@@ -1478,6 +1520,13 @@ namespace Microsoft.Maui.Controls
 
 			protected override async Task<Page> OnPopModal(bool animated)
 			{
+				if (!_shell.NavigationManager.AccumulateNavigatedEvents)
+				{
+					var page = _shell.CurrentPage;
+					await _shell.GoToAsync("..", animated);
+					return page;
+				}
+
 				if (ModalStack.Count > 0)
 					ModalStack[ModalStack.Count - 1].SendDisappearing();
 
@@ -1498,6 +1547,14 @@ namespace Microsoft.Maui.Controls
 
 			protected override async Task OnPushModal(Page modal, bool animated)
 			{
+				if (!_shell.NavigationManager.AccumulateNavigatedEvents)
+				{
+					// This will route the modal push through the shell section which is setup
+					// to update the shell state after a modal push
+					await _shell.CurrentItem.CurrentItem.Navigation.PushModalAsync(modal, animated);
+					return;
+				}
+
 				if (ModalStack.Count == 0)
 					_shell.CurrentItem.SendDisappearing();
 

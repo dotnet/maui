@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var al = new AbsoluteLayout();
 
 			var label = new Label { Text = "Move this label around", FontSize = 72, Margin = 300 };
-			AbsoluteLayout.SetLayoutBounds(label, new Rectangle(0, 0, 2000, 2000));
+			AbsoluteLayout.SetLayoutBounds(label, new Rect(0, 0, 2000, 2000));
 			al.Children.Add(label);
 
 			var sv = new ScrollView

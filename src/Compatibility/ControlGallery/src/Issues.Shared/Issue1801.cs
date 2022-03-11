@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Func<ListView, object, string, object> logEvent = (_, item, e) =>
 			{
 				var line = $"Item '{item}' {e}. SelectedItem = '{list.SelectedItem}'";
-				if (Device.RuntimePlatform == Device.Android || Device.RuntimePlatform == Device.Tizen)
+				if (DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.Tizen)
 					// Android/Tizen scroll to show the last line so append to the log to make sure this line is visible
 					log.Text += line + "\n";
 				else
