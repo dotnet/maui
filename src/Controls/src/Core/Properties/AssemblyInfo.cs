@@ -40,8 +40,8 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Pages")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Pages.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.CarouselView")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Foldable")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Foldable.UnitTests")]
 [assembly: InternalsVisibleTo("WinUI.UITests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DeviceTests")]
 

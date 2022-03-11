@@ -4,7 +4,7 @@ using System.Threading;
 
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.DualScreen.UnitTests
+namespace Microsoft.Maui.Controls.Foldable.UnitTests
 {
 	public class BaseTestFixture
 	{

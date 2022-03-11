@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.DualScreen.UnitTests
+namespace Microsoft.Maui.Controls.Foldable.UnitTests
 {
 	[TestFixture]
 	public partial class TwoPaneViewNotSpannedTests : BaseTestFixture

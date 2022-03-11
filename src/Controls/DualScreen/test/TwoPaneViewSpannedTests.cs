@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.DualScreen.UnitTests
+namespace Microsoft.Maui.Controls.Foldable.UnitTests
 {
 	[TestFixture]
 	public class TwoPaneViewSpannedTests : BaseTestFixture

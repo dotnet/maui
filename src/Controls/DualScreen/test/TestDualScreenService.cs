@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.DualScreen.UnitTests
+namespace Microsoft.Maui.Controls.Foldable.UnitTests
 {
 	internal class TestDualScreenService : IDualScreenService
 	{

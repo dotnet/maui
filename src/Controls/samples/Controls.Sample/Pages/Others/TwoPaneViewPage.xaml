@@ -3,11 +3,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.TwoPaneViewPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
-    xmlns:foldable="clr-namespace:Microsoft.Maui.Controls.Foldable;assembly=Microsoft.Maui.Controls.DualScreen"
+    xmlns:foldable="clr-namespace:Microsoft.Maui.Controls.Foldable;assembly=Microsoft.Maui.Controls.Foldable"
     Title="TwoPaneView"
     BackgroundColor="#bbbbbb">
     <!-- For Surface Duo and other foldable Android phones -->
-    <!-- Requires Microsoft.Maui.Controls.DualScreen NuGet -->
+    <!-- Requires Microsoft.Maui.Controls.Foldable NuGet -->
     <views:BasePage.Content>
         <foldable:TwoPaneView x:Name="twoPaneView"
                               MinTallModeHeight="{Binding Source={x:Reference MinTallModeHeight}, Path=Value}"

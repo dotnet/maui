@@ -10,13 +10,13 @@ using FileMode = System.IO.FileMode;
 using FileAccess = System.IO.FileAccess;
 using FileShare = System.IO.FileShare;
 using Stream = System.IO.Stream;
-using Microsoft.Maui.Controls.DualScreen.UnitTests;
+using Microsoft.Maui.Controls.Foldable.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 
 [assembly: Dependency(typeof(MockDeserializer))]
 [assembly: Dependency(typeof(MockResourcesProvider))]
 
-namespace Microsoft.Maui.Controls.DualScreen.UnitTests
+namespace Microsoft.Maui.Controls.Foldable.UnitTests
 {
 	internal class MockPlatformServices : Internals.IPlatformServices
 	{

@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.DualScreen.UnitTests
+namespace Microsoft.Maui.Controls.Foldable.UnitTests
 {
 	internal class TestDeviceInfo : DeviceInfo
 	{
