@@ -122,7 +122,6 @@ namespace Microsoft.Maui.Handlers
 		void OnKeyboardBackPressed(object? sender, EventArgs eventArgs)
 		{
 			VirtualView?.Completed();
-			PlatformView?.ClearFocus();
 		}
 	}
 }
