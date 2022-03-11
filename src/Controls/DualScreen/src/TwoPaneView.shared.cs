@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Foldable
 		{
 #if !ANDROID
 			// default implementation for other platforms
-			DependencyService.Register<NoDualScreenServiceImpl>();
+			DependencyService.Register<NoFoldableServiceImpl>();
 #endif
 		}
 

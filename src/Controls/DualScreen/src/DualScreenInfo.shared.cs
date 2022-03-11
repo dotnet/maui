@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Foldable
 		TwoPaneViewLayoutGuide _twoPaneViewLayoutGuide;
 		IFoldableService _dualScreenService;		
 		IFoldableService DualScreenService =>
-			_dualScreenService ?? DependencyService.Get<IFoldableService>() ?? NoDualScreenServiceImpl.Instance;
+			_dualScreenService ?? DependencyService.Get<IFoldableService>() ?? NoFoldableServiceImpl.Instance;
 
 		internal VisualElement Element { get; }
 

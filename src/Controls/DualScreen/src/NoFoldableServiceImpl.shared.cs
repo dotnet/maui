@@ -7,16 +7,20 @@ using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Foldable
 {
-    internal class NoDualScreenServiceImpl : IFoldableService
+	/// <summary>
+	/// This implementation is created by the TwoPaneView for all 
+	/// platforms except Android, which creates an working instance
+	/// via HostBuilderExtension.
+	/// </summary>
+    internal class NoFoldableServiceImpl : IFoldableService
     {
-		static Lazy<NoDualScreenServiceImpl> _Instance = new Lazy<NoDualScreenServiceImpl>(() => new NoDualScreenServiceImpl());
-        public static NoDualScreenServiceImpl Instance => _Instance.Value;
+		static Lazy<NoFoldableServiceImpl> _Instance = new Lazy<NoFoldableServiceImpl>(() => new NoFoldableServiceImpl());
+        public static NoFoldableServiceImpl Instance => _Instance.Value;
 
 		readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
 		readonly WeakEventManager _onLayoutChangedEventManager = new WeakEventManager();
-		public NoDualScreenServiceImpl()
+		public NoFoldableServiceImpl()
         {
-			System.Diagnostics.Debug.Write("NoDualScreenServiceImpl.ctor", "JWM");
 			DeviceDisplay.MainDisplayInfoChanged += OnDeviceInfoChanged;
 		}
 

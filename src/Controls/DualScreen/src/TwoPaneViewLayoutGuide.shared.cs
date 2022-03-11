@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Foldable
 					ds = DependencyService.Get<IFoldableService>();
 				}
 				if (ds == null)
-					ds = NoDualScreenServiceImpl.Instance;
+					ds = NoFoldableServiceImpl.Instance;
 
 				return ds;
 			}
