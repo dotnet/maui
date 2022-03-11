@@ -24,45 +24,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void TabLayoutMediator.ITabConfigurationStrategy.OnConfigureTab(TabLayout.Tab tab, int position)
 		{
-			if (_selecting)
-				return;
-
 			tab.SetText(new String(SectionController.GetItems()[position].Title));
-			// TODO : Find a way to make this cancellable
-			var shellSection = ShellSection;
-			var shellContent = SectionController.GetItems()[position];
-
-			if (shellContent == shellSection.CurrentItem)
-				return;
-
-			var stack = shellSection.Stack.ToList();
-			bool result = ShellController.ProposeNavigation(ShellNavigationSource.ShellContentChanged,
-				(ShellItem)shellSection.Parent, shellSection, shellContent, stack, true);
-
-			if (result)
-			{
-				UpdateCurrentItem(shellContent);
-			}
-			else if (shellSection?.CurrentItem != null)
-			{
-				var currentPosition = SectionController.GetItems().IndexOf(shellSection.CurrentItem);
-				_selecting = true;
-
-				// Android doesn't really appreciate you calling SetCurrentItem inside a OnPageSelected callback.
-				// It wont crash but the way its programmed doesn't really anticipate re-entrancy around that method
-				// and it ends up going to the wrong location. Thus we must invoke.
-
-				Device.BeginInvokeOnMainThread(() =>
-				{
-					if (currentPosition < _viewPager.ChildCount && _toolbarTracker != null)
-					{
-						_viewPager.SetCurrentItem(currentPosition, false);
-						UpdateCurrentItem(shellSection.CurrentItem);
-					}
-
-					_selecting = false;
-				});
-			}
 		}
 
 		void UpdateCurrentItem(ShellContent content)
@@ -70,7 +32,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_toolbarTracker == null)
 				return;
 
-			var page = ((IShellContentController)content).Page;
+			var page = ((IShellContentController)content).GetOrCreateContent();
 			if (page == null)
 				throw new ArgumentNullException(nameof(page), "Shell Content Page is Null");
 
@@ -136,8 +98,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var root = inflater.Inflate(Controls.Compatibility.Resource.Layout.rootlayout, null).JavaCast<CoordinatorLayout>();
 
 			_toolbar = root.FindViewById<AToolbar>(Controls.Compatibility.Resource.Id.main_toolbar);
-			if (Context.GetActivity() is AppCompatActivity aca)
-				aca.SetSupportActionBar(_toolbar);
 
 			_viewPager = root.FindViewById<ViewPager2>(Controls.Compatibility.Resource.Id.main_viewpager);
 			_tablayout = root.FindViewById<TabLayout>(Controls.Compatibility.Resource.Id.main_tablayout);
@@ -150,7 +110,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var pagerContext = MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
 			_viewPager.Adapter = new ShellFragmentStateAdapter(shellSection, ChildFragmentManager, pagerContext);
 			_viewPager.OverScrollMode = OverScrollMode.Never;
-
+			_viewPager.RegisterOnPageChangeCallback(new ViewPagerPageChanged(this));
 			new TabLayoutMediator(_tablayout, _viewPager, this)
 				.Attach();
 
@@ -321,6 +281,63 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 			((IShellController)_shellContext?.Shell)?.RemoveAppearanceObserver(this);
 			ShellSection.PropertyChanged -= OnShellItemPropertyChanged;
+		}
+
+		protected virtual void OnPageSelected(int position)
+		{
+			if (_selecting)
+				return;
+
+			var shellSection = ShellSection;
+			var shellContent = SectionController.GetItems()[position];
+
+			if (shellContent == shellSection.CurrentItem)
+				return;
+
+			var stack = shellSection.Stack.ToList();
+			bool result = ShellController.ProposeNavigation(ShellNavigationSource.ShellContentChanged,
+				(ShellItem)shellSection.Parent, shellSection, shellContent, stack, true);
+
+			if (result)
+			{
+				UpdateCurrentItem(shellContent);
+			}
+			else if (shellSection?.CurrentItem != null)
+			{
+				var currentPosition = SectionController.GetItems().IndexOf(shellSection.CurrentItem);
+				_selecting = true;
+
+				// Android doesn't really appreciate you calling SetCurrentItem inside a OnPageSelected callback.
+				// It wont crash but the way its programmed doesn't really anticipate re-entrancy around that method
+				// and it ends up going to the wrong location. Thus we must invoke.
+
+				_viewPager.Post(() =>
+				{
+					if (currentPosition < _viewPager.ChildCount && _toolbarTracker != null)
+					{
+						_viewPager.SetCurrentItem(currentPosition, false);
+						UpdateCurrentItem(shellSection.CurrentItem);
+					}
+
+					_selecting = false;
+				});
+			}
+		}
+
+		class ViewPagerPageChanged : ViewPager2.OnPageChangeCallback
+		{
+			private ShellSectionRenderer _shellSectionRenderer;
+
+			public ViewPagerPageChanged(ShellSectionRenderer shellSectionRenderer)
+			{
+				_shellSectionRenderer = shellSectionRenderer;
+			}
+
+			public override void OnPageSelected(int position)
+			{
+				base.OnPageSelected(position);
+				_shellSectionRenderer.OnPageSelected(position);
+			}
 		}
 	}
 }

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public float StrokeMiterLimit { get; set; }
 
-		public Size CrossPlatformArrange(Rectangle bounds)
+		public Size CrossPlatformArrange(Rect bounds)
 		{
 			return Size.Zero;
 		}

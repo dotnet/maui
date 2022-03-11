@@ -62,5 +62,25 @@ namespace Microsoft.Maui.Dispatching
 
 		public static Task<SynchronizationContext> GetSynchronizationContextAsync(this IDispatcher dispatcher) =>
 			dispatcher.DispatchAsync(() => SynchronizationContext.Current!);
+
+		public static void StartTimer(this IDispatcher dispatcher, TimeSpan interval, Func<bool> callback)
+		{
+			_ = callback ?? throw new ArgumentNullException(nameof(callback));
+
+			var timer = dispatcher.CreateTimer();
+			timer.Interval = interval;
+			timer.IsRepeating = true;
+			timer.Tick += OnTick;
+			timer.Start();
+
+			void OnTick(object? sender, EventArgs e)
+			{
+				if (!callback())
+				{
+					timer.Tick -= OnTick;
+					timer.Stop();
+				}
+			}
+		}
 	}
 }

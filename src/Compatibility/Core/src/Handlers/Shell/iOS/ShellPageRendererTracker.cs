@@ -72,6 +72,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_context = context;
 			_nSCache = new NSCache();
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
+
+			if (_context.Shell.Toolbar != null)
+				_context.Shell.Toolbar.PropertyChanged += OnToolbarPropertyChanged;
+
 			_fontManager = context.Shell.RequireFontManager();
 		}
 
@@ -132,10 +136,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ViewController.HidesBottomBarWhenPushed = !tabBarVisible;
 		}
 
+		void OnToolbarPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			UpdateTitle();
+		}
+
 		protected virtual void UpdateTitle()
 		{
-			if (Page.Parent is BaseShellItem)
-				NavigationItem.Title = Page.Title;
+			NavigationItem.Title = _context.Shell.Toolbar.Title;
 		}
 
 		void UpdateShellToMyPage()
@@ -713,6 +721,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					BackButtonBehavior.PropertyChanged -= OnBackButtonBehaviorPropertyChanged;
 
 				_context.Shell.PropertyChanged -= HandleShellPropertyChanged;
+
+				if (_context.Shell.Toolbar != null)
+					_context.Shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
 			}
 
 			_context = null;

@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Essentials;
 using Samples.ViewModel;
 
 namespace Samples.View
@@ -11,7 +12,7 @@ namespace Samples.View
 		public BasePage()
 		{
 			NavigationPage.SetBackButtonTitle(this, "Back");
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				NavigationPage.SetHasNavigationBar(this, false);
 		}
 

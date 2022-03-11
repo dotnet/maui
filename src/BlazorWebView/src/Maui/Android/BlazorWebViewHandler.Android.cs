@@ -1,7 +1,9 @@
 using System;
 using Android.Webkit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using static Android.Views.ViewGroup;
 using Path = System.IO.Path;
@@ -27,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// To allow overriding ExternalLinkMode.InsecureOpenInWebView and open links in browser with a _blank target
 			blazorAndroidWebView.Settings.SetSupportMultipleWindows(true);
 
-			BlazorAndroidWebView.SetWebContentsDebuggingEnabled(enabled: true);
+			BlazorAndroidWebView.SetWebContentsDebuggingEnabled(enabled: DeveloperTools.Enabled);
 
 			if (blazorAndroidWebView.Settings != null)
 			{
@@ -89,7 +91,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
-			_webviewManager = new AndroidWebKitWebViewManager(PlatformView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
+			_webviewManager = new AndroidWebKitWebViewManager(
+				PlatformView,
+				Services!,
+				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
+				fileProvider,
+				VirtualView.JSComponents,
+				hostPageRelativePath);
 
 			if (RootComponents != null)
 			{

@@ -30,6 +30,8 @@
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Build.Tasks\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Build.Tasks.dll" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Build.Tasks\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Build.Tasks.pdb" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Build.Tasks\bin\$(Configuration)\netstandard2.0\*\Microsoft.Maui.Controls.Build.Tasks.resources.dll" />
+    <_Files Include="$(MauiRootDirectory)src\Essentials\src\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Essentials.dll" />
+    <_Files Include="$(MauiRootDirectory)src\Essentials\src\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Essentials.pdb" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.dll" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.pdb" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.dll" />

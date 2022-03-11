@@ -4,7 +4,6 @@ using Android.Graphics;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using APath = Android.Graphics.Path;
-using FormsRectangle = Microsoft.Maui.Graphics.Rectangle;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
 using Point = Microsoft.Maui.Graphics.Point;
 
@@ -32,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			else if (geometry is RectangleGeometry)
 			{
-				FormsRectangle rect = (geometry as RectangleGeometry).Rect;
+				Graphics.Rect rect = (geometry as RectangleGeometry).Rect;
 
 				path.AddRect(
 					density * (float)rect.Left,
@@ -45,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				EllipseGeometry ellipseGeometry = geometry as EllipseGeometry;
 
-				path.AddOval(new RectF(
+				path.AddOval(new Graphics.RectF(
 					density * (float)(ellipseGeometry.Center.X - ellipseGeometry.RadiusX),
 					density * (float)(ellipseGeometry.Center.Y - ellipseGeometry.RadiusY),
 					density * (float)(ellipseGeometry.Center.X + ellipseGeometry.RadiusX),

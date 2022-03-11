@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Internals
 	{
 		readonly Dictionary<Type, Dictionary<Type, (Type target, short priority)>> _handlers = new Dictionary<Type, Dictionary<Type, (Type target, short priority)>>();
 		static Type _defaultVisualType = typeof(VisualMarker.DefaultVisual);
-		static Type _materialVisualType = typeof(VisualMarker.MaterialVisual);
+		//static Type _materialVisualType = typeof(VisualMarker.MaterialVisual);
 
 		static Type[] _defaultVisualRenderers = new[] { _defaultVisualType };
 
@@ -157,8 +157,8 @@ namespace Microsoft.Maui.Controls.Internals
 			if (_handlers.TryGetValue(viewType, out Dictionary<Type, (Type target, short priority)> visualRenderers))
 				if (visualRenderers.TryGetValue(visualType, out (Type target, short priority) specificTypeRenderer))
 					return specificTypeRenderer.target;
-				else if (visualType == _materialVisualType)
-					VisualMarker.MaterialCheck();
+				//else if (visualType == _materialVisualType)
+				//	VisualMarker.MaterialCheck();
 
 			if (visualType != _defaultVisualType && visualRenderers != null)
 				if (visualRenderers.TryGetValue(_defaultVisualType, out (Type target, short priority) specificTypeRenderer))
@@ -384,12 +384,14 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll']/Docs" />
+		[Obsolete]
 		public static void RegisterAll(Type[] attrTypes, IFontRegistrar fontRegistrar = null)
 		{
 			RegisterAll(attrTypes, default(InitializationFlags), fontRegistrar);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll']/Docs" />
+		[Obsolete]
 		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags, IFontRegistrar fontRegistrar = null)
 		{
 			RegisterAll(

@@ -155,6 +155,8 @@ namespace Microsoft.Maui.Platform
 
 			editText.FocusableInTouchMode = isEditable;
 			editText.Focusable = isEditable;
+
+			editText.SetCursorVisible(isEditable);
 		}
 
 		public static void UpdateKeyboard(this EditText editText, IEntry entry)

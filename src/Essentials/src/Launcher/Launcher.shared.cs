@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Essentials
 		public ReadOnlyFile File { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='PresentationSourceBounds']/Docs" />
-		public Rectangle PresentationSourceBounds { get; set; } = Rectangle.Zero;
+		public Rect PresentationSourceBounds { get; set; } = Rect.Zero;
 	}
 }
 

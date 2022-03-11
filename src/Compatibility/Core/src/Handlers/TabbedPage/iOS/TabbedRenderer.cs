@@ -491,7 +491,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		UIViewController IPlatformViewHandler.ViewController => this;
 
-		void IViewHandler.PlatformArrange(Rectangle rect) =>
+		void IViewHandler.PlatformArrange(Rect rect) =>
 			_viewHandlerWrapper.PlatformArrange(rect);
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext)

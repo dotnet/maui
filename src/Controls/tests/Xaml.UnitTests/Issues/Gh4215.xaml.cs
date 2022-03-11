@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public static implicit operator DateTime(Gh4215VM value) => DateTime.UtcNow;
 		public static implicit operator string(Gh4215VM value) => "foo";
 		public static implicit operator long(Gh4215VM value) => long.MaxValue;
-		public static implicit operator Rectangle(Gh4215VM value) => new Rectangle();
+		public static implicit operator Rect(Gh4215VM value) => new Rect();
 	}
 
 	public partial class Gh4215 : ContentPage

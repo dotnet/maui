@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					var searchBar = new UISearchBar(RectangleF.Zero) { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
+					var searchBar = new UISearchBar(CGRect.Empty) { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
 					var cancelButton = searchBar.FindDescendantView<UIButton>();
 					_cancelButtonTextColorDefaultNormal = cancelButton.TitleColor(UIControlState.Normal);
@@ -413,7 +413,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			// iPhone does not have an enter key on numeric keyboards
-			if (Device.Idiom == TargetIdiom.Phone && (keyboard == Keyboard.Numeric || keyboard == Keyboard.Telephone))
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone && (keyboard == Keyboard.Numeric || keyboard == Keyboard.Telephone))
 			{
 				_numericAccessoryView = _numericAccessoryView ?? CreateNumericKeyboardAccessoryView();
 				Control.InputAccessoryView = _numericAccessoryView;

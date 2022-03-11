@@ -26,9 +26,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Row,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(10, 0, 10, 100)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(10, 0, 10, 100)));
 		}
 
 		[Test]
@@ -45,9 +45,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Column,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 10, 100, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 10, 100, 10)));
 		}
 
 		[Test]
@@ -65,9 +65,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				JustifyContent = FlexJustify.End,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(80, 0, 10, 100)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(80, 0, 10, 100)));
 		}
 
 		[Test]
@@ -85,9 +85,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				JustifyContent = FlexJustify.End,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 80, 100, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 80, 100, 10)));
 		}
 
 		[Test]
@@ -104,9 +104,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				Direction = FlexDirection.Row,
 			};
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(10, 0, 80, 100)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(10, 0, 80, 100)));
 		}
 
 		[Test]
@@ -123,9 +123,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				Direction = FlexDirection.Column,
 			};
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 10, 100, 80)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 10, 100, 80)));
 		}
 
 		[Test]
@@ -143,9 +143,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Row,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 10, 100, 80)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 10, 100, 80)));
 		}
 
 		[Test]
@@ -163,9 +163,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Column,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(10, 0, 80, 100)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(10, 0, 80, 100)));
 		}
 
 		[Test]
@@ -188,10 +188,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Row,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 0, 45, 100)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rectangle(55, 0, 45, 100)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 0, 45, 100)));
+			Assert.That(view1.Bounds, Is.EqualTo(new Rect(55, 0, 45, 100)));
 		}
 
 		[Test]
@@ -213,10 +213,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Column,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 45)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rectangle(0, 55, 100, 45)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 0, 100, 45)));
+			Assert.That(view1.Bounds, Is.EqualTo(new Rect(0, 55, 100, 45)));
 		}
 	}
 }

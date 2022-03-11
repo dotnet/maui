@@ -39,9 +39,6 @@ namespace Microsoft.Maui
 		{
 			base.HandleUIChange();
 
-			if (WindowElements.Count > 0)
-				RemoveAdorners();
-
 			if (GraphicsView != null)
 				Offset = GenerateAdornerOffset(GraphicsView);
 		}

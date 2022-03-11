@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public void Platform_Is_Correct()
 		{
 #if WINDOWS_UWP || WINDOWS
-			Assert.Equal(DevicePlatform.UWP, DeviceInfo.Platform);
+			Assert.Equal(DevicePlatform.WinUI, DeviceInfo.Platform);
 #elif __IOS__
 			Assert.Equal(DevicePlatform.iOS, DeviceInfo.Platform);
 #elif __ANDROID__

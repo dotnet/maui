@@ -10,8 +10,11 @@
     <Error Condition=" '$(App)' != 'maui' and '$(App)' != 'maui-blazor' " Text="Please pass -p:App=maui or -p:App=maui-blazor" />
     <RemoveDir Directories="$(Intermediate)" />
     <Exec Command="&quot;$(DotNetToolPath)&quot; new $(App) -o $(Intermediate)" EnvironmentVariables="$(EnvVars)" />
-    <!-- MainPage.xaml.cs uses CommonMethod.cs -->
-    <Copy SourceFiles="src/MainPage-$(App).cs" DestinationFiles="$(Intermediate)MainPage.xaml.cs" />
+    <!-- Copy replacement files-->
+    <ItemGroup>
+      <_FilesToCopy Include="src/$(App)/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_FilesToCopy)" DestinationFolder="$(Intermediate)" />
     <!-- Restore as a separate step due to: https://github.com/dotnet/sdk/issues/21877 -->
     <MSBuild Projects="$(CSProj)" Targets="Restore" />
     <MSBuild Projects="$(CSProj)" Targets="Record" Properties="App=$(App);TargetFramework=net6.0-android;RuntimeIdentifier=$(RuntimeIdentifier)" />

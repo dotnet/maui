@@ -53,7 +53,7 @@
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
     <MauiIcon Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" />
     <MauiFont Include="Resources\Fonts\*" />
-    <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" BaseSize="168,208" />
+    <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
   </ItemGroup>
 
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />

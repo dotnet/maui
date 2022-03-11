@@ -1,6 +1,6 @@
 name: Bug Report
 description: File a bug report
-labels: ["t/bug"]
+labels: ["t/bug", "s/needs-verification"]
 assignees: []
 body:
   - type: markdown
