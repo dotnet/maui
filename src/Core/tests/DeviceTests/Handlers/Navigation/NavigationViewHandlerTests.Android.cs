@@ -23,6 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(async () =>
 			{
 				var context = MauiProgram.DefaultContext;
+
 				var rootView = (context as AppCompatActivity).Window.DecorView as ViewGroup;
 				var linearLayoutCompat = new LinearLayoutCompat(context);
 				var fragmentManager = MauiContext.GetFragmentManager();
