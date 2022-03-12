@@ -1,4 +1,5 @@
-﻿using Android.App;
+﻿using System;
+using Android.App;
 using Android.Graphics;
 using Java.Interop;
 using Xunit;
@@ -21,11 +22,21 @@ public partial class FontManagerTests : TestBase
 	public void CanLoadFonts(string fontName, string assetName)
 	{
 		var fontWeight = FontWeight.Regular;
+		var fontStyle = TypefaceStyle.Normal;
+		var fontSlant = false;
+
+		var expectedTypeface = Typeface.CreateFromAsset(Application.Context.Assets, assetName);
+		Typeface expected;
+		if (OperatingSystem.IsAndroidVersionAtLeast(28))
+			expected = Typeface.Create(expectedTypeface, (int)fontWeight, fontSlant);
+		else
+			expected = Typeface.Create(expectedTypeface, fontStyle);
+
 		var registrar = new FontRegistrar(fontLoader: null);
 		registrar.Register("dokdo_regular.ttf", "myalias");
 		var manager = new FontManager(registrar);
 		var actual = manager.GetTypeface(Font.OfSize(fontName, 12, fontWeight));
-		var expected = Typeface.Create(Typeface.CreateFromAsset(Application.Context.Assets, assetName), (int)fontWeight, italic: false);
+
 		Assert.True(expected.Equals(actual));
 	}
 }
