@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 			var tintBrush = check.Foreground?.ToPlatform();
 			var resources = platformCheckBox.Resources;
 
-			foreach (string key in TintColorResourceKeys)
+			foreach (string key in _tintColorResourceKeys)
 			{
 				if (tintBrush == null)
 				{
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		private static readonly string[] TintColorResourceKeys =
+		static readonly string[] _tintColorResourceKeys =
 		{
 			"CheckBoxCheckBackgroundFillChecked",
 			"CheckBoxCheckBackgroundFillCheckedPointerOver",
