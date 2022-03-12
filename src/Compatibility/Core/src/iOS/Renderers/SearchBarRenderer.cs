@@ -329,7 +329,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
 
 				var color = Element.IsEnabled && targetColor != null
-					? targetColor : ColorExtensions.PlaceholderColor.ToColor();
+					? targetColor : Maui.Platform.ColorExtensions.PlaceholderColor.ToColor();
 
 				_textField.AttributedPlaceholder = formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: color);
 				_textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);

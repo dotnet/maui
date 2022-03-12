@@ -47,15 +47,11 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\rootlayout.axml" />
     <AndroidResource Include="$(AndroidRoot)Resources\Layout\tabbar.axml" />
     <AndroidResource Include="$(AndroidRoot)Resources\Layout\toolbar.axml" />
 
     <AndroidResource Include="$(AndroidRoot)Resources\values\styles.xml" />
     <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\flyoutcontent.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\shellcontent.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\bottomtablayout.axml" />
     <ProjectReference Include="..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj" />
   </ItemGroup>
   <ItemGroup>

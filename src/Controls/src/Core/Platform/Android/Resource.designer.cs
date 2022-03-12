@@ -18,6 +18,18 @@ namespace Microsoft.Maui.Controls
 
 		public partial class Animation
 		{
+			// aapt resource value: 0x7F01001C
+			public static int enterfromleft = 2130771996;
+
+			// aapt resource value: 0x7F01001D
+			public static int enterfromright = 2130771997;
+
+			// aapt resource value: 0x7F01001E
+			public static int exittoleft = 2130771998;
+
+			// aapt resource value: 0x7F01001F
+			public static int exittoright = 2130771999;
+
 			static Animation()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
@@ -57,6 +69,15 @@ namespace Microsoft.Maui.Controls
 
 		public partial class Id
 		{
+			// aapt resource value: 0x7F0800F4
+			public static int main_tablayout = 2131230964;
+
+			// aapt resource value: 0x7F0800F5
+			public static int main_viewpager = 2131230965;
+
+			// aapt resource value: 0x7F08010C
+			public static int main_toolbar = 2131230988;
+
 			// aapt resource value: 0x7F080063
 			public static int navigationlayout_bottomtabs = 2131230819;
 
@@ -65,6 +86,21 @@ namespace Microsoft.Maui.Controls
 
 			// aapt resource value: 0x7F0801CD
 			public static int navigationlayout_toptabs = 2131231181;
+
+			// aapt resource value: 0x7F08017D
+			public static int shellcontent_toolbar = 2131231101;
+
+			// aapt resource value: 0x7F08017C
+			public static int shellcontent_appbar = 2131231100;
+
+			// aapt resource value: 0x7F080061
+			public static int bottomtab_navarea = 2131230817;
+
+			// aapt resource value: 0x7F080062
+			public static int bottomtab_tabbar = 2131230818;
+
+			// aapt resource value: 0x7F0800C7
+			public static int flyoutcontent_appbar = 2131230919;
 
 			static Id()
 			{
@@ -76,6 +112,18 @@ namespace Microsoft.Maui.Controls
 		{
 			// aapt resource value: 0x7F0B002E
 			public static int fragment_backstack = 2131427374;
+
+			// aapt resource value: 0x7F0B001C
+			public static int bottomtablayout = 2131427356;
+
+			// aapt resource value: 0x7F0B002F
+			public static int flyoutcontent = 2131427375;
+
+			// aapt resource value: 0x7F0B006B
+			public static int rootlayout = 2131427435;
+
+			// aapt resource value: 0x7F0B006F
+			public static int shellcontent = 2131427439;
 
 			static Layout()
 			{
