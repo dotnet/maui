@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Platform
 			if (!string.IsNullOrEmpty(hint))
 			{
 				// info HintText won't read anything back when using TalkBack pre API 26
-				if (PlatformVersion.IsAtLeast(26))
+				if (OperatingSystem.IsAndroidVersionAtLeast(26))
 				{
 					info.HintText = hint;
 

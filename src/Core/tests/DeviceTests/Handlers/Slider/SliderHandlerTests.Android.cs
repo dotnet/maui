@@ -33,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetNativeMinimum(SliderHandler sliderHandler)
 		{
-			if (PlatformVersion.Supports(PlatformApis.SeekBarSetMin))
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
 				return GetNativeSlider(sliderHandler).Min;
 			}
