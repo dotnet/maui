@@ -387,16 +387,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void SetupMenu(IMenu menu, int maxBottomItems, ShellItem shellItem)
 		{
-			var currentIndex = ((IShellItemController)ShellItem).GetItems().IndexOf(ShellSection);
-			var items = CreateTabList(shellItem);
+			if (ShellItemController.ShowTabs)
+			{
+				var currentIndex = ((IShellItemController)ShellItem).GetItems().IndexOf(ShellSection);
+				var items = CreateTabList(shellItem);
 
-			BottomNavigationViewUtils.SetupMenu(
-				menu,
-				maxBottomItems,
-				items,
-				currentIndex,
-				_bottomView,
-				MauiContext);
+				BottomNavigationViewUtils.SetupMenu(
+					menu,
+					maxBottomItems,
+					items,
+					currentIndex,
+					_bottomView,
+					MauiContext);
+			}
 
 			UpdateTabBarVisibility();
 		}

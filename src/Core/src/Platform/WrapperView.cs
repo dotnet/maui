@@ -17,9 +17,6 @@ namespace Microsoft.Maui.Platform
 			get => _clip;
 			set
 			{
-				if (_clip == value)
-					return;
-
 				_clip = value;
 				ClipChanged();
 			}

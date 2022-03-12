@@ -46,6 +46,11 @@ namespace Microsoft.Maui.Platform
 			AccessibilityTraits = UIAccessibilityTrait.Button;
 		}
 
+		public void UpdateTime(TimeSpan time)
+		{
+			_picker.Date = new DateTime(1, 1, 1, time.Hours, time.Minutes, time.Seconds).ToNSDate();
+		}
+
 		public NSDate Date => _picker.Date;
 	}
 }

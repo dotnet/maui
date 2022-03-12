@@ -111,12 +111,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return light;
 		}
 
-		//bool _disposed;
 		IShellFlyoutRenderer _flyoutView;
 		FrameLayout _frameLayout;
 		IMauiContext _mauiContext;
 
-		//event EventHandler<VisualElementChangedEventArgs> _elementChanged;
 		event EventHandler<PropertyChangedEventArgs> _elementPropertyChanged;
 
 		public ShellRenderer()
@@ -144,7 +142,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected virtual IShellFlyoutContentRenderer CreateShellFlyoutContentRenderer()
 		{
 			return new ShellFlyoutTemplatedContentRenderer(this);
-			//return new ShellFlyoutContentView(this, AndroidContext);
 		}
 
 		protected virtual IShellFlyoutRenderer CreateShellFlyoutRenderer()
@@ -184,14 +181,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			Profile.FrameBegin();
-
 			if (e.PropertyName == Shell.CurrentItemProperty.PropertyName)
 				SwitchFragment(FragmentManager, _frameLayout, Element.CurrentItem);
 
 			_elementPropertyChanged?.Invoke(sender, e);
-
-			Profile.FrameEnd();
 		}
 
 		internal void SetVirtualView(Shell shell)
@@ -205,48 +198,32 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected virtual void OnElementSet(Shell shell)
 		{
 			Element = shell;
-			Profile.FrameBegin();
 
-			Profile.FramePartition("Flyout");
 			_flyoutView = CreateShellFlyoutRenderer();
-
-			Profile.FramePartition("Frame");
 			_frameLayout = new CustomFrameLayout(AndroidContext)
 			{
 				LayoutParameters = new LP(LP.MatchParent, LP.MatchParent),
 				Id = AView.GenerateViewId(),
 			};
 
-			Profile.FramePartition("SetFitsSystemWindows");
 			_frameLayout.SetFitsSystemWindows(true);
 
-			Profile.FramePartition("AttachFlyout");
 			_flyoutView.AttachFlyout(this, _frameLayout);
 
-			Profile.FramePartition("AddAppearanceObserver");
 			((IShellController)shell).AddAppearanceObserver(this, shell);
 
-			// Previewer Hack
-			Profile.FramePartition("Previewer Hack");
-			if (AndroidContext.GetActivity() != null && shell.CurrentItem != null)
-				SwitchFragment(FragmentManager, _frameLayout, shell.CurrentItem, false);
-
-			Profile.FrameEnd();
+			SwitchFragment(FragmentManager, _frameLayout, shell.CurrentItem, false);
 		}
 
 		IShellItemRenderer _currentView;
 
 		protected virtual void SwitchFragment(FragmentManager manager, AView targetView, ShellItem newItem, bool animate = true)
 		{
-			Profile.FrameBegin();
-
-			Profile.FramePartition("CreateShellItemView");
 			var previousView = _currentView;
 			_currentView = CreateShellItemRenderer(newItem);
 			_currentView.ShellItem = newItem;
 			var fragment = _currentView.Fragment;
 
-			Profile.FramePartition("Transaction");
 			FragmentTransaction transaction = manager.BeginTransactionEx();
 
 			if (animate)
@@ -255,7 +232,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			transaction.ReplaceEx(_frameLayout.Id, fragment);
 			transaction.CommitAllowingStateLossEx();
 
-			Profile.FramePartition("OnDestroyed");
 			void OnDestroyed(object sender, EventArgs args)
 			{
 				previousView.Destroyed -= OnDestroyed;
@@ -266,26 +242,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (previousView != null)
 				previousView.Destroyed += OnDestroyed;
-
-			Profile.FrameEnd();
 		}
 
 		void OnElementSizeChanged(object sender, EventArgs e)
 		{
-			Profile.FrameBegin();
-
-			Profile.FramePartition("ToPixels");
 			int width = (int)AndroidContext.ToPixels(Element.Width);
 			int height = (int)AndroidContext.ToPixels(Element.Height);
 
-			Profile.FramePartition("Measure");
 			_flyoutView.AndroidView.Measure(MakeMeasureSpec(width, MeasureSpecMode.Exactly),
 				MakeMeasureSpec(height, MeasureSpecMode.Exactly));
 
-			Profile.FramePartition("Layout");
 			_flyoutView.AndroidView.Layout(0, 0, width, height);
-
-			Profile.FrameEnd();
 		}
 
 		int MakeMeasureSpec(int size, MeasureSpecMode mode)
@@ -295,8 +262,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateStatusBarColor(ShellAppearance appearance)
 		{
-			Profile.FrameBegin("UpdtStatBarClr");
-
 			var activity = AndroidContext.GetActivity();
 			var window = activity?.Window;
 			var decorView = window?.DecorView;
@@ -333,13 +298,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!(decorView.Background is SplitDrawable splitDrawable) ||
 				splitDrawable.Color != color || splitDrawable.TopSize != statusBarHeight || splitDrawable.BottomSize != navigationBarHeight)
 			{
-				Profile.FramePartition("Create SplitDrawable");
 				var split = new SplitDrawable(color, statusBarHeight, navigationBarHeight);
-				Profile.FramePartition("SetBackground");
 				decorView.SetBackground(split);
 			}
-
-			Profile.FrameEnd("UpdtStatBarClr");
 		}
 
 

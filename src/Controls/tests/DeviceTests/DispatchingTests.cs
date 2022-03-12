@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 			bool dispatched = false;
 			await Task.Run(async () =>
 			{
-				var app = new Application(false);
+				var app = await InvokeOnMainThreadAsync(() =>  new Application(false));
 				var handler = new ApplicationHandlerStub();
 				handler.SetMauiContext(MauiContext);
 				app.Handler = handler;

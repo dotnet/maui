@@ -12,7 +12,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
-#if ANDROID
+#if ANDROID || IOS
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
 
@@ -27,12 +27,10 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-#if WINDOWS || ANDROID
 					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
 					handlers.AddHandler<Layout, LayoutHandler>();
 					handlers.AddHandler<Image, ImageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
-#endif
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Toolbar, ToolbarHandler>();
 #if WINDOWS
@@ -93,5 +91,13 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		protected Task<Shell> CreateShellAsync(Action<Shell> action)=>
+			InvokeOnMainThreadAsync(() =>
+			{
+				var value = new Shell();
+				action?.Invoke(value);
+				return value;
+			});
 	}
 }
