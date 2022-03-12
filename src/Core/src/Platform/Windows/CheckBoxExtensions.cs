@@ -13,14 +13,39 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateForeground(this MauiCheckBox platformCheckBox, ICheckBox check) 
 		{
 			var tintBrush = check.Foreground?.ToPlatform();
+			var resources = platformCheckBox.Resources;
 
-			if (tintBrush == null)
+			foreach (string key in TintColorResourceKeys)
 			{
-				platformCheckBox.TintBrush = new SolidColorBrush(UI.Colors.Black);
-				return;
+				if (tintBrush == null)
+				{
+					resources.Remove(key);
+				}
+				else
+				{
+					resources[key] = tintBrush;
+				}
 			}
-
-			platformCheckBox.TintBrush = tintBrush;
 		}
+
+		private static readonly string[] TintColorResourceKeys =
+		{
+			"CheckBoxCheckBackgroundFillChecked",
+			"CheckBoxCheckBackgroundFillCheckedPointerOver",
+			"CheckBoxCheckBackgroundFillCheckedPressed",
+			"CheckBoxCheckBackgroundFillCheckedDisabled",
+			"CheckBoxCheckBackgroundStrokeUnchecked",
+			"CheckBoxCheckBackgroundStrokeUncheckedPointerOver",
+			"CheckBoxCheckBackgroundStrokeUncheckedPressed",
+			"CheckBoxCheckBackgroundStrokeUncheckedDisabled",
+			"CheckBoxCheckBackgroundStrokeChecked",
+			"CheckBoxCheckBackgroundStrokeCheckedPointerOver",
+			"CheckBoxCheckBackgroundStrokeCheckedPressed",
+			"CheckBoxCheckBackgroundStrokeCheckedDisabled",
+			"CheckBoxCheckBackgroundStrokeIndeterminate",
+			"CheckBoxCheckBackgroundStrokeIndeterminatePointerOver",
+			"CheckBoxCheckBackgroundStrokeIndeterminatePressed",
+			"CheckBoxCheckBackgroundStrokeIndeterminateDisabled",
+		};
 	}
 }
