@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// ResourceKeys controlling the stroke and the checked fill color of the CheckBox.
+		// https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.checkbox?view=winui-3.0#control-style-and-template
 		static readonly string[] _tintColorResourceKeys =
 		{
 			"CheckBoxCheckBackgroundFillChecked",
