@@ -164,9 +164,14 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			if (nativeToolBar.Parent == appbarLayout)
+			if (nativeToolBar.Parent is ViewGroup parent)
 			{
-				return;
+				if (parent == appbarLayout && parent.GetChildAt(0) == nativeToolBar)
+				{
+					return;
+				}
+
+				parent.RemoveView(nativeToolBar);
 			}
 
 			appbarLayout.AddView(nativeToolBar, 0);
@@ -188,15 +193,19 @@ namespace Microsoft.Maui.Handlers
 
 			var nativeToolBar = te.Toolbar?.ToPlatform(handler.MauiContext);
 
-			if (appbarLayout == null)
+			if (appbarLayout == null || nativeToolBar == null)
 			{
 				return;
 			}
 
-			if (appbarLayout.ChildCount > 0 &&
-				appbarLayout.GetChildAt(0) == nativeToolBar)
+			if (nativeToolBar.Parent is ViewGroup parent)
 			{
-				return;
+				if (parent == appbarLayout && parent.GetChildAt(0) == nativeToolBar)
+				{
+					return;
+				}
+
+				parent.RemoveView(nativeToolBar);
 			}
 
 			appbarLayout.AddView(nativeToolBar, 0);
