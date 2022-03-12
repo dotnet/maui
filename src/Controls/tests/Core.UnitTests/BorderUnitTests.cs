@@ -31,7 +31,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreSame(visualTreeChildren[0], label);
 		}
 
-
 		[Test]
 		public void ChildrenHaveParentsWhenContentIsSet()
 		{
