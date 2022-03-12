@@ -264,6 +264,14 @@ namespace Microsoft.Maui.Controls
 		internal override void ApplyQueryAttributes(ShellRouteParameters query)
 		{
 			base.ApplyQueryAttributes(query);
+
+			// If the query parameters are empty and this attribute wasn't previouslly set
+			// That means there's no work to be done here.
+			// An empty query set is only valid if we've previouslly propagated
+			// something to this bindable property
+			if (query.Count == 0 && !this.IsSet(QueryAttributesProperty))
+				return;
+
 			SetValue(QueryAttributesProperty, query);
 
 			if (ContentCache is BindableObject bindable)

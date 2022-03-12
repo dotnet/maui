@@ -4,7 +4,6 @@ using System.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellNavigationState']/Docs" />
 	[DebuggerDisplay("Location = {Location}")]
 	public class ShellNavigationState
