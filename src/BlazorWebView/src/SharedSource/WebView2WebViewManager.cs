@@ -181,7 +181,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #endif
 
 #if (WEBVIEW2_WINFORMS || WEBVIEW2_WPF)
-			var developerTools = _developerTools;
 			_webView2Initialize(args);
 #endif
 
@@ -193,11 +192,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			await _webview.EnsureCoreWebView2Async();
 #else
+			var developerTools = _developerTools;
+
 			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync(
 				args.CoreWebView2BrowserExecutableFolder, args.CoreWebView2UserDataFolder, args.CoreWebView2EnvironmentOptions)
 				.ConfigureAwait(true);
 
 			await _webview.EnsureCoreWebView2Async(_coreWebView2Environment);
+#endif
 
 			ApplyDefaultWebViewSettings(developerTools);
 
