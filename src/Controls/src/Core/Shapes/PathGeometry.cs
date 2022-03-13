@@ -51,25 +51,30 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='AppendPath']/Docs" />
 		public override void AppendPath(PathF path)
 		{
-			foreach (var f in Figures)
+			foreach (var figure in Figures)
 			{
-				foreach (var s in f.Segments)
+				path.MoveTo(figure.StartPoint);
+
+				foreach (var segment in figure.Segments)
 				{
-					if (s is ArcSegment arcSegment)
+					if (segment is ArcSegment arcSegment)
 						AddArc(path, arcSegment);
-					else if (s is BezierSegment bezierSegment)
+					else if (segment is BezierSegment bezierSegment)
 						AddBezier(path, bezierSegment);
-					else if (s is LineSegment lineSegment)
+					else if (segment is LineSegment lineSegment)
 						AddLine(path, lineSegment);
-					else if (s is PolyBezierSegment polyBezierSegment)
+					else if (segment is PolyBezierSegment polyBezierSegment)
 						AddPolyBezier(path, polyBezierSegment);
-					else if (s is PolyLineSegment polyLineSegment)
+					else if (segment is PolyLineSegment polyLineSegment)
 						AddPolyLine(path, polyLineSegment);
-					else if (s is PolyQuadraticBezierSegment polyQuadraticBezierSegment)
+					else if (segment is PolyQuadraticBezierSegment polyQuadraticBezierSegment)
 						AddPolyQuad(path, polyQuadraticBezierSegment);
-					else if (s is QuadraticBezierSegment quadraticBezierSegment)
+					else if (segment is QuadraticBezierSegment quadraticBezierSegment)
 						AddQuad(path, quadraticBezierSegment);
 				}
+
+				if (figure.IsClosed)
+					path.Close();
 			}
 		}
 

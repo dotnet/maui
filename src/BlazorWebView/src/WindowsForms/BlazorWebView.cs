@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -9,8 +9,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-
-		private async void TapGestureRecognizer_Tapped(object sender, EventArgs e)
+		async void TapGestureRecognizer_Tapped(object sender, EventArgs e)
 		{
 			await DisplayAlert("Item", "Tapped", "Successfully");
 		}

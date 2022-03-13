@@ -87,7 +87,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (new Uri(AppOrigin).IsBaseOf(uri))
 				{
 					var relativePath = new Uri(AppOrigin).MakeRelativeUri(uri).ToString();
-					if (allowFallbackOnHostPage && string.IsNullOrEmpty(relativePath))
+
+					// If the path does not end in a file extension (or is empty), it's most likely referring to a page,
+					// in which case we should allow falling back on the host page.
+					if (allowFallbackOnHostPage && !Path.HasExtension(relativePath))
 					{
 						relativePath = _hostPageRelativePath;
 					}

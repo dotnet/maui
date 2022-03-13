@@ -62,8 +62,8 @@ namespace Microsoft.Maui.Platform
 
 					if (HeaderControl != null)
 					{
-						HeaderControl.ContentGrid.Margin = new UI.Xaml.Thickness(0, 0, 4, 0);
-						HeaderControl.TextBlockBorder.VerticalAlignment = VerticalAlignment.Center;
+						HeaderControl.ContentGridMargin = new UI.Xaml.Thickness(0, 0, 4, 0);
+						HeaderControl.TextBlockBorderVerticalAlignment = VerticalAlignment.Center;
 					}
 				}
 				else if (PaneFooter == HeaderControl || Header == null)
@@ -82,8 +82,8 @@ namespace Microsoft.Maui.Platform
 
 					if (HeaderControl != null)
 					{
-						HeaderControl.ContentGrid.Margin = new UI.Xaml.Thickness(0, 0, 0, 0);
-						HeaderControl.TextBlockBorder.VerticalAlignment = VerticalAlignment.Top;
+						HeaderControl.ContentGridMargin = new UI.Xaml.Thickness(0, 0, 0, 0);
+						HeaderControl.TextBlockBorderVerticalAlignment = VerticalAlignment.Top;
 					}
 				}
 			}
