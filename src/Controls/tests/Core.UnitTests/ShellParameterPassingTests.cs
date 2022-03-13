@@ -380,7 +380,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void InitialShellDoesntTriggerShellContentBindableProperty()
+		public void InitialNavigationDoesntSetQueryAttributesProperty()
 		{
 			var content = CreateShellContent();
 			_ = new TestShell(content);
