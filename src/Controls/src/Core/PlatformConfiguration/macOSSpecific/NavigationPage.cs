@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 			element.SetValue(NavigationTransitionPushStyleProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetNavigationTransitionPushStyle']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetNavigationTransitionPushStyle' and position()=1]/Docs" />
 		public static NavigationTransitionStyle GetNavigationTransitionPushStyle(this IPlatformElementConfiguration<macOS, FormsElement> config)
 		{
 			return GetNavigationTransitionPushStyle(config.Element);
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 			element.SetValue(NavigationTransitionPopStyleProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetNavigationTransitionPopStyle']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetNavigationTransitionPopStyle' and position()=1]/Docs" />
 		public static NavigationTransitionStyle GetNavigationTransitionPopStyle(this IPlatformElementConfiguration<macOS, FormsElement> config)
 		{
 			return GetNavigationTransitionPopStyle(config.Element);
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 			SetNavigationTransitionPopStyle(element, popStyle);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetNavigationTransitionStyle']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetNavigationTransitionStyle' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<macOS, FormsElement> SetNavigationTransitionStyle(this IPlatformElementConfiguration<macOS, FormsElement> config, NavigationTransitionStyle pushStyle, NavigationTransitionStyle popStyle)
 		{
 			SetNavigationTransitionStyle(config.Element, pushStyle, popStyle);

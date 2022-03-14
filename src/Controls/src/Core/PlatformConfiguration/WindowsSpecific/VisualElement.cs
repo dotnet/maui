@@ -33,13 +33,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			element.SetValue(AccessKeyProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='GetAccessKey']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='GetAccessKey' and position()=1]/Docs" />
 		public static string GetAccessKey(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (string)config.Element.GetValue(AccessKeyProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='SetAccessKey']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='SetAccessKey' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetAccessKey(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, string value)
 		{
@@ -57,13 +57,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		{
 			element.SetValue(AccessKeyPlacementProperty, value);
 		}
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='GetAccessKeyPlacement']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='GetAccessKeyPlacement' and position()=1]/Docs" />
 		public static AccessKeyPlacement GetAccessKeyPlacement(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (AccessKeyPlacement)config.Element.GetValue(AccessKeyPlacementProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='SetAccessKeyPlacement']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='SetAccessKeyPlacement' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetAccessKeyPlacement(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, AccessKeyPlacement value)
 		{
@@ -80,12 +80,12 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		{
 			element.SetValue(AccessKeyHorizontalOffsetProperty, value);
 		}
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='GetAccessKeyHorizontalOffset']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='GetAccessKeyHorizontalOffset' and position()=1]/Docs" />
 		public static double GetAccessKeyHorizontalOffset(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (double)config.Element.GetValue(AccessKeyHorizontalOffsetProperty);
 		}
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='SetAccessKeyHorizontalOffset']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='SetAccessKeyHorizontalOffset' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetAccessKeyHorizontalOffset(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, double value)
 		{
@@ -102,12 +102,12 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		{
 			element.SetValue(AccessKeyVerticalOffsetProperty, value);
 		}
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='GetAccessKeyVerticalOffset']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='GetAccessKeyVerticalOffset' and position()=1]/Docs" />
 		public static double GetAccessKeyVerticalOffset(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (double)config.Element.GetValue(AccessKeyVerticalOffsetProperty);
 		}
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='SetAccessKeyVerticalOffset']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='SetAccessKeyVerticalOffset' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetAccessKeyVerticalOffset(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, double value)
 		{
@@ -133,13 +133,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			element.SetValue(IsLegacyColorModeEnabledProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='GetIsLegacyColorModeEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='GetIsLegacyColorModeEnabled' and position()=1]/Docs" />
 		public static bool GetIsLegacyColorModeEnabled(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (bool)config.Element.GetValue(IsLegacyColorModeEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='SetIsLegacyColorModeEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='SetIsLegacyColorModeEnabled' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetIsLegacyColorModeEnabled(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, bool value)
 		{

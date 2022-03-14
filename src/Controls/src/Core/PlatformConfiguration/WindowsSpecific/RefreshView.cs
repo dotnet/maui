@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			element.SetValue(RefreshPullDirectionProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='GetRefreshPullDirection']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='GetRefreshPullDirection' and position()=1]/Docs" />
 		public static RefreshPullDirection GetRefreshPullDirection(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return GetRefreshPullDirection(config.Element);
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return (RefreshPullDirection)element.GetValue(RefreshPullDirectionProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='SetRefreshPullDirection']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='SetRefreshPullDirection' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetRefreshPullDirection(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, RefreshPullDirection value)
 		{

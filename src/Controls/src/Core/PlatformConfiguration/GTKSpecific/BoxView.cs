@@ -22,14 +22,14 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 			element.SetValue(HasCornerRadiusProperty, tabPosition);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="//Member[@MemberName='GetHasCornerRadius']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="//Member[@MemberName='GetHasCornerRadius' and position()=1]/Docs" />
 		public static bool GetHasCornerRadius(
 			this IPlatformElementConfiguration<GTK, FormsElement> config)
 		{
 			return GetHasCornerRadius(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="//Member[@MemberName='SetHasCornerRadius']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="//Member[@MemberName='SetHasCornerRadius' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<GTK, FormsElement> SetHasCornerRadius(
 			this IPlatformElementConfiguration<GTK, FormsElement> config, bool value)
 		{

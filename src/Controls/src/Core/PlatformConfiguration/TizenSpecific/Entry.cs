@@ -20,13 +20,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(FontWeightProperty, weight);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Entry.xml" path="//Member[@MemberName='GetFontWeight']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Entry.xml" path="//Member[@MemberName='GetFontWeight' and position()=1]/Docs" />
 		public static string GetFontWeight(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetFontWeight(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Entry.xml" path="//Member[@MemberName='SetFontWeight']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Entry.xml" path="//Member[@MemberName='SetFontWeight' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetFontWeight(this IPlatformElementConfiguration<Tizen, FormsElement> config, string weight)
 		{
 			SetFontWeight(config.Element, weight);

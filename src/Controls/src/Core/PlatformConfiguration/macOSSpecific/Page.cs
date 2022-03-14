@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 			element.SetValue(TabOrderProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='GetTabOrder']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='GetTabOrder' and position()=1]/Docs" />
 		public static VisualElement[] GetTabOrder(this IPlatformElementConfiguration<macOS, FormsElement> config)
 		{
 			return GetTabOrder(config.Element);

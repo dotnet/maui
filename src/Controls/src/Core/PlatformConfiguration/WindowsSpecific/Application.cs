@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			element.SetValue(ImageDirectoryProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='GetImageDirectory']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='GetImageDirectory' and position()=1]/Docs" />
 		public static string GetImageDirectory(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (string)config.Element.GetValue(ImageDirectoryProperty);
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return (string)element.GetValue(ImageDirectoryProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='SetImageDirectory']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='SetImageDirectory' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetImageDirectory(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, string value)
 		{

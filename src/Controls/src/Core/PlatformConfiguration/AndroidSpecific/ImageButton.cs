@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
+namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
 	using Microsoft.Maui.Graphics;
 	using FormsImageButton = Maui.Controls.ImageButton;
@@ -22,13 +22,13 @@
 			element.SetValue(IsShadowEnabledProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='GetIsShadowEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='GetIsShadowEnabled' and position()=1]/Docs" />
 		public static bool GetIsShadowEnabled(this IPlatformElementConfiguration<Android, FormsImageButton> config)
 		{
 			return GetIsShadowEnabled(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='SetIsShadowEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='SetIsShadowEnabled' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsImageButton> SetIsShadowEnabled(this IPlatformElementConfiguration<Android, FormsImageButton> config, bool value)
 		{
 			SetIsShadowEnabled(config.Element, value);
@@ -50,13 +50,13 @@
 			element.SetValue(ShadowColorProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='GetShadowColor']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='GetShadowColor' and position()=1]/Docs" />
 		public static Color GetShadowColor(this IPlatformElementConfiguration<Android, FormsImageButton> config)
 		{
 			return GetShadowColor(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='SetShadowColor']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='SetShadowColor' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsImageButton> SetShadowColor(this IPlatformElementConfiguration<Android, FormsImageButton> config, Color value)
 		{
 			SetShadowColor(config.Element, value);
@@ -78,13 +78,13 @@
 			element.SetValue(ShadowRadiusProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='GetShadowRadius']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='GetShadowRadius' and position()=1]/Docs" />
 		public static double GetShadowRadius(this IPlatformElementConfiguration<Android, FormsImageButton> config)
 		{
 			return GetShadowRadius(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='SetShadowRadius']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='SetShadowRadius' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsImageButton> SetShadowRadius(this IPlatformElementConfiguration<Android, FormsImageButton> config, double value)
 		{
 			SetShadowRadius(config.Element, value);
@@ -106,13 +106,13 @@
 			element.SetValue(ShadowOffsetProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='GetShadowOffset']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='GetShadowOffset' and position()=1]/Docs" />
 		public static Size GetShadowOffset(this IPlatformElementConfiguration<Android, FormsImageButton> config)
 		{
 			return GetShadowOffset(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='SetShadowOffset']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='SetShadowOffset' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsImageButton> SetShadowOffset(this IPlatformElementConfiguration<Android, FormsImageButton> config, Size value)
 		{
 			SetShadowOffset(config.Element, value);

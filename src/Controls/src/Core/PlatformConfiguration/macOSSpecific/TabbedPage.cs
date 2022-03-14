@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 			element.SetValue(TabsStyleProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTabsStyle']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTabsStyle' and position()=1]/Docs" />
 		public static TabsStyle GetTabsStyle(this IPlatformElementConfiguration<macOS, FormsElement> config)
 		{
 			return GetTabsStyle(config.Element);

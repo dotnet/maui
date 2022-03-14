@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			element.SetValue(WindowSoftInputModeAdjustProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Application.xml" path="//Member[@MemberName='GetWindowSoftInputModeAdjust']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Application.xml" path="//Member[@MemberName='GetWindowSoftInputModeAdjust' and position()=1]/Docs" />
 		public static WindowSoftInputModeAdjust GetWindowSoftInputModeAdjust(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetWindowSoftInputModeAdjust(config.Element);

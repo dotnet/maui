@@ -49,13 +49,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(StyleProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetStyle']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetStyle' and position()=1]/Docs" />
 		public static string GetStyle(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetStyle(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetStyle']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetStyle' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetStyle(this IPlatformElementConfiguration<Tizen, FormsElement> config, string value)
 		{
 			SetStyle(config.Element, value);
@@ -74,13 +74,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(IsFocusAllowedProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='IsFocusAllowed']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='IsFocusAllowed' and position()=1]/Docs" />
 		public static bool? IsFocusAllowed(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return IsFocusAllowed(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetFocusAllowed']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetFocusAllowed' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetFocusAllowed(this IPlatformElementConfiguration<Tizen, FormsElement> config, bool value)
 		{
 			SetFocusAllowed(config.Element, value);
@@ -101,14 +101,14 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(NextFocusDirectionProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusDirection']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusDirection' and position()=1]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static string GetNextFocusDirection(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetNextFocusDirection(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusDirection']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusDirection' and position()=1]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetNextFocusDirection(this IPlatformElementConfiguration<Tizen, FormsElement> config, string value)
 		{
@@ -170,13 +170,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(NextFocusUpViewProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusUpView']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusUpView' and position()=1]/Docs" />
 		public static View GetNextFocusUpView(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetNextFocusUpView(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusUpView']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusUpView' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetNextFocusUpView(this IPlatformElementConfiguration<Tizen, FormsElement> config, View value)
 		{
 			SetNextFocusUpView(config.Element, value);
@@ -195,13 +195,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(NextFocusDownViewProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusDownView']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusDownView' and position()=1]/Docs" />
 		public static View GetNextFocusDownView(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetNextFocusDownView(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusDownView']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusDownView' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetNextFocusDownView(this IPlatformElementConfiguration<Tizen, FormsElement> config, View value)
 		{
 			SetNextFocusDownView(config.Element, value);
@@ -220,13 +220,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(NextFocusLeftViewProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusLeftView']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusLeftView' and position()=1]/Docs" />
 		public static View GetNextFocusLeftView(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetNextFocusLeftView(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusLeftView']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusLeftView' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetNextFocusLeftView(this IPlatformElementConfiguration<Tizen, FormsElement> config, View value)
 		{
 			SetNextFocusLeftView(config.Element, value);
@@ -245,13 +245,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(NextFocusRightViewProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusRightView']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusRightView' and position()=1]/Docs" />
 		public static View GetNextFocusRightView(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetNextFocusRightView(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusRightView']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusRightView' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetNextFocusRightView(this IPlatformElementConfiguration<Tizen, FormsElement> config, View value)
 		{
 			SetNextFocusRightView(config.Element, value);
@@ -270,13 +270,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(NextFocusBackViewProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusBackView']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusBackView' and position()=1]/Docs" />
 		public static View GetNextFocusBackView(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetNextFocusBackView(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusBackView']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusBackView' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetNextFocusBackView(this IPlatformElementConfiguration<Tizen, FormsElement> config, View value)
 		{
 			SetNextFocusBackView(config.Element, value);
@@ -295,13 +295,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(NextFocusForwardViewProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusForwardView']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetNextFocusForwardView' and position()=1]/Docs" />
 		public static View GetNextFocusForwardView(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetNextFocusForwardView(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusForwardView']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetNextFocusForwardView' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetNextFocusForwardView(this IPlatformElementConfiguration<Tizen, FormsElement> config, View value)
 		{
 			SetNextFocusForwardView(config.Element, value);
@@ -325,13 +325,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(ToolTipProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetToolTip']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetToolTip' and position()=1]/Docs" />
 		public static string GetToolTip(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetToolTip(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetToolTip']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='SetToolTip' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetToolTip(this IPlatformElementConfiguration<Tizen, FormsElement> config, string value)
 		{
 			SetToolTip(config.Element, value);

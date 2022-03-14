@@ -21,13 +21,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(PanGestureRecognizerShouldRecognizeSimultaneouslyProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetPanGestureRecognizerShouldRecognizeSimultaneously']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetPanGestureRecognizerShouldRecognizeSimultaneously' and position()=1]/Docs" />
 		public static bool GetPanGestureRecognizerShouldRecognizeSimultaneously(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetPanGestureRecognizerShouldRecognizeSimultaneously(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='SetPanGestureRecognizerShouldRecognizeSimultaneously']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='SetPanGestureRecognizerShouldRecognizeSimultaneously' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetPanGestureRecognizerShouldRecognizeSimultaneously(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetPanGestureRecognizerShouldRecognizeSimultaneously(config.Element, value);
@@ -51,13 +51,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(HandleControlUpdatesOnMainThreadProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetHandleControlUpdatesOnMainThread']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetHandleControlUpdatesOnMainThread' and position()=1]/Docs" />
 		public static bool GetHandleControlUpdatesOnMainThread(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetHandleControlUpdatesOnMainThread(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='SetHandleControlUpdatesOnMainThread']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='SetHandleControlUpdatesOnMainThread' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetHandleControlUpdatesOnMainThread(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetHandleControlUpdatesOnMainThread(config.Element, value);
@@ -81,13 +81,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(EnableAccessibilityScalingForNamedFontSizesProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetEnableAccessibilityScalingForNamedFontSizes']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetEnableAccessibilityScalingForNamedFontSizes' and position()=1]/Docs" />
 		public static bool GetEnableAccessibilityScalingForNamedFontSizes(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetEnableAccessibilityScalingForNamedFontSizes(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='SetEnableAccessibilityScalingForNamedFontSizes']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='SetEnableAccessibilityScalingForNamedFontSizes' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetEnableAccessibilityScalingForNamedFontSizes(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetEnableAccessibilityScalingForNamedFontSizes(config.Element, value);

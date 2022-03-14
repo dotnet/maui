@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetUseDefaultPadding(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetUseDefaultPadding']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetUseDefaultPadding' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsElement> SetUseDefaultPadding(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetUseDefaultPadding(config.Element, value);
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetUseDefaultShadow(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetUseDefaultShadow']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetUseDefaultShadow' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsElement> SetUseDefaultShadow(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetUseDefaultShadow(config.Element, value);

@@ -20,13 +20,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			element.SetValue(SwipeTransitionModeProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="//Member[@MemberName='GetSwipeTransitionMode']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="//Member[@MemberName='GetSwipeTransitionMode' and position()=1]/Docs" />
 		public static SwipeTransitionMode GetSwipeTransitionMode(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetSwipeTransitionMode(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="//Member[@MemberName='SetSwipeTransitionMode']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="//Member[@MemberName='SetSwipeTransitionMode' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsElement> SetSwipeTransitionMode(this IPlatformElementConfiguration<Android, FormsElement> config, SwipeTransitionMode value)
 		{
 			SetSwipeTransitionMode(config.Element, value);

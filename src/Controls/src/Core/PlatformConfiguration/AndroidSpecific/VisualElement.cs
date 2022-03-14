@@ -58,13 +58,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			element.SetValue(IsLegacyColorModeEnabledProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='GetIsLegacyColorModeEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='GetIsLegacyColorModeEnabled' and position()=1]/Docs" />
 		public static bool GetIsLegacyColorModeEnabled(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return (bool)config.Element.GetValue(IsLegacyColorModeEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='SetIsLegacyColorModeEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='SetIsLegacyColorModeEnabled' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsElement> SetIsLegacyColorModeEnabled(
 			this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{

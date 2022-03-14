@@ -25,13 +25,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(SearchBarStyleProperty, style);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SearchBar.xml" path="//Member[@MemberName='GetSearchBarStyle']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SearchBar.xml" path="//Member[@MemberName='GetSearchBarStyle' and position()=1]/Docs" />
 		public static UISearchBarStyle GetSearchBarStyle(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetSearchBarStyle(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SearchBar.xml" path="//Member[@MemberName='SetSearchBarStyle']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SearchBar.xml" path="//Member[@MemberName='SetSearchBarStyle' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetSearchBarStyle(
 			this IPlatformElementConfiguration<iOS, FormsElement> config, UISearchBarStyle style)
 		{

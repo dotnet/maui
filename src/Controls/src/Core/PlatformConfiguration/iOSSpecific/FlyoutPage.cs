@@ -22,14 +22,14 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(ApplyShadowProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetApplyShadow']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetApplyShadow' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetApplyShadow(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetApplyShadow(config.Element, value);
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetApplyShadow']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetApplyShadow' and position()=1]/Docs" />
 		public static bool GetApplyShadow(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetApplyShadow(config.Element);

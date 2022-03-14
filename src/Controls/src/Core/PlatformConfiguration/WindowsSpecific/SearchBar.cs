@@ -25,13 +25,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return (bool)element.GetValue(IsSpellCheckEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/SearchBar.xml" path="//Member[@MemberName='GetIsSpellCheckEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/SearchBar.xml" path="//Member[@MemberName='GetIsSpellCheckEnabled' and position()=1]/Docs" />
 		public static bool GetIsSpellCheckEnabled(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return GetIsSpellCheckEnabled(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/SearchBar.xml" path="//Member[@MemberName='SetIsSpellCheckEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/SearchBar.xml" path="//Member[@MemberName='SetIsSpellCheckEnabled' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetIsSpellCheckEnabled(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, bool value)
 		{

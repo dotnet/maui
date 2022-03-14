@@ -22,13 +22,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			page.SetValue(BreadCrumbProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Page.xml" path="//Member[@MemberName='GetBreadCrumb']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Page.xml" path="//Member[@MemberName='GetBreadCrumb' and position()=1]/Docs" />
 		public static string GetBreadCrumb(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetBreadCrumb(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Page.xml" path="//Member[@MemberName='SetBreadCrumb']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Page.xml" path="//Member[@MemberName='SetBreadCrumb' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetBreadCrumb(this IPlatformElementConfiguration<Tizen, FormsElement> config, string value)
 		{
 			SetBreadCrumb(config.Element, value);

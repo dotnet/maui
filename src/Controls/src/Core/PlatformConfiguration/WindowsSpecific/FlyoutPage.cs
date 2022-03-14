@@ -26,13 +26,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			element.SetValue(CollapseStyleProperty, collapseStyle);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetCollapseStyle']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetCollapseStyle' and position()=1]/Docs" />
 		public static CollapseStyle GetCollapseStyle(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (CollapseStyle)config.Element.GetValue(CollapseStyleProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetCollapseStyle']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetCollapseStyle' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetCollapseStyle(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, CollapseStyle value)
 		{

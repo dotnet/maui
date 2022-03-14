@@ -22,13 +22,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(UseBezelInteractionProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetUseBezelInteraction']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetUseBezelInteraction' and position()=1]/Docs" />
 		public static bool GetUseBezelInteraction(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetUseBezelInteraction(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='SetUseBezelInteraction']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='SetUseBezelInteraction' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetUseBezelInteraction(this IPlatformElementConfiguration<Tizen, FormsElement> config, bool value)
 		{
 			SetUseBezelInteraction(config.Element, value);
@@ -50,13 +50,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			application.SetValue(OverlayContentProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetOverlayContent']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetOverlayContent' and position()=1]/Docs" />
 		public static View GetOverlayContent(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetOverlayContent(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='SetOverlayContent']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='SetOverlayContent' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetOverlayContent(this IPlatformElementConfiguration<Tizen, FormsElement> config, View value)
 		{
 			SetOverlayContent(config.Element, value);
@@ -79,13 +79,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			application.SetValue(ActiveBezelInteractionElementPropertyKey, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetActiveBezelInteractionElement']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetActiveBezelInteractionElement' and position()=1]/Docs" />
 		public static Element GetActiveBezelInteractionElement(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetActiveBezelInteractionElement(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='SetActiveBezelInteractionElement']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='SetActiveBezelInteractionElement' and position()=1]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetActiveBezelInteractionElement(this IPlatformElementConfiguration<Tizen, FormsElement> config, Element value)
 		{

@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 			element.SetValue(SendDisappearingEventOnPauseProperty, value);
 		}
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetSendDisappearingEventOnPause']/Docs" />
+		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetSendDisappearingEventOnPause' and position()=1]/Docs" />
 		public static bool GetSendDisappearingEventOnPause(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetSendDisappearingEventOnPause(config.Element);
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 			element.SetValue(SendAppearingEventOnResumeProperty, value);
 		}
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetSendAppearingEventOnResume']/Docs" />
+		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetSendAppearingEventOnResume' and position()=1]/Docs" />
 		public static bool GetSendAppearingEventOnResume(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetSendAppearingEventOnResume(config.Element);
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 			element.SetValue(ShouldPreserveKeyboardOnResumeProperty, value);
 		}
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetShouldPreserveKeyboardOnResume']/Docs" />
+		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetShouldPreserveKeyboardOnResume' and position()=1]/Docs" />
 		public static bool GetShouldPreserveKeyboardOnResume(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetShouldPreserveKeyboardOnResume(config.Element);

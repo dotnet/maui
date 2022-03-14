@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetUpdateMode(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/DatePicker.xml" path="//Member[@MemberName='SetUpdateMode']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/DatePicker.xml" path="//Member[@MemberName='SetUpdateMode' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetUpdateMode(this IPlatformElementConfiguration<iOS, FormsElement> config, UpdateMode value)
 		{
 			SetUpdateMode(config.Element, value);

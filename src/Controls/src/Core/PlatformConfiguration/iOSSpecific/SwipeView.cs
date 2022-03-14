@@ -20,13 +20,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(SwipeTransitionModeProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SwipeView.xml" path="//Member[@MemberName='GetSwipeTransitionMode']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SwipeView.xml" path="//Member[@MemberName='GetSwipeTransitionMode' and position()=1]/Docs" />
 		public static SwipeTransitionMode GetSwipeTransitionMode(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetSwipeTransitionMode(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SwipeView.xml" path="//Member[@MemberName='SetSwipeTransitionMode']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SwipeView.xml" path="//Member[@MemberName='SetSwipeTransitionMode' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetSwipeTransitionMode(this IPlatformElementConfiguration<iOS, FormsElement> config, SwipeTransitionMode value)
 		{
 			SetSwipeTransitionMode(config.Element, value);

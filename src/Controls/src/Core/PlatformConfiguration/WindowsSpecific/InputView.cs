@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			element.SetValue(DetectReadingOrderFromContentProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/InputView.xml" path="//Member[@MemberName='GetDetectReadingOrderFromContent']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/InputView.xml" path="//Member[@MemberName='GetDetectReadingOrderFromContent' and position()=1]/Docs" />
 		public static bool GetDetectReadingOrderFromContent(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (bool)config.Element.GetValue(DetectReadingOrderFromContentProperty);
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return (bool)element.GetValue(DetectReadingOrderFromContentProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/InputView.xml" path="//Member[@MemberName='SetDetectReadingOrderFromContent']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/InputView.xml" path="//Member[@MemberName='SetDetectReadingOrderFromContent' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetDetectReadingOrderFromContent(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, bool value)
 		{

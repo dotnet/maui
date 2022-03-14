@@ -307,7 +307,7 @@ namespace Microsoft.Maui.Controls
 			MergedDictionaries.Add(mergedResourceDictionary);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add' and position()=2]/Docs" />
 		public void Add(StyleSheets.StyleSheet styleSheet)
 		{
 			StyleSheets = StyleSheets ?? new List<StyleSheets.StyleSheet>(2);

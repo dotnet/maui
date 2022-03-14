@@ -20,13 +20,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(UpdateOnTapProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Slider.xml" path="//Member[@MemberName='GetUpdateOnTap']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Slider.xml" path="//Member[@MemberName='GetUpdateOnTap' and position()=1]/Docs" />
 		public static bool GetUpdateOnTap(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetUpdateOnTap(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Slider.xml" path="//Member[@MemberName='SetUpdateOnTap']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Slider.xml" path="//Member[@MemberName='SetUpdateOnTap' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetUpdateOnTap(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetUpdateOnTap(config.Element, value);

@@ -22,14 +22,14 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 			element.SetValue(BackButtonIconProperty, backButtonIcon);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="//Member[@MemberName='GetBackButtonIcon']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="//Member[@MemberName='GetBackButtonIcon' and position()=1]/Docs" />
 		public static string GetBackButtonIcon(
 			this IPlatformElementConfiguration<GTK, FormsElement> config)
 		{
 			return GetBackButtonIcon(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="//Member[@MemberName='SetBackButtonIcon']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="//Member[@MemberName='SetBackButtonIcon' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<GTK, FormsElement> SetBackButtonIcon(
 			this IPlatformElementConfiguration<GTK, FormsElement> config, string value)
 		{

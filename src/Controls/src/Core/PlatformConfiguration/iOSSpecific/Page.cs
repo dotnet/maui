@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetPrefersStatusBarHidden(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersStatusBarHidden']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersStatusBarHidden' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetPrefersStatusBarHidden(this IPlatformElementConfiguration<iOS, FormsElement> config, StatusBarHiddenMode value)
 		{
 			SetPrefersStatusBarHidden(config.Element, value);
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetPreferredStatusBarUpdateAnimation(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPreferredStatusBarUpdateAnimation']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPreferredStatusBarUpdateAnimation' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetPreferredStatusBarUpdateAnimation(this IPlatformElementConfiguration<iOS, FormsElement> config, UIStatusBarAnimation value)
 		{
 			SetPreferredStatusBarUpdateAnimation(config.Element, value);
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(UseSafeAreaProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetUseSafeArea']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetUseSafeArea' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetUseSafeArea(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetUseSafeArea(config.Element, value);
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetLargeTitleDisplay(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetLargeTitleDisplay']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetLargeTitleDisplay' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetLargeTitleDisplay(this IPlatformElementConfiguration<iOS, FormsElement> config, LargeTitleDisplayMode value)
 		{
 			SetLargeTitleDisplay(config.Element, value);
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetPrefersHomeIndicatorAutoHidden(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersHomeIndicatorAutoHidden']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersHomeIndicatorAutoHidden' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetPrefersHomeIndicatorAutoHidden(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetPrefersHomeIndicatorAutoHidden(config.Element, value);

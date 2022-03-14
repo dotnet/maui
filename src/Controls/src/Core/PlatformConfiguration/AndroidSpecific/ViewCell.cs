@@ -27,13 +27,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			element.SetValue(IsContextActionsLegacyModeEnabledProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ViewCell.xml" path="//Member[@MemberName='GetIsContextActionsLegacyModeEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ViewCell.xml" path="//Member[@MemberName='GetIsContextActionsLegacyModeEnabled' and position()=1]/Docs" />
 		public static bool GetIsContextActionsLegacyModeEnabled(this IPlatformElementConfiguration<Android, FormsCell> config)
 		{
 			return GetIsContextActionsLegacyModeEnabled(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ViewCell.xml" path="//Member[@MemberName='SetIsContextActionsLegacyModeEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ViewCell.xml" path="//Member[@MemberName='SetIsContextActionsLegacyModeEnabled' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsCell> SetIsContextActionsLegacyModeEnabled(this IPlatformElementConfiguration<Android, FormsCell> config, bool value)
 		{
 			SetIsContextActionsLegacyModeEnabled(config.Element, value);

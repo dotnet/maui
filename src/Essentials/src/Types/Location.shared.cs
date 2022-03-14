@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Essentials
 		public static double CalculateDistance(Location locationStart, Location locationEnd, DistanceUnits units) =>
 			CalculateDistance(locationStart.Latitude, locationStart.Longitude, locationEnd.Latitude, locationEnd.Longitude, units);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance' and position()=3]/Docs" />
 		public static double CalculateDistance(
 			double latitudeStart,
 			double longitudeStart,

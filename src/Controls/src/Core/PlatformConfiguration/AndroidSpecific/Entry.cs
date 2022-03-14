@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetImeOptions(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="//Member[@MemberName='SetImeOptions']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="//Member[@MemberName='SetImeOptions' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsElement> SetImeOptions(this IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, FormsElement> config, ImeFlags value)
 		{
 			SetImeOptions(config.Element, value);

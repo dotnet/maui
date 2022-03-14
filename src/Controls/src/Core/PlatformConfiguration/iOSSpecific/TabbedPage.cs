@@ -18,12 +18,12 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		public static void SetTranslucencyMode(BindableObject element, TranslucencyMode value)
 			=> element.SetValue(TranslucencyModeProperty, value);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTranslucencyMode']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTranslucencyMode' and position()=1]/Docs" />
 		public static TranslucencyMode GetTranslucencyMode(
 			this IPlatformElementConfiguration<iOS, FormsElement> config)
 			=> GetTranslucencyMode(config.Element);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="//Member[@MemberName='SetTranslucencyMode']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="//Member[@MemberName='SetTranslucencyMode' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetTranslucencyMode(
 			this IPlatformElementConfiguration<iOS, FormsElement> config, TranslucencyMode value)
 		{

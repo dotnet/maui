@@ -20,13 +20,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 			element.SetValue(BarHeightProperty, value);
 		}
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/NavigationPage.xml" path="//Member[@MemberName='GetBarHeight']/Docs" />
+		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/NavigationPage.xml" path="//Member[@MemberName='GetBarHeight' and position()=1]/Docs" />
 		public static int GetBarHeight(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetBarHeight(config.Element);
 		}
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/NavigationPage.xml" path="//Member[@MemberName='SetBarHeight']/Docs" />
+		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/NavigationPage.xml" path="//Member[@MemberName='SetBarHeight' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsElement> SetBarHeight(this IPlatformElementConfiguration<Android, FormsElement> config, int value)
 		{
 			SetBarHeight(config.Element, value);

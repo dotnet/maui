@@ -22,14 +22,14 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 			element.SetValue(TabPositionProperty, tabPosition);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTabPosition']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTabPosition' and position()=1]/Docs" />
 		public static TabPosition GetTabPosition(
 			this IPlatformElementConfiguration<GTK, FormsElement> config)
 		{
 			return GetTabPosition(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="//Member[@MemberName='SetTabPosition']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="//Member[@MemberName='SetTabPosition' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<GTK, FormsElement> SetTabPosition(
 			this IPlatformElementConfiguration<GTK, FormsElement> config, TabPosition value)
 		{

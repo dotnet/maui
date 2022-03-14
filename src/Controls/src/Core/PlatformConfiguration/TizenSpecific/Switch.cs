@@ -1,4 +1,4 @@
-﻿
+
 namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
 	using Microsoft.Maui.Graphics;
@@ -22,13 +22,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			element.SetValue(ColorProperty, color);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Switch.xml" path="//Member[@MemberName='GetColor']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Switch.xml" path="//Member[@MemberName='GetColor' and position()=1]/Docs" />
 		public static Color GetColor(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetColor(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Switch.xml" path="//Member[@MemberName='SetColor']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Switch.xml" path="//Member[@MemberName='SetColor' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetColor(this IPlatformElementConfiguration<Tizen, FormsElement> config, Color color)
 		{
 			SetColor(config.Element, color);

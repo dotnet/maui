@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
+namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
 	using Microsoft.Maui.Graphics;
 	using FormsElement = Maui.Controls.Image;
@@ -24,13 +24,13 @@
 			element.SetValue(BlendColorProperty, color);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='GetBlendColor']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='GetBlendColor' and position()=1]/Docs" />
 		public static Color GetBlendColor(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetBlendColor(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='SetBlendColor']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='SetBlendColor' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetBlendColor(this IPlatformElementConfiguration<Tizen, FormsElement> config, Color color)
 		{
 			SetBlendColor(config.Element, color);
@@ -49,13 +49,13 @@
 			element.SetValue(FileProperty, file);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='GetFile']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='GetFile' and position()=1]/Docs" />
 		public static string GetFile(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetFile(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='SetFile']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='SetFile' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetFile(this IPlatformElementConfiguration<Tizen, FormsElement> config, string file)
 		{
 			SetFile(config.Element, file);

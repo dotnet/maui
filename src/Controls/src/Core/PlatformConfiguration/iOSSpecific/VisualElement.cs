@@ -1,4 +1,4 @@
-﻿
+
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using System;
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(BlurEffectProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetBlurEffect']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetBlurEffect' and position()=1]/Docs" />
 		public static BlurEffectStyle GetBlurEffect(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetBlurEffect(config.Element);
@@ -81,13 +81,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(IsShadowEnabledProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetIsShadowEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetIsShadowEnabled' and position()=1]/Docs" />
 		public static bool GetIsShadowEnabled(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetIsShadowEnabled(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetIsShadowEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetIsShadowEnabled' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetIsShadowEnabled(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetIsShadowEnabled(config.Element, value);
@@ -111,13 +111,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(ShadowColorProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetShadowColor']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetShadowColor' and position()=1]/Docs" />
 		public static Color GetShadowColor(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetShadowColor(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetShadowColor']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetShadowColor' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetShadowColor(this IPlatformElementConfiguration<iOS, FormsElement> config, Color value)
 		{
 			SetShadowColor(config.Element, value);
@@ -141,13 +141,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(ShadowRadiusProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetShadowRadius']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetShadowRadius' and position()=1]/Docs" />
 		public static double GetShadowRadius(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetShadowRadius(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetShadowRadius']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetShadowRadius' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetShadowRadius(this IPlatformElementConfiguration<iOS, FormsElement> config, double value)
 		{
 			SetShadowRadius(config.Element, value);
@@ -171,13 +171,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(ShadowOffsetProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetShadowOffset']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetShadowOffset' and position()=1]/Docs" />
 		public static Size GetShadowOffset(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetShadowOffset(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetShadowOffset']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetShadowOffset' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetShadowOffset(this IPlatformElementConfiguration<iOS, FormsElement> config, Size value)
 		{
 			SetShadowOffset(config.Element, value);
@@ -201,13 +201,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(ShadowOpacityProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetShadowOpacity']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetShadowOpacity' and position()=1]/Docs" />
 		public static double GetShadowOpacity(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetShadowOpacity(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetShadowOpacity']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetShadowOpacity' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetShadowOpacity(this IPlatformElementConfiguration<iOS, FormsElement> config, double value)
 		{
 			SetShadowOpacity(config.Element, value);
@@ -235,13 +235,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(IsLegacyColorModeEnabledProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetIsLegacyColorModeEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetIsLegacyColorModeEnabled' and position()=1]/Docs" />
 		public static bool GetIsLegacyColorModeEnabled(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return (bool)config.Element.GetValue(IsLegacyColorModeEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetIsLegacyColorModeEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetIsLegacyColorModeEnabled' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetIsLegacyColorModeEnabled(
 			this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
@@ -272,7 +272,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetCanBecomeFirstResponder(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetCanBecomeFirstResponder']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='SetCanBecomeFirstResponder' and position()=1]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetCanBecomeFirstResponder(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetCanBecomeFirstResponder(config.Element, value);
