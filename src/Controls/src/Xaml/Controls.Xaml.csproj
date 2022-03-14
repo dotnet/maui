@@ -4,7 +4,6 @@
 		<AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
 		<RootNamespace>Microsoft.Maui.Controls.Xaml</RootNamespace>
 		<IsPackable>false</IsPackable>
-		<IsTrimmable>true</IsTrimmable>
 		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
 		<NoWarn>$(NoWarn);CA2200</NoWarn>
 		<PackageId>Microsoft.Maui.Controls.Xaml</PackageId>
