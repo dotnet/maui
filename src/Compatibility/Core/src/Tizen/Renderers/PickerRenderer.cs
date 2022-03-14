@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 						ie.TextBlockFocused -= OnTextBlockFocused;
 						ie.EntryLayoutFocused -= OnFocused;
 						ie.EntryLayoutUnfocused -= OnUnfocused;
-						if (Device.Idiom == TargetIdiom.TV)
+						if (DeviceInfo.Idiom == DeviceIdiom.TV)
 						{
 							ie.EntryLayoutFocused -= OnLayoutFocused;
 							ie.EntryLayoutUnfocused -= OnLayoutUnfocused;
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					ie.EntryLayoutFocused += OnFocused;
 					ie.EntryLayoutUnfocused += OnUnfocused;
 
-					if (Device.Idiom == TargetIdiom.TV)
+					if (DeviceInfo.Idiom == DeviceIdiom.TV)
 					{
 						ie.EntryLayoutFocused += OnLayoutFocused;
 						ie.EntryLayoutUnfocused += OnLayoutUnfocused;
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (Element.IsEnabled)
 			{
 				int i = 0;
-				if (Device.Idiom == TargetIdiom.Watch)
+				if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				{
 					_dialog = new WatchDialog(Forms.NativeParent, false);
 				}

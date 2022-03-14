@@ -253,27 +253,32 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DeviceInfo.SetCurrent(null);
 			}
 
-			void SetUpPlatform(string platform)
+			DevicePlatform SetUpPlatform(string platform)
 			{
-				mockDeviceInfo.RuntimePlatform = platform;
-				if (platform == Device.iOS)
+				var p = DevicePlatform.Create(platform);
+
+				mockDeviceInfo.Platform = p;
+				if (p == DevicePlatform.iOS)
 				{
 					DependencyService.Register<INativeValueConverterService, MockIosPlatformValueConverterService>();
 					DependencyService.Register<INativeBindingService, MockIosPlatformBindingService>();
 				}
-				else if (platform == Device.Android)
+				else if (p == DevicePlatform.Android)
 				{
 					DependencyService.Register<INativeValueConverterService, MockAndroidPlatformValueConverterService>();
 					DependencyService.Register<INativeBindingService, MockAndroidPlatformBindingService>();
 				}
+
+				return p;
 			}
 
-			[TestCase(false, Device.iOS)]
-			[TestCase(false, Device.Android)]
+			[TestCase(false, "iOS")]
+			[TestCase(false, "Android")]
 			//[TestCase(true)]
 			public void PlatformInContentView(bool useCompiledXaml, string platform)
 			{
-				SetUpPlatform(platform);
+				var realPlatform = SetUpPlatform(platform);
+
 				var layout = new PlatformViewsAndBindings(useCompiledXaml);
 				layout.BindingContext = new
 				{
@@ -282,14 +287,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				};
 				var view = layout.view0;
 				Assert.NotNull(view.Content);
+
 				MockPlatformView platformView = null;
-				if (platform == Device.iOS)
+				if (realPlatform == DevicePlatform.iOS)
 				{
 					Assert.That(view.Content, Is.TypeOf<MockUIViewWrapper>());
 					Assert.That(((MockUIViewWrapper)view.Content).PlatformView, Is.TypeOf<MockUIView>());
 					platformView = ((MockUIViewWrapper)view.Content).PlatformView;
 				}
-				else if (platform == Device.Android)
+				else if (realPlatform == DevicePlatform.Android)
 				{
 					Assert.That(view.Content, Is.TypeOf<MockAndroidViewWrapper>());
 					Assert.That(((MockAndroidViewWrapper)view.Content).PlatformView, Is.TypeOf<MockAndroidView>());

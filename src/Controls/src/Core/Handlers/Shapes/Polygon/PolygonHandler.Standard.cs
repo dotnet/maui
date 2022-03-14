@@ -3,8 +3,10 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class PolygonHandler 
+	public partial class PolygonHandler
 	{
-		public static void MapPoints(IViewHandler handler, Polygon polygon) { }
+		public static void MapShape(IShapeViewHandler handler, Polygon polygon) { }
+		public static void MapPoints(IShapeViewHandler handler, Polygon polygon) { }
+		public static void MapFillRule(IShapeViewHandler handler, Polygon polygon) { }
 	}
 }

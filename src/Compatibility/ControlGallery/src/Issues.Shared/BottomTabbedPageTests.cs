@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 #if UITEST
@@ -223,7 +224,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					},
 			};
 
-			if (Device.RuntimePlatform == Device.Android)
+			if (DeviceInfo.Platform == DevicePlatform.Android)
 			{
 				layout.Children.Insert(1, btnChangeBarItemColorText);
 				layout.Children.Insert(2, btnChangeBarSelectedItemColorText);

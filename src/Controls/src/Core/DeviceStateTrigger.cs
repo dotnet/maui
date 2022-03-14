@@ -1,4 +1,4 @@
-using FormsDevice = Microsoft.Maui.Controls.Device;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls
 {
@@ -30,18 +30,13 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateState()
 		{
-			switch (Device)
-			{
-				case FormsDevice.Android:
-					SetActive(FormsDevice.RuntimePlatform == FormsDevice.Android);
-					break;
-				case FormsDevice.iOS:
-					SetActive(FormsDevice.RuntimePlatform == FormsDevice.iOS);
-					break;
-				case FormsDevice.UWP:
-					SetActive(FormsDevice.RuntimePlatform == FormsDevice.UWP);
-					break;
-			}
+			var device = DevicePlatform.Create(Device);
+			if (device == DevicePlatform.Android)
+				SetActive(DeviceInfo.Platform == DevicePlatform.Android);
+			else if (device == DevicePlatform.iOS)
+				SetActive(DeviceInfo.Platform == DevicePlatform.iOS);
+			else if (device == DevicePlatform.WinUI || device == DevicePlatform.Create("UWP"))
+				SetActive(DeviceInfo.Platform == DevicePlatform.WinUI);
 		}
 	}
 }

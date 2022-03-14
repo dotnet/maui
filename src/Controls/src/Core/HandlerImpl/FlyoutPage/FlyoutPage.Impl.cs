@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (Device.Idiom == TargetIdiom.Phone)
+				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 					return -1;
 
 				var scaledScreenSize = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangingCore(args);
 
-			if (Device.Idiom == TargetIdiom.Phone)
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				return;
 
 			if (args.NewHandler == null)

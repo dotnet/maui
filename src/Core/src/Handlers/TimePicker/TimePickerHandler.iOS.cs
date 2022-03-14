@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidEnd += OnEnded;
 				platformView.ValueChanged += OnValueChanged;
 				platformView.DateSelected += OnDateSelected;	
+				platformView.UpdateTime(VirtualView.Time);
 			}
 		}
 
@@ -113,7 +114,8 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || PlatformView == null)
 				return;
 
-			VirtualView.Time = PlatformView.Date.ToDateTime() - new DateTime(1, 1, 1);
+			var datetime = PlatformView.Date.ToDateTime();
+			VirtualView.Time = new TimeSpan(datetime.Hour, datetime.Minute, 0);
 		}
 	}
 }

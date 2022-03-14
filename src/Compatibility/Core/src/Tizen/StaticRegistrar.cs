@@ -116,11 +116,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			Registered.Register(typeof(IndicatorView), () => new IndicatorViewRenderer());
 			Registered.Register(typeof(RadioButton), () => new RadioButtonRenderer());
 
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				Registered.Register(typeof(Shell), () => new Watch.ShellRenderer());
 			}
-			else if (Device.Idiom == TargetIdiom.TV)
+			else if (DeviceInfo.Idiom == DeviceIdiom.TV)
 			{
 				Registered.Register(typeof(Shell), () => new TV.TVShellRenderer());
 			}

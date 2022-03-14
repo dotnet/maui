@@ -1,36 +1,41 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	internal sealed class MauiDispatcher : Dispatcher
 	{
-#pragma warning disable CA1416 // Validate platform compatibility
+		readonly IDispatcher _dispatcher;
+
+		public MauiDispatcher(IDispatcher dispatcher)
+		{
+			_dispatcher = dispatcher;
+		}
+
 		public override bool CheckAccess()
 		{
-			return !Device.IsInvokeRequired;
+			return !_dispatcher.IsDispatchRequired;
 		}
 
 		public override Task InvokeAsync(Action workItem)
 		{
-			return Device.InvokeOnMainThreadAsync(workItem);
+			return _dispatcher.DispatchAsync(workItem);
 		}
 
 		public override Task InvokeAsync(Func<Task> workItem)
 		{
-			return Device.InvokeOnMainThreadAsync(workItem);
+			return _dispatcher.DispatchAsync(workItem);
 		}
 
 		public override Task<TResult> InvokeAsync<TResult>(Func<TResult> workItem)
 		{
-			return Device.InvokeOnMainThreadAsync(workItem);
+			return _dispatcher.DispatchAsync(workItem);
 		}
 
 		public override Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> workItem)
 		{
-			return Device.InvokeOnMainThreadAsync(workItem);
+			return _dispatcher.DispatchAsync(workItem);
 		}
-#pragma warning restore CA1416 // Validate platform compatibility
 	}
 }

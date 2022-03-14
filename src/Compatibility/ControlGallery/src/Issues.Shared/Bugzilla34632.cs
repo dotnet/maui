@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 
 #if UITEST
 using Xamarin.UITest;
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		protected override void Init()
 		{
-			if (Device.RuntimePlatform == Device.UWP)
+			if (DeviceInfo.Platform == DevicePlatform.UWP)
 				FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split;
 			else
 				FlyoutLayoutBehavior = FlyoutLayoutBehavior.SplitOnLandscape;
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					Command = new Command(() =>
 					{
 						//If we're in potrait toggle hide the menu on click
-						if (Width < Height || Device.Idiom == TargetIdiom.Phone)
+						if (Width < Height || DeviceInfo.Idiom == DeviceIdiom.Phone)
 						{
 							IsPresented = false;
 						}

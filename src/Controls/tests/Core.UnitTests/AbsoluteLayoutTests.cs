@@ -43,11 +43,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var child = new View { IsPlatformEnabled = true };
 
-			abs.Children.Add(child, new Rectangle(10, 20, 30, 40));
+			abs.Children.Add(child, new Rect(10, 20, 30, 40));
 
-			abs.Layout(new Rectangle(0, 0, 100, 100));
+			abs.Layout(new Rect(0, 0, 100, 100));
 
-			Assert.AreEqual(new Rectangle(10, 20, 30, 40), child.Bounds);
+			Assert.AreEqual(new Rect(10, 20, 30, 40), child.Bounds);
 		}
 
 
@@ -62,9 +62,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var child = new View { IsPlatformEnabled = true };
 
 
-			abs.Children.Add(child, new Rectangle(10, 20, 0.4, 0.5), AbsoluteLayoutFlags.SizeProportional);
+			abs.Children.Add(child, new Rect(10, 20, 0.4, 0.5), AbsoluteLayoutFlags.SizeProportional);
 
-			abs.Layout(new Rectangle(0, 0, 100, 100));
+			abs.Layout(new Rect(0, 0, 100, 100));
 
 			Assert.That(child.X, Is.EqualTo(10));
 			Assert.That(child.Y, Is.EqualTo(20));
@@ -85,9 +85,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var child = new View { IsPlatformEnabled = true };
 
-			abs.Children.Add(child, new Rectangle(relX, relY, width, height), AbsoluteLayoutFlags.PositionProportional);
+			abs.Children.Add(child, new Rect(relX, relY, width, height), AbsoluteLayoutFlags.PositionProportional);
 
-			abs.Layout(new Rectangle(0, 0, 100, 100));
+			abs.Layout(new Rect(0, 0, 100, 100));
 
 			double expectedX = Math.Round((100 - width) * relX);
 			double expectedY = Math.Round((100 - height) * relY);
@@ -109,8 +109,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				IsPlatformEnabled = true
 			};
-			abs.Children.Add(child, new Rectangle(relX, relY, relWidth, relHeight), AbsoluteLayoutFlags.All);
-			abs.Layout(new Rectangle(0, 0, 100, 100));
+			abs.Children.Add(child, new Rect(relX, relY, relWidth, relHeight), AbsoluteLayoutFlags.All);
+			abs.Layout(new Rect(0, 0, 100, 100));
 
 			double expectedWidth = Math.Round(100 * relWidth);
 			double expectedHeight = Math.Round(100 * relHeight);
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var child = new View();
 
 			// ChildSizeReq == 100x20
-			abs.Children.Add(child, new Rectangle(10, 20, 30, 40));
+			abs.Children.Add(child, new Rect(10, 20, 30, 40));
 
 			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var child = new View();
 
 			// ChildSizeReq == 100x20
-			abs.Children.Add(child, new Rectangle(0.5, 0.5, 30, 40), AbsoluteLayoutFlags.PositionProportional);
+			abs.Children.Add(child, new Rect(0.5, 0.5, 30, 40), AbsoluteLayoutFlags.PositionProportional);
 
 			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			// ChildSizeReq == 100x20
-			abs.Children.Add(child, new Rectangle(0.5, 0.5, 0.5, 0.5), AbsoluteLayoutFlags.All);
+			abs.Children.Add(child, new Rect(0.5, 0.5, 0.5, 0.5), AbsoluteLayoutFlags.All);
 
 			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			// ChildSizeReq == 100x20
-			abs.Children.Add(child, new Rectangle(10, 20, 0.5, 0.5), AbsoluteLayoutFlags.SizeProportional);
+			abs.Children.Add(child, new Rect(10, 20, 0.5, 0.5), AbsoluteLayoutFlags.SizeProportional);
 
 			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			abs.Children.Add(child, new Rectangle(1, 1, 100, 100));
+			abs.Children.Add(child, new Rect(1, 1, 100, 100));
 
 			bool fired = false;
 			abs.MeasureInvalidated += (sender, args) => fired = true;
@@ -240,12 +240,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			abs.Children.Add(child, new Rectangle(1, 1, 100, 100));
+			abs.Children.Add(child, new Rect(1, 1, 100, 100));
 
 			bool fired = false;
 			abs.MeasureInvalidated += (sender, args) => fired = true;
 
-			AbsoluteLayout.SetLayoutBounds(child, new Rectangle(2, 2, 200, 200));
+			AbsoluteLayout.SetLayoutBounds(child, new Rect(2, 2, 200, 200));
 
 			Assert.True(fired);
 		}
@@ -258,15 +258,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var converter = new BoundsTypeConverter();
 
 			Assert.IsTrue(converter.CanConvertFrom(typeof(string)));
-			Assert.AreEqual(new Rectangle(3, 4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4"));
-			Assert.AreEqual(new Rectangle(3, 4, 20, 30), converter.ConvertFromInvariantString("3, 4, 20, 30"));
-			Assert.AreEqual(new Rectangle(3, 4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4, AutoSize, AutoSize"));
-			Assert.AreEqual(new Rectangle(3, 4, AbsoluteLayout.AutoSize, 30), converter.ConvertFromInvariantString("3, 4, AutoSize, 30"));
-			Assert.AreEqual(new Rectangle(3, 4, 20, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4, 20, AutoSize"));
+			Assert.AreEqual(new Rect(3, 4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4"));
+			Assert.AreEqual(new Rect(3, 4, 20, 30), converter.ConvertFromInvariantString("3, 4, 20, 30"));
+			Assert.AreEqual(new Rect(3, 4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4, AutoSize, AutoSize"));
+			Assert.AreEqual(new Rect(3, 4, AbsoluteLayout.AutoSize, 30), converter.ConvertFromInvariantString("3, 4, AutoSize, 30"));
+			Assert.AreEqual(new Rect(3, 4, 20, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4, 20, AutoSize"));
 
 			var autoSize = "AutoSize";
-			Assert.AreEqual(new Rectangle(3.3, 4.4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3.3, 4.4, " + autoSize + ", AutoSize"));
-			Assert.AreEqual(new Rectangle(3.3, 4.4, 5.5, 6.6), converter.ConvertFromInvariantString("3.3, 4.4, 5.5, 6.6"));
+			Assert.AreEqual(new Rect(3.3, 4.4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3.3, 4.4, " + autoSize + ", AutoSize"));
+			Assert.AreEqual(new Rect(3.3, 4.4, 5.5, 6.6), converter.ConvertFromInvariantString("3.3, 4.4, 5.5, 6.6"));
 		}
 	}
 }

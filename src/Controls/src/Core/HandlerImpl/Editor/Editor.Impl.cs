@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	{
 		double _previousWidthConstraint;
 		double _previousHeightConstraint;
-		Rectangle _previousBounds;
+		Rect _previousBounds;
 
 		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 			(this as IEditorController).SendCompleted();
 		}
 
-		protected override Size ArrangeOverride(Rectangle bounds)
+		protected override Size ArrangeOverride(Rect bounds)
 		{
 			_previousBounds = bounds;
 			return base.ArrangeOverride(bounds);

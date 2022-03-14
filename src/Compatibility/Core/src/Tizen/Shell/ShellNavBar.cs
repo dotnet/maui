@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		bool _hasBackButton = false;
 		private bool disposedValue;
-		bool _isTV = Device.Idiom == TargetIdiom.TV;
+		bool _isTV = DeviceInfo.Idiom == DeviceIdiom.TV;
 
 		public ShellNavBar() : base(Forms.NativeParent)
 		{

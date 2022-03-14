@@ -31,6 +31,7 @@ using TNativeView = AppKit.NSView;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
+	[Obsolete]
 	public struct InitializationOptions
 	{
 		public InitializationFlags Flags;
@@ -102,6 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		// Once we get essentials/cg converted to using startup.cs
 		// we will delete all the renderer code inside this file
+		[Obsolete]
 		internal static void RenderersRegistered()
 		{
 			IsInitializedRenderers = true;
@@ -132,11 +134,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 #endif
 
+		[Obsolete]
 		public static bool IsInitializedRenderers { get; private set; }
 
+		[Obsolete]
 		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
 			SetupInit(activationState.Context, options);
 
+		[Obsolete]
 		static void SetupInit(IMauiContext context, InitializationOptions? maybeOptions = null)
 		{
 			MauiContext = context;
@@ -155,6 +160,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			IsInitialized = true;
 		}
 
+		[Obsolete]
 		internal static void RegisterCompatRenderers(IMauiContext context)
 		{
 			if (!IsInitializedRenderers)

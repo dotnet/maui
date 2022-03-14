@@ -51,5 +51,10 @@ namespace Microsoft.Maui.Platform
 		public NSDate Date => Picker.Date;
 
 		public event EventHandler? DateSelected;
+
+		public void UpdateTime(TimeSpan time)
+		{
+			_picker.Date = new DateTime(1, 1, 1, time.Hours, time.Minutes, time.Seconds).ToNSDate();
+		}
 	}
 }

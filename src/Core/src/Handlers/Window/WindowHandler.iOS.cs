@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMenuBar(IWindowHandler handler, IWindow view)
 		{
-			if (view is IMenuBarElement mb)
+			if (MauiUIApplicationDelegate.Current != null &&
+				view is IMenuBarElement mb)
 			{
 				if (MauiUIApplicationDelegate.Current.MenuBuilder == null)
 				{

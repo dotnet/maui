@@ -53,7 +53,7 @@
 
     <!-- Setup Microsoft.NET.Sdk.Maui/WorkloadManifest.* -->
     <ItemGroup>
-      <_PackagesToUnzip Include="$(PackageOutputPath)/Microsoft.NET.Sdk.Maui.Manifest-$(DotNetPreviewVersionBand).*.nupkg" />
+      <_PackagesToUnzip Include="$(PackageOutputPath)/Microsoft.NET.Sdk.Maui.Manifest-$(DotNetMauiManifestVersionBand).*.nupkg" />
     </ItemGroup>
     <Unzip
         SourceFiles="@(_PackagesToUnzip)"
@@ -65,7 +65,7 @@
     <CopyWorkloadFiles
         Name="microsoft.net.sdk.maui"
         Files="@(_WorkloadFiles)"
-        WorkloadDirectory="$(MSBuildExtensionsPath)../../sdk-manifests/$(DotNetPreviewVersionBand)"
+        WorkloadDirectory="$(MSBuildExtensionsPath)../../sdk-manifests/$(DotNetVersionBand)"
     />
     <RemoveDir Directories="$(_InstallTempDirectory)" />
 

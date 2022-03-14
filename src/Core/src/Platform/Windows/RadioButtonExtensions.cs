@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class RadioButtonExtensions
 	{
@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 			platformRadioButton.IsChecked = radioButton.IsChecked;
 		}
 
-		public static void UpdateTextColor(this Button platformButton, ITextStyle button)
+		public static void UpdateTextColor(this Button platformButton, IRadioButton button)
 		{
 			var brush = button.TextColor?.ToPlatform();
 

@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 			base.OnCreate(savedInstanceState);
 
+#pragma warning disable CS0612 // Type or member is obsolete
 			Forms.Init(new MauiContext(MauiApplication.Current.Services, this));
+#pragma warning restore CS0612 // Type or member is obsolete
 			LoadApplication(new Issue10182Application());
 
 			_activity1 = (Activity1)DependencyService.Resolve<Context>();
