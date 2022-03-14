@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Controls
 			return $"{source}/";
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='FormatRoute'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='FormatRoute'][1]/Docs" />
 		public static string FormatRoute(List<string> segments)
 		{
 			var route = FormatRoute(String.Join(PathSeparator, segments));

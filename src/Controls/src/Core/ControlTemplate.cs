@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ControlTemplate.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ControlTemplate.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public ControlTemplate(Func<object> createTemplate) : base(createTemplate)
 		{
 		}

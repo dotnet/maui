@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 			_idString = type.FullName;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public DataTemplate(Func<object> loadTemplate) : base(loadTemplate)
 		{
 			_id = Interlocked.Increment(ref idCounter);

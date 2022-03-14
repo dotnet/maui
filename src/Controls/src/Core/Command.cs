@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls
 		readonly Action<object> _execute;
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public Command(Action<object> execute)
 		{
 			if (execute == null)
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 			_canExecute = canExecute;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][5]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public Command(Action execute, Func<bool> canExecute) : this(o => execute(), o => canExecute())
 		{
 			if (execute == null)

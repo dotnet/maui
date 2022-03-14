@@ -494,7 +494,7 @@ namespace Microsoft.Maui.Controls
 			return displayBinding;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][2]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void NotifyRowTapped(int groupIndex, int inGroupIndex, Cell cell = null)
 		{
@@ -560,7 +560,7 @@ namespace Microsoft.Maui.Controls
 					TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][1]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void NotifyRowTapped(int index, Cell cell = null)
 		{
