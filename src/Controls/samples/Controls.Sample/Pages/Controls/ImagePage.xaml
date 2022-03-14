@@ -13,16 +13,14 @@
                     Style="{StaticResource Headline}"/>
                 <Image 
                     Source="https://aka.ms/campus.jpg"
-                    HeightRequest="200" 
-                    WidthRequest="200"/>
+                    />
                 <Label
                     Text="FileSource"
                     Style="{StaticResource Headline}"/>
                 <Image 
                     Background="Purple"
                     Source="dotnet_bot.png"
-                    HeightRequest="200" 
-                    WidthRequest="200"/>
+                   />
                 <Label
                     Text="Font Image Source"
                     Style="{StaticResource Headline}"/>
