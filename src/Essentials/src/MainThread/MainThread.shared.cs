@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync' and position()=0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][1]/Docs" />
 		public static Task InvokeOnMainThreadAsync(Action action)
 		{
 			if (IsMainThread)
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Essentials
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync' and position()=0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][1]/Docs" />
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func)
 		{
 			if (IsMainThread)
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Essentials
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync' and position()=1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][2]/Docs" />
 		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask)
 		{
 			if (IsMainThread)
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Essentials
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync' and position()=2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][3]/Docs" />
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask)
 		{
 			if (IsMainThread)

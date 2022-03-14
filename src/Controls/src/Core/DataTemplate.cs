@@ -13,14 +13,14 @@ namespace Microsoft.Maui.Controls
 
 		int _id;
 		string _idString;
-		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public DataTemplate()
 		{
 			_id = Interlocked.Increment(ref idCounter);
 			_idString = GetType().FullName + _id;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor' and position()=2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public DataTemplate(
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type) 
 			: base(type)

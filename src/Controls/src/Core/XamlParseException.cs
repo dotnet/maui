@@ -12,18 +12,18 @@ namespace Microsoft.Maui.Controls.Xaml
 	{
 		readonly string _unformattedMessage;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public XamlParseException()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="//Member[@MemberName='.ctor' and position()=1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public XamlParseException(string message)
 		   : base(message)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="//Member[@MemberName='.ctor' and position()=3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="//Member[@MemberName='.ctor'][4]/Docs" />
 		public XamlParseException(string message, Exception innerException)
 		   : base(message, innerException)
 		{

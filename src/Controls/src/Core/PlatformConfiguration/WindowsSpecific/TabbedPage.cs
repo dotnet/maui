@@ -18,25 +18,25 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		public static readonly BindableProperty HeaderIconsSizeProperty =
 			BindableProperty.Create(nameof(HeaderIconsSizeProperty), typeof(Size), typeof(TabbedPage), new Size(16, 16));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='SetHeaderIconsEnabled' and position()=0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='SetHeaderIconsEnabled'][1]/Docs" />
 		public static void SetHeaderIconsEnabled(BindableObject element, bool value)
 		{
 			element.SetValue(HeaderIconsEnabledProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='GetHeaderIconsEnabled' and position()=0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='GetHeaderIconsEnabled'][1]/Docs" />
 		public static bool GetHeaderIconsEnabled(BindableObject element)
 		{
 			return (bool)element.GetValue(HeaderIconsEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='GetHeaderIconsEnabled' and position()=1]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='GetHeaderIconsEnabled'][2]/Docs" />
 		public static bool GetHeaderIconsEnabled(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return GetHeaderIconsEnabled(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='SetHeaderIconsEnabled' and position()=1]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='SetHeaderIconsEnabled'][2]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetHeaderIconsEnabled(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, bool value)
 		{
@@ -62,25 +62,25 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			SetHeaderIconsEnabled(config.Element, false);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='SetHeaderIconsSize' and position()=0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='SetHeaderIconsSize'][1]/Docs" />
 		public static void SetHeaderIconsSize(BindableObject element, Size value)
 		{
 			element.SetValue(HeaderIconsSizeProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='GetHeaderIconsSize' and position()=0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='GetHeaderIconsSize'][1]/Docs" />
 		public static Size GetHeaderIconsSize(BindableObject element)
 		{
 			return (Size)element.GetValue(HeaderIconsSizeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='GetHeaderIconsSize' and position()=1]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='GetHeaderIconsSize'][2]/Docs" />
 		public static Size GetHeaderIconsSize(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return GetHeaderIconsSize(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='SetHeaderIconsSize' and position()=1]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="//Member[@MemberName='SetHeaderIconsSize'][2]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetHeaderIconsSize(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, Size value)
 		{
