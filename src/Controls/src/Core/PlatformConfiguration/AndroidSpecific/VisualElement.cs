@@ -12,25 +12,25 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			BindableProperty.Create("Elevation", typeof(float?),
 				typeof(FormsElement));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='GetElevation'][1]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='GetElevation'][2]/Docs" />
 		public static float? GetElevation(FormsElement element)
 		{
 			return (float?)element.GetValue(ElevationProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='SetElevation'][1]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='SetElevation'][2]/Docs" />
 		public static void SetElevation(FormsElement element, float? value)
 		{
 			element.SetValue(ElevationProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='GetElevation'][2]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='GetElevation'][1]/Docs" />
 		public static float? GetElevation(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetElevation(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='SetElevation'][2]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='SetElevation'][1]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsElement> SetElevation(this IPlatformElementConfiguration<Android, FormsElement> config, float? value)
 		{
 			SetElevation(config.Element, value);
