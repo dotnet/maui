@@ -7,6 +7,10 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Bumptech.Glide;
+using Bumptech.Glide.Load;
+using Bumptech.Glide.Load.Engine;
+using Bumptech.Glide.Request;
+using Bumptech.Glide.Request.Target;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.BumptechGlide;
 
@@ -14,28 +18,34 @@ namespace Microsoft.Maui
 {
 	public partial class FontImageSourceService
 	{
-		public override Task<bool> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult<Drawable>?> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is IFontImageSource fontImageSource)
 			{
 				if (fontImageSource.IsEmpty)
-					return Task.FromResult(false);
+					return null;
 
 				var glyph = fontImageSource.Glyph;
 
 				var size = FontManager.GetFontSize(fontImageSource.Font);
-				var textSize = TypedValue.ApplyDimension(size.Unit, size.Value, imageView.Context?.Resources?.DisplayMetrics);
+				var unit = fontImageSource.FontAutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip;
+				var textSize = TypedValue.ApplyDimension(unit, size.Value, imageView.Context?.Resources?.DisplayMetrics);
 				var typeface = FontManager.GetTypeface(fontImageSource.Font);
 				var color = (fontImageSource.Color ?? Graphics.Colors.White).ToPlatform();
 
 				try
 				{
-					Glide
-						.With(imageView.Context)
+					var listener = new RequestBuilderExtensions.RequestCompleteListener();
+					var glide = Glide.With(imageView.Context);
+					var builder = glide
 						.Load(new FontImageSourceModel(glyph, textSize, typeface, color))
-						.Into(imageView);
+						.AddListener(listener);
 
-					return Task.FromResult(true);
+					var viewTarget = builder.Into(imageView);
+
+					var result = await listener.Result.ConfigureAwait(false);
+
+					return new ImageSourceServiceResult(result, () => glide.Clear(viewTarget));
 				}
 				catch (Exception ex)
 				{
@@ -44,7 +54,7 @@ namespace Microsoft.Maui
 				}
 			}
 
-			return Task.FromResult(false);
+			return null;
 		}
 
 		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>
@@ -58,7 +68,7 @@ namespace Microsoft.Maui
 			var glyph = imageSource.Glyph;
 
 			var size = FontManager.GetFontSize(imageSource.Font);
-			var textSize = TypedValue.ApplyDimension(size.Unit, size.Value, context.Resources?.DisplayMetrics);
+			var textSize = size.Value; //TypedValue.ApplyDimension(size.Unit, size.Value, context.Resources?.DisplayMetrics);
 			var typeface = FontManager.GetTypeface(imageSource.Font);
 			var color = (imageSource.Color ?? Graphics.Colors.White).ToPlatform();
 
@@ -99,6 +109,8 @@ namespace Microsoft.Maui
 			var baseline = (int)(-paint.Ascent() + .5f);
 			var height = (int)(baseline + paint.Descent() + .5f);
 
+			var bmpcfg = Bitmap.Config.Argb8888!;
+			
 			var bitmap = newBitmap(width, height, Bitmap.Config.Argb8888!);
 
 			using var canvas = new Canvas(bitmap);

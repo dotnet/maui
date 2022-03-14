@@ -12,18 +12,26 @@ namespace Microsoft.Maui
 {
 	public partial class FileImageSourceService
 	{
-		public override Task<bool> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult<Drawable>?> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is IFileImageSource fileImageSource)
 			{
 				try
 				{
-					Glide
-						.With(imageView.Context)
+					var listener = new RequestBuilderExtensions.RequestCompleteListener();
+					var glide = Glide.With(imageView.Context);
+					var builder = glide
 						.Load(fileImageSource.File, imageView.Context!)
+						.AddListener(listener);
+
+					// Load into the image view
+					var viewTarget = builder
 						.Into(imageView);
 
-					return Task.FromResult(true);
+					// Wait for the result from the listener
+					var result = await listener.Result.ConfigureAwait(false);
+
+					return new ImageSourceServiceResult(result, () => glide.Clear(viewTarget));
 				}
 				catch (Exception ex)
 				{
@@ -32,7 +40,7 @@ namespace Microsoft.Maui
 				}
 			}
 
-			return Task.FromResult(false);
+			return null;
 		}
 
 		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>

@@ -16,6 +16,12 @@ namespace Microsoft.Maui
 	{
 		Action? _dispose;
 
+		public ImageSourceServiceResult(bool success, Action? dispose = null)
+			: this(null, false, dispose)
+		{
+			succeeded = success;
+		}
+
 		public ImageSourceServiceResult(PlatformView? image, Action? dispose = null)
 			: this(image, false, dispose)
 		{
@@ -29,6 +35,11 @@ namespace Microsoft.Maui
 		}
 
 		public PlatformView? Value { get; }
+
+		bool? succeeded;
+
+		public bool Succeeded
+			=> succeeded ?? Value is not null;
 
 		public bool IsResolutionDependent { get; }
 

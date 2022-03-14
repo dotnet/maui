@@ -63,5 +63,29 @@ namespace Microsoft.Maui.BumptechGlide
 				return false; // True would prevent target.OnResourceReady from being called - not necessary here
 			}
 		}
+
+		internal class RequestCompleteListener : Java.Lang.Object, Bumptech.Glide.Request.IRequestListener
+		{
+			public RequestCompleteListener()
+			{
+				tcsComplete = new TaskCompletionSource<bool>();
+			}
+
+			readonly TaskCompletionSource<bool> tcsComplete;
+
+			public Task<bool> Result => tcsComplete.Task;
+
+			public bool OnLoadFailed(GlideException exception, Java.Lang.Object model, ITarget target, bool isFirstResource)
+			{
+				tcsComplete.TrySetException(exception);
+				return false; // True would prevent target.OnLoadFailed from being called - not necessary here
+			}
+
+			public bool OnResourceReady(Java.Lang.Object result, Java.Lang.Object model, ITarget target, DataSource dataSource, bool isFirstResource)
+			{
+				tcsComplete.TrySetResult(true);
+				return false; // True would prevent target.OnResourceReady from being called - not necessary here
+			}
+		}
 	}
 }

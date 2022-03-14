@@ -10,5 +10,7 @@ namespace Microsoft.Maui
 		Font Font { get; }
 
 		string Glyph { get; }
+
+		bool FontAutoScalingEnabled { get; }
 	}
 }

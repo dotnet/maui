@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 			Android.Content.Context context,
 			CancellationToken cancellationToken = default);
 
-		Task<bool> LoadDrawableAsync(
+		Task<IImageSourceServiceResult<Android.Graphics.Drawables.Drawable>?> LoadDrawableAsync(
 			IImageSource imageSource,
 			Android.Widget.ImageView imageView,
 			CancellationToken cancellationToken = default);

@@ -14,7 +14,7 @@ namespace Microsoft.Maui
 {
 	public partial class StreamImageSourceService
 	{
-		public override async Task<bool> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult<Drawable>?> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is IStreamImageSource streamImageSource)
 			{
@@ -28,12 +28,20 @@ namespace Microsoft.Maui
 					//  - Copy the stream into a byte array and that is double memory usage - especially for large streams.
 					var inputStream = new InputStreamAdapter(stream);
 
-					Glide
-						.With(imageView.Context)
+					var listener = new RequestBuilderExtensions.RequestCompleteListener();
+					var glide = Glide.With(imageView.Context);
+					var builder = glide
 						.Load(inputStream)
+						.AddListener(listener);
+
+					// Load into the image view
+					var viewTarget = builder
 						.Into(imageView);
 
-					return true;
+					// Wait for the result from the listener
+					var result = await listener.Result.ConfigureAwait(false);
+
+					return new ImageSourceServiceResult(result, () => glide.Clear(viewTarget));
 				}
 				catch (Exception ex)
 				{
@@ -41,10 +49,8 @@ namespace Microsoft.Maui
 					throw;
 				}
 			}
-
-			return false;
+			return null;
 		}
-
 
 		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>
 			GetDrawableAsync((IStreamImageSource)imageSource, context, cancellationToken);

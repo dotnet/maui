@@ -38,12 +38,12 @@ namespace Microsoft.Maui.Platform
 				var service = services.GetRequiredImageSourceService(imageSource);
 
 				var result = await service.LoadDrawableAsync(imageSource, destinationImageView, cancellationToken);
-				
-				var applied = result && !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
+
+				var applied = result is not null && result.Succeeded && !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
 
 				events?.LoadingCompleted(applied);
 
-				return new ImageSourceServiceResult(null);
+				return result;
 			}
 			catch (OperationCanceledException)
 			{
