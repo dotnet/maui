@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Extensions.DependencyInjection;
 using TDeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 
-namespace Microsoft.Maui.Controls.Hosting
+namespace Microsoft.Maui.Controls.Compatibility.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{

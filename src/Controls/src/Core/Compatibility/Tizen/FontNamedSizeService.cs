@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				default:
 					throw new ArgumentOutOfRangeException(nameof(size));
 			}
-			return Forms.ConvertToDPFont(pt);
+			return DPExtensions.ConvertToDPFont(pt);
 		}
 	}
 }

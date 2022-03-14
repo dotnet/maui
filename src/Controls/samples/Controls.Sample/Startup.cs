@@ -39,6 +39,9 @@ namespace Maui.Controls.Sample
 			var appBuilder = MauiApp.CreateBuilder();
 
 			appBuilder.UseMauiApp<XamlApp>();
+#if TIZEN
+			appBuilder.UseMauiCompatibility();
+#endif
 			var services = appBuilder.Services;
 
 			if (UseMauiGraphicsSkia)
@@ -104,7 +107,7 @@ namespace Maui.Controls.Sample
 
 			services.AddLogging(logging =>
 			{
-#if WINDOWS || TIZEN
+#if WINDOWS
 				logging.AddDebug();
 #else
 				logging.AddConsole();

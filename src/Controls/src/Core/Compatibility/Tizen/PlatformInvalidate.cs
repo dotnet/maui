@@ -8,13 +8,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	{
 		public void Invalidate(VisualElement visualElement)
 		{
-			var renderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Platform.GetRenderer(visualElement);
-			if (renderer == null || !renderer.NativeView.IsRealized)
+			if (visualElement.Handler?.PlatformView == null)
 			{
 				return;
 			}
 
-			renderer.NativeView.MarkChanged();
+			visualElement.ToPlatform().MarkChanged();
 		}
 	}
 }
