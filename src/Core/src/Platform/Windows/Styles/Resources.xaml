@@ -6,7 +6,6 @@
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="MauiAutoSuggestBoxStyle.xaml" />
-        <ResourceDictionary Source="MauiCheckBoxStyle.xaml" />
         <ResourceDictionary Source="MauiComboBoxStyle.xaml" />
         <ResourceDictionary Source="MauiRadioButtonStyle.xaml" />
         <ResourceDictionary Source="MauiSliderStyle.xaml" />
