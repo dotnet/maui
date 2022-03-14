@@ -159,9 +159,19 @@ namespace Microsoft.Maui.Controls
 			if (bindable is Border border)
 			{
 				if (oldValue is Element oldElement)
-					border.InternalChildren.Remove(oldElement);
+				{
+					int index = border.InternalChildren.IndexOf(oldElement);
+					if (border.InternalChildren.Remove(oldElement))
+					{
+						border.OnChildRemoved(oldElement, index);
+					}
+				}
+
 				if (newValue is Element newElement)
+				{
 					border.InternalChildren.Add(newElement);
+					border.OnChildAdded(newElement);
+				}
 			}
 
 			((IBorderView)bindable).InvalidateMeasure();

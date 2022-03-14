@@ -5,12 +5,12 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="CheckBox">
     <views:BasePage.Content>
-        <VerticalStackLayout
-            Margin="12">
-            <Label
-                Text="Default"
-                Style="{StaticResource Headline}"/>
+        <VerticalStackLayout Margin="12">
+            <Label Text="Default" Style="{StaticResource Headline}"/>
             <CheckBox/>
+
+            <Label Text="Colored" Style="{StaticResource Headline}"/>
+            <CheckBox Color="Purple" />
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
