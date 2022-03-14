@@ -15,11 +15,11 @@
                 <ImageButton 
                     HorizontalOptions="Center" 
                     WidthRequest="200"
-                    HeightRequest="100" 
+                    
                     Clicked="OnImageButtonClicked"
                     Aspect="AspectFit" 
                     Background="Green"
-                    Source="settings.png"
+                    Source="cog.png"
                     Padding="16, 9, 16, 9" />
                 <Label       
                     Text="AspectFill"     
@@ -31,7 +31,7 @@
                     Clicked="OnImageButtonClicked" 
                     Aspect="AspectFill" 
                     Background="Green" 
-                    Source="settings.png" 
+                    Source="cog.png" 
                     Padding="16, 9, 16, 9" />
                 <Label         
                     Text="Fill"
@@ -43,7 +43,7 @@
                     Clicked="OnImageButtonClicked" 
                     Aspect="Fill" 
                     Background="Green" 
-                    Source="settings.png" 
+                    Source="cog.png" 
                     Padding="16, 9, 16, 9" />
                 <Label         
                     x:Name="InfoLabel"
@@ -56,7 +56,7 @@
                     Style="{StaticResource Headline}"/>
                 <ImageButton
                     Aspect="AspectFit" 
-                    Source="settings.png"
+                    Source="cog.png"
                     BorderColor="Red"
                     BackgroundColor="Green"/>
                 <Label
@@ -64,7 +64,7 @@
                     Style="{StaticResource Headline}"/>
                 <ImageButton
                     Aspect="AspectFit" 
-                    Source="settings.png"
+                    Source="cog.png"
                     BorderColor="Red"
                     BorderWidth="4"
                     BackgroundColor="Green"/>
@@ -73,7 +73,7 @@
                     Style="{StaticResource Headline}"/>
                 <ImageButton
                     Aspect="AspectFit" 
-                    Source="settings.png"
+                    Source="cog.png"
                     CornerRadius="0"
                     BackgroundColor="Purple"/>
                 <Label
@@ -81,7 +81,7 @@
                     Style="{StaticResource Headline}"/>
                 <ImageButton  
                     Aspect="AspectFit" 
-                    Source="settings.png"
+                    Source="cog.png"
                     CornerRadius="10"
                     BackgroundColor="Purple"/>
             </VerticalStackLayout>
