@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public WebAuthenticatorResult(IDictionary<string, string> properties)
 		{
 			foreach (var kvp in properties)

@@ -77,11 +77,11 @@ namespace Microsoft.Maui
 			return new Font(Family, Size, fontSlant, weight, AutoScalingEnabled);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='OfSize']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='OfSize'][1]/Docs" />
 		public static Font OfSize(string? name, double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
 			new(name, size, fontSlant, weight, enableScaling);
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='SystemFontOfSize']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='SystemFontOfSize'][1]/Docs" />
 		public static Font SystemFontOfSize(double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
 			new(null, size, fontSlant, weight, enableScaling);
 

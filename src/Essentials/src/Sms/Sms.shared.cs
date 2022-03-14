@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Essentials
 				Recipients.Add(recipient);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public SmsMessage(string body, IEnumerable<string> recipients)
 		{
 			Body = body;
