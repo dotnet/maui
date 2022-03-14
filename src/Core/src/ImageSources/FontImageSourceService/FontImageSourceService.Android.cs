@@ -9,6 +9,7 @@ using Android.Util;
 using Bumptech.Glide;
 using Bumptech.Glide.Load;
 using Bumptech.Glide.Load.Engine;
+using Bumptech.Glide.Load.Resource.Bitmap;
 using Bumptech.Glide.Request;
 using Bumptech.Glide.Request.Target;
 using Microsoft.Extensions.Logging;
@@ -39,7 +40,8 @@ namespace Microsoft.Maui
 					var glide = Glide.With(imageView.Context);
 					var builder = glide
 						.Load(new FontImageSourceModel(glyph, textSize, typeface, color))
-						.AddListener(listener);
+						.AddListener(listener)
+						.Override(Target.SizeOriginal, Target.SizeOriginal);
 
 					var viewTarget = builder.Into(imageView);
 
@@ -68,7 +70,8 @@ namespace Microsoft.Maui
 			var glyph = imageSource.Glyph;
 
 			var size = FontManager.GetFontSize(imageSource.Font);
-			var textSize = size.Value; //TypedValue.ApplyDimension(size.Unit, size.Value, context.Resources?.DisplayMetrics);
+			var unit = imageSource.FontAutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip;
+			var textSize = TypedValue.ApplyDimension(unit, size.Value, context.Resources?.DisplayMetrics);
 			var typeface = FontManager.GetTypeface(imageSource.Font);
 			var color = (imageSource.Color ?? Graphics.Colors.White).ToPlatform();
 
@@ -77,6 +80,7 @@ namespace Microsoft.Maui
 				var result = await Glide
 					.With(context)
 					.Load(new FontImageSourceModel(glyph, textSize, typeface, color))
+					.Override(Target.SizeOriginal, Target.SizeOriginal)
 					.SubmitAsync(context, cancellationToken)
 					.ConfigureAwait(false);
 
