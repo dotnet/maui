@@ -4,10 +4,10 @@
         "LanguageSet": "VS_Main_Languages",
         "LocItems": [
             {
-                "SourceFile": "src\\Controls\\src\\Core\\src\\Compatibility\\iOS\\Resources\\StringResources.resx",
-                "LclFile": "loc\\{Lang}\\src\\Controls\\src\\Core\\src\\Compatibility\\iOS\\Resources\\StringResources.resx.lcl",
+                "SourceFile": "src\\Controls\\src\\Core\\Compatibility\\iOS\\Resources\\StringResources.resx",
+                "LclFile": "loc\\{Lang}\\src\\Controls\\src\\Core\\Compatibility\\iOS\\Resources\\StringResources.resx.lcl",
                 "CopyOption": "LangIDOnName",
-                "OutputPath": "src\\Controls\\src\\Core\\src\\Compatibility\\iOS\\Resources\\xlf\\"
+                "OutputPath": "src\\Controls\\src\\Core\\Compatibility\\iOS\\Resources\\"
             },
             {
                 "SourceFile": "src\\Controls\\src\\Build.Tasks\\ErrorMessages.resx",
