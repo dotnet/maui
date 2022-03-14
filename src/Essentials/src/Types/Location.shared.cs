@@ -31,12 +31,12 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Location']/Docs" />
 	public class Location
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public Location()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor' and position()=2]/Docs" />
 		public Location(double latitude, double longitude)
 		{
 			Latitude = latitude;
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Essentials
 			Timestamp = DateTimeOffset.UtcNow;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor' and position()=3]/Docs" />
 		public Location(double latitude, double longitude, DateTimeOffset timestamp)
 		{
 			Latitude = latitude;
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Essentials
 			Timestamp = timestamp;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][4]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor' and position()=4]/Docs" />
 		public Location(double latitude, double longitude, double altitude)
 		{
 			Latitude = latitude;
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Essentials
 			Timestamp = DateTimeOffset.UtcNow;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor' and position()=1]/Docs" />
 		public Location(Location point)
 		{
 			if (point == null)

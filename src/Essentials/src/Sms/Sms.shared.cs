@@ -46,12 +46,12 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SmsMessage']/Docs" />
 	public class SmsMessage
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public SmsMessage()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="//Member[@MemberName='.ctor' and position()=2]/Docs" />
 		public SmsMessage(string body, string recipient)
 		{
 			Body = body;

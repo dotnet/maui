@@ -77,13 +77,13 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensorData']/Docs" />
 	public readonly struct OrientationSensorData : IEquatable<OrientationSensorData>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public OrientationSensorData(double x, double y, double z, double w)
 			: this((float)x, (float)y, (float)z, (float)w)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='.ctor' and position()=1]/Docs" />
 		public OrientationSensorData(float x, float y, float z, float w) =>
 			Orientation = new Quaternion(x, y, z, w);
 

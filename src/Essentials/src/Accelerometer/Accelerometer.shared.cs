@@ -84,13 +84,13 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AccelerometerData']/Docs" />
 	public readonly struct AccelerometerData : IEquatable<AccelerometerData>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public AccelerometerData(double x, double y, double z)
 			: this((float)x, (float)y, (float)z)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='.ctor' and position()=1]/Docs" />
 		public AccelerometerData(float x, float y, float z) =>
 			Acceleration = new Vector3(x, y, z);
 

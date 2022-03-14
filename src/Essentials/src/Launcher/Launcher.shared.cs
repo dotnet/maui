@@ -69,19 +69,19 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OpenFileRequest']/Docs" />
 	public class OpenFileRequest
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public OpenFileRequest()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='.ctor' and position()=2]/Docs" />
 		public OpenFileRequest(string title, ReadOnlyFile file)
 		{
 			Title = title;
 			File = file;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='.ctor' and position()=1]/Docs" />
 		public OpenFileRequest(string title, FileBase file)
 		{
 			Title = title;

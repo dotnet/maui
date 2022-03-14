@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 			_execute = execute;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public Command(Action execute) : this(o => execute())
 		{
 			if (execute == null)

@@ -27,9 +27,9 @@ namespace Microsoft.Maui.Controls
 			private set;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public ShellNavigationState() { }
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor' and position()=1]/Docs" />
 		public ShellNavigationState(string location) : this(location, true)
 		{
 		}
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 				Location = FullLocation;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor' and position()=2]/Docs" />
 		public ShellNavigationState(Uri location)
 		{
 			FullLocation = location;

@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		bool _refreshAllowed = true;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public ListView()
 		{
 #pragma warning disable CS0618 // Type or member is obsolete

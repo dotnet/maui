@@ -7,13 +7,13 @@ namespace Microsoft.Maui.Controls.Internals
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class NavigationRequestedEventArgs : NavigationEventArgs
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestedEventArgs.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestedEventArgs.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public NavigationRequestedEventArgs(Page page, bool animated) : base(page)
 		{
 			Animated = animated;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestedEventArgs.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestedEventArgs.xml" path="//Member[@MemberName='.ctor' and position()=2]/Docs" />
 		public NavigationRequestedEventArgs(Page page, Page before, bool animated) : this(page, animated)
 		{
 			BeforePage = before;

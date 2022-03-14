@@ -77,13 +77,13 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.GyroscopeData']/Docs" />
 	public readonly struct GyroscopeData : IEquatable<GyroscopeData>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public GyroscopeData(double x, double y, double z)
 			: this((float)x, (float)y, (float)z)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor' and position()=1]/Docs" />
 		public GyroscopeData(float x, float y, float z) =>
 			AngularVelocity = new Vector3(x, y, z);
 

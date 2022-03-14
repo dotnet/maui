@@ -174,12 +174,12 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/TableSection.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableSection']/Docs" />
 	public sealed class TableSection : TableSectionBase<Cell>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableSection.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableSection.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public TableSection()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableSection.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableSection.xml" path="//Member[@MemberName='.ctor' and position()=1]/Docs" />
 		public TableSection(string title) : base(title)
 		{
 		}

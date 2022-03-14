@@ -60,12 +60,12 @@ namespace Microsoft.Maui.Controls
 #endif
 
 		bool _setForMaui;
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public NavigationPage() : this(UseMauiHandler)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor' and position()=1]/Docs" />
 		public NavigationPage(Page root) : this(UseMauiHandler, root)
 		{
 		}

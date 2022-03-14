@@ -8,12 +8,12 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.WebAuthenticatorResult']/Docs" />
 	public class WebAuthenticatorResult
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public WebAuthenticatorResult()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor' and position()=2]/Docs" />
 		public WebAuthenticatorResult(Uri uri)
 		{
 			foreach (var kvp in WebUtils.ParseQueryString(uri.ToString()))

@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	{
 		bool _finishedTriggered;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Animation.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public Animation()
 		{
 			Easing = Easing.Linear;

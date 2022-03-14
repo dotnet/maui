@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Essentials
 	[Preserve(AllMembers = true)]
 	public readonly struct DisplayInfo : IEquatable<DisplayInfo>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfo.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfo.xml" path="//Member[@MemberName='.ctor' and position()=0]/Docs" />
 		public DisplayInfo(double width, double height, double density, DisplayOrientation orientation, DisplayRotation rotation)
 		{
 			Width = width;
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Essentials
 			RefreshRate = 0;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfo.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfo.xml" path="//Member[@MemberName='.ctor' and position()=1]/Docs" />
 		public DisplayInfo(double width, double height, double density, DisplayOrientation orientation, DisplayRotation rotation, float rate)
 		{
 			Width = width;
