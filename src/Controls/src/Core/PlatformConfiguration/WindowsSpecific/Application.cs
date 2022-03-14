@@ -11,25 +11,25 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			BindableProperty.Create("ImageDirectory", typeof(string), typeof(FormsElement), string.Empty,
 				propertyChanged: OnImageDirectoryChanged);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='SetImageDirectory'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='SetImageDirectory'][1]/Docs" />
 		public static void SetImageDirectory(BindableObject element, string value)
 		{
 			element.SetValue(ImageDirectoryProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='GetImageDirectory']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='GetImageDirectory'][2]/Docs" />
 		public static string GetImageDirectory(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (string)config.Element.GetValue(ImageDirectoryProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='GetImageDirectory'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='GetImageDirectory'][1]/Docs" />
 		public static string GetImageDirectory(BindableObject element)
 		{
 			return (string)element.GetValue(ImageDirectoryProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='SetImageDirectory']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='SetImageDirectory'][2]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetImageDirectory(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, string value)
 		{
