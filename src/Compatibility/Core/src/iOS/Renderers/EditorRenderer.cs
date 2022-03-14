@@ -362,7 +362,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		[PortHandler]
 		protected internal virtual void UpdateTextColor()
-			=> TextView.TextColor = Element.TextColor?.ToUIColor() ?? ColorExtensions.LabelColor;
+			=> TextView.TextColor = Element.TextColor?.ToUIColor() ?? Maui.Platform.ColorExtensions.LabelColor;
 
 		[PortHandler]
 		void UpdateMaxLength()

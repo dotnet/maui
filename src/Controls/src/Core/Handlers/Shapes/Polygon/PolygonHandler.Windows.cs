@@ -22,17 +22,17 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		public static void MapShape(PolygonHandler handler, Polygon polygon)
+		public static void MapShape(IShapeViewHandler handler, Polygon polygon)
 		{
 			handler.PlatformView?.UpdateShape(polygon);
 		}
 
-		public static void MapPoints(PolygonHandler handler, Polygon polygon)
+		public static void MapPoints(IShapeViewHandler handler, Polygon polygon)
 		{
 			handler.PlatformView?.InvalidateShape(polygon);
 		}
 
-		public static void MapFillRule(PolygonHandler handler, Polygon polygon)
+		public static void MapFillRule(IShapeViewHandler handler, Polygon polygon)
 		{
 			IDrawable drawable = handler.PlatformView?.Drawable;
 

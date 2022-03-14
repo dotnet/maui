@@ -3,6 +3,9 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+#if IOS
+using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -15,8 +18,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-#if WINDOWS || ANDROID
 					handlers.AddHandler<NavigationPage, NavigationViewHandler>();
+
+#if WINDOWS || ANDROID
 					handlers.AddHandler<Toolbar, ToolbarHandler>();
 #else
 					handlers.AddHandler<NavigationPage, Controls.Handlers.Compatibility.NavigationRenderer>();
@@ -105,7 +109,27 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(2, unloaded);
 		}
 
-#if !IOS
+		[Fact]
+		public async Task NavigatedToFiresAfterLoaded()
+		{
+			SetupBuilder();
+
+			var navPage = new NavigationPage(new ContentPage());
+			var page = new ContentPage();
+
+			int loaded = 0;
+			bool loadedFired = false;
+
+			page.Loaded += (_, __) => loaded++;
+			page.NavigatedTo += (_, __) => loadedFired = (loaded == 1);
+
+			await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
+			{
+				await navPage.PushAsync(page);
+				Assert.True(loadedFired);
+			});
+		}
+
 		[Fact]
 		public async Task LoadedFiresOnPushedPage()
 		{
@@ -135,7 +159,5 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, unloaded);
 			});
 		}
-#endif
-
 	}
 }
