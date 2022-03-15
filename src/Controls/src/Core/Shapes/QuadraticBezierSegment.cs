@@ -5,13 +5,13 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/QuadraticBezierSegment.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.QuadraticBezierSegment']/Docs" />
 	public class QuadraticBezierSegment : PathSegment
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/QuadraticBezierSegment.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/QuadraticBezierSegment.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public QuadraticBezierSegment()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/QuadraticBezierSegment.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/QuadraticBezierSegment.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public QuadraticBezierSegment(Point point1, Point point2)
 		{
 			Point1 = point1;

@@ -42,6 +42,13 @@
                 Style="{StaticResource Headline}"/>
             <Slider
                 ThumbColor="Orange"/>
+            <Label
+                Text="Custom Slider (Red MinimumTrackColor, Green MaximumTrackColor, Blue ThumbColor)"
+                Style="{StaticResource Headline}"/>
+            <Slider
+                MinimumTrackColor="Red"
+                MaximumTrackColor="Green"
+                ThumbColor="Blue"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

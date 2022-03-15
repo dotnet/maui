@@ -6,13 +6,13 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.ArcSegment']/Docs" />
 	public class ArcSegment : PathSegment
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public ArcSegment()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public ArcSegment(Point point, Size size, double rotationAngle, SweepDirection sweepDirection, bool isLargeArc)
 		{
 			Point = point;

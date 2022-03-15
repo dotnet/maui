@@ -43,21 +43,21 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="Type[@FullName='Microsoft.Maui.Essentials.GeolocationRequest']/Docs" />
 	public partial class GeolocationRequest
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public GeolocationRequest()
 		{
 			Timeout = TimeSpan.Zero;
 			DesiredAccuracy = GeolocationAccuracy.Default;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public GeolocationRequest(GeolocationAccuracy accuracy)
 		{
 			Timeout = TimeSpan.Zero;
 			DesiredAccuracy = accuracy;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public GeolocationRequest(GeolocationAccuracy accuracy, TimeSpan timeout)
 		{
 			Timeout = timeout;

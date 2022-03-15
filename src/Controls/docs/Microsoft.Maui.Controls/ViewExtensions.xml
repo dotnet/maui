@@ -263,7 +263,7 @@
         <param name="rotation">The final rotation value.</param>
         <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
         <param name="easing">The easing function to use for the animation.</param>
-        <summary>Returns a task that skews the Y axis by <paramref name="opacity" />, taking time <paramref name="length" /> and using <paramref name="easing" />.</summary>
+        <summary>Returns a task that skews the X axis by <paramref name="rotation" />, taking time <paramref name="length" /> and using <paramref name="easing" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -299,7 +299,7 @@
         <param name="rotation">The final rotation value.</param>
         <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
         <param name="easing">The easing function to use for the animation.</param>
-        <summary>Returns a task that skews the X axis by <paramref name="opacity" />, taking time <paramref name="length" /> and using <paramref name="easing" />.</summary>
+        <summary>Returns a task that skews the Y axis by <paramref name="rotation" />, taking time <paramref name="length" /> and using <paramref name="easing" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

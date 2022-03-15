@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 
 			var requestUri = request?.Url?.ToString();
-			var allowFallbackOnHostPage = IsAppOriginPageUri(requestUri);
+			var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(requestUri);
 			requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
 
 			if (requestUri != null &&
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			base.OnPageFinished(view, url);
 
 			// TODO: How do we know this runs only once?
-			if (view != null && IsAppOriginPageUri(url))
+			if (view != null && AppOriginUri.IsBaseOfPage(url))
 			{
 				// Startup scripts must run in OnPageFinished. If scripts are run earlier they will have no lasting
 				// effect because once the page content loads all the document state gets reset.
@@ -164,23 +164,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					// Done; no more action required
 				}));
 			}));
-		}
-
-		private static bool IsAppOriginPageUri(string? requestUriString)
-		{
-			if (string.IsNullOrEmpty(requestUriString))
-			{
-				return false;
-			}
-
-			var requestUri = new Uri(requestUriString);
-			if (!AppOriginUri.IsBaseOf(requestUri))
-			{
-				return false;
-			}
-
-			// If the path does not end in a file extension, it's most likely referring to a page.
-			return !Path.HasExtension(requestUriString);
 		}
 
 		protected override void Dispose(bool disposing)

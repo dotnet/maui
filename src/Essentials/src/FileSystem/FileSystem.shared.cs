@@ -258,19 +258,19 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ReadOnlyFile.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ReadOnlyFile']/Docs" />
 	public class ReadOnlyFile : FileBase
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ReadOnlyFile.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ReadOnlyFile.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public ReadOnlyFile(string fullPath)
 			: base(fullPath)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ReadOnlyFile.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ReadOnlyFile.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public ReadOnlyFile(string fullPath, string contentType)
 			: base(fullPath, contentType)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ReadOnlyFile.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ReadOnlyFile.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public ReadOnlyFile(FileBase file)
 			: base(file)
 		{
@@ -285,19 +285,19 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileResult.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/FileResult.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public FileResult(string fullPath)
 			: base(fullPath)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileResult.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/FileResult.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public FileResult(string fullPath, string contentType)
 			: base(fullPath, contentType)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileResult.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/FileResult.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public FileResult(FileBase file)
 			: base(file)
 		{
