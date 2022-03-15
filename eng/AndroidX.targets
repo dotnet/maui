@@ -53,6 +53,10 @@
         Version="1.4.0.4"
     />
     <PackageReference
+        Update="Xamarin.Google.Guava.ListenableFuture"
+        Version="1.0.0.6"
+    />
+    <PackageReference
         Update="Xamarin.AndroidX.Migration"
         Version="1.0.8"
         NoWarn="NU1701"
