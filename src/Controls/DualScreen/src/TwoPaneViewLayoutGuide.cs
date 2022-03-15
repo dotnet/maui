@@ -18,18 +18,7 @@ namespace Microsoft.Maui.Controls.Foldable
 		internal IFoldableService DualScreenService { 
 			get
 			{
-				//HACK:FOLDABLE System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.DualScreenService - property getter " + _dualScreenService, "JWM");
-				//var ds = _dualScreenService ?? DependencyService.Get<IDualScreenService>() ?? NoDualScreenServiceImpl.Instance;
-
-				var ds = _dualScreenService;
-				if (ds == null)
-				{
-					ds = DependencyService.Get<IFoldableService>();
-				}
-				if (ds == null)
-					ds = NoFoldableServiceImpl.Instance;
-
-				return ds;
+				return _dualScreenService ?? DependencyService.Get<IFoldableService>() ?? NoFoldableServiceImpl.Instance;
 			}
 		}
 
@@ -42,19 +31,14 @@ namespace Microsoft.Maui.Controls.Foldable
 		bool _isLandscape;
 		public event PropertyChangedEventHandler PropertyChanged;
 		List<string> _pendingPropertyChanges = new List<string>();
-		//Rect _absoluteLayoutPosition;
-		//object _watchHandle;
-		//Action _layoutChangedReference;
-
+		
 		TwoPaneViewLayoutGuide()
 		{
-			
 		}
 
 		public TwoPaneViewLayoutGuide(VisualElement layout) : this(layout, null)
 		{
 		}
-
 
 		internal TwoPaneViewLayoutGuide(VisualElement layout, IFoldableService dualScreenService)
 		{
@@ -64,103 +48,8 @@ namespace Microsoft.Maui.Controls.Foldable
 			if(_layout != null)
 			{
 				UpdateLayouts(layout.Width, layout.Height);
-				_layout.PropertyChanged += OnLayoutPropertyChanged;
-				_layout.PropertyChanging += OnLayoutPropertyChanging;
-//				WatchForChanges();
 			}
 		}
-
-		void OnLayoutPropertyChanging(object sender, PropertyChangingEventArgs e)
-		{
-			if (e.PropertyName == "Renderer")
-			{
-//				StopWatchingForChanges();
-			}
-		}
-
-		void OnLayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == "Renderer")
-			{
-//				WatchForChanges();
-			}
-		}
-
-		//public void WatchForChanges()
-		//{
-			//if (_layout != null && _watchHandle == null)
-			//{
-			//	_layoutChangedReference = OnLayoutChanged;
-			//	var layoutHandle = DualScreenService.WatchForChangesOnLayout(_layout, _layoutChangedReference);
-
-			//	if (layoutHandle == null)
-			//	{
-			//		_layoutChangedReference = null;
-			//		return;
-			//	}
-
-			//	_watchHandle = layoutHandle;
-			//	OnScreenChanged(DualScreenService, EventArgs.Empty);
-			//	DualScreenService.OnScreenChanged += OnScreenChanged;
-			//}
-			//else
-			//{
-			//	DualScreenService.OnScreenChanged += OnScreenChanged;
-			//}
-		//}
-
-		//public void StopWatchingForChanges()
-		//{
-			//DualScreenService.OnScreenChanged -= OnScreenChanged;
-			//if (_layout != null)
-			//{
-			//	DualScreenService.StopWatchingForChangesOnLayout(_layout, _watchHandle);
-			//}
-
-			//_layoutChangedReference = null;
-			//_watchHandle = null;
-		//}
-
-		//void OnLayoutChanged()
-		//{
-		//	if (_watchHandle == null)
-		//	{
-		//		StopWatchingForChanges();
-		//		return;
-		//	}
-
-		//	OnScreenChanged(DualScreenService, EventArgs.Empty);
-		//}
-
-		//void OnScreenChanged(object sender, EventArgs e)
-		//{
-		//	if (_layout == null)
-		//	{
-		//		UpdateLayouts();
-		//		return;
-		//	}
-
-		//	if(_layout != null && _watchHandle == null)
-		//	{
-		//		StopWatchingForChanges();
-		//		return;
-		//	}
-
-		//	var screenPosition = DualScreenService.GetLocationOnScreen(_layout);
-		//	if (screenPosition == null)
-		//	{
-		//		UpdateLayouts();
-		//		return;
-		//	}
-
-		//	var newPosition = new Rect(screenPosition.Value, _layout.Bounds.Size);
-
-		//	if (newPosition != _absoluteLayoutPosition)
-		//	{
-		//		_absoluteLayoutPosition = newPosition;
-		//		UpdateLayouts();
-		//	}
-		//}
 
 		public bool IsLandscape
 		{
@@ -386,8 +275,6 @@ namespace Microsoft.Maui.Controls.Foldable
 			var hinge = DualScreenService.GetHinge();
 			bool hingeIsVertical = Hinge.Height > Hinge.Width;
 			
-			if (hinge == Rect.Zero)
-				System.Diagnostics.Debug.Write($"hinge == Rect.Zero", "JWM2");
 			if (hingeIsVertical)
 			{
 				// Check that the control is over the split

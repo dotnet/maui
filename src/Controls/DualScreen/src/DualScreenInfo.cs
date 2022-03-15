@@ -45,21 +45,16 @@ namespace Microsoft.Maui.Foldable
 
 		internal DualScreenInfo(VisualElement element, IFoldableService dualScreenService)
 		{
-			//HACK:FOLDABLE
-			System.Diagnostics.Debug.Write("DualScreenInfo.ctor DualScreenService:" + dualScreenService, "JWM");
-
 			_spanningBounds = new Rect[0];
 			Element = element;
 			_dualScreenService = dualScreenService;
 
 			if (element == null)
 			{
-				System.Diagnostics.Debug.Write("     element == null", "JWM");
 				_twoPaneViewLayoutGuide = TwoPaneViewLayoutGuide.Instance;
 			}
 			else
 			{
-				System.Diagnostics.Debug.Write($"     element == [{element}]", "JWM");
 				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, DualScreenService); // get if null
 				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;				
 			}
@@ -145,7 +140,7 @@ namespace Microsoft.Maui.Foldable
 			if (guide.Pane2 == Rect.Zero)
 				return new Rect[0];
 			
-			//TODO: should this be checking SpanMode==Wide ???
+			//TODO: I think this should this be checking SpanMode==Wide
 			if(IsLandscape)
 				return new[] { guide.Pane1, new Rect(0, hinge.Height + guide.Pane1.Height, guide.Pane2.Width, guide.Pane2.Height) };
 			else
@@ -165,7 +160,6 @@ namespace Microsoft.Maui.Foldable
 		static DualScreenInfo OnCreate()
 		{
 			DualScreenInfo dualScreenInfo = new DualScreenInfo(null);
-//			dualScreenInfo._twoPaneViewLayoutGuide.WatchForChanges(); // HACK: no-op!
 			dualScreenInfo._twoPaneViewLayoutGuide.PropertyChanged += dualScreenInfo.OnTwoPaneViewLayoutGuideChanged;
 			return dualScreenInfo;
 		}
@@ -176,12 +170,6 @@ namespace Microsoft.Maui.Foldable
 			IsLandscape = GetIsLandscape();
 			HingeBounds = GetHingeBounds();
 			SpanMode = GetSpanMode();
-
-			//HACK:FOLDABLE
-			System.Diagnostics.Debug.Write("DualScreenInfo.OnTwoPaneViewLayoutGuideChanged SpanningBounds:" + SpanningBounds.ToRectStrings(), "JWM");
-			System.Diagnostics.Debug.Write("                                               IsLandscape:" + IsLandscape, "JWM");
-			System.Diagnostics.Debug.Write("                                               HingeBounds:" + HingeBounds, "JWM");
-			System.Diagnostics.Debug.Write("                                               SpanMode:" + SpanMode, "JWM");
 		}
 
 		bool SetProperty<T>(ref T backingStore, T value,

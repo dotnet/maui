@@ -33,17 +33,13 @@ namespace Microsoft.Maui.Foldable
 				{
 					android.OnConfigurationChanged((activity, configuration) =>
 					{
-						global::Android.Util.Log.Debug("JWM2", "~~~ HostBuilder.OnConfigurationChanged");
 						// set window size after rotation
 						var bounds = wmc.ComputeCurrentWindowMetrics(activity).Bounds;
-						global::Android.Util.Log.Debug("JWM2", $"~~~                               bounds:{bounds}");
 						var rect = new Rect(bounds.Left, bounds.Top, bounds.Width(), bounds.Height());
 						consumer.SetWindowSize(rect);
 					})
 					.OnStart((activity) =>
 					{
-						global::Android.Util.Log.Debug("JWM2", "~~~ HostBuilder.OnStart");
-
 						foldContext = activity.GetWindow().Handler.MauiContext.Services.GetService(
 								typeof(IFoldableContext)) as IFoldableContext; // DualScreenServiceImpl instance
 
@@ -52,19 +48,16 @@ namespace Microsoft.Maui.Foldable
 
 						consumer.SetFoldableContext(foldContext); // so that we can update it on each message
 
-						// HACK: set window size first time - sets WindowBounds
+						// set window size first time - sets WindowBounds
 						var bounds = wmc.ComputeCurrentWindowMetrics(activity).Bounds;
-						global::Android.Util.Log.Debug("JWM2", $"---                               bounds:{bounds}");
 						var rect = new Rect(bounds.Left, bounds.Top, bounds.Width(), bounds.Height());
 						consumer.SetWindowSize(rect);
 
 
-						// HACK: Not sure this is the best way to pass info - adds to DependencyService here too
+						// Adds to DependencyService here in the Init too
 						Microsoft.Maui.Foldable.FoldableService.Init(foldContext, activity);
 
-						wit.AddWindowLayoutInfoListener(activity, runOnUiThreadExecutor(), consumer); // `consumer` is the IConsumer implementation
-
-						global::Android.Util.Log.Debug("JWM2", $"~~~ HostBuilder.OnStart foldContext:{foldContext}");
+						wit.AddWindowLayoutInfoListener(activity, runOnUiThreadExecutor(), consumer); // `consumer` is the IConsumer implementation declared below
 					})
 					.OnStop((activity) =>
 					{
@@ -76,7 +69,7 @@ namespace Microsoft.Maui.Foldable
 						AndroidX.Window.Layout.WindowInfoTracker.Companion.GetOrCreate(
 							activity));
 
-						wmc = WindowMetricsCalculator.Companion.OrCreate; // source method `getOrCreate` is munged by auto-binding
+						wmc = WindowMetricsCalculator.Companion.OrCreate; // source method `getOrCreate` is munged by NuGet auto-binding
 					});
 				});
 			});
@@ -122,12 +115,9 @@ namespace Microsoft.Maui.Foldable
 			
 			if (newLayoutInfo == null)
 			{
-				global::Android.Util.Log.Info("JWM2", "^^^ LayoutStateChangeCallback.Accept windowLayoutInfo was NULL");
+				global::Android.Util.Log.Info("JWM", "LayoutStateChangeCallback.Accept windowLayoutInfo was NULL");
 				return;
 			}
-
-			global::Android.Util.Log.Info("JWM2", "%%% LayoutStateChangeCallback.Accept");
-			global::Android.Util.Log.Info("JWM2", "%%% " + newLayoutInfo.ToString());
 
 			var isSeparating = false; // we don't know if we'll find a displayFeature of not
 			var foldingFeatureBounds = Rect.Zero;
@@ -136,7 +126,7 @@ namespace Microsoft.Maui.Foldable
 			{
 				var foldingFeature = displayFeature.JavaCast<IFoldingFeature>();
 
-				if (foldingFeature != null) // HACK: requires JavaCast as shown above
+				if (foldingFeature != null) // requires JavaCast as shown above, since DisplayFeatures collection might have mulitple types
 				{
 					isSeparating = foldingFeature.IsSeparating;
 
@@ -150,11 +140,11 @@ namespace Microsoft.Maui.Foldable
 				}
 				else
 				{
-					global::Android.Util.Log.Info("JWM2", "DisplayFeature is not a fold or hinge (shouldn't happen currently)");
+					global::Android.Util.Log.Info("JWM2", "DisplayFeature is not a fold or hinge (could be a cut-out)");
 				}
 			}
 			
-			foldableInfo.isSeparating = isSeparating;// also invokes FoldingFeatureChanged
+			foldableInfo.IsSeparating = isSeparating;// also invokes FoldingFeatureChanged
 			foldableInfo.FoldingFeatureBounds = foldingFeatureBounds;// also invokes FoldingFeatureChanged
 			foldableInfo.WindowBounds = WindowBounds; // also invokes FoldingFeatureChanged
 		}
@@ -166,7 +156,6 @@ namespace Microsoft.Maui.Foldable
 			foldableInfo = foldableContext as IFoldableContext;
 			if (foldableInfo is null)
 			{
-				global::Android.Util.Log.Info("JWM2", "^^^ .SetFoldableContext foldableContext was NULL");
 				throw new ArgumentNullException(nameof(foldableContext));
 			}
 		}

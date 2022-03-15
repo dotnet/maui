@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Foldable
 	public interface IFoldableContext
 	{
 		/// <summary>Whether an obscuring hinge exists or a foldable is in Flex Mode (HALF_OPEN)</summary>
-		bool isSeparating { get; set; }
+		bool IsSeparating { get; set; }
 		/// <summary>Coordinates of the obscured hinge area (within the WindowBounds, in pixels)</summary>
 		Rect FoldingFeatureBounds { get; set;  }
 		/// <summary>Size of the screen (in pixels)</summary>

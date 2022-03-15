@@ -38,16 +38,15 @@ namespace Microsoft.Maui.Foldable
 		
 
 		public ScreenHelper() {
-			global::Android.Util.Log.Debug("JWM", "ScreenHelper.ctor - no IFoldableContext");
+
 		}
 		public ScreenHelper(IFoldableContext activity)
 		{
-			global::Android.Util.Log.Debug("JWM", $"ScreenHelper.ctor - WITH IFoldableContext FoldingFeatureBounds:{FoldingFeatureBounds}");
 			Activity = activity as Activity;
 			screenDensity = activity.ScreenDensity;
 			FoldingFeatureBounds = activity.FoldingFeatureBounds;
 			WindowBounds = activity.WindowBounds;
-			IsSpanned = activity.isSeparating;
+			IsSpanned = activity.IsSeparating;
 		}
 
 		public bool Initialize(IFoldableContext activity)
@@ -56,7 +55,7 @@ namespace Microsoft.Maui.Foldable
 			screenDensity = activity.ScreenDensity;
 			FoldingFeatureBounds = activity.FoldingFeatureBounds;
 			WindowBounds = activity.WindowBounds;
-			IsSpanned = activity.isSeparating;
+			IsSpanned = activity.IsSeparating;
 			return true;
 		}
 

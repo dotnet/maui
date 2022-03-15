@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Foldable
 
 		public static void Init(IFoldableContext foldableInfo, Activity activity=null)
 		{
-			global::Android.Util.Log.Debug("JWM2", "DualScreenService.Init - Android detected");
 			DependencyService.Register<FoldableServiceImpl>();
 			FoldableServiceImpl.Init(foldableInfo, activity);
 		}
@@ -35,7 +34,7 @@ namespace Microsoft.Maui.Foldable
 		internal class FoldableServiceImpl : IFoldableService, IFoldableContext
 		{
 			#region IFoldableContext properties
-			public bool isSeparating { 
+			public bool IsSeparating { 
 				get { return _isSpanned; } 
 				set { _isSpanned = value;
 					FoldLayoutChanged();
@@ -57,7 +56,7 @@ namespace Microsoft.Maui.Foldable
 				set 
 				{ 
 					_windowBounds = value;
-					global::Android.Util.Log.Info("JWM2", $"=== FoldingFeatureChanged?.Invoke isSeparating:{isSeparating} window:{WindowBounds}");
+					global::Android.Util.Log.Info("JWM2", $"=== FoldingFeatureChanged?.Invoke isSeparating:{IsSeparating} window:{WindowBounds}");
 					FoldLayoutChanged();
 				}
 			}
@@ -65,7 +64,7 @@ namespace Microsoft.Maui.Foldable
 			{
 				FoldingFeatureChanged?.Invoke(this, new Microsoft.Maui.Foldable.FoldEventArgs()
 				{
-					isSeparating = isSeparating,
+					isSeparating = IsSeparating,
 					FoldingFeatureBounds = FoldingFeatureBounds,
 					WindowBounds = WindowBounds
 				});
@@ -99,15 +98,13 @@ namespace Microsoft.Maui.Foldable
 			[Controls.Internals.Preserve(Conditional = true)]
 			public FoldableServiceImpl()
 			{
-				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.ctor - Android detected default ctor");
-
 				_HingeService = this;
 				if (_foldableInfo != null)
 				{ 
 					Init(_foldableInfo, _mainActivity);
 					
 					_hingeDp = _foldableInfo.FoldingFeatureBounds; // convert to DP?
-					_isSpanned = _foldableInfo.isSeparating;
+					_isSpanned = _foldableInfo.IsSeparating;
 					_windowBounds = _foldableInfo.WindowBounds;
 					ScreenDensity = _foldableInfo.ScreenDensity;
 					Update(); // calculate dp from px for hinge coordinates
@@ -118,8 +115,7 @@ namespace Microsoft.Maui.Foldable
 
 			private void DualScreenServiceImpl_FoldingFeatureChanged(object sender, FoldEventArgs ea)
 			{
-				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.DualScreenServiceImpl_FoldingFeatureChanged");
-				global::Android.Util.Log.Debug("JWM", "   " + ea);
+				global::Android.Util.Log.Debug("JWM", $"DualScreenServiceImpl.DualScreenServiceImpl_FoldingFeatureChanged {ea}"); // TODO: consider removing this log later
 
 				_isLandscape = (ea.WindowBounds.Width >= ea.WindowBounds.Height);
 				_isSpanned = ea.isSeparating;
@@ -146,7 +142,6 @@ namespace Microsoft.Maui.Foldable
 				}
 				else
 				{
-					global::Android.Util.Log.Debug("JWM2", $"FoldingFeatureChanged, no Activity, ScreenDensity:{ScreenDensity}");
 					var scalingFactor = 2.5;
 					var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
 
@@ -154,14 +149,10 @@ namespace Microsoft.Maui.Foldable
 					{
 						ScaledScreenSize = newSize;
 					}
-
-					global::Android.Util.Log.Debug("JWM2", "                             ScaledScreenSize:" + ScaledScreenSize);
-					global::Android.Util.Log.Debug("JWM2", "                             _isLandscape:" + _isLandscape);
 				}
 
-				//HACK:FOLDABLE fix this?
-				Update();
-				//HACK:FOLDABLE sends message to TwoPaneView, but nothing happens there...
+				Update(); //TODO: confirm timing this update
+
 				OnLayoutChanged?.Invoke(sender, ea); 
 				FoldingFeatureChanged?.Invoke(sender, ea);
 			}
@@ -171,8 +162,6 @@ namespace Microsoft.Maui.Foldable
 				if (_foldableInfo == null)
 					_foldableInfo = foldableInfo;
 				
-				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.Init - Android detected");
-
 				if (_HingeService == null)
 				{
 					_mainActivity = activity;
@@ -192,8 +181,6 @@ namespace Microsoft.Maui.Foldable
 
 				var screenHelper = _HingeService._helper ?? new ScreenHelper(foldableInfo);
 
-				//TODO:FOLDABLE Hinge service used to query IsDuo - this is no longer available
-				//consider how to selectively set up the hinge, although it is wired-up only when used
 				_HingeService._helper = screenHelper;
 				_HingeService.SetupHingeSensors(_mainActivity);
 
@@ -218,8 +205,6 @@ namespace Microsoft.Maui.Foldable
 				//HACK:FOLDABLE
 				_isSpanned = _helper?.IsDualMode ?? false; 
 
-				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.Update _isSpanned:" + _isSpanned);
-
 				// Hinge
 				if (!_isSpanned)
 				{
@@ -239,9 +224,6 @@ namespace Microsoft.Maui.Foldable
 						_hingeDp = new Rect((hinge.Left), (hinge.Top), (hinge.Width), (hinge.Height));
 					}
 				}
-				global::Android.Util.Log.Debug("JWM", "                             _hingeDp:" + _hingeDp);
-
-
 
 
 				//HACK:FOLDABLE
@@ -259,22 +241,15 @@ namespace Microsoft.Maui.Foldable
 							ScaledScreenSize = newSize;
 						}
 					}
-
-					global::Android.Util.Log.Debug("JWM", "                             ScaledScreenSize:" + ScaledScreenSize);
-					global::Android.Util.Log.Debug("JWM", "                             _isLandscape:" + _isLandscape);
 				}
 				else
 				{
-					global::Android.Util.Log.Debug("JWM2", $"Use HostBuilderExtension density:{ScreenDensity} landscape:" + _isLandscape);
 					var newSize = new Size(_pixelScreenSize.Width / 2.5, _pixelScreenSize.Height / 2.5);
 
 					if (newSize != ScaledScreenSize)
 					{
 						ScaledScreenSize = newSize;
 					}
-
-					global::Android.Util.Log.Debug("JWM2", "                             ScaledScreenSize:" + ScaledScreenSize);
-					global::Android.Util.Log.Debug("JWM2", "                             _isLandscape:" + _isLandscape);
 				}
 			}
 
@@ -537,43 +512,10 @@ namespace Microsoft.Maui.Foldable
 						
 			void ConfigurationChanged(object sender, EventArgs e)
 			{
-				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.ConfigurationChanged IGNORE ConfigurationChanged??????");
 				//TODO: do we need to update the screen here???
 				_helper?.Update();
 				_onScreenChangedEventManager.HandleEvent(this, e, nameof(OnScreenChanged));
 				return;
-				////if (IsDuo)
-				////{
-				//_helper?.Update();
-				////}
-
-				//bool wasLandscape = IsLandscape;
-				//Update();
-
-				//bool screenChanged = false;
-				//if (wasLandscape != IsLandscape)
-				//{
-				//	screenChanged = true;
-				//}
-
-				//if (_mainActivity != null)
-				//{
-				//	using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
-				//	{
-				//		var scalingFactor = display.Density;
-				//		_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
-				//		var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
-
-				//		if (newSize != ScaledScreenSize)
-				//		{
-				//			ScaledScreenSize = newSize;
-				//			screenChanged = true;
-				//		}
-				//	}
-				//}
-
-				//if (screenChanged)
-				//	_onScreenChangedEventManager.HandleEvent(this, e, nameof(OnScreenChanged));
 			}
 
 
