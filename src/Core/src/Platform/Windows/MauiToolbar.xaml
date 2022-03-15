@@ -31,7 +31,8 @@
                 <TextBlock VerticalAlignment="Center" x:Name="title" TextWrapping="NoWrap" Margin="10,0,0,0"/>
             </Border>
 
-            <ContentControl x:Name="titleView" Grid.Column="3" HorizontalAlignment="Stretch" />
+            <ContentControl x:Name="titleView" Grid.Column="3" HorizontalAlignment="Stretch" 
+                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
 
         </Grid>
     </CommandBar.Content>
