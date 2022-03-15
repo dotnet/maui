@@ -27,6 +27,9 @@
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" />
     <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" />
+    <!-- TODO: remove these packages the next time AndroidX is updated -->
+    <PackageReference Include="Xamarin.Google.Guava.ListenableFuture" />
+    <PackageReference Include="Xamarin.AndroidX.Concurrent.Futures" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
