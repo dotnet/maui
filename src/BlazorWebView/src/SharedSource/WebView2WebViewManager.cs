@@ -179,8 +179,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			var developerTools = _blazorWebViewHandler.DeveloperTools;
 #elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-			var userDataFolderOrNull = GetUserDataFolderOverride();
-			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolderOrNull)
+			var userDataFolder = GetWebView2UserDataFolder();
+			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolder)
 				.ConfigureAwait(true);
 			await _webview.EnsureCoreWebView2Async(_coreWebView2Environment);
 
@@ -317,21 +317,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		}
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-		private static string GetUserDataFolderOverride()
+		private static string GetWebView2UserDataFolder()
 		{
 			if (Assembly.GetEntryAssembly() is { } mainAssembly)
 			{
-				// Where possible, and especially in development, we prefer not to override the WebView2 default behavior of creating
-				// its user data directory in the application folder. This helps to avoid littering the developer's user profile directory
-				// if they are repeatedly creating test applications.
-				if (!string.IsNullOrEmpty(mainAssembly.Location)
-					&& CanCreateSubdirectory(Path.GetDirectoryName(mainAssembly.Location)))
-				{
-					return null;
-				}
-
-				// However, if the application is running from a location where we can't write files (e.g., program files),
-				// use our own convention of %LocalAppData%\YourApplicationName.WebView2
+				// In case the application is running from a non-writable location (e.g., program files if you're not running
+				// elevated), use our own convention of %LocalAppData%\YourApplicationName.WebView2.
+				// We may be able to remove this if https://github.com/MicrosoftEdge/WebView2Feedback/issues/297 is fixed.
 				var applicationName = mainAssembly.GetName().Name;
 				var result = Path.Combine(
 					Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -341,26 +333,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			}
 
 			return null;
-		}
-
-		private static bool CanCreateSubdirectory(string withinDirectory)
-		{
-			if (!Directory.Exists(withinDirectory))
-			{
-				return false;
-			}
-
-			try
-			{
-				var path = Path.Combine(withinDirectory, Guid.NewGuid().ToString());
-				var dirInfo = Directory.CreateDirectory(path);
-				Directory.Delete(path, false);
-				return true;
-			}
-			catch (Exception)
-			{
-				return false;
-			}
 		}
 #endif
 	}
