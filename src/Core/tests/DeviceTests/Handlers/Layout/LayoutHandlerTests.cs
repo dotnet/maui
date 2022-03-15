@@ -346,5 +346,49 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			// Verify the views are in the correct order
 			await AssertZIndexOrder(handler);
 		}
+
+		[Fact]
+		public async Task MeasureMatchesExplicitValues()
+		{
+			var layout = new LayoutStub();
+
+			var content = new SliderStub
+			{
+				DesiredSize = new Size(50, 50)
+			};
+
+			layout.Add(content);
+			layout.Width = 100;
+			layout.Height = 150;
+
+			var contentViewHandler = await CreateHandlerAsync(layout);
+
+			var measure = await InvokeOnMainThreadAsync(() => layout.Measure(double.PositiveInfinity, double.PositiveInfinity));
+
+			Assert.Equal(layout.Width, measure.Width);
+			Assert.Equal(layout.Height, measure.Height);
+		}
+
+		[Fact]
+		public async Task RespectsMinimumValues()
+		{
+			var layout = new LayoutStub();
+
+			var content = new SliderStub
+			{
+				DesiredSize = new Size(50, 50)
+			};
+
+			layout.Add(content);
+			layout.MinimumWidth = 100;
+			layout.MinimumHeight = 150;
+
+			var contentViewHandler = await CreateHandlerAsync(layout);
+
+			var measure = await InvokeOnMainThreadAsync(() => layout.Measure(double.PositiveInfinity, double.PositiveInfinity));
+
+			Assert.Equal(layout.MinimumWidth, measure.Width);
+			Assert.Equal(layout.MinimumHeight, measure.Height);
+		}
 	}
 }

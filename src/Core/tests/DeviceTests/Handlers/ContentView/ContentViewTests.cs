@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 	public class ContentViewTests : HandlerTestBase<ContentViewHandler, ContentViewStub>
 	{
 		[Fact]
-		public async Task ContentViewDesiredSizeMatchesExplicitValues()
+		public async Task MeasureMatchesExplicitValues()
 		{
 			var cv = new ContentViewStub();
 
@@ -27,6 +27,28 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			
 			Assert.Equal(cv.Width, measure.Width);
 			Assert.Equal(cv.Height, measure.Height);
+		}
+
+		[Fact]
+		public async Task RespectsMinimumValues()
+		{
+			var cv = new ContentViewStub();
+
+			var content = new SliderStub
+			{
+				DesiredSize = new Size(50, 50)
+			};
+
+			cv.Content = content;
+			cv.MinimumWidth = 100;
+			cv.MinimumHeight = 150;
+
+			var contentViewHandler = await CreateHandlerAsync(cv);
+
+			var measure = await InvokeOnMainThreadAsync(() => cv.Measure(double.PositiveInfinity, double.PositiveInfinity));
+
+			Assert.Equal(cv.MinimumWidth, measure.Width);
+			Assert.Equal(cv.MinimumHeight, measure.Height);
 		}
 	}
 }

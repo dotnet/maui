@@ -22,12 +22,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			return LayoutManager.Measure(widthConstraint, heightConstraint);
+			return PresentedContent?.Measure(widthConstraint, heightConstraint) ?? Size.Zero;
 		}
 
 		public Size CrossPlatformArrange(Rect bounds)
 		{
-			return LayoutManager.ArrangeChildren(bounds);
+			return PresentedContent?.Arrange(bounds) ?? Size.Zero;
 		}
 	}
 }

@@ -59,6 +59,10 @@ namespace Microsoft.Maui.Platform
 			var platformWidth = Context.ToPixels(width);
 			var platformHeight = Context.ToPixels(height);
 
+			// Minimum values win over everything
+			platformWidth = Math.Max(MinimumWidth, platformWidth);
+			platformHeight = Math.Max(MinimumHeight, platformHeight);
+
 			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
 		}
 
