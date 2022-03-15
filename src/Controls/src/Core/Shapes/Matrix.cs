@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			this = CreateTranslation(offsetX, offsetY) * this;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][1]/Docs" />
 		public Point Transform(Point point)
 		{
 			Point newPoint = point;
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			return new Point(x, y);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][2]/Docs" />
 		public void Transform(Point[] points)
 		{
 			if (points != null)
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][2]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][3]/Docs" />
 		public Vector2 Transform(Vector2 vector)
 		{
 			Vector2 newVector = vector;
@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			return new Vector2(x, y);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][3]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][4]/Docs" />
 		public void Transform(Vector2[] vectors)
 		{
 			if (vectors != null)

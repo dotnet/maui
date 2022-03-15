@@ -5,19 +5,19 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="Type[@FullName='Microsoft.Maui.Controls.LinearGradientBrush']/Docs" />
 	public class LinearGradientBrush : GradientBrush
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public LinearGradientBrush()
 		{
 
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public LinearGradientBrush(GradientStopCollection gradientStops)
 		{
 			GradientStops = gradientStops;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public LinearGradientBrush(GradientStopCollection gradientStops, Point startPoint, Point endPoint)
 		{
 			GradientStops = gradientStops;

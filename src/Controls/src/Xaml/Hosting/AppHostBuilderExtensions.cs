@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Controls.Hosting
 		public static MauiAppBuilder UseMauiApp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder)
 			where TApp : class, IApplication
 		{
+#pragma warning disable RS0030 // Do not used banned APIs - don't want to use a factory method here
 			builder.Services.TryAddSingleton<IApplication, TApp>();
+#pragma warning restore RS0030
 			builder.SetupDefaults();
 			return builder;
 		}

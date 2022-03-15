@@ -5,14 +5,14 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/PanUpdatedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.PanUpdatedEventArgs']/Docs" />
 	public class PanUpdatedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/PanUpdatedEventArgs.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/PanUpdatedEventArgs.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public PanUpdatedEventArgs(GestureStatus type, int gestureId, double totalx, double totaly) : this(type, gestureId)
 		{
 			TotalX = totalx;
 			TotalY = totaly;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/PanUpdatedEventArgs.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/PanUpdatedEventArgs.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public PanUpdatedEventArgs(GestureStatus type, int gestureId)
 		{
 			StatusType = type;

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -64,6 +63,11 @@ namespace Microsoft.Maui.Platform
 			}
 
 			mauiTimePicker.UpdateCharacterSpacing(timePicker);
+		}
+
+		public static void UpdateTextAlignment(this MauiTimePicker textField, ITimePicker timePicker)
+		{
+			// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
 		}
 	}
 }

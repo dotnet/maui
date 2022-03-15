@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (bool)element.GetValue(IsSwipePagingEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetIsSwipePagingEnabled'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetIsSwipePagingEnabled'][1]/Docs" />
 		public static void SetIsSwipePagingEnabled(BindableObject element, bool value)
 		{
 			element.SetValue(IsSwipePagingEnabledProperty, value);
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetIsSwipePagingEnabled(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetIsSwipePagingEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetIsSwipePagingEnabled'][2]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsElement> SetIsSwipePagingEnabled(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetIsSwipePagingEnabled(config.Element, value);
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (bool)element.GetValue(IsSmoothScrollEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetIsSmoothScrollEnabled'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetIsSmoothScrollEnabled'][1]/Docs" />
 		public static void SetIsSmoothScrollEnabled(BindableObject element, bool value)
 		{
 			element.SetValue(IsSmoothScrollEnabledProperty, value);
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetIsSmoothScrollEnabled(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetIsSmoothScrollEnabled']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetIsSmoothScrollEnabled'][2]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsElement> SetIsSmoothScrollEnabled(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetIsSmoothScrollEnabled(config.Element, value);
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (int)element.GetValue(OffscreenPageLimitProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetOffscreenPageLimit'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetOffscreenPageLimit'][1]/Docs" />
 		public static void SetOffscreenPageLimit(BindableObject element, int value)
 		{
 			element.SetValue(OffscreenPageLimitProperty, value);
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetOffscreenPageLimit(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetOffscreenPageLimit']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetOffscreenPageLimit'][2]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsElement> SetOffscreenPageLimit(this IPlatformElementConfiguration<Android, FormsElement> config, int value)
 		{
 			SetOffscreenPageLimit(config.Element, value);
@@ -129,13 +129,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			BindableProperty.Create("ToolbarPlacement", typeof(ToolbarPlacement),
 			typeof(TabbedPage), ToolbarPlacement.Top);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='GetToolbarPlacement'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='GetToolbarPlacement'][1]/Docs" />
 		public static ToolbarPlacement GetToolbarPlacement(BindableObject element)
 		{
 			return (ToolbarPlacement)element.GetValue(ToolbarPlacementProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetToolbarPlacement'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetToolbarPlacement'][1]/Docs" />
 		public static void SetToolbarPlacement(BindableObject element, ToolbarPlacement value)
 		{
 			if (element.IsSet(ToolbarPlacementProperty) && GetToolbarPlacement(element) != value)
@@ -146,20 +146,20 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			element.SetValue(ToolbarPlacementProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='GetToolbarPlacement']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='GetToolbarPlacement'][2]/Docs" />
 		public static ToolbarPlacement GetToolbarPlacement(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetToolbarPlacement(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetToolbarPlacement']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='SetToolbarPlacement'][2]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsElement> SetToolbarPlacement(this IPlatformElementConfiguration<Android, FormsElement> config, ToolbarPlacement value)
 		{
 			SetToolbarPlacement(config.Element, value);
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='GetMaxItemCount'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='GetMaxItemCount'][1]/Docs" />
 		public static int GetMaxItemCount(BindableObject element)
 		{
 			if (GetToolbarPlacement(element) == ToolbarPlacement.Bottom)
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return int.MaxValue;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='GetMaxItemCount']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='GetMaxItemCount'][2]/Docs" />
 		public static int GetMaxItemCount(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetMaxItemCount(config.Element);

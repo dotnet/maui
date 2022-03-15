@@ -6,8 +6,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, TimePicker>
 	{
-		WBrush? _defaultForeground;
-
 		protected override TimePicker CreatePlatformView() => new TimePicker();
 
 		protected override void ConnectHandler(TimePicker platformView)
@@ -18,11 +16,6 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(TimePicker platformView)
 		{
 			platformView.TimeChanged -= OnControlTimeChanged;
-		}
-
-		void SetupDefaults(TimePicker platformView)
-		{
-			_defaultForeground = platformView.Foreground;
 		}
 
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
@@ -50,7 +43,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			if (handler is TimePickerHandler platformHandler)
-				handler.PlatformView?.UpdateTextColor(timePicker, platformHandler._defaultForeground);
+				handler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
 		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)
