@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Web;
 using Android.Content;
 using Android.Runtime;
 using Android.Webkit;
 using AWebView = Android.Webkit.WebView;
 using AUri = Android.Net.Uri;
+using Java.Net;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -35,13 +37,33 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			// Handle redirects to the app custom scheme by reloading the URL in the view.
 			// Handle navigation to external URLs using the system browser, unless overriden.
-			var requestUri = request?.Url?.ToString();
+			if (request?.Url is { } url)
+			{
+				if (url.Scheme is "http" or "https")
+				{
+					if (TryOverrideHttpUrlLoading(view, request, url.ToString()))
+					{
+						return true;
+					}
+				}
+				else
+				{
+					TryStartActivityFromUri(url.ToString(), uriHasIntentScheme: url.Scheme == "intent");
+					return true;
+				}
+			}
+
+			return base.ShouldOverrideUrlLoading(view, request);
+		}
+
+		private bool TryOverrideHttpUrlLoading(AWebView? view, IWebResourceRequest? request, string? requestUri)
+		{
 			if (Uri.TryCreate(requestUri, UriKind.RelativeOrAbsolute, out var uri))
 			{
 				if (uri.Host == BlazorWebView.AppHostAddress &&
-					view is not null && 
-					request is not null && 
-					request.IsRedirect && 
+					view is not null &&
+					request is not null &&
+					request.IsRedirect &&
 					request.IsForMainFrame)
 				{
 					view.LoadUrl(uri.ToString());
@@ -65,7 +87,60 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 			}
 
-			return base.ShouldOverrideUrlLoading(view, request);
+			return false;
+		}
+
+		private void TryStartActivityFromUri(string? uriString, bool uriHasIntentScheme)
+		{
+			if (_webViewHandler is null || uriString is null)
+			{
+				return;
+			}
+
+			try
+			{
+				var intent = Intent.ParseUri(uriString, IntentUriType.Scheme);
+
+				if (intent is not null)
+				{
+					_webViewHandler.Context.StartActivity(intent);
+				}
+			}
+			catch (URISyntaxException)
+			{
+				// No-op. The URI was malformed.
+				return;
+			}
+			catch (ActivityNotFoundException)
+			{
+				if (!uriHasIntentScheme)
+				{
+					// No-op. This behavior is consistent with other platforms when a URI with an unknown scheme is clicked.
+					return;
+				}
+
+				// Chrome for Android allows specifying a fallback URL in case an intent cannot be resolved.
+				// Since the Android WebView cannot handle "intent"-schemed URIs, we add our own support for the fallback
+				// URL here.
+				// See: https://developer.chrome.com/docs/multidevice/android/intents/
+
+				const string FallbackUrlQueryParameterPrefix = "S.browser_fallback_url=";
+
+				var fallbackUrlQueryParameterPrefixLocation = uriString.LastIndexOf(FallbackUrlQueryParameterPrefix);
+
+				if (fallbackUrlQueryParameterPrefixLocation != -1)
+				{
+					var fallbackUrlQueryParameterValueStart = fallbackUrlQueryParameterPrefixLocation + FallbackUrlQueryParameterPrefix.Length;
+					var fallbackUrlQueryParameterValueEnd = uriString.IndexOf(';', fallbackUrlQueryParameterValueStart);
+
+					if (fallbackUrlQueryParameterValueEnd != -1)
+					{
+						var encodedFallbackUrlString = uriString[fallbackUrlQueryParameterValueStart..fallbackUrlQueryParameterValueEnd];
+						var fallbackUrlString = HttpUtility.UrlDecode(encodedFallbackUrlString);
+						TryStartActivityFromUri(fallbackUrlString, uriHasIntentScheme: false);
+					}
+				}
+			}
 		}
 
 		public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
