@@ -54,16 +54,18 @@ namespace Microsoft.Maui.Controls
 			return item.Owned && _list.Contains(item);
 		}
 
-		public void CopyTo(TRestrict[] array, int destIndex)
+		public void CopyTo(Array array, int destIndex)
 		{
 			if (array.Length - destIndex < Count)
 				throw new ArgumentException("Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
 			foreach (TRestrict item in this)
 			{
-				array[destIndex] = item;
+				array.SetValue(item, destIndex);
 				destIndex++;
 			}
 		}
+
+		public void CopyTo(TRestrict[] array, int index) => CopyTo ((Array)array, index);
 
 		public int Count
 		{
@@ -107,9 +109,9 @@ namespace Microsoft.Maui.Controls
 
 		public IEnumerator<TRestrict> GetEnumerator()
 		{
-			foreach (TRestrict item in _list)
+			foreach (var i in _list)
 			{
-				if (item.Owned)
+				if (i is TRestrict item && item.Owned)
 				{
 					yield return item;
 				}
@@ -297,8 +299,6 @@ namespace Microsoft.Maui.Controls
 		{
 			Remove((TRestrict)value);
 		}
-
-		public void CopyTo(Array array, int index) => _list.CopyTo((TTrack[])array, index);
 
 		public bool IsFixedSize => ((IList)_list).IsFixedSize;
 
