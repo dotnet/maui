@@ -171,19 +171,22 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		private async Task InitializeWebView2()
 		{
+#if WEBVIEW2_MAUI
+            _coreWebView2Environment = await CoreWebView2Environment.CreateAsync()
+				.AsTask()
+				.ConfigureAwait(true);
+			await _webview.EnsureCoreWebView2Async();
+
+			var developerTools = _blazorWebViewHandler.DeveloperTools;
+#elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 			var userDataFolderOrNull = GetUserDataFolderOverride();
 			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolderOrNull)
-#if WEBVIEW2_MAUI
-				.AsTask()
-#endif
 				.ConfigureAwait(true);
 			await _webview.EnsureCoreWebView2Async(_coreWebView2Environment);
 
-#if WEBVIEW2_MAUI
-            var developerTools = _blazorWebViewHandler.DeveloperTools;
-#elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 			var developerTools = _developerTools;
 #endif
+
 			ApplyDefaultWebViewSettings(developerTools);
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
@@ -313,9 +316,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			_webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
 		}
 
+#if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private static string GetUserDataFolderOverride()
 		{
-#if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 			if (Assembly.GetEntryAssembly() is { } mainAssembly)
 			{
 				// Where possible, and especially in development, we prefer not to override the WebView2 default behavior of creating
@@ -333,10 +336,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				var result = Path.Combine(
 					Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
 					$"{applicationName}.WebView2");
+
 				return result;
 			}
 
-#endif
 			return null;
 		}
 
@@ -359,6 +362,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				return false;
 			}
 		}
+#endif
 	}
 }
 
