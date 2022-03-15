@@ -13,7 +13,7 @@
 
 		}
 
-		public RadialGradientPaint(GradientStop[] gradientStops)
+		public RadialGradientPaint(PaintGradientStop[] gradientStops)
 		{
 			GradientStops = gradientStops;
 		}
@@ -24,7 +24,7 @@
 			Radius = radius;
 		}
 
-		public RadialGradientPaint(GradientStop[] gradientStops, Point center, double radius)
+		public RadialGradientPaint(PaintGradientStop[] gradientStops, Point center, double radius)
 		{
 			GradientStops = gradientStops;
 			Center = center;
