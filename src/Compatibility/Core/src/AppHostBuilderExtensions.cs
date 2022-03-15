@@ -38,6 +38,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 {
 	public static class MauiAppBuilderExtensions
 	{
+		// TODO better message
+		internal const string UseMapperInstead = "Renderers are obsolete please try to use the corresponding handler/mapper";
+		static bool _compatibilityEnabled = false;
+		internal static void CheckForCompatibility()
+		{
+			if (!_compatibilityEnabled)
+			{
+				// TODO better message
+				throw new InvalidOperationException("This Compatibility feature is currently not enabled. Please call `builder.UseMauiCompatibility`");
+			}
+		}
+
 		public static MauiAppBuilder UseMauiCompatibility(this MauiAppBuilder builder)
 		{
 #if PLATFORM
@@ -52,50 +64,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 				.ConfigureMauiHandlers(handlers =>
 				{
 #if PLATFORM
-					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Entry), typeof(EntryRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Editor), typeof(EditorRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Label), typeof(LabelRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Image), typeof(ImageRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Button), typeof(ButtonRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ImageButton), typeof(ImageButtonRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(CollectionView), typeof(CollectionViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(CarouselView), typeof(CarouselViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Path), typeof(PathRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Ellipse), typeof(EllipseRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Line), typeof(LineRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Polyline), typeof(PolylineRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Polygon), typeof(PolygonRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Shapes.Rectangle), typeof(RectangleRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(RadioButton), typeof(RadioButtonRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Slider), typeof(SliderRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(WebView), typeof(WebViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(SearchBar), typeof(SearchBarRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Switch), typeof(SwitchRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(SwipeView), typeof(SwipeViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(DatePicker), typeof(DatePickerRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(TimePicker), typeof(TimePickerRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Picker), typeof(PickerRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Stepper), typeof(StepperRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ProgressBar), typeof(ProgressBarRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ScrollView), typeof(ScrollViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ActivityIndicator), typeof(ActivityIndicatorRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(CheckBox), typeof(CheckBoxRenderer));
+
 #if !WINDOWS
 #if !(MACCATALYST || MACOS)
+#pragma warning disable CS0612 // Type or member is obsolete
 					handlers.TryAddCompatibilityRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer));
+#pragma warning restore CS0612 // Type or member is obsolete
 #endif
 #else
+#pragma warning disable CS0618 // Type or member is obsolete
 					handlers.TryAddCompatibilityRenderer(typeof(Layout), typeof(LayoutRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
 #endif
-					handlers.TryAddCompatibilityRenderer(typeof(CarouselPage), typeof(CarouselPageRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Page), typeof(PageRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(RefreshView), typeof(RefreshViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer));
 
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
 					handlers.TryAddCompatibilityRenderer(typeof(Microsoft.Maui.Controls.Compatibility.Layout<View>), typeof(DefaultRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Microsoft.Maui.Controls.Compatibility.RelativeLayout), typeof(DefaultRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Microsoft.Maui.Controls.Compatibility.AbsoluteLayout), typeof(DefaultRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 
 					// Shimmed renderers go directly to the registrar to load Image Handlers
 					Internals.Registrar.Registered.Register(typeof(FileImageSource), typeof(FileImageSourceHandler));
@@ -132,7 +121,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 					services.GetService<IDispatcher>() ??
 					MauiWinUIApplication.Current.Services.GetRequiredService<IDispatcher>();
 
-				dispatcher.DispatchIfRequired(() =>
+					dispatcher.DispatchIfRequired(() =>
 					{
 						var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
 						if (UI.Xaml.Application.Current?.Resources != null && dictionaries != null)

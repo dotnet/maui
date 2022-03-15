@@ -18,6 +18,7 @@ using Shape = Microsoft.Maui.Controls.Shapes.Shape;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ShapeRenderer<TShape, TNativeShape> : ViewRenderer<TShape, TNativeShape>
 		 where TShape : Shape
 		 where TNativeShape : ShapeView

@@ -8,6 +8,7 @@ using APath = Android.Graphics.Path;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PolygonRenderer : ShapeRenderer<Polygon, PolygonView>
 	{
 		PointCollection _points;

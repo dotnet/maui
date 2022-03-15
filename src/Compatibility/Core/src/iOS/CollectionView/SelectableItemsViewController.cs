@@ -6,6 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SelectableItemsViewController<TItemsView> : StructuredItemsViewController<TItemsView>
 		where TItemsView : SelectableItemsView
 	{

@@ -10,8 +10,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			Internals.Registrar.Registered.Register(controlType, rendererType);
 
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
+#if PLATFORM
+#pragma warning disable CS0612 // Type or member is obsolete
 			handlersCollection.TryAddHandler(controlType, typeof(RendererToHandlerShim));
+#pragma warning restore CS0612 // Type or member is obsolete
 #endif
 
 			return handlersCollection;
@@ -21,8 +23,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			Internals.Registrar.Registered.Register(controlType, rendererType);
 
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
+#if PLATFORM
+#pragma warning disable CS0612 // Type or member is obsolete
 			handlersCollection.AddHandler(controlType, typeof(RendererToHandlerShim));
+#pragma warning restore CS0612 // Type or member is obsolete
 #endif
 
 			return handlersCollection;
@@ -33,8 +37,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			Internals.Registrar.Registered.Register(typeof(TControlType), typeof(TRenderer));
 
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
+#if PLATFORM
+#pragma warning disable CS0612 // Type or member is obsolete
 			handlersCollection.AddHandler<TMauiType, RendererToHandlerShim>();
+#pragma warning restore CS0612 // Type or member is obsolete
 #endif
 			return handlersCollection;
 		}
@@ -49,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static IMauiHandlersCollection AddCompatibilityRenderers(this IMauiHandlersCollection handlersCollection, params global::System.Reflection.Assembly[] assemblies)
 		{
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
+#if PLATFORM
 
 			Internals.Registrar.RegisterAll(
 				assemblies,
@@ -61,7 +67,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}, default(InitializationFlags),
 				(result) =>
 				{
+#pragma warning disable CS0612 // Type or member is obsolete
 					handlersCollection?.TryAddHandler(result.target, typeof(RendererToHandlerShim));
+#pragma warning restore CS0612 // Type or member is obsolete
 				});
 #endif
 
@@ -85,7 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static IImageSourceServiceCollection AddCompatibilityServices(this IImageSourceServiceCollection services, params global::System.Reflection.Assembly[] assemblies)
 		{
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
+#if PLATFORM
 			Internals.Registrar.RegisterAll(
 				assemblies,
 				null,

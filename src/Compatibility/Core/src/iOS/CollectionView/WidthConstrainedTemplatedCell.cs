@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	internal abstract class WidthConstrainedTemplatedCell : TemplatedCell
 	{
 		[Export("initWithFrame:")]
