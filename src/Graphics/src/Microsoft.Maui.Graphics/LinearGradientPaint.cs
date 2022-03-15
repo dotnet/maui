@@ -13,7 +13,7 @@
 		
 		}
 
-		public LinearGradientPaint(GradientStop[] gradientStops)
+		public LinearGradientPaint(PaintGradientStop[] gradientStops)
 		{
 			GradientStops = gradientStops;
 		}
@@ -24,7 +24,7 @@
 			EndPoint = endPoint;
 		}
 
-		public LinearGradientPaint(GradientStop[] gradientStops, Point startPoint, Point endPoint)
+		public LinearGradientPaint(PaintGradientStop[] gradientStops, Point startPoint, Point endPoint)
 		{
 			GradientStops = gradientStops;
 			StartPoint = startPoint;

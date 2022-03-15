@@ -4,10 +4,10 @@ namespace Microsoft.Maui.Graphics
 {
 	public abstract class GradientPaint : Paint
 	{
-		GradientStop[] _gradientStops =
+		PaintGradientStop[] _gradientStops =
 		{
-			new GradientStop(0, Colors.White),
-			new GradientStop(1, Colors.White)
+			new PaintGradientStop(0, Colors.White),
+			new PaintGradientStop(1, Colors.White)
 		};
 
 		public GradientPaint()
@@ -18,14 +18,14 @@ namespace Microsoft.Maui.Graphics
 		{
 			if (source != null)
 			{
-				_gradientStops = new GradientStop[source.GradientStops.Length];
+				_gradientStops = new PaintGradientStop[source.GradientStops.Length];
 
 				for (var i = 0; i < _gradientStops.Length; i++)
-					_gradientStops[i] = new GradientStop(source.GradientStops[i]);	
+					_gradientStops[i] = new PaintGradientStop(source.GradientStops[i]);	
 			}
 		}
 
-		public GradientStop[] GradientStops
+		public PaintGradientStop[] GradientStops
 		{
 			get => _gradientStops;
 			set
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Graphics
 				_gradientStops = value;
 
 				if (_gradientStops == null || _gradientStops.Length == 0)
-					_gradientStops = new[] { new GradientStop(0, Colors.White), new GradientStop(1, Colors.White) };
+					_gradientStops = new[] { new PaintGradientStop(0, Colors.White), new PaintGradientStop(1, Colors.White) };
 			}
 		}
 
@@ -113,9 +113,9 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
-		public GradientStop[] GetSortedStops()
+		public PaintGradientStop[] GetSortedStops()
 		{
-			var vStops = new GradientStop[_gradientStops.Length];
+			var vStops = new PaintGradientStop[_gradientStops.Length];
 			Array.Copy(_gradientStops, vStops, _gradientStops.Length);
 			Array.Sort(vStops);
 
@@ -125,11 +125,11 @@ namespace Microsoft.Maui.Graphics
 		public void SetGradientStops(float[] offsets, Color[] colors)
 		{
 			var stopCount = Math.Min(colors.Length, offsets.Length);
-			_gradientStops = new GradientStop[stopCount];
+			_gradientStops = new PaintGradientStop[stopCount];
 
 			for (var p = 0; p < stopCount; p++)
 			{
-				_gradientStops[p] = new GradientStop(offsets[p], colors[p]);
+				_gradientStops[p] = new PaintGradientStop(offsets[p], colors[p]);
 			}
 		}
 
@@ -141,12 +141,12 @@ namespace Microsoft.Maui.Graphics
 		public void AddOffset(float offset, Color color)
 		{
 			var oldStops = GradientStops;
-			var newStops = new GradientStop[oldStops.Length + 1];
+			var newStops = new PaintGradientStop[oldStops.Length + 1];
 
 			for (var i = 0; i < oldStops.Length; i++)
 				newStops[i] = oldStops[i];
 
-			newStops[oldStops.Length] = new GradientStop(offset, color);
+			newStops[oldStops.Length] = new PaintGradientStop(offset, color);
 
 			GradientStops = newStops;
 		}
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Graphics
 			}
 
 			var oldStops = GradientStops;
-			var newStops = new GradientStop[oldStops.Length - 1];
+			var newStops = new PaintGradientStop[oldStops.Length - 1];
 			for (var i = 0; i < oldStops.Length; i++)
 			{
 				if (i < index)

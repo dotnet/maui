@@ -2,18 +2,18 @@ using System;
 
 namespace Microsoft.Maui.Graphics
 {
-	public class GradientStop : IComparable<GradientStop>
+	public class PaintGradientStop : IComparable<PaintGradientStop>
 	{
 		private Color _color;
 		private float _offset;
 
-		public GradientStop(float offset, Color color)
+		public PaintGradientStop(float offset, Color color)
 		{
 			_color = color;
 			_offset = offset;
 		}
 
-		public GradientStop(GradientStop source)
+		public PaintGradientStop(PaintGradientStop source)
 		{
 			_color = source._color;
 			_offset = source._offset;
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Graphics
 			set => _offset = value;
 		}
 
-		public int CompareTo(GradientStop obj)
+		public int CompareTo(PaintGradientStop obj)
 		{
 			if (_offset < obj._offset)
 				return -1;

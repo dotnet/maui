@@ -225,7 +225,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				var colors = new int[linearGradientPaint.GradientStops.Length];
 				var stops = new float[colors.Length];
 
-				GradientStop[] vStops = linearGradientPaint.GetSortedStops();
+				PaintGradientStop[] vStops = linearGradientPaint.GetSortedStops();
 
 				for (int i = 0; i < vStops.Length; i++)
 				{
@@ -257,7 +257,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				var colors = new int[radialGradientPaint.GradientStops.Length];
 				var stops = new float[colors.Length];
 
-				GradientStop[] vStops = radialGradientPaint.GetSortedStops();
+				PaintGradientStop[] vStops = radialGradientPaint.GetSortedStops();
 
 				for (int i = 0; i < vStops.Length; i++)
 				{
