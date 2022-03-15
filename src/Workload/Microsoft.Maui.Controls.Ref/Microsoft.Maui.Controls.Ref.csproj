@@ -14,10 +14,12 @@
     <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.aar" />
     <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Core/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.Compatibility.aar" />
     <_AndroidFiles Include="$(MauiRootDirectory)src/Controls/src/Core/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.aar" />
+    <_AndroidFiles Include="$(MauiRootDirectory)src/DualScreen/src/Core/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.Foldable.aar" />
     <None Include="@(_AndroidFiles)" FullTfm="$(_MauiDotNetTfm)-android30.0" Tfm="$(_MauiDotNetTfm)-android" Profile="Android" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/DualScreen/Core/src/bin/$(Configuration)/%(Tfm)/ref/Microsoft.Maui.Controls.Foldable.dll')" />
     <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Compatibility/Core/src/bin/$(Configuration)/%(Tfm)/ref/Microsoft.Maui.Controls.Compatibility.dll')" />
     <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Controls/src/Core/bin/$(Configuration)/%(Tfm)/ref/Microsoft.Maui.Controls.dll')" />
     <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Controls/src/Xaml/bin/$(Configuration)/%(Tfm)/ref/Microsoft.Maui.Controls.Xaml.dll')" />
@@ -28,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(MauiPlatformName)' == '' ">
+    <ProjectReference Include="../../../src/DualScreen/src/Core.Design/Controls.Foldable.csproj" />
     <ProjectReference Include="../../../src/Controls/src/Core/Controls.Core.csproj" />
     <ProjectReference Include="../../../src/Controls/src/Xaml/Controls.Xaml.csproj" />
     <ProjectReference Include="../../../src/Controls/src/Core.Design/Controls.Core.Design.csproj" />
