@@ -27,7 +27,6 @@
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" />
     <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" />
-    <PackageReference Include="Xamarin.Google.Guava.ListenableFuture" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
