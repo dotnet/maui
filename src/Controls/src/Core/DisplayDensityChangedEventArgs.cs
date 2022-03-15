@@ -2,9 +2,9 @@
 
 namespace Microsoft.Maui.Controls
 {
-	public class DisplayDensityUpdatedEventArgs : EventArgs
+	public class DisplayDensityChangedEventArgs : EventArgs
 	{
-		public DisplayDensityUpdatedEventArgs(float displayDensity)
+		public DisplayDensityChangedEventArgs(float displayDensity)
 		{
 			DisplayDensity = displayDensity;
 		}

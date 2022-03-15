@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler? Stopped;
 		public event EventHandler? Destroying;
 		public event EventHandler<BackgroundingEventArgs>? Backgrounding;
-		public event EventHandler<DisplayDensityUpdatedEventArgs>? DisplayDensityChanged;
+		public event EventHandler<DisplayDensityChangedEventArgs>? DisplayDensityChanged;
 
 		protected virtual void OnCreated() { }
 		protected virtual void OnResumed() { }
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnStopped() { }
 		protected virtual void OnDestroying() { }
 		protected virtual void OnBackgrounding(IPersistedState state) { }
-		protected virtual void OnDisplayDensityUpdated(float displayDensity) { }	
+		protected virtual void OnDisplayDensityChanged(float displayDensity) { }	
 
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		{
@@ -336,8 +336,8 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.DisplayDensityChanged(float displayDensity)
 		{
-			DisplayDensityChanged?.Invoke(this, new DisplayDensityUpdatedEventArgs(displayDensity));
-			OnDisplayDensityUpdated(displayDensity);
+			DisplayDensityChanged?.Invoke(this, new DisplayDensityChangedEventArgs(displayDensity));
+			OnDisplayDensityChanged(displayDensity);
 		}
 
 		float IWindow.RequestDisplayDensity()
