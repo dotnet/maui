@@ -52,6 +52,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 
 		public static MauiAppBuilder UseMauiCompatibility(this MauiAppBuilder builder)
 		{
+			_compatibilityEnabled = true;
+
 #if PLATFORM
 			// initialize compatibility DependencyService
 			DependencyService.SetToInitialized();
