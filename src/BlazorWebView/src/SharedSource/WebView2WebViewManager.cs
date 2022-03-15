@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
+using System.Reflection;
 #elif WEBVIEW2_WPF
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
@@ -29,6 +30,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
+using System.Reflection;
 #elif WEBVIEW2_MAUI
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="externalNavigationStarting">Callback invoked when external navigation starts.</param>
-		public WebView2WebViewManager(
+		internal WebView2WebViewManager(
 			WebView2Control webview!!,
 			IServiceProvider services,
 			Dispatcher dispatcher,
@@ -125,7 +127,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="blazorWebViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
-		public WebView2WebViewManager(
+		internal WebView2WebViewManager(
 			WebView2Control webview!!,
 			IServiceProvider services,
 			Dispatcher dispatcher,
@@ -169,12 +171,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		private async Task InitializeWebView2()
 		{
-			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync()
+			var userDataFolderOrNull = GetUserDataFolderOverride();
+			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolderOrNull)
 #if WEBVIEW2_MAUI
 				.AsTask()
 #endif
 				.ConfigureAwait(true);
-			await _webview.EnsureCoreWebView2Async();
+			await _webview.EnsureCoreWebView2Async(_coreWebView2Environment);
 
 #if WEBVIEW2_MAUI
             var developerTools = _blazorWebViewHandler.DeveloperTools;
@@ -308,6 +311,53 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			// Desktop applications almost never want to show a URL preview when hovering over a link
 			_webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
+		}
+
+		private static string GetUserDataFolderOverride()
+		{
+#if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+			if (Assembly.GetEntryAssembly() is { } mainAssembly)
+			{
+				// Where possible, and especially in development, we prefer not to override the WebView2 default behavior of creating
+				// its user data directory in the application folder. This helps to avoid littering the developer's user profile directory
+				// if they are repeatedly creating test applications.
+				if (!string.IsNullOrEmpty(mainAssembly.Location)
+					&& CanCreateSubdirectory(Path.GetDirectoryName(mainAssembly.Location)))
+				{
+					return null;
+				}
+
+				// However, if the application is running from a location where we can't write files (e.g., program files),
+				// use our own convention of %LocalAppData%\YourApplicationName.WebView2
+				var applicationName = mainAssembly.GetName().Name;
+				var result = Path.Combine(
+					Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+					$"{applicationName}.WebView2");
+				return result;
+			}
+
+#endif
+			return null;
+		}
+
+		private static bool CanCreateSubdirectory(string withinDirectory)
+		{
+			if (!Directory.Exists(withinDirectory))
+			{
+				return false;
+			}
+
+			try
+			{
+				var path = Path.Combine(withinDirectory, Guid.NewGuid().ToString());
+				var dirInfo = Directory.CreateDirectory(path);
+				Directory.Delete(path, false);
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
 		}
 	}
 }
