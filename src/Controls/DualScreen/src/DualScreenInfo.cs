@@ -7,6 +7,7 @@ using System.Threading;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Foldable;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Foldable
 {
@@ -195,6 +196,12 @@ namespace Microsoft.Maui.Foldable
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 			return true;
 		}
+
+#if !ANDROID
+		public Task<int> GetHingeAngleAsync() => DualScreenService.GetHingeAngleAsync();
+
+		void ProcessHingeAngleSubscriberCount(int newCount) { }
+#endif
 	}
 	
 	/// <summary>
