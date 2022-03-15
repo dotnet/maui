@@ -1,5 +1,4 @@
 ﻿using System;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -20,12 +19,16 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiTimePicker platformView)
 		{
 			base.ConnectHandler(platformView);
+      
+			SetupDefaults(platformView);
 
 			if (platformView != null)
 			{
 				platformView.EditingDidBegin += OnStarted;
 				platformView.EditingDidEnd += OnEnded;
 				platformView.ValueChanged += OnValueChanged;
+				platformView.DateSelected += OnDateSelected;	
+				platformView.UpdateTime(VirtualView.Time);
 			}
 		}
 
@@ -36,9 +39,12 @@ namespace Microsoft.Maui.Handlers
 			if (platformView != null)
 			{
 				platformView.RemoveFromSuperview();
+
 				platformView.EditingDidBegin -= OnStarted;
 				platformView.EditingDidEnd -= OnEnded;
 				platformView.ValueChanged -= OnValueChanged;
+				platformView.DateSelected -= OnDateSelected;
+
 				platformView.Dispose();
 			}
 		}
@@ -50,12 +56,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateFormat(timePicker);
+			handler.PlatformView?.UpdateFormat(timePicker, handler.PlatformView?.Picker);
 		}
 
 		public static void MapTime(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateTime(timePicker);
+			handler.PlatformView?.UpdateTime(timePicker, handler.PlatformView?.Picker);
 		}
 
 		public static void MapCharacterSpacing(ITimePickerHandler handler, ITimePicker timePicker)
@@ -75,6 +81,12 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(timePicker, DefaultTextColor);
 		}
 
+		public static void MapFlowDirection(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.PlatformView?.UpdateFlowDirection(timePicker);
+			handler.PlatformView?.UpdateTextAlignment(timePicker);
+		}
+
 		void OnStarted(object? sender, EventArgs eventArgs)
 		{
 			if (VirtualView != null)
@@ -88,6 +100,11 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		void OnValueChanged(object? sender, EventArgs e)
+		{
+			SetVirtualViewTime();
+		}
+
+		void OnDateSelected(object? sender, EventArgs e)
 		{
 			SetVirtualViewTime();
 		}

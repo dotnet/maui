@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
 			return value is ImageSource source
-				? source.ToWindowsImageSourceAsync().AsAsyncValue()
+				? source.ToIconSource(source.FindMauiContext())?.CreateIconElement()
 				: null;
 		}
 

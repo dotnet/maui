@@ -387,14 +387,15 @@ namespace Microsoft.Maui.Controls
 			_unloaded?.Invoke(this, EventArgs.Empty);
 		}
 
-		private protected override void OnWindowChanged(IWindow oldValue, IWindow newValue)
+		static void OnWindowChanged(BindableObject bindable, object? oldValue, object? newValue)
 		{
-			base.OnWindowChanged(oldValue, newValue);
+			if (bindable is not VisualElement visualElement)
+				return;
 
-			if (_watchingPlatformLoaded && oldValue is Element oldWindow)
-				oldWindow.HandlerChanged -= OnWindowHandlerChanged;
+			if (visualElement._watchingPlatformLoaded && oldValue is Window oldWindow)
+				oldWindow.HandlerChanged -= visualElement.OnWindowHandlerChanged;
 
-			UpdatePlatformUnloadedLoadedWiring(newValue);
+			visualElement.UpdatePlatformUnloadedLoadedWiring(newValue as Window);
 		}
 
 		void OnWindowHandlerChanged(object? sender, EventArgs e)
@@ -406,7 +407,7 @@ namespace Microsoft.Maui.Controls
 		// if the user is watching for them. Otherwise
 		// this will get wired up for every single VE that's on 
 		// the screen
-		void UpdatePlatformUnloadedLoadedWiring(IWindow? window)
+		void UpdatePlatformUnloadedLoadedWiring(Window? window)
 		{
 			// If I'm not attached to a window and I haven't started watching any platform events
 			// then it's not useful to wire anything up. We will just wait until
@@ -416,21 +417,22 @@ namespace Microsoft.Maui.Controls
 
 			if (_unloaded == null && _loaded == null)
 			{
-				if (window is Element elementWindow)
-					elementWindow.HandlerChanged -= OnWindowHandlerChanged;
+				if (window is not null)
+					window.HandlerChanged -= OnWindowHandlerChanged;
 
 #if PLATFORM
 				_loadedUnloadedToken?.Dispose();
 				_loadedUnloadedToken = null;
 #endif
+
 				_watchingPlatformLoaded = false;
 				return;
 			}
 
 			if (!_watchingPlatformLoaded)
 			{
-				if (window is Element elementWindow)
-					elementWindow.HandlerChanged += OnWindowHandlerChanged;
+				if (window is not null)
+					window.HandlerChanged += OnWindowHandlerChanged;
 
 				_watchingPlatformLoaded = true;
 			}

@@ -1,6 +1,5 @@
 ﻿using System;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -51,12 +50,20 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
-			if (_picker != null)
+			if (_picker is UIDatePicker picker)
 			{
-				_picker.EditingDidBegin += OnStarted;
-				_picker.EditingDidEnd += OnEnded;
-				_picker.ValueChanged += OnValueChanged;
+				picker.EditingDidBegin += OnStarted;
+				picker.EditingDidEnd += OnEnded;
+				picker.ValueChanged += OnValueChanged;
+
+				var date = VirtualView?.Date;
+				if (date is DateTime dt)
+				{
+					picker.Date = dt.ToNSDate();
+				}
 			}
+
+			SetupDefaults(platformView);
 
 			base.ConnectHandler(platformView);
 		}
@@ -80,12 +87,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateFormat(datePicker);
+			var picker = (handler as DatePickerHandler)?._picker;
+			handler.PlatformView?.UpdateFormat(datePicker, picker);
 		}
 
 		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateDate(datePicker);
+			var picker = (handler as DatePickerHandler)?._picker;
+			handler.PlatformView?.UpdateDate(datePicker, picker);
 		}
 
 		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
@@ -117,6 +126,20 @@ namespace Microsoft.Maui.Handlers
 			if (handler is DatePickerHandler platformHandler)
 				handler.PlatformView?.UpdateTextColor(datePicker, platformHandler._defaultTextColor);
 		}
+    
+		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.PlatformView?.UpdateFlowDirection(datePicker);
+			handler.PlatformView?.UpdateTextAlignment(datePicker);
+		}
+
+		void OnValueChanged(object? sender, EventArgs? e)
+		{
+			SetVirtualViewDate();
+
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
+		}
 
 		void OnStarted(object? sender, EventArgs eventArgs)
 		{
@@ -128,11 +151,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (VirtualView != null)
 				VirtualView.IsFocused = false;
-		}
-
-		void OnValueChanged(object? sender, EventArgs? e)
-		{
-			SetVirtualViewDate();
 		}
 
 		void SetVirtualViewDate()

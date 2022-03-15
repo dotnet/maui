@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindableProperty PriorityProperty = BindableProperty.Create("Priority", typeof(int), typeof(ToolbarItem), 0);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ToolbarItem.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ToolbarItem.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public ToolbarItem()
 		{
 		}
