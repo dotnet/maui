@@ -76,6 +76,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(added);
 			Assert.AreEqual(child1, frame.Content);
+			Assert.AreEqual(child1.Parent, frame);
 
 			added = false;
 			frame.Content = child1;
@@ -100,6 +101,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			frame.ChildAdded += (sender, e) => added = true;
 
 			frame.Content = child2;
+			Assert.Null(child1.Parent);
 
 			Assert.True(removed);
 			Assert.True(added);

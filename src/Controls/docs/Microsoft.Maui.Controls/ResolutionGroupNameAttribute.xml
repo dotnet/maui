@@ -20,7 +20,7 @@
   <Docs>
     <summary>Attribute that identifies a group name, typically a company name or reversed company URL, that provides a scope for effect names.</summary>
     <remarks>
-      <para>Developers must supply a name to <see cref="T:Microsoft.Maui.Controls.ExportEffectAttribute" /> that is unique over the scope of  the <param name="name" /> that they supply to <see cref="T:Microsoft.Maui.Controls.ResolutionGroupNameAttribute" />. The <see cref="M:Microsoft.Maui.Controls.Effect.Resolve(System.String)" /> method takes a string that is the concatenation of <paramref name="name" /> (the resolution group name), <c>'.'</c>, and the unique name that was supplied to <see cref="T:Microsoft.Maui.Controls.ExportEffectAttribute" />, and returns the specified effect.</para>
+      <para>Developers must supply a name to <see cref="T:Microsoft.Maui.Controls.ExportEffectAttribute" /> that is unique over the scope of the name that they supply to <see cref="T:Microsoft.Maui.Controls.ResolutionGroupNameAttribute" />. The <see cref="M:Microsoft.Maui.Controls.Effect.Resolve(System.String)" /> method takes a string that is the concatenation of the name (the resolution group name), <c>'.'</c>, and the unique name that was supplied to <see cref="T:Microsoft.Maui.Controls.ExportEffectAttribute" />, and returns the specified effect.</para>
       <example>
         <para>For example, with the declarations:</para>
         <code lang="c#"><![CDATA[
@@ -52,7 +52,7 @@ button.Effects.Add (Effect.Resolve ("com.YourCompany.ShadowEffect"));]]></code>
         <param name="name">A name, such as a company name or reversed company URL, that helps to uniquely identify effects.</param>
         <summary>Creates a new resolution group name attribute.</summary>
         <remarks>
-          <para>Developers must supply a name to <see cref="T:Microsoft.Maui.Controls.ExportEffectAttribute" /> that is unique over the scope of  the <param name="name" /> that they supply to <see cref="T:Microsoft.Maui.Controls.ResolutionGroupNameAttribute" />. The <see cref="M:Microsoft.Maui.Controls.Effect.Resolve(System.String)" /> method takes a string that is the concatenation of <paramref name="name" /> (the resolution group name), <c>'.'</c>, and the unique name that was supplied to <see cref="T:Microsoft.Maui.Controls.ExportEffectAttribute" />, and returns the specified effect.</para>
+          <para>Developers must supply a name to <see cref="T:Microsoft.Maui.Controls.ExportEffectAttribute" /> that is unique over the scope of  the <paramref name="name" /> that they supply to <see cref="T:Microsoft.Maui.Controls.ResolutionGroupNameAttribute" />. The <see cref="M:Microsoft.Maui.Controls.Effect.Resolve(System.String)" /> method takes a string that is the concatenation of <paramref name="name" /> (the resolution group name), <c>'.'</c>, and the unique name that was supplied to <see cref="T:Microsoft.Maui.Controls.ExportEffectAttribute" />, and returns the specified effect.</para>
           <example>
             <para>For example, with the declarations:</para>
             <code lang="c#"><![CDATA[

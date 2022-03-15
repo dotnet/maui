@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -87,6 +88,167 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(wind1.VisualDiagnosticsOverlay.RemoveAdorner(adorner));
 
 			Assert.True(wind1.VisualDiagnosticsOverlay.WindowElements.Count == 0);
+		}
+
+		[Test]
+		public void ListViewWindowIsInheritedByViewCells()
+		{
+			var lv = new ListView { ItemTemplate = new DataTemplate(() => new ViewCell { View = new View() }) };
+			var window = new Window(new ContentPage { Content = lv });
+
+			lv.ItemsSource = Enumerable.Range(0, 10);
+
+			ViewCell cell = lv.TemplatedItems[0] as ViewCell;
+			Assert.AreEqual(window, cell.View.Window);
+		}
+
+		[Test]
+		public void ListViewWindowIsInheritedByLabelInViewCells()
+		{
+			var lv = new ListView { ItemTemplate = new DataTemplate(() => new ViewCell { View = new Label() }) };
+			var cp = new ContentPage { Content = lv };
+			var window = new Window(cp);
+
+			Assert.AreEqual(window, lv.Window);
+			Assert.AreEqual(window, cp.Window);
+
+			lv.ItemsSource = Enumerable.Range(0, 10);
+
+			var cell = lv.TemplatedItems[0] as ViewCell;
+
+			Assert.AreEqual(window, cell.View.Window);
+		}
+
+		[Test]
+		public void ListViewWindowIsInheritedByLayoutsInViewCells()
+		{
+			var lv = new ListView { ItemTemplate = new DataTemplate(() => new ViewCell { View = new Grid { new Label() } }) };
+			var cp = new ContentPage { Content = lv };
+			var window = new Window(cp);
+
+			Assert.AreEqual(window, lv.Window);
+			Assert.AreEqual(window, cp.Window);
+
+			lv.ItemsSource = Enumerable.Range(0, 10);
+
+			var cell = lv.TemplatedItems[0] as ViewCell;
+			var grid = cell.View as Grid;
+			var label = grid.Children[0] as Label;
+
+			Assert.AreEqual(window, ((IWindowController)cell).Window);
+			Assert.AreEqual(window, cell.View.Window);
+			Assert.AreEqual(window, label.Window);
+		}
+
+		[Test]
+		public void NestedControlsAllHaveTheSameWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var window = new Window(cp);
+
+			Assert.AreEqual(window, btn.Window);
+			Assert.AreEqual(window, grid.Window);
+			Assert.AreEqual(window, cp.Window);
+		}
+
+		[Test]
+		public void PageHasTheSameWindowWhenAddedLater()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var window = new Window();
+
+			Assert.Null(btn.Window);
+			Assert.Null(grid.Window);
+			Assert.Null(cp.Window);
+
+			window.Page = cp;
+
+			Assert.AreEqual(window, btn.Window);
+			Assert.AreEqual(window, grid.Window);
+			Assert.AreEqual(window, cp.Window);
+		}
+
+		[Test]
+		public void NestedControlsAllHaveTheSameWindowWhenAddedLater()
+		{
+			var btn = new Button();
+			var grid = new Grid();
+			var cp = new ContentPage { Content = grid };
+			var window = new Window(cp);
+
+			Assert.Null(btn.Window);
+			Assert.AreEqual(window, grid.Window);
+			Assert.AreEqual(window, cp.Window);
+
+			grid.Children.Add(btn);
+
+			Assert.AreEqual(window, btn.Window);
+			Assert.AreEqual(window, grid.Window);
+			Assert.AreEqual(window, cp.Window);
+		}
+
+		[Test]
+		public void SwappingPagesUpdatesTheWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+
+			var window = new Window(cp);
+			var window2 = new Window(cp);
+
+			Assert.AreEqual(window2, btn.Window);
+			Assert.AreEqual(window2, grid.Window);
+			Assert.AreEqual(window2, cp.Window);
+		}
+
+		[Test]
+		public void DetachingThePageUnsetsTheWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var window = new Window(cp);
+
+			window.Page = null;
+
+			Assert.Null(btn.Window);
+			Assert.Null(grid.Window);
+			Assert.Null(cp.Window);
+		}
+
+		[Test]
+		public void DetachingInTheMiddleUnsetsTheWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var window = new Window(cp);
+
+			cp.Content = null;
+
+			Assert.Null(btn.Window);
+			Assert.Null(grid.Window);
+			Assert.AreEqual(window, cp.Window);
+		}
+
+		[Test]
+		public void RemovingControlsFromLayoutsUnsetsTheWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var window = new Window(cp);
+
+			grid.Remove(btn);
+
+			Assert.Null(btn.Window);
+			Assert.AreEqual(window, grid.Window);
+			Assert.AreEqual(window, cp.Window);
 		}
 
 		void ValidateSetup(Application app, Page page = null)

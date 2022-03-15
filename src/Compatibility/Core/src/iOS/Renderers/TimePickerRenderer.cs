@@ -77,6 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected abstract override TControl CreateNativeControl();
 
+		[PortHandler]
 		protected override void OnElementChanged(ElementChangedEventArgs<TimePicker> e)
 		{
 			if (e.NewElement != null)

@@ -30,5 +30,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsNotEmpty(visualTreeChildren);
 			Assert.AreSame(visualTreeChildren[0], label);
 		}
+
+		[Test]
+		public void ChildrenHaveParentsWhenContentIsSet()
+		{
+			var border = new Border();
+
+			var label = new Label();
+			border.Content = label;
+
+			Assert.AreSame(border, label.Parent);
+
+			border.Content = null;
+			Assert.Null(label.Parent);
+		}
 	}
 }

@@ -236,5 +236,97 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(expectedX, frame.Left);
 			Assert.Equal(expectedWidth, frame.Width);
 		}
+
+		[Fact]
+		public void WidthOverridesFill() 
+		{
+			var widthConstraint = 300;
+			var heightConstraint = 300;
+
+			var viewWidth = 100;
+			var desiredSize = new Size(viewWidth, 50);
+
+			var element = Substitute.For<IView>();
+			element.DesiredSize.Returns(desiredSize);
+			element.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+			element.Width.Returns(viewWidth);
+			element.Height.Returns(Dimension.Unset);
+
+			var frame = element.ComputeFrame(new Rect(0, 0, widthConstraint, heightConstraint));
+
+			// Since a width was specified, it wins over the Fill and the width should end up being 100
+			Assert.Equal(100, frame.Width);
+		}
+
+		[Fact]
+		public void WidthOverridesFillFromCenter() 
+		{
+			var widthConstraint = 300;
+			var heightConstraint = 300;
+
+			var viewWidth = 100;
+			var desiredSize = new Size(viewWidth, 50);
+
+			var element = Substitute.For<IView>();
+			element.DesiredSize.Returns(desiredSize);
+			element.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+			element.Width.Returns(viewWidth);
+			element.Height.Returns(Dimension.Unset);
+
+			var frame = element.ComputeFrame(new Rect(0, 0, widthConstraint, heightConstraint));
+
+			// Since a width was specified, it wins over the Fill
+			// We want to do the filling from the center of the space, so the left edge of the frame should be
+			// the center, minus half of the view
+			var expectedX = (widthConstraint / 2) - (viewWidth / 2);
+
+			Assert.Equal(expectedX, frame.Left);
+		}
+
+		[Fact]
+		public void HeightOverridesFill()
+		{
+			var widthConstraint = 300;
+			var heightConstraint = 300;
+
+			var viewHeight = 100;
+			var desiredSize = new Size(50, viewHeight);
+
+			var element = Substitute.For<IView>();
+			element.DesiredSize.Returns(desiredSize);
+			element.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+			element.Height.Returns(100);
+			element.Width.Returns(Dimension.Unset);
+
+			var frame = element.ComputeFrame(new Rect(0, 0, widthConstraint, heightConstraint));
+
+			// Since a height was specified, it wins over the Fill and the height should end up being 100
+			Assert.Equal(100, frame.Height);
+		}
+
+		[Fact]
+		public void HeightOverridesFillFromCenter()
+		{
+			var widthConstraint = 300;
+			var heightConstraint = 300;
+
+			var viewHeight = 100;
+			var desiredSize = new Size(50, viewHeight);
+
+			var element = Substitute.For<IView>();
+			element.DesiredSize.Returns(desiredSize);
+			element.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+			element.Height.Returns(viewHeight);
+			element.Width.Returns(Dimension.Unset);
+
+			var frame = element.ComputeFrame(new Rect(0, 0, widthConstraint, heightConstraint));
+
+			// Since a height was specified, it wins over the Fill
+			// We want to do the filling from the center of the space, so the top edge of the frame should be
+			// the center, minus half of the view
+			var expectedY = (heightConstraint / 2) - (viewHeight / 2);
+
+			Assert.Equal(expectedY, frame.Top);
+		}
 	}
 }

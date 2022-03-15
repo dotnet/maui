@@ -2,7 +2,7 @@ using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
-namespace Microsoft.Maui.Controls.Hosting
+namespace Microsoft.Maui.Controls.Compatibility.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{

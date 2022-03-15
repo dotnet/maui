@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Essentials
 					}));
 #elif WINDOWS
 				life.AddWindows(windows => windows
-					.OnNativeMessage((window, args) =>
+					.OnPlatformMessage((window, args) =>
 					{
 						Platform.NewWindowProc(args.Hwnd, args.MessageId, args.WParam, args.LParam);
 					})

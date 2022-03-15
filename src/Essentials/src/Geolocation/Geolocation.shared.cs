@@ -27,15 +27,15 @@ namespace Microsoft.Maui.Essentials
 		public static Task<Location> GetLastKnownLocationAsync() =>
 			Current.GetLastKnownLocationAsync();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Geolocation.xml" path="//Member[@MemberName='GetLocationAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Geolocation.xml" path="//Member[@MemberName='GetLocationAsync'][1]/Docs" />
 		public static Task<Location> GetLocationAsync() =>
 			Current.GetLocationAsync(new GeolocationRequest(), default);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Geolocation.xml" path="//Member[@MemberName='GetLocationAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Geolocation.xml" path="//Member[@MemberName='GetLocationAsync'][2]/Docs" />
 		public static Task<Location> GetLocationAsync(GeolocationRequest request) =>
 			Current.GetLocationAsync(request ?? new GeolocationRequest(), default);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Geolocation.xml" path="//Member[@MemberName='GetLocationAsync'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Geolocation.xml" path="//Member[@MemberName='GetLocationAsync'][3]/Docs" />
 		public static Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancelToken) =>
 			Current.GetLocationAsync(request ?? new GeolocationRequest(), cancelToken);
 

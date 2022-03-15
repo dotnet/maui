@@ -66,13 +66,13 @@ namespace Microsoft.Maui.Controls
 			return new FileImageSource { File = file };
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromResource'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromResource'][2]/Docs" />
 		public static ImageSource FromResource(string resource, Type resolvingType)
 		{
 			return FromResource(resource, resolvingType.GetTypeInfo().Assembly);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromResource']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromResource'][1]/Docs" />
 		public static ImageSource FromResource(string resource, Assembly sourceAssembly = null)
 		{
 #if !NETSTANDARD1_0
@@ -95,13 +95,13 @@ namespace Microsoft.Maui.Controls
 			return FromStream(() => sourceAssembly.GetManifestResourceStream(resource));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromStream']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromStream'][1]/Docs" />
 		public static ImageSource FromStream(Func<Stream> stream)
 		{
 			return new StreamImageSource { Stream = token => Task.Run(stream, token) };
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromStream']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromStream'][2]/Docs" />
 		public static ImageSource FromStream(Func<CancellationToken, Task<Stream>> stream)
 		{
 			return new StreamImageSource { Stream = stream };
