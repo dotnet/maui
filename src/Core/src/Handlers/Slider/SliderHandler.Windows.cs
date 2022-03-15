@@ -9,8 +9,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SliderHandler : ViewHandler<ISlider, MauiSlider>
 	{
-		static Brush? DefaultForegroundColor;
-		static Brush? DefaultBackgroundColor;
+		static Brush? DefaultMinimumTrackColor;
+		static Brush? DefaultMaximumTrackColor;
 		static Brush? DefaultThumbColor;
 
 		PointerEventHandler? _pointerPressedHandler;
@@ -56,8 +56,8 @@ namespace Microsoft.Maui.Handlers
 
 		void SetupDefaults(MauiSlider platformView)
 		{
-			DefaultForegroundColor = platformView.Foreground;
-			DefaultBackgroundColor = platformView.Background;
+			DefaultMinimumTrackColor = platformView.Resources["SliderTrackValueFill"] as Brush;
+			DefaultMaximumTrackColor = platformView.Resources["SliderTrackFill"] as Brush;
 			DefaultThumbColor = platformView.Thumb?.Background;
 		}
 
@@ -78,12 +78,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimumTrackColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.PlatformView?.UpdateMinimumTrackColor(slider, DefaultForegroundColor);
+			handler.PlatformView?.UpdateMinimumTrackColor(slider, DefaultMinimumTrackColor);
 		}
 
 		public static void MapMaximumTrackColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.PlatformView?.UpdateMaximumTrackColor(slider, DefaultBackgroundColor);
+			handler.PlatformView?.UpdateMaximumTrackColor(slider, DefaultMaximumTrackColor);
 		}
 
 		public static void MapThumbColor(ISliderHandler handler, ISlider slider)

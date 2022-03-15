@@ -1217,7 +1217,7 @@
       <Docs>
         <param name="state">To be added.</param>
         <param name="animate">To be added.</param>
-        <summary>Asynchronously navigates to <param name="state" />, optionally animating.</summary>
+        <summary>Asynchronously navigates to <paramref name="state" />, optionally animating.</summary>
         <returns>To be added.</returns>
         <remarks>
           <para>Note that <see cref="T:Microsoft.Maui.Controls.ShellNavigationState" /> has implicit conversions from <see langword="string" /> and <see cref="T:System.Uri" />, so developers may write code such as the following, with no explicit instantiation of the <see cref="T:Microsoft.Maui.Controls.ShellNavigationState" />:</para>
@@ -1560,7 +1560,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Docs>
         <param name="obj">To be added.</param>
         <param name="behavior">To be added.</param>
-        <summary>Sets the back button behavior of <param name="obj" /> to <param name="behavior" />.</summary>
+        <summary>Sets the back button behavior of <paramref name="obj" /> to <paramref name="behavior" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -1656,7 +1656,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Docs>
         <param name="obj">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>Sets the flyout behavior of <param name="obj" /> to <param name="value" />.</summary>
+        <summary>Sets the flyout behavior of <paramref name="obj" /> to <paramref name="value" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -1776,7 +1776,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Docs>
         <param name="obj">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>Sets the navigation bar visibility of <param name="obj" />.</summary>
+        <summary>Sets the navigation bar visibility of <paramref name="obj" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -1824,7 +1824,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Docs>
         <param name="obj">To be added.</param>
         <param name="handler">To be added.</param>
-        <summary>Sets the <see cref="T:Microsoft.Maui.Controls.SearchHandler" /> for <param name="obj" />.</summary>
+        <summary>Sets the <see cref="T:Microsoft.Maui.Controls.SearchHandler" /> for <paramref name="obj" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -1920,7 +1920,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Docs>
         <param name="obj">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>Sets the tab bar visibility of <param name="obj" />.</summary>
+        <summary>Sets the tab bar visibility of <paramref name="obj" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -2016,7 +2016,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Docs>
         <param name="obj">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>Sets the title <see cref="T:Microsoft.Maui.Controls.View" /> of <param name="obj" />.</summary>
+        <summary>Sets the title <see cref="T:Microsoft.Maui.Controls.View" /> of <paramref name="obj" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

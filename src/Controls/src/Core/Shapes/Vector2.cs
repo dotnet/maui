@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public struct Vector2
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public Vector2(double x, double y)
 			: this()
 		{
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			Y = y;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public Vector2(Point p)
 			: this()
 		{
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			Y = p.Y;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Vector2.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public Vector2(double angle)
 			: this()
 		{

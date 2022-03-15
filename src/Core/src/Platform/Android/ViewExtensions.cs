@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static Matrix4x4 GetViewTransform(this View view)
 		{
-			if (view?.Matrix == null || view.Matrix.IsIdentity)
+			if (view?.Matrix == null)
 				return new Matrix4x4();
 
 			var m = new float[16];

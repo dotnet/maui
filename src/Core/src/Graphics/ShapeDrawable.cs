@@ -14,6 +14,8 @@
 
 		public IShapeView? ShapeView { get; set; }
 
+		public WindingMode WindingMode { get; set; }
+
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			var rect = dirtyRect;
@@ -29,8 +31,9 @@
 
 			if (path == null)
 				return;
-
+					
 			DrawStrokePath(canvas, rect, path);
+			ClipPath(canvas, path);
 			DrawFillPath(canvas, rect, path);
 		}
 
@@ -113,6 +116,11 @@
 			canvas.FillPath(path);
 
 			canvas.RestoreState();
+		}
+
+		void ClipPath(ICanvas canvas, PathF path)
+		{
+			canvas.ClipPath(path, WindingMode);
 		}
 	}
 }

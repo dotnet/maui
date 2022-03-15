@@ -65,7 +65,7 @@
                 <Label
                     Text="Clipped Image using GeometryGroup"/>
                 <Image  
-                    Source="crimson.jpg">
+                    Source="oasis.jpg">
                     <Image.Clip>
                         <GeometryGroup 
                             FillRule="EvenOdd">
@@ -79,7 +79,7 @@
                 <Label
                     Text="Clipped Image using PathGeometry"/>
                 <Image  
-                    Source="crimson.jpg">
+                    Source="oasis.jpg">
                     <Image.Clip>
                         <PathGeometry
                             Figures="M8 148 L156 148 L132 12 Z"/>

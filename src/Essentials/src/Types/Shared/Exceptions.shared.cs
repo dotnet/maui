@@ -37,18 +37,18 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotSupportedException.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FeatureNotSupportedException']/Docs" />
 	public class FeatureNotSupportedException : NotSupportedException
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotSupportedException.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotSupportedException.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public FeatureNotSupportedException()
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotSupportedException.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotSupportedException.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public FeatureNotSupportedException(string message)
 			: base(message)
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotSupportedException.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotSupportedException.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public FeatureNotSupportedException(string message, Exception innerException)
 			: base(message, innerException)
 		{
@@ -58,18 +58,18 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotEnabledException.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FeatureNotEnabledException']/Docs" />
 	public class FeatureNotEnabledException : InvalidOperationException
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotEnabledException.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotEnabledException.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public FeatureNotEnabledException()
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotEnabledException.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotEnabledException.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public FeatureNotEnabledException(string message)
 			: base(message)
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotEnabledException.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotEnabledException.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public FeatureNotEnabledException(string message, Exception innerException)
 			: base(message, innerException)
 		{

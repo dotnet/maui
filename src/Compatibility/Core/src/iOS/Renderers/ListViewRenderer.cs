@@ -743,7 +743,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			// ...and Steve said to the unbelievers the separator shall be gray, and gray it was. The unbelievers looked on, and saw that it was good, and
 			// they went forth and documented the default color. The holy scripture still reflects this default.
 			// Defined here: https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableView_Class/#//apple_ref/occ/instp/UITableView/separatorColor
-			Control.SeparatorColor = color.ToUIColor(ColorExtensions.SeparatorColor);
+			Control.SeparatorColor = color.ToUIColor(Maui.Platform.ColorExtensions.SeparatorColor);
 		}
 
 		void UpdateSeparatorVisibility()

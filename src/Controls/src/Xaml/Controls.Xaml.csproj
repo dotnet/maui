@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
 		<AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
@@ -17,11 +17,13 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Controls.Core.csproj" />
+        <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Folder Include="Diagnostics\" />
+		<Folder Include="Hosting\" />
 	</ItemGroup>
 
     <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">

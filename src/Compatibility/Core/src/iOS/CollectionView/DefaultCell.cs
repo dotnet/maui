@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			Label = new UILabel(frame)
 			{
-				TextColor = ColorExtensions.LabelColor,
+				TextColor = Maui.Platform.ColorExtensions.LabelColor,
 				Lines = 1,
 				Font = UIFont.PreferredBody,
 				TranslatesAutoresizingMaskIntoConstraints = false
