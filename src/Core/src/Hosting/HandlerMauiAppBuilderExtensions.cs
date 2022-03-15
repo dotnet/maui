@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Hosting
 
 		public static IServiceCollection ConfigureMauiHandlers(this IServiceCollection services, Action<IMauiHandlersCollection>? configureDelegate)
 		{
-			services.TryAddSingleton<IMauiHandlersFactory, MauiHandlersFactory>();
+			services.TryAddSingleton<IMauiHandlersFactory>(sp => new MauiHandlersFactory(sp.GetServices<HandlerRegistration>()));
 			if (configureDelegate != null)
 			{
 				services.AddSingleton<HandlerRegistration>(new HandlerRegistration(configureDelegate));

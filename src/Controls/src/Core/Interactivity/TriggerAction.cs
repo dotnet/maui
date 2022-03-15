@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerAction.xml" path="Type[@FullName='Microsoft.Maui.Controls.TriggerAction']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerAction.xml" path="Type[@FullName='Microsoft.Maui.Controls.TriggerAction' and position()=0]/Docs" />
 	public abstract class TriggerAction
 	{
 		internal TriggerAction(Type associatedType)
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerAction.xml" path="Type[@FullName='Microsoft.Maui.Controls.TriggerAction']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerAction.xml" path="Type[@FullName='Microsoft.Maui.Controls.TriggerAction' and position()=1]/Docs" />
 	public abstract class TriggerAction<T> : TriggerAction where T : BindableObject
 	{
 		protected TriggerAction() : base(typeof(T))

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		bool _refreshAllowed = true;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public ListView()
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -379,7 +379,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler Refreshing;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='ScrollTo'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='ScrollTo'][1]/Docs" />
 		public void ScrollTo(object item, ScrollToPosition position, bool animated)
 		{
 			if (!Enum.IsDefined(typeof(ScrollToPosition), position))
@@ -392,7 +392,7 @@ namespace Microsoft.Maui.Controls
 				_pendingScroll = args;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='ScrollTo'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='ScrollTo'][2]/Docs" />
 		public void ScrollTo(object item, object group, ScrollToPosition position, bool animated)
 		{
 			if (!IsGroupingEnabled)
@@ -494,7 +494,7 @@ namespace Microsoft.Maui.Controls
 			return displayBinding;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][2]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void NotifyRowTapped(int groupIndex, int inGroupIndex, Cell cell = null)
 		{
@@ -520,7 +520,7 @@ namespace Microsoft.Maui.Controls
 			ItemTapped?.Invoke(this, new ItemTappedEventArgs(ItemsSource.Cast<object>().ElementAt(groupIndex), cell?.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][4]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void NotifyRowTapped(int groupIndex, int inGroupIndex, Cell cell, bool isContextMenuRequested)
 		{
@@ -560,7 +560,7 @@ namespace Microsoft.Maui.Controls
 					TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][1]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void NotifyRowTapped(int index, Cell cell = null)
 		{
@@ -575,7 +575,7 @@ namespace Microsoft.Maui.Controls
 				NotifyRowTapped(0, index, cell);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][3]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void NotifyRowTapped(int index, Cell cell, bool isContextmenuRequested)
 		{

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public SwipeItems() : this(Enumerable.Empty<ISwipeItem>())
 		{
 

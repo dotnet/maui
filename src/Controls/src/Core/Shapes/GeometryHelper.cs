@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	{
 		static readonly List<Point> Points = new List<Point>();
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][1]/Docs" />
 		public static PathGeometry FlattenGeometry(Geometry geoSrc, double tolerance)
 		{
 			// Return empty PathGeometry if Geometry is null
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			return pathGeoDst;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][2]/Docs" />
 		public static void FlattenGeometry(PathGeometry pathGeoDst, Geometry geoSrc, double tolerance, Matrix matxPrevious)
 		{
 			Matrix matx = matxPrevious;

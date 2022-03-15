@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Effect.xml" path="//Member[@MemberName='IsAttached']/Docs" />
 		public bool IsAttached { get; private set; }
 
+#pragma warning disable CS1734 // XML comment on 'Effect.ResolveId' has a paramref tag for 'name', but there is no parameter by that name
 		/// <include file="../../docs/Microsoft.Maui.Controls/Effect.xml" path="//Member[@MemberName='ResolveId']/Docs" />
+#pragma warning restore CS1734
 		public string ResolveId { get; internal set; }
 
 		#region Statics
