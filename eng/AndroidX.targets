@@ -49,10 +49,6 @@
         Version="0.10.0"
     />
     <PackageReference
-        Update="Xamarin.Google.Android.Material"
-        Version="1.4.0.4"
-    />
-    <PackageReference
         Update="Xamarin.Google.Guava.ListenableFuture"
         Version="1.0.0.6"
     />
@@ -60,6 +56,15 @@
         Update="Xamarin.AndroidX.Migration"
         Version="1.0.8"
         NoWarn="NU1701"
+    />
+    <!-- TODO: remove these packages the next time AndroidX is updated -->
+    <PackageReference
+        Update="Xamarin.Google.Android.Material"
+        Version="1.4.0.4"
+    />
+    <PackageReference
+        Update="Xamarin.AndroidX.Concurrent.Futures"
+        Version="1.1.0.7"
     />
   </ItemGroup>
 </Project>
