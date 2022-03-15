@@ -80,49 +80,49 @@ namespace Microsoft.Maui.Controls.Internals
 			get { return GetNavigationStack(); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopAsync'][1]/Docs" />
 		public Task<Page> PopAsync()
 		{
 			return OnPopAsync(true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopAsync'][2]/Docs" />
 		public Task<Page> PopAsync(bool animated)
 		{
 			return OnPopAsync(animated);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopModalAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopModalAsync'][1]/Docs" />
 		public Task<Page> PopModalAsync()
 		{
 			return OnPopModal(true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopModalAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopModalAsync'][2]/Docs" />
 		public Task<Page> PopModalAsync(bool animated)
 		{
 			return OnPopModal(animated);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopToRootAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopToRootAsync'][1]/Docs" />
 		public Task PopToRootAsync()
 		{
 			return OnPopToRootAsync(true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopToRootAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopToRootAsync'][2]/Docs" />
 		public Task PopToRootAsync(bool animated)
 		{
 			return OnPopToRootAsync(animated);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushAsync'][1]/Docs" />
 		public Task PushAsync(Page root)
 		{
 			return PushAsync(root, true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushAsync'][2]/Docs" />
 		public Task PushAsync(Page root, bool animated)
 		{
 			if (root.RealParent != null)
@@ -130,13 +130,13 @@ namespace Microsoft.Maui.Controls.Internals
 			return OnPushAsync(root, animated);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushModalAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushModalAsync'][1]/Docs" />
 		public Task PushModalAsync(Page modal)
 		{
 			return PushModalAsync(modal, true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushModalAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushModalAsync'][2]/Docs" />
 		public Task PushModalAsync(Page modal, bool animated)
 		{
 			if (modal.RealParent != null && modal.RealParent is not IWindow)

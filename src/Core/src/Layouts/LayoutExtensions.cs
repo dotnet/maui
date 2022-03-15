@@ -69,6 +69,14 @@ namespace Microsoft.Maui.Layouts
 		static double AlignHorizontal(IView view, Rect bounds, Thickness margin)
 		{
 			var alignment = view.HorizontalLayoutAlignment;
+
+			if (alignment == LayoutAlignment.Fill && IsExplicitSet(view.Width))
+			{
+				// If the view has an explicit width set and the layout alignment is Fill,
+				// we just treat the view as centered within the space it "fills"
+				alignment = LayoutAlignment.Center;
+			}
+
 			var desiredWidth = view.DesiredSize.Width;
 			var startX = bounds.X;
 
@@ -114,9 +122,18 @@ namespace Microsoft.Maui.Layouts
 
 		static double AlignVertical(IView view, Rect bounds, Thickness margin)
 		{
+			var alignment = view.VerticalLayoutAlignment;
+
+			if (alignment == LayoutAlignment.Fill && IsExplicitSet(view.Height))
+			{
+				// If the view has an explicit height set and the layout alignment is Fill,
+				// we just treat the view as centered within the space it "fills"
+				alignment = LayoutAlignment.Center;
+			}
+
 			double frameY = bounds.Y + margin.Top;
 
-			switch (view.VerticalLayoutAlignment)
+			switch (alignment)
 			{
 				case LayoutAlignment.Center:
 					frameY += (bounds.Height - view.DesiredSize.Height) / 2;

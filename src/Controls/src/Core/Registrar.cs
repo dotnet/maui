@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Registrar']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Registrar' and position()=0]/Docs" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class Registrar<TRegistrable> where TRegistrable : class
 	{
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		static Type[] _defaultVisualRenderers = new[] { _defaultVisualType };
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register'][1]/Docs" />
 		public void Register(Type tview, Type trender, Type[] supportedVisuals, short priority)
 		{
 			supportedVisuals = supportedVisuals ?? _defaultVisualRenderers;
@@ -73,10 +73,10 @@ namespace Microsoft.Maui.Controls.Internals
 			//	});
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register'][2]/Docs" />
 		public void Register(Type tview, Type trender, Type[] supportedVisual) => Register(tview, trender, supportedVisual, 0);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register'][3]/Docs" />
 		public void Register(Type tview, Type trender) => Register(tview, trender, _defaultVisualRenderers);
 
 		internal TRegistrable GetHandler(Type type) => GetHandler(type, _defaultVisualType);
@@ -109,19 +109,19 @@ namespace Microsoft.Maui.Controls.Internals
 			return returnValue;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandler']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandler'][1]/Docs" />
 		public TOut GetHandler<TOut>(Type type) where TOut : class, TRegistrable
 		{
 			return GetHandler(type) as TOut;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandler']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandler'][2]/Docs" />
 		public TOut GetHandler<TOut>(Type type, params object[] args) where TOut : class, TRegistrable
 		{
 			return GetHandler(type, null, null, args) as TOut;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerForObject']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerForObject'][1]/Docs" />
 		public TOut GetHandlerForObject<TOut>(object obj) where TOut : class, TRegistrable
 		{
 			if (obj == null)
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Internals
 			return GetHandler(type, (obj as IVisualController)?.EffectiveVisual?.GetType()) as TOut;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerForObject']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerForObject'][2]/Docs" />
 		public TOut GetHandlerForObject<TOut>(object obj, params object[] args) where TOut : class, TRegistrable
 		{
 			if (obj == null)
@@ -145,10 +145,10 @@ namespace Microsoft.Maui.Controls.Internals
 			return GetHandler(type, obj, (obj as IVisualController)?.EffectiveVisual, args) as TOut;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerType']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerType'][1]/Docs" />
 		public Type GetHandlerType(Type viewType) => GetHandlerType(viewType, _defaultVisualType);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerType']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerType'][2]/Docs" />
 		public Type GetHandlerType(Type viewType, Type visualType)
 		{
 			visualType = visualType ?? _defaultVisualType;
@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Registrar']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Registrar' and position()=1]/Docs" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class Registrar
 	{
@@ -383,14 +383,14 @@ namespace Microsoft.Maui.Controls.Internals
 			Effects[resolutionName + "." + id] = effectType;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll'][1]/Docs" />
 		[Obsolete]
 		public static void RegisterAll(Type[] attrTypes, IFontRegistrar fontRegistrar = null)
 		{
 			RegisterAll(attrTypes, default(InitializationFlags), fontRegistrar);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll'][2]/Docs" />
 		[Obsolete]
 		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags, IFontRegistrar fontRegistrar = null)
 		{

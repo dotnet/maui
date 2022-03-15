@@ -32,20 +32,29 @@ namespace Microsoft.Maui.Platform
 				nativeSlider.Value = slider.Value;
 		}
 
-		public static void UpdateMinimumTrackColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultForegroundColor)
+		public static void UpdateMinimumTrackColor(this MauiSlider platformSlider, ISlider slider, Brush? defaultMinimumTrackColor)
 		{
-			if (slider.MinimumTrackColor.IsDefault())
-				nativeSlider.Foreground = defaultForegroundColor;
-			else
-				nativeSlider.Foreground = slider.MinimumTrackColor.ToPlatform();
+			var brush = slider.MinimumTrackColor.IsDefault() ? defaultMinimumTrackColor : slider.MinimumTrackColor.ToPlatform();
+
+
+			platformSlider.Resources["SliderTrackValueFill"] = brush;
+			platformSlider.Resources["SliderTrackValueFilllPointerOver"] = brush;
+			platformSlider.Resources["SliderTrackValueFillPressed"] = brush;
+			platformSlider.Resources["SliderTrackValueFillDisabled"] = brush;
+
+			platformSlider.Foreground = brush;
 		}
 
-		public static void UpdateMaximumTrackColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultBackgroundColor)
+		public static void UpdateMaximumTrackColor(this MauiSlider platformSlider, ISlider slider, Brush? defaultMaximumTrackColor)
 		{
-			if (slider.MaximumTrackColor.IsDefault())
-				nativeSlider.BorderBrush = defaultBackgroundColor;
-			else
-				nativeSlider.BorderBrush = slider.MaximumTrackColor.ToPlatform();
+			var brush = slider.MaximumTrackColor.IsDefault() ? defaultMaximumTrackColor : slider.MaximumTrackColor.ToPlatform();
+
+			platformSlider.Resources["SliderTrackFill"] = brush;
+			platformSlider.Resources["SliderTrackFillPointerOver"] = brush;
+			platformSlider.Resources["SliderTrackFillPressed"] = brush;
+			platformSlider.Resources["SliderTrackFillDisabled"] = brush;
+
+			platformSlider.BorderBrush = brush;
 		}
 
 		public static void UpdateThumbColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultThumbColor)

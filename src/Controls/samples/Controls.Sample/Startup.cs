@@ -10,11 +10,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.Hosting;
 
 #if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Components.WebView.Maui;
@@ -217,7 +218,8 @@ namespace Maui.Controls.Sample
 #elif WINDOWS
 					// Log everything in this one
 					events.AddWindows(windows => windows
-						//.OnNativeMessage((a, b) => LogEvent(nameof(WindowsLifecycle.OnNativeMessage)))
+						.OnPlatformMessage((a, b) => 
+							LogEvent(nameof(WindowsLifecycle.OnPlatformMessage)))
 						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))

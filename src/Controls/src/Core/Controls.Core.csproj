@@ -7,7 +7,6 @@
     <IsPackable>false</IsPackable>
     <_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
     <GitInfoReportImportance>high</GitInfoReportImportance>
-	<WarningsNotAsErrors>CS1571;CS1572;CS1734</WarningsNotAsErrors>
   </PropertyGroup>
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
@@ -29,6 +28,13 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+    <AndroidResource Include="Compatibility\Android\Resources\Layout\rootlayout.axml" />
+    <AndroidResource Include="Compatibility\Android\Resources\Layout\flyoutcontent.axml" />
+    <AndroidResource Include="Compatibility\Android\Resources\Layout\shellcontent.axml" />
+    <AndroidResource Include="Compatibility\Android\Resources\Layout\bottomtablayout.axml" />
+  </ItemGroup>
+  
   <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);

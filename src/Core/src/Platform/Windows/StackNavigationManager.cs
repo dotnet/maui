@@ -181,7 +181,15 @@ namespace Microsoft.Maui.Platform
 
 			fe.OnLoaded(() =>
 			{
-				FireNavigationFinished();
+				if (presenter?.Content is not FrameworkElement pc)
+				{
+					FireNavigationFinished();
+				}
+				else
+				{
+					pc.OnLoaded(FireNavigationFinished);
+				}
+
 				if (NavigationView is IView view)
 				{
 					view.Arrange(fe);

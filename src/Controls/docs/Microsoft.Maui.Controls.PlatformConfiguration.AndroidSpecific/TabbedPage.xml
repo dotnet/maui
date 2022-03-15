@@ -311,7 +311,7 @@
       </Parameters>
       <Docs>
         <param name="element">To be added.</param>
-        <summary>Gets whether smooth scrolling is enabled for <param name="element" />.</summary>
+        <summary>Gets whether smooth scrolling is enabled for <paramref name="element" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -742,8 +742,8 @@
       <Docs>
         <param name="element">The <see cref="T:Microsoft.Maui.Controls.BindableObject" /> to adjust.</param>
         <param name="value">
-          <see langword="true" /> if <param name="element" /> should enable smooth scrolling.</param>
-        <summary>Enables or disables smooth scrolling on <param name="element" />.</summary>
+          <see langword="true" /> if <paramref name="element" /> should enable smooth scrolling.</param>
+        <summary>Enables or disables smooth scrolling on <paramref name="element" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

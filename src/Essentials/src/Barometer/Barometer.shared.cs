@@ -84,11 +84,11 @@ namespace Microsoft.Maui.Essentials
 		public static bool operator !=(BarometerData left, BarometerData right) =>
 			!left.Equals(right);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
 		public override bool Equals(object obj) =>
 			(obj is BarometerData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
 		public bool Equals(BarometerData other) =>
 			PressureInHectopascals.Equals(other.PressureInHectopascals);
 

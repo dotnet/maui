@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -565,25 +565,25 @@ namespace Microsoft.Maui.Controls
 		public static Shell Current => Application.Current?.MainPage as Shell;
 
 		internal ShellNavigationManager NavigationManager => _navigationManager;
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />
 		public Task GoToAsync(ShellNavigationState state)
 		{
 			return _navigationManager.GoToAsync(state, null, false);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs" />
 		public Task GoToAsync(ShellNavigationState state, bool animate)
 		{
 			return _navigationManager.GoToAsync(state, animate, false);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />
 		public Task GoToAsync(ShellNavigationState state, IDictionary<string, object> parameters)
 		{
 			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(parameters));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs" />
 		public Task GoToAsync(ShellNavigationState state, bool animate, IDictionary<string, object> parameters)
 		{
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
@@ -1224,19 +1224,31 @@ namespace Microsoft.Maui.Controls
 				(o) => rootItem = rootItem ?? o as ShellItem);
 		}
 
-		internal T GetEffectiveValue<T>(BindableProperty property, T defaultValue)
+		internal T GetEffectiveValue<T>(BindableProperty property, T defaultValue, bool ignoreImplicit = false)
 		{
-			return GetEffectiveValue<T>(property, () => defaultValue, null);
+			return GetEffectiveValue<T>(property, () => defaultValue, null, ignoreImplicit: ignoreImplicit);
 		}
 
-		internal T GetEffectiveValue<T>(BindableProperty property, Func<T> defaultValue, Action<Element> observer, Element element = null)
+		internal T GetEffectiveValue<T>(
+			BindableProperty property,
+			Func<T> defaultValue,
+			Action<Element> observer,
+			Element element = null,
+			bool ignoreImplicit = false)
 		{
-			element = element ?? GetVisiblePage() ?? CurrentContent;
+			element = element ?? GetCurrentShellPage() ?? CurrentContent;
 			while (element != this && element != null)
 			{
 				observer?.Invoke(element);
 
-				if (element.IsSet(property))
+				if (ignoreImplicit && Routing.IsImplicit(element))
+				{
+					// If this is an implicitly created route.
+					// A route that the user doesn't have inside their Shell file.
+					// Then we don't want to consider it as a value to use.
+					// So we let the code just go to the next parent.
+				}
+				else if (element.IsSet(property))
 					return (T)element.GetValue(property);
 
 				element = element.Parent;
@@ -1309,7 +1321,7 @@ namespace Microsoft.Maui.Controls
 			if (CurrentItem == null || GetVisiblePage() == null)
 				return;
 
-			var behavior = GetEffectiveFlyoutBehavior();
+			var behavior = (this as IFlyoutView).FlyoutBehavior;
 			for (int i = 0; i < _flyoutBehaviorObservers.Count; i++)
 				_flyoutBehaviorObservers[i].OnFlyoutBehaviorChanged(behavior);
 
@@ -1364,6 +1376,22 @@ namespace Microsoft.Maui.Controls
 				return scc.PresentedPage;
 
 			return null;
+		}
+
+		// This returns the current shell page that's visible
+		// without including the modal stack
+		internal Element GetCurrentShellPage()
+		{
+			var navStack = CurrentSection?.Navigation?.NavigationStack;
+			Page currentPage = null;
+
+			if (navStack != null)
+			{
+				currentPage = navStack[navStack.Count - 1] ??
+					((IShellContentController)CurrentContent)?.Page;
+			}
+
+			return currentPage;
 		}
 
 		Element WalkToPage(Element element)

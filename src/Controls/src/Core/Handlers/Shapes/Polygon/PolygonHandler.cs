@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class PolygonHandler : ShapeViewHandler
 	{
-		public static IPropertyMapper<Polygon, PolygonHandler> PolygonMapper = new PropertyMapper<Polygon, PolygonHandler>(Mapper)
+		public static IPropertyMapper<Polygon, IShapeViewHandler> PolygonMapper = new PropertyMapper<Polygon, IShapeViewHandler>(Mapper)
 		{
 			[nameof(IShapeView.Shape)] = MapShape,
 			[nameof(Polygon.Points)] = MapPoints,
