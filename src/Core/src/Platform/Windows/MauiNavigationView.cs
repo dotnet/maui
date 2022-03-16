@@ -37,8 +37,8 @@ namespace Microsoft.Maui.Platform
 			MenuItemsScrollViewer = (ScrollViewer)GetTemplateChild("MenuItemsScrollViewer");
 			PaneContentGrid = (Grid)GetTemplateChild("PaneContentGrid");
 			RootSplitView = (SplitView)GetTemplateChild("RootSplitView");
-			TopNavArea = ((StackPanel)GetTemplateChild("TopNavArea"));
-			TopNavMenuItemsHost = ((ItemsRepeater)GetTemplateChild("TopNavMenuItemsHost"));
+			TopNavArea = (StackPanel)GetTemplateChild("TopNavArea");
+			TopNavMenuItemsHost = (ItemsRepeater)GetTemplateChild("TopNavMenuItemsHost");
 			ContentPaneTopPadding = (Grid)GetTemplateChild("ContentPaneTopPadding");
 			PaneToggleButtonGrid = (Grid)GetTemplateChild("PaneToggleButtonGrid");
 			ButtonHolderGrid = (Grid)GetTemplateChild("ButtonHolderGrid");
