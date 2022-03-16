@@ -16,5 +16,6 @@
 		public const string Shell = "Shell";
 		public const string TabbedPage = "TabbedPage";
 		public const string VisualElement = "VisualElement";
+		public const string Window = "Window";
 	}
 }
