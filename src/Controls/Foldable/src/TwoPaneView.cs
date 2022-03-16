@@ -196,11 +196,12 @@ namespace Microsoft.Maui.Controls.Foldable
 		{
 			System.Diagnostics.Debug.Write("TwoPaneView.DualScreenService_OnFeatureChanged - " + e, "JWM");
 			try
-			{ 
+			{
 				InvalidateMeasure();
 			}
-			catch (Exception) {
-				
+			catch (Exception)
+			{
+
 			}
 		}
 
@@ -209,12 +210,12 @@ namespace Microsoft.Maui.Controls.Foldable
 			base.OnIsPlatformEnabledChanged();
 			if (IsPlatformEnabled)
 			{
-//				_twoPaneViewLayoutGuide.WatchForChanges();
+				//				_twoPaneViewLayoutGuide.WatchForChanges();
 				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuide;
 			}
 			else
 			{
-//				_twoPaneViewLayoutGuide.StopWatchingForChanges();
+				//				_twoPaneViewLayoutGuide.StopWatchingForChanges();
 				_twoPaneViewLayoutGuide.PropertyChanged -= OnTwoPaneViewLayoutGuide;
 			}
 		}
@@ -387,6 +388,9 @@ namespace Microsoft.Maui.Controls.Foldable
 		}
 
 		Rect _previousHinge = Rect.Zero;
+		Rect _previousPane1 = Rect.Zero;
+		Rect _previousPane2 = Rect.Zero;
+		bool _previousIsLayoutSpanned;
 
 		void UpdateRowsColumns(ViewMode newMode)
 		{
@@ -402,10 +406,22 @@ namespace Microsoft.Maui.Controls.Foldable
 			Rect pane2 = _twoPaneViewLayoutGuide.Pane2;
 			bool isLayoutSpanned = _twoPaneViewLayoutGuide.Mode != TwoPaneViewMode.SinglePane;
 
+			if (pane1 == _previousPane1 &&
+				pane2 == _previousPane2 &&
+				_previousIsLayoutSpanned == isLayoutSpanned &&
+				_twoPaneViewLayoutGuide.Hinge == _previousHinge)
+			{
+				return;
+			}
+
+			_previousPane1 = pane1;
+			_previousPane2 = pane2;
+			_previousIsLayoutSpanned = isLayoutSpanned;
+			_previousHinge = _twoPaneViewLayoutGuide.Hinge;
+
 			if (_twoPaneViewLayoutGuide.Mode != TwoPaneViewMode.SinglePane && newMode != ViewMode.Pane1Only && newMode != ViewMode.Pane2Only)
 			{
 				Rect hinge = _twoPaneViewLayoutGuide.Hinge;
-				_previousHinge = hinge;
 
 				if (_twoPaneViewLayoutGuide.Mode == TwoPaneViewMode.Wide)
 				{
