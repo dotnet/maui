@@ -39,9 +39,13 @@
                 Style="{StaticResource Headline}"/>
             <Button Text="Toogle SearchHandler" Clicked="OnToggleSearchHandler" />
             <Label
-                Text="Toogle TabBar"
+                Text="Toggle TabBar"
                 Style="{StaticResource Headline}"/>
-            <Button Text="Toogle TabBar" Clicked="OnToggleTabBar" />
+            <Button Text="Toggle TabBar" Clicked="OnToggleTabBar" />
+            <Label
+                Text="Flyout Header Behavior"
+                Style="{StaticResource Headline}"/>
+            <Picker x:Name="flyoutHeaderBehavior" />
         </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>
