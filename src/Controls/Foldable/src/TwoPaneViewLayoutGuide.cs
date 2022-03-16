@@ -20,8 +20,10 @@ namespace Microsoft.Maui.Controls.Foldable
 		{
 			get
 			{
+				if (_dualScreenService == null)
+					_dualScreenService = _layout?.Handler?.MauiContext?.Services?.GetService<IFoldableService>();
+
 				return _dualScreenService ??
-					_layout?.Handler?.MauiContext?.Services?.GetService<IFoldableService>() ??
 					NoPlatformFoldableService.Instance;
 			}
 		}
@@ -47,7 +49,6 @@ namespace Microsoft.Maui.Controls.Foldable
 		internal TwoPaneViewLayoutGuide(VisualElement layout, IFoldableService dualScreenService)
 		{
 			_layout = layout;
-			_dualScreenService = dualScreenService ?? DualScreenService;
 
 			if (_layout != null)
 			{
