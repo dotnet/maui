@@ -2,6 +2,8 @@
 using Microsoft.Maui.Graphics;
 using Android.Runtime;
 using AndroidX.Window.Layout;
+using Android.App;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Foldable
 {
@@ -13,14 +15,19 @@ namespace Microsoft.Maui.Foldable
 		IFoldableContext foldableInfo;
 		Rect WindowBounds;
 
-		public void SetWindowSize(Rect size)
+		public void SetWindowSize(Rect sizePx)
 		{
-			WindowBounds = size;
-			foldableInfo.WindowBounds = size;
+			WindowBounds = sizePx;
+			foldableInfo.WindowBounds = WindowBounds;
 		}
 
 		public void Accept(Java.Lang.Object windowLayoutInfo)
 		{
+			if (!_activity.TryGetTarget(out var activity))
+			{
+				return;
+			}
+
 			var newLayoutInfo = windowLayoutInfo as AndroidX.Window.Layout.WindowLayoutInfo;
 
 			if (newLayoutInfo == null)
@@ -40,8 +47,12 @@ namespace Microsoft.Maui.Foldable
 				{
 					isSeparating = foldingFeature.IsSeparating;
 
-					foldingFeatureBounds = new Rect(foldingFeature.Bounds.Left, foldingFeature.Bounds.Top,
-														foldingFeature.Bounds.Width(), foldingFeature.Bounds.Height());
+					foldingFeatureBounds =
+						new Rect(
+							foldingFeature.Bounds.Left,
+							foldingFeature.Bounds.Top,
+							foldingFeature.Bounds.Width(),
+							foldingFeature.Bounds.Height());
 
 					global::Android.Util.Log.Info("JWM2", "\n    IsSeparating: " + foldingFeature.IsSeparating
 							+ "\n    Orientation: " + foldingFeature.Orientation  // FoldingFeature.OrientationVertical or Horizontal

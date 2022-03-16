@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Foldable
 				FoldLayoutChanged();
 			}
 		}
+
 		public Rect FoldingFeatureBounds
 		{
 			get
@@ -38,23 +39,25 @@ namespace Microsoft.Maui.Foldable
 				FoldLayoutChanged();
 			}
 		}
-		public float ScreenDensity { get; set; }
 
 		internal void OnConfigurationChanged(Activity activity, Configuration configuration)
 		{
 			// set window size after rotation
 			var bounds = wmc.ComputeCurrentWindowMetrics(activity).Bounds;
 			var rect = new Rect(bounds.Left, bounds.Top, bounds.Width(), bounds.Height());
+			WindowBounds = rect;
 			consumer.SetWindowSize(rect);
+			Update();
+
+			//TODO: do we need to update the screen here???
+			_helper?.Update();
+			_onScreenChangedEventManager.HandleEvent(this, EventArgs.Empty, nameof(OnScreenChanged));
 		}
 
 		internal void OnStart(Activity activity)
 		{
 			foldContext = activity.GetWindow().Handler.MauiContext.Services.GetService(
 								typeof(IFoldableContext)) as IFoldableContext; // DualScreenServiceImpl instance
-
-			screenDensity = activity?.Resources?.DisplayMetrics?.Density ?? 1;
-			foldContext.ScreenDensity = screenDensity; // assuming this never changes
 
 			consumer.SetFoldableContext(foldContext); // so that we can update it on each message
 
@@ -108,7 +111,7 @@ namespace Microsoft.Maui.Foldable
 		}
 		void FoldLayoutChanged()
 		{
-			FoldingFeatureChanged?.Invoke(this, new Microsoft.Maui.Foldable.FoldEventArgs()
+			OnLayoutChanged?.Invoke(this, new Microsoft.Maui.Foldable.FoldEventArgs()
 			{
 				isSeparating = IsSeparating,
 				FoldingFeatureBounds = FoldingFeatureBounds,
@@ -132,108 +135,62 @@ namespace Microsoft.Maui.Foldable
 		#endregion
 
 		ScreenHelper _helper;
-		bool _isLandscape;
 		Size _pixelScreenSize;
-		Consumer consumer = new Consumer();
+		Consumer consumer;
 		AndroidX.Window.Java.Layout.WindowInfoTrackerCallbackAdapter wit = null; // for hinge/fold
 		IWindowMetricsCalculator wmc = null; // for window dimensions
 		IFoldableContext foldContext; // DualScreenServiceImpl instance
-		float screenDensity = 1f; // for converting px to dp
 
 		readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
-		public event EventHandler<FoldEventArgs> OnLayoutChanged;
-		public event EventHandler<FoldEventArgs> FoldingFeatureChanged;
+
+		/// <summary>Event triggered when the app is spanned or unspanned or rotated while spanned</summary>
+		public event System.EventHandler<FoldEventArgs> OnLayoutChanged;
 
 		[Controls.Internals.Preserve(Conditional = true)]
 		public FoldableService()
 		{
 			_HingeService = this;
-			if (_foldableInfo != null)
-			{
-				Init(_foldableInfo, _mainActivity);
-
-				_hingeDp = _foldableInfo.FoldingFeatureBounds; // convert to DP?
-				_isSpanned = _foldableInfo.IsSeparating;
-				_windowBounds = _foldableInfo.WindowBounds;
-				ScreenDensity = _foldableInfo.ScreenDensity;
-				Update(); // calculate dp from px for hinge coordinates
-
-				_foldableInfo.FoldingFeatureChanged += DualScreenServiceImpl_FoldingFeatureChanged;
-			}
-		}
-
-		private void DualScreenServiceImpl_FoldingFeatureChanged(object sender, FoldEventArgs ea)
-		{
-			global::Android.Util.Log.Debug("JWM", $"DualScreenServiceImpl.DualScreenServiceImpl_FoldingFeatureChanged {ea}"); // TODO: consider removing this log later
-
-			_isLandscape = (ea.WindowBounds.Width >= ea.WindowBounds.Height);
-			_isSpanned = ea.isSeparating;
-
-			_helper.FoldingFeatureBounds = ea.FoldingFeatureBounds;
-			_helper.WindowBounds = ea.WindowBounds;
-			_helper.IsSpanned = ea.isSeparating;
-
-			_pixelScreenSize = new Size(ea.WindowBounds.Width, ea.WindowBounds.Height);
-
-			if (_mainActivity is Activity)
-			{
-				using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
-				{
-					var scalingFactor = display.Density;
-
-					var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
-
-					if (newSize != ScaledScreenSize)
-					{
-						ScaledScreenSize = newSize;
-					}
-				}
-			}
-			else
-			{
-				var scalingFactor = 2.5;
-				var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
-
-				if (newSize != ScaledScreenSize)
-				{
-					ScaledScreenSize = newSize;
-				}
-			}
-
-			Update(); //TODO: confirm timing this update
-
-			OnLayoutChanged?.Invoke(sender, ea);
-			FoldingFeatureChanged?.Invoke(sender, ea);
 		}
 
 		void Init(IFoldableContext foldableInfo, Activity activity = null)
 		{
+			consumer ??= new Consumer(activity);
 			if (_foldableInfo == null)
+			{
 				_foldableInfo = foldableInfo;
 
-			if (_HingeService == null)
-			{
+				if (_foldableInfo != null)
+				{
+					_hingeDp = _foldableInfo.FoldingFeatureBounds; // convert to DP?
+					_isSpanned = _foldableInfo.IsSeparating;
+					_windowBounds = _foldableInfo.WindowBounds;
+					Update(); // calculate dp from px for hinge coordinates
+				}
+
+				if (_HingeService == null)
+				{
+					_mainActivity = activity;
+					return;
+				}
+
+				if (activity == _mainActivity && _HingeService._helper != null)
+				{
+					_HingeService?.Update();
+					return;
+				}
+
 				_mainActivity = activity;
-				return;
-			}
 
-			if (activity == _mainActivity && _HingeService._helper != null)
-			{
+				if (_mainActivity == null)
+					return;
+
+				var screenHelper = _HingeService._helper ?? new ScreenHelper(foldableInfo, _mainActivity);
+
+				_HingeService._helper = screenHelper;
+				_HingeService.SetupHingeSensors(_mainActivity);
+
 				_HingeService?.Update();
-				return;
 			}
-
-			_mainActivity = activity;
-
-			if (_mainActivity == null)
-				return;
-
-			var screenHelper = _HingeService._helper ?? new ScreenHelper(foldableInfo, _mainActivity);
-
-			_HingeService._helper = screenHelper;
-			_HingeService.SetupHingeSensors(_mainActivity);
-
-			_HingeService?.Update();
 		}
 
 
@@ -251,6 +208,11 @@ namespace Microsoft.Maui.Foldable
 
 		void Update()
 		{
+			var windowBounds = WindowBounds;
+
+			if (windowBounds.Height == 00 && windowBounds.Width == 0)
+				return;
+
 			//HACK:FOLDABLE
 			_isSpanned = _helper?.IsDualMode ?? false;
 
@@ -274,32 +236,28 @@ namespace Microsoft.Maui.Foldable
 				}
 			}
 
+			_helper.FoldingFeatureBounds = FoldingFeatureBounds;
+			_helper.IsSpanned = IsSeparating;
 
-			//HACK:FOLDABLE
-			_pixelScreenSize = new Size(WindowBounds.Width, WindowBounds.Height);
+			_pixelScreenSize = new Size(windowBounds.Width, windowBounds.Height);
+
 			if (_mainActivity is Activity)
 			{
-				using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
-				{
-					var scalingFactor = display.Density;
-					_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
-					var newSize = new Size(_pixelScreenSize.Width / scalingFactor, _pixelScreenSize.Height / scalingFactor);
-
-					if (newSize != ScaledScreenSize)
-					{
-						ScaledScreenSize = newSize;
-					}
-				}
+				ScaledScreenSize = new Size(
+					_mainActivity.FromPixels(_pixelScreenSize.Width),
+					_mainActivity.FromPixels(_pixelScreenSize.Height));
 			}
-			else
+
+			Update(); //TODO: confirm timing this update
+
+			var args = new FoldEventArgs()
 			{
-				var newSize = new Size(_pixelScreenSize.Width / 2.5, _pixelScreenSize.Height / 2.5);
+				FoldingFeatureBounds = FoldingFeatureBounds,
+				isSeparating = IsSeparating,
+				WindowBounds = WindowBounds
+			};
 
-				if (newSize != ScaledScreenSize)
-				{
-					ScaledScreenSize = newSize;
-				}
-			}
+			OnLayoutChanged?.Invoke(this, args);
 		}
 
 		public bool IsSpanned => _isSpanned;
@@ -322,6 +280,7 @@ namespace Microsoft.Maui.Foldable
 		}
 
 		public Rect GetHinge() => _hingeDp;
+
 		/// <summary>
 		/// I question whether we should be basing anything on landscape-ness, and 
 		/// instead should be using the orientation of the hinge
@@ -562,14 +521,6 @@ namespace Microsoft.Maui.Foldable
 				DefaultHingeSensor = new HingeSensor(context);
 				DefaultHingeSensor.OnSensorChanged += DefaultHingeSensorOnSensorChanged;
 			}
-		}
-
-		void ConfigurationChanged(object sender, EventArgs e)
-		{
-			//TODO: do we need to update the screen here???
-			_helper?.Update();
-			_onScreenChangedEventManager.HandleEvent(this, e, nameof(OnScreenChanged));
-			return;
 		}
 
 

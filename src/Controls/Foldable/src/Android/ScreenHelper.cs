@@ -5,6 +5,7 @@ using Android.Content.Res;
 using Android.Runtime;
 using Android.Views;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Foldable
 {
@@ -17,43 +18,28 @@ namespace Microsoft.Maui.Foldable
 		/// </summary>
 		public Rect FoldingFeatureBounds { get; set; } = Rect.Zero;
 		/// <summary>
-		///                         Surface Duo          Surface Duo2
-		/// Dual-portrait (wide)    0, 0 - 2784, 1800    0, 0 - 2754, 1892
-		/// Dual-landscape (tall)   0, 0 - 1800, 2784    0, 0 - 1892, 2754
-		/// </summary>
-		public Rect WindowBounds { get; set; } = Rect.Zero;
-		/// <summary>
 		/// Whether the app is spanned across a hinge or fold
 		/// </summary>
 		public bool IsSpanned { get; set; }
-		/// <summary>
-		/// Need to pass the density up from the UseDualScreen HostBuilderExtension
-		/// so we can calculate dp from pixels for layout measuring
-		/// </summary>
-		float screenDensity = 1f;
 
 		IFoldableContext _foldableContext;
 
-		Activity _activity;
+		WeakReference<Activity> _activity;
 
 		public ScreenHelper(IFoldableContext foldableContext, Activity activity)
 		{
-			_activity = activity;
+			_activity = new WeakReference<Activity>(activity);
 			_foldableContext = foldableContext;
-			screenDensity = foldableContext.ScreenDensity;
 			FoldingFeatureBounds = foldableContext.FoldingFeatureBounds;
-			WindowBounds = foldableContext.WindowBounds;
 			IsSpanned = foldableContext.IsSeparating;
 		}
 
 		public void OnConfigurationChanged(Configuration newConfig)
 			=> Update();
 
-		public void Update() 
+		public void Update()
 		{
 			FoldingFeatureBounds = _foldableContext.FoldingFeatureBounds;
-			WindowBounds = _foldableContext.WindowBounds;
-			screenDensity = _foldableContext.ScreenDensity;
 		}
 
 		/// <summary>
@@ -62,19 +48,11 @@ namespace Microsoft.Maui.Foldable
 		/// for other foldable devices
 		/// </summary>
 		public SurfaceOrientation GetRotation()
-			=> GetRotation(_activity);
-
-		[Obsolete("No longer used with rotation parameter")]
-		Rect GetHinge(SurfaceOrientation rotation)
 		{
-			// Hinge's coordinates of its 4 edges in different mode (Surface Duo 1 & 2 sizes)
-			// Double Portrait  Rect(1350, 0 - 1434, 1800)     Rect(1344, 0 - 1410, 1892)
-			// Double Landscape Rect(0, 1350 - 1800, 1434)     Rect(0, 1344 - 1892, 1410)
+			if (_activity.TryGetTarget(out var activity))
+				return GetRotation(activity);
 
-			if (FoldingFeatureBounds == Rect.Zero)
-				return new Rect();
-
-			return new Rect((int)FoldingFeatureBounds.Left, (int)FoldingFeatureBounds.Top, (int)FoldingFeatureBounds.Width, (int)FoldingFeatureBounds.Height);
+			return SurfaceOrientation.Rotation0;
 		}
 
 		/// <summary>
@@ -95,11 +73,8 @@ namespace Microsoft.Maui.Foldable
 		/// <summary>
 		/// Passed from UseDualScreen HostBuilderExtension
 		/// </summary>
-		Rect GetWindowRect()
-		{
-			var windowRect = new Rect(0, 0, (int)WindowBounds.Width, (int)WindowBounds.Height);
-			return windowRect;
-		}
+		Rect GetWindowRect() =>
+			_foldableContext.WindowBounds;
 
 		public bool IsDualMode
 		{
@@ -150,7 +125,10 @@ namespace Microsoft.Maui.Foldable
 		/// </remarks>
 		double PixelsToDip(double px)
 		{
-			return px / screenDensity;
+			if (_activity.TryGetTarget(out var activity))
+				return activity.FromPixels(px);
+
+			return px;
 		}
 
 		Rect RectPixelsToDip(Rect rect)
