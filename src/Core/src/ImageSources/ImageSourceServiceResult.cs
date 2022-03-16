@@ -2,8 +2,8 @@
 using System;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIImage;
-#elif MONOANDROID
-using PlatformView = Android.Graphics.Drawables.Drawable;
+#elif ANDROID
+using PlatformView = System.Boolean;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Media.ImageSource;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
@@ -16,30 +16,19 @@ namespace Microsoft.Maui
 	{
 		Action? _dispose;
 
-		public ImageSourceServiceResult(bool success, Action? dispose = null)
-			: this(null, false, dispose)
-		{
-			succeeded = success;
-		}
-
-		public ImageSourceServiceResult(PlatformView? image, Action? dispose = null)
+		public ImageSourceServiceResult(PlatformView image, Action? dispose = null)
 			: this(image, false, dispose)
 		{
 		}
 
-		public ImageSourceServiceResult(PlatformView? image, bool resolutionDependent, Action? dispose = null)
+		public ImageSourceServiceResult(PlatformView image, bool resolutionDependent, Action? dispose = null)
 		{
 			Value = image;
 			IsResolutionDependent = resolutionDependent;
 			_dispose = dispose;
 		}
 
-		public PlatformView? Value { get; }
-
-		bool? succeeded;
-
-		public bool Succeeded
-			=> succeeded ?? Value is not null;
+		public PlatformView Value { get; }
 
 		public bool IsResolutionDependent { get; }
 

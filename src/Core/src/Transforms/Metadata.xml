@@ -1,6 +1,13 @@
 <metadata>
   <!-- Normalize the namespace for .NET -->
   <attr path="//package[@name='com.microsoft.maui']" name="managedName">Microsoft.Maui</attr>
+  <attr path="//package[@name='com.microsoft.maui.glide']" name="managedName">Microsoft.Maui.Glide</attr>
+
   <!-- Make all classes internal -->
   <attr path="//class[@visibility='public']" name="visibility">internal</attr>
+
+  <remove-node path="//package[@name='com.bumptech.glide']" />
+  <remove-node path="//package[@name='com.microsoft.maui.glide']" />
+  <remove-node path="//package[@name='com.microsoft.maui.glide.fontimagesource']" />
+
 </metadata>

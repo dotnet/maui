@@ -8,11 +8,11 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class ImageSourcePartExtensions
 	{
-		public static async Task<IImageSourceServiceResult<Drawable>?> UpdateSourceAsync(
+		public static async Task<IImageSourceServiceResult<bool>?> UpdateSourceAsync(
 			this IImageSourcePart image,
 			View destinationContext,
 			IImageSourceServiceProvider services,
-			Action<Drawable?> setDrawable,
+			Action<Drawable?> setImage,
 			CancellationToken cancellationToken = default)
 		{
 			image.UpdateIsLoading(false);
@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Platform
 			if (context == null)
 				return null;
 
-			if (destinationContext is not Android.Widget.ImageView destinationImageView)
+			var destinationImageView = destinationContext as Android.Widget.ImageView;
+				
+			if (destinationImageView is null && setImage is null)
 				return null;
 
 			var imageSource = image.Source;
@@ -37,9 +39,19 @@ namespace Microsoft.Maui.Platform
 			{
 				var service = services.GetRequiredImageSourceService(imageSource);
 
-				var result = await service.LoadDrawableAsync(imageSource, destinationImageView, cancellationToken);
+				var applied = false;
+				IImageSourceServiceResult<bool> result;
 
-				var applied = result is not null && result.Succeeded && !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
+				if (destinationImageView is not null)
+				{
+					result = await service.LoadDrawableAsync(imageSource, destinationImageView, cancellationToken);
+				}
+				else
+				{
+					result = await service.LoadDrawableAsync(context, imageSource, setImage, cancellationToken);
+				}
+
+				applied = result is not null && result.Value && !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
 
 				events?.LoadingCompleted(applied);
 

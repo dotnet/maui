@@ -48,8 +48,16 @@ namespace Microsoft.Maui
 
 #if IOS || MACCATALYST
 			return imageSourceService.GetImageAsync(imageSource);
-#elif MONOANDROID
-			return imageSourceService.GetDrawableAsync(imageSource, mauiContext.Context!);
+#elif ANDROID
+
+			var tcsDrawable = new TaskCompletionSource<IImageSourceServiceResult<Android.Graphics.Drawables.Drawable>?>();
+
+			imageSourceService.LoadDrawableAsync(mauiContext.Context!, imageSource,
+				d =>
+				{
+					//tcsDrawable.SetResult(new ImageSourceServiceResult()
+				});
+			return tcsDrawable.Task;
 #elif WINDOWS
 			return imageSourceService.GetImageSourceAsync(imageSource);
 #else

@@ -5,43 +5,25 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Runtime;
-using Bumptech.Glide;
-using Bumptech.Glide.Load.Engine;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.BumptechGlide;
 
 namespace Microsoft.Maui
 {
 	public partial class StreamImageSourceService
 	{
-		public override async Task<IImageSourceServiceResult<Drawable>?> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
-			if (imageSource is IStreamImageSource streamImageSource)
+			if (imageSource is IStreamImageSource streamImageSource && !streamImageSource.IsEmpty)
 			{
 				try
 				{
 					var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 
-					// We can use the .NET stream directly because we register the InputStreamModelLoader.
-					// There are 2 alternatives:
-					//  - Load the bitmap manually and pass that along, but then we do not get the decoding features.
-					//  - Copy the stream into a byte array and that is double memory usage - especially for large streams.
-					var inputStream = new InputStreamAdapter(stream);
+					var callback = new ImageLoaderCallback();
 
-					var listener = new RequestBuilderExtensions.RequestCompleteListener();
-					var glide = Glide.With(imageView.Context);
-					var builder = glide
-						.Load(inputStream)
-						.AddListener(listener);
+					ImageLoader.LoadFromStream(imageView, stream, callback);
 
-					// Load into the image view
-					var viewTarget = builder
-						.Into(imageView);
-
-					// Wait for the result from the listener
-					var result = await listener.Result.ConfigureAwait(false);
-
-					return new ImageSourceServiceResult(result, () => glide.Clear(viewTarget));
+					return await callback.Result.ConfigureAwait(false);
 				}
 				catch (Exception ex)
 				{
@@ -49,44 +31,32 @@ namespace Microsoft.Maui
 					throw;
 				}
 			}
-			return null;
+
+			return new ImageSourceServiceResult(false);
 		}
 
-		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>
-			GetDrawableAsync((IStreamImageSource)imageSource, context, cancellationToken);
-
-		public async Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IStreamImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable?> callback, CancellationToken cancellationToken = default)
 		{
-			if (imageSource.IsEmpty)
-				return null;
-
-			try
+			if (imageSource is IStreamImageSource streamImageSource && !streamImageSource.IsEmpty)
 			{
-				var stream = await imageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+				try
+				{
+					var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 
-				// We can use the .NET stream directly because we register the InputStreamModelLoader.
-				// There are 2 alternatives:
-				//  - Load the bitmap manually and pass that along, but then we do not get the decoding features.
-				//  - Copy the stream into a byte array and that is double memory usage - especially for large streams.
-				var inputStream = new InputStreamAdapter(stream);
+					var drawableCallback = new ImageLoaderDrawableCallback(callback);
 
-				var result = await Glide
-					.With(context)
-					.Load(inputStream)
-					.SetDiskCacheStrategy(DiskCacheStrategy.None)
-					.SubmitAsync(context, cancellationToken)
-					.ConfigureAwait(false);
+					ImageLoader.LoadFromStream(context, stream, drawableCallback);
 
-				if (result == null)
-					throw new InvalidOperationException("Unable to load image stream.");
-
-				return result;
+					return await drawableCallback.Result.ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					Logger?.LogWarning(ex, "Unable to load image stream.");
+					throw;
+				}
 			}
-			catch (Exception ex)
-			{
-				Logger?.LogWarning(ex, "Unable to load image stream.");
-				throw;
-			}
+
+			return new ImageSourceServiceResult(false);
 		}
 	}
 }

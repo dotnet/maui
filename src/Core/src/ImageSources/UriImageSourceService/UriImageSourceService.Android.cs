@@ -4,44 +4,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
-using Bumptech.Glide;
-using Bumptech.Glide.Load;
-using Bumptech.Glide.Load.Engine;
-using Bumptech.Glide.Request.Target;
-using Java.Interop;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.BumptechGlide;
 
 namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		public override async Task<IImageSourceServiceResult<Drawable>?> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
-			if (imageSource is IUriImageSource uriImageSource)
+			if (imageSource is IUriImageSource uriImageSource && !uriImageSource.IsEmpty)
 			{
 				try
 				{
-					var listener = new RequestBuilderExtensions.RequestCompleteListener();
-					var glide = Glide.With(imageView.Context);
-					var builder = glide
-						.Load(uriImageSource.Uri.OriginalString)
-						.AddListener(listener);
+					var callback = new ImageLoaderCallback();
 
-					if (!uriImageSource.CachingEnabled)
-					{
-						builder = builder
-							.SetDiskCacheStrategy(DiskCacheStrategy.None)
-							.SkipMemoryCache(true);
-					}
+					ImageLoader.LoadFromUri(imageView, uriImageSource.Uri.OriginalString, new Java.Lang.Boolean(uriImageSource.CachingEnabled), callback);
 
-					// Load into the image view
-					var viewTarget = builder.Into(imageView);
-
-					// Wait for the result from the listener
-					var result = await listener.Result.ConfigureAwait(false);
-
-					return new ImageSourceServiceResult(result, () => glide.Clear(viewTarget));
+					return callback.Result;
 				}
 				catch (Exception ex)
 				{
@@ -50,46 +29,29 @@ namespace Microsoft.Maui
 				}
 			}
 
-			return null;
+			return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(false));
 		}
 
-		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>
-			GetDrawableAsync((IUriImageSource)imageSource, context, cancellationToken);
-
-		public async Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IUriImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable?> callback, CancellationToken cancellationToken = default)
 		{
-			if (imageSource.IsEmpty)
-				return null;
-
-			var uri = imageSource.Uri;
-
-			try
+			if (imageSource is IUriImageSource uriImageSource && !uriImageSource.IsEmpty)
 			{
-				var builder = Glide
-					.With(context)
-					.Load(uri.OriginalString);
-
-				if (!imageSource.CachingEnabled)
+				try
 				{
-					builder = builder
-						.SetDiskCacheStrategy(DiskCacheStrategy.None)
-						.SkipMemoryCache(true);
+					var drawableCallback = new ImageLoaderDrawableCallback(callback);
+
+					ImageLoader.LoadFromUri(context, uriImageSource.Uri.OriginalString, new Java.Lang.Boolean(uriImageSource.CachingEnabled), drawableCallback);
+
+					return drawableCallback.Result;
 				}
-
-				var result = await builder
-					.SubmitAsync(context, cancellationToken)
-					.ConfigureAwait(false);
-
-				if (result == null)
-					throw new InvalidOperationException($"Unable to load image URI '{uri}'.");
-
-				return result;
+				catch (Exception ex)
+				{
+					Logger?.LogWarning(ex, "Unable to load image stream.");
+					throw;
+				}
 			}
-			catch (Exception ex)
-			{
-				Logger?.LogWarning(ex, "Unable to load image URI '{Uri}'.", uri);
-				throw;
-			}
+
+			return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(false));
 		}
 	}
 }
