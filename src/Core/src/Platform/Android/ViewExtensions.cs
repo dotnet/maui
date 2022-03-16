@@ -308,6 +308,15 @@ namespace Microsoft.Maui.Platform
 				ViewHelper.RemoveFromParent(view);
 		}
 
+		public static Task<byte[]?> RenderAsBMP(this IView view)
+		{
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
+				return Task.FromResult<byte[]?>(null);
+
+			return Task.FromResult<byte[]?>(platformView.RenderAsBMP());
+		}
+
 		public static Task<byte[]?> RenderAsPNG(this IView view)
 		{
 			var platformView = view?.ToPlatform();

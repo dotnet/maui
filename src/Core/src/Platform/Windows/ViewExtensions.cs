@@ -260,6 +260,15 @@ namespace Microsoft.Maui.Platform
 			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
 		}
 
+		public static async Task<byte[]?> RenderAsBMP(this IView view)
+		{
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
+				return null;
+
+			return await platformView.RenderAsBMP();
+		}
+
 		public static async Task<byte[]?> RenderAsPNG(this IView view)
 		{
 			var platformView = view?.ToPlatform();
@@ -277,6 +286,8 @@ namespace Microsoft.Maui.Platform
 
 			return await platformView.RenderAsJPEG();
 		}
+
+		public static Task<byte[]?> RenderAsBMP(this FrameworkElement view) => view != null ? view.RenderAsBMPAsync() : Task.FromResult<byte[]?>(null);
 
 		public static Task<byte[]?> RenderAsPNG(this FrameworkElement view) => view != null ? view.RenderAsPNGAsync() : Task.FromResult<byte[]?>(null);
 

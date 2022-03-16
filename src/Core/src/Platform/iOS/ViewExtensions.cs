@@ -329,31 +329,49 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static Task<byte[]?> RenderAsPNG(this IView view) => view != null ? view.RenderAsImage(true) : Task.FromResult<byte[]?>(null);
-
-		public static Task<byte[]?> RenderAsJPEG(this IView view) => view != null ? view.RenderAsImage(false) : Task.FromResult<byte[]?>(null);
-
-		public static Task<byte[]?> RenderAsPNG(this UIView view, bool skipChildren = true) => view != null ? view.RenderAsImage(skipChildren, true) : Task.FromResult<byte[]?>(null);
-
-		public static Task<byte[]?> RenderAsJPEG(this UIView view, bool skipChildren = true) => view != null ? view.RenderAsImage(skipChildren, false) : Task.FromResult<byte[]?>(null);
-
-		static Task<byte[]?> RenderAsImage(this UIView platformView, bool skipChildren, bool asPng)
+		public static Task<byte[]?> RenderAsBMP(this IView view)
 		{
-			byte[]? result;
-			if (asPng)
-				result = platformView?.Window?.RenderAsPng(platformView.Layer, UIScreen.MainScreen.Scale, skipChildren);
-			else
-				result = platformView?.Window?.RenderAsJpeg(platformView.Layer, UIScreen.MainScreen.Scale, skipChildren);
-			return Task.FromResult<byte[]?>(result);
+			(UIView? platformView, bool skipChildren) = view.GetPlatformRenderBase();
+			if (platformView is null)
+				return Task.FromResult<byte[]?>(null);
+
+			return platformView.RenderAsBMP(skipChildren);
 		}
 
-		static Task<byte[]?> RenderAsImage(this IView view, bool asPng)
+		public static Task<byte[]?> RenderAsPNG(this IView view)
+		{
+			(UIView? platformView, bool skipChildren) = view.GetPlatformRenderBase();
+			if (platformView is null)
+				return Task.FromResult<byte[]?>(null);
+
+			return platformView.RenderAsPNG(skipChildren);
+		}
+
+		public static Task<byte[]?> RenderAsJPEG(this IView view)
+		{
+			(UIView? platformView, bool skipChildren) = view.GetPlatformRenderBase();
+			if (platformView is null)
+				return Task.FromResult<byte[]?>(null);
+
+			return platformView.RenderAsJPEG(skipChildren);
+		}
+
+		public static Task<byte[]?> RenderAsBMP(this UIView view, bool skipChildren = true)
+			=> Task.FromResult(view?.Window?.RenderAsBmp(view.Layer, UIScreen.MainScreen.Scale, skipChildren));
+
+		public static Task<byte[]?> RenderAsPNG(this UIView view, bool skipChildren = true)
+			=> Task.FromResult(view?.Window?.RenderAsPng(view.Layer, UIScreen.MainScreen.Scale, skipChildren));
+
+		public static Task<byte[]?> RenderAsJPEG(this UIView view, bool skipChildren = true)
+			=> Task.FromResult(view?.Window?.RenderAsJpeg(view.Layer, UIScreen.MainScreen.Scale, skipChildren));
+
+		static (UIView? View, bool SkipChildren) GetPlatformRenderBase(this IView view)
 		{
 			var platformView = view?.ToPlatform();
 			if (platformView == null)
-				return Task.FromResult<byte[]?>(null);
+				return (null, false);
 			var skipChildren = !(view is IView && !(view is ILayout));
-			return platformView.RenderAsImage(skipChildren, asPng);
+			return (platformView, skipChildren);
 		}
 
 		internal static Rect GetPlatformViewBounds(this IView view)
