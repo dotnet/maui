@@ -365,8 +365,8 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			var measure = await InvokeOnMainThreadAsync(() => layout.Measure(double.PositiveInfinity, double.PositiveInfinity));
 
-			Assert.Equal(layout.Width, measure.Width);
-			Assert.Equal(layout.Height, measure.Height);
+			Assert.Equal(layout.Width, measure.Width, 0);
+			Assert.Equal(layout.Height, measure.Height, 0);
 		}
 
 		[Fact]
@@ -387,8 +387,8 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			var measure = await InvokeOnMainThreadAsync(() => layout.Measure(double.PositiveInfinity, double.PositiveInfinity));
 
-			Assert.Equal(layout.MinimumWidth, measure.Width);
-			Assert.Equal(layout.MinimumHeight, measure.Height);
+			Assert.Equal(layout.MinimumWidth, measure.Width, 0);
+			Assert.Equal(layout.MinimumHeight, measure.Height, 0);
 		}
 	}
 }

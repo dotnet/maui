@@ -25,8 +25,8 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 
 			var measure = await InvokeOnMainThreadAsync(() => cv.Measure(double.PositiveInfinity, double.PositiveInfinity));
 			
-			Assert.Equal(cv.Width, measure.Width);
-			Assert.Equal(cv.Height, measure.Height);
+			Assert.Equal(cv.Width, measure.Width, 0);
+			Assert.Equal(cv.Height, measure.Height, 0);
 		}
 
 		[Fact]
@@ -47,8 +47,8 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 
 			var measure = await InvokeOnMainThreadAsync(() => cv.Measure(double.PositiveInfinity, double.PositiveInfinity));
 
-			Assert.Equal(cv.MinimumWidth, measure.Width);
-			Assert.Equal(cv.MinimumHeight, measure.Height);
+			Assert.Equal(cv.MinimumWidth, measure.Width, 0);
+			Assert.Equal(cv.MinimumHeight, measure.Height, 0);
 		}
 	}
 }
