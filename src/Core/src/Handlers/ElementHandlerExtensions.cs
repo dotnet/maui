@@ -75,5 +75,12 @@ namespace Microsoft.Maui
 			handler?.Invoke(commandName, args);
 			return args.Task;
 		}
+
+		public static T InvokeWithResult<T>(this IElementHandler handler, string commandName,
+			RetrievePlatformValueRequest<T> args)
+		{
+			handler?.Invoke(commandName, args);
+			return args.Result;
+		}
 	}
 }

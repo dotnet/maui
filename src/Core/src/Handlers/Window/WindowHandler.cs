@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static CommandMapper<IWindow, IWindowHandler> CommandMapper = new(ElementCommandMapper)
 		{
+			[nameof(IWindow.RequestDisplayDensity)] = MapRequestDisplayDensity,
 		};
 
 		public WindowHandler()
