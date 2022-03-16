@@ -1,4 +1,5 @@
 ﻿using Android.Graphics.Drawables;
+using Android.OS;
 using Bumptech.Glide;
 using Bumptech.Glide.Request.Target;
 using Bumptech.Glide.Request.Transition;
@@ -15,9 +16,16 @@ namespace Benchmarks.Droid;
 public class ImageBenchmark
 {
 	AImageView? imageView;
+	Glide? glide;
+	Handler? handler;
 
 	[GlobalSetup]
-	public void GlobalSetup() => imageView = new AImageView(MainInstrumentation.Instance!.Context);
+	public void GlobalSetup()
+	{
+		imageView = new AImageView(MainInstrumentation.Instance!.Context);
+		glide = Glide.Get(MainInstrumentation.Instance!.Context);
+		handler = new Handler(Looper.MainLooper!);
+	}
 
 	[GlobalCleanup]
 	public void GlobalCleanup()
@@ -33,19 +41,17 @@ public class ImageBenchmark
 	public void SetImageDrawable() => imageView!.SetImageDrawable(MainInstrumentation.Instance!.Context!.GetDrawable(Resource.Drawable.dotnet_bot));
 
 	[Benchmark]
-	public async Task ImageHelperFromFile()
+	public void ImageHelperFromFile()
 	{
-		var tcsDone = new TaskCompletionSource<bool>();
+		var callback = new Callback();
 
-		MainInstrumentation.Instance!.RunOnMainSync(() =>
-		{
+		handler!.Post(() => { 
 			try
 			{
-				Microsoft.Maui.ImageLoader.LoadFromUri(
+				Microsoft.Maui.ImageLoader.LoadFromFile(
 					imageView,
-					"https://user-images.githubusercontent.com/898335/146419825-23e0b47e-d14b-47d7-85cd-bd8299c2ae98.png", //"dotnet_bot.png",
-					new Java.Lang.Boolean(true),
-					new Callback(tcsDone.SetResult));
+					"dotnet_bot.png",
+					callback);
 			}
 			catch (System.Exception ex)
 			{
@@ -54,20 +60,23 @@ public class ImageBenchmark
 		});
 
 		Android.Util.Log.Debug("DOTNET-BENCH", "Waiting for Glide");
-		await tcsDone.Task;
+		callback.SuccessTask.GetAwaiter().GetResult();
 		Android.Util.Log.Debug("DOTNET-BENCH", "Finsihed Glide");
 	}
 
 	class Callback : Java.Lang.Object, Microsoft.Maui.IImageLoaderCallback
 	{
-		public Callback(Action<bool> handler)
-			=> this.handler = handler;
+		readonly TaskCompletionSource<Drawable?> tcsDrawable = new TaskCompletionSource<Drawable?>();
+		readonly TaskCompletionSource<bool> tcsSuccess = new TaskCompletionSource<bool>();
 
-		readonly Action<bool> handler;
+		public Task<Drawable?> DrawableTask => tcsDrawable.Task;
+		public Task<bool> SuccessTask => tcsSuccess.Task;
 
 		public void OnComplete(Java.Lang.Boolean? success, Drawable? drawable, IRunnable? dispose)
 		{
-			handler?.Invoke(success?.BooleanValue() ?? false);
+			Android.Util.Log.Debug("DOTNET-BENCH", "Callback OnComplete");
+			tcsSuccess.SetResult(success?.BooleanValue() ?? false);
+			tcsDrawable.SetResult(drawable);
 		}
 	}
 }
