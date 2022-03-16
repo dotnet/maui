@@ -335,6 +335,17 @@ namespace Microsoft.Maui.Platform
 			return platformView.RenderAsJPEG();
 		}
 
+		public static Task<byte[]?> RenderAsImage(this AView view, RenderType type)
+		{
+			return type switch
+			{
+				RenderType.JPEG => view.RenderAsJPEG(),
+				RenderType.PNG => view.RenderAsPNG(),
+				RenderType.BMP => Task.FromResult<byte[]?>(view.RenderAsBMP()),
+				_ => throw new NotImplementedException()
+			};
+		}
+
 		public static Task<byte[]?> RenderAsPNG(this AView view)
 			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Png));
 

@@ -287,6 +287,17 @@ namespace Microsoft.Maui.Platform
 			return await platformView.RenderAsJPEG();
 		}
 
+		public static Task<byte[]?> RenderAsImage(this FrameworkElement view, RenderType type)
+		{
+			return type switch
+			{
+				RenderType.JPEG => view.RenderAsJPEG(),
+				RenderType.PNG => view.RenderAsPNG(),
+				RenderType.BMP => view.RenderAsBMP(),
+				_ => throw new NotImplementedException()
+			};
+		}
+
 		public static Task<byte[]?> RenderAsBMP(this FrameworkElement view) => view != null ? view.RenderAsBMPAsync() : Task.FromResult<byte[]?>(null);
 
 		public static Task<byte[]?> RenderAsPNG(this FrameworkElement view) => view != null ? view.RenderAsPNGAsync() : Task.FromResult<byte[]?>(null);

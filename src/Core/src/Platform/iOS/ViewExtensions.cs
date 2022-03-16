@@ -356,6 +356,17 @@ namespace Microsoft.Maui.Platform
 			return platformView.RenderAsJPEG(skipChildren);
 		}
 
+		public static Task<byte[]?> RenderAsImage(this UIView view, RenderType type, bool skipChildren = true)
+		{
+			return type switch
+			{
+				RenderType.JPEG => view.RenderAsJPEG(skipChildren),
+				RenderType.PNG => view.RenderAsPNG(skipChildren),
+				RenderType.BMP => view.RenderAsBMP(skipChildren),
+				_ => throw new NotImplementedException()
+			};
+		}
+
 		public static Task<byte[]?> RenderAsBMP(this UIView view, bool skipChildren = true)
 			=> Task.FromResult(view?.Window?.RenderAsBmp(view.Layer, UIScreen.MainScreen.Scale, skipChildren));
 

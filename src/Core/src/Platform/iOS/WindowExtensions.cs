@@ -32,8 +32,19 @@ namespace Microsoft.Maui.Platform
 
 		public static async Task<RenderedView?> RenderAsImage(this IWindow window, RenderType type)
 		{
-			await Task.Delay(5);
-			return null;
+			if (window.Handler?.PlatformView is not UIWindow win)
+				return null;
+
+			var bb = win.GetBoundingBox();
+			var image = type switch
+			{
+				RenderType.JPEG => await win.RenderAsJPEG(),
+				RenderType.PNG => await win.RenderAsPNG(),
+				RenderType.BMP => await win.RenderAsBMP(),
+				_ => throw new NotImplementedException(),
+			};
+
+			return new RenderedView(bb.Width, bb.Height, image, type);
 		}
 	}
 }
