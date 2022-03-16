@@ -45,22 +45,21 @@ namespace Microsoft.Maui
 		{
 			if (imageSource is IFileImageSource fileImageSource)
 			{
-				var drawableCallback = new ImageLoaderCallback(callback);
-
 				try
 				{
 					var id = context?.GetDrawableId(fileImageSource.File) ?? -1;
 					if (id > 0)
 					{
-						drawableCallback.OnComplete(
-							new Java.Lang.Boolean(true),
-							context?.GetDrawable(id),
-							null);
+						var d = context?.GetDrawable(id);
+
+						callback?.Invoke(d);
+
+						return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(d is not null));
 					}
-					else
-					{
-						ImageLoader.LoadFromFile(context, fileImageSource.File, drawableCallback);
-					}
+
+					var drawableCallback = new ImageLoaderCallback(callback);
+
+					ImageLoader.LoadFromFile(context, fileImageSource.File, drawableCallback);
 
 					return drawableCallback.Result;
 				}
