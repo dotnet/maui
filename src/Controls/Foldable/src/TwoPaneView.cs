@@ -33,7 +33,6 @@ namespace Microsoft.Maui.Controls.Foldable
 		ContentView _content1;
 		ContentView _content2;
 		ViewMode _currentMode;
-		//bool _hasMeasured = false;
 		bool _updatingMode = false;
 		bool _processPendingChange = false;
 		Rect _layoutGuidePane1;
@@ -265,25 +264,6 @@ namespace Microsoft.Maui.Controls.Foldable
 		bool UpdateMode(double width, double height, bool invalidateLayout = true)
 		{
 			invalidateLayout = false;
-			//if (_twoPaneViewLayoutGuide.Hinge != _previousHinge)
-			//{
-			//	_previousWidth = -1;
-			//	_previousHeight = -1;
-			//	_previousHinge = _twoPaneViewLayoutGuide.Hinge;
-			//}
-
-			//// controls hasn't fully been created yet
-			//if (RowDefinitions.Count != 3
-			//	|| ColumnDefinitions.Count != 3
-			//	|| width == -1
-			//	|| height == -1
-			//	|| width == _previousWidth
-			//	|| height == _previousHeight
-			//	|| width == double.PositiveInfinity
-			//	|| height == double.PositiveInfinity)
-			//{
-			//	return false;
-			//}
 
 			// controls hasn't fully been created yet
 			if (RowDefinitions.Count != 3
@@ -312,8 +292,6 @@ namespace Microsoft.Maui.Controls.Foldable
 				_previousHeight = height;
 
 				ViewMode newMode = (PanePriority == TwoPaneViewPriority.Pane1) ? ViewMode.Pane1Only : ViewMode.Pane2Only;
-
-				//_hasMeasured = true;
 
 				_twoPaneViewLayoutGuide.UpdateLayouts(width, height);
 
