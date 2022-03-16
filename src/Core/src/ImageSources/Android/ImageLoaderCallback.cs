@@ -8,52 +8,35 @@ namespace Microsoft.Maui
 {
 	internal class ImageLoaderCallback : Java.Lang.Object, IImageLoaderCallback
 	{
-		TaskCompletionSource<IImageSourceServiceResult<bool>> tcsResult = new();
-
-		public Task<IImageSourceServiceResult<bool>> Result
-			=> tcsResult.Task;
-
-		public void OnComplete(Java.Lang.Boolean? success, Java.Lang.IRunnable? dispose)
-		{
-			var s = success?.BooleanValue() ?? false;
-
-			Action? disposeWrapper = null;
-			if (dispose != null)
-				disposeWrapper = dispose.Run;
-
-			tcsResult.TrySetResult(new ImageSourceServiceResult(s, disposeWrapper));
-		}
-	}
-
-	internal class ImageLoaderDrawableCallback : Java.Lang.Object, IImageLoaderDrawableCallback
-	{
-		public ImageLoaderDrawableCallback(Action<Drawable?> handler)
+		public ImageLoaderCallback(Action<Drawable?>? handler = default)
 		{
 			_handler = handler;
 		}
 
-		readonly Action<Drawable?> _handler;
+		readonly Action<Drawable?>? _handler;
 
-		TaskCompletionSource<IImageSourceServiceResult<bool>> tcsResult = new();
+		readonly TaskCompletionSource<IImageSourceServiceResult<bool>> tcsResult = new();
 
 		public Task<IImageSourceServiceResult<bool>> Result
 			=> tcsResult.Task;
 
-		public void OnComplete(Drawable? drawable, Java.Lang.IRunnable? dispose)
+		public void OnComplete(Java.Lang.Boolean? success, Drawable? drawable, Java.Lang.IRunnable? dispose)
 		{
 			try
 			{
+				var s = success?.BooleanValue() ?? false;
+
 				_handler?.Invoke(drawable);
 
 				Action? disposeWrapper = null;
 				if (dispose != null)
 					disposeWrapper = dispose.Run;
 
-				tcsResult.TrySetResult(new ImageSourceServiceResult(drawable is not null, disposeWrapper));
+				tcsResult.SetResult(new ImageSourceServiceResult(s, disposeWrapper));
 			}
 			catch
 			{
-				tcsResult.TrySetResult(new ImageSourceServiceResult(false));
+				tcsResult.SetResult(new ImageSourceServiceResult(false));
 			}
 		}
 	}

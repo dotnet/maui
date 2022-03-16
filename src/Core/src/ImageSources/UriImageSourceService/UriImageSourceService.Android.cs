@@ -38,7 +38,7 @@ namespace Microsoft.Maui
 			{
 				try
 				{
-					var drawableCallback = new ImageLoaderDrawableCallback(callback);
+					var drawableCallback = new ImageLoaderCallback(callback);
 
 					ImageLoader.LoadFromUri(context, uriImageSource.Uri.OriginalString, new Java.Lang.Boolean(uriImageSource.CachingEnabled), drawableCallback);
 

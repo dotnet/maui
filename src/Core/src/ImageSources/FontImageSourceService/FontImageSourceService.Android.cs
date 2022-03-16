@@ -57,7 +57,7 @@ namespace Microsoft.Maui
 		
 				try
 				{
-					var drawableCallback = new ImageLoaderDrawableCallback(callback);
+					var drawableCallback = new ImageLoaderCallback(callback);
 					
 					ImageLoader.LoadFromFont(
 						context,

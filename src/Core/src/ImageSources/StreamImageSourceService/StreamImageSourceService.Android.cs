@@ -43,7 +43,7 @@ namespace Microsoft.Maui
 				{
 					var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 
-					var drawableCallback = new ImageLoaderDrawableCallback(callback);
+					var drawableCallback = new ImageLoaderCallback(callback);
 
 					ImageLoader.LoadFromStream(context, stream, drawableCallback);
 

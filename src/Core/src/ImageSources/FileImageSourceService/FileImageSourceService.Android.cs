@@ -45,7 +45,7 @@ namespace Microsoft.Maui
 		{
 			if (imageSource is IFileImageSource fileImageSource)
 			{
-				var drawableCallback = new ImageLoaderDrawableCallback(callback);
+				var drawableCallback = new ImageLoaderCallback(callback);
 
 				try
 				{

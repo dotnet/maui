@@ -26,7 +26,7 @@ public class ImageLoader {
     public static void loadFromResourceId(ImageView imageView, int resourceId, ImageLoaderCallback callback)
     {
         imageView.setImageResource(resourceId);
-        callback.onComplete(true, null);
+        callback.onComplete(true, null, null);
     }
 
     public static void loadFromFile(ImageView imageView, String file, ImageLoaderCallback callback)
@@ -44,7 +44,7 @@ public class ImageLoader {
         Uri androidUri = Uri.parse(uri);
 
         if (androidUri == null) {
-            callback.onComplete(false, null);
+            callback.onComplete(false, null, null);
             return;
         }
 
@@ -88,7 +88,7 @@ public class ImageLoader {
             .into(imageView);
     }
 
-    public static void loadFromResourceId(Context context, int resourceId, ImageLoaderDrawableCallback callback)
+    public static void loadFromResourceId(Context context, int resourceId, ImageLoaderCallback callback)
     {
         RequestManager glide = Glide.with(context);
 
@@ -97,7 +97,7 @@ public class ImageLoader {
             .addListener(new CallbackListener(callback, glide));
     }
 
-    public static void loadFromFile(Context context, String file, ImageLoaderDrawableCallback callback)
+    public static void loadFromFile(Context context, String file, ImageLoaderCallback callback)
     {
         RequestManager glide = Glide.with(context);
 
@@ -106,12 +106,12 @@ public class ImageLoader {
             .addListener(new CallbackListener(callback, glide));
     }
 
-    public static void loadFromUri(Context context, String uri, Boolean cachingEnabled, ImageLoaderDrawableCallback callback)
+    public static void loadFromUri(Context context, String uri, Boolean cachingEnabled, ImageLoaderCallback callback)
     {
         Uri androidUri = Uri.parse(uri);
 
         if (androidUri == null) {
-            callback.onComplete(null, null);
+            callback.onComplete(false, null, null);
             return;
         }
 
@@ -132,7 +132,7 @@ public class ImageLoader {
     }
 
 
-    public static void loadFromStream(Context context, InputStream inputStream, ImageLoaderDrawableCallback callback)
+    public static void loadFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback)
     {
         RequestManager glide = Glide.with(context);
 
@@ -142,7 +142,7 @@ public class ImageLoader {
     }
 
 
-    public static void loadFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderDrawableCallback callback)
+    public static void loadFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback)
     {
         RequestManager glide = Glide.with(context);
 
@@ -158,51 +158,29 @@ public class ImageLoader {
 class CallbackListener implements RequestListener<Drawable>
 {
     private final ImageLoaderCallback callback;
-    private final ImageLoaderDrawableCallback callbackDrawable;
     private final RequestManager requestManager;
 
 
     CallbackListener(ImageLoaderCallback callback, RequestManager requestManager)
     {
         this.callback = callback;
-        this.callbackDrawable = null;
-        this.requestManager = requestManager;
-    }
-
-    CallbackListener(ImageLoaderDrawableCallback callback, RequestManager requestManager)
-    {
-        this.callback = null;
-        this.callbackDrawable = callback;
         this.requestManager = requestManager;
     }
 
     @Override
     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-        if (callbackDrawable != null)
-            callbackDrawable.onComplete(null, null);
-        else if (callback != null)
-            callback.onComplete(false, null);
+        callback.onComplete(false, null,null);
         return false;
     }
 
     @Override
     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-        if (callbackDrawable != null) {
-            callbackDrawable.onComplete(resource, new Runnable() {
+        callback.onComplete(true, resource, new Runnable() {
                 @Override
                 public void run() {
                     requestManager.clear(target);
                 }
             });
-
-        } else if (callback != null) {
-            callback.onComplete(true, new Runnable() {
-                @Override
-                public void run() {
-                    requestManager.clear(target);
-                }
-            });
-        }
         return false;
     }
 }
