@@ -143,14 +143,14 @@ namespace Microsoft.Maui.Controls
 
 		public Size CrossPlatformArrange(Graphics.Rect bounds)
 		{
-			bounds = bounds.Inset(StrokeThickness / 2);
+			bounds = bounds.Inset(StrokeThickness);
 			this.ArrangeContent(bounds);
 			return bounds.Size;
 		}
 
 		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			var inset = Padding + (StrokeThickness / 2);
+			var inset = Padding + StrokeThickness;
 			return this.MeasureContent(inset, widthConstraint, heightConstraint);
 		}
 
