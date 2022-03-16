@@ -382,9 +382,6 @@ namespace Microsoft.Maui.Controls.Foldable
 		}
 
 		Rect _previousHinge = Rect.Zero;
-		Rect _previousPane1 = Rect.Zero;
-		Rect _previousPane2 = Rect.Zero;
-		bool _previousIsLayoutSpanned;
 
 		void UpdateRowsColumns(ViewMode newMode, double newWidth, double newHeight)
 		{
@@ -400,21 +397,11 @@ namespace Microsoft.Maui.Controls.Foldable
 			Rect pane2 = _twoPaneViewLayoutGuide.Pane2;
 			bool isLayoutSpanned = _twoPaneViewLayoutGuide.Mode != TwoPaneViewMode.SinglePane;
 
-			if (pane1 == _previousPane1 &&
-				pane2 == _previousPane2 &&
-				_previousIsLayoutSpanned == isLayoutSpanned &&
-				_twoPaneViewLayoutGuide.Hinge == _previousHinge)
-			{
-				return;
-			}
-
-			_previousPane1 = pane1;
-			_previousPane2 = pane2;
-			_previousIsLayoutSpanned = isLayoutSpanned;
 			_previousHinge = _twoPaneViewLayoutGuide.Hinge;
 
 			if (_twoPaneViewLayoutGuide.Mode != TwoPaneViewMode.SinglePane && newMode != ViewMode.Pane1Only && newMode != ViewMode.Pane2Only)
 			{
+				_previousHinge = _twoPaneViewLayoutGuide.Hinge;
 				Rect hinge = _twoPaneViewLayoutGuide.Hinge;
 
 				if (_twoPaneViewLayoutGuide.Mode == TwoPaneViewMode.Wide)

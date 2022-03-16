@@ -57,11 +57,6 @@ namespace Microsoft.Maui.Controls.Foldable
 			}
 		}
 
-		private void OnHandlerChanging(object sender, HandlerChangingEventArgs e)
-		{
-			throw new NotImplementedException();
-		}
-
 		void OnLayoutHandlerChanged(object sender, EventArgs e)
 		{
 			if (_dualScreenService != null)
