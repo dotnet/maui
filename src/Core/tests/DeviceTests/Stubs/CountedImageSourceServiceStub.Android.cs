@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
@@ -7,11 +8,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class CountedImageSourceServiceStub
 	{
-		public Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>
-			GetDrawableAsync((ICountedImageSourceStub)imageSource, context, cancellationToken);
-
-		public async Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(ICountedImageSourceStub imageSource, Context context, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
+			if (imageSource is not ICountedImageSourceStub imageSourceStub)
+				return new Result(false, false, null);
+
 			try
 			{
 				Starting.Set();
@@ -19,15 +20,45 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				// simulate actual work
 				var drawable = await Task.Run(() =>
 				{
-					if (imageSource.Wait)
+					if (imageSourceStub.Wait)
 						DoWork.WaitOne();
 
-					var color = imageSource.Color.ToPlatform();
+					var color = imageSourceStub.Color.ToPlatform();
 
 					return new ColorDrawable(color);
 				}).ConfigureAwait(false);
 
-				return new Result(drawable, imageSource.IsResolutionDependent);
+				imageView.SetImageDrawable(drawable);
+
+				return new Result(drawable is not null, imageSourceStub.IsResolutionDependent, drawable);
+			}
+			finally
+			{
+				Finishing.Set();
+			}
+		}
+
+		public async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable> callback, CancellationToken cancellationToken = default)
+		{
+			if (imageSource is not ICountedImageSourceStub imageSourceStub)
+				return new Result(false, false, null);
+
+			try
+			{
+				Starting.Set();
+
+				// simulate actual work
+				var drawable = await Task.Run(() =>
+				{
+					if (imageSourceStub.Wait)
+						DoWork.WaitOne();
+
+					var color = imageSourceStub.Color.ToPlatform();
+
+					return new ColorDrawable(color);
+				}).ConfigureAwait(false);
+
+				return new Result(drawable is not null, imageSourceStub.IsResolutionDependent, drawable);
 			}
 			finally
 			{
@@ -37,8 +68,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		class Result : ImageSourceServiceResult
 		{
-			public Result(ColorDrawable drawable, bool resolutionDependent)
-				: base(drawable, resolutionDependent, () => drawable.Dispose())
+			public Result(bool success, bool resolutionDependent, Drawable drawable)
+				: base(success, resolutionDependent, () => drawable?.Dispose())
 			{
 			}
 		}

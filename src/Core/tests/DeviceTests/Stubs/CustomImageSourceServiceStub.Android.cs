@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
@@ -14,23 +15,36 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			_cache = cache;
 		}
 
-		public Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
-			if (imageSource is ICustomImageSourceStub counted)
-				return GetDrawableAsync(counted, context, cancellationToken);
+			if (imageSource is not ICustomImageSourceStub imageSourceStub)
+				return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(false));
 
-			return Task.FromResult<IImageSourceServiceResult<Drawable>>(null);
-		}
-
-		public Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(ICustomImageSourceStub imageSource, Context context, CancellationToken cancellationToken = default)
-		{
-			var color = imageSource.Color;
+			var color = imageSourceStub.Color;
 
 			var drawable = _cache.Get(color);
 
-			var result = new ImageSourceServiceResult(drawable, () => _cache.Return(color));
+			imageView.SetImageDrawable(drawable);
 
-			return Task.FromResult<IImageSourceServiceResult<Drawable>>(result);
+			var result = new ImageSourceServiceResult(drawable is not null, () => _cache.Return(color));
+
+			return Task.FromResult<IImageSourceServiceResult<bool>>(result);
+		}
+
+		public Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable> callback, CancellationToken cancellationToken = default)
+		{
+			if (imageSource is not ICustomImageSourceStub imageSourceStub)
+				return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(false));
+
+			var color = imageSourceStub.Color;
+
+			var drawable = _cache.Get(color);
+
+			callback?.Invoke(drawable);
+
+			var result = new ImageSourceServiceResult(drawable is not null, () => _cache.Return(color));
+
+			return Task.FromResult<IImageSourceServiceResult<bool>>(result);
 		}
 	}
 }
