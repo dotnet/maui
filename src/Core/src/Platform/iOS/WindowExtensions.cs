@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Platform
 
 		public static async Task<RenderedView?> RenderAsImage(this IWindow window, RenderType type)
 		{
-			if (window.Handler?.PlatformView is not UIWindow win)
+			if (window?.ToPlatform() is not UIWindow win)
 				return null;
 
 			var bb = win.GetBoundingBox();
