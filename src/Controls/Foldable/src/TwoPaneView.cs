@@ -10,14 +10,6 @@ namespace Microsoft.Maui.Controls.Foldable
 	[ContentProperty("")]
 	public partial class TwoPaneView : Grid
 	{
-		static TwoPaneView()
-		{
-#if !ANDROID
-			// default implementation for other platforms
-			DependencyService.Register<NoFoldableServiceImpl>();
-#endif
-		}
-
 		enum ViewMode
 		{
 			Pane1Only,

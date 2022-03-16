@@ -12,15 +12,15 @@ namespace Microsoft.Maui.Foldable
 	/// platforms except Android, which creates an working instance
 	/// via HostBuilderExtension.
 	/// </summary>
-    internal class NoFoldableServiceImpl : IFoldableService
-    {
-		static Lazy<NoFoldableServiceImpl> _Instance = new Lazy<NoFoldableServiceImpl>(() => new NoFoldableServiceImpl());
-        public static NoFoldableServiceImpl Instance => _Instance.Value;
+	class NoPlatformFoldableService : IFoldableService
+	{
+		static Lazy<NoPlatformFoldableService> _Instance = new Lazy<NoPlatformFoldableService>(() => new NoPlatformFoldableService());
+		public static NoPlatformFoldableService Instance => _Instance.Value;
 
 		readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
 		readonly WeakEventManager _onLayoutChangedEventManager = new WeakEventManager();
-		public NoFoldableServiceImpl()
-        {
+		public NoPlatformFoldableService()
+		{
 			DeviceDisplay.MainDisplayInfoChanged += OnDeviceInfoChanged;
 		}
 
@@ -28,8 +28,8 @@ namespace Microsoft.Maui.Foldable
 
 		public bool IsSpanned => false;
 
-        public bool IsLandscape => DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape();
-		
+		public bool IsLandscape => DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape();
+
 		public DisplayInfo DeviceInfo => DeviceDisplay.MainDisplayInfo;
 
 		public event EventHandler OnScreenChanged
@@ -43,19 +43,19 @@ namespace Microsoft.Maui.Foldable
 			remove { _onLayoutChangedEventManager.RemoveEventHandler(value); }
 		}
 		public void Dispose()
-        {
-        }
+		{
+		}
 
 		public Size ScaledScreenSize => DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
 		public Rect GetHinge()
-        {
-            return Rect.Zero;
-        }
+		{
+			return Rect.Zero;
+		}
 
-        public Point? GetLocationOnScreen(VisualElement visualElement)
-        {
-            return null;
-        }
+		public Point? GetLocationOnScreen(VisualElement visualElement)
+		{
+			return null;
+		}
 
 		public object WatchForChangesOnLayout(VisualElement visualElement, Action action)
 		{

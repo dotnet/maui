@@ -8,6 +8,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Foldable;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Foldable
 {
@@ -28,9 +29,9 @@ namespace Microsoft.Maui.Foldable
 		bool _isLandscape;
 		TwoPaneViewMode _spanMode;
 		TwoPaneViewLayoutGuide _twoPaneViewLayoutGuide;
-		IFoldableService _dualScreenService;		
-		IFoldableService DualScreenService =>
-			_dualScreenService ?? DependencyService.Get<IFoldableService>() ?? NoFoldableServiceImpl.Instance;
+		IFoldableService _dualScreenService;
+		IFoldableService FoldableService =>
+			_dualScreenService ?? Element?.Handler?.MauiContext?.Services?.GetService<IFoldableService>();
 
 		internal VisualElement Element { get; }
 
@@ -55,11 +56,16 @@ namespace Microsoft.Maui.Foldable
 			}
 			else
 			{
-				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, DualScreenService); // get if null
-				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;				
+				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, FoldableService); // get if null
+				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;
 			}
 		}
 
+		internal void SetFoldableService(IFoldableService foldableService)
+		{
+			_dualScreenService = foldableService;
+			_twoPaneViewLayoutGuide.SetFoldableService(foldableService);
+		}
 
 		EventHandler<HingeAngleChangedEventArgs> _hingeAngleChanged;
 		int subscriberCount = 0;
@@ -103,6 +109,7 @@ namespace Microsoft.Maui.Foldable
 				SetProperty(ref _hingeBounds, value);
 			}
 		}
+
 		/// <summary>
 		/// Used when app is detected to be on a single screen - 
 		/// mainly on Surface Duo (although possible also on other
@@ -116,6 +123,7 @@ namespace Microsoft.Maui.Foldable
 				SetProperty(ref _isLandscape, value);
 			}
 		}
+
 		/// <summary>
 		/// Determines the layout direction of the panes
 		/// SinglePane, Wide, Tall
@@ -139,9 +147,9 @@ namespace Microsoft.Maui.Foldable
 
 			if (guide.Pane2 == Rect.Zero)
 				return new Rect[0];
-			
+
 			//TODO: I think this should this be checking SpanMode==Wide
-			if(IsLandscape)
+			if (IsLandscape)
 				return new[] { guide.Pane1, new Rect(0, hinge.Height + guide.Pane1.Height, guide.Pane2.Width, guide.Pane2.Height) };
 			else
 				return new[] { guide.Pane1, new Rect(hinge.Width + guide.Pane1.Width, 0, guide.Pane2.Width, guide.Pane2.Height) };
@@ -173,7 +181,7 @@ namespace Microsoft.Maui.Foldable
 		}
 
 		bool SetProperty<T>(ref T backingStore, T value,
-			[CallerMemberName]string propertyName = "",
+			[CallerMemberName] string propertyName = "",
 			Action onChanged = null)
 		{
 			if (EqualityComparer<T>.Default.Equals(backingStore, value))
@@ -186,18 +194,42 @@ namespace Microsoft.Maui.Foldable
 		}
 
 #if !ANDROID
-		public Task<int> GetHingeAngleAsync() => DualScreenService.GetHingeAngleAsync();
-
+		public Task<int> GetHingeAngleAsync() => FoldableService?.GetHingeAngleAsync() ?? Task.FromResult(0);
 		void ProcessHingeAngleSubscriberCount(int newCount) { }
+#else
+
+		static object hingeAngleLock = new object();
+		public Task<int> GetHingeAngleAsync() => FoldableService?.GetHingeAngleAsync() ?? Task.FromResult(0);
+
+		void ProcessHingeAngleSubscriberCount(int newCount)
+		{
+			lock (hingeAngleLock)
+			{
+				if (newCount == 1)
+				{
+					Foldable.FoldableService.HingeAngleChanged += OnHingeAngleChanged;
+				}
+				else if (newCount == 0)
+				{
+					Foldable.FoldableService.HingeAngleChanged -= OnHingeAngleChanged;
+				}
+			}
+		}
+
+		void OnHingeAngleChanged(object sender, HingeSensor.HingeSensorChangedEventArgs e)
+		{
+			_hingeAngleChanged?.Invoke(this, new HingeAngleChangedEventArgs(e.HingeAngle));
+		}
 #endif
 	}
-	
+
 	/// <summary>
 	/// Microsoft.Maui.Graphics.Rectangle to string (for debugging)
 	/// </summary>
-	public static class BoundsExtensions
+	static class BoundsExtensions
 	{
-		public static string ToRectStrings(this Rect[] bounds) {
+		public static string ToRectStrings(this Rect[] bounds)
+		{
 			if (bounds.Length == 0)
 				return "[]";
 			string output = "";

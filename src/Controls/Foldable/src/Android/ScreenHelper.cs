@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Foldable
 {
-	public class ScreenHelper
+	class ScreenHelper
 	{
 		/// <summary>
 		///                         Surface Duo             Surface Duo2
@@ -27,36 +27,23 @@ namespace Microsoft.Maui.Foldable
 		/// </summary>
 		public bool IsSpanned { get; set; }
 		/// <summary>
-		/// Removed public access for this property, we no longer expose the underlying activity
-		/// </summary>
-		Activity Activity { get; set; }
-		/// <summary>
 		/// Need to pass the density up from the UseDualScreen HostBuilderExtension
 		/// so we can calculate dp from pixels for layout measuring
 		/// </summary>
 		float screenDensity = 1f;
-		
 
-		public ScreenHelper() {
+		IFoldableContext _foldableContext;
 
-		}
-		public ScreenHelper(IFoldableContext activity)
+		Activity _activity;
+
+		public ScreenHelper(IFoldableContext foldableContext, Activity activity)
 		{
-			Activity = activity as Activity;
-			screenDensity = activity.ScreenDensity;
-			FoldingFeatureBounds = activity.FoldingFeatureBounds;
-			WindowBounds = activity.WindowBounds;
-			IsSpanned = activity.IsSeparating;
-		}
-
-		public bool Initialize(IFoldableContext activity)
-		{
-			Activity = activity as Activity;
-			screenDensity = activity.ScreenDensity;
-			FoldingFeatureBounds = activity.FoldingFeatureBounds;
-			WindowBounds = activity.WindowBounds;
-			IsSpanned = activity.IsSeparating;
-			return true;
+			_activity = activity;
+			_foldableContext = foldableContext;
+			screenDensity = foldableContext.ScreenDensity;
+			FoldingFeatureBounds = foldableContext.FoldingFeatureBounds;
+			WindowBounds = foldableContext.WindowBounds;
+			IsSpanned = foldableContext.IsSeparating;
 		}
 
 		public void OnConfigurationChanged(Configuration newConfig)
@@ -64,9 +51,9 @@ namespace Microsoft.Maui.Foldable
 
 		public void Update() 
 		{
-			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds;
-			WindowBounds = (Activity as IFoldableContext).WindowBounds;
-			screenDensity = (Activity as IFoldableContext).ScreenDensity;
+			FoldingFeatureBounds = _foldableContext.FoldingFeatureBounds;
+			WindowBounds = _foldableContext.WindowBounds;
+			screenDensity = _foldableContext.ScreenDensity;
 		}
 
 		/// <summary>
@@ -75,7 +62,7 @@ namespace Microsoft.Maui.Foldable
 		/// for other foldable devices
 		/// </summary>
 		public SurfaceOrientation GetRotation()
-			=> GetRotation(Activity);
+			=> GetRotation(_activity);
 
 		[Obsolete("No longer used with rotation parameter")]
 		Rect GetHinge(SurfaceOrientation rotation)

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Foldable;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Controls.Foldable
 {
@@ -15,10 +16,13 @@ namespace Microsoft.Maui.Controls.Foldable
 		public static TwoPaneViewLayoutGuide Instance => _twoPaneViewLayoutGuide.Value;
 		static Lazy<TwoPaneViewLayoutGuide> _twoPaneViewLayoutGuide = new Lazy<TwoPaneViewLayoutGuide>(() => new TwoPaneViewLayoutGuide());
 
-		internal IFoldableService DualScreenService { 
+		internal IFoldableService DualScreenService
+		{
 			get
 			{
-				return _dualScreenService ?? DependencyService.Get<IFoldableService>() ?? NoFoldableServiceImpl.Instance;
+				return _dualScreenService ??
+					_layout?.Handler?.MauiContext?.Services?.GetService<IFoldableService>() ??
+					NoPlatformFoldableService.Instance;
 			}
 		}
 
@@ -27,11 +31,11 @@ namespace Microsoft.Maui.Controls.Foldable
 		Rect _rightPane;
 		TwoPaneViewMode _mode;
 		VisualElement _layout;
-		readonly IFoldableService _dualScreenService;
+		IFoldableService _dualScreenService;
 		bool _isLandscape;
 		public event PropertyChangedEventHandler PropertyChanged;
 		List<string> _pendingPropertyChanges = new List<string>();
-		
+
 		TwoPaneViewLayoutGuide()
 		{
 		}
@@ -45,10 +49,15 @@ namespace Microsoft.Maui.Controls.Foldable
 			_layout = layout;
 			_dualScreenService = dualScreenService ?? DualScreenService;
 
-			if(_layout != null)
+			if (_layout != null)
 			{
 				UpdateLayouts(layout.Width, layout.Height);
 			}
+		}
+
+		internal void SetFoldableService(IFoldableService foldableService)
+		{
+			_dualScreenService = foldableService;
 		}
 
 		public bool IsLandscape
@@ -194,7 +203,7 @@ namespace Microsoft.Maui.Controls.Foldable
 				}
 			}
 
-			else 
+			else
 			{   // NOT spanned
 				if (DualScreenService.IsLandscape)
 				{
@@ -274,7 +283,7 @@ namespace Microsoft.Maui.Controls.Foldable
 			bool isInMultipleRegions = false;
 			var hinge = DualScreenService.GetHinge();
 			bool hingeIsVertical = Hinge.Height > Hinge.Width;
-			
+
 			if (hingeIsVertical)
 			{
 				// Check that the control is over the split
@@ -288,7 +297,8 @@ namespace Microsoft.Maui.Controls.Foldable
 				{
 					isInMultipleRegions = true;
 				}
-			} else // Portrait
+			}
+			else // Portrait
 			{
 				// Check that the control is over the split
 				if (layoutBounds.Y < hinge.Y && layoutBounds.Y + layoutBounds.Height > (hinge.Y + hinge.Height))
@@ -346,7 +356,7 @@ namespace Microsoft.Maui.Controls.Foldable
 		}
 
 		protected bool SetProperty<T>(ref T backingStore, T value,
-			[CallerMemberName]string propertyName = "",
+			[CallerMemberName] string propertyName = "",
 			Action onChanged = null)
 		{
 			if (EqualityComparer<T>.Default.Equals(backingStore, value))
