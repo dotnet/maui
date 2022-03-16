@@ -23,12 +23,6 @@ import java.io.File;
 import java.io.InputStream;
 
 public class ImageLoader {
-    public static void loadFromResourceId(ImageView imageView, int resourceId, ImageLoaderCallback callback)
-    {
-        imageView.setImageResource(resourceId);
-        callback.onComplete(true, null, null);
-    }
-
     public static void loadFromFile(ImageView imageView, String file, ImageLoaderCallback callback)
     {
         RequestManager glide = Glide.with(imageView);
@@ -86,15 +80,6 @@ public class ImageLoader {
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
             .addListener(new CallbackListener(callback, glide))
             .into(imageView);
-    }
-
-    public static void loadFromResourceId(Context context, int resourceId, ImageLoaderCallback callback)
-    {
-        RequestManager glide = Glide.with(context);
-
-        glide
-            .load(resourceId)
-            .addListener(new CallbackListener(callback, glide));
     }
 
     public static void loadFromFile(Context context, String file, ImageLoaderCallback callback)

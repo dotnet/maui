@@ -52,7 +52,10 @@ namespace Microsoft.Maui
 					var id = context?.GetDrawableId(fileImageSource.File) ?? -1;
 					if (id > 0)
 					{
-						ImageLoader.LoadFromResourceId(context, id, drawableCallback);
+						drawableCallback.OnComplete(
+							new Java.Lang.Boolean(true),
+							context?.GetDrawable(id),
+							null);
 					}
 					else
 					{
