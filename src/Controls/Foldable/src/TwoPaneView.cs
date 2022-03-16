@@ -180,9 +180,16 @@ namespace Microsoft.Maui.Controls.Foldable
 			RowDefinitions = new RowDefinitionCollection() { new RowDefinition(), new RowDefinition(), new RowDefinition() };
 			ColumnDefinitions = new ColumnDefinitionCollection() { new ColumnDefinition(), new ColumnDefinition(), new ColumnDefinition() };
 
-			//HACK:FOLDABLE
+		}
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
 			if (_twoPaneViewLayoutGuide.DualScreenService != null)
+			{
 				_twoPaneViewLayoutGuide.DualScreenService.OnLayoutChanged += DualScreenService_OnFeatureChanged;
+			}
 		}
 
 		private void DualScreenService_OnFeatureChanged(object sender, FoldEventArgs e)
@@ -234,12 +241,12 @@ namespace Microsoft.Maui.Controls.Foldable
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
+			var screenSize = _twoPaneViewLayoutGuide.DualScreenService.ScaledScreenSize;
+			widthConstraint = Math.Min(widthConstraint, screenSize.Width);
+			heightConstraint = Math.Min(heightConstraint, screenSize.Height);
+
 			UpdateMode(widthConstraint, heightConstraint, false);
 			var sizeRequest = base.MeasureOverride(widthConstraint, heightConstraint);
-			if (UpdateMode(sizeRequest.Width, sizeRequest.Height, false))
-			{
-				sizeRequest = base.MeasureOverride(widthConstraint, heightConstraint);
-			}
 			return sizeRequest;
 		}
 

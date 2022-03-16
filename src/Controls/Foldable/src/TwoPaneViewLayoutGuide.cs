@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Foldable;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +19,9 @@ namespace Microsoft.Maui.Controls.Foldable
 			get
 			{
 				if (_dualScreenService == null)
+				{
 					_dualScreenService = _layout?.Handler?.MauiContext?.Services?.GetService<IFoldableService>();
+				}
 
 				return _dualScreenService ??
 					NoPlatformFoldableService.Instance;
@@ -53,12 +53,37 @@ namespace Microsoft.Maui.Controls.Foldable
 			if (_layout != null)
 			{
 				UpdateLayouts(layout.Width, layout.Height);
+				_layout.HandlerChanged += OnLayoutHandlerChanged;
 			}
+		}
+
+		private void OnHandlerChanging(object sender, HandlerChangingEventArgs e)
+		{
+			throw new NotImplementedException();
+		}
+
+		void OnLayoutHandlerChanged(object sender, EventArgs e)
+		{
+			if (_dualScreenService != null)
+			{
+				_dualScreenService.OnLayoutChanged -= OnDualScreenServiceChanged;
+			}
+
+			if (_layout.Handler != null)
+			{
+				DualScreenService.OnLayoutChanged += OnDualScreenServiceChanged;
+			}
+		}
+
+		void OnDualScreenServiceChanged(object sender, FoldEventArgs e)
+		{
+			UpdateLayouts();
 		}
 
 		internal void SetFoldableService(IFoldableService foldableService)
 		{
 			_dualScreenService = foldableService;
+			UpdateLayouts();
 		}
 
 		public bool IsLandscape
@@ -159,6 +184,13 @@ namespace Microsoft.Maui.Controls.Foldable
 
 		double _layoutWidth = -1;
 		double _layoutHeight = -1;
+
+
+		void UpdateLayouts()
+		{
+			if (_layoutWidth > 0 && _layoutHeight > 0)
+				UpdateLayouts(_layoutWidth, _layoutHeight);
+		}
 
 		internal void UpdateLayouts(double width, double height)
 		{
