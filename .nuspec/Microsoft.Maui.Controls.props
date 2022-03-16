@@ -1,22 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+	<Import Project="Microsoft.Maui.Controls.SingleProject.props" />
+
 	<PropertyGroup>
 		<_IsHotRestartDefined>$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants.Trim())', '(^|;)HOTRESTART($|;)'))</_IsHotRestartDefined>
 		<DefineConstants Condition="!$(_IsHotRestartDefined) And '$(IsHotRestartBuild)' == 'true'">HOTRESTART;$(DefineConstants)</DefineConstants>
-	</PropertyGroup>
-
-	<PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
-		<OutputType Condition="'$(OutputType)' == 'Exe'">WinExe</OutputType>
-		<EnablePreviewMsixTooling Condition="'$(EnablePreviewMsixTooling)' == ''">true</EnablePreviewMsixTooling>
-		<_SingleProjectRIDRequired Condition="'$(OutputType)' == 'WinExe'">true</_SingleProjectRIDRequired>
-		<_SingleProjectRIDSpecified Condition="'$(RuntimeIdentifier)' != '' or '$(RuntimeIdentifiers)' != ''">true</_SingleProjectRIDSpecified>
-	</PropertyGroup>
-
-	<PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' and '$(_SingleProjectRIDRequired)' == 'true' and '$(_SingleProjectRIDSpecified)' != 'true' ">
-		<_SingleProjectHostArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)</_SingleProjectHostArchitecture>
-		<_SingleProjectHostArchitecture>$(_SingleProjectHostArchitecture.ToLower())</_SingleProjectHostArchitecture>
-		<RuntimeIdentifier>win10-$(_SingleProjectHostArchitecture)</RuntimeIdentifier>
-		<_MauiUsingDefaultRuntimeIdentifier>true</_MauiUsingDefaultRuntimeIdentifier>
 	</PropertyGroup>
 
 	<ItemGroup>
