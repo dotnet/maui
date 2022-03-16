@@ -17,7 +17,6 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
-    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
@@ -46,8 +45,7 @@
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
     <OutputType>WinExe</OutputType>
-    <RuntimeIdentifier Condition="'$(Platform)' == 'x86'">win10-x86</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$(Platform)' != 'x86'">win10-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>

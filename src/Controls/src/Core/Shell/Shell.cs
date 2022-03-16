@@ -450,12 +450,14 @@ namespace Microsoft.Maui.Controls
 		ShellNavigationState IShellController.GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, bool includeStack)
 			=> ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, includeStack ? shellSection.Stack.ToList() : null, includeStack ? shellSection.Navigation.ModalStack.ToList() : null);
 
-		async void IShellController.OnFlyoutItemSelected(Element element)
+		void IShellController.OnFlyoutItemSelected(Element element)
 		{
-			await (this as IShellController).OnFlyoutItemSelectedAsync(element);
+			(this as IShellController)
+				.OnFlyoutItemSelectedAsync(element)
+				.FireAndForget();
 		}
 
-		async Task IShellController.OnFlyoutItemSelectedAsync(Element element)
+		Task IShellController.OnFlyoutItemSelectedAsync(Element element)
 		{
 			ShellItem shellItem = null;
 			ShellSection shellSection = null;
@@ -484,12 +486,10 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (shellItem == null || !shellItem.IsEnabled)
-				return;
+				return Task.CompletedTask;
 
 			shellSection = shellSection ?? shellItem.CurrentItem;
 			shellContent = shellContent ?? shellSection?.CurrentItem;
-
-			var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, null, null);
 
 			if (FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
 				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
@@ -499,7 +499,49 @@ namespace Microsoft.Maui.Controls
 			else if (shellContent == null)
 				shellSection.PropertyChanged += OnShellItemPropertyChanged;
 			else
-				await GoToAsync(state).ConfigureAwait(false);
+			{
+				var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, null, null);
+
+				if (this.CurrentItem == null)
+				{
+					var requestBuilder = new RouteRequestBuilder(new List<string>()
+					{
+						shellItem.Route,
+						shellSection.Route,
+						shellContent.Route
+					});
+
+					var node = new ShellUriHandler.NodeLocation();
+					node.SetNode(shellContent);
+					requestBuilder.AddMatch(node);
+
+					var navRequest =
+						new ShellNavigationRequest(
+							new RequestDefinition(requestBuilder, this),
+							 ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt,
+							 String.Empty,
+							 String.Empty);
+
+					var navParameters = new ShellNavigationParameters()
+					{
+						TargetState = state,
+						Animated = false,
+						EnableRelativeShellRoutes = false,
+						DeferredArgs = null,
+						Parameters = null
+					};
+
+					return _navigationManager
+						.GoToAsync(navParameters, navRequest);
+
+				}
+				else
+				{
+					return GoToAsync(state);
+				}
+			}
+
+			return Task.CompletedTask;
 		}
 
 		void OnShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -552,8 +594,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		ReadOnlyCollection<ShellItem> IShellController.GetItems() =>
-			new ReadOnlyCollection<ShellItem>(((ShellItemCollection)Items).VisibleItemsReadOnly.ToList());
+		ReadOnlyCollection<ShellItem> IShellController.GetItems() => ((ShellItemCollection)Items).VisibleItemsReadOnly;
 
 		event NotifyCollectionChangedEventHandler IShellController.ItemsCollectionChanged
 		{

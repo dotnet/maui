@@ -102,19 +102,21 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
+				var window = MauiProgram.DefaultWindow;
+
 				FrameworkElement frameworkElement = null;
-				var content = (Panel)DefaultWindow.Content;
+				var content = (Panel)window.Content;
 				try
 				{
 					var scopedContext = new MauiContext(MauiContext.Services);
-					scopedContext.AddWeakSpecific(DefaultWindow);
+					scopedContext.AddWeakSpecific(window);
 					var mauiContext = scopedContext.MakeScoped(true);
 					var windowManager = mauiContext.GetNavigationRootManager();
-					windowManager.Connect(window.Content);
+					windowManager.Connect((IView)window.Content);
 					frameworkElement = windowManager.RootView;
 
-					TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-					frameworkElement.Loaded += (_, __) => taskCompletionSource.SetResult(true);
+					var taskCompletionSource = new TaskCompletionSource<object>();
+					frameworkElement.Loaded += (object _, RoutedEventArgs __) => taskCompletionSource.SetResult(true);
 					content.Children.Add(frameworkElement);
 					await taskCompletionSource.Task;
 					await action(windowManager);

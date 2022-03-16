@@ -12,6 +12,7 @@
   <PropertyGroup>
     <RecordDependsOn>
       Clean;
+      _ClearSystemProperties;
       BuildAndStartAotProfiling;
       _Sleep;
       FinishAotProfiling;
@@ -21,6 +22,10 @@
   </PropertyGroup>
   <Target Name="Record" DependsOnTargets="$(RecordDependsOn)">
     <Message Importance="High" Text="Success! See changes in: $(MauiNuSpecDirectory)$(App).aotprofile" />
+  </Target>
+  <Target Name="_ClearSystemProperties" DependsOnTargets="_ResolveMonoAndroidSdks">
+    <!-- Clear debug.mono.log in case it was set -->
+    <Exec Command="&quot;$(AdbToolPath)adb&quot; shell &quot;setprop debug.mono.log ''&quot;" />
   </Target>
   <Target Name="_Sleep">
     <Sleep Delay="5000" />
