@@ -326,7 +326,7 @@ namespace Microsoft.Maui.Controls.Foldable
 				}
 
 				// Update row/column sizes (this may need to happen even if the mode doesn't change)
-				UpdateRowsColumns(newMode);
+				UpdateRowsColumns(newMode, width, height);
 
 				// Update mode if necessary
 				if (newMode != _currentMode)
@@ -388,7 +388,7 @@ namespace Microsoft.Maui.Controls.Foldable
 		Rect _previousPane2 = Rect.Zero;
 		bool _previousIsLayoutSpanned;
 
-		void UpdateRowsColumns(ViewMode newMode)
+		void UpdateRowsColumns(ViewMode newMode, double newWidth, double newHeight)
 		{
 			var columnLeft = ColumnDefinitions[0];
 			var columnMiddle = ColumnDefinitions[1];
@@ -480,7 +480,7 @@ namespace Microsoft.Maui.Controls.Foldable
 					{
 						// add padding to content where the content is under the hinge
 						_content1.Padding = new Thickness(pane1.X, 0, 0, 0);
-						_content2.Padding = new Thickness(0, 0, Width - pane1.Width, 0);
+						_content2.Padding = new Thickness(0, 0, newWidth - pane1.Width, 0);
 					}
 					else
 					{
@@ -498,7 +498,7 @@ namespace Microsoft.Maui.Controls.Foldable
 					{
 						// add padding to content where the content is under the hinge
 						_content2.Padding = new Thickness(pane1.X, 0, 0, 0);
-						_content1.Padding = new Thickness(0, 0, Width - pane1.Width, 0);
+						_content1.Padding = new Thickness(0, 0, newWidth - pane1.Width, 0);
 					}
 					else
 					{
@@ -516,7 +516,7 @@ namespace Microsoft.Maui.Controls.Foldable
 					{
 						// add padding to content where the content is under the hinge
 						_content1.Padding = new Thickness(0, pane1.Y, 0, 0);
-						_content2.Padding = new Thickness(0, 0, 0, Height - pane1.Height);
+						_content2.Padding = new Thickness(0, 0, 0, newHeight - pane1.Height);
 					}
 					else
 					{
@@ -535,7 +535,7 @@ namespace Microsoft.Maui.Controls.Foldable
 					{
 						// add padding to content where the content is under the hinge
 						_content2.Padding = new Thickness(0, pane1.Y, 0, 0);
-						_content1.Padding = new Thickness(0, 0, 0, Height - pane1.Height);
+						_content1.Padding = new Thickness(0, 0, 0, newHeight - pane1.Height);
 					}
 					else
 					{
@@ -551,7 +551,7 @@ namespace Microsoft.Maui.Controls.Foldable
 					if (!isLayoutSpanned)
 					{
 						// add padding to content where the content is under the hinge
-						_content1.Padding = new Thickness(pane1.X, pane1.Y, Width - pane1.Width - pane1.X, Height - pane1.Height - pane1.Y);
+						_content1.Padding = new Thickness(pane1.X, pane1.Y, newWidth - pane1.Width - pane1.X, newHeight - pane1.Height - pane1.Y);
 						_content2.Padding = new Thickness(0, 0, 0, 0);
 					}
 					else
@@ -569,7 +569,7 @@ namespace Microsoft.Maui.Controls.Foldable
 					{
 						_content1.Padding = new Thickness(0, 0, 0, 0);
 						// add padding to content where the content is under the hinge
-						_content2.Padding = new Thickness(pane1.X, pane1.Y, Width - pane1.Width - pane1.X, Height - pane1.Height - pane1.Y);
+						_content2.Padding = new Thickness(pane1.X, pane1.Y, newWidth - pane1.Width - pane1.X, newHeight - pane1.Height - pane1.Y);
 					}
 					else
 					{
