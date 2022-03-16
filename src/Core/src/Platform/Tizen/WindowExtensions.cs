@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using ElmSharp;
+using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
 using ELayout = ElmSharp.Layout;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class PlatformWindowExtensions
+	public static partial class WindowExtensions
 	{
 		static Dictionary<Window, Func<bool>> s_windowBackButtonPressedHandler = new Dictionary<Window, Func<bool>>();
 		static Dictionary<Window, Action> s_windowCloseRequestHandler = new Dictionary<Window, Action>();
@@ -88,6 +89,11 @@ namespace Microsoft.Maui.Platform
 		public static void SetModalStack(this Window window, ModalStack modalStack)
 		{
 			s_windowModalStack[window] = modalStack;
+		}
+
+		public static float GetDisplayDensity(this Window window)
+		{
+			return (float)DeviceInfo.ScalingFactor;
 		}
 
 		static void OnBackButtonPressed(Window window)

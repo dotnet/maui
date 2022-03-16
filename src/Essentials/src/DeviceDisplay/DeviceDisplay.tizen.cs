@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Devices
 			return new DisplayInfo(
 				width: displayWidth,
 				height: displayHeight,
-				density: displayDpi / 160.0,
+				density: displayDpi / DeviceDisplay.BaseLogicalDpi,
 				orientation: GetNaturalDisplayOrientation(),
 				rotation: displayRotation
 				);
