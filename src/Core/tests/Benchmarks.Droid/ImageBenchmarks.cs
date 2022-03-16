@@ -1,4 +1,5 @@
-﻿using Android.Graphics.Drawables;
+﻿using Android.Content;
+using Android.Graphics.Drawables;
 using Android.OS;
 using Bumptech.Glide;
 using Bumptech.Glide.Request.Target;
@@ -18,13 +19,27 @@ public class ImageBenchmark
 	AImageView? imageView;
 	Glide? glide;
 	Handler? handler;
+	Context? context;
+	string? imageFilename;
 
 	[GlobalSetup]
 	public void GlobalSetup()
 	{
-		imageView = new AImageView(MainInstrumentation.Instance!.Context);
-		glide = Glide.Get(MainInstrumentation.Instance!.Context);
+		context = MainInstrumentation.Instance!.Context!;
+
+		imageView = new AImageView(context);
+		glide = Glide.Get(context);
 		handler = new Handler(Looper.MainLooper!);
+
+		var imageName = "dotnet_bot.png";
+		var cacheDir = Microsoft.Maui.Essentials.FileSystem.CacheDirectory;
+		imageFilename = Path.Combine(cacheDir, imageName);
+
+		using (var s = context!.Assets!.Open(imageName))
+		using (var w = File.Create(Path.Combine(cacheDir, imageName)))
+		{
+			s.CopyTo(w);
+		}
 	}
 
 	[GlobalCleanup]
@@ -34,34 +49,25 @@ public class ImageBenchmark
 		imageView = null;
 	}
 
-	//[Benchmark]
+	[Benchmark]
 	public void SetImageResource() => imageView!.SetImageResource(Resource.Drawable.dotnet_bot);
 
-	//[Benchmark]
+	[Benchmark]
 	public void SetImageDrawable() => imageView!.SetImageDrawable(MainInstrumentation.Instance!.Context!.GetDrawable(Resource.Drawable.dotnet_bot));
 
 	[Benchmark]
-	public void ImageHelperFromFile()
+	public async Task ImageHelperFromFile()
 	{
 		var callback = new Callback();
 
-		handler!.Post(() => { 
-			try
-			{
-				Microsoft.Maui.ImageLoader.LoadFromFile(
-					imageView,
-					"dotnet_bot.png",
-					callback);
-			}
-			catch (System.Exception ex)
-			{
-				Log.Debug("DOTNET-BENCH", ex.ToString());
-			}
+		handler!.Post(() => {
+			Microsoft.Maui.ImageLoader.LoadFromFile(
+				context!,
+				imageFilename,
+				callback);
 		});
 
-		Android.Util.Log.Debug("DOTNET-BENCH", "Waiting for Glide");
-		callback.SuccessTask.GetAwaiter().GetResult();
-		Android.Util.Log.Debug("DOTNET-BENCH", "Finsihed Glide");
+		await callback.SuccessTask;
 	}
 
 	class Callback : Java.Lang.Object, Microsoft.Maui.IImageLoaderCallback
@@ -74,7 +80,6 @@ public class ImageBenchmark
 
 		public void OnComplete(Java.Lang.Boolean? success, Drawable? drawable, IRunnable? dispose)
 		{
-			Android.Util.Log.Debug("DOTNET-BENCH", "Callback OnComplete");
 			tcsSuccess.SetResult(success?.BooleanValue() ?? false);
 			tcsDrawable.SetResult(drawable);
 		}
