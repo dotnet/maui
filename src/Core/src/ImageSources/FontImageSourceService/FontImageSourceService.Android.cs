@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 			if (imageSource is IFontImageSource fontImageSource)
 			{
 				var size = FontManager.GetFontSize(fontImageSource.Font);
-				var unit = fontImageSource.FontAutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip;
+				var unit = fontImageSource.Font.AutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip;
 				var textSize = TypedValue.ApplyDimension(unit, size.Value, imageView.Context?.Resources?.DisplayMetrics);
 				var typeface = FontManager.GetTypeface(fontImageSource.Font);
 				var color = (fontImageSource.Color ?? Graphics.Colors.White).ToPlatform();
@@ -50,11 +50,11 @@ namespace Microsoft.Maui
 			if (imageSource is IFontImageSource fontImageSource)
 			{
 				var size = FontManager.GetFontSize(fontImageSource.Font);
-				var unit = fontImageSource.FontAutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip;
+				var unit = fontImageSource.Font.AutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip;
 				var textSize = TypedValue.ApplyDimension(unit, size.Value, context?.Resources?.DisplayMetrics);
 				var typeface = FontManager.GetTypeface(fontImageSource.Font);
 				var color = (fontImageSource.Color ?? Graphics.Colors.White).ToPlatform();
-
+		
 				try
 				{
 					var drawableCallback = new ImageLoaderDrawableCallback(callback);
