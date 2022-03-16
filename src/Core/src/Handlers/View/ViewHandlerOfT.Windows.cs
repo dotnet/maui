@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Handlers
 			oldParent?.Children.Remove(ContainerView);
 
 			((WrapperView)ContainerView).Child = null;
+			((WrapperView)ContainerView).Dispose();
 			ContainerView = null;
 
 			if (oldIndex is int idx && idx >= 0)

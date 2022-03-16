@@ -31,9 +31,8 @@
 
 			if (path == null)
 				return;
-					
+
 			DrawStrokePath(canvas, rect, path);
-			ClipPath(canvas, path);
 			DrawFillPath(canvas, rect, path);
 		}
 
@@ -108,6 +107,8 @@
 				return;
 
 			canvas.SaveState();
+
+			ClipPath(canvas, path);
 
 			// Set Fill
 			var fillPaint = ShapeView.Fill;
