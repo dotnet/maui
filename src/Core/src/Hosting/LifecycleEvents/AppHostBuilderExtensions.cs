@@ -24,7 +24,7 @@ namespace Microsoft.Maui.LifecycleEvents
 	{
 		public static MauiAppBuilder ConfigureLifecycleEvents(this MauiAppBuilder builder, Action<ILifecycleBuilder>? configureDelegate)
 		{
-			builder.Services.TryAddSingleton<ILifecycleEventService, LifecycleEventService>();
+			builder.Services.TryAddSingleton<ILifecycleEventService>(sp => new LifecycleEventService(sp.GetServices<LifecycleEventRegistration>()));
 			if (configureDelegate != null)
 			{
 				builder.Services.AddSingleton<LifecycleEventRegistration>(new LifecycleEventRegistration(configureDelegate));

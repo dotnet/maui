@@ -36,6 +36,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
+			_shellAppearance = appearance;
+
 			if (appearance != null)
 				SetAppearance(appearance);
 			else
@@ -52,6 +54,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		BottomNavigationViewTracker _bottomNavigationTracker;
 		BottomSheetDialog _bottomSheetDialog;
 		bool _disposed;
+		bool _menuSetup;
+		ShellAppearance _shellAppearance;
+		bool _appearanceSet;
 		public IShellItemController ShellItemController => ShellItem;
 		IMauiContext MauiContext => ShellContext.Shell.Handler.MauiContext;
 
@@ -138,7 +143,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.OnDestroy();
 		}
 
-		protected virtual void SetAppearance(ShellAppearance appearance) => _appearanceTracker.SetAppearance(_bottomView, appearance);
+		protected virtual void SetAppearance(ShellAppearance appearance)
+		{
+			if (_bottomView == null ||
+				_bottomView.Visibility == ViewStates.Gone ||
+				DisplayedPage == null)
+			{
+				return;
+			}
+
+			_appearanceSet = true;
+			_appearanceTracker.SetAppearance(_bottomView, appearance);
+		}
 
 		protected virtual bool ChangeSection(ShellSection shellSection)
 		{
@@ -279,6 +295,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (newPage != null)
 				newPage.PropertyChanged += OnDisplayedElementPropertyChanged;
 
+			if (newPage != null && !_menuSetup)
+			{
+				SetupMenu();
+			}
+
 			UpdateTabBarVisibility();
 		}
 
@@ -387,8 +408,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void SetupMenu(IMenu menu, int maxBottomItems, ShellItem shellItem)
 		{
+			if (DisplayedPage == null)
+				return;
+
 			if (ShellItemController.ShowTabs)
 			{
+				_menuSetup = true;
 				var currentIndex = ((IShellItemController)ShellItem).GetItems().IndexOf(ShellSection);
 				var items = CreateTabList(shellItem);
 
@@ -414,7 +439,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnDisplayedElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
+			{
+				if (!_menuSetup)
+					SetupMenu();
+
 				UpdateTabBarVisibility();
+			}
 		}
 
 		void SetupMenu()
@@ -429,6 +459,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			_bottomView.Visibility = ShellItemController.ShowTabs ? ViewStates.Visible : ViewStates.Gone;
+
+			if (_shellAppearance != null && !_appearanceSet)
+			{
+				SetAppearance(_shellAppearance);
+			}
 		}
 	}
 }
