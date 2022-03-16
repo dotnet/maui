@@ -242,10 +242,6 @@ namespace Microsoft.Maui.Controls.Foldable
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			var screenSize = _twoPaneViewLayoutGuide.DualScreenService.ScaledScreenSize;
-			widthConstraint = Math.Min(widthConstraint, screenSize.Width);
-			heightConstraint = Math.Min(heightConstraint, screenSize.Height);
-
 			UpdateMode(widthConstraint, heightConstraint, false);
 			var sizeRequest = base.MeasureOverride(widthConstraint, heightConstraint);
 			return sizeRequest;
