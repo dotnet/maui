@@ -367,13 +367,13 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		public static Task<byte[]?> RenderAsBMP(this UIWindow window, bool skipChildren = true)
+		public static Task<byte[]?> RenderAsBMP(this UIWindow window, bool skipChildren = false)
 			=> Task.FromResult(window?.RenderAsBmp(window.Layer, UIScreen.MainScreen.Scale, skipChildren));
 
-		public static Task<byte[]?> RenderAsPNG(this UIWindow window, bool skipChildren = true)
+		public static Task<byte[]?> RenderAsPNG(this UIWindow window, bool skipChildren = false)
 			=> Task.FromResult(window?.RenderAsPng(window.Layer, UIScreen.MainScreen.Scale, skipChildren));
 
-		public static Task<byte[]?> RenderAsJPEG(this UIWindow window, bool skipChildren = true)
+		public static Task<byte[]?> RenderAsJPEG(this UIWindow window, bool skipChildren = false)
 			=> Task.FromResult(window?.RenderAsJpeg(window.Layer, UIScreen.MainScreen.Scale, skipChildren));
 
 		public static Task<byte[]?> RenderAsBMP(this UIView view, bool skipChildren = true)
