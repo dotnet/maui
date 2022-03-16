@@ -12,15 +12,9 @@ namespace Microsoft.Maui.Foldable
 	class ScreenHelper
 	{
 		/// <summary>
-		///                         Surface Duo             Surface Duo2
-		/// Dual-portrait (wide)    1350, 0 - 1434, 1800    1344, 0 - 1410, 1892
-		/// Dual-landscape (tall)   0, 1350 - 1800, 1434    0, 1344 - 1892, 1410
-		/// </summary>
-		public Rect FoldingFeatureBounds { get; set; } = Rect.Zero;
-		/// <summary>
 		/// Whether the app is spanned across a hinge or fold
 		/// </summary>
-		public bool IsSpanned { get; set; }
+		public bool IsSpanned => _foldableContext.IsSeparating;
 
 		IFoldableContext _foldableContext;
 
@@ -30,16 +24,6 @@ namespace Microsoft.Maui.Foldable
 		{
 			_activity = new WeakReference<Activity>(activity);
 			_foldableContext = foldableContext;
-			FoldingFeatureBounds = foldableContext.FoldingFeatureBounds;
-			IsSpanned = foldableContext.IsSeparating;
-		}
-
-		public void OnConfigurationChanged(Configuration newConfig)
-			=> Update();
-
-		public void Update()
-		{
-			FoldingFeatureBounds = _foldableContext.FoldingFeatureBounds;
 		}
 
 		/// <summary>
@@ -58,17 +42,8 @@ namespace Microsoft.Maui.Foldable
 		/// <summary>
 		/// Passed from UseDualScreen HostBuilderExtension
 		/// </summary>
-		Rect GetHinge()
-		{
-			// Hinge's coordinates of its 4 edges in different mode on Surface Duo 1, Surface Duo 2
-			// Double Portrait  Rect(1350, 0 - 1434, 1800)     Rect(1344, 0 - 1410, 1892)
-			// Double Landscape Rect(0, 1350 - 1800, 1434)     Rect(0, 1344 - 1892, 1410)
-
-			if (FoldingFeatureBounds == Rect.Zero)
-				return new Rect();
-
-			return new Rect((int)FoldingFeatureBounds.Left, (int)FoldingFeatureBounds.Top, (int)FoldingFeatureBounds.Width, (int)FoldingFeatureBounds.Height);
-		}
+		Rect GetHinge() =>
+			_foldableContext.FoldingFeatureBounds;
 
 		/// <summary>
 		/// Passed from UseDualScreen HostBuilderExtension

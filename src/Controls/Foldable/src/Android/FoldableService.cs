@@ -29,14 +29,14 @@ namespace Microsoft.Maui.Foldable
 		{
 			get
 			{
-				global::Android.Util.Log.Debug("JWM2", $"DualScreenServiceImpl.getFoldingFeatureBounds _hingeDp:{_hingeDp}");
-				return _hingeDp;
+				global::Android.Util.Log.Debug("JWM2", $"DualScreenServiceImpl.getFoldingFeatureBounds _hingePx:{_hingePx}");
+				return _hingePx;
 			}
 			set
 			{
 				global::Android.Util.Log.Debug("JWM2", $"DualScreenServiceImpl.setFoldingFeatureBounds value:{value}");
-				_hingeDp = value;
-				FoldLayoutChanged();
+				_hingePx = value;
+				Update();
 			}
 		}
 
@@ -49,8 +49,6 @@ namespace Microsoft.Maui.Foldable
 			consumer.SetWindowSize(rect);
 			Update();
 
-			//TODO: do we need to update the screen here???
-			_helper?.Update();
 			_onScreenChangedEventManager.HandleEvent(this, EventArgs.Empty, nameof(OnScreenChanged));
 		}
 
@@ -65,7 +63,7 @@ namespace Microsoft.Maui.Foldable
 			var bounds = wmc.ComputeCurrentWindowMetrics(activity).Bounds;
 			var rect = new Rect(bounds.Left, bounds.Top, bounds.Width(), bounds.Height());
 			consumer.SetWindowSize(rect);
-
+			Update();
 			wit.AddWindowLayoutInfoListener(activity, runOnUiThreadExecutor(), consumer); // `consumer` is the IConsumer implementation declared below
 		}
 
@@ -109,6 +107,7 @@ namespace Microsoft.Maui.Foldable
 				FoldLayoutChanged();
 			}
 		}
+
 		void FoldLayoutChanged()
 		{
 			OnLayoutChanged?.Invoke(this, new Microsoft.Maui.Foldable.FoldEventArgs()
@@ -120,7 +119,7 @@ namespace Microsoft.Maui.Foldable
 		}
 
 		bool _isSpanned = false;
-		Rect _hingeDp = Rect.Zero;
+		Rect _hingePx = Rect.Zero;
 		Rect _windowBounds = Rect.Zero;
 		#endregion
 		Activity _mainActivity;
@@ -154,14 +153,14 @@ namespace Microsoft.Maui.Foldable
 
 		void Init(IFoldableContext foldableInfo, Activity activity = null)
 		{
-			consumer ??= new Consumer(activity);
+			consumer ??= new Consumer();
 			if (_foldableInfo == null)
 			{
 				_foldableInfo = foldableInfo;
 
 				if (_foldableInfo != null)
 				{
-					_hingeDp = _foldableInfo.FoldingFeatureBounds; // convert to DP?
+					_hingePx = _foldableInfo.FoldingFeatureBounds; // convert to DP?
 					_isSpanned = _foldableInfo.IsSeparating;
 					_windowBounds = _foldableInfo.WindowBounds;
 					Update(); // calculate dp from px for hinge coordinates
@@ -219,7 +218,7 @@ namespace Microsoft.Maui.Foldable
 			// Hinge
 			if (!_isSpanned)
 			{
-				_hingeDp = Rect.Zero;
+				_hingePx = Rect.Zero;
 			}
 			else // IsSpanned
 			{
@@ -227,17 +226,14 @@ namespace Microsoft.Maui.Foldable
 
 				if (hinge == Rect.Zero || !IsSpanned)
 				{
-					_hingeDp = Rect.Zero;
+					_hingePx = Rect.Zero;
 				}
 				else
 				{
 					//TODO: verify this works with zero-size hinge (foldable devices)
-					_hingeDp = new Rect((hinge.Left), (hinge.Top), (hinge.Width), (hinge.Height));
+					_hingePx = new Rect((hinge.Left), (hinge.Top), (hinge.Width), (hinge.Height));
 				}
 			}
-
-			_helper.FoldingFeatureBounds = FoldingFeatureBounds;
-			_helper.IsSpanned = IsSeparating;
 
 			_pixelScreenSize = new Size(windowBounds.Width, windowBounds.Height);
 
@@ -248,16 +244,7 @@ namespace Microsoft.Maui.Foldable
 					_mainActivity.FromPixels(_pixelScreenSize.Height));
 			}
 
-			Update(); //TODO: confirm timing this update
-
-			var args = new FoldEventArgs()
-			{
-				FoldingFeatureBounds = FoldingFeatureBounds,
-				isSeparating = IsSeparating,
-				WindowBounds = WindowBounds
-			};
-
-			OnLayoutChanged?.Invoke(this, args);
+			FoldLayoutChanged();
 		}
 
 		public bool IsSpanned => _isSpanned;
@@ -279,7 +266,7 @@ namespace Microsoft.Maui.Foldable
 			return returnValue;
 		}
 
-		public Rect GetHinge() => _hingeDp;
+		public Rect GetHinge() => _hingePx;
 
 		/// <summary>
 		/// I question whether we should be basing anything on landscape-ness, and 

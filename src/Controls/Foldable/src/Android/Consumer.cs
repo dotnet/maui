@@ -23,11 +23,6 @@ namespace Microsoft.Maui.Foldable
 
 		public void Accept(Java.Lang.Object windowLayoutInfo)
 		{
-			if (!_activity.TryGetTarget(out var activity))
-			{
-				return;
-			}
-
 			var newLayoutInfo = windowLayoutInfo as AndroidX.Window.Layout.WindowLayoutInfo;
 
 			if (newLayoutInfo == null)
