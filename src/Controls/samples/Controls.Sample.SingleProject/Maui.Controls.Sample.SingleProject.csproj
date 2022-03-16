@@ -8,8 +8,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <WindowsPackageType>MSIX</WindowsPackageType>
     <!-- <WindowsPackageType>None</WindowsPackageType> -->
     <ApplicationTitle>.NET MAUI Controls</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sample</ApplicationId>
@@ -42,11 +40,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Controls.Sample\Maui.Controls.Sample.csproj" />
   </ItemGroup>
-
-  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <OutputType>WinExe</OutputType>
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
-  </PropertyGroup>
 
   <ItemGroup>
     <Content Remove="Properties\launchSettings.json" />

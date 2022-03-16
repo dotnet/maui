@@ -10,10 +10,6 @@
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.MauiBlazorWebView.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.MauiBlazorWebView.DeviceTests</AssemblyName>
-
-    <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <WindowsPackageType>MSIX</WindowsPackageType>
   </PropertyGroup>
 
   <PropertyGroup>

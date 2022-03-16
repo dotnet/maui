@@ -13,7 +13,6 @@
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
-    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
