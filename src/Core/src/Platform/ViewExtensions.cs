@@ -37,6 +37,19 @@ namespace Microsoft.Maui
 		public static IPlatformViewHandler ToHandler(this IView view, IMauiContext context) =>
 			(IPlatformViewHandler)ElementExtensions.ToHandler(view, context);
 
+		public static async Task<RenderedView> RenderAsImage(this IView view, RenderType type)
+		{
+			var boundingBox = view.GetBoundingBox();
+			byte[]? image = type switch
+			{
+				RenderType.PNG => await view.RenderAsPNG(),
+				RenderType.JPEG => await view.RenderAsJPEG(),
+				RenderType.BMP => await view.RenderAsBMP(),
+				_ => throw new NotImplementedException(),
+			};
+
+			return new RenderedView(boundingBox.Width, boundingBox.Height, image, type);
+		}
 
 		internal static T? GetParentOfType<T>(this ParentView? view)
 			where T : class
