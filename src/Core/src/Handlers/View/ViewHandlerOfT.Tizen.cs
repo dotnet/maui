@@ -47,7 +47,6 @@ namespace Microsoft.Maui.Handlers
 				// This is just some initial Forms value nonsense, nothing is actually laying out yet
 				return;
 			}
-
 			platformView.UpdateBounds(frame.ToPixel());
 		}
 
@@ -98,11 +97,28 @@ namespace Microsoft.Maui.Handlers
 		{
 			var bounds = PlatformView.GetBounds();
 			var parent = PlatformView.GetParent();
-			parent?.Remove(PlatformView);
+			var containable = parent as IContainable<NView>;
+			if (containable != null)
+			{
+				containable.Children.Remove(PlatformView);
+			}
+			else
+			{
+				parent?.Remove(PlatformView);
+			}
 
 			ContainerView ??= new WrapperView();
 			PlatformView.UpdatePosition(new Point(0, 0));
 			ContainerView.Content = PlatformView;
+
+			if (containable != null)
+			{
+				containable.Children.Add(PlatformView);
+			}
+			else
+			{
+				parent?.Add(PlatformView);
+			}
 
 			parent?.Add(ContainerView);
 			ContainerView.UpdateBounds(bounds);
@@ -112,11 +128,28 @@ namespace Microsoft.Maui.Handlers
 		{
 			var bounds = ContainerView!.GetBounds();
 			var parent = ContainerView!.GetParent();
-			parent?.Remove(ContainerView!);
+			var containable = parent as IContainable<NView>;
+			if (containable != null)
+			{
+				containable.Children.Remove(ContainerView);
+			}
+			else
+			{
+				parent?.Remove(ContainerView!);
+			}
+
 			ContainerView.Content = null;
 			ContainerView.Dispose();
 			ContainerView = null;
-			parent?.Add(PlatformView);
+
+			if (containable != null)
+			{
+				containable.Children.Add(PlatformView);
+			}
+			else
+			{
+				parent?.Add(PlatformView);
+			}
 			PlatformView.UpdateBounds(bounds);
 		}
 

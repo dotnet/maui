@@ -2,6 +2,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using Tizen.UIExtensions.NUI;
 using NView = Tizen.NUI.BaseComponents.View;
 using TSize = Tizen.UIExtensions.Common.Size;
 using XLabel = Microsoft.Maui.Controls.Label;
@@ -55,20 +56,65 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var header = CreateHeaderView();
 			var footer = CreateFooterView();
 
-			var layout = new StackLayout
+			bool isHorizontal = false;
+
+			if (CollectionView is Tizen.UIExtensions.NUI.CollectionView cv)
 			{
-				VerticalOptions = LayoutOptions.Fill,
-				HorizontalOptions = LayoutOptions.Fill,
-			};
+				if (cv.LayoutManager != null)
+				{
+					isHorizontal = cv.LayoutManager.IsHorizontal;
+				}
+			}
+
+			var layout = new Grid();
+
+			if (isHorizontal)
+			{
+				layout.RowDefinitions.Add(new RowDefinition
+				{
+					Height = GridLength.Auto,
+				});
+				layout.RowDefinitions.Add(new RowDefinition
+				{
+					Height = GridLength.Star,
+				});
+				layout.RowDefinitions.Add(new RowDefinition
+				{
+					Height = GridLength.Auto,
+				});
+			}
+			else
+			{
+				layout.ColumnDefinitions.Add(new ColumnDefinition
+				{
+					Width = GridLength.Auto,
+				});
+				layout.ColumnDefinitions.Add(new ColumnDefinition
+				{
+					Width = GridLength.Star,
+				});
+				layout.ColumnDefinitions.Add(new ColumnDefinition
+				{
+					Width = GridLength.Auto,
+				});
+			}
 
 			if (header != null)
 			{
-				layout.Children.Add(header);
+				layout.Add(header, 0, 0);
 			}
-			layout.Children.Add(emptyView);
+
+			if (isHorizontal)
+				layout.Add(emptyView, 1, 0);
+			else
+				layout.Add(emptyView, 0, 1);
+
 			if (footer != null)
 			{
-				layout.Children.Add(footer);
+				if (isHorizontal)
+					layout.Add(emptyView, 2, 0);
+				else
+					layout.Add(emptyView, 0, 2);
 			}
 
 			layout.Parent = Element;
@@ -79,7 +125,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override TSize MeasureHeader(double widthConstraint, double heightConstraint)
 		{
-			return _createdEmptyView?.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins).Request.ToPixel() ?? new TSize(100, 100);
+			return (CollectionView as NView)!.Size.ToCommon();
 		}
 
 		public override TSize MeasureItem(double widthConstraint, double heightConstraint)

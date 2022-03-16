@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnDetected(object source, NPanGestureDetector.DetectedEventArgs e)
 		{
+			e.Handled = false;
 			if (e.PanGesture.State == NGestureStateType.Started)
 			{
 				_gestureId++;

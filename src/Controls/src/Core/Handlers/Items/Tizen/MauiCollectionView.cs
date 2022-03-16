@@ -6,10 +6,8 @@ using Microsoft.Maui.Controls.Platform;
 using Tizen.UIExtensions.NUI;
 using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 using TScrollToPosition = Tizen.UIExtensions.Common.ScrollToPosition;
-
-// TODO : Need to update Tizen.UIExtensions
-//using TSnapPointsAlignment = Tizen.UIExtensions.NUI.SnapPointsAlignment;
-//using TSnapPointsType = Tizen.UIExtensions.NUI.SnapPointsType;
+using TSnapPointsAlignment = Tizen.UIExtensions.NUI.SnapPointsAlignment;
+using TSnapPointsType = Tizen.UIExtensions.NUI.SnapPointsType;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -102,9 +100,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ItemsLayout.PropertyChanged += OnLayoutPropertyChanged;
 				if (ItemsLayout is ItemsLayout itemsLayout)
 				{
-					// TODO : Need to update Tizen.UIExtensions
-					//SnapPointsType = (TSnapPointsType)itemsLayout.SnapPointsType;
-					//SnapPointsAlignment = (TSnapPointsAlignment)itemsLayout.SnapPointsAlignment;
+					SnapPointsType = (TSnapPointsType)itemsLayout.SnapPointsType;
+					SnapPointsAlignment = (TSnapPointsAlignment)itemsLayout.SnapPointsAlignment;
 				}
 			}
 		}

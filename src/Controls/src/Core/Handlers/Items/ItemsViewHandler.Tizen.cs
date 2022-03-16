@@ -8,12 +8,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void ConnectHandler(TCollectionView nativeView)
 		{
 			base.ConnectHandler(nativeView);
-			(nativeView as MauiCollectionView<TItemsView>).SetupNewElement(VirtualView);
+			(nativeView as MauiCollectionView<TItemsView>)?.SetupNewElement(VirtualView);
 		}
 
 		protected override void DisconnectHandler(TCollectionView nativeView)
 		{
-			(nativeView as MauiCollectionView<TItemsView>).TearDownOldElement(VirtualView);
+			(nativeView as MauiCollectionView<TItemsView>)?.TearDownOldElement(VirtualView);
 			base.DisconnectHandler(nativeView);
 		}
 
@@ -24,32 +24,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.PlatformView as MauiCollectionView<TItemsView>).UpdateItemsSource();
+			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateItemsSource();
 		}
 
 		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.PlatformView as MauiCollectionView<TItemsView>).UpdateHorizontalScrollBarVisibility();
+			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateHorizontalScrollBarVisibility();
 		}
 
 		public static void MapVerticalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.PlatformView as MauiCollectionView<TItemsView>).UpdateVerticalScrollBarVisibility();
+			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateVerticalScrollBarVisibility();
 		}
 
 		public static void MapItemTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.PlatformView as MauiCollectionView<TItemsView>).UpdateAdaptor();
+			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateAdaptor();
 		}
 
 		public static void MapEmptyView(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.PlatformView as MauiCollectionView<TItemsView>).UpdateAdaptor();
+			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateAdaptor();
 		}
 
 		public static void MapEmptyViewTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.PlatformView as MauiCollectionView<TItemsView>).UpdateAdaptor();
+			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateAdaptor();
 		}
 
 		[MissingMapper]

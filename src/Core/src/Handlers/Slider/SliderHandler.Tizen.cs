@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnControlValueChanged(object? sender, EventArgs eventArgs)
 		{
-			if (PlatformView == null || VirtualView == null)
+			if (PlatformView == null || VirtualView == null || PlatformView.Value == VirtualView.Value)
 				return;
 
 			VirtualView.DragStarted();

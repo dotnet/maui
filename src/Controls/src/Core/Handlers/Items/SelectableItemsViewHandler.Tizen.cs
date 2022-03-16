@@ -11,17 +11,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapSelectedItem(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
-			(handler.PlatformView as MauiSelectableItemsView<TItemsView>).UpdateSelection();
+			(handler.PlatformView as MauiSelectableItemsView<TItemsView>)?.UpdateSelection();
 		}
 
 		public static void MapSelectedItems(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
-			(handler.PlatformView as MauiSelectableItemsView<TItemsView>).UpdateSelection();
+			(handler.PlatformView as MauiSelectableItemsView<TItemsView>)?.UpdateSelection();
 		}
 
 		public static void MapSelectionMode(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
-			(handler.PlatformView as MauiSelectableItemsView<TItemsView>).UpdateSelection();
+			(handler.PlatformView as MauiSelectableItemsView<TItemsView>)?.UpdateSelection();
 		}
 	}
 }

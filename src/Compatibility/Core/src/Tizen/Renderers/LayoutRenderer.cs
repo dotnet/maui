@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				SetNativeControl(new NViewGroup());
 			}
 			base.OnElementChanged(e);
+
+			RegisterOnLayoutUpdated();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
