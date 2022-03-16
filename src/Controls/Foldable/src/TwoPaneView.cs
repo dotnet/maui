@@ -210,12 +210,10 @@ namespace Microsoft.Maui.Controls.Foldable
 			base.OnIsPlatformEnabledChanged();
 			if (IsPlatformEnabled)
 			{
-				//				_twoPaneViewLayoutGuide.WatchForChanges();
 				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuide;
 			}
 			else
 			{
-				//				_twoPaneViewLayoutGuide.StopWatchingForChanges();
 				_twoPaneViewLayoutGuide.PropertyChanged -= OnTwoPaneViewLayoutGuide;
 			}
 		}

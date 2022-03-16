@@ -15,8 +15,6 @@ namespace Microsoft.Maui.Foldable
 		Rect GetHinge();
 		Size ScaledScreenSize { get; }
 		Point? GetLocationOnScreen(VisualElement visualElement);
-		object WatchForChangesOnLayout(VisualElement visualElement, Action action);
-		void StopWatchingForChangesOnLayout(VisualElement visualElement, object handle);
 		Task<int> GetHingeAngleAsync();
 
 		event EventHandler<FoldEventArgs> OnLayoutChanged;
