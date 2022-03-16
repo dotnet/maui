@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/FontSizeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.FontSizeConverter']/Docs" />
+	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.FontSizeTypeConverter")]
 	public class FontSizeConverter : TypeConverter, IExtendedTypeConverter
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/FontSizeConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
