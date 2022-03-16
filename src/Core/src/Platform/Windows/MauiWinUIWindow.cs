@@ -81,7 +81,7 @@ namespace Microsoft.Maui
 
 					var window = this.GetWindow();
 					if (window is not null)
-						window.DisplayDensityUpdated(dpiX / DeviceDisplay.BaseLogicalDpi);
+						window.DisplayDensityChanged(dpiX / DeviceDisplay.BaseLogicalDpi);
 				}
 
 				MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(

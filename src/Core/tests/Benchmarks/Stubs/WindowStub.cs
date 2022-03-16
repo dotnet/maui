@@ -66,6 +66,6 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public float RequestDisplayDensity() => 1.0f;
 
-		public virtual void DisplayDensityUpdated(float displayDensity) { }
+		public virtual void DisplayDensityChanged(float displayDensity) { }
 	}
 }

@@ -79,7 +79,7 @@ namespace Microsoft.Maui
 
 		FlowDirection FlowDirection { get; }
 
-		void DisplayDensityUpdated(float displayDensity);
+		void DisplayDensityChanged(float displayDensity);
 
 		float RequestDisplayDensity();
 	}
