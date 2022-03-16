@@ -406,5 +406,62 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(child1, oldItem);
 			Assert.AreEqual(child2, newItem);
 		}
+
+		[Test]
+		public void Clear()
+		{
+			var oc = new ObservableCollection<View>();
+			var wrapper = new ObservableWrapper<View, Button>(oc);
+
+			oc.Add(new Stepper());
+
+			wrapper.Add(new Button());
+			wrapper.Add(new Button());
+
+			wrapper.Clear();
+			Assert.AreEqual(1, oc.Count);
+			Assert.AreEqual(0, wrapper.Count);
+		}
+
+		[Test]
+		public void DifferentTypes()
+		{
+			var oc = new ObservableCollection<Element>();
+			var wrapper = new ObservableWrapper<Element, Button>(oc);
+
+			// Wrong type!
+			oc.Add(new Label());
+
+			var child1 = new Button();
+			var child2 = new Button();
+			wrapper.Add(child1);
+			wrapper.Add(child2);
+
+			// Do things that might cast
+			foreach (var item in wrapper) { }
+			var target = new Button[4];
+			wrapper.CopyTo(target, 2);
+			Assert.AreEqual(target[2], child1);
+			Assert.AreEqual(target[3], child2);
+		}
+
+		[Test]
+		public void CopyToArrayBaseType()
+		{
+			var oc = new ObservableCollection<View>();
+			var wrapper = new ObservableWrapper<View, Button>(oc);
+
+			oc.Add(new Stepper());
+
+			var child1 = new Button();
+			var child2 = new Button();
+			wrapper.Add(child1);
+			wrapper.Add(child2);
+
+			var target = new View[4];
+			wrapper.CopyTo((Array)target, 2);
+			Assert.AreEqual(target[2], child1);
+			Assert.AreEqual(target[3], child2);
+		}
 	}
 }

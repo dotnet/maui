@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
 			base.ConnectHandler(platformView);
-			
+
 			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 
 			SetupDefaults(platformView);
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 				_dialog.Dispose();
 				_dialog = null;
 			}
-			
+
 			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 
 			base.DisconnectHandler(platformView);
@@ -139,7 +139,11 @@ namespace Microsoft.Maui.Handlers
 			if (_dialog == null)
 				_dialog = CreateDatePickerDialog(year, month, day);
 			else
-				_dialog.UpdateDate(year, month, day);
+			{
+				EventHandler? setDateLater = null;
+				setDateLater = (sender, e) => { _dialog!.UpdateDate(year, month, day); _dialog.ShowEvent -= setDateLater; };
+				_dialog.ShowEvent += setDateLater;
+			}
 
 			_dialog.CancelEvent += OnCancelButtonClicked;
 

@@ -13,8 +13,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public static ILoggingBuilder AddUnitTestLogger(
 			this ILoggingBuilder builder)
 		{
+			// ensure a new UnitTestLoggerProvider is created every test
+			// to guarantee MockApplication.MockLogger is cleared between tests
+			var loggerProvider = new UnitTestLoggerProvider();
 			builder.Services.TryAddEnumerable(
-				ServiceDescriptor.Singleton<ILoggerProvider, UnitTestLoggerProvider>());
+				ServiceDescriptor.Singleton<ILoggerProvider>(loggerProvider));
 
 			return builder;
 		}

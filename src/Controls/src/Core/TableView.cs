@@ -28,12 +28,12 @@ namespace Microsoft.Maui.Controls
 
 		TableModel _model;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public TableView() : this(null)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public TableView(TableRoot root)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete

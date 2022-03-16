@@ -28,11 +28,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFont(this TimePicker nativeTimePicker, ITimePicker timePicker, IFontManager fontManager) =>
 			nativeTimePicker.UpdateFont(timePicker.Font, fontManager);
-	
-		public static void UpdateTextColor(this TimePicker nativeTimePicker, ITimePicker timePicker,WBrush? defaultForeground)
+
+		public static void UpdateTextColor(this TimePicker nativeTimePicker, ITimePicker timePicker)
 		{
 			Color textColor = timePicker.TextColor;
-			nativeTimePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToPlatform()) : textColor.ToPlatform();
+			if (textColor != null)
+				nativeTimePicker.Foreground = textColor.ToPlatform();
 		}
 	}
 }

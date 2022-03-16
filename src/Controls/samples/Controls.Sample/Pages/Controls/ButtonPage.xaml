@@ -4,6 +4,46 @@
     x:Class="Maui.Controls.Sample.Pages.ButtonPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Button">
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+
+            <Style x:Key="CustomButtonStyle" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="Red"/>
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="FontSize" Value="24"/>
+                <Setter Property="Margin" Value="8"/>
+                <Setter Property="CornerRadius" Value="40"/>
+                <Setter Property="HorizontalOptions" Value="Center"/>
+                <Setter Property="WidthRequest" Value="80"/>
+                <Setter Property="HeightRequest" Value="80"/>
+                <Setter
+                    Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup
+                            x:Name="CommonStates">
+                            <VisualState
+                                x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter
+                                        Property="Scale"
+                                        Value="1" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState
+                                x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter
+                                        Property="Scale"
+                                        Value="0.8" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+            
+        </ResourceDictionary>
+    </views:BasePage.Resources>
     <views:BasePage.Content>
         <ScrollView>
             <VerticalStackLayout Margin="12" Spacing="6">
@@ -140,6 +180,12 @@
                     HorizontalOptions="Start"
                     Background="LightGrey"
                     Padding="{Binding Text, Source={Reference paddingEntry}, Converter={StaticResource ThicknessConverter}}"/>
+                <Label
+                    Text="Using VisualStates"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="B" 
+                    Style="{StaticResource CustomButtonStyle}" />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

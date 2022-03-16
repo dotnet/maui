@@ -48,12 +48,12 @@ namespace Microsoft.Maui.Controls
 		public event PropertyChangingEventHandler PropertyChanging;
 		public event EventHandler BindingContextChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='ClearValue'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='ClearValue'][1]/Docs" />
 		public void ClearValue(BindableProperty property) => ClearValue(property, fromStyle: false, checkAccess: true);
 
 		internal void ClearValue(BindableProperty property, bool fromStyle) => ClearValue(property, fromStyle: fromStyle, checkAccess: true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='ClearValue'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='ClearValue'][2]/Docs" />
 		public void ClearValue(BindablePropertyKey propertyKey)
 		{
 			if (propertyKey == null)
@@ -358,10 +358,10 @@ namespace Microsoft.Maui.Controls
 			OnSetDynamicResource(property, key);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValue'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValue'][1]/Docs" />
 		public void SetValue(BindableProperty property, object value) => SetValue(property, value, false, true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValue'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValue'][2]/Docs" />
 		public void SetValue(BindablePropertyKey propertyKey, object value)
 		{
 			if (propertyKey == null)
@@ -595,10 +595,10 @@ namespace Microsoft.Maui.Controls
 			context.Binding = null;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='CoerceValue'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='CoerceValue'][1]/Docs" />
 		public void CoerceValue(BindableProperty property) => CoerceValue(property, checkAccess: true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='CoerceValue'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='CoerceValue'][2]/Docs" />
 		public void CoerceValue(BindablePropertyKey propertyKey)
 		{
 			if (propertyKey == null)
