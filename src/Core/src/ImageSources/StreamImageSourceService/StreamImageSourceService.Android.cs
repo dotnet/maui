@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
@@ -13,13 +14,19 @@ namespace Microsoft.Maui
 	{
 		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
-			if (imageSource is IStreamImageSource streamImageSource && !streamImageSource.IsEmpty)
+			var streamImageSource = (IStreamImageSource)imageSource;
+
+			if (!streamImageSource.IsEmpty)
 			{
+				Stream? stream = null;
 				try
 				{
-					var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
-
-					var callback = new ImageLoaderCallback();
+					stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+					
+					var callback = new ImageLoaderCallback(drawable =>
+					{
+						stream?.Dispose();
+					});
 
 					ImageLoader.LoadFromStream(imageView, stream, callback);
 
@@ -30,6 +37,11 @@ namespace Microsoft.Maui
 					Logger?.LogWarning(ex, "Unable to load image stream.");
 					throw;
 				}
+				finally
+				{
+					if (stream != null)
+						GC.KeepAlive(stream);
+				}
 			}
 
 			return new ImageSourceServiceResult(false);
@@ -37,13 +49,21 @@ namespace Microsoft.Maui
 
 		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable?> callback, CancellationToken cancellationToken = default)
 		{
-			if (imageSource is IStreamImageSource streamImageSource && !streamImageSource.IsEmpty)
+			var streamImageSource = (IStreamImageSource)imageSource;
+
+			if (!streamImageSource.IsEmpty)
 			{
+				Stream? stream = null;
+
 				try
 				{
 					var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 
-					var drawableCallback = new ImageLoaderCallback(callback);
+					var drawableCallback = new ImageLoaderCallback(drawable =>
+					{
+						callback(drawable);
+						stream?.Dispose();
+					});
 
 					ImageLoader.LoadFromStream(context, stream, drawableCallback);
 
@@ -53,6 +73,11 @@ namespace Microsoft.Maui
 				{
 					Logger?.LogWarning(ex, "Unable to load image stream.");
 					throw;
+				}
+				finally
+				{
+					if (stream != null)
+						GC.KeepAlive(stream);
 				}
 			}
 

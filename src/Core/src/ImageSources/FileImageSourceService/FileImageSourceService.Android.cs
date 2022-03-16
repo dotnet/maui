@@ -12,7 +12,9 @@ namespace Microsoft.Maui
 	{
 		public override Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
-			if (imageSource is IFileImageSource fileImageSource)
+			var fileImageSource = (IFileImageSource)imageSource;
+
+			if (!fileImageSource.IsEmpty)
 			{
 				var callback = new ImageLoaderCallback();
 
@@ -37,13 +39,13 @@ namespace Microsoft.Maui
 					throw;
 				}
 			}
-
 			return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(false));
 		}
 
 		public override Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable?> callback, CancellationToken cancellationToken = default)
 		{
-			if (imageSource is IFileImageSource fileImageSource)
+			var fileImageSource = (IFileImageSource)imageSource;
+			if (!fileImageSource.IsEmpty)
 			{
 				try
 				{
@@ -69,7 +71,6 @@ namespace Microsoft.Maui
 					throw;
 				}
 			}
-
 			return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(false));
 		}
 	}

@@ -12,7 +12,8 @@ namespace Microsoft.Maui
 	{
 		public override Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
-			if (imageSource is IUriImageSource uriImageSource && !uriImageSource.IsEmpty)
+			var uriImageSource = (IUriImageSource)imageSource;
+			if (!uriImageSource.IsEmpty)
 			{
 				try
 				{
@@ -34,7 +35,8 @@ namespace Microsoft.Maui
 
 		public override Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable?> callback, CancellationToken cancellationToken = default)
 		{
-			if (imageSource is IUriImageSource uriImageSource && !uriImageSource.IsEmpty)
+			var uriImageSource = (IUriImageSource)imageSource;
+			if (!uriImageSource.IsEmpty)
 			{
 				try
 				{
