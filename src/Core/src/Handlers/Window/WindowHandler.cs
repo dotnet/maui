@@ -32,12 +32,17 @@ namespace Microsoft.Maui.Handlers
 		};
 
 		public WindowHandler()
-			: base(Mapper)
+			: base(Mapper, CommandMapper)
 		{
 		}
 
 		public WindowHandler(IPropertyMapper? mapper = null)
-			: base(mapper ?? Mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public WindowHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 
