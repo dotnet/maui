@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Platform;
 
@@ -19,11 +20,11 @@ namespace Maui.Controls.Sample.Pages
 		private async void RenderButton_Clicked(object sender, System.EventArgs e)
 		{
 			Reset();
-			byte[]? renderImage = null;
+			RenderedView? renderImage = null;
 			stopwatch.Start();
 			try
 			{
-				renderImage = await this.RenderButton.RenderAsBMP();
+				renderImage = await this.RenderButton.RenderAsImage(RenderType.JPEG);
 				
 			}
 			catch (System.Exception ex)
@@ -32,9 +33,9 @@ namespace Maui.Controls.Sample.Pages
 			}
 			stopwatch.Stop();
 
-			if (renderImage is not null)
+			if (renderImage?.Render is not null)
 			{
-				var imageStream = new MemoryStream(renderImage);
+				var imageStream = new MemoryStream(renderImage.Render);
 				this.TestImage.Source = ImageSource.FromStream(() => imageStream);
 			}
 			this.StopwatchTime.Text = stopwatch.Elapsed.ToString();
