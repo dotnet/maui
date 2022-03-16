@@ -2,6 +2,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -78,7 +79,7 @@ namespace Maui.Controls.Sample.Pages
 				}
 			}
 			this.StopwatchTime.Text = stopwatch.Elapsed.ToString();
-			this.RenderStats.Text = $"Width: {renderImage?.Width}; Height: {renderImage?.Height}; Type: {renderImage?.RenderType}";
+			this.RenderStats.Text = $"Width: {renderImage?.Width}; Height: {renderImage?.Height}; Type: {renderImage?.RenderType}; Size: {SizeInBytes(renderImage?.Render)}";
 		}
 
 		private void Reset()
@@ -87,6 +88,22 @@ namespace Maui.Controls.Sample.Pages
 			StopwatchTime.Text = string.Empty;
 			RenderStats.Text = string.Empty;
 			this.TestImage.Source = null;
+		}
+
+		private string SizeInBytes(byte[]? array)
+		{
+			if (array is null)
+				return string.Empty;
+			string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+			double len = System.Convert.ToDouble(array.Length);
+			int order = 0;
+			while (len >= 1024D && order < sizes.Length - 1)
+			{
+				order++;
+				len /= 1024;
+			}
+
+			return string.Format(CultureInfo.CurrentCulture, "{0:0.##} {1}", len, sizes[order]);
 		}
 	}
 

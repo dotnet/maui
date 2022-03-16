@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Android.App;
+using Android.Views;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Platform
 {
@@ -9,8 +12,22 @@ namespace Microsoft.Maui.Platform
 	{
 		public static async Task<RenderedView?> RenderAsImage(this IWindow window, RenderType type)
 		{
-			await Task.Delay(5);
-			return null;
+			if (window.Handler?.PlatformView is not Activity activity)
+				return null;
+
+			if (activity?.Window?.DecorView?.RootView is not View rootView)
+				return null;
+
+			var bb = rootView.GetBoundingBox();
+			var image = type switch
+			{
+				RenderType.JPEG => await rootView.RenderAsJPEG(),
+				RenderType.PNG => await rootView.RenderAsPNG(),
+				RenderType.BMP => rootView.RenderAsBMP(),
+				_ => throw new NotImplementedException(),
+			};
+
+			return new RenderedView(bb.Width, bb.Height, image, type);
 		}
 	}
 }
