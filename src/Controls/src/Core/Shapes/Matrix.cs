@@ -226,37 +226,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][3]/Docs" />
-		public Vector2 Transform(Vector2 vector)
-		{
-			Vector2 newVector = vector;
-
-			double x = newVector.X;
-			double y = newVector.Y;
-
-			MultiplyVector(ref x, ref y);
-
-			return new Vector2(x, y);
-		}
-
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][4]/Docs" />
-		public void Transform(Vector2[] vectors)
-		{
-			if (vectors != null)
-			{
-				for (int i = 0; i < vectors.Length; i++)
-				{
-					var vector = vectors[i];
-					double x = vector.X;
-					double y = vector.Y;
-
-					MultiplyVector(ref x, ref y);
-
-					vectors[i] = new Vector2(x, y);
-				}
-			}
-		}
-
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Determinant']/Docs" />
 		public double Determinant
 		{
