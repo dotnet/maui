@@ -14,7 +14,7 @@
     <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.aar" />
     <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Core/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.Compatibility.aar" />
     <_AndroidFiles Include="$(MauiRootDirectory)src/Controls/src/Core/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.aar" />
-    <_AndroidFiles Include="$(MauiRootDirectory)src/DualScreen/src/Core/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.Foldable.aar" />
+    <_AndroidFiles Include="$(MauiRootDirectory)src/Controls/Foldable/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.Foldable.aar" />
     <None Include="@(_AndroidFiles)" FullTfm="$(_MauiDotNetTfm)-android30.0" Tfm="$(_MauiDotNetTfm)-android" Profile="Android" />
   </ItemGroup>
 
