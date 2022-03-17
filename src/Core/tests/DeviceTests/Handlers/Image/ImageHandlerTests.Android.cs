@@ -95,7 +95,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal("SetImageResource", handler.ImageEvents[1].Member);
 
 				var r = Platform.DefaultContext.Resources.GetDrawableId(Platform.DefaultContext.PackageName, "blue");
-				Assert.Equal(r, handler.ImageEvents[0].Value);
+				Assert.Equal(r, handler.ImageEvents[1].Value);
 			});
 		}
 
