@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 			if (action.Name.StartsWith("MenuItem", StringComparison.Ordinal))
 				return true;
 
-			return false;
+			return base.CanPerform();
 		}
 
 		/* The Selector for every single MenuElement has to be unique. If you try to reuse the same selector
