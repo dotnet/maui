@@ -8,7 +8,7 @@ using WView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
+	[System.Obsolete]
 	public class FormsWebViewClient : WebViewClient
 	{
 		WebNavigationResult _navigationResult = WebNavigationResult.Success;

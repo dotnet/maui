@@ -7,7 +7,7 @@ using Object = Java.Lang.Object;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
+	[System.Obsolete]
 	public class EmptyViewAdapter : RecyclerView.Adapter
 	{
 		int _headerHeight;

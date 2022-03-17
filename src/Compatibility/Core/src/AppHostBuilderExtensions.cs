@@ -9,6 +9,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.Dispatching;
+using System.Runtime.CompilerServices;
 
 #if ANDROID
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -38,15 +39,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 {
 	public static class MauiAppBuilderExtensions
 	{
-		// TODO better message
-		internal const string UseMapperInstead = "Renderers are obsolete please try to use the corresponding handler/mapper";
+		internal const string UseMapperInstead = "This renderer is obsolete please try to use the corresponding handler/mapper";
+
 		static bool _compatibilityEnabled = false;
-		internal static void CheckForCompatibility()
+		internal static void CheckForCompatibility([CallerMemberName] string memberName = "")
 		{
 			if (!_compatibilityEnabled)
 			{
-				// TODO better message
-				throw new InvalidOperationException("This Compatibility feature is currently not enabled. Please call `builder.UseMauiCompatibility`");
+				throw new InvalidOperationException(
+					$"{memberName} is currently not enabled. To enable compatibility features you will need to call add `builder.UseMauiCompatibility()`.\n\n" +
+					"MauiApp\n" +
+					"	.CreateBuilder()\n" +
+					"	.UseMauiApp<TApp>()\n" +
+					"	.UseMauiCompatibility();\n"
+					);
 			}
 		}
 

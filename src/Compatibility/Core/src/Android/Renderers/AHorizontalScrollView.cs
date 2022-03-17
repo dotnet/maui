@@ -6,7 +6,7 @@ using AndroidX.Core.Widget;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
+	[System.Obsolete]
 	public class AHorizontalScrollView : HorizontalScrollView, IScrollView
 	{
 		readonly ScrollViewRenderer _renderer;

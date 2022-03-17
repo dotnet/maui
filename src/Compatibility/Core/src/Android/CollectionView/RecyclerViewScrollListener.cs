@@ -2,7 +2,7 @@ using AndroidX.RecyclerView.Widget;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.CollectionView
 {
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
+	[System.Obsolete]
 	public class RecyclerViewScrollListener<TItemsView, TItemsViewSource> : RecyclerView.OnScrollListener
 		where TItemsView : ItemsView
 		where TItemsViewSource : IItemsViewSource

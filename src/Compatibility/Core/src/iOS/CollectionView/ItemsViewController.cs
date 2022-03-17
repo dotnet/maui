@@ -9,7 +9,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
+	[System.Obsolete]
 	public abstract class ItemsViewController<TItemsView> : UICollectionViewController
 	where TItemsView : ItemsView
 	{

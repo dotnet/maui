@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
+	[System.Obsolete]
 	public class ItemsViewDelegator<TItemsView, TViewController> : UICollectionViewDelegateFlowLayout
 		where TItemsView : ItemsView
 		where TViewController : ItemsViewController<TItemsView>
