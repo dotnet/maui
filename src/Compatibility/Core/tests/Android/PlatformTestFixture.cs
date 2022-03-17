@@ -118,8 +118,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			var renderer = element.GetRenderer();
 			if (renderer == null)
 			{
+#pragma warning disable CS0612 // Type or member is obsolete
 				renderer = Platform.CreateRendererWithContext(element, context);
 				Platform.SetRenderer(element, renderer);
+#pragma warning restore CS0612 // Type or member is obsolete
 			}
 
 			return renderer;
