@@ -13,12 +13,12 @@ namespace Microsoft.Maui.Platform
 			textField.Text = entry.Text;
 		}
 
-		public static void UpdateTextColor(this UITextField textField, ITextStyle textStyle, UIColor? defaultTextColor = null)
+		public static void UpdateTextColor(this UITextField textField, ITextStyle textStyle)
 		{
 			// Default value of color documented to be black in iOS docs
 
 			var textColor = textStyle.TextColor;
-			textField.TextColor = textColor.ToPlatform(defaultTextColor ?? ColorExtensions.LabelColor);
+			textField.TextColor = textColor.ToPlatform(ColorExtensions.LabelColor);
 		}
 
 		public static void UpdateIsPassword(this UITextField textField, IEntry entry)
