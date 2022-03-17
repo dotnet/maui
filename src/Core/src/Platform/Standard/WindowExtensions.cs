@@ -7,10 +7,9 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class WindowExtensions
 	{
-		public static async Task<RenderedView?> RenderAsImage(this IWindow window, RenderType type)
+		public static Task<RenderedView?> RenderAsImage(this IWindow window, RenderType type)
 		{
-			await Task.Delay(5);
-			return null;
+			return Task.FromResult<RenderedView?>(null);
 		}
 	}
 }

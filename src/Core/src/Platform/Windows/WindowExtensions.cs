@@ -49,6 +49,17 @@ namespace Microsoft.Maui.Platform
 			return PlatformMethods.GetDpiForWindow(hwnd) / DeviceDisplay.BaseLogicalDpi;
 		}
 
+		public static UI.Windowing.AppWindow? GetAppWindow(this UI.Xaml.Window platformWindow)
+		{
+			var hwnd = platformWindow.GetWindowHandle();
+
+			if (hwnd == IntPtr.Zero)
+				return null;
+
+			var windowId = UI.Win32Interop.GetWindowIdFromWindow(hwnd);
+			return UI.Windowing.AppWindow.GetFromWindowId(windowId);
+		}
+
 		public static async Task<RenderedView?> RenderAsImage(this IWindow window, RenderType type)
 		{
 			if (window.Handler?.PlatformView is not UI.Xaml.Window win)
@@ -57,7 +68,6 @@ namespace Microsoft.Maui.Platform
 			if (win.Content is not UI.Xaml.FrameworkElement element)
 				return null;
 
-			var bb = element.GetBoundingBox();
 			var image = type switch
 			{
 				RenderType.JPEG => await element.RenderAsJPEGAsync(),
@@ -66,7 +76,7 @@ namespace Microsoft.Maui.Platform
 				_ => throw new NotImplementedException(),
 			};
 
-			return new RenderedView(bb.Width, bb.Height, image, type);
+			return new RenderedView(image, type);
 		}
 	}
 }

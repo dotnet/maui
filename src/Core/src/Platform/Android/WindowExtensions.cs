@@ -18,7 +18,6 @@ namespace Microsoft.Maui.Platform
 			if (activity?.Window?.DecorView?.RootView is not View rootView)
 				return null;
 
-			var bb = rootView.GetBoundingBox();
 			var image = type switch
 			{
 				RenderType.JPEG => await rootView.RenderAsJPEG(),
@@ -27,7 +26,7 @@ namespace Microsoft.Maui.Platform
 				_ => throw new NotImplementedException(),
 			};
 
-			return new RenderedView(bb.Width, bb.Height, image, type);
+			return new RenderedView(image, type);
 		}
 	}
 }

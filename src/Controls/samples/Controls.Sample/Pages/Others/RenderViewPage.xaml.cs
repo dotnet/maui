@@ -102,7 +102,7 @@ namespace Maui.Controls.Sample.Pages
 				}
 			}
 			this.StopwatchTime.Text = stopwatch.Elapsed.ToString();
-			this.RenderStats.Text = $"Width: {renderImage?.Width}; Height: {renderImage?.Height}; Type: {renderImage?.RenderType}; Size: {SizeInBytes(renderImage?.Render)}";
+			this.RenderStats.Text = $"Type: {renderImage?.RenderType}; Size: {SizeInBytes(renderImage?.Render)}";
 		}
 
 		private void Reset()

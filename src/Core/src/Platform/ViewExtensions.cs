@@ -39,7 +39,6 @@ namespace Microsoft.Maui
 
 		public static async Task<RenderedView> RenderAsImage(this IView view, RenderType type)
 		{
-			var boundingBox = view.GetBoundingBox();
 			byte[]? image = type switch
 			{
 				RenderType.PNG => await view.RenderAsPNG(),
@@ -48,7 +47,7 @@ namespace Microsoft.Maui
 				_ => throw new NotImplementedException(),
 			};
 
-			return new RenderedView(boundingBox.Width, boundingBox.Height, image, type);
+			return new RenderedView(image, type);
 		}
 
 		internal static T? GetParentOfType<T>(this ParentView? view)

@@ -6,17 +6,11 @@ namespace Microsoft.Maui
 {
 	public class RenderedView
 	{
-		public RenderedView(double width, double height, byte[]? render, RenderType renderType)
+		public RenderedView(byte[]? render, RenderType renderType)
 		{
-			this.Width = width;
-			this.Height = height;
 			this.Render = render;
 			this.RenderType = renderType;
 		}
-
-		public double Width { get; }
-
-		public double Height { get; }
 
 		public byte[]? Render { get; }
 

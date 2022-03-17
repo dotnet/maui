@@ -35,7 +35,6 @@ namespace Microsoft.Maui.Platform
 			if (window?.ToPlatform() is not UIWindow win)
 				return null;
 
-			var bb = win.GetBoundingBox();
 			var image = type switch
 			{
 				RenderType.JPEG => await win.RenderAsJPEG(),
@@ -44,7 +43,7 @@ namespace Microsoft.Maui.Platform
 				_ => throw new NotImplementedException(),
 			};
 
-			return new RenderedView(bb.Width, bb.Height, image, type);
+			return new RenderedView(image, type);
 		}
 	}
 }

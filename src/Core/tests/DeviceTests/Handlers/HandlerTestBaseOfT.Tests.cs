@@ -220,8 +220,6 @@ namespace Microsoft.Maui.DeviceTests
 			var result = await (await GetValueAsync(view, handler => GetRenderedView(handler, type)));
 			Assert.NotNull(result);
 			Assert.NotNull(result?.Render);
-			Assert.True(result.Width > 0);
-			Assert.True(result.Height > 0);
 		}
 	}
 }
