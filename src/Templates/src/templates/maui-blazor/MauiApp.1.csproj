@@ -65,7 +65,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Content Remove="Properties\launchSettings.json" />
+		<Content Update="$(AppDesignerFolder)\**" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" Condition="'$(AppDesignerFolder)' != ''"/>
 	</ItemGroup>
 
 </Project>
