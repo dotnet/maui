@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
 		UIPickerView? _pickerView;
+#if IOS && !MACCATALYST
 
 		protected override MauiPicker CreatePlatformView()
 		{
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 				var pickerSource = (PickerSource)_pickerView.Model;
 				var count = VirtualView?.GetCount() ?? 0;
 				if (pickerSource.SelectedIndex == -1 && count > 0)
-					UpdatePickerSelectedIndex(0);
+					UpdatePickerSelectedIndex(_pickerView, 0);
 
 				if (VirtualView?.SelectedIndex == -1 && count > 0)
 				{
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 
 			return platformPicker;
 		}
-
+#endif
 		protected override void ConnectHandler(MauiPicker platformView)
 		{
 			platformView.EditingDidBegin += OnStarted;
@@ -180,23 +181,23 @@ namespace Microsoft.Maui.Handlers
 			Reload(this);
 		}
 
-		void UpdatePickerFromPickerSource(PickerSource pickerSource)
+		void UpdatePickerFromPickerSource(PickerSource? pickerSource)
 		{
-			if (VirtualView == null || PlatformView == null)
+			if (VirtualView == null || PlatformView == null || pickerSource == null)
 				return;
 
 			PlatformView.Text = VirtualView.GetItem(pickerSource.SelectedIndex);
 			VirtualView.SelectedIndex = pickerSource.SelectedIndex;
 		}
 
-		void UpdatePickerSelectedIndex(int formsIndex)
+		void UpdatePickerSelectedIndex(UIPickerView? pickerView, int formsIndex)
 		{
-			if (VirtualView == null || _pickerView == null)
+			if (VirtualView == null || pickerView == null)
 				return;
 
-			var source = (PickerSource)_pickerView.Model;
+			var source = (PickerSource)pickerView.Model;
 			source.SelectedIndex = formsIndex;
-			_pickerView.Select(Math.Max(formsIndex, 0), 0, true);
+			pickerView.Select(Math.Max(formsIndex, 0), 0, true);
 		}
 	}
 
