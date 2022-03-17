@@ -1,12 +1,8 @@
 ﻿using System;
-using System.IO;
-using System.Web;
 using Android.Content;
 using Android.Runtime;
 using Android.Webkit;
 using AWebView = Android.Webkit.WebView;
-using AUri = Android.Net.Uri;
-using Java.Net;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
