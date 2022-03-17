@@ -92,7 +92,7 @@ public abstract partial class PlatformBehavior<TView, TPlatformView> : Behavior<
 		}
 	}
 
-	void OnUnloaded(object sender, EventArgs e)
+	void OnUnloaded(object? sender, EventArgs e)
 	{
 		if (sender is TView view)
 		{
@@ -100,7 +100,7 @@ public abstract partial class PlatformBehavior<TView, TPlatformView> : Behavior<
 		}
 	}
 
-	void OnLoaded(object sender, EventArgs e)
+	void OnLoaded(object? sender, EventArgs e)
 	{
 		if (sender is TView view && view.Handler.PlatformView is TPlatformView platformView)
 		{
@@ -123,13 +123,15 @@ public abstract partial class PlatformBehavior<TView, TPlatformView> : Behavior<
 	/// <summary>
 	/// This method is called when the Handler is attached to the View. Use this method to perform your customizations in the control.
 	/// </summary>
-	/// <param name="handler">The <see cref="IViewHandler"/> for the <see cref="VisualElement"/>.</param>
+	/// <param name="bindable">The <see cref="IViewHandler"/> for the <see cref="VisualElement"/>.</param>
+	/// <param name="platformView">The <see cref="IViewHandler"/> for the <see cref="VisualElement"/>.</param>
 	protected virtual void OnAttachedTo(TView bindable, TPlatformView platformView) { }
 
 	/// <summary>
 	/// This method is called when the Handler is dettached from the View. Use this method to perform your customizations in the control.
 	/// </summary>
-	/// <param name="handler">The <see cref="IViewHandler"/> for the <see cref="VisualElement"/>.</param>
+	/// <param name="bindable">The <see cref="IViewHandler"/> for the <see cref="VisualElement"/>.</param>
+	/// <param name="platformView">The <see cref="IViewHandler"/> for the <see cref="VisualElement"/>.</param>
 	protected virtual void OnDetachedFrom(TView bindable, TPlatformView platformView) { }
 }
 
