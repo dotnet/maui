@@ -21,10 +21,6 @@ namespace Microsoft.Maui.Handlers
             };
 	
 			return platformPicker;
-			//platformPicker.ShowsMenuAsPrimaryAction = true;
-			//platformPicker.ChangesSelectionAsPrimaryAction = true; //monterey only
-			//platformPicker.Menu = CreateMenu(null);
-			//return CreateButtonWithMenu();
 		}
 
 		UIAlertController CreateAlert(UITextField uITextField, UIPickerView? pickerView)
@@ -36,7 +32,8 @@ namespace Microsoft.Maui.Handlers
 
 			var okAlertController = UIAlertController.Create ("", "", UIAlertControllerStyle.ActionSheet);
 
-    		okAlertController.AddAction (UIAlertAction.Create ("Done", UIAlertActionStyle.Default, action => 
+			// needs translation
+    		okAlertController.AddAction(UIAlertAction.Create ("Done", UIAlertActionStyle.Default, action => 
 			{
 				var pickerSource = pickerView?.Model as PickerSource;
 				var count = VirtualView?.GetCount() ?? 0;
@@ -69,37 +66,5 @@ namespace Microsoft.Maui.Handlers
 
 			return okAlertController;
 		}
-
-		UIButton CreateButtonWithMenu()
-		{
-			UIButton button = new UIButton(UIButtonType.RoundedRect);
-
-        	button.SetTitle("Click Test", UIControlState.Normal);
-        	button.SetTitleColor(UIColor.SystemRed, UIControlState.Normal);
-        	button.ShowsMenuAsPrimaryAction = true;
-			button.ChangesSelectionAsPrimaryAction = true; //monterey only
-			button.Menu = CreateMenu(button);
-			return button;
-		}
-
-		UIMenu CreateMenu(UIButton button)
-        {
-            
-            //you can set the icon as the second parameter
-            var Action1 = UIAction.Create("Action1",null,null,(arg)=> { 
-            	button.SetTitle ("Action1", UIControlState.Normal);
-            });
-
-            var Action2 = UIAction.Create("Action2", null, null, (arg) => {
-				button.SetTitle ("Action2", UIControlState.Normal);
-            });
-
-            var Action3 = UIAction.Create("Action3", null, null, (arg) => {
-				button.SetTitle ("Action3", UIControlState.Normal);
-            });
-
-            var Menus = UIMenu.Create(new UIMenuElement[] {Action1,Action2,Action3 });
-            return Menus;
-        }
 	}
 }
