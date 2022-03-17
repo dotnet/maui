@@ -202,8 +202,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "View Renders To Image"
-#if __IOS__
-			, Skip = "iOS is missing `Window` in the test runner, so it can't run these tests from here."
+#if !__ANDROID__
+			, Skip = "iOS and Windows can't render elements to images from test runner. It's missing the required root windows."
 #endif
 			)]
 		[InlineData(RenderType.JPEG)]
