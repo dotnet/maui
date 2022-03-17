@@ -201,7 +201,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotEqual(platformViewTransform, new System.Numerics.Matrix4x4());
 		}
 
-		[Theory(DisplayName = "View Renders To Image")]
+		[Theory(DisplayName = "View Renders To Image"
+#if __IOS__
+			, Skip = "iOS is missing `Window` in the test runner, so it can't run these tests from here."
+#endif
+			)]
 		[InlineData(RenderType.JPEG)]
 		[InlineData(RenderType.PNG)]
 		[InlineData(RenderType.BMP)]
