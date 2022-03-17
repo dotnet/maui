@@ -6,15 +6,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	internal static class UriExtensions
 	{
 		internal static bool IsBaseOfPage(this Uri baseUri, string? uriString)
-		{
-			if (Path.HasExtension(uriString))
-			{
-				// If the path ends in a file extension, it's not referring to a page.
-				return false;
-			}
+			=> !Path.HasExtension(uriString)
+			&& Uri.TryCreate(uriString, UriKind.RelativeOrAbsolute, out var uri)
+			&& IsBaseOfPageCore(baseUri, uri);
 
-			var uri = new Uri(uriString!);
-			return baseUri.IsBaseOf(uri);
-		}
+		internal static bool IsBaseOfPage(this Uri baseUri, Uri uri)
+			=> !Path.HasExtension(uri.OriginalString)
+			&& IsBaseOfPageCore(baseUri, uri);
+
+		private static bool IsBaseOfPageCore(Uri baseUri, Uri uri)
+			=> (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+			&& baseUri.IsBaseOf(uri);
 	}
 }
