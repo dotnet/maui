@@ -57,7 +57,7 @@ namespace Microsoft.Maui
 
 				try
 				{
-					var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+					stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 
 					var drawableCallback = new ImageLoaderCallback(drawable =>
 					{

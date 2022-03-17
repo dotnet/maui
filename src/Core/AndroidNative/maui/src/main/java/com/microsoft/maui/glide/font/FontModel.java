@@ -1,6 +1,5 @@
-package com.microsoft.maui.glide.fontimagesource;
+package com.microsoft.maui.glide.font;
 
-import android.graphics.Color;
 import android.graphics.Typeface;
 
 import androidx.annotation.ColorInt;

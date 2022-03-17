@@ -1,4 +1,4 @@
-package com.microsoft.maui.glide.fontimagesource;
+package com.microsoft.maui.glide.font;
 
 import androidx.annotation.NonNull;
 
