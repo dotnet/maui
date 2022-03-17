@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/DualScreen/Core/src/bin/$(Configuration)/%(Tfm)/ref/Microsoft.Maui.Controls.Foldable.dll')" />
+    <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Controls/Foldable/src/bin/$(Configuration)/%(Tfm)/ref/Microsoft.Maui.Controls.Foldable.dll')" />
     <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Compatibility/Core/src/bin/$(Configuration)/%(Tfm)/ref/Microsoft.Maui.Controls.Compatibility.dll')" />
     <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Controls/src/Core/bin/$(Configuration)/%(Tfm)/ref/Microsoft.Maui.Controls.dll')" />
     <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Controls/src/Xaml/bin/$(Configuration)/%(Tfm)/ref/Microsoft.Maui.Controls.Xaml.dll')" />
@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(MauiPlatformName)' == '' ">
-    <ProjectReference Include="../../../src/DualScreen/src/Core.Design/Controls.Foldable.csproj" />
+    <ProjectReference Include="../../../src/Controls/Foldable/src/Controls.Foldable.csproj" />
     <ProjectReference Include="../../../src/Controls/src/Core/Controls.Core.csproj" />
     <ProjectReference Include="../../../src/Controls/src/Xaml/Controls.Xaml.csproj" />
     <ProjectReference Include="../../../src/Controls/src/Core.Design/Controls.Core.Design.csproj" />
