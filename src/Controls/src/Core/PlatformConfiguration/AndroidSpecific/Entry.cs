@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (ImeFlags)element.GetValue(ImeOptionsProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="//Member[@MemberName='SetImeOptions'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="//Member[@MemberName='SetImeOptions'][1]/Docs" />
 		public static void SetImeOptions(BindableObject element, ImeFlags value)
 		{
 			element.SetValue(ImeOptionsProperty, value);
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetImeOptions(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="//Member[@MemberName='SetImeOptions']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="//Member[@MemberName='SetImeOptions'][2]/Docs" />
 		public static IPlatformElementConfiguration<Android, FormsElement> SetImeOptions(this IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, FormsElement> config, ImeFlags value)
 		{
 			SetImeOptions(config.Element, value);

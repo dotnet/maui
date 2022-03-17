@@ -15,12 +15,12 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(SpanProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/GridItemsLayout.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/GridItemsLayout.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public GridItemsLayout([Parameter("Orientation")] ItemsLayoutOrientation orientation) : base(orientation)
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/GridItemsLayout.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/GridItemsLayout.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public GridItemsLayout(int span, [Parameter("Orientation")] ItemsLayoutOrientation orientation) :
 			base(orientation)
 		{

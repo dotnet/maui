@@ -25,5 +25,8 @@ namespace Microsoft.Maui.Platform
 
 			return null;
 		}
+
+		public static float GetDisplayDensity(this UIWindow uiWindow) =>
+			(float)(uiWindow.Screen?.Scale ?? new nfloat(1.0f));
 	}
 }

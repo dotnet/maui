@@ -3,6 +3,7 @@
   <Import Condition="'$(SampleProject)' == 'true' or '$(CI)' != 'true' " Project="eng\Versions.dev.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true'" Project="eng\Git.Build.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true' " Project="eng\Versions.targets" />
+  <Import Condition="'$(SampleProject)' != 'true' and '$(IsTestProject)' != 'true'" Project="eng\BannedApis.targets" />
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\Microsoft.Extensions.targets" />
 

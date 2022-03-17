@@ -55,6 +55,7 @@ namespace Microsoft.Maui.Platform
 
 		public void Dispose()
 		{
+			DisposeClip();
 			DisposeShadow();
 			DisposeBorder();
 		}
@@ -94,6 +95,12 @@ namespace Microsoft.Maui.Platform
 			visual.Clip = geometricClip;
 		}
 
+		void DisposeClip()
+		{
+			var visual = ElementCompositionPreview.GetElementVisual(Child);
+			visual.Clip = null;
+		}
+		
 		void DisposeBorder()
 		{
 			_borderPath = null;

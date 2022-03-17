@@ -34,10 +34,10 @@ body:
       label: Version with bug
       description: In what version do you see this issue?
       options:
-        - Preview 10
         - Preview 11
         - Preview 12
-        - Preview 13 (current)
+        - Preview 13
+        - Preview 14 (current)
         - Release Candidate 1
         - Release Candidate 2
         - Unknown/Other (please specify)
@@ -49,10 +49,10 @@ body:
       label: Last version that worked well
       description: Is there a version on which this _did_ work? If yes, which one? If no or unknown, please select `Unknown/Other`.
       options:
-        - Preview 10
         - Preview 11
         - Preview 12
-        - Preview 13 (current)
+        - Preview 13
+        - Preview 14 (current)
         - Release Candidate 1
         - Release Candidate 2
         - Unknown/Other

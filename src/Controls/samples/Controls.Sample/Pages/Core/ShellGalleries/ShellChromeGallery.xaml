@@ -4,7 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.ShellGalleries.ShellChromeGallery"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"    
-    Title="Chrome Gallery">
+    Title="Chrome Gallery"
+    Shell.TabBarIsVisible="False"
+    >
     <views:BasePage.Content>
         <StackLayout
             Margin="12">
@@ -32,10 +34,14 @@
                 Text="Pop Page"
                 Style="{StaticResource Headline}"/>
             <Button Text="Pop Page" Clicked="OnPopPage" />
-             <Label
+            <Label
                 Text="Toogle SearchHandler"
                 Style="{StaticResource Headline}"/>
             <Button Text="Toogle SearchHandler" Clicked="OnToggleSearchHandler" />
+            <Label
+                Text="Toogle TabBar"
+                Style="{StaticResource Headline}"/>
+            <Button Text="Toogle TabBar" Clicked="OnToggleTabBar" />
         </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>

@@ -22,15 +22,15 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Email']/Docs" />
 	public static partial class Email
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][1]/Docs" />
 		public static Task ComposeAsync()
 			=> ComposeAsync(null);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][3]/Docs" />
 		public static Task ComposeAsync(string subject, string body, params string[] to)
 			=> ComposeAsync(new EmailMessage(subject, body, to));
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][2]/Docs" />
 		public static Task ComposeAsync(EmailMessage message)
 		{
 			if (!Current.IsComposeSupported)
@@ -83,12 +83,12 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.EmailMessage']/Docs" />
 	public class EmailMessage
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public EmailMessage()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public EmailMessage(string subject, string body, params string[] to)
 		{
 			Subject = subject;
@@ -130,19 +130,19 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="Type[@FullName='Microsoft.Maui.Essentials.EmailAttachment']/Docs" />
 	public partial class EmailAttachment : FileBase
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public EmailAttachment(string fullPath)
 			: base(fullPath)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public EmailAttachment(string fullPath, string contentType)
 			: base(fullPath, contentType)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public EmailAttachment(FileBase file)
 			: base(file)
 		{

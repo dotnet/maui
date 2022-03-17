@@ -39,6 +39,8 @@ namespace Microsoft.Maui.Platform
 
 			var actual = CrossPlatformArrange(new Graphics.Rect(0, 0, width, height));
 
+			_borderPath?.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
+
 			return new global::Windows.Foundation.Size(actual.Width, actual.Height);
 		}
 

@@ -46,12 +46,24 @@ namespace Microsoft.Maui.Platform
 			var deviceIndependentWidth = widthMeasureSpec.ToDouble(Context);
 			var deviceIndependentHeight = heightMeasureSpec.ToDouble(Context);
 
-			var size = CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
+			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
 
-			var nativeWidth = Context.ToPixels(size.Width);
-			var nativeHeight = Context.ToPixels(size.Height);
+			var measure = CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
 
-			SetMeasuredDimension((int)nativeWidth, (int)nativeHeight);
+			// If the measure spec was exact, we should return the explicit size value, even if the content
+			// measure came out to a different size
+			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
+			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
+
+			var platformWidth = Context.ToPixels(width);
+			var platformHeight = Context.ToPixels(height);
+
+			// Minimum values win over everything
+			platformWidth = Math.Max(MinimumWidth, platformWidth);
+			platformHeight = Math.Max(MinimumHeight, platformHeight);
+
+			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)

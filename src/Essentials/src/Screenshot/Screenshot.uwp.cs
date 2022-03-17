@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Essentials
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
-	internal partial class ScreenshotImplementation : IScreenshot
+	public partial class ScreenshotImplementation : IScreenshot
 	{
 		public bool IsCaptureSupported =>
 			true;

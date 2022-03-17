@@ -185,14 +185,14 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ItemsUpdatingScrollModeProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ScrollTo']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ScrollTo'][1]/Docs" />
 		public void ScrollTo(int index, int groupIndex = -1,
 			ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
 		{
 			OnScrollToRequested(new ScrollToRequestEventArgs(index, groupIndex, position, animate));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ScrollTo']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ScrollTo'][2]/Docs" />
 		public void ScrollTo(object item, object group = null,
 			ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
 		{
