@@ -50,7 +50,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 					Assert.AreEqual(1, frameRenderer.NativeView.Subviews[0].Subviews.Length);
 
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 					LabelRenderer labelRenderer = null;
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 					var view = frameRenderer.NativeView;
 					Assert.AreEqual(1, view.Subviews.Length);
@@ -60,7 +62,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 						view = view.Subviews[0];
 						Assert.AreEqual(1, view.Subviews.Length);
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 						labelRenderer = view as LabelRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 					}
 
