@@ -10,8 +10,9 @@ namespace Microsoft.Maui.Controls.Handlers
 	public partial class ShellHandler : ViewHandler<Shell, ShellView>
 	{
 		ScrollViewer _scrollViewer;
-		double? headerHeight = null;
-		double? headerOffset = null;
+		double? _topAreaHeight = null;
+		double? _headerHeight = null;
+		double? _headerOffset = null;
 
 		protected override ShellView CreatePlatformView()
 		{
@@ -171,56 +172,17 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (view.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Default ||
 				view.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Fixed)
 			{
-				var defaultHeight = headerHeight;
-				var defaultTranslateY = headerOffset;
+				var defaultHeight = _headerHeight;
+				var defaultTranslateY = _headerOffset;
 
 				UpdateFlyoutHeaderTransformation(flyoutHeader, defaultHeight, defaultTranslateY);
 				return;
 			}
 
-			var menuItemsScrollViewer = _scrollViewer;
-
-			if (menuItemsScrollViewer != null)
+			if (_scrollViewer != null)
 			{
-				double? topAreaHeight = null;
-
-				menuItemsScrollViewer.ViewChanged += (sender, args) =>
-				{
-					if (headerHeight == null)
-						headerHeight = flyoutHeader.ActualHeight;
-
-					if (headerOffset == null)
-					{
-						if (flyoutHeader.RenderTransform is CompositeTransform compositeTransform)
-							headerOffset = compositeTransform.TranslateY;
-						else
-							headerOffset = 0;
-					}
-
-					switch (view.FlyoutHeaderBehavior)
-					{
-						case FlyoutHeaderBehavior.Scroll:
-							var scrollHeight = Math.Max(headerHeight.Value - menuItemsScrollViewer.VerticalOffset, 0);
-							var scrollTranslateY = -menuItemsScrollViewer.VerticalOffset;
-
-							UpdateFlyoutHeaderTransformation(flyoutHeader, scrollHeight, scrollTranslateY);
-							break;
-						case FlyoutHeaderBehavior.CollapseOnScroll:
-							var topNavArea = (StackPanel)PlatformView.TopNavArea;
-							if (topAreaHeight == null)
-								topAreaHeight = Math.Max(topNavArea.ActualHeight, 50.0f);
-
-							var calculatedHeight = headerHeight.Value - menuItemsScrollViewer.VerticalOffset;
-							var collapseOnScrollHeight = calculatedHeight < topAreaHeight.Value ? topAreaHeight.Value : calculatedHeight;
-
-							var offsetY = -menuItemsScrollViewer.VerticalOffset;
-							var maxOffsetY = -topAreaHeight.Value;
-							var collapseOnScrollTranslateY = offsetY < maxOffsetY ? maxOffsetY : offsetY;
-
-							UpdateFlyoutHeaderTransformation(flyoutHeader, collapseOnScrollHeight, collapseOnScrollTranslateY);
-							break;
-					}
-				};
+				_scrollViewer.ViewChanged -= OnScrollViewerViewChanged;
+				_scrollViewer.ViewChanged += OnScrollViewerViewChanged;
 			}
 		}
 
@@ -237,6 +199,52 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (height.HasValue)
 			{
 				flyoutHeader.Height = height.Value;
+			}
+		}
+
+		void OnScrollViewerViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+		{
+			if (_scrollViewer == null)
+				return;
+
+			var flyoutHeader = PlatformView?.PaneCustomContent as ShellHeaderView;
+
+			if (flyoutHeader == null)
+				return;
+
+			if (_headerHeight == null)
+				_headerHeight = flyoutHeader.ActualHeight;
+
+			if (_headerOffset == null)
+			{
+				if (flyoutHeader.RenderTransform is CompositeTransform compositeTransform)
+					_headerOffset = compositeTransform.TranslateY;
+				else
+					_headerOffset = 0;
+			}
+
+			switch (VirtualView?.FlyoutHeaderBehavior)
+			{
+				case FlyoutHeaderBehavior.Scroll:
+					var scrollHeight = Math.Max(_headerHeight.Value - _scrollViewer.VerticalOffset, 0);
+					var scrollTranslateY = -_scrollViewer.VerticalOffset;
+
+					UpdateFlyoutHeaderTransformation(flyoutHeader, scrollHeight, scrollTranslateY);
+					break;
+				case FlyoutHeaderBehavior.CollapseOnScroll:
+					var topNavArea = (StackPanel)PlatformView.TopNavArea;
+					if (_topAreaHeight == null)
+						_topAreaHeight = Math.Max(topNavArea.ActualHeight, 50.0f);
+
+					var calculatedHeight = _headerHeight.Value - _scrollViewer.VerticalOffset;
+					var collapseOnScrollHeight = calculatedHeight < _topAreaHeight.Value ? _topAreaHeight.Value : calculatedHeight;
+
+					var offsetY = -_scrollViewer.VerticalOffset;
+					var maxOffsetY = -_topAreaHeight.Value;
+					var collapseOnScrollTranslateY = offsetY < maxOffsetY ? maxOffsetY : offsetY;
+
+					UpdateFlyoutHeaderTransformation(flyoutHeader, collapseOnScrollHeight, collapseOnScrollTranslateY);
+					break;
 			}
 		}
 	}
