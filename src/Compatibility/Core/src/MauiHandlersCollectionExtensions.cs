@@ -2,12 +2,13 @@ using System;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 
-namespace Microsoft.Maui.Controls.Compatibility
+namespace Microsoft.Maui.Controls.Compatibility.Hosting
 {
 	public static class MauiHandlersCollectionExtensions
 	{
 		public static IMauiHandlersCollection TryAddCompatibilityRenderer(this IMauiHandlersCollection handlersCollection, Type controlType, Type rendererType)
 		{
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			Internals.Registrar.Registered.Register(controlType, rendererType);
 
 #if PLATFORM
@@ -21,6 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static IMauiHandlersCollection AddCompatibilityRenderer(this IMauiHandlersCollection handlersCollection, Type controlType, Type rendererType)
 		{
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			Internals.Registrar.Registered.Register(controlType, rendererType);
 
 #if PLATFORM
@@ -35,6 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static IMauiHandlersCollection AddCompatibilityRenderer<TControlType, TMauiType, TRenderer>(this IMauiHandlersCollection handlersCollection)
 			where TMauiType : IView
 		{
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			Internals.Registrar.Registered.Register(typeof(TControlType), typeof(TRenderer));
 
 #if PLATFORM
@@ -48,6 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static IMauiHandlersCollection AddCompatibilityRenderer<TControlType, TRenderer>(this IMauiHandlersCollection handlersCollection)
 			where TControlType : IView
 		{
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			handlersCollection.AddCompatibilityRenderer<TControlType, TControlType, TRenderer>();
 
 			return handlersCollection;
@@ -55,6 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static IMauiHandlersCollection AddCompatibilityRenderers(this IMauiHandlersCollection handlersCollection, params global::System.Reflection.Assembly[] assemblies)
 		{
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 #if PLATFORM
 
 			Internals.Registrar.RegisterAll(
@@ -79,6 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static IFontCollection AddCompatibilityFonts(this IFontCollection fontCollection, IFontRegistrar fontRegistrar, params global::System.Reflection.Assembly[] assemblies)
 		{
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			Internals.Registrar.RegisterAll(
 				assemblies,
 				null,
@@ -93,6 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static IImageSourceServiceCollection AddCompatibilityServices(this IImageSourceServiceCollection services, params global::System.Reflection.Assembly[] assemblies)
 		{
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 #if PLATFORM
 			Internals.Registrar.RegisterAll(
 				assemblies,
@@ -114,6 +121,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static IEffectsBuilder AddCompatibilityEffects(this IEffectsBuilder effectsBuilder, params global::System.Reflection.Assembly[] assemblies)
 		{
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			Internals.Registrar.RegisterEffects(assemblies);
 			return effectsBuilder;
 		}

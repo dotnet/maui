@@ -10,6 +10,7 @@ using CStackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 [assembly: AssemblyMetadata("IsTrimmable", "True")]
 [assembly: InternalsVisibleTo("Compatibility.Windows.UnitTests")]
 [assembly: InternalsVisibleTo("Compatibility.Android.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
 [assembly: StyleProperty("column-gap", typeof(CGrid), nameof(CGrid.ColumnSpacingProperty))]
 [assembly: StyleProperty("row-gap", typeof(CGrid), nameof(CGrid.RowSpacingProperty))]
 
