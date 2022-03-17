@@ -54,8 +54,8 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new FileImageSourceService();
 
 			// get an image
-			var result1 = await service.GetDrawableAsync(imageSource);
-			var bitmapDrawable1 = Assert.IsType<BitmapDrawable>(result1);
+			var (result1, drawable1) = await service.GetDrawableResultAsync(imageSource);
+			var bitmapDrawable1 = Assert.IsType<BitmapDrawable>(drawable1);
 			var bitmap1 = bitmapDrawable1.Bitmap;
 
 			// release
@@ -66,8 +66,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(collected);
 
 			// get the image again
-			var result2 = await service.GetDrawableAsync(imageSource);
-			var bitmapDrawable2 = Assert.IsType<BitmapDrawable>(result2);
+			var (result2, drawable2) = await service.GetDrawableResultAsync(imageSource);
+			var bitmapDrawable2 = Assert.IsType<BitmapDrawable>(drawable2);
 			var bitmap2 = bitmapDrawable2.Bitmap;
 
 			// make sure it WAS collected and we got a new image
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new CustomImageSourceServiceStub(cache);
 
 			// get an image
-			var result1 = await service.GetDrawableAsync(imageSource);
+			var (result1, drawable1) = await service.GetDrawableResultAsync(imageSource);
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
@@ -130,12 +130,12 @@ namespace Microsoft.Maui.DeviceTests
 			result1.Dispose();
 
 			// get the image again
-			var result2 = await service.GetDrawableAsync(imageSource);
+			var (result2, drawable2) = await service.GetDrawableResultAsync(imageSource);
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			// make sure it WAS collected and we got a new image
-			Assert.NotEqual(result1, result2);
+			Assert.NotEqual(drawable1, drawable2);
 
 			result2.Dispose();
 		}
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.DeviceTests
 						.SetDiskCacheStrategy(DiskCacheStrategy.None)
 						.Into(target);
 
-					var result = await target.DrawableResult;
+					await target.Result;
 				}
 				catch (ExecutionException ex) when (ex.Cause is GlideException)
 				{
@@ -179,16 +179,16 @@ namespace Microsoft.Maui.DeviceTests
 
 		class CacheCheckTarget : Bumptech.Glide.Request.Target.CustomTarget
 		{
-			public Task<Drawable> DrawableResult
-				=> tcsDrawable.Task;
+			public Task Result
+				=> tcsResult.Task;
 
-			TaskCompletionSource<Drawable> tcsDrawable = new ();
+			TaskCompletionSource<object> tcsResult = new ();
 
 			public override void OnLoadFailed(Drawable errorDrawable)
 			{
 				base.OnLoadFailed(errorDrawable);
 
-				tcsDrawable.TrySetException(new GlideException("Failed"));
+				tcsResult.TrySetException(new GlideException("Failed"));
 			}
 			public override void OnLoadCleared(Drawable p0)
 			{
@@ -196,7 +196,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			public override void OnResourceReady(Java.Lang.Object resource, ITransition transition)
 			{
-				tcsDrawable.SetResult(resource as Drawable);
+				resource.Dispose();
+				tcsResult.TrySetResult(null);
 			}
 		}
 	}

@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 {
 	public partial class FileImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			var fileImageSource = (IFileImageSource)imageSource;
 
@@ -24,14 +24,18 @@ namespace Microsoft.Maui
 					if (id > 0)
 					{
 						imageView.SetImageResource(id);
-						return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(true));
+						return new ImageSourceServiceResult(true);
 					}
 					else
 					{
-						ImageLoader.LoadFromFile(imageView, fileImageSource.File, callback);
+						PlatformInterop.LoadImageFromFile(imageView, fileImageSource.File, callback);
 					}
 
-					return callback.Result;
+					var result = await callback.Result.ConfigureAwait(false);
+					if (!result.Value)
+						throw new ApplicationException($"Unable to load image file '{fileImageSource.File}'.");
+
+					return result;
 				}
 				catch (Exception ex)
 				{
@@ -39,10 +43,10 @@ namespace Microsoft.Maui
 					throw;
 				}
 			}
-			return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(false));
+			return new ImageSourceServiceResult(false);
 		}
 
-		public override Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable?> callback, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable?> callback, CancellationToken cancellationToken = default)
 		{
 			var fileImageSource = (IFileImageSource)imageSource;
 			if (!fileImageSource.IsEmpty)
@@ -56,14 +60,18 @@ namespace Microsoft.Maui
 
 						callback?.Invoke(d);
 
-						return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(d is not null));
+						return new ImageSourceServiceResult(d is not null);
 					}
 
 					var drawableCallback = new ImageLoaderCallback(callback);
 
-					ImageLoader.LoadFromFile(context, fileImageSource.File, drawableCallback);
+					PlatformInterop.LoadImageFromFile(context, fileImageSource.File, drawableCallback);
 
-					return drawableCallback.Result;
+					var result = await drawableCallback.Result.ConfigureAwait(false);
+					if (!result.Value)
+						throw new ApplicationException($"Unable to load image file '{fileImageSource.File}'.");
+					
+					return result;
 				}
 				catch (Exception ex)
 				{
@@ -71,7 +79,7 @@ namespace Microsoft.Maui
 					throw;
 				}
 			}
-			return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(false));
+			return new ImageSourceServiceResult(false);
 		}
 	}
 }

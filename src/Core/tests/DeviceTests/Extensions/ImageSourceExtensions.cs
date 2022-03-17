@@ -17,9 +17,21 @@ namespace Microsoft.Maui.DeviceTests
 			var tcsDrawable = new TaskCompletionSource<Drawable>();
 
 			// get an image
-			var result1 = await service.LoadDrawableAsync(Platform.DefaultContext, imageSource, tcsDrawable.SetResult).ConfigureAwait(false);
+			var result = await service.LoadDrawableAsync(Platform.DefaultContext, imageSource, tcsDrawable.SetResult).ConfigureAwait(false);
 
 			return await tcsDrawable.Task.ConfigureAwait(false);
+		}
+
+		public static async Task<(IImageSourceServiceResult<bool>,Drawable)> GetDrawableResultAsync(this IImageSourceService service, IImageSource imageSource)
+		{
+			var tcsDrawable = new TaskCompletionSource<Drawable>();
+
+			// get an image
+			var result = await service.LoadDrawableAsync(Platform.DefaultContext, imageSource, tcsDrawable.SetResult).ConfigureAwait(false);
+
+			var drawable = await tcsDrawable.Task.ConfigureAwait(false);
+
+			return (result, drawable);
 		}
 #endif
 	}

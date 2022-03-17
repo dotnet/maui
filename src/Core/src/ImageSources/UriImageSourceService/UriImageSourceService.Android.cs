@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			var uriImageSource = (IUriImageSource)imageSource;
 			if (!uriImageSource.IsEmpty)
@@ -19,21 +19,23 @@ namespace Microsoft.Maui
 				{
 					var callback = new ImageLoaderCallback();
 
-					ImageLoader.LoadFromUri(imageView, uriImageSource.Uri.OriginalString, new Java.Lang.Boolean(uriImageSource.CachingEnabled), callback);
+					PlatformInterop.LoadImageFromUri(imageView, uriImageSource.Uri.OriginalString, new Java.Lang.Boolean(uriImageSource.CachingEnabled), callback);
 
-					return callback.Result;
+					var result = await callback.Result.ConfigureAwait(false);
+					if (!result.Value)
+						throw new ApplicationException($"Unable to load image uri '{uriImageSource.Uri.OriginalString}'.");
 				}
 				catch (Exception ex)
 				{
-					Logger?.LogWarning(ex, "Unable to load image stream.");
+					Logger?.LogWarning(ex, "Unable to load image uri '{Uri}'.", uriImageSource.Uri.OriginalString);
 					throw;
 				}
 			}
 
-			return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(false));
+			return new ImageSourceServiceResult(false);
 		}
 
-		public override Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable?> callback, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable?> callback, CancellationToken cancellationToken = default)
 		{
 			var uriImageSource = (IUriImageSource)imageSource;
 			if (!uriImageSource.IsEmpty)
@@ -42,18 +44,20 @@ namespace Microsoft.Maui
 				{
 					var drawableCallback = new ImageLoaderCallback(callback);
 
-					ImageLoader.LoadFromUri(context, uriImageSource.Uri.OriginalString, new Java.Lang.Boolean(uriImageSource.CachingEnabled), drawableCallback);
+					PlatformInterop.LoadImageFromUri(context, uriImageSource.Uri.OriginalString, new Java.Lang.Boolean(uriImageSource.CachingEnabled), drawableCallback);
 
-					return drawableCallback.Result;
+					var result = await drawableCallback.Result.ConfigureAwait(false);
+					if (!result.Value)
+						throw new ApplicationException($"Unable to load image uri '{uriImageSource.Uri.OriginalString}'.");
 				}
 				catch (Exception ex)
 				{
-					Logger?.LogWarning(ex, "Unable to load image stream.");
+					Logger?.LogWarning(ex, "Unable to load image uri '{Uri}'.", uriImageSource.Uri.OriginalString);
 					throw;
 				}
 			}
 
-			return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(false));
+			return new ImageSourceServiceResult(false);
 		}
 	}
 }

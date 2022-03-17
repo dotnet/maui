@@ -28,9 +28,13 @@ namespace Microsoft.Maui
 						stream?.Dispose();
 					});
 
-					ImageLoader.LoadFromStream(imageView, stream, callback);
+					PlatformInterop.LoadImageFromStream(imageView, stream, callback);
 
-					return await callback.Result.ConfigureAwait(false);
+					var result = await callback.Result.ConfigureAwait(false);
+					if (!result.Value)
+						throw new ApplicationException($"Unable to load image stream.");
+
+					return result;
 				}
 				catch (Exception ex)
 				{
@@ -65,9 +69,13 @@ namespace Microsoft.Maui
 						stream?.Dispose();
 					});
 
-					ImageLoader.LoadFromStream(context, stream, drawableCallback);
+					PlatformInterop.LoadImageFromStream(context, stream, drawableCallback);
 
-					return await drawableCallback.Result.ConfigureAwait(false);
+					var result = await drawableCallback.Result.ConfigureAwait(false);
+					if (!result.Value)
+						throw new ApplicationException($"Unable to load image stream.");
+
+					return result;
 				}
 				catch (Exception ex)
 				{

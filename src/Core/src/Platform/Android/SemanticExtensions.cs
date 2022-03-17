@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static View GetSemanticPlatformElement(this View platformView)
 		{
-			return ViewHelper.GetSemanticPlatformElement(platformView)!;
+			return PlatformInterop.GetSemanticPlatformElement(platformView)!;
 		}
 	}
 }
