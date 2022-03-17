@@ -23,10 +23,6 @@
     <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests\TestUtils.DeviceTests.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj" />

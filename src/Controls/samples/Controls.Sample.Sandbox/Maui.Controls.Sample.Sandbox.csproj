@@ -14,11 +14,6 @@
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
   </PropertyGroup>
 
-  <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.Graphics.Win2D" />
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>

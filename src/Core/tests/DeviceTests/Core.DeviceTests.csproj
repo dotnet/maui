@@ -26,10 +26,6 @@
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests\TestUtils.DeviceTests.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj" />

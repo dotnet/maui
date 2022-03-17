@@ -15,11 +15,6 @@
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.Graphics.Win2D" />
-  </ItemGroup>
-
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 
   <ItemGroup>
