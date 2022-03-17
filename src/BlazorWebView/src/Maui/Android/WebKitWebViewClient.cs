@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.Runtime;
 using Android.Webkit;
+using Java.Net;
 using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -54,16 +55,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 					if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
 					{
-						var intent = Intent.ParseUri(requestUri, IntentUriType.Scheme);
-
 						try
 						{
+							var intent = Intent.ParseUri(requestUri, IntentUriType.Scheme);
 							_webViewHandler.Context.StartActivity(intent);
+						}
+						catch (URISyntaxException)
+						{
+							// This can occur if there is a problem with the URI formatting given its specified scheme.
+							// Other platforms will silently ignore formatting issues, so we do the same here.
 						}
 						catch (ActivityNotFoundException)
 						{
-							// Do nothing. This is consistent with the behavior on other platforms when a URL with
-							// unknown scheme is clicked.
+							// Do nothing if there is no activity to handle the intent. This is consistent with the
+							// behavior on other platforms when a URL with an unknown scheme is clicked.
 						}
 					}
 
