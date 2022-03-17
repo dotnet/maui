@@ -8,6 +8,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
 using Windows.Storage.Streams;
+using Windows.Storage;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -104,9 +105,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						var contentType = StaticContentProvider.GetResponseContentTypeOrDefault(relativePath);
 						headers = StaticContentProvider.GetResponseHeaders(contentType);
 						var headerString = GetHeaderString(headers);
-						var winUIFile = await Package.Current.InstalledLocation.GetFileAsync(relativePath);
+						var stream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
 
-						eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(await winUIFile.OpenReadAsync(), statusCode, statusMessage, headerString);
+						eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(stream.AsRandomAccessStream(), statusCode, statusMessage, headerString);
 					}
 				}
 			}
