@@ -91,6 +91,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
+		public void WindowCanRetrieveDisplayDensity()
+		{
+			var window = new Window(new ContentPage());
+			var handler = new WindowHandlerStub(commandMapper: new CommandMapper<IWindow, WindowHandlerStub>(WindowHandlerStub.CommandMapper)
+			{
+				[nameof(IWindow.RequestDisplayDensity)] = (h, v, a) => ((DisplayDensityRequest)a).SetResult(42)
+			});
+
+			window.Handler = handler;
+
+			Assert.AreEqual(42, window.DisplayDensity);
+		}
+
 		public void ListViewWindowIsInheritedByViewCells()
 		{
 			var lv = new ListView { ItemTemplate = new DataTemplate(() => new ViewCell { View = new View() }) };
