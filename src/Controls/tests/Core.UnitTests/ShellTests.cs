@@ -474,20 +474,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void BackButtonBehaviorSet()
-		{
-			var page = new ContentPage();
-
-			Assert.IsNull(Shell.GetBackButtonBehavior(page));
-
-			var backButtonBehavior = new BackButtonBehavior();
-
-			Shell.SetBackButtonBehavior(page, backButtonBehavior);
-
-			Assert.AreEqual(backButtonBehavior, Shell.GetBackButtonBehavior(page));
-		}
-
-		[Test]
 		public void ModalSetters()
 		{
 			var page = new ContentPage();
@@ -499,32 +485,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.IsTrue(IsModal(page));
 			Assert.IsFalse(IsAnimated(page));
-		}
-
-		[Test]
-		public void BackButtonBehaviorBindingContextPropagation()
-		{
-			object bindingContext = new object();
-			var page = new ContentPage();
-			var backButtonBehavior = new BackButtonBehavior();
-
-			Shell.SetBackButtonBehavior(page, backButtonBehavior);
-			page.BindingContext = bindingContext;
-
-			Assert.AreEqual(page.BindingContext, backButtonBehavior.BindingContext);
-		}
-
-		[Test]
-		public void BackButtonBehaviorBindingContextPropagationWithExistingBindingContext()
-		{
-			object bindingContext = new object();
-			var page = new ContentPage();
-			var backButtonBehavior = new BackButtonBehavior();
-
-			page.BindingContext = bindingContext;
-			Shell.SetBackButtonBehavior(page, backButtonBehavior);
-
-			Assert.AreEqual(page.BindingContext, backButtonBehavior.BindingContext);
 		}
 
 		[Test]

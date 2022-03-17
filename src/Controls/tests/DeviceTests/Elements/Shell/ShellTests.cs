@@ -66,6 +66,39 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Back Button Executes Command")]
+		public async Task BackButtonExecutesCommand()
+		{
+			SetupBuilder();
+			bool commandExecuted = false;
+			string parameter = String.Empty;
+			var command = new Command((p) =>
+			{
+				parameter = $"{p}";
+				commandExecuted = true;
+			});
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(new ContentPage());
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				var rootNavView = (handler.PlatformView);
+				Assert.False(rootNavView.IsBackEnabled);
+				await shell.Navigation.PushAsync(new ContentPage());
+				Assert.True(rootNavView.IsBackEnabled);
+				Shell.SetBackButtonBehavior(shell.CurrentPage,
+					new BackButtonBehavior()
+					{
+						Command = command,
+						CommandParameter = "PARAMETER"
+					});
+
+				Assert.False(rootNavView.IsBackEnabled);
+			});
+		}
 
 		[Theory]
 		[ClassData(typeof(ShellBasicNavigationTestCases))]
@@ -90,7 +123,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected Task<Shell> CreateShellAsync(Action<Shell> action)=>
+		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
 			{
 				var value = new Shell();
