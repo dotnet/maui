@@ -51,6 +51,68 @@ namespace Microsoft.Maui.Handlers
 
 			return platformPicker;
 		}
+#else
+		protected override MauiPicker CreatePlatformView()
+		{	
+			var platformPicker = new MauiPicker(null) { BorderStyle = UITextBorderStyle.RoundedRect };
+	
+			platformPicker.ShouldBeginEditing += (textField) => 
+			{
+				var alertController = CreateAlert(textField);
+				var platformWindow = MauiContext?.GetPlatformWindow();
+				platformWindow?.BeginInvokeOnMainThread(() =>
+				{
+					_ = platformWindow?.RootViewController?.PresentViewControllerAsync(alertController, true);
+				});
+                return false;
+            };
+	
+			return platformPicker;
+		}
+
+		UIAlertController CreateAlert(UITextField uITextField)
+		{
+			var frame = new RectangleF(0, 0, 269, 240);
+			_pickerView = new UIPickerView(frame);
+			_pickerView.Model = new PickerSource(VirtualView);
+			_pickerView?.ReloadAllComponents();
+
+			var okAlertController = UIAlertController.Create ("", "", UIAlertControllerStyle.ActionSheet);
+
+			// needs translation
+    		okAlertController.AddAction(UIAlertAction.Create ("Done", UIAlertActionStyle.Default, action => 
+			{
+				var pickerSource = _pickerView?.Model as PickerSource;
+				var count = VirtualView?.GetCount() ?? 0;
+				if (pickerSource != null && pickerSource.SelectedIndex == -1 && count > 0)
+					UpdatePickerSelectedIndex(_pickerView, 0);
+
+				if (VirtualView?.SelectedIndex == -1 && count > 0)
+				{
+					(PlatformView as MauiPicker)?.SetSelectedIndex(VirtualView, 0);
+				}
+
+				UpdatePickerFromPickerSource(pickerSource);
+				uITextField.ResignFirstResponder();
+			}));
+			
+			if(okAlertController.View != null && _pickerView != null)
+			{
+				okAlertController.View.AddSubview(_pickerView);
+				var height = NSLayoutConstraint.Create(okAlertController.View,  NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, 350);
+				okAlertController.View.AddConstraint(height);
+			}
+			
+			UIPopoverPresentationController presentationPopover = okAlertController.PopoverPresentationController;
+			if (presentationPopover!=null)
+			{
+    			presentationPopover.SourceView = uITextField;
+				presentationPopover.SourceRect = uITextField.Bounds;
+    			presentationPopover.PermittedArrowDirections = UIPopoverArrowDirection.Up | UIPopoverArrowDirection.Down;
+			}
+
+			return okAlertController;
+		}
 #endif
 		protected override void ConnectHandler(MauiPicker platformView)
 		{
