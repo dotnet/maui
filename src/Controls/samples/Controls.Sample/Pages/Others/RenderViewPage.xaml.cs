@@ -1,11 +1,13 @@
 #nullable enable
 
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Platform;
 
 namespace Maui.Controls.Sample.Pages
@@ -14,6 +16,8 @@ namespace Maui.Controls.Sample.Pages
 	{
 		Stopwatch stopwatch = new Stopwatch();
 		RenderBindingModel vm;
+		MemoryStream? imageStream;
+		byte[]? byteStream;
 
 		public RenderViewPage()
 		{
@@ -64,13 +68,32 @@ namespace Maui.Controls.Sample.Pages
 			RenderView(renderImage);
 		}
 
+		private async void RenderViewSaved_Clicked(object sender, System.EventArgs e)
+		{
+			if (byteStream is not null)
+			{
+				var extension = vm.RenderType switch
+				{
+					RenderType.JPEG => "jpg",
+					RenderType.PNG => "png",
+					RenderType.BMP => "bmp",
+					_ => "jpg",
+				};
+				string fileName = $"{System.IO.Path.GetTempFileName()}.{extension}";
+				string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), fileName);
+				File.WriteAllBytes(filePath, byteStream);
+				await Share.RequestAsync(new ShareFileRequest() { Title = fileName, File = new ShareFile(filePath) });
+			}
+		}
+
 		private void RenderView(RenderedView? renderImage)
 		{
 			if (renderImage?.Render is not null)
 			{
 				try
 				{
-					var imageStream = new MemoryStream(renderImage.Render);
+					byteStream = renderImage.Render;
+					imageStream = new MemoryStream(renderImage.Render);
 					this.TestImage.Source = ImageSource.FromStream(() => imageStream);
 				}
 				catch (System.Exception ex)

@@ -19,6 +19,7 @@
         <VerticalStackLayout Spacing="5" Grid.Row="2">
             <Label x:Name="StopwatchTime" HorizontalOptions="Center"/>
             <Label x:Name="RenderStats" HorizontalOptions="Center"/>
+            <Button Text="Save Rendered View" Clicked="RenderViewSaved_Clicked" />
         </VerticalStackLayout>
     </Grid>
 </views:BasePage>
