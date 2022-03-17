@@ -1,9 +1,20 @@
 package com.microsoft.maui;
 
+import android.content.Context;
+import android.graphics.Color;
+import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.widget.AdapterView;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ViewHelper {
     public static void requestLayoutIfNeeded(View view)
@@ -93,5 +104,38 @@ public class ViewHelper {
         view.setRotationY(rotationY);
         setPivotXIfNeeded(view, pivotX);
         setPivotYIfNeeded(view, pivotY);
+    }
+
+    @NonNull
+    public static LinearLayout createNavigationBarOuterLayout(Context context)
+    {
+        LinearLayout linearLayout = new LinearLayout(context);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        linearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        return linearLayout;
+    }
+
+    @NonNull
+    public static FrameLayout createNavigationBarArea(Context context, LinearLayout linearLayout)
+    {
+        FrameLayout frameLayout = new FrameLayout(context);
+        frameLayout.setId(View.generateViewId());
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+        layoutParams.gravity = Gravity.FILL;
+        layoutParams.weight = 1;
+        frameLayout.setLayoutParams(layoutParams);
+        linearLayout.addView(frameLayout);
+        return frameLayout;
+    }
+
+    @NonNull
+    public static BottomNavigationView createNavigationBar(Context context, int navigationStyle, LinearLayout linearLayout, BottomNavigationView.OnItemSelectedListener listener)
+    {
+        BottomNavigationView navigationView = new BottomNavigationView(new ContextThemeWrapper(context, navigationStyle));
+        navigationView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        navigationView.setBackgroundColor(Color.WHITE);
+        navigationView.setOnItemSelectedListener(listener);
+        linearLayout.addView(navigationView);
+        return navigationView;
     }
 }

@@ -11,7 +11,6 @@ using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -49,7 +48,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected const int MoreTabId = 99;
 		BottomNavigationView _bottomView;
 		FrameLayout _navigationArea;
-		AView _outerLayout;
+		LinearLayout _outerLayout;
 		IShellBottomNavViewAppearanceTracker _appearanceTracker;
 		BottomNavigationViewTracker _bottomNavigationTracker;
 		BottomSheetDialog _bottomSheetDialog;
@@ -68,12 +67,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnCreateView(inflater, container, savedInstanceState);
 
-			_outerLayout = inflater.Inflate(Controls.Resource.Layout.bottomtablayout, null);
-			_bottomView = _outerLayout.FindViewById<BottomNavigationView>(Controls.Resource.Id.bottomtab_tabbar);
-			_navigationArea = _outerLayout.FindViewById<FrameLayout>(Controls.Resource.Id.bottomtab_navarea);
-
-			_bottomView.SetBackgroundColor(Colors.White.ToPlatform());
-			_bottomView.SetOnItemSelectedListener(this);
+			var context = MauiContext.Context;
+			_outerLayout = ViewHelper.CreateNavigationBarOuterLayout(context);
+			_navigationArea = ViewHelper.CreateNavigationBarArea(context, _outerLayout);
+			_bottomView = ViewHelper.CreateNavigationBar(context, Resource.Style.Widget_Design_BottomNavigationView, _outerLayout, this);
 
 			if (ShellItem == null)
 				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
