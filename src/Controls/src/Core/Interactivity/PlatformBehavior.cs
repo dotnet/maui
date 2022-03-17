@@ -1,10 +1,10 @@
 ﻿#nullable enable
 
-#if __IOS__
+#if IOS
 using PlatformView = UIKit.UIView;
-#elif __MACOS__
+#elif MACOS
 using PlatformView = AppKit.NSView;
-#elif __ANDROID__
+#elif ANDROID
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
@@ -21,16 +21,11 @@ namespace Microsoft.Maui.Controls;
 /// </summary>
 /// <typeparam name="TView">Virtual View</typeparam>
 /// <typeparam name="TPlatformView">Platform View</typeparam>
-public abstract partial class BasePlatformBehavior<TView, TPlatformView> : Behavior<TView>
-	where TView : VisualElement
-#if __IOS__ || __ANDROID__ || __WINDOWS
-		where TPlatformView : PlatformView
-#else
-		where TPlatformView : class
-#endif
+public abstract partial class PlatformBehavior<TView, TPlatformView> : Behavior<TView>
+	where TView : Element
+	where TPlatformView : class
 {
-	protected TPlatformView? PlatformView => View?.Handler?.PlatformView as TPlatformView;
-	protected TView? View { get; private set; }
+	TPlatformView? _platformView;
 
 	/// <inheritdoc />
 	protected sealed override void OnAttachedTo(BindableObject bindable)
@@ -47,51 +42,102 @@ public abstract partial class BasePlatformBehavior<TView, TPlatformView> : Behav
 	/// <inheritdoc />
 	protected sealed override void OnAttachedTo(TView bindable)
 	{
-		if (bindable.Handler is null)
+		if (bindable is VisualElement ve)
 		{
-			bindable.HandlerChanged += OnHandlerChanged;
-			return;
+			ve.Loaded += OnLoaded;
+			ve.Unloaded += OnUnloaded;
 		}
-		View = bindable;
-		OnPlatformAttachedBehavior(bindable.Handler);
+		else
+		{
+			if (bindable.Handler != null)
+				FireAttachedTo(bindable);
+
+			bindable.HandlerChanged += OnHandlerChanged;
+		}
 	}
 
 	/// <inheritdoc />
 	protected sealed override void OnDetachingFrom(TView bindable)
 	{
-		OnPlatformDeattachedBehavior(bindable.Handler);
-		bindable.HandlerChanged -= OnHandlerChanged;
+		if (bindable is VisualElement ve)
+		{
+			ve.Loaded -= OnLoaded;
+			ve.Unloaded -= OnUnloaded;
+		}
+		else
+		{
+			bindable.HandlerChanged -= OnHandlerChanged;
+		}
+
+		FireDetachedFrom(bindable);
 	}
 
-	private void OnHandlerChanged(object? sender, EventArgs e)
+
+
+	void FireAttachedTo(TView bindable)
+	{
+		if (bindable?.Handler?.PlatformView is TPlatformView platformView)
+		{
+			_platformView = platformView;
+			OnAttachedTo(bindable, platformView);
+		}
+	}
+
+	void FireDetachedFrom(TView bindable)
+	{
+		if (_platformView != null)
+		{
+			OnDetachedFrom(bindable, _platformView);
+			_platformView = null;
+		}
+	}
+
+	void OnUnloaded(object sender, EventArgs e)
+	{
+		if (sender is TView view)
+		{
+			FireDetachedFrom(view);
+		}
+	}
+
+	void OnLoaded(object sender, EventArgs e)
+	{
+		if (sender is TView view && view.Handler.PlatformView is TPlatformView platformView)
+		{
+			OnAttachedTo(view, platformView);
+			_platformView = platformView;
+		}
+	}
+
+	void OnHandlerChanged(object? sender, EventArgs e)
 	{
 		if (sender is not TView visualElement)
 			return;
 
 		if (visualElement.Handler is not null)
-			OnAttachedTo(visualElement);
+			FireAttachedTo(visualElement);
 		else
-			OnDetachingFrom(visualElement);
+			FireDetachedFrom(visualElement);
 	}
 
 	/// <summary>
 	/// This method is called when the Handler is attached to the View. Use this method to perform your customizations in the control.
 	/// </summary>
 	/// <param name="handler">The <see cref="IViewHandler"/> for the <see cref="VisualElement"/>.</param>
-	protected abstract void OnPlatformAttachedBehavior(IViewHandler handler);
+	protected virtual void OnAttachedTo(TView bindable, TPlatformView platformView) { }
 
 	/// <summary>
 	/// This method is called when the Handler is dettached from the View. Use this method to perform your customizations in the control.
 	/// </summary>
 	/// <param name="handler">The <see cref="IViewHandler"/> for the <see cref="VisualElement"/>.</param>
-	protected abstract void OnPlatformDeattachedBehavior(IViewHandler? handler);
+	protected virtual void OnDetachedFrom(TView bindable, TPlatformView platformView) { }
 }
 
 /// <summary>
 /// Base class for generalized user-defined behaviors that can respond to arbitrary conditions and events that has influence in the Platform specif layer.
 /// </summary>
 /// <typeparam name="TView">Virtual View</typeparam>
-public abstract partial class BasePlatformBehavior<TView> : BasePlatformBehavior<TView,PlatformView>
+public abstract partial class PlatformBehavior<TView> : PlatformBehavior<TView, PlatformView>
 	where TView : VisualElement
 {
 

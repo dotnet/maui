@@ -346,6 +346,9 @@ namespace Microsoft.Maui.Controls
 			{
 				_loaded += value;
 				UpdatePlatformUnloadedLoadedWiring(Window);
+				if (_isLoadedFired)
+					_loaded?.Invoke(this, EventArgs.Empty);
+
 			}
 			remove
 			{
