@@ -50,6 +50,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 			}
 		}
 
+		internal static void ResetCompatibilityCheck()
+		{
+			_compatibilityEnabled = false;
+		}
+
 		public static MauiAppBuilder UseMauiCompatibility(this MauiAppBuilder builder)
 		{
 			_compatibilityEnabled = true;
@@ -108,7 +113,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 			return builder;
 		}
 
-		private static MauiAppBuilder AddMauiCompat(this MauiAppBuilder builder)
+		static MauiAppBuilder AddMauiCompat(this MauiAppBuilder builder)
 		{
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiCompatInitializer>());
 			return builder;

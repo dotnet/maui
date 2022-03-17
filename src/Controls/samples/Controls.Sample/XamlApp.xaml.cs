@@ -28,8 +28,6 @@ namespace Maui.Controls.Sample
 			};
 
 			LoadAsset();
-
-			MainPage = new Shell() { Items = { new MainPage() } };
 		}
 
 		async void LoadAsset()
