@@ -14,6 +14,8 @@
 
 		public IShapeView? ShapeView { get; set; }
 
+		public WindingMode WindingMode { get; set; }
+
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			var rect = dirtyRect;
@@ -106,6 +108,8 @@
 
 			canvas.SaveState();
 
+			ClipPath(canvas, path);
+
 			// Set Fill
 			var fillPaint = ShapeView.Fill;
 			canvas.SetFillPaint(fillPaint, dirtyRect);
@@ -113,6 +117,11 @@
 			canvas.FillPath(path);
 
 			canvas.RestoreState();
+		}
+
+		void ClipPath(ICanvas canvas, PathF path)
+		{
+			canvas.ClipPath(path, WindingMode);
 		}
 	}
 }

@@ -14,25 +14,25 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			BindableProperty.CreateAttached("CollapseStyle", typeof(CollapseStyle),
 				typeof(FlyoutPage), CollapseStyle.Full);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetCollapseStyle'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetCollapseStyle'][1]/Docs" />
 		public static CollapseStyle GetCollapseStyle(BindableObject element)
 		{
 			return (CollapseStyle)element.GetValue(CollapseStyleProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetCollapseStyle'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetCollapseStyle'][1]/Docs" />
 		public static void SetCollapseStyle(BindableObject element, CollapseStyle collapseStyle)
 		{
 			element.SetValue(CollapseStyleProperty, collapseStyle);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetCollapseStyle']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetCollapseStyle'][2]/Docs" />
 		public static CollapseStyle GetCollapseStyle(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (CollapseStyle)config.Element.GetValue(CollapseStyleProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetCollapseStyle']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetCollapseStyle'][2]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetCollapseStyle(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, CollapseStyle value)
 		{
@@ -69,13 +69,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			element.SetValue(CollapsedPaneWidthProperty, collapsedPaneWidth);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='CollapsedPaneWidth']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='CollapsedPaneWidth'][1]/Docs" />
 		public static double CollapsedPaneWidth(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (double)config.Element.GetValue(CollapsedPaneWidthProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='CollapsedPaneWidth']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='CollapsedPaneWidth'][2]/Docs" />
 		public static IPlatformElementConfiguration<Windows, FormsElement> CollapsedPaneWidth(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, double value)
 		{

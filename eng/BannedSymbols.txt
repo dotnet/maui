@@ -1,0 +1,1 @@
+M:Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddSingleton`2(Microsoft.Extensions.DependencyInjection.IServiceCollection);Use a Factory method to create the service instead
