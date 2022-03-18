@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 			xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
-			xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls.Compatibility""
+			xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
 			Title=""Home"">
 				<local:TestCases.InnerView>
 					<Label x:Name=""innerView""/>
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				<ContentPage
 					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-					xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls.Compatibility""
+					xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
 					Title=""People"">
 
 					<cmp:StackLayout Spacing=""0"">

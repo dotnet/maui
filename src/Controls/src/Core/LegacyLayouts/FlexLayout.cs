@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 											propertyChanged: OnBasisPropertyChanged);
 		
 		public FlexLayout() =>
-			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
+			Hosting.CompatibilityCheck.CheckForCompatibility();
 
 		public FlexDirection Direction
 		{

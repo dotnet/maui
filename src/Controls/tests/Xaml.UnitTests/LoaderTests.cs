@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var xaml = @"
 				<cmp:StackLayout 
 				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls.Compatibility""
+				xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
 					<cmp:StackLayout.Children>
 						<Label x:Name=""label0"" Text=""{Binding text}""/>
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				<ContentPage 
 				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls.Compatibility""
+				xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
 					<ContentPage.Resources>
 						<ResourceDictionary>

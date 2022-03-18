@@ -132,7 +132,7 @@ xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			var xaml = @"<local:BaseView 
 	xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" 
-	xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls.Compatibility""
+	xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
   	xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
 	Padding=""0,40,0,0"">
     <local:BaseView.Resources>

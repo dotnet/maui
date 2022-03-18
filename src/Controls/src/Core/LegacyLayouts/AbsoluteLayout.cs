@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public AbsoluteLayout()
 		{
-			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
+			Hosting.CompatibilityCheck.CheckForCompatibility();
 			_children = new AbsoluteElementCollection(InternalChildren, this);
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<AbsoluteLayout>>(() =>
 				new PlatformConfigurationRegistry<AbsoluteLayout>(this));

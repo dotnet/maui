@@ -2,7 +2,7 @@
 <ContentPage
         xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-        xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls.Compatibility"
+        xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
         x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Gh11335">
     <cmp:StackLayout x:Name="stack">
         <Label x:Name="label" Text="Welcome to Microsoft.Maui.Controls!!!!" 
