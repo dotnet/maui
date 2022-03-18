@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Essentials
 
 		class EssentialsBuilder : IEssentialsBuilder
 		{
-			private List<AppAction>? _appActions;
+		List<AppAction>? _appActions;
 			internal Action<AppAction>? AppActionHandlers;
 			internal bool TrackVersions;
 
