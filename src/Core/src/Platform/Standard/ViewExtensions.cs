@@ -58,6 +58,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaximumWidth(this object platformView, IView view) { }
 
+		public static System.Threading.Tasks.Task<byte[]?> RenderAsBMP(this IView view)
+			=> System.Threading.Tasks.Task.FromResult<byte[]?>(null);
+
 		public static System.Threading.Tasks.Task<byte[]?> RenderAsPNG(this IView view)
 			=> System.Threading.Tasks.Task.FromResult<byte[]?>(null);
 
