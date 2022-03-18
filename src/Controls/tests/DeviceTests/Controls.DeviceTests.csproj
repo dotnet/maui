@@ -12,6 +12,7 @@
     <AssemblyName>Microsoft.Maui.Controls.DeviceTests</AssemblyName>
 
     <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-windows'))">win10-x64</RuntimeIdentifier>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>MSIX</WindowsPackageType>
   </PropertyGroup>
