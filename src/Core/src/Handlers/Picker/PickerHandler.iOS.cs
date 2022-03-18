@@ -60,10 +60,14 @@ namespace Microsoft.Maui.Handlers
 		
 		UIAlertController CreateAlert(UITextField uITextField)
 		{
-			var frame = new RectangleF(0, 20, 269, 240);
-		
+			var paddingTitle = 0;
+			if(!string.IsNullOrEmpty(VirtualView.Title))
+				paddingTitle+= 25;
+				
+			var pickerHeight = 240;
+			var frame = new RectangleF(0, paddingTitle, 269, pickerHeight);
 			var pickerView = new UIPickerView(frame);
-			pickerView.Model = new PickerSource(VirtualView);
+			pickerView.Model  = new PickerSource(VirtualView);
 			pickerView?.ReloadAllComponents();
 
 			var pickerController = UIAlertController.Create(VirtualView.Title, "", UIAlertControllerStyle.ActionSheet);
@@ -77,7 +81,8 @@ namespace Microsoft.Maui.Handlers
 			if(pickerController.View != null && pickerView != null)
 			{
 				pickerController.View.AddSubview(pickerView);
-				var height = NSLayoutConstraint.Create(pickerController.View,  NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, 350);
+				var doneButtonHeight = 90;
+				var height = NSLayoutConstraint.Create(pickerController.View,  NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, pickerHeight+doneButtonHeight);
 				pickerController.View.AddConstraint(height);
 			}
 			
