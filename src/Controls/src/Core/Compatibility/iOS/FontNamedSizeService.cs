@@ -3,10 +3,13 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using UIKit;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.FontNamedSizeService))]
+#pragma warning restore CS0612 // Type or member is obsolete
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete]
 	class FontNamedSizeService : IFontNamedSizeService
 	{
 		readonly double _fontScalingFactor = 1;

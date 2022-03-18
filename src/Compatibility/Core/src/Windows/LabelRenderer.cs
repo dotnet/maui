@@ -274,7 +274,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			if (isLabelDefault && _isInitiallyDefault)
+#pragma warning disable CS0612 // Type or member is obsolete
 				textBlock.ApplyFont(Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)), Element.RequireFontManager());
+#pragma warning restore CS0612 // Type or member is obsolete
 			else
 				textBlock.ApplyFont(label.ToFont(), Element.RequireFontManager());
 
