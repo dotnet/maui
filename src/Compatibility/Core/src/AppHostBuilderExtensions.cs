@@ -41,29 +41,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 	{
 		internal const string UseMapperInstead = "This renderer is obsolete please try to use the corresponding handler/mapper";
 
-		static bool _compatibilityEnabled = false;
 		internal static void CheckForCompatibility([CallerMemberName] string memberName = "")
 		{
-			if (!_compatibilityEnabled)
-			{
-				throw new InvalidOperationException(
-					$"{memberName} is currently not enabled. To enable compatibility features you will need to call add `builder.UseMauiCompatibility()`.\n\n" +
-					"MauiApp\n" +
-					"	.CreateBuilder()\n" +
-					"	.UseMauiApp<TApp>()\n" +
-					"	.UseMauiCompatibility();\n"
-					);
-			}
+			Controls.Hosting.CompatibilityCheck.CheckForCompatibility(memberName);
 		}
 
 		internal static void ResetCompatibilityCheck()
 		{
-			_compatibilityEnabled = false;
+			Controls.Hosting.CompatibilityCheck.ResetCompatibilityCheck();
 		}
 
 		public static MauiAppBuilder UseMauiCompatibility(this MauiAppBuilder builder)
 		{
-			_compatibilityEnabled = true;
+			Controls.Hosting.CompatibilityCheck.UseCompatibility();
 
 #if PLATFORM
 			// initialize compatibility DependencyService
