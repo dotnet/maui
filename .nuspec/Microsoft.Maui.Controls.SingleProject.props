@@ -2,8 +2,8 @@
 
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
     <OutputType Condition="'$(OutputType)' == 'Exe'">WinExe</OutputType>
-    <EnablePreviewMsixTooling Condition="'$(EnablePreviewMsixTooling)' == ''">true</EnablePreviewMsixTooling>
-    <_SingleProjectRIDRequired Condition="'$(OutputType)' == 'WinExe'">true</_SingleProjectRIDRequired>
+    <EnablePreviewMsixTooling Condition="'$(EnablePreviewMsixTooling)' == '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">true</EnablePreviewMsixTooling>
+    <_SingleProjectRIDRequired Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">true</_SingleProjectRIDRequired>
     <_SingleProjectRIDSpecified Condition="'$(RuntimeIdentifier)' != '' or '$(RuntimeIdentifiers)' != ''">true</_SingleProjectRIDSpecified>
   </PropertyGroup>
 
