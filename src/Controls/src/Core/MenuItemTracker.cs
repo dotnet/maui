@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls
 				if (AdditionalTargets != null)
 					foreach (var item in AdditionalTargets)
 						foreach (var menuItem in GetMenuItems(item))
-							if (returnValue.Contains(menuItem))
+							if (!returnValue.Contains(menuItem))
 								returnValue.Add(menuItem);
 
 				returnValue.Sort(CreateComparer());
