@@ -64,8 +64,4 @@
 		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<Content Update="$(AppDesignerFolder)\**" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" Condition="'$(AppDesignerFolder)' != ''"/>
-	</ItemGroup>
-
 </Project>

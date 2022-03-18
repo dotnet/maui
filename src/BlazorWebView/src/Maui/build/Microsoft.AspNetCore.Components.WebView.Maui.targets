@@ -43,6 +43,9 @@
 
       <Content Remove="@(_ContentToUpdate)" />
       <Content Include="@(_ContentToUpdate)" ExcludeFromContentCheck="true" PublishFolderType="None" />
+
+      <!-- Remove the items in AppDesignerFolder ("Properties", by default) so they don't get copied to the output directory -->
+      <Content Remove="$(AppDesignerFolder)\**" />
     </ItemGroup>
   </Target>
 
