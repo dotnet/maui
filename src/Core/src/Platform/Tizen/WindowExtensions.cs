@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using ElmSharp;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
@@ -94,6 +96,24 @@ namespace Microsoft.Maui.Platform
 		public static float GetDisplayDensity(this Window window)
 		{
 			return (float)DeviceInfo.ScalingFactor;
+		}
+
+		public static async Task<RenderedView?> RenderAsImage(this IWindow window, RenderType type)
+		{
+			Debug.WriteLine("RenderAsImage() is not supported on Tizen yet.");
+
+			if (window?.ToPlatform() is not Window win)
+				return null;
+
+			var image = type switch
+			{
+				RenderType.JPEG => await win.RenderAsJPEG(),
+				RenderType.PNG => await win.RenderAsPNG(),
+				RenderType.BMP => await win.RenderAsBMP(),
+				_ => throw new NotImplementedException(),
+			};
+
+			return new RenderedView(image, type);
 		}
 
 		static void OnBackButtonPressed(Window window)
