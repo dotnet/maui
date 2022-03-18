@@ -46,10 +46,10 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 				newElement.PropertyChanged += OnElementPropertyChanged;
-			}
 
-			UpdateInputTransparent();
-			UpdateIsEnabled();
+				UpdateInputTransparent();
+				UpdateIsEnabled();
+			}
 		}
 
 		void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
