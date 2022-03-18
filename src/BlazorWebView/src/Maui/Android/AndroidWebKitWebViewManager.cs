@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
 		private static readonly string AppOrigin = $"https://{BlazorWebView.AppHostAddress}/";
+		private static readonly Uri AppOriginUri = new Uri(AppOrigin);
 		private static readonly AUri AndroidAppOriginUri = AUri.Parse(AppOrigin)!;
 		private readonly AWebView _webview;
 
@@ -66,7 +67,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var nativeToJs = new BlazorWebMessageCallback(message =>
 			{
-				MessageReceived(new Uri(AppOrigin), message!);
+				var currentUri = _webview.Url != null ? new Uri(_webview.Url) : null;
+				if (currentUri?.Scheme != AppOriginUri.Scheme && currentUri?.Host != AppOriginUri.Host)
+				{
+					throw new InvalidOperationException($"Received a message from host '{currentUri?.Host}' which does not match app host address '{appOriginUri.Host}'.");
+				}
+				MessageReceived(AppOriginUri, message!);
 			});
 
 			var destPort = new[] { nativeToJsPorts[1] };

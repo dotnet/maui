@@ -69,6 +69,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private void MessageReceived(Uri uri, string message)
 		{
+			if (uri.Scheme != "app" && uri.Host != BlazorWebView.AppHostAddress)
+			{
+				throw new InvalidOperationException($"Received a message from host '{uri.Host}' which does not match app host address '{BlazorWebView.AppHostAddress}'.");
+			}
 			_webviewManager?.MessageReceivedInternal(uri, message);
 		}
 
