@@ -37,7 +37,6 @@ namespace Microsoft.Maui.Controls
 
 			ApplyChanges();
 			_toolbarTracker.CollectionChanged += (_, __) => ToolbarItems = _toolbarTracker.ToolbarItems;
-			_toolbarTracker.AdditionalTargets = new List<Page> { shell };
 		}
 
 		void ApplyChanges()
@@ -62,7 +61,7 @@ namespace Microsoft.Maui.Controls
 			if (stack.Count == 0)
 				return;
 
-			_toolbarTracker.Target = currentPage;
+			_toolbarTracker.Target = _shell;
 
 			Page previousPage = null;
 			if (stack.Count > 1)

@@ -12,6 +12,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class ShellToolbarTests : ShellTestBase
 	{
 		[Test]
+		public async Task ShellToolbarItemsMergeWithPage()
+		{
+			var toolbarItem1 = new ToolbarItem("Foo1", "Foo.png", () => { });
+			var toolbarItem2 = new ToolbarItem("Foo2", "Foo.png", () => { });
+			var toolbarItem3 = new ToolbarItem("Foo2", "Foo.png", () => { });
+
+			var firstPage = new ContentPage
+			{
+				ToolbarItems = { toolbarItem2 }
+			};
+
+			var secondPage = new ContentPage
+			{
+				ToolbarItems = { toolbarItem3 }
+			};
+
+			var shell = new TestShell(firstPage)
+			{
+				ToolbarItems = {
+					toolbarItem1
+				}
+			};
+
+			var toolbar = shell.Toolbar;
+			Assert.True(toolbar.ToolbarItems.Contains(toolbarItem1));
+			Assert.True(toolbar.ToolbarItems.Contains(toolbarItem2));
+			Assert.AreEqual(2, toolbar.ToolbarItems.Count());
+
+			await shell.Navigation.PushAsync(secondPage);
+			Assert.True(toolbar.ToolbarItems.Contains(toolbarItem1));
+			Assert.True(toolbar.ToolbarItems.Contains(toolbarItem3));
+			Assert.AreEqual(2, toolbar.ToolbarItems.Count());
+		}
+
+		[Test]
 		public async Task BackButtonExecutesCommand()
 		{
 			var pushedPage = new ContentPage();
