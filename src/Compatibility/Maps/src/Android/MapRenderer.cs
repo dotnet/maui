@@ -64,9 +64,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 		{
 			return new Size(40);
 		}
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return new Size(40);
+			return new SizeRequest(new Size(40), new Size(40));
 		}
 
 		protected override MapView CreateNativeControl()

@@ -36,9 +36,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 		const string MoveMessageName = "MapMoveToRegion";
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return Control.GetSizeRequest(widthConstraint, heightConstraint).Request;
+			return Control.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
 		// iOS 9/10 have some issues with releasing memory from map views; each one we create allocates

@@ -3,7 +3,7 @@
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mg="clr-namespace:Microsoft.Maui.Graphics;assembly=Microsoft.Maui.Graphics"
-    xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
+    xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls.Compatibility"
 	x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Gh11551">
     <ContentPage.Resources>
 		<mg:Rect x:Key="rect" Height="22" Width="{x:Static cmp:AbsoluteLayout.AutoSize}" X="1" Y="0.5"/>
