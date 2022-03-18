@@ -20,21 +20,9 @@ namespace Microsoft.Maui.Handlers
 			var toolbar = new UIToolbar(new RectangleF(0, 0, width, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
 			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
 
-			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
-			{
-				var pickerSource = (PickerSource)_pickerView.Model;
-				var count = VirtualView?.GetCount() ?? 0;
-				if (pickerSource.SelectedIndex == -1 && count > 0)
-					UpdatePickerSelectedIndex(_pickerView, 0);
-
-				if (VirtualView?.SelectedIndex == -1 && count > 0)
-				{
-					PlatformView?.SetSelectedIndex(VirtualView, 0);
-				}
-
-				UpdatePickerFromPickerSource(pickerSource);
-				platformPicker.ResignFirstResponder();
-			});
+			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done,
+				(o, a) => FinishSelectItem(_pickerView,platformPicker)
+			);
 
 			toolbar.SetItems(new[] { spacer, doneButton }, false);
 
@@ -72,46 +60,34 @@ namespace Microsoft.Maui.Handlers
 
 		UIAlertController CreateAlert(UITextField uITextField)
 		{
-			var frame = new RectangleF(0, 0, 269, 240);
+			var frame = new RectangleF(0, 20, 269, 240);
 			_pickerView = new UIPickerView(frame);
 			_pickerView.Model = new PickerSource(VirtualView);
 			_pickerView?.ReloadAllComponents();
 
-			var okAlertController = UIAlertController.Create ("", "", UIAlertControllerStyle.ActionSheet);
+			var pickerController = UIAlertController.Create(VirtualView.Title, "", UIAlertControllerStyle.ActionSheet);
 
 			// needs translation
-    		okAlertController.AddAction(UIAlertAction.Create ("Done", UIAlertActionStyle.Default, action => 
-			{
-				var pickerSource = _pickerView?.Model as PickerSource;
-				var count = VirtualView?.GetCount() ?? 0;
-				if (pickerSource != null && pickerSource.SelectedIndex == -1 && count > 0)
-					UpdatePickerSelectedIndex(_pickerView, 0);
-
-				if (VirtualView?.SelectedIndex == -1 && count > 0)
-				{
-					(PlatformView as MauiPicker)?.SetSelectedIndex(VirtualView, 0);
-				}
-
-				UpdatePickerFromPickerSource(pickerSource);
-				uITextField.ResignFirstResponder();
-			}));
+    		pickerController.AddAction(UIAlertAction.Create("Done",
+								UIAlertActionStyle.Default, 
+								action => FinishSelectItem(_pickerView,uITextField)
+							));
 			
-			if(okAlertController.View != null && _pickerView != null)
+			if(pickerController.View != null && _pickerView != null)
 			{
-				okAlertController.View.AddSubview(_pickerView);
-				var height = NSLayoutConstraint.Create(okAlertController.View,  NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, 350);
-				okAlertController.View.AddConstraint(height);
+				pickerController.View.AddSubview(_pickerView);
+				var height = NSLayoutConstraint.Create(pickerController.View,  NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, 350);
+				pickerController.View.AddConstraint(height);
 			}
 			
-			UIPopoverPresentationController presentationPopover = okAlertController.PopoverPresentationController;
-			if (presentationPopover!=null)
+			var popoverPresentation = pickerController.PopoverPresentationController;
+			if (popoverPresentation!=null)
 			{
-    			presentationPopover.SourceView = uITextField;
-				presentationPopover.SourceRect = uITextField.Bounds;
-    			presentationPopover.PermittedArrowDirections = UIPopoverArrowDirection.Up | UIPopoverArrowDirection.Down;
+    			popoverPresentation.SourceView = uITextField;
+				popoverPresentation.SourceRect = uITextField.Bounds;
 			}
 
-			return okAlertController;
+			return pickerController;
 		}
 #endif
 		protected override void ConnectHandler(MauiPicker platformView)
@@ -260,6 +236,17 @@ namespace Microsoft.Maui.Handlers
 			var source = (PickerSource)pickerView.Model;
 			source.SelectedIndex = formsIndex;
 			pickerView.Select(Math.Max(formsIndex, 0), 0, true);
+		}
+
+		void FinishSelectItem(UIPickerView? pickerView, UITextField textField)
+		{
+			var pickerSource = pickerView?.Model as PickerSource;
+			var count = VirtualView?.GetCount() ?? 0;
+			if (pickerSource != null && pickerSource.SelectedIndex == -1 && count > 0)
+				UpdatePickerSelectedIndex(pickerView, 0);
+
+			UpdatePickerFromPickerSource(pickerSource);
+			textField.ResignFirstResponder();
 		}
 	}
 
