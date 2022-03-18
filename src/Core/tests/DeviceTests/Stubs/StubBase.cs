@@ -77,7 +77,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public string AutomationId { get; set; }
 
-		public FlowDirection FlowDirection { get; set; } = FlowDirection.LeftToRight;
+		public virtual FlowDirection FlowDirection { get; set; } = FlowDirection.LeftToRight;
 
 		public LayoutAlignment HorizontalLayoutAlignment { get; set; }
 
