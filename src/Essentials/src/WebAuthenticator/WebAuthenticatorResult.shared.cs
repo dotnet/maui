@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Authentication
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.WebAuthenticatorResult']/Docs" />
 	public class WebAuthenticatorResult

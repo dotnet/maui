@@ -4,10 +4,11 @@ using Android.Content.PM;
 using Android.Graphics;
 using Android.Hardware.Camera2;
 using Android.OS;
-
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Essentials;
 using Camera = Android.Hardware.Camera;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Implementations
 {
 	public class FlashlightImplementation : IFlashlight
 	{

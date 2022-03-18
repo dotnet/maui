@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	public interface IHapticFeedback
 	{

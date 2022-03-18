@@ -4,8 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	public static partial class FilePicker
 	{

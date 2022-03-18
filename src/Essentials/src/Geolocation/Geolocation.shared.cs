@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Devices.Sensors.Implementations;
 
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public interface IGeolocation
 	{
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors.Implementations
 {
 	public partial class GeolocationImplementation : IGeolocation
 	{

@@ -4,9 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.ApplicationModel.Communication.Implementations;
+using Microsoft.Maui.Storage;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	public interface IEmail
 	{

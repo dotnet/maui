@@ -7,8 +7,9 @@ using MessageUI;
 #endif
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
 {
 	public partial class EmailImplementation : IEmail
 	{

@@ -1,7 +1,8 @@
 using CoreMotion;
 using Foundation;
+using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors.Implementations
 {
 	public partial class GyroscopeImplementation : IGyroscope
 	{

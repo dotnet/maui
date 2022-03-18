@@ -1,12 +1,13 @@
 using System;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
 using SafariServices;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Implementations
 {
 	public partial class BrowserImplementation : IBrowser
 	{

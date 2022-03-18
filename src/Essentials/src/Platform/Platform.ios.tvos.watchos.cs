@@ -5,14 +5,15 @@ using System.Threading.Tasks;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.Authentication;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.ApplicationModel.Implementations;
 
 #if __IOS__
 using CoreMotion;
 #elif __WATCHOS__
 using CoreMotion;
 #endif
-
-using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {

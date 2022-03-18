@@ -9,7 +9,7 @@ using UIKit;
 
 using ObjCRuntime;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Implementations
 {
 	public class DeviceInfoImplementation : IDeviceInfo
 	{

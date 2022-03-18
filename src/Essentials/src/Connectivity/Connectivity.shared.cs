@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.ComponentModel;
 using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.Networking.Implementations;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Networking
 {
 	public interface IConnectivity
 	{

@@ -5,7 +5,7 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Implementations
 {
 	public partial class AppActionsImplementation : IAppActions
 	{

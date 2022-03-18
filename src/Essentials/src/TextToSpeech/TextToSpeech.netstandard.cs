@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media.Implementations
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="Type[@FullName='Microsoft.Maui.Essentials.TextToSpeech']/Docs" />
 	public partial class TextToSpeechImplementation : ITextToSpeech

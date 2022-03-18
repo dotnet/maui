@@ -1,8 +1,10 @@
 using System;
 using Android.Content;
 using Android.OS;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Implementations
 {
 	public partial class BatteryImplementation : IBattery
 	{

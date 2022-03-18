@@ -2,8 +2,9 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Storage;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public interface ILauncher
 	{
@@ -99,7 +100,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Implementations
 {
 	public partial class LauncherImplementation : ILauncher
 	{

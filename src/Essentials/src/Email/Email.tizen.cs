@@ -2,7 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
 {
 	public partial class EmailImplementation : IEmail
 	{

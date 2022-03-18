@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using Microsoft.Maui.Storage;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public interface IVersionTracking
 	{
@@ -114,7 +115,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Implementations
 {
 	public class VersionTrackingImplementation : IVersionTracking
 	{

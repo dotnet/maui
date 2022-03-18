@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.ApplicationModel.DataTransfer.Implementations;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Storage;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
 	public interface IShare
 	{

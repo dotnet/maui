@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.Media;
+using Microsoft.Maui.Media.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Media
 {
 	public interface ITextToSpeech
 	{

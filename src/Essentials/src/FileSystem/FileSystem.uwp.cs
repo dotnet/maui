@@ -1,10 +1,11 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Windows.ApplicationModel;
+using Microsoft.Maui.ApplicationModel;
 using Windows.Storage;
+using Package = Windows.ApplicationModel.Package;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage.Implementations
 {
 	public partial class FileSystemImplementation : IFileSystem
 	{
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 	}
 }
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	public partial class FileBase
 	{

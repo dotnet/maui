@@ -4,7 +4,7 @@ using CoreTelephony;
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Networking.Implementations
 {
 	public partial class ConnectivityImplementation : IConnectivity
 	{

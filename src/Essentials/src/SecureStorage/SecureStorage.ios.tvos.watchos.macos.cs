@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Foundation;
 using Security;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage.Implementations
 {
 	public partial class SecureStorageImplementation : ISecureStorage, IPlatformSecureStorage
 	{

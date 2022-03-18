@@ -2,9 +2,10 @@ using System;
 using System.Threading.Tasks;
 using Android.Content;
 using AndroidX.Browser.CustomTabs;
+using Microsoft.Maui.Essentials;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Implementations
 {
 	public partial class BrowserImplementation : IBrowser
 	{

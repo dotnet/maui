@@ -3,10 +3,11 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Microsoft.Maui.Essentials;
 using AndroidUri = Android.Net.Uri;
 using Uri = System.Uri;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Implementations
 {
 	public partial class LauncherImplementation
 	{

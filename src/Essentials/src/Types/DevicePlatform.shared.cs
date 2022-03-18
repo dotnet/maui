@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DevicePlatform']/Docs" />
 	public readonly struct DevicePlatform : IEquatable<DevicePlatform>

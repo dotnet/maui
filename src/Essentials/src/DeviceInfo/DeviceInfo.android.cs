@@ -4,7 +4,7 @@ using Android.Content.Res;
 using Android.OS;
 using Android.Provider;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Implementations
 {
 	public class DeviceInfoImplementation : IDeviceInfo
 	{

@@ -2,9 +2,9 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.Storage.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	public interface ISecureStorage
 	{
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage.Implementations
 {
 	public partial class SecureStorageImplementation
 	{

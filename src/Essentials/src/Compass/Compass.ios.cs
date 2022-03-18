@@ -1,6 +1,6 @@
 using CoreLocation;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors.Implementations
 {
 	public partial class CompassImplementation : ICompass, IPlatformCompass
 	{

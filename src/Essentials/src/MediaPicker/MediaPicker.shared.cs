@@ -2,10 +2,11 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.Media;
+using Microsoft.Maui.Media.Implementations;
+using Microsoft.Maui.Storage;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Media
 {
 	public interface IMediaPicker
 	{

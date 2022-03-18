@@ -5,6 +5,7 @@ using Windows.UI.Xaml;
 using WindowActivationState = Windows.UI.Core.CoreWindowActivationState;
 #elif WINDOWS
 using System;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 #endif

@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Maui.Essentials;
 using Windows.Devices.Geolocation;
 using Windows.Services.Maps;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors.Implementations
 {
 	public class GeocodingImplementation: IGeocoding
 	{

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using CoreLocation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class GeolocationRequest
 	{

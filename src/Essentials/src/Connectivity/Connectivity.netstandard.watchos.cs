@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Networking.Implementations
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
 	public partial class ConnectivityImplementation : IConnectivity

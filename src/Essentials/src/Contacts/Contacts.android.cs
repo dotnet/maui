@@ -5,10 +5,11 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Database;
 using Android.Provider;
+using Microsoft.Maui.Essentials;
 using CommonDataKinds = Android.Provider.ContactsContract.CommonDataKinds;
 using StructuredName = Android.Provider.ContactsContract.CommonDataKinds.StructuredName;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
 {
 	public class ContactsImplementation : IContacts
 	{

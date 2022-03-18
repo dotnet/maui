@@ -7,8 +7,10 @@ using Foundation;
 using MobileCoreServices;
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	public static partial class FilePicker
 	{

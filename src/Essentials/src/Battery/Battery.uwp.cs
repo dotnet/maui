@@ -1,6 +1,7 @@
+using Microsoft.Maui.ApplicationModel;
 using Windows.System.Power;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Implementations
 {
 	public partial class BatteryImplementation : IBattery
 	{

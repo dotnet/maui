@@ -1,7 +1,7 @@
 using Tizen.Sensor;
 using TizenAccelerometer = Tizen.Sensor.Accelerometer;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors.Implementations
 {
 	public partial class AccelerometerImplementation
 	{

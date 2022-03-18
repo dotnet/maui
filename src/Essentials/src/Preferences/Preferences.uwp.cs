@@ -1,6 +1,6 @@
 using Windows.Storage;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage.Implementations
 {
 	public class PreferencesImplementation:IPreferences
 	{

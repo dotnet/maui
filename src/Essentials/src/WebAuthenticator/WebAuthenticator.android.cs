@@ -2,8 +2,9 @@ using System;
 using System.Threading.Tasks;
 using Android.Content;
 using AndroidX.Browser.CustomTabs;
+using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Authentication.Implementations
 {
 	public partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{

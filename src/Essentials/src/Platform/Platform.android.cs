@@ -12,9 +12,11 @@ using Android.Net;
 using Android.Net.Wifi;
 using Android.OS;
 using Android.Views;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.ApplicationModel.Implementations;
+using Microsoft.Maui.Storage;
 using AndroidIntent = Android.Content.Intent;
 using AndroidUri = Android.Net.Uri;
-using Microsoft.Maui.Essentials.Implementations;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -252,7 +254,7 @@ namespace Microsoft.Maui.Essentials
 			else
 #endif
 #pragma warning disable CS0618 // Type or member is obsolete
-			config.Locale = locale;
+				config.Locale = locale;
 #pragma warning restore CS0618 // Type or member is obsolete
 
 #pragma warning disable CS0618 // Type or member is obsolete

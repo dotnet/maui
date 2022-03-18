@@ -4,10 +4,11 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
 using Android.Provider;
-
+using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Storage;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
 {
 	public class SmsImplementation : ISms
 	{

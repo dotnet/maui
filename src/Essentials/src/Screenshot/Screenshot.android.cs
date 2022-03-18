@@ -3,8 +3,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Views;
+using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Media
 {
 	public static partial class Screenshot
 	{
@@ -100,7 +101,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media.Implementations
 {
 	public partial class ScreenshotImplementation : IScreenshot
 	{

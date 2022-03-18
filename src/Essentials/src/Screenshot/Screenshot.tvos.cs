@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media.Implementations
 {
 	public partial class ScreenshotImplementation : IScreenshot
 	{
@@ -18,7 +18,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return Task.FromResult(result);
 		}
 	}
+}
 
+namespace Microsoft.Maui.Media
+{
 	internal partial class ScreenshotResult
 	{
 		readonly UIImage uiImage;

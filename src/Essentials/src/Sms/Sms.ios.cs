@@ -2,9 +2,10 @@ using System.Linq;
 using System.Threading.Tasks;
 #if !(MACCATALYST || MACOS)
 using MessageUI;
+using Microsoft.Maui.Essentials;
 #endif
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
 {
 	public class SmsImplementation : ISms
 	{

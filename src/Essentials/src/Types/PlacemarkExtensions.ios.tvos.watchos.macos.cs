@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CoreLocation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public static partial class PlacemarkExtensions
 	{

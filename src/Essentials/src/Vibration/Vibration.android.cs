@@ -2,9 +2,11 @@ using System;
 #if __ANDROID_26__
 using Android;
 using Android.OS;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Essentials;
 #endif
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Implementations
 {
 	public partial class VibrationImplementation : IVibration
 	{

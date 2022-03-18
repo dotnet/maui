@@ -1,9 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using Android.Content;
+using Microsoft.Maui.Essentials;
 using static Android.Content.ClipboardManager;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer.Implementations
 {
 	public partial class ClipboardImplementation : IClipboard
 	{

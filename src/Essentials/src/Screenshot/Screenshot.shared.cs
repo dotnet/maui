@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Media
 {
 	public interface IScreenshot
 	{
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media.Implementations
 {
 	internal partial class ScreenshotResult : IScreenshotResult
 	{

@@ -1,7 +1,7 @@
 using System.Globalization;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Implementations
 {
 	public class AppInfoImplementation
 	{

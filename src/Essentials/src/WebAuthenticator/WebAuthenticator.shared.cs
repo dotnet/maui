@@ -4,10 +4,10 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.Authentication;
+using Microsoft.Maui.Authentication.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Authentication
 {
 	public interface IWebAuthenticator
 	{
@@ -75,11 +75,11 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Authentication.Implementations
 {
 	public partial class WebAuthenticatorImplementation
 	{
 		public Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
-			=> AuthenticateAsync(new Microsoft.Maui.Essentials.WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
+			=> AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
 	}
 }

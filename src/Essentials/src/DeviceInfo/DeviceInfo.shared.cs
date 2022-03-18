@@ -1,9 +1,9 @@
 #nullable enable
 using System;
 using System.ComponentModel;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.Devices.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceInfo']/Docs" />
 	public static class DeviceInfo

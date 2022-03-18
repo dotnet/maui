@@ -4,9 +4,11 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Net;
 using Android.OS;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Essentials;
 using Debug = System.Diagnostics.Debug;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Networking.Implementations
 {
 	public partial class ConnectivityImplementation : IConnectivity
 	{

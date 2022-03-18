@@ -1,7 +1,7 @@
 using Windows.Devices.Sensors;
 using WindowsOrientationSensor = Windows.Devices.Sensors.OrientationSensor;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors.Implementations
 {
 	public partial class OrientationSensorImplementation : IOrientationSensor
 	{

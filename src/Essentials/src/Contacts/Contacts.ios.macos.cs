@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 using Contacts;
 #if __IOS__
 using ContactsUI;
+using Microsoft.Maui.Essentials;
 #endif
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
 {
 	public class ContactsImplementation : IContacts
 	{

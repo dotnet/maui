@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using AVFoundation;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Implementations
 {
 	public class FlashlightImplementation : IFlashlight
 	{

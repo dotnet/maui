@@ -1,12 +1,14 @@
 #nullable enable
 using System;
 using System.Runtime.InteropServices;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Essentials;
 using Microsoft.UI.Windowing;
 using Windows.Graphics.Display;
 using Windows.Graphics.Display.Core;
 using Windows.System.Display;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Implementations
 {
 	public class DeviceDisplayImplementation : IDeviceDisplay
 	{

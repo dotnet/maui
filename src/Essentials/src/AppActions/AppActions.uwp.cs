@@ -11,7 +11,7 @@ using Windows.ApplicationModel.Activation;
 using Microsoft.UI.Xaml;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class AppActions
 	{
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Implementations
 {
 	public class AppActionsImplementation : IAppActions
 	{

@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 using Android.Locations;
 using Android.OS;
 using Android.Runtime;
-
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Essentials;
 using AndroidLocation = Android.Locations.Location;
 using LocationPower = Android.Locations.Power;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors.Implementations
 {
 	public partial class GeolocationImplementation : IGeolocation
 	{

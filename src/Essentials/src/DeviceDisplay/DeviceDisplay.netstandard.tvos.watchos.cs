@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Implementations
 {
 	public class DeviceDisplayImplementation : IDeviceDisplay
 	{

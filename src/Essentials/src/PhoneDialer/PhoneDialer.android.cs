@@ -5,9 +5,10 @@ using Android.OS;
 using Android.Telephony;
 using Java.Net;
 using Java.Util;
+using Microsoft.Maui.Essentials;
 using Uri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
 {
 	public partial class PhoneDialerImplementation : IPhoneDialer
 	{

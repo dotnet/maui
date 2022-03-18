@@ -2,8 +2,10 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Android.Views;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Implementations
 {
 	public partial class HapticFeedbackImplementation : IHapticFeedback
 	{
