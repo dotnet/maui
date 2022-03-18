@@ -117,7 +117,7 @@ Task("dotnet-templates")
             "net6.0-maccatalyst",
         };
 
-        foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
+        foreach (var template in new [] { "maui", "maui-blank", "maui-blazor", "mauilib" })
         {
             var name = template.Replace("-", "_").Replace(" ", "_");
             StartProcess(dn, $"new {template} -o \"{templatesTest}{name}\"");
