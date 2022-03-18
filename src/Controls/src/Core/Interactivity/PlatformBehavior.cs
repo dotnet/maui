@@ -17,7 +17,7 @@ using System;
 namespace Microsoft.Maui.Controls;
 
 /// <summary>
-/// Base class for generalized user-defined behaviors that can respond to arbitrary conditions and events that has influence in the Platform specif layer.
+/// Base class for generalized user-defined behaviors that can respond to arbitrary conditions and events when connected to the platform view hierarchy.
 /// </summary>
 /// <typeparam name="TView">Virtual View</typeparam>
 /// <typeparam name="TPlatformView">Platform View</typeparam>
@@ -121,22 +121,22 @@ public abstract partial class PlatformBehavior<TView, TPlatformView> : Behavior<
 	}
 
 	/// <summary>
-	/// This method is called when the Handler is attached to the View. Use this method to perform your customizations in the control.
+	/// This method is called when the bindable is attached to the platform view hierarchy. 
 	/// </summary>
-	/// <param name="bindable">The <see cref="IViewHandler"/> for the <see cref="VisualElement"/>.</param>
-	/// <param name="platformView">The <see cref="IViewHandler"/> for the <see cref="VisualElement"/>.</param>
+	/// <param name="bindable">The bindable object to which the behavior was attached.</param>
+	/// <param name="platformView">The platform control connected to the bindable object.</param>
 	protected virtual void OnAttachedTo(TView bindable, TPlatformView platformView) { }
 
 	/// <summary>
-	/// This method is called when the Handler is dettached from the View. Use this method to perform your customizations in the control.
+	/// This method is called when the bindable is detached from the platform view hierarchy. 
 	/// </summary>
-	/// <param name="bindable">The <see cref="IViewHandler"/> for the <see cref="VisualElement"/>.</param>
-	/// <param name="platformView">The <see cref="IViewHandler"/> for the <see cref="VisualElement"/>.</param>
+	/// <param name="bindable">The bindable object to which the behavior was attached.</param>
+	/// <param name="platformView">The platform control connected to the bindable object.</param>
 	protected virtual void OnDetachedFrom(TView bindable, TPlatformView platformView) { }
 }
 
 /// <summary>
-/// Base class for generalized user-defined behaviors that can respond to arbitrary conditions and events that has influence in the Platform specif layer.
+/// Base class for generalized user-defined behaviors that can respond to arbitrary conditions and events when connected to the platform view hierarchy.
 /// </summary>
 /// <typeparam name="TView">Virtual View</typeparam>
 public abstract partial class PlatformBehavior<TView> : PlatformBehavior<TView, PlatformView>
