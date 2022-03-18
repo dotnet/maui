@@ -57,25 +57,26 @@ namespace Microsoft.Maui.Handlers
 	
 			return platformPicker;
 		}
-
+		
 		UIAlertController CreateAlert(UITextField uITextField)
 		{
 			var frame = new RectangleF(0, 20, 269, 240);
-			_pickerView = new UIPickerView(frame);
-			_pickerView.Model = new PickerSource(VirtualView);
-			_pickerView?.ReloadAllComponents();
+		
+			var pickerView = new UIPickerView(frame);
+			pickerView.Model = new PickerSource(VirtualView);
+			pickerView?.ReloadAllComponents();
 
 			var pickerController = UIAlertController.Create(VirtualView.Title, "", UIAlertControllerStyle.ActionSheet);
 
 			// needs translation
     		pickerController.AddAction(UIAlertAction.Create("Done",
 								UIAlertActionStyle.Default, 
-								action => FinishSelectItem(_pickerView,uITextField)
+								action => FinishSelectItem(pickerView,uITextField)
 							));
 			
-			if(pickerController.View != null && _pickerView != null)
+			if(pickerController.View != null && pickerView != null)
 			{
-				pickerController.View.AddSubview(_pickerView);
+				pickerController.View.AddSubview(pickerView);
 				var height = NSLayoutConstraint.Create(pickerController.View,  NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, 350);
 				pickerController.View.AddConstraint(height);
 			}
@@ -262,10 +263,7 @@ namespace Microsoft.Maui.Handlers
 
 		public int SelectedIndex { get; internal set; }
 
-		public override nint GetComponentCount(UIPickerView picker)
-		{
-			return 1;
-		}
+		public override nint GetComponentCount(UIPickerView picker) => 1;
 
 		public override nint GetRowsInComponent(UIPickerView pickerView, nint component) =>
 			_virtualView?.GetCount() ?? 0;
