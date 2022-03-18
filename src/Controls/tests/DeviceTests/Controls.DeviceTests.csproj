@@ -10,11 +10,6 @@
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.DeviceTests</AssemblyName>
-
-    <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
-    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-windows'))">win10-x64</RuntimeIdentifier>
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <WindowsPackageType>MSIX</WindowsPackageType>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -27,10 +22,6 @@
     <MauiImage Include="Resources\Images\*" />
     <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
   </ItemGroup>
 
   <ItemGroup>
