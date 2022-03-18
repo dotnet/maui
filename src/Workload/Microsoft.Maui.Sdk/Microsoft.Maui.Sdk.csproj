@@ -66,12 +66,6 @@
         OldValue="@VERSION@"
         NewValue="$(PackageReferenceVersion)"
     />
-    <ReplaceText
-        Input="$(IntermediateOutputPath)BundledVersions.targets"
-        Output="$(IntermediateOutputPath)BundledVersions.targets"
-        OldValue="@TFM@"
-        NewValue="$(_MauiDotNetTfm)"
-    />
     <ItemGroup>
       <None
           Include="$(IntermediateOutputPath)BundledVersions.targets"

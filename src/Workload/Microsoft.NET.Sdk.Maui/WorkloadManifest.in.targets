@@ -1,0 +1,216 @@
+<Project>
+
+  <PropertyGroup>
+    <_MauiRuntimePackVersion>$(MauiVersion)</_MauiRuntimePackVersion>
+    <_MauiRuntimePackVersion Condition=" '$(_MauiRuntimePackVersion)' == '' ">**FromWorkload**</_MauiRuntimePackVersion>
+  </PropertyGroup>
+
+  <!-- Known framework references -->
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == '' ">
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Core"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Core"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Core.Ref.any"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="any"
+        RuntimePackAlwaysCopyLocal="true"
+    />
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Controls"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Controls"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Controls.Ref.any"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="any"
+        RuntimePackAlwaysCopyLocal="true"
+    />
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Essentials"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Essentials"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Essentials.Ref.any"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="any"
+        RuntimePackAlwaysCopyLocal="true"
+    />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Core"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Core"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Core.Ref.android"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="android"
+        Profile="Android"
+    />
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Controls"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Controls"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Controls.Ref.android"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="android"
+        Profile="Android"
+    />
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Essentials"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Essentials"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Essentials.Ref.android"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="android"
+        Profile="Android"
+    />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' ">
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Core"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Core"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Core.Ref.ios"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="ios"
+        Profile="iOS"
+    />
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Controls"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Controls"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Controls.Ref.ios"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="ios"
+        Profile="iOS"
+    />
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Essentials"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Essentials"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Essentials.Ref.ios"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="ios"
+        Profile="iOS"
+    />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Core"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Core"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Core.Ref.maccatalyst"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="maccatalyst"
+        Profile="MacCatalyst"
+    />
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Controls"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Controls"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Controls.Ref.maccatalyst"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="maccatalyst"
+        Profile="MacCatalyst"
+    />
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Essentials"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Essentials"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Essentials.Ref.maccatalyst"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="maccatalyst"
+        Profile="MacCatalyst"
+    />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Core"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Core"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Core.Ref.win"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="win"
+        Profile="Windows"
+    />
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Controls"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Controls"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Controls.Ref.win"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="win"
+        Profile="Windows"
+    />
+    <KnownFrameworkReference
+        Include="Microsoft.Maui.Essentials"
+        TargetFramework="@TFM@"
+        RuntimeFrameworkName="Microsoft.Maui.Essentials"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackName="Microsoft.Maui.Essentials.Ref.win"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="win"
+        Profile="Windows"
+    />
+  </ItemGroup>
+
+  <!-- @(ProjectCapability) for IDEs -->
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' ">
+    <ProjectCapability Include="UseMauiCore" />
+    <ProjectCapability Condition=" '$(UseMaui)' == 'true' " Include="UseMaui" />
+  </ItemGroup>
+
+  <!-- SDK imports -->
+  <Import
+      Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true' "
+      Project="Sdk.targets" Sdk="Microsoft.Maui.Sdk"
+  />
+  <Import
+      Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' "
+      Project="Sdk.targets" Sdk="Microsoft.Maui.Resizetizer.Sdk"
+  />
+
+</Project>

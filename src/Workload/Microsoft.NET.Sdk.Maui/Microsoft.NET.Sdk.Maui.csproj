@@ -24,6 +24,36 @@
     <_JsonInputFile Include="SdkInstaller.in.json" OutputPath="$(IntermediateOutputPath)SdkInstaller.json" Pack="false" />
   </ItemGroup>
 
+  <Target Name="_GenerateWorkloadManifestTargets"
+      BeforeTargets="Build;AssignTargetPaths"
+      DependsOnTargets="SetVersions"
+      Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/Versions.props;WorkloadManifest.in.targets"
+      Outputs="$(IntermediateOutputPath)WorkloadManifest.targets">
+    <ReplaceText
+        Input="WorkloadManifest.in.targets"
+        Output="$(IntermediateOutputPath)WorkloadManifest.targets"
+        OldValue="@VERSION@"
+        NewValue="$(PackageReferenceVersion)"
+    />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)WorkloadManifest.targets"
+        Output="$(IntermediateOutputPath)WorkloadManifest.targets"
+        OldValue="@TFM@"
+        NewValue="$(_MauiDotNetTfm)"
+    />
+    <ItemGroup>
+      <None
+          Include="$(IntermediateOutputPath)WorkloadManifest.targets"
+          Link="WorkloadManifest.targets"
+          CopyToOutputDirectory="PreserveNewest"
+          Pack="true"
+          PackagePath="data"
+          Visible="false"
+      />
+      <FileWrites Include="$(IntermediateOutputPath)WorkloadManifest.targets" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="_GenerateWorkloadManifest"
       BeforeTargets="Build;AssignTargetPaths"
       DependsOnTargets="SetVersions"
