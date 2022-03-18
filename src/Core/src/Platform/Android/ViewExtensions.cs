@@ -308,6 +308,15 @@ namespace Microsoft.Maui.Platform
 				ViewHelper.RemoveFromParent(view);
 		}
 
+		public static Task<byte[]?> RenderAsBMP(this IView view)
+		{
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
+				return Task.FromResult<byte[]?>(null);
+
+			return Task.FromResult<byte[]?>(platformView.RenderAsBMP());
+		}
+
 		public static Task<byte[]?> RenderAsPNG(this IView view)
 		{
 			var platformView = view?.ToPlatform();
@@ -324,6 +333,17 @@ namespace Microsoft.Maui.Platform
 				return Task.FromResult<byte[]?>(null);
 
 			return platformView.RenderAsJPEG();
+		}
+
+		public static Task<byte[]?> RenderAsImage(this AView view, RenderType type)
+		{
+			return type switch
+			{
+				RenderType.JPEG => view.RenderAsJPEG(),
+				RenderType.PNG => view.RenderAsPNG(),
+				RenderType.BMP => Task.FromResult<byte[]?>(view.RenderAsBMP()),
+				_ => throw new NotImplementedException()
+			};
 		}
 
 		public static Task<byte[]?> RenderAsPNG(this AView view)
