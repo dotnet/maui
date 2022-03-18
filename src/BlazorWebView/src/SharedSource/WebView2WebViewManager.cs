@@ -212,7 +212,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			QueueBlazorStart();
 
-			_webview.CoreWebView2.WebMessageReceived += (s, e) => MessageReceived(new Uri(e.Source), e.TryGetWebMessageAsString());
+			_webview.CoreWebView2.WebMessageReceived += (s, e) =>
+			{
+				if (e.Source != AppOrigin)
+				{
+					throw new InvalidOperationException($"Received a message from host '{e.Source}' which does not match app host address '{AppOrigin}'.");
+				}
+				MessageReceived(new Uri(e.Source), e.TryGetWebMessageAsString());
+			};
 		}
 
 		/// <summary>

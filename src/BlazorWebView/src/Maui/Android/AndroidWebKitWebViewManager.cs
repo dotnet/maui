@@ -66,7 +66,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var nativeToJs = new BlazorWebMessageCallback(message =>
 			{
-				MessageReceived(new Uri(AppOrigin), message!);
+				var currentUri = _webview.Url != null ? new Uri(_webview.Url) : null;
+				var appOriginUri = new Uri(AppOrigin);
+				if (currentUri?.Scheme != appOriginUri.Scheme && currentUri?.Host != appOriginUri.Host)
+				{
+					throw new InvalidOperationException($"Received a message from host '{currentUri?.Host}' which does not match app host address '{appOriginUri.Host}'.");
+				}
+				MessageReceived(appOriginUri, message!);
 			});
 
 			var destPort = new[] { nativeToJsPorts[1] };
