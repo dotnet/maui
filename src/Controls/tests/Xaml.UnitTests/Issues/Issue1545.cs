@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			string xaml = @"<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 						 xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
-						 xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
+						 xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls.Compatibility""
 						 x:Class=""Microsoft.Maui.Controls.ControlGallery.Issue1545"">
 							<ContentPage.Resources>
 							<ResourceDictionary>
