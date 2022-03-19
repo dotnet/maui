@@ -48,7 +48,5 @@
   </ItemGroup>
 
   <Import Project="../../../Maui.InTree.props" />
-  <Import Project="../../../Maui.InTree.targets" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.targets" />
 
 </Project>

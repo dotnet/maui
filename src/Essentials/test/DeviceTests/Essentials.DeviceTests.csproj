@@ -58,6 +58,5 @@
   </ItemGroup>
 
   <Import Project="../../../Maui.InTree.props" />
-  <Import Project="../../../Maui.InTree.targets" />
 
 </Project>
