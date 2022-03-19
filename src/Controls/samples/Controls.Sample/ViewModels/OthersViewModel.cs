@@ -16,7 +16,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(StyleSheetsPage), "StyleSheets",
 				"Demonstrates the usage of CSS in XAML."),
 			new SectionModel(typeof(TwoPaneViewPage), "Foldable",
-				"Demonstrates the usage of TwoPaneView and hinge sensor.")
+				"Demonstrates the usage of TwoPaneView and hinge sensor."),
+			new SectionModel(typeof(RenderViewPage), "Render Views",
+				"Demonstrates rendering views as images.")
 		};
 	}
 }

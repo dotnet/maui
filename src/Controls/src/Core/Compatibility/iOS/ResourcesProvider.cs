@@ -1,3 +1,4 @@
+using System;
 #if __MOBILE__
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
@@ -10,6 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+	[Obsolete]
 	[Preserve(AllMembers = true)]
 	internal class ResourcesProvider : ISystemResourcesProvider
 	{
