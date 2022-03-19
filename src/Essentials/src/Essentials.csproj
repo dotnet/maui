@@ -8,6 +8,7 @@
     <IsPackable>false</IsPackable>
     <GenerateReferenceAssemblySource>true</GenerateReferenceAssemblySource>
     <GenAPIAdditionalParameters>--writer TypeList</GenAPIAdditionalParameters>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
   <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
