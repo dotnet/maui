@@ -1,19 +1,19 @@
 using System;
 using CoreFoundation;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class BatteryImplementation : IBattery
+	partial class BatteryImplementation : IBattery
 	{
 		CFRunLoopSource powerSourceNotification;
 
-		public void StartBatteryListeners()
+		void StartBatteryListeners()
 		{
 			powerSourceNotification = IOKit.CreatePowerSourceNotification(PowerSourceNotification);
 			CFRunLoop.Current.AddSource(powerSourceNotification, CFRunLoop.ModeDefault);
 		}
 
-		public void StopBatteryListeners()
+		void StopBatteryListeners()
 		{
 			if (powerSourceNotification != null)
 			{
@@ -31,11 +31,11 @@ namespace Microsoft.Maui.Devices.Implementations
 
 		public BatteryPowerSource PowerSource => IOKit.GetProvidingPowerSource();
 
-		public void StartEnergySaverListeners()
+		void StartEnergySaverListeners()
 		{
 		}
 
-		public void StopEnergySaverListeners()
+		void StopEnergySaverListeners()
 		{
 		}
 

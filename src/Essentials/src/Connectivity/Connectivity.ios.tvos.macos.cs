@@ -4,9 +4,9 @@ using CoreTelephony;
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Networking.Implementations
+namespace Microsoft.Maui.Networking
 {
-	public partial class ConnectivityImplementation : IConnectivity
+	partial class ConnectivityImplementation : IConnectivity
 	{
 #if !(MACCATALYST || MACOS)
 		// TODO: Use NWPathMonitor on > iOS 12

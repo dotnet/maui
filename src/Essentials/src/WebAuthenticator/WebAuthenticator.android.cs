@@ -2,11 +2,10 @@ using System;
 using System.Threading.Tasks;
 using Android.Content;
 using AndroidX.Browser.CustomTabs;
-using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Authentication.Implementations
+namespace Microsoft.Maui.Authentication
 {
-	public partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
+	partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{
 		TaskCompletionSource<WebAuthenticatorResult> tcsResponse = null;
 		Uri currentRedirectUri = null;

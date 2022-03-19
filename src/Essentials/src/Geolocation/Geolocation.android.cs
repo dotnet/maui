@@ -7,13 +7,12 @@ using Android.Locations;
 using Android.OS;
 using Android.Runtime;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Essentials;
 using AndroidLocation = Android.Locations.Location;
 using LocationPower = Android.Locations.Power;
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class GeolocationImplementation : IGeolocation
+	partial class GeolocationImplementation : IGeolocation
 	{
 		const long twoMinutes = 120000;
 		static readonly string[] ignoredProviders = new string[] { LocationManager.PassiveProvider, "local_database" };

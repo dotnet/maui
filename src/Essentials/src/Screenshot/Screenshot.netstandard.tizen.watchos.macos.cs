@@ -1,7 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Media.Implementations
+namespace Microsoft.Maui.Media
 {
 	public partial class ScreenshotImplementation : IScreenshot
 	{

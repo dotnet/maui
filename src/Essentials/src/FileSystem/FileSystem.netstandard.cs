@@ -1,10 +1,10 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Storage.Implementations
+namespace Microsoft.Maui.Storage
 {
-	public partial class FileSystemImplementation : IFileSystem
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileSystem']/Docs" />
+	partial class FileSystemImplementation : IFileSystem
 	{
 		string PlatformCacheDirectory
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
@@ -18,10 +18,7 @@ namespace Microsoft.Maui.Storage.Implementations
 		Task<bool> PlatformAppPackageFileExistsAsync(string filename)
 			 => throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
-}
 
-namespace Microsoft.Maui.Storage
-{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileBase']/Docs" />
 	public partial class FileBase
 	{

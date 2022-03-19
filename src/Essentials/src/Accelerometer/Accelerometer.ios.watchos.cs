@@ -1,10 +1,9 @@
 using CoreMotion;
 using Foundation;
-using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class AccelerometerImplementation
+	partial class AccelerometerImplementation
 	{
 		public bool IsSupported =>
 			Platform.MotionManager?.AccelerometerAvailable ?? false;

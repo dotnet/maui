@@ -5,12 +5,11 @@ using Android.Graphics;
 using Android.Hardware.Camera2;
 using Android.OS;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Essentials;
 using Camera = Android.Hardware.Camera;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class FlashlightImplementation : IFlashlight
+	class FlashlightImplementation : IFlashlight
 	{
 		static readonly object locker = new object();
 

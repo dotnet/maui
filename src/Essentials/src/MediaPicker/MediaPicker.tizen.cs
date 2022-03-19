@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Media.Implementations
+namespace Microsoft.Maui.Media
 {
-	public partial class MediaPickerImplementation : IMediaPicker
+	partial class MediaPickerImplementation : IMediaPicker
 	{
 		public bool IsCaptureSupported
 			   => true;

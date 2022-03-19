@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Maui.Essentials;
 using AndroidAddress = Android.Locations.Address;
 using AndroidLocation = Android.Locations.Location;
 

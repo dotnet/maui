@@ -3,7 +3,7 @@ using Tizen.System;
 
 namespace Microsoft.Maui.Devices
 {
-	public static partial class Flashlight
+	class FlashlightImplementation : IFlashlight
 	{
 		internal static bool IsSupported
 			=> Platform.GetFeatureInfo<bool>("camera.back.flash");
@@ -23,12 +23,12 @@ namespace Microsoft.Maui.Devices
 			});
 		}
 
-		static Task PlatformTurnOnAsync()
+		public Task TurnOnAsync()
 		{
 			return SwitchFlashlight(true);
 		}
 
-		static Task PlatformTurnOffAsync()
+		public Task TurnOffAsync()
 		{
 			return SwitchFlashlight(false);
 		}

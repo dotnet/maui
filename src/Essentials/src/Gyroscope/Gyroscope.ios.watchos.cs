@@ -1,10 +1,9 @@
 using CoreMotion;
 using Foundation;
-using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class GyroscopeImplementation : IGyroscope
+	partial class GyroscopeImplementation : IGyroscope
 	{
 		bool PlatformIsSupported =>
 			Platform.MotionManager?.GyroAvailable ?? false;

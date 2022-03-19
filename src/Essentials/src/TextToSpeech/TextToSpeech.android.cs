@@ -6,14 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.OS;
 using Android.Speech.Tts;
-using Microsoft.Maui.Essentials;
 using AndroidTextToSpeech = Android.Speech.Tts.TextToSpeech;
 using Debug = System.Diagnostics.Debug;
 using JavaLocale = Java.Util.Locale;
 
-namespace Microsoft.Maui.Media.Implementations
+namespace Microsoft.Maui.Media
 {
-	public partial class TextToSpeechImplementation : ITextToSpeech
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
 		const int maxSpeechInputLengthDefault = 4000;
 

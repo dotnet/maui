@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Essentials;
 using static System.Math;
 
 namespace Microsoft.Maui.Devices.Sensors

@@ -5,12 +5,11 @@ using Android.OS;
 using Android.Telephony;
 using Java.Net;
 using Java.Util;
-using Microsoft.Maui.Essentials;
 using Uri = Android.Net.Uri;
 
-namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public partial class PhoneDialerImplementation : IPhoneDialer
+	partial class PhoneDialerImplementation : IPhoneDialer
 	{
 		const string intentCheck = "00000000000";
 

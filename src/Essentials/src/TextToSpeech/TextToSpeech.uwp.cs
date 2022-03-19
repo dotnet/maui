@@ -10,9 +10,9 @@ using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Media.SpeechSynthesis;
 
-namespace Microsoft.Maui.Media.Implementations
+namespace Microsoft.Maui.Media
 {
-	public partial class TextToSpeechImplementation : ITextToSpeech
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
 		public Task<IEnumerable<Locale>> GetLocalesAsync() =>
 			Task.FromResult(SpeechSynthesizer.AllVoices.Select(v => new Locale(v.Language, null, v.DisplayName, v.Id)));

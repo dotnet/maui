@@ -2,12 +2,11 @@ using System.Linq;
 using System.Threading.Tasks;
 #if !(MACCATALYST || MACOS)
 using MessageUI;
-using Microsoft.Maui.Essentials;
 #endif
 
-namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public class SmsImplementation : ISms
+	class SmsImplementation : ISms
 	{
 		internal static bool IsComposeSupported
 #if !(MACCATALYST || MACOS)

@@ -1,11 +1,10 @@
 using System;
 using CoreMotion;
 using Foundation;
-using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class BarometerImplementation : IBarometer
+	partial class BarometerImplementation : IBarometer
 	{
 		CMAltimeter altitudeManager;
 

@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using Microsoft.Maui.Devices.Sensors;
-using Microsoft.Maui.Devices.Sensors.Implementations;
 
 
 namespace Microsoft.Maui.Devices.Sensors
@@ -19,7 +18,9 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancelToken);
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Geolocation.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Geolocation']/Docs" />
 	public static partial class Geolocation
 	{
@@ -55,9 +56,9 @@ namespace Microsoft.Maui.Devices.Sensors
 	}
 }
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class GeolocationImplementation : IGeolocation
+	partial class GeolocationImplementation : IGeolocation
 	{
 		public Task<Location> GetLocationAsync()
 			=> GetLocationAsync(new GeolocationRequest(), default);

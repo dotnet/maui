@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Maui.ApplicationModel.Communication.Implementations;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.ApplicationModel.Communication;
 using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
@@ -13,6 +14,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		Task<Contact> PickContactAsync();
 		Task<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken = default);
 	}
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Contacts.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Contacts']/Docs" />
 	public static class Contacts
 	{

@@ -4,17 +4,16 @@ using System.Text;
 using System.Threading.Tasks;
 using AuthenticationServices;
 using Foundation;
-using Microsoft.Maui.Essentials;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Authentication.Implementations
+namespace Microsoft.Maui.Authentication
 {
 	public partial class AppleSignInAuthenticatorImplementation : IAppleSignInAuthenticator
 	{
 		AuthManager authManager;
 
-		public async Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticator.Options options)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticatorOptions options)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
 				throw new FeatureNotSupportedException();

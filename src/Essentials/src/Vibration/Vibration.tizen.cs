@@ -2,9 +2,9 @@ using System;
 using System.Linq;
 using Tizen.System;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class VibrationImplementation : IVibration
+	partial class VibrationImplementation : IVibration
 	{
 		public bool IsSupported
 			=> Vibrator.NumberOfVibrators > 0;

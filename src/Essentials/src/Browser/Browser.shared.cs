@@ -1,88 +1,40 @@
+#nullable enable
 using System;
 using System.Threading.Tasks;
-using System.ComponentModel;
-using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.ApplicationModel.Implementations;
-
 
 namespace Microsoft.Maui.ApplicationModel
 {
 	public interface IBrowser
 	{
-		Task OpenAsync(string uri);
-
-		Task OpenAsync(string uri, BrowserLaunchMode launchMode);
-			
-		Task OpenAsync(string uri, BrowserLaunchOptions options);
-
-		Task OpenAsync(Uri uri);
-
-		Task OpenAsync(Uri uri, BrowserLaunchMode launchMode);
-
 		Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Browser']/Docs" />
-	public static partial class Browser
+	public static class Browser
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][1]/Docs" />
-		public static Task OpenAsync(string uri) =>
-			Current.OpenAsync(uri, BrowserLaunchMode.SystemPreferred);
+		static IBrowser? defaultImplementation;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][3]/Docs" />
-		public static Task OpenAsync(string uri, BrowserLaunchMode launchMode) =>
-			Current.OpenAsync(uri, new BrowserLaunchOptions()
-			{
-				LaunchMode = launchMode
-			});
+		public static IBrowser Default =>
+			defaultImplementation ??= new BrowserImplementation();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][4]/Docs" />
-		public static Task OpenAsync(string uri, BrowserLaunchOptions options)
-		{
-			if (string.IsNullOrWhiteSpace(uri))
-			{
-				throw new ArgumentNullException(nameof(uri), $"Uri cannot be empty.");
-			}
+		internal static void SetDefault(IBrowser? implementation) =>
+			defaultImplementation = implementation;
+	}
 
-			return Current.OpenAsync(new Uri(uri), options);
-		}
+	public static class BrowserExtensions
+	{
+		public static Task<bool> OpenAsync(this IBrowser browser, string uri) =>
+			browser.OpenAsync(new Uri(uri), new BrowserLaunchOptions());
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][2]/Docs" />
-		public static Task OpenAsync(Uri uri) =>
-			Current.OpenAsync(uri, BrowserLaunchMode.SystemPreferred);
+		public static Task<bool> OpenAsync(this IBrowser browser, string uri, BrowserLaunchMode launchMode) =>
+			browser.OpenAsync(new Uri(uri), new BrowserLaunchOptions { LaunchMode = launchMode });
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][5]/Docs" />
-		public static Task OpenAsync(Uri uri, BrowserLaunchMode launchMode) =>
-			Current.OpenAsync(uri, new BrowserLaunchOptions()
-			{
-				LaunchMode = launchMode
-			});
+		public static Task<bool> OpenAsync(this IBrowser browser, string uri, BrowserLaunchOptions options) =>
+			browser.OpenAsync(new Uri(uri), options);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][6]/Docs" />
-		public static Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options) =>
-			Current.OpenAsync(EscapeUri(uri), options);
+		public static Task<bool> OpenAsync(this IBrowser browser, Uri uri) =>
+			browser.OpenAsync(uri, new BrowserLaunchOptions());
 
-		internal static Uri EscapeUri(Uri uri)
-		{
-			if (uri == null)
-				throw new ArgumentNullException(nameof(uri));
-
-			var idn = new global::System.Globalization.IdnMapping();
-			return new Uri(uri.Scheme + "://" + idn.GetAscii(uri.Authority) + uri.PathAndQuery + uri.Fragment);
-		}
-
-#nullable enable
-		static IBrowser? currentImplementation;
-#nullable disable
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IBrowser Current =>
-			currentImplementation ??= new BrowserImplementation();
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IBrowser? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
+		public static Task<bool> OpenAsync(this IBrowser browser, Uri uri, BrowserLaunchMode launchMode) =>
+			browser.OpenAsync(uri, new BrowserLaunchOptions { LaunchMode = launchMode });
 	}
 }

@@ -2,7 +2,6 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.ApplicationModel.Communication;
-using Microsoft.Maui.ApplicationModel.Communication.Implementations;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
@@ -12,7 +11,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 		void Open(string number);
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/PhoneDialer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PhoneDialer']/Docs" />
 	public static class PhoneDialer
 	{
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 	}
 }
 
-namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	partial class PhoneDialerImplementation
 	{

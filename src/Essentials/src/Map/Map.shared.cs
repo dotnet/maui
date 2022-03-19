@@ -3,7 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Devices.Sensors;
-using Microsoft.Maui.ApplicationModel.Implementations;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -12,6 +12,9 @@ namespace Microsoft.Maui.ApplicationModel
 		Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options);
 		Task OpenMapsAsync(Placemark placemark, MapLaunchOptions options);
 	}
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Map']/Docs" />
 	public static class Map
 	{
@@ -59,14 +62,13 @@ namespace Microsoft.Maui.ApplicationModel
 
 			return Current.OpenMapsAsync(placemark, options);
 		}
+
 		static IMap? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IMap Current =>
 			currentImplementation ??= new MapImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IMap? implementation) =>
+		internal static void SetCurrent(IMap? implementation) =>
 			currentImplementation = implementation;
 	}
 }

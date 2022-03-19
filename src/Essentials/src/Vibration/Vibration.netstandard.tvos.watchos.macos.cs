@@ -1,9 +1,9 @@
 using System;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class VibrationImplementation : IVibration
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Vibration']/Docs" />
+	partial class VibrationImplementation : IVibration
 	{
 		public bool IsSupported
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;

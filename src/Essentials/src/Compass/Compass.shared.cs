@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices.Sensors;
-using Microsoft.Maui.Devices.Sensors.Implementations;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
@@ -29,7 +28,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		bool ShouldDisplayHeadingCalibration { get; set; }
 #endif
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Compass']/Docs" />
 	public static partial class Compass
 	{
@@ -76,19 +77,18 @@ namespace Microsoft.Maui.Devices.Sensors
 
 #nullable enable
 		static ICompass? currentImplementation;
-#nullable disable
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static ICompass Current =>
 			currentImplementation ??= new CompassImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(ICompass? implementation) =>
+		internal static void SetCurrent(ICompass? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}
-
+}
+namespace Microsoft.Maui.Devices.Sensors
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/CompassChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.CompassChangedEventArgs']/Docs" />
 	public class CompassChangedEventArgs : EventArgs
 	{
@@ -132,11 +132,8 @@ namespace Microsoft.Maui.Devices.Sensors
 		public override string ToString() =>
 			$"{nameof(HeadingMagneticNorth)}: {HeadingMagneticNorth}";
 	}
-}
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
-{
-	public partial class CompassImplementation : ICompass
+	partial class CompassImplementation : ICompass
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 

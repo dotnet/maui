@@ -2,9 +2,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public partial class EmailImplementation : IEmail
+	partial class EmailImplementation : IEmail
 	{
 		public bool IsComposeSupported
 			=> Platform.GetFeatureInfo<bool>("email");

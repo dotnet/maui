@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using WinRT;
 
-namespace Microsoft.Maui.ApplicationModel.DataTransfer.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public class ShareImplementation : IShare
+	class ShareImplementation : IShare
 	{
 		public Task RequestAsync(ShareTextRequest request)
 		{

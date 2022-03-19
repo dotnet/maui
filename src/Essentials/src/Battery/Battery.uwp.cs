@@ -1,9 +1,9 @@
 using Microsoft.Maui.ApplicationModel;
 using Windows.System.Power;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class BatteryImplementation : IBattery
+	partial class BatteryImplementation : IBattery
 	{
 		public void StartEnergySaverListeners() =>
 			PowerManager.EnergySaverStatusChanged += ReportEnergySaverUpdated;

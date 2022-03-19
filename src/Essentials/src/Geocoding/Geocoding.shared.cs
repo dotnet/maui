@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Maui.Devices.Sensors.Implementations;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
@@ -12,6 +12,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude);
 		Task<IEnumerable<Location>> GetLocationsAsync(string address);
 	}
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Geocoding']/Docs" />
 	public static class Geocoding
 	{
@@ -34,12 +37,10 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		static IGeocoding? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IGeocoding Current =>
 			currentImplementation ??= new GeocodingImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IGeocoding? implementation) =>
+		internal static void SetCurrent(IGeocoding? implementation) =>
 			currentImplementation = implementation;
 	}
 }

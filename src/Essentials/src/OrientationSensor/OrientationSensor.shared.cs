@@ -2,7 +2,6 @@ using System;
 using System.Numerics;
 using System.ComponentModel;
 using Microsoft.Maui.Devices.Sensors;
-using Microsoft.Maui.Devices.Sensors.Implementations;
 using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
@@ -21,7 +20,9 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged;
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensor']/Docs" />
 	public static partial class OrientationSensor
 	{
@@ -50,19 +51,17 @@ namespace Microsoft.Maui.Devices.Sensors
 
 #nullable enable
 		static IOrientationSensor? currentImplementation;
-#nullable disable
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IOrientationSensor Current =>
 			currentImplementation ??= new OrientationSensorImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IOrientationSensor? implementation) =>
+		internal static void SetCurrent(IOrientationSensor? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}
-
+}
+namespace Microsoft.Maui.Devices.Sensors
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensorChangedEventArgs']/Docs" />
 	public class OrientationSensorChangedEventArgs : EventArgs
 	{
@@ -115,10 +114,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(Orientation.Z)}: {Orientation.Z}, " +
 			$"{nameof(Orientation.W)}: {Orientation.W}";
 	}
-}
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
-{
 	public partial class OrientationSensorImplementation : IOrientationSensor
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;

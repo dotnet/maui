@@ -1,8 +1,9 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using System.ComponentModel;
-using Microsoft.Maui.ApplicationModel.Implementations;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -10,53 +11,33 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		bool IsSupported { get; }
 
-		string Type { get; }
+		Task<IEnumerable<AppAction>> GetAsync();
 
-		Task<IEnumerable<Maui.ApplicationModel.AppAction>> GetAsync ();
-		Task SetAsync (IEnumerable<AppAction> actions);	
+		Task SetAsync(IEnumerable<AppAction> actions);
 
-		Task SetAsync (params AppAction[] actions);		
+		event EventHandler<AppActionEventArgs>? AppActionActivated;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppActions']/Docs" />
-	public static partial class AppActions
+	public interface IPlatformAppActions
 	{
-		internal static bool IsSupported
-			=> Current.IsSupported;
+#if WINDOWS
+		Task OnLaunched(LaunchActivatedEventArgs e);
+#elif IOS || MACCATALYST
+		void PerformActionForShortcutItem(UIKit.UIApplication application, UIKit.UIApplicationShortcutItem shortcutItem, UIKit.UIOperationHandler completionHandler);
+#elif ANDROID
+		void OnNewIntent(Android.Content.Intent? intent);
+#endif
+	}
 
-		internal static string Type
-			=> Current.Type;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='GetAsync']/Docs" />
-		public static Task<IEnumerable<AppAction>> GetAsync()
-			=> Current.GetAsync();
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='SetAsync'][1]/Docs" />
-		public static Task SetAsync(params AppAction[] actions)
-			=> Current.SetAsync(actions);
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='SetAsync'][2]/Docs" />
-		public static Task SetAsync(IEnumerable<AppAction> actions)
-			=> Current.SetAsync(actions);
-
-		public static event EventHandler<AppActionEventArgs> OnAppAction;
-
-		internal static void InvokeOnAppAction(object sender, AppAction appAction)
-			=> OnAppAction?.Invoke(sender, new AppActionEventArgs(appAction));
-
-#nullable enable
+	public static class AppActions
+	{
 		static IAppActions? currentImplementation;
-#nullable disable
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IAppActions Current =>
 			currentImplementation ??= new AppActionsImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IAppActions? implementation) =>
+		internal static void SetCurrent(IAppActions? implementation) =>
 			currentImplementation = implementation;
-#nullable disable
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppActionEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppActionEventArgs']/Docs" />
@@ -74,7 +55,7 @@ namespace Microsoft.Maui.ApplicationModel
 	public class AppAction
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="//Member[@MemberName='.ctor']/Docs" />
-		public AppAction(string id, string title, string subtitle = null, string icon = null)
+		public AppAction(string id, string title, string? subtitle = null, string? icon = null)
 		{
 			Id = id ?? throw new ArgumentNullException(nameof(id));
 			Title = title ?? throw new ArgumentNullException(nameof(title));
@@ -82,18 +63,16 @@ namespace Microsoft.Maui.ApplicationModel
 			Subtitle = subtitle;
 			Icon = icon;
 		}
-		public string Type => "XE_APP_ACTION_TYPE";
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="//Member[@MemberName='Title']/Docs" />
 		public string Title { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="//Member[@MemberName='Subtitle']/Docs" />
-		public string Subtitle { get; set; }
+		public string? Subtitle { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="//Member[@MemberName='Id']/Docs" />
 		public string Id { get; set; }
 
-		internal string Icon { get; set; }
-
+		internal string? Icon { get; set; }
 	}
 }

@@ -4,9 +4,9 @@ using Android.Content;
 using AndroidX.Security.Crypto;
 using Javax.Crypto;
 
-namespace Microsoft.Maui.Storage.Implementations
+namespace Microsoft.Maui.Storage
 {
-	public partial class SecureStorageImplementation : ISecureStorage
+	partial class SecureStorageImplementation : ISecureStorage
 	{
 		static readonly object locker = new object();
 

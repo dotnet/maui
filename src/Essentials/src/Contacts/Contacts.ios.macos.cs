@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 using Contacts;
 #if __IOS__
 using ContactsUI;
-using Microsoft.Maui.Essentials;
 #endif
 
-namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public class ContactsImplementation : IContacts
+	class ContactsImplementation : IContacts
 	{
 #if __MACOS__
         static Task<Contact> PlatformPickContactAsync() => throw ExceptionUtils.NotSupportedOrImplementedException;

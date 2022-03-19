@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Devices;
-using Microsoft.Maui.Devices.Implementations;
 
 namespace Microsoft.Maui.Devices
 {
@@ -11,7 +10,9 @@ namespace Microsoft.Maui.Devices
 		
 		void Perform(HapticFeedbackType type);
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/HapticFeedback.xml" path="Type[@FullName='Microsoft.Maui.Essentials.HapticFeedback']/Docs" />
 	public static partial class HapticFeedback
 	{
@@ -25,15 +26,11 @@ namespace Microsoft.Maui.Devices
 
 #nullable enable
 		static IHapticFeedback? currentImplementation;
-#nullable disable
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IHapticFeedback Current =>
 			currentImplementation ??= new HapticFeedbackImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IHapticFeedback? implementation) =>
+		internal static void SetCurrent(IHapticFeedback? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}

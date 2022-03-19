@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using Microsoft.Maui.Essentials;
 
 #if WINDOWS_UWP
 using Windows.ApplicationModel.Core;
@@ -9,7 +8,7 @@ using Windows.UI.Core;
 using Microsoft.UI.Dispatching;
 #endif
 
-namespace Microsoft.Maui.ApplicationModel
+namespace Microsoft.Maui.Essentials
 {
 	public static partial class MainThread
 	{

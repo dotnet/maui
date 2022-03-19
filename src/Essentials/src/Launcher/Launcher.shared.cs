@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Storage;
 
@@ -22,7 +23,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 		Task<bool> TryOpenAsync(Uri uri);
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Launcher']/Docs" />
 	public static partial class Launcher
 	{
@@ -57,16 +60,16 @@ namespace Microsoft.Maui.ApplicationModel
 #nullable enable
 		static ILauncher? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static ILauncher Current =>
-			currentImplementation ??= new Implementations.LauncherImplementation();
+			currentImplementation ??= new LauncherImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(ILauncher? implementation) =>
+		internal static void SetCurrent(ILauncher? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}
-
+}
+namespace Microsoft.Maui.ApplicationModel
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OpenFileRequest']/Docs" />
 	public class OpenFileRequest
 	{
@@ -100,9 +103,9 @@ namespace Microsoft.Maui.ApplicationModel
 	}
 }
 
-namespace Microsoft.Maui.ApplicationModel.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public partial class LauncherImplementation : ILauncher
+	partial class LauncherImplementation : ILauncher
 	{
 		public Task<bool> CanOpenAsync(string uri)
 		{

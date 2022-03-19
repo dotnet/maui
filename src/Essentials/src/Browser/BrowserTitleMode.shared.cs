@@ -1,3 +1,4 @@
+#nullable enable
 namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserTitleMode.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BrowserTitleMode']/Docs" />

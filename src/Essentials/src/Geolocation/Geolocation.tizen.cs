@@ -2,9 +2,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tizen.Location;
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class GeolocationImplementation : IGeolocation
+	partial class GeolocationImplementation : IGeolocation
 	{
 		Location lastKnownLocation = new Location();
 

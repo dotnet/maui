@@ -4,8 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
 
-namespace Microsoft.Maui.Storage
+namespace Microsoft.Maui.Essentials
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FilePicker.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FilePicker']/Docs" />
 	public static partial class FilePicker
@@ -18,7 +19,9 @@ namespace Microsoft.Maui.Storage
 		public static Task<IEnumerable<FileResult>> PickMultipleAsync(PickOptions options = null) =>
 			PlatformPickAsync(options ?? PickOptions.Default, true);
 	}
-
+}
+namespace Microsoft.Maui.Storage
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FilePickerFileType']/Docs" />
 	public partial class FilePickerFileType
 	{

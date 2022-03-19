@@ -4,13 +4,12 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
 using Android.Provider;
-using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Storage;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public class SmsImplementation : ISms
+	class SmsImplementation : ISms
 	{
 		static readonly string smsRecipientSeparator = ";";
 

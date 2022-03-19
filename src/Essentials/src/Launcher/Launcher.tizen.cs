@@ -2,9 +2,9 @@ using System;
 using System.Threading.Tasks;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.ApplicationModel.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public partial class LauncherImplementation
+	partial class LauncherImplementation
 	{
 		Task<bool> PlatformCanOpenAsync(Uri uri)
 			=> Task.FromResult(uri.IsWellFormedOriginalString());

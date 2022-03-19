@@ -3,9 +3,9 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public partial class PhoneDialerImplementation : IPhoneDialer
+	partial class PhoneDialerImplementation : IPhoneDialer
 	{
 		const string noNetworkProviderCode = "65535";
 

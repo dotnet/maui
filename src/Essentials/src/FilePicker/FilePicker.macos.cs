@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using AppKit;
 using MobileCoreServices;
 
-namespace Microsoft.Maui.Storage
+namespace Microsoft.Maui.Essentials
 {
 	public static partial class FilePicker
 	{
@@ -48,7 +48,9 @@ namespace Microsoft.Maui.Storage
 			panel.AllowedFileTypes = allowedFileTypes.ToArray();
 		}
 	}
-
+}
+namespace Microsoft.Maui.Storage
+{
 	public partial class FilePickerFileType
 	{
 		static FilePickerFileType PlatformImageFileType() =>

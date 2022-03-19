@@ -1,9 +1,9 @@
 #nullable enable
 using System;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class DeviceDisplayImplementation : IDeviceDisplay
+	class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged
 		{

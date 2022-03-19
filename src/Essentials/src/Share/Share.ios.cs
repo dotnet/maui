@@ -2,15 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Foundation;
-using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.ApplicationModel.DataTransfer.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public class ShareImplementation : IShare
+	class ShareImplementation : IShare
 	{
 		public Task RequestAsync(ShareTextRequest request)
 		{

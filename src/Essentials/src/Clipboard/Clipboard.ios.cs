@@ -4,9 +4,9 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.ApplicationModel.DataTransfer.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public partial class ClipboardImplementation : IClipboard
+	partial class ClipboardImplementation : IClipboard
 	{
 		public Task SetTextAsync(string text)
 		{

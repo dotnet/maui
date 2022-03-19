@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using Microsoft.Maui.Media;
-using Microsoft.Maui.Media.Implementations;
 
 namespace Microsoft.Maui.Media
 {
@@ -17,7 +16,9 @@ namespace Microsoft.Maui.Media
 		Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken);
 
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="Type[@FullName='Microsoft.Maui.Essentials.TextToSpeech']/Docs" />
 	public static partial class TextToSpeech
 	{
@@ -81,19 +82,17 @@ namespace Microsoft.Maui.Media
 		
 #nullable enable
 		static ITextToSpeech? currentImplementation;
-#nullable disable
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static ITextToSpeech Current =>
 			currentImplementation ??= new TextToSpeechImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(ITextToSpeech? implementation) =>
+		internal static void SetCurrent(ITextToSpeech? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}
-
+}
+namespace Microsoft.Maui.Media
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Locale']/Docs" />
 	public class Locale
 	{

@@ -5,9 +5,9 @@ using Microsoft.Maui.ApplicationModel;
 using Windows.Storage;
 using Package = Windows.ApplicationModel.Package;
 
-namespace Microsoft.Maui.Storage.Implementations
+namespace Microsoft.Maui.Storage
 {
-	public partial class FileSystemImplementation : IFileSystem
+	partial class FileSystemImplementation : IFileSystem
 	{
 		string PlatformCacheDirectory
 			=> ApplicationData.Current.LocalCacheFolder.Path;
@@ -64,10 +64,7 @@ namespace Microsoft.Maui.Storage.Implementations
 		internal static string NormalizePath(string path)
 			=> path.Replace('/', Path.DirectorySeparatorChar);
 	}
-}
 
-namespace Microsoft.Maui.Storage
-{
 	public partial class FileBase
 	{
 		internal FileBase(IStorageFile file)

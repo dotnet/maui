@@ -7,7 +7,6 @@ using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Authentication;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.ApplicationModel.Implementations;
 
 #if __IOS__
 using CoreMotion;
@@ -25,18 +24,6 @@ namespace Microsoft.Maui.Essentials
 
 		public static bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
 			=> WebAuthenticator.OpenUrl(new Uri(userActivity?.WebPageUrl?.AbsoluteString));
-#endif
-
-#if __IOS__
-		public static void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
-		{
-			if (shortcutItem.Type == AppActions.Type)
-			{
-				var appAction = shortcutItem.ToAppAction();
-
-				AppActions.InvokeOnAppAction(application, shortcutItem.ToAppAction());
-			}
-		}
 #endif
 
 #if __IOS__

@@ -5,9 +5,9 @@ using Windows.Storage;
 using Windows.System;
 using WinLauncher = Windows.System.Launcher;
 
-namespace Microsoft.Maui.ApplicationModel.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public partial class LauncherImplementation
+	partial class LauncherImplementation
 	{
 		async Task<bool> PlatformCanOpenAsync(Uri uri)
 		{

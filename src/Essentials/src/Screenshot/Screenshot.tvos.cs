@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Media.Implementations
+namespace Microsoft.Maui.Media
 {
 	public partial class ScreenshotImplementation : IScreenshot
 	{

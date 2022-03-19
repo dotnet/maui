@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using AppKit;
 
-namespace Microsoft.Maui.Media.Implementations
+namespace Microsoft.Maui.Media
 {
-	public partial class TextToSpeechImplementation : ITextToSpeech
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
 		static readonly Lazy<NSSpeechSynthesizer> speechSynthesizer = new Lazy<NSSpeechSynthesizer>(() =>
 			new NSSpeechSynthesizer { Delegate = new SpeechSynthesizerDelegate() });

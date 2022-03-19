@@ -1,7 +1,7 @@
 using System;
 using Foundation;
 
-namespace Microsoft.Maui.ApplicationModel
+namespace Microsoft.Maui.Essentials
 {
 	public static partial class MainThread
 	{

@@ -1,6 +1,6 @@
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class CompassImplementation : ICompass
+	partial class CompassImplementation : ICompass
 	{
 		bool PlatformIsSupported => throw ExceptionUtils.NotSupportedOrImplementedException;
 

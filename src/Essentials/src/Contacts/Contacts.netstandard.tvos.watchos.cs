@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Contacts.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Contacts']/Docs" />
-	public class ContactsImplementation : IContacts
+	class ContactsImplementation : IContacts
 	{
 		public Task<Contact> PickContactAsync() => throw ExceptionUtils.NotSupportedOrImplementedException;
 

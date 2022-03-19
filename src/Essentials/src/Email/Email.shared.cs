@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.ApplicationModel.Communication.Implementations;
+using Microsoft.Maui.ApplicationModel.Communication;
 using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
@@ -19,7 +18,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 		Task ComposeAsync(EmailMessage message);
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Email']/Docs" />
 	public static partial class Email
 	{
@@ -68,19 +69,17 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 #nullable enable
 		static IEmail? currentImplementation;
-#nullable disable
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IEmail Current =>
 			currentImplementation ??= new EmailImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IEmail? implementation) =>
+		internal static void SetCurrent(IEmail? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}
-
+}
+namespace Microsoft.Maui.ApplicationModel.Communication
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.EmailMessage']/Docs" />
 	public class EmailMessage
 	{

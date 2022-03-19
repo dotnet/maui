@@ -1,7 +1,7 @@
 using System;
 using ElmSharp;
 
-namespace Microsoft.Maui.ApplicationModel
+namespace Microsoft.Maui.Essentials
 {
 	public static partial class MainThread
 	{

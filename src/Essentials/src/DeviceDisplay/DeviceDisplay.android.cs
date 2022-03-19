@@ -8,11 +8,10 @@ using Android.Provider;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
-using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class DeviceDisplayImplementation : IDeviceDisplay
+	class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		OrientationEventListener? orientationListener;
 

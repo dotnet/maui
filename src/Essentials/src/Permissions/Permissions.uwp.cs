@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using Microsoft.Maui.Essentials;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Contacts;
 using Windows.Devices.Enumeration;

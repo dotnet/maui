@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using AppKit;
 using Foundation;
 
-namespace Microsoft.Maui.ApplicationModel.DataTransfer.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public partial class ClipboardImplementation : IClipboard
+	partial class ClipboardImplementation : IClipboard
 	{
 		readonly string pasteboardType = NSPasteboard.NSPasteboardTypeString;
 		readonly string[] pasteboardTypes = { pasteboardType };

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Devices;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Storage;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
 
-namespace Microsoft.Maui.Storage
+namespace Microsoft.Maui.Essentials
 {
 	public static partial class FilePicker
 	{
@@ -67,7 +67,9 @@ namespace Microsoft.Maui.Storage
 				picker.FileTypeFilter.Add("*");
 		}
 	}
-
+}
+namespace Microsoft.Maui.Storage
+{
 	public partial class FilePickerFileType
 	{
 		static FilePickerFileType PlatformImageFileType() =>

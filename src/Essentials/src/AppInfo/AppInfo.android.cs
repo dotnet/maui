@@ -5,11 +5,10 @@ using Android.Content.PM;
 using Android.Content.Res;
 using Android.Provider;
 using AndroidX.Core.Content.PM;
-using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.ApplicationModel.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public class AppInfoImplementation : IAppInfo
+	class AppInfoImplementation : IAppInfo
 	{
 		public string PackageName => Platform.AppContext.PackageName;
 

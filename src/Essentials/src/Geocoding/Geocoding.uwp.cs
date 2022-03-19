@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
 using Windows.Devices.Geolocation;
 using Windows.Services.Maps;
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public class GeocodingImplementation: IGeocoding
+	class GeocodingImplementation: IGeocoding
 	{
 		public async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
 		{

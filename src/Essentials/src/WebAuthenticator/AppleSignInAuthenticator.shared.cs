@@ -4,38 +4,38 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using Microsoft.Maui.Authentication;
-using Microsoft.Maui.Authentication.Implementations;
 
 namespace Microsoft.Maui.Authentication
 {
 	public interface IAppleSignInAuthenticator
 	{
-		Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticator.Options options = null);
+		Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticatorOptions options = null);
 	}
 
+	public class AppleSignInAuthenticatorOptions
+	{
+		public bool IncludeFullNameScope { get; set; } = false;
+
+		public bool IncludeEmailScope { get; set; } = false;
+	}
+}
+
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppleSignInAuthenticator.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppleSignInAuthenticator']/Docs" />
 	public static class AppleSignInAuthenticator
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppleSignInAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync']/Docs" />
-		public static Task<WebAuthenticatorResult> AuthenticateAsync(Options options = null)
-			=> Current.AuthenticateAsync(options ?? new AppleSignInAuthenticator.Options());
-
-		public class Options
-		{
-			public bool IncludeFullNameScope { get; set; } = false;
-
-			public bool IncludeEmailScope { get; set; } = false;
-		}
+		public static Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticatorOptions options = null)
+			=> Current.AuthenticateAsync(options ?? new AppleSignInAuthenticatorOptions());
 
 #nullable enable
 		static IAppleSignInAuthenticator? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IAppleSignInAuthenticator Current =>
 			currentImplementation ??= new AppleSignInAuthenticatorImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IAppleSignInAuthenticator? implementation) =>
+		internal static void SetCurrent(IAppleSignInAuthenticator? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}

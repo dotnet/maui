@@ -1,11 +1,10 @@
 using System;
 using Android.Hardware;
 using Android.Runtime;
-using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class OrientationSensorImplementation : IOrientationSensor
+	partial class OrientationSensorImplementation : IOrientationSensor
 	{
 		bool PlatformIsSupported =>
 			Platform.SensorManager?.GetDefaultSensor(SensorType.RotationVector) != null;

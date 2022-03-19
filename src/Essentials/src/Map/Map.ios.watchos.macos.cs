@@ -7,9 +7,9 @@ using Foundation;
 using MapKit;
 using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.ApplicationModel.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public class MapImplementation : IMap
+	class MapImplementation : IMap
 	{
 		public Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
 		{

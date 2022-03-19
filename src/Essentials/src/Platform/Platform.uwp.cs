@@ -69,9 +69,6 @@ namespace Microsoft.Maui.Essentials
 
 		public static string MapServiceToken { get; set; }
 
-		public static async void OnLaunched(LaunchActivatedEventArgs e)
-			=> await AppActions.OnLaunched(e);
-
 		public static void OnActivated(Window window, WindowActivatedEventArgs args)
 		{
 			if (args.WindowActivationState != WindowActivationState.Deactivated)

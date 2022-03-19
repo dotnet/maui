@@ -13,7 +13,6 @@ using Android.Net.Wifi;
 using Android.OS;
 using Android.Views;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.ApplicationModel.Implementations;
 using Microsoft.Maui.Storage;
 using AndroidIntent = Android.Content.Intent;
 using AndroidUri = Android.Net.Uri;
@@ -101,26 +100,6 @@ namespace Microsoft.Maui.Essentials
 
 		public static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults) =>
 			Permissions.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-
-		public static void OnNewIntent(AndroidIntent intent)
-			=> CheckAppActions(intent);
-
-		public static void OnResume(Activity activity = null)
-		{
-			if (activity != null)
-				CheckAppActions(activity.Intent);
-		}
-
-		static void CheckAppActions(AndroidIntent intent)
-		{
-			if (intent?.Action == Intent.ActionAppAction)
-			{
-				var appAction = intent.ToAppAction();
-
-				if (!string.IsNullOrEmpty(appAction?.Id))
-					AppActions.InvokeOnAppAction(Platform.CurrentActivity, appAction);
-			}
-		}
 
 		internal static bool HasSystemFeature(string systemFeature)
 		{
@@ -260,11 +239,6 @@ namespace Microsoft.Maui.Essentials
 #pragma warning disable CS0618 // Type or member is obsolete
 			resources.UpdateConfiguration(config, resources.DisplayMetrics);
 #pragma warning restore CS0618 // Type or member is obsolete
-		}
-
-		public static class Intent
-		{
-			public const string ActionAppAction = "ACTION_XE_APP_ACTION";
 		}
 	}
 

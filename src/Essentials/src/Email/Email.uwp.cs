@@ -10,9 +10,9 @@ using Windows.Storage.Streams;
 using PlatformEmailAttachment = Windows.ApplicationModel.Email.EmailAttachment;
 using PlatformEmailMessage = Windows.ApplicationModel.Email.EmailMessage;
 
-namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public partial class EmailImplementation : IEmail
+	partial class EmailImplementation : IEmail
 	{
 		public bool IsComposeSupported
 			=> ApiInformation.IsTypePresent("Windows.ApplicationModel.Email.EmailManager");

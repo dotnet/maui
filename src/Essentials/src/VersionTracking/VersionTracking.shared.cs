@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using Microsoft.Maui.Storage;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -37,7 +38,10 @@ namespace Microsoft.Maui.ApplicationModel
 
 		bool IsFirstLaunchForBuild(string build);
 	}
+}
 
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="Type[@FullName='Microsoft.Maui.Essentials.VersionTracking']/Docs" />
 	public static class VersionTracking
 	{
@@ -104,20 +108,18 @@ namespace Microsoft.Maui.ApplicationModel
 #nullable enable
 		static IVersionTracking? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IVersionTracking Current =>
-			currentImplementation ??= new Implementations.VersionTrackingImplementation();
+			currentImplementation ??= new VersionTrackingImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IVersionTracking? implementation) =>
+		internal static void SetCurrent(IVersionTracking? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}
 }
 
-namespace Microsoft.Maui.ApplicationModel.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public class VersionTrackingImplementation : IVersionTracking
+	class VersionTrackingImplementation : IVersionTracking
 	{
 		const string versionTrailKey = "VersionTracking.Trail";
 		const string versionsKey = "VersionTracking.Versions";

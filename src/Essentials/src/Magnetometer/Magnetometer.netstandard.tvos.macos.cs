@@ -1,7 +1,7 @@
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Magnetometer']/Docs" />
-	public partial class MagnetometerImplementation
+	partial class MagnetometerImplementation
 	{
 		bool PlatformIsSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;

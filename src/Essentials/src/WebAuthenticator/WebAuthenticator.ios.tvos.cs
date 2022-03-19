@@ -11,13 +11,12 @@ using SafariServices;
 using ObjCRuntime;
 using UIKit;
 using WebKit;
-using Microsoft.Maui.Authentication.Implementations;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.ApplicationModel.Implementations;
+using Microsoft.Maui.Authentication;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Authentication.Implementations
+namespace Microsoft.Maui.Authentication
 {
-	public partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
+	partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{
 #if __IOS__
 		const int asWebAuthenticationSessionErrorCodeCanceledLogin = 1;

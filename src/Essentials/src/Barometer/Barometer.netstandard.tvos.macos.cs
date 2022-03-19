@@ -1,8 +1,8 @@
 using System;
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class BarometerImplementation : IBarometer
+	partial class BarometerImplementation : IBarometer
 	{
 		void PlatformStart(SensorSpeed sensorSpeed)
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;

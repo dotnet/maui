@@ -1,9 +1,9 @@
 #nullable enable
 using System;
 using System.ComponentModel;
-using Microsoft.Maui.Devices.Implementations;
+using Microsoft.Maui.Devices;
 
-namespace Microsoft.Maui.Devices
+namespace Microsoft.Maui.Essentials
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceDisplay']/Docs" />
 	public static partial class DeviceDisplay
@@ -24,12 +24,10 @@ namespace Microsoft.Maui.Devices
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='Current']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IDeviceDisplay Current => currentImplementation;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='SetCurrent']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IDeviceDisplay? implementation)
+		internal static void SetCurrent(IDeviceDisplay? implementation)
 		{
 			lock (locker)
 			{
@@ -121,7 +119,9 @@ namespace Microsoft.Maui.Devices
 			}
 		}
 	}
-
+}
+namespace Microsoft.Maui.Devices
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DisplayInfoChangedEventArgs']/Docs" />
 	public class DisplayInfoChangedEventArgs : EventArgs
 	{

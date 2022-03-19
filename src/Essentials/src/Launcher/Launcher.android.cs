@@ -3,13 +3,12 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Microsoft.Maui.Essentials;
 using AndroidUri = Android.Net.Uri;
 using Uri = System.Uri;
 
-namespace Microsoft.Maui.ApplicationModel.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public partial class LauncherImplementation
+	partial class LauncherImplementation
 	{
 		Task<bool> PlatformCanOpenAsync(Uri uri)
 		{

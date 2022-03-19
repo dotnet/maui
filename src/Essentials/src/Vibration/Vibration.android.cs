@@ -3,12 +3,11 @@ using System;
 using Android;
 using Android.OS;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Essentials;
 #endif
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class VibrationImplementation : IVibration
+	partial class VibrationImplementation : IVibration
 	{
 		public bool IsSupported => true;
 

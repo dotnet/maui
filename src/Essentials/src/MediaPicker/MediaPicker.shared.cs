@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.Media;
-using Microsoft.Maui.Media.Implementations;
 using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.Media
@@ -20,7 +19,9 @@ namespace Microsoft.Maui.Media
 
 		Task<FileResult> CaptureVideoAsync(MediaPickerOptions options);
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/MediaPicker.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MediaPicker']/Docs" />
 	public static partial class MediaPicker
 	{
@@ -56,19 +57,17 @@ namespace Microsoft.Maui.Media
 
 #nullable enable
 		static IMediaPicker? currentImplementation;
-#nullable disable
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IMediaPicker Current =>
 			currentImplementation ??= new MediaPickerImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IMediaPicker? implementation) =>
+		internal static void SetCurrent(IMediaPicker? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}
-
+}
+namespace Microsoft.Maui.Media
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/MediaPickerOptions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MediaPickerOptions']/Docs" />
 	public class MediaPickerOptions
 	{

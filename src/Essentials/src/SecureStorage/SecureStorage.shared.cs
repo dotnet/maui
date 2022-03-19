@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Maui.Storage.Implementations;
+using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.Storage
 {
@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Storage
 		Task SetAsync(string key, string value, Security.SecAccessible accessible);
 #endif
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SecureStorage']/Docs" />
 	public static partial class SecureStorage
 	{
@@ -90,21 +92,19 @@ namespace Microsoft.Maui.Storage
 
 		static ISecureStorage? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static ISecureStorage Current =>
 			currentImplementation ??= new SecureStorageImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(ISecureStorage? implementation)
+		internal static void SetCurrent(ISecureStorage? implementation)
 		{
 			currentImplementation = implementation;
 		}
 	}
 }
 
-namespace Microsoft.Maui.Storage.Implementations
+namespace Microsoft.Maui.Storage
 {
-	public partial class SecureStorageImplementation
+	partial class SecureStorageImplementation
 	{
 #if !NETSTANDARD
 		// Special Alias that is only used for Secure Storage. All others should use: Preferences.GetPrivatePreferencesSharedName

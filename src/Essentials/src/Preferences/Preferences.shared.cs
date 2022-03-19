@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Storage.Implementations;
+using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.Storage
 {
@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Storage
 		void Set<T>(string key, T value, string? sharedName);
 		T Get<T>(string key, T defaultValue, string? sharedName);
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Preferences']/Docs" />
 	public static class Preferences
 	{
@@ -165,12 +167,10 @@ namespace Microsoft.Maui.Storage
 
 		static IPreferences? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IPreferences Current =>
 			currentImplementation ??= new PreferencesImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IPreferences? implementation) =>
+		internal static void SetCurrent(IPreferences? implementation) =>
 			currentImplementation = implementation;
 	}
 }

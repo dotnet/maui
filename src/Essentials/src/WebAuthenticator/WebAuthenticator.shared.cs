@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using Microsoft.Maui.Authentication;
-using Microsoft.Maui.Authentication.Implementations;
 
 namespace Microsoft.Maui.Authentication
 {
@@ -24,7 +23,10 @@ namespace Microsoft.Maui.Authentication
 		bool OnResumeCallback(global::Android.Content.Intent intent);
 #endif
 	}
+}
 
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="Type[@FullName='Microsoft.Maui.Essentials.WebAuthenticator']/Docs" />
 	public static partial class WebAuthenticator
 	{
@@ -55,16 +57,17 @@ namespace Microsoft.Maui.Authentication
 #nullable enable
 		static IWebAuthenticator? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IWebAuthenticator Current =>
 			currentImplementation ??= new WebAuthenticatorImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IWebAuthenticator? implementation) =>
+		internal static void SetCurrent(IWebAuthenticator? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}
+}
 
+namespace Microsoft.Maui.Authentication
+{
 	public class WebAuthenticatorOptions
 	{
 		public Uri Url { get; set; }
@@ -73,10 +76,7 @@ namespace Microsoft.Maui.Authentication
 
 		public bool PrefersEphemeralWebBrowserSession { get; set; }
 	}
-}
 
-namespace Microsoft.Maui.Authentication.Implementations
-{
 	public partial class WebAuthenticatorImplementation
 	{
 		public Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)

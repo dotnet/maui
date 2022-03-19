@@ -2,12 +2,11 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Android.Content;
 using Microsoft.Maui.Devices.Sensors;
-using Microsoft.Maui.Essentials;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.ApplicationModel.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public class MapImplementation : IMap
+	class MapImplementation : IMap
 	{
 		public Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
 		{

@@ -1,7 +1,7 @@
 #nullable enable
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Maui.Devices.Implementations;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Devices
 {
@@ -10,6 +10,9 @@ namespace Microsoft.Maui.Devices
 		Task TurnOnAsync();
 		Task TurnOffAsync();
 	}
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Flashlight.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Flashlight']/Docs" />
 	public static partial class Flashlight
 	{

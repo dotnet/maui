@@ -6,13 +6,12 @@ using Android.Content;
 using Android.OS;
 using Android.Text;
 using Android.Webkit;
-using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Storage;
 using Uri = Android.Net.Uri;
 
-namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public partial class EmailImplementation : IEmail
+	partial class EmailImplementation : IEmail
 	{
 		static EmailMessage testEmail =>
 			new ("Testing Microsoft.Maui.Essentials", "This is a test email.", "Microsoft.Maui.Essentials@example.org");

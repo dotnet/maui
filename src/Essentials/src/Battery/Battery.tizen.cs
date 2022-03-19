@@ -1,9 +1,9 @@
 using System;
 using TizenBattery = Tizen.System.Battery;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class BatteryImplementation : IBattery
+	partial class BatteryImplementation : IBattery
 	{
 		void OnChanged(object sender, object e)
 			=> MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);

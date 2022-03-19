@@ -2,9 +2,9 @@ using System;
 using Windows.Devices.Haptics;
 using Windows.Foundation.Metadata;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class VibrationImplementation : IVibration
+	partial class VibrationImplementation : IVibration
 	{
 		public bool IsSupported
 			=> ApiInformation.IsTypePresent("Windows.Phone.Devices.Notification.VibrationDevice") && DefaultDevice != null;

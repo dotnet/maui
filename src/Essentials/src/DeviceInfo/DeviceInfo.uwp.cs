@@ -4,9 +4,9 @@ using Windows.Security.ExchangeActiveSyncProvisioning;
 using Windows.System.Profile;
 using Windows.UI.ViewManagement;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class DeviceInfoImplementation : IDeviceInfo
+	class DeviceInfoImplementation : IDeviceInfo
 	{
 		readonly EasClientDeviceInformation deviceInfo;
 		DeviceIdiom currentIdiom;
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Devices.Implementations
 						{
 							try
 							{
-								var currentHandle = Essentials.Platform.CurrentWindowHandle;
+								var currentHandle = Platform.CurrentWindowHandle;
 								var settings = UIViewSettingsInterop.GetForWindow(currentHandle);
 								var uiMode = settings.UserInteractionMode;
 								currentIdiom = uiMode == UserInteractionMode.Mouse ? DeviceIdiom.Desktop : DeviceIdiom.Tablet;

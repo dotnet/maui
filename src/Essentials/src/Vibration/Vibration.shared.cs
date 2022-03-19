@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Devices;
-using Microsoft.Maui.Devices.Implementations;
 
 namespace Microsoft.Maui.Devices
 {
@@ -17,7 +16,10 @@ namespace Microsoft.Maui.Devices
 
 		void Cancel();
 	}
+}
 
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Vibration']/Docs" />
 	public static partial class Vibration
 	{
@@ -54,15 +56,11 @@ namespace Microsoft.Maui.Devices
 
 #nullable enable
 		static IVibration? currentImplementation;
-#nullable disable
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IVibration Current =>
 			currentImplementation ??= new VibrationImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IVibration? implementation) =>
+		internal static void SetCurrent(IVibration? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}

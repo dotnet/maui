@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Tizen;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Storage
+namespace Microsoft.Maui.Essentials
 {
 	public static partial class FilePicker
 	{
@@ -45,7 +45,9 @@ namespace Microsoft.Maui.Storage
 			return await tcs.Task;
 		}
 	}
-
+}
+namespace Microsoft.Maui.Storage
+{
 	public partial class FilePickerFileType
 	{
 		static FilePickerFileType PlatformImageFileType() =>

@@ -8,9 +8,9 @@ using ObjCRuntime;
 using Photos;
 using UIKit;
 
-namespace Microsoft.Maui.Storage.Implementations
+namespace Microsoft.Maui.Storage
 {
-	public partial class FileSystemImplementation : IFileSystem, IPlatformFileSystem
+	partial class FileSystemImplementation : IFileSystem, IPlatformFileSystem
 	{
 		public async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
 		{

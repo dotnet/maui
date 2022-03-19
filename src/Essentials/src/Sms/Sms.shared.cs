@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.ApplicationModel.Communication.Implementations;
+using Microsoft.Maui.ApplicationModel.Communication;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
@@ -11,7 +11,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 	{
 		Task ComposeAsync(SmsMessage? message);
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Sms.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Sms']/Docs" />
 	public static class Sms
 	{
@@ -33,16 +35,15 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		}
 		static ISms? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static ISms Current =>
 			currentImplementation ??= new SmsImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(ISms? implementation) =>
+		internal static void SetCurrent(ISms? implementation) =>
 			currentImplementation = implementation;
 	}
-#nullable restore
-
+}
+namespace Microsoft.Maui.ApplicationModel.Communication
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SmsMessage']/Docs" />
 	public class SmsMessage
 	{
@@ -52,15 +53,15 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
-		public SmsMessage(string body, string recipient)
+		public SmsMessage(string body, string? recipient)
 		{
 			Body = body;
 			if (!string.IsNullOrWhiteSpace(recipient))
-				Recipients.Add(recipient);
+				Recipients.Add(recipient!);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
-		public SmsMessage(string body, IEnumerable<string> recipients)
+		public SmsMessage(string body, IEnumerable<string>? recipients)
 		{
 			Body = body;
 			if (recipients != null)
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="//Member[@MemberName='Body']/Docs" />
-		public string Body { get; set; }
+		public string? Body { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="//Member[@MemberName='Recipients']/Docs" />
 		public List<string> Recipients { get; set; } = new List<string>();

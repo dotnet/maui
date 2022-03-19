@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Foundation;
-using Microsoft.Maui.Essentials;
 #if __IOS__ || __TVOS__
 using ObjCRuntime;
 using UIKit;
@@ -10,9 +9,9 @@ using UIKit;
 using AppKit;
 #endif
 
-namespace Microsoft.Maui.ApplicationModel.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public class AppInfoImplementation : IAppInfo
+	class AppInfoImplementation : IAppInfo
 	{
 		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 

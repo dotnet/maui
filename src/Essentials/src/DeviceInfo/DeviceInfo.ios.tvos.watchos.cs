@@ -9,9 +9,9 @@ using UIKit;
 
 using ObjCRuntime;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class DeviceInfoImplementation : IDeviceInfo
+	class DeviceInfoImplementation : IDeviceInfo
 	{
 		public string Model
 		{
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Devices.Implementations
 			{
 				try
 				{
-					return Essentials.Platform.GetSystemLibraryProperty("hw.machine");
+					return Platform.GetSystemLibraryProperty("hw.machine");
 				}
 				catch (Exception)
 				{

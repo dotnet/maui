@@ -5,9 +5,9 @@ using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Map
+	class MapImplementation : IMap
 	{
-		internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.ApplicationModel
 			return Task.CompletedTask;
 		}
 
-		internal static Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
+		public Task OpenMapsAsync(Placemark placemark, MapLaunchOptions options)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 

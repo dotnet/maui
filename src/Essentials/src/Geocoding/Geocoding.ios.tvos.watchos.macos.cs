@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using CoreLocation;
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public class GeocodingImplementation : IGeocoding
+	class GeocodingImplementation : IGeocoding
 	{
 		public async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
 		{

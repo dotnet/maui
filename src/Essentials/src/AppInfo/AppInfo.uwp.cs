@@ -7,9 +7,9 @@ using Microsoft.UI.Xaml;
 using Windows.UI.Xaml;
 #endif
 
-namespace Microsoft.Maui.ApplicationModel.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public class AppInfoImplementation : IAppInfo
+	class AppInfoImplementation : IAppInfo
 	{
 		static Lazy<bool> _isPackagedAppLazy = new Lazy<bool>(() =>
 		{

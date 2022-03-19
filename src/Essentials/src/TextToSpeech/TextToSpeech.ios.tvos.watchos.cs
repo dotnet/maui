@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using AVFoundation;
 
-namespace Microsoft.Maui.Media.Implementations
+namespace Microsoft.Maui.Media
 {
-	public partial class TextToSpeechImplementation : ITextToSpeech
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
 		static readonly Lazy<AVSpeechSynthesizer> speechSynthesizer = new Lazy<AVSpeechSynthesizer>();
 

@@ -1,11 +1,10 @@
 using System;
 using Android.Hardware;
 using Android.Runtime;
-using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class GyroscopeImplementation : IGyroscope
+	partial class GyroscopeImplementation : IGyroscope
 	{
 		bool PlatformIsSupported =>
 			   Platform.SensorManager?.GetDefaultSensor(SensorType.Gyroscope) != null;

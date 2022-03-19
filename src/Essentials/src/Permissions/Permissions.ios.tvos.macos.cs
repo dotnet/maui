@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
 using Photos;
 
 namespace Microsoft.Maui.ApplicationModel

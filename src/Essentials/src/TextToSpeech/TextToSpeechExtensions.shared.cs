@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Microsoft.Maui.Media
 {
-	internal static partial class TextToSpeechExtensions
+	static partial class TextToSpeechExtensions
 	{
 		internal static List<string> SplitSpeak(this string text, int max)
 		{

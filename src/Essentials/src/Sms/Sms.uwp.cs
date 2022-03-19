@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.Chat;
 using Windows.Foundation.Metadata;
 
-namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public class SmsImplementation:ISms
+	class SmsImplementation : ISms
 	{
 		internal static bool IsComposeSupported
 			=> ApiInformation.IsTypePresent("Windows.ApplicationModel.Chat.ChatMessageManager");

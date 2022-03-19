@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class HapticFeedbackImplementation : IHapticFeedback
+	partial class HapticFeedbackImplementation : IHapticFeedback
 	{
 		public bool IsSupported => true;
 

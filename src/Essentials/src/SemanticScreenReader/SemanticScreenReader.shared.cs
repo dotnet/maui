@@ -1,7 +1,7 @@
 ﻿#nullable enable
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Maui.Accessibility.Implementations;
+using Microsoft.Maui.Accessibility;
 
 namespace Microsoft.Maui.Accessibility
 {
@@ -9,7 +9,9 @@ namespace Microsoft.Maui.Accessibility
 	{
 		void Announce(string text);
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	public static partial class SemanticScreenReader
 	{
 		public static void Announce(string text)
@@ -19,12 +21,10 @@ namespace Microsoft.Maui.Accessibility
 
 		static ISemanticScreenReader? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static ISemanticScreenReader Current =>
 			currentImplementation ??= new SemanticScreenReaderImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(ISemanticScreenReader? implementation) =>
+		internal static void SetCurrent(ISemanticScreenReader? implementation) =>
 			currentImplementation = implementation;
 	}
 }

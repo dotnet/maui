@@ -2,22 +2,21 @@ using System;
 using Android.Content;
 using Android.OS;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class BatteryImplementation : IBattery
+	partial class BatteryImplementation : IBattery
 	{
 		BatteryBroadcastReceiver batteryReceiver;
 		EnergySaverBroadcastReceiver powerReceiver;
 
-		public void StartEnergySaverListeners()
+		void StartEnergySaverListeners()
 		{
-			powerReceiver = new EnergySaverBroadcastReceiver(Battery.OnEnergySaverChanged);
+			powerReceiver = new EnergySaverBroadcastReceiver(OnEnergySaverChanged);
 			Platform.AppContext.RegisterReceiver(powerReceiver, new IntentFilter(PowerManager.ActionPowerSaveModeChanged));
 		}
 
-		public void StopEnergySaverListeners()
+		void StopEnergySaverListeners()
 		{
 			try
 			{
@@ -40,15 +39,15 @@ namespace Microsoft.Maui.Devices.Implementations
 			}
 		}
 
-		public void StartBatteryListeners()
+		void StartBatteryListeners()
 		{
 			Permissions.EnsureDeclared<Permissions.Battery>();
 
-			batteryReceiver = new BatteryBroadcastReceiver(Battery.OnBatteryInfoChanged);
+			batteryReceiver = new BatteryBroadcastReceiver(OnBatteryInfoChanged);
 			Platform.AppContext.RegisterReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged));
 		}
 
-		public void StopBatteryListeners()
+		void StopBatteryListeners()
 		{
 			try
 			{

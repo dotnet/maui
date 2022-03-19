@@ -4,9 +4,9 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class DeviceDisplayImplementation : IDeviceDisplay
+	class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		NSObject? observer;
 

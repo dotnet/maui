@@ -4,9 +4,9 @@ using AppKit;
 using Foundation;
 using Microsoft.Maui.Graphics.Platform;
 
-namespace Microsoft.Maui.ApplicationModel.DataTransfer.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public class ShareImplementation : IShare
+	class ShareImplementation : IShare
 	{
 		public Task RequestAsync(ShareTextRequest request)
 		{

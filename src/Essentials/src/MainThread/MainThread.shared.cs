@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.ApplicationModel
+namespace Microsoft.Maui.Essentials
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MainThread']/Docs" />
 	public static partial class MainThread

@@ -2,9 +2,9 @@ using System;
 using System.Diagnostics;
 using Tizen.System;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class HapticFeedbackImplementation : IHapticFeedback
+	partial class HapticFeedbackImplementation : IHapticFeedback
 	{
 		public bool IsSupported => true;
 

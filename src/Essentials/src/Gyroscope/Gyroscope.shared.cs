@@ -2,7 +2,6 @@ using System;
 using System.Numerics;
 using System.ComponentModel;
 using Microsoft.Maui.Devices.Sensors;
-using Microsoft.Maui.Devices.Sensors.Implementations;
 using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
@@ -21,7 +20,9 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		event EventHandler<GyroscopeChangedEventArgs> ReadingChanged;
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Gyroscope']/Docs" />
 	public static partial class Gyroscope
 	{
@@ -51,19 +52,17 @@ namespace Microsoft.Maui.Devices.Sensors
 
 #nullable enable
 		static IGyroscope? currentImplementation;
-#nullable disable
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IGyroscope Current =>
 			currentImplementation ??= new GyroscopeImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IGyroscope? implementation) =>
+		internal static void SetCurrent(IGyroscope? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}
-
+}
+namespace Microsoft.Maui.Devices.Sensors
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.GyroscopeChangedEventArgs']/Docs" />
 	public class GyroscopeChangedEventArgs : EventArgs
 	{
@@ -117,9 +116,9 @@ namespace Microsoft.Maui.Devices.Sensors
 	}
 }
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class GyroscopeImplementation : IGyroscope
+	partial class GyroscopeImplementation : IGyroscope
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 

@@ -3,11 +3,10 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Android.Views;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.Devices.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class HapticFeedbackImplementation : IHapticFeedback
+	partial class HapticFeedbackImplementation : IHapticFeedback
 	{
 		public bool IsSupported => true;
 

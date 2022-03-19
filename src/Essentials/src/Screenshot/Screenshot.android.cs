@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Views;
-using Microsoft.Maui.Essentials;
 using Java.Nio;
 
 namespace Microsoft.Maui.Media
@@ -115,7 +114,7 @@ namespace Microsoft.Maui.Media
 	}
 }
 
-namespace Microsoft.Maui.Media.Implementations
+namespace Microsoft.Maui.Media
 {
 	public partial class ScreenshotImplementation : IScreenshot
 	{

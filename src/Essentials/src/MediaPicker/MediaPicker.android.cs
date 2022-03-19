@@ -4,13 +4,12 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Provider;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Storage;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Media.Implementations
+namespace Microsoft.Maui.Media
 {
-	public partial class MediaPickerImplementation : IMediaPicker
+	partial class MediaPickerImplementation : IMediaPicker
 	{
 		public bool IsCaptureSupported
 			=> Platform.AppContext.PackageManager.HasSystemFeature(PackageManager.FeatureCameraAny);

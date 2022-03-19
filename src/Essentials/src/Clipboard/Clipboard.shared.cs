@@ -1,8 +1,6 @@
+#nullable enable
 using System;
 using System.Threading.Tasks;
-using System.ComponentModel;
-using Microsoft.Maui.ApplicationModel.DataTransfer;
-using Microsoft.Maui.ApplicationModel.DataTransfer.Implementations;
 
 namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
@@ -10,71 +8,45 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 	{
 		bool HasText { get; }
 
-		Task SetTextAsync(string text);
+		Task SetTextAsync(string? text);
 
-		Task<string> GetTextAsync();
+		Task<string?> GetTextAsync();
 
-		void StartClipboardListeners();
-
-		void StopClipboardListeners();
+		event EventHandler<EventArgs> ClipboardContentChanged;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Clipboard']/Docs" />
 	public static partial class Clipboard
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='SetTextAsync']/Docs" />
-		public static Task SetTextAsync(string text)
-			=> Current.SetTextAsync(text ?? string.Empty);
+		static IClipboard? defaultImplementation;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='HasText']/Docs" />
-		public static bool HasText
-			=> Current.HasText;
+		public static IClipboard Default =>
+			defaultImplementation ??= new ClipboardImplementation();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='GetTextAsync']/Docs" />
-		public static Task<string> GetTextAsync()
-			=> Current.GetTextAsync();
+		internal static void SetDefault(IClipboard? implementation) =>
+			defaultImplementation = implementation;
+	}
 
-		public static event EventHandler<EventArgs> ClipboardContentChanged
+	partial class ClipboardImplementation : IClipboard
+	{
+		event EventHandler<EventArgs>? ClipboardContentChangedInternal;
+
+		public event EventHandler<EventArgs> ClipboardContentChanged
 		{
 			add
 			{
-				var wasRunning = ClipboardContentChangedInternal != null;
-
+				if (ClipboardContentChangedInternal == null)
+					StartClipboardListeners();
 				ClipboardContentChangedInternal += value;
-
-				if (!wasRunning && ClipboardContentChangedInternal != null)
-				{
-					Current.StartClipboardListeners();
-				}
 			}
-
 			remove
 			{
-				var wasRunning = ClipboardContentChangedInternal != null;
-
 				ClipboardContentChangedInternal -= value;
-
-				if (wasRunning && ClipboardContentChangedInternal == null)
-					Current.StopClipboardListeners();
+				if (ClipboardContentChangedInternal == null)
+					StopClipboardListeners();
 			}
 		}
 
-		static event EventHandler<EventArgs> ClipboardContentChangedInternal;
-
-		internal static void ClipboardChangedInternal() => ClipboardContentChangedInternal?.Invoke(null, EventArgs.Empty);
-
-#nullable enable
-		static IClipboard? currentImplementation;
-#nullable disable
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IClipboard Current =>
-			currentImplementation ??= new ClipboardImplementation();
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IClipboard? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
+		internal void OnClipboardContentChanged() =>
+			ClipboardContentChangedInternal?.Invoke(this, EventArgs.Empty);
 	}
 }

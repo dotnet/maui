@@ -7,11 +7,10 @@ using MessageUI;
 #endif
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Essentials;
 
-namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public partial class EmailImplementation : IEmail
+	partial class EmailImplementation : IEmail
 	{
 		public bool IsComposeSupported =>
 #if !(MACCATALYST || MACOS)

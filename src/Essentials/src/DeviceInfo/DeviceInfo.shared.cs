@@ -1,21 +1,19 @@
 #nullable enable
 using System;
 using System.ComponentModel;
-using Microsoft.Maui.Devices.Implementations;
+using Microsoft.Maui.Devices;
 
-namespace Microsoft.Maui.Devices
+namespace Microsoft.Maui.Essentials
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceInfo']/Docs" />
 	public static class DeviceInfo
 	{
 		static IDeviceInfo? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IDeviceInfo Current =>
 			currentImplementation ??= new DeviceInfoImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IDeviceInfo? implementation) =>
+		internal static void SetCurrent(IDeviceInfo? implementation) =>
 			currentImplementation = implementation;
 
 
@@ -43,7 +41,9 @@ namespace Microsoft.Maui.Devices
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="//Member[@MemberName='DeviceType']/Docs" />
 		public static DeviceType DeviceType => Current.DeviceType;
 	}
-
+}
+namespace Microsoft.Maui.Devices
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceType.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceType']/Docs" />
 	public enum DeviceType
 	{

@@ -5,13 +5,12 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Database;
 using Android.Provider;
-using Microsoft.Maui.Essentials;
 using CommonDataKinds = Android.Provider.ContactsContract.CommonDataKinds;
 using StructuredName = Android.Provider.ContactsContract.CommonDataKinds.StructuredName;
 
-namespace Microsoft.Maui.ApplicationModel.Communication.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public class ContactsImplementation : IContacts
+	class ContactsImplementation : IContacts
 	{
 		const string idCol = ContactsContract.Contacts.InterfaceConsts.Id;
 		const string displayNameCol = ContactsContract.Contacts.InterfaceConsts.DisplayName;

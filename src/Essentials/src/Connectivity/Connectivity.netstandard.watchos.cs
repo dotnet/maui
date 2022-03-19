@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Networking.Implementations
+namespace Microsoft.Maui.Networking
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
-	public partial class ConnectivityImplementation : IConnectivity
+	partial class ConnectivityImplementation : IConnectivity
 	{
 		public NetworkAccess NetworkAccess =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.ApplicationModel.DataTransfer.Implementations;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Storage;
 
@@ -14,7 +14,9 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		Task RequestAsync(ShareTextRequest request);
 		Task RequestAsync(ShareMultipleFilesRequest request);
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Share']/Docs" />
 	public static partial class Share
 	{
@@ -71,16 +73,16 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 #nullable enable
 		static IShare? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IShare Current =>
 			currentImplementation ??= new ShareImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IShare? implementation) =>
+		internal static void SetCurrent(IShare? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}
-
+}
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ShareRequestBase.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ShareRequestBase']/Docs" />
 	public abstract class ShareRequestBase
 	{

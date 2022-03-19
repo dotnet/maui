@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 using Android.Provider;
 using Android.Webkit;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Essentials;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Storage.Implementations
+namespace Microsoft.Maui.Storage
 {
-	public partial class FileSystemImplementation : IFileSystem, IPlatformFileSystem
+	partial class FileSystemImplementation : IFileSystem, IPlatformFileSystem
 	{
 		internal const string EssentialsFolderHash = "2203693cc04e0be7f4f024d5f9499e13";
 
@@ -386,10 +385,7 @@ namespace Microsoft.Maui.Storage.Implementations
 		}
 
 	}
-}
 
-namespace Microsoft.Maui.Storage
-{
 	public partial class FileBase
 	{
 		internal FileBase(Java.IO.File file)

@@ -1,7 +1,8 @@
+#nullable enable
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Devices.Sensors.Implementations;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
@@ -15,47 +16,20 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		void Start(SensorSpeed sensorSpeed);
 
-		event EventHandler<BarometerChangedEventArgs> ReadingChanged;
+		event EventHandler<BarometerChangedEventArgs>? ReadingChanged;
 
 		void Stop();
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Barometer']/Docs" />
 	public static class Barometer
 	{
-		public static event EventHandler<BarometerChangedEventArgs> ReadingChanged
-		{
-			add => Current.ReadingChanged += value;
-			remove => Current.ReadingChanged -= value;
-		}
+		static IBarometer? defaultImplementation;
 
-		public static bool IsSupported => Current.IsSupported;
+		public static IBarometer Default =>
+			defaultImplementation ??= new BarometerImplementation();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
-		public static bool IsMonitoring 
-			=> Current.IsMonitoring;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='Start']/Docs" />
-		public static void Start(SensorSpeed sensorSpeed)
-			=> Current.Start(sensorSpeed);
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='Stop']/Docs" />
-		public static void Stop()
-			=> Current.Stop();
-
-#nullable enable
-		static IBarometer? currentImplementation;
-#nullable disable
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IBarometer Current =>
-			currentImplementation ??= new BarometerImplementation();
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IBarometer? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
+		internal static void SetDefault(IBarometer? implementation) =>
+			defaultImplementation = implementation;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BarometerChangedEventArgs']/Docs" />
@@ -100,11 +74,8 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='ToString']/Docs" />
 		public override string ToString() => $"{nameof(PressureInHectopascals)}: {PressureInHectopascals}";
 	}
-}
 
-namespace Microsoft.Maui.Devices.Sensors.Implementations
-{
-	public partial class BarometerImplementation : IBarometer
+	partial class BarometerImplementation : IBarometer
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 

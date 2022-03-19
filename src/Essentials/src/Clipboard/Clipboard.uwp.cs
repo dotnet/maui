@@ -4,9 +4,9 @@ using Windows.ApplicationModel.DataTransfer;
 
 using WindowsClipboard = Windows.ApplicationModel.DataTransfer.Clipboard;
 
-namespace Microsoft.Maui.ApplicationModel.DataTransfer.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public partial class ClipboardImplementation : IClipboard
+	partial class ClipboardImplementation : IClipboard
 	{
 		public Task SetTextAsync(string text)
 		{

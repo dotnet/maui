@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Foundation;
 using MobileCoreServices;
 
-namespace Microsoft.Maui.Storage.Implementations
+namespace Microsoft.Maui.Storage
 {
-	public partial class FileSystemImplementation : IFileSystem
+	partial class FileSystemImplementation : IFileSystem
 	{
 		string PlatformCacheDirectory
 			=> GetDirectory(NSSearchPathDirectory.CachesDirectory);
@@ -54,10 +54,7 @@ namespace Microsoft.Maui.Storage.Implementations
 			return dirs[0];
 		}
 	}
-}
 
-namespace Microsoft.Maui.Storage
-{
 	public partial class FileBase
 	{
 		internal FileBase(NSUrl file)

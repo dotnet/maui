@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ComponentModel;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Networking.Implementations;
+using Microsoft.Maui.Networking;
 using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Networking
@@ -18,7 +17,9 @@ namespace Microsoft.Maui.Networking
 
 		void StopListeners();
 	}
-
+}
+namespace Microsoft.Maui.Essentials
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
 	public static partial class Connectivity
 	{
@@ -84,19 +85,18 @@ namespace Microsoft.Maui.Networking
 
 #nullable enable
 		static IConnectivity? currentImplementation;
-#nullable disable
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IConnectivity Current =>
 			currentImplementation ??= new ConnectivityImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IConnectivity? implementation) =>
+		internal static void SetCurrent(IConnectivity? implementation) =>
 			currentImplementation = implementation;
 #nullable disable
 	}
-
+}
+namespace Microsoft.Maui.Networking
+{
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ConnectivityChangedEventArgs']/Docs" />
 	public class ConnectivityChangedEventArgs : EventArgs
 	{

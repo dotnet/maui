@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Media
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IScreenshot Current =>
-			currentImplementation ??= new Implementations.ScreenshotImplementation();
+			currentImplementation ??= new ScreenshotImplementation();
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetCurrent(IScreenshot? implementation) =>
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Media
 	}
 }
 
-namespace Microsoft.Maui.Media.Implementations
+namespace Microsoft.Maui.Media
 {
 	internal partial class ScreenshotResult : IScreenshotResult
 	{

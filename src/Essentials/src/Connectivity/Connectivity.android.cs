@@ -5,12 +5,11 @@ using Android.Content;
 using Android.Net;
 using Android.OS;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Essentials;
 using Debug = System.Diagnostics.Debug;
 
-namespace Microsoft.Maui.Networking.Implementations
+namespace Microsoft.Maui.Networking
 {
-	public partial class ConnectivityImplementation : IConnectivity
+	partial class ConnectivityImplementation : IConnectivity
 	{
 		static ConnectivityBroadcastReceiver conectivityReceiver;
 		static Intent connectivityIntent = new Intent(Platform.EssentialsConnectivityChanged);
