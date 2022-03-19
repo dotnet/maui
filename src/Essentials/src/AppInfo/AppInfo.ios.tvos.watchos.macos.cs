@@ -26,21 +26,21 @@ namespace Microsoft.Maui.ApplicationModel
 		public string BuildString => GetBundleValue("CFBundleVersion");
 
 		string GetBundleValue(string key)
-		   => NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
+			=> NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
 
 #if __IOS__ || __TVOS__
 		public async void ShowSettingsUI()
 			=> await Launcher.OpenAsync(UIApplication.OpenSettingsUrlString);
 #elif __MACOS__
-        public void ShowSettingsUI()
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                var prefsApp = ScriptingBridge.SBApplication.FromBundleIdentifier("com.apple.systempreferences");
-                prefsApp.SendMode = ScriptingBridge.AESendMode.NoReply;
-                prefsApp.Activate();
-            });
-        }
+		public void ShowSettingsUI()
+		{
+			MainThread.BeginInvokeOnMainThread(() =>
+			{
+				var prefsApp = ScriptingBridge.SBApplication.FromBundleIdentifier("com.apple.systempreferences");
+				prefsApp.SendMode = ScriptingBridge.AESendMode.NoReply;
+				prefsApp.Activate();
+			});
+		}
 #else
 		public void ShowSettingsUI() =>
 			throw new FeatureNotSupportedException();
@@ -69,8 +69,8 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 		}
 #elif __MACOS__
-        public AppTheme RequestedTheme
-        {
+		public AppTheme RequestedTheme
+		{
 			get
 			{
 				if (OperatingSystem.IsMacOSVersionAtLeast(10, 14))
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.ApplicationModel
 				}
 				return AppTheme.Light;
 			}
-        }
+		}
 #else
 		public AppTheme RequestedTheme =>
 			AppTheme.Unspecified;

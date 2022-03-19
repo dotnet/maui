@@ -1,8 +1,7 @@
+#nullable enable
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using System.ComponentModel;
-using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.Storage
 {
@@ -17,68 +16,8 @@ namespace Microsoft.Maui.Storage
 		Task<bool> AppPackageFileExistsAsync(string filename);
 	}
 
-	public interface IPlatformFileSystem
-	{
-#if ANDROID
-		Java.IO.File GetTemporaryFile(Java.IO.File root, string fileName);
-
-		string EnsurePhysicalPath(Android.Net.Uri uri, bool requireExtendedAccess = true);
-#endif
-#if IOS || MACCATALYST
-		Task<FileResult[]> EnsurePhysicalFileResultsAsync(params Foundation.NSUrl[] urls);
-#endif
-	}
-}
-namespace Microsoft.Maui.Essentials
-{
-	/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileSystem']/Docs" />
 	public static class FileSystem
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="//Member[@MemberName='CacheDirectory']/Docs" />
-		public static string CacheDirectory
-			=> Current.CacheDirectory;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="//Member[@MemberName='AppDataDirectory']/Docs" />
-		public static string AppDataDirectory
-			=> Current.AppDataDirectory;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="//Member[@MemberName='OpenAppPackageFileAsync']/Docs" />
-		public static Task<Stream> OpenAppPackageFileAsync(string filename)
-			=> Current.OpenAppPackageFileAsync(filename);
-
-		public static Task<bool> AppPackageFileExistsAsync(string filename)
-			=> Current.AppPackageFileExistsAsync(filename);
-
-
-#if ANDROID
-		internal static Java.IO.File GetTemporaryFile(Java.IO.File root, string fileName)
-		{
-			if (Current is IPlatformFileSystem p)
-				return p.GetTemporaryFile(root, fileName);
-			
-			throw ExceptionUtils.NotSupportedOrImplementedException;
-		}
-
-		internal static string EnsurePhysicalPath(Android.Net.Uri uri, bool requireExtendedAccess = true)
-		{
-			if (Current is IPlatformFileSystem p)
-				return p.EnsurePhysicalPath(uri, requireExtendedAccess);
-			
-			throw ExceptionUtils.NotSupportedOrImplementedException;
-		}
-#endif
-
-#if IOS || MACCATALYST
-		internal static Task<FileResult[]> EnsurePhysicalFileResultsAsync(params Foundation.NSUrl[] urls)
-		{
-			if (Current is IPlatformFileSystem p)
-				return p.EnsurePhysicalFileResultsAsync(urls);
-
-			throw ExceptionUtils.NotSupportedOrImplementedException;
-		}
-#endif
-
-#nullable enable
 		static IFileSystem? currentImplementation;
 
 		public static IFileSystem Current =>
@@ -86,11 +25,31 @@ namespace Microsoft.Maui.Essentials
 
 		internal static void SetCurrent(IFileSystem? implementation) =>
 			currentImplementation = implementation;
-#nullable disable
 	}
-}
-namespace Microsoft.Maui.Storage
-{
+
+	public partial class FileSystemImplementation
+	{
+		public string CacheDirectory
+			=> PlatformCacheDirectory;
+
+		public string AppDataDirectory
+			=> PlatformAppDataDirectory;
+
+		public Task<Stream> OpenAppPackageFileAsync(string filename)
+			=> PlatformOpenAppPackageFileAsync(filename);
+
+		public Task<bool> AppPackageFileExistsAsync(string filename)
+			=> PlatformAppPackageFileExistsAsync(filename);
+	}
+
+	static partial class FileSystemUtils
+	{
+		public static string NormalizePath(string filename) =>
+			filename
+				.Replace('\\', Path.DirectorySeparatorChar)
+				.Replace('/', Path.DirectorySeparatorChar);
+	}
+
 	static class FileMimeTypes
 	{
 		internal const string All = "*/*";
@@ -162,7 +121,7 @@ namespace Microsoft.Maui.Storage
 	{
 		internal const string DefaultContentType = FileMimeTypes.OctetStream;
 
-		string contentType;
+		string? contentType;
 
 		// The caller must setup FullPath at least!!!
 		internal FileBase()
@@ -198,7 +157,7 @@ namespace Microsoft.Maui.Storage
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="//Member[@MemberName='FullPath']/Docs" />
-		public string FullPath { get; internal set; }
+		public string FullPath { get; internal set; } = null!;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="//Member[@MemberName='ContentType']/Docs" />
 		public string ContentType
@@ -225,7 +184,7 @@ namespace Microsoft.Maui.Storage
 			return DefaultContentType;
 		}
 
-		string fileName;
+		string? fileName;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="//Member[@MemberName='FileName']/Docs" />
 		public string FileName
@@ -300,23 +259,5 @@ namespace Microsoft.Maui.Storage
 			: base(file)
 		{
 		}
-	}
-}
-
-namespace Microsoft.Maui.Storage
-{
-	public partial class FileSystemImplementation
-	{
-		public string CacheDirectory
-			=> PlatformCacheDirectory;
-
-		public string AppDataDirectory
-			=> PlatformAppDataDirectory;
-
-		public Task<Stream> OpenAppPackageFileAsync(string filename)
-			=> PlatformOpenAppPackageFileAsync(filename);
-
-		public Task<bool> AppPackageFileExistsAsync(string filename)
-			=> PlatformAppPackageFileExistsAsync(filename);
 	}
 }

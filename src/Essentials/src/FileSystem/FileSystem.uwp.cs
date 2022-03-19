@@ -20,32 +20,35 @@ namespace Microsoft.Maui.Storage
 			if (filename == null)
 				throw new ArgumentNullException(nameof(filename));
 
-			if (AppInfo.PackagingModel == AppPackagingModel.Packaged)
+			if (AppInfoUtils.IsPackagedApp)
 			{
-				filename = NormalizePath(filename);
+				filename = FileSystemUtils.NormalizePath(filename);
 
 				return Package.Current.InstalledLocation.OpenStreamForReadAsync(filename);
 			}
 			else
 			{
-				var file = PlatformGetFullAppPackageFilePath(filename);
+				var file = FileSystemUtils.PlatformGetFullAppPackageFilePath(filename);
 				return Task.FromResult((Stream)File.OpenRead(file));
 			}
 		}
 
 		Task<bool> PlatformAppPackageFileExistsAsync(string filename)
 		{
-			var file = PlatformGetFullAppPackageFilePath(filename);
+			var file = FileSystemUtils.PlatformGetFullAppPackageFilePath(filename);
 			return Task.FromResult(File.Exists(file));
 		}
+	}
 
-		internal static bool AppPackageFileExists(string filename)
+	static partial class FileSystemUtils
+	{
+		public static bool AppPackageFileExists(string filename)
 		{
 			var file = PlatformGetFullAppPackageFilePath(filename);
 			return File.Exists(file);
 		}
 
-		static string PlatformGetFullAppPackageFilePath(string filename)
+		public static string PlatformGetFullAppPackageFilePath(string filename)
 		{
 			if (filename == null)
 				throw new ArgumentNullException(nameof(filename));
@@ -53,16 +56,13 @@ namespace Microsoft.Maui.Storage
 			filename = NormalizePath(filename);
 
 			string root;
-			if (AppInfo.PackagingModel == AppPackagingModel.Packaged)
+			if (AppInfoUtils.IsPackagedApp)
 				root = Package.Current.InstalledLocation.Path;
 			else
 				root = AppContext.BaseDirectory;
 
 			return Path.Combine(root, filename);
 		}
-
-		internal static string NormalizePath(string path)
-			=> path.Replace('/', Path.DirectorySeparatorChar);
 	}
 
 	public partial class FileBase

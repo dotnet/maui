@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Provider;
 using Android.Webkit;
 using Microsoft.Maui.ApplicationModel;
@@ -9,34 +10,13 @@ using AndroidUri = Android.Net.Uri;
 
 namespace Microsoft.Maui.Storage
 {
-	partial class FileSystemImplementation : IFileSystem, IPlatformFileSystem
+	partial class FileSystemImplementation : IFileSystem
 	{
-		internal const string EssentialsFolderHash = "2203693cc04e0be7f4f024d5f9499e13";
-
-		const string storageTypePrimary = "primary";
-		const string storageTypeRaw = "raw";
-		const string storageTypeImage = "image";
-		const string storageTypeVideo = "video";
-		const string storageTypeAudio = "audio";
-		static readonly string[] contentUriPrefixes =
-		{
-			"content://downloads/public_downloads",
-			"content://downloads/my_downloads",
-			"content://downloads/all_downloads",
-		};
-
-		internal const string UriSchemeFile = "file";
-		internal const string UriSchemeContent = "content";
-
-		internal const string UriAuthorityExternalStorage = "com.android.externalstorage.documents";
-		internal const string UriAuthorityDownloads = "com.android.providers.downloads.documents";
-		internal const string UriAuthorityMedia = "com.android.providers.media.documents";
-
 		string PlatformCacheDirectory
-			=> Platform.AppContext.CacheDir.AbsolutePath;
+			=> Application.Context.CacheDir.AbsolutePath;
 
 		string PlatformAppDataDirectory
-			=> Platform.AppContext.FilesDir.AbsolutePath;
+			=> Application.Context.FilesDir.AbsolutePath;
 
 		Task<Stream> PlatformOpenAppPackageFileAsync(string filename) =>
 			Task.FromResult(PlatformOpenAppPackageFile(filename));
@@ -59,22 +39,43 @@ namespace Microsoft.Maui.Storage
 			if (filename == null)
 				throw new ArgumentNullException(nameof(filename));
 
-			filename = NormalizePath(filename);
+			filename = FileSystemUtils.NormalizePath(filename);
 
 			try
 			{
-				return Platform.AppContext.Assets.Open(filename);
+				return Application.Context.Assets.Open(filename);
 			}
 			catch (Java.IO.FileNotFoundException ex)
 			{
 				throw new FileNotFoundException(ex.Message, filename, ex);
 			}
 		}
+	}
 
-		static string NormalizePath(string filename) =>
-			filename.Replace('\\', Path.DirectorySeparatorChar);
+	static partial class FileSystemUtils
+	{
+		internal const string EssentialsFolderHash = "2203693cc04e0be7f4f024d5f9499e13";
 
-		public Java.IO.File GetTemporaryFile(Java.IO.File root, string fileName)
+		const string storageTypePrimary = "primary";
+		const string storageTypeRaw = "raw";
+		const string storageTypeImage = "image";
+		const string storageTypeVideo = "video";
+		const string storageTypeAudio = "audio";
+		static readonly string[] contentUriPrefixes =
+		{
+			"content://downloads/public_downloads",
+			"content://downloads/my_downloads",
+			"content://downloads/all_downloads",
+		};
+
+		internal const string UriSchemeFile = "file";
+		internal const string UriSchemeContent = "content";
+
+		internal const string UriAuthorityExternalStorage = "com.android.externalstorage.documents";
+		internal const string UriAuthorityDownloads = "com.android.providers.downloads.documents";
+		internal const string UriAuthorityMedia = "com.android.providers.media.documents";
+
+		public static Java.IO.File GetTemporaryFile(Java.IO.File root, string fileName)
 		{
 			// create the directory for all Essentials files
 			var rootDir = new Java.IO.File(root, EssentialsFolderHash);
@@ -93,8 +94,7 @@ namespace Microsoft.Maui.Storage
 			return tmpFile;
 		}
 
-
-		public string EnsurePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
+		public static string EnsurePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
 		{
 			// if this is a file, use that
 			if (uri.Scheme.Equals(UriSchemeFile, StringComparison.OrdinalIgnoreCase))
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Storage
 			{
 				// if this is on an older OS version, or we just need it now
 
-				if (Platform.HasApiLevelKitKat && DocumentsContract.IsDocumentUri(Platform.AppContext, uri))
+				if (Platform.HasApiLevelKitKat && DocumentsContract.IsDocumentUri(Application.Context, uri))
 				{
 					var resolved = ResolveDocumentPath(uri);
 					if (File.Exists(resolved))
@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Storage
 			return null;
 		}
 
-		string CacheContentFile(AndroidUri uri)
+		static string CacheContentFile(AndroidUri uri)
 		{
 			if (!uri.Scheme.Equals(UriSchemeContent, StringComparison.OrdinalIgnoreCase))
 				return null;
@@ -270,8 +270,8 @@ namespace Microsoft.Maui.Storage
 			// create a temporary file
 			var hasPermission = Permissions.IsDeclaredInManifest(global::Android.Manifest.Permission.WriteExternalStorage);
 			var root = hasPermission
-				? Platform.AppContext.ExternalCacheDir
-				: Platform.AppContext.CacheDir;
+				? Application.Context.ExternalCacheDir
+				: Application.Context.CacheDir;
 			var tmpFile = GetTemporaryFile(root, filename);
 
 			// copy to the destination
@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Storage
 
 		static bool IsVirtualFile(AndroidUri uri)
 		{
-			if (!DocumentsContract.IsDocumentUri(Platform.AppContext, uri))
+			if (!DocumentsContract.IsDocumentUri(Application.Context, uri))
 				return false;
 
 			var value = GetColumnValue(uri, DocumentsContract.Document.ColumnFlags);
@@ -311,7 +311,7 @@ namespace Microsoft.Maui.Storage
 
 		static Stream GetVirtualFileStream(AndroidUri uri, out string extension)
 		{
-			var mimeTypes = Platform.ContentResolver.GetStreamTypes(uri, FileSystem.MimeTypes.All);
+			var mimeTypes = Platform.ContentResolver.GetStreamTypes(uri, FileMimeTypes.All);
 			if (mimeTypes?.Length >= 1)
 			{
 				var mimeType = mimeTypes[0];
@@ -383,7 +383,6 @@ namespace Microsoft.Maui.Storage
 
 			return text;
 		}
-
 	}
 
 	public partial class FileBase

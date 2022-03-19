@@ -13,10 +13,10 @@ namespace Microsoft.Maui.Storage
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
-			 => throw ExceptionUtils.NotSupportedOrImplementedException;
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		Task<bool> PlatformAppPackageFileExistsAsync(string filename)
-			 => throw ExceptionUtils.NotSupportedOrImplementedException;
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileBase']/Docs" />

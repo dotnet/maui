@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.System;
 using WinLauncher = Windows.System.Launcher;

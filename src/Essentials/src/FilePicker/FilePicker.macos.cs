@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using AppKit;
 using MobileCoreServices;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
-	public static partial class FilePicker
+	partial class FilePickerImplementation : IFilePicker
 	{
-		static Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+		Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
 		{
 			var openPanel = new NSOpenPanel
 			{
@@ -48,9 +48,7 @@ namespace Microsoft.Maui.Essentials
 			panel.AllowedFileTypes = allowedFileTypes.ToArray();
 		}
 	}
-}
-namespace Microsoft.Maui.Storage
-{
+
 	public partial class FilePickerFileType
 	{
 		static FilePickerFileType PlatformImageFileType() =>

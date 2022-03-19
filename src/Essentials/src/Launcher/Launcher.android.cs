@@ -14,10 +14,10 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri.OriginalString));
 
-			if (Platform.AppContext == null)
+			if (Application.Context == null)
 				return Task.FromResult(false);
 
-			var manager = Platform.AppContext.PackageManager;
+			var manager = Application.Context.PackageManager;
 			var supportedResolvedInfos = manager.QueryIntentActivities(intent, PackageInfoFlags.MatchDefaultOnly);
 			return Task.FromResult(supportedResolvedInfos.Any());
 		}
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.ApplicationModel
 #endif
 			intent.SetFlags(flags);
 
-			Platform.AppContext.StartActivity(intent);
+			Application.Context.StartActivity(intent);
 			return Task.FromResult(true);
 		}
 
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.ApplicationModel
 #endif
 			chooserIntent.SetFlags(flags);
 
-			Platform.AppContext.StartActivity(chooserIntent);
+			Application.Context.StartActivity(chooserIntent);
 
 			return Task.FromResult(true);
 		}

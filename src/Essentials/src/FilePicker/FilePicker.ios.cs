@@ -1,20 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
-using MobileCoreServices;
-using ObjCRuntime;
-using UIKit;
 using Microsoft.Maui.Devices;
-using Microsoft.Maui.Storage;
+using MobileCoreServices;
+using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
-	public static partial class FilePicker
+	partial class FilePickerImplementation : IFilePicker
 	{
-		static async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+		async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
 		{
 			var allowedUtis = options?.FileTypes?.Value?.ToArray() ?? new string[]
 			{
@@ -52,7 +49,7 @@ namespace Microsoft.Maui.Essentials
 		{
 			try
 			{
-				var results = await FileSystem.EnsurePhysicalFileResultsAsync(urls);
+				var results = await FileSystemUtils.EnsurePhysicalFileResultsAsync(urls);
 
 				tcs.TrySetResult(results);
 			}
@@ -75,11 +72,8 @@ namespace Microsoft.Maui.Essentials
 			public override void DidPickDocument(UIDocumentPickerViewController controller, NSUrl url)
 				=> PickHandler?.Invoke(new NSUrl[] { url });
 		}
-
 	}
-}
-namespace Microsoft.Maui.Storage
-{
+
 	public partial class FilePickerFileType
 	{
 		static FilePickerFileType PlatformImageFileType() =>

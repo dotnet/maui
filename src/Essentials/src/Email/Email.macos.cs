@@ -9,7 +9,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		public bool IsComposeSupported =>
 			MainThread.InvokeOnMainThread(() => NSWorkspace.SharedWorkspace.UrlForApplication(NSUrl.FromString("mailto:")) != null);
 
-		public Task ComposeAsync(EmailMessage message)
+		Task PlatformComposeAsync(EmailMessage message)
 		{
 			var url = GetMailToUri(message);
 
