@@ -14,9 +14,9 @@ using CoreMotion;
 using CoreMotion;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Platform
+	static partial class Platform
 	{
 #if __IOS__ || __TVOS__
 		public static bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)

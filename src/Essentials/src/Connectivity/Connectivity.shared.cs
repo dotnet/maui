@@ -13,68 +13,64 @@ namespace Microsoft.Maui.Networking
 
 		NetworkAccess NetworkAccess { get; }
 
-		void StartListeners();
-
-		void StopListeners();
+		event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged;
 	}
-}
-namespace Microsoft.Maui.Essentials
-{
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
-	public static partial class Connectivity
+
+#nullable enable
+	public static class Connectivity
 	{
-		static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChangedInternal;
+		static IConnectivity? currentImplementation;
+
+		public static IConnectivity Current =>
+			currentImplementation ??= new ConnectivityImplementation();
+
+		internal static void SetCurrent(IConnectivity? implementation) =>
+			currentImplementation = implementation;
+	}
+#nullable disable
+
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
+	partial class ConnectivityImplementation : IConnectivity
+	{
+		event EventHandler<ConnectivityChangedEventArgs> ConnectivityChangedInternal;
 
 		// a cache so that events aren't fired unnecessarily
 		// this is mainly an issue on Android, but we can stiil do this everywhere
-		static NetworkAccess currentAccess;
-		static List<ConnectionProfile> currentProfiles;
+		NetworkAccess currentAccess;
+		List<ConnectionProfile> currentProfiles;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='NetworkAccess']/Docs" />
-		public static NetworkAccess NetworkAccess => Current.NetworkAccess;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='ConnectionProfiles']/Docs" />
-		public static IEnumerable<ConnectionProfile> ConnectionProfiles => Current.ConnectionProfiles.Distinct();
-
-		public static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged
+		public event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged
 		{
 			add
 			{
-				var wasRunning = ConnectivityChangedInternal != null;
-
-				ConnectivityChangedInternal += value;
-
-				if (!wasRunning && ConnectivityChangedInternal != null)
+				if (ConnectivityChangedInternal is null)
 				{
 					SetCurrent();
-					Current.StartListeners();
+					StartListeners();
 				}
+				ConnectivityChangedInternal += value;
 			}
-
 			remove
 			{
-				var wasRunning = ConnectivityChangedInternal != null;
-
 				ConnectivityChangedInternal -= value;
-
-				if (wasRunning && ConnectivityChangedInternal == null)
-					Current.StopListeners();
+				if (ConnectivityChangedInternal is null)
+					StopListeners();
 			}
 		}
 
-		static void SetCurrent()
+		void SetCurrent()
 		{
 			currentAccess = NetworkAccess;
 			currentProfiles = new List<ConnectionProfile>(ConnectionProfiles);
 		}
 
-		internal static void OnConnectivityChanged(NetworkAccess access, IEnumerable<ConnectionProfile> profiles)
+		void OnConnectivityChanged(NetworkAccess access, IEnumerable<ConnectionProfile> profiles)
 			=> OnConnectivityChanged(new ConnectivityChangedEventArgs(access, profiles));
 
-		internal static void OnConnectivityChanged()
+		void OnConnectivityChanged()
 			=> OnConnectivityChanged(NetworkAccess, ConnectionProfiles);
 
-		internal static void OnConnectivityChanged(ConnectivityChangedEventArgs e)
+		void OnConnectivityChanged(ConnectivityChangedEventArgs e)
 		{
 			if (currentAccess != e.NetworkAccess || !currentProfiles.SequenceEqual(e.ConnectionProfiles))
 			{
@@ -82,21 +78,8 @@ namespace Microsoft.Maui.Essentials
 				MainThread.BeginInvokeOnMainThread(() => ConnectivityChangedInternal?.Invoke(null, e));
 			}
 		}
-
-#nullable enable
-		static IConnectivity? currentImplementation;
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IConnectivity Current =>
-			currentImplementation ??= new ConnectivityImplementation();
-
-		internal static void SetCurrent(IConnectivity? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
 	}
-}
-namespace Microsoft.Maui.Networking
-{
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ConnectivityChangedEventArgs']/Docs" />
 	public class ConnectivityChangedEventArgs : EventArgs
 	{

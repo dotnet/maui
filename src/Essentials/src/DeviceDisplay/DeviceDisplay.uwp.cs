@@ -4,17 +4,14 @@ using System.Runtime.InteropServices;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Windowing;
 using Windows.Graphics.Display;
-using Windows.Graphics.Display.Core;
 using Windows.System.Display;
 
 namespace Microsoft.Maui.Devices
 {
-	class DeviceDisplayImplementation : IDeviceDisplay
+	partial class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		readonly object locker = new object();
 		DisplayRequest? displayRequest;
-
-		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged;
 
 		public bool KeepScreenOn
 		{
@@ -25,7 +22,6 @@ namespace Microsoft.Maui.Devices
 					return displayRequest != null;
 				}
 			}
-
 			set
 			{
 				lock (locker)
@@ -84,10 +80,9 @@ namespace Microsoft.Maui.Devices
 			return DisplayRotation.Unknown;
 		}
 
-#if WINDOWS
-
 		AppWindow? _currentAppWindowListeningTo;
-		public DisplayInfo GetMainDisplayInfo()
+
+		DisplayInfo GetMainDisplayInfo()
 		{
 			if (Platform.CurrentWindow == null)
 				return new DisplayInfo();
@@ -137,22 +132,19 @@ namespace Microsoft.Maui.Devices
 			return null;
 		}
 
-		public void StartScreenMetricsListeners()
+		void StartScreenMetricsListeners()
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
 			{
 				Platform.CurrentWindowDisplayChanged += OnWindowDisplayChanged;
 				Platform.CurrentWindowChanged += OnCurrentWindowChanged;
 
-				if (Platform.CurrentWindow != null)
-				{
-					_currentAppWindowListeningTo = Platform.CurrentAppWindow;
-					_currentAppWindowListeningTo.Changed += OnAppWindowChanged;
-				}
+				_currentAppWindowListeningTo = Platform.CurrentAppWindow;
+				_currentAppWindowListeningTo.Changed += OnAppWindowChanged;
 			});
 		}
 
-		public void StopScreenMetricsListeners()
+		void StopScreenMetricsListeners()
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
 			{
@@ -169,27 +161,17 @@ namespace Microsoft.Maui.Devices
 		void OnCurrentWindowChanged(object? sender, EventArgs e)
 		{
 			if (_currentAppWindowListeningTo != null)
-			{
 				_currentAppWindowListeningTo.Changed -= OnAppWindowChanged;
-			}
 
 			_currentAppWindowListeningTo = Platform.CurrentAppWindow;
 			_currentAppWindowListeningTo.Changed += OnAppWindowChanged;
 		}
 
-		void OnWindowDisplayChanged(object? sender, EventArgs e)
-		{
-			WindowDisplayPropertiesChanged();
-		}
-
-		void WindowDisplayPropertiesChanged()
-		{
-			var metrics = GetMainDisplayInfo();
-			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(metrics));
-		}
+		void OnWindowDisplayChanged(object? sender, EventArgs e) =>
+			OnMainDisplayInfoChanged();
 
 		void OnAppWindowChanged(AppWindow sender, AppWindowChangedEventArgs args) =>
-			WindowDisplayPropertiesChanged();
+			OnMainDisplayInfoChanged();
 
 		static DisplayRotation CalculateRotation(DEVMODE devMode, AppWindow appWindow)
 		{
@@ -339,85 +321,5 @@ namespace Microsoft.Maui.Devices
 			public int dmPanningWidth;
 			public int dmPanningHeight;
 		}
-#elif WINDOWS_UWP
-		public DisplayInfo GetMainDisplayInfo() =>
-			GetMainDisplayInfo(null);
-
-		DisplayInfo GetMainDisplayInfo(DisplayInformation? di = null)
-		{
-			di ??= DisplayInformation.GetForCurrentView();
-
-			var rotation = CalculateRotation(di);
-			var perpendicular =
-				rotation == DisplayRotation.Rotation90 ||
-				rotation == DisplayRotation.Rotation270;
-
-			var w = di.ScreenWidthInRawPixels;
-			var h = di.ScreenHeightInRawPixels;
-
-			var hdi = HdmiDisplayInformation.GetForCurrentView();
-			var hdm = hdi?.GetCurrentDisplayMode();
-
-			return new DisplayInfo(
-				width: perpendicular ? h : w,
-				height: perpendicular ? w : h,
-				density: di.LogicalDpi / DeviceDisplay.BaseLogicalDpi,
-				orientation: CalculateOrientation(di),
-				rotation: rotation,
-				rate: (float)(hdm?.RefreshRate ?? 0));
-		}
-
-		public void StartScreenMetricsListeners()
-		{
-			MainThread.BeginInvokeOnMainThread(() =>
-			{
-				var di = DisplayInformation.GetForCurrentView();
-
-				di.DpiChanged += OnDisplayInformationChanged;
-				di.OrientationChanged += OnDisplayInformationChanged;
-			});
-		}
-
-		public void StopScreenMetricsListeners()
-		{
-			MainThread.BeginInvokeOnMainThread(() =>
-			{
-				var di = DisplayInformation.GetForCurrentView();
-
-				di.DpiChanged -= OnDisplayInformationChanged;
-				di.OrientationChanged -= OnDisplayInformationChanged;
-			});
-		}
-
-		void OnDisplayInformationChanged(DisplayInformation di, object args)
-		{
-			var metrics = GetMainDisplayInfo(di);
-			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(metrics));
-		}
-
-		DisplayOrientation CalculateOrientation(DisplayInformation di)
-		{
-			switch (di.CurrentOrientation)
-			{
-				case DisplayOrientations.Landscape:
-				case DisplayOrientations.LandscapeFlipped:
-					return DisplayOrientation.Landscape;
-				case DisplayOrientations.Portrait:
-				case DisplayOrientations.PortraitFlipped:
-					return DisplayOrientation.Portrait;
-			}
-
-			return DisplayOrientation.Unknown;
-		}
-
-		static DisplayRotation CalculateRotation(DisplayInformation di)
-		{
-			var native = di.NativeOrientation;
-			var current = di.CurrentOrientation;
-
-			return CalculateRotation(native, current);
-		}
-	}
-#endif
 	}
 }

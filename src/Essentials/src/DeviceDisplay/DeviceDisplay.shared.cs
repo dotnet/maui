@@ -1,127 +1,17 @@
 #nullable enable
 using System;
-using System.ComponentModel;
-using Microsoft.Maui.Devices;
 
-namespace Microsoft.Maui.Essentials
-{
-	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceDisplay']/Docs" />
-	public static partial class DeviceDisplay
-	{
-#if WINDOWS
-		internal const float BaseLogicalDpi = 96.0f;
-#elif ANDROID
-		internal const float BaseLogicalDpi = 160.0f;
-#endif
-
-		static readonly object locker = new object();
-		static IDeviceDisplay currentImplementation;
-
-		static DeviceDisplay()
-		{
-			currentImplementation = new DeviceDisplayImplementation();
-			currentImplementation.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
-		}
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='Current']/Docs" />
-		public static IDeviceDisplay Current => currentImplementation;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='SetCurrent']/Docs" />
-		internal static void SetCurrent(IDeviceDisplay? implementation)
-		{
-			lock (locker)
-			{
-				if (currentImplementation == implementation)
-					return;
-
-				var newImplementation = implementation ?? new DeviceDisplayImplementation();
-
-				var oldImplementation = currentImplementation;
-				currentImplementation = newImplementation;
-
-				if (oldImplementation is not null)
-				{
-					oldImplementation.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
-
-					var wasAlwaysOn = oldImplementation.KeepScreenOn;
-					if (wasAlwaysOn)
-					{
-						oldImplementation.KeepScreenOn = false;
-						newImplementation.KeepScreenOn = true;
-					}
-
-					var wasRunning = MainDisplayInfoChangedInternal != null;
-					if (wasRunning)
-					{
-						oldImplementation.StopScreenMetricsListeners();
-						newImplementation.StartScreenMetricsListeners();
-					}
-				}
-
-				newImplementation.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
-
-				SetCurrent(newImplementation.GetMainDisplayInfo());
-			}
-		}
-
-		static event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChangedInternal;
-
-		static DisplayInfo currentMetrics;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='KeepScreenOn']/Docs" />
-		public static bool KeepScreenOn
-		{
-			get => Current.KeepScreenOn;
-			set => Current.KeepScreenOn = value;
-		}
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='MainDisplayInfo']/Docs" />
-		public static DisplayInfo MainDisplayInfo => Current.GetMainDisplayInfo();
-
-		static void SetCurrent(DisplayInfo metrics) =>
-			currentMetrics = new DisplayInfo(metrics.Width, metrics.Height, metrics.Density, metrics.Orientation, metrics.Rotation, metrics.RefreshRate);
-
-		public static event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged
-		{
-			add
-			{
-				var wasRunning = MainDisplayInfoChangedInternal != null;
-
-				MainDisplayInfoChangedInternal += value;
-
-				if (!wasRunning && MainDisplayInfoChangedInternal != null)
-				{
-					SetCurrent(Current.GetMainDisplayInfo());
-					Current.StartScreenMetricsListeners();
-				}
-			}
-
-			remove
-			{
-				var wasRunning = MainDisplayInfoChangedInternal != null;
-
-				MainDisplayInfoChangedInternal -= value;
-
-				if (wasRunning && MainDisplayInfoChangedInternal == null)
-					Current.StopScreenMetricsListeners();
-			}
-		}
-
-		static void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e) =>
-			OnMainDisplayInfoChanged(e);
-
-		static void OnMainDisplayInfoChanged(DisplayInfoChangedEventArgs e)
-		{
-			if (!currentMetrics.Equals(e.DisplayInfo))
-			{
-				SetCurrent(e.DisplayInfo);
-				MainDisplayInfoChangedInternal?.Invoke(null, e);
-			}
-		}
-	}
-}
 namespace Microsoft.Maui.Devices
 {
+	public interface IDeviceDisplay
+	{
+		bool KeepScreenOn { get; set; }
+
+		DisplayInfo MainDisplayInfo { get; }
+
+		event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged;
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DisplayInfoChangedEventArgs']/Docs" />
 	public class DisplayInfoChangedEventArgs : EventArgs
 	{
@@ -133,16 +23,72 @@ namespace Microsoft.Maui.Devices
 		public DisplayInfo DisplayInfo { get; }
 	}
 
-	public interface IDeviceDisplay
+	public static class DeviceDisplay
 	{
-		bool KeepScreenOn { get; set; }
+#if WINDOWS
+		internal const float BaseLogicalDpi = 96.0f;
+#elif ANDROID
+		internal const float BaseLogicalDpi = 160.0f;
+#endif
 
-		void StartScreenMetricsListeners();
+		static IDeviceDisplay? currentImplementation;
 
-		void StopScreenMetricsListeners();
+		public static IDeviceDisplay Current =>
+			currentImplementation ?? new DeviceDisplayImplementation();
 
-		DisplayInfo GetMainDisplayInfo();
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='SetCurrent']/Docs" />
+		internal static void SetCurrent(IDeviceDisplay? implementation) =>
+			currentImplementation = implementation;
+	}
 
-		event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged;
+	partial class DeviceDisplayImplementation : IDeviceDisplay
+	{
+		event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChangedInternal;
+
+		DisplayInfo currentMetrics;
+
+		public DisplayInfo MainDisplayInfo => GetMainDisplayInfo();
+
+		public event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged
+		{
+			add
+			{
+				if (MainDisplayInfoChangedInternal is null)
+				{
+					SetCurrent(MainDisplayInfo);
+					StartScreenMetricsListeners();
+				}
+				MainDisplayInfoChangedInternal += value;
+			}
+			remove
+			{
+				MainDisplayInfoChangedInternal -= value;
+				if (MainDisplayInfoChangedInternal is null)
+					StopScreenMetricsListeners();
+			}
+		}
+
+		void SetCurrent(DisplayInfo metrics) =>
+			currentMetrics = new DisplayInfo(
+				metrics.Width, metrics.Height,
+				metrics.Density,
+				metrics.Orientation,
+				metrics.Rotation,
+				metrics.RefreshRate);
+
+		void OnMainDisplayInfoChanged(DisplayInfoChangedEventArgs e)
+		{
+			if (!currentMetrics.Equals(e.DisplayInfo))
+			{
+				SetCurrent(e.DisplayInfo);
+				MainDisplayInfoChangedInternal?.Invoke(null, e);
+			}
+		}
+
+		void OnMainDisplayInfoChanged()
+		{
+			var metrics = GetMainDisplayInfo();
+			OnMainDisplayInfoChanged(new DisplayInfoChangedEventArgs(metrics));
+		}
 	}
 }

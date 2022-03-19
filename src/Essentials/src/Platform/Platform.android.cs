@@ -17,19 +17,15 @@ using Microsoft.Maui.Storage;
 using AndroidIntent = Android.Content.Intent;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Platform
+	static partial class Platform
 	{
 		static ActivityLifecycleContextListener lifecycleListener;
-
-		public static Context AppContext => Application.Context;
 
 		public static Activity CurrentActivity => lifecycleListener?.Activity;
 
 		public static event EventHandler<ActivityStateChangedEventArgs> ActivityStateChanged;
-
-		internal const string EssentialsConnectivityChanged = "com.maui.essentials.ESSENTIALS_CONNECTIVITY_CHANGED";
 
 		internal const int requestCodeFilePicker = 11001;
 		internal const int requestCodeMediaPicker = 11002;

@@ -9,8 +9,6 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentialssss/AppActions.xml" path="Type[@FullName='Microsoft.Maui.Essentialssss.AppActions']/Docs" />
 	public static partial class AppActions
 	{
-		static event EventHandler<AppActionEventArgs>? OnAppActionInternal;
-
 		/// <include file="../../docs/Microsoft.Maui.Essentialssss/AppActions.xml" path="//Member[@MemberName='GetAsync']/Docs" />
 		public static Task<IEnumerable<AppAction>> GetAsync()
 			=> Current.GetAsync();
@@ -23,26 +21,12 @@ namespace Microsoft.Maui.Essentials
 		public static Task SetAsync(IEnumerable<AppAction> actions)
 			=> Current.SetAsync(actions);
 
+		/// <include file="../../docs/Microsoft.Maui.Essentialssss/AppActions.xml" path="//Member[@MemberName='OnAppAction'][2]/Docs" />
 		public static event EventHandler<AppActionEventArgs>? OnAppAction
 		{
-			add
-			{
-				if (OnAppActionInternal == null)
-					Current.AppActionActivated += OnAppActionActivated;
-
-				OnAppActionInternal += value;
-			}
-			remove
-			{
-				OnAppActionInternal -= value;
-
-				if (OnAppActionInternal == null)
-					Current.AppActionActivated -= OnAppActionActivated;
-			}
+			add => Current.AppActionActivated += value;
+			remove => Current.AppActionActivated -= value;
 		}
-
-		static void OnAppActionActivated(object? sender, AppActionEventArgs e) =>
-			OnAppActionInternal?.Invoke(sender, e);
 
 		static IAppActions Current => ApplicationModel.AppActions.Current;
 	}

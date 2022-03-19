@@ -1,7 +1,7 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 #if !NETSTANDARD
-    public static partial class Platform
+    static partial class Platform
     {
     }
 #endif

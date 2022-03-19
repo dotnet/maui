@@ -11,10 +11,10 @@ namespace Microsoft.Maui.Networking
 		public IEnumerable<ConnectionProfile> ConnectionProfiles =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void StartListeners() =>
+		void StartListeners() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void StopListeners() =>
+		void StopListeners() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

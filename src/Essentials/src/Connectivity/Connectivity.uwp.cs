@@ -7,14 +7,14 @@ namespace Microsoft.Maui.Networking
 {
 	partial class ConnectivityImplementation : IConnectivity
 	{
-		public void StartListeners() =>
-			 NetworkInformation.NetworkStatusChanged += NetworkStatusChanged;
+		void StartListeners() =>
+			NetworkInformation.NetworkStatusChanged += NetworkStatusChanged;
 
-		static void NetworkStatusChanged(object sender) =>
-			Connectivity.OnConnectivityChanged();
+		void StopListeners() =>
+			NetworkInformation.NetworkStatusChanged -= NetworkStatusChanged;
 
-		public void StopListeners() =>
-			 NetworkInformation.NetworkStatusChanged -= NetworkStatusChanged;
+		void NetworkStatusChanged(object sender) =>
+			OnConnectivityChanged();
 
 		public NetworkAccess NetworkAccess
 		{

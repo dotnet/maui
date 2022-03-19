@@ -10,9 +10,9 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Platform
+	static partial class Platform
 	{
 		const uint DISPLAY_CHANGED = 126;
 		const uint DPI_CHANGED = 736;

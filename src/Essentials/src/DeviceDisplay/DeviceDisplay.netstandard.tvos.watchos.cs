@@ -1,22 +1,15 @@
 #nullable enable
-using System;
 
 namespace Microsoft.Maui.Devices
 {
-	class DeviceDisplayImplementation : IDeviceDisplay
+	partial class DeviceDisplayImplementation : IDeviceDisplay
 	{
-		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged
-		{
-			add { }
-			remove { }
-		}
-
 		public bool KeepScreenOn { get => false; set { } }
 
-		public DisplayInfo GetMainDisplayInfo() => default;
+		DisplayInfo GetMainDisplayInfo() => default;
 
-		public void StartScreenMetricsListeners() { }
+		void StartScreenMetricsListeners() { }
 
-		public void StopScreenMetricsListeners() { }
+		void StopScreenMetricsListeners() { }
 	}
 }

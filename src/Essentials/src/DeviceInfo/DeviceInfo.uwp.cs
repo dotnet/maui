@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Devices
 						{
 							try
 							{
-								var currentHandle = Platform.CurrentWindowHandle;
+								var currentHandle = ApplicationModel.Platform.CurrentWindowHandle;
 								var settings = UIViewSettingsInterop.GetForWindow(currentHandle);
 								var uiMode = settings.UserInteractionMode;
 								currentIdiom = uiMode == UserInteractionMode.Mouse ? DeviceIdiom.Desktop : DeviceIdiom.Tablet;

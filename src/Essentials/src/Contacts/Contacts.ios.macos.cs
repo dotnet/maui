@@ -13,8 +13,8 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 	class ContactsImplementation : IContacts
 	{
 #if __MACOS__
-        static Task<Contact> PlatformPickContactAsync() => throw ExceptionUtils.NotSupportedOrImplementedException;
-
+		public Task<Contact> PickContactAsync() =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
 #elif __IOS__
 		public Task<Contact> PickContactAsync()
 		{
@@ -49,8 +49,8 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 			return source.Task;
 		}
-
 #endif
+
 		public Task<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			var keys = new[]

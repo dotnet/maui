@@ -10,9 +10,9 @@ using TizenGyroscope = Tizen.Sensor.Gyroscope;
 using TizenMagnetometer = Tizen.Sensor.Magnetometer;
 using TizenOrientationSensor = Tizen.Sensor.RotationVectorSensor;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Platform
+	static partial class Platform
 	{
 		static TizenAccelerometer accelerometer = null;
 		static TizenBarometer barometer = null;
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Essentials
 		public static string MapServiceToken { get; set; }
 	}
 
-	public enum SensorType
+	enum SensorType
 	{
 		Accelerometer,
 		Barometer,
