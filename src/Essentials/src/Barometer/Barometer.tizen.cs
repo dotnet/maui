@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Devices.Sensors
 {
 	class BarometerImplementation : IBarometer
 	{
-		bool PlatformIsSupported
+		public bool IsSupported
 			=> TizenBarometerSensor.IsSupported;
 
 		TizenBarometerSensor DefaultSensor

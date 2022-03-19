@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 		CMAltimeter altitudeManager;
 
-		bool PlatformIsSupported
+		public bool IsSupported
 			=> CMAltimeter.IsRelativeAltitudeAvailable;
 
 		void PlatformStart(SensorSpeed sensorSpeed)

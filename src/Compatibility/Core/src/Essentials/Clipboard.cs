@@ -8,10 +8,10 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Clipboard']/Docs" />
 	public static partial class Clipboard
 	{
-		static event EventHandler<EventArgs> ClipboardContentChangedInternal;
+		static event EventHandler<EventArgs>? ClipboardContentChangedInternal;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='SetTextAsync']/Docs" />
-		public static Task SetTextAsync(string text)
+		public static Task SetTextAsync(string? text)
 			=> Current.SetTextAsync(text ?? string.Empty);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='HasText']/Docs" />
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Essentials
 			=> Current.HasText;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='GetTextAsync']/Docs" />
-		public static Task<string> GetTextAsync()
+		public static Task<string?> GetTextAsync()
 			=> Current.GetTextAsync();
 
 		public static event EventHandler<EventArgs> ClipboardContentChanged
@@ -39,5 +39,8 @@ namespace Microsoft.Maui.Essentials
 		}
 
 		static IClipboard Current => ApplicationModel.DataTransfer.Clipboard.Default;
+
+		static void OnClipboardContentChanged(object? sender, EventArgs e) =>
+			ClipboardContentChangedInternal?.Invoke(sender, e);
 	}
 }

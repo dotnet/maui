@@ -9,40 +9,32 @@ namespace Microsoft.Maui.Devices.Sensors
 	partial class AccelerometerImplementation
 	{
 		static SensorManager? _sensorManager;
+		static Sensor? _accelerometer;
 
 		static SensorManager? SensorManager =>
 			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
 
-		public bool IsSupported =>
-			SensorManager?.GetDefaultSensor(SensorType.Accelerometer) != null;
+		static Sensor? Sensor =>
+			_accelerometer ??= SensorManager?.GetDefaultSensor(SensorType.Accelerometer);
 
-		AccelerometerListener? listener;
-		Sensor? accelerometer;
+		public bool IsSupported => Sensor is not null;
+
+		AccelerometerListener? _listener;
 
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			if (SensorManager is null)
-				return;
+			_listener = new AccelerometerListener(this);
 
-			accelerometer = SensorManager.GetDefaultSensor(SensorType.Accelerometer);
-			if (accelerometer is not null)
-			{
-				listener = new AccelerometerListener(this);
-
-				var delay = sensorSpeed.ToPlatform();
-				SensorManager.RegisterListener(listener, accelerometer, delay);
-			}
+			var delay = sensorSpeed.ToPlatform();
+			SensorManager!.RegisterListener(_listener, Sensor, delay);
 		}
 
 		void PlatformStop()
 		{
-			if (listener == null || accelerometer == null)
-				return;
+			SensorManager!.UnregisterListener(_listener, Sensor);
 
-			SensorManager?.UnregisterListener(listener, accelerometer);
-
-			listener.Dispose();
-			listener = null;
+			_listener!.Dispose();
+			_listener = null;
 		}
 	}
 
@@ -51,12 +43,12 @@ namespace Microsoft.Maui.Devices.Sensors
 		// acceleration due to gravity
 		const double gravity = 9.81;
 
-		AccelerometerImplementation _accelerometer;
-
-		internal AccelerometerListener(AccelerometerImplementation accelerometer)
+		public AccelerometerListener(Action<AccelerometerData> changeHandler)
 		{
-			_accelerometer = accelerometer;
+			ChangeHandler = changeHandler;
 		}
+
+		public readonly Action<AccelerometerData> ChangeHandler;
 
 		void ISensorEventListener.OnAccuracyChanged(Sensor? sensor, SensorStatus accuracy)
 		{
@@ -69,7 +61,7 @@ namespace Microsoft.Maui.Devices.Sensors
 				return;
 
 			var data = new AccelerometerData(values[0] / gravity, values[1] / gravity, values[2] / gravity);
-			_accelerometer.OnChanged(data);
+			ChangeHandler?.Invoke(data);
 		}
 	}
 }

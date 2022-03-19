@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void PlatformStop()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		bool PlatformIsSupported
+		public bool IsSupported
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

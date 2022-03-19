@@ -80,11 +80,8 @@ namespace Microsoft.Maui.Devices.Sensors
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 
 #pragma warning disable CS0067
-		public event EventHandler<BarometerChangedEventArgs> ReadingChanged;
+		public event EventHandler<BarometerChangedEventArgs>? ReadingChanged;
 #pragma warning restore CS0067
-
-		public bool IsSupported
-			=> PlatformIsSupported;
 
 		public bool IsMonitoring { get; private set; }
 

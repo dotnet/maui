@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		WinBarometer DefaultBarometer => WinBarometer.GetDefault();
 
-		bool PlatformIsSupported =>
+		public bool IsSupported =>
 			DefaultBarometer != null;
 
 		void PlatformStart(SensorSpeed sensorSpeed)

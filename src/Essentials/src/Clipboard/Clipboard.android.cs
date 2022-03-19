@@ -34,10 +34,10 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		public Task<string?> GetTextAsync() =>
 			Task.FromResult(ClipboardManager?.PrimaryClip?.GetItemAt(0)?.Text);
 
-		public void StartClipboardListeners()
+		void StartClipboardListeners()
 			=> ClipboardManager?.AddPrimaryClipChangedListener(ClipboardListener);
 
-		public void StopClipboardListeners()
+		void StopClipboardListeners()
 			=> ClipboardManager?.RemovePrimaryClipChangedListener(ClipboardListener);
 	}
 
