@@ -19,7 +19,7 @@
     <MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion>6.0.4</MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
-    <MicrosoftWindowsAppSDKPackageVersion>1.1.0-20220317.0-CI-experimental</MicrosoftWindowsAppSDKPackageVersion>
+    <MicrosoftWindowsAppSDKPackageVersion>1.1.0-20220318.0-CI-experimental</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftGraphicsWin2DPackageVersion>1.0.0.30</MicrosoftGraphicsWin2DPackageVersion>
     <!-- Everything else -->
     <MicrosoftAspNetCoreAppRuntimewinx64Version>6.0.2</MicrosoftAspNetCoreAppRuntimewinx64Version>

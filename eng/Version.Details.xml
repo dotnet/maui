@@ -32,9 +32,9 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>572aeedcfa16bdb619fafcecf5924e5c6b65b07b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK" Version="1.1.0-20220317.0-CI-experimental">
+    <Dependency Name="Microsoft.WindowsAppSDK" Version="1.1.0-20220318.0-CI-experimental">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
-      <Sha>adb8068e1f60e1298e69aeff11be43ca554a7cbd</Sha>
+      <Sha>3be71a6133671e9403e228c424f6fd2f457007a3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="6.0.2" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
