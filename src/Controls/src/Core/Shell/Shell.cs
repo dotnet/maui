@@ -604,7 +604,20 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='Current']/Docs" />
-		public static Shell Current => Application.Current?.MainPage as Shell;
+		public static Shell Current
+		{
+			get
+			{
+				if (Application.Current == null)
+					return null;
+
+				foreach (var window in Application.Current.Windows)
+					if (window is Window && window.IsActivated && window.Page is Shell shell)
+						return shell;
+
+				return Application.Current?.MainPage as Shell;
+			}
+		}
 
 		internal ShellNavigationManager NavigationManager => _navigationManager;
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />

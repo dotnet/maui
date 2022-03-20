@@ -1432,7 +1432,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await testShell.CurrentSection.Navigation.PopAsync();
 			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
 		}
-		
+
+		[Test]
+		public void WindowTitleSetToShellTitle()
+		{
+			TestShell testShell = new TestShell(new ContentPage())
+			{
+				Title = "Shell Title"
+			};
+
+			Window window = new Window()
+			{
+				Page = testShell
+			};
+
+			Assert.AreEqual("Shell Title", (window as IWindow).Title);
+
+			window.Title = "Window Title";
+			Assert.AreEqual("Window Title", (window as IWindow).Title);
+
+			window.Title = null;
+			Assert.AreEqual("Shell Title", (window as IWindow).Title);
+		}
+
 		public void ShellToolbarNotVisibleWithBasicContentPage()
 		{
 			TestShell testShell = new TestShell(new ContentPage());
