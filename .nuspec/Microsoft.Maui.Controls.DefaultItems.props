@@ -18,5 +18,5 @@
     <MauiCss Include="**\*.css" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
   </ItemGroup>
 
-  <Import Project="Microsoft.Maui.Controls.SingleProject.AutoImport.props" />
+  <Import Project="Microsoft.Maui.Controls.SingleProject.props" />
 </Project>
