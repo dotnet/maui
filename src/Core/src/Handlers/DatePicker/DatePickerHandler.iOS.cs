@@ -115,8 +115,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateTextColor(datePicker);
+			handler.PlatformView?.UpdateTextColor(datePicker);
 		}
     
 		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)

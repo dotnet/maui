@@ -15,10 +15,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this UITextField textField, ITextStyle textStyle)
 		{
-			// Default value of color documented to be black in iOS docs
-
 			var textColor = textStyle.TextColor;
-			textField.TextColor = textColor.ToPlatform(ColorExtensions.LabelColor);
+			if (textColor != null)
+				textField.TextColor = textColor.ToPlatform(ColorExtensions.LabelColor);
 		}
 
 		public static void UpdateIsPassword(this UITextField textField, IEntry entry)
