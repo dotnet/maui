@@ -4,6 +4,7 @@ using Foundation;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class CarouselViewRenderer : ItemsViewRenderer<CarouselView, CarouselViewController>
 	{
 		CarouselView Carousel => Element;

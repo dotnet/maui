@@ -12,6 +12,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class TimePickerRenderer : TimePickerRendererBase<UITextField>
 	{
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class TimePickerRendererBase<TControl> : ViewRenderer<TimePicker, TControl>
 		where TControl : UITextField
 	{

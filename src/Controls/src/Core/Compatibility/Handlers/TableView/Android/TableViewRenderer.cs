@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Control.NestedScrollingEnabled = (Parent.GetParentOfType<NestedScrollView>() != null);
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (double.IsInfinity(heightConstraint))
 			{

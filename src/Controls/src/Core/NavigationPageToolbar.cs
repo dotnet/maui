@@ -108,19 +108,25 @@ namespace Microsoft.Maui.Controls
 			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
 
 			BarBackground = navigationPage.BarBackground;
-			if (!Brush.IsNullOrEmpty(navigationPage.BarBackground))
-				BarBackgroundColor = null;
-			else
-				BarBackgroundColor = navigationPage.BarBackgroundColor;
+			if (Brush.IsNullOrEmpty(navigationPage.BarBackground) &&
+				navigationPage.BarBackgroundColor != null)
+			{
+				BarBackground = new SolidColorBrush(navigationPage.BarBackgroundColor);
+			}
 
 #if WINDOWS
-			if (Brush.IsNullOrEmpty(BarBackground) && BarBackgroundColor == null)
+			if (Brush.IsNullOrEmpty(BarBackground))
 			{
-				BarBackgroundColor = navigationPage.CurrentPage.BackgroundColor ??
+				var backgroundColor = navigationPage.CurrentPage.BackgroundColor ??
 					navigationPage.BackgroundColor;
 
 				BarBackground = navigationPage.CurrentPage.Background ??
 					navigationPage.Background;
+
+				if (Brush.IsNullOrEmpty(BarBackground) && backgroundColor != null)
+				{
+					BarBackground = new SolidColorBrush(backgroundColor);
+				}
 			}
 #endif
 			BarTextColor = GetBarTextColor();
