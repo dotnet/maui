@@ -16,11 +16,12 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 2. Install the released 6.0.2xx SDK as well:  
    - https://dotnet.microsoft.com/en-us/download/dotnet/6.0
    > This is a known issue where we can't use rollback files from one SDK band in another. https://github.com/dotnet/sdk/issues/23402
-4. Clear your nuget cache:  
+3. Clear your nuget cache:  
    ```
    dotnet nuget locals all --clear
    ```
-   > NOTE: this is going to contain the "stable" versions of the packages, so you will have to clear the NuGet cache when this feed changes and when .NET ships. The various `darc-pub-dotnet-*` feeds are temporary and are generated on various builds. These feeds my disappear and be replaced with new ones as new builds come out. Make sure to verify that you are on the latest here and clear the nuget cache if it changes:  
+   > NOTE: this is going to contain the "stable" versions of the packages, so you will have to clear the NuGet cache when this feed changes and when .NET ships. The various `darc-pub-dotnet-*` feeds are temporary and are generated on various builds. These feeds my disappear and be replaced with new ones as new builds come out. Make sure to verify that you are on the latest here and clear the nuget cache if it changes.
+4. If you're on Windows install [SDK 20348](https://go.microsoft.com/fwlink/?linkid=2164145)
    
 
 ### .NET MAUI Workload
