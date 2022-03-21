@@ -128,8 +128,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return size;
 		}
 
-		public virtual Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
-			GetDesiredSize(this, widthConstraint, heightConstraint, MinimumSize());
+		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			var sizeRequest = GetDesiredSize(widthConstraint, heightConstraint);
+			var minSize = sizeRequest.Minimum;
+			var size = sizeRequest.Request;
+
+			if (size.Height < minSize.Height || size.Width < minSize.Width)
+			{
+				return new Size(
+						size.Width < minSize.Width ? minSize.Width : size.Width,
+						size.Height < minSize.Height ? minSize.Height : size.Height
+					);
+			}
+
+			return size;
+		}
+
+		public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			var minSize = MinimumSize();
+			var size = GetDesiredSize(this, widthConstraint, heightConstraint, minSize);
+			return new SizeRequest(size, minSize);
+		}
 
 		protected virtual Size MinimumSize()
 		{

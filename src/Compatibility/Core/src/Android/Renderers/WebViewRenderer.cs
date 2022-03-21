@@ -14,6 +14,7 @@ using MixedContentHandling = Android.Webkit.MixedContentHandling;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class WebViewRenderer : ViewRenderer<WebView, AWebView>, IWebViewDelegate
 	{
 		public const string AssetBaseUrl = "file:///android_asset/";
