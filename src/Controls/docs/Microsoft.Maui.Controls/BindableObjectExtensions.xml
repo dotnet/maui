@@ -220,11 +220,11 @@ Debug.WriteLine (label.Text); // prints "John Doe"
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="SetOnAppTheme&lt;T&gt;">
-      <MemberSignature Language="C#" Value="public static void SetOnAppTheme&lt;T&gt; (this Microsoft.Maui.Controls.BindableObject self, Microsoft.Maui.Controls.BindableProperty targetProperty, T light, T dark);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetOnAppTheme&lt;T&gt;(class Microsoft.Maui.Controls.BindableObject self, class Microsoft.Maui.Controls.BindableProperty targetProperty, !!T light, !!T dark) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.BindableObjectExtensions.SetOnAppTheme``1(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.BindableProperty,``0,``0)" />
-      <MemberSignature Language="F#" Value="static member SetOnAppTheme : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.BindableProperty * 'T * 'T -&gt; unit" Usage="Microsoft.Maui.Controls.BindableObjectExtensions.SetOnAppTheme (self, targetProperty, light, dark)" />
+    <Member MemberName="SetAppTheme&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public static void SetAppTheme&lt;T&gt; (this Microsoft.Maui.Controls.BindableObject self, Microsoft.Maui.Controls.BindableProperty targetProperty, T light, T dark);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetAppTheme&lt;T&gt;(class Microsoft.Maui.Controls.BindableObject self, class Microsoft.Maui.Controls.BindableProperty targetProperty, !!T light, !!T dark) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.BindableObjectExtensions.SetAppTheme``1(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.BindableProperty,``0,``0)" />
+      <MemberSignature Language="F#" Value="static member SetAppTheme : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.BindableProperty * 'T * 'T -&gt; unit" Usage="Microsoft.Maui.Controls.BindableObjectExtensions.SetAppTheme (self, targetProperty, light, dark)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
