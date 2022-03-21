@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Platform
 			slider.UpdateThumbStyle();
 		}
 
-		private void UpdateThumbStyle()
+		void UpdateThumbStyle()
 		{
 			if (_thumb == null)
 			{
