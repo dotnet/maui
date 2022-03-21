@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			=> enableActions.Contains(action.Name);
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PickerRenderer : PickerRendererBase<UITextField>
 	{
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
@@ -44,6 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class PickerRendererBase<TControl> : ViewRenderer<Picker, TControl>
 		where TControl : UITextField
 	{

@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	using Microsoft.Maui.Essentials;
 	using Microsoft.Maui.Graphics;
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class FlyoutPageRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener, IManageFragments, ILifeCycleState
 	{
 		#region Statics

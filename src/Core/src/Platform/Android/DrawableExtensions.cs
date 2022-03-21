@@ -59,24 +59,13 @@ namespace Microsoft.Maui.Platform
 				drawable.SetColorFilter(colorFilter);
 		}
 
-
-		public static void SetColorFilter(this ADrawable drawable, Graphics.Color color, FilterMode mode, AColorFilter? defaultColorFilter)
-		{
-			if (drawable == null)
-				return;
-
-			if (color == null)
-				SetColorFilter(drawable, defaultColorFilter);
-			else
-				drawable.SetColorFilter(color.ToPlatform(), mode);
-		}
-
 		public static void SetColorFilter(this ADrawable drawable, Graphics.Color color, FilterMode mode)
 		{
 			if (drawable == null)
 				return;
 
-			drawable.SetColorFilter(color.ToPlatform(), mode);
+			if (color != null)
+				drawable.SetColorFilter(color.ToPlatform(), mode);
 		}
 
 		public static void SetColorFilter(this ADrawable drawable, AColor color, FilterMode mode)

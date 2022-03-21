@@ -176,11 +176,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			catch (OperationCanceledException)
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				Application.Current?.FindMauiContext()?.CreateLogger<ImageRenderer>()?.LogWarning("Image load cancelled");
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 			catch (Exception ex)
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				Application.Current?.FindMauiContext()?.CreateLogger<ImageRenderer>()?.LogWarning(ex, "Image load failed");
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			return null;
@@ -376,7 +380,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		static int IdFromTitle(string title, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] Type resourceType, string defType, Resources resource)
 		{
+#pragma warning disable CS0612 // Type or member is obsolete
 			return IdFromTitle(title, resourceType, defType, resource, Platform.GetPackageName());
+#pragma warning disable CS0612 // Type or member is obsolete
 		}
 
 		static int IdFromTitle(string title, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] Type resourceType, string defType, Context context)

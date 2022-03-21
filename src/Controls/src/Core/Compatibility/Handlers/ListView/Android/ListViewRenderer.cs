@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateVerticalScrollBarVisibility();
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (double.IsInfinity(heightConstraint))
 			{

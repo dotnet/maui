@@ -25,12 +25,8 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			Color placeholderColor = searchBar.PlaceholderColor;
-
-			BrushHelpers.UpdateColor(placeholderColor, ref defaultPlaceholderColorBrush,
-				() => queryTextBox.PlaceholderForegroundBrush, brush => queryTextBox.PlaceholderForegroundBrush = brush);
-
-			BrushHelpers.UpdateColor(placeholderColor, ref defaultPlaceholderColorFocusBrush,
-				() => queryTextBox.PlaceholderForegroundFocusBrush, brush => queryTextBox.PlaceholderForegroundFocusBrush = brush);
+			if (placeholderColor != null)
+				queryTextBox.PlaceholderForegroundBrush = queryTextBox.PlaceholderForegroundFocusBrush = placeholderColor.ToPlatform();
 		}
 
 		public static void UpdateText(this AutoSuggestBox platformControl, ISearchBar searchBar)
@@ -47,12 +43,8 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			Color textColor = searchBar.TextColor;
-
-			BrushHelpers.UpdateColor(textColor, ref defaultTextColorBrush,
-				() => queryTextBox.Foreground, brush => queryTextBox.Foreground = brush);
-
-			BrushHelpers.UpdateColor(textColor, ref defaultTextColorFocusBrush,
-				() => queryTextBox.ForegroundFocusBrush, brush => queryTextBox.ForegroundFocusBrush = brush);
+			if (textColor != null)
+				queryTextBox.Foreground = queryTextBox.ForegroundFocusBrush = textColor.ToPlatform();
 		}
 
 		public static void UpdateFont(this AutoSuggestBox platformControl, ISearchBar searchBar, IFontManager fontManager) =>
@@ -103,7 +95,7 @@ namespace Microsoft.Maui.Platform
 
 			queryTextBox.IsReadOnly = searchBar.IsReadOnly;
 		}
-		
+
 		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
@@ -121,21 +113,12 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			Color cancelColor = searchBar.CancelButtonColor;
-
-			BrushHelpers.UpdateColor(cancelColor, ref defaultDeleteButtonForegroundColorBrush,
-				() => cancelButton.ForegroundBrush, brush => cancelButton.ForegroundBrush = brush);
-
-			if (cancelColor == null)
+			if (cancelColor != null)
 			{
-				BrushHelpers.UpdateColor(null, ref defaultDeleteButtonBackgroundColorBrush,
-					() => cancelButton.BackgroundBrush, brush => cancelButton.BackgroundBrush = brush);
-			}
-			else
-			{
+				cancelButton.ForegroundBrush = cancelColor.ToPlatform();
 				// Determine whether the background should be black or white (in order to make the foreground color visible) 
 				var bcolor = cancelColor.ToWindowsColor().GetContrastingColor().ToColor();
-				BrushHelpers.UpdateColor(bcolor, ref defaultDeleteButtonBackgroundColorBrush,
-					() => cancelButton.BackgroundBrush, brush => cancelButton.BackgroundBrush = brush);
+				cancelButton.BackgroundBrush = bcolor.ToPlatform();
 			}
 		}
 	}

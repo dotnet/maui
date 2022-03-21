@@ -63,12 +63,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 		protected IVisualElementRenderer GetRenderer(VisualElement element)
 		{
+#pragma warning disable CS0612 // Type or member is obsolete
 			return Platform.CreateRenderer(element);
+#pragma warning restore CS0612 // Type or member is obsolete
 		}
 
 		protected async Task<IVisualElementRenderer> GetRendererAsync(VisualElement element)
 		{
+#pragma warning disable CS0612 // Type or member is obsolete
 			return await element.Dispatcher.DispatchAsync(() => Platform.CreateRenderer(element));
+#pragma warning restore CS0612 // Type or member is obsolete
 		}
 
 		protected UIView GetNativeControl(VisualElement visualElement)
@@ -81,7 +85,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UILabel GetNativeControl(Label label)
 		{
 			var renderer = GetRenderer(label);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as LabelRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
@@ -110,7 +118,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UITextField GetNativeControl(Entry entry)
 		{
 			var renderer = GetRenderer(entry);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as EntryRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
@@ -128,7 +140,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UITextView GetNativeControl(Editor editor)
 		{
 			var renderer = GetRenderer(editor);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as EditorRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
@@ -146,7 +162,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UIButton GetNativeControl(Button button)
 		{
 			var renderer = GetRenderer(button);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as ButtonRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
@@ -164,7 +184,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UIButton GetNativeControl(ImageButton button)
 		{
 			var renderer = GetRenderer(button);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as ImageButtonRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
@@ -182,14 +206,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UITextField GetNativeControl(DatePicker datePicker)
 		{
 			var renderer = GetRenderer(datePicker);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as DatePickerRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
 		protected UIDatePicker GetPickerControl(DatePicker datePicker)
 		{
 			var renderer = GetRenderer(datePicker);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as DatePickerRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Picker;
 		}
 
@@ -218,14 +250,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UITextField GetNativeControl(TimePicker timePicker)
 		{
 			var renderer = GetRenderer(timePicker);
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as TimePickerRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
 		protected UIDatePicker GetPickerControl(TimePicker timePicker)
 		{
 			var renderer = GetRenderer(timePicker);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as TimePickerRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Picker;
 		}
 

@@ -14,14 +14,14 @@ namespace Microsoft.Maui.Controls
 		Color _iconColor;
 		Color _barTextColor;
 		Brush _barBackground;
-		Color _barBackgroundColor;
 		ImageSource _titleIcon;
 		string _backButtonTitle;
 		double? _barHeight;
 		IEnumerable<ToolbarItem> _toolbarItems;
 		bool _dynamicOverflowEnabled;
-		bool _isVisible = false;
+		bool _isVisible;
 		bool _backButtonVisible;
+		bool _backButtonEnabled = true;
 		bool _drawerToggleVisible;
 
 		public Toolbar(Maui.IElement parent)
@@ -33,7 +33,6 @@ namespace Microsoft.Maui.Controls
 		public double? BarHeight { get => _barHeight; set => SetProperty(ref _barHeight, value); }
 		public string BackButtonTitle { get => _backButtonTitle; set => SetProperty(ref _backButtonTitle, value); }
 		public ImageSource TitleIcon { get => _titleIcon; set => SetProperty(ref _titleIcon, value); }
-		public Color BarBackgroundColor { get => _barBackgroundColor; set => SetProperty(ref _barBackgroundColor, value); }
 		public Brush BarBackground { get => _barBackground; set => SetProperty(ref _barBackground, value); }
 		public virtual Color BarTextColor { get => _barTextColor; set => SetProperty(ref _barTextColor, value); }
 		public virtual Color IconColor { get => _iconColor; set => SetProperty(ref _iconColor, value); }
@@ -41,6 +40,7 @@ namespace Microsoft.Maui.Controls
 		public virtual VisualElement TitleView { get => _titleView; set => SetProperty(ref _titleView, value); }
 		public bool DynamicOverflowEnabled { get => _dynamicOverflowEnabled; set => SetProperty(ref _dynamicOverflowEnabled, value); }
 		public bool BackButtonVisible { get => _backButtonVisible; set => SetProperty(ref _backButtonVisible, value); }
+		public bool BackButtonEnabled { get => _backButtonEnabled; set => SetProperty(ref _backButtonEnabled, value); }
 		public virtual bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
 		public bool IsVisible { get => _isVisible; set => SetProperty(ref _isVisible, value); }
 		public IElementHandler Handler { get; set; }
