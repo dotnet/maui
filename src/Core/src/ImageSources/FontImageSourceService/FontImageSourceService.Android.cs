@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 {
 	public partial class FontImageSourceService
 	{
-		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult?> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			var fontImageSource = (IFontImageSource)imageSource;
 			if (!fontImageSource.IsEmpty)
@@ -34,11 +34,7 @@ namespace Microsoft.Maui
 						textSize,
 						callback);
 
-					var result = await callback.Result.ConfigureAwait(false);
-					if (!result.Value)
-						throw new ApplicationException($"Unable to generate font image '{fontImageSource.Glyph}'.");
-
-					return result;
+					return callback.Result;
 				}
 				catch (Exception ex)
 				{
@@ -46,10 +42,10 @@ namespace Microsoft.Maui
 					throw;
 				}
 			}
-			return new ImageSourceServiceResult(false);
+			return Task.FromResult<IImageSourceServiceResult?>(null);
 		}
 
-		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable?> callback, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(Context context, IImageSource imageSource, CancellationToken cancellationToken = default)
 		{
 			var fontImageSource = (IFontImageSource)imageSource;
 			if (!fontImageSource.IsEmpty)
@@ -62,7 +58,7 @@ namespace Microsoft.Maui
 
 				try
 				{
-					var drawableCallback = new ImageLoaderCallback(callback);
+					var drawableCallback = new ImageLoaderResultCallback();
 
 					PlatformInterop.LoadImageFromFont(
 						context,
@@ -72,11 +68,7 @@ namespace Microsoft.Maui
 						textSize,
 						drawableCallback);
 
-					var result = await drawableCallback.Result.ConfigureAwait(false);
-					if (!result.Value)
-						throw new ApplicationException($"Unable to generate font image '{fontImageSource.Glyph}'.");
-
-					return result;
+					return drawableCallback.Result;
 				}
 				catch (Exception ex)
 				{
@@ -84,7 +76,7 @@ namespace Microsoft.Maui
 					throw;
 				}
 			}
-			return new ImageSourceServiceResult(false);
+			return Task.FromResult<IImageSourceServiceResult<Drawable>?>(null);
 		}
 	}
 }

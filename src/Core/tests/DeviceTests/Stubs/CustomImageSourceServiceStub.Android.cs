@@ -15,10 +15,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			_cache = cache;
 		}
 
-		public Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is not ICustomImageSourceStub imageSourceStub)
-				return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(false));
+				return Task.FromResult<IImageSourceServiceResult>(new ImageSourceServiceLoadResult());
 
 			var color = imageSourceStub.Color;
 
@@ -26,25 +26,23 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 			imageView.SetImageDrawable(drawable);
 
-			var result = new ImageSourceServiceResult(drawable is not null, () => _cache.Return(color));
+			var result = new ImageSourceServiceLoadResult(() => _cache.Return(color));
 
-			return Task.FromResult<IImageSourceServiceResult<bool>>(result);
+			return Task.FromResult<IImageSourceServiceResult>(result);
 		}
 
-		public Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable> callback, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(Context context, IImageSource imageSource, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is not ICustomImageSourceStub imageSourceStub)
-				return Task.FromResult<IImageSourceServiceResult<bool>>(new ImageSourceServiceResult(false));
+				return Task.FromResult<IImageSourceServiceResult<Drawable>>(null);
 
 			var color = imageSourceStub.Color;
 
 			var drawable = _cache.Get(color);
 
-			callback?.Invoke(drawable);
+			var result = new ImageSourceServiceResult(drawable, () => _cache.Return(color));
 
-			var result = new ImageSourceServiceResult(drawable is not null, () => _cache.Return(color));
-
-			return Task.FromResult<IImageSourceServiceResult<bool>>(result);
+			return Task.FromResult<IImageSourceServiceResult<Drawable>>(result);
 		}
 	}
 }

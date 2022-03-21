@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class ImageSourcePartExtensions
 	{
-		public static async Task<IImageSourceServiceResult<bool>?> UpdateSourceAsync(
+		public static async Task<IImageSourceServiceResult?> UpdateSourceAsync(
 			this IImageSourcePart image,
 			View destinationContext,
 			IImageSourceServiceProvider services,
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Platform
 				var service = services.GetRequiredImageSourceService(imageSource);
 
 				var applied = false;
-				IImageSourceServiceResult<bool> result;
+				IImageSourceServiceResult? result;
 
 				if (destinationImageView is not null)
 				{
@@ -48,10 +48,12 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					result = await service.LoadDrawableAsync(context, imageSource, setImage, cancellationToken);
+					result = await service.GetDrawableAsync(context, imageSource, cancellationToken);
+					if (setImage is not null && result is IImageSourceServiceResult<Drawable> drawableResult)
+						setImage.Invoke(drawableResult.Value);
 				}
 
-				applied = result is not null && result.Value && !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
+				applied = result is not null && !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
 
 				events?.LoadingCompleted(applied);
 

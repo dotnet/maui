@@ -100,15 +100,13 @@ namespace Microsoft.Maui.Controls.Platform
 			var services = context.Services;
 			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 			var imageSourceService = provider.GetRequiredImageSourceService(source);
-			
-			await imageSourceService.LoadDrawableAsync(
+
+			var result = await imageSourceService.GetDrawableAsync(
 				context.Context,
-				source,
-				d =>
-				{
-					menuItem.SetIcon(d);
-					d.Dispose();
-				});
+				source);
+
+			if (result is not null)
+				menuItem?.SetIcon(result.Value);
 		}
 
 

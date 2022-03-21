@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 {
 	public partial class StreamImageSourceService
 	{
-		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult?> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			var streamImageSource = (IStreamImageSource)imageSource;
 
@@ -23,16 +23,13 @@ namespace Microsoft.Maui
 				{
 					stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 					
-					var callback = new ImageLoaderCallback(drawable =>
-					{
-						stream?.Dispose();
-					});
+					var callback = new ImageLoaderCallback();
 
 					PlatformInterop.LoadImageFromStream(imageView, stream, callback);
 
-					var result = await callback.Result.ConfigureAwait(false);
-					if (!result.Value)
-						throw new ApplicationException($"Unable to load image stream.");
+					var result = await callback.Result;
+
+					stream?.Dispose();
 
 					return result;
 				}
@@ -48,10 +45,10 @@ namespace Microsoft.Maui
 				}
 			}
 
-			return new ImageSourceServiceResult(false);
+			return null;
 		}
 
-		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable?> callback, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(Context context, IImageSource imageSource, CancellationToken cancellationToken = default)
 		{
 			var streamImageSource = (IStreamImageSource)imageSource;
 
@@ -63,17 +60,13 @@ namespace Microsoft.Maui
 				{
 					stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 
-					var drawableCallback = new ImageLoaderCallback(drawable =>
-					{
-						callback(drawable);
-						stream?.Dispose();
-					});
+					var drawableCallback = new ImageLoaderResultCallback();
 
 					PlatformInterop.LoadImageFromStream(context, stream, drawableCallback);
 
 					var result = await drawableCallback.Result.ConfigureAwait(false);
-					if (!result.Value)
-						throw new ApplicationException($"Unable to load image stream.");
+
+					stream?.Dispose();
 
 					return result;
 				}
@@ -89,7 +82,7 @@ namespace Microsoft.Maui
 				}
 			}
 
-			return new ImageSourceServiceResult(false);
+			return null;
 		}
 	}
 }

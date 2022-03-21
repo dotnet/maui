@@ -25,8 +25,9 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new FileImageSourceService();
 
 			// get an image
-			var result1 = await service.GetDrawableAsync(imageSource);
-			var bitmapDrawable1 = Assert.IsType<BitmapDrawable>(result1);
+			var result1 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var drawable1 = result1.Value;
+			var bitmapDrawable1 = Assert.IsType<BitmapDrawable>(drawable1);
 			var bitmap1 = bitmapDrawable1.Bitmap;
 
 			// try collect it
@@ -34,8 +35,9 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(collected);
 
 			// get the image again
-			var result2 = await service.GetDrawableAsync(imageSource);
-			var bitmapDrawable2 = Assert.IsType<BitmapDrawable>(result2);
+			var result2 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var drawable2 = result2.Value;
+			var bitmapDrawable2 = Assert.IsType<BitmapDrawable>(drawable2);
 			var bitmap2 = bitmapDrawable2.Bitmap;
 
 			// make sure it was NOT collected and we got the same image
@@ -54,7 +56,8 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new FileImageSourceService();
 
 			// get an image
-			var (result1, drawable1) = await service.GetDrawableResultAsync(imageSource);
+			var result1 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var drawable1 = result1.Value;
 			var bitmapDrawable1 = Assert.IsType<BitmapDrawable>(drawable1);
 			var bitmap1 = bitmapDrawable1.Bitmap;
 
@@ -66,7 +69,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(collected);
 
 			// get the image again
-			var (result2, drawable2) = await service.GetDrawableResultAsync(imageSource);
+			var result2 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var drawable2 = result2.Value;
 			var bitmapDrawable2 = Assert.IsType<BitmapDrawable>(drawable2);
 			var bitmap2 = bitmapDrawable2.Bitmap;
 
@@ -97,12 +101,12 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new CustomImageSourceServiceStub(cache);
 
 			// get an image
-			var result1 = await service.GetDrawableAsync(imageSource);
+			var result1 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			// get the image again
-			var result2 = await service.GetDrawableAsync(imageSource);
+			var result2 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(2, cache.Cache[imageSource.Color].Count);
 
@@ -122,7 +126,8 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new CustomImageSourceServiceStub(cache);
 
 			// get an image
-			var (result1, drawable1) = await service.GetDrawableResultAsync(imageSource);
+			var result1 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var drawable1 = result1.Value;
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
@@ -130,7 +135,8 @@ namespace Microsoft.Maui.DeviceTests
 			result1.Dispose();
 
 			// get the image again
-			var (result2, drawable2) = await service.GetDrawableResultAsync(imageSource);
+			var result2 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var drawable2 = result2.Value;
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
@@ -160,7 +166,8 @@ namespace Microsoft.Maui.DeviceTests
 						.SetDiskCacheStrategy(DiskCacheStrategy.None)
 						.Into(target);
 
-					await target.Result;
+					var loadedFromCache = await target.DidLoadFromCache.ConfigureAwait(false);
+					collected = !loadedFromCache;
 				}
 				catch (ExecutionException ex) when (ex.Cause is GlideException)
 				{
@@ -179,16 +186,16 @@ namespace Microsoft.Maui.DeviceTests
 
 		class CacheCheckTarget : Bumptech.Glide.Request.Target.CustomTarget
 		{
-			public Task Result
+			public Task<bool> DidLoadFromCache
 				=> tcsResult.Task;
 
-			TaskCompletionSource<object> tcsResult = new ();
+			TaskCompletionSource<bool> tcsResult = new ();
 
 			public override void OnLoadFailed(Drawable errorDrawable)
 			{
 				base.OnLoadFailed(errorDrawable);
 
-				tcsResult.TrySetException(new GlideException("Failed"));
+				tcsResult.SetResult(false);
 			}
 			public override void OnLoadCleared(Drawable p0)
 			{
@@ -196,8 +203,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			public override void OnResourceReady(Java.Lang.Object resource, ITransition transition)
 			{
-				resource.Dispose();
-				tcsResult.TrySetResult(null);
+				tcsResult.TrySetResult(true);
 			}
 		}
 	}

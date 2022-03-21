@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult?> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			var uriImageSource = (IUriImageSource)imageSource;
 			if (!uriImageSource.IsEmpty)
@@ -21,9 +21,7 @@ namespace Microsoft.Maui
 
 					PlatformInterop.LoadImageFromUri(imageView, uriImageSource.Uri.OriginalString, new Java.Lang.Boolean(uriImageSource.CachingEnabled), callback);
 
-					var result = await callback.Result.ConfigureAwait(false);
-					if (!result.Value)
-						throw new ApplicationException($"Unable to load image uri '{uriImageSource.Uri.OriginalString}'.");
+					return callback.Result;
 				}
 				catch (Exception ex)
 				{
@@ -32,23 +30,21 @@ namespace Microsoft.Maui
 				}
 			}
 
-			return new ImageSourceServiceResult(false);
+			return Task.FromResult<IImageSourceServiceResult?>(null);
 		}
 
-		public override async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable?> callback, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(Context context, IImageSource imageSource, CancellationToken cancellationToken = default)
 		{
 			var uriImageSource = (IUriImageSource)imageSource;
 			if (!uriImageSource.IsEmpty)
 			{
 				try
 				{
-					var drawableCallback = new ImageLoaderCallback(callback);
+					var drawableCallback = new ImageLoaderResultCallback();
 
 					PlatformInterop.LoadImageFromUri(context, uriImageSource.Uri.OriginalString, new Java.Lang.Boolean(uriImageSource.CachingEnabled), drawableCallback);
 
-					var result = await drawableCallback.Result.ConfigureAwait(false);
-					if (!result.Value)
-						throw new ApplicationException($"Unable to load image uri '{uriImageSource.Uri.OriginalString}'.");
+					return drawableCallback.Result;
 				}
 				catch (Exception ex)
 				{
@@ -57,7 +53,7 @@ namespace Microsoft.Maui
 				}
 			}
 
-			return new ImageSourceServiceResult(false);
+			return Task.FromResult<IImageSourceServiceResult<Drawable>?>(null);
 		}
 	}
 }

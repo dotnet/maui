@@ -70,7 +70,7 @@ namespace Microsoft.Maui.DeviceTests
 			var cache = new CustomImageCacheStub();
 			var image = await InvokeOnMainThreadAsync(() => cache.Get(Colors.Red));
 
-			var result = new ImageSourceServiceResult(image is not null, () => dispose++);
+			var result = new ImageSourceServiceResult(image, () => dispose++);
 
 			Assert.False(result.IsDisposed);
 			Assert.Equal(0, dispose);

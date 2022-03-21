@@ -8,10 +8,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class CountedImageSourceServiceStub
 	{
-		public async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is not ICountedImageSourceStub imageSourceStub)
-				return new Result(false, false, null);
+				return null;
 
 			try
 			{
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 				imageView.SetImageDrawable(drawable);
 
-				return new Result(drawable is not null, imageSourceStub.IsResolutionDependent, drawable);
+				return new ImageSourceServiceLoadResult(drawable.Dispose);
 			}
 			finally
 			{
@@ -38,10 +38,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			}
 		}
 
-		public async Task<IImageSourceServiceResult<bool>> LoadDrawableAsync(Context context, IImageSource imageSource, Action<Drawable> callback, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(Context context, IImageSource imageSource, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is not ICountedImageSourceStub imageSourceStub)
-				return new Result(false, false, null);
+				return null;
 
 			try
 			{
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					return new ColorDrawable(color);
 				}).ConfigureAwait(false);
 
-				return new Result(drawable is not null, imageSourceStub.IsResolutionDependent, drawable);
+				return new ImageSourceServiceResult(drawable, imageSourceStub.IsResolutionDependent, drawable.Dispose);
 			}
 			finally
 			{
@@ -68,8 +68,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		class Result : ImageSourceServiceResult
 		{
-			public Result(bool success, bool resolutionDependent, Drawable drawable)
-				: base(success, resolutionDependent, () => drawable?.Dispose())
+			public Result(Drawable image, bool resolutionDependent, Drawable drawable)
+				: base(image, resolutionDependent, () => drawable?.Dispose())
 			{
 			}
 		}

@@ -6,18 +6,55 @@ using Android.Graphics.Drawables;
 
 namespace Microsoft.Maui
 {
-	internal class ImageLoaderCallback : Java.Lang.Object, IImageLoaderCallback
+	internal class ImageLoaderResultCallback : Java.Lang.Object, IImageLoaderCallback
 	{
-		public ImageLoaderCallback(Action<Drawable?>? handler = default)
+		public ImageLoaderResultCallback(Action<Drawable?>? completeCallback = null)
 		{
-			_handler = handler;
+			CompleteCallback = completeCallback;
 		}
 
-		readonly Action<Drawable?>? _handler;
+		readonly TaskCompletionSource<IImageSourceServiceResult<Drawable>?> tcsResult = new();
 
-		readonly TaskCompletionSource<IImageSourceServiceResult<bool>> tcsResult = new();
+		public Task<IImageSourceServiceResult<Drawable>?> Result
+			=> tcsResult.Task;
 
-		public Task<IImageSourceServiceResult<bool>> Result
+		public readonly Action<Drawable?>? CompleteCallback;
+
+		public void OnComplete(Java.Lang.Boolean? success, Drawable? drawable, Java.Lang.IRunnable? dispose)
+		{
+			try
+			{
+				var s = success?.BooleanValue() ?? false;
+
+				Action? disposeWrapper = null;
+				if (dispose != null)
+				{
+					disposeWrapper = () =>
+					{
+						dispose.Run();
+					};
+				}
+
+				if (s && drawable is not null)
+					tcsResult.SetResult(new ImageSourceServiceResult(drawable!, disposeWrapper));
+			}
+			catch
+			{
+			}
+
+			tcsResult.SetResult(null);
+		}
+	}
+
+	internal class ImageLoaderCallback : Java.Lang.Object, IImageLoaderCallback
+	{
+		public ImageLoaderCallback()
+		{
+		}
+
+		readonly TaskCompletionSource<IImageSourceServiceResult?> tcsResult = new();
+
+		public Task<IImageSourceServiceResult?> Result
 			=> tcsResult.Task;
 
 		public void OnComplete(Java.Lang.Boolean? success, Drawable? drawable, Java.Lang.IRunnable? dispose)
@@ -26,18 +63,23 @@ namespace Microsoft.Maui
 			{
 				var s = success?.BooleanValue() ?? false;
 
-				_handler?.Invoke(drawable);
-
 				Action? disposeWrapper = null;
 				if (dispose != null)
-					disposeWrapper = dispose.Run;
+				{
+					disposeWrapper = () =>
+					{
+						dispose.Run();
+					};
+				}
 
-				tcsResult.SetResult(new ImageSourceServiceResult(s, disposeWrapper));
+				if (s)
+					tcsResult.SetResult(new ImageSourceServiceLoadResult(disposeWrapper));
 			}
 			catch
 			{
-				tcsResult.SetResult(new ImageSourceServiceResult(false));
 			}
+
+			tcsResult.SetResult(null);
 		}
 	}
 }
