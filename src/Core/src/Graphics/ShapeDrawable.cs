@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Graphics
+﻿using System.Numerics;
+
+namespace Microsoft.Maui.Graphics
 {
 	public class ShapeDrawable : IDrawable
 	{
@@ -9,12 +11,27 @@
 
 		public ShapeDrawable(IShapeView? shape)
 		{
+			UpdateShapeView(shape);
+		}
+
+		internal IShapeView? ShapeView { get; set; }
+		internal WindingMode WindingMode { get; set; }
+		internal Matrix3x2? RenderTransform { get; set; }
+
+		public void UpdateShapeView(IShapeView? shape)
+		{
 			ShapeView = shape;
 		}
 
-		public IShapeView? ShapeView { get; set; }
+		public void UpdateWindingMode(WindingMode windingMode)
+		{
+			WindingMode = windingMode;
+		}
 
-		public WindingMode WindingMode { get; set; }
+		public void UpdateRenderTransform(Matrix3x2? renderTransform)
+		{
+			RenderTransform = renderTransform;
+		}
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
@@ -31,6 +48,8 @@
 
 			if (path == null)
 				return;
+
+			ApplyTransform(path);
 
 			DrawStrokePath(canvas, rect, path);
 			DrawFillPath(canvas, rect, path);
@@ -122,6 +141,14 @@
 		void ClipPath(ICanvas canvas, PathF path)
 		{
 			canvas.ClipPath(path, WindingMode);
+		}
+
+		void ApplyTransform(PathF path)
+		{
+			if (RenderTransform == null)
+				return;
+
+			path.Transform(RenderTransform.Value);
 		}
 	}
 }
