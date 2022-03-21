@@ -99,24 +99,23 @@ namespace Microsoft.Maui.Platform
 			"SliderThumbBackgroundDisabled",
 		};
 
-		public static Task UpdateThumbImageSourceAsync(this Slider nativeSlider, ISlider slider, IImageSourceServiceProvider? provider)
+		public static async Task UpdateThumbImageSourceAsync(this MauiSlider nativeSlider, ISlider slider, IImageSourceServiceProvider? provider)
 		{
-			//var thumbImageSource = slider.ThumbImageSource;
+			var thumbImageSource = slider.ThumbImageSource;
 
-			//if (thumbImageSource == null)
-			//{
-			//	nativeSlider.ThumbImageSource = null;
-			//	return;
-			//}
+			if (thumbImageSource == null)
+			{
+				nativeSlider.ThumbImageSource = null;
+				return;
+			}
 
-			//if (provider != null && thumbImageSource != null)
-			//{
-			//	var service = provider.GetRequiredImageSourceService(thumbImageSource);
-			//	var nativeThumbImageSource = await service.GetImageSourceAsync(thumbImageSource);
+			if (provider != null && thumbImageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(thumbImageSource);
+				var nativeThumbImageSource = await service.GetImageSourceAsync(thumbImageSource);
 
-			//	nativeSlider.ThumbImageSource = nativeThumbImageSource?.Value;
-			//}
-			return Task.CompletedTask;
+				nativeSlider.ThumbImageSource = nativeThumbImageSource?.Value;
+			}
 		}
 	}
 }
