@@ -1,9 +1,15 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class PathHandler
 	{
+		public static void MapShape(IShapeViewHandler handler, Path path)
+		{
+			handler.PlatformView?.UpdateShape(path);
+		}
+
 		public static void MapData(IShapeViewHandler handler, Path path)
 		{
 			handler.PlatformView?.InvalidateShape(path);
@@ -11,6 +17,21 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapRenderTransform(IShapeViewHandler handler, Path path)
 		{
+			IDrawable drawable = handler.PlatformView?.Drawable;
+
+			if (drawable == null)
+				return;
+
+			if (drawable is ShapeDrawable shapeDrawable)
+			{
+				Matrix? matrix = path.RenderTransform?.Value;
+
+				if (matrix != null)
+				{
+					shapeDrawable.UpdateRenderTransform(matrix.Value.ToMatrix3X2());
+				}
+			}
+
 			handler.PlatformView?.InvalidateShape(path);
 		}
 	}
