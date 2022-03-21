@@ -5,6 +5,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	public class ItemContentView : ViewGroup
 	{
 		protected IVisualElementRenderer Content;
@@ -73,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			var size = Context.FromPixels(r - l, b - t);
 
-			Content.Element.Layout(new Rectangle(Point.Zero, size));
+			Content.Element.Layout(new Rect(Point.Zero, size));
 
 			Content.UpdateLayout();
 		}

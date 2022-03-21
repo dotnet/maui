@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsReadOnly(this UITextField textField, IEntry entry)
 		{
-			textField.UserInteractionEnabled = !entry.IsReadOnly;
+			textField.UserInteractionEnabled = !(entry.IsReadOnly || entry.InputTransparent);
 		}
 
 		public static void UpdateFont(this UITextField textField, ITextStyle textStyle, IFontManager fontManager)
@@ -124,7 +124,6 @@ namespace Microsoft.Maui.Platform
 			textField.ReloadInputViews();
 		}
 
-		[PortHandler]
 		public static void UpdateCursorPosition(this UITextField textField, IEntry entry)
 		{
 			var selectedTextRange = textField.SelectedTextRange;
@@ -134,7 +133,6 @@ namespace Microsoft.Maui.Platform
 				UpdateCursorSelection(textField, entry);
 		}
 
-		[PortHandler]
 		public static void UpdateSelectionLength(this UITextField textField, IEntry entry)
 		{
 			var selectedTextRange = textField.SelectedTextRange;

@@ -7,7 +7,6 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using NSubstitute;
 using NUnit.Framework;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -33,7 +32,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestLayout()
 		{
 			View view = new View();
-			view.Layout(new Rectangle(50, 25, 100, 200));
+			view.Layout(new Rect(50, 25, 100, 200));
 
 			Assert.AreEqual(view.X, 50);
 			Assert.AreEqual(view.Y, 25);
@@ -69,7 +68,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool fired = false;
 			view.SizeChanged += (sender, e) => fired = true;
 
-			view.Layout(new Rectangle(0, 0, 100, 100));
+			view.Layout(new Rect(0, 0, 100, 100));
 
 			Assert.True(fired);
 		}
@@ -547,7 +546,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			task.Task.Wait();
 			Assert.False(task.Task.Result);
-			Device.PlatformServices = null;
 		}
 
 		[Test]
@@ -567,7 +565,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			task.Task.Wait();
 			Assert.AreEqual(2, task.Task.Result);
-			Device.PlatformServices = null;
 		}
 
 		[Test]
@@ -598,7 +595,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void MockBounds()
 		{
 			var view = new View();
-			view.Layout(new Rectangle(10, 20, 30, 40));
+			view.Layout(new Rect(10, 20, 30, 40));
 
 			bool changed = false;
 			view.PropertyChanged += (sender, args) =>
@@ -612,14 +609,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			view.SizeChanged += (sender, args) => changed = true;
 
-			view.MockBounds(new Rectangle(5, 10, 15, 20));
+			view.MockBounds(new Rect(5, 10, 15, 20));
 
-			Assert.AreEqual(new Rectangle(5, 10, 15, 20), view.Bounds);
+			Assert.AreEqual(new Rect(5, 10, 15, 20), view.Bounds);
 			Assert.False(changed);
 
 			view.UnmockBounds();
 
-			Assert.AreEqual(new Rectangle(10, 20, 30, 40), view.Bounds);
+			Assert.AreEqual(new Rect(10, 20, 30, 40), view.Bounds);
 			Assert.False(changed);
 		}
 
@@ -711,7 +708,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				Clip = new RectangleGeometry
 				{
-					Rect = new Rectangle(0, 0, 50, 50)
+					Rect = new Rect(0, 0, 50, 50)
 				}
 			};
 
@@ -728,7 +725,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				Clip = new RectangleGeometry
 				{
-					Rect = new Rectangle(0, 0, 50, 50)
+					Rect = new Rect(0, 0, 50, 50)
 				}
 			};
 

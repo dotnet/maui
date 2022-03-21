@@ -173,16 +173,29 @@ namespace Microsoft.Maui.Controls.Shapes
 				brush.Parent = this;
 		}
 
-		PathF IShape.PathForBounds(Graphics.Rectangle viewBounds)
+		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
+			bool getBoundsByFlattening = false;
+
 			if (HeightRequest < 0 && WidthRequest < 0)
+			{
+				getBoundsByFlattening = true;
 				Frame = viewBounds;
+			}
 
 			var path = GetPath();
 
+			if (getBoundsByFlattening)
+			{
+				var boundsByFlattening = path.GetBoundsByFlattening();
+
+				HeightRequest = boundsByFlattening.Height;
+				WidthRequest = boundsByFlattening.Width;
+			}
+
 #if !NETSTANDARD
 
-			RectangleF pathBounds = viewBounds;
+			RectF pathBounds = viewBounds;
 
 			try
 			{

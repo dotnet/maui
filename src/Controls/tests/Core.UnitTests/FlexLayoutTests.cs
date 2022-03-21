@@ -28,11 +28,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			layout.Layout(new Rectangle(0, 0, 912, 912));
+			layout.Layout(new Rect(0, 0, 912, 912));
 
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 912, 912)));
-			Assert.That(label1.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 912)));
-			Assert.That(label2.Bounds, Is.EqualTo(new Rectangle(100, 0, 100, 912)));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 912, 912)));
+			Assert.That(label1.Bounds, Is.EqualTo(new Rect(0, 0, 100, 912)));
+			Assert.That(label2.Bounds, Is.EqualTo(new Rect(100, 0, 100, 912)));
 		}
 
 		[Test]
@@ -50,11 +50,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			layout.Layout(new Rectangle(0, 0, 912, 912));
+			layout.Layout(new Rect(0, 0, 912, 912));
 
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 912, 912)));
-			Assert.That(label1.Bounds, Is.EqualTo(new Rectangle(0, 0, 120, 912)));
-			Assert.That(label2.Bounds, Is.EqualTo(new Rectangle(120, 0, 120, 912)));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 912, 912)));
+			Assert.That(label1.Bounds, Is.EqualTo(new Rect(0, 0, 120, 912)));
+			Assert.That(label2.Bounds, Is.EqualTo(new Rect(120, 0, 120, 912)));
 
 		}
 
@@ -73,13 +73,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			layout.Layout(new Rectangle(0, 0, 912, 912));
+			layout.Layout(new Rect(0, 0, 912, 912));
 
 			Assert.AreEqual(912, layout.Width);
 			Assert.AreEqual(912, layout.Height);
 
-			Assert.AreEqual(new Rectangle(5, 0, 100, 912), label1.Bounds);
-			Assert.AreEqual(new Rectangle(110, 0, 100, 912), label2.Bounds);
+			Assert.AreEqual(new Rect(5, 0, 100, 912), label1.Bounds);
+			Assert.AreEqual(new Rect(110, 0, 100, 912), label2.Bounds);
 		}
 
 		[Test]
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			FlexLayout.SetGrow(label3, 1);
 			layout.Children.Add(label3);
 
-			layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
+			layout.Layout(new Rect(0, 0, layoutSize.Width, layoutSize.Height));
 
 			Assert.AreEqual(label2.Bounds.Left, Math.Max(label1.Bounds.Left, label1.Bounds.Right), 1);
 			Assert.AreEqual(label3.Bounds.Left, Math.Max(label2.Bounds.Left, label2.Bounds.Right), 1);
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			FlexLayout.SetGrow(label3, 1);
 			layout.Children.Add(label3);
 
-			layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
+			layout.Layout(new Rect(0, 0, layoutSize.Width, layoutSize.Height));
 
 			foreach (var view in layout.Children)
 				Assert.That(view.Frame.Width, Is.EqualTo(100));
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var label3 = new Label { IsPlatformEnabled = true };
 			FlexLayout.SetGrow(label3, 1);
 
-			layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
+			layout.Layout(new Rect(0, 0, layoutSize.Width, layoutSize.Height));
 
 			Assert.AreEqual(150, label1.Bounds.Width);
 			Assert.AreEqual(150, label2.Bounds.Width);
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Children.Add(label3);
 
-			layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
+			layout.Layout(new Rect(0, 0, layoutSize.Width, layoutSize.Height));
 			Assert.AreEqual(100, label1.Bounds.Width);
 			Assert.AreEqual(100, label2.Bounds.Width);
 			Assert.AreEqual(100, label3.Bounds.Width);
@@ -214,24 +214,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			FlexLayout.SetGrow(label2, 1);
 			layout.Children.Add(label2);
 
-			layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
+			layout.Layout(new Rect(0, 0, layoutSize.Width, layoutSize.Height));
 
-			Assert.AreEqual(new Rectangle(0, 0, 100, 50), label0.Bounds);
-			Assert.AreEqual(new Rectangle(100, 0, 100, 50), label1.Bounds);
-			Assert.AreEqual(new Rectangle(200, 0, 100, 50), label2.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 50), label0.Bounds);
+			Assert.AreEqual(new Rect(100, 0, 100, 50), label1.Bounds);
+			Assert.AreEqual(new Rect(200, 0, 100, 50), label2.Bounds);
 
 			var lastItem = layout.Children[2];
 			Assert.That(lastItem, Is.SameAs(label2));
 
 			layout.Children.Remove(lastItem);
-			Assert.AreEqual(new Rectangle(0, 0, 150, 50), label0.Bounds);
-			Assert.AreEqual(new Rectangle(150, 0, 150, 50), label1.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 150, 50), label0.Bounds);
+			Assert.AreEqual(new Rect(150, 0, 150, 50), label1.Bounds);
 
 			layout.Children.Insert(0, lastItem);
 
-			Assert.AreEqual(new Rectangle(0, 0, 100, 50), label2.Bounds);
-			Assert.AreEqual(new Rectangle(100, 0, 100, 50), label0.Bounds);
-			Assert.AreEqual(new Rectangle(200, 0, 100, 50), label1.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 50), label2.Bounds);
+			Assert.AreEqual(new Rect(100, 0, 100, 50), label0.Bounds);
+			Assert.AreEqual(new Rect(200, 0, 100, 50), label1.Bounds);
 		}
 
 		[Test]
@@ -263,7 +263,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				HeightRequest = 10
 			};
 			layout.Children.Add(label2);
-			layout.Layout(new Rectangle(0, 0, 320, 50));
+			layout.Layout(new Rect(0, 0, 320, 50));
 
 			var label2Size = label2.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(10, label2Size.Request.Height);
@@ -309,17 +309,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var inner = layout.Children[1] as FlexLayout;
 			FlexLayout.SetGrow(inner, 1);
 
-			layout.Layout(new Rectangle(0, 0, 300, 600));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 300, 600)));
-			Assert.That(header.Bounds, Is.EqualTo(new Rectangle(0, 0, 300, 50)));
-			Assert.That(inner.Bounds, Is.EqualTo(new Rectangle(0, 50, 300, 500)));
-			Assert.That(inner.Children[0].Frame, Is.EqualTo(new Rectangle(5, 5, 50, 490)));
-			Assert.That(inner.Children[1].Frame, Is.EqualTo(new Rectangle(65, 5, 50, 490)));
-			Assert.That(inner.Children[2].Frame, Is.EqualTo(new Rectangle(125, 5, 50, 490)));
-			Assert.That(inner.Children[3].Frame, Is.EqualTo(new Rectangle(185, 5, 50, 490)));
-			Assert.That(inner.Children[4].Frame, Is.EqualTo(new Rectangle(245, 5, 50, 490)));
+			layout.Layout(new Rect(0, 0, 300, 600));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 300, 600)));
+			Assert.That(header.Bounds, Is.EqualTo(new Rect(0, 0, 300, 50)));
+			Assert.That(inner.Bounds, Is.EqualTo(new Rect(0, 50, 300, 500)));
+			Assert.That(inner.Children[0].Frame, Is.EqualTo(new Rect(5, 5, 50, 490)));
+			Assert.That(inner.Children[1].Frame, Is.EqualTo(new Rect(65, 5, 50, 490)));
+			Assert.That(inner.Children[2].Frame, Is.EqualTo(new Rect(125, 5, 50, 490)));
+			Assert.That(inner.Children[3].Frame, Is.EqualTo(new Rect(185, 5, 50, 490)));
+			Assert.That(inner.Children[4].Frame, Is.EqualTo(new Rect(245, 5, 50, 490)));
 
-			Assert.That(footer.Bounds, Is.EqualTo(new Rectangle(0, 550, 300, 50)));
+			Assert.That(footer.Bounds, Is.EqualTo(new Rect(0, 550, 300, 50)));
 		}
 
 		[Test]
@@ -392,10 +392,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var measure = layout.Measure(300, double.PositiveInfinity);
 			Assert.That(measure.Request, Is.EqualTo(new Size(300, 52)));
-			layout.Layout(new Rectangle(0, 0, 300, 300));
-			Assert.That(label0.Bounds, Is.EqualTo(new Rectangle(6, 6, 138, 20)));
-			Assert.That(label1.Bounds, Is.EqualTo(new Rectangle(156, 6, 138, 20)));
-			Assert.That(label2.Bounds, Is.EqualTo(new Rectangle(0, 32, 300, 20)));
+			layout.Layout(new Rect(0, 0, 300, 300));
+			Assert.That(label0.Bounds, Is.EqualTo(new Rect(6, 6, 138, 20)));
+			Assert.That(label1.Bounds, Is.EqualTo(new Rect(156, 6, 138, 20)));
+			Assert.That(label2.Bounds, Is.EqualTo(new Rect(0, 32, 300, 20)));
 		}
 
 		[Test]
@@ -416,8 +416,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			layout.Layout(new Rectangle(0, 0, 300, 300));
-			Assert.That(label0.Bounds, Is.EqualTo(new Rectangle(0, 0, 300, 300)));
+			layout.Layout(new Rect(0, 0, 300, 300));
+			Assert.That(label0.Bounds, Is.EqualTo(new Rect(0, 0, 300, 300)));
 		}
 
 		[Test]
@@ -450,10 +450,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = Substitute.For<IViewHandler>();
 			layout.Handler = handler;
 
-			layout.Layout(new Rectangle(0, 0, 300, 300));
-			Assert.That(label0.Bounds, Is.EqualTo(new Rectangle(0, 0, 300, 20)));
-			Assert.That(label1.Bounds, Is.EqualTo(new Rectangle(0, 20, 300, 20)));
-			Assert.That(label2.Bounds, Is.EqualTo(new Rectangle(0, 40, 300, 20)));
+			layout.Layout(new Rect(0, 0, 300, 300));
+			Assert.That(label0.Bounds, Is.EqualTo(new Rect(0, 0, 300, 20)));
+			Assert.That(label1.Bounds, Is.EqualTo(new Rect(0, 20, 300, 20)));
+			Assert.That(label2.Bounds, Is.EqualTo(new Rect(0, 40, 300, 20)));
 
 			label1.IsVisible = false;
 
@@ -463,8 +463,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Fake a native invalidation
 			layout.ForceLayout();
 
-			Assert.That(label0.Bounds, Is.EqualTo(new Rectangle(0, 0, 300, 20)));
-			Assert.That(label2.Bounds, Is.EqualTo(new Rectangle(0, 20, 300, 20)));
+			Assert.That(label0.Bounds, Is.EqualTo(new Rect(0, 0, 300, 20)));
+			Assert.That(label2.Bounds, Is.EqualTo(new Rect(0, 20, 300, 20)));
 
 			label0.IsVisible = false;
 			label1.IsVisible = true;
@@ -475,8 +475,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Fake a native invalidation
 			layout.ForceLayout();
 
-			Assert.That(label1.Bounds, Is.EqualTo(new Rectangle(0, 0, 300, 20)));
-			Assert.That(label2.Bounds, Is.EqualTo(new Rectangle(0, 20, 300, 20)));
+			Assert.That(label1.Bounds, Is.EqualTo(new Rect(0, 0, 300, 20)));
+			Assert.That(label2.Bounds, Is.EqualTo(new Rect(0, 20, 300, 20)));
 		}
 
 		[Test]
@@ -492,7 +492,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = Substitute.For<IViewHandler>();
 			layout.Handler = handler;
 
-			layout.Layout(new Rectangle(0, 0, 300, 300));
+			layout.Layout(new Rect(0, 0, 300, 300));
 			for (var i = 0; i < 3; i++)
 			{
 				var box = new BoxView
@@ -509,7 +509,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Fake a native invalidation
 			layout.ForceLayout();
 
-			Assert.That(layout.Children[2].Frame, Is.EqualTo(new Rectangle(0, 200, 300, 100)));
+			Assert.That(layout.Children[2].Frame, Is.EqualTo(new Rect(0, 200, 300, 100)));
 		}
 
 		[Test]
@@ -542,9 +542,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			layout.Layout(new Rectangle(0, 0, 500, 300));
-			Assert.That(layout.Children[0].Frame, Is.EqualTo(new Rectangle(20, 10, 100, 20)));
-			Assert.That(layout.Children[2].Frame, Is.EqualTo(new Rectangle(380, 10, 100, 20)));
+			layout.Layout(new Rect(0, 0, 500, 300));
+			Assert.That(layout.Children[0].Frame, Is.EqualTo(new Rect(20, 10, 100, 20)));
+			Assert.That(layout.Children[2].Frame, Is.EqualTo(new Rect(380, 10, 100, 20)));
 		}
 
 		void AssertInvalidated(IViewHandler handler)

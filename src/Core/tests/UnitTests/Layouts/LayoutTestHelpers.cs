@@ -42,11 +42,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		public static void AssertArranged(IView view, double x, double y, double width, double height)
 		{
-			var expected = new Rectangle(x, y, width, height);
+			var expected = new Rect(x, y, width, height);
 			view.Received().Arrange(Arg.Is(expected));
 		}
 
-		public static void AssertArranged(IView view, Rectangle expected)
+		public static void AssertArranged(IView view, Rect expected)
 		{
 			view.Received().Arrange(Arg.Is(expected));
 		}

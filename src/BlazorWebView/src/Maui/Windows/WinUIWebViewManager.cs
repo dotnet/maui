@@ -8,6 +8,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
 using Windows.Storage.Streams;
+using Windows.Storage;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -87,11 +88,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (new Uri(AppOrigin).IsBaseOf(uri))
 				{
 					var relativePath = new Uri(AppOrigin).MakeRelativeUri(uri).ToString();
-					if (allowFallbackOnHostPage && string.IsNullOrEmpty(relativePath))
+
+					// If the path does not end in a file extension (or is empty), it's most likely referring to a page,
+					// in which case we should allow falling back on the host page.
+					if (allowFallbackOnHostPage && !Path.HasExtension(relativePath))
 					{
 						relativePath = _hostPageRelativePath;
 					}
-					relativePath = Path.Combine(_contentRootDir, relativePath.Replace("/", "\\"));
+					relativePath = Path.Combine(_contentRootDir, relativePath.Replace('/', '\\'));
 
 					var winUIItem = await Package.Current.InstalledLocation.TryGetItemAsync(relativePath);
 					if (winUIItem != null)
@@ -101,9 +105,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						var contentType = StaticContentProvider.GetResponseContentTypeOrDefault(relativePath);
 						headers = StaticContentProvider.GetResponseHeaders(contentType);
 						var headerString = GetHeaderString(headers);
-						var winUIFile = await Package.Current.InstalledLocation.GetFileAsync(relativePath);
+						var stream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
 
-						eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(await winUIFile.OpenReadAsync(), statusCode, statusMessage, headerString);
+						eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(stream.AsRandomAccessStream(), statusCode, statusMessage, headerString);
 					}
 				}
 			}

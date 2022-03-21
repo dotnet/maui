@@ -20,18 +20,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[SetUp]
-			public void SetUp()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				Device.PlatformServices = null;
-			}
-
 			[TestCase(false)]
 			[TestCase(true)]
 			public void AutoMergedRd(bool useCompiledXaml)

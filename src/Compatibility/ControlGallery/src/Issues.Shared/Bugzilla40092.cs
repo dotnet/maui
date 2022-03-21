@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				AutomationId = Black
 			};
 
-			mainLayout.Children.Add(view, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
+			mainLayout.Children.Add(view, new Rect(0, 0, 1, 1), AbsoluteLayoutFlags.All);
 			Content = thePage;
 
 		}

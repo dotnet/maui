@@ -2,6 +2,7 @@ using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -372,7 +373,7 @@ namespace Microsoft.Maui.Controls
 				return (Brush)color;
 			}
 
-			if (Application.Current?.RequestedTheme == OSAppTheme.Dark)
+			if (Application.Current?.RequestedTheme == AppTheme.Dark)
 			{
 				return Brush.White;
 			}
@@ -592,7 +593,7 @@ namespace Microsoft.Maui.Controls
 			var content = Content;
 			if (content is View)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<RadioButton>()?.LogWarning("Warning - {RuntimePlatform} does not support View as the {PropertyName} property of RadioButton; the return value of the ToString() method will be displayed instead.", Device.RuntimePlatform, ContentProperty.PropertyName);
+				Application.Current?.FindMauiContext()?.CreateLogger<RadioButton>()?.LogWarning("Warning - {RuntimePlatform} does not support View as the {PropertyName} property of RadioButton; the return value of the ToString() method will be displayed instead.", DeviceInfo.Platform, ContentProperty.PropertyName);
 			}
 
 			return content?.ToString();

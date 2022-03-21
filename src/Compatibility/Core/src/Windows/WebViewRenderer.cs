@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class WebViewRenderer : ViewRenderer<WebView, WebView2>, IWebViewDelegate
 	{
 		IWebViewController WebViewController => Element;
@@ -52,7 +53,7 @@ if(bases.length == 0){
 			_internalWebView.NavigationCompleted += async (sender, args) =>
 			{
 				// Generate a version of the <base> script with the correct <base> tag
-				var script = BaseInsertionScript.Replace("baseTag", baseTag);
+				var script = BaseInsertionScript.Replace("baseTag", baseTag, StringComparison.Ordinal);
 
 				// Run it and retrieve the updated HTML from our WebView
 				await sender.ExecuteScriptAsync(script);

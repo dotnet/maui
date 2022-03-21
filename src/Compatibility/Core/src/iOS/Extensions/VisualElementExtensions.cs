@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete]
 	public static class VisualElementExtensions
 	{
 		public static IVisualElementRenderer GetRenderer(this VisualElement self)

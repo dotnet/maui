@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class TimePickerRenderer : ViewRenderer<TimePicker, Microsoft.UI.Xaml.Controls.TimePicker>
 	{
 		WBrush _defaultBrush;
@@ -141,7 +142,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (timePicker == null)
 				return;
 
-			bool timePickerIsDefault = timePicker.FontFamily == null && timePicker.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(TimePicker), true) && timePicker.FontAttributes == FontAttributes.None;
+			bool timePickerIsDefault =
+				timePicker.FontFamily == null &&
+#pragma warning disable CS0612 // Type or member is obsolete
+				timePicker.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(TimePicker), true) &&
+#pragma warning restore CS0612 // Type or member is obsolete
+				timePicker.FontAttributes == FontAttributes.None;
 
 			if (timePickerIsDefault && !_fontApplied)
 				return;
@@ -168,7 +174,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateTime()
 		{
 			Control.Time = Element.Time;
-			if (Element.Format?.Contains('H') == true)
+			if (Element.Format?.Contains('H', StringComparison.Ordinal) == true)
 			{
 				Control.ClockIdentifier = "24HourClock";
 			}

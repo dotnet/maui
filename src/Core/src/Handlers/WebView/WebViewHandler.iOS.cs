@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					// we don't care that much about this being accurate
 					// the cookie container will split the cookies up more correctly
-					if (!cookie.Domain.Contains(domain) && !domain.Contains(cookie.Domain))
+					if (!cookie.Domain.Contains(domain, StringComparison.Ordinal) && !domain.Contains(cookie.Domain, StringComparison.Ordinal))
 						continue;
 
 					existingCookies.Add(cookie);
@@ -427,7 +427,7 @@ namespace Microsoft.Maui.Handlers
 
 							foreach (var deleteme in cookies)
 							{
-								if (record.DisplayName.Contains(deleteme.Domain) || deleteme.Domain.Contains(record.DisplayName))
+								if (record.DisplayName.Contains(deleteme.Domain, StringComparison.Ordinal) || deleteme.Domain.Contains(record.DisplayName, StringComparison.Ordinal))
 								{
 									WKWebsiteDataStore.DefaultDataStore.RemoveDataOfTypes(record.DataTypes,
 										  new[] { record }, () => { });

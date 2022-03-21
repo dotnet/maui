@@ -527,14 +527,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsTrue(stacklayoutVisualController.IsRightToLeft(), "EffectiveFlowDirection should be RightToLeft");
 		}
 
-
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.FlowDirection = FlowDirection.LeftToRight;
-		}
-
 		static void AddExplicitLTRToScrollView(ScrollView parent, View child)
 		{
 			parent.Content = child;

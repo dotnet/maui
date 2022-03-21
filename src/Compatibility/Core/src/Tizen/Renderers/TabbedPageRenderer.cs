@@ -58,12 +58,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					SelectionMode = ToolbarSelectionMode.Always,
 				};
 
-				if (Device.Idiom == TargetIdiom.Phone)
+				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				{
 					//Set ShrinkMode to Expand as defauly only for Mobile profile
 					_toolbar.ShrinkMode = ToolbarShrinkMode.Expand;
 				}
-				else if (Device.Idiom == TargetIdiom.TV)
+				else if (DeviceInfo.Idiom == DeviceIdiom.TV)
 				{
 					//According to TV UX Guideline, toolbar style should be set to "tabbar_with_title" in case of TabbedPage only for TV profile.
 					_toolbar.SetTVTabBarWithTitleStyle();

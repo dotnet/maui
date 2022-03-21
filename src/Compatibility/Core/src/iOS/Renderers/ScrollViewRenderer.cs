@@ -13,6 +13,7 @@ using RectangleF = CoreGraphics.CGRect;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ScrollViewRenderer : UIScrollView, IVisualElementRenderer, IEffectControlProvider
 	{
 		EventTracker _events;
@@ -117,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetElementSize(Size size)
 		{
-			Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Layout.LayoutChildIntoBoundingRegion(Element, new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public UIViewController ViewController
@@ -220,6 +221,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateHorizontalScrollBarVisibility();
 		}
 
+		[PortHandler]
 		void UpdateIsEnabled()
 		{
 			if (Element == null)

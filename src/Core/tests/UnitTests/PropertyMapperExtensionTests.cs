@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using Microsoft.Maui.Controls;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests
@@ -23,8 +24,8 @@ namespace Microsoft.Maui.UnitTests
 
 			mapper1.UpdateProperties(null, new Button());
 
-			Assert.Contains(msg1, log);
-			Assert.Contains(msg2, log);
+			Assert.Contains(msg1, log, StringComparison.Ordinal);
+			Assert.Contains(msg2, log, StringComparison.Ordinal);
 
 			var originalIndex = log.IndexOf(msg1);
 			var additionalIndex = log.IndexOf(msg2);
@@ -49,8 +50,8 @@ namespace Microsoft.Maui.UnitTests
 
 			mapper1.UpdateProperties(null, new Button());
 
-			Assert.Contains(msg1, log);
-			Assert.Contains(msg2, log);
+			Assert.Contains(msg1, log, StringComparison.Ordinal);
+			Assert.Contains(msg2, log, StringComparison.Ordinal);
 
 			var originalIndex = log.IndexOf(msg1);
 			var additionalIndex = log.IndexOf(msg2);
@@ -75,8 +76,8 @@ namespace Microsoft.Maui.UnitTests
 
 			mapper1.UpdateProperties(null, new Button());
 
-			Assert.DoesNotContain(msg1, log);
-			Assert.Contains(msg2, log);
+			Assert.DoesNotContain(msg1, log, StringComparison.Ordinal);
+			Assert.Contains(msg2, log, StringComparison.Ordinal);
 		}
 	}
 }

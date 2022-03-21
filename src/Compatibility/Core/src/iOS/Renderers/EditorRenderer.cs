@@ -3,6 +3,7 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -10,6 +11,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EditorRenderer : EditorRendererBase<UITextView>
 	{
 		// Using same placeholder color as for the Entry
@@ -130,6 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class EditorRendererBase<TControl> : ViewRenderer<Editor, TControl>
 		where TControl : UIView
 	{
@@ -174,7 +177,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				SetNativeControl(CreateNativeControl());
 
-				if (Device.Idiom == TargetIdiom.Phone)
+				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				{
 					// iPhone does not have a dismiss keyboard button
 					var keyboardWidth = UIScreen.MainScreen.Bounds.Width;
@@ -361,7 +364,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		[PortHandler]
 		protected internal virtual void UpdateTextColor()
-			=> TextView.TextColor = Element.TextColor?.ToUIColor() ?? ColorExtensions.LabelColor;
+			=> TextView.TextColor = Element.TextColor?.ToUIColor() ?? Maui.Platform.ColorExtensions.LabelColor;
 
 		[PortHandler]
 		void UpdateMaxLength()

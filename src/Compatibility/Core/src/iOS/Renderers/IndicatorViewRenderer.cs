@@ -9,6 +9,7 @@ using static Microsoft.Maui.Controls.IndicatorView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class IndicatorViewRenderer : ViewRenderer<IndicatorView, UIView>
 	{
 		UIColor _defaultPagesIndicatorTintColor;
@@ -165,7 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			AddSubview(control);
 
 			var indicatorLayoutSizeRequest = indicatorLayout.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			indicatorLayout.Layout(new Rectangle(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
+			indicatorLayout.Layout(new Rect(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
 		}
 
 		void UIPagerValueChanged(object sender, System.EventArgs e)

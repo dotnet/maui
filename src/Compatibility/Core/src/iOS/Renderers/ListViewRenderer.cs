@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// grow a little each time, which you weren't testing at all were you? So there you have it, the stupid reason we integer align here.
 				//
 				// The same technically applies to the footer, though that could hardly matter less. We just do it for fun.
-				Layout.LayoutChildIntoBoundingRegion(e, new Rectangle(0, 0, width, Math.Ceiling(request.Request.Height)));
+				Layout.LayoutChildIntoBoundingRegion(e, new Rect(0, 0, width, Math.Ceiling(request.Request.Height)));
 
 				Device.BeginInvokeOnMainThread(() =>
 				{
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				var e = _footerRenderer.Element;
 				var request = e.Measure(width, height, MeasureFlags.IncludeMargins);
-				Layout.LayoutChildIntoBoundingRegion(e, new Rectangle(0, 0, width, Math.Ceiling(request.Request.Height)));
+				Layout.LayoutChildIntoBoundingRegion(e, new Rect(0, 0, width, Math.Ceiling(request.Request.Height)));
 
 				Device.BeginInvokeOnMainThread(() =>
 				{
@@ -398,7 +398,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var footerView = (VisualElement)sender;
 			var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
+			Layout.LayoutChildIntoBoundingRegion(footerView, new Rect(0, 0, width, request.Request.Height));
 
 			Control.TableFooterView = _footerRenderer.NativeView;
 		}
@@ -420,7 +420,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var headerView = (VisualElement)sender;
 			var request = headerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
+			Layout.LayoutChildIntoBoundingRegion(headerView, new Rect(0, 0, width, request.Request.Height));
 
 			Control.TableHeaderView = _headerRenderer.NativeView;
 		}
@@ -491,7 +491,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				double width = Bounds.Width;
 				var request = footerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, width, request.Request.Height));
+				Layout.LayoutChildIntoBoundingRegion(footerView, new Rect(0, 0, width, request.Request.Height));
 
 				Control.TableFooterView = _footerRenderer.NativeView;
 				footerView.MeasureInvalidated += OnFooterMeasureInvalidated;
@@ -537,7 +537,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				double width = Bounds.Width;
 				var request = headerView.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, width, request.Request.Height));
+				Layout.LayoutChildIntoBoundingRegion(headerView, new Rect(0, 0, width, request.Request.Height));
 
 				Control.TableHeaderView = _headerRenderer.NativeView;
 				headerView.MeasureInvalidated += OnHeaderMeasureInvalidated;
@@ -743,7 +743,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			// ...and Steve said to the unbelievers the separator shall be gray, and gray it was. The unbelievers looked on, and saw that it was good, and
 			// they went forth and documented the default color. The holy scripture still reflects this default.
 			// Defined here: https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableView_Class/#//apple_ref/occ/instp/UITableView/separatorColor
-			Control.SeparatorColor = color.ToUIColor(ColorExtensions.SeparatorColor);
+			Control.SeparatorColor = color.ToUIColor(Maui.Platform.ColorExtensions.SeparatorColor);
 		}
 
 		void UpdateSeparatorVisibility()

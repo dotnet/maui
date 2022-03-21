@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.EntryCellRenderer instead")]
 	public class EntryCellRenderer : CellRenderer
 	{
-		static readonly Color DefaultTextColor = ColorExtensions.LabelColor.ToColor();
+		static readonly Color DefaultTextColor = Maui.Platform.ColorExtensions.LabelColor.ToColor();
 
 		[Preserve(Conditional = true)]
 		public EntryCellRenderer()

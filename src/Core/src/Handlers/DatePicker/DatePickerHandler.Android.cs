@@ -1,6 +1,8 @@
-﻿using Android.App;
+﻿using System;
+using Android.App;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -33,6 +35,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
+			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+
 			SetupDefaults(platformView);
 		}
 
@@ -46,10 +50,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog != null)
 			{
+				_dialog.CancelEvent -= OnCancelButtonClicked;
 				_dialog.Hide();
 				_dialog.Dispose();
 				_dialog = null;
 			}
+
+			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -132,7 +139,13 @@ namespace Microsoft.Maui.Handlers
 			if (_dialog == null)
 				_dialog = CreateDatePickerDialog(year, month, day);
 			else
-				_dialog.UpdateDate(year, month, day);
+			{
+				EventHandler? setDateLater = null;
+				setDateLater = (sender, e) => { _dialog!.UpdateDate(year, month, day); _dialog.ShowEvent -= setDateLater; };
+				_dialog.ShowEvent += setDateLater;
+			}
+
+			_dialog.CancelEvent += OnCancelButtonClicked;
 
 			_dialog.Show();
 		}
@@ -140,6 +153,24 @@ namespace Microsoft.Maui.Handlers
 		void HidePickerDialog()
 		{
 			_dialog?.Hide();
+		}
+
+		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+		{
+			DatePickerDialog? currentDialog = _dialog;
+
+			if (currentDialog != null && currentDialog.IsShowing)
+			{
+				currentDialog.Dismiss();
+				currentDialog.CancelEvent -= OnCancelButtonClicked;
+
+				ShowPickerDialog(currentDialog.DatePicker.Year, currentDialog.DatePicker.Month, currentDialog.DatePicker.DayOfMonth);
+			}
+		}
+
+		void OnCancelButtonClicked(object? sender, EventArgs e)
+		{
+			// TODO: Update IsFocused Property
 		}
 	}
 }

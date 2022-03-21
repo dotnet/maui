@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				TextColor = Colors.White,
 			};
 			_btnLogin.Clicked += BtnLogin_Clicked;
-			layout.Children.Add(_btnLogin, new Rectangle(0.5f, 0.5f, 0.25f, 0.25f), AbsoluteLayoutFlags.All);
+			layout.Children.Add(_btnLogin, new Rect(0.5f, 0.5f, 0.25f, 0.25f), AbsoluteLayoutFlags.All);
 
 			_busyBackground = new BoxView
 			{
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			// Bump up elevation on Android to cover FastRenderer Button
 			((BoxView)_busyBackground).On<Android>().SetElevation(10f);
 
-			layout.Children.Add(_busyBackground, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.SizeProportional);
+			layout.Children.Add(_busyBackground, new Rect(0, 0, 1, 1), AbsoluteLayoutFlags.SizeProportional);
 
 			Content = layout;
 		}

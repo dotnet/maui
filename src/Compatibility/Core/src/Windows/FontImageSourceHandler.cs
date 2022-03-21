@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				foreach(var family in allFamilies)
 				{
-					if(family.Contains(source))
+					if(family.Contains(source, StringComparison.Ordinal))
 					{
 						fontSource = family;
 						break;

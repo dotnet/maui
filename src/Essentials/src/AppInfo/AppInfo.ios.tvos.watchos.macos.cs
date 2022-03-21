@@ -54,8 +54,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 				if ((OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13, 0)) || (OperatingSystem.IsTvOS() && !OperatingSystem.IsTvOSVersionAtLeast(13, 0)))
 					return AppTheme.Unspecified;
 
-				var uiStyle = Platform.GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
-					UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
+				var traits =
+					MainThread.InvokeOnMainThread(() => Platform.GetCurrentUIViewController()?.TraitCollection) ??
+					UITraitCollection.CurrentTraitCollection;
+
+				var uiStyle = traits.UserInterfaceStyle;
 
 				return uiStyle switch
 				{
@@ -92,11 +95,30 @@ namespace Microsoft.Maui.Essentials.Implementations
 			AppTheme.Unspecified;
 #endif
 
+#if __IOS__ || __TVOS__
+		public LayoutDirection RequestedLayoutDirection
+		{
+			get
+			{
+				var currentWindow = Platform.GetCurrentWindow(false);
+				UIUserInterfaceLayoutDirection layoutDirection =
+					currentWindow?.EffectiveUserInterfaceLayoutDirection ??
+					UIApplication.SharedApplication.UserInterfaceLayoutDirection;
+
+				return (layoutDirection == UIUserInterfaceLayoutDirection.RightToLeft) ?
+					LayoutDirection.RightToLeft : LayoutDirection.LeftToRight;
+			}
+		}
+#elif __MACOS__
+		public bool IsDeviceUILayoutDirectionRightToLeft => 
+			NSApplication.SharedApplication.UserInterfaceLayoutDirection == NSApplicationLayoutDirection.RightToLeft;
+#endif
+
 		internal static bool VerifyHasUrlScheme(string scheme)
 		{
-			var cleansed = scheme.Replace("://", string.Empty);
+			var cleansed = scheme.Replace("://", string.Empty, StringComparison.Ordinal);
 			var schemes = GetCFBundleURLSchemes().ToList();
-			return schemes.Any(x => x != null && x.Equals(cleansed, StringComparison.InvariantCultureIgnoreCase));
+			return schemes.Any(x => x != null && x.Equals(cleansed, StringComparison.OrdinalIgnoreCase));
 		}
 
 		internal static IEnumerable<string> GetCFBundleURLSchemes()

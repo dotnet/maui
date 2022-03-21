@@ -49,12 +49,15 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this TextBox textBox, ITextStyle textStyle)
 		{
 			var brush = textStyle.TextColor?.ToPlatform();
+
 			if (brush is null)
 			{
 				textBox.Resources.Remove("TextControlForeground");
 				textBox.Resources.Remove("TextControlForegroundPointerOver");
 				textBox.Resources.Remove("TextControlForegroundFocused");
 				textBox.Resources.Remove("TextControlForegroundDisabled");
+
+				textBox.ClearValue(TextBox.ForegroundProperty);
 			}
 			else
 			{
@@ -62,6 +65,8 @@ namespace Microsoft.Maui.Platform
 				textBox.Resources["TextControlForegroundPointerOver"] = brush;
 				textBox.Resources["TextControlForegroundFocused"] = brush;
 				textBox.Resources["TextControlForegroundDisabled"] = brush;
+
+				textBox.Foreground = brush;
 			}
 		}
 

@@ -48,7 +48,7 @@ namespace Maui.Controls.Sample
 				_overlay = overlay;
 			}
 
-			public void Draw(ICanvas canvas, RectangleF dirtyRect)
+			public void Draw(ICanvas canvas, RectF dirtyRect)
 			{
 				canvas.FillColor = Color.FromRgba(255, 0, 0, 225);
 				canvas.StrokeColor = Color.FromRgba(225, 0, 0, 225);

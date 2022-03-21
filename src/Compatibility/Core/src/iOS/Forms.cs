@@ -31,6 +31,7 @@ using TNativeView = AppKit.NSView;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
+	[Obsolete]
 	public struct InitializationOptions
 	{
 		public InitializationFlags Flags;
@@ -102,6 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		// Once we get essentials/cg converted to using startup.cs
 		// we will delete all the renderer code inside this file
+		[Obsolete]
 		internal static void RenderersRegistered()
 		{
 			IsInitializedRenderers = true;
@@ -132,11 +134,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 #endif
 
+		[Obsolete]
 		public static bool IsInitializedRenderers { get; private set; }
 
+		[Obsolete]
 		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
 			SetupInit(activationState.Context, options);
 
+		[Obsolete]
 		static void SetupInit(IMauiContext context, InitializationOptions? maybeOptions = null)
 		{
 			MauiContext = context;
@@ -145,36 +150,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Application.AccentColor = Color.FromRgba(50, 79, 133, 255);
 
-#if __MOBILE__
-			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
-#else
-			if (!IsInitialized)
-			{
-				// Only need to do this once
-				// Subscribe to notifications in OS Theme changes
-				NSDistributedNotificationCenter.GetDefaultCenter().AddObserver((NSString)"AppleInterfaceThemeChangedNotification", (n) =>
-				{
-					var interfaceStyle = NSUserDefaults.StandardUserDefaults.StringForKey("AppleInterfaceStyle");
-
-					var aquaAppearance = NSAppearance.GetAppearance(interfaceStyle == "Dark" ? NSAppearance.NameDarkAqua : NSAppearance.NameAqua);
-					NSApplication.SharedApplication.Appearance = aquaAppearance;
-
-					Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(interfaceStyle == "Dark" ? OSAppTheme.Dark : OSAppTheme.Light));
-				});
-			}
-
-			Device.SetFlowDirection(NSApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
-
-			if (IsMojaveOrNewer)
-			{
-				var interfaceStyle = NSUserDefaults.StandardUserDefaults.StringForKey("AppleInterfaceStyle");
-				var aquaAppearance = NSAppearance.GetAppearance(interfaceStyle == "Dark" ? NSAppearance.NameDarkAqua : NSAppearance.NameAqua);
-				NSApplication.SharedApplication.Appearance = aquaAppearance;
-			}
-#endif
-			var platformServices = new IOSPlatformServices();
-
-			Device.PlatformServices = platformServices;
+			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
 
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
 				RegisterCompatRenderers(context);
@@ -184,6 +160,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			IsInitialized = true;
 		}
 
+		[Obsolete]
 		internal static void RegisterCompatRenderers(IMauiContext context)
 		{
 			if (!IsInitializedRenderers)
@@ -233,110 +210,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 				return base.VisitMember(node);
 			}
-		}
-
-		class IOSPlatformServices : IPlatformServices
-		{
-			public void StartTimer(TimeSpan interval, Func<bool> callback)
-			{
-				NSTimer timer = NSTimer.CreateRepeatingTimer(interval, t =>
-				{
-					if (!callback())
-						t.Invalidate();
-				});
-				NSRunLoop.Main.AddTimer(timer, NSRunLoopMode.Common);
-			}
-
-			HttpClient GetHttpClient()
-			{
-				var proxy = CoreFoundation.CFNetwork.GetSystemProxySettings();
-				var handler = new HttpClientHandler();
-				if (!string.IsNullOrEmpty(proxy.HTTPProxy))
-				{
-					handler.Proxy = CoreFoundation.CFNetwork.GetDefaultProxy();
-					handler.UseProxy = true;
-				}
-				return new HttpClient(handler);
-			}
-
-			public OSAppTheme RequestedTheme
-			{
-				get
-				{
-#if __IOS__ || __TVOS__
-					if (!IsiOS13OrNewer)
-						return OSAppTheme.Unspecified;
-					var uiStyle = GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
-						UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
-
-					switch (uiStyle)
-					{
-						case UIUserInterfaceStyle.Light:
-							return OSAppTheme.Light;
-						case UIUserInterfaceStyle.Dark:
-							return OSAppTheme.Dark;
-						default:
-							return OSAppTheme.Unspecified;
-					};
-#else
-					return AppearanceIsDark() ? OSAppTheme.Dark : OSAppTheme.Light;
-#endif
-				}
-			}
-
-#if __MACOS__
-			bool AppearanceIsDark()
-			{
-				if (IsMojaveOrNewer)
-				{
-					var appearance = NSApplication.SharedApplication.EffectiveAppearance;
-					var matchedAppearance = appearance.FindBestMatch(new string[] { NSAppearance.NameAqua, NSAppearance.NameDarkAqua });
-
-					return matchedAppearance == NSAppearance.NameDarkAqua;
-				}
-				else
-				{
-					return false;
-				}
-			}
-#endif
-
-#if __IOS__ || __TVOS__
-
-			static UIViewController GetCurrentUIViewController() =>
-				GetCurrentViewController(false);
-
-			static UIViewController GetCurrentViewController(bool throwIfNull = true)
-			{
-				UIViewController viewController = null;
-
-				var window = UIApplication.SharedApplication.GetKeyWindow();
-
-				if (window != null && window.WindowLevel == UIWindowLevel.Normal)
-					viewController = window.RootViewController;
-
-				if (viewController == null)
-				{
-					window = UIApplication.SharedApplication
-						.Windows
-						.OrderByDescending(w => w.WindowLevel)
-						.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
-
-					if (window == null && throwIfNull)
-						throw new InvalidOperationException("Could not find current view controller.");
-					else
-						viewController = window?.RootViewController;
-				}
-
-				while (viewController?.PresentedViewController != null)
-					viewController = viewController.PresentedViewController;
-
-				if (throwIfNull && viewController == null)
-					throw new InvalidOperationException("Could not find current view controller.");
-
-				return viewController;
-			}
-#endif
 		}
 	}
 }
