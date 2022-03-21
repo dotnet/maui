@@ -457,6 +457,8 @@ namespace Microsoft.Maui.Controls
 			object original = value;
 			try
 			{
+				convertTo = Nullable.GetUnderlyingType(convertTo) ?? convertTo;
+
 				var stringValue = value as string ?? string.Empty;
 				// see: https://bugzilla.xamarin.com/show_bug.cgi?id=32871
 				// do not canonicalize "*.[.]"; "1." should not update bound BindableProperty
