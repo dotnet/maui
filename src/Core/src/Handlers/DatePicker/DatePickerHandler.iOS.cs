@@ -5,6 +5,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
+#if IOS && !MACCATALYST
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
 		UIColor? _defaultTextColor;
@@ -161,4 +162,5 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Date = _picker.Date.ToDateTime().Date;
 		}
 	}
+#endif
 }

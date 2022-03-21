@@ -1,91 +1,74 @@
 ﻿using System;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-#if IOS && !MACCATALYST
-	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
+	public partial class TimePickerHandler : ViewHandler<ITimePicker, UIDatePicker>
 	{
-		static UIColor? DefaultTextColor;
-
-		protected override MauiTimePicker CreatePlatformView()
+		protected override UIDatePicker CreatePlatformView()
 		{
-			return new MauiTimePicker(() =>
-			{
-				SetVirtualViewTime();
-				PlatformView?.ResignFirstResponder();
-			});
+			return new UIDatePicker { Mode = UIDatePickerMode.Time, TimeZone = new NSTimeZone("UTC") };
 		}
 
-		protected override void ConnectHandler(MauiTimePicker platformView)
+		protected override void ConnectHandler(UIDatePicker platformView)
 		{
 			base.ConnectHandler(platformView);
       
-			SetupDefaults(platformView);
-
 			if (platformView != null)
-			{
+			{	
 				platformView.EditingDidBegin += OnStarted;
 				platformView.EditingDidEnd += OnEnded;
 				platformView.ValueChanged += OnValueChanged;
-				platformView.DateSelected += OnDateSelected;	
-				platformView.UpdateTime(VirtualView.Time);
+				platformView.UpdateTime(VirtualView);
 			}
 		}
 
-		protected override void DisconnectHandler(MauiTimePicker platformView)
+		protected override void DisconnectHandler(UIDatePicker platformView)
 		{
 			base.DisconnectHandler(platformView);
 
 			if (platformView != null)
 			{
-				platformView.RemoveFromSuperview();
-
 				platformView.EditingDidBegin -= OnStarted;
 				platformView.EditingDidEnd -= OnEnded;
 				platformView.ValueChanged -= OnValueChanged;
-				platformView.DateSelected -= OnDateSelected;
-
-				platformView.Dispose();
+			 	platformView.RemoveFromSuperview();
+			 	platformView.Dispose();
 			}
-		}
-
-		void SetupDefaults(MauiTimePicker platformView)
-		{
-			DefaultTextColor = platformView.TextColor;
 		}
 
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateFormat(timePicker, handler.PlatformView?.Picker);
+			handler.PlatformView?.UpdateFormat(timePicker);
 		}
 
 		public static void MapTime(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateTime(timePicker, handler.PlatformView?.Picker);
+			handler.PlatformView?.UpdateTime(timePicker);
 		}
 
 		public static void MapCharacterSpacing(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateCharacterSpacing(timePicker);
+			//handler.PlatformView?.UpdateCharacterSpacing(timePicker);
 		}
 
 		public static void MapFont(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.PlatformView?.UpdateFont(timePicker, fontManager);
+			//handler.PlatformView?.UpdateFont(timePicker, fontManager);
 		}
 
 		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateTextColor(timePicker, DefaultTextColor);
+			//handler.PlatformView?.UpdateTextColor(timePicker, DefaultTextColor);
 		}
 
 		public static void MapFlowDirection(TimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateFlowDirection(timePicker);
-			handler.PlatformView?.UpdateTextAlignment(timePicker);
+			// handler.PlatformView?.UpdateFlowDirection(timePicker);
+			// handler.PlatformView?.UpdateTextAlignment(timePicker);
 		}
 
 		void OnStarted(object? sender, EventArgs eventArgs)
@@ -105,11 +88,6 @@ namespace Microsoft.Maui.Handlers
 			SetVirtualViewTime();
 		}
 
-		void OnDateSelected(object? sender, EventArgs e)
-		{
-			SetVirtualViewTime();
-		}
-
 		void SetVirtualViewTime()
 		{
 			if (VirtualView == null || PlatformView == null)
@@ -119,5 +97,4 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Time = new TimeSpan(datetime.Hour, datetime.Minute, 0);
 		}
 	}
-#endif
 }
