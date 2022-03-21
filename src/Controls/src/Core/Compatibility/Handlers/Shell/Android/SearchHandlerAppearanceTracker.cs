@@ -23,8 +23,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		InputTypes _inputType;
 
 		IMauiContext MauiContext => _shellContext.Shell.Handler.MauiContext;
-		ColorStateList DefaultTextColors { get; set; }
-		ColorStateList DefaultPlaceholderTextColors { get; set; }
 
 		public SearchHandlerAppearanceTracker(IShellSearchView searchView, IShellContext shellContext)
 		{
@@ -34,8 +32,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_searchHandler.PropertyChanged += SearchHandlerPropertyChanged;
 			_searchHandler.FocusChangeRequested += SearchHandlerFocusChangeRequested;
 			_editText = (_control as ViewGroup).GetChildrenOfType<EditText>().FirstOrDefault();
-			DefaultTextColors = _editText.TextColors;
-			DefaultPlaceholderTextColors = _editText.HintTextColors;
 			UpdateSearchBarColors();
 			UpdateFont();
 			UpdateHorizontalTextAlignment();
@@ -131,7 +127,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdatePlaceholderColor()
 		{
-			_editText.UpdatePlaceholderColor(_searchHandler.PlaceholderColor, DefaultPlaceholderTextColors);
+			_editText.UpdatePlaceholderColor(_searchHandler.PlaceholderColor);
 		}
 
 		void UpdateHorizontalTextAlignment()
@@ -177,7 +173,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateTextColor()
 		{
-			_editText.UpdateTextColor(_searchHandler.TextColor, DefaultTextColors);
+			_editText.UpdateTextColor(_searchHandler.TextColor);
 			UpdateImageButtonIconColor("SearchIcon", _searchHandler.TextColor);
 			UpdateClearPlaceholderIconColor();
 			//we need to set the cursor to
