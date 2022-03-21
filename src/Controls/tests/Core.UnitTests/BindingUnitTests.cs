@@ -1866,7 +1866,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 #if !WINDOWS_PHONE
 		[TestCase("en-US", "0.5", 0.5, 0.9, "0.9")]
 		[TestCase("pt-PT", "0,5", 0.5, 0.9, "0,9")]
-		public void ConvertIsCultureInvariant(string culture, string sliderSetStringValue, double sliderExpectedDoubleValue, double sliderSetDoubleValue, string sliderExpectedStringValue)
+		public void ConvertIsCultureAware(string culture, string sliderSetStringValue, double sliderExpectedDoubleValue, double sliderSetDoubleValue, string sliderExpectedStringValue)
 		{
 			System.Threading.Thread.CurrentThread.CurrentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
 
