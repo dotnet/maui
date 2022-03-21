@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMenuBar(IWindowHandler handler, IWindow view)
 		{
-			if (view is IMenuBarElement mb)
+			if (MauiUIApplicationDelegate.Current != null &&
+				view is IMenuBarElement mb)
 			{
 				if (MauiUIApplicationDelegate.Current.MenuBuilder == null)
 				{
@@ -42,6 +43,12 @@ namespace Microsoft.Maui.Handlers
 						.DisconnectHandler();
 				}
 			}
+		}
+
+		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
+		{
+			if (args is DisplayDensityRequest request)
+				request.SetResult(handler.PlatformView.GetDisplayDensity());
 		}
 	}
 }

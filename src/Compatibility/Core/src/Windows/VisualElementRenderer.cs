@@ -15,6 +15,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer instead")]
 	public class VisualElementRenderer<TElement, TNativeElement> : Panel, IVisualNativeElementRenderer, IDisposable, IEffectControlProvider where TElement : VisualElement
 																																	  where TNativeElement : FrameworkElement
 	{
@@ -212,7 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				IVisualElementRenderer renderer = Platform.GetRenderer(child);
 				if (renderer == null)
 					continue;
-				Rectangle bounds = child.Bounds;
+				var bounds = child.Bounds;
 
 				renderer.ContainerElement.Arrange(new WRect(bounds.X, bounds.Y, Math.Max(0, bounds.Width), Math.Max(0, bounds.Height)));
 

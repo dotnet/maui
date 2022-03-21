@@ -692,38 +692,6 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="SetFlowDirection">
-      <MemberSignature Language="C#" Value="public static void SetFlowDirection (Microsoft.Maui.Controls.FlowDirection value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetFlowDirection(valuetype Microsoft.Maui.Controls.FlowDirection value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Device.SetFlowDirection(Microsoft.Maui.Controls.FlowDirection)" />
-      <MemberSignature Language="F#" Value="static member SetFlowDirection : Microsoft.Maui.Controls.FlowDirection -&gt; unit" Usage="Microsoft.Maui.Controls.Device.SetFlowDirection value" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.FlowDirection" />
-      </Parameters>
-      <Docs>
-        <param name="value">The new flow direction value to set.</param>
-        <summary>Sets the flow direction on the device.</summary>
-        <remarks>
-          <para>The following contains a few important points about flow direction from <format type="text/html"><a href="https://docs.microsoft.com/xamarin/xamarin-forms/app-fundamentals/localization/rtl">Right-to-Left Localization</a></format>. Developers should consult that document for more information about limitations of right-to-left support, and for requirements to implement right-to-left support on various target platforms.</para>
-          <para>The default value of <see cref="T:Microsoft.Maui.Controls.FlowDirection" /> for a visual element that has no parent is <see cref="F:Microsoft.Maui.Controls.FlowDirection.LeftToRight" />, even on platforms where <see cref="P:Microsoft.Maui.Controls.Device.FlowDirection" /> is <see cref="F:Microsoft.Maui.Controls.FlowDirection.RightToLeft" />. Therefore, developers must deliberately opt in to right-to-left layout. Developers can choose right-to-left layout by setting the <see cref="P:Microsoft.Maui.Controls.VisualElement.FlowDirection" /> property of the root element to <see cref="F:Microsoft.Maui.Controls.FlowDirection.RightToLeft" /> to chosse right-to-left layout, or to <see cref="F:Microsoft.Maui.Controls.FlowDirection.MatchParent" /> to match the device layout.</para>
-          <para>All <see cref="T:Microsoft.Maui.Controls.VisualElement" />s that have a parent default to <see cref="F:Microsoft.Maui.Controls.FlowDirection.MatchParent" />.</para>
-        </remarks>
-      </Docs>
-    </Member>
     <Member MemberName="StartTimer">
       <MemberSignature Language="C#" Value="public static void StartTimer (TimeSpan interval, Func&lt;bool&gt; callback);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void StartTimer(valuetype System.TimeSpan interval, class System.Func`1&lt;bool&gt; callback) cil managed" />

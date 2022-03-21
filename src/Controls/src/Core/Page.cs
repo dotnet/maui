@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
 
 		bool _allocatedFlag;
-		Rectangle _containerArea;
+		Rect _containerArea;
 
 		bool _containerAreaSet;
 
@@ -77,6 +77,7 @@ namespace Microsoft.Maui.Controls
 
 			InternalChildren.CollectionChanged += InternalChildrenOnCollectionChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Page>>(() => new PlatformConfigurationRegistry<Page>(this));
+			this.NavigatedTo += FlushPendingActions;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BackgroundImageSource']/Docs" />
@@ -131,7 +132,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ContainerArea']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Rectangle ContainerArea
+		public Rect ContainerArea
 		{
 			get { return _containerArea; }
 			set
@@ -182,13 +183,13 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler Disappearing;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayActionSheet']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayActionSheet'][1]/Docs" />
 		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, params string[] buttons)
 		{
 			return DisplayActionSheet(title, cancel, destruction, FlowDirection.MatchParent, buttons);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayActionSheet']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayActionSheet'][2]/Docs" />
 		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
 		{
 			var args = new ActionSheetArguments(title, cancel, destruction, buttons);
@@ -203,25 +204,25 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][1]/Docs" />
 		public Task DisplayAlert(string title, string message, string cancel)
 		{
 			return DisplayAlert(title, message, null, cancel, FlowDirection.MatchParent);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][2]/Docs" />
 		public Task<bool> DisplayAlert(string title, string message, string accept, string cancel)
 		{
 			return DisplayAlert(title, message, accept, cancel, FlowDirection.MatchParent);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][1]/Docs" />
 		public Task DisplayAlert(string title, string message, string cancel, FlowDirection flowDirection)
 		{
 			return DisplayAlert(title, message, null, cancel, flowDirection);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][2]/Docs" />
 		public Task<bool> DisplayAlert(string title, string message, string accept, string cancel, FlowDirection flowDirection)
 		{
 			if (string.IsNullOrEmpty(cancel))
@@ -238,7 +239,7 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayPromptAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayPromptAsync'][2]/Docs" />
 		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
 		{
 			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
@@ -251,16 +252,17 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
-		internal override void OnIsPlatformEnabledChanged()
+		void FlushPendingActions(object sender, EventArgs e)
 		{
-			base.OnIsPlatformEnabledChanged();
-			if (IsPlatformEnabled && _pendingActions.Count > 0)
+			if (_pendingActions.Count > 0)
 			{
 				var actionsToProcess = _pendingActions.ToList();
 				_pendingActions.Clear();
 				foreach (var pendingAction in actionsToProcess)
 					pendingAction();
 			}
+
+			this.NavigatedTo -= FlushPendingActions;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ForceLayout']/Docs" />
@@ -277,8 +279,8 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void LayoutChildren(double x, double y, double width, double height)
 		{
-			var area = new Rectangle(x, y, width, height);
-			Rectangle originalArea = area;
+			var area = new Rect(x, y, width, height);
+			Rect originalArea = area;
 			if (_containerAreaSet)
 			{
 				area = ContainerArea;
@@ -377,7 +379,7 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			var logicalChildren = ((IElementController)this).LogicalChildren;
-			var startingLayout = new List<Rectangle>(logicalChildren.Count);
+			var startingLayout = new List<Rect>(logicalChildren.Count);
 			foreach (Element el in logicalChildren)
 			{
 				if (el is VisualElement c)

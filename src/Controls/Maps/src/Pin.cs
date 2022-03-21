@@ -70,10 +70,17 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 			unchecked
 			{
+#if NETSTANDARD2_0
 				int hashCode = Label?.GetHashCode() ?? 0;
 				hashCode = (hashCode * 397) ^ Position.GetHashCode();
 				hashCode = (hashCode * 397) ^ (int)Type;
 				hashCode = (hashCode * 397) ^ (Address?.GetHashCode() ?? 0);
+#else
+				int hashCode = Label?.GetHashCode(StringComparison.Ordinal) ?? 0;
+				hashCode = (hashCode * 397) ^ Position.GetHashCode();
+				hashCode = (hashCode * 397) ^ (int)Type;
+				hashCode = (hashCode * 397) ^ (Address?.GetHashCode(StringComparison.Ordinal) ?? 0);
+#endif
 				return hashCode;
 			}
 		}
@@ -106,7 +113,9 @@ namespace Microsoft.Maui.Controls.Maps
 
 		bool Equals(Pin other)
 		{
-			return string.Equals(Label, other.Label) && Equals(Position, other.Position) && Type == other.Type && string.Equals(Address, other.Address);
+			return string.Equals(Label, other.Label, StringComparison.Ordinal) &&
+				Equals(Position, other.Position) && Type == other.Type &&
+				string.Equals(Address, other.Address, StringComparison.Ordinal);
 		}
 	}
 }

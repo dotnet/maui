@@ -11,6 +11,7 @@ using ATimePicker = Android.Widget.TimePicker;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class TimePickerRendererBase<TControl> : ViewRenderer<TimePicker, TControl>, TimePickerDialog.IOnTimeSetListener, IPickerRenderer
 		where TControl : global::Android.Views.View
 	{
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		[PortHandler]
 		bool Is24HourView
 		{
-			get => (DateFormat.Is24HourFormat(Context) && Element.Format == (string)TimePicker.FormatProperty.DefaultValue) || Element.Format?.Contains('H') == true;
+			get => (DateFormat.Is24HourFormat(Context) && Element.Format == (string)TimePicker.FormatProperty.DefaultValue) || Element.Format?.Contains('H', StringComparison.Ordinal) == true;
 		}
 
 		public TimePickerRendererBase(Context context) : base(context)
@@ -182,6 +183,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		abstract protected void UpdateTextColor();
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class TimePickerRenderer : TimePickerRendererBase<EditText>
 	{
 		TextColorSwitcher _textColorSwitcher;

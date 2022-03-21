@@ -28,43 +28,43 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		void UpdateContent() =>
-			PlatformView.UpdateContent(VirtualView.Content, MauiContext);
+		static void UpdateContent(IRefreshViewHandler handler) =>
+			handler.PlatformView.UpdateContent(handler.VirtualView.Content, handler.MauiContext);
 
-		void UpdateRefreshColor()
+		static void UpdateRefreshColor(IRefreshViewHandler handler)
 		{
-			if (VirtualView.RefreshColor == null)
+			if (handler.VirtualView.RefreshColor == null)
 				return;
 
-			var color = VirtualView.RefreshColor.ToColor()?.ToInt();
+			var color = handler.VirtualView.RefreshColor.ToColor()?.ToInt();
 
 			if (color != null)
-				PlatformView.SetColorSchemeColors(color.Value);
+				handler.PlatformView.SetColorSchemeColors(color.Value);
 		}
 
-		void UpdateIsRefreshing() =>
-			PlatformView.Refreshing = VirtualView.IsRefreshing;
+		static void UpdateIsRefreshing(IRefreshViewHandler handler) =>
+			handler.PlatformView.Refreshing = handler.VirtualView.IsRefreshing;
 
-		void UpdateBackground()
+		static void UpdateBackground(IRefreshViewHandler handler)
 		{
-			if (VirtualView.Background == null)
+			if (handler.VirtualView.Background == null)
 				return;
 
-			var color = VirtualView.Background.ToColor()?.ToInt();
+			var color = handler.VirtualView.Background.ToColor()?.ToInt();
 			if (color != null)
-				PlatformView.SetProgressBackgroundColorSchemeColor(color.Value);
+				handler.PlatformView.SetProgressBackgroundColorSchemeColor(color.Value);
 		}
 
-		public static void MapBackground(RefreshViewHandler handler, IView view)
-			=> handler.UpdateBackground();
+		public static void MapBackground(IRefreshViewHandler handler, IView view)
+			=> UpdateBackground(handler);
 
-		public static void MapIsRefreshing(RefreshViewHandler handler, IRefreshView refreshView)
-			=> handler.UpdateIsRefreshing();
+		public static void MapIsRefreshing(IRefreshViewHandler handler, IRefreshView refreshView)
+			=> UpdateIsRefreshing(handler);
 
-		public static void MapContent(RefreshViewHandler handler, IRefreshView refreshView)
-			=> handler.UpdateContent();
+		public static void MapContent(IRefreshViewHandler handler, IRefreshView refreshView)
+			=> UpdateContent(handler);
 
-		public static void MapRefreshColor(RefreshViewHandler handler, IRefreshView refreshView)
-			=> handler.UpdateRefreshColor();
+		public static void MapRefreshColor(IRefreshViewHandler handler, IRefreshView refreshView)
+			=> UpdateRefreshColor(handler);
 	}
 }

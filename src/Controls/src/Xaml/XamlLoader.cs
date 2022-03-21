@@ -355,7 +355,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 				var pattern = $"x:Class *= *\"{type.FullName}\"";
 				var regex = new Regex(pattern, RegexOptions.ECMAScript);
-				if (regex.IsMatch(xaml) || xaml.Contains($"x:Class=\"{type.FullName}\""))
+				if (regex.IsMatch(xaml) || xaml.IndexOf($"x:Class=\"{type.FullName}\"") != -1)
 					return xaml;
 			}
 			return null;

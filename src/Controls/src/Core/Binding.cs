@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 		object _source;
 		string _updateSourceEventName;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public Binding()
 		{
 		}

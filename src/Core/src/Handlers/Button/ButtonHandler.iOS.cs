@@ -8,19 +8,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		static readonly UIControlState[] ControlStates = { UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled };
 
-		static UIColor? ButtonTextColorDefaultDisabled;
-		static UIColor? ButtonTextColorDefaultHighlighted;
-		static UIColor? ButtonTextColorDefaultNormal;
-
 		// This appears to be the padding that Xcode has when "Default" content insets are used
 		public readonly static Thickness DefaultPadding = new Thickness(12, 7);
-
-		void SetupDefaults(UIButton platformView)
-		{
-			ButtonTextColorDefaultNormal ??= platformView.TitleColor(UIControlState.Normal);
-			ButtonTextColorDefaultHighlighted ??= platformView.TitleColor(UIControlState.Highlighted);
-			ButtonTextColorDefaultDisabled ??= platformView.TitleColor(UIControlState.Disabled);
-		}
 
 		protected override UIButton CreatePlatformView()
 		{
@@ -31,8 +20,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UIButton platformView)
 		{
-			SetupDefaults(platformView);
-
 			platformView.TouchUpInside += OnButtonTouchUpInside;
 			platformView.TouchUpOutside += OnButtonTouchUpOutside;
 			platformView.TouchDown += OnButtonTouchDown;
@@ -45,6 +32,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.TouchUpInside -= OnButtonTouchUpInside;
 			platformView.TouchUpOutside -= OnButtonTouchUpOutside;
 			platformView.TouchDown -= OnButtonTouchDown;
+
 			base.DisconnectHandler(platformView);
 		}
 
@@ -73,7 +61,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			handler.PlatformView?.UpdateTextColor(button, ButtonTextColorDefaultNormal, ButtonTextColorDefaultHighlighted, ButtonTextColorDefaultDisabled);
+			handler.PlatformView?.UpdateTextColor(button);
 		}
 
 		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)

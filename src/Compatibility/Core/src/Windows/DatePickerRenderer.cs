@@ -14,6 +14,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class DatePickerRenderer : ViewRenderer<DatePicker, Microsoft.UI.Xaml.Controls.DatePicker>
 	{
 		WBrush _defaultBrush;
@@ -143,7 +144,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		bool CheckDateFormat()
 		{
-			return String.IsNullOrWhiteSpace(Element.Format) || Element.Format.Equals("d");
+			return String.IsNullOrWhiteSpace(Element.Format) || Element.Format.Equals("d", StringComparison.Ordinal);
 		}
 
 		[PortHandler]
@@ -165,7 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				Control.MonthFormat = "month";
 			}
-			else if (Element.Format.Equals("D"))
+			else if (Element.Format.Equals("D", StringComparison.Ordinal))
 			{
 				Control.MonthFormat = "month.full";
 			}
@@ -191,7 +192,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				Control.DayFormat = "day";
 			}
-			else if (Element.Format.Equals("D"))
+			else if (Element.Format.Equals("D", StringComparison.Ordinal))
 			{
 				Control.DayFormat = "dayofweek.full";
 			}
@@ -217,7 +218,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				Control.YearFormat = "year";
 			}
-			else if (Element.Format.Equals("D"))
+			else if (Element.Format.Equals("D", StringComparison.Ordinal))
 			{
 				Control.YearFormat = "year.full";
 			}
@@ -255,7 +256,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (datePicker == null)
 				return;
 
-			bool datePickerIsDefault = datePicker.FontFamily == null && datePicker.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(DatePicker), true) && datePicker.FontAttributes == FontAttributes.None;
+			bool datePickerIsDefault =
+				datePicker.FontFamily == null &&
+#pragma warning disable CS0612 // Type or member is obsolete
+				datePicker.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(DatePicker), true) &&
+#pragma warning restore CS0612 // Type or member is obsolete
+				datePicker.FontAttributes == FontAttributes.None;
 
 			if (datePickerIsDefault && !_fontApplied)
 				return;

@@ -25,7 +25,7 @@ namespace Microsoft.Maui
 		public static SourceInfo? GetSourceInfo(object obj) =>
 			sourceInfos.TryGetValue(obj, out var sourceinfo) ? sourceinfo : null;
 
-		/// <include file="../../docs/Microsoft.Maui/VisualDiagnostics.xml" path="//Member[@MemberName='OnChildAdded']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/VisualDiagnostics.xml" path="//Member[@MemberName='OnChildAdded'][1]/Docs" />
 		public static void OnChildAdded(IVisualTreeElement parent, IVisualTreeElement child)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
@@ -39,7 +39,7 @@ namespace Microsoft.Maui
 			OnChildAdded(parent, child, index);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/VisualDiagnostics.xml" path="//Member[@MemberName='OnChildAdded']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/VisualDiagnostics.xml" path="//Member[@MemberName='OnChildAdded'][2]/Docs" />
 		public static void OnChildAdded(IVisualTreeElement? parent, IVisualTreeElement child, int newLogicalIndex)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)

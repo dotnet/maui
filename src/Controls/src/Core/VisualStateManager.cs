@@ -181,12 +181,12 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public VisualStateGroupList() : this(false)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public VisualStateGroupList(bool isDefault)
 		{
 			IsDefault = isDefault;

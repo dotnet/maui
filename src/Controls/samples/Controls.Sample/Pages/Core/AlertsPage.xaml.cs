@@ -11,6 +11,12 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
+		protected override async void OnAppearing()
+		{
+			base.OnAppearing();
+			await DisplayAlert("Alert", "Welcome to the Alerts Page", "Hello!");
+		}
+
 		async void OnAlertSimpleClicked(object sender, EventArgs e)
 		{
 			await DisplayAlert("Alert", "You have been alerted", "OK");

@@ -12,5 +12,13 @@ namespace Microsoft.Maui.Controls
 		bool IFlyoutView.IsPresented { get => FlyoutIsPresented; set => FlyoutIsPresented = value; }
 
 		bool IFlyoutView.IsGestureEnabled => false;
+
+		FlyoutBehavior IFlyoutView.FlyoutBehavior
+		{
+			get
+			{
+				return GetEffectiveFlyoutBehavior();
+			}
+		}
 	}
 }

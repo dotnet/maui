@@ -1,4 +1,6 @@
-﻿using ObjCRuntime;
+﻿using System;
+using System.Globalization;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -20,14 +22,24 @@ namespace Microsoft.Maui.Platform
 			platformDatePicker.UpdateDate(datePicker, null);
 		}
 
+		public static void UpdateTextColor(this MauiDatePicker platformDatePicker, IDatePicker datePicker) =>
+			UpdateTextColor(platformDatePicker, datePicker, null);
+
 		public static void UpdateTextColor(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIColor? defaultTextColor)
 		{
 			var textColor = datePicker.TextColor;
 
 			if (textColor == null)
-				platformDatePicker.TextColor = defaultTextColor;
+			{
+				if (defaultTextColor != null)
+				{
+					platformDatePicker.TextColor = defaultTextColor;
+				}
+			}
 			else
+			{
 				platformDatePicker.TextColor = textColor.ToPlatform();
+			}
 
 			// HACK This forces the color to update; there's probably a more elegant way to make this happen
 			platformDatePicker.UpdateDate(datePicker);
@@ -38,7 +50,37 @@ namespace Microsoft.Maui.Platform
 			if (picker != null && picker.Date.ToDateTime().Date != datePicker.Date.Date)
 				picker.SetDate(datePicker.Date.ToNSDate(), false);
 
-			platformDatePicker.Text = datePicker.Date.ToString(datePicker.Format);
+			string format = datePicker.Format ?? string.Empty;
+
+			// Can't use VirtualView.Format because it won't display the correct format if the region and language are set differently
+			if (picker != null && string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase))	
+			{
+				NSDateFormatter dateFormatter = new NSDateFormatter
+				{
+					TimeZone = NSTimeZone.FromGMT(0)
+				};
+
+				if (format.Equals("D", StringComparison.Ordinal) == true)
+				{
+					dateFormatter.DateStyle = NSDateFormatterStyle.Long;
+					var strDate = dateFormatter.StringFor(picker?.Date);
+					platformDatePicker.Text = strDate;
+				}
+				else
+				{
+					dateFormatter.DateStyle = NSDateFormatterStyle.Short;
+					var strDate = dateFormatter.StringFor(picker?.Date);
+					platformDatePicker.Text = strDate;
+				}
+			}
+			else if (format.Contains('/', StringComparison.Ordinal))
+			{
+				platformDatePicker.Text = datePicker.Date.ToString(format, CultureInfo.InvariantCulture);
+			}
+			else
+			{
+				platformDatePicker.Text = datePicker.Date.ToString(format);
+			}
 
 			platformDatePicker.UpdateCharacterSpacing(datePicker);
 		}
@@ -67,6 +109,11 @@ namespace Microsoft.Maui.Platform
 			{
 				picker.MaximumDate = datePicker.MaximumDate.ToNSDate();
 			}
+		}
+
+		public static void UpdateTextAlignment(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
+		{
+			// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
 		}
 	}
 }

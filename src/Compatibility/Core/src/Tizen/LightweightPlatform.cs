@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		public LightweightPlatform(EvasObject parent)
 		{
 			Forms.NativeParent = parent;
-			_defaultPlatformColor = Device.Idiom == TargetIdiom.Phone ? EColor.White : EColor.Transparent;
+			_defaultPlatformColor = DeviceInfo.Idiom == DeviceIdiom.Phone ? EColor.White : EColor.Transparent;
 			_viewStack = new Native.Canvas(parent)
 			{
 				BackgroundColor = _defaultPlatformColor,

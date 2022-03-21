@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
@@ -32,9 +33,14 @@ namespace Microsoft.Maui.Controls
 			});
 		}
 
-		public async Task GoToAsync(ShellNavigationParameters shellNavigationParameters)
+		public Task GoToAsync(ShellNavigationParameters shellNavigationParameters) =>
+			GoToAsync(shellNavigationParameters, null);
+
+		internal async Task GoToAsync(
+			ShellNavigationParameters shellNavigationParameters,
+			ShellNavigationRequest navigationRequest)
 		{
-			if (shellNavigationParameters.PagePushing != null)
+			if (shellNavigationParameters.PagePushing != null && navigationRequest == null)
 				Routing.RegisterImplicitPageRoute(shellNavigationParameters.PagePushing);
 
 			var state = shellNavigationParameters.TargetState ?? new ShellNavigationState(Routing.GetRoute(shellNavigationParameters.PagePushing), false);
@@ -42,7 +48,7 @@ namespace Microsoft.Maui.Controls
 			bool enableRelativeShellRoutes = shellNavigationParameters.EnableRelativeShellRoutes;
 			ShellNavigatingEventArgs deferredArgs = shellNavigationParameters.DeferredArgs;
 
-			var navigationRequest = ShellUriHandler.GetNavigationRequest(_shell, state.FullLocation, enableRelativeShellRoutes, shellNavigationParameters: shellNavigationParameters);
+			navigationRequest ??= ShellUriHandler.GetNavigationRequest(_shell, state.FullLocation, enableRelativeShellRoutes, shellNavigationParameters: shellNavigationParameters);
 			bool isRelativePopping = ShellUriHandler.IsTargetRelativePop(shellNavigationParameters);
 			var parameters = shellNavigationParameters.Parameters ?? new ShellRouteParameters();
 
@@ -147,7 +153,7 @@ namespace Microsoft.Maui.Controls
 				if (navigationRequest.Request.GlobalRoutes.Count > 0 && navigationRequest.StackRequest != ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 				{
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
-					await Device.InvokeOnMainThreadAsync(() =>
+					await _shell.Dispatcher.DispatchAsync(() =>
 					{
 						return _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, animate, isRelativePopping);
 					});
@@ -157,7 +163,7 @@ namespace Microsoft.Maui.Controls
 					currentShellSection?.Navigation?.NavigationStack?.Count > 1)
 				{
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
-					await Device.InvokeOnMainThreadAsync(() =>
+					await _shell.Dispatcher.DispatchAsync(() =>
 					{
 						return _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, animate, isRelativePopping);
 					});
@@ -243,7 +249,7 @@ namespace Microsoft.Maui.Controls
 				if (!q.Key.StartsWith(prefix, StringComparison.Ordinal))
 					continue;
 				var key = q.Key.Substring(prefix.Length);
-				if (key.Contains("."))
+				if (key.IndexOf(".", StringComparison.Ordinal) != -1)
 					continue;
 				filteredQuery.Add(key, q.Value);
 			}
@@ -492,7 +498,6 @@ namespace Microsoft.Maui.Controls
 				routeStack.Insert(0, "/");
 
 			return new ShellNavigationState(String.Join("/", routeStack), true);
-
 		}
 
 		public static List<Page> BuildFlattenedNavigationStack(Shell shell)

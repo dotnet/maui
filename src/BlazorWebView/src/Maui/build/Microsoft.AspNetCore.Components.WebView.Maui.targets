@@ -44,9 +44,8 @@
       <Content Remove="@(_ContentToUpdate)" />
       <Content Include="@(_ContentToUpdate)" ExcludeFromContentCheck="true" PublishFolderType="None" />
 
-      <!-- Remove other extraneous files -->
-      <Content Remove="global.json" />
-      <Content Remove="Properties\launchSettings.json" />
+      <!-- Remove the items in AppDesignerFolder ("Properties", by default) so they don't get copied to the output directory -->
+      <Content Remove="$(AppDesignerFolder)\**" Condition="'$(AppDesignerFolder)' != ''" />
     </ItemGroup>
   </Target>
 

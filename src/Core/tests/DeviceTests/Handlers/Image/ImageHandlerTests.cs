@@ -272,7 +272,7 @@ namespace Microsoft.Maui.DeviceTests
 			handler.SetVirtualView(view);
 			view.Handler = handler;
 
-			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
+			view.Arrange(new Rect(0, 0, view.Width, view.Height));
 			handler.PlatformArrange(view.Frame);
 
 			return handler;

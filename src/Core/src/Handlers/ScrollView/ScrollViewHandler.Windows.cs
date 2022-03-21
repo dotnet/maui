@@ -33,6 +33,9 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+			widthConstraint = Math.Max(widthConstraint, 0);
+			heightConstraint = Math.Max(heightConstraint, 0);
+
 			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
 
 			if (GetInsetPanel(PlatformView) == null)
@@ -236,7 +239,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// If the presented content has LayoutAlignment Fill, we'll need to adjust the measurement to account for that
-			return fullSize.AdjustForFill(new Rectangle(0, 0, widthConstraint, heightConstraint), presentedContent);
+			return fullSize.AdjustForFill(new Rect(0, 0, widthConstraint, heightConstraint), presentedContent);
 		}
 	}
 }

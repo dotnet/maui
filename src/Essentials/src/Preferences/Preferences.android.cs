@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 									if (!double.TryParse(savedDouble, NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out var outDouble))
 									{
 										var maxString = Convert.ToString(double.MaxValue, CultureInfo.InvariantCulture);
-										outDouble = savedDouble.Equals(maxString) ? double.MaxValue : double.MinValue;
+										outDouble = savedDouble.Equals(maxString, StringComparison.Ordinal) ? double.MaxValue : double.MinValue;
 									}
 
 									value = outDouble;

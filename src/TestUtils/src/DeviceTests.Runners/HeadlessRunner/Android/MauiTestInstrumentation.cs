@@ -32,6 +32,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public HeadlessRunnerOptions RunnerOptions { get; private set; } = null!;
 
+		public Context? CurrentExecutionContext { get; private set; }
+
 		public override void OnCreate(Bundle? arguments)
 		{
 			_activityClass = Java.Lang.Class.ForName(Context!.PackageName + ".TestActivity");
@@ -130,10 +132,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				if (activity is not MauiTestActivity testActivity)
 					throw new InvalidOperationException($"Unexpected activity type '{activity?.GetType().FullName ?? "<null>"}'.");
 
+				CurrentExecutionContext = activity;
+
 				return testActivity.TaskCompletionSource.Task;
 			}
 			else
 			{
+				CurrentExecutionContext = TargetContext;
+
 				var runner = Services.GetRequiredService<HeadlessTestRunner>();
 
 				return runner.RunTestsAsync();

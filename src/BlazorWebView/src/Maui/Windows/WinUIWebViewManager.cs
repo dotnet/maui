@@ -8,6 +8,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
 using Windows.Storage.Streams;
+using Windows.Storage;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -22,14 +23,34 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly string _hostPageRelativePath;
 		private readonly string _contentRootDir;
 
-		public WinUIWebViewManager(WebView2Control webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath, string contentRootDir)
-			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath)
+		/// <summary>
+		/// Initializes a new instance of <see cref="WinUIWebViewManager"/>
+		/// </summary>
+		/// <param name="webview">A <see cref="WebView2Control"/> to access platform-specific WebView2 APIs.</param>
+		/// <param name="services">A service provider containing services to be used by this class and also by application code.</param>
+		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
+		/// <param name="fileProvider">Provides static content to the webview.</param>
+		/// <param name="jsComponents">The <see cref="JSComponentConfigurationStore"/>.</param>
+		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
+		/// <param name="contentRootDir">Path to the directory containing application content files.</param>
+        /// <param name="webViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
+        public WinUIWebViewManager(
+			WebView2Control webview,
+			IServiceProvider services,
+			Dispatcher dispatcher,
+			IFileProvider fileProvider,
+			JSComponentConfigurationStore jsComponents,
+			string hostPageRelativePath,
+			string contentRootDir,
+			BlazorWebViewHandler webViewHandler)
+			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath, webViewHandler)
 		{
 			_webview = webview;
 			_hostPageRelativePath = hostPageRelativePath;
 			_contentRootDir = contentRootDir;
 		}
 
+		/// <inheritdoc />
 		protected override async Task HandleWebResourceRequest(CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
 			// Unlike server-side code, we get told exactly why the browser is making the request,
@@ -67,11 +88,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (new Uri(AppOrigin).IsBaseOf(uri))
 				{
 					var relativePath = new Uri(AppOrigin).MakeRelativeUri(uri).ToString();
-					if (allowFallbackOnHostPage && string.IsNullOrEmpty(relativePath))
+
+					// If the path does not end in a file extension (or is empty), it's most likely referring to a page,
+					// in which case we should allow falling back on the host page.
+					if (allowFallbackOnHostPage && !Path.HasExtension(relativePath))
 					{
 						relativePath = _hostPageRelativePath;
 					}
-					relativePath = Path.Combine(_contentRootDir, relativePath.Replace("/", "\\"));
+					relativePath = Path.Combine(_contentRootDir, relativePath.Replace('/', '\\'));
 
 					var winUIItem = await Package.Current.InstalledLocation.TryGetItemAsync(relativePath);
 					if (winUIItem != null)
@@ -81,9 +105,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						var contentType = StaticContentProvider.GetResponseContentTypeOrDefault(relativePath);
 						headers = StaticContentProvider.GetResponseHeaders(contentType);
 						var headerString = GetHeaderString(headers);
-						var winUIFile = await Package.Current.InstalledLocation.GetFileAsync(relativePath);
+						var stream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
 
-						eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(await winUIFile.OpenReadAsync(), statusCode, statusMessage, headerString);
+						eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(stream.AsRandomAccessStream(), statusCode, statusMessage, headerString);
 					}
 				}
 			}
@@ -92,6 +116,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			deferral.Complete();
 		}
 
+		/// <inheritdoc />
 		protected override void QueueBlazorStart()
 		{
 			// In .NET MAUI we use autostart='false' for the Blazor script reference, so we start it up manually in this event

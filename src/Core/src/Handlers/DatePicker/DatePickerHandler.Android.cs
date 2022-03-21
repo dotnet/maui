@@ -1,14 +1,13 @@
-﻿using Android.App;
+﻿using System;
+using Android.App;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
-		Drawable? _defaultBackground;
-		ColorStateList? _defaultTextColors;
-
 		DatePickerDialog? _dialog;
 
 		protected override MauiDatePicker CreatePlatformView()
@@ -33,23 +32,20 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
-			SetupDefaults(platformView);
-		}
-
-		void SetupDefaults(MauiDatePicker platformView)
-		{
-			_defaultBackground = platformView.Background;
-			_defaultTextColors = platformView.TextColors;
+			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 		}
 
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
 			if (_dialog != null)
 			{
+				_dialog.CancelEvent -= OnCancelButtonClicked;
 				_dialog.Hide();
 				_dialog.Dispose();
 				_dialog = null;
 			}
+
+			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -72,7 +68,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateBackground(datePicker, platformHandler._defaultBackground);
+				handler.PlatformView?.UpdateBackground(datePicker);
 		}
 
 		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
@@ -112,7 +108,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateTextColor(datePicker, platformHandler._defaultTextColors);
+				handler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
 		void ShowPickerDialog()
@@ -132,7 +128,13 @@ namespace Microsoft.Maui.Handlers
 			if (_dialog == null)
 				_dialog = CreateDatePickerDialog(year, month, day);
 			else
-				_dialog.UpdateDate(year, month, day);
+			{
+				EventHandler? setDateLater = null;
+				setDateLater = (sender, e) => { _dialog!.UpdateDate(year, month, day); _dialog.ShowEvent -= setDateLater; };
+				_dialog.ShowEvent += setDateLater;
+			}
+
+			_dialog.CancelEvent += OnCancelButtonClicked;
 
 			_dialog.Show();
 		}
@@ -140,6 +142,24 @@ namespace Microsoft.Maui.Handlers
 		void HidePickerDialog()
 		{
 			_dialog?.Hide();
+		}
+
+		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+		{
+			DatePickerDialog? currentDialog = _dialog;
+
+			if (currentDialog != null && currentDialog.IsShowing)
+			{
+				currentDialog.Dismiss();
+				currentDialog.CancelEvent -= OnCancelButtonClicked;
+
+				ShowPickerDialog(currentDialog.DatePicker.Year, currentDialog.DatePicker.Month, currentDialog.DatePicker.DayOfMonth);
+			}
+		}
+
+		void OnCancelButtonClicked(object? sender, EventArgs e)
+		{
+			// TODO: Update IsFocused Property
 		}
 	}
 }

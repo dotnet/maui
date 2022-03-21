@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		public UIViewController? ViewController { get; set; }
 
-		public override void PlatformArrange(Rectangle rect) =>
+		public override void PlatformArrange(Rect rect) =>
 			this.PlatformArrangeHandler(rect);
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>

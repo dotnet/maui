@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	{
 		public HandlerToRendererShim(IPlatformViewHandler vh)
 		{
+			Compatibility.Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			ViewHandler = vh;
 		}
 
@@ -76,7 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetElementSize(Size size)
 		{
-			Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Layout.LayoutChildIntoBoundingRegion(Element, new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 	}
 }
