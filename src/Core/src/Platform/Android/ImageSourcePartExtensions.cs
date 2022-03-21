@@ -53,6 +53,9 @@ namespace Microsoft.Maui.Platform
 						setImage.Invoke(drawableResult.Value);
 				}
 
+				if (result is null)
+					throw new InvalidOperationException("Glide failed to load image");
+
 				applied = result is not null && !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
 
 				events?.LoadingCompleted(applied);

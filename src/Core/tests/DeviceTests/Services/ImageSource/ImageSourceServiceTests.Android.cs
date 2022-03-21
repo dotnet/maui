@@ -111,7 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(2, cache.Cache[imageSource.Color].Count);
 
 			// make sure it was NOT collected and we got the same image
-			Assert.Equal(result1, result2);
+			Assert.Equal(result1.Value, result2.Value);
 
 			result1.Dispose();
 			result2.Dispose();

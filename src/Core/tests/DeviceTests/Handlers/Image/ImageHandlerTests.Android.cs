@@ -59,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal("SetImageResource", handler.ImageEvents[0].Member);
 				Assert.Equal(Android.Resource.Color.Transparent, handler.ImageEvents[0].Value);
 				Assert.Equal("SetImageResource", handler.ImageEvents[1].Member);
-				Assert.IsType<BitmapDrawable>(handler.ImageEvents[1].Value);
+				Assert.IsType<int>(handler.ImageEvents[1].Value);
 			});
 		}
 

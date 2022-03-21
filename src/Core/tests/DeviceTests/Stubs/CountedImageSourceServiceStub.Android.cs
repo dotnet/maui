@@ -65,13 +65,5 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				Finishing.Set();
 			}
 		}
-
-		class Result : ImageSourceServiceResult
-		{
-			public Result(Drawable image, bool resolutionDependent, Drawable drawable)
-				: base(image, resolutionDependent, () => drawable?.Dispose())
-			{
-			}
-		}
 	}
 }

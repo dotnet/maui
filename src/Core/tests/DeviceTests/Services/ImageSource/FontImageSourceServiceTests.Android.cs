@@ -47,9 +47,9 @@ namespace Microsoft.Maui.DeviceTests
 				Color = expectedColor,
 			};
 
-			using var drawable = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			using var result = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
 
 			var bitmap = bitmapDrawable.Bitmap;
 
@@ -77,9 +77,9 @@ namespace Microsoft.Maui.DeviceTests
 				Color = Colors.Red,
 			};
 
-			using var drawable = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			using var result = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
 
 			var bitmap = bitmapDrawable.Bitmap;
 

@@ -32,9 +32,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			var imageSource = new FileImageSourceStub(filename);
 
-			using var drawable = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			using var result = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
 
 			var bitmap = bitmapDrawable.Bitmap;
 
@@ -55,9 +55,9 @@ namespace Microsoft.Maui.DeviceTests
 			var filename = CreateBitmapFile(100, 100, expectedColor);
 			var imageSource = new FileImageSourceStub(filename);
 
-			using var drawable = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			using var result = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
 
 			var bitmap = bitmapDrawable.Bitmap;
 

@@ -36,7 +36,10 @@ namespace Microsoft.Maui
 				}
 
 				if (s && drawable is not null)
+				{
 					tcsResult.SetResult(new ImageSourceServiceResult(drawable!, disposeWrapper));
+					return;
+				}
 			}
 			catch
 			{
@@ -73,7 +76,10 @@ namespace Microsoft.Maui
 				}
 
 				if (s)
+				{
 					tcsResult.SetResult(new ImageSourceServiceLoadResult(disposeWrapper));
+					return;
+				}
 			}
 			catch
 			{
