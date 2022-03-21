@@ -74,6 +74,11 @@
                     Style="{StaticResource Headline}"/>
                 <SearchBar
                     IsTextPredictionEnabled="False"/>
+                <Label
+                    Text="TextChanged"
+                    Style="{StaticResource Headline}"/>
+                <SearchBar
+                    TextChanged="OnSearchBarTextChanged"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
