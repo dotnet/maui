@@ -8,32 +8,32 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SliderExtensions
 	{
-		static void UpdateIncrement(this Slider nativeSlider, ISlider slider)
+		static void UpdateIncrement(this MauiSlider nativeSlider, ISlider slider)
 		{
 			double stepping = Math.Min((slider.Maximum - slider.Minimum) / 1000, 1);
 			nativeSlider.StepFrequency = stepping;
 			nativeSlider.SmallChange = stepping;
 		}
 
-		public static void UpdateMinimum(this Slider nativeSlider, ISlider slider)
+		public static void UpdateMinimum(this MauiSlider nativeSlider, ISlider slider)
 		{
 			nativeSlider.Minimum = slider.Minimum;
 			nativeSlider.UpdateIncrement(slider);
 		}
 
-		public static void UpdateMaximum(this Slider nativeSlider, ISlider slider)
+		public static void UpdateMaximum(this MauiSlider nativeSlider, ISlider slider)
 		{
 			nativeSlider.Maximum = slider.Maximum;
 			nativeSlider.UpdateIncrement(slider);
 		}
 
-		public static void UpdateValue(this Slider nativeSlider, ISlider slider)
+		public static void UpdateValue(this MauiSlider nativeSlider, ISlider slider)
 		{
 			if (nativeSlider.Value != slider.Value)
 				nativeSlider.Value = slider.Value;
 		}
 
-		public static void UpdateMinimumTrackColor(this Slider platformSlider, ISlider slider)
+		public static void UpdateMinimumTrackColor(this MauiSlider platformSlider, ISlider slider)
 		{
 			var brush = slider.MinimumTrackColor?.ToPlatform();
 
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Platform
 			"SliderTrackValueFillDisabled",
 		};
 
-		public static void UpdateMaximumTrackColor(this Slider platformSlider, ISlider slider)
+		public static void UpdateMaximumTrackColor(this MauiSlider platformSlider, ISlider slider)
 		{
 			var brush = slider.MaximumTrackColor?.ToPlatform();
 
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Platform
 			"SliderTrackFillDisabled",
 		};
 
-		public static void UpdateThumbColor(this Slider platformSlider, ISlider slider)
+		public static void UpdateThumbColor(this MauiSlider platformSlider, ISlider slider)
 		{
 			var brush = slider.ThumbColor?.ToPlatform();
 
