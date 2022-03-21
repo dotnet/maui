@@ -12,7 +12,7 @@ using Microsoft.Maui.Controls.Compatibility;
 using System;
 using Microsoft.Maui.Hosting;
 
-namespace Microsoft.Maui.Controls.Hosting
+namespace Microsoft.Maui.Controls.Compatibility.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{

@@ -17,8 +17,6 @@
 		<ResourceDictionary Source="TabbedPageStyle.xaml" />
 		<ResourceDictionary Source="SliderStyle.xaml" />
         <ResourceDictionary Source="PickerStyle.xaml" />
-        <ResourceDictionary Source="../Handlers/ListView/Windows/ListViewStyles.xaml" />
-        <ResourceDictionary Source="../Handlers/TableView/Windows/TableViewStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <x:Boolean x:Key="MicrosoftMauiControlsCompatibilityIncluded">true</x:Boolean>

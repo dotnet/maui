@@ -183,13 +183,13 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler Disappearing;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayActionSheet']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayActionSheet'][1]/Docs" />
 		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, params string[] buttons)
 		{
 			return DisplayActionSheet(title, cancel, destruction, FlowDirection.MatchParent, buttons);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayActionSheet']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayActionSheet'][2]/Docs" />
 		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
 		{
 			var args = new ActionSheetArguments(title, cancel, destruction, buttons);
@@ -204,25 +204,25 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][1]/Docs" />
 		public Task DisplayAlert(string title, string message, string cancel)
 		{
 			return DisplayAlert(title, message, null, cancel, FlowDirection.MatchParent);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][2]/Docs" />
 		public Task<bool> DisplayAlert(string title, string message, string accept, string cancel)
 		{
 			return DisplayAlert(title, message, accept, cancel, FlowDirection.MatchParent);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][1]/Docs" />
 		public Task DisplayAlert(string title, string message, string cancel, FlowDirection flowDirection)
 		{
 			return DisplayAlert(title, message, null, cancel, flowDirection);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][2]/Docs" />
 		public Task<bool> DisplayAlert(string title, string message, string accept, string cancel, FlowDirection flowDirection)
 		{
 			if (string.IsNullOrEmpty(cancel))
@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayPromptAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayPromptAsync'][2]/Docs" />
 		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
 		{
 			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);

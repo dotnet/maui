@@ -14,11 +14,11 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Map']/Docs" />
 	public static class Map
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][1]/Docs" />
 		public static Task OpenAsync(Location location) =>
 			OpenAsync(location, new MapLaunchOptions());
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][4]/Docs" />
 		public static Task OpenAsync(Location location, MapLaunchOptions options)
 		{
 			if (location == null)
@@ -30,11 +30,11 @@ namespace Microsoft.Maui.Essentials
 			return Current.OpenMapsAsync(location.Latitude, location.Longitude, options);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][3]/Docs" />
 		public static Task OpenAsync(double latitude, double longitude) =>
 			OpenAsync(latitude, longitude, new MapLaunchOptions());
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][5]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][6]/Docs" />
 		public static Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
 			if (options == null)
@@ -43,11 +43,11 @@ namespace Microsoft.Maui.Essentials
 			return Current.OpenMapsAsync(latitude, longitude, options);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][2]/Docs" />
 		public static Task OpenAsync(Placemark placemark) =>
 			OpenAsync(placemark, new MapLaunchOptions());
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][4]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][5]/Docs" />
 		public static Task OpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
 			if (placemark == null)

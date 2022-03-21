@@ -170,6 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
+		[PortHandler]
 		void UpdateDateFromModel(bool animate)
 		{
 			if (_picker.Date.ToDateTime().Date != Element.Date.Date)
@@ -204,6 +205,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void UpdateElementDate()
 		{
 			ElementController.SetValueFromRenderer(DatePicker.DateProperty, _picker.Date.ToDateTime().Date);
@@ -241,6 +243,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_picker.MinimumDate = Element.MinimumDate.ToNSDate();
 		}
 
+		[PortHandler]
 		protected internal virtual void UpdateTextColor()
 		{
 			var textColor = Element.TextColor;

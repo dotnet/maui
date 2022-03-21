@@ -84,8 +84,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		// we want the list returned from here to remain point in time accurate
-		ReadOnlyCollection<ShellSection> IShellItemController.GetItems() =>
-			new ReadOnlyCollection<ShellSection>(((ShellSectionCollection)Items).VisibleItemsReadOnly.ToList());
+		ReadOnlyCollection<ShellSection> IShellItemController.GetItems() => ((ShellSectionCollection)Items).VisibleItemsReadOnly;
 
 		event NotifyCollectionChangedEventHandler IShellItemController.ItemsCollectionChanged
 		{
@@ -328,6 +327,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Items.ToList().AsReadOnly();
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Items.ToList();
 	}
 }

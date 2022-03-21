@@ -8,12 +8,12 @@ namespace Microsoft.Maui.Controls.Xaml
 	{
 		readonly bool _hasLineInfo;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XmlLineInfo.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XmlLineInfo.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public XmlLineInfo()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XmlLineInfo.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XmlLineInfo.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public XmlLineInfo(int linenumber, int lineposition)
 		{
 			_hasLineInfo = true;

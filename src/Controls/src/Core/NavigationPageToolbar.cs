@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls
 			if (stack.Count > 1)
 				previousPage = stack[stack.Count - 1];
 
-			_toolbarTracker.Target = navigationPage.CurrentPage;
+			_toolbarTracker.Target = navigationPage;
 			_toolbarTracker.AdditionalTargets = navigationPage.GetParentPages();
 			ToolbarItems = _toolbarTracker.ToolbarItems;
 			IsVisible = NavigationPage.GetHasNavigationBar(currentPage) && _hasAppeared;
@@ -158,6 +158,21 @@ namespace Microsoft.Maui.Controls
 		Color GetBarTextColor() => _currentNavigationPage?.BarTextColor;
 		Color GetIconColor() => (_currentPage != null) ? NavigationPage.GetIconColor(_currentPage) : null;
 		string GetTitle() => _currentPage?.Title;
-		VisualElement GetTitleView() => (_currentNavigationPage != null) ? NavigationPage.GetTitleView(_currentNavigationPage) : null;
+		VisualElement GetTitleView()
+		{
+			if (_currentNavigationPage == null)
+			{
+				return null;
+			}
+
+			Page target = _currentNavigationPage;
+
+			if (_currentNavigationPage.CurrentPage is Page currentPage)
+			{
+				target = currentPage;
+			}
+
+			return NavigationPage.GetTitleView(target);
+		}
 	}
 }

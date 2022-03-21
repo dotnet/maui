@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdatePlaceholderColor(this AutoSuggestBox platformControl, ISearchBar searchBar, Brush? defaultPlaceholderColorBrush, Brush? defaultPlaceholderColorFocusBrush, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
+				queryTextBox = platformControl.GetFirstDescendant<MauiSearchTextBox>();
+
+			if (queryTextBox == null)
 				return;
 
 			Color placeholderColor = searchBar.PlaceholderColor;
@@ -38,6 +41,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this AutoSuggestBox platformControl, ISearchBar searchBar, Brush? defaultTextColorBrush, Brush? defaultTextColorFocusBrush, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
+				queryTextBox = platformControl.GetFirstDescendant<MauiSearchTextBox>();
+
+			if (queryTextBox == null)
 				return;
 
 			Color textColor = searchBar.TextColor;
@@ -55,6 +61,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateHorizontalTextAlignment(this AutoSuggestBox platformControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
+				queryTextBox = platformControl.GetFirstDescendant<MauiSearchTextBox>();
+
+			if (queryTextBox == null)
 				return;
 
 			queryTextBox.TextAlignment = searchBar.HorizontalTextAlignment.ToPlatform();
@@ -71,6 +80,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateMaxLength(this AutoSuggestBox platformControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
+				queryTextBox = platformControl.GetFirstDescendant<MauiSearchTextBox>();
+
+			if (queryTextBox == null)
 				return;
 
 			queryTextBox.MaxLength = searchBar.MaxLength;
@@ -81,14 +93,22 @@ namespace Microsoft.Maui.Platform
 				platformControl.Text = currentControlText.Substring(0, searchBar.MaxLength);
 		}
 		
-		public static void UpdateIsReadOnly(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
+		public static void UpdateIsReadOnly(this AutoSuggestBox platformControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
 		{
 			if (queryTextBox == null)
+				queryTextBox = platformControl.GetFirstDescendant<MauiSearchTextBox>();
+
+			if (queryTextBox == null)
 				return;
+
+			queryTextBox.IsReadOnly = searchBar.IsReadOnly;
 		}
 		
 		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
 		{
+			if (queryTextBox == null)
+				queryTextBox = platformControl.GetFirstDescendant<MauiSearchTextBox>();
+
 			if (queryTextBox == null)
 				return;
 

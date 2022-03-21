@@ -192,7 +192,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (font == Font.Default && !_fontApplied)
 				return;
 
-			Font fontToApply = font == Font.Default ? Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)) : font;
+			Font fontToApply = font == Font.Default
+#pragma warning disable CS0612 // Type or member is obsolete
+				? Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false))
+#pragma warning restore CS0612 // Type or member is obsolete
+				: font;
 
 			Control.ApplyFont(fontToApply, Element.RequireFontManager());
 			_fontApplied = true;

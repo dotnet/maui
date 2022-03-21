@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Handlers
 		{
 #if __ANDROID__
 			[nameof(ITimePicker.Background)] = MapBackground,
+#elif __IOS__
+			[nameof(ITimePicker.FlowDirection)] = MapFlowDirection,
 #endif
 			[nameof(ITimePicker.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ITimePicker.Font)] = MapFont,

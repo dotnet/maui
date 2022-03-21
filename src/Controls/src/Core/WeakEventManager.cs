@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly Dictionary<string, List<Subscription>> _eventHandlers = new Dictionary<string, List<Subscription>>();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='AddEventHandler']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='AddEventHandler'][1]/Docs" />
 		public void AddEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName] string eventName = "")
 			where TEventArgs : EventArgs
 		{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='AddEventHandler']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='AddEventHandler'][2]/Docs" />
 		public void AddEventHandler(Delegate? handler, [CallerMemberName] string eventName = "")
 		{
 			if (IsNullOrEmpty(eventName))
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='RemoveEventHandler']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='RemoveEventHandler'][1]/Docs" />
 		public void RemoveEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName] string eventName = "")
 			where TEventArgs : EventArgs
 		{
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 			RemoveEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='RemoveEventHandler']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='RemoveEventHandler'][2]/Docs" />
 		public void RemoveEventHandler(Delegate? handler, [CallerMemberName] string eventName = "")
 		{
 			if (IsNullOrEmpty(eventName))

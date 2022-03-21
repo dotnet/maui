@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Hosting
 {
@@ -16,12 +17,17 @@ namespace Microsoft.Maui.Hosting
 	{
 		private readonly MauiApplicationServiceCollection _services = new();
 		private Func<IServiceProvider>? _createServiceProvider;
+		private readonly Lazy<ConfigurationManager> _configuration;
 		private ILoggingBuilder? _logging;
 
 		internal MauiAppBuilder(bool useDefaults)
 		{
-			Configuration = new();
-			Services.AddSingleton<IConfiguration>(Configuration);
+			// Lazy-load the ConfigurationManager, so it isn't created if it is never used.
+			// Don't capture the 'this' variable in AddSingleton, so MauiAppBuilder can be GC'd.
+			var configuration = new Lazy<ConfigurationManager>(() => new ConfigurationManager());
+			Services.AddSingleton<IConfiguration>(sp => configuration.Value);
+
+			_configuration = configuration;
 
 			if (useDefaults)
 			{
@@ -35,6 +41,40 @@ namespace Microsoft.Maui.Hosting
 				this.ConfigureDispatching();
 
 				this.UseEssentials();
+
+#if WINDOWS
+				this.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiCoreInitializer>());
+#endif
+			}
+		}
+
+		class MauiCoreInitializer : IMauiInitializeService
+		{
+			public void Initialize(IServiceProvider services)
+			{
+#if WINDOWS
+				var dispatcher = 
+					services.GetService<IDispatcher>() ??
+					MauiWinUIApplication.Current.Services.GetRequiredService<IDispatcher>();
+
+				if (!dispatcher.IsDispatchRequired)
+					SetupResources();
+				else
+					dispatcher.Dispatch(SetupResources);
+
+				void SetupResources()
+				{
+					var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
+					if (UI.Xaml.Application.Current?.Resources != null && dictionaries != null)
+					{
+						// WinUI
+						UI.Xaml.Application.Current.Resources.AddLibraryResources<UI.Xaml.Controls.XamlControlsResources>();
+
+						// Microsoft.Maui
+						UI.Xaml.Application.Current.Resources.AddLibraryResources("MicrosoftMauiCoreIncluded", "ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
+					}
+				}
+#endif
 			}
 		}
 
@@ -46,7 +86,7 @@ namespace Microsoft.Maui.Hosting
 		/// <summary>
 		/// A collection of configuration providers for the application to compose. This is useful for adding new configuration sources and providers.
 		/// </summary>
-		public ConfigurationManager Configuration { get; }
+		public ConfigurationManager Configuration => _configuration.Value;
 
 		/// <summary>
 		/// A collection of logging providers for the application to compose. This is useful for adding new logging providers.

@@ -11,6 +11,7 @@ using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform.Compatibility;
+using Microsoft.Maui.Dispatching;
 
 [assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			var initialHeader = new Label() { Text = "Hello" };
 			var newHeader = new Label() { Text = "Hello part 2" };
 			shell.FlyoutHeader = initialHeader;
-			await Device.InvokeOnMainThreadAsync(async () =>
+			await shell.Dispatcher.DispatchAsync(async () =>
 			{
 				TestActivity testSurface = null;
 				try
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 					Assert.IsNotNull(addedView);
 					Assert.IsNull(newHeader.GetValue(Platform.RendererProperty));
 					Assert.IsNotNull(initialHeader.GetValue(Platform.RendererProperty));
-					await Device.InvokeOnMainThreadAsync(() => shell.FlyoutHeader = newHeader);
+					await shell.Dispatcher.DispatchAsync(() => shell.FlyoutHeader = newHeader);
 					Assert.IsNotNull(newHeader.GetValue(Platform.RendererProperty), "New Header Not Set Up");
 					Assert.IsNull(initialHeader.GetValue(Platform.RendererProperty), "Old Header Still Set Up");
 				}
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			BottomNavigationView bottomView = new BottomNavigationView(this.Context);
 			bottomView.Menu.Add("test");
 			ColorChangeRevealDrawable ccr =
-				await Device.InvokeOnMainThreadAsync(() =>
+				await shell.Dispatcher.DispatchAsync(() =>
 				{
 					tracker.SetAppearance(bottomView, new ShellAppearanceTest());
 					return (ColorChangeRevealDrawable)bottomView.Background;

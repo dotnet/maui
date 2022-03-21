@@ -181,7 +181,6 @@ namespace Microsoft.Maui.Controls
 
 			Uri request = ConvertToStandardFormat(shell, uri);
 
-
 			var possibleRouteMatches = GenerateRoutePaths(shell, request, uri, enableRelativeShellRoutes);
 
 			if (possibleRouteMatches.Count == 0)
@@ -214,7 +213,7 @@ namespace Microsoft.Maui.Controls
 			RequestDefinition definition =
 				new RequestDefinition(theWinningRoute, shell);
 
-			ShellNavigationRequest navigationRequest = new ShellNavigationRequest(definition, whatDoIDo, request.Query, request.Fragment);
+			var navigationRequest = new ShellNavigationRequest(definition, whatDoIDo, request.Query, request.Fragment);
 
 			return navigationRequest;
 		}
