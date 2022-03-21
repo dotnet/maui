@@ -40,9 +40,10 @@ namespace Microsoft.Maui.Platform
 		{
 			try
 			{
-				platformWebView.EvaluateJavaScript(request.Script);
-				// TODO: Fix it after update NUI API
-				request.SetResult(string.Empty);
+				platformWebView.EvaluateJavaScript(request.Script, (message) =>
+				{
+					request.SetResult(message);
+				});
 			}
 			catch (Exception ex)
 			{
