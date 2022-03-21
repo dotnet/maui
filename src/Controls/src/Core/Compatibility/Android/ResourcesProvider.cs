@@ -1,3 +1,4 @@
+using System;
 using Android.Content.Res;
 using Android.Util;
 using Microsoft.Maui.Controls.Internals;
@@ -5,6 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete]
 	internal class ResourcesProvider : ISystemResourcesProvider
 	{
 		ResourceDictionary _dictionary;

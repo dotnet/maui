@@ -191,7 +191,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (picker == null)
 				return;
 
-			bool pickerIsDefault = picker.FontFamily == null && picker.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Picker), true) && picker.FontAttributes == FontAttributes.None;
+			bool pickerIsDefault =
+				picker.FontFamily == null &&
+#pragma warning disable CS0612 // Type or member is obsolete
+				picker.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Picker), true) &&
+#pragma warning restore CS0612 // Type or member is obsolete
+				picker.FontAttributes == FontAttributes.None;
 
 			if (pickerIsDefault && !_fontApplied)
 				return;

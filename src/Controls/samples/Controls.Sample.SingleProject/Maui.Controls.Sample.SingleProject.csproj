@@ -37,4 +37,6 @@
     <Content Remove="Properties\launchSettings.json" />
   </ItemGroup>
 
+  <Import Project="../../../Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
 </Project>

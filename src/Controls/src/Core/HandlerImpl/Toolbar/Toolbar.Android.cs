@@ -103,11 +103,6 @@ namespace Microsoft.Maui.Controls
 			arg1.PlatformView.UpdateBarBackground(arg2);
 		}
 
-		public static void MapBarBackgroundColor(ToolbarHandler arg1, Toolbar arg2)
-		{
-			arg1.PlatformView.UpdateBarBackgroundColor(arg2);
-		}
-
 		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateBackButton(arg2);
