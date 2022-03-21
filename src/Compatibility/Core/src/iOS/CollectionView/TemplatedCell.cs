@@ -8,6 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete]
 	public abstract class TemplatedCell : ItemsViewCell
 	{
 		public event EventHandler<EventArgs> ContentSizeChanged;

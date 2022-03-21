@@ -4,7 +4,9 @@ using System.Text;
 using Android.Views;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Graphics;
+#pragma warning disable CS0612 // Type or member is obsolete
 using static Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform;
+#pragma warning restore CS0612 // Type or member is obsolete
 using PlatformView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility

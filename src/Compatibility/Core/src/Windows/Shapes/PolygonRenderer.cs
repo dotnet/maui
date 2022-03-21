@@ -16,6 +16,7 @@ using WPolygon = System.Windows.Shapes.Polygon;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 #endif
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PolygonRenderer : ShapeRenderer<Polygon, WPolygon>
 	{
 		PointCollection _points;

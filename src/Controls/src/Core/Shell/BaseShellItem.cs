@@ -455,7 +455,7 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (DeviceInfo.Platform == DevicePlatform.iOS)
 				{
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = Device.GetNamedSize(NamedSize.Small, label) });
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontAttributesProperty, Value = FontAttributes.Bold });
 				}
 				else if (DeviceInfo.Platform == DevicePlatform.WinUI)

@@ -32,10 +32,14 @@
                 Text="Pop Page"
                 Style="{StaticResource Headline}"/>
             <Button Text="Pop Page" Clicked="OnPopPage" />
-             <Label
-                Text="Toogle SearchHandler"
+            <Label
+                Text="Toggle SearchHandler"
                 Style="{StaticResource Headline}"/>
-            <Button Text="Toogle SearchHandler" Clicked="OnToggleSearchHandler" />
+            <Button Text="Toggle SearchHandler" Clicked="OnToggleSearchHandler" />
+            <Label
+                Text="Toggle TabBar"
+                Style="{StaticResource Headline}"/>
+            <Button Text="Toggle TabBar" Clicked="OnToggleTabBar" />
         </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>

@@ -16,7 +16,6 @@ using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
 [assembly: ExportRenderer(typeof(Bugzilla21177.CollectionView), typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CollectionViewRenderer))]
-[assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
 [assembly: ExportRenderer(typeof(NativeCell), typeof(NativeiOSCellRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeiOSListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
@@ -25,8 +24,11 @@ using RectangleF = CoreGraphics.CGRect;
 [assembly: ExportRenderer(typeof(Bugzilla43161.AccessoryViewCell), typeof(AccessoryViewCellRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla36802.AccessoryViewCell), typeof(AccessoryViewCellRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla52700.NoSelectionViewCell), typeof(NoSelectionViewCellRenderer))]
+#pragma warning disable CS0612 // Type or member is obsolete
+[assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
 [assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue1683.EditorKeyboardFlags), typeof(EditorRendererKeyboardFlags))]
+#pragma warning restore CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(Issue5830.ExtendedEntryCell), typeof(ExtendedEntryCellRenderer))]
 [assembly: ExportRenderer(typeof(Issue13390), typeof(Issue13390Renderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
@@ -50,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class CustomIOSMapRenderer : ViewRenderer<Bugzilla39987.CustomMapView, MKMapView>
+	public class CustomIOSMapRenderer : Handlers.Compatibility.ViewRenderer<Bugzilla39987.CustomMapView, MKMapView>
 	{
 		private MKMapView _mapView;
 
@@ -239,7 +241,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
-	public class NativeiOSListViewRenderer : ViewRenderer<NativeListView2, UITableView>
+	public class NativeiOSListViewRenderer : Handlers.Compatibility.ViewRenderer<NativeListView2, UITableView>
 	{
 		public NativeiOSListViewRenderer()
 		{
@@ -283,11 +285,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+			base.GetDesiredSize(widthConstraint, heightConstraint);
 			return Control.GetSizeRequest(widthConstraint, heightConstraint, 44, 44);
 		}
 	}
 
-	public class NativeListViewRenderer : ViewRenderer<NativeListView, UITableView>
+	public class NativeListViewRenderer : Handlers.Compatibility.ViewRenderer<NativeListView, UITableView>
 	{
 		public NativeListViewRenderer()
 		{
@@ -490,11 +493,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 	}
 
+	[System.Obsolete]
 	public class CustomContentRenderer : ViewRenderer
 	{
 	}
 
-	public class CollectionViewRenderer : ViewRenderer<Bugzilla21177.CollectionView, UICollectionView>
+	public class CollectionViewRenderer : Controls.Handlers.Compatibility.ViewRenderer<Bugzilla21177.CollectionView, UICollectionView>
 	{
 		public void ItemSelected(UICollectionView collectionViewView, NSIndexPath indexPath)
 		{
@@ -628,6 +632,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class EditorRendererKeyboardFlags : EditorRenderer
 	{
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -642,6 +647,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class EntryRendererKeyboardFlags : EntryRenderer
 	{
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

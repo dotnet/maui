@@ -17,6 +17,7 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class RadioButtonRenderer : AppCompatRadioButton,
 		IBorderVisualElementRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,
 		AView.IOnFocusChangeListener,

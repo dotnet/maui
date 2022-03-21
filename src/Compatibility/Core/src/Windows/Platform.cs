@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Obsolete]
 	public abstract class Platform : INavigation
 	{
 		static Task<bool> s_currentAlert;

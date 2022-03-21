@@ -5,6 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete]
 	public class UIContainerCell : UITableViewCell
 	{
 		IVisualElementRenderer _renderer;

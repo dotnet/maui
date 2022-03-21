@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
 		UIPickerView? _pickerView;
+#if IOS && !MACCATALYST
 
 		protected override MauiPicker CreatePlatformView()
 		{
@@ -19,21 +20,9 @@ namespace Microsoft.Maui.Handlers
 			var toolbar = new UIToolbar(new RectangleF(0, 0, width, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
 			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
 
-			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
-			{
-				var pickerSource = (PickerSource)_pickerView.Model;
-				var count = VirtualView?.GetCount() ?? 0;
-				if (pickerSource.SelectedIndex == -1 && count > 0)
-					UpdatePickerSelectedIndex(0);
-
-				if (VirtualView?.SelectedIndex == -1 && count > 0)
-				{
-					PlatformView?.SetSelectedIndex(VirtualView, 0);
-				}
-
-				UpdatePickerFromPickerSource(pickerSource);
-				platformPicker.ResignFirstResponder();
-			});
+			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done,
+				(o, a) => FinishSelectItem(_pickerView,platformPicker)
+			);
 
 			toolbar.SetItems(new[] { spacer, doneButton }, false);
 
@@ -50,7 +39,63 @@ namespace Microsoft.Maui.Handlers
 
 			return platformPicker;
 		}
+#else
+		protected override MauiPicker CreatePlatformView()
+		{	
+			var platformPicker = new MauiPicker(null) { BorderStyle = UITextBorderStyle.RoundedRect };
+	
+			platformPicker.ShouldBeginEditing += (textField) => 
+			{
+				var alertController = CreateAlert(textField);
+				var platformWindow = MauiContext?.GetPlatformWindow();
+				platformWindow?.BeginInvokeOnMainThread(() =>
+				{
+					_ = platformWindow?.RootViewController?.PresentViewControllerAsync(alertController, true);
+				});
+                return false;
+            };
+	
+			return platformPicker;
+		}
+		
+		UIAlertController CreateAlert(UITextField uITextField)
+		{
+			var paddingTitle = 0;
+			if(!string.IsNullOrEmpty(VirtualView.Title))
+				paddingTitle+= 25;
+				
+			var pickerHeight = 240;
+			var frame = new RectangleF(0, paddingTitle, 269, pickerHeight);
+			var pickerView = new UIPickerView(frame);
+			pickerView.Model  = new PickerSource(VirtualView);
+			pickerView?.ReloadAllComponents();
 
+			var pickerController = UIAlertController.Create(VirtualView.Title, "", UIAlertControllerStyle.ActionSheet);
+
+			// needs translation
+    		pickerController.AddAction(UIAlertAction.Create("Done",
+								UIAlertActionStyle.Default, 
+								action => FinishSelectItem(pickerView,uITextField)
+							));
+			
+			if(pickerController.View != null && pickerView != null)
+			{
+				pickerController.View.AddSubview(pickerView);
+				var doneButtonHeight = 90;
+				var height = NSLayoutConstraint.Create(pickerController.View,  NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, pickerHeight+doneButtonHeight);
+				pickerController.View.AddConstraint(height);
+			}
+			
+			var popoverPresentation = pickerController.PopoverPresentationController;
+			if (popoverPresentation!=null)
+			{
+    			popoverPresentation.SourceView = uITextField;
+				popoverPresentation.SourceRect = uITextField.Bounds;
+			}
+
+			return pickerController;
+		}
+#endif
 		protected override void ConnectHandler(MauiPicker platformView)
 		{
 			platformView.EditingDidBegin += OnStarted;
@@ -180,23 +225,34 @@ namespace Microsoft.Maui.Handlers
 			Reload(this);
 		}
 
-		void UpdatePickerFromPickerSource(PickerSource pickerSource)
+		void UpdatePickerFromPickerSource(PickerSource? pickerSource)
 		{
-			if (VirtualView == null || PlatformView == null)
+			if (VirtualView == null || PlatformView == null || pickerSource == null)
 				return;
 
 			PlatformView.Text = VirtualView.GetItem(pickerSource.SelectedIndex);
 			VirtualView.SelectedIndex = pickerSource.SelectedIndex;
 		}
 
-		void UpdatePickerSelectedIndex(int formsIndex)
+		void UpdatePickerSelectedIndex(UIPickerView? pickerView, int formsIndex)
 		{
-			if (VirtualView == null || _pickerView == null)
+			if (VirtualView == null || pickerView == null)
 				return;
 
-			var source = (PickerSource)_pickerView.Model;
+			var source = (PickerSource)pickerView.Model;
 			source.SelectedIndex = formsIndex;
-			_pickerView.Select(Math.Max(formsIndex, 0), 0, true);
+			pickerView.Select(Math.Max(formsIndex, 0), 0, true);
+		}
+
+		void FinishSelectItem(UIPickerView? pickerView, UITextField textField)
+		{
+			var pickerSource = pickerView?.Model as PickerSource;
+			var count = VirtualView?.GetCount() ?? 0;
+			if (pickerSource != null && pickerSource.SelectedIndex == -1 && count > 0)
+				UpdatePickerSelectedIndex(pickerView, 0);
+
+			UpdatePickerFromPickerSource(pickerSource);
+			textField.ResignFirstResponder();
 		}
 	}
 
@@ -212,10 +268,7 @@ namespace Microsoft.Maui.Handlers
 
 		public int SelectedIndex { get; internal set; }
 
-		public override nint GetComponentCount(UIPickerView picker)
-		{
-			return 1;
-		}
+		public override nint GetComponentCount(UIPickerView picker) => 1;
 
 		public override nint GetRowsInComponent(UIPickerView pickerView, nint component) =>
 			_virtualView?.GetCount() ?? 0;

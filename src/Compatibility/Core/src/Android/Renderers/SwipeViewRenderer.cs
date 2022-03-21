@@ -24,6 +24,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SwipeViewRenderer : ViewRenderer<SwipeView, AView>
 	{
 		const float OpenSwipeThresholdPercentage = 0.6f; // 60%

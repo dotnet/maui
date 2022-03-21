@@ -126,6 +126,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Size Measure(double widthConstraint, double heightConstraint)
 		{
+			if (Handler != null)
+			{ 
+				return Handler.GetDesiredSize(widthConstraint, heightConstraint);
+			}
+
 			return new Size(widthConstraint, heightConstraint);
 		}
 

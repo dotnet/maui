@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>6.0.300-preview.22154.4</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>6.0.300-preview.22166.1</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>6.0.4</MicrosoftNETCoreAppRefPackageVersion>
     <!-- NOTE: should eventually revert back to $(MicrosoftNETCoreAppRefPackageVersion) in .NET 7 -->
@@ -9,7 +9,7 @@
     <MicrosoftExtensionsServicingPackageVersion>6.0.1</MicrosoftExtensionsServicingPackageVersion>
     <SystemCodeDomPackageVersion>6.0.0</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.300-rc.1.14</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.300-rc.1.24</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftiOSSdkPackageVersion>15.2.303-rc.1.55</MicrosoftiOSSdkPackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>15.2.303-rc.1.55</MicrosoftMacCatalystSdkPackageVersion>
@@ -19,7 +19,7 @@
     <MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion>6.0.4</MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
-    <MicrosoftWindowsAppSDKPackageVersion>1.0.0</MicrosoftWindowsAppSDKPackageVersion>
+    <MicrosoftWindowsAppSDKPackageVersion>1.0.1</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftGraphicsWin2DPackageVersion>1.0.0.30</MicrosoftGraphicsWin2DPackageVersion>
     <!-- Everything else -->
     <MicrosoftAspNetCoreAppRuntimewinx64Version>6.0.2</MicrosoftAspNetCoreAppRuntimewinx64Version>
@@ -33,6 +33,7 @@
     <MicrosoftJSInteropPackageVersion>6.0.2</MicrosoftJSInteropPackageVersion>
     <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.2</MicrosoftWindowsDesktopAppRuntimewinx64Version>
     <!-- Other packages -->
+    <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
     <MicrosoftMauiGraphicsVersion>6.0.200-preview.14.1092</MicrosoftMauiGraphicsVersion>
     <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
     <_MicrosoftWebWebView2Version>1.0.1020.30</_MicrosoftWebWebView2Version>
