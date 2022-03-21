@@ -1,6 +1,9 @@
+using System;
+
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/NamedSize.xml" path="Type[@FullName='Microsoft.Maui.Controls.NamedSize']/Docs" />
+	[Obsolete]
 	public enum NamedSize
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/NamedSize.xml" path="//Member[@MemberName='Default']/Docs" />

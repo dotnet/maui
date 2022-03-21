@@ -68,6 +68,8 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(TitleProperty, value);
 		}
 
+		string? ITitledElement.Title => Title ?? (Page as Shell)?.Title;
+
 		public Page? Page
 		{
 			get => (Page?)GetValue(PageProperty);
@@ -96,7 +98,7 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnStopped() { }
 		protected virtual void OnDestroying() { }
 		protected virtual void OnBackgrounding(IPersistedState state) { }
-		protected virtual void OnDisplayDensityChanged(float displayDensity) { }	
+		protected virtual void OnDisplayDensityChanged(float displayDensity) { }
 
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		{
@@ -149,6 +151,8 @@ namespace Microsoft.Maui.Controls
 
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
+
+		internal bool IsActivated { get; private set; }
 
 		IFlowDirectionController FlowController => this;
 
@@ -296,12 +300,14 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Activated()
 		{
+			IsActivated = true;
 			Activated?.Invoke(this, EventArgs.Empty);
 			OnActivated();
 		}
 
 		void IWindow.Deactivated()
 		{
+			IsActivated = false;
 			Deactivated?.Invoke(this, EventArgs.Empty);
 			OnDeactivated();
 		}
@@ -398,6 +404,9 @@ namespace Microsoft.Maui.Controls
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
 			}
 
+			if (oldPage is Shell shell)
+				shell.PropertyChanged += ShellPropertyChanged;
+
 			var newPage = newValue as Page;
 			if (newPage != null)
 			{
@@ -417,6 +426,9 @@ namespace Microsoft.Maui.Controls
 					OnPageHandlerChanged(newPage, EventArgs.Empty);
 			}
 
+			if (newPage is Shell newShell)
+				newShell.PropertyChanged += ShellPropertyChanged;
+
 			window?.Handler?.UpdateValue(nameof(IWindow.FlowDirection));
 
 			void OnPageHandlerChanged(object? sender, EventArgs e)
@@ -428,6 +440,12 @@ namespace Microsoft.Maui.Controls
 			void OnPageHandlerChanging(object? sender, HandlerChangingEventArgs e)
 			{
 				window.AlertManager.Unsubscribe();
+			}
+
+			void ShellPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == nameof(Shell.Title))
+					window?.Handler?.UpdateValue(nameof(ITitledElement.Title));
 			}
 		}
 
