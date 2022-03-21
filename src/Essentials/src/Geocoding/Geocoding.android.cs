@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,10 +11,10 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 		public async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
 		{
-			using (var geocoder = new Geocoder(Platform.AppContext))
+			using (var geocoder = new Geocoder(Application.Context))
 			{
 				var addressList = await geocoder.GetFromLocationAsync(latitude, longitude, 10);
-				return addressList?.ToPlacemarks();
+				return addressList?.ToPlacemarks() ?? Array.Empty<Placemark>();
 			}
 		}
 
@@ -22,11 +23,11 @@ namespace Microsoft.Maui.Devices.Sensors
 			if (address == null)
 				throw new ArgumentNullException(nameof(address));
 
-			using (var geocoder = new Geocoder(Platform.AppContext))
+			using (var geocoder = new Geocoder(Application.Context))
 			{
 				var addressList = await geocoder.GetFromLocationNameAsync(address, 10);
 
-				return addressList?.ToLocations();
+				return addressList?.ToLocations() ?? Array.Empty<Location>();
 			}
 		}
 	}

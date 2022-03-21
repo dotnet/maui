@@ -38,6 +38,17 @@ namespace Microsoft.Maui.Devices.Sensors
 			defaultImplementation = implementation;
 	}
 
+	public static class CompassExtensions
+	{
+		public static void SetShouldDisplayHeadingCalibration(this ICompass compass, bool shouldDisplay)
+		{
+			if (compass is IPlatformCompass platform)
+			{
+				platform.ShouldDisplayHeadingCalibration = shouldDisplay;
+			}
+		}
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/CompassChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.CompassChangedEventArgs']/Docs" />
 	public class CompassChangedEventArgs : EventArgs
 	{
@@ -60,7 +71,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public double HeadingMagneticNorth { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
-		public override bool Equals(object obj) =>
+		public override bool Equals(object? obj) =>
 			(obj is CompassData data) && Equals(data);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />

@@ -1,46 +1,50 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
 	public interface IGeocoding
 	{
 		Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude);
+
 		Task<IEnumerable<Location>> GetLocationsAsync(string address);
 	}
-}
-namespace Microsoft.Maui.Essentials
-{
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Geocoding']/Docs" />
+
+	public interface IPlatformGeocoding : IGeocoding
+	{
+#if WINDOWS || TIZEN
+		string? MapServiceToken { get; set; }
+#endif
+	}
+
 	public static class Geocoding
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="//Member[@MemberName='GetPlacemarksAsync'][1]/Docs" />
-		public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(Location location)
+		static IGeocoding? defaultImplementation;
+
+		public static IGeocoding Default =>
+			defaultImplementation ??= new GeocodingImplementation();
+
+		internal static void SetCurrent(IGeocoding? implementation) =>
+			defaultImplementation = implementation;
+	}
+
+	public static class GeocodingExtensions
+	{
+		public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(this IGeocoding geocoding, Location location)
 		{
 			if (location == null)
 				throw new ArgumentNullException(nameof(location));
 
-			return GetPlacemarksAsync(location.Latitude, location.Longitude);
+			return geocoding.GetPlacemarksAsync(location.Latitude, location.Longitude);
 		}
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="//Member[@MemberName='GetPlacemarksAsync'][2]/Docs" />
-		public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
-			=> Current.GetPlacemarksAsync(latitude, longitude);
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="//Member[@MemberName='GetLocationsAsync']/Docs" />
-		public static Task<IEnumerable<Location>> GetLocationsAsync(string address)
-			=> Current.GetLocationsAsync(address);
-
-		static IGeocoding? currentImplementation;
-
-		public static IGeocoding Current =>
-			currentImplementation ??= new GeocodingImplementation();
-
-		internal static void SetCurrent(IGeocoding? implementation) =>
-			currentImplementation = implementation;
+		public static void SetMapServiceToken(this IGeocoding geocoding, string? mapServiceToken)
+		{
+			if (geocoding is IPlatformGeocoding platform)
+			{
+				platform.MapServiceToken = mapServiceToken;
+			}
+		}
 	}
 }
