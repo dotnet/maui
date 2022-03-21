@@ -19,9 +19,11 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty PageProperty = BindableProperty.Create(
 			nameof(Page), typeof(Page), typeof(Window), default(Page?),
+			propertyChanging: OnPageChanging,
 			propertyChanged: OnPageChanged);
 
-		public static readonly BindableProperty FlowDirectionProperty = BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
+		public static readonly BindableProperty FlowDirectionProperty =
+			BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		ReadOnlyCollection<Element>? _logicalChildren;
@@ -32,8 +34,13 @@ namespace Microsoft.Maui.Controls
 		IToolbar? IToolbarElement.Toolbar => Toolbar;
 		internal Toolbar? Toolbar
 		{
-			get => _toolbar; set
+			get => _toolbar;
+			set
 			{
+				if (_toolbar == value)
+					return;
+
+				_toolbar?.Handler?.DisconnectHandler();
 				_toolbar = value;
 				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
 			}
@@ -96,7 +103,7 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnStopped() { }
 		protected virtual void OnDestroying() { }
 		protected virtual void OnBackgrounding(IPersistedState state) { }
-		protected virtual void OnDisplayDensityChanged(float displayDensity) { }	
+		protected virtual void OnDisplayDensityChanged(float displayDensity) { }
 
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		{
@@ -384,6 +391,23 @@ namespace Microsoft.Maui.Controls
 		// we might want to change this to only return the currently visible page
 		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() =>
 			_visualChildren;
+
+
+		static void OnPageChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is not Window window)
+				return;
+
+			if (newValue is IToolbarElement toolbarElement &&
+				toolbarElement.Toolbar is Toolbar tb)
+			{
+				window.Toolbar = tb;
+			}
+			else
+			{
+				window.Toolbar = null;
+			}
+		}
 
 		static void OnPageChanged(BindableObject bindable, object oldValue, object newValue)
 		{
