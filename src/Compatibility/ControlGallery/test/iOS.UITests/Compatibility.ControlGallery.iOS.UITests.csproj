@@ -7,14 +7,7 @@
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <DefineConstants>$(DefineConstants);__IOS__;UITEST;__SHELL__</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>1701;1702;0618</NoWarn>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <NoWarn>1701;1702;0618</NoWarn>
+    <NoWarn>1701;1702;0618;0612</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

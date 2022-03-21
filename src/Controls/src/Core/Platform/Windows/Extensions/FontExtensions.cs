@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static void ApplyFont<TFontElement>(this UI.Xaml.Documents.TextElement self, TFontElement element) where TFontElement : Element, IFontElement
 			=> self.UpdateFont(element.ToFont(), element.RequireFontManager());
 
+		[Obsolete]
 		internal static double GetFontSize(this NamedSize size) => size switch
 		{
 			NamedSize.Default => (double)UI.Xaml.Application.Current.Resources["ControlContentThemeFontSize"],

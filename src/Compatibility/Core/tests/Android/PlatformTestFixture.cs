@@ -8,6 +8,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CardView.Widget;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using AColor = Android.Graphics.Color;
@@ -350,7 +351,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		async Task<TProperty> GetRendererProperty<TProperty>(VisualElement element,
 			Func<IVisualElementRenderer, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await element.Dispatcher.DispatchAsync(() =>
 			{
 				using (var renderer = GetRenderer(element))
 				{
@@ -362,7 +363,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		async Task<TProperty> GetRendererPropertyWithParent<TProperty>(VisualElement element,
 			Func<IVisualElementRenderer, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await element.Dispatcher.DispatchAsync(() =>
 			{
 				using (var renderer = GetRenderer(element))
 				{
@@ -377,7 +378,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		async Task<TProperty> GetRendererPropertyWithLayout<TProperty>(VisualElement element,
 			Func<IVisualElementRenderer, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await element.Dispatcher.DispatchAsync(() =>
 			{
 				using (var renderer = GetRenderer(element))
 				{
@@ -391,7 +392,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		protected async Task<TProperty> GetControlProperty<TProperty>(ImageButton imageButton,
 			Func<AppCompatImageButton, TProperty> getProperty, bool requiresLayout = false)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await imageButton.Dispatcher.DispatchAsync(() =>
 			{
 				using (var control = GetNativeControl(imageButton))
 				{
@@ -408,7 +409,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		protected async Task<TProperty> GetControlProperty<TProperty>(Button button,
 			Func<AppCompatButton, TProperty> getProperty, bool requiresLayout = false)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await button.Dispatcher.DispatchAsync(() =>
 			{
 				using (var control = GetNativeControl(button))
 				{
@@ -440,7 +441,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		protected async Task<TProperty> GetControlProperty<TProperty>(Editor editor,
 			Func<EditText, TProperty> getProperty, bool requiresLayout = false)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await editor.Dispatcher.DispatchAsync(() =>
 			{
 				using (var control = GetNativeControl(editor))
 				{
@@ -457,7 +458,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		protected async Task<TProperty> GetControlProperty<TProperty>(Entry entry,
 			Func<EditText, TProperty> getProperty, bool requiresLayout = false)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await entry.Dispatcher.DispatchAsync(() =>
 			{
 				using (var control = GetNativeControl(entry))
 				{
@@ -474,7 +475,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		protected async Task<TProperty> GetControlProperty<TProperty>(Label label,
 			Func<TextView, TProperty> getProperty, bool requiresLayout = false)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await label.Dispatcher.DispatchAsync(() =>
 			{
 				using (var control = GetNativeControl(label))
 				{
