@@ -215,20 +215,13 @@ namespace Microsoft.Maui.Platform
 
 		static ALayoutDirection GetLayoutDirection(IView view)
 		{
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			return view.FlowDirection switch
 			{
-				return ALayoutDirection.Inherit;
-			}
-			else if (view.FlowDirection == FlowDirection.RightToLeft)
-			{
-				return ALayoutDirection.Rtl;
-			}
-			else if (view.FlowDirection == FlowDirection.LeftToRight)
-			{
-				return ALayoutDirection.Ltr;
-			}
-			return ALayoutDirection.Inherit;
+				FlowDirection.MatchParent => ALayoutDirection.Inherit,
+				FlowDirection.LeftToRight => ALayoutDirection.Ltr,
+				FlowDirection.RightToLeft => ALayoutDirection.Rtl,
+				_ => ALayoutDirection.Inherit,
+			};
 		}
 
 		public static bool GetClipToOutline(this AView view)
