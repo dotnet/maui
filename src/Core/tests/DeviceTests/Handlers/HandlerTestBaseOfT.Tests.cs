@@ -7,6 +7,9 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
+		protected async Task<RenderedView> GetRenderedView(IViewHandler viewHandler, RenderType type) =>
+			await (viewHandler.VirtualView).RenderAsImage(type);
+
 		[Fact(DisplayName = "Automation Id is set correctly")]
 		[InlineData()]
 		public async Task SetAutomationId()
@@ -196,6 +199,27 @@ namespace Microsoft.Maui.DeviceTests
 
 			var platformViewTransform = await GetValueAsync(view, handler => GetViewTransform(handler));
 			Assert.NotEqual(platformViewTransform, new System.Numerics.Matrix4x4());
+		}
+
+		[Theory(DisplayName = "View Renders To Image"
+#if !__ANDROID__
+			, Skip = "iOS and Windows can't render elements to images from test runner. It's missing the required root windows."
+#endif
+			)]
+		[InlineData(RenderType.JPEG)]
+		[InlineData(RenderType.PNG)]
+		[InlineData(RenderType.BMP)]
+		public async Task RendersAsImage(RenderType type)
+		{
+			var view = new TStub()
+			{
+				Height = 100,
+				Width = 100,
+			};
+
+			var result = await (await GetValueAsync(view, handler => GetRenderedView(handler, type)));
+			Assert.NotNull(result);
+			Assert.NotNull(result?.Render);
 		}
 	}
 }

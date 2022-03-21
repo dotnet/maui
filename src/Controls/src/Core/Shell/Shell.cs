@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
@@ -450,12 +451,14 @@ namespace Microsoft.Maui.Controls
 		ShellNavigationState IShellController.GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, bool includeStack)
 			=> ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, includeStack ? shellSection.Stack.ToList() : null, includeStack ? shellSection.Navigation.ModalStack.ToList() : null);
 
-		async void IShellController.OnFlyoutItemSelected(Element element)
+		void IShellController.OnFlyoutItemSelected(Element element)
 		{
-			await (this as IShellController).OnFlyoutItemSelectedAsync(element);
+			(this as IShellController)
+				.OnFlyoutItemSelectedAsync(element)
+				.FireAndForget();
 		}
 
-		async Task IShellController.OnFlyoutItemSelectedAsync(Element element)
+		Task IShellController.OnFlyoutItemSelectedAsync(Element element)
 		{
 			ShellItem shellItem = null;
 			ShellSection shellSection = null;
@@ -484,12 +487,10 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (shellItem == null || !shellItem.IsEnabled)
-				return;
+				return Task.CompletedTask;
 
 			shellSection = shellSection ?? shellItem.CurrentItem;
 			shellContent = shellContent ?? shellSection?.CurrentItem;
-
-			var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, null, null);
 
 			if (FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
 				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
@@ -499,7 +500,49 @@ namespace Microsoft.Maui.Controls
 			else if (shellContent == null)
 				shellSection.PropertyChanged += OnShellItemPropertyChanged;
 			else
-				await GoToAsync(state).ConfigureAwait(false);
+			{
+				var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, null, null);
+
+				if (this.CurrentItem == null)
+				{
+					var requestBuilder = new RouteRequestBuilder(new List<string>()
+					{
+						shellItem.Route,
+						shellSection.Route,
+						shellContent.Route
+					});
+
+					var node = new ShellUriHandler.NodeLocation();
+					node.SetNode(shellContent);
+					requestBuilder.AddMatch(node);
+
+					var navRequest =
+						new ShellNavigationRequest(
+							new RequestDefinition(requestBuilder, this),
+							 ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt,
+							 String.Empty,
+							 String.Empty);
+
+					var navParameters = new ShellNavigationParameters()
+					{
+						TargetState = state,
+						Animated = false,
+						EnableRelativeShellRoutes = false,
+						DeferredArgs = null,
+						Parameters = null
+					};
+
+					return _navigationManager
+						.GoToAsync(navParameters, navRequest);
+
+				}
+				else
+				{
+					return GoToAsync(state);
+				}
+			}
+
+			return Task.CompletedTask;
 		}
 
 		void OnShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -552,8 +595,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		ReadOnlyCollection<ShellItem> IShellController.GetItems() =>
-			new ReadOnlyCollection<ShellItem>(((ShellItemCollection)Items).VisibleItemsReadOnly.ToList());
+		ReadOnlyCollection<ShellItem> IShellController.GetItems() => ((ShellItemCollection)Items).VisibleItemsReadOnly;
 
 		event NotifyCollectionChangedEventHandler IShellController.ItemsCollectionChanged
 		{
@@ -562,28 +604,41 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='Current']/Docs" />
-		public static Shell Current => Application.Current?.MainPage as Shell;
+		public static Shell Current
+		{
+			get
+			{
+				if (Application.Current == null)
+					return null;
+
+				foreach (var window in Application.Current.Windows)
+					if (window is Window && window.IsActivated && window.Page is Shell shell)
+						return shell;
+
+				return Application.Current?.MainPage as Shell;
+			}
+		}
 
 		internal ShellNavigationManager NavigationManager => _navigationManager;
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />
 		public Task GoToAsync(ShellNavigationState state)
 		{
 			return _navigationManager.GoToAsync(state, null, false);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs" />
 		public Task GoToAsync(ShellNavigationState state, bool animate)
 		{
 			return _navigationManager.GoToAsync(state, animate, false);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />
 		public Task GoToAsync(ShellNavigationState state, IDictionary<string, object> parameters)
 		{
 			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(parameters));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs" />
 		public Task GoToAsync(ShellNavigationState state, bool animate, IDictionary<string, object> parameters)
 		{
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
@@ -1019,6 +1074,21 @@ namespace Microsoft.Maui.Controls
 
 		protected override bool OnBackButtonPressed()
 		{
+#if WINDOWS || !PLATFORM
+			var backButtonBehavior = GetBackButtonBehavior(GetVisiblePage());
+			if (backButtonBehavior != null)
+			{
+				var command = backButtonBehavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
+				var commandParameter = backButtonBehavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null);
+
+				if (command != null)
+				{
+					command.Execute(commandParameter);
+					return true;
+				}
+			}
+#endif
+
 			if (GetVisiblePage() is Page page && page.SendBackButtonPressed())
 				return true;
 
@@ -1053,9 +1123,27 @@ namespace Microsoft.Maui.Controls
 			Navigated?.Invoke(this, args);
 			OnNavigated(args);
 
+			if (_previousPage != null)
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+
 			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
 			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
 			_previousPage = null;
+
+			if (CurrentPage != null)
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+		}
+
+		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
+
+		void OnCurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			CurrentPagePropertyChanged?.Invoke(this, e);
+
+			if (e.Is(Shell.TabBarIsVisibleProperty))
+				CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 		}
 
 		void SendNavigating(ShellNavigatingEventArgs args)

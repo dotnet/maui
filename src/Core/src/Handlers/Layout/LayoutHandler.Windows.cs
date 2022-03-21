@@ -125,6 +125,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		public static void MapFlowDirection(ILayoutHandler handler, ILayout layout)
+		{
+			if (handler.PlatformView is LayoutPanel layoutPanel)
+			{
+				layoutPanel.FlowDirection = Microsoft.UI.Xaml.FlowDirection.LeftToRight;
+			}
+		}
+
 		static void MapInputTransparent(ILayoutHandler handler, ILayout layout)
 		{
 			if (handler.PlatformView is LayoutPanel layoutPanel && layout != null)

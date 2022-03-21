@@ -78,5 +78,9 @@ namespace Microsoft.Maui
 		bool BackButtonClicked();
 
 		FlowDirection FlowDirection { get; }
+
+		void DisplayDensityChanged(float displayDensity);
+
+		float RequestDisplayDensity();
 	}
 }

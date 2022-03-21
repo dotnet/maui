@@ -67,5 +67,23 @@ namespace Microsoft.Maui.DeviceTests
 
 		string GetToolbarTitle(IElementHandler handler) =>
 			GetPlatformToolbar(handler).Title;
+
+
+		[Fact(DisplayName = "Back Button Enabled Changes with push/pop")]
+		public async Task BackButtonEnabledChangesWithPushPop()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
+			{
+				var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
+				Assert.False(navView.IsBackEnabled);
+				await navPage.PushAsync(new ContentPage());
+				Assert.True(navView.IsBackEnabled);
+				await navPage.PopAsync();
+				Assert.False(navView.IsBackEnabled);
+			});
+		}
 	}
 }

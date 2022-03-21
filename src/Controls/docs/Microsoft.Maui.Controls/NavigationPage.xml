@@ -1487,7 +1487,14 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that gets and sets title views.</summary>
-        <remarks>To be added.</remarks>
+        <remarks>On Windows, the TitleView will appear in the content area of the MauiToolbar control. By default, the content area's width is auto-sized to the content, with the remaining area made available for toolbar commands. This is to support the default Windows-specific dynamic overflow ability of the commands. If a user wants the TitleView to occupy all of the space not used by toolbar commands, dynamic overflow needs to be turned off, which can be accomplished by calling the Page's SetToolbarDynamicOverflowEnabled PlatformSpecific to false:
+		
+		<example>
+			<code>this.On&lt;WindowsOS&gt;().SetToolbarDynamicOverflowEnabled(false);</code>
+		</example>
+		
+		</remarks>
+		
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.INavigationPageController.RemoveAsyncInner">

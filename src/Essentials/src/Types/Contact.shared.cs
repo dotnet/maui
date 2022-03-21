@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Essentials
 	{
 		string displayName;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public Contact()
 		{
 		}
@@ -84,12 +84,12 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ContactEmail.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ContactEmail']/Docs" />
 	public class ContactEmail
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactEmail.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactEmail.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public ContactEmail()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactEmail.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactEmail.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public ContactEmail(string emailAddress)
 		{
 			EmailAddress = emailAddress;
@@ -105,12 +105,12 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ContactPhone.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ContactPhone']/Docs" />
 	public class ContactPhone
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactPhone.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactPhone.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public ContactPhone()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactPhone.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactPhone.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public ContactPhone(string phoneNumber)
 		{
 			PhoneNumber = phoneNumber;

@@ -44,12 +44,12 @@ namespace Microsoft.Maui
 			get { return GridUnitType == GridUnitType.Star; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public GridLength(double value) : this(value, GridUnitType.Absolute)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public GridLength(double value, GridUnitType type)
 		{
 			if (value < 0 || double.IsNaN(value))

@@ -53,7 +53,7 @@ namespace Microsoft.Maui
 			return new Font(Family, Size, Slant, Weight, enabled);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithSize'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithSize'][1]/Docs" />
 		public Font WithSize(double size)
 		{
 			return new Font(Family, size, Slant, Weight, AutoScalingEnabled);
@@ -65,23 +65,23 @@ namespace Microsoft.Maui
 			return new Font(Family, Size, fontSlant, Weight, AutoScalingEnabled);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithWeight']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithWeight'][1]/Docs" />
 		public Font WithWeight(FontWeight weight)
 		{
 			return new Font(Family, Size, Slant, weight, AutoScalingEnabled);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithWeight']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithWeight'][2]/Docs" />
 		public Font WithWeight(FontWeight weight, FontSlant fontSlant)
 		{
 			return new Font(Family, Size, fontSlant, weight, AutoScalingEnabled);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='OfSize']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='OfSize'][1]/Docs" />
 		public static Font OfSize(string? name, double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
 			new(name, size, fontSlant, weight, enableScaling);
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='SystemFontOfSize']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='SystemFontOfSize'][1]/Docs" />
 		public static Font SystemFontOfSize(double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
 			new(null, size, fontSlant, weight, enableScaling);
 

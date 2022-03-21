@@ -66,7 +66,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
 		[Theory]
 		[ClassData(typeof(ShellBasicNavigationTestCases))]
 		public async Task BasicShellNavigationStructurePermutations(ShellItem[] shellItems)
@@ -90,7 +89,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected Task<Shell> CreateShellAsync(Action<Shell> action)=>
+		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
 			{
 				var value = new Shell();

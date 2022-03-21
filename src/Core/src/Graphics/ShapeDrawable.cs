@@ -52,7 +52,6 @@ namespace Microsoft.Maui.Graphics
 			ApplyTransform(path);
 
 			DrawStrokePath(canvas, rect, path);
-			ClipPath(canvas, path);
 			DrawFillPath(canvas, rect, path);
 		}
 
@@ -127,6 +126,8 @@ namespace Microsoft.Maui.Graphics
 				return;
 
 			canvas.SaveState();
+
+			ClipPath(canvas, path);
 
 			// Set Fill
 			var fillPaint = ShapeView.Fill;

@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Essentials
 				_essentialsRegistrations = essentialsRegistrations;
 			}
 
-			public async void Initialize(IServiceProvider services)
+			public void Initialize(IServiceProvider services)
 			{
 				_essentialsBuilder = new EssentialsBuilder();
 				if (_essentialsRegistrations != null)
@@ -135,9 +135,20 @@ namespace Microsoft.Maui.Essentials
 
 				AppActions.OnAppAction += HandleOnAppAction;
 
+				if (_essentialsBuilder.AppActions is not null)
+				{
+					SetAppActions(services, _essentialsBuilder.AppActions);
+				}
+
+				if (_essentialsBuilder.TrackVersions)
+					VersionTracking.Track();
+			}
+
+			private static async void SetAppActions(IServiceProvider services, List<AppAction> appActions)
+			{
 				try
 				{
-					await AppActions.SetAsync(_essentialsBuilder.AppActions);
+					await AppActions.SetAsync(appActions);
 				}
 				catch (FeatureNotSupportedException ex)
 				{
@@ -145,9 +156,6 @@ namespace Microsoft.Maui.Essentials
 						.CreateLogger<IEssentialsBuilder>()?
 						.LogError(ex, "App Actions are not supported on this platform.");
 				}
-
-				if (_essentialsBuilder.TrackVersions)
-					VersionTracking.Track();
 			}
 
 			void HandleOnAppAction(object? sender, AppActionEventArgs e)
@@ -158,9 +166,11 @@ namespace Microsoft.Maui.Essentials
 
 		class EssentialsBuilder : IEssentialsBuilder
 		{
-			internal readonly List<AppAction> AppActions = new List<AppAction>();
+		List<AppAction>? _appActions;
 			internal Action<AppAction>? AppActionHandlers;
 			internal bool TrackVersions;
+
+			internal List<AppAction>? AppActions => _appActions;
 
 #pragma warning disable CS0414 // Remove unread private members
 			internal string? MapServiceToken;
@@ -174,7 +184,8 @@ namespace Microsoft.Maui.Essentials
 
 			public IEssentialsBuilder AddAppAction(AppAction appAction)
 			{
-				AppActions.Add(appAction);
+				_appActions ??= new List<AppAction>();
+				_appActions.Add(appAction);
 				return this;
 			}
 

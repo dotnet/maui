@@ -42,10 +42,8 @@ Or, the "main" branch:
 
 ```
 iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
-.\maui-install.ps1 -b 'main' -v '6.0.200-preview'
+.\maui-install.ps1 -b 'main' -v '6.0.300-preview'
 ``` 
-
-> NOTE: the branch (`-b 'main'`) and version (`-v 6.0.200-preview`) parameters. The `main` branch currently requires the 6.0.200 SDK band since the manifests are all in that SDK band - this will change in the future
 
 ### iOS / MacCatalyst
 

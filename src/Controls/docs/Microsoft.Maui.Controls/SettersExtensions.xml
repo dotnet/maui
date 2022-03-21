@@ -75,7 +75,7 @@
         <Parameter Name="binding" Type="Microsoft.Maui.Controls.Binding" />
       </Parameters>
       <Docs>
-        <param name="setters">The list of setters to which to add a setter that binds <paramref name="property" /> to <paramref name="value" />.</param>
+        <param name="setters">The list of setters to which to add a setter that binds <paramref name="property" /> using <paramref name="binding" />.</param>
         <param name="property">The property to set.</param>
         <param name="binding">The binding to add.</param>
         <summary>Add a Setter with a Binding to the IList&lt;Setter&gt;</summary>
