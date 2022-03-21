@@ -121,7 +121,7 @@ public class PlatformInterop {
         MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback, glide);
 
         glide
-            .load(new File(file))
+            .load(file)
             .into(target);
     }
 
@@ -184,7 +184,7 @@ public class PlatformInterop {
         MauiCustomTarget target = new MauiCustomTarget(callback, glide);
 
         glide
-            .load(new File(file))
+            .load(file)
             .into(target);
     }
 

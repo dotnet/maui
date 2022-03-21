@@ -15,7 +15,6 @@ public class MauiCustomTarget extends CustomTarget<Drawable>
     private final ImageLoaderCallback callback;
     private final RequestManager requestManager;
 
-
     public MauiCustomTarget(ImageLoaderCallback callback, RequestManager requestManager)
     {
         this.callback = callback;
@@ -26,12 +25,9 @@ public class MauiCustomTarget extends CustomTarget<Drawable>
     public void onLoadFailed(@Nullable Drawable errorDrawable) {
         super.onLoadFailed(errorDrawable);
 
-        callback.onComplete(false, errorDrawable, new Runnable() {
-            @Override
-            public void run() {
-                requestManager.clear(MauiCustomTarget.this);
-            }
-        });
+        requestManager.clear(MauiCustomTarget.this);
+
+        callback.onComplete(false, errorDrawable, null);
     }
 
     @Override
