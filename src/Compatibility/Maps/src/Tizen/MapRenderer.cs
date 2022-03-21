@@ -4,9 +4,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Controls.Platform;
 using Tizen.Location;
 using Tizen.Maps;
-using Microsoft.Maui.Controls.Platform.Tizen;
+using Pin = Microsoft.Maui.Controls.Maps.Pin;
 using TPin = Tizen.Maps.Pin;
 
 namespace Microsoft.Maui.Controls.Compatibility.Maps.Tizen

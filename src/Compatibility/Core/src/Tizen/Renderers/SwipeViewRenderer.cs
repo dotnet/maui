@@ -367,7 +367,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				Text = item.Text,
 				HorizontalTextAlignment = TextAlignment.Center,
+#pragma warning disable CS0612 // Type or member is obsolete
 				FontSize = Device.GetNamedSize(NamedSize.Default, typeof(Label)),
+#pragma warning disable CS0612 // Type or member is obsolete
 			};
 
 			if (horizontal)
@@ -378,7 +380,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				label.VerticalOptions = LayoutOptions.Center;
 				label.HorizontalOptions = LayoutOptions.Center;
 				label.VerticalTextAlignment = TextAlignment.Center;
+#pragma warning disable CS0612 // Type or member is obsolete
 				label.FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label));
+#pragma warning disable CS0612 // Type or member is obsolete
 			}
 			else
 			{

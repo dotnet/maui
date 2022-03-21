@@ -1,9 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Tizen.Maps;
 using Microsoft.Maui.Controls.Compatibility.Maps.Tizen;
-using Microsoft.Maui.Controls.Platform.Tizen;
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+using Tizen.Maps;
 
 namespace Microsoft.Maui.Controls
 {

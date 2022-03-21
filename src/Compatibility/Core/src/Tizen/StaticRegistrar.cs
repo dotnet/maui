@@ -141,7 +141,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			Registered.Register(typeof(EmbeddedFont), () => new CompatibilityEmbeddedFontLoader());
 
 			//Dependencies
+#pragma warning disable CS0612 // Type or member is obsolete
 			DependencyService.Register<ISystemResourcesProvider, ResourcesProvider>();
+#pragma warning disable CS0612 // Type or member is obsolete
 			DependencyService.Register<INativeBindingService, NativeBindingService>();
 			DependencyService.Register<INativeValueConverterService, NativeValueConverterService>();
 

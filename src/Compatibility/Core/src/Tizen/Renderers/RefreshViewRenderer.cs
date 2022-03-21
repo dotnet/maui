@@ -280,7 +280,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		int GetScrollYOnGenList(IntPtr handle)
 		{
+#pragma warning disable IL2026
 			var interop = typeof(EvasObject).Assembly.GetType("Interop");
+#pragma warning disable IL2026
 			var elementary = interop?.GetNestedType("Elementary", BindingFlags.NonPublic | BindingFlags.Static) ?? null;
 
 			if (elementary != null)

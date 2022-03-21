@@ -269,7 +269,9 @@ namespace Microsoft.Maui.Controls.Platform
 				Text = args.Message,
 				HorizontalOptions = LayoutOptions.Fill,
 				HorizontalTextAlignment = TextAlignment.Center,
+#pragma warning disable CS0612 // Type or member is obsolete
 				FontSize = Device.GetNamedSize(NamedSize.Subtitle, typeof(Label)),
+#pragma warning disable CS0612 // Type or member is obsolete
 			});
 			layout.Add(entry);
 			layout.Parent = sender;

@@ -1,10 +1,11 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Tizen;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.Tizen;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Tizen;
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+using Microsoft.Maui.Controls.Internals;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
-namespace Xamarin.Forms.ControlGallery.Tizen
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tizen
 {
 	public class RegistrarValidationService : IRegistrarValidationService
 	{

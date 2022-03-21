@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.Hosting;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
@@ -15,6 +16,9 @@ namespace Samples
 
 			builder
 				.UseMauiApp<App>()
+#if TIZEN
+				.UseMauiCompatibility()
+#endif
 				.ConfigureEssentials(essentials =>
 				{
 					essentials.UseVersionTracking();

@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class CoreAppExtensions
 	{
-		static Window? MainWindow { get; set; }
+		public static Window? MainWindow { get; set; }
 
 		public static IWindow GetWindow(this CoreApplication application)
 		{

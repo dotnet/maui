@@ -1,12 +1,13 @@
 using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Tizen;
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+using Microsoft.Maui.Controls.Platform;
 using ElmSharp;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Tizen;
-using Xamarin.Forms.Platform.Tizen;
 using EColor = ElmSharp.Color;
 
 [assembly: ExportEffect(typeof(BorderEffect), "BorderEffect")]
-namespace Xamarin.Forms.ControlGallery.Tizen
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tizen
 {
 	public class BorderEffect : PlatformEffect
 	{
