@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var context = MauiContext.Context;
 			_outerLayout = ViewHelper.CreateNavigationBarOuterLayout(context);
 			_navigationArea = ViewHelper.CreateNavigationBarArea(context, _outerLayout);
-			_bottomView = ViewHelper.CreateNavigationBar(context, Resource.Style.Widget_Design_BottomNavigationView, _outerLayout, this);
+			_bottomView = ViewHelper.CreateNavigationBar(context, Resource.Attribute.bottomNavigationViewStyle, _outerLayout, this);
 
 			if (ShellItem == null)
 				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");

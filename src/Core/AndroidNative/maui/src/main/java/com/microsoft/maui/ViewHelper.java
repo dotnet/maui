@@ -129,9 +129,9 @@ public class ViewHelper {
     }
 
     @NonNull
-    public static BottomNavigationView createNavigationBar(Context context, int navigationStyle, LinearLayout linearLayout, BottomNavigationView.OnItemSelectedListener listener)
+    public static BottomNavigationView createNavigationBar(Context context, int styleAttribute, LinearLayout linearLayout, BottomNavigationView.OnItemSelectedListener listener)
     {
-        BottomNavigationView navigationView = new BottomNavigationView(new ContextThemeWrapper(context, navigationStyle));
+        BottomNavigationView navigationView = new BottomNavigationView(context, null, styleAttribute);
         navigationView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         navigationView.setBackgroundColor(Color.WHITE);
         navigationView.setOnItemSelectedListener(listener);

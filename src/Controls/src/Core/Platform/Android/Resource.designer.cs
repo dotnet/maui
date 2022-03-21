@@ -41,6 +41,9 @@ namespace Microsoft.Maui.Controls
 			// aapt resource value: 0x7F030007
 			public static int actionBarSize = 2130903047;
 
+			// aapt resource value: 0x7F030066
+			public static int bottomNavigationViewStyle = 2130903142;
+
 			// aapt resource value: 0x7F0303F1
 			public static int toolbarStyle = 2130904049;
 
@@ -195,17 +198,6 @@ namespace Microsoft.Maui.Controls
 			public static int overflow_tab_title = 2131558503;
 
 			static String()
-			{
-				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
-			}
-		}
-
-		public partial class Style
-		{
-			// aapt resource value: 0x7F0E025D
-			public static int Widget_Design_BottomNavigationView = 2131624541;
-
-			static Style()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
 			}
