@@ -28,24 +28,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
-			platformView.FocusChange += OnFocusedChange;
-
-			if (platformView is IMauiEditText mauiEditText)
-			{
-				mauiEditText.OnKeyboardBackPressed += OnKeyboardBackPressed;
-			}
 		}
 
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
-			platformView.FocusChange -= OnFocusedChange;
-
-			if (platformView is IMauiEditText mauiEditText)
-			{
-				mauiEditText.OnKeyboardBackPressed -= OnKeyboardBackPressed;
-			}
 		}
 
 		public static void MapBackground(IEditorHandler handler, IEditor editor) =>
@@ -108,16 +96,5 @@ namespace Microsoft.Maui.Handlers
 
 		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
 			VirtualView?.UpdateText(e);
-
-		void OnFocusedChange(object? sender, FocusChangeEventArgs e)
-		{
-			if (!e.HasFocus)
-				VirtualView?.Completed();
-		}
-
-		void OnKeyboardBackPressed(object? sender, EventArgs eventArgs)
-		{
-			VirtualView?.Completed();
-		}
 	}
 }

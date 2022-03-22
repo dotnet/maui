@@ -37,8 +37,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
-			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
-
 			if (_dialog != null)
 			{
 				_dialog.CancelEvent -= OnCancelButtonClicked;
