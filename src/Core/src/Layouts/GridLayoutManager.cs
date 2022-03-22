@@ -30,10 +30,7 @@ namespace Microsoft.Maui.Layouts
 		{
 			var structure = _gridStructure ?? new GridStructure(Grid, bounds.Width, bounds.Height);
 
-			var rtl = FlowDirection.RightToLeft ==
-					LayoutHandler.GetLayoutFlowDirection(Grid.GetEffectiveFlowDirection());
-
-			var reverseColumns = rtl && Grid.ColumnDefinitions.Count > 1;
+			var reverseColumns = Grid.ColumnDefinitions.Count > 1 && !Grid.ShouldArrangeLeftToRight();
 
 			foreach (var view in Grid)
 			{
