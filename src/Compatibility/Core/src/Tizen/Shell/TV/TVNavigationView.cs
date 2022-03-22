@@ -10,6 +10,7 @@ using NCollectionView = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Nat
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class TVNavigationView : Background, INavigationView
 	{
 		static EColor s_defaultBackgroundColor = EColor.Black;

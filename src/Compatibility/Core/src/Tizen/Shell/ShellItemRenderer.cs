@@ -13,6 +13,7 @@ using EToolbarItemEventArgs = ElmSharp.ToolbarItemEventArgs;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ShellItemRenderer : IAppearanceObserver, IDisposable
 	{
 		// The source of icon resources is https://materialdesignicons.com/

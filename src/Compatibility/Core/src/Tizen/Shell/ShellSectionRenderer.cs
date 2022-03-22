@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		EvasObject NativeView { get; }
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ShellSectionRenderer : IAppearanceObserver, IShellSectionRenderer
 	{
 		EBox _mainLayout = null;

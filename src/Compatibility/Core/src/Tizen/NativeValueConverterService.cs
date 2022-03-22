@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	{
 		public bool ConvertTo(object value, Type toType, out object nativeValue)
 		{
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			nativeValue = null;
 			if ((value is EObject) && toType.IsAssignableFrom(typeof(View)))
 			{

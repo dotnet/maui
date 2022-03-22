@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	/// <summary>
 	/// Renderer of ContentPage.
 	/// </summary>
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PageRenderer : VisualElementRenderer<Page>, SkiaSharp.IBackgroundCanvas
 	{
 		Native.Page _page;

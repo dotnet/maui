@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class CanvasViewRenderer<TView, TNativeView> : ViewRenderer<TView, Native.Canvas>, IBackgroundCanvas, IClipperCanvas, ICanvasRenderer
 		where TView : View
 		where TNativeView : EvasObject

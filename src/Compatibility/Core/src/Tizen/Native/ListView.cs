@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 	/// Whenever element disappears from visible space its content is destroyed for time being.
 	/// This is carried out by so called Cell Handlers.
 	/// </remarks>
+	[Obsolete]
 	public class ListView : GenList
 	{
 		/// <summary>

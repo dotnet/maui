@@ -6,6 +6,7 @@ using EGestureType = ElmSharp.GestureLayer.GestureType;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class DropGestureHandler : GestureHandler
 	{
 		bool _isApi4;

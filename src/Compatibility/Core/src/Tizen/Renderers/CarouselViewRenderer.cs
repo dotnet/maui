@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class CarouselViewRenderer : ItemsViewRenderer<CarouselView, Native.CarouselView>
 	{
 		List<View> _oldViews = new List<View>();

@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	/// <summary>
 	/// Base class for rendering of a Xamarin element.
 	/// </summary>
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer instead")]
 	public abstract class VisualElementRenderer<TElement> : IVisualElementRenderer, IEffectControlProvider where TElement : VisualElement
 	{
 		readonly List<EventHandler<VisualElementChangedEventArgs>> _elementChangedHandlers = new List<EventHandler<VisualElementChangedEventArgs>>();

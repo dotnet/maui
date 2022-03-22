@@ -18,6 +18,7 @@ using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.App
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 
+	[Obsolete]
 	public class FormsApplication : CoreUIApplication
 	{
 		ITizenPlatform _platform;

@@ -3,6 +3,7 @@ using ElmSharp.Wearable;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch
 {
+	[System.Obsolete]
 	public class WatchTableView : WatchListView, ITableView
 	{
 		static readonly SectionCellRenderer _sectionCellRenderer = new SectionCellRenderer();

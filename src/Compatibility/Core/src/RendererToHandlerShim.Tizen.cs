@@ -1,4 +1,6 @@
+#pragma warning disable CS0612 // Type or member is obsolete
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+#pragma warning disable CS0612 // Type or member is obsolete
 using Microsoft.Maui.Graphics;
 using Rect = Microsoft.Maui.Graphics.Rect;
 using ERect = ElmSharp.Rect;

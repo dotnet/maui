@@ -19,7 +19,9 @@ using PlatformView = UIKit.UIView;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, UIKit.UIView>;
 #elif TIZEN
+#pragma warning disable CS0612 // Type or member is obsolete
 using static Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Platform;
+#pragma warning disable CS0612 // Type or member is obsolete
 using PlatformView = ElmSharp.EvasObject;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, ElmSharp.EvasObject>;

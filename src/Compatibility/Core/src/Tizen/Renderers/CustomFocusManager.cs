@@ -7,6 +7,7 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	class CustomFocusManager : IDisposable
 	{
 		VisualElement _nextUp;

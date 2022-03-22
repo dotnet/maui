@@ -2,6 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Renderers
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class FlyoutContainer : ElmSharp.Box, IDisposable
 	{
 		readonly FlyoutPage _parent;

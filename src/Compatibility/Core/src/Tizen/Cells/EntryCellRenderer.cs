@@ -6,6 +6,7 @@ using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EntryCellRenderer : ViewCellRenderer
 	{
 		readonly Dictionary<EvasObject, VisualElement> _cacheCandidate = new Dictionary<EvasObject, VisualElement>();

@@ -14,6 +14,7 @@ using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	class RefreshIcon : AbsoluteLayout
 	{
 		public const int IconSize = ThemeConstants.RefreshView.Resources.IconSize;
@@ -89,6 +90,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 	}
 
+	[Obsolete]
 	class RefreshLayout : XStackLayout
 	{
 		static readonly int MaximumDistance = 100;
@@ -166,6 +168,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		Loading,
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class RefreshViewRenderer : LayoutRenderer
 	{
 		ElmSharp.GestureLayer _gestureLayer;

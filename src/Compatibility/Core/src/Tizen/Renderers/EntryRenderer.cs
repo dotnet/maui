@@ -8,6 +8,7 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EntryRenderer : ViewRenderer<Entry, EEntry>
 	{
 		SmartEvent _selectionCleared;

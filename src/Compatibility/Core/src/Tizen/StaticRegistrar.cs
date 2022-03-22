@@ -8,6 +8,7 @@ using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class StaticRegistrar<TRegistrable> where TRegistrable : class
 	{
 		readonly Dictionary<Type, Func<TRegistrable>> _handlers = new Dictionary<Type, Func<TRegistrable>>();
@@ -57,6 +58,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 	}
 
+	[Obsolete]
 	public static class StaticRegistrar
 	{
 		public static StaticRegistrar<IRegisterable> Registered { get; internal set; }

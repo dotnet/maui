@@ -4,6 +4,7 @@ using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class BoxViewRenderer : CanvasViewRenderer<BoxView, RoundRectangle>
 	{
 		public BoxViewRenderer()

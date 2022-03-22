@@ -8,6 +8,7 @@ using SpecificSwitch = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecif
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SwitchRenderer : ViewRenderer<Switch, Check>
 	{
 		public SwitchRenderer()

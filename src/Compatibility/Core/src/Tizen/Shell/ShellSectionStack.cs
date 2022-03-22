@@ -7,6 +7,7 @@ using EBox = ElmSharp.Box;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class ShellSectionStack : EBox, IAppearanceObserver, IDisposable
 	{
 		ShellNavBar _navBar = null;

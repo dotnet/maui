@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Watch
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ShellSectionNavigationRenderer : IShellItemRenderer
 	{
 		SimpleViewStack _viewStack;

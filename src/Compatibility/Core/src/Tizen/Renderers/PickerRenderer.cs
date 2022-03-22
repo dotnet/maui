@@ -10,6 +10,7 @@ using NIEntry = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IEnt
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PickerRenderer : ViewRenderer<Picker, EEntry>
 	{
 		List _list;

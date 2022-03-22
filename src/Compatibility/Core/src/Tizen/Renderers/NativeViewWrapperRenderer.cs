@@ -4,7 +4,9 @@ using ESize = ElmSharp.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class NativeViewWrapperRenderer : ViewRenderer<NativeViewWrapper, EvasObject>
+#pragma warning disable CS0618 // Type or member is obsolete
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<NativeViewWrapper> e)
 		{

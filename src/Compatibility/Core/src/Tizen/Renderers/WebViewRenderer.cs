@@ -9,6 +9,7 @@ using TWebView = Tizen.WebView.WebView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class WebViewRenderer : ViewRenderer<WebView, WebViewContainer>, IWebViewDelegate
 	{
 		bool _isUpdating;

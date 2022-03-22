@@ -10,6 +10,7 @@ using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {
+	[Obsolete]
 	public class ItemDefaultTemplateAdaptor : ItemTemplateAdaptor
 	{
 		class ToTextConverter : IValueConverter
@@ -45,6 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		}
 	}
 
+	[Obsolete]
 	public class ItemTemplateAdaptor : ItemAdaptor
 	{
 		Dictionary<EvasObject, View> _nativeFormsTable = new Dictionary<EvasObject, View>();

@@ -6,6 +6,7 @@ using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class TableViewRenderer : ViewRenderer<TableView, Native.ListView>
 	{
 		internal static BindableProperty PresentationProperty = BindableProperty.Create("Presentation", typeof(View), typeof(TableSectionBase), null, BindingMode.OneWay, null, null, null, null, null as BindableProperty.CreateDefaultValueDelegate);

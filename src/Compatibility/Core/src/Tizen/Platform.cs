@@ -12,6 +12,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public static class Platform
 	{
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer),
@@ -141,6 +142,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		public EvasObject RootNativeView { get; private set; }
 	}
 
+	[Obsolete]
 	public class DefaultPlatform : BindableObject, ITizenPlatform, INavigation
 	{
 		NavigationModel _navModel = new NavigationModel();

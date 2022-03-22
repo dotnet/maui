@@ -9,6 +9,7 @@ using EImage = ElmSharp.Image;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class ShellNavBar : EBox, IFlyoutBehaviorObserver, IDisposable
 	{
 		EImage _menuIcon = null;

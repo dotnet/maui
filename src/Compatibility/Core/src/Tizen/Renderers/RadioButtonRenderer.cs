@@ -6,6 +6,7 @@ using TSpan = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Span;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class RadioButtonRenderer : ViewRenderer<RadioButton, Radio>
 	{
 		readonly TSpan _span = new TSpan();

@@ -3,6 +3,7 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ViewCellRenderer : CellRenderer
 	{
 		readonly Dictionary<EvasObject, ViewCell> _cacheCandidate = new Dictionary<EvasObject, ViewCell>();

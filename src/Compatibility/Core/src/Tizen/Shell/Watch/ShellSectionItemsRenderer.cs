@@ -9,6 +9,7 @@ using Index = ElmSharp.Index;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Watch
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ShellSectionItemsRenderer : IShellItemRenderer
 	{
 		const int ItemMaxCount = 20;

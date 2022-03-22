@@ -12,6 +12,7 @@ using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class PopupManager : IDisposable
 	{
 		ITizenPlatform _platform;

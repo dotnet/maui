@@ -7,6 +7,7 @@ using EImage = ElmSharp.Image;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class NavigationView : Background, INavigationView
 	{
 		static EColor s_defaultBackgroundColor = EColor.White;

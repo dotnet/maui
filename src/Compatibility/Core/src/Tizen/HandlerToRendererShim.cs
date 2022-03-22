@@ -10,12 +10,15 @@ using EvasObject = ElmSharp.EvasObject;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+#pragma warning disable CS0612 // Type or member is obsolete
 	public class HandlerToRendererShim : IVisualElementRenderer
+#pragma warning disable CS0612 // Type or member is obsolete
 	{
 		bool _disposed;
 
 		public HandlerToRendererShim(IPlatformViewHandler vh)
 		{
+			Compatibility.Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			ViewHandler = vh;
 		}
 

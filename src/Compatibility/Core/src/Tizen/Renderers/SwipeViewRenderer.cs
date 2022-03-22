@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		Closed
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SwipeViewRenderer : LayoutRenderer
 	{
 		static readonly double SwipeItemWidth = Forms.ConvertToScaledDP(100);

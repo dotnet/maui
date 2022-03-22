@@ -10,6 +10,7 @@ using WatchDateTimePickerDialog = Microsoft.Maui.Controls.Compatibility.Platform
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class DatePickerRenderer : ViewRenderer<DatePicker, EEntry>
 	{
 		//TODO need to add internationalization support

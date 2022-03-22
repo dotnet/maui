@@ -6,6 +6,7 @@ using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class StepperRenderer : ViewRenderer<Stepper, Spinner>
 	{
 

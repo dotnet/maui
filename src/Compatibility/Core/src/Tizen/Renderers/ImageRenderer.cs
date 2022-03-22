@@ -7,6 +7,7 @@ using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Ima
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ImageRenderer : ViewRenderer<Image, Native.Image>
 	{
 		public ImageRenderer()

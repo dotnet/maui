@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Renderers;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class FlyoutPageRenderer : VisualElementRenderer<FlyoutPage>
 	{
 		Native.FlyoutPage _flyoutPage;

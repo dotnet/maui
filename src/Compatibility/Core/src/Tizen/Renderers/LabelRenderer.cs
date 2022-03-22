@@ -5,6 +5,7 @@ using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Lab
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 
 	public class LabelRenderer : ViewRenderer<Label, Native.Label>
 	{

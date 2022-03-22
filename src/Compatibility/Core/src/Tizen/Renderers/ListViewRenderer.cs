@@ -8,6 +8,7 @@ using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	/// <summary>
 	/// Renderer class for Xamarin ListView class. This provides necessary logic translating
 	/// Xamarin API to Tizen Native API. This is a derivate of a ViewRenderer base class.

@@ -7,6 +7,7 @@ using SpecificVE = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.V
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, EProgressBar>
 	{
 		static readonly EColor s_defaultColor = ThemeConstants.ProgressBar.ColorClass.Default;

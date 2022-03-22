@@ -2,7 +2,9 @@ using System;
 using Microsoft.Maui.Essentials;
 using ElmSharp;
 using ElmSharp.Wearable;
+#pragma warning disable CS0612 // Type or member is obsolete
 using static Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.TableView;
+#pragma warning disable CS0612 // Type or member is obsolete
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
 using EEntry = ElmSharp.Entry;
@@ -17,6 +19,7 @@ using Index = ElmSharp.Index;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public static class ThemeManager
 	{
 		#region Layout

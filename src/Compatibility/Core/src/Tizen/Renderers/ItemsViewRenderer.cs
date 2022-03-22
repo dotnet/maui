@@ -7,6 +7,7 @@ using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Ite
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class ItemsViewRenderer<TItemsView, TNative> : ViewRenderer<TItemsView, TNative>
 		where TItemsView : ItemsView
 		where TNative : Native.CollectionView

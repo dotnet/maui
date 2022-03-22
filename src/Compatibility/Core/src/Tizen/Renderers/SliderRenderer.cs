@@ -7,6 +7,7 @@ using ESlider = ElmSharp.Slider;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SliderRenderer : ViewRenderer<Slider, ESlider>
 	{
 		EColor _defaultMinColor;

@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class FastLayoutRenderer : ViewRenderer<Layout, Native.EvasFormsCanvas>, SkiaSharp.IBackgroundCanvas, ILayoutRenderer
 	{
 		bool _layoutUpdatedRegistered = false;

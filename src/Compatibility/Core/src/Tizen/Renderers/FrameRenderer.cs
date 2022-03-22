@@ -4,6 +4,7 @@ using EPolygon = ElmSharp.Polygon;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class FrameRenderer : LayoutRenderer
 	{
 		const int _thickness = 2;

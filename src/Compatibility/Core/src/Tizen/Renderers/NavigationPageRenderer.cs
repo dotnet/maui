@@ -14,6 +14,7 @@ using SpecificPage = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class NavigationPageRenderer : VisualElementRenderer<NavigationPage>
 	{
 		enum ToolbarButtonPosition

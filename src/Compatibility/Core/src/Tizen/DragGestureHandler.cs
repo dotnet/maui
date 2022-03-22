@@ -7,6 +7,7 @@ using EGestureType = ElmSharp.GestureLayer.GestureType;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class DragGestureHandler : GestureHandler
 	{
 		bool _isApi4;

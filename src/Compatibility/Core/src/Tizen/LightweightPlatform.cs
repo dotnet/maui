@@ -9,6 +9,7 @@ using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class LightweightPlatform : ITizenPlatform, INavigation, IDisposable
 	{
 		NavigationModel _navModel = new NavigationModel();

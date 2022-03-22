@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		Lightweight,
 	}
 
+	[Obsolete]
 	public class InitializationOptions
 	{
 		public CoreApplication Context { get; set; }
@@ -85,7 +86,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 	}
 
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
 	public static class Forms
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 	{
 		static Lazy<string> s_profile = new Lazy<string>(() =>
 		{

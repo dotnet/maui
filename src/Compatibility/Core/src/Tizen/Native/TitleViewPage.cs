@@ -3,6 +3,7 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {
+	[Obsolete]
 	public class TitleViewPage : Native.Box
 	{
 		Native.Page _page = null;

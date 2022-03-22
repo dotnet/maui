@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EllipseRenderer : ShapeRenderer<Ellipse, EllipseView>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Ellipse> e)

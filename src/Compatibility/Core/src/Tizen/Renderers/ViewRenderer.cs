@@ -10,6 +10,7 @@ using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.App
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer instead")]
 	/// <summary>
 	/// Base class for view renderers.
 	/// </summary>

@@ -7,6 +7,7 @@ using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {
+	[System.Obsolete]
 	public class EmptyItemAdaptor : ItemTemplateAdaptor, IEmptyAdaptor
 	{
 		static DataTemplate s_defaultEmptyTemplate = new DataTemplate(typeof(EmptyView));

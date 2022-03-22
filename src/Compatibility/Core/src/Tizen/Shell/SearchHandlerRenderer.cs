@@ -6,6 +6,7 @@ using NSearchBar = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.S
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SearchHandlerRenderer : IDisposable
 	{
 		bool disposedValue;

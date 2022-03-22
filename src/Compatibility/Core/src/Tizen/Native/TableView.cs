@@ -5,6 +5,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 	/// <summary>
 	/// Extends the ListView class to provide TableView class implementation.
 	/// </summary>
+	[System.Obsolete]
 	public class TableView : ListView, ITableView
 	{
 
