@@ -3,7 +3,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiPicker;
 #elif MONOANDROID
 using PlatformView = Microsoft.Maui.Platform.MauiPicker;
 #elif WINDOWS
-using PlatformView = Microsoft.Maui.Platform.MauiComboBox;
+using PlatformView = Microsoft.UI.Xaml.Controls.ComboBox;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
