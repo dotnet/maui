@@ -9,22 +9,16 @@ namespace Microsoft.Maui
 	public struct GridLength
 	{
 		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='Auto']/Docs" />
-		public static GridLength Auto
-		{
-			get { return new GridLength(1, GridUnitType.Auto); }
-		}
+		public static readonly GridLength Auto = new GridLength(1, GridUnitType.Auto);
 
 		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='Star']/Docs" />
-		public static GridLength Star
-		{
-			get { return new GridLength(1, GridUnitType.Star); }
-		}
+		public static readonly GridLength Star = new GridLength(1, GridUnitType.Star);
 
 		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='Value']/Docs" />
-		public double Value { get; }
+		public readonly double Value { get; }
 
 		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='GridUnitType']/Docs" />
-		public GridUnitType GridUnitType { get; }
+		public readonly GridUnitType GridUnitType { get; }
 
 		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='IsAbsolute']/Docs" />
 		public bool IsAbsolute
