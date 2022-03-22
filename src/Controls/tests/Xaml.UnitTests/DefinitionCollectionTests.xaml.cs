@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void DefinitionCollectionsReplacedAtCompilation()
 			{
 				MockCompiler.Compile(typeof(DefinitionCollectionTests), out var methodDef);
-				Assert.That(!methodDef.Body.Instructions.Any(instr=>InstructionIsDefColConvCtor(methodDef, instr)), "This Xaml still genereate [Row|Col]efinitionConverter ctor");
+				Assert.That(!methodDef.Body.Instructions.Any(instr=>InstructionIsDefColConvCtor(methodDef, instr)), "This Xaml still generates [Row|Col]DefinitionCollectionTypeConverter ctor");
 			}
 
 			bool InstructionIsDefColConvCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)
