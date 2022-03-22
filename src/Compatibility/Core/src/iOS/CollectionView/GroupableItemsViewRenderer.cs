@@ -2,6 +2,7 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class GroupableItemsViewRenderer<TItemsView, TViewController> : SelectableItemsViewRenderer<TItemsView, TViewController>
 		where TItemsView : GroupableItemsView
 		where TViewController : GroupableItemsViewController<TItemsView>

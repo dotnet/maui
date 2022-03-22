@@ -22,14 +22,24 @@ namespace Microsoft.Maui.Platform
 			platformDatePicker.UpdateDate(datePicker, null);
 		}
 
+		public static void UpdateTextColor(this MauiDatePicker platformDatePicker, IDatePicker datePicker) =>
+			UpdateTextColor(platformDatePicker, datePicker, null);
+
 		public static void UpdateTextColor(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIColor? defaultTextColor)
 		{
 			var textColor = datePicker.TextColor;
 
 			if (textColor == null)
-				platformDatePicker.TextColor = defaultTextColor;
+			{
+				if (defaultTextColor != null)
+				{
+					platformDatePicker.TextColor = defaultTextColor;
+				}
+			}
 			else
+			{
 				platformDatePicker.TextColor = textColor.ToPlatform();
+			}
 
 			// HACK This forces the color to update; there's probably a more elegant way to make this happen
 			platformDatePicker.UpdateDate(datePicker);
