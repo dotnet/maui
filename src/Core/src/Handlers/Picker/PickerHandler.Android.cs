@@ -11,9 +11,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
-		static Drawable? s_defaultBackground;
-		static ColorStateList? s_defaultTitleColors { get; set; }
-		static ColorStateList? s_defaultTextColors { get; set; }
 		AlertDialog? _dialog;
 
 		protected override MauiPicker CreatePlatformView() =>
@@ -28,8 +25,6 @@ namespace Microsoft.Maui.Handlers
 				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
 
 			base.ConnectHandler(platformView);
-
-			SetupDefaults(platformView);
 		}
 
 		protected override void DisconnectHandler(MauiPicker platformView)
@@ -43,17 +38,10 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		void SetupDefaults(MauiPicker platformView)
-		{
-			s_defaultBackground = platformView.Background;
-			s_defaultTitleColors = platformView.HintTextColors;
-			s_defaultTextColors = platformView.TextColors;
-		}
-
 		// This is a Android-specific mapping
 		public static void MapBackground(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateBackground(picker, s_defaultBackground);
+			handler.PlatformView?.UpdateBackground(picker);
 		}
 
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
@@ -65,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateTitleColor(picker, s_defaultTitleColors);
+			handler.PlatformView?.UpdateTitleColor(picker);
 		}
 
 		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
@@ -92,7 +80,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView.UpdateTextColor(picker, s_defaultTextColors);
+			handler.PlatformView.UpdateTextColor(picker);
 		}
 
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
@@ -115,7 +103,6 @@ namespace Microsoft.Maui.Handlers
 			else if (_dialog != null)
 			{
 				_dialog.Hide();
-				PlatformView.ClearFocus();
 				_dialog = null;
 			}
 		}

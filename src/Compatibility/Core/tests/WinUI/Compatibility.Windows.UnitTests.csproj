@@ -5,13 +5,11 @@
     <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.UAP.UnitTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility.UAP.UnitTests</AssemblyName>
-    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS;UWP_16299</DefineConstants>
     <NoWarn>1701;1702;CS8305;8305;CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="NUnit" Version="3.12.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>

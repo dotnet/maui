@@ -28,18 +28,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateText(this UIButton platformButton, IText button) =>
 			platformButton.SetTitle(button.Text, UIControlState.Normal);
 
-		public static void UpdateTextColor(this UIButton platformButton, ITextStyle button) =>
-			platformButton.UpdateTextColor(button);
-
-		public static void UpdateTextColor(this UIButton platformButton, ITextStyle button, UIColor? buttonTextColorDefaultNormal, UIColor? buttonTextColorDefaultHighlighted, UIColor? buttonTextColorDefaultDisabled)
+		public static void UpdateTextColor(this UIButton platformButton, ITextStyle button)
 		{
-			if (button.TextColor == null)
-			{
-				platformButton.SetTitleColor(buttonTextColorDefaultNormal, UIControlState.Normal);
-				platformButton.SetTitleColor(buttonTextColorDefaultHighlighted, UIControlState.Highlighted);
-				platformButton.SetTitleColor(buttonTextColorDefaultDisabled, UIControlState.Disabled);
-			}
-			else
+			if (button.TextColor != null)
 			{
 				var color = button.TextColor.ToPlatform();
 

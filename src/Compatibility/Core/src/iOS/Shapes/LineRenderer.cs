@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class LineRenderer : ShapeRenderer<Line, LineView>
 	{
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]

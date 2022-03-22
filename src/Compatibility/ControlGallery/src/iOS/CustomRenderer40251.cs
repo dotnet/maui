@@ -8,9 +8,12 @@ using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(Button), typeof(CustomRenderer40251))]
+#pragma warning restore CS0612 // Type or member is obsolete
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 {
+	[System.Obsolete]
 	public class CustomRenderer40251 : ButtonRenderer
 	{
 		Dictionary<string, object> originalValues = new Dictionary<string, object>();

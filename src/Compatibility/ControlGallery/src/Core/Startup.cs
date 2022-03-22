@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.Hosting;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 
@@ -22,6 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var builder = MauiApp.CreateBuilder();
 			builder
 				.UseMauiApp<App>()
+				.UseMauiCompatibility()
 				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddCompatibilityRenderers(AppDomain.CurrentDomain.GetAssemblies());

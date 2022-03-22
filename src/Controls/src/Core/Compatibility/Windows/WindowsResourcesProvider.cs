@@ -1,3 +1,4 @@
+using System;
 using Windows.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -8,6 +9,7 @@ using FWeight = Windows.UI.Text.FontWeight;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Obsolete]
 	internal sealed class WindowsResourcesProvider : ISystemResourcesProvider
 	{
 		public IResourceDictionary GetSystemResources()

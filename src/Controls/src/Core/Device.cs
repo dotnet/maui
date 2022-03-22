@@ -10,10 +10,11 @@ using Microsoft.Maui.Essentials;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="Type[@FullName='Microsoft.Maui.Controls.Device']/Docs" />
-	//[Obsolete]
+	[Obsolete]
 	public static class Device
 	{
 		// this is just for those cases where the runtime needs to pre-load renderers
+		[Obsolete]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static Assembly DefaultRendererAssembly { get; set; }
 
@@ -70,16 +71,12 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Use Essentials.DeviceInfo.Platform instead.")]
 		public static string RuntimePlatform => DeviceInfo.Platform.ToString();
 
-		// [Obsolete]
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='FlowDirection']/Docs" />
-		public static FlowDirection FlowDirection
-		{
-			get
-			{
-				return AppInfo.RequestedLayoutDirection == LayoutDirection.RightToLeft
-					? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
-			}
-		}
+		[Obsolete("Use Essentials.AppInfo.RequestedLayoutDirection instead.")]
+		public static FlowDirection FlowDirection =>
+			AppInfo.RequestedLayoutDirection == LayoutDirection.RightToLeft
+				? FlowDirection.RightToLeft
+				: FlowDirection.LeftToRight;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='IsInvokeRequired']/Docs" />
 		[Obsolete("Use BindableObject.Dispatcher.IsDispatchRequired instead.")]
@@ -117,19 +114,21 @@ namespace Microsoft.Maui.Controls
 			Application.Current.FindDispatcher().GetSynchronizationContextAsync();
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][2]/Docs" />
+		[Obsolete]
 		public static double GetNamedSize(NamedSize size, Element targetElement)
 		{
 			return GetNamedSize(size, targetElement.GetType());
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][1]/Docs" />
+		[Obsolete]
 		public static double GetNamedSize(NamedSize size, Type targetElementType)
 		{
 			return GetNamedSize(size, targetElementType, false);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='StartTimer']/Docs" />
-		[Obsolete("Use BindableObject.Dispatcher.StartTimer() instead.")]
+		[Obsolete("Use BindableObject.Dispatcher.StartTimer() or BindableObject.Dispatcher.DispatchDelayed() instead.")]
 		public static void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
 			_ = callback ?? throw new ArgumentNullException(nameof(callback));
@@ -140,11 +139,13 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][3]/Docs" />
+		[Obsolete]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes) =>
 			DependencyService.Get<IFontNamedSizeService>()?.GetNamedSize(size, targetElementType, useOldSizes) ??
 			throw new NotImplementedException("The current platform does not implement the IFontNamedSizeService dependency service.");
 
+		[Obsolete]
 		public static class Styles
 		{
 			public static readonly string TitleStyleKey = "TitleStyle";

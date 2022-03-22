@@ -5,14 +5,14 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using static System.String;
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="Type[@FullName='Microsoft.Maui.Controls.WeakEventManager']/Docs" />
+	/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="Type[@FullName='Microsoft.Maui.WeakEventManager']/Docs" />
 	public class WeakEventManager
 	{
 		readonly Dictionary<string, List<Subscription>> _eventHandlers = new Dictionary<string, List<Subscription>>();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='AddEventHandler'][1]/Docs" />
+		/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='AddEventHandler'][1]/Docs" />
 		public void AddEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName] string eventName = "")
 			where TEventArgs : EventArgs
 		{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='AddEventHandler'][2]/Docs" />
+		/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='AddEventHandler'][2]/Docs" />
 		public void AddEventHandler(Delegate? handler, [CallerMemberName] string eventName = "")
 		{
 			if (IsNullOrEmpty(eventName))
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='HandleEvent']/Docs" />
+		/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='HandleEvent']/Docs" />
 		public void HandleEvent(object sender, object args, string eventName)
 		{
 			var toRaise = new List<(object? subscriber, MethodInfo handler)>();
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='RemoveEventHandler'][1]/Docs" />
+		/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='RemoveEventHandler'][1]/Docs" />
 		public void RemoveEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName] string eventName = "")
 			where TEventArgs : EventArgs
 		{
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 			RemoveEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='RemoveEventHandler'][2]/Docs" />
+		/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='RemoveEventHandler'][2]/Docs" />
 		public void RemoveEventHandler(Delegate? handler, [CallerMemberName] string eventName = "")
 		{
 			if (IsNullOrEmpty(eventName))
@@ -141,16 +141,16 @@ namespace Microsoft.Maui.Controls
 
 		struct Subscription
 		{
-			/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='.ctor']/Docs" />
+			/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='.ctor']/Docs" />
 			public Subscription(WeakReference? subscriber, MethodInfo handler)
 			{
 				Subscriber = subscriber;
 				Handler = handler ?? throw new ArgumentNullException(nameof(handler));
 			}
 
-			/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='Subscriber']/Docs" />
+			/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='Subscriber']/Docs" />
 			public readonly WeakReference? Subscriber;
-			/// <include file="../../docs/Microsoft.Maui.Controls/WeakEventManager.xml" path="//Member[@MemberName='Handler']/Docs" />
+			/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='Handler']/Docs" />
 			public readonly MethodInfo Handler;
 		}
 	}

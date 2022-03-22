@@ -39,8 +39,9 @@ namespace Microsoft.Maui.Controls.Internals
 			var proxy = BindableObjectProxy<TPlatformView>.BindableObjectProxies.GetValue(target, (TPlatformView key) => new BindableObjectProxy<TPlatformView>(key));
 			BindableProperty bindableProperty = null;
 			propertyChanged = propertyChanged ?? target as INotifyPropertyChanged;
-			var propertyType = target.GetType().GetProperty(targetProperty)?.PropertyType;
-			var defaultValue = target.GetType().GetProperty(targetProperty)?.GetMethod.Invoke(target, new object[] { });
+			var targetPropertyInfo = target.GetType().GetProperty(targetProperty);
+			var propertyType = targetPropertyInfo?.PropertyType;
+			var defaultValue = targetPropertyInfo?.GetMethod.Invoke(target, Array.Empty<object>());
 			bindableProperty = CreateBindableProperty<TPlatformView>(targetProperty, propertyType, defaultValue);
 			if (binding != null && binding.Mode != BindingMode.OneWay && propertyChanged != null)
 				propertyChanged.PropertyChanged += (sender, e) =>
