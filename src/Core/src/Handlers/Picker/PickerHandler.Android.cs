@@ -103,7 +103,6 @@ namespace Microsoft.Maui.Handlers
 			else if (_dialog != null)
 			{
 				_dialog.Hide();
-				PlatformView.ClearFocus();
 				_dialog = null;
 			}
 		}

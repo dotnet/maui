@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Handlers
 			if (_dialog != null)
 			{
 				_dialog.Hide();
-				_dialog.CancelEvent -= OnCancelButtonClicked;
 				_dialog = null;
 			}
 		}
@@ -44,14 +43,11 @@ namespace Microsoft.Maui.Handlers
 
 				if (_dialog != null)
 				{
-					_dialog.CancelEvent -= OnCancelButtonClicked;
 					_dialog = null;
 				}
 			}
 
 			var dialog = new TimePickerDialog(Context!, onTimeSetCallback, hour, minute, Use24HourView);
-			
-			dialog.CancelEvent += OnCancelButtonClicked;
 
 			return dialog;
 		}
@@ -118,7 +114,6 @@ namespace Microsoft.Maui.Handlers
 			if (_dialog != null)
 			{
 				_dialog.Hide();
-				_dialog.CancelEvent -= OnCancelButtonClicked;
 			}
 
 			_dialog = null;
@@ -126,13 +121,5 @@ namespace Microsoft.Maui.Handlers
 
 		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(PlatformView?.Context)
 			&& VirtualView.Format == "t" || VirtualView.Format == "HH:mm");
-
-		void OnCancelButtonClicked(object? sender, EventArgs e)
-		{
-			if(VirtualView == null)
-				return;
-
-			VirtualView.Unfocus();
-		}
 	}
 }

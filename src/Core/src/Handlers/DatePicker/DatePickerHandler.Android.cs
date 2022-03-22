@@ -39,7 +39,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog != null)
 			{
-				_dialog.CancelEvent -= OnCancelButtonClicked;
 				_dialog.Hide();
 				_dialog.Dispose();
 				_dialog = null;
@@ -135,8 +134,6 @@ namespace Microsoft.Maui.Handlers
 				_dialog.ShowEvent += setDateLater;
 			}
 
-			_dialog.CancelEvent += OnCancelButtonClicked;
-
 			_dialog.Show();
 		}
 
@@ -152,18 +149,9 @@ namespace Microsoft.Maui.Handlers
 			if (currentDialog != null && currentDialog.IsShowing)
 			{
 				currentDialog.Dismiss();
-				currentDialog.CancelEvent -= OnCancelButtonClicked;
 
 				ShowPickerDialog(currentDialog.DatePicker.Year, currentDialog.DatePicker.Month, currentDialog.DatePicker.DayOfMonth);
 			}
-		}
-
-		void OnCancelButtonClicked(object? sender, EventArgs e)
-		{
-			if (VirtualView == null)
-				return;
-
-			VirtualView.Unfocus();
 		}
 	}
 }
