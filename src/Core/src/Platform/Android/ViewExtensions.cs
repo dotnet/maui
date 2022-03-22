@@ -71,38 +71,16 @@ namespace Microsoft.Maui.Platform
 		{
 			request.IsFocused = true;
 
-			var dispatcher =
-				platformView
-					?.GetHostedWindow()
-					?.Handler
-					?.MauiContext
-					?.GetDispatcher();
-
 			// Android does the actual focus/unfocus work on the main looper
 			// So in case we're setting the focus in response to another control's un-focusing,
 			// we need to post the handling of it to the main looper so that it happens _after_ all the other focus
-			// work is done; otherwise, a call to ClearFocus on another control will kill the focus we set here
+			// work is done; otherwise, a call to ClearFocus on another control will kill the focus we set 
 
-			if (dispatcher != null)
-			{
-				dispatcher.Dispatch(() =>
-				{
-					if (platformView == null || platformView.IsDisposed())
-						return;
-
-					platformView?.RequestFocus();
-				});
-			}
+			var q = Looper.MyLooper();
+			if (q != null)
+				new Handler(q).Post(RequestFocus);
 			else
-			{
-				MainThread.InvokeOnMainThreadAsync(() =>
-				{
-					if (platformView == null || platformView.IsDisposed())
-						return;
-
-					platformView?.RequestFocus();
-				});
-			}
+				MainThread.InvokeOnMainThreadAsync(RequestFocus);
 		}
 
 		public static void Unfocus(this AView platformView, IView view)
