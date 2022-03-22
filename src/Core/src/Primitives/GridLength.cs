@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 {
 	/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="Type[@FullName='Microsoft.Maui.GridLength']/Docs" />
 	[DebuggerDisplay("{Value}.{GridUnitType}")]
-	public struct GridLength
+	public readonly struct GridLength
 	{
 		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='Auto']/Docs" />
 		public static readonly GridLength Auto = new GridLength(1, GridUnitType.Auto);
