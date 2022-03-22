@@ -5,9 +5,6 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Layouts
 {
-	// TODO ezhart Looks like UWP flips columns in RTL mode
-	// So we need to do that. Need some GLM tests for that.
-
 	public class GridLayoutManager : LayoutManager
 	{
 		GridStructure? _gridStructure;
@@ -33,6 +30,11 @@ namespace Microsoft.Maui.Layouts
 		{
 			var structure = _gridStructure ?? new GridStructure(Grid, bounds.Width, bounds.Height);
 
+			var rtl = FlowDirection.RightToLeft ==
+					LayoutHandler.GetLayoutFlowDirection(Grid.GetEffectiveFlowDirection());
+
+			var reverseColumns = rtl && Grid.ColumnDefinitions.Count > 1;
+
 			foreach (var view in Grid)
 			{
 				if (view.Visibility == Visibility.Collapsed)
@@ -41,6 +43,12 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				var cell = structure.GetCellBoundsFor(view, bounds.Left, bounds.Top);
+
+				if (reverseColumns)
+				{
+					var adjustedXPosition = bounds.Right - cell.Left - cell.Width;
+					cell.Left = adjustedXPosition;
+				}
 
 				view.Arrange(cell);
 			}
