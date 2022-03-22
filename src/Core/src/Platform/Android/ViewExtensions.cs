@@ -81,6 +81,14 @@ namespace Microsoft.Maui.Platform
 				new Handler(q).Post(RequestFocus);
 			else
 				MainThread.InvokeOnMainThreadAsync(RequestFocus);
+
+			void RequestFocus()
+			{
+				if (platformView == null || platformView.IsDisposed())
+					return;
+
+				platformView?.RequestFocus();
+			}
 		}
 
 		public static void Unfocus(this AView platformView, IView view)
