@@ -1,17 +1,19 @@
 #nullable enable
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SliderHandler : ViewHandler<ISlider, MauiSlider>
+	public partial class SliderHandler : ViewHandler<ISlider, Slider>
 	{
 		PointerEventHandler? _pointerPressedHandler;
 		PointerEventHandler? _pointerReleasedHandler;
 
-		protected override MauiSlider CreatePlatformView()
+		protected override Slider CreatePlatformView()
 		{
+			// MauiSlider is an internal type
 			var slider = new MauiSlider
 			{
 				IsThumbToolTipEnabled = false
@@ -20,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 			return slider;
 		}
 
-		protected override void ConnectHandler(MauiSlider platformView)
+		protected override void ConnectHandler(Slider platformView)
 		{
 			platformView.ValueChanged += OnPlatformValueChanged;
 
@@ -32,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.AddHandler(UIElement.PointerCanceledEvent, _pointerReleasedHandler, true);
 		}
 
-		protected override void DisconnectHandler(MauiSlider platformView)
+		protected override void DisconnectHandler(Slider platformView)
 		{
 			platformView.ValueChanged -= OnPlatformValueChanged;
 
@@ -78,8 +80,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 
-			handler.PlatformView?.UpdateThumbImageSourceAsync(slider, provider)
- 				.FireAndForget(handler);
+			if (handler?.PlatformView is MauiSlider mauiSlider)
+			{
+				mauiSlider.UpdateThumbImageSourceAsync(slider, provider).FireAndForget(handler);
+			}
 		}
 
 		void OnPlatformValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
