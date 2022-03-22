@@ -16,6 +16,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ImageButtonRenderer :
 		AppCompatImageButton,
 		IVisualElementRenderer,
@@ -208,7 +209,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			canvas.ClipShape(Context, Element);
 
 			var backgroundDrawable = _backgroundTracker?.BackgroundDrawable;
-			RectF drawableBounds = null;
+			global::Android.Graphics.RectF drawableBounds = null;
 
 			if (Drawable != null)
 			{
@@ -234,7 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 							break;
 					}
 
-					drawableBounds = new RectF(outlineBounds.Left * widthRatio, outlineBounds.Top * heightRatio, outlineBounds.Right * widthRatio, outlineBounds.Bottom * heightRatio);
+					drawableBounds = new global::Android.Graphics.RectF(outlineBounds.Left * widthRatio, outlineBounds.Top * heightRatio, outlineBounds.Right * widthRatio, outlineBounds.Bottom * heightRatio);
 				}
 
 				if (drawableBounds != null)

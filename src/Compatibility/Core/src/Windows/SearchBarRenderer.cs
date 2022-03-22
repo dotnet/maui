@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SearchBarRenderer : ViewRenderer<SearchBar, AutoSuggestBox>
 	{
 		WBrush _defaultPlaceholderColorBrush;
@@ -207,7 +208,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (searchBar == null)
 				return;
 
-			bool searchBarIsDefault = searchBar.FontFamily == null && searchBar.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(SearchBar), true) && searchBar.FontAttributes == FontAttributes.None;
+			bool searchBarIsDefault =
+				searchBar.FontFamily == null &&
+#pragma warning disable CS0612 // Type or member is obsolete
+				searchBar.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(SearchBar), true) &&
+#pragma warning restore CS0612 // Type or member is obsolete
+				searchBar.FontAttributes == FontAttributes.None;
 
 			if (searchBarIsDefault && !_fontApplied)
 				return;

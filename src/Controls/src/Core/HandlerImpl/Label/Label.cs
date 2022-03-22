@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls
 		{
 			[nameof(TextType)] = MapTextType,
 			[nameof(Text)] = MapText,
+			[nameof(FormattedText)] = MapText,
 			[nameof(TextTransform)] = MapText,
 #if __IOS__
 			[nameof(TextDecorations)] = MapTextDecorations,

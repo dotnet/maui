@@ -17,21 +17,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class BindingUnitTests
 		: BindingBaseUnitTests
 	{
-
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		protected override BindingBase CreateBinding(BindingMode mode = BindingMode.Default, string stringFormat = null)
 		{
 			return new Binding("Text", mode, stringFormat: stringFormat);

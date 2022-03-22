@@ -30,7 +30,7 @@ stages:
                   name: ${{ parameters.androidVmPool }}
                   vmImage: ${{ parameters.androidVmImage }}
                   demands:
-                    - macOS.Name -equals BigSur
+                    - macOS.Name -equals Monterey
                     - macOS.Architecture -equals x64
                     - Agent.HasDevices -equals False
                     - Agent.IsPaired -equals False
@@ -64,7 +64,7 @@ stages:
                   name: ${{ parameters.iosVmPool }}
                   vmImage: ${{ parameters.iosVmImage }}
                   demands:
-                    - macOS.Name -equals BigSur
+                    - macOS.Name -equals Monterey
                     - macOS.Architecture -equals x64
                     - Agent.HasDevices -equals False
                     - Agent.IsPaired -equals False

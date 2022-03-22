@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 				}
 			};
 
-			if (Device.RuntimePlatform != Device.UWP)
+			if (Device.RuntimePlatform != Device.WinUI)
 			{
 				layout.Children.Add(GalleryBuilder.NavButton("SwipeItemView Gallery", () => new CustomSwipeItemViewGallery(), Navigation));
 				layout.Children.Add(GalleryBuilder.NavButton("CustomSwipeItem Size Gallery", () => new CustomSizeSwipeViewGallery(), Navigation));

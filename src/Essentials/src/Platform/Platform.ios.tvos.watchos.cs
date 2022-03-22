@@ -69,9 +69,6 @@ namespace Microsoft.Maui.Essentials
 			return returnValue;
 		}
 
-		internal static bool HasOSVersion(int major, int minor) =>
-			OperatingSystem.IsIOSVersionAtLeast(major, minor);
-
 #if __IOS__ || __TVOS__
 
 		static Func<UIViewController> getCurrentController;

@@ -7,10 +7,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, UISwitch>
 	{
-		static UIColor? DefaultOnTrackColor;
-		static UIColor? DefaultOffTrackColor;
-		static UIColor? DefaultThumbColor;
-
 		protected override UISwitch CreatePlatformView()
 		{
 			return new UISwitch(RectangleF.Empty);
@@ -30,26 +26,19 @@ namespace Microsoft.Maui.Handlers
 			platformView.ValueChanged -= OnControlValueChanged;
 		}
 
-		void SetupDefaults(UISwitch platformView)
-		{
-			DefaultOnTrackColor = UISwitch.Appearance.OnTintColor;
-			DefaultOffTrackColor = platformView.GetOffTrackColor();
-			DefaultThumbColor = UISwitch.Appearance.ThumbTintColor;
-		}
-
-		public static void MapIsOn(SwitchHandler handler, ISwitch view)
+		public static void MapIsOn(ISwitchHandler handler, ISwitch view)
 		{
 			handler.PlatformView?.UpdateIsOn(view);
 		}
 
-		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
+		public static void MapTrackColor(ISwitchHandler handler, ISwitch view)
 		{
-			handler.PlatformView?.UpdateTrackColor(view, DefaultOnTrackColor, DefaultOffTrackColor);
+			handler.PlatformView?.UpdateTrackColor(view);
 		}
 
-		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
+		public static void MapThumbColor(ISwitchHandler handler, ISwitch view)
 		{
-			handler.PlatformView?.UpdateThumbColor(view, DefaultThumbColor);
+			handler.PlatformView?.UpdateThumbColor(view);
 		}
 
 		void OnControlValueChanged(object? sender, EventArgs e)

@@ -23,7 +23,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp]
 			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices();
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			}
 
@@ -31,7 +30,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void TearDown()
 			{
 				DispatcherProvider.SetCurrent(null);
-				Device.PlatformServices = null;
 			}
 
 			[Test]

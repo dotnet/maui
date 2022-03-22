@@ -88,7 +88,7 @@ stages:
     - template: common/insertion.yml                                # Insert on VS and SDK
       parameters:
         poolName: $(windowsNet6VmPool)
-        mImage: $(windowsNet6VmImage)
+        vmImage: $(windowsNet6VmImage)
 
 
 

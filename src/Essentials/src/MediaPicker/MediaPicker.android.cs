@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 					? FileSystem.Extensions.Jpg
 					: FileSystem.Extensions.Mp4;
 				var fileName = Guid.NewGuid().ToString("N") + ext;
-				var tmpFile = FileSystem.GetEssentialsTemporaryFile(Platform.AppContext.CacheDir, fileName);
+				var tmpFile = FileSystem.GetTemporaryFile(Platform.AppContext.CacheDir, fileName);
 
 				// Set up the content:// uri
 				AndroidUri outputUri = null;

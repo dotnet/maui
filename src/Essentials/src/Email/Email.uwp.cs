@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			{
 				foreach (var attachment in message.Attachments)
 				{
-					var path = FileSystem.NormalizePath(attachment.FullPath);
+					var path = NormalizePath(attachment.FullPath);
 					var file = attachment.File ?? await StorageFile.GetFileFromPathAsync(path);
 
 					var stream = RandomAccessStreamReference.CreateFromFile(file);
@@ -52,6 +52,9 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			await EmailManager.ShowComposeNewEmailAsync(platformEmailMessage);
 		}
+
+		internal static string NormalizePath(string path)
+			=> path.Replace('/', Path.DirectorySeparatorChar);
 
 		public Task ComposeAsync(string subject, string body, params string[] to)
 			=> ComposeAsync(

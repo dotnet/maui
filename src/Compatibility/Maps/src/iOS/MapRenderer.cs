@@ -23,7 +23,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.MacOS;
 namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 #endif
 {
-	public class MapRenderer : ViewRenderer
+	public class MapRenderer : Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer
 	{
 		CLLocationManager _locationManager;
 		bool _shouldUpdateRegion;
@@ -47,9 +47,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 		// For the time being, we don't want ViewRenderer handling disposal of the MKMapView
 		// if we're on iOS 9 or 10; during Dispose we'll be putting the MKMapView in a pool instead
-#if __MOBILE__
-		protected override bool ManageNativeControlLifetime => false;
-#endif
+//#if MOBILE
+//		protected override bool ManageNativeControlLifetime => false;
+//#endif
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -409,14 +409,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 		void OnPinCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => PinCollectionChanged(e));
-			}
-			else
-			{
-				PinCollectionChanged(e);
-			}
+			BeginInvokeOnMainThread(() => PinCollectionChanged(e));
 		}
 
 		void PinCollectionChanged(NotifyCollectionChangedEventArgs e)
@@ -499,14 +492,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 		void OnMapElementCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => MapElementCollectionChanged(e));
-			}
-			else
-			{
-				MapElementCollectionChanged(e);
-			}
+			BeginInvokeOnMainThread(() => MapElementCollectionChanged(e));
 		}
 
 		void MapElementCollectionChanged(NotifyCollectionChangedEventArgs e)

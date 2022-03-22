@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 
@@ -48,9 +49,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			propertyType: typeof(IServiceProvider),
 			ownerType: typeof(BlazorWebView),
 			typeMetadata: new PropertyMetadata(OnServicesPropertyChanged));
+
+		/// <summary>
+		/// The backing store for the <see cref="ExternalNavigationStarting"/> property.
+		/// </summary>
+		public static readonly DependencyProperty ExternalNavigationStartingProperty = DependencyProperty.Register(
+			name: nameof(ExternalNavigationStarting),
+			propertyType: typeof(EventHandler<ExternalLinkNavigationEventArgs>),
+			ownerType: typeof(BlazorWebView));
 		#endregion
 
-		private const string webViewTemplateChildName = "WebView";
+		private const string WebViewTemplateChildName = "WebView";
 		private WebView2Control _webview;
 		private WebView2WebViewManager _webviewManager;
 		private bool _isDisposed;
@@ -67,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			Template = new ControlTemplate
 			{
-				VisualTree = new FrameworkElementFactory(typeof(WebView2Control), webViewTemplateChildName)
+				VisualTree = new FrameworkElementFactory(typeof(WebView2Control), WebViewTemplateChildName)
 			};
 		}
 
@@ -97,6 +106,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// </summary>
 		public RootComponentsCollection RootComponents =>
 			(RootComponentsCollection)GetValue(RootComponentsProperty);
+
+		/// <summary>
+		/// Allows customizing how external links are opened.
+		/// Opens external links in the system browser by default.
+		/// </summary>
+		public EventHandler<ExternalLinkNavigationEventArgs> ExternalNavigationStarting
+		{
+			get => (EventHandler<ExternalLinkNavigationEventArgs>)GetValue(ExternalNavigationStartingProperty);
+			set => SetValue(ExternalNavigationStartingProperty, value);
+		}
 
 		/// <summary>
 		/// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
@@ -131,7 +150,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			if (_webview == null)
 			{
-				_webview = (WebView2Control)GetTemplateChild(webViewTemplateChildName);
+				_webview = (WebView2Control)GetTemplateChild(WebViewTemplateChildName);
 				StartWebViewCoreIfPossible();
 			}
 		}
@@ -171,7 +190,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
 
-			_webviewManager = new WebView2WebViewManager(_webview, Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			_webviewManager = new WebView2WebViewManager(
+				_webview,
+				Services,
+				ComponentsDispatcher,
+				fileProvider,
+				RootComponents.JSComponents,
+				hostPageRelativePath,
+				(args) => ExternalNavigationStarting?.Invoke(this, args));
+
 			foreach (var rootComponent in RootComponents)
 			{
 				// Since the page isn't loaded yet, this will always complete synchronously
@@ -239,6 +266,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			}
 		}
 
+		/// <summary>
+		/// Allows asynchronous disposal of the <see cref="BlazorWebView" />.
+		/// </summary>
 		protected virtual async ValueTask DisposeAsyncCore()
 		{
 			// Dispose this component's contents that user-written disposal logic and Razor component disposal logic will
@@ -255,6 +285,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			_webview = null;
 		}
 
+		/// <inheritdoc />
 		public async ValueTask DisposeAsync()
 		{
 			if (_isDisposed)
@@ -269,7 +300,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			// Suppress finalization.
 			GC.SuppressFinalize(this);
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize	
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 		}
 	}
 }

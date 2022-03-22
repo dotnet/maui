@@ -5,6 +5,7 @@ using AndroidX.RecyclerView.Widget;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	public class GroupableItemsViewAdapter<TItemsView, TItemsViewSource> : SelectableItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsView : GroupableItemsView
 		where TItemsViewSource : IGroupableItemsViewSource

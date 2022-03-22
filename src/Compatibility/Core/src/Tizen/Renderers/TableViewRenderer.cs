@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual Native.ListView CreateNativeControl(EvasObject parent)
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				return new Native.Watch.WatchTableView(parent, Forms.CircleSurface);
 			}

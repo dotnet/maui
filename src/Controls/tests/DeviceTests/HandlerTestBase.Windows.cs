@@ -41,7 +41,12 @@ namespace Microsoft.Maui.DeviceTests
 					navigationRootManager = mauiContext.GetNavigationRootManager();
 					navigationRootManager.UseCustomAppTitleBar = false;
 
-					newWindowHandler = window.ToHandler(mauiContext);
+					MauiContext
+						.Services
+						.GetRequiredService<WWindow>()
+						.SetWindowHandler(window, mauiContext);
+
+					newWindowHandler = window.Handler;
 					var content = window.Content.Handler.ToPlatform();
 					await content.OnLoadedAsync();
 					await Task.Delay(10);
@@ -50,6 +55,10 @@ namespace Microsoft.Maui.DeviceTests
 						await action((THandler)newWindowHandler);
 					else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
 						await action((THandler)window.Content.Handler);
+					else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
+						await action((THandler)cp.Content.Handler);
+					else
+						throw new Exception($"I can't work with {typeof(THandler)}");
 
 				}
 				finally

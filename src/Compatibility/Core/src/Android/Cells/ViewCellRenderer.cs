@@ -256,7 +256,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				double height = Context.FromPixels(b - t);
 
 				Performance.Start(reference, "Element.Layout");
-				Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(_view.Element, new Rectangle(0, 0, width, height));
+				Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(_view.Element, new Rect(0, 0, width, height));
 				Performance.Stop(reference, "Element.Layout");
 
 				_view.UpdateLayout();

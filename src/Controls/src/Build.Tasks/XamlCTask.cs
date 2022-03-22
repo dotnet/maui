@@ -17,9 +17,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 	{
 		bool hasCompiledXamlResources;
 		public bool KeepXamlResources { get; set; }
-		public bool OptimizeIL { get; set; }
+		public bool OptimizeIL { get; set; } = true;
 		public bool DefaultCompile { get; set; }
 		public bool ForceCompile { get; set; }
+		public string TargetFramework { get; set; }
 
 		public IAssemblyResolver DefaultAssemblyResolver { get; set; }
 
@@ -153,30 +154,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 													  (string)xamlFilePathAttr.ConstructorArguments[0].Value :
 													  resource.Name;
 
-							MethodDefinition initCompRuntime = null;
-							if (!ValidateOnly)
-							{
-								initCompRuntime = typeDef.Methods.FirstOrDefault(md => md.Name == "__InitComponentRuntime");
-								if (initCompRuntime != null)
-									LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}__InitComponentRuntime already exists... not creating");
-								else
-								{
-									LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Creating empty {typeDef.Name}.__InitComponentRuntime");
-									initCompRuntime = new MethodDefinition("__InitComponentRuntime", initComp.Attributes, initComp.ReturnType);
-									initCompRuntime.Body.InitLocals = true;
-									LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
-									LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Copying body of InitializeComponent to __InitComponentRuntime");
-									initCompRuntime.Body = new MethodBody(initCompRuntime);
-									var iCRIl = initCompRuntime.Body.GetILProcessor();
-									foreach (var instr in initComp.Body.Instructions)
-										iCRIl.Append(instr);
-									initComp.Body.Instructions.Clear();
-									initComp.Body.GetILProcessor().Emit(OpCodes.Ret);
-									initComp.Body.InitLocals = true;
-									typeDef.Methods.Add(initCompRuntime);
-									LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
-								}
-							}
 
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Parsing Xaml");
 							var rootnode = ParseXaml(resource.GetResourceStream(), typeDef);
@@ -191,7 +168,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Replacing {0}.InitializeComponent ()");
 							Exception e;
-							if (!TryCoreCompile(initComp, initCompRuntime, rootnode, xamlFilePath, out e))
+							if (!TryCoreCompile(initComp, rootnode, xamlFilePath, out e))
 							{
 								success = false;
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");
@@ -274,7 +251,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return success;
 		}
 
-		bool TryCoreCompile(MethodDefinition initComp, MethodDefinition initCompRuntime, ILRootNode rootnode, string xamlFilePath, out Exception exception)
+		bool TryCoreCompile(MethodDefinition initComp, ILRootNode rootnode, string xamlFilePath, out Exception exception)
 		{
 			try
 			{
@@ -295,6 +272,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				rootnode.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null);
 				rootnode.Accept(new ExpandMarkupsVisitor(visitorContext), null);
 				rootnode.Accept(new PruneIgnoredNodesVisitor(), null);
+				rootnode.Accept(new SimplifyOnPlatformVisitor(TargetFramework), null);
 				rootnode.Accept(new CreateObjectVisitor(visitorContext), null);
 				rootnode.Accept(new SetNamescopesAndRegisterNamesVisitor(visitorContext), null);
 				rootnode.Accept(new SetFieldVisitor(visitorContext), null);

@@ -32,23 +32,37 @@ namespace Microsoft.Maui.Platform
 				nativeSlider.Value = slider.Value;
 		}
 
-		public static void UpdateMinimumTrackColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultForegroundColor)
+		public static void UpdateMinimumTrackColor(this MauiSlider platformSlider, ISlider slider)
 		{
-			if (slider.MinimumTrackColor.IsDefault())
-				nativeSlider.Foreground = defaultForegroundColor;
-			else
-				nativeSlider.Foreground = slider.MinimumTrackColor.ToPlatform();
+			if (slider.MinimumTrackColor == null)
+				return;
+
+			var brush = slider.MinimumTrackColor.ToPlatform();
+
+			platformSlider.Resources["SliderTrackValueFill"] = brush;
+			platformSlider.Resources["SliderTrackValueFilllPointerOver"] = brush;
+			platformSlider.Resources["SliderTrackValueFillPressed"] = brush;
+			platformSlider.Resources["SliderTrackValueFillDisabled"] = brush;
+
+			platformSlider.Foreground = brush;
 		}
 
-		public static void UpdateMaximumTrackColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultBackgroundColor)
+		public static void UpdateMaximumTrackColor(this MauiSlider platformSlider, ISlider slider)
 		{
-			if (slider.MaximumTrackColor.IsDefault())
-				nativeSlider.BorderBrush = defaultBackgroundColor;
-			else
-				nativeSlider.BorderBrush = slider.MaximumTrackColor.ToPlatform();
+			if (slider.MaximumTrackColor == null)
+				return;
+
+			var brush = slider.MaximumTrackColor.ToPlatform();
+
+			platformSlider.Resources["SliderTrackFill"] = brush;
+			platformSlider.Resources["SliderTrackFillPointerOver"] = brush;
+			platformSlider.Resources["SliderTrackFillPressed"] = brush;
+			platformSlider.Resources["SliderTrackFillDisabled"] = brush;
+
+			platformSlider.BorderBrush = brush;
 		}
 
-		public static void UpdateThumbColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultThumbColor)
+		public static void UpdateThumbColor(this MauiSlider nativeSlider, ISlider slider)
 		{
 			var thumb = nativeSlider?.Thumb;
 
@@ -56,10 +70,9 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			nativeSlider.ThumbColorOver = slider.ThumbColor.ToPlatform();
-			BrushHelpers.UpdateColor(slider.ThumbColor, ref defaultThumbColor,
-				() => thumb.Background, brush => thumb.Background = brush);
-    }
-    
+			thumb.Background = slider.ThumbColor.ToPlatform();
+		}
+
 		public static async Task UpdateThumbImageSourceAsync(this MauiSlider nativeSlider, ISlider slider, IImageSourceServiceProvider? provider)
 		{
 			var thumbImageSource = slider.ThumbImageSource;

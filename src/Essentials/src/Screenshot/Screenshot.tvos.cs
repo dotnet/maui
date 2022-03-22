@@ -3,14 +3,14 @@ using System.Threading.Tasks;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public static partial class Screenshot
+	public partial class ScreenshotImplementation : IScreenshot
 	{
-		internal static bool PlatformIsCaptureSupported =>
+		public bool PlatformIsCaptureSupported =>
 			UIScreen.MainScreen != null;
 
-		static Task<ScreenshotResult> PlatformCaptureAsync()
+		public Task<IScreenshotResult> CaptureAsync()
 		{
 			var img = UIScreen.MainScreen.Capture();
 			var result = new ScreenshotResult(img);
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Essentials
 		}
 	}
 
-	public partial class ScreenshotResult
+	internal partial class ScreenshotResult
 	{
 		readonly UIImage uiImage;
 

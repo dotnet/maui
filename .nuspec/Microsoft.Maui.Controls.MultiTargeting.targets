@@ -5,6 +5,12 @@
     <Compile Remove="**\iOS\**\*.cs" />
     <None Include="**\iOS\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+   <ItemGroup Condition=" '$(_MauiTargetPlatformIsMacCatalyst)' != 'True' ">
+    <Compile Remove="**\**\*.MacCatalyst.cs" />
+    <None Include="**\**\*.MacCatalyst.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\MacCatalyst\**\*.cs" />
+    <None Include="**\MacCatalyst\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsmacOS)' != 'True' ">
     <Compile Remove="**\*.Mac.cs" />
     <None Include="**\*.Mac.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
@@ -28,6 +34,10 @@
     <None Include="**\*.Standard.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Remove="**\Standard\**\*.cs" />
     <None Include="**\Standard\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(_MauiNoTargetPlatform)' == 'True'">
+    <Compile Remove="**\*.Platform.cs" />
+    <None Include="**\*.Platform.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' != 'True' ">
     <Compile Remove="**\*.Windows.cs" />
@@ -72,7 +82,9 @@
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
     <DefineConstants>$(DefineConstants);MONOANDROID</DefineConstants>
   </PropertyGroup>
-
+  <PropertyGroup Condition="'$(_MauiNoTargetPlatform)' != 'True'">
+    <DefineConstants>$(DefineConstants);PLATFORM</DefineConstants>
+  </PropertyGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
     <AndroidResource Include="$(MonoAndroidResourcePrefix)\*\*.xml" />
     <AndroidResource Include="$(MonoAndroidResourcePrefix)\*\*.axml" />

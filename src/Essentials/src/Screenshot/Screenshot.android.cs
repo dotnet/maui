@@ -1,49 +1,36 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Views;
+using Java.Nio;
 
 namespace Microsoft.Maui.Essentials
 {
 	public static partial class Screenshot
 	{
-		static bool PlatformIsCaptureSupported =>
-			true;
-
-		static Task<ScreenshotResult> PlatformCaptureAsync()
-		{
-			if (Platform.WindowManager?.DefaultDisplay?.Flags.HasFlag(DisplayFlags.Secure) == true)
-				throw new UnauthorizedAccessException("Unable to take a screenshot of a secure window.");
-
-			var view = Platform.GetCurrentActivity(true)?.Window?.DecorView?.RootView;
-			if (view == null)
-				throw new NullReferenceException("Unable to find the main window.");
-
-			var result = new ScreenshotResult(view.Render());
-
-			return Task.FromResult(result);
-		}
-
-		public static Bitmap Render(this View view)
-		{
-			var bitmap = RenderUsingCanvasDrawing(view);
-
-			if (bitmap == null)
-				bitmap = RenderUsingDrawingCache(view);
-
-			return bitmap;
-		}
-
 		public static byte[] RenderAsJPEG(this View view, int quality = 100) => view?.RenderAsImage(Bitmap.CompressFormat.Jpeg, quality);
 
 		public static byte[] RenderAsPNG(this View view, int quality = 100) => view?.RenderAsImage(Bitmap.CompressFormat.Png, quality);
+
+		public static byte[] RenderAsBMP(this View view)
+		{
+			using (var bitmap = view.Render())
+			{
+				var byteBuffer = ByteBuffer.AllocateDirect(bitmap.ByteCount);
+				bitmap.CopyPixelsToBuffer(byteBuffer);
+				byte[] byt = new byte[bitmap.ByteCount];
+				Marshal.Copy(byteBuffer.GetDirectBufferAddress(), byt, 0, bitmap.ByteCount);
+				return byt;
+			}
+		}
 
 		public static byte[] RenderAsImage(this View view, Bitmap.CompressFormat format, int quality = 100)
 		{
 			byte[] imageBytes = null;
 
-			using (var bitmap = Render(view))
+			using (var bitmap = view.Render())
 			{
 				if (bitmap != null)
 				{
@@ -114,9 +101,43 @@ namespace Microsoft.Maui.Essentials
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		}
+
+		public static Bitmap Render(this View view)
+		{
+			var bitmap = view.RenderUsingCanvasDrawing();
+
+			if (bitmap == null)
+				bitmap = view.RenderUsingDrawingCache();
+
+			return bitmap;
+		}
+	}
+}
+
+namespace Microsoft.Maui.Essentials.Implementations
+{
+	public partial class ScreenshotImplementation : IScreenshot
+	{
+		public bool IsCaptureSupported =>
+			true;
+
+		public Task<IScreenshotResult> CaptureAsync()
+		{
+			if (Platform.WindowManager?.DefaultDisplay?.Flags.HasFlag(DisplayFlags.Secure) == true)
+				throw new UnauthorizedAccessException("Unable to take a screenshot of a secure window.");
+
+			var view = Platform.GetCurrentActivity(true)?.Window?.DecorView?.RootView;
+			if (view == null)
+				throw new InvalidOperationException("Unable to find the main window.");
+
+			var result = new ScreenshotResult(view.Render());
+
+			return Task.FromResult<IScreenshotResult>(result);
+		}
+
 	}
 
-	public partial class ScreenshotResult
+	internal partial class ScreenshotResult
 	{
 		readonly Bitmap bmp;
 

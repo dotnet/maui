@@ -12,6 +12,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SearchBarRenderer : ViewRenderer<SearchBar, UISearchBar>
 	{
 		UIColor _cancelButtonTextColorDefaultDisabled;
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					var searchBar = new UISearchBar(RectangleF.Zero) { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
+					var searchBar = new UISearchBar(CGRect.Empty) { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
 					var cancelButton = searchBar.FindDescendantView<UIButton>();
 					_cancelButtonTextColorDefaultNormal = cancelButton.TitleColor(UIControlState.Normal);
@@ -329,7 +330,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
 
 				var color = Element.IsEnabled && targetColor != null
-					? targetColor : ColorExtensions.PlaceholderColor.ToColor();
+					? targetColor : Maui.Platform.ColorExtensions.PlaceholderColor.ToColor();
 
 				_textField.AttributedPlaceholder = formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: color);
 				_textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
@@ -413,7 +414,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			// iPhone does not have an enter key on numeric keyboards
-			if (Device.Idiom == TargetIdiom.Phone && (keyboard == Keyboard.Numeric || keyboard == Keyboard.Telephone))
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone && (keyboard == Keyboard.Numeric || keyboard == Keyboard.Telephone))
 			{
 				_numericAccessoryView = _numericAccessoryView ?? CreateNumericKeyboardAccessoryView();
 				Control.InputAccessoryView = _numericAccessoryView;

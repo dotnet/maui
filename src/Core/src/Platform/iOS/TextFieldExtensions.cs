@@ -13,12 +13,11 @@ namespace Microsoft.Maui.Platform
 			textField.Text = entry.Text;
 		}
 
-		public static void UpdateTextColor(this UITextField textField, ITextStyle textStyle, UIColor? defaultTextColor = null)
+		public static void UpdateTextColor(this UITextField textField, ITextStyle textStyle)
 		{
-			// Default value of color documented to be black in iOS docs
-
 			var textColor = textStyle.TextColor;
-			textField.TextColor = textColor.ToPlatform(defaultTextColor ?? ColorExtensions.LabelColor);
+			if (textColor != null)
+				textField.TextColor = textColor.ToPlatform(ColorExtensions.LabelColor);
 		}
 
 		public static void UpdateIsPassword(this UITextField textField, IEntry entry)
@@ -95,7 +94,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsReadOnly(this UITextField textField, IEntry entry)
 		{
-			textField.UserInteractionEnabled = !entry.IsReadOnly;
+			textField.UserInteractionEnabled = !(entry.IsReadOnly || entry.InputTransparent);
 		}
 
 		public static void UpdateFont(this UITextField textField, ITextStyle textStyle, IFontManager fontManager)
@@ -135,7 +134,6 @@ namespace Microsoft.Maui.Platform
 			textField.ReloadInputViews();
 		}
 
-		[PortHandler]
 		public static void UpdateCursorPosition(this UITextField textField, IEntry entry)
 		{
 			var selectedTextRange = textField.SelectedTextRange;
@@ -145,7 +143,6 @@ namespace Microsoft.Maui.Platform
 				UpdateCursorSelection(textField, entry);
 		}
 
-		[PortHandler]
 		public static void UpdateSelectionLength(this UITextField textField, IEntry entry)
 		{
 			var selectedTextRange = textField.SelectedTextRange;

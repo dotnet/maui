@@ -1,4 +1,14 @@
-﻿#if __ANDROID__
+﻿#if __IOS__ || MACCATALYST
+using PlatformView = WebKit.WKWebView;
+#elif MONOANDROID
+using PlatformView = Android.Webkit.WebView;
+#elif WINDOWS
+using PlatformView = Microsoft.UI.Xaml.Controls.WebView2;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
+
+#if __ANDROID__
 using Android.Webkit;
 #elif __IOS__
 using WebKit;
@@ -6,9 +16,9 @@ using WebKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class WebViewHandler
+	public partial class WebViewHandler : IWebViewHandler
 	{
-		public static PropertyMapper<IWebView, WebViewHandler> WebViewMapper = new PropertyMapper<IWebView, WebViewHandler>(ViewHandler.ViewMapper)
+		public static PropertyMapper<IWebView, IWebViewHandler> Mapper = new PropertyMapper<IWebView, IWebViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IWebView.Source)] = MapSource,
 #if __ANDROID__
@@ -20,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 		};
 
-		public static CommandMapper<IWebView, WebViewHandler> WebViewCommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IWebView, IWebViewHandler> CommandMapper = new(ViewCommandMapper)
 		{
 			[nameof(IWebView.GoBack)] = MapGoBack,
 			[nameof(IWebView.GoForward)] = MapGoForward,
@@ -29,15 +39,17 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IWebView.EvaluateJavaScriptAsync)] = MapEvaluateJavaScriptAsync,
 		};
 
-		public WebViewHandler() : base(WebViewMapper, WebViewCommandMapper)
+		public WebViewHandler() : base(Mapper, CommandMapper)
 		{
-
 		}
 
 		public WebViewHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
-			: base(mapper ?? WebViewMapper, commandMapper ?? WebViewCommandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
-
 		}
+
+		IWebView IWebViewHandler.VirtualView => VirtualView;
+
+		PlatformView IWebViewHandler.PlatformView => PlatformView;
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 
 namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 {
@@ -18,7 +19,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				}
 			};
 
-			if (Device.RuntimePlatform != Device.UWP)
+			if (DeviceInfo.Platform != DevicePlatform.WinUI)
 			{
 				layout.Children.Add(GalleryBuilder.NavButton("SwipeItemView Gallery", () => new CustomSwipeItemViewGallery(), Navigation));
 				layout.Children.Add(GalleryBuilder.NavButton("CustomSwipeItem Size Gallery", () => new CustomSizeSwipeViewGallery(), Navigation));

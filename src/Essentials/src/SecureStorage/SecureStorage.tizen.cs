@@ -2,11 +2,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Tizen.Security.SecureRepository;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Essentials.Implementations
 {
-	public partial class SecureStorage
+	public partial class SecureStorageImplementation : ISecureStorage
 	{
-		static Task<string> PlatformGetAsync(string key)
+		Task<string> PlatformGetAsync(string key)
 		{
 			try
 			{
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static Task PlatformSetAsync(string key, string data)
+		Task PlatformSetAsync(string key, string data)
 		{
 			try
 			{
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static void PlatformRemoveAll()
+		void PlatformRemoveAll()
 		{
 			try
 			{
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static bool PlatformRemove(string key)
+		bool PlatformRemove(string key)
 		{
 			try
 			{

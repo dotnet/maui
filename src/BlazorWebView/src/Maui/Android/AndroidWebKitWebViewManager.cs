@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using Android.Webkit;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using AWebView = Android.Webkit.WebView;
+using AUri = Android.Net.Uri;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -17,9 +19,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		// Using an IP address means that WebView doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
-		private const string AppOrigin = "https://0.0.0.0/";
-		private static readonly Android.Net.Uri AndroidAppOriginUri = Android.Net.Uri.Parse(AppOrigin)!;
-		private readonly BlazorWebViewHandler _blazorWebViewHandler;
+		private static readonly string AppOrigin = $"https://{BlazorWebView.AppHostAddress}/";
+		private static readonly AUri AndroidAppOriginUri = AUri.Parse(AppOrigin)!;
 		private readonly AWebView _webview;
 
 		/// <summary>
@@ -30,11 +31,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-		public AndroidWebKitWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, AWebView webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+		public AndroidWebKitWebViewManager(AWebView webview!!, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
-			_blazorWebViewHandler = blazorMauiWebViewHandler ?? throw new ArgumentNullException(nameof(blazorMauiWebViewHandler));
-			_webview = webview ?? throw new ArgumentNullException(nameof(webview));
+#if WEBVIEW2_MAUI
+			if (services.GetService<MauiBlazorMarkerService>() is null)
+			{
+				throw new InvalidOperationException(
+					"Unable to find the required services. " +
+					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView)}' in the application startup code.");
+			}
+#endif
+			_webview = webview;
 		}
 
 		/// <inheritdoc />

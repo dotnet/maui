@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
@@ -347,7 +348,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			return new ContentPage
 			{
 				Title = "TimePicker",
-				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
+				Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Content = new StackLayout
 				{
 					VerticalOptions = LayoutOptions.Fill,
@@ -418,7 +419,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			return new ContentPage
 			{
 				Title = "DatePicker",
-				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
+				Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Content = new StackLayout
 				{
 					VerticalOptions = LayoutOptions.Fill,
@@ -492,7 +493,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			return new ContentPage
 			{
 				Title = "Picker",
-				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
+				Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Content = new StackLayout
 				{
 					VerticalOptions = LayoutOptions.Fill,

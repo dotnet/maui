@@ -9,19 +9,19 @@ namespace Microsoft.Maui.Controls.Internals
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/GIFDecoderFormatException.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.GIFDecoderFormatException']/Docs" />
 	public class GIFDecoderFormatException : Exception
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/GIFDecoderFormatException.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/GIFDecoderFormatException.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public GIFDecoderFormatException()
 		{
 			;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/GIFDecoderFormatException.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/GIFDecoderFormatException.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public GIFDecoderFormatException(string message) : base(message)
 		{
 			;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/GIFDecoderFormatException.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/GIFDecoderFormatException.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public GIFDecoderFormatException(string message, Exception innerException) : base(message, innerException)
 		{
 			;

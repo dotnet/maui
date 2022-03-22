@@ -17,6 +17,7 @@ using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete]
 	public class Platform : BindableObject, INavigation, IDisposable
 	{
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer),
@@ -218,7 +219,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (renderView == null || renderView.NativeView == null)
 			{
 				if (view is IView iView)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<Platform>()?.LogWarning(
+						"Someone called Platform.GetNativeSize instead of going through the Handler.");
+
 					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
+				}
 
 				Performance.Stop(reference);
 				return new SizeRequest(Size.Zero);
@@ -574,6 +580,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_renderer.View?.Window?.EndEditing(true);
 		}
 
+		[System.Obsolete]
 		internal class DefaultRenderer : VisualElementRenderer<VisualElement>
 		{
 			public override UIView HitTest(CGPoint point, UIEvent uievent)

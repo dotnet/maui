@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var imageSource = (ImageSourceStub)Activator.CreateInstance(type);
 
-			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetDrawableAsync(imageSource, Platform.DefaultContext));
+			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext));
 		}
 
 		[Theory]
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var imageSource = new FileImageSourceStub(filename);
 
-			using var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			using var drawable = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 
 			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
 
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 			var filename = CreateBitmapFile(100, 100, expectedColor);
 			var imageSource = new FileImageSourceStub(filename);
 
-			using var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			using var drawable = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 
 			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
 

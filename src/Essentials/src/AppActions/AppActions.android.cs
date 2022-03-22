@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics.Drawables;
-using Microsoft.Maui.Essentials.Implementations;
+using Android.Runtime;
 
 namespace Microsoft.Maui.Essentials.Implementations
 {
@@ -32,14 +32,15 @@ namespace Microsoft.Maui.Essentials.Implementations
 				throw new FeatureNotSupportedException();
 
 #if __ANDROID_25__
-			Platform.ShortcutManager.SetDynamicShortcuts(actions.Select(a => a.ToShortcutInfo()).ToList());
+			using var list = new JavaList<ShortcutInfo>(actions.Select(a => a.ToShortcutInfo()));
+			Platform.ShortcutManager.SetDynamicShortcuts(list);
 #endif
 			return Task.CompletedTask;
 		}
 
 		public Task SetAsync(params AppAction[] actions)
 		{	
-			return SetAsync(actions.AsEnumerable<AppAction>());
+			return SetAsync(actions);
 		}
 	}
 

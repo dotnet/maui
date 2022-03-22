@@ -8,9 +8,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
-		static Drawable? DefaultBackground;
-		static ColorStateList? DefaultTextColors;
-
 		MauiTimePicker? _timePicker;
 		AlertDialog? _dialog;
 
@@ -50,42 +47,36 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// This is a Android-specific mapping
-		public static void MapBackground(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateBackground(timePicker, DefaultBackground);
+			handler.PlatformView?.UpdateBackground(timePicker);
 		}
 
-		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateFormat(timePicker);
 		}
 
-		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapTime(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateTime(timePicker);
 		}
 
-		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapCharacterSpacing(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateCharacterSpacing(timePicker);
 		}
 
-		public static void MapFont(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapFont(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(timePicker, fontManager);
 		}
 
-		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateTextColor(timePicker, DefaultTextColors);
-		}
-
-		static void SetupDefaults(MauiTimePicker platformView)
-		{
-			DefaultBackground = platformView.Background;
-			DefaultTextColors = platformView.TextColors;
+			handler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
 		void ShowPickerDialog()

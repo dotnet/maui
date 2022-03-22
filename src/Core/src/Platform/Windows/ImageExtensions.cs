@@ -40,28 +40,13 @@ namespace Microsoft.Maui.Platform
 			throw new InvalidCastException($"\"{source.GetType().FullName}\" is not supported.");
 		}
 
-		internal static string GetFileLocation(this IImageSourceServiceConfiguration? configuration, string filename)
-		{
-			var imageDirectory = configuration?.GetImageDirectory();
-			if (!string.IsNullOrEmpty(imageDirectory))
-			{
-				var directory = Path.GetDirectoryName(filename);
-				if (string.IsNullOrEmpty(directory) || !Path.GetFullPath(directory).Equals(Path.GetFullPath(imageDirectory)))
-					filename = Path.Combine(imageDirectory, filename);
-			}
-
-			return filename;
-		}
-
 		public static IconSource? ToIconSource(this IImageSource source, IMauiContext mauiContext)
 		{
 			IconSource? image = null;
 
 			if (source is IFileImageSource fis)
 			{
-				var configuration = mauiContext.Services?.GetService<IImageSourceServiceConfiguration>();
-				string filename = configuration.GetFileLocation(fis.File);
-				image = new BitmapIconSource { UriSource = new Uri("ms-appx:///" + filename) };
+				image = new BitmapIconSource { UriSource = new Uri("ms-appx:///" + fis.File) };
 			}
 			else if (source is IUriImageSource uri)
 			{

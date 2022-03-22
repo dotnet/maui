@@ -158,20 +158,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		};
 #pragma warning restore 0414
 
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test, TestCaseSource("Properties")]
 		public void DefaultValues(PropertyTestCase property)
 		{

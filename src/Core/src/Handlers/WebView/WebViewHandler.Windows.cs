@@ -11,62 +11,51 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : ViewHandler<IWebView, WebView2>
 	{
+		WebNavigationEvent _eventState;
 		readonly HashSet<string> _loadedCookies = new HashSet<string>();
 
 		protected override WebView2 CreatePlatformView() => new MauiWebView();
 
+		internal WebNavigationEvent CurrentNavigationEvent
+		{
+			get => _eventState;
+			set => _eventState = value;
+		}
+    
 		protected override void ConnectHandler(WebView2 platformView)
 		{
-			platformView.NavigationStarting += OnNavigationStarted;
-			platformView.NavigationCompleted += OnNavigationCompleted;
-
+			platformView.CoreWebView2Initialized += OnCoreWebView2Initialized;
+			
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(WebView2 platformView)
 		{
-			platformView.NavigationStarting -= OnNavigationStarted;
-			platformView.NavigationCompleted -= OnNavigationCompleted;
+			if (platformView.CoreWebView2 != null)
+			{
+				platformView.CoreWebView2.HistoryChanged -= OnHistoryChanged;
+				platformView.CoreWebView2.NavigationStarting -= OnNavigationStarting;
+				platformView.CoreWebView2.NavigationCompleted -= OnNavigationCompleted;
+			}
+
+			platformView.CoreWebView2Initialized -= OnCoreWebView2Initialized;
 
 			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapSource(WebViewHandler handler, IWebView webView)
+		void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
 		{
-			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
-
-			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
+			sender.CoreWebView2.NavigationStarting += OnNavigationStarting;
+			sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
+			sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
 		}
 
-		public static void MapGoBack(WebViewHandler handler, IWebView webView, object? arg)
+		void OnHistoryChanged(CoreWebView2 sender, object args)
 		{
-			handler.PlatformView?.UpdateGoBack(webView);
+			PlatformView?.UpdateCanGoBackForward(VirtualView);
 		}
 
-		public static void MapGoForward(WebViewHandler handler, IWebView webView, object? arg)
-		{
-			handler.PlatformView?.UpdateGoForward(webView);
-		}
-
-		public static void MapReload(WebViewHandler handler, IWebView webView, object? arg)
-		{
-			handler.PlatformView?.UpdateReload(webView);
-		}
-
-		public static void MapEval(WebViewHandler handler, IWebView webView, object? arg)
-		{
-			if (arg is not string script)
-				return;
-
-			handler.PlatformView?.Eval(webView, script);
-		}
-
-		void OnNavigationStarted(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
-		{
-			// TODO: Notify navigation state.
-		}
-		
-		void OnNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+		void OnNavigationCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
 		{
 			if (args.IsSuccess)
 				NavigationSucceeded(sender, args);
@@ -74,38 +63,92 @@ namespace Microsoft.Maui.Handlers
 				NavigationFailed(sender, args);
 		}
 
-		void NavigationSucceeded(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+		void OnNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
 		{
-			string? url = sender.Source?.ToString();
+			if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri) && uri != null)
+			{
+				bool cancel = VirtualView.Navigating(CurrentNavigationEvent, uri.AbsoluteUri);
 
-			if (url == null)
-				return;
+				args.Cancel = cancel;
 
-			SendNavigated(url);
-
-			if (VirtualView == null)
-				return;
-
-			sender.UpdateCanGoBackForward(VirtualView);
+				// Reset in this case because this is the last event we will get
+				if (cancel)
+					_eventState = WebNavigationEvent.NewPage;
+			}
 		}
 
-		void NavigationFailed(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+		public static void MapSource(IWebViewHandler handler, IWebView webView)
 		{
-			string? url = sender.Source?.ToString();
+			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
 
-			if (url == null)
+			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
+		}
+
+		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (handler.PlatformView.CanGoBack && handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Back;
+
+			handler.PlatformView?.UpdateGoBack(webView);
+		}
+
+		public static void MapGoForward(IWebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (handler.PlatformView.CanGoForward && handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Forward;
+
+			handler.PlatformView?.UpdateGoForward(webView);
+		}
+
+		public static void MapReload(IWebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (handler is WebViewHandler w)
+				w.CurrentNavigationEvent = WebNavigationEvent.Refresh;
+
+			handler.PlatformView?.UpdateReload(webView);
+		}
+
+		public static void MapEval(IWebViewHandler handler, IWebView webView, object? arg)
+		{
+			if (arg is not string script)
 				return;
 
-			SendNavigated(url);
+			handler.PlatformView?.Eval(webView, script);
 		}
-		
-		void SendNavigated(string url)
-		{
-			SyncPlatformCookiesToVirtualView(url);
 
-			PlatformView?.UpdateCanGoBackForward(VirtualView);
+		void NavigationSucceeded(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs e)
+		{
+			var uri = sender.Source;
+
+			if (uri != null)
+				SendNavigated(uri, CurrentNavigationEvent, WebNavigationResult.Success);
+
+			if (VirtualView is null)
+				return;
 		}
-		
+
+		void NavigationFailed(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs e)
+		{
+			var uri = sender.Source;
+
+			if (!string.IsNullOrEmpty(uri))
+				SendNavigated(uri, CurrentNavigationEvent, WebNavigationResult.Failure);
+		}
+
+		void SendNavigated(string url, WebNavigationEvent evnt, WebNavigationResult result)
+		{
+			if (VirtualView != null)
+			{
+				SyncPlatformCookiesToVirtualView(url);
+
+				VirtualView.Navigated(evnt, url, result);
+
+				PlatformView?.UpdateCanGoBackForward(VirtualView);
+			}
+
+			CurrentNavigationEvent = WebNavigationEvent.NewPage;
+		}
+
 		void SyncPlatformCookiesToVirtualView(string url)
 		{
 			var myCookieJar = VirtualView.Cookies;
@@ -233,7 +276,9 @@ namespace Microsoft.Maui.Handlers
 			return null;
 		}
 
-		public static void MapEvaluateJavaScriptAsync(WebViewHandler handler, IWebView webView, object? arg) 
+		
+
+		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg) 
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{

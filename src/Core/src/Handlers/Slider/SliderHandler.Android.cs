@@ -7,13 +7,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SliderHandler : ViewHandler<ISlider, SeekBar>
 	{
-		static ColorStateList? DefaultProgressTintList { get; set; }
-		static ColorStateList? DefaultProgressBackgroundTintList { get; set; }
-		static PorterDuff.Mode? DefaultProgressTintMode { get; set; }
-		static PorterDuff.Mode? DefaultProgressBackgroundTintMode { get; set; }
-		static ColorFilter? DefaultThumbColorFilter { get; set; }
-		static Drawable? DefaultThumb { get; set; }
-
 		SeekBarChangeListener ChangeListener { get; } = new SeekBarChangeListener();
 
 		protected override SeekBar CreatePlatformView()
@@ -37,51 +30,41 @@ namespace Microsoft.Maui.Handlers
 			platformView.SetOnSeekBarChangeListener(null);
 		}
 
-		void SetupDefaults(SeekBar platformView)
-		{
-			DefaultThumbColorFilter = platformView.Thumb?.GetColorFilter();
-			DefaultProgressTintMode = platformView.ProgressTintMode;
-			DefaultProgressBackgroundTintMode = platformView.ProgressBackgroundTintMode;
-			DefaultProgressTintList = platformView.ProgressTintList;
-			DefaultProgressBackgroundTintList = platformView.ProgressBackgroundTintList;
-			DefaultThumb = platformView.Thumb;
-		}
-
-		public static void MapMinimum(SliderHandler handler, ISlider slider)
+		public static void MapMinimum(ISliderHandler handler, ISlider slider)
 		{
 			handler.PlatformView?.UpdateMinimum(slider);
 		}
 
-		public static void MapMaximum(SliderHandler handler, ISlider slider)
+		public static void MapMaximum(ISliderHandler handler, ISlider slider)
 		{
 			handler.PlatformView?.UpdateMaximum(slider);
 		}
 
-		public static void MapValue(SliderHandler handler, ISlider slider)
+		public static void MapValue(ISliderHandler handler, ISlider slider)
 		{
 			handler.PlatformView?.UpdateValue(slider);
 		}
 
-		public static void MapMinimumTrackColor(SliderHandler handler, ISlider slider)
+		public static void MapMinimumTrackColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.PlatformView?.UpdateMinimumTrackColor(slider, DefaultProgressBackgroundTintList, DefaultProgressBackgroundTintMode);
+			handler.PlatformView?.UpdateMinimumTrackColor(slider);
 		}
 
-		public static void MapMaximumTrackColor(SliderHandler handler, ISlider slider)
+		public static void MapMaximumTrackColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.PlatformView?.UpdateMaximumTrackColor(slider, DefaultProgressTintList, DefaultProgressTintMode);
+			handler.PlatformView?.UpdateMaximumTrackColor(slider);
 		}
 
-		public static void MapThumbColor(SliderHandler handler, ISlider slider)
+		public static void MapThumbColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.PlatformView?.UpdateThumbColor(slider, DefaultThumbColorFilter);
+			handler.PlatformView?.UpdateThumbColor(slider);
 		}
 
-		public static void MapThumbImageSource(SliderHandler handler, ISlider slider)
+		public static void MapThumbImageSource(ISliderHandler handler, ISlider slider)
 		{
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 
-			handler.PlatformView?.UpdateThumbImageSourceAsync(slider, provider, DefaultThumb)
+			handler.PlatformView?.UpdateThumbImageSourceAsync(slider, provider)
 				.FireAndForget(handler);
 		}
 
