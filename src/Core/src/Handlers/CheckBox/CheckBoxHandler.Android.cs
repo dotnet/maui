@@ -19,13 +19,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(AppCompatCheckBox platformView)
 		{
-			platformView.FocusChange += OnFocusChanged;
 			platformView.CheckedChange += OnCheckedChange;
 		}
 
 		protected override void DisconnectHandler(AppCompatCheckBox platformView)
 		{
-			platformView.FocusChange -= OnFocusChanged;
 			platformView.CheckedChange -= OnCheckedChange;
 		}
 
@@ -49,13 +47,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (VirtualView != null)
 				VirtualView.IsChecked = e.IsChecked;
-		}
-
-
-		void OnFocusChanged(object? sender, View.FocusChangeEventArgs e)
-		{
-			if (VirtualView != null)
-				VirtualView.IsFocused = e.HasFocus;
 		}
 	}
 }
