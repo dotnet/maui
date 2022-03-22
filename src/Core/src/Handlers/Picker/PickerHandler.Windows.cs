@@ -53,6 +53,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTitle(picker);
 		}
 
+		public static void MapBackground(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView?.UpdateBackground(picker);
+		}
+
 		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateSelectedIndex(picker);

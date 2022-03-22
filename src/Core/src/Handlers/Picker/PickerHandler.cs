@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IPicker, IPickerHandler> Mapper = new PropertyMapper<IPicker, PickerHandler>(ViewMapper)
 		{
-#if __ANDROID__
+#if __ANDROID__ || WINDOWS
 			[nameof(IPicker.Background)] = MapBackground,
 #endif
 			[nameof(IPicker.CharacterSpacing)] = MapCharacterSpacing,

@@ -16,6 +16,30 @@ namespace Microsoft.Maui.Platform
 			nativeComboBox.DataContext = picker;
 		}
 
+		public static void UpdateBackground(this MauiComboBox nativeComboBox, IPicker picker)
+		{
+			var platformBrush = picker.Background?.ToPlatform();
+
+			if (platformBrush == null)
+			{
+				nativeComboBox.Resources.RemoveKeys(_backgroundColorResourceKeys);
+			}
+			else
+			{
+				nativeComboBox.Resources.SetValueForAllKey(_backgroundColorResourceKeys, platformBrush);
+			}
+		}
+
+		static readonly string[] _backgroundColorResourceKeys =
+		{
+			"ComboBoxBackground",
+			"ComboBoxBackgroundPointerOver",
+			"ComboBoxBackgroundPressed",
+			"ComboBoxBackgroundDisabled",
+			"ComboBoxBackgroundUnfocused",
+		};
+
+
 		public static void UpdateTextColor(this MauiComboBox nativeComboBox, IPicker picker)
 		{
 			Color color = picker.TextColor;
