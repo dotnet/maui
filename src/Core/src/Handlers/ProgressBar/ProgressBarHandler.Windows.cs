@@ -5,19 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ProgressBarHandler : ViewHandler<IProgress, ProgressBar>
 	{
-		object? _foregroundDefault;
-
 		protected override ProgressBar CreatePlatformView() => new() { Minimum = 0, Maximum = 1 };
-
-		protected override void ConnectHandler(ProgressBar platformView)
-		{
-			SetupDefaults(platformView);
-		}
-
-		void SetupDefaults(ProgressBar platformView)
-		{
-			_foregroundDefault = platformView.GetForegroundCache();
-		}
 
 		public static void MapProgress(IProgressBarHandler handler, IProgress progress)
 		{
@@ -28,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler is ProgressBarHandler platformHandler)
 			{
-				platformHandler.PlatformView?.UpdateProgressColor(progress, platformHandler._foregroundDefault);
+				platformHandler.PlatformView?.UpdateProgressColor(progress);
 			}
 		}
 	}

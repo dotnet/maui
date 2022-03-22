@@ -1,66 +1,106 @@
 ﻿#nullable enable
 using System;
 using System.Threading.Tasks;
-using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class SliderExtensions
 	{
-		static void UpdateIncrement(this MauiSlider nativeSlider, ISlider slider)
+		static void UpdateIncrement(this Slider nativeSlider, ISlider slider)
 		{
 			double stepping = Math.Min((slider.Maximum - slider.Minimum) / 1000, 1);
 			nativeSlider.StepFrequency = stepping;
 			nativeSlider.SmallChange = stepping;
 		}
 
-		public static void UpdateMinimum(this MauiSlider nativeSlider, ISlider slider)
+		public static void UpdateMinimum(this Slider nativeSlider, ISlider slider)
 		{
 			nativeSlider.Minimum = slider.Minimum;
 			nativeSlider.UpdateIncrement(slider);
 		}
 
-		public static void UpdateMaximum(this MauiSlider nativeSlider, ISlider slider)
+		public static void UpdateMaximum(this Slider nativeSlider, ISlider slider)
 		{
 			nativeSlider.Maximum = slider.Maximum;
 			nativeSlider.UpdateIncrement(slider);
 		}
 
-		public static void UpdateValue(this MauiSlider nativeSlider, ISlider slider)
+		public static void UpdateValue(this Slider nativeSlider, ISlider slider)
 		{
 			if (nativeSlider.Value != slider.Value)
 				nativeSlider.Value = slider.Value;
 		}
 
-		public static void UpdateMinimumTrackColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultForegroundColor)
+		public static void UpdateMinimumTrackColor(this Slider platformSlider, ISlider slider)
 		{
-			if (slider.MinimumTrackColor.IsDefault())
-				nativeSlider.Foreground = defaultForegroundColor;
+			var brush = slider.MinimumTrackColor?.ToPlatform();
+
+			if (brush == null)
+			{
+				platformSlider.Resources.RemoveKeys(_minimumTrackColorResourceKeys);
+			}
 			else
-				nativeSlider.Foreground = slider.MinimumTrackColor.ToPlatform();
+			{
+				platformSlider.Resources.SetValueForAllKey(_minimumTrackColorResourceKeys, brush);
+			}
 		}
 
-		public static void UpdateMaximumTrackColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultBackgroundColor)
+		static readonly string[] _minimumTrackColorResourceKeys =
 		{
-			if (slider.MaximumTrackColor.IsDefault())
-				nativeSlider.BorderBrush = defaultBackgroundColor;
+			"SliderTrackValueFill",
+			"SliderTrackValueFilllPointerOver",
+			"SliderTrackValueFillPressed",
+			"SliderTrackValueFillDisabled",
+		};
+
+		public static void UpdateMaximumTrackColor(this Slider platformSlider, ISlider slider)
+		{
+			var brush = slider.MaximumTrackColor?.ToPlatform();
+
+			if (brush == null)
+			{
+				platformSlider.Resources.RemoveKeys(_maximumTrackColorResourceKeys);
+			}
 			else
-				nativeSlider.BorderBrush = slider.MaximumTrackColor.ToPlatform();
+			{
+				platformSlider.Resources.SetValueForAllKey(_maximumTrackColorResourceKeys, brush);
+			}
 		}
 
-		public static void UpdateThumbColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultThumbColor)
+		static readonly string[] _maximumTrackColorResourceKeys =
 		{
-			var thumb = nativeSlider?.Thumb;
+			"SliderTrackFill",
+			"SliderTrackFillPointerOver",
+			"SliderTrackFillPressed",
+			"SliderTrackFillDisabled",
+		};
 
-			if (thumb == null || slider?.ThumbColor == null || nativeSlider == null)
-				return;
+		public static void UpdateThumbColor(this Slider platformSlider, ISlider slider)
+		{
+			var brush = slider.ThumbColor?.ToPlatform();
 
-			nativeSlider.ThumbColorOver = slider.ThumbColor.ToPlatform();
-			BrushHelpers.UpdateColor(slider.ThumbColor, ref defaultThumbColor,
-				() => thumb.Background, brush => thumb.Background = brush);
-    }
-    
-		public static async Task UpdateThumbImageSourceAsync(this MauiSlider nativeSlider, ISlider slider, IImageSourceServiceProvider? provider)
+			if (brush == null)
+			{
+				platformSlider.Resources.RemoveKeys(_thumbColorResourceKeys);
+			}
+			else
+			{
+				platformSlider.Resources.SetValueForAllKey(_thumbColorResourceKeys, brush);
+			}
+		}
+
+		static readonly string[] _thumbColorResourceKeys =
+		{
+			"SliderThumbBackground",
+			"SliderThumbBackgroundPointerOver",
+			"SliderThumbBackgroundPressed",
+			"SliderThumbBackgroundDisabled",
+		};
+
+		internal static async Task UpdateThumbImageSourceAsync(this MauiSlider nativeSlider, ISlider slider, IImageSourceServiceProvider? provider)
 		{
 			var thumbImageSource = slider.ThumbImageSource;
 

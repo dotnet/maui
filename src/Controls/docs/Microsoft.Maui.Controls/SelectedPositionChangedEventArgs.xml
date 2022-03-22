@@ -33,7 +33,7 @@
       </Parameters>
       <Docs>
         <param name="selectedPosition">The newly selected position.</param>
-        <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.SelectedPositionChangedEventArgs" /> with the specified new <paramref name="selectecPosition" />.</summary>
+        <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.SelectedPositionChangedEventArgs" /> with the specified new <paramref name="selectedPosition" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

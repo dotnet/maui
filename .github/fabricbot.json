@@ -1495,5 +1495,335 @@
                 }
             ]
         }
+    },
+    {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "IssuesOnlyResponder",
+        "version": "1.0",
+        "config": {
+            "conditions": {
+                "operator": "or",
+                "operands": [
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-newcontrol"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-general"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-webview"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-datetimepicker"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-picker"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-switch"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-dualscreen"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-checkbox"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-border"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-label"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-button"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-dialogalert"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-entry"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-frame"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-stepper"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-refreshview"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-image"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-activityindicator"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-radiobutton"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-slider"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-progressbar"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-pages"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-map"
+                        }
+                    }
+                ]
+            },
+            "eventType": "issue",
+            "eventNames": [
+                "issues",
+                "project_card"
+            ],
+            "taskName": "Add area/controls label when any 'control-X' label is applied to the issue",
+            "actions": [
+                {
+                    "name": "addLabel",
+                    "parameters": {
+                        "label": "area/controls 🎮"
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "PullRequestResponder",
+        "version": "1.0",
+        "config": {
+            "conditions": {
+                "operator": "or",
+                "operands": [
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-newcontrol"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-general"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-webview"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-datetimepicker"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-picker"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-switch"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-dualscreen"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-checkbox"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-border"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-label"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-button"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-dialogalert"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-entry"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-frame"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-stepper"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-refreshview"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-image"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-activityindicator"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-radiobutton"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-slider"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-progressbar"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-pages"
+                        }
+                    },
+                    {
+                        "name": "labelAdded",
+                        "parameters": {
+                            "label": "control-map"
+                        }
+                    }
+                ]
+            },
+            "eventType": "issue",
+            "eventNames": [
+                "issues",
+                "project_card"
+            ],
+            "taskName": "Add area/controls label when any 'control-X' label is applied to the PR",
+            "actions": [
+                {
+                    "name": "addLabel",
+                    "parameters": {
+                        "label": "area/controls 🎮"
+                    }
+                }
+            ]
+        }
     }
 ]

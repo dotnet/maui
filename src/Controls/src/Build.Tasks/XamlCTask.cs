@@ -17,9 +17,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 	{
 		bool hasCompiledXamlResources;
 		public bool KeepXamlResources { get; set; }
-		public bool OptimizeIL { get; set; }
+		public bool OptimizeIL { get; set; } = true;
 		public bool DefaultCompile { get; set; }
 		public bool ForceCompile { get; set; }
+		public string TargetFramework { get; set; }
 
 		public IAssemblyResolver DefaultAssemblyResolver { get; set; }
 
@@ -271,6 +272,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				rootnode.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null);
 				rootnode.Accept(new ExpandMarkupsVisitor(visitorContext), null);
 				rootnode.Accept(new PruneIgnoredNodesVisitor(), null);
+				rootnode.Accept(new SimplifyOnPlatformVisitor(TargetFramework), null);
 				rootnode.Accept(new CreateObjectVisitor(visitorContext), null);
 				rootnode.Accept(new SetNamescopesAndRegisterNamesVisitor(visitorContext), null);
 				rootnode.Accept(new SetFieldVisitor(visitorContext), null);

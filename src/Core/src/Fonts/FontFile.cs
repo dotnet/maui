@@ -19,10 +19,10 @@ namespace Microsoft.Maui
 		/// <include file="../../docs/Microsoft.Maui/FontFile.xml" path="//Member[@MemberName='PostScriptName']/Docs" />
 		public string? PostScriptName { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui/FontFile.xml" path="//Member[@MemberName='FileNameWithExtension'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/FontFile.xml" path="//Member[@MemberName='FileNameWithExtension'][2]/Docs" />
 		public string FileNameWithExtension(string? extension) => $"{FileName}{extension}";
 
-		/// <include file="../../docs/Microsoft.Maui/FontFile.xml" path="//Member[@MemberName='FileNameWithExtension'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/FontFile.xml" path="//Member[@MemberName='FileNameWithExtension'][1]/Docs" />
 		public string FileNameWithExtension() => FileNameWithExtension(Extension);
 
 		/// <include file="../../docs/Microsoft.Maui/FontFile.xml" path="//Member[@MemberName='GetPostScriptNameWithSpaces']/Docs" />

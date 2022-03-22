@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (platformView != null)
 			{
-				platformView.FocusChange += OnNativeViewFocusChange;
+				platformView.FocusChange += OnPlatformViewFocusChange;
 			}
 		}
 
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (platformView.IsAlive())
 			{
-				platformView.FocusChange -= OnNativeViewFocusChange;
+				platformView.FocusChange -= OnPlatformViewFocusChange;
 
 				if (ViewCompat.GetAccessibilityDelegate(platformView) is MauiAccessibilityDelegateCompat ad)
 				{
@@ -144,32 +144,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.VirtualView is not IToolbarElement te || te.Toolbar == null)
 				return;
 
-			var rootManager = handler.MauiContext?.GetNavigationRootManager();
-			rootManager?.SetToolbarElement(te);
-
-			var platformView = handler.PlatformView as View;
-			if (platformView == null)
-				return;
-
-			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			var appbarLayout = platformView.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar);
-
-			if (appbarLayout == null)
-				appbarLayout = rootManager?.RootView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar);
-
-			var nativeToolBar = te.Toolbar?.ToPlatform(handler.MauiContext);
-
-			if (appbarLayout == null || nativeToolBar == null)
-			{
-				return;
-			}
-
-			if (nativeToolBar.Parent == appbarLayout)
-			{
-				return;
-			}
-
-			appbarLayout.AddView(nativeToolBar, 0);
+			MapToolbar(handler, te);
 		}
 
 		internal static void MapToolbar(IElementHandler handler, IToolbarElement te)
@@ -183,8 +158,10 @@ namespace Microsoft.Maui.Handlers
 			var platformView = handler.PlatformView as View;
 
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			var appbarLayout = platformView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar) ??
-				rootManager?.RootView?.FindViewById<ViewGroup>(Microsoft.Maui.Resource.Id.navigationlayout_appbar);
+			
+			var appbarLayout = 
+				platformView?.FindViewById<ViewGroup>(Resource.Id.navigationlayout_appbar) ??
+				rootManager?.RootView?.FindViewById<ViewGroup>(Resource.Id.navigationlayout_appbar);
 
 			var nativeToolBar = te.Toolbar?.ToPlatform(handler.MauiContext);
 
@@ -202,7 +179,16 @@ namespace Microsoft.Maui.Handlers
 			appbarLayout.AddView(nativeToolBar, 0);
 		}
 
-		void OnNativeViewFocusChange(object? sender, PlatformView.FocusChangeEventArgs e)
+		public virtual bool NeedsContainer
+		{
+			get
+			{
+				return VirtualView?.Clip != null || VirtualView?.Shadow != null 
+					|| (VirtualView as IBorder)?.Border != null || VirtualView?.InputTransparent == true;
+			}
+		}
+		
+		void OnPlatformViewFocusChange(object? sender, PlatformView.FocusChangeEventArgs e)
 		{
 			if (VirtualView != null)
 			{

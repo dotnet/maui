@@ -7,15 +7,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTitle(this MauiPicker platformPicker, IPicker picker) =>
 			UpdatePicker(platformPicker, picker);
 
-		public static void UpdateTitleColor(this MauiPicker platformPicker, IPicker picker, ColorStateList? defaultColor)
+		public static void UpdateTitleColor(this MauiPicker platformPicker, IPicker picker)
 		{
 			var titleColor = picker.TitleColor;
 
-			if (titleColor == null)
-			{
-				platformPicker.SetHintTextColor(defaultColor);
-			}
-			else
+			if (titleColor != null)
 			{
 				var androidColor = titleColor.ToPlatform();
 				if (!platformPicker.TextColors.IsOneColor(ColorStates.EditText, androidColor))

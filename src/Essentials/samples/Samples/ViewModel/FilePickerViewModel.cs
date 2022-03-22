@@ -90,7 +90,7 @@ namespace Samples.ViewModel
 				{
 					{ DevicePlatform.iOS, new[] { "public.my.comic.extension" } }, // or general UTType values
                     { DevicePlatform.Android, new[] { "application/comics" } },
-					{ DevicePlatform.UWP, new[] { ".cbr", ".cbz" } },
+					{ DevicePlatform.WinUI, new[] { ".cbr", ".cbz" } },
 					{ DevicePlatform.Tizen, new[] { "*/*" } },
 					{ DevicePlatform.macOS, new[] { "cbr", "cbz" } }, // or general UTType values
                 });

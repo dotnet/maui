@@ -159,6 +159,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView != null)
 			{
 				PlatformView?.UpdateTextColor(VirtualView, _defaultTextColorBrush, _defaultTextColorFocusBrush, _queryTextBox);
+				PlatformView?.UpdatePlaceholderColor(VirtualView, _defaultPlaceholderColorBrush, _defaultPlaceholderColorFocusBrush, _queryTextBox);
 				PlatformView?.UpdateHorizontalTextAlignment(VirtualView, _queryTextBox);
 				PlatformView?.UpdateMaxLength(VirtualView, _queryTextBox);
 			}

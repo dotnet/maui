@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using Foundation;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using UIKit;
 using WebKit;
@@ -33,6 +34,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler!!, WKWebView webview!!, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
 			: base(provider, dispatcher, new Uri(BlazorWebViewHandler.AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
+			if (provider.GetService<MauiBlazorMarkerService>() is null)
+			{
+				throw new InvalidOperationException(
+					"Unable to find the required services. " +
+					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView)}' in the application startup code.");
+			}
+
 			_blazorMauiWebViewHandler = blazorMauiWebViewHandler;
 			_webview = webview;
 

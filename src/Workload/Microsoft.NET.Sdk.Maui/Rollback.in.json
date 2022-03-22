@@ -6,5 +6,5 @@
   "microsoft.net.sdk.maui": "@VERSION@",
   "microsoft.net.sdk.tvos": "@MicrosofttvOSSdkPackageVersion@",
   "microsoft.net.workload.mono.toolchain": "@MicrosoftNETCoreAppRefPackageVersion@",
-  "microsoft.net.workload.emscripten": "@MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion@"
+  "microsoft.net.workload.emscripten": "@MicrosoftNETWorkloadEmscriptenPackageVersion@"
 }

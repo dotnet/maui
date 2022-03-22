@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Controls.Platform
 		static void HandleChildRemoved(object? sender, ElementEventArgs e)
 		{
 			var view = e.Element;
+			// TODO MAUI
 			//view?.DisposeModalAndChildRenderers();
 		}
 
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Controls.Platform
 			else if (RootViewController != null)
 				await RootViewController.DismissViewControllerAsync(animated);
 
-			// Yes?
+			// TODO MAUI
 			//modal.DisposeModalAndChildRenderers();
 
 			return modal;

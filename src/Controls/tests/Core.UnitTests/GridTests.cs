@@ -24,6 +24,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
+		public void ChildrenHaveParentsWhenAdded()
+		{
+			var layout = new Grid();
+			var label = new Label();
+			layout.Children.Add(label);
+
+			Assert.AreSame(layout, label.Parent);
+
+			layout.Children.Remove(label);
+			Assert.Null(label.Parent);
+		}
+
+		[Test]
 		public void ThrowsOnNullRemove()
 		{
 			var layout = new Grid();

@@ -16,13 +16,17 @@ namespace Microsoft.Maui.Platform
 		readonly Android.Graphics.Rect _viewBounds;
 
 		APath _currentPath;
-		SizeF _lastPathSize;
+		SizeF _lastPathSize; 
+		bool _invalidateClip;
 
 		Bitmap _shadowBitmap;
 		Canvas _shadowCanvas;
 		Android.Graphics.Paint _shadowPaint;
 		bool _invalidateShadow;
-		AView BorderView;
+
+		AView _borderView;
+
+		public bool InputTransparent { get; set; }
 
 		public WrapperView(Context context)
 			: base(context)
@@ -37,6 +41,8 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnDetachedFromWindow();
 
+			_invalidateShadow = true;
+
 			if (_shadowBitmap != null)
 			{
 				_shadowBitmap.Recycle();
@@ -46,8 +52,9 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
-			BorderView?.BringToFront();
-			if (ChildCount == 0 || GetChildAt(0) is not View child)
+			_borderView?.BringToFront();
+
+			if (ChildCount == 0 || GetChildAt(0) is not AView child)
 				return;
 
 			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(right - left);
@@ -55,7 +62,7 @@ namespace Microsoft.Maui.Platform
 
 			child.Measure(widthMeasureSpec, heightMeasureSpec);
 			child.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
-			BorderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
+			_borderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -105,9 +112,19 @@ namespace Microsoft.Maui.Platform
 			base.DispatchDraw(canvas);
 		}
 
+		public override bool DispatchTouchEvent(MotionEvent e)
+		{
+			if (InputTransparent)
+			{
+				return false;
+			}
+
+			return base.DispatchTouchEvent(e);
+		}
+
 		partial void ClipChanged()
 		{
-			_invalidateShadow = true;
+			_invalidateClip = _invalidateShadow = true;
 			PostInvalidate();
 		}
 
@@ -121,25 +138,27 @@ namespace Microsoft.Maui.Platform
 		{
 			if (Border == null)
 			{
-				if (BorderView != null)
-					this.RemoveView(BorderView);
-				BorderView = null;
+				if (_borderView != null)
+					this.RemoveView(_borderView);
+				_borderView = null;
 				return;
 			}
 
-			if (BorderView == null)
+			if (_borderView == null)
 			{
-				this.AddView(BorderView = new AView(Context));
+				this.AddView(_borderView = new AView(Context));
 			}
-			BorderView.UpdateBorderStroke(Border);
+			_borderView.UpdateBorderStroke(Border);
 		}
 
 		void ClipChild(Canvas canvas)
 		{
 			var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
 
-			if (_lastPathSize != bounds.Size || _currentPath == null)
+			if (_invalidateClip || _lastPathSize != bounds.Size || _currentPath == null)
 			{
+				_invalidateClip = false;
+
 				var path = Clip.PathForBounds(bounds);
 				_currentPath = path?.AsAndroidPath();
 				_lastPathSize = bounds.Size;
