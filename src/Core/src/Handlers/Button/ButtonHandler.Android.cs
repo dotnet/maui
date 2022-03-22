@@ -193,6 +193,7 @@ namespace Microsoft.Maui.Handlers
 				case MotionEventActions.Down:
 					button?.Pressed();
 					break;
+				case MotionEventActions.Cancel:
 				case MotionEventActions.Up:
 					button?.Released();
 					break;
