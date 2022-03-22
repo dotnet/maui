@@ -40,6 +40,13 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
+		private protected override void OnDisconnectHandler(object platformView)
+		{
+			base.OnDisconnectHandler(platformView);
+			if (platformView is MaterialToolbar mt)
+				mt.RemoveFromParent();
+		}
+
 		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)
 		{
 			arg1.PlatformView.UpdateTitle(arg2);
@@ -80,8 +87,8 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var appbarConfigBuilder =
-					   new AppBarConfiguration
-						   .Builder(_stackNavigationManager.NavGraph);
+					new AppBarConfiguration
+						.Builder(_stackNavigationManager.NavGraph);
 
 			if (_drawerLayout != null)
 				appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(_drawerLayout);
