@@ -27,7 +27,10 @@ namespace Microsoft.Maui.Controls
 			{
 				var lengths = strValue.Split(',');
 				var converter = new GridLengthTypeConverter();
-				return new RowDefinitionCollection(lengths.Select(length => new RowDefinition {Height = (GridLength)converter.ConvertFromInvariantString(length) }).ToArray());
+				var definitions = new RowDefinition[lengths.Length];
+				for (var i = 0; i < lengths.Length; i++)
+					definitions[i] = new RowDefinition { Height = (GridLength)converter.ConvertFromInvariantString(lengths[i]) };
+				return new RowDefinitionCollection(definitions);
 			}
 
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(RowDefinitionCollection)));
