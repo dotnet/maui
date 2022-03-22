@@ -123,16 +123,6 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 #endif
 
-#if __IOS__ || __WATCHOS__
-		static CMMotionManager motionManager;
-
-		internal static CMMotionManager MotionManager =>
-			motionManager ?? (motionManager = new CMMotionManager());
-#endif
-
-		internal static NSOperationQueue GetCurrentQueue() =>
-			NSOperationQueue.CurrentQueue ?? new NSOperationQueue();
-
 #if __IOS__
 		internal class UIPresentationControllerDelegate : UIAdaptivePresentationControllerDelegate
 		{

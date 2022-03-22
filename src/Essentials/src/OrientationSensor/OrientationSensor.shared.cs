@@ -12,8 +12,6 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		bool IsMonitoring { get; }
 
-		SensorSpeed SensorSpeed { get; }
-
 		void Start(SensorSpeed sensorSpeed);
 
 		void Stop();
@@ -34,9 +32,6 @@ namespace Microsoft.Maui.Essentials
 
 		public static bool IsSupported 
 			=> Current.IsSupported;
-
-		public static SensorSpeed SensorSpeed
-			=> Current.SensorSpeed;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
 		public static bool IsMonitoring { get; private set; }
@@ -119,7 +114,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 
-		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
+		SensorSpeed SensorSpeed { get; set; } = SensorSpeed.Default;
 
 		public event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged;
 

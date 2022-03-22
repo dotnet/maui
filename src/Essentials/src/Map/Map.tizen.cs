@@ -7,8 +7,11 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	class MapImplementation : IMap
 	{
-		public Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
 			var appControl = new AppControl
@@ -24,8 +27,14 @@ namespace Microsoft.Maui.ApplicationModel
 			return Task.CompletedTask;
 		}
 
-		public Task OpenMapsAsync(Placemark placemark, MapLaunchOptions options)
+		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
+			if (placemark == null)
+				throw new ArgumentNullException(nameof(placemark));
+
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
 			var appControl = new AppControl

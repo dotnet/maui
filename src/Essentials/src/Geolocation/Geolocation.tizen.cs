@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
+			_ = request ?? throw new ArgumentNullException(nameof(request));
+
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
 			Locator service = null;

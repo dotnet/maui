@@ -12,8 +12,6 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		bool IsMonitoring { get; }
 
-		SensorSpeed SensorSpeed { get; }
-
 		void Start(SensorSpeed sensorSpeed);
 
 		event EventHandler<BarometerChangedEventArgs>? ReadingChanged;
@@ -85,7 +83,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public bool IsMonitoring { get; private set; }
 
-		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
+		SensorSpeed SensorSpeed { get; set; } = SensorSpeed.Default;
 
 		void RaiseReadingChanged(BarometerData reading)
 		{

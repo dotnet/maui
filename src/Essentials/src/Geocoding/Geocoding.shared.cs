@@ -39,12 +39,15 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			return geocoding.GetPlacemarksAsync(location.Latitude, location.Longitude);
 		}
+
 		public static void SetMapServiceToken(this IGeocoding geocoding, string? mapServiceToken)
 		{
+#if WINDOWS || TIZEN
 			if (geocoding is IPlatformGeocoding platform)
 			{
 				platform.MapServiceToken = mapServiceToken;
 			}
+#endif
 		}
 	}
 }

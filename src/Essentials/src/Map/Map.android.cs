@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Android.Content;
@@ -8,8 +9,11 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	class MapImplementation : IMap
 	{
-		public Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			var uri = string.Empty;
 			var lat = latitude.ToString(CultureInfo.InvariantCulture);
 			var lng = longitude.ToString(CultureInfo.InvariantCulture);
@@ -30,7 +34,7 @@ namespace Microsoft.Maui.ApplicationModel
 			return Task.CompletedTask;
 		}
 
-		internal static string GetMode(NavigationMode mode)
+		static string GetMode(NavigationMode mode)
 		{
 			switch (mode)
 			{
@@ -44,8 +48,14 @@ namespace Microsoft.Maui.ApplicationModel
 			return string.Empty;
 		}
 
-		public Task OpenMapsAsync(Placemark placemark, MapLaunchOptions options)
+		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
+			if (placemark == null)
+				throw new ArgumentNullException(nameof(placemark));
+
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			var uri = string.Empty;
 			if (options.NavigationMode == NavigationMode.None)
 			{

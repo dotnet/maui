@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Locations;
 using Android.OS;
-using Android.Runtime;
 using Microsoft.Maui.ApplicationModel;
 using AndroidLocation = Android.Locations.Location;
 using LocationPower = Android.Locations.Power;
@@ -37,6 +36,8 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
+			_ = request ?? throw new ArgumentNullException(nameof(request));
+
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
 			var locationManager = Platform.LocationManager;
@@ -257,7 +258,7 @@ namespace Microsoft.Maui.Devices.Sensors
 				activeProviders.Add(provider);
 		}
 
-		void ILocationListener.OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
+		void ILocationListener.OnStatusChanged(string provider, Availability status, Bundle extras)
 		{
 			switch (status)
 			{

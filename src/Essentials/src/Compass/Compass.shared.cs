@@ -9,8 +9,6 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		bool IsMonitoring { get; }
 
-		SensorSpeed SensorSpeed { get; }
-
 		void Start(SensorSpeed sensorSpeed);
 
 		void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter);
@@ -104,7 +102,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public bool IsMonitoring { get; private set; }
 
-		public SensorSpeed SensorSpeed { get; private set; }
+		SensorSpeed SensorSpeed { get; set; }
 
 		public void Start(SensorSpeed sensorSpeed) => Start(sensorSpeed, true);
 

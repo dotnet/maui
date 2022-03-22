@@ -1,3 +1,4 @@
+#nullable enable
 using CoreMotion;
 using Foundation;
 
@@ -5,14 +6,18 @@ namespace Microsoft.Maui.Devices.Sensors
 {
 	partial class GyroscopeImplementation : IGyroscope
 	{
+		static CMMotionManager? motionManager;
+
+		static CMMotionManager MotionManager =>
+			motionManager ??= new CMMotionManager();
+
 		bool PlatformIsSupported =>
-			Platform.MotionManager?.GyroAvailable ?? false;
+			MotionManager.GyroAvailable;
 
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			var manager = Platform.MotionManager;
-			manager.GyroUpdateInterval = sensorSpeed.ToPlatform();
-			manager.StartGyroUpdates(Platform.GetCurrentQueue(), DataUpdated);
+			MotionManager.GyroUpdateInterval = sensorSpeed.ToPlatform();
+			MotionManager.StartGyroUpdates(NSOperationQueue.CurrentQueue, DataUpdated);
 		}
 
 		void DataUpdated(CMGyroData data, NSError error)
@@ -26,6 +31,6 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 		void PlatformStop() =>
-			Platform.MotionManager?.StopGyroUpdates();
+			MotionManager.StopGyroUpdates();
 	}
 }

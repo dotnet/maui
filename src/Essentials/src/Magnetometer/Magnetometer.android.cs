@@ -1,4 +1,7 @@
+#nullable enable
 using System;
+using Android.App;
+using Android.Content;
 using Android.Hardware;
 using Android.Runtime;
 
@@ -6,27 +9,34 @@ namespace Microsoft.Maui.Devices.Sensors
 {
 	partial class MagnetometerImplementation : IMagnetometer
 	{
-		bool PlatformIsSupported =>
-			   Platform.SensorManager?.GetDefaultSensor(SensorType.MagneticField) != null;
+		static SensorManager? _sensorManager;
+		static Sensor? magnetometer;
 
-		MagnetometerListener listener;
-		Sensor magnetometer;
+		static SensorManager? SensorManager =>
+			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
+
+		static Sensor? Sensor =>
+			magnetometer ??= SensorManager?.GetDefaultSensor(SensorType.MagneticField);
+
+		bool PlatformIsSupported =>
+			Sensor is not null;
+
+		MagnetometerListener? listener;
 
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var delay = sensorSpeed.ToPlatform();
 
 			listener = new MagnetometerListener(RaiseReadingChanged);
-			magnetometer = Platform.SensorManager.GetDefaultSensor(SensorType.MagneticField);
-			Platform.SensorManager.RegisterListener(listener, magnetometer, delay);
+			SensorManager!.RegisterListener(listener, Sensor, delay);
 		}
 
 		void PlatformStop()
 		{
-			if (listener == null || magnetometer == null)
+			if (listener == null || Sensor == null)
 				return;
 
-			Platform.SensorManager.UnregisterListener(listener, magnetometer);
+			SensorManager!.UnregisterListener(listener, Sensor);
 			listener.Dispose();
 			listener = null;
 		}

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	class GeocodingImplementation : IGeocoding
+	class GeocodingImplementation : IPlatformGeocoding, IGeocoding
 	{
 		public string? MapServiceToken { get; set; }
 

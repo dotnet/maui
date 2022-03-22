@@ -1,69 +1,33 @@
-using System;
-using System.Collections.Generic;
+#nullable enable
 using System.Threading;
 using System.Threading.Tasks;
-using System.ComponentModel;
-using Microsoft.Maui.Devices.Sensors;
-
 
 namespace Microsoft.Maui.Devices.Sensors
 {
 	public interface IGeolocation
 	{
-		Task<Location> GetLastKnownLocationAsync();
+		Task<Location?> GetLastKnownLocationAsync();
 
-		Task<Location> GetLocationAsync();
-
-		Task<Location> GetLocationAsync(GeolocationRequest request);
-
-		Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancelToken);
+		Task<Location?> GetLocationAsync(GeolocationRequest request, CancellationToken cancelToken);
 	}
-}
-namespace Microsoft.Maui.Essentials
-{
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Geolocation.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Geolocation']/Docs" />
-	public static partial class Geolocation
+
+	public static class Geolocation
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Geolocation.xml" path="//Member[@MemberName='GetLastKnownLocationAsync']/Docs" />
-		public static Task<Location> GetLastKnownLocationAsync() =>
-			Current.GetLastKnownLocationAsync();
+		static IGeolocation? defaultImplementation;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Geolocation.xml" path="//Member[@MemberName='GetLocationAsync'][1]/Docs" />
-		public static Task<Location> GetLocationAsync() =>
-			Current.GetLocationAsync(new GeolocationRequest(), default);
+		public static IGeolocation Default =>
+			defaultImplementation ??= new GeolocationImplementation();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Geolocation.xml" path="//Member[@MemberName='GetLocationAsync'][2]/Docs" />
-		public static Task<Location> GetLocationAsync(GeolocationRequest request) =>
-			Current.GetLocationAsync(request ?? new GeolocationRequest(), default);
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Geolocation.xml" path="//Member[@MemberName='GetLocationAsync'][3]/Docs" />
-		public static Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancelToken) =>
-			Current.GetLocationAsync(request ?? new GeolocationRequest(), cancelToken);
-
-#nullable enable
-		static IGeolocation? currentImplementation;
-#nullable disable
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IGeolocation Current =>
-			currentImplementation ??= new GeolocationImplementation();
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IGeolocation? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
+		internal static void SetDefault(IGeolocation? implementation) =>
+			defaultImplementation = implementation;
 	}
-}
 
-namespace Microsoft.Maui.Devices.Sensors
-{
-	partial class GeolocationImplementation : IGeolocation
+	public static class GeolocationExtensions
 	{
-		public Task<Location> GetLocationAsync()
-			=> GetLocationAsync(new GeolocationRequest(), default);
+		public static Task<Location?> GetLocationAsync(this IGeolocation geolocation) =>
+			geolocation.GetLocationAsync(new GeolocationRequest(), default);
 
-		public Task<Location> GetLocationAsync(GeolocationRequest request)
-			=> GetLocationAsync(request ?? new GeolocationRequest(), default);
+		public static Task<Location?> GetLocationAsync(this IGeolocation geolocation, GeolocationRequest request) =>
+			geolocation.GetLocationAsync(request ?? new GeolocationRequest(), default);
 	}
 }

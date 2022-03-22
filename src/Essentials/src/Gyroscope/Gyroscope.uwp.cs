@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		bool PlatformIsSupported =>
 			DefaultSensor != null;
 
-		public void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			sensor = DefaultSensor;
 
