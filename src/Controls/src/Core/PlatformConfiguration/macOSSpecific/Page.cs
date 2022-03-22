@@ -9,25 +9,25 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='TabOrderProperty']/Docs" />
 		public static readonly BindableProperty TabOrderProperty = BindableProperty.Create("TabOrder", typeof(VisualElement[]), typeof(Page), null);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='GetTabOrder'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='GetTabOrder'][1]/Docs" />
 		public static VisualElement[] GetTabOrder(BindableObject element)
 		{
 			return (VisualElement[])element.GetValue(TabOrderProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='SetTabOrder']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='SetTabOrder'][1]/Docs" />
 		public static void SetTabOrder(BindableObject element, params VisualElement[] value)
 		{
 			element.SetValue(TabOrderProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='GetTabOrder']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='GetTabOrder'][2]/Docs" />
 		public static VisualElement[] GetTabOrder(this IPlatformElementConfiguration<macOS, FormsElement> config)
 		{
 			return GetTabOrder(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='SetTabOrder']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='SetTabOrder'][2]/Docs" />
 		public static IPlatformElementConfiguration<macOS, FormsElement> SetTabOrder(this IPlatformElementConfiguration<macOS, FormsElement> config, params VisualElement[] value)
 		{
 			SetTabOrder(config.Element, value);

@@ -9,8 +9,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler : ViewHandler<IEditor, AppCompatEditText>
 	{
-		ColorStateList? _defaultPlaceholderColors;
-
 		protected override AppCompatEditText CreatePlatformView()
 		{
 			var editText = new AppCompatEditText(Context)
@@ -22,8 +20,6 @@ namespace Microsoft.Maui.Handlers
 
 			editText.SetSingleLine(false);
 			editText.SetHorizontallyScrolling(false);
-
-			_defaultPlaceholderColors = editText.HintTextColors;
 
 			return editText;
 		}
@@ -67,7 +63,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor)
 		{
 			if (handler is EditorHandler platformHandler)
-				handler.PlatformView?.UpdatePlaceholderColor(editor, platformHandler._defaultPlaceholderColors);
+				handler.PlatformView?.UpdatePlaceholderColor(editor);
 		}
 
 		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor) =>

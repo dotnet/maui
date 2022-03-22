@@ -23,6 +23,13 @@ stages:
               Invoke-Git merge origin/$(LocBranch) --no-commit
             displayName: 'Merge loc Branch'
 
+          - task: PowerShell@2
+            displayName: "Update LocProject.json"
+            inputs:
+              targetType: 'filePath'
+              filePath: $(Build.SourcesDirectory)\eng\automation\scripts\update-locproject.ps1
+              arguments: -SourcesDirectory "$(Build.SourcesDirectory)" -LocProjectPath "$(Build.SourcesDirectory)\eng\automation\LocProject.json"
+
           - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
             displayName: 'Localization Build'
             env:

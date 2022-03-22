@@ -12,6 +12,7 @@
     <None Update="@(None)" PackagePath="" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" />
+    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.SingleProject.props" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.SingleProject.targets" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.targets" />
     <_Files Include="$(MauiNuSpecDirectory)maui.aotprofile" />

@@ -17,6 +17,7 @@ using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete]
 	public class Platform : BindableObject, INavigation, IDisposable
 	{
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer),
@@ -579,6 +580,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_renderer.View?.Window?.EndEditing(true);
 		}
 
+		[System.Obsolete]
 		internal class DefaultRenderer : VisualElementRenderer<VisualElement>
 		{
 			public override UIView HitTest(CGPoint point, UIEvent uievent)

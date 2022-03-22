@@ -94,11 +94,6 @@ namespace Microsoft.Maui.Controls
 			arg1.PlatformView.UpdateBarBackground(arg2);
 		}
 
-		public static void MapBarBackgroundColor(ToolbarHandler arg1, Toolbar arg2)
-		{
-			arg1.PlatformView.UpdateBarBackgroundColor(arg2);
-		}
-
 		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateBackButton(arg2);
@@ -114,6 +109,10 @@ namespace Microsoft.Maui.Controls
 			arg1.PlatformView.UpdateIconColor(arg2);
 		}
 
+		public static void MapIcon(ToolbarHandler arg1, Toolbar arg2)
+		{
+		}
+
 		public static void MapTitleView(ToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateTitleView(arg2);
@@ -125,6 +124,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public static void MapBackButtonVisible(ToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.PlatformView.UpdateBackButton(arg2);
+		}
+
+		public static void MapBackButtonEnabled(ToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateBackButton(arg2);
 		}

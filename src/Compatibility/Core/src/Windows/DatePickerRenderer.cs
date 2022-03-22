@@ -14,6 +14,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class DatePickerRenderer : ViewRenderer<DatePicker, Microsoft.UI.Xaml.Controls.DatePicker>
 	{
 		WBrush _defaultBrush;
@@ -255,7 +256,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (datePicker == null)
 				return;
 
-			bool datePickerIsDefault = datePicker.FontFamily == null && datePicker.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(DatePicker), true) && datePicker.FontAttributes == FontAttributes.None;
+			bool datePickerIsDefault =
+				datePicker.FontFamily == null &&
+#pragma warning disable CS0612 // Type or member is obsolete
+				datePicker.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(DatePicker), true) &&
+#pragma warning restore CS0612 // Type or member is obsolete
+				datePicker.FontAttributes == FontAttributes.None;
 
 			if (datePickerIsDefault && !_fontApplied)
 				return;

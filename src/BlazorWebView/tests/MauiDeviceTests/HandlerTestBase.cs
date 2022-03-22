@@ -24,13 +24,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 
 			_isCreated = true;
 			var appBuilder = MauiApp
-				.CreateBuilder()
-				.ConfigureMauiHandlers(handlers =>
-				{
-					//handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
-					//handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
-					//handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
-				});
+				.CreateBuilder();
 
 			additionalCreationActions?.Invoke(appBuilder);
 

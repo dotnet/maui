@@ -25,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new FileImageSourceService();
 
 			// get an image
-			var result1 = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 			var bitmapDrawable1 = Assert.IsType<BitmapDrawable>(result1.Value);
 			var bitmap1 = bitmapDrawable1.Bitmap;
 
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(collected);
 
 			// get the image again
-			var result2 = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			var result2 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 			var bitmapDrawable2 = Assert.IsType<BitmapDrawable>(result2.Value);
 			var bitmap2 = bitmapDrawable2.Bitmap;
 
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new FileImageSourceService();
 
 			// get an image
-			var result1 = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 			var bitmapDrawable1 = Assert.IsType<BitmapDrawable>(result1.Value);
 			var bitmap1 = bitmapDrawable1.Bitmap;
 
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(collected);
 
 			// get the image again
-			var result2 = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			var result2 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 			var bitmapDrawable2 = Assert.IsType<BitmapDrawable>(result2.Value);
 			var bitmap2 = bitmapDrawable2.Bitmap;
 
@@ -79,9 +79,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public void GlideStaticEqualsGlideGet()
 		{
-			var fromGet = Glide.Get(Platform.DefaultContext);
+			var fromGet = Glide.Get(MauiProgram.DefaultContext);
 
-			var manager = Glide.With(Platform.DefaultContext);
+			var manager = Glide.With(MauiProgram.DefaultContext);
 			var glideField = manager.GetType().GetProperty("Glide", BindingFlags.NonPublic | BindingFlags.Instance);
 			var fromField = glideField.GetValue(manager);
 
@@ -97,12 +97,12 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new CustomImageSourceServiceStub(cache);
 
 			// get an image
-			var result1 = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			// get the image again
-			var result2 = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			var result2 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(2, cache.Cache[imageSource.Color].Count);
 
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new CustomImageSourceServiceStub(cache);
 
 			// get an image
-			var result1 = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.DeviceTests
 			result1.Dispose();
 
 			// get the image again
-			var result2 = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			var result2 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
@@ -152,11 +152,11 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					// the OnlyRetrieveFromCache means that if it is not already loaded, then throw
 					_ = await Glide
-							.With(Platform.DefaultContext)
-							.Load(bitmapFile, Platform.DefaultContext)
+							.With(MauiProgram.DefaultContext)
+							.Load(bitmapFile, MauiProgram.DefaultContext)
 							.SetOnlyRetrieveFromCache(true)
 							.SetDiskCacheStrategy(DiskCacheStrategy.None)
-							.SubmitAsync(Platform.DefaultContext);
+							.SubmitAsync(MauiProgram.DefaultContext);
 				}
 				catch (ExecutionException ex) when (ex.Cause is GlideException)
 				{

@@ -35,11 +35,11 @@ namespace Microsoft.Maui.Essentials
 		public static Task<IEnumerable<Locale>> GetLocalesAsync() =>
 			Current.GetLocalesAsync();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync'][1]/Docs" />
 		public static Task SpeakAsync(string text, CancellationToken cancelToken = default) =>
 			SpeakAsync(text, default, cancelToken);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync'][2]/Docs" />
 		public static async Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
 		{
 			if (string.IsNullOrEmpty(text))

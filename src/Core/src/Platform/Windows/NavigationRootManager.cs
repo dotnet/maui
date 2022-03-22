@@ -43,7 +43,10 @@ namespace Microsoft.Maui.Platform
 
 		void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
 		{
-			_mauiContext.GetPlatformWindow().GetWindow()?.BackButtonClicked();
+			_mauiContext
+				.GetPlatformWindow()
+				.GetWindow()?
+				.BackButtonClicked();
 		}
 
 		public FrameworkElement RootView => _rootView;

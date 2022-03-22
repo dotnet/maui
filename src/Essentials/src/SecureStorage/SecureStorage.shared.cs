@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SecureStorage']/Docs" />
 	public static partial class SecureStorage
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='GetAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='GetAsync'][1]/Docs" />
 		public static Task<string> GetAsync(string key)
 		{
 			if (string.IsNullOrWhiteSpace(key))
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Essentials
 			return Current.GetAsync(key);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='SetAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='SetAsync'][0 and position()=0]/Docs" />
 		public static Task SetAsync(string key, string value)
 		{
 			if (string.IsNullOrWhiteSpace(key))
@@ -46,11 +46,11 @@ namespace Microsoft.Maui.Essentials
 			return Current.SetAsync(key, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='Remove']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='Remove'][1]/Docs" />
 		public static bool Remove(string key)
 			=> Current.Remove(key);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='RemoveAll']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='RemoveAll'][1]/Docs" />
 		public static void RemoveAll()
 			=> Current.RemoveAll();
 
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		internal static readonly string Alias = Preferences.GetPrivatePreferencesSharedName("preferences");
 #endif
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='GetAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='GetAsync'][2]/Docs" />
 		public Task<string> GetAsync(string key)
 		{
 			if (string.IsNullOrWhiteSpace(key))
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return PlatformGetAsync(key);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='SetAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='SetAsync'][0 and position()=1]/Docs" />
 		public Task SetAsync(string key, string value)
 		{
 			if (string.IsNullOrWhiteSpace(key))
@@ -132,11 +132,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return PlatformSetAsync(key, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='Remove']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='Remove'][2]/Docs" />
 		public bool Remove(string key)
 			=> PlatformRemove(key);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='RemoveAll']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='RemoveAll'][2]/Docs" />
 		public void RemoveAll()
 			=> PlatformRemoveAll();
 

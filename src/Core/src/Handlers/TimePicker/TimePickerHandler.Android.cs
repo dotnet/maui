@@ -8,9 +8,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
-		static Drawable? DefaultBackground;
-		static ColorStateList? DefaultTextColors;
-
 		MauiTimePicker? _timePicker;
 		AlertDialog? _dialog;
 
@@ -62,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 		// This is a Android-specific mapping
 		public static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateBackground(timePicker, DefaultBackground);
+			handler.PlatformView?.UpdateBackground(timePicker);
 		}
 
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
@@ -89,13 +86,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateTextColor(timePicker, DefaultTextColors);
-		}
-
-		static void SetupDefaults(MauiTimePicker platformView)
-		{
-			DefaultBackground = platformView.Background;
-			DefaultTextColors = platformView.TextColors;
+			handler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
 		void ShowPickerDialog()

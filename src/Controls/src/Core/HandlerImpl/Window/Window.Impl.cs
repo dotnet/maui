@@ -12,7 +12,7 @@ using Microsoft.Maui.Controls.Platform;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement, IFlowDirectionController
+	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Controls
 
 		public Window()
 		{
-			SetWindow(this);
 			_visualChildren = new List<IVisualTreeElement>();
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
@@ -69,6 +68,8 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(TitleProperty, value);
 		}
 
+		string? ITitledElement.Title => Title ?? (Page as Shell)?.Title;
+
 		public Page? Page
 		{
 			get => (Page?)GetValue(PageProperty);
@@ -88,6 +89,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler? Stopped;
 		public event EventHandler? Destroying;
 		public event EventHandler<BackgroundingEventArgs>? Backgrounding;
+		public event EventHandler<DisplayDensityChangedEventArgs>? DisplayDensityChanged;
 
 		protected virtual void OnCreated() { }
 		protected virtual void OnResumed() { }
@@ -96,6 +98,7 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnStopped() { }
 		protected virtual void OnDestroying() { }
 		protected virtual void OnBackgrounding(IPersistedState state) { }
+		protected virtual void OnDisplayDensityChanged(float displayDensity) { }
 
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		{
@@ -149,6 +152,8 @@ namespace Microsoft.Maui.Controls
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
 
+		internal bool IsActivated { get; private set; }
+
 		IFlowDirectionController FlowController => this;
 
 		public FlowDirection FlowDirection
@@ -198,6 +203,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
+
+		Window IWindowController.Window
+		{
+			get => this;
+			set => throw new InvalidOperationException("A window cannot set a window.");
+		}
 
 		IView IWindow.Content =>
 			Page ?? throw new InvalidOperationException("No page was set on the window.");
@@ -289,12 +300,14 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Activated()
 		{
+			IsActivated = true;
 			Activated?.Invoke(this, EventArgs.Empty);
 			OnActivated();
 		}
 
 		void IWindow.Deactivated()
 		{
+			IsActivated = false;
 			Deactivated?.Invoke(this, EventArgs.Empty);
 			OnDeactivated();
 		}
@@ -327,6 +340,19 @@ namespace Microsoft.Maui.Controls
 			OnBackgrounding(state);
 		}
 
+		void IWindow.DisplayDensityChanged(float displayDensity)
+		{
+			DisplayDensityChanged?.Invoke(this, new DisplayDensityChangedEventArgs(displayDensity));
+			OnDisplayDensityChanged(displayDensity);
+		}
+
+		float IWindow.RequestDisplayDensity()
+		{
+			var request = new DisplayDensityRequest();
+			var result = Handler?.InvokeWithResult(nameof(IWindow.RequestDisplayDensity), request);
+			return result ?? 1.0f;
+		}
+
 		FlowDirection IWindow.FlowDirection
 		{
 			get
@@ -345,6 +371,8 @@ namespace Microsoft.Maui.Controls
 				return _effectiveFlowDirection.ToFlowDirection();
 			}
 		}
+
+		public float DisplayDensity => ((IWindow)this).RequestDisplayDensity();
 
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
@@ -376,6 +404,9 @@ namespace Microsoft.Maui.Controls
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
 			}
 
+			if (oldPage is Shell shell)
+				shell.PropertyChanged += ShellPropertyChanged;
+
 			var newPage = newValue as Page;
 			if (newPage != null)
 			{
@@ -395,6 +426,9 @@ namespace Microsoft.Maui.Controls
 					OnPageHandlerChanged(newPage, EventArgs.Empty);
 			}
 
+			if (newPage is Shell newShell)
+				newShell.PropertyChanged += ShellPropertyChanged;
+
 			window?.Handler?.UpdateValue(nameof(IWindow.FlowDirection));
 
 			void OnPageHandlerChanged(object? sender, EventArgs e)
@@ -406,6 +440,12 @@ namespace Microsoft.Maui.Controls
 			void OnPageHandlerChanging(object? sender, HandlerChangingEventArgs e)
 			{
 				window.AlertManager.Unsubscribe();
+			}
+
+			void ShellPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == nameof(Shell.Title))
+					window?.Handler?.UpdateValue(nameof(ITitledElement.Title));
 			}
 		}
 
