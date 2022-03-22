@@ -21,19 +21,20 @@ namespace Microsoft.Maui.Controls.XamlC
 
 				yield return Create(Ldc_I4, parts.Length);
 				yield return Create(Newarr, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "RowDefinition")));
-				for(var i =0;i< parts.Length;i++){
-				        yield return Create(Dup);
+				for (var i = 0; i < parts.Length; i++)
+				{
+					yield return Create(Dup);
 					yield return Create(Ldc_I4, i);
 					foreach (var instruction in gridlengthconverter.ConvertFromString(parts[i], context, node))
 						yield return instruction;
 					yield return Create(Newobj, module.ImportCtorReference(
-						    type: ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "RowDefinition"), 
-						    parameterTypes: new[]{("Microsoft.Maui", "Microsoft.Maui", "GridLength")}));
+							type: ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "RowDefinition"),
+							parameterTypes: new[] { ("Microsoft.Maui", "Microsoft.Maui", "GridLength") }));
 					yield return Create(Stelem_Ref);
 				}
 				yield return Create(Newobj, module.ImportCtorReference(
-					    type: ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "RowDefinitionCollection"),
-					    paramCount: 1)); 
+						type: ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "RowDefinitionCollection"),
+						paramCount: 1));
 				yield break;
 
 			}
