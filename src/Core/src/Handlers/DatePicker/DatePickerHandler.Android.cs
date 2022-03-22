@@ -56,8 +56,6 @@ namespace Microsoft.Maui.Handlers
 				if (VirtualView != null)
 				{
 					VirtualView.Date = e.Date;
-
-					VirtualView.IsFocused = false;
 				}
 			}, year, month, day);
 

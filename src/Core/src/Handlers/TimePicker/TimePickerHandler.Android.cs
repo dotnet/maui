@@ -99,18 +99,12 @@ namespace Microsoft.Maui.Handlers
 		// to be lost). Not useful until we have orientation changed events.
 		void ShowPickerDialog(int hour, int minute)
 		{
-			if (VirtualView != null)
-				VirtualView.IsFocused = true;
-
 			_dialog = CreateTimePickerDialog(hour, minute);
 			_dialog.Show();
 		}
 
 		void HidePickerDialog()
 		{
-			if (VirtualView != null)
-				VirtualView.IsFocused = false;
-
 			if (_dialog != null)
 			{
 				_dialog.Hide();
