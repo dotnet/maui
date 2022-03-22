@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 				_tabBarAppearance.ConfigureWithDefaultBackground();
 			}
 
-			var effectiveBarColor = (barBackgroundColor == null) ? defaultBarTextColor : barBackgroundColor.ToPlatform();
+			var effectiveBarColor = (barBackgroundColor == null) ? defaultBarColor : barBackgroundColor.ToPlatform();
 			// Set BarBackgroundColor
 			if (effectiveBarColor != null)
 			{
