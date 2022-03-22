@@ -10,6 +10,7 @@ using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class DatePickerRendererBase<TControl> : ViewRenderer<DatePicker, TControl>, IPickerRenderer
 		where TControl : global::Android.Views.View
 	{
@@ -205,6 +206,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	}
 
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class DatePickerRenderer : DatePickerRendererBase<EditText>
 	{
 		TextColorSwitcher _textColorSwitcher;

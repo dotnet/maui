@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Controls.Handlers
 				new PropertyMapper<ShellItem, ShellItemHandler>(ElementMapper)
 				{
 					[nameof(ShellItem.CurrentItem)] = MapCurrentItem,
-					[Shell.SearchHandlerProperty.PropertyName] = MapSearchHandler
+					[Shell.SearchHandlerProperty.PropertyName] = MapSearchHandler,
+					[Shell.TabBarIsVisibleProperty.PropertyName] = MapTabBarIsVisible
 				};
 
 		public static CommandMapper<ShellItem, ShellItemHandler> CommandMapper =
@@ -59,6 +60,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			platformView.SelectionChanged += OnNavigationTabChanged;
 		}
 
+		protected override void DisconnectHandler(MauiNavigationView platformView)
+		{
+			base.DisconnectHandler(platformView);
+			platformView.SelectionChanged -= OnNavigationTabChanged;
+		}
+
 		public override void SetVirtualView(Maui.IElement view)
 		{
 			if (view.Parent is IShellController controller)
@@ -98,16 +105,17 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			List<BaseShellItem> items;
 
+			IShellItemController shellItemController = VirtualView;
 			if (Routing.IsImplicit(VirtualView))
 			{
 				items = new List<BaseShellItem>(((IShellSectionController)VirtualView.CurrentItem).GetItems());
 			}
 			else
 			{
-				items = new List<BaseShellItem>(((IShellItemController)VirtualView).GetItems());
+				items = new List<BaseShellItem>(shellItemController.GetItems());
 			}
 
-			bool hasTabs = items.Count > 1;
+			bool hasTabs = shellItemController.ShowTabs;
 			object? selectedItem = null;
 
 			_mainLevelTabs.SyncItems(items, (navItem, baseShellItem) =>
@@ -248,11 +256,24 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-
-		
-
 		public static void MapSearchHandler(ShellItemHandler handler, ShellItem item)
 		{
+		}
+
+		public static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
+		{
+			IShellItemController shellItemController = item;
+
+			if(shellItemController.ShowTabs)
+			{
+				handler.PlatformView.PaneDisplayMode 
+					= NavigationViewPaneDisplayMode.Top;
+			}
+			else
+			{
+				handler.PlatformView.PaneDisplayMode
+					= NavigationViewPaneDisplayMode.LeftMinimal;
+			}
 		}
 
 		public static void MapCurrentItem(ShellItemHandler handler, ShellItem item)

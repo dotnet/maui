@@ -18,6 +18,7 @@ using NativeImage = AppKit.NSImage;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+	[System.Obsolete]
 	public static class ImageElementManager
 	{
 		public static void Init(IImageVisualElementRenderer renderer)

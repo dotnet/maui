@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = TrimmerConstants.NativeBindingService)]
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			var view = target as UIView;
 			if (view == null)
 				return false;
@@ -25,6 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public bool TrySetBinding(object target, BindableProperty property, BindingBase binding)
 		{
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			var view = target as UIView;
 			if (view == null)
 				return false;
@@ -34,6 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public bool TrySetValue(object target, BindableProperty property, object value)
 		{
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			var view = target as UIView;
 			if (view == null)
 				return false;

@@ -1,13 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Text;
+#nullable disable
 using Android.App;
 using Android.Content;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Platform
 {
 	public static class ActivityResultCallbackRegistry
 	{
-		static readonly ConcurrentDictionary<int, Action<Result, Intent>> s_activityResultCallbacks =
+		static readonly ConcurrentDictionary<int, Action<Result, Intent>> ActivityResultCallbacks =
 			new ConcurrentDictionary<int, Action<Result, Intent>>();
 
 		static int s_nextActivityResultCallbackKey;
@@ -16,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			Action<Result, Intent> callback;
 
-			if (s_activityResultCallbacks.TryGetValue(requestCode, out callback))
+			if (ActivityResultCallbacks.TryGetValue(requestCode, out callback))
 			{
 				callback(resultCode, data);
 			}
@@ -26,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			int requestCode = s_nextActivityResultCallbackKey;
 
-			while (!s_activityResultCallbacks.TryAdd(requestCode, callback))
+			while (!ActivityResultCallbacks.TryAdd(requestCode, callback))
 			{
 				s_nextActivityResultCallbackKey += 1;
 				requestCode = s_nextActivityResultCallbackKey;
@@ -40,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		internal static void UnregisterActivityResultCallback(int requestCode)
 		{
 			Action<Result, Intent> callback;
-			s_activityResultCallbacks.TryRemove(requestCode, out callback);
+			ActivityResultCallbacks.TryRemove(requestCode, out callback);
 		}
 	}
 }

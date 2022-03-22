@@ -41,6 +41,9 @@ namespace Microsoft.Maui.Controls
 			// aapt resource value: 0x7F030007
 			public static int actionBarSize = 2130903047;
 
+			// aapt resource value: 0x7F030066
+			public static int bottomNavigationViewStyle = 2130903142;
+
 			// aapt resource value: 0x7F0303F1
 			public static int toolbarStyle = 2130904049;
 
@@ -112,9 +115,6 @@ namespace Microsoft.Maui.Controls
 		{
 			// aapt resource value: 0x7F0B002E
 			public static int fragment_backstack = 2131427374;
-
-			// aapt resource value: 0x7F0B001C
-			public static int bottomtablayout = 2131427356;
 
 			// aapt resource value: 0x7F0B002F
 			public static int flyoutcontent = 2131427375;
