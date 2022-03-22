@@ -3,7 +3,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:uwp="using:Microsoft.Maui.Platform">
 
-    <Style TargetType="uwp:MauiComboBox">
+    <!--<Style TargetType="uwp:MauiComboBox">
         <Setter Property="Padding" Value="12,5,0,7" />
         <Setter Property="MinWidth" Value="{ThemeResource ComboBoxThemeMinWidth}" />
         <Setter Property="Foreground" Value="{ThemeResource ComboBoxForeground}" />
@@ -250,7 +250,7 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>
+    </Style>-->
 
     <DataTemplate x:Key="ComboBoxHeader">
         <TextBlock
@@ -260,7 +260,7 @@
     </DataTemplate>
 
 
-    <Style TargetType="ComboBoxItem" x:Key="PickerItemContainer">
+    <!--<Style TargetType="ComboBoxItem" x:Key="PickerItemContainer">
         <Setter Property="Foreground" Value="{ThemeResource ComboBoxItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource ComboBoxItemBackground}" />
         <Setter Property="TabNavigation" Value="Local" />
@@ -443,5 +443,5 @@
     <DataTemplate x:Key="PickerItem">
         <TextBlock Text="{Binding Path=Content, ElementName=ContentPresenter}" 
                    CharacterSpacing="{Binding Path=CharacterSpacing, ElementName=ContentPresenter}" />
-    </DataTemplate>
+    </DataTemplate>-->
 </ResourceDictionary> 
