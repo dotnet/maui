@@ -5,6 +5,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Layouts
 {
+	// TODO ezhart Looks like UWP flips columns in RTL mode
+	// So we need to do that. Need some GLM tests for that.
+
 	public class GridLayoutManager : LayoutManager
 	{
 		GridStructure? _gridStructure;
