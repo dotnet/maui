@@ -30,6 +30,6 @@ namespace Microsoft.AspNetCore.Components.WebView
 		///
 		/// Defaults to opening links in an external browser.
 		/// </summary>
-		public ExternalLinkNavigationPolicy ExternalLinkNavigationPolicy { get; set; } = ExternalLinkNavigationPolicy.OpenInExternalBrowser;
+		public ExternalLinkNavigationPolicy ExternalLinkNavigationPolicy { get; set; } = ExternalLinkNavigationPolicy.OpenExternally;
 	}
 }

@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					var callbackArgs = new ExternalLinkNavigationEventArgs(uri);
 					_webViewHandler.ExternalNavigationStarting?.Invoke(callbackArgs);
 
-					if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
+					if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenExternally)
 					{
 						try
 						{

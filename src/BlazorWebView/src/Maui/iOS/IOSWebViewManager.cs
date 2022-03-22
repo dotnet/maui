@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (navigationAction.TargetFrame is null)
 				{
 					// Open in a new browser window regardless of ExternalLinkNavigationPolicy
-					callbackArgs.ExternalLinkNavigationPolicy = ExternalLinkNavigationPolicy.OpenInExternalBrowser;
+					callbackArgs.ExternalLinkNavigationPolicy = ExternalLinkNavigationPolicy.OpenExternally;
 				}
 				else if (callbackArgs.Uri.Host == BlazorWebView.AppHostAddress)
 				{
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				var url = new NSUrl(callbackArgs.Uri.ToString());
 
-				if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
+				if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenExternally)
 				{
 					UIApplication.SharedApplication.OpenUrl(url);
 				}

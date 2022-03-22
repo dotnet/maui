@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				_blazorWebViewHandler.ExternalNavigationStarting?.Invoke(callbackArgs);
 #endif
 
-				if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
+				if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenExternally)
 				{
 					LaunchUriInExternalBrowser(uri);
 				}

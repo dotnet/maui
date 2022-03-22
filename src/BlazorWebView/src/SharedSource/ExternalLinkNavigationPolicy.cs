@@ -9,10 +9,10 @@
 	public enum ExternalLinkNavigationPolicy
 	{
 		/// <summary>
-		/// Allows navigation to external links using the system default browser.
+		/// Allows navigation to external links using an app determined by the system.
 		/// This is the default navigation policy.
 		/// </summary>
-		OpenInExternalBrowser,
+		OpenExternally,
 
 		/// <summary>
 		/// Allows navigation to external links within the Blazor WebView.
