@@ -1,10 +1,10 @@
-<Type Name="WeakEventManager" FullName="Microsoft.Maui.Controls.WeakEventManager">
+<Type Name="WeakEventManager" FullName="Microsoft.Maui.WeakEventManager">
   <TypeSignature Language="C#" Value="public class WeakEventManager" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit WeakEventManager extends System.Object" />
-  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.WeakEventManager" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.WeakEventManager" />
   <TypeSignature Language="F#" Value="type WeakEventManager = class" />
   <AssemblyInfo>
-    <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+    <AssemblyName>Microsoft.Maui.Core</AssemblyName>
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
@@ -19,10 +19,10 @@
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public WeakEventManager ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.WeakEventManager.#ctor" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.WeakEventManager.#ctor" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters />
@@ -34,11 +34,11 @@
     <Member MemberName="AddEventHandler">
       <MemberSignature Language="C#" Value="public void AddEventHandler (EventHandler handler, string eventName = default);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void AddEventHandler(class System.EventHandler handler, string eventName) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.WeakEventManager.AddEventHandler(System.EventHandler,System.String)" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.WeakEventManager.AddEventHandler(System.EventHandler,System.String)" />
       <MemberSignature Language="F#" Value="member this.AddEventHandler : EventHandler * string -&gt; unit" Usage="weakEventManager.AddEventHandler (handler, eventName)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
@@ -64,11 +64,11 @@
     <Member MemberName="AddEventHandler&lt;TEventArgs&gt;">
       <MemberSignature Language="C#" Value="public void AddEventHandler&lt;TEventArgs&gt; (EventHandler&lt;TEventArgs&gt; handler, string eventName = default) where TEventArgs : EventArgs;" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void AddEventHandler&lt;(class System.EventArgs) TEventArgs&gt;(class System.EventHandler`1&lt;!!TEventArgs&gt; handler, string eventName) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.WeakEventManager.AddEventHandler``1(System.EventHandler{``0},System.String)" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.WeakEventManager.AddEventHandler``1(System.EventHandler{``0},System.String)" />
       <MemberSignature Language="F#" Value="member this.AddEventHandler : EventHandler&lt;'EventArgs (requires 'EventArgs :&gt; EventArgs)&gt; * string -&gt; unit (requires 'EventArgs :&gt; EventArgs)" Usage="weakEventManager.AddEventHandler (handler, eventName)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
@@ -102,11 +102,11 @@
     <Member MemberName="HandleEvent">
       <MemberSignature Language="C#" Value="public void HandleEvent (object sender, object args, string eventName);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void HandleEvent(object sender, object args, string eventName) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.WeakEventManager.HandleEvent(System.Object,System.Object,System.String)" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.WeakEventManager.HandleEvent(System.Object,System.Object,System.String)" />
       <MemberSignature Language="F#" Value="member this.HandleEvent : obj * obj * string -&gt; unit" Usage="weakEventManager.HandleEvent (sender, args, eventName)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
@@ -128,11 +128,11 @@
     <Member MemberName="RemoveEventHandler">
       <MemberSignature Language="C#" Value="public void RemoveEventHandler (EventHandler handler, string eventName = default);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void RemoveEventHandler(class System.EventHandler handler, string eventName) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.WeakEventManager.RemoveEventHandler(System.EventHandler,System.String)" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.WeakEventManager.RemoveEventHandler(System.EventHandler,System.String)" />
       <MemberSignature Language="F#" Value="member this.RemoveEventHandler : EventHandler * string -&gt; unit" Usage="weakEventManager.RemoveEventHandler (handler, eventName)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
@@ -158,11 +158,11 @@
     <Member MemberName="RemoveEventHandler&lt;TEventArgs&gt;">
       <MemberSignature Language="C#" Value="public void RemoveEventHandler&lt;TEventArgs&gt; (EventHandler&lt;TEventArgs&gt; handler, string eventName = default) where TEventArgs : EventArgs;" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void RemoveEventHandler&lt;(class System.EventArgs) TEventArgs&gt;(class System.EventHandler`1&lt;!!TEventArgs&gt; handler, string eventName) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.WeakEventManager.RemoveEventHandler``1(System.EventHandler{``0},System.String)" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.WeakEventManager.RemoveEventHandler``1(System.EventHandler{``0},System.String)" />
       <MemberSignature Language="F#" Value="member this.RemoveEventHandler : EventHandler&lt;'EventArgs (requires 'EventArgs :&gt; EventArgs)&gt; * string -&gt; unit (requires 'EventArgs :&gt; EventArgs)" Usage="weakEventManager.RemoveEventHandler (handler, eventName)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>

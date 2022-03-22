@@ -428,6 +428,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_flyoutAnimation.StartAnimation();
 				View.LayoutIfNeeded();
 			}
+			else if (_flyoutAnimation == null)
+			{
+				FlyoutTransition.LayoutViews(View.Bounds, IsOpen ? 1 : 0, Flyout.ViewController.View, Detail.View, _flyoutBehavior);
+				UpdateTapoffView();
+
+				if (TapoffView != null)
+				{
+					TapoffView.Layer.Opacity = IsOpen ? 1 : 0;
+				}
+			}
 
 			void UpdateTapoffView()
 			{

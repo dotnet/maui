@@ -44,9 +44,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+			return
+				new SizeRequest(this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint),
+				MinimumSize());
 		}
 
 		public override void SizeToFit()

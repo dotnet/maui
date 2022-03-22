@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls.Internals;
@@ -9,6 +10,33 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Hosting
 {
+	internal static class CompatibilityCheck
+	{
+		// This code is currently here because RelativeLayout is still in Controls
+		// I ran into issues with XamlC and moving RelativeLayout to compatibility
+		// If that issue gets resolved then we can move this back to Compatibility
+		static bool _compatibilityEnabled = false;
+		internal static void CheckForCompatibility([CallerMemberName] string memberName = "")
+		{
+			if (!_compatibilityEnabled)
+			{
+				throw new InvalidOperationException(
+					$"{memberName} is currently not enabled. To enable compatibility features you will need to call add `builder.UseMauiCompatibility()`.\n\n" +
+					"MauiApp\n" +
+					"	.CreateBuilder()\n" +
+					"	.UseMauiApp<TApp>()\n" +
+					"	.UseMauiCompatibility();\n"
+					);
+			}
+		}
+
+		internal static void ResetCompatibilityCheck() =>
+			_compatibilityEnabled = false;
+
+		internal static void UseCompatibility() => 
+			_compatibilityEnabled = true;
+	}
+	
 	public static partial class AppHostBuilderExtensions
 	{
 		public static MauiAppBuilder ConfigureEffects(this MauiAppBuilder builder, Action<IEffectsBuilder> configureDelegate)

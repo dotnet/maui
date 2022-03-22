@@ -6,6 +6,7 @@ using AndroidX.RecyclerView.Widget;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	internal class SimpleViewHolder : RecyclerView.ViewHolder
 	{
 		public SimpleViewHolder(global::Android.Views.View itemView, View rootElement) : base(itemView)

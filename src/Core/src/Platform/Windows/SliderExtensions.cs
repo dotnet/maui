@@ -32,10 +32,12 @@ namespace Microsoft.Maui.Platform
 				nativeSlider.Value = slider.Value;
 		}
 
-		public static void UpdateMinimumTrackColor(this MauiSlider platformSlider, ISlider slider, Brush? defaultMinimumTrackColor)
+		public static void UpdateMinimumTrackColor(this MauiSlider platformSlider, ISlider slider)
 		{
-			var brush = slider.MinimumTrackColor.IsDefault() ? defaultMinimumTrackColor : slider.MinimumTrackColor.ToPlatform();
+			if (slider.MinimumTrackColor == null)
+				return;
 
+			var brush = slider.MinimumTrackColor.ToPlatform();
 
 			platformSlider.Resources["SliderTrackValueFill"] = brush;
 			platformSlider.Resources["SliderTrackValueFilllPointerOver"] = brush;
@@ -45,9 +47,12 @@ namespace Microsoft.Maui.Platform
 			platformSlider.Foreground = brush;
 		}
 
-		public static void UpdateMaximumTrackColor(this MauiSlider platformSlider, ISlider slider, Brush? defaultMaximumTrackColor)
+		public static void UpdateMaximumTrackColor(this MauiSlider platformSlider, ISlider slider)
 		{
-			var brush = slider.MaximumTrackColor.IsDefault() ? defaultMaximumTrackColor : slider.MaximumTrackColor.ToPlatform();
+			if (slider.MaximumTrackColor == null)
+				return;
+
+			var brush = slider.MaximumTrackColor.ToPlatform();
 
 			platformSlider.Resources["SliderTrackFill"] = brush;
 			platformSlider.Resources["SliderTrackFillPointerOver"] = brush;
@@ -57,7 +62,7 @@ namespace Microsoft.Maui.Platform
 			platformSlider.BorderBrush = brush;
 		}
 
-		public static void UpdateThumbColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultThumbColor)
+		public static void UpdateThumbColor(this MauiSlider nativeSlider, ISlider slider)
 		{
 			var thumb = nativeSlider?.Thumb;
 
@@ -65,10 +70,9 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			nativeSlider.ThumbColorOver = slider.ThumbColor.ToPlatform();
-			BrushHelpers.UpdateColor(slider.ThumbColor, ref defaultThumbColor,
-				() => thumb.Background, brush => thumb.Background = brush);
-    }
-    
+			thumb.Background = slider.ThumbColor.ToPlatform();
+		}
+
 		public static async Task UpdateThumbImageSourceAsync(this MauiSlider nativeSlider, ISlider slider, IImageSourceServiceProvider? provider)
 		{
 			var thumbImageSource = slider.ThumbImageSource;

@@ -160,27 +160,21 @@ namespace Microsoft.Maui.Platform
 				platformView.UpdateBorderStroke(border);
 		}
 
-		public static void UpdateBackground(this AView platformView, IView view, Drawable? defaultBackground = null) =>
-			platformView.UpdateBackground(view.Background, defaultBackground);
+		public static void UpdateBackground(this AView platformView, IView view) =>
+			platformView.UpdateBackground(view.Background);
 
-		public static void UpdateBackground(this AView platformView, Paint? background, Drawable? defaultBackground = null)
+		public static void UpdateBackground(this AView platformView, Paint? background)
 		{
-			// Remove previous background gradient if any
-			if (platformView.Background is MauiDrawable mauiDrawable)
-			{
-				platformView.Background = null;
-				mauiDrawable.Dispose();
-			}
-
 			var paint = background;
 
-			if (paint.IsNullOrEmpty())
+			if (!paint.IsNullOrEmpty())
 			{
-				if (defaultBackground != null)
-					platformView.Background = defaultBackground;
-			}
-			else
-			{
+				// Remove previous background gradient if any
+				if (platformView.Background is MauiDrawable mauiDrawable)
+				{
+					platformView.Background = null;
+					mauiDrawable.Dispose();
+				}
 				if (paint is SolidPaint solidPaint)
 				{
 					if (solidPaint.Color is Color backgroundColor)

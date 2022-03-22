@@ -15,6 +15,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Swip
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SwipeViewRenderer : ViewRenderer<SwipeView, UIView>
 	{
 		const float MinimumOpenSwipeThresholdPercentage = 0.15f; // 15%
