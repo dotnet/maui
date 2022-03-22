@@ -47,7 +47,7 @@ At this point we would love for you to include the reproduction.
 * Try to remove some code or make small changes to see how that influences the issue you're seeing. Remove any code that is not needed to reproduce the issue. This is noise and will interfere with getting to a cause and solution.
 * Put the code on a GitHub repository and include that link in the issue that you're opening. 
 
-**Note: we can't except any zip files attached to the issue.** If we need the code in a zip, we can get that from the GitHub repository. This will also make it easier to collaborate. If we think we spot something that doesn't look right, we can open a PR on your repro repo (😬) and you can easily see the differences.
+**Note: we can't accept any zip files attached to the issue.** If we need the code in a zip, we can get that from the GitHub repository. This will also make it easier to collaborate. If we think we spot something that doesn't look right, we can open a PR on your repro repo (😬) and you can easily see the differences.
 
 ## Big don'ts!
 - Never put any sensitive information in your code. No API keys, credentials, personal information, etc.

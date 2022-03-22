@@ -5,6 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete]
 	internal class PlatformRenderer : UIViewController
 	{
 		bool _disposed;

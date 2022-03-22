@@ -3,6 +3,7 @@
   <Import Condition="'$(SampleProject)' == 'true' or '$(CI)' != 'true' " Project="eng\Versions.dev.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true'" Project="eng\Git.Build.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true' " Project="eng\Versions.targets" />
+  <Import Condition="'$(SampleProject)' != 'true' and '$(IsTestProject)' != 'true'" Project="eng\BannedApis.targets" />
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\Microsoft.Extensions.targets" />
 
@@ -59,7 +60,7 @@
 
   <!-- Until we get a new enough dotnet -->
   <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
-    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.18362.18" TargetingPackVersion="10.0.18362.18" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.18362.22" TargetingPackVersion="10.0.18362.22" />
   </ItemGroup>
 
 </Project>

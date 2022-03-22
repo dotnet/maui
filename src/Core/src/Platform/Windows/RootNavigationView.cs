@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Platform
 			PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 			IsTitleBarAutoPaddingEnabled = false;
 			IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+
 			RegisterPropertyChangedCallback(IsBackButtonVisibleProperty, BackButtonVisibleChanged);
 			RegisterPropertyChangedCallback(OpenPaneLengthProperty, PaneLengthPropertyChanged);
 			RegisterPropertyChangedCallback(HeaderProperty, HeaderPropertyChanged);
@@ -62,8 +63,8 @@ namespace Microsoft.Maui.Platform
 
 					if (HeaderControl != null)
 					{
-						HeaderControl.ContentGrid.Margin = new UI.Xaml.Thickness(0, 0, 4, 0);
-						HeaderControl.TextBlockBorder.VerticalAlignment = VerticalAlignment.Center;
+						HeaderControl.ContentGridMargin = new UI.Xaml.Thickness(0, 0, 4, 0);
+						HeaderControl.TextBlockBorderVerticalAlignment = VerticalAlignment.Center;
 					}
 				}
 				else if (PaneFooter == HeaderControl || Header == null)
@@ -82,8 +83,8 @@ namespace Microsoft.Maui.Platform
 
 					if (HeaderControl != null)
 					{
-						HeaderControl.ContentGrid.Margin = new UI.Xaml.Thickness(0, 0, 0, 0);
-						HeaderControl.TextBlockBorder.VerticalAlignment = VerticalAlignment.Top;
+						HeaderControl.ContentGridMargin = new UI.Xaml.Thickness(0, 0, 0, 0);
+						HeaderControl.TextBlockBorderVerticalAlignment = VerticalAlignment.Top;
 					}
 				}
 			}
@@ -100,6 +101,13 @@ namespace Microsoft.Maui.Platform
 			isBackButtonVisible.Mode = BindingMode.OneWay;
 			isBackButtonVisible.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 			BindingOperations.SetBinding(this, IsBackButtonVisibleProperty, isBackButtonVisible);
+
+			Binding isBackEnabled = new Binding();
+			isBackEnabled.Source = HeaderControl;
+			isBackEnabled.Path = new PropertyPath("IsBackEnabled");
+			isBackEnabled.Mode = BindingMode.OneWay;
+			isBackEnabled.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+			BindingOperations.SetBinding(this, IsBackEnabledProperty, isBackEnabled);
 
 			var HeaderContent = (ContentControl)GetTemplateChild("HeaderContent");
 
@@ -131,7 +139,9 @@ namespace Microsoft.Maui.Platform
 			if (IsBackButtonVisible == NavigationViewBackButtonVisible.Auto)
 				IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
 
-			IsBackEnabled = (IsBackButtonVisible == NavigationViewBackButtonVisible.Visible);
+			IsBackEnabled = (IsBackButtonVisible == NavigationViewBackButtonVisible.Visible) &&
+				(_headerControl?.IsBackEnabled ?? true);
+
 			UpdateFlyoutPanelMargin();
 			UpdateTopNavAreaMargin();
 		}

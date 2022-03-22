@@ -2,6 +2,7 @@
 {
 	public static class TestCategory
 	{
+		public const string Behavior = "Behavior";
 		public const string Button = "Button";
 		public const string Dispatcher = "Dispatcher";
 		public const string Editor = "Editor";
@@ -16,5 +17,6 @@
 		public const string Shell = "Shell";
 		public const string TabbedPage = "TabbedPage";
 		public const string VisualElement = "VisualElement";
+		public const string Window = "Window";
 	}
 }

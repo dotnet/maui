@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+	[Obsolete]
 	public class VisualElementPackager : IDisposable
 	{
 		VisualElement _element;

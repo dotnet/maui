@@ -4,10 +4,10 @@ using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="Type[@FullName='Microsoft.Maui.Controls.Command']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="Type[@FullName='Microsoft.Maui.Controls.Command' and position()=0]/Docs" />
 	public sealed class Command<T> : Command
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public Command(Action<T> execute)
 			: base(o =>
 			{
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public Command(Action<T> execute, Func<T, bool> canExecute)
 			: base(o =>
 			{
@@ -60,14 +60,14 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="Type[@FullName='Microsoft.Maui.Controls.Command']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="Type[@FullName='Microsoft.Maui.Controls.Command' and position()=1]/Docs" />
 	public class Command : ICommand
 	{
 		readonly Func<object, bool> _canExecute;
 		readonly Action<object> _execute;
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public Command(Action<object> execute)
 		{
 			if (execute == null)
@@ -76,14 +76,14 @@ namespace Microsoft.Maui.Controls
 			_execute = execute;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public Command(Action execute) : this(o => execute())
 		{
 			if (execute == null)
 				throw new ArgumentNullException(nameof(execute));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][4]/Docs" />
 		public Command(Action<object> execute, Func<object, bool> canExecute) : this(execute)
 		{
 			if (canExecute == null)
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 			_canExecute = canExecute;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public Command(Action execute, Func<bool> canExecute) : this(o => execute(), o => canExecute())
 		{
 			if (execute == null)

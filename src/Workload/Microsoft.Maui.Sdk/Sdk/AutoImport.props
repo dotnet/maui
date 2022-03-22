@@ -1,6 +1,12 @@
 <!-- all <ItemGroup/>'s must check if $(EnableDefaultMauiItems) is true -->
 <Project>
 
+  <ItemDefinitionGroup>
+    <MauiXaml>
+      <SubType>Designer</SubType>
+    </MauiXaml>
+  </ItemDefinitionGroup>
+
   <ItemGroup Condition=" '$(UseMaui)' == 'true' and ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') ">
     <!-- %(Sdk) is only here if something later needs to identify these -->
     <Using Include="Microsoft.Extensions.DependencyInjection" Sdk="Maui" />

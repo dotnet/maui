@@ -10,6 +10,13 @@ stages:
         pool:  $(HostedWinVS2019)
         steps:
 
+          - task: PowerShell@2
+            displayName: "Update LocProject.json"
+            inputs:
+              targetType: 'filePath'
+              filePath: $(Build.SourcesDirectory)\eng\automation\scripts\update-locproject.ps1
+              arguments: -SourcesDirectory "$(Build.SourcesDirectory)" -LocProjectPath "$(Build.SourcesDirectory)\eng\automation\LocProject.json"
+
           - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
             displayName: 'Localization Build'
             env:

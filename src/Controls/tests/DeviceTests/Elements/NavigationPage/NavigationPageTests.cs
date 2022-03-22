@@ -28,7 +28,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
 		public async Task BackButtonVisibilityChangesWithPushPop()
 		{
@@ -75,6 +74,22 @@ namespace Microsoft.Maui.DeviceTests
 				NavigationPage.SetHasNavigationBar(navPage.CurrentPage, true);
 				Assert.True(IsNavigationBarVisible(handler));
 				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "NavigationBar Removes When MainPage Set To ContentPage")]
+		public async Task NavigationBarRemovesWhenMainPageSetToContentPage()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage());
+			var window = new Window(navPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
+			{
+				var contentPage = new ContentPage();
+				window.Page = contentPage;
+				await OnLoadedAsync(contentPage);
+				Assert.False(IsNavigationBarVisible(handler));
 			});
 		}
 

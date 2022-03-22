@@ -9,6 +9,7 @@ using static Microsoft.Maui.Controls.IndicatorView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class IndicatorViewRenderer : ViewRenderer<IndicatorView, UIView>
 	{
 		UIColor _defaultPagesIndicatorTintColor;

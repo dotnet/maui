@@ -5,12 +5,12 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Placemark']/Docs" />
 	public class Placemark
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public Placemark()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public Placemark(Placemark placemark)
 		{
 			if (placemark == null)

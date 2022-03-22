@@ -26,6 +26,7 @@ using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class TabbedPageRenderer : VisualElementRenderer<TabbedPage>,
 #pragma warning disable CS0618 // Type or member is obsolete
 		TabLayout.IOnTabSelectedListener,

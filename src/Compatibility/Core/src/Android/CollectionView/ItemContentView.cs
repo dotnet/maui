@@ -5,6 +5,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	public class ItemContentView : ViewGroup
 	{
 		protected IVisualElementRenderer Content;

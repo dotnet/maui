@@ -37,7 +37,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public ActivationFlags Flags;
 	}
 
-	public class FormsAppCompatActivity : AppCompatActivity, IDeviceInfoProvider
+	[System.Obsolete]
+	class FormsAppCompatActivity : AppCompatActivity, IDeviceInfoProvider
 	{
 		public delegate bool BackButtonPressedEventHandler(object sender, EventArgs e);
 

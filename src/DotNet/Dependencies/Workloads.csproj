@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-$(DotNetMonoManifestVersionBand)"   Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Manifest-$(DotNetEmscriptenManifestVersionBand)" Version="[$(MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Manifest-$(DotNetEmscriptenManifestVersionBand)" Version="[$(MicrosoftNETWorkloadEmscriptenPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-$(DotNetAndroidManifestVersionBand)"    Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-$(DotNetMaciOSManifestVersionBand)" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-$(DotNetMaciOSManifestVersionBand)"         Version="[$(MicrosoftiOSSdkPackageVersion)]" />

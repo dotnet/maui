@@ -20,6 +20,11 @@
                 Text="TextColor"
                 Style="{StaticResource Headline}"/>
             <DatePicker TextColor="Red"/>
+            <Label      
+                Text="Format"
+                Style="{StaticResource Headline}"/>
+            <DatePicker
+                Format="yyyy/MM/dd" />    
         </VerticalStackLayout>
     </views:BasePage.Content>               
 </views:BasePage>

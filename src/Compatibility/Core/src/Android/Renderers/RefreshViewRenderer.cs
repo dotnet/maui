@@ -16,6 +16,7 @@ using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class RefreshViewRenderer : SwipeRefreshLayout, IVisualElementRenderer, IEffectControlProvider, SwipeRefreshLayout.IOnRefreshListener
 	{
 		bool _isDisposed;

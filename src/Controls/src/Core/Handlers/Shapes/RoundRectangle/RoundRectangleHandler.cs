@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class RoundRectangleHandler : ShapeViewHandler
 	{
-		public static IPropertyMapper<RoundRectangle, RoundRectangleHandler> RoundRectangleMapper = new PropertyMapper<RoundRectangle, RoundRectangleHandler>(Mapper)
+		public static IPropertyMapper<RoundRectangle, IShapeViewHandler> RoundRectangleMapper = new PropertyMapper<RoundRectangle, IShapeViewHandler>(Mapper)
 		{
 			[nameof(RoundRectangle.CornerRadius)] = MapCornerRadius
 		};

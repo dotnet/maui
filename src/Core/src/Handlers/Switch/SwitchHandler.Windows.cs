@@ -6,14 +6,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, ToggleSwitch>
 	{
-		WResourceDictionary? _originalResources;
-
 		protected override ToggleSwitch CreatePlatformView() => new ToggleSwitch();
-
-		void SetupDefaults(ToggleSwitch platformView)
-		{
-			_originalResources = platformView?.CloneResources();
-		}
 
 		public static void MapIsOn(ISwitchHandler handler, ISwitch view)
 		{
@@ -23,13 +16,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTrackColor(ISwitchHandler handler, ISwitch view)
 		{
 			if (handler is SwitchHandler platformHandler)
-				handler.PlatformView?.UpdateTrackColor(view, platformHandler._originalResources);
+				handler.PlatformView?.UpdateTrackColor(view);
 		}
 
 		public static void MapThumbColor(ISwitchHandler handler, ISwitch view)
 		{
 			if (handler is SwitchHandler platformHandler)
-				handler.PlatformView?.UpdateThumbColor(view, platformHandler._originalResources);
+				handler.PlatformView?.UpdateThumbColor(view);
 		}
 
 		protected override void DisconnectHandler(ToggleSwitch platformView)
@@ -41,7 +34,6 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(ToggleSwitch platformView)
 		{
 			base.ConnectHandler(platformView);
-			SetupDefaults(platformView);
 			platformView.Toggled += OnToggled;
 		}
 

@@ -9,9 +9,12 @@ using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(Issue12372Button), typeof(_12372CustomRenderer))]
+#pragma warning restore CS0612 // Type or member is obsolete
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers
 {
+	[System.Obsolete]
 	public class _12372CustomRenderer : ButtonRenderer
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Button> args)

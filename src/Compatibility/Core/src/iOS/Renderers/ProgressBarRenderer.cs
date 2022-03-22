@@ -7,6 +7,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, UIProgressView>
 	{
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]

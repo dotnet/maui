@@ -37,7 +37,7 @@
       <_VersionsToReplace Include="MicrosoftMacCatalystSdkPackageVersion" />
       <_VersionsToReplace Include="MicrosoftmacOSSdkPackageVersion" />
       <_VersionsToReplace Include="MicrosofttvOSSdkPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion" />
+      <_VersionsToReplace Include="MicrosoftNETWorkloadEmscriptenPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreAuthorizationPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsAnalyzersPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsFormsPackageVersion" />
