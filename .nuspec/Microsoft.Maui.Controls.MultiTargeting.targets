@@ -64,6 +64,8 @@
     <None Include="**\**\*.Tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Remove="**\Tizen\**\*.cs" />
     <None Include="**\Tizen\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\Tizen\**\*.png" />
+    <None Include="**\Tizen\**\*.png" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="bin\**;obj\**" />
