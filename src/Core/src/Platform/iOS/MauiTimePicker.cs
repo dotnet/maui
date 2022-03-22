@@ -1,6 +1,5 @@
 ﻿using System;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -29,6 +28,7 @@ namespace Microsoft.Maui.Platform
 
 			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
 			{
+				DateSelected?.Invoke(this, EventArgs.Empty);
 				_dateSelected?.Invoke();
 			});
 
@@ -46,6 +46,15 @@ namespace Microsoft.Maui.Platform
 			AccessibilityTraits = UIAccessibilityTrait.Button;
 		}
 
-		public NSDate Date => _picker.Date;
+		public UIDatePicker Picker => _picker;
+
+		public NSDate Date => Picker.Date;
+
+		public event EventHandler? DateSelected;
+
+		public void UpdateTime(TimeSpan time)
+		{
+			_picker.Date = new DateTime(1, 1, 1, time.Hours, time.Minutes, time.Seconds).ToNSDate();
+		}
 	}
 }

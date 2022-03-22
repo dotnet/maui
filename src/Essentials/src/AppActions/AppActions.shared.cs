@@ -32,11 +32,11 @@ namespace Microsoft.Maui.Essentials
 		public static Task<IEnumerable<AppAction>> GetAsync()
 			=> Current.GetAsync();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='SetAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='SetAsync'][1]/Docs" />
 		public static Task SetAsync(params AppAction[] actions)
 			=> Current.SetAsync(actions);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='SetAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='SetAsync'][2]/Docs" />
 		public static Task SetAsync(IEnumerable<AppAction> actions)
 			=> Current.SetAsync(actions);
 

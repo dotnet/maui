@@ -8,6 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete]
 	public class CarouselViewController : ItemsViewController<CarouselView>
 	{
 		protected readonly CarouselView Carousel;

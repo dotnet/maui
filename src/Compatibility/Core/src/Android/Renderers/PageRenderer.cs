@@ -12,6 +12,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PageRenderer : VisualElementRenderer<Page>
 	{
 		public PageRenderer(Context context) : base(context)

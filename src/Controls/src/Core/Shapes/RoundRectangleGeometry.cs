@@ -5,13 +5,13 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.RoundRectangleGeometry']/Docs" />
 	public class RoundRectangleGeometry : GeometryGroup
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public RoundRectangleGeometry()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public RoundRectangleGeometry(CornerRadius cornerRadius, Rect rect)
 		{
 			CornerRadius = cornerRadius;

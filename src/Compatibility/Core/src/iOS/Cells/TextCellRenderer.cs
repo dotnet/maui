@@ -10,8 +10,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.TextCellRenderer instead")]
 	public class TextCellRenderer : CellRenderer
 	{
-		readonly Color DefaultDetailColor = ColorExtensions.SecondaryLabelColor.ToColor();
-		readonly Color DefaultTextColor = ColorExtensions.LabelColor.ToColor();
+		readonly Color DefaultDetailColor = Maui.Platform.ColorExtensions.SecondaryLabelColor.ToColor();
+		readonly Color DefaultTextColor = Maui.Platform.ColorExtensions.LabelColor.ToColor();
 
 		[Preserve(Conditional = true)]
 		public TextCellRenderer()

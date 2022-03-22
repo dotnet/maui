@@ -18,6 +18,29 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests : HandlerTestBase
 	{
+		[Fact(DisplayName = "Back Button Enabled/Disabled")]
+		public async Task BackButtonEnabledAndDisabled()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync((shell) => {
+				shell.Items.Add(new ContentPage());
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{				
+				var rootNavView = (handler.PlatformView);
+				Assert.False(rootNavView.IsBackEnabled);
+				await shell.Navigation.PushAsync(new ContentPage());
+				Assert.True(rootNavView.IsBackEnabled);
+				Shell.SetBackButtonBehavior(shell.CurrentPage,
+					new BackButtonBehavior()
+					{
+						IsEnabled = false
+					});
+				Assert.False(rootNavView.IsBackEnabled);
+			});
+		}
+
 		[Fact(DisplayName = "Shell with Single Content Page Has Panes Disabled")]
 		public async Task BasicShellHasPaneDisplayModeDisabled()
 		{

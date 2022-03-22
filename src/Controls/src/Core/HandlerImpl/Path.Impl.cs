@@ -10,8 +10,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			base.OnPropertyChanged(propertyName);
 
-			if (propertyName == DataProperty.PropertyName ||
-				propertyName == RenderTransformProperty.PropertyName)
+			if (propertyName == DataProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
 		}
 

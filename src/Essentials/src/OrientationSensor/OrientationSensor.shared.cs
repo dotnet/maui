@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Essentials
 		public static void Start(SensorSpeed sensorSpeed)
 			=> Current.Start(sensorSpeed);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Stop']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Stop'][1]/Docs" />
 		public static void Stop()
 			=> Current.Stop();
 
@@ -77,24 +77,24 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensorData']/Docs" />
 	public readonly struct OrientationSensorData : IEquatable<OrientationSensorData>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public OrientationSensorData(double x, double y, double z, double w)
 			: this((float)x, (float)y, (float)z, (float)w)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public OrientationSensorData(float x, float y, float z, float w) =>
 			Orientation = new Quaternion(x, y, z, w);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='Orientation']/Docs" />
 		public Quaternion Orientation { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
 		public override bool Equals(object obj) =>
 			(obj is OrientationSensorData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
 		public bool Equals(OrientationSensorData other) =>
 			Orientation.Equals(other.Orientation);
 
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Stop']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Stop'][2]/Docs" />
 		public void Stop()
 		{
 			if (!PlatformIsSupported)

@@ -160,27 +160,21 @@ namespace Microsoft.Maui.Platform
 				platformView.UpdateBorderStroke(border);
 		}
 
-		public static void UpdateBackground(this AView platformView, IView view, Drawable? defaultBackground = null) =>
-			platformView.UpdateBackground(view.Background, defaultBackground);
+		public static void UpdateBackground(this AView platformView, IView view) =>
+			platformView.UpdateBackground(view.Background);
 
-		public static void UpdateBackground(this AView platformView, Paint? background, Drawable? defaultBackground = null)
+		public static void UpdateBackground(this AView platformView, Paint? background)
 		{
-			// Remove previous background gradient if any
-			if (platformView.Background is MauiDrawable mauiDrawable)
-			{
-				platformView.Background = null;
-				mauiDrawable.Dispose();
-			}
-
 			var paint = background;
 
-			if (paint.IsNullOrEmpty())
+			if (!paint.IsNullOrEmpty())
 			{
-				if (defaultBackground != null)
-					platformView.Background = defaultBackground;
-			}
-			else
-			{
+				// Remove previous background gradient if any
+				if (platformView.Background is MauiDrawable mauiDrawable)
+				{
+					platformView.Background = null;
+					mauiDrawable.Dispose();
+				}
 				if (paint is SolidPaint solidPaint)
 				{
 					if (solidPaint.Color is Color backgroundColor)
@@ -308,6 +302,15 @@ namespace Microsoft.Maui.Platform
 				ViewHelper.RemoveFromParent(view);
 		}
 
+		public static Task<byte[]?> RenderAsBMP(this IView view)
+		{
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
+				return Task.FromResult<byte[]?>(null);
+
+			return Task.FromResult<byte[]?>(platformView.RenderAsBMP());
+		}
+
 		public static Task<byte[]?> RenderAsPNG(this IView view)
 		{
 			var platformView = view?.ToPlatform();
@@ -324,6 +327,17 @@ namespace Microsoft.Maui.Platform
 				return Task.FromResult<byte[]?>(null);
 
 			return platformView.RenderAsJPEG();
+		}
+
+		public static Task<byte[]?> RenderAsImage(this AView view, RenderType type)
+		{
+			return type switch
+			{
+				RenderType.JPEG => view.RenderAsJPEG(),
+				RenderType.PNG => view.RenderAsPNG(),
+				RenderType.BMP => Task.FromResult<byte[]?>(view.RenderAsBMP()),
+				_ => throw new NotImplementedException()
+			};
 		}
 
 		public static Task<byte[]?> RenderAsPNG(this AView view)
@@ -367,7 +381,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static Matrix4x4 GetViewTransform(this View view)
 		{
-			if (view?.Matrix == null || view.Matrix.IsIdentity)
+			if (view?.Matrix == null)
 				return new Matrix4x4();
 
 			var m = new float[16];
