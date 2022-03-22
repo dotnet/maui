@@ -39,6 +39,12 @@ namespace Microsoft.Maui.Handlers
 					return;
 
 				VirtualView.Time = new TimeSpan(args.HourOfDay, args.Minute, 0);
+				VirtualView.IsFocused = false;
+
+				if (_dialog != null)
+				{
+					_dialog = null;
+				}
 			}
 
 			var dialog = new TimePickerDialog(Context!, onTimeSetCallback, hour, minute, Use24HourView);
@@ -99,7 +105,11 @@ namespace Microsoft.Maui.Handlers
 
 		void HidePickerDialog()
 		{
-			_dialog?.Hide();
+			if (_dialog != null)
+			{
+				_dialog.Hide();
+			}
+
 			_dialog = null;
 		}
 
