@@ -16,9 +16,9 @@
         TargetingPackName="Microsoft.Maui.Core.Ref.any"
         TargetingPackVersion="$(_MauiRuntimePackVersion)"
         RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
-        RuntimePackRuntimeIdentifiers="any"
-        RuntimePackAlwaysCopyLocal="true"
-    />
+        RuntimePackRuntimeIdentifiers="any">
+      <RuntimePackAlwaysCopyLocal Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' ">true</RuntimePackAlwaysCopyLocal>
+    </KnownFrameworkReference>
     <KnownFrameworkReference
         Include="Microsoft.Maui.Controls"
         TargetFramework="@TFM@"
@@ -28,9 +28,9 @@
         TargetingPackName="Microsoft.Maui.Controls.Ref.any"
         TargetingPackVersion="$(_MauiRuntimePackVersion)"
         RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
-        RuntimePackRuntimeIdentifiers="any"
-        RuntimePackAlwaysCopyLocal="true"
-    />
+        RuntimePackRuntimeIdentifiers="any">
+      <RuntimePackAlwaysCopyLocal Condition=" '$(UseMaui)' == 'true' ">true</RuntimePackAlwaysCopyLocal>
+    </KnownFrameworkReference>
     <KnownFrameworkReference
         Include="Microsoft.Maui.Essentials"
         TargetFramework="@TFM@"
@@ -40,9 +40,9 @@
         TargetingPackName="Microsoft.Maui.Essentials.Ref.any"
         TargetingPackVersion="$(_MauiRuntimePackVersion)"
         RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
-        RuntimePackRuntimeIdentifiers="any"
-        RuntimePackAlwaysCopyLocal="true"
-    />
+        RuntimePackRuntimeIdentifiers="any">
+      <RuntimePackAlwaysCopyLocal Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' ">true</RuntimePackAlwaysCopyLocal>
+    </KnownFrameworkReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <KnownFrameworkReference
