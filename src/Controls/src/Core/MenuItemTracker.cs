@@ -60,8 +60,9 @@ namespace Microsoft.Maui.Controls
 
 				if (AdditionalTargets != null)
 					foreach (var item in AdditionalTargets)
-						foreach (var menuITem in GetMenuItems(item))
-							returnValue.Add(menuITem);
+						foreach (var menuItem in GetMenuItems(item))
+							if (!returnValue.Contains(menuItem))
+								returnValue.Add(menuItem);
 
 				returnValue.Sort(CreateComparer());
 				return returnValue;
@@ -102,6 +103,11 @@ namespace Microsoft.Maui.Controls
 						result.AddRange(GetCurrentToolbarItems(flyoutDetail.Detail));
 				}
 			}
+			else if (page is Shell shell)
+			{
+				if (shell.GetCurrentShellPage() is Page shellPage && shellPage != shell)
+					result.AddRange(GetCurrentToolbarItems(shellPage));
+			}
 			else if (page is IPageContainer<Page>)
 			{
 				var container = (IPageContainer<Page>)page;
@@ -137,8 +143,10 @@ namespace Microsoft.Maui.Controls
 
 		void OnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
 		{
-			if (propertyChangedEventArgs.PropertyName == NavigationPage.CurrentPageProperty.PropertyName || propertyChangedEventArgs.PropertyName == FlyoutPage.IsPresentedProperty.PropertyName ||
-				propertyChangedEventArgs.PropertyName == "Detail" || propertyChangedEventArgs.PropertyName == "Flyout")
+			if (propertyChangedEventArgs.PropertyName == NavigationPage.CurrentPageProperty.PropertyName ||
+				propertyChangedEventArgs.PropertyName == FlyoutPage.IsPresentedProperty.PropertyName ||
+				propertyChangedEventArgs.PropertyName == "Detail" ||
+				propertyChangedEventArgs.PropertyName == "Flyout")
 			{
 				EmitCollectionChanged();
 			}
@@ -162,11 +170,40 @@ namespace Microsoft.Maui.Controls
 				_flyoutDetails++;
 
 			((ObservableCollection<TMenuItem>)GetMenuItems(page)).CollectionChanged += OnCollectionChanged;
+
+			if (page is Shell shell)
+			{
+				shell.Navigated += OnShellNavigated;
+				shell.Navigating += OnShellNavigating;
+
+				if (shell.GetCurrentShellPage() is Page currentShellPage)
+					RegisterChildPage(currentShellPage);
+
+				return;
+			}
+
 			page.Descendants().OfType<Page>().ForEach(RegisterChildPage);
 
 			page.DescendantAdded += OnChildAdded;
 			page.DescendantRemoved += OnChildRemoved;
 			page.PropertyChanged += OnPropertyChanged;
+		}
+
+		void OnShellNavigating(object sender, ShellNavigatingEventArgs e)
+		{
+			if (((Shell)sender).GetCurrentShellPage() is Page page)
+				UnregisterChildPage(page);
+		}
+
+		void OnShellNavigated(object sender, ShellNavigatedEventArgs e)
+		{
+			if (((Shell)sender).GetCurrentShellPage() is Page page)
+			{
+				UnregisterChildPage(page);
+				RegisterChildPage(page);
+			}
+
+			EmitCollectionChanged();
 		}
 
 		void UnregisterChildPage(Page page)
@@ -185,6 +222,13 @@ namespace Microsoft.Maui.Controls
 
 			if (page is FlyoutPage)
 				_flyoutDetails--;
+
+			if (page is Shell shell)
+			{
+				shell.Navigated -= OnShellNavigated;
+				shell.Navigating -= OnShellNavigating;
+				return;
+			}
 
 			((ObservableCollection<TMenuItem>)GetMenuItems(page)).CollectionChanged -= OnCollectionChanged;
 			page.Descendants().OfType<Page>().ForEach(UnregisterChildPage);

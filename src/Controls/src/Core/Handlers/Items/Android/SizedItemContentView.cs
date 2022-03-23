@@ -1,14 +1,15 @@
 ﻿using System;
 using Android.Content;
+using Android.Views;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal class SizedItemContentView : ItemContentView
 	{
-		readonly Func<int> _width;
-		readonly Func<int> _height;
+		readonly Func<double> _width;
+		readonly Func<double> _height;
 
-		public SizedItemContentView(Context context, Func<int> width, Func<int> height)
+		public SizedItemContentView(Context context, Func<double> width, Func<double> height)
 			: base(context)
 		{
 			_width = width;
@@ -23,13 +24,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var targetWidth = _width();
-			var targetHeight = _height();
+			double targetWidth = _width();
+			double targetHeight = _height();
 
-			(Content.VirtualView as View).Measure(Context.FromPixels(targetWidth), Context.FromPixels(targetHeight),
-				MeasureFlags.IncludeMargins);
+			if (!double.IsInfinity(targetWidth))
+				targetWidth = (int)Context.FromPixels(targetWidth);
 
-			SetMeasuredDimension(targetWidth, targetHeight);
+			if (!double.IsInfinity(targetHeight))
+				targetHeight = (int)Context.FromPixels(targetHeight);
+
+			if (Content.VirtualView.Handler is IPlatformViewHandler pvh)
+			{
+				var widthSpec = Context.CreateMeasureSpec(targetWidth, 
+					double.IsInfinity(targetWidth) ? double.NaN : targetWidth
+					, targetWidth);
+					
+				var heightSpec = Context.CreateMeasureSpec(targetHeight, double.IsInfinity(targetHeight) ? double.NaN : targetHeight
+					, targetHeight);
+
+				pvh.PlatformView.Measure(widthSpec, heightSpec);
+				
+				SetMeasuredDimension(
+					pvh.PlatformView.MeasuredWidth,
+					pvh.PlatformView.MeasuredHeight);
+			}
 		}
 	}
 }

@@ -64,5 +64,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.ToPlatform().UpdateTransformation(view);
 		}
+
+		public virtual bool NeedsContainer
+		{
+			get
+			{
+				return VirtualView?.Clip != null || VirtualView?.Shadow != null || (VirtualView as IBorder)?.Border != null;
+			}
+		}
 	}
 }

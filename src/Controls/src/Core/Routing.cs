@@ -158,23 +158,6 @@ namespace Microsoft.Maui.Controls
 			if (s_routes.TryGetValue(route, out var content))
 				result = content.GetOrCreate(services);
 
-			if (result == null)
-			{
-				// okay maybe its a type, we'll try that just to be nice to the user
-				var type = Type.GetType(route);
-				if (type != null)
-				{
-					if (services != null)
-					{
-						result = (services.GetService(type) ?? Activator.CreateInstance(type)) as Element;
-					}
-					else
-					{
-						result = Activator.CreateInstance(type) as Element;
-					}
-				}
-			}
-
 			if (result != null)
 				SetRoute(result, route);
 
@@ -196,20 +179,20 @@ namespace Microsoft.Maui.Controls
 			return $"{source}/";
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='FormatRoute']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='FormatRoute'][1]/Docs" />
 		public static string FormatRoute(List<string> segments)
 		{
 			var route = FormatRoute(String.Join(PathSeparator, segments));
 			return route;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='FormatRoute'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='FormatRoute'][2]/Docs" />
 		public static string FormatRoute(string route)
 		{
 			return route;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][2]/Docs" />
 		public static void RegisterRoute(string route, RouteFactory factory)
 		{
 			if (!String.IsNullOrWhiteSpace(route))
@@ -229,7 +212,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][1]/Docs" />
 		public static void RegisterRoute(
 			string route,
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
@@ -284,9 +267,10 @@ namespace Microsoft.Maui.Controls
 			{
 				if (services != null)
 				{
-					return (services.GetService(_type) ?? Activator.CreateInstance(_type)) as Element;
+					return (Element)(services.GetService(_type) ?? Activator.CreateInstance(_type));
 				}
-				return Activator.CreateInstance(_type) as Element;
+
+				return (Element)Activator.CreateInstance(_type);
 			}
 
 			public override bool Equals(object obj)

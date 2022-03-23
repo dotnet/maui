@@ -17,16 +17,21 @@ using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.FileProviders;
 #if WEBVIEW2_WINFORMS
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.WebView.WindowsForms;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 #elif WEBVIEW2_WPF
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.WebView.Wpf;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 #elif WEBVIEW2_MAUI
 using Microsoft.AspNetCore.Components.WebView.Maui;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -58,6 +63,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment _coreWebView2Environment;
 		private readonly Action<ExternalLinkNavigationEventArgs> _externalNavigationStarting;
+		private readonly BlazorWebViewDeveloperTools _developerTools;
 
 		/// <summary>
 		/// Constructs an instance of <see cref="WebView2WebViewManager"/>.
@@ -80,8 +86,25 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 
 		{
+#if WEBVIEW2_WINFORMS
+			if (services.GetService<WindowsFormsBlazorMarkerService>() is null)
+			{
+				throw new InvalidOperationException(
+					"Unable to find the required services. " +
+					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddWindowsFormsBlazorWebView)}' in the application startup code.");
+			}
+#elif WEBVIEW2_WPF
+			if (services.GetService<WpfBlazorMarkerService>() is null)
+			{
+				throw new InvalidOperationException(
+					"Unable to find the required services. " +
+					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddWpfBlazorWebView)}' in the application startup code.");
+			}
+#endif
+
 			_webview = webview;
 			_externalNavigationStarting = externalNavigationStarting;
+			_developerTools = services.GetRequiredService<BlazorWebViewDeveloperTools>();
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
@@ -113,6 +136,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		)
 			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
+			if (services.GetService<MauiBlazorMarkerService>() is null)
+			{
+				throw new InvalidOperationException(
+					"Unable to find the required services. " +
+					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView)}' in the application startup code.");
+			}
+
 			_webview = webview;
 			_blazorWebViewHandler = blazorWebViewHandler;
 
@@ -145,7 +175,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #endif
 				.ConfigureAwait(true);
 			await _webview.EnsureCoreWebView2Async();
-			ApplyDefaultWebViewSettings();
+
+#if WEBVIEW2_MAUI
+            var developerTools = _blazorWebViewHandler.DeveloperTools;
+#elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+			var developerTools = _developerTools;
+#endif
+			ApplyDefaultWebViewSettings(developerTools);
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
 
@@ -263,8 +299,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		private protected static string GetHeaderString(IDictionary<string, string> headers) =>
 			string.Join(Environment.NewLine, headers.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
 
-		private void ApplyDefaultWebViewSettings()
+		private void ApplyDefaultWebViewSettings(BlazorWebViewDeveloperTools devTools)
 		{
+			_webview.CoreWebView2.Settings.AreDevToolsEnabled = devTools.Enabled;
+
 			// Desktop applications typically don't want the default web browser context menu
 			_webview.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
 

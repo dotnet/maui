@@ -4,7 +4,10 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	// We don't currently have a replacement for this
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class NativeViewWrapperRenderer : ViewRenderer<NativeViewWrapper, global::Android.Views.View>
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		public NativeViewWrapperRenderer(Context context) : base(context)
 		{

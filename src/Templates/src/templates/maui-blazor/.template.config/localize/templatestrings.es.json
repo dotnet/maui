@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Blazor App (Preview)",
-  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, and WinUI using Blazor",
-  "postActions/openInEditor/description": "Opens Pages/Index.razor in the editor.",
-  "symbols/applicationId/description": "Overrides the $(ApplicationId) in the project"
+  "name": "Aplicación .NET MAUI Blazor (versión preliminar)",
+  "description": "Un proyecto para crear una aplicación .NET MAUI para iOS, Android, Mac Catalyst y WinUI con Blazor",
+  "postActions/openInEditor/description": "Abre Pages/Index.razor en el editor.",
+  "symbols/applicationId/description": "Reemplaza $(ApplicationId) en el proyecto"
 }

@@ -13,6 +13,7 @@ using RectangleF = CoreGraphics.CGRect;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ScrollViewRenderer : UIScrollView, IVisualElementRenderer, IEffectControlProvider
 	{
 		EventTracker _events;

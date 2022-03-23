@@ -13,13 +13,15 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public object Default { get; set; } = s_notset;
 		public object Android { get; set; } = s_notset;
-		public object GTK { get; set; } = s_notset;
+		internal object GTK { get; set; } = s_notset;
 		public object iOS { get; set; } = s_notset;
-		public object macOS { get; set; } = s_notset;
+		internal object macOS { get; set; } = s_notset;
 		public object MacCatalyst { get; set; } = s_notset;
 		public object Tizen { get; set; } = s_notset;
+		[Obsolete("Use WinUI instead.")]
 		public object UWP { get; set; } = s_notset;
-		public object WPF { get; set; } = s_notset;
+		internal object WPF { get; set; } = s_notset;
+		public object WinUI { get; set; } = s_notset;
 
 		public IValueConverter Converter { get; set; }
 
@@ -33,8 +35,11 @@ namespace Microsoft.Maui.Controls.Xaml
 				&& macOS == s_notset
 				&& MacCatalyst == s_notset
 				&& Tizen == s_notset
+#pragma warning disable CS0618 // Type or member is obsolete
 				&& UWP == s_notset
+#pragma warning restore CS0618 // Type or member is obsolete
 				&& WPF == s_notset
+				&& WinUI == s_notset
 				&& Default == s_notset)
 			{
 				throw new XamlParseException("OnPlatformExtension requires a value to be specified for at least one platform or Default.", serviceProvider);
@@ -138,11 +143,23 @@ namespace Microsoft.Maui.Controls.Xaml
 				value = Tizen;
 				return true;
 			}
-			if (DeviceInfo.Platform == DevicePlatform.UWP && UWP != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.WinUI && WinUI != s_notset)
+			{
+				value = WinUI;
+				return true;
+			}
+#pragma warning disable CS0618 // Type or member is obsolete
+			if (DeviceInfo.Platform == DevicePlatform.WinUI && UWP != s_notset)
 			{
 				value = UWP;
 				return true;
 			}
+			if (DeviceInfo.Platform == DevicePlatform.Create("UWP") && UWP != s_notset)
+			{
+				value = UWP;
+				return true;
+			}
+#pragma warning restore CS0618 // Type or member is obsolete
 			if (DeviceInfo.Platform == DevicePlatform.Create("WPF") && WPF != s_notset)
 			{
 				value = WPF;

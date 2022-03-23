@@ -34,17 +34,17 @@ namespace Microsoft.Maui
 		/// <include file="../../docs/Microsoft.Maui/Thickness.xml" path="//Member[@MemberName='IsNaN']/Docs" />
 		public bool IsNaN => double.IsNaN(Left) && double.IsNaN(Top) && double.IsNaN(Right) && double.IsNaN(Bottom);
 
-		/// <include file="../../docs/Microsoft.Maui/Thickness.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/Thickness.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public Thickness(double uniformSize) : this(uniformSize, uniformSize, uniformSize, uniformSize)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Thickness.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/Thickness.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public Thickness(double horizontalSize, double verticalSize) : this(horizontalSize, verticalSize, horizontalSize, verticalSize)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Thickness.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/Thickness.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public Thickness(double left, double top, double right, double bottom) : this()
 		{
 			Left = left;

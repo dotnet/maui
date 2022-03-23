@@ -475,6 +475,7 @@ void RunMSBuildWithDotNet(
             .SetMaxCpuCount(0)
             .WithTarget(target)
             .EnableBinaryLogger(binlog);
+
         if (warningsAsError)
         {
             msbuildSettings.TreatAllWarningsAs(MSBuildTreatAllWarningsAs.Error);
@@ -518,6 +519,7 @@ void RunMSBuildWithDotNet(
             .SetMaxCpuCount(0)
             .WithTarget(target)
             .EnableBinaryLogger(binlog);
+
         if (warningsAsError)
         {
             msbuildSettings.WarningsAsError = true;

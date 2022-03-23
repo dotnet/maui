@@ -29,7 +29,10 @@ namespace Microsoft.Maui
 
 		public override bool CanPerform(Selector action, NSObject? withSender)
 		{
-			return true;
+			if (action.Name.StartsWith("MenuItem", StringComparison.Ordinal))
+				return true;
+
+			return base.CanPerform(action, withSender);
 		}
 
 		/* The Selector for every single MenuElement has to be unique. If you try to reuse the same selector
