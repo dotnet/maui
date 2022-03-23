@@ -81,9 +81,6 @@ namespace Microsoft.Maui
 			// aapt resource value: 0x7F08013E
 			public static int navigationlayout_content = 2131231038;
 
-			// aapt resource value: 0x7F08013F
-			public static int maui_toolbar = 2131231039;
-
 			// aapt resource value: 0x7F080140
 			public static int navigationlayout_toptabs = 2131231040;
 
@@ -110,9 +107,6 @@ namespace Microsoft.Maui
 			// aapt resource value: 0x7F0B002E
 			public static int drawer_layout = 2131427374;
 
-			// aapt resource value: 0x7F0B003E
-			public static int maui_toolbar = 2131427390;
-
 			// aapt resource value: 0x7F0B005A
 			public static int navigationlayout = 2131427418;
 
@@ -131,6 +125,9 @@ namespace Microsoft.Maui
 		{
 			// aapt resource value: 0x7F0E00F8
 			public static int Maui_MainTheme_NoActionBar = 2131624184;
+
+			// aapt resource value: 0x7F0E01E8
+			public static int ThemeOverlay_AppCompat_Light = 2131624424;
 
 			// aapt resource value: 0x7F0E02E1
 			public static int scrollViewTheme = 2131624673;
