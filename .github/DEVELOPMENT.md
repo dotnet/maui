@@ -21,7 +21,8 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
    dotnet nuget locals all --clear
    ```
    > NOTE: this is going to contain the "stable" versions of the packages, so you will have to clear the NuGet cache when this feed changes and when .NET ships. The various `darc-pub-dotnet-*` feeds are temporary and are generated on various builds. These feeds my disappear and be replaced with new ones as new builds come out. Make sure to verify that you are on the latest here and clear the nuget cache if it changes.
-4. If you're on Windows install [SDK 20348](https://go.microsoft.com/fwlink/?linkid=2164145)
+4. If you're on a Windows development machine, install [SDK 20348](https://go.microsoft.com/fwlink/?linkid=2164145)
+5. If you're on a MacOS development machine, install [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-macos)
    
 
 ### .NET MAUI Workload
