@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI ContentView (C#) (Preview)",
-  "postActions/openInEditor/description": "Opens NewContent1.cs in the editor.",
-  "symbols/namespace/description": "Namespace for the generated code."
+  "name": ".NET MAUI ContentView (C#) (預覽)",
+  "postActions/openInEditor/description": "在編輯器中開啟 NewContent1.cs。",
+  "symbols/namespace/description": "適用於產生之程式碼的命名空間。"
 }

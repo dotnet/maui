@@ -5,9 +5,9 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
+#if IOS && !MACCATALYST
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
-		UIColor? _defaultTextColor;
 		UIDatePicker? _picker;
 
 		protected override MauiDatePicker CreatePlatformView()
@@ -63,8 +63,6 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			SetupDefaults(platformView);
-
 			base.ConnectHandler(platformView);
 		}
 
@@ -78,11 +76,6 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			base.DisconnectHandler(platformView);
-		}
-
-		void SetupDefaults(MauiDatePicker platformView)
-		{
-			_defaultTextColor = platformView.TextColor;
 		}
 
 		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
@@ -123,8 +116,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateTextColor(datePicker, platformHandler._defaultTextColor);
+			handler.PlatformView?.UpdateTextColor(datePicker);
 		}
     
 		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
@@ -161,4 +153,5 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Date = _picker.Date.ToDateTime().Date;
 		}
 	}
+#endif
 }

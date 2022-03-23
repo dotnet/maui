@@ -117,15 +117,18 @@ namespace Microsoft.Maui.Platform
 		{
 			UISemanticContentAttribute updateValue = platformView.SemanticContentAttribute;
 
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			switch (view.FlowDirection)
 			{
-				updateValue = UISemanticContentAttribute.Unspecified;
+				case FlowDirection.MatchParent:
+					updateValue = UISemanticContentAttribute.Unspecified;
+					break;
+				case FlowDirection.LeftToRight:
+					updateValue = UISemanticContentAttribute.ForceLeftToRight;
+					break;
+				case FlowDirection.RightToLeft:
+					updateValue = UISemanticContentAttribute.ForceRightToLeft;
+					break;
 			}
-			else if (view.FlowDirection == FlowDirection.RightToLeft)
-				updateValue = UISemanticContentAttribute.ForceRightToLeft;
-			else if (view.FlowDirection == FlowDirection.LeftToRight)
-				updateValue = UISemanticContentAttribute.ForceLeftToRight;
 
 			if (updateValue != platformView.SemanticContentAttribute)
 				platformView.SemanticContentAttribute = updateValue;

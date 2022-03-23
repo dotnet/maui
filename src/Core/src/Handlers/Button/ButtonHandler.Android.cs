@@ -19,14 +19,6 @@ namespace Microsoft.Maui.Handlers
 
 		static ColorStateList TransparentColorStateList = Colors.Transparent.ToDefaultColorStateList();
 
-		// not static and each button has a new instance
-		Drawable? DefaultBackground;
-
-		void SetupDefaults(MaterialButton platformView)
-		{
-			DefaultBackground ??= platformView.Background;
-		}
-
 		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
 		ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();
 
@@ -45,8 +37,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MaterialButton platformView)
 		{
-			SetupDefaults(platformView);
-
 			ClickListener.Handler = this;
 			platformView.SetOnClickListener(ClickListener);
 
@@ -76,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 		// This is a Android-specific mapping
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			handler.PlatformView?.UpdateBackground(button, (handler as ButtonHandler)?.DefaultBackground);
+			handler.PlatformView?.UpdateBackground(button);
 		}
 
 		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
@@ -193,6 +183,7 @@ namespace Microsoft.Maui.Handlers
 				case MotionEventActions.Down:
 					button?.Pressed();
 					break;
+				case MotionEventActions.Cancel:
 				case MotionEventActions.Up:
 					button?.Released();
 					break;

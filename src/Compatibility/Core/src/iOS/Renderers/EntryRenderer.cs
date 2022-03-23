@@ -13,6 +13,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entr
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EntryRenderer : EntryRendererBase<UITextField>
 	{
 		[Preserve(Conditional = true)]
@@ -30,6 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class EntryRendererBase<TControl> : ViewRenderer<Entry, TControl>
 		where TControl : UITextField
 	{

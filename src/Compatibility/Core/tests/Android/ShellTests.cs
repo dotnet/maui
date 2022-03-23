@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			shell.FlyoutHeader = initialHeader;
 			await shell.Dispatcher.DispatchAsync(async () =>
 			{
+#pragma warning disable CS0612 // Type or member is obsolete
 				TestActivity testSurface = null;
 				try
 				{
@@ -45,6 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				{
 					testSurface?.Finish();
 				}
+#pragma warning restore CS0612 // Type or member is obsolete
 			});
 		}
 

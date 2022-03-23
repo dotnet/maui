@@ -171,8 +171,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValueCore(IsFocusedPropertyKey, value);
 		}
 
-		Maui.FlowDirection IView.FlowDirection
-			=> ((IFlowDirectionController)this).EffectiveFlowDirection.ToFlowDirection();
+		FlowDirection IView.FlowDirection => FlowDirection;
 
 		Primitives.LayoutAlignment IView.HorizontalLayoutAlignment => default;
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => default;
@@ -347,6 +346,9 @@ namespace Microsoft.Maui.Controls
 			{
 				_loaded += value;
 				UpdatePlatformUnloadedLoadedWiring(Window);
+				if (_isLoadedFired)
+					_loaded?.Invoke(this, EventArgs.Empty);
+
 			}
 			remove
 			{

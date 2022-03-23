@@ -18,6 +18,7 @@ using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class CheckBoxRendererBase :
 		AppCompatCheckBox,
 		IVisualElementRenderer,
@@ -244,6 +245,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			CompoundButtonCompat.SetButtonTintMode(Control, mode);
 		}
 
+		[PortHandler]
 		void IOnFocusChangeListener.OnFocusChange(AView v, bool hasFocus)
 		{
 			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, hasFocus);
