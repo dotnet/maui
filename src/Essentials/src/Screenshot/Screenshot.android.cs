@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Views;
+using Java.Nio;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -11,6 +13,18 @@ namespace Microsoft.Maui.Essentials
 		public static byte[] RenderAsJPEG(this View view, int quality = 100) => view?.RenderAsImage(Bitmap.CompressFormat.Jpeg, quality);
 
 		public static byte[] RenderAsPNG(this View view, int quality = 100) => view?.RenderAsImage(Bitmap.CompressFormat.Png, quality);
+
+		public static byte[] RenderAsBMP(this View view)
+		{
+			using (var bitmap = view.Render())
+			{
+				var byteBuffer = ByteBuffer.AllocateDirect(bitmap.ByteCount);
+				bitmap.CopyPixelsToBuffer(byteBuffer);
+				byte[] byt = new byte[bitmap.ByteCount];
+				Marshal.Copy(byteBuffer.GetDirectBufferAddress(), byt, 0, bitmap.ByteCount);
+				return byt;
+			}
+		}
 
 		public static byte[] RenderAsImage(this View view, Bitmap.CompressFormat format, int quality = 100)
 		{

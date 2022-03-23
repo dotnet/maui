@@ -2,6 +2,7 @@
 {
 	public static class TestCategory
 	{
+		public const string Behavior = "Behavior";
 		public const string Button = "Button";
 		public const string Dispatcher = "Dispatcher";
 		public const string Editor = "Editor";

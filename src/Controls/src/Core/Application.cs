@@ -20,7 +20,10 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
+
+#pragma warning disable CS0612 // Type or member is obsolete
 		readonly Lazy<IResourceDictionary> _systemResources;
+#pragma warning restore CS0612 // Type or member is obsolete
 
 		IAppIndexingProvider? _appIndexProvider;
 		ReadOnlyCollection<Element>? _logicalChildren;
@@ -38,12 +41,15 @@ namespace Microsoft.Maui.Controls
 			if (setCurrentApplication)
 				SetCurrentApplication(this);
 
+#pragma warning disable CS0612 // Type or member is obsolete
 			_systemResources = new Lazy<IResourceDictionary>(() =>
 			{
 				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
 				systemResources.ValuesChanged += OnParentResourcesChanged;
 				return systemResources;
 			});
+#pragma warning restore CS0612 // Type or member is obsolete
+
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
 
 			_lastAppTheme = PlatformAppTheme;

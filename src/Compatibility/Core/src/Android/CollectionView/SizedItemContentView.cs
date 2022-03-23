@@ -3,6 +3,7 @@ using Android.Content;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	internal class SizedItemContentView : ItemContentView
 	{
 		readonly Func<int> _width;

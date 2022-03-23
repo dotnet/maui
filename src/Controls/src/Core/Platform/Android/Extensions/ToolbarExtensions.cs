@@ -107,25 +107,30 @@ namespace Microsoft.Maui.Controls.Platform
 			nativeToolbar.UpdateBarTextColor(toolbar);
 		}
 
-		public static void UpdateBarBackgroundColor(this AToolbar nativeToolbar, Toolbar toolbar)
-		{
-			var tintColor = toolbar.BarBackgroundColor;
-
-			if (tintColor == null)
-			{
-				nativeToolbar.BackgroundTintMode = null;
-			}
-			else
-			{
-				nativeToolbar.BackgroundTintMode = PorterDuff.Mode.Src;
-				nativeToolbar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToPlatform());
-			}
-		}
-
 		public static void UpdateBarBackground(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
 			Brush barBackground = toolbar.BarBackground;
-			nativeToolbar.UpdateBackground(barBackground);
+
+			if (barBackground is SolidColorBrush solidColor)
+			{
+				var tintColor = solidColor.Color;
+				if (tintColor == null)
+				{
+					nativeToolbar.BackgroundTintMode = null;
+				}
+				else
+				{
+					nativeToolbar.BackgroundTintMode = PorterDuff.Mode.Src;
+					nativeToolbar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToPlatform());
+				}
+			}
+			else
+			{
+				nativeToolbar.UpdateBackground(barBackground);
+
+				if (Brush.IsNullOrEmpty(barBackground))
+					nativeToolbar.BackgroundTintMode = null;
+			}
 		}
 
 		public static void UpdateIconColor(this AToolbar nativeToolbar, Toolbar toolbar)

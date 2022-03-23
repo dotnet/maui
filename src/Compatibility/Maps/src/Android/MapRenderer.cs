@@ -30,7 +30,7 @@ using Polyline = Microsoft.Maui.Controls.Maps.Polyline;
 
 namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 {
-	public class MapRenderer : ViewRenderer<Map, MapView>, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
+	public class MapRenderer : Handlers.Compatibility.ViewRenderer<Map, MapView>, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
 	{
 		const string MoveMessageName = "MapMoveToRegion";
 
@@ -59,9 +59,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			set { s_bundle = value; }
 		}
 
-		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
+
+		protected override Size MinimumSize()
 		{
-			return new SizeRequest(new Size(Context.ToPixels(40), Context.ToPixels(40)));
+			return new Size(40);
+		}
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			return new SizeRequest(new Size(40), new Size(40));
 		}
 
 		protected override MapView CreateNativeControl()

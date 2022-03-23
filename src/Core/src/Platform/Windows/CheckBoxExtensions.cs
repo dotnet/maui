@@ -14,18 +14,14 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateForeground(this CheckBox platformCheckBox, ICheckBox check) 
 		{
 			var tintBrush = check.Foreground?.ToPlatform();
-			var resources = platformCheckBox.Resources;
 
-			foreach (string key in _tintColorResourceKeys)
+			if (tintBrush == null)
 			{
-				if (tintBrush == null)
-				{
-					resources.Remove(key);
-				}
-				else
-				{
-					resources[key] = tintBrush;
-				}
+				platformCheckBox.Resources.RemoveKeys(_tintColorResourceKeys);
+			}
+			else
+			{
+				platformCheckBox.Resources.SetValueForAllKey(_tintColorResourceKeys, tintBrush);
 			}
 		}
 

@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	{
 		public HandlerToRendererShim(IPlatformViewHandler vh)
 		{
+			Compatibility.Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			ViewHandler = vh;
 		}
 

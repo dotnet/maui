@@ -7,6 +7,9 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
+		protected async Task<RenderedView> GetRenderedView(IViewHandler viewHandler, RenderType type) =>
+			await (viewHandler.VirtualView).RenderAsImage(type);
+
 		[Fact(DisplayName = "Automation Id is set correctly")]
 		[InlineData()]
 		public async Task SetAutomationId()
@@ -28,8 +31,22 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				FlowDirection = flowDirection
 			};
+
+			var expectedFlowDirection = flowDirection;
+
+#if WINDOWS
+			if (view is LayoutStub)
+			{
+				// On Windows, we deliberately _do not_ set the platform FlowDirection
+				// for Layouts, because the cross-platform layout code is already taking
+				// flow direction into account. The result of setting the cross-platform
+				// flow direction will always be Microsoft.UI.Xaml.FlowDirection.LeftToRight
+				expectedFlowDirection = FlowDirection.LeftToRight;
+			}
+#endif
+
 			var id = await GetValueAsync(view, handler => GetFlowDirection(handler));
-			Assert.Equal(view.FlowDirection, id);
+			Assert.Equal(expectedFlowDirection, id);
 		}
 
 		[Theory(DisplayName = "Opacity is set correctly")]
@@ -196,6 +213,27 @@ namespace Microsoft.Maui.DeviceTests
 
 			var platformViewTransform = await GetValueAsync(view, handler => GetViewTransform(handler));
 			Assert.NotEqual(platformViewTransform, new System.Numerics.Matrix4x4());
+		}
+
+		[Theory(DisplayName = "View Renders To Image"
+#if !__ANDROID__
+			, Skip = "iOS and Windows can't render elements to images from test runner. It's missing the required root windows."
+#endif
+			)]
+		[InlineData(RenderType.JPEG)]
+		[InlineData(RenderType.PNG)]
+		[InlineData(RenderType.BMP)]
+		public async Task RendersAsImage(RenderType type)
+		{
+			var view = new TStub()
+			{
+				Height = 100,
+				Width = 100,
+			};
+
+			var result = await (await GetValueAsync(view, handler => GetRenderedView(handler, type)));
+			Assert.NotNull(result);
+			Assert.NotNull(result?.Render);
 		}
 	}
 }

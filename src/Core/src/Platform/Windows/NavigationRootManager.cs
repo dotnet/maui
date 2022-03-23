@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Platform
 	{
 		IMauiContext _mauiContext;
 		WindowRootView _rootView;
-		MauiToolbar? _windowHeader;
+		MauiToolbar? _toolbar;
 		IMenuBar? _menuBar;
 
 		public NavigationRootManager(IMauiContext mauiContext)
@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Platform
 
 		internal bool UseCustomAppTitleBar { get; set; } = true;
 		internal FrameworkElement? AppTitleBar => _rootView.AppTitleBar;
+		internal MauiToolbar? ToolBar => _toolbar;
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
 		{
@@ -37,13 +38,16 @@ namespace Microsoft.Maui.Platform
 
 			if (_rootView.NavigationViewControl != null)
 			{
-				_rootView.NavigationViewControl.HeaderControl = _windowHeader;
+				_rootView.NavigationViewControl.HeaderControl = _toolbar;
 			}
 		}
 
 		void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
 		{
-			_mauiContext.GetPlatformWindow().GetWindow()?.BackButtonClicked();
+			_mauiContext
+				.GetPlatformWindow()
+				.GetWindow()?
+				.BackButtonClicked();
 		}
 
 		public FrameworkElement RootView => _rootView;
@@ -69,7 +73,7 @@ namespace Microsoft.Maui.Platform
 				{
 					rootNavigationView = new RootNavigationView();
 				}
-				
+
 				rootNavigationView.Content = platformView;
 				_rootView.Content = rootNavigationView;
 			}
@@ -119,23 +123,23 @@ namespace Microsoft.Maui.Platform
 		{
 			_menuBar = menuBar;
 
-			if (_windowHeader == null)
+			if (_toolbar == null)
 				return;
 
 			if (menuBar != null)
-				_windowHeader.SetMenuBar((MenuBar)menuBar.ToPlatform(_mauiContext));
+				_toolbar.SetMenuBar((MenuBar)menuBar.ToPlatform(_mauiContext));
 			else
-				_windowHeader.SetMenuBar(null);
+				_toolbar.SetMenuBar(null);
 		}
 
-		internal void SetToolbar(FrameworkElement toolBar)
+		internal void SetToolbar(FrameworkElement? toolBar)
 		{
-			_windowHeader = toolBar as MauiToolbar;
+			_toolbar = toolBar as MauiToolbar;
 			SetMenuBar(_menuBar);
 
 			if (_rootView.NavigationViewControl != null)
 			{
-				_rootView.NavigationViewControl.HeaderControl = _windowHeader;
+				_rootView.NavigationViewControl.HeaderControl = _toolbar;
 			}
 		}
 

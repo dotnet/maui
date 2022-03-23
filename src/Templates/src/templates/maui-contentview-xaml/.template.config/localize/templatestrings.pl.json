@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI ContentView (XAML) (Preview)",
-  "postActions/openInEditor/description": "Opens NewContent1.xaml in the editor.",
-  "symbols/namespace/description": "Namespace for the generated code."
+  "name": ".NET MAUI ContentView (XAML) (wersja zapoznawcza)",
+  "postActions/openInEditor/description": "Otwiera plik NewContent1.xaml w edytorze.",
+  "symbols/namespace/description": "Przestrzeń nazw wygenerowanego kodu."
 }

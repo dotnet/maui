@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Maui.Graphics;
+using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
@@ -19,21 +20,12 @@ namespace Microsoft.Maui.Controls
 			shell.Navigated += (_, __) => ApplyChanges();
 			shell.PropertyChanged += (_, p) =>
 			{
-				if (p.Is(Shell.BackButtonBehaviorProperty))
-				{
-					if (_backButtonBehavior != null)
-						_backButtonBehavior.PropertyChanged -= OnBackButtonPropertyChanged;
-
-					_backButtonBehavior =
-						_shell.GetEffectiveValue<BackButtonBehavior>(Shell.BackButtonBehaviorProperty, null);
-
-					if (_backButtonBehavior != null)
-						_backButtonBehavior.PropertyChanged += OnBackButtonPropertyChanged;
-				}
-				else if (p.IsOneOf(
+				if (p.IsOneOf(
 					Shell.CurrentItemProperty,
 					Shell.FlyoutBehaviorProperty,
-					Shell.BackButtonBehaviorProperty))
+					Shell.BackButtonBehaviorProperty,
+					Shell.NavBarIsVisibleProperty,
+					Shell.TitleViewProperty))
 				{
 					ApplyChanges();
 				}
@@ -42,25 +34,13 @@ namespace Microsoft.Maui.Controls
 			};
 
 			shell.HandlerChanged += (_, __) => ApplyChanges();
-			_backButtonBehavior =
-				_shell.GetEffectiveValue<BackButtonBehavior>(Shell.BackButtonBehaviorProperty, null);
-
-			if (_backButtonBehavior != null)
-				_backButtonBehavior.PropertyChanged += OnBackButtonPropertyChanged;
 
 			ApplyChanges();
 			_toolbarTracker.CollectionChanged += (_, __) => ToolbarItems = _toolbarTracker.ToolbarItems;
-			_toolbarTracker.AdditionalTargets = new List<Page> { shell };
-		}
-
-		void OnBackButtonPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-		{
-			ApplyChanges();
 		}
 
 		void ApplyChanges()
 		{
-
 			var currentPage = _shell.CurrentPage;
 
 			if (_currentPage != _shell.CurrentPage)
@@ -81,14 +61,14 @@ namespace Microsoft.Maui.Controls
 			if (stack.Count == 0)
 				return;
 
-			_toolbarTracker.Target = currentPage;
+			_toolbarTracker.Target = _shell;
 
 			Page previousPage = null;
 			if (stack.Count > 1)
 				previousPage = stack[stack.Count - 1];
 
 			ToolbarItems = _toolbarTracker.ToolbarItems;
-			_backButtonBehavior = _shell.GetEffectiveValue<BackButtonBehavior>(Shell.BackButtonBehaviorProperty, null);
+			UpdateBackbuttonBehavior();
 			bool backButtonVisible = true;
 
 			if (_backButtonBehavior != null)
@@ -97,27 +77,88 @@ namespace Microsoft.Maui.Controls
 			}
 
 			BackButtonVisible = backButtonVisible && stack.Count > 1;
+			BackButtonEnabled = _backButtonBehavior?.IsEnabled ?? true;
+
+			if (_backButtonBehavior?.Command != null)
+			{
+				BackButtonEnabled =
+					BackButtonEnabled &&
+					_backButtonBehavior.Command.CanExecute(_backButtonBehavior.CommandParameter);
+			}
 
 			UpdateTitle();
 
-			TitleView = _shell.GetEffectiveValue<VisualElement>(Shell.TitleViewProperty, null);
+			TitleView = _shell.GetEffectiveValue<VisualElement>(
+				Shell.TitleViewProperty,
+				Shell.GetTitleView(_shell));
 
-			bool showToolBarDefault =
-				BackButtonVisible ||
-				!String.IsNullOrEmpty(Title) ||
-				TitleView != null ||
-				_toolbarTracker.ToolbarItems.Count > 0;
-
-			IsVisible = _shell.GetEffectiveValue<bool>(Shell.NavBarIsVisibleProperty, showToolBarDefault);
+			if (_currentPage != null &&
+				_currentPage.IsSet(Shell.NavBarIsVisibleProperty))
+			{
+				IsVisible = Shell.GetNavBarIsVisible(_currentPage);
+			}
+			else
+			{
+				IsVisible = (BackButtonVisible ||
+					!String.IsNullOrEmpty(Title) ||
+					TitleView != null ||
+					_toolbarTracker.ToolbarItems.Count > 0);
+			}
 
 			if (currentPage != null)
 				DynamicOverflowEnabled = PlatformConfiguration.WindowsSpecific.Page.GetToolbarDynamicOverflowEnabled(currentPage);
+		}
+
+		ICommand _backButtonCommand;
+		void UpdateBackbuttonBehavior()
+		{
+			var bbb = Shell.GetBackButtonBehavior(_currentPage);
+
+			if (bbb == _backButtonBehavior)
+				return;
+
+			if (_backButtonBehavior != null)
+				_backButtonBehavior.PropertyChanged -= OnBackButtonPropertyChanged;
+
+			_backButtonBehavior = bbb;
+
+			if (_backButtonBehavior != null)
+				_backButtonBehavior.PropertyChanged += OnBackButtonPropertyChanged;
+
+			void OnBackButtonPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+			{
+				ApplyChanges();
+
+				if (_backButtonBehavior.Command == _backButtonCommand)
+					return;
+
+				if (_backButtonCommand != null)
+					_backButtonCommand.CanExecuteChanged -= OnBackButtonCanExecuteChanged;
+
+				_backButtonCommand = _backButtonBehavior.Command;
+
+				if (_backButtonCommand != null)
+					_backButtonCommand.CanExecuteChanged += OnBackButtonCanExecuteChanged;
+			}
+
+			void OnBackButtonCanExecuteChanged(object sender, EventArgs e)
+			{
+				BackButtonEnabled = 
+					_backButtonCommand.CanExecute(_backButtonBehavior.CommandParameter);
+			}
 		}
 
 		void OnCurrentPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.Is(Page.TitleProperty))
 				UpdateTitle();
+			else if (e.IsOneOf(
+				Shell.BackButtonBehaviorProperty,
+				Shell.NavBarIsVisibleProperty,
+				Shell.TitleViewProperty))
+			{
+				ApplyChanges();
+			}
 		}
 
 		internal void UpdateTitle()

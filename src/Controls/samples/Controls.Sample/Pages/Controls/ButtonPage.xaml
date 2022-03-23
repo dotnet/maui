@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.ButtonPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
     Title="Button">
     <views:BasePage.Resources>
         <ResourceDictionary>
@@ -186,6 +187,11 @@
                 <Button
                     Text="B" 
                     Style="{StaticResource CustomButtonStyle}" />
+                <Label
+                    Text="Using Custom Button"
+                    Style="{StaticResource Headline}"/>
+                <local:CustomButton
+                    Text="Custom Button" />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
