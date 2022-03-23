@@ -28,6 +28,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					return new ColorDrawable(color);
 				}).ConfigureAwait(false);
 
+				cancellationToken.ThrowIfCancellationRequested();
 				imageView.SetImageDrawable(drawable);
 
 				return new ImageSourceServiceLoadResult(drawable.Dispose);
