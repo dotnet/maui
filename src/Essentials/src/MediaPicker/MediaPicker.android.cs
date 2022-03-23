@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Provider;
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Media
 	partial class MediaPickerImplementation : IMediaPicker
 	{
 		public bool IsCaptureSupported
-			=> Platform.AppContext.PackageManager.HasSystemFeature(PackageManager.FeatureCameraAny);
+			=> Application.Context.PackageManager.HasSystemFeature(PackageManager.FeatureCameraAny);
 
 		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> PickAsync(options, true);
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Media
 		public async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo)
 		{
 			var intent = new Intent(Intent.ActionGetContent);
-			intent.SetType(photo ? FileSystem.MimeTypes.ImageAll : FileSystem.MimeTypes.VideoAll);
+			intent.SetType(photo ? FileMimeTypes.ImageAll : FileMimeTypes.VideoAll);
 
 			var pickerIntent = Intent.CreateChooser(intent, options?.Title);
 
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Media
 					// so this means that it will always be cleaned up by the time we need it because we are using
 					// an intermediate activity.
 
-					path = FileSystem.EnsurePhysicalPath(intent.Data);
+					path = FileSystemUtils.EnsurePhysicalPath(intent.Data);
 				}
 
 				await IntermediateActivity.StartAsync(pickerIntent, Platform.requestCodeMediaPicker, onResult: OnResult);
@@ -57,6 +58,9 @@ namespace Microsoft.Maui.Media
 
 		public async Task<FileResult> CaptureAsync(MediaPickerOptions options, bool photo)
 		{
+			if (!IsCaptureSupported)
+				throw new FeatureNotSupportedException();
+
 			await Permissions.EnsureGrantedAsync<Permissions.Camera>();
 			await Permissions.EnsureGrantedAsync<Permissions.StorageWrite>();
 
@@ -74,10 +78,10 @@ namespace Microsoft.Maui.Media
 
 				// Create the temporary file
 				var ext = photo
-					? FileSystem.Extensions.Jpg
-					: FileSystem.Extensions.Mp4;
+					? FileExtensions.Jpg
+					: FileExtensions.Mp4;
 				var fileName = Guid.NewGuid().ToString("N") + ext;
-				var tmpFile = FileSystem.GetTemporaryFile(Platform.AppContext.CacheDir, fileName);
+				var tmpFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
 
 				// Set up the content:// uri
 				AndroidUri outputUri = null;

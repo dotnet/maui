@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Media
 	partial class MediaPickerImplementation : IMediaPicker
 	{
 		public bool IsCaptureSupported
-			   => true;
+			=> true;
 
 		public async Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> await FilePicker.PickAsync(new PickOptions

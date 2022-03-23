@@ -6,7 +6,6 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
 using MobileCoreServices;
-using ObjCRuntime;
 using Photos;
 using UIKit;
 
@@ -23,13 +22,23 @@ namespace Microsoft.Maui.Media
 			=> PhotoAsync(options, true, true);
 
 		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
-			=> PhotoAsync(options, true, false);
+		{
+			if (!IsCaptureSupported)
+				throw new FeatureNotSupportedException();
+
+			return PhotoAsync(options, true, false);
+		}
 
 		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, false, true);
 
 		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
-			=> PhotoAsync(options, false, false);
+		{
+			if (!IsCaptureSupported)
+				throw new FeatureNotSupportedException();
+
+			return PhotoAsync(options, false, false);
+		}
 
 		public async Task<FileResult> PhotoAsync(MediaPickerOptions options, bool photo, bool pickExisting)
 		{

@@ -1,6 +1,5 @@
 #nullable enable
-
-using System.ComponentModel;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -13,6 +12,19 @@ namespace Microsoft.Maui.Media
 		Task<IScreenshotResult> CaptureAsync();
 	}
 
+	public interface IPlatformScreenshot : IScreenshot
+	{
+#if ANDROID
+		Task<IScreenshotResult> CaptureAsync(Android.Views.View view);
+#elif IOS || MACCATALYST
+		Task<IScreenshotResult> CaptureAsync(UIKit.UIWindow window);
+		Task<IScreenshotResult> CaptureAsync(UIKit.UIView view);
+		Task<IScreenshotResult> CaptureAsync(CoreAnimation.CALayer layer, bool skipChildren);
+#elif WINDOWS
+		Task<IScreenshotResult> CaptureAsync(UI.Xaml.UIElement element);
+#endif
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.IScreenshotResult']/Docs" />
 	public interface IScreenshotResult
 	{
@@ -23,34 +35,67 @@ namespace Microsoft.Maui.Media
 		int Height { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='OpenReadAsync']/Docs" />
-		Task<Stream> OpenReadAsync(ScreenshotFormat format = ScreenshotFormat.Png);
+		Task<Stream> OpenReadAsync(ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='CopyToAsync']/Docs" />
+		Task CopyToAsync(Stream destination, ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='ToPixelBufferAsync']/Docs" />
+		Task<byte[]> ToPixelBufferAsync();
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Screenshot']/Docs" />
-	public static partial class Screenshot
+	public static class Screenshot
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="//Member[@MemberName='IsCaptureSupported']/Docs" />
-		public static bool IsCaptureSupported
-			=> Current.IsCaptureSupported;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="//Member[@MemberName='CaptureAsync']/Docs" />
-		public static Task<IScreenshotResult> CaptureAsync()
-		{
-			if (!IsCaptureSupported)
-				throw new FeatureNotSupportedException();
-
-			return Current.CaptureAsync();
-		}
-
 		static IScreenshot? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IScreenshot Current =>
 			currentImplementation ??= new ScreenshotImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IScreenshot? implementation) =>
+		internal static void SetCurrent(IScreenshot? implementation) =>
 			currentImplementation = implementation;
+	}
+
+	public static class ScreenshotExtensions
+	{
+#if ANDROID
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Android.Views.View view)
+		{
+			if (screenshot is not IPlatformScreenshot platform)
+				throw new PlatformNotSupportedException("This implementation of IScreenshot does not implement IPlatformScreenshot.");
+
+			return platform.CaptureAsync(view);
+		}
+#elif IOS || MACCATALYST
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UIKit.UIWindow window)
+		{
+			if (screenshot is not IPlatformScreenshot platform)
+				throw new PlatformNotSupportedException("This implementation of IScreenshot does not implement IPlatformScreenshot.");
+
+			return platform.CaptureAsync(window);
+		}
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UIKit.UIView view)
+		{
+			if (screenshot is not IPlatformScreenshot platform)
+				throw new PlatformNotSupportedException("This implementation of IScreenshot does not implement IPlatformScreenshot.");
+
+			return platform.CaptureAsync(view);
+		}
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, CoreAnimation.CALayer layer, bool skipChildren)
+		{
+			if (screenshot is not IPlatformScreenshot platform)
+				throw new PlatformNotSupportedException("This implementation of IScreenshot does not implement IPlatformScreenshot.");
+
+			return platform.CaptureAsync(layer, skipChildren);
+		}
+#elif WINDOWS
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UI.Xaml.UIElement element)
+		{
+			if (screenshot is not IPlatformScreenshot platform)
+				throw new PlatformNotSupportedException("This implementation of IScreenshot does not implement IPlatformScreenshot.");
+
+			return platform.CaptureAsync(element);
+		}
+#endif
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ScreenshotFormat']/Docs" />
@@ -61,17 +106,20 @@ namespace Microsoft.Maui.Media
 		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="//Member[@MemberName='Jpeg']/Docs" />
 		Jpeg
 	}
-}
 
-namespace Microsoft.Maui.Media
-{
-	internal partial class ScreenshotResult : IScreenshotResult
+	partial class ScreenshotResult : IScreenshotResult
 	{
 		public int Width { get; }
-		
+
 		public int Height { get; }
 
-		public Task<Stream> OpenReadAsync(ScreenshotFormat format = ScreenshotFormat.Png)
-			=> PlatformOpenReadAsync(format);
+		public Task<Stream> OpenReadAsync(ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100)
+			=> PlatformOpenReadAsync(format, quality);
+
+		public Task CopyToAsync(Stream destination, ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100)
+			=> PlatformCopyToAsync(destination, format, quality);
+
+		public Task<byte[]> ToPixelBufferAsync()
+			=> PlatformToPixelBufferAsync();
 	}
 }

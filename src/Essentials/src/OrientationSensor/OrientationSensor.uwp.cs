@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		WindowsOrientationSensor sensor;
 
 		static WindowsOrientationSensor DefaultSensor =>
-		  WindowsOrientationSensor.GetDefault();
+			WindowsOrientationSensor.GetDefault();
 
 		bool PlatformIsSupported =>
 			DefaultSensor != null;

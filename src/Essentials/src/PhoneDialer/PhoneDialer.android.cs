@@ -1,10 +1,8 @@
 using System;
 using Android.App;
 using Android.Content;
-using Android.OS;
 using Android.Telephony;
 using Java.Net;
-using Java.Util;
 using Uri = Android.Net.Uri;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
@@ -43,7 +41,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 				flags |= ActivityFlags.LaunchAdjacent;
 			dialIntent.SetFlags(flags);
 
-			Platform.AppContext.StartActivity(dialIntent);
+			Application.Context.StartActivity(dialIntent);
 		}
 
 		static Intent ResolveDialIntent(string number)

@@ -1,6 +1,5 @@
 namespace Microsoft.Maui.Storage
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Preferences']/Docs" />
 	class PreferencesImplementation : IPreferences
 	{
 		public bool ContainsKey(string key, string sharedName) =>

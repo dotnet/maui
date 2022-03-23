@@ -1,8 +1,6 @@
+#nullable enable
 using System;
 using System.Numerics;
-using System.ComponentModel;
-using Microsoft.Maui.Devices.Sensors;
-using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
@@ -18,45 +16,18 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged;
 	}
-}
-namespace Microsoft.Maui.Essentials
-{
-	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensor']/Docs" />
+
 	public static partial class OrientationSensor
 	{
-		public static event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged
-		{
-			add => Current.ReadingChanged += value;
-			remove => Current.ReadingChanged -= value;
-		}
+		static IOrientationSensor? defaultImplementation;
 
-		public static bool IsSupported 
-			=> Current.IsSupported;
+		public static IOrientationSensor Default =>
+			defaultImplementation ??= new OrientationSensorImplementation();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
-		public static bool IsMonitoring { get; private set; }
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Start']/Docs" />
-		public static void Start(SensorSpeed sensorSpeed)
-			=> Current.Start(sensorSpeed);
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Stop'][1]/Docs" />
-		public static void Stop()
-			=> Current.Stop();
-
-#nullable enable
-		static IOrientationSensor? currentImplementation;
-
-		public static IOrientationSensor Current =>
-			currentImplementation ??= new OrientationSensorImplementation();
-
-		internal static void SetCurrent(IOrientationSensor? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
+		internal static void SetDefault(IOrientationSensor? implementation) =>
+			defaultImplementation = implementation;
 	}
-}
-namespace Microsoft.Maui.Devices.Sensors
-{
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensorChangedEventArgs']/Docs" />
 	public class OrientationSensorChangedEventArgs : EventArgs
 	{
@@ -96,7 +67,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			left.Equals(right);
 
 		public static bool operator !=(OrientationSensorData left, OrientationSensorData right) =>
-		   !left.Equals(right);
+			!left.Equals(right);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
 		public override int GetHashCode() =>
@@ -116,7 +87,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		SensorSpeed SensorSpeed { get; set; } = SensorSpeed.Default;
 
-		public event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged;
+		public event EventHandler<OrientationSensorChangedEventArgs>? ReadingChanged;
 
 		public bool IsSupported
 			=> PlatformIsSupported;
@@ -145,7 +116,6 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Stop'][2]/Docs" />
 		public void Stop()
 		{
 			if (!PlatformIsSupported)
@@ -170,12 +140,11 @@ namespace Microsoft.Maui.Devices.Sensors
 		internal void RaiseReadingChanged(OrientationSensorData reading)
 		{
 			var args = new OrientationSensorChangedEventArgs(reading);
-			
+
 			if (UseSyncContext)
 				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, args));
 			else
 				ReadingChanged?.Invoke(null, args);
 		}
-
 	}
 }

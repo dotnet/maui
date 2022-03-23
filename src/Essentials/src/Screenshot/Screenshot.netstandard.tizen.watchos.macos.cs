@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Media
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 
-	internal partial class ScreenshotResult
+	partial class ScreenshotResult
 	{
 		ScreenshotResult()
 		{

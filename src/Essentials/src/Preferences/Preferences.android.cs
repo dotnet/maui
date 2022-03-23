@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Storage
 {
 	class PreferencesImplementation : IPreferences
 	{
-		static readonly object locker = new object();
+		readonly object locker = new object();
 
 		public bool ContainsKey(string key, string sharedName)
 		{

@@ -5,7 +5,6 @@ using Foundation;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.ApplicationModel

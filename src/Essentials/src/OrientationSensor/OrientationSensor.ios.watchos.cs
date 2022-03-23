@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Numerics;
 using CoreMotion;
@@ -7,16 +8,20 @@ namespace Microsoft.Maui.Devices.Sensors
 {
 	partial class OrientationSensorImplementation : IOrientationSensor
 	{
+		static CMMotionManager? motionManager;
+
+		static CMMotionManager MotionManager =>
+			motionManager ??= new CMMotionManager();
+
 		bool PlatformIsSupported =>
-			Platform.MotionManager?.DeviceMotionAvailable ?? false;
+			MotionManager.GyroAvailable;
 
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			var manager = Platform.MotionManager;
-			manager.DeviceMotionUpdateInterval = sensorSpeed.ToPlatform();
+			MotionManager.DeviceMotionUpdateInterval = sensorSpeed.ToPlatform();
 
 			// use a fixed reference frame where X points north and Z points vertically into the sky
-			manager.StartDeviceMotionUpdates(CMAttitudeReferenceFrame.XTrueNorthZVertical, Platform.GetCurrentQueue(), DataUpdated);
+			MotionManager.StartDeviceMotionUpdates(CMAttitudeReferenceFrame.XTrueNorthZVertical, NSOperationQueue.CurrentQueue, DataUpdated);
 		}
 
 		void DataUpdated(CMDeviceMotion data, NSError error)
@@ -41,6 +46,6 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 		void PlatformStop() =>
-			Platform.MotionManager?.StopDeviceMotionUpdates();
+			MotionManager.StopDeviceMotionUpdates();
 	}
 }
