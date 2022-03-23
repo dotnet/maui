@@ -412,8 +412,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
 
-			aview.ScaleX = (float)view.Scale * (float)view.ScaleX;
-			aview.ScaleY = (float)view.Scale * (float)view.ScaleY;
+			var scale = view.Scale;
+
+			if (double.IsNaN(scale))
+				return;
+
+			aview.ScaleX = (float)scale * (float)view.ScaleX;
+			aview.ScaleY = (float)scale * (float)view.ScaleY;
 		}
 
 		[PortHandler]
