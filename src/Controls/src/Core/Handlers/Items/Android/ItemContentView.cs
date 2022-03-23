@@ -46,7 +46,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				RemoveView(platformView);
 			}
 
-			Content?.Dispose();
 			Content = null;
 			_size = null;
 		}
