@@ -1,23 +1,19 @@
 #nullable enable
-using System;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SliderHandler : ViewHandler<ISlider, MauiSlider>
+	public partial class SliderHandler : ViewHandler<ISlider, Slider>
 	{
-		static Brush? DefaultForegroundColor;
-		static Brush? DefaultBackgroundColor;
-		static Brush? DefaultThumbColor;
-
 		PointerEventHandler? _pointerPressedHandler;
 		PointerEventHandler? _pointerReleasedHandler;
 
-		protected override MauiSlider CreatePlatformView()
+		protected override Slider CreatePlatformView()
 		{
+			// MauiSlider is an internal type
 			var slider = new MauiSlider
 			{
 				IsThumbToolTipEnabled = false
@@ -26,12 +22,9 @@ namespace Microsoft.Maui.Handlers
 			return slider;
 		}
 
-		protected override void ConnectHandler(MauiSlider platformView)
+		protected override void ConnectHandler(Slider platformView)
 		{
-			SetupDefaults(PlatformView);
-
 			platformView.ValueChanged += OnPlatformValueChanged;
-			platformView.Ready += OnPlatformViewReady;
 
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
@@ -41,10 +34,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.AddHandler(UIElement.PointerCanceledEvent, _pointerReleasedHandler, true);
 		}
 
-		protected override void DisconnectHandler(MauiSlider platformView)
+		protected override void DisconnectHandler(Slider platformView)
 		{
 			platformView.ValueChanged -= OnPlatformValueChanged;
-			platformView.Ready -= OnPlatformViewReady;
 
 			platformView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
 			platformView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
@@ -52,13 +44,6 @@ namespace Microsoft.Maui.Handlers
 
 			_pointerPressedHandler = null;
 			_pointerReleasedHandler = null;
-		}
-
-		void SetupDefaults(MauiSlider platformView)
-		{
-			DefaultForegroundColor = platformView.Foreground;
-			DefaultBackgroundColor = platformView.Background;
-			DefaultThumbColor = platformView.Thumb?.Background;
 		}
 
 		public static void MapMinimum(ISliderHandler handler, ISlider slider)
@@ -78,25 +63,27 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimumTrackColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.PlatformView?.UpdateMinimumTrackColor(slider, DefaultForegroundColor);
+			handler.PlatformView?.UpdateMinimumTrackColor(slider);
 		}
 
 		public static void MapMaximumTrackColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.PlatformView?.UpdateMaximumTrackColor(slider, DefaultBackgroundColor);
+			handler.PlatformView?.UpdateMaximumTrackColor(slider);
 		}
 
 		public static void MapThumbColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.PlatformView?.UpdateThumbColor(slider, DefaultThumbColor);
+			handler.PlatformView?.UpdateThumbColor(slider);
 		}
 
 		public static void MapThumbImageSource(ISliderHandler handler, ISlider slider)
 		{
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 
-			handler.PlatformView?.UpdateThumbImageSourceAsync(slider, provider)
- 				.FireAndForget(handler);
+			if (handler?.PlatformView is MauiSlider mauiSlider)
+			{
+				mauiSlider.UpdateThumbImageSourceAsync(slider, provider).FireAndForget(handler);
+			}
 		}
 
 		void OnPlatformValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
@@ -113,12 +100,6 @@ namespace Microsoft.Maui.Handlers
 		void OnPointerReleased(object? sender, PointerRoutedEventArgs e)
 		{
 			VirtualView?.DragCompleted();
-		}
-
-		void OnPlatformViewReady(object? sender, EventArgs e)
-		{
-			if (VirtualView != null)
-				PlatformView?.UpdateThumbColor(VirtualView, DefaultThumbColor);
 		}
 	}
 }

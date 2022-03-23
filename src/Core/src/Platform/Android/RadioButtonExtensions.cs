@@ -1,7 +1,7 @@
 ﻿using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	public static class RadioButtonExtensions
 	{

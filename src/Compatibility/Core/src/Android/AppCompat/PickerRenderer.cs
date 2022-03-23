@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class PickerRendererBase<TControl> : ViewRenderer<Picker, TControl>, IPickerRenderer
 		where TControl : global::Android.Views.View
 	{
@@ -189,6 +190,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		abstract protected void UpdateGravity();
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PickerRenderer : PickerRendererBase<EditText>
 	{
 		TextColorSwitcher _textColorSwitcher;

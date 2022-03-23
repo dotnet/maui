@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Hosting
 			}
 
 			builder.Services.TryAddSingleton<IImageSourceServiceProvider>(svcs => new ImageSourceServiceProvider(svcs.GetRequiredService<IImageSourceServiceCollection>(), svcs));
-			builder.Services.TryAddSingleton<IImageSourceServiceCollection, ImageSourceServiceBuilder>();
+			builder.Services.TryAddSingleton<IImageSourceServiceCollection>(svcs => new ImageSourceServiceBuilder(svcs.GetServices<ImageSourceRegistration>()));
 
 			return builder;
 		}

@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class LabelRenderer : ViewRenderer<Label, NativeLabel>
 	{
 		SizeRequest _perfectSize;
@@ -594,7 +595,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			// default value of color documented to be black in iOS docs
 #if __MOBILE__
-			Control.TextColor = textColor.ToUIColor(ColorExtensions.LabelColor);
+			Control.TextColor = textColor.ToUIColor(Maui.Platform.ColorExtensions.LabelColor);
 #else
 			var alignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 			var textWithColor = new NSAttributedString(Element.Text ?? "", font: Element.ToNSFont(), foregroundColor: textColor.ToNSColor(ColorExtensions.TextColor), paragraphStyle: new NSMutableParagraphStyle() { Alignment = alignment });

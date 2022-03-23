@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Obsolete]
 	public static class VisualElementExtensions
 	{
 		public static IVisualElementRenderer GetOrCreateRenderer(this VisualElement self)

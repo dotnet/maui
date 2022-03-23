@@ -12,6 +12,6 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/EffectiveVisualExtensions.xml" path="//Member[@MemberName='IsMatchParent']/Docs" />
 		public static bool IsMatchParent(this IVisual visual) => visual == VisualMarker.MatchParent;
 		/// <include file="../../docs/Microsoft.Maui.Controls/EffectiveVisualExtensions.xml" path="//Member[@MemberName='IsMaterial']/Docs" />
-		public static bool IsMaterial(this IVisual visual) => visual == VisualMarker.Material;
+		public static bool IsMaterial(this IVisual visual) => false; // visual == VisualMarker.Material;
 	}
 }

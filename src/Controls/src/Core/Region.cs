@@ -51,13 +51,13 @@ namespace Microsoft.Maui.Controls
 			return new Region(positions);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Contains'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Contains'][1]/Docs" />
 		public bool Contains(Point pt)
 		{
 			return Contains(pt.X, pt.Y);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Contains'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Contains'][2]/Docs" />
 		public bool Contains(double x, double y)
 		{
 			if (Regions == null)
@@ -79,13 +79,13 @@ namespace Microsoft.Maui.Controls
 			return Inflate(_inflation.Value.Left * -1, _inflation.Value.Top * -1, _inflation.Value.Right * -1, _inflation.Value.Bottom * -1);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Inflate'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Inflate'][1]/Docs" />
 		public Region Inflate(double size)
 		{
 			return Inflate(size, size, size, size);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Inflate'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Inflate'][2]/Docs" />
 		public Region Inflate(double left, double top, double right, double bottom)
 		{
 			if (Regions == null)

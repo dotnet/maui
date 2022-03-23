@@ -15,6 +15,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ImageRenderer : ViewRenderer<Image, FormsUIImageView>, IImageVisualElementRenderer
 	{
 		bool _isDisposed;
@@ -232,7 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 	public sealed class FontImageSourceHandler : IImageSourceHandler
 	{
-		readonly Color _defaultColor = ColorExtensions.LabelColor.ToColor();
+		readonly Color _defaultColor = Maui.Platform.ColorExtensions.LabelColor.ToColor();
 
 		[Preserve(Conditional = true)]
 		public FontImageSourceHandler()

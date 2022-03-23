@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		AutoPackage = 1 << 2
 	}
 
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer instead")]
 	public class VisualElementRenderer<TElement> : NativeView, IVisualElementRenderer, IEffectControlProvider where TElement : VisualElement
 	{
 		readonly NativeColor _defaultColor = NativeColor.Clear;

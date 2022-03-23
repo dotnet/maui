@@ -87,6 +87,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public int ZIndex { get; set; }
 
+		public bool InputTransparent { get; set; }
+
 		public Size Arrange(Rect bounds)
 		{
 			Frame = bounds;
@@ -124,6 +126,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Size Measure(double widthConstraint, double heightConstraint)
 		{
+			if (Handler != null)
+			{ 
+				return Handler.GetDesiredSize(widthConstraint, heightConstraint);
+			}
+
 			return new Size(widthConstraint, heightConstraint);
 		}
 

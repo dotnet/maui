@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category(TestCategory.VisualElement)]
+	[Category(TestCategory.Element)]
 	public partial class ElementTests : HandlerTestBase
 	{
 		[Theory("IsInAccessibleTree initializes correctly")]
