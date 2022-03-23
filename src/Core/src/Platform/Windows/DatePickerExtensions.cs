@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 		{
 			platformDatePicker.Date = dateTime;
 		}
-	
+
 		public static void UpdateMinimumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			platformDatePicker.MinDate = datePicker.MinimumDate;
@@ -37,10 +37,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateFont(this CalendarDatePicker platformDatePicker, IDatePicker datePicker, IFontManager fontManager) =>
 			platformDatePicker.UpdateFont(datePicker.Font, fontManager);
 
-		public static void UpdateTextColor(this CalendarDatePicker platformDatePicker, IDatePicker datePicker, WBrush? defaultForeground)
+		public static void UpdateTextColor(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			Color textColor = datePicker.TextColor;
-			platformDatePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToPlatform()) : textColor.ToPlatform();
+			if (textColor != null)
+				platformDatePicker.Foreground = textColor.ToPlatform();
 		}
 	}
 }

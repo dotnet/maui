@@ -8,6 +8,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	public class VisualElementPackager : IDisposable
 	{
 		readonly EventHandler<ElementEventArgs> _childAddedHandler;

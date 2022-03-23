@@ -13,5 +13,16 @@ namespace Microsoft.Maui.Handlers
 		{
 			arg1.PlatformView.UpdateTitle(arg2);
 		}
+
+		private protected override void OnDisconnectHandler(object platformView)
+		{
+			base.OnDisconnectHandler(platformView);
+			if (platformView is MauiToolbar mauiToolbar)
+			{
+				var navRootManager = MauiContext?.GetNavigationRootManager();
+				if (navRootManager?.ToolBar == mauiToolbar)
+					navRootManager.SetToolbar(null);
+			}
+		}
 	}
 }

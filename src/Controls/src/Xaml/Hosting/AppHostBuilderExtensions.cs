@@ -138,10 +138,13 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.SetToInitialized();
 			DependencyService.Register<Xaml.ResourcesLoader>();
 			DependencyService.Register<Xaml.ValueConverterProvider>();
-			DependencyService.Register<ResourcesProvider>();
 			DependencyService.Register<PlatformSizeService>();
 			DependencyService.Register<PlatformInvalidate>();
+
+#pragma warning disable CS0612 // Type or member is obsolete
+			DependencyService.Register<ResourcesProvider>();
 			DependencyService.Register<FontNamedSizeService>();
+#pragma warning restore CS0612 // Type or member is obsolete
 #endif
 
 			builder.ConfigureImageSourceHandlers();

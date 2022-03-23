@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -9,9 +10,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP
 	/// </summary>
 	static class BootstrapHelper
 	{
-
 		// Do not overload this method. ICLRRuntimeHost2::CreateDelegate can not resolve overloaded methods.
 		[PreserveSig]
+		[RequiresUnreferencedCode("The assembly, type, or method may have been trimmed if it wasn't preserved another way.")]
 		private static int Bootstrap(
 			[MarshalAs(UnmanagedType.LPWStr)] string assemblyPath,
 			[MarshalAs(UnmanagedType.LPWStr)] string typeName,

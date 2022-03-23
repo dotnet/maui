@@ -21,6 +21,12 @@ namespace Microsoft.Maui.Essentials
 		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
 		static extern IntPtr IntPtr_objc_msgSend(IntPtr receiver, IntPtr selector);
 
+		public static byte[] RenderAsBmp(this UIWindow window, object obj, nfloat scale, bool skipChildren = true)
+		{
+			using (var image = Render(window, obj, scale, skipChildren))
+				return image != null ? image.RenderAsBmp() : null;
+		}
+
 		public static byte[] RenderAsPng(this UIWindow window, object obj, nfloat scale, bool skipChildren = true)
 		{
 			using (var image = Render(window, obj, scale, skipChildren))
@@ -32,6 +38,8 @@ namespace Microsoft.Maui.Essentials
 			using (var image = Render(window, obj, scale, skipChildren))
 				return image != null ? image.RenderAsJpeg() : null;
 		}
+
+		public static byte[] RenderAsBmp(this UIImage image) => image.AsBMP();
 
 		public static byte[] RenderAsPng(this UIImage image) => image.AsPNG().AsImageBytes();
 
@@ -222,6 +230,89 @@ namespace Microsoft.Maui.Essentials
 		}
 	}
 
+	public static class ScreenshotExtensions
+	{
+		const int PixelDataOffset = 54;
+
+		public static byte[] AsBMP (this UIImage image)
+		{
+			var cgimage = image.CGImage;
+			var width = cgimage.Width;
+			var height = cgimage.Height;
+
+			var data = InitializeByteArray(width, height);
+			var colorSpace = CGColorSpace.CreateDeviceRGB();
+			var rawData = Marshal.AllocHGlobal(height * width * 4);
+			var context = new CGBitmapContext(
+				rawData, width, height, 8, 4 * width, colorSpace, CGImageAlphaInfo.PremultipliedLast
+			);
+			context.DrawImage(new CGRect(0.0f, 0.0f, (float)width, (float)height), cgimage);
+			byte[] pixelData = new byte[height * width * 4];
+			Marshal.Copy(rawData, pixelData, 0, pixelData.Length);
+			Marshal.FreeHGlobal(rawData);
+
+			nint di = PixelDataOffset;
+			nint si;
+			for (int y = 0; y < height; y++)
+			{
+				si = (height - y - 1) * 4 * width;
+				for (int x = 0; x < width; x++)
+				{
+					pixelData.CopyFlipPixel(si, data, di);
+					di += 4;
+					si += 4;
+				}
+			}
+			return data;
+		}
+
+		private static void CopyFlipPixel(this byte[] source, nint sourceOffset, byte[] destination, nint destinationOffset)
+		{
+			nint S = sourceOffset;
+			nint D = destinationOffset + 2;
+			destination[D--] = source[S++];
+			destination[D--] = source[S++];
+			destination[D--] = source[S++];
+			destination[destinationOffset + 3] = source[S];
+		}
+
+		static byte[] InitializeByteArray(nint width, nint height)
+		{
+			var rawPixelDataSize = width * height * 4;
+			var size = rawPixelDataSize + 14 + 40;
+			var data = new byte[size];
+			data[0] = 0x42;
+			data[1] = 0x4D;
+			data.SetLong(0x2, size);
+			data.SetLong(0xA, PixelDataOffset);
+			data.SetLong(0xE, 40);
+			data.SetLong(0x12, width);
+			data.SetLong(0x16, height);
+			data.SetShort(0x1A, 1);
+			data.SetShort(0x1C, 32);
+			data.SetLong(0x22, rawPixelDataSize);
+			data.SetLong(0x26, 2835);
+			data.SetLong(0x2A, 2835);
+
+			return data;
+		}
+
+		static void SetShort(this byte[] data, int offset, nint value)
+		{
+			var byts = BitConverter.GetBytes(value);
+			if (!BitConverter.IsLittleEndian)
+				Array.Reverse(byts);
+			Array.Copy(byts, 0, data, offset, byts.Length);
+		}
+
+		static void SetLong(this byte[] data, nint offset, nint value)
+		{
+			var byts = BitConverter.GetBytes(value);
+			if (!BitConverter.IsLittleEndian)
+				Array.Reverse(byts);
+			Array.Copy(byts, 0, data, offset, byts.Length);
+		}
+	}
 }
 
 namespace Microsoft.Maui.Essentials.Implementations

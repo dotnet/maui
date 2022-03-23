@@ -96,13 +96,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				var displayedPage = CurrentItem?.DisplayedPage;
-				if (displayedPage == null)
-					return true;
-
 				Shell shell = Parent as Shell;
 				if (shell == null)
 					return true;
+
+				var displayedPage = shell.GetCurrentShellPage();
 
 				if (ShellItemController.GetItems().Count <= 1)
 					return false;
