@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Layouts
 			var desiredWidth = view.DesiredSize.Width;
 			var startX = bounds.X;
 
-			if (view.FlowDirection == FlowDirection.LeftToRight)
+			if (view.ShouldArrangeLeftToRight())
 			{
 				return AlignHorizontal(startX, margin.Left, margin.Right, bounds.Width, desiredWidth, alignment);
 			}
@@ -196,5 +196,18 @@ namespace Microsoft.Maui.Layouts
 
 			return size;
 		}
+
+		public static bool ShouldArrangeLeftToRight(this IView view) 
+		{
+			var viewFlowDirection = view.GetEffectiveFlowDirection();
+
+			// The various platforms handle layout and flow direction in different ways; some platforms
+			// helpfully flip the coordinates of arrange calls when in RTL mode, others don't
+			// So this gives us a place to ask the platform (via LayoutHandler) whether we need to do 
+			// the layout work to flip RTL stuff in our cross-platform layouts or not.
+			var layoutFlowDirection = LayoutHandler.GetLayoutFlowDirection(viewFlowDirection);
+
+			return layoutFlowDirection == FlowDirection.LeftToRight;
+		} 
 	}
 }
