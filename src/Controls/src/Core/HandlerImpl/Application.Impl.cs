@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls
 			{
 				window = CreateWindow(activationState);
 
-				if (_pendingMainPage != null && window.Page != null && window.Page != _pendingMainPage)
+				if (_singleWindowMainPage != null && window.Page != null && window.Page != _singleWindowMainPage)
 					throw new InvalidOperationException($"Both {nameof(MainPage)} was set and {nameof(Application.CreateWindow)} was overridden to provide a page.");
 			}
 
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void RemoveWindow(Window window)
 		{
-			if (_pendingMainPage != null)
+			if (_singleWindowMainPage != null)
 				return;
 
 			// Window was closed, stop tracking it
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls
 				windowElement.Parent = null;
 				OnChildRemoved(windowElement, oldIndex);
 
-				if (_pendingMainPage != null)
+				if (_singleWindowMainPage != null)
 					window.Page = null;
 			}
 
@@ -126,8 +126,8 @@ namespace Microsoft.Maui.Controls
 			if (Windows.Count > 0)
 				return Windows[0];
 
-			if (_pendingMainPage != null)
-				return new Window(_pendingMainPage);
+			if (_singleWindowMainPage != null)
+				return new Window(_singleWindowMainPage);
 
 			throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
 		}
