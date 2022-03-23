@@ -15,6 +15,7 @@ using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using System.Threading.Tasks;
 
 #if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Components.WebView.Maui;
@@ -233,6 +234,16 @@ namespace Maui.Controls.Sample
 
 			// If someone wanted to completely turn off the CascadeInputTransparent behavior in their application, this next line would be an easy way to do it
 			// Microsoft.Maui.Controls.Layout.ControlsLayoutMapper.ModifyMapping(nameof(Microsoft.Maui.Controls.Layout.CascadeInputTransparent), (_, _, _) => { });
+
+			System.AppDomain.CurrentDomain.UnhandledException += (sender, error) =>
+			{
+				// MessageBox.Show(text: error.ExceptionObject.ToString(), caption: "Error");
+			};
+
+			TaskScheduler.UnobservedTaskException += (s, e) =>
+			{
+
+			};
 
 			return appBuilder.Build();
 		}

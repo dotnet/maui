@@ -82,6 +82,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 			}
 			_webviewManager.Navigate("/");
+
+
+			AppDomain.CurrentDomain.UnhandledException += (sender, error) =>
+			{
+			};
 		}
 
 		internal IFileProvider CreateFileProvider(string contentRootDir)

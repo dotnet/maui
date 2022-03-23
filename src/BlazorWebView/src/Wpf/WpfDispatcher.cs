@@ -12,12 +12,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 	{
 		private readonly WindowsDispatcher _windowsDispatcher;
 
-		public WpfDispatcher(WindowsDispatcher windowsDispatcher)
+		public WpfDispatcher(WindowsDispatcher windowsDispatcher!!)
 		{
-			_windowsDispatcher = windowsDispatcher ?? throw new ArgumentNullException(nameof(windowsDispatcher));
+			_windowsDispatcher = windowsDispatcher;
 		}
 
-		private static Action<Exception> RethrowException = exception =>
+		private static readonly Action<Exception> RethrowException = exception =>
 			ExceptionDispatchInfo.Capture(exception).Throw();
 
 		public override bool CheckAccess()

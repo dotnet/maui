@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
 
@@ -13,29 +14,105 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_dispatcher = dispatcher;
 		}
 
+		private static readonly Action<Exception> RethrowException = exception =>
+			ExceptionDispatchInfo.Capture(exception).Throw();
+
 		public override bool CheckAccess()
 		{
 			return !_dispatcher.IsDispatchRequired;
 		}
 
-		public override Task InvokeAsync(Action workItem)
+		public override async Task InvokeAsync(Action workItem)
 		{
-			return _dispatcher.DispatchAsync(workItem);
+			await _dispatcher.DispatchAsync(workItem);
+
+			var current = System.AppDomain.CurrentDomain;
+
+			//try
+			//{
+			//	if (CheckAccess())
+			//	{
+			//		workItem();
+			//	}
+			//	else
+			//	{
+			//		await _dispatcher.DispatchAsync(workItem);
+			//	}
+			//}
+			//catch (Exception ex)
+			//{
+			//	_ = _dispatcher.DispatchAsync(() => ExceptionDispatchInfo.Capture(ex).Throw());
+			//	throw;
+			//}
 		}
 
-		public override Task InvokeAsync(Func<Task> workItem)
+		public override async Task InvokeAsync(Func<Task> workItem)
 		{
-			return _dispatcher.DispatchAsync(workItem);
+			try
+			{
+				if (CheckAccess())
+				{
+					await workItem();
+				}
+				else
+				{
+					await _dispatcher.DispatchAsync(workItem);
+				}
+			}
+			catch (Exception ex)
+			{
+				// TODO: Determine whether this is the right kind of rethrowing pattern
+				// You do have to do something like this otherwise unhandled exceptions
+				// throw from inside Dispatcher.InvokeAsync are simply lost.
+				_ = _dispatcher.DispatchAsync(() => ExceptionDispatchInfo.Capture(ex).Throw());
+				throw;
+			}
 		}
 
-		public override Task<TResult> InvokeAsync<TResult>(Func<TResult> workItem)
+		public override async Task<TResult> InvokeAsync<TResult>(Func<TResult> workItem)
 		{
-			return _dispatcher.DispatchAsync(workItem);
+			try
+			{
+				if (CheckAccess())
+				{
+					return workItem();
+				}
+				else
+				{
+					return await _dispatcher.DispatchAsync(workItem);
+				}
+			}
+			catch (Exception ex)
+			{
+				// TODO: Determine whether this is the right kind of rethrowing pattern
+				// You do have to do something like this otherwise unhandled exceptions
+				// throw from inside Dispatcher.InvokeAsync are simply lost.
+				_ = _dispatcher.DispatchAsync(() => ExceptionDispatchInfo.Capture(ex).Throw());
+				throw;
+			}
 		}
 
-		public override Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> workItem)
+		public override async Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> workItem)
 		{
-			return _dispatcher.DispatchAsync(workItem);
+			try
+			{
+				if (CheckAccess())
+				{
+					return await workItem();
+				}
+				else
+				{
+					return await _dispatcher.DispatchAsync(workItem);
+				}
+			}
+			catch (Exception ex)
+			{
+				// TODO: Determine whether this is the right kind of rethrowing pattern
+				// You do have to do something like this otherwise unhandled exceptions
+				// throw from inside Dispatcher.InvokeAsync are simply lost.
+				_ = _dispatcher.DispatchAsync(() => ExceptionDispatchInfo.Capture(ex).Throw());
+				throw;
+			}
 		}
 	}
 }

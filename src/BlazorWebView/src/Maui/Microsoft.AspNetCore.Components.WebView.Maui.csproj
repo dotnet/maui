@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authorization" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebView" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="6.0.4" />
     <PackageReference Include="Microsoft.JSInterop" />
   </ItemGroup>
 

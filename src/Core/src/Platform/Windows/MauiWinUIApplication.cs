@@ -32,6 +32,21 @@ namespace Microsoft.Maui
 
 			Application = Services.GetRequiredService<IApplication>();
 
+
+			System.AppDomain.CurrentDomain.UnhandledException += (sender, error) =>
+			{
+			};
+
+			System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (s, e) =>
+			{
+
+			};
+
+			UI.Xaml.Application.Current.UnhandledException += (se, e) =>
+			{
+
+			};
+
 			this.SetApplicationHandler(Application, applicationContext);
 
 			this.CreatePlatformWindow(Application, args);

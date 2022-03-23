@@ -53,7 +53,7 @@ namespace BlazorWinFormsApp
 
 		private void _webViewActionButton_Click(object sender, EventArgs e)
 		{
-			blazorWebView1.WebView.CoreWebView2.ExecuteScriptAsync("alert('hello from native UI')");
+			throw new Exception("some exception");
 		}
 
 		private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -69,6 +69,10 @@ namespace BlazorWinFormsApp
 		private void sendScriptalertToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			blazorWebView1.WebView.CoreWebView2.ExecuteScriptAsync("alert('hello from a native menu')");
+		}
+
+		private void button2_Click(object sender, EventArgs e)
+		{
 		}
 	}
 }

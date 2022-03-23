@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Runtime.ExceptionServices;
 using Microsoft.UI.Dispatching;
+using Windows.UI.Core;
 
 namespace Microsoft.Maui.Dispatching
 {
@@ -16,7 +18,18 @@ namespace Microsoft.Maui.Dispatching
 			!_dispatcherQueue.HasThreadAccess;
 
 		bool DispatchImplementation(Action action) =>
-			_dispatcherQueue.TryEnqueue(() => action());
+			_dispatcherQueue.TryEnqueue(() =>
+			{
+				try
+				{
+					action();
+				}
+				catch (Exception ex)
+				{
+					_ = Microsoft.UI.Xaml.Window.Current.Dispatcher.RunAsync(CoreDispatcherPriority.High, () => ExceptionDispatchInfo.Capture(ex).Throw());
+				}
+
+			});
 
 		bool DispatchDelayedImplementation(TimeSpan delay, Action action)
 		{
