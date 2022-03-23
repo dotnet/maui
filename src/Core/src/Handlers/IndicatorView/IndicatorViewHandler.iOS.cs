@@ -3,31 +3,31 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, MauiPageControl>
+	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, UIPageControl>
 	{
-		protected override MauiPageControl CreatePlatformView() => new MauiPageControl();
+		protected override UIPageControl CreatePlatformView() => new MauiPageControl();
 
-		protected override void ConnectHandler(MauiPageControl platformView)
+		protected override void ConnectHandler(UIPageControl platformView)
 		{
 			base.ConnectHandler(platformView);
-			PlatformView?.SetIndicatorView(VirtualView);
+			(PlatformView as MauiPageControl)?.SetIndicatorView(VirtualView);
 			UpdateIndicator();
 		}
 
-		protected override void DisconnectHandler(MauiPageControl platformView)
+		protected override void DisconnectHandler(UIPageControl platformView)
 		{
 			base.DisconnectHandler(platformView);
-			PlatformView?.SetIndicatorView(null);
+			(PlatformView as MauiPageControl)?.SetIndicatorView(null);
 		}
 
 		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.PlatformView?.UpdateIndicatorCount();
+			(handler.PlatformView as MauiPageControl)?.UpdateIndicatorCount();
 		}
 
 		public static void MapPosition(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.PlatformView?.UpdatePosition();
+			(handler.PlatformView as MauiPageControl)?.UpdatePosition();
 		}
 
 		public static void MapHideSingle(IIndicatorViewHandler handler, IIndicatorView indicator)
@@ -37,12 +37,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMaximumVisible(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.PlatformView?.UpdateIndicatorCount();
+			(handler.PlatformView as MauiPageControl)?.UpdateIndicatorCount();
 		}
 
 		public static void MapIndicatorSize(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.PlatformView?.UpdateIndicatorSize(indicator);
+			(handler.PlatformView as MauiPageControl)?.UpdateIndicatorSize(indicator);
 		}
 
 		public static void MapIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator)
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIndicatorShape(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.PlatformView?.UpdateIndicatorShape(indicator);
+			(handler.PlatformView as MauiPageControl)?.UpdateIndicatorShape(indicator);
 		}
 
 		void UpdateIndicator()

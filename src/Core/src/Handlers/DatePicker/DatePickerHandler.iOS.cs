@@ -5,11 +5,14 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
+	public partial class DatePickerHandler : ViewHandler<IDatePicker, UIView>
 	{
+		MauiDatePicker? GetMauiDatePicker() => PlatformView as MauiDatePicker;
+		static MauiDatePicker? GetMauiDatePicker(IDatePickerHandler handler) => handler.PlatformView as MauiDatePicker;
+
 		UIDatePicker? _picker;
 
-		protected override MauiDatePicker CreatePlatformView()
+		protected override UIView CreatePlatformView()
 		{
 			MauiDatePicker platformDatePicker = new MauiDatePicker();
 
@@ -47,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 
 		internal UIDatePicker? DatePickerDialog { get { return _picker; } }
 
-		protected override void ConnectHandler(MauiDatePicker platformView)
+		protected override void ConnectHandler(UIView platformView)
 		{
 			if (_picker is UIDatePicker picker)
 			{
@@ -65,7 +68,7 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiDatePicker platformView)
+		protected override void DisconnectHandler(UIView platformView)
 		{
 			if (_picker != null)
 			{
@@ -80,48 +83,48 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var picker = (handler as DatePickerHandler)?._picker;
-			handler.PlatformView?.UpdateFormat(datePicker, picker);
+			GetMauiDatePicker(handler)?.UpdateFormat(datePicker, picker);
 		}
 
 		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var picker = (handler as DatePickerHandler)?._picker;
-			handler.PlatformView?.UpdateDate(datePicker, picker);
+			GetMauiDatePicker(handler)?.UpdateDate(datePicker, picker);
 		}
 
 		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._picker);
+				GetMauiDatePicker(handler)?.UpdateMinimumDate(datePicker, platformHandler._picker);
 		}
 
 		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._picker);
+				GetMauiDatePicker(handler)?.UpdateMaximumDate(datePicker, platformHandler._picker);
 		}
 
 		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateCharacterSpacing(datePicker);
+			GetMauiDatePicker(handler)?.UpdateCharacterSpacing(datePicker);
 		}
 
 		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.PlatformView?.UpdateFont(datePicker, fontManager);
+			GetMauiDatePicker(handler)?.UpdateFont(datePicker, fontManager);
 		}
 
 		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateTextColor(datePicker);
+			GetMauiDatePicker(handler)?.UpdateTextColor(datePicker);
 		}
-    
+
 		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateFlowDirection(datePicker);
-			handler.PlatformView?.UpdateTextAlignment(datePicker);
+			GetMauiDatePicker(handler)?.UpdateTextAlignment(datePicker);
 		}
 
 		void OnValueChanged(object? sender, EventArgs? e)

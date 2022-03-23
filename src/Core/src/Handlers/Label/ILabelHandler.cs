@@ -1,5 +1,5 @@
 ﻿#if __IOS__ || MACCATALYST
-using PlatformView = Microsoft.Maui.Platform.MauiLabel;
+using PlatformView = UIKit.UILabel;
 #elif MONOANDROID
 using PlatformView = AndroidX.AppCompat.Widget.AppCompatTextView;
 #elif WINDOWS

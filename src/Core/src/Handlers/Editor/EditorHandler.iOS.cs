@@ -7,26 +7,30 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : ViewHandler<IEditor, MauiTextView>
+	public partial class EditorHandler : ViewHandler<IEditor, UITextView>
 	{
 		static readonly int BaseHeight = 30;
 
-		protected override MauiTextView CreatePlatformView() => new MauiTextView();
+		protected override UITextView CreatePlatformView() => new MauiTextView();
 
-		protected override void ConnectHandler(MauiTextView platformView)
+		protected override void ConnectHandler(UITextView platformView)
 		{
 			platformView.ShouldChangeText += OnShouldChangeText;
 			platformView.Started += OnStarted;
 			platformView.Ended += OnEnded;
-			platformView.TextSetOrChanged += OnTextPropertySet;
+
+			if (platformView is MauiTextView textField)
+				textField.TextSetOrChanged += OnTextPropertySet;
 		}
 
-		protected override void DisconnectHandler(MauiTextView platformView)
+		protected override void DisconnectHandler(UITextView platformView)
 		{
 			platformView.ShouldChangeText -= OnShouldChangeText;
 			platformView.Started -= OnStarted;
 			platformView.Ended -= OnEnded;
-			platformView.TextSetOrChanged -= OnTextPropertySet;
+
+			if (platformView is MauiTextView textField)
+				textField.TextSetOrChanged -= OnTextPropertySet;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
@@ -44,10 +48,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(editor);
 
 		public static void MapPlaceholder(IEditorHandler handler, IEditor editor) =>
-			handler.PlatformView?.UpdatePlaceholder(editor);
+			(handler.PlatformView as MauiTextView)?.UpdatePlaceholder(editor);
 
 		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor) =>
-			handler.PlatformView?.UpdatePlaceholderColor(editor);
+			(handler.PlatformView as MauiTextView)?.UpdatePlaceholderColor(editor);
 
 		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateCharacterSpacing(editor);

@@ -1,7 +1,7 @@
 ﻿#if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIScrollView;
 #elif MONOANDROID
-using PlatformView = Microsoft.Maui.Platform.MauiScrollView;
+using PlatformView = AndroidX.Core.Widget.NestedScrollView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.ScrollViewer;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)

@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Platform
 
 		public MauiNavigationView()
 		{
+
 		}
 
 		protected override void OnApplyTemplate()

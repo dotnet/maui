@@ -1,44 +1,49 @@
-﻿#nullable disable
-using System;
+﻿using System;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : ViewHandler<IStepper, MauiStepper>
+	public partial class StepperHandler : ViewHandler<IStepper, Microsoft.UI.Xaml.FrameworkElement>
 	{
-		protected override MauiStepper CreatePlatformView() => new MauiStepper();
+		MauiStepper? GetMauiStepper() => PlatformView as MauiStepper;
+		static MauiStepper? GetMauiStepper(IStepperHandler handler) => handler.PlatformView as MauiStepper;
 
-		protected override void ConnectHandler(MauiStepper platformView)
+		protected override FrameworkElement CreatePlatformView() => new MauiStepper();
+
+		protected override void ConnectHandler(FrameworkElement platformView)
 		{
-			platformView.ValueChanged += OnValueChanged;
+			if (platformView is MauiStepper mauiStepper)
+				mauiStepper.ValueChanged += OnValueChanged;
 
 			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiStepper platformView)
+		protected override void DisconnectHandler(FrameworkElement platformView)
 		{
-			platformView.ValueChanged -= OnValueChanged;
+			if (platformView is MauiStepper mauiStepper)
+				mauiStepper.ValueChanged -= OnValueChanged;
 
 			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapMinimum(IStepperHandler handler, IStepper stepper) 
-		{ 
-			handler.PlatformView?.UpdateMinimum(stepper); 
+		public static void MapMinimum(IStepperHandler handler, IStepper stepper)
+		{
+			GetMauiStepper(handler)?.UpdateMinimum(stepper);
 		}
 
-		public static void MapMaximum(IStepperHandler handler, IStepper stepper) 
-		{ 
-			handler.PlatformView?.UpdateMaximum(stepper); 
+		public static void MapMaximum(IStepperHandler handler, IStepper stepper)
+		{
+			GetMauiStepper(handler)?.UpdateMaximum(stepper);
 		}
 
-		public static void MapIncrement(IStepperHandler handler, IStepper stepper) 
-		{ 
-			handler.PlatformView?.UpdateInterval(stepper); 
+		public static void MapIncrement(IStepperHandler handler, IStepper stepper)
+		{
+			GetMauiStepper(handler)?.UpdateInterval(stepper);
 		}
 
-		public static void MapValue(IStepperHandler handler, IStepper stepper) 
-		{ 
-			handler.PlatformView?.UpdateValue(stepper); 
+		public static void MapValue(IStepperHandler handler, IStepper stepper)
+		{
+			GetMauiStepper(handler)?.UpdateValue(stepper);
 		}
 
 		// This is a Windows-specific mapping
@@ -47,12 +52,13 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateBackground(view);
 		}
 
-		void OnValueChanged(object sender, EventArgs e)
+		void OnValueChanged(object? sender, EventArgs e)
 		{
 			if (VirtualView == null || PlatformView == null)
 				return;
 
-			VirtualView.Value = PlatformView.Value;
+			if (PlatformView is MauiStepper mauiStepper)
+				VirtualView.Value = mauiStepper.Value;
 		}
 	}
 }

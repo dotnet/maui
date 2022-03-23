@@ -1,13 +1,14 @@
 ﻿using System;
 using Android.Graphics.Drawables;
 using Android.Views;
+using AndroidX.AppCompat.Widget;
 using Google.Android.Material.ImageView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ImageButtonHandler : ViewHandler<IImageButton, ShapeableImageView>
+	public partial class ImageButtonHandler : ViewHandler<IImageButton, AppCompatImageView>
 	{
-		protected override ShapeableImageView CreatePlatformView()
+		protected override AppCompatImageView CreatePlatformView()
 		{
 			var platformView = new ShapeableImageView(Context);
 
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.SetImageDrawable(obj);
 		}
 
-		protected override void DisconnectHandler(ShapeableImageView platformView)
+		protected override void DisconnectHandler(AppCompatImageView platformView)
 		{
 			platformView.FocusChange -= OnFocusChange;
 			platformView.Click -= OnClick;
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 			SourceLoader.Reset();
 		}
 
-		protected override void ConnectHandler(ShapeableImageView platformView)
+		protected override void ConnectHandler(AppCompatImageView platformView)
 		{
 			platformView.FocusChange += OnFocusChange;
 			platformView.Click += OnClick;

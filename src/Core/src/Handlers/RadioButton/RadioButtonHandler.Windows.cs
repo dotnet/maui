@@ -1,12 +1,13 @@
 ﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class RadioButtonHandler : ViewHandler<IRadioButton, MauiRadioButton>
+	public partial class RadioButtonHandler : ViewHandler<IRadioButton, RadioButton>
 	{
 		protected override MauiRadioButton CreatePlatformView() => new MauiRadioButton();
 
-		protected override void ConnectHandler(MauiRadioButton platformView)
+		protected override void ConnectHandler(RadioButton platformView)
 		{
 			platformView.Checked += OnCheckedOrUnchecked;
 			platformView.Unchecked += OnCheckedOrUnchecked;
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiRadioButton platformView)
+		protected override void DisconnectHandler(RadioButton platformView)
 		{
 			platformView.Checked -= OnCheckedOrUnchecked;
 			platformView.Unchecked -= OnCheckedOrUnchecked;

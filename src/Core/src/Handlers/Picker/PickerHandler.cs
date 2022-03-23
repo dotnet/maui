@@ -1,9 +1,9 @@
-﻿#if __IOS__ || MACCATALYST
-using PlatformView = Microsoft.Maui.Platform.MauiPicker;
+﻿#if IOS || MACCATALYST
+using PlatformView = UIKit.UIView;
 #elif MONOANDROID
-using PlatformView = Microsoft.Maui.Platform.MauiPicker;
+using PlatformView = Android.Views.View;
 #elif WINDOWS
-using PlatformView = Microsoft.Maui.Platform.MauiComboBox;
+using PlatformView = Microsoft.UI.Xaml.Controls.ComboBox;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif

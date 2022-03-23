@@ -1,7 +1,7 @@
 ﻿#if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIButton;
 #elif MONOANDROID
-using PlatformView = Google.Android.Material.ImageView.ShapeableImageView;
+using PlatformView = AndroidX.AppCompat.Widget.AppCompatImageView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.Button;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)

@@ -6,17 +6,21 @@ using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
 using AResource = Android.Resource;
+using Android.Views;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
+	public partial class PickerHandler : ViewHandler<IPicker, Android.Views.View>
 	{
+		MauiPicker? GetMauiPicker() => PlatformView as MauiPicker;
+		static MauiPicker? GetMauiPicker(IPickerHandler handler) => handler.PlatformView as MauiPicker;
+
 		AlertDialog? _dialog;
 
-		protected override MauiPicker CreatePlatformView() =>
+		protected override View CreatePlatformView() =>
 			new MauiPicker(Context);
 
-		protected override void ConnectHandler(MauiPicker platformView)
+		protected override void ConnectHandler(Android.Views.View platformView)
 		{
 			platformView.FocusChange += OnFocusChange;
 			platformView.Click += OnClick;
@@ -27,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiPicker platformView)
+		protected override void DisconnectHandler(Android.Views.View platformView)
 		{
 			platformView.FocusChange -= OnFocusChange;
 			platformView.Click -= OnClick;
@@ -48,44 +52,44 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTitle(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateTitle(picker);
+			GetMauiPicker(handler)?.UpdateTitle(picker);
 		}
 
 		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateTitleColor(picker);
+			GetMauiPicker(handler)?.UpdateTitleColor(picker);
 		}
 
 		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateSelectedIndex(picker);
+			GetMauiPicker(handler)?.UpdateSelectedIndex(picker);
 		}
 
 		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateCharacterSpacing(picker);
+			GetMauiPicker(handler)?.UpdateCharacterSpacing(picker);
 		}
 
 		public static void MapFont(IPickerHandler handler, IPicker picker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.PlatformView?.UpdateFont(picker, fontManager);
+			GetMauiPicker(handler)?.UpdateFont(picker, fontManager);
 		}
 
 		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment);
+			GetMauiPicker(handler)?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment);
 		}
 
 		public static void MapTextColor(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView.UpdateTextColor(picker);
+			GetMauiPicker(handler)?.UpdateTextColor(picker);
 		}
 
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
+			GetMauiPicker(handler)?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 		}
 
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
@@ -130,7 +134,7 @@ namespace Microsoft.Maui.Handlers
 					{
 						var selectedIndex = e.Which;
 						VirtualView.SelectedIndex = selectedIndex;
-						base.PlatformView?.UpdatePicker(VirtualView);
+						GetMauiPicker()?.UpdatePicker(VirtualView);
 					});
 
 					builder.SetNegativeButton(AResource.String.Cancel, (o, args) => { });
@@ -163,7 +167,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.VirtualView == null || handler.PlatformView == null)
 				return;
 
-			handler.PlatformView.UpdatePicker(handler.VirtualView);
+			GetMauiPicker(handler)?.UpdatePicker(handler.VirtualView);
 		}
 	}
 }

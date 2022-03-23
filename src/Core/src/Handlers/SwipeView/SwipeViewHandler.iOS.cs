@@ -4,9 +4,12 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwipeViewHandler : ViewHandler<ISwipeView, MauiSwipeView>
+	public partial class SwipeViewHandler : ViewHandler<ISwipeView, UIView>
 	{
-		protected override MauiSwipeView CreatePlatformView()
+		MauiSwipeView? GetMauiSwipeView() => PlatformView as MauiSwipeView;
+		static MauiSwipeView? GetMauiSwipeView(ISwipeViewHandler handler) => handler.PlatformView as MauiSwipeView;
+
+		protected override UIView CreatePlatformView()
 		{
 			return new MauiSwipeView
 			{
@@ -21,9 +24,12 @@ namespace Microsoft.Maui.Handlers
 			base.SetVirtualView(view);
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 
-			PlatformView.Element = VirtualView;
-			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+			if (PlatformView is MauiSwipeView swipeView)
+			{
+				swipeView.Element = VirtualView;
+				swipeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+				swipeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+			}
 		}
 
 		public static void MapContent(ISwipeViewHandler handler, ISwipeView view)
@@ -32,18 +38,18 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			handler.PlatformView.UpdateContent(view, handler.MauiContext);
+			GetMauiSwipeView(handler)?.UpdateContent(view, handler.MauiContext);
 		}
 
 		public static void MapIsEnabled(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
-			handler.PlatformView.UpdateIsSwipeEnabled(swipeView);
+			GetMauiSwipeView(handler)?.UpdateIsSwipeEnabled(swipeView);
 			ViewHandler.MapIsEnabled(handler, swipeView);
 		}
 
 		public static void MapSwipeTransitionMode(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
-			handler.PlatformView.UpdateSwipeTransitionMode(swipeView.SwipeTransitionMode);
+			GetMauiSwipeView(handler)?.UpdateSwipeTransitionMode(swipeView.SwipeTransitionMode);
 		}
 
 		public static void MapRequestOpen(ISwipeViewHandler handler, ISwipeView swipeView, object? args)
@@ -53,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			handler.PlatformView.ProgrammaticallyOpenSwipeItem(request.OpenSwipeItem, request.Animated);
+			GetMauiSwipeView(handler)?.ProgrammaticallyOpenSwipeItem(request.OpenSwipeItem, request.Animated);
 		}
 
 		public static void MapRequestClose(ISwipeViewHandler handler, ISwipeView swipeView, object? args)
@@ -62,7 +68,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-			handler.PlatformView.ResetSwipe(request.Animated);
+			GetMauiSwipeView(handler)?.ResetSwipe(request.Animated);
 		}
 
 		public static void MapLeftItems(ISwipeViewHandler handler, ISwipeView view)

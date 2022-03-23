@@ -1,8 +1,10 @@
+using UIKit;
+
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : ViewHandler<ILabel, MauiLabel>
+	public partial class LabelHandler : ViewHandler<ILabel, UILabel>
 	{
-		protected override MauiLabel CreatePlatformView() => new MauiLabel();
+		protected override UILabel CreatePlatformView() => new MauiLabel();
 
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||
@@ -53,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPadding(ILabelHandler handler, ILabel label)
 		{
-			handler.PlatformView?.UpdatePadding(label);
+			(handler.PlatformView as MauiLabel)?.UpdatePadding(label);
 		}
 
 		public static void MapTextDecorations(ILabelHandler handler, ILabel label)

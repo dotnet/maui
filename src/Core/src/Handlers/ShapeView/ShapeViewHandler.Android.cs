@@ -1,8 +1,9 @@
 ﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ShapeViewHandler : ViewHandler<IShapeView, MauiShapeView>
+	public partial class ShapeViewHandler : ViewHandler<IShapeView, PlatformGraphicsView>
 	{
 		protected override MauiShapeView CreatePlatformView() =>
 			new MauiShapeView(Context);

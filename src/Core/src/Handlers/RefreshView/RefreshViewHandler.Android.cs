@@ -1,15 +1,16 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using AndroidX.SwipeRefreshLayout.Widget;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class RefreshViewHandler : ViewHandler<IRefreshView, MauiSwipeRefreshLayout>
+	public partial class RefreshViewHandler : ViewHandler<IRefreshView, SwipeRefreshLayout>
 	{
-		protected override MauiSwipeRefreshLayout CreatePlatformView()
+		protected override SwipeRefreshLayout CreatePlatformView()
 		{
 			return new MauiSwipeRefreshLayout(Context);
 		}
 
-		protected override void ConnectHandler(MauiSwipeRefreshLayout platformView)
+		protected override void ConnectHandler(SwipeRefreshLayout platformView)
 		{
 			base.ConnectHandler(platformView);
 			platformView.Refresh += OnSwipeRefresh;
@@ -20,16 +21,17 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.IsRefreshing = true;
 		}
 
-		protected override void DisconnectHandler(MauiSwipeRefreshLayout platformView)
+		protected override void DisconnectHandler(SwipeRefreshLayout platformView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
 			platformView.Refresh -= OnSwipeRefresh;
-			platformView.UpdateContent(null, null);
+			(platformView as MauiSwipeRefreshLayout)?.UpdateContent(null, null);
 			base.DisconnectHandler(platformView);
 		}
 
 		static void UpdateContent(IRefreshViewHandler handler) =>
-			handler.PlatformView.UpdateContent(handler.VirtualView.Content, handler.MauiContext);
+			(handler.PlatformView as MauiSwipeRefreshLayout)?
+			.UpdateContent(handler.VirtualView.Content, handler.MauiContext);
 
 		static void UpdateRefreshColor(IRefreshViewHandler handler)
 		{

@@ -1,7 +1,7 @@
 ﻿#if __IOS__ || MACCATALYST
-using PlatformView = Microsoft.Maui.Platform.MauiShapeView;
+using PlatformView = Microsoft.Maui.Graphics.Platform.PlatformGraphicsView;
 #elif MONOANDROID
-using PlatformView = Microsoft.Maui.Platform.MauiShapeView;
+using PlatformView = Microsoft.Maui.Graphics.Platform.PlatformGraphicsView;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Graphics.Win2D.W2DGraphicsView;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)

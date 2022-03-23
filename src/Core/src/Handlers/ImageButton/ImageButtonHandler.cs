@@ -1,11 +1,11 @@
-﻿#if __IOS__ || MACCATALYST
+﻿#if IOS || MACCATALYST
 using PlatformImage = UIKit.UIImage;
 using PlatformImageView = UIKit.UIImageView;
 using PlatformView = UIKit.UIButton;
 #elif MONOANDROID
 using PlatformImage = Android.Graphics.Drawables.Drawable;
 using PlatformImageView = Android.Widget.ImageView;
-using PlatformView = Google.Android.Material.ImageView.ShapeableImageView;
+using PlatformView = AndroidX.AppCompat.Widget.AppCompatImageView;
 #elif WINDOWS
 using System;
 using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;

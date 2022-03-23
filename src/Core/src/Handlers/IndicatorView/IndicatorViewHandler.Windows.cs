@@ -1,29 +1,31 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, MauiPageControl>
+	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, FrameworkElement>
 	{
-		protected override MauiPageControl CreatePlatformView() => new MauiPageControl();
+		MauiPageControl? GetMauiPageControl() => PlatformView as MauiPageControl;
+		static MauiPageControl? GetMauiPageControl(IIndicatorViewHandler handler) => handler.PlatformView as MauiPageControl;
 
-		protected override void ConnectHandler(MauiPageControl platformView)
+		protected override FrameworkElement CreatePlatformView() => new MauiPageControl();
+
+		protected override void ConnectHandler(FrameworkElement platformView)
 		{
 			base.ConnectHandler(platformView);
-			PlatformView?.SetIndicatorView(VirtualView);
+			GetMauiPageControl()?.SetIndicatorView(VirtualView);
 			UpdateIndicator();
 		}
 
-		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator) => handler.PlatformView?.CreateIndicators();
-		public static void MapPosition(IIndicatorViewHandler handler, IIndicatorView indicator) => handler.PlatformView?.UpdateIndicatorsColor();
-		public static void MapHideSingle(IIndicatorViewHandler handler, IIndicatorView indicator) => handler.PlatformView?.CreateIndicators();
-		public static void MapMaximumVisible(IIndicatorViewHandler handler, IIndicatorView indicator) => handler.PlatformView?.CreateIndicators();
-		public static void MapIndicatorSize(IIndicatorViewHandler handler, IIndicatorView indicator) => handler.PlatformView?.CreateIndicators();
-		public static void MapIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator) => handler.PlatformView?.UpdateIndicatorsColor();
-		public static void MapSelectedIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator) => handler.PlatformView?.UpdateIndicatorsColor();
-		public static void MapIndicatorShape(IIndicatorViewHandler handler, IIndicatorView indicator) => handler.PlatformView?.CreateIndicators();
+		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator) => GetMauiPageControl(handler)?.CreateIndicators();
+		public static void MapPosition(IIndicatorViewHandler handler, IIndicatorView indicator) => GetMauiPageControl(handler)?.UpdateIndicatorsColor();
+		public static void MapHideSingle(IIndicatorViewHandler handler, IIndicatorView indicator) => GetMauiPageControl(handler)?.CreateIndicators();
+		public static void MapMaximumVisible(IIndicatorViewHandler handler, IIndicatorView indicator) => GetMauiPageControl(handler)?.CreateIndicators();
+		public static void MapIndicatorSize(IIndicatorViewHandler handler, IIndicatorView indicator) => GetMauiPageControl(handler)?.CreateIndicators();
+		public static void MapIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator) => GetMauiPageControl(handler)?.UpdateIndicatorsColor();
+		public static void MapSelectedIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator) => GetMauiPageControl(handler)?.UpdateIndicatorsColor();
+		public static void MapIndicatorShape(IIndicatorViewHandler handler, IIndicatorView indicator) => GetMauiPageControl(handler)?.CreateIndicators();
 
 		void UpdateIndicator()
 		{
@@ -35,14 +37,15 @@ namespace Microsoft.Maui.Handlers
 				{
 					ClearIndicators();
 					handler = indicatorsLayoutOverride.ToPlatform(MauiContext);
-					if (handler != null)
-						PlatformView.ItemsSource = new ObservableCollection<FrameworkElement>() { handler };
+					var pager = GetMauiPageControl();
+					if (handler != null && pager != null)
+						pager.ItemsSource = new ObservableCollection<FrameworkElement>() { handler };
 				}
 			}
 
 			void ClearIndicators()
 			{
-				PlatformView.Items.Clear();
+				GetMauiPageControl()?.Items.Clear();
 			}
 		}
 	}

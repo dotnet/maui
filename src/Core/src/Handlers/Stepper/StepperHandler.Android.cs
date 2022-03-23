@@ -6,7 +6,7 @@ using AOrientation = Android.Widget.Orientation;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : ViewHandler<IStepper, LinearLayout>, IAndroidStepperHandler
+	public partial class StepperHandler : ViewHandler<IStepper, Android.Views.View>, IAndroidStepperHandler
 	{
 		AButton? _downButton;
 		AButton? _upButton;
@@ -16,11 +16,11 @@ namespace Microsoft.Maui.Handlers
 
 		AButton? IAndroidStepperHandler.DownButton => _downButton;
 
-		protected override LinearLayout CreatePlatformView()
+		protected override Android.Views.View CreatePlatformView()
 		{
-			var stepperLayout = new LinearLayout(Context)
+			var stepperLayout = new MauiStepper(Context)
 			{
-				Orientation = AOrientation.Horizontal,
+				Orientation = (int)AOrientation.Horizontal,
 				Focusable = true,
 				DescendantFocusability = DescendantFocusability.AfterDescendants
 			};
@@ -38,22 +38,22 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimum(IStepperHandler handler, IStepper stepper)
 		{
-			handler.PlatformView?.UpdateMinimum(stepper);
+			(handler.PlatformView as MauiStepper)?.UpdateMinimum(stepper);
 		}
 
 		public static void MapMaximum(IStepperHandler handler, IStepper stepper)
 		{
-			handler.PlatformView?.UpdateMaximum(stepper);
+			(handler.PlatformView as MauiStepper)?.UpdateMaximum(stepper);
 		}
 
 		public static void MapIncrement(IStepperHandler handler, IStepper stepper)
 		{
-			handler.PlatformView?.UpdateIncrement(stepper);
+			(handler.PlatformView as MauiStepper)?.UpdateIncrement(stepper);
 		}
 
 		public static void MapValue(IStepperHandler handler, IStepper stepper)
 		{
-			handler.PlatformView?.UpdateValue(stepper);
+			(handler.PlatformView as MauiStepper)?.UpdateValue(stepper);
 		}
 
 		AButton IAndroidStepperHandler.CreateButton()

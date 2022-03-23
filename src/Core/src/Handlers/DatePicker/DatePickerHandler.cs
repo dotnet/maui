@@ -1,7 +1,7 @@
-﻿#if __IOS__ || MACCATALYST
-using PlatformView = Microsoft.Maui.Platform.MauiDatePicker;
+﻿#if IOS || MACCATALYST
+using PlatformView = UIKit.UIView;
 #elif MONOANDROID
-using PlatformView = Microsoft.Maui.Platform.MauiDatePicker;
+using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.CalendarDatePicker;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)

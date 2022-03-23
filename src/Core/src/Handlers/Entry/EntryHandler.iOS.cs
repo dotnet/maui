@@ -6,33 +6,39 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : ViewHandler<IEntry, MauiTextField>
+	public partial class EntryHandler : ViewHandler<IEntry, UITextField>
 	{
-		protected override MauiTextField CreatePlatformView() =>
+		protected override UITextField CreatePlatformView() =>
 			new MauiTextField
 			{
 				BorderStyle = UITextBorderStyle.RoundedRect,
 				ClipsToBounds = true
 			};
 
-		protected override void ConnectHandler(MauiTextField platformView)
+		protected override void ConnectHandler(UITextField platformView)
 		{
 			platformView.ShouldReturn = OnShouldReturn;
 			platformView.EditingDidBegin += OnEditingBegan;
 			platformView.EditingChanged += OnEditingChanged;
 			platformView.EditingDidBegin += OnEditingBegan;
 			platformView.EditingDidEnd += OnEditingEnded;
-			platformView.TextPropertySet += OnTextPropertySet;
+			
+			if (platformView is MauiTextField textField)
+				textField.TextPropertySet += OnTextPropertySet;
+
 			platformView.ShouldChangeCharacters += OnShouldChangeCharacters;
 		}
 
-		protected override void DisconnectHandler(MauiTextField platformView)
+		protected override void DisconnectHandler(UITextField platformView)
 		{
 			platformView.EditingDidBegin -= OnEditingBegan;
 			platformView.EditingChanged -= OnEditingChanged;
 			platformView.EditingDidBegin -= OnEditingBegan;
 			platformView.EditingDidEnd -= OnEditingEnded;
-			platformView.TextPropertySet -= OnTextPropertySet;
+
+			if (platformView is MauiTextField textField)
+				textField.TextPropertySet -= OnTextPropertySet;
+
 			platformView.ShouldChangeCharacters -= OnShouldChangeCharacters;
 		}
 

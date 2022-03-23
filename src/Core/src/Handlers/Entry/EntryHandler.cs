@@ -1,6 +1,6 @@
 ﻿#nullable enable
 #if __IOS__ || MACCATALYST
-using PlatformView = Microsoft.Maui.Platform.MauiTextField;
+using PlatformView = UIKit.UITextField;
 #elif MONOANDROID
 using PlatformView = AndroidX.AppCompat.Widget.AppCompatEditText;
 #elif WINDOWS

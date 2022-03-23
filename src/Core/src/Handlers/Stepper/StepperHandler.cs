@@ -1,9 +1,9 @@
-﻿#if __IOS__ || MACCATALYST
+﻿#if IOS || MACCATALYST
 using PlatformView = UIKit.UIStepper;
 #elif MONOANDROID
-using PlatformView = Android.Widget.LinearLayout;
+using PlatformView = Android.Views.View;
 #elif WINDOWS
-using PlatformView = Microsoft.Maui.Platform.MauiStepper;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif

@@ -3,12 +3,16 @@ using System;
 using System.Collections.Specialized;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PickerHandler : ViewHandler<IPicker, MauiComboBox>
+	public partial class PickerHandler : ViewHandler<IPicker, ComboBox>
 	{
-		protected override MauiComboBox CreatePlatformView()
+		MauiComboBox? GetMauiPicker() => PlatformView as MauiComboBox;
+		static MauiComboBox? GetMauiPicker(IPickerHandler handler) => handler.PlatformView as MauiComboBox;
+
+		protected override ComboBox CreatePlatformView()
 		{
 			var platformPicker = new MauiComboBox();
 
@@ -18,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 			return platformPicker;
 		}
 
-		protected override void ConnectHandler(MauiComboBox platformView)
+		protected override void ConnectHandler(ComboBox platformView)
 		{
 			platformView.SelectionChanged += OnControlSelectionChanged;
 
@@ -26,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
 		}
 
-		protected override void DisconnectHandler(MauiComboBox platformView)
+		protected override void DisconnectHandler(ComboBox platformView)
 		{
 			platformView.SelectionChanged -= OnControlSelectionChanged;
 
@@ -45,17 +49,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTitle(IPickerHandler handler, IPicker picker) 
 		{
-			handler.PlatformView?.UpdateTitle(picker);
+			GetMauiPicker(handler)?.UpdateTitle(picker);
 		}
 
 		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateTitle(picker);
+			GetMauiPicker(handler)?.UpdateTitle(picker);
 		}
 
 		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateSelectedIndex(picker);
+			GetMauiPicker(handler)?.UpdateSelectedIndex(picker);
 		}
 
 		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker) 
@@ -80,7 +84,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateHorizontalTextAlignment(picker);
+			GetMauiPicker(handler)?.UpdateHorizontalTextAlignment(picker);
 		}
 		
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)

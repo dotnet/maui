@@ -1,10 +1,9 @@
-﻿#nullable enable
-#if __IOS__ || MACCATALYST
-using PlatformView = Microsoft.Maui.Platform.MauiPageControl;
+﻿#if __IOS__ || MACCATALYST
+using PlatformView = UIKit.UIPageControl;
 #elif MONOANDROID
-using PlatformView = Microsoft.Maui.Platform.MauiPageControl;
+using PlatformView = Android.Views.View;
 #elif WINDOWS
-using PlatformView = Microsoft.Maui.Platform.MauiPageControl;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif

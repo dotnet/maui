@@ -1,11 +1,12 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class PolylineHandler 
 	{
-		protected override void ConnectHandler(MauiShapeView nativeView)
+		protected override void ConnectHandler(PlatformGraphicsView nativeView)
 		{
 			if (VirtualView is Polyline polyline)
 				polyline.Points.CollectionChanged += OnPointsCollectionChanged;
@@ -13,7 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.ConnectHandler(nativeView);
 		}
 
-		protected override void DisconnectHandler(MauiShapeView nativeView)
+		protected override void DisconnectHandler(PlatformGraphicsView nativeView)
 		{
 			if (VirtualView is Polyline polyline)
 				polyline.Points.CollectionChanged -= OnPointsCollectionChanged;

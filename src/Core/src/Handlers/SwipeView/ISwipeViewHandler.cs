@@ -1,7 +1,7 @@
-﻿#if __IOS__ || MACCATALYST
-using PlatformView = Microsoft.Maui.Platform.MauiSwipeView;
+﻿#if IOS || MACCATALYST
+using PlatformView = UIKit.UIView;
 #elif MONOANDROID
-using PlatformView = Microsoft.Maui.Platform.MauiSwipeView;
+using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.SwipeControl;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)

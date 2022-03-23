@@ -3,11 +3,15 @@ using Android.App;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text.Format;
+using Android.Views;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
+	public partial class TimePickerHandler : ViewHandler<ITimePicker, View>
 	{
+		MauiTimePicker? GetMauiTimePicker() => PlatformView as MauiTimePicker;
+		static MauiTimePicker? GetMauiTimePicker(ITimePickerHandler handler) => handler.PlatformView as MauiTimePicker;
+
 		MauiTimePicker? _timePicker;
 		AlertDialog? _dialog;
 
@@ -22,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 			return _timePicker;
 		}
 
-		protected override void DisconnectHandler(MauiTimePicker platformView)
+		protected override void DisconnectHandler(View platformView)
 		{
 			if (_dialog != null)
 			{
@@ -60,29 +64,29 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateFormat(timePicker);
+			GetMauiTimePicker(handler)?.UpdateFormat(timePicker);
 		}
 
 		public static void MapTime(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateTime(timePicker);
+			GetMauiTimePicker(handler)?.UpdateTime(timePicker);
 		}
 
 		public static void MapCharacterSpacing(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateCharacterSpacing(timePicker);
+			GetMauiTimePicker(handler)?.UpdateCharacterSpacing(timePicker);
 		}
 
 		public static void MapFont(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.PlatformView?.UpdateFont(timePicker, fontManager);
+			GetMauiTimePicker(handler)?.UpdateFont(timePicker, fontManager);
 		}
 
 		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateTextColor(timePicker);
+			GetMauiTimePicker(handler)?.UpdateTextColor(timePicker);
 		}
 
 		void ShowPickerDialog()

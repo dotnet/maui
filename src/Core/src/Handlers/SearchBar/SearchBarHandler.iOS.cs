@@ -4,13 +4,13 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
+	public partial class SearchBarHandler : ViewHandler<ISearchBar, UISearchBar>
 	{
 		UITextField? _editor;
 
 		public UITextField? QueryEditor => _editor;
 
-		protected override MauiSearchBar CreatePlatformView()
+		protected override UISearchBar CreatePlatformView()
 		{
 			var searchBar = new MauiSearchBar() { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
@@ -22,11 +22,13 @@ namespace Microsoft.Maui.Handlers
 			return searchBar;
 		}
 
-		protected override void ConnectHandler(MauiSearchBar platformView)
+		protected override void ConnectHandler(UISearchBar platformView)
 		{
 			platformView.CancelButtonClicked += OnCancelClicked;
 			platformView.SearchButtonClicked += OnSearchButtonClicked;
-			platformView.TextSetOrChanged += OnTextPropertySet;
+			if (platformView is MauiSearchBar searchBar)
+				searchBar.TextSetOrChanged += OnTextPropertySet;
+
 			platformView.ShouldChangeTextInRange += ShouldChangeText;
 
 			platformView.OnEditingStarted += OnEditingStarted;
@@ -35,11 +37,14 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiSearchBar platformView)
+		protected override void DisconnectHandler(UISearchBar platformView)
 		{
 			platformView.CancelButtonClicked -= OnCancelClicked;
 			platformView.SearchButtonClicked -= OnSearchButtonClicked;
-			platformView.TextSetOrChanged -= OnTextPropertySet;
+
+			if (platformView is MauiSearchBar searchBar)
+				searchBar.TextSetOrChanged -= OnTextPropertySet;
+
 			platformView.ShouldChangeTextInRange -= ShouldChangeText;
 
 			platformView.OnEditingStarted -= OnEditingStarted;

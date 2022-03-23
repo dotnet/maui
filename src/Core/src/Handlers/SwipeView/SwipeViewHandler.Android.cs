@@ -4,6 +4,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeViewHandler : ViewHandler<ISwipeView, MauiSwipeView>
 	{
+		MauiSwipeView? GetMauiSwipeView() => PlatformView as MauiSwipeView;
+		static MauiSwipeView? GetMauiSwipeView(ISwipeViewHandler handler) => handler.PlatformView as MauiSwipeView;
+
 		protected override MauiSwipeView CreatePlatformView()
 		{
 			var returnValue = new MauiSwipeView(Context)
@@ -45,26 +48,26 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			handler.PlatformView.UpdateContent();
+			GetMauiSwipeView(handler)?.UpdateContent();
 		}
 
 		public static void MapIsEnabled(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
-			handler.PlatformView.UpdateIsSwipeEnabled(swipeView.IsEnabled);
+			GetMauiSwipeView(handler)?.UpdateIsSwipeEnabled(swipeView.IsEnabled);
 			ViewHandler.MapIsEnabled(handler, swipeView);
 		}
 
 		public static void MapBackground(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
 			if (swipeView.Background == null)
-				handler.PlatformView.Control?.SetWindowBackground();
+				GetMauiSwipeView(handler)?.Control?.SetWindowBackground();
 			else
 				ViewHandler.MapBackground(handler, swipeView);
 		}
 
 		public static void MapSwipeTransitionMode(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
-			handler.PlatformView.UpdateSwipeTransitionMode(swipeView.SwipeTransitionMode);
+			GetMauiSwipeView(handler)?.UpdateSwipeTransitionMode(swipeView.SwipeTransitionMode);
 		}
 
 		public static void MapRequestOpen(ISwipeViewHandler handler, ISwipeView swipeView, object? args)
@@ -74,7 +77,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			handler.PlatformView.OnOpenRequested(request);
+			GetMauiSwipeView(handler)?.OnOpenRequested(request);
 		}
 
 		public static void MapRequestClose(ISwipeViewHandler handler, ISwipeView swipeView, object? args)
@@ -84,7 +87,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			handler.PlatformView.OnCloseRequested(request);
+			GetMauiSwipeView(handler)?.OnCloseRequested(request);
 		}
 	}
 }

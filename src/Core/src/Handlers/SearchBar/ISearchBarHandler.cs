@@ -1,6 +1,6 @@
 ﻿#nullable enable
 #if __IOS__ || MACCATALYST
-using PlatformView = Microsoft.Maui.Platform.MauiSearchBar;
+using PlatformView = UIKit.UISearchBar;
 using QueryEditor = UIKit.UITextField;
 #elif MONOANDROID
 using PlatformView = AndroidX.AppCompat.Widget.SearchView;
