@@ -2,7 +2,6 @@
   "solution": {
     "path": "Microsoft.Maui.sln",
     "projects": [
-      "src\\Compatibility\\Android.FormsViewGroup\\src\\Compatibility.Android.FormsViewGroup.csproj",
       "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks.csproj",
       "src\\Controls\\src\\Core\\Controls.Core.csproj",
       "src\\Controls\\src\\Xaml\\Controls.Xaml.csproj",
