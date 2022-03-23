@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample
 		public static MauiApp CreateMauiApp() =>
 			MauiApp
 				.CreateBuilder()
-				.UseMauiApp<maui_app.App>()
+				.UseMauiApp<App>()
 				.Build();
 	}
 

@@ -150,8 +150,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_dialog.Show();
 		}
 
+		[PortHandler]
 		void OnCancelButtonClicked(object sender, EventArgs e)
 		{
+			// I would say the original bugzilla issue that added this code is wrong
+			// https://bugzilla.xamarin.com/42/42074/bug.html
+			// I don't see why cancelling the popup would cause the focus to remove from the control
+			// That's the control the user clicked on
+			// I'm pretty sure this was initially done to match the iOS behavior but we shouldn't just
+			// match focus behavior for no good reason.
+			// On WinUI when the calendar control opens the TextBox loses focus then gains it back when you close
+			// Which is also how Android works
 			Element.Unfocus();
 		}
 
