@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[SetUp]
 		public virtual void Setup()
 		{
+			Microsoft.Maui.Controls.Hosting.CompatibilityCheck.UseCompatibility();
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 			_defaultUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
 			MockPlatformSizeService.Current?.Reset();

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Internals
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class PromptArguments
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public PromptArguments(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
 		{
 			Title = title;

@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			if (element == null)
 				return true;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 			object renderer = Platform.Android.Platform.CreateRendererWithContext(element, _context);
+#pragma warning restore CS0612 // Type or member is obsolete
 
 			if (renderer == null
 				|| renderer.GetType().Name == "DefaultRenderer"

@@ -10,7 +10,11 @@ namespace Microsoft.Maui.Hosting
 	{
 		public static MauiAppBuilder ConfigureDispatching(this MauiAppBuilder builder)
 		{
-			builder.Services.TryAddSingleton<IDispatcherProvider>(svc => new DispatcherProvider());
+			builder.Services.TryAddSingleton<IDispatcherProvider>(svc =>
+				// the DispatcherProvider might have already been initialized, so ensure that we are grabbing the
+				// Current and putting it in the DI container.
+				DispatcherProvider.Current);
+
 			builder.Services.TryAddScoped(svc =>
 			{
 				var provider = svc.GetRequiredService<IDispatcherProvider>();

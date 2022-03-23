@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			application.SendStart();
 			application.PropertyChanged += new PropertyChangedEventHandler(this.AppOnPropertyChanged);
 			SetPage(_application.MainPage);
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				_useBezelInteration = Specific.GetUseBezelInteraction(_application);
 				UpdateOverlayContent();
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				SetPage(_application.MainPage);
 			}
-			else if (Device.Idiom == TargetIdiom.Watch)
+			else if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				if (Specific.UseBezelInteractionProperty.PropertyName == args.PropertyName)
 				{
@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				BaseLayout = layout;
 
-				if (Device.Idiom == TargetIdiom.Watch)
+				if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				{
 					BaseCircleSurface = new CircleSurface(conformant);
 					Forms.CircleSurface = BaseCircleSurface;

@@ -170,7 +170,7 @@
         <Parameter Name="value" Type="System.Nullable&lt;System.Single&gt;" />
       </Parameters>
       <Docs>
-        <param name="element">The visual element on the Android platform whose elevation to set.</param>
+        <param name="config">The visual element on the Android platform whose elevation to set.</param>
         <param name="value">The new elevation value.</param>
         <summary>Sets the elevation for the visual element.</summary>
         <remarks>To be added.</remarks>
@@ -220,7 +220,7 @@
         <Parameter Name="value" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="config">The platform configuration for the visual element on the Android platform whose legacy color mode status to set.</param>
+        <param name="element">The platform configuration for the visual element on the Android platform whose legacy color mode status to set.</param>
         <param name="value">
           <see langword="true" /> to enable legacy color mode. Otherwise, <see langword="false" />.</param>
         <summary>Sets a Boolean value that controls whether the legacy color mode is enabled.</summary>

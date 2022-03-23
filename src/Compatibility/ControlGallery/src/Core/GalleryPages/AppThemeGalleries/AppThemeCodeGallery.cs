@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppT
 
 			onThemeLabel.SetBinding(Label.TextColorProperty, new AppThemeBinding() { Light = Colors.Green, Dark = Colors.Red });
 
-			onThemeLabel1.SetOnAppTheme(Label.TextColorProperty, Colors.Green, Colors.Red);
+			onThemeLabel1.SetAppTheme(Label.TextColorProperty, Colors.Green, Colors.Red);
 
 			onThemeLabel2.SetAppThemeColor(Label.TextColorProperty, Colors.Green, Colors.Red);
 

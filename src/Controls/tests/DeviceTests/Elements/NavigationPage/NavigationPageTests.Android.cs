@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Android.Views;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -21,8 +22,15 @@ namespace Microsoft.Maui.DeviceTests
 		MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
 		{
 			var navManager = mauiContext.GetNavigationRootManager();
-			return navManager.ToolbarElement.Toolbar.Handler.PlatformView as
+			ViewGroup appbarLayout =
+				navManager?.RootView?.FindViewById<ViewGroup>(Resource.Id.navigationlayout_appbar);
+
+			var toolBar = appbarLayout?.GetFirstChildOfType<MaterialToolbar>();
+
+			toolBar = toolBar ?? navManager.ToolbarElement?.Toolbar?.Handler?.PlatformView as
 				MaterialToolbar;
+
+			return toolBar;
 		}
 
 		public bool IsBackButtonVisible(IElementHandler handler) =>
@@ -30,7 +38,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public bool IsBackButtonVisible(IMauiContext mauiContext)
 		{
-			return GetPlatformToolbar(mauiContext).NavigationIcon != null;
+			return GetPlatformToolbar(mauiContext)?.NavigationIcon != null;
 		}
 
 		public bool IsNavigationBarVisible(IElementHandler handler) =>
@@ -38,8 +46,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		public bool IsNavigationBarVisible(IMauiContext mauiContext)
 		{
-			return GetPlatformToolbar(mauiContext)
-					.LayoutParameters.Height > 0;
+			return GetPlatformToolbar(mauiContext)?
+					.LayoutParameters?.Height > 0;
 		}
 
 		public bool ToolbarItemsMatch(

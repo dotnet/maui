@@ -15,6 +15,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete]
 	public class Platform : BindableObject, IPlatformLayout, INavigation
 	{
 		readonly Context _context;
@@ -592,7 +593,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void LayoutRootPage(Page page, int width, int height)
 		{
-			page.Layout(new Rectangle(0, 0, _context.FromPixels(width), _context.FromPixels(height)));
+			page.Layout(new Rect(0, 0, _context.FromPixels(width), _context.FromPixels(height)));
 		}
 
 		Task PresentModal(Page modal, bool animated)
@@ -685,7 +686,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				if (changed)
 				{
-					_modal.Layout(new Rectangle(0, 0, Context.FromPixels(r - l), Context.FromPixels(b - t)));
+					_modal.Layout(new Rect(0, 0, Context.FromPixels(r - l), Context.FromPixels(b - t)));
 					_backgroundView.Layout(0, 0, r - l, b - t);
 				}
 
@@ -719,7 +720,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		#endregion
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal class DefaultRenderer : VisualElementRenderer<View>, ILayoutChanges
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			public bool NotReallyHandled { get; private set; }
 

@@ -55,12 +55,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					BackgroundColor = EColor.Transparent
 				};
 
-				if (Device.Idiom == TargetIdiom.Phone)
+				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				{
 					_pageBusyDialog.SetTitleBackgroundColor(EColor.Transparent);
 					_pageBusyDialog.SetContentBackgroundColor(EColor.Transparent);
 				}
-				else if (Device.Idiom == TargetIdiom.Watch)
+				else if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				{
 					_pageBusyDialog.SetWatchCircleStyle();
 				}
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					new Label
 					{
 						LineBreakMode = LineBreakMode.CharacterWrap,
-						TextColor = Device.Idiom == TargetIdiom.Watch ? Color.White : Color.Accent,
+						TextColor = DeviceInfo.Idiom == DeviceIdiom.Watch ? Color.White : Color.Accent,
 						Text = args.Message,
 						HorizontalOptions = LayoutOptions.FillAndExpand,
 						HorizontalTextAlignment = TextAlignment.Center,
@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			layout.Parent = sender;
 			var layoutrenderer = Platform.GetOrCreateRenderer(layout);
 
-			var request = layout.Measure(Device.Idiom == TargetIdiom.Watch ? sender.Width * 0.7 : sender.Width, sender.Height);
+			var request = layout.Measure(DeviceInfo.Idiom == DeviceIdiom.Watch ? sender.Width * 0.7 : sender.Width, sender.Height);
 			(layoutrenderer as ILayoutRenderer).RegisterOnLayoutUpdated();
 			layoutrenderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(request.Request.Height);
 			layoutrenderer.NativeView.MinimumWidth = Forms.ConvertToScaledPixel(request.Request.Width);

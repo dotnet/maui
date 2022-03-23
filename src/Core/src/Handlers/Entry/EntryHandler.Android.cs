@@ -1,5 +1,4 @@
-﻿using System;
-using Android.Content.Res;
+﻿using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Runtime;
 using Android.Text;
@@ -16,12 +15,10 @@ namespace Microsoft.Maui.Handlers
 	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
 	{
 		Drawable? _clearButtonDrawable;
-		ColorStateList? _defaultPlaceholderColors;
 
 		protected override AppCompatEditText CreatePlatformView()
 		{
-			var nativeEntry = new MauiEditText(Context);
-			_defaultPlaceholderColors = nativeEntry.HintTextColors;
+			var nativeEntry = new AppCompatEditText(Context);
 			return nativeEntry;
 		}
 
@@ -35,11 +32,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange += OnFocusedChange;
 			platformView.Touch += OnTouch;
 			platformView.EditorAction += OnEditorAction;
-
-			if (platformView is IMauiEditText mauiEditText)
-			{
-				mauiEditText.OnKeyboardBackPressed += OnKeyboardBackPressed;
-			}
 		}
 
 		protected override void DisconnectHandler(AppCompatEditText platformView)
@@ -49,11 +41,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange -= OnFocusedChange;
 			platformView.Touch -= OnTouch;
 			platformView.EditorAction -= OnEditorAction;
-
-			if (platformView is IMauiEditText mauiEditText)
-			{
-				mauiEditText.OnKeyboardBackPressed -= OnKeyboardBackPressed;
-			}
 		}
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry) =>
@@ -86,7 +73,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry)
 		{
 			if (handler is EntryHandler platformHandler)
-				handler.PlatformView?.UpdatePlaceholderColor(entry, platformHandler._defaultPlaceholderColors);
+				handler.PlatformView?.UpdatePlaceholderColor(entry);
 		}
 
 		public static void MapFont(IEntryHandler handler, IEntry entry) =>
@@ -142,11 +129,6 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			e.Handled = true;
-		}
-
-		void OnKeyboardBackPressed(object? sender, EventArgs eventArgs)
-		{
-			PlatformView?.ClearFocus();
 		}
 	}
 }

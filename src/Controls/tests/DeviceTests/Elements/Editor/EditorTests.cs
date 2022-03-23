@@ -35,11 +35,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, (_) =>
 			{
-				layout.Arrange(new Graphics.Rectangle(Graphics.Point.Zero, layout.Measure(1000, 1000)));
+				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(1000, 1000)));
 				var initialHeight = editor.Height;
 
 				editor.Text += Environment.NewLine + " Some new text" + Environment.NewLine;
-				layout.Arrange(new Graphics.Rectangle(Graphics.Point.Zero, layout.Measure(1000, 1000)));
+				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(1000, 1000)));
 
 				if (option == EditorAutoSizeOption.Disabled)
 					Assert.Equal(initialHeight, editor.Height);

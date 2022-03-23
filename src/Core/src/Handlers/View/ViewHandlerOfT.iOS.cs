@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		public UIViewController? ViewController { get; set; }
 
-		public override void PlatformArrange(Rectangle rect) =>
+		public override void PlatformArrange(Rect rect) =>
 			this.PlatformArrangeHandler(rect);
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 
 			var oldIndex = oldParent?.IndexOfSubview(ContainerView);
 			ContainerView.RemoveFromSuperview();
-
+			ContainerView.Dispose();
 			ContainerView = null;
 
 			if (oldIndex is int idx && idx >= 0)

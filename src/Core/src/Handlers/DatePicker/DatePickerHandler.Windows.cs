@@ -6,8 +6,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, CalendarDatePicker>
 	{
-		WBrush? _defaultForeground;
-
 		protected override CalendarDatePicker CreatePlatformView() => new CalendarDatePicker();
 
 		protected override void ConnectHandler(CalendarDatePicker platformView)
@@ -18,11 +16,6 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(CalendarDatePicker platformView)
 		{
 			platformView.DateChanged -= DateChanged;
-		}
-
-		void SetupDefaults(CalendarDatePicker platformView)
-		{
-			_defaultForeground = platformView.Foreground;
 		}
 
 		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
@@ -60,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateTextColor(datePicker, platformHandler._defaultForeground);
+				handler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
 		private void DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)

@@ -62,7 +62,7 @@ namespace Microsoft.Maui
 		/// <param name="usePlatformViewBounds">If true, use platform view bounds for given elements. Else, use the Elements Frame.</param>
 		/// <returns>List of Children Elements.</returns>
 		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, double x1, double y1, double x2, double y2, bool usePlatformViewBounds = true) =>
-			GetVisualTreeElements(visualElement, new Rectangle(x1, y1, x2 - x1, y2 - y1), usePlatformViewBounds);
+			GetVisualTreeElements(visualElement, new Rect(x1, y1, x2 - x1, y2 - y1), usePlatformViewBounds);
 
 		/// <summary>
 		/// Gets list of a Visual Tree Elements children based off of a rectangle.
@@ -71,7 +71,7 @@ namespace Microsoft.Maui
 		/// <param name="rectangle">The rectangle.</param>
 		/// <param name="usePlatformViewBounds">If true, use platform view bounds for given elements. Else, use the Elements Frame.</param>
 		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Rectangle rectangle, bool usePlatformViewBounds = true) =>
+		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Rect rectangle, bool usePlatformViewBounds = true) =>
 			GetVisualTreeElementsInternal(
 				visualElement,
 				new List<Point>

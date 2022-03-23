@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetElementSize(Size size)
 		{
-			Element.Layout(new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Element.Layout(new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public UIViewController ViewController
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			// TODO MAUI: Is this correct?
 			if (Element.Width == -1 && Element.Height == -1)
-				Element.Layout(new Rectangle(Element.X, Element.Y, View.Bounds.Width, View.Bounds.Height));
+				Element.Layout(new Rect(Element.X, Element.Y, View.Bounds.Width, View.Bounds.Height));
 
 			LayoutChildren(false);
 		}
@@ -302,8 +302,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				detailView.Layer.Opacity = (float)opacity;
 			}
 
-			FlyoutPageController.FlyoutBounds = new Rectangle(flyoutFrame.X, 0, flyoutFrame.Width, flyoutFrame.Height);
-			FlyoutPageController.DetailBounds = new Rectangle(0, 0, frame.Width, frame.Height);
+			FlyoutPageController.FlyoutBounds = new Rect(flyoutFrame.X, 0, flyoutFrame.Width, flyoutFrame.Height);
+			FlyoutPageController.DetailBounds = new Rect(0, 0, frame.Width, frame.Height);
 
 			if (Presented)
 				_clickOffView.Frame = _detailController.View.Frame;

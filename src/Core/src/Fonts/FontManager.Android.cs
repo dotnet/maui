@@ -18,14 +18,14 @@ namespace Microsoft.Maui
 
 		readonly ConcurrentDictionary<(string? fontFamilyName, FontWeight weight, bool italic), Typeface?> _typefaces = new();
 		readonly IFontRegistrar _fontRegistrar;
-		readonly ILogger<FontManager>? _logger;
+		readonly IServiceProvider? _serviceProvider;
 
 		Typeface? _defaultTypeface;
 
-		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
+		public FontManager(IFontRegistrar fontRegistrar, IServiceProvider? serviceProvider = null)
 		{
 			_fontRegistrar = fontRegistrar;
-			_logger = logger;
+			_serviceProvider = serviceProvider;
 		}
 
 		public double DefaultFontSize => 14; // 14sp
@@ -65,6 +65,10 @@ namespace Microsoft.Maui
 			var asset = LoadTypefaceFromAsset(fontName, warning: true);
 			if (asset != null)
 				return asset;
+
+			// The font might be a file, such as a temporary file extracted from EmbeddedResource
+			if (File.Exists(fontName))
+				return Typeface.CreateFromFile(fontName);
 
 			var fontFile = FontFile.FromString(fontName);
 			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
@@ -109,7 +113,7 @@ namespace Microsoft.Maui
 			catch (Exception ex)
 			{
 				if (warning)
-					_logger?.LogWarning(ex, "Unable to load font '{Font}' from assets.", fontfamily);
+					_serviceProvider?.CreateLogger<FontManager>()?.LogWarning(ex, "Unable to load font '{Font}' from assets.", fontfamily);
 			}
 
 			return null;
@@ -127,8 +131,6 @@ namespace Microsoft.Maui
 			{
 				if (GetFromAssets(fontFamily) is Typeface typeface)
 					result = typeface;
-				else if (FontNameToFontFile(fontFamily) is string f && File.Exists(f))
-					result = Typeface.CreateFromFile(f);
 				else
 					result = Typeface.Create(fontFamily, style);
 			}

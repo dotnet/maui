@@ -1,0 +1,7 @@
+<Project>
+
+  <Import Project="..\..\..\Maui.InTree.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.targets" />
+  <Import Project="..\..\..\..\Directory.Build.targets" />
+
+</Project>

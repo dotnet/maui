@@ -4,18 +4,17 @@ using Android.Views;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using AView = Android.Views.View;
-using Object = Java.Lang.Object;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class ItemContentView : ViewGroup
 	{
-		protected IPlatformViewHandler Content;
-		internal IView View => Content?.VirtualView;
 		Size? _size;
 		Action<Size> _reportMeasure;
+
+		protected IPlatformViewHandler Content;
+		internal IView View => Content?.VirtualView;
 
 		public ItemContentView(Context context) : base(context)
 		{
@@ -26,7 +25,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void RealizeContent(View view, ItemsView itemsView)
 		{
 			Content = CreateHandler(view, itemsView);
-			AddView(Content.PlatformView);
+			var platformView = Content.ContainerView ?? Content.PlatformView;
+			AddView(platformView);
 
 			//TODO: RUI IS THIS THE BEST WAY TO CAST? 
 			(View as VisualElement).MeasureInvalidated += ElementMeasureInvalidated;
@@ -39,9 +39,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				(View as VisualElement).MeasureInvalidated -= ElementMeasureInvalidated;
 			}
 
-			if (Content?.PlatformView != null)
+			var platformView = Content?.ContainerView ?? Content?.PlatformView;
+
+			if (platformView != null)
 			{
-				RemoveView(Content.PlatformView);
+				RemoveView(platformView);
 			}
 
 			Content = null;
@@ -71,7 +73,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (mauiControlsView == null)
 				return;
 
-			mauiControlsView.Layout(new Rectangle(Point.Zero, size));
+			mauiControlsView.Layout(new Rect(Point.Zero, size));
 
 			UpdateContentLayout();
 		}
@@ -134,8 +136,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateContentLayout()
 		{
-			VisualElement mauiControlsView = (View as VisualElement);
-			AView aview = Content.PlatformView;
+			VisualElement mauiControlsView = View as VisualElement;
+			AView aview = Content.ContainerView ?? Content.PlatformView;
 
 			if (mauiControlsView == null || aview == null)
 				return;
@@ -145,7 +147,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var width = Math.Max(0, (int)Context.ToPixels(mauiControlsView.Width));
 			var height = Math.Max(0, (int)Context.ToPixels(mauiControlsView.Height));
 
-			Content.PlatformView.Layout(x, y, width, height);
+			aview.Layout(x, y, width, height);
 
 			if ((aview is LayoutViewGroup || aview is ContentViewGroup || aview is CoordinatorLayout || aview is FragmentContainerView) && width == 0 && height == 0)
 			{

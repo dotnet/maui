@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.Maui.Handlers
 {
-    public partial class BorderHandler : ViewHandler<IBorderView, ContentPanel>
+	public partial class BorderHandler : ViewHandler<IBorderView, ContentPanel>
     {
         public override void SetVirtualView(IView view)
         {

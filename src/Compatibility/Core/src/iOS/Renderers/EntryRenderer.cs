@@ -13,6 +13,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entr
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EntryRenderer : EntryRendererBase<UITextField>
 	{
 		[Preserve(Conditional = true)]
@@ -23,13 +24,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected override UITextField CreateNativeControl()
 		{
-			var textField = new UITextField(RectangleF.Zero);
+			var textField = new UITextField(CGRect.Empty);
 			textField.BorderStyle = UITextBorderStyle.RoundedRect;
 			textField.ClipsToBounds = true;
 			return textField;
 		}
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class EntryRendererBase<TControl> : ViewRenderer<Entry, TControl>
 		where TControl : UITextField
 	{
@@ -37,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		// Placeholder default color is 70% gray
 		// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
-		readonly Color _defaultPlaceholderColor = ColorExtensions.SeventyPercentGrey.ToColor();
+		readonly Color _defaultPlaceholderColor = Maui.Platform.ColorExtensions.SeventyPercentGrey.ToColor();
 		UIColor _defaultCursorColor;
 		bool _useLegacyColorManagement;
 

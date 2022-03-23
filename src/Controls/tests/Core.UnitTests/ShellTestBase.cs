@@ -334,7 +334,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public TestShell(params ShellItem[] shellItems) : this()
 			{
-				_ = new Window() { Page = this };
 				shellItems.ForEach(x => Items.Add(x));
 			}
 

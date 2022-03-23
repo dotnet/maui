@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Text = "I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text. I am a long bit of text."
 			};
-			layout.Children.Add(label, () => new Rectangle(0, 0, 250, 400));
+			layout.Children.Add(label, () => new Rect(0, 0, 250, 400));
 			Content = layout;
 		}
 

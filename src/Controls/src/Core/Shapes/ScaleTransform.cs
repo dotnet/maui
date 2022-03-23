@@ -3,20 +3,20 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ScaleTransform.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.ScaleTransform']/Docs" />
 	public class ScaleTransform : Transform
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ScaleTransform.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ScaleTransform.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public ScaleTransform()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ScaleTransform.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ScaleTransform.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public ScaleTransform(double scaleX, double scaleY)
 		{
 			ScaleX = scaleX;
 			ScaleY = scaleY;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ScaleTransform.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ScaleTransform.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public ScaleTransform(double scaleX, double scaleY, double centerX, double centerY)
 		{
 			ScaleX = scaleX;

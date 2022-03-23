@@ -5,7 +5,11 @@ using System.Text;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using ObjCRuntime;
 using UIKit;
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform;
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Compatibility

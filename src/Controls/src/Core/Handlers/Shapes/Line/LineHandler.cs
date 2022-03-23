@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class LineHandler : ShapeViewHandler
 	{
-		public static IPropertyMapper<Line, LineHandler> LineMapper = new PropertyMapper<Line, LineHandler>(Mapper)
+		public static IPropertyMapper<Line, IShapeViewHandler> LineMapper = new PropertyMapper<Line, IShapeViewHandler>(Mapper)
 		{
 			[nameof(Line.X1)] = MapX1,
 			[nameof(Line.Y1)] = MapY1,

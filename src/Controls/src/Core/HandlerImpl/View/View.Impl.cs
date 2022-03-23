@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 
 		void IHotReloadableView.Reload()
 		{
-			Device.BeginInvokeOnMainThread(() =>
+			Dispatcher.Dispatch(() =>
 			{
 				this.CheckHandlers();
 				//Handler = null;

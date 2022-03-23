@@ -5,6 +5,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls
 {
@@ -105,7 +106,7 @@ namespace Microsoft.Maui.Controls
 				return null;
 
 			//make all the platforms mimic Android's implementation, which is by far the most complete.
-			if (Microsoft.Maui.Controls.Device.RuntimePlatform != "Android")
+			if (DeviceInfo.Platform != DevicePlatform.Android)
 			{
 				script = EscapeJsString(script);
 				script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";
