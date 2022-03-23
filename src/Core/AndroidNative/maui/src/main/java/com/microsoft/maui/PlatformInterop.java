@@ -16,6 +16,9 @@ import android.widget.LinearLayout;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
@@ -25,6 +28,8 @@ import com.bumptech.glide.request.target.Target;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.microsoft.maui.glide.MauiCustomTarget;
 import com.microsoft.maui.glide.MauiCustomViewTarget;
 import com.microsoft.maui.glide.font.FontModel;
@@ -164,6 +169,62 @@ public class PlatformInterop {
         toolbar.setLayoutParams(layoutParams);
         toolbar.setPopupTheme(popupTheme);
         return toolbar;
+    }
+
+    @NonNull
+    public static CoordinatorLayout createCoordinatorLayout(Context context)
+    {
+        CoordinatorLayout layout = new CoordinatorLayout(context);
+        layout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        return layout;
+    }
+
+    @NonNull
+    public static AppBarLayout createAppBar(Context context, int appBarStyleAttribute, CoordinatorLayout layout)
+    {
+        AppBarLayout appbar = new AppBarLayout(context, null, appBarStyleAttribute);
+        appbar.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        layout.addView(appbar);
+        return appbar;
+    }
+
+    @NonNull
+    public static MaterialToolbar createMaterialToolbar(Context context, AppBarLayout appbar, int actionBarHeight, int popupTheme)
+    {
+        MaterialToolbar toolbar = new MaterialToolbar(context);
+        toolbar.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, actionBarHeight));
+        toolbar.setPopupTheme(popupTheme);
+        appbar.addView(toolbar);
+        return toolbar;
+    }
+
+    @NonNull
+    public static TabLayout createTabLayout(Context context, AppBarLayout appbar, int actionBarHeight)
+    {
+        TabLayout layout = new TabLayout(context);
+        AppBarLayout.LayoutParams layoutParams = new AppBarLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, actionBarHeight);
+        layoutParams.gravity = Gravity.BOTTOM;
+        layout.setLayoutParams(layoutParams);
+        layout.setTabMode(TabLayout.MODE_SCROLLABLE);
+        appbar.addView(layout);
+        return layout;
+    }
+
+    @NonNull
+    public static ViewPager2 createViewPager(Context context, CoordinatorLayout layout, TabLayout tabLayout, TabLayoutMediator.TabConfigurationStrategy tabConfigurationStrategy, FragmentStateAdapter adapter, ViewPager2.OnPageChangeCallback callback)
+    {
+        ViewPager2 pager = new ViewPager2(context);
+        pager.setOverScrollMode(ViewPager2.OVER_SCROLL_NEVER);
+        pager.setId(View.generateViewId());
+        pager.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        pager.setAdapter(adapter);
+        pager.registerOnPageChangeCallback(callback);
+        layout.addView(pager);
+
+        new TabLayoutMediator(tabLayout, pager, tabConfigurationStrategy)
+            .attach();
+
+        return pager;
     }
 
     public static void loadImageFromFile(ImageView imageView, String file, ImageLoaderCallback callback)
