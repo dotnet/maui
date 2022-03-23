@@ -161,22 +161,6 @@ namespace Microsoft.Maui.ApplicationModel
 		internal static ConnectivityManager ConnectivityManager =>
 			AppContext.GetSystemService(Context.ConnectivityService) as ConnectivityManager;
 
-#if __ANDROID_31__
-		internal static VibratorManager VibratorManager =>
-			HasApiLevelS
-				? AppContext.GetSystemService(Context.VibratorManagerService) as VibratorManager
-				: null;
-#endif
-
-		internal static Vibrator Vibrator =>
-#if __ANDROID_31__
-			HasApiLevelS
-				? VibratorManager.DefaultVibrator :
-#endif
-#pragma warning disable CS0618 // Type or member is obsolete
-				AppContext.GetSystemService(Context.VibratorService) as Vibrator;
-#pragma warning restore CS0618 // Type or member is obsolete
-
 		internal static WifiManager WifiManager =>
 			AppContext.GetSystemService(Context.WifiService) as WifiManager;
 

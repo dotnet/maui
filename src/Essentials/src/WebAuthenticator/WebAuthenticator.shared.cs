@@ -1,17 +1,11 @@
+#nullable enable
 using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
-using System.ComponentModel;
-using Microsoft.Maui.Authentication;
 
 namespace Microsoft.Maui.Authentication
 {
 	public interface IWebAuthenticator
 	{
-		Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl);
-
 		Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions);
 	}
 
@@ -20,66 +14,51 @@ namespace Microsoft.Maui.Authentication
 #if IOS || MACCATALYST || MACOS
 		bool OpenUrlCallback(Uri uri);
 #elif ANDROID
-		bool OnResumeCallback(global::Android.Content.Intent intent);
+		bool OnResumeCallback(Android.Content.Intent intent);
 #endif
 	}
-}
 
-namespace Microsoft.Maui.Essentials
-{
-	/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="Type[@FullName='Microsoft.Maui.Essentials.WebAuthenticator']/Docs" />
-	public static partial class WebAuthenticator
+	public static class WebAuthenticator
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync'][1]/Docs" />
-		public static Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
-			=> Current.AuthenticateAsync(url, callbackUrl);
+		static IWebAuthenticator? defaultImplementation;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync'][2]/Docs" />
-		public static Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
-			=> Current.AuthenticateAsync(webAuthenticatorOptions);
+		public static IWebAuthenticator Default =>
+			defaultImplementation ??= new WebAuthenticatorImplementation();
+
+		internal static void SetDefault(IWebAuthenticator? implementation) =>
+			defaultImplementation = implementation;
+	}
+
+	public static class WebAuthenticatorExtensions
+	{
+		public static Task<WebAuthenticatorResult> AuthenticateAsync(this IWebAuthenticator webAuthenticator, Uri url, Uri callbackUrl) =>
+			webAuthenticator.AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
 
 #if IOS || MACCATALYST || MACOS
-		internal static bool OpenUrl(Uri uri)
+		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, Uri uri)
 		{
-			if (Current is IPlatformWebAuthenticatorCallback c)
-				return c.OpenUrlCallback(uri);
-			return false;
+			if (webAuthenticator is not IPlatformWebAuthenticatorCallback platform)
+				throw new PlatformNotSupportedException("This implementation of IWebAuthenticator does not implement IPlatformWebAuthenticatorCallback.");
+
+			return platform.OpenUrlCallback(uri);
 		}
 #elif ANDROID
-		internal static bool OnResume(global::Android.Content.Intent intent)
+		public static bool OnResume(this IWebAuthenticator webAuthenticator, Android.Content.Intent intent)
 		{
-			if (Current is IPlatformWebAuthenticatorCallback c)
-				return c.OnResumeCallback(intent);
-			return false;
+			if (webAuthenticator is not IPlatformWebAuthenticatorCallback platform)
+				throw new PlatformNotSupportedException("This implementation of IWebAuthenticator does not implement IPlatformWebAuthenticatorCallback.");
+
+			return platform.OnResumeCallback(intent);
 		}
 #endif
-
-#nullable enable
-		static IWebAuthenticator? currentImplementation;
-
-		public static IWebAuthenticator Current =>
-			currentImplementation ??= new WebAuthenticatorImplementation();
-
-		internal static void SetCurrent(IWebAuthenticator? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
 	}
-}
 
-namespace Microsoft.Maui.Authentication
-{
 	public class WebAuthenticatorOptions
 	{
-		public Uri Url { get; set; }
+		public Uri? Url { get; set; }
 
-		public Uri CallbackUrl { get; set; }
+		public Uri? CallbackUrl { get; set; }
 
 		public bool PrefersEphemeralWebBrowserSession { get; set; }
-	}
-
-	public partial class WebAuthenticatorImplementation
-	{
-		public Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
-			=> AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
 	}
 }

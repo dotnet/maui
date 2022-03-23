@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using AndroidX.Browser.CustomTabs;
 
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.Authentication
 		{
 			var url = webAuthenticatorOptions?.Url;
 			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
-			var packageName = Platform.AppContext.PackageName;
+			var packageName = Application.Context.PackageName;
 
 			// Create an intent to see if the app developer wired up the callback activity correctly
 			var intent = new Intent(Intent.ActionView);

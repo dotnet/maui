@@ -1,6 +1,5 @@
+#nullable enable
 using System;
-using System.ComponentModel;
-using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Devices
 {
@@ -10,31 +9,41 @@ namespace Microsoft.Maui.Devices
 
 		void Vibrate();
 
-		void Vibrate(double duration);
-
 		void Vibrate(TimeSpan duration);
 
 		void Cancel();
 	}
-}
 
-namespace Microsoft.Maui.Essentials
-{
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Vibration']/Docs" />
-	public static partial class Vibration
+	public static class Vibration
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="//Member[@MemberName='Vibrate'][1]/Docs" />
-		public static void Vibrate()
-			=> Current.Vibrate(TimeSpan.FromMilliseconds(500));
+		static IVibration? defaultImplementation;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="//Member[@MemberName='Vibrate'][2]/Docs" />
-		public static void Vibrate(double duration)
-			=> Current.Vibrate(TimeSpan.FromMilliseconds(duration));
+		public static IVibration Default =>
+			defaultImplementation ??= new VibrationImplementation();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="//Member[@MemberName='Vibrate'][3]/Docs" />
-		public static void Vibrate(TimeSpan duration)
+		internal static void SetDefault(IVibration? implementation) =>
+			defaultImplementation = implementation;
+	}
+
+	public static class VibrationExtensions
+	{
+		public static void Vibrate(this IVibration vibration, double duration) =>
+			vibration.Vibrate(TimeSpan.FromMilliseconds(duration));
+	}
+
+	partial class VibrationImplementation : IVibration
+	{
+		public void Vibrate()
 		{
-			if (!Current.IsSupported)
+			if (!IsSupported)
+				throw new FeatureNotSupportedException();
+
+			PlatformVibrate();
+		}
+
+		public void Vibrate(TimeSpan duration)
+		{
+			if (!IsSupported)
 				throw new FeatureNotSupportedException();
 
 			if (duration.TotalMilliseconds < 0)
@@ -42,26 +51,15 @@ namespace Microsoft.Maui.Essentials
 			else if (duration.TotalSeconds > 5)
 				duration = TimeSpan.FromSeconds(5);
 
-			Current.Vibrate(duration);
+			PlatformVibrate(duration);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="//Member[@MemberName='Cancel']/Docs" />
-		public static void Cancel()
+		public void Cancel()
 		{
-			if (!Current.IsSupported)
+			if (!IsSupported)
 				throw new FeatureNotSupportedException();
 
-			Current.Cancel();
+			PlatformCancel();
 		}
-
-#nullable enable
-		static IVibration? currentImplementation;
-
-		public static IVibration Current =>
-			currentImplementation ??= new VibrationImplementation();
-
-		internal static void SetCurrent(IVibration? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
 	}
 }
