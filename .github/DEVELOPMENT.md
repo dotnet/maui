@@ -33,19 +33,41 @@ Install the .NET MAUI workload using the versions from a particular branch:
 
 For example, the "preview.14" branch:
 
+
+Windows:
+
 ```
 iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
 .\maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
-``` 
+```
+
+MacOS:
+
+```
+curl -O https://aka.ms/dotnet/maui/maui-install.ps1
+chmod +x maui-install.ps1
+.\maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
+```
+
 
 > NOTE: the branch (`-b 'release/6.0.2xx-preview14'`) and version (`-v 6.0.200-preview`) parameters. The "preview 14" branch currently requires the 6.0.200 SDK band since the manifests are all in that SDK band - this will change in the future
 
 Or, the "main" branch:
 
+Windows:
+
 ```
 iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
 .\maui-install.ps1 -b 'main' -v '6.0.300-preview'
 ``` 
+
+MacOS:
+
+```
+curl -O https://aka.ms/dotnet/maui/maui-install.ps1
+chmod +x maui-install.ps1
+.\maui-install.ps1 -b 'main' -v '6.0.300-preview'
+```
 
 ### iOS / MacCatalyst
 
