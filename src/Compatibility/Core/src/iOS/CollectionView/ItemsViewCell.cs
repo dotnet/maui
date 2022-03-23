@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var selectedBackgroundView = new UIView
 			{
-				BackgroundColor = ColorExtensions.Gray
+				BackgroundColor = Maui.Platform.ColorExtensions.Gray
 			};
 
 			SelectedBackgroundView = selectedBackgroundView;

@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Class Library (Preview)",
-  "description": "A project for creating a .NET MAUI class library",
-  "postActions/openInEditor/description": "Opens Class1.cs in the editor."
+  "name": ".NET MAUI类库(预览)",
+  "description": "用于创建 .NET MAUI 类库的项目",
+  "postActions/openInEditor/description": "在编辑器中打开 Class1.cs。"
 }

@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Obsolete]
 	public class VisualElementPackager : IDisposable
 	{
 		readonly int _column;

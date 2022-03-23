@@ -33,6 +33,9 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+			widthConstraint = Math.Max(widthConstraint, 0);
+			heightConstraint = Math.Max(heightConstraint, 0);
+
 			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
 
 			if (GetInsetPanel(PlatformView) == null)

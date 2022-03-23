@@ -1,8 +1,11 @@
 <ResourceDictionary
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Microsoft.Maui.Platform"
 	xmlns:uwp="using:Microsoft.Maui.Platform">
 
+    <converters:TextAlignmentToHorizontalAlignmentConverter x:Key="AlignmentConverter" />
+    
     <Style x:Key="MauiAutoSuggestBoxStyle" TargetType="AutoSuggestBox">
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsTabStop" Value="False" />

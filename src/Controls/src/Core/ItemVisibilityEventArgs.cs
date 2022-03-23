@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ItemVisibilityEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ItemVisibilityEventArgs']/Docs" />
 	public sealed class ItemVisibilityEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ItemVisibilityEventArgs.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ItemVisibilityEventArgs.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public ItemVisibilityEventArgs(object item, int itemIndex)
 		{
 			Item = item;

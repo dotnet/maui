@@ -6,13 +6,13 @@ namespace Microsoft.Maui.Controls
 	[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
 	public class SolidColorBrush : Brush
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/SolidColorBrush.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/SolidColorBrush.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public SolidColorBrush()
 		{
 
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SolidColorBrush.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/SolidColorBrush.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public SolidColorBrush(Color color)
 		{
 			Color = color;

@@ -8,6 +8,7 @@ using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class BoxViewBorderRenderer : ViewRenderer<BoxView, WBorder>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<BoxView> e)

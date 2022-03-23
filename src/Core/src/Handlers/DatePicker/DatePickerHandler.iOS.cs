@@ -1,6 +1,5 @@
 ﻿using System;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -8,7 +7,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
-		UIColor? _defaultTextColor;
 		UIDatePicker? _picker;
 
 		protected override MauiDatePicker CreatePlatformView()
@@ -79,19 +77,16 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		void SetupDefaults(MauiDatePicker platformView)
-		{
-			_defaultTextColor = platformView.TextColor;
-		}
-
 		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateFormat(datePicker);
+			var picker = (handler as DatePickerHandler)?._picker;
+			handler.PlatformView?.UpdateFormat(datePicker, picker);
 		}
 
 		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateDate(datePicker);
+			var picker = (handler as DatePickerHandler)?._picker;
+			handler.PlatformView?.UpdateDate(datePicker, picker);
 		}
 
 		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
@@ -120,8 +115,21 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateTextColor(datePicker, platformHandler._defaultTextColor);
+			handler.PlatformView?.UpdateTextColor(datePicker);
+		}
+    
+		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.PlatformView?.UpdateFlowDirection(datePicker);
+			handler.PlatformView?.UpdateTextAlignment(datePicker);
+		}
+
+		void OnValueChanged(object? sender, EventArgs? e)
+		{
+			SetVirtualViewDate();
+
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
 		}
 
 		void OnStarted(object? sender, EventArgs eventArgs)
@@ -134,11 +142,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (VirtualView != null)
 				VirtualView.IsFocused = false;
-		}
-
-		void OnValueChanged(object? sender, EventArgs? e)
-		{
-			SetVirtualViewDate();
 		}
 
 		void SetVirtualViewDate()

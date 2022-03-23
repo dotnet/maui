@@ -8,9 +8,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, ASwitch>
 	{
-		Drawable? _defaultTrackDrawable;
-		Drawable? _defaultThumbDrawable;
-
 		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
 
 		protected override ASwitch CreatePlatformView()
@@ -24,7 +21,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.SetOnCheckedChangeListener(ChangeListener);
 
 			base.ConnectHandler(platformView);
-			SetupDefaults(platformView);
 		}
 
 		protected override void DisconnectHandler(ASwitch platformView)
@@ -32,19 +28,7 @@ namespace Microsoft.Maui.Handlers
 			ChangeListener.Handler = null;
 			platformView.SetOnCheckedChangeListener(null);
 
-			_defaultTrackDrawable?.Dispose();
-			_defaultTrackDrawable = null;
-
-			_defaultThumbDrawable?.Dispose();
-			_defaultThumbDrawable = null;
-
 			base.DisconnectHandler(platformView);
-		}
-
-		void SetupDefaults(ASwitch platformView)
-		{
-			_defaultTrackDrawable = platformView.GetDefaultSwitchTrackDrawable();
-			_defaultThumbDrawable = platformView.GetDefaultSwitchThumbDrawable();
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -72,13 +56,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTrackColor(ISwitchHandler handler, ISwitch view)
 		{
 			if (handler is SwitchHandler platformHandler)
-				handler.PlatformView?.UpdateTrackColor(view, platformHandler._defaultTrackDrawable);
+				handler.PlatformView?.UpdateTrackColor(view);
 		}
 
 		public static void MapThumbColor(ISwitchHandler handler, ISwitch view)
 		{
 			if (handler is SwitchHandler platformHandler)
-				handler.PlatformView?.UpdateThumbColor(view, platformHandler._defaultThumbDrawable);
+				handler.PlatformView?.UpdateThumbColor(view);
 		}
 
 		void OnCheckedChanged(bool isOn)

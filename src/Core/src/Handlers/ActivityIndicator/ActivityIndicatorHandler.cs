@@ -3,7 +3,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiActivityIndicator;
 #elif MONOANDROID
 using PlatformView = Android.Widget.ProgressBar;
 #elif WINDOWS
-using PlatformView = Microsoft.Maui.Platform.MauiActivityIndicator;
+using PlatformView = Microsoft.UI.Xaml.Controls.ProgressRing;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
@@ -19,6 +19,11 @@ namespace Microsoft.Maui.Handlers
 #if __ANDROID__
 			// Android does not have the concept of IsRunning, so we are leveraging the Visibility
 			[nameof(IActivityIndicator.Visibility)] = MapIsRunning,
+#endif
+#if WINDOWS
+			[nameof(IActivityIndicator.Width)] = MapWidth,
+			[nameof(IActivityIndicator.Height)] = MapHeight,
+			[nameof(IActivityIndicator.Background)] = MapBackground,
 #endif
 		};
 
