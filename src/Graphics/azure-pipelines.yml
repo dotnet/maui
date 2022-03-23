@@ -27,6 +27,7 @@ trigger:
     include:
     - main
     - release/*
+    - darc-*
   tags:
     include:
     - '*'
