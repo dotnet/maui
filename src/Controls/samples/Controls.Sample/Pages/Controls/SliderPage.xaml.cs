@@ -5,6 +5,8 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class SliderPage
 	{
+		ImageSource _imageSource;
+
 		public SliderPage()
 		{
 			InitializeComponent();
@@ -17,6 +19,20 @@ namespace Maui.Controls.Sample.Pages
 			Debug.WriteLine($"Slider Value: {args.NewValue}");
 		}
 
+		private void ToggleImageSource(object sender, System.EventArgs e)
+		{
+			if (_imageSource is null)
+			{
+				_imageSource = ImageSlider.ThumbImageSource;
+				ImageSlider.ThumbImageSource = null;
+			}
+			else
+			{
+				ImageSlider.ThumbImageSource = _imageSource;
+				_imageSource = null;
+			}
+		}
+		
 		void OnDynamicValueChanged(object sender, ValueChangedEventArgs args)
 		{
 			UpdateInfo();

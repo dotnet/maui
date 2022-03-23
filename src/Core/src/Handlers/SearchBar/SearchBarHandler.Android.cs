@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, SearchView>
 	{
-		static Drawable? DefaultBackground;
 		static ColorStateList? DefaultPlaceholderTextColors { get; set; }
 
 		EditText? _editText;
@@ -29,7 +28,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.QueryTextChange += OnQueryTextChange;
 			platformView.QueryTextSubmit += OnQueryTextSubmit;
-			SetupDefaults(platformView);
 		}
 
 		protected override void DisconnectHandler(SearchView platformView)
@@ -38,15 +36,10 @@ namespace Microsoft.Maui.Handlers
 			platformView.QueryTextSubmit -= OnQueryTextSubmit;
 		}
 
-		void SetupDefaults(SearchView platformView)
-		{
-			DefaultBackground = platformView.Background;
-		}
-
 		// This is a Android-specific mapping
 		public static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateBackground(searchBar, DefaultBackground);
+			handler.PlatformView?.UpdateBackground(searchBar);
 		}
 
 		// This is a Android-specific mapping

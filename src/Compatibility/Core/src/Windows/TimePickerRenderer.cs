@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class TimePickerRenderer : ViewRenderer<TimePicker, Microsoft.UI.Xaml.Controls.TimePicker>
 	{
 		WBrush _defaultBrush;

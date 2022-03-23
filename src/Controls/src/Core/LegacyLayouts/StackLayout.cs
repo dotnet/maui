@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public StackLayout()
 		{
+			Hosting.CompatibilityCheck.CheckForCompatibility();
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<StackLayout>>(() =>
 				new PlatformConfigurationRegistry<StackLayout>(this));
 		}

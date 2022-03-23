@@ -5,8 +5,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
-		static UIColor? DefaultTextColor;
-
 		protected override MauiTimePicker CreatePlatformView()
 		{
 			return new MauiTimePicker(() =>
@@ -19,8 +17,6 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiTimePicker platformView)
 		{
 			base.ConnectHandler(platformView);
-      
-			SetupDefaults(platformView);
 
 			if (platformView != null)
 			{
@@ -49,11 +45,6 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void SetupDefaults(MauiTimePicker platformView)
-		{
-			DefaultTextColor = platformView.TextColor;
-		}
-
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateFormat(timePicker, handler.PlatformView?.Picker);
@@ -78,7 +69,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateTextColor(timePicker, DefaultTextColor);
+			handler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
 		public static void MapFlowDirection(TimePickerHandler handler, ITimePicker timePicker)

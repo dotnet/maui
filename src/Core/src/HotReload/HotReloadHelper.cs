@@ -14,11 +14,9 @@ namespace Microsoft.Maui.HotReload
 	{
 		static IMauiHandlersCollection? HandlerService;
 		//static IMauiHandlersServiceProvider? HandlerServiceProvider;
-		public static void Init(IMauiHandlersCollection handlerService)
+		public static void RegisterHandlers(IMauiHandlersCollection handlerService)
 		{
 			HandlerService = handlerService;
-			//HandlerServiceProvider = new MauiHandlersServiceProvider(handlerService);
-			IsEnabled = true;
 		}
 		public static void AddActiveView(IHotReloadableView view) => ActiveViews.Add(view);
 		public static void Reset()
@@ -175,5 +173,14 @@ namespace Microsoft.Maui.HotReload
 				view!.Reload();
 			}
 		}
+		#region Metadata Update Handler
+		public static void UpdateApplication(Type[] types)
+		{
+			IsEnabled = true;
+			foreach (var t in types)
+				RegisterReplacedView(t.FullName ?? "", t);
+		}
+		public static void ClearCache(Type[] types) => TriggerReload();
+		#endregion
 	}
 }

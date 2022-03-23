@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Point GetRelativePosition(VisualElement subView, VisualElement parent);
 		}
 
-		public class PopupStackLayout : StackLayout, INotifyPropertyChanged
+		public class PopupStackLayout : Microsoft.Maui.Controls.Compatibility.StackLayout, INotifyPropertyChanged
 		{
 			private static readonly Guid PageRootGridId = Guid.NewGuid();
 			private readonly Guid ShowButtonId = Guid.NewGuid();

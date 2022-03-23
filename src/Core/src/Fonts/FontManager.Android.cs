@@ -66,6 +66,10 @@ namespace Microsoft.Maui
 			if (asset != null)
 				return asset;
 
+			// The font might be a file, such as a temporary file extracted from EmbeddedResource
+			if (File.Exists(fontName))
+				return Typeface.CreateFromFile(fontName);
+
 			var fontFile = FontFile.FromString(fontName);
 			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
 			{
@@ -127,8 +131,6 @@ namespace Microsoft.Maui
 			{
 				if (GetFromAssets(fontFamily) is Typeface typeface)
 					result = typeface;
-				else if (FontNameToFontFile(fontFamily) is string f && File.Exists(f))
-					result = Typeface.CreateFromFile(f);
 				else
 					result = Typeface.Create(fontFamily, style);
 			}

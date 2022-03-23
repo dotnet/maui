@@ -15,6 +15,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete]
 	public class Platform : BindableObject, IPlatformLayout, INavigation
 	{
 		readonly Context _context;
@@ -719,7 +720,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		#endregion
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal class DefaultRenderer : VisualElementRenderer<View>, ILayoutChanges
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			public bool NotReallyHandled { get; private set; }
 

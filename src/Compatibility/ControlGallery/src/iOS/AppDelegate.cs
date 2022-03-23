@@ -22,8 +22,10 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 [assembly: Dependency(typeof(TestCloudService))]
 [assembly: Dependency(typeof(CacheService))]
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(DisposePage), typeof(DisposePageRenderer))]
 [assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]
+#pragma warning restore CS0612 // Type or member is obsolete
 [assembly: ExportEffect(typeof(BorderEffect), nameof(BorderEffect))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 {
@@ -57,6 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class DisposePageRenderer : PageRenderer
 	{
 		protected override void Dispose(bool disposing)
@@ -70,6 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class DisposeLabelRenderer : LabelRenderer
 	{
 		protected override void Dispose(bool disposing)

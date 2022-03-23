@@ -8,8 +8,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, MauiComboBox>
 	{
-		WBrush? _defaultForeground;
-
 		protected override MauiComboBox CreatePlatformView()
 		{
 			var platformPicker = new MauiComboBox();
@@ -26,8 +24,6 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
 				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
-
-			SetupDefaults(platformView);
 		}
 
 		protected override void DisconnectHandler(MauiComboBox platformView)
@@ -36,11 +32,6 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
 				notifyCollection.CollectionChanged -= OnRowsCollectionChanged;
-		}
-
-		void SetupDefaults(MauiComboBox platformView)
-		{
-			_defaultForeground = platformView.Foreground;
 		}
 
 		static void Reload(IPickerHandler handler)
@@ -83,7 +74,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler is PickerHandler platformHandler)
 			{
-				platformHandler.PlatformView?.UpdateTextColor(picker, platformHandler._defaultForeground);
+				platformHandler.PlatformView?.UpdateTextColor(picker);
 			}
 		}
 

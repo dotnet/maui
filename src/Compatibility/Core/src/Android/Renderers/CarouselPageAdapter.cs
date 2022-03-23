@@ -11,6 +11,7 @@ using Object = Java.Lang.Object;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete]
 	internal class CarouselPageAdapter : PagerAdapter, ViewPager.IOnPageChangeListener
 	{
 		readonly Context _context;

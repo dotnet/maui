@@ -1,9 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.props" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.props" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" />
-
   <PropertyGroup>
     <TargetFrameworks>$(MauiPlatformsNoMacCat)</TargetFrameworks>
     <OutputType>Exe</OutputType>
@@ -31,7 +27,6 @@
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests\TestUtils.DeviceTests.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners.SourceGen\TestUtils.DeviceTests.Runners.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
@@ -61,9 +56,6 @@
     <Compile Remove="**\Windows\**\*.cs" />
   </ItemGroup>
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.targets" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.targets" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.targets" />
+  <Import Project="../../../Maui.InTree.props" />
 
 </Project>

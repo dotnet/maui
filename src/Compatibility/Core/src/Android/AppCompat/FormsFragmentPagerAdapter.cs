@@ -11,6 +11,7 @@ using FragmentTransit = Android.App.FragmentTransit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {
+	[System.Obsolete]
 	internal class FormsFragmentPagerAdapter<[DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers)] T> : FragmentPagerAdapter where T : Page
 	{
 		MultiPage<T> _page;
