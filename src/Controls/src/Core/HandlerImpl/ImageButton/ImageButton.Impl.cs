@@ -14,17 +14,17 @@ namespace Microsoft.Maui.Controls
 
 		IImageSource IImageSourcePart.Source => Source;
 
-		void IImageButton.Clicked()
+		void IButton.Clicked()
 		{
 			(this as IButtonController).SendClicked();
 		}
 
-		void IImageButton.Pressed()
+		void IButton.Pressed()
 		{
 			(this as IButtonController).SendPressed();
 		}
 
-		void IImageButton.Released()
+		void IButton.Released()
 		{
 			(this as IButtonController).SendReleased();
 		}

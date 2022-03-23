@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdatePadding(this Button platformButton, IPadding padding) =>
 			platformButton.UpdatePadding(padding, platformButton.GetResource<UI.Xaml.Thickness>("ButtonPadding"));
 
-		public static void UpdateLineBreakMode(this Button platformButton, IButton button)
+		public static void UpdateLineBreakMode(this Button platformButton, ILineBreakMode button)
 		{
 			if (platformButton.GetContent<TextBlock>() is TextBlock textBlock)
 			{

@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Platform
 				(int)padding.Bottom);
 		}
 	
-		public static void UpdateLineBreakMode(this Button nativeControl, IButton button)
+		public static void UpdateLineBreakMode(this Button nativeControl, ILineBreakMode button)
 		{
 			nativeControl.SetLineBreakMode(button);
 		}

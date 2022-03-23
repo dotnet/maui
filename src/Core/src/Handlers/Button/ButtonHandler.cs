@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		ImageSourcePartLoader? _imageSourcePartLoader;
 		public ImageSourcePartLoader ImageSourceLoader =>
-			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => VirtualView, OnSetImageSource);
+			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => (VirtualView as IImageButton), OnSetImageSource);
 
 		public static IPropertyMapper<IImage, IButtonHandler> ImageButtonMapper = new PropertyMapper<IImage, IButtonHandler>()
 		{
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IButton.Background)] = MapBackground,
 			[nameof(IButton.Padding)] = MapPadding,
-			[nameof(IButton.LineBreakMode)] = MapLineBreakMode,
+			[nameof(ILineBreakMode.LineBreakMode)] = MapLineBreakMode,
 			[nameof(IButtonStroke.StrokeThickness)] = MapStrokeThickness,
 			[nameof(IButtonStroke.StrokeColor)] = MapStrokeColor,
 			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius

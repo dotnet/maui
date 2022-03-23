@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Platform
 				(float)padding.Right);
 		}
 
-		public static void UpdateLineBreakMode(this UIButton nativeButton, IButton button)
+		public static void UpdateLineBreakMode(this UIButton nativeButton, ILineBreakMode button)
 		{
 			nativeButton.TitleLabel.LineBreakMode = button.LineBreakMode switch
 			{

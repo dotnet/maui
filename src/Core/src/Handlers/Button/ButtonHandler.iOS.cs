@@ -76,7 +76,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapLineBreakMode(IButtonHandler handler, IButton button)
 		{
-			handler.PlatformView?.UpdateLineBreakMode(button);
+			if (button is ILineBreakMode lineBreakMode)
+				handler.PlatformView?.UpdateLineBreakMode(lineBreakMode);
 		}
 
 		public static void MapFont(IButtonHandler handler, ITextStyle button)
