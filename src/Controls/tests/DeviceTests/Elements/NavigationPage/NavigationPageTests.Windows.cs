@@ -36,8 +36,8 @@ namespace Microsoft.Maui.DeviceTests
 		public bool IsNavigationBarVisible(IMauiContext mauiContext)
 		{
 			var navView = GetMauiNavigationView(mauiContext);
-			var header = navView.Header as WFrameworkElement;
-			return header.Visibility == UI.Xaml.Visibility.Visible;
+			var header = navView?.Header as WFrameworkElement;
+			return header?.Visibility == UI.Xaml.Visibility.Visible;
 		}
 
 		public bool ToolbarItemsMatch(
