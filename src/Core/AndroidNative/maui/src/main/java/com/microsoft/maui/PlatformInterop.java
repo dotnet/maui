@@ -118,6 +118,9 @@ public class PlatformInterop {
     {
         RequestManager glide = Glide.with(imageView);
 
+        // Clear pending operations
+        glide.clear(imageView);
+
         MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback, glide);
 
         glide
@@ -135,6 +138,9 @@ public class PlatformInterop {
         }
 
         RequestManager glide = Glide.with(imageView);
+
+        // Clear pending operations
+        glide.clear(imageView);
 
         MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback, glide);
 
@@ -155,6 +161,9 @@ public class PlatformInterop {
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback)
     {
         RequestManager glide = Glide.with(imageView);
+
+        // Clear pending operations
+        glide.clear(imageView);
 
         MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback, glide);
 
