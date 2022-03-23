@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext context = source.FindMauiContext(true);
 			IImageSourceServiceProvider imageSourceServiceProvider = context.Services.GetRequiredService<IImageSourceServiceProvider>();
 			IImageSourceService imageSourceService = imageSourceServiceProvider.GetImageSourceService(source);
-			return imageSourceService.GetImageSourceAsync(source).Result;
+			return imageSourceService.GetImageSourceAsync(source).ContinueWith(task => task.Result.Value).AsAsyncValue();
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)
