@@ -8,9 +8,9 @@ using WinRT;
 
 namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	class ShareImplementation : IShare
+	partial class ShareImplementation : IShare
 	{
-		public Task RequestAsync(ShareTextRequest request)
+		Task PlatformRequestAsync(ShareTextRequest request)
 		{
 			var hwnd = Platform.CurrentWindowHandle;
 			var dataTransferManager = DataTransferManagerHelper.GetDataTransferManager(hwnd);
@@ -41,7 +41,10 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			return Task.CompletedTask;
 		}
 
-		public async Task RequestAsync(ShareMultipleFilesRequest request)
+		Task PlatformRequestAsync(ShareFileRequest request) =>
+			PlatformRequestAsync((ShareMultipleFilesRequest)request);
+
+		async Task PlatformRequestAsync(ShareMultipleFilesRequest request)
 		{
 			var storageFiles = new List<IStorageFile>();
 			foreach (var file in request.Files)

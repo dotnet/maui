@@ -10,8 +10,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 #endif
 
-
-
 namespace Microsoft.Maui.Accessibility
 {
 	partial class SemanticScreenReaderImplementation : ISemanticScreenReader
@@ -34,8 +32,8 @@ namespace Microsoft.Maui.Accessibility
 		}
 
 		// This isn't great but it's the only way I've found to announce with WinUI.
-		// You have to locate a control that has an automation peer and then use that 
-		// to perform the announce operation. This creates scenarios where the 
+		// You have to locate a control that has an automation peer and then use that
+		// to perform the announce operation. This creates scenarios where the
 		// screen might not have any automation peers on it to use but in those cases
 		// you really shouldn't be using the announce API
 		static AutomationPeer FindAutomationPeer(DependencyObject depObj)

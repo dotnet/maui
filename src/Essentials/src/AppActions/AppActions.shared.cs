@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -21,7 +20,7 @@ namespace Microsoft.Maui.ApplicationModel
 	public interface IPlatformAppActions
 	{
 #if WINDOWS
-		Task OnLaunched(LaunchActivatedEventArgs e);
+		Task OnLaunched(UI.Xaml.LaunchActivatedEventArgs e);
 #elif IOS || MACCATALYST
 		void PerformActionForShortcutItem(UIKit.UIApplication application, UIKit.UIApplicationShortcutItem shortcutItem, UIKit.UIOperationHandler completionHandler);
 #elif ANDROID

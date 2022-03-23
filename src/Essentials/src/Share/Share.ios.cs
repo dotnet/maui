@@ -9,9 +9,9 @@ using UIKit;
 
 namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	class ShareImplementation : IShare
+	partial class ShareImplementation : IShare
 	{
-		public Task RequestAsync(ShareTextRequest request)
+		Task PlatformRequestAsync(ShareTextRequest request)
 		{
 			var items = new List<NSObject>();
 			if (!string.IsNullOrWhiteSpace(request.Text))
@@ -39,7 +39,10 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			return vc.PresentViewControllerAsync(activityController, true);
 		}
 
-		public Task RequestAsync(ShareMultipleFilesRequest request)
+		Task PlatformRequestAsync(ShareFileRequest request) =>
+			PlatformRequestAsync((ShareMultipleFilesRequest)request);
+
+		Task PlatformRequestAsync(ShareMultipleFilesRequest request)
 		{
 			var items = new List<NSObject>();
 
