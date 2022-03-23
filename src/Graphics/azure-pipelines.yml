@@ -106,6 +106,13 @@ stages:
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
 
+            - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+              displayName: 'Install .NET'
+              retryCountOnTaskFailure: 3
+              env:
+                DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                PRIVATE_BUILD: $(PrivateBuild)
+
             - pwsh: |
                 [xml] $fileXml = Get-Content "eng\Versions.props"
                 $DotNetVersion = $fileXml.SelectSingleNode("Project/PropertyGroup/MicrosoftDotnetSdkInternalPackageVersion").InnerText

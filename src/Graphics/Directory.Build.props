@@ -1,5 +1,20 @@
 <Project>
   <Import Project="eng\Versions.props" />
+    <PropertyGroup>
+    <_MauiDotNetVersion Condition="'$(_MauiDotNetVersion)' == ''">6.0</_MauiDotNetVersion>
+    <_MauiDotNetTfm Condition="'$(_MauiDotNetTfm)' == ''">net$(_MauiDotNetVersion)</_MauiDotNetTfm>
+    <_MauiTargetPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MauiTargetPlatformIdentifier>
+    <_MauiNoTargetPlatform Condition="'$(_MauiTargetPlatformIdentifier)' == ''">True</_MauiNoTargetPlatform>
+    <_MauiTargetPlatformIsAndroid Condition="'$(_MauiTargetPlatformIdentifier)' == 'android'">True</_MauiTargetPlatformIsAndroid>
+    <_MauiTargetPlatformIsiOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'ios'">True</_MauiTargetPlatformIsiOS>
+    <_MauiTargetPlatformIsMacCatalyst Condition="'$(_MauiTargetPlatformIdentifier)' == 'maccatalyst'">True</_MauiTargetPlatformIsMacCatalyst>
+    <_MauiTargetPlatformIsmacOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'macos'">True</_MauiTargetPlatformIsmacOS>
+    <_MauiTargetPlatformIstvOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'tvos'">True</_MauiTargetPlatformIstvOS>
+    <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
+
+    <IncludeWindowsTargetFrameworks Condition="($([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full') or ('$(Packing)' == 'true')">true</IncludeWindowsTargetFrameworks>
+  </PropertyGroup>
+
   <PropertyGroup>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -8,17 +23,17 @@
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
   </PropertyGroup>
+
   <PropertyGroup>
     <MauiRootDirectory>$(MSBuildThisFileDirectory)</MauiRootDirectory>
     <DotNetOutputPath>$(MSBuildThisFileDirectory)bin/</DotNetOutputPath>
     <DotNetTempDirectory>$(DotNetOutputPath)temp/</DotNetTempDirectory>
-    <DotNetDirectory Condition="'$(DotNetDirectory)' == ''">$(DotNetOutputPath)dotnet/</DotNetDirectory>
-    <DotNetDirectoryWithSlash>$([MSBuild]::EnsureTrailingSlash('$(DotNetDirectory)'))</DotNetDirectoryWithSlash>
-    <DotNetToolPath>$(DotNetDirectoryWithSlash)dotnet</DotNetToolPath>
-    <DotNetPacksDirectory>$(DotNetDirectoryWithSlash)packs/</DotNetPacksDirectory>
-    <DotNetLibraryPacksDirectory>$(DotNetDirectoryWithSlash)library-packs/</DotNetLibraryPacksDirectory>
-    <DotNetSdkManifestsDirectory>$(DotNetDirectoryWithSlash)sdk-manifests/$(DotNetVersionBand)/</DotNetSdkManifestsDirectory>
-    <DotNetTemplatePacksDirectory>$(DotNetDirectoryWithSlash)template-packs/</DotNetTemplatePacksDirectory>
+    <DotNetDirectory>$(DotNetOutputPath)dotnet/</DotNetDirectory>
+    <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
+    <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
+    <DotNetLibraryPacksDirectory>$(DotNetDirectory)library-packs/</DotNetLibraryPacksDirectory>
+    <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/</DotNetSdkManifestsDirectory>
+    <DotNetTemplatePacksDirectory>$(DotNetDirectory)template-packs/</DotNetTemplatePacksDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>

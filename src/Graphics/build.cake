@@ -23,6 +23,7 @@ PowerShell:
 // #addin "nuget:?package=Cake.AppleSimulator&version=0.2.0"
 // #addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
 #load "eng/cake/dotnet.cake"
+#load "eng/cake/helpers.cake"
 
 //////////////////////////////////////////////////////////////////////
 // TOOLS
@@ -36,13 +37,24 @@ PowerShell:
 
 string agentName = EnvironmentVariable("AGENT_NAME", "");
 bool isCIBuild = !String.IsNullOrWhiteSpace(agentName);
-string artifactStagingDirectory = EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", ".");
 string workingDirectory = EnvironmentVariable("SYSTEM_DEFAULTWORKINGDIRECTORY", ".");
 string envProgramFiles = EnvironmentVariable("ProgramFiles(x86)");
 var configuration = GetBuildVariable("BUILD_CONFIGURATION", GetBuildVariable("configuration", "DEBUG"));
-var msbuildPath = GetBuildVariable("msbuild", $"{envProgramFiles}\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin\\MSBuild.exe");
 bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.StartsWith("Hosted Agent");
 
+var localDotnet = GetBuildVariable("workloads",  (target == "VS-WINUI") ? "global" : "local") == "local";
+var vsVersion = GetBuildVariable("VS", "");
+
+DirectoryPath artifactStagingDirectory = MakeAbsolute(Directory(EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", "artifacts")));
+DirectoryPath logDirectory = MakeAbsolute(Directory(EnvironmentVariable("LogDirectory", $"{artifactStagingDirectory}/logs")));
+DirectoryPath testResultsDirectory = MakeAbsolute(Directory(EnvironmentVariable("TestResultsDirectory", $"{artifactStagingDirectory}/test-results")));
+DirectoryPath diffDirectory = MakeAbsolute(Directory(EnvironmentVariable("ApiDiffDirectory", $"{artifactStagingDirectory}/api-diff")));
+DirectoryPath tempDirectory = MakeAbsolute(Directory(EnvironmentVariable("AGENT_TEMPDIRECTORY", EnvironmentVariable("TEMP", EnvironmentVariable("TMPDIR", "../maui-temp")) + "/" + Guid.NewGuid())));
+
+string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
+string MSBuildArgumentsENV = EnvironmentVariable("MSBuildArguments", "");
+string MSBuildArgumentsARGS = Argument("MSBuildArguments", "");
+string MSBuildArguments;
 
 var target = Argument("target", "Default");
 if(String.IsNullOrWhiteSpace(target))
@@ -52,18 +64,10 @@ if(String.IsNullOrWhiteSpace(target))
 // TASK TARGETS
 //////////////////////////////////////////////////////////////////////
 
-Task("Default").IsDependentOn("dotnet-pack");
+Task("Default").IsDependentOn("dotnet");
 
 //////////////////////////////////////////////////////////////////////
 // EXECUTION
 //////////////////////////////////////////////////////////////////////
 
 RunTarget(target);
-
-T GetBuildVariable<T>(string key, T defaultValue)
-{
-    // on MAC all environment variables are upper case regardless of how you specify them in devops
-    // And then Environment Variable check is case sensitive
-    T upperCaseReturnValue = Argument(key.ToUpper(), EnvironmentVariable(key.ToUpper(), defaultValue));
-    return Argument(key, EnvironmentVariable(key, upperCaseReturnValue));
-}
