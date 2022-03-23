@@ -71,17 +71,11 @@ namespace Microsoft.Maui.Platform
 		{
 			if (brush is null)
 			{
-				foreach (var key in keys)
-				{
-					resource.Remove(key);
-				}
+				resource.RemoveKeys(keys);
 			}
 			else
 			{
-				foreach (var key in keys)
-				{
-					resource[key] = brush;
-				}
+				resource.SetValueForAllKey(keys, brush);
 			}
 		}
 
