@@ -53,18 +53,6 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-
-		public static void MapBackgroundImageSource(IPageHandler handler, IContentView page)
-		{
-			if (page is not IViewBackgroundImagePart viewBackgroundImagePart)
-				return;
-
-			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-
-			handler.PlatformView?.UpdateBackgroundImageSourceAsync(viewBackgroundImagePart, provider)			
-				.FireAndForget(handler);
-    }
-
 		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
 			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
