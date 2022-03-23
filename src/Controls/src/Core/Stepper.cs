@@ -49,10 +49,10 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<Stepper>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public Stepper() => _platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Stepper>>(() => new PlatformConfigurationRegistry<Stepper>(this));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public Stepper(double min, double max, double val, double increment) : this()
 		{
 			if (min >= max)

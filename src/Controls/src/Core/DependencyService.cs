@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 			return (T)Activator.CreateInstance(dependencyImplementation.ImplementorType);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="//Member[@MemberName='Register']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="//Member[@MemberName='Register'][1]/Docs" />
 		public static void Register<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] T>() where T : class
 		{
 			Type type = typeof(T);
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls
 				DependencyTypes.Add(type);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="//Member[@MemberName='Register']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="//Member[@MemberName='Register'][2]/Docs" />
 		public static void Register<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] T, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TImpl>() where T : class where TImpl : class, T
 		{
 			Type targetType = typeof(T);
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="//Member[@MemberName='Register']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="//Member[@MemberName='Register'][3]/Docs" />
 		public static void Register(Assembly[] assemblies)
 		{
 			lock (s_initializeLock)

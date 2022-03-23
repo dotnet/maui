@@ -83,9 +83,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public void GlideStaticEqualsGlideGet()
 		{
-			var fromGet = Glide.Get(Platform.DefaultContext);
+			var fromGet = Glide.Get(MauiProgram.DefaultContext);
 
-			var manager = Glide.With(Platform.DefaultContext);
+			var manager = Glide.With(MauiProgram.DefaultContext);
 			var glideField = manager.GetType().GetProperty("Glide", BindingFlags.NonPublic | BindingFlags.Instance);
 			var fromField = glideField.GetValue(manager);
 

@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			var w = vDevMode.dmPelsWidth;
 			var h = vDevMode.dmPelsHeight;
-			var dpi = GetDpiForWindow(windowHandler) / 96.0;
+			var dpi = GetDpiForWindow(windowHandler) / DeviceDisplay.BaseLogicalDpi;
 
 			return new DisplayInfo(
 				width: perpendicular ? h : w,
@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return new DisplayInfo(
 				width: perpendicular ? h : w,
 				height: perpendicular ? w : h,
-				density: di.LogicalDpi / 96.0,
+				density: di.LogicalDpi / DeviceDisplay.BaseLogicalDpi,
 				orientation: CalculateOrientation(di),
 				rotation: rotation,
 				rate: (float)(hdm?.RefreshRate ?? 0));

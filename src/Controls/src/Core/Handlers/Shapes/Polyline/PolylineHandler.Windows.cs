@@ -22,17 +22,17 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		public static void MapShape(PolylineHandler handler, Polyline polyline)
+		public static void MapShape(IShapeViewHandler handler, Polyline polyline)
 		{
 			handler.PlatformView?.UpdateShape(polyline);
 		}
 
-		public static void MapPoints(PolylineHandler handler, Polyline polyline)
+		public static void MapPoints(IShapeViewHandler handler, Polyline polyline)
 		{
 			handler.PlatformView?.InvalidateShape(polyline);
 		}
 
-		public static void MapFillRule(PolylineHandler handler, Polyline polyline)
+		public static void MapFillRule(IShapeViewHandler handler, Polyline polyline)
 		{
 			IDrawable drawable = handler.PlatformView?.Drawable;
 
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				return;
 
 			if (drawable is ShapeDrawable shapeDrawable)
-				shapeDrawable.WindingMode = polyline.FillRule == FillRule.EvenOdd ? Graphics.WindingMode.EvenOdd : Graphics.WindingMode.NonZero;
+				shapeDrawable.UpdateWindingMode(polyline.FillRule == FillRule.EvenOdd ? WindingMode.EvenOdd : WindingMode.NonZero);
 
 			handler.PlatformView?.InvalidateShape(polyline);
 		}

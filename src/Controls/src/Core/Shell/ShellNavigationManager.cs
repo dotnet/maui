@@ -33,9 +33,14 @@ namespace Microsoft.Maui.Controls
 			});
 		}
 
-		public async Task GoToAsync(ShellNavigationParameters shellNavigationParameters)
+		public Task GoToAsync(ShellNavigationParameters shellNavigationParameters) =>
+			GoToAsync(shellNavigationParameters, null);
+
+		internal async Task GoToAsync(
+			ShellNavigationParameters shellNavigationParameters,
+			ShellNavigationRequest navigationRequest)
 		{
-			if (shellNavigationParameters.PagePushing != null)
+			if (shellNavigationParameters.PagePushing != null && navigationRequest == null)
 				Routing.RegisterImplicitPageRoute(shellNavigationParameters.PagePushing);
 
 			var state = shellNavigationParameters.TargetState ?? new ShellNavigationState(Routing.GetRoute(shellNavigationParameters.PagePushing), false);
@@ -43,7 +48,7 @@ namespace Microsoft.Maui.Controls
 			bool enableRelativeShellRoutes = shellNavigationParameters.EnableRelativeShellRoutes;
 			ShellNavigatingEventArgs deferredArgs = shellNavigationParameters.DeferredArgs;
 
-			var navigationRequest = ShellUriHandler.GetNavigationRequest(_shell, state.FullLocation, enableRelativeShellRoutes, shellNavigationParameters: shellNavigationParameters);
+			navigationRequest ??= ShellUriHandler.GetNavigationRequest(_shell, state.FullLocation, enableRelativeShellRoutes, shellNavigationParameters: shellNavigationParameters);
 			bool isRelativePopping = ShellUriHandler.IsTargetRelativePop(shellNavigationParameters);
 			var parameters = shellNavigationParameters.Parameters ?? new ShellRouteParameters();
 
@@ -493,7 +498,6 @@ namespace Microsoft.Maui.Controls
 				routeStack.Insert(0, "/");
 
 			return new ShellNavigationState(String.Join("/", routeStack), true);
-
 		}
 
 		public static List<Page> BuildFlattenedNavigationStack(Shell shell)

@@ -90,6 +90,11 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 				AddSearchHandler("text here");
 		}
 
+		void OnToggleTabBar(object sender, EventArgs e)
+		{
+			Shell.SetTabBarIsVisible(this, !Shell.GetTabBarIsVisible(this));
+		}
+
 		protected void AddSearchHandler(string placeholder)
 		{
 			var searchHandler = new CustomSearchHandler();

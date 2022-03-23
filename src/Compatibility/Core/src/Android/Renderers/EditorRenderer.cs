@@ -13,6 +13,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EditorRenderer : EditorRendererBase<FormsEditText>
 	{
 		TextColorSwitcher _hintColorSwitcher;
@@ -61,6 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class EditorRendererBase<TControl> : ViewRenderer<Editor, TControl>, ITextWatcher
 		where TControl : global::Android.Views.View
 	{
@@ -281,6 +283,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		[PortHandler]
 		abstract protected void UpdatePlaceholderColor();
 
+		[PortHandler]
 		void OnKeyboardBackPressed(object sender, EventArgs eventArgs)
 		{
 			ElementController?.SendCompleted();

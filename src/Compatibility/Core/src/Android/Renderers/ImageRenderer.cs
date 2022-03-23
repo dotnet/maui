@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void SetFormsAnimationDrawable(IFormsAnimationDrawable formsAnimationDrawable);
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ImageRenderer : ViewRenderer<Image, AImageView>
 	{
 		bool _isDisposed;

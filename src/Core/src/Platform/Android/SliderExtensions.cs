@@ -23,53 +23,28 @@ namespace Microsoft.Maui.Platform
 			seekBar.Progress = (int)((value - min) / (max - min) * PlatformMaxValue);
 		}
 
-		public static void UpdateMinimumTrackColor(this SeekBar seekBar, ISlider slider) =>
-			UpdateMinimumTrackColor(seekBar, slider, null, null);
-
-		public static void UpdateMinimumTrackColor(this SeekBar seekBar, ISlider slider, ColorStateList? defaultProgressTintList, PorterDuff.Mode? defaultProgressTintMode)
+		public static void UpdateMinimumTrackColor(this SeekBar seekBar, ISlider slider)
 		{
-			if (slider.MinimumTrackColor == null)
-			{
-				if (defaultProgressTintList != null)
-					seekBar.ProgressTintList = defaultProgressTintList;
-
-				if (defaultProgressTintMode != null)
-					seekBar.ProgressTintMode = defaultProgressTintMode;
-			}
-			else
+			if (slider.MinimumTrackColor != null)
 			{
 				seekBar.ProgressTintList = ColorStateList.ValueOf(slider.MinimumTrackColor.ToPlatform());
 				seekBar.ProgressTintMode = PorterDuff.Mode.SrcIn;
 			}
 		}
 
-		public static void UpdateMaximumTrackColor(this SeekBar seekBar, ISlider slider) =>
-			UpdateMaximumTrackColor(seekBar, slider, null, null);
-
-		public static void UpdateMaximumTrackColor(this SeekBar seekBar, ISlider slider, ColorStateList? defaultProgressBackgroundTintList, PorterDuff.Mode? defaultProgressBackgroundTintMode)
+		public static void UpdateMaximumTrackColor(this SeekBar seekBar, ISlider slider)
 		{
-			if (slider.MaximumTrackColor == null)
-			{
-				if (defaultProgressBackgroundTintList != null)
-					seekBar.ProgressBackgroundTintList = defaultProgressBackgroundTintList;
-
-				if (defaultProgressBackgroundTintMode != null)
-					seekBar.ProgressBackgroundTintMode = defaultProgressBackgroundTintMode;
-			}
-			else
+			if (slider.MaximumTrackColor != null)
 			{
 				seekBar.ProgressBackgroundTintList = ColorStateList.ValueOf(slider.MaximumTrackColor.ToPlatform());
 				seekBar.ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
 			}
 		}
 
-		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider) =>
-			UpdateThumbColor(seekBar, slider);
+		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider)  =>
+			seekBar.Thumb?.SetColorFilter(slider.ThumbColor, FilterMode.SrcIn);
 
-		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider, ColorFilter? defaultThumbColorFilter) =>
-			seekBar.Thumb?.SetColorFilter(slider.ThumbColor, FilterMode.SrcIn, defaultThumbColorFilter);
-
-		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider, Drawable? defaultThumb)
+		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var context = seekBar.Context;
 
@@ -85,8 +60,8 @@ namespace Microsoft.Maui.Platform
 
 				var thumbDrawable = result?.Value;
 
-				if (seekBar.IsAlive())
-					seekBar.SetThumb(thumbDrawable ?? defaultThumb);
+				if (seekBar.IsAlive() && thumbDrawable != null)
+					seekBar.SetThumb(thumbDrawable);
 			}
 		}
 	}

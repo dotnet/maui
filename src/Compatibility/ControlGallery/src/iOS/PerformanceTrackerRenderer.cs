@@ -13,6 +13,7 @@ using Microsoft.Maui.Controls.Maps;
 using ObjCRuntime;
 using UIKit;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(PerformanceTracker), typeof(PerformanceTrackerRenderer))]
 [assembly: ExportRenderer(typeof(ActivityIndicator), typeof(PerformanceTrackingActivityIndicator))]
 [assembly: ExportRenderer(typeof(BoxView), typeof(PerformanceTrackingBoxView))]
@@ -24,17 +25,18 @@ using UIKit;
 [assembly: ExportRenderer(typeof(Entry), typeof(PerformanceTrackingEntry))]
 [assembly: ExportRenderer(typeof(Image), typeof(PerformanceTrackingImage))]
 [assembly: ExportRenderer(typeof(Label), typeof(PerformanceTrackingLabel))]
-[assembly: ExportRenderer(typeof(ListView), typeof(PerformanceTrackingListView))]
-[assembly: ExportRenderer(typeof(Map), typeof(PerformanceTrackingMap))]
 [assembly: ExportRenderer(typeof(Picker), typeof(PerformanceTrackingPicker))]
 [assembly: ExportRenderer(typeof(ProgressBar), typeof(PerformanceTrackingProgressBar))]
 [assembly: ExportRenderer(typeof(SearchBar), typeof(PerformanceTrackingSearchBar))]
 [assembly: ExportRenderer(typeof(Slider), typeof(PerformanceTrackingSlider))]
 [assembly: ExportRenderer(typeof(Stepper), typeof(PerformanceTrackingStepper))]
 [assembly: ExportRenderer(typeof(Switch), typeof(PerformanceTrackingSwitch))]
-[assembly: ExportRenderer(typeof(TableView), typeof(PerformanceTrackingTableView))]
 [assembly: ExportRenderer(typeof(TimePicker), typeof(PerformanceTrackingTimePicker))]
 [assembly: ExportRenderer(typeof(WebView), typeof(PerformanceTrackingWebView))]
+#pragma warning restore CS0612 // Type or member is obsolete
+[assembly: ExportRenderer(typeof(ListView), typeof(PerformanceTrackingListView))]
+[assembly: ExportRenderer(typeof(Map), typeof(PerformanceTrackingMap))]
+[assembly: ExportRenderer(typeof(TableView), typeof(PerformanceTrackingTableView))]
 [assembly: ExportRenderer(typeof(Frame), typeof(PerformanceTrackingFrame))]
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
@@ -47,6 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackerRenderer : ViewRenderer
 	{
 		public const string SubviewAddedMessage = "SubviewAdded";
@@ -136,6 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingActivityIndicator : ActivityIndicatorRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingActivityIndicator> _watcher;
@@ -185,6 +189,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingBoxView : BoxRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingBoxView> _watcher;
@@ -272,7 +277,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		{
 			base.LayoutSubviews();
 
+#pragma warning disable CS0612 // Type or member is obsolete
 			MessagingCenter.Instance.Send((IDrawnObservable)this, PerformanceTrackerRenderer.SubviewAddedMessage);
+#pragma warning restore CS0612 // Type or member is obsolete
 			_watcher.SubscribeToDrawn(this);
 		}
 
@@ -283,6 +290,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingButton : ButtonRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingButton> _watcher;
@@ -332,6 +340,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingImageButton : ImageButtonRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingImageButton> _watcher;
@@ -381,6 +390,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingCheckBox : CheckBoxRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingCheckBox> _watcher;
@@ -430,6 +440,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingDatePicker : DatePickerRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingDatePicker> _watcher;
@@ -479,6 +490,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingEditor : EditorRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingEditor> _watcher;
@@ -528,6 +540,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingEntry : EntryRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingEntry> _watcher;
@@ -576,7 +589,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			base.Dispose(disposing);
 		}
 	}
-
+	
+	[System.Obsolete]
 	public class PerformanceTrackingImage : ImageRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingImage> _watcher;
@@ -627,6 +641,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingLabel : LabelRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingLabel> _watcher;
@@ -715,7 +730,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		{
 			base.LayoutSubviews();
 
+#pragma warning disable CS0612 // Type or member is obsolete
 			MessagingCenter.Instance.Send((IDrawnObservable)this, PerformanceTrackerRenderer.SubviewAddedMessage);
+#pragma warning restore CS0612 // Type or member is obsolete
 			_watcher.SubscribeToDrawn(this);
 		}
 
@@ -765,7 +782,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		{
 			base.LayoutSubviews();
 
+#pragma warning disable CS0612 // Type or member is obsolete
 			MessagingCenter.Instance.Send((IDrawnObservable)this, PerformanceTrackerRenderer.SubviewAddedMessage);
+#pragma warning restore CS0612 // Type or member is obsolete
 			_watcher.SubscribeToDrawn(this);
 		}
 
@@ -776,6 +795,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingPicker : PickerRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingPicker> _watcher;
@@ -825,6 +845,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingProgressBar : ProgressBarRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingProgressBar> _watcher;
@@ -874,6 +895,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingSearchBar : SearchBarRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingSearchBar> _watcher;
@@ -923,6 +945,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingSlider : SliderRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingSlider> _watcher;
@@ -972,6 +995,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingStepper : StepperRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingStepper> _watcher;
@@ -1021,6 +1045,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingSwitch : SwitchRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingSwitch> _watcher;
@@ -1108,7 +1133,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		{
 			base.LayoutSubviews();
 
+#pragma warning disable CS0612 // Type or member is obsolete
 			MessagingCenter.Instance.Send((IDrawnObservable)this, PerformanceTrackerRenderer.SubviewAddedMessage);
+#pragma warning restore CS0612 // Type or member is obsolete
 			_watcher.SubscribeToDrawn(this);
 		}
 
@@ -1119,6 +1146,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingTimePicker : TimePickerRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingTimePicker> _watcher;
@@ -1168,6 +1196,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class PerformanceTrackingWebView : WkWebViewRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingWebView> _watcher;
@@ -1234,8 +1263,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 		public void SubscribeToDrawn(UIView elem)
 		{
+#pragma warning disable CS0612 // Type or member is obsolete
 			if (!PerformanceTrackerRenderer.EnableInstrumentation)
 				return;
+#pragma warning restore CS0612 // Type or member is obsolete
 
 			if (elem != _View && elem is IDrawnObservable)
 			{

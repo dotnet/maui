@@ -60,12 +60,12 @@ namespace Microsoft.Maui.Controls
 #endif
 
 		bool _setForMaui;
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public NavigationPage() : this(UseMauiHandler)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public NavigationPage(Page root) : this(UseMauiHandler, root)
 		{
 		}
@@ -206,13 +206,13 @@ namespace Microsoft.Maui.Controls
 			return (Color)bindable.GetValue(IconColorProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopAsync'][1]/Docs" />
 		public Task<Page> PopAsync()
 		{
 			return PopAsync(true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopAsync'][2]/Docs" />
 		public async Task<Page> PopAsync(bool animated)
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
@@ -252,13 +252,13 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<NavigationEventArgs> PoppedToRoot;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopToRootAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopToRootAsync'][1]/Docs" />
 		public Task PopToRootAsync()
 		{
 			return PopToRootAsync(true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopToRootAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopToRootAsync'][2]/Docs" />
 		public async Task PopToRootAsync(bool animated)
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
@@ -286,13 +286,13 @@ namespace Microsoft.Maui.Controls
 			await result;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PushAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PushAsync'][1]/Docs" />
 		public Task PushAsync(Page page)
 		{
 			return PushAsync(page, true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PushAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PushAsync'][2]/Docs" />
 		public async Task PushAsync(Page page, bool animated)
 		{
 			// If Navigation interactions are being handled by the MAUI APIs

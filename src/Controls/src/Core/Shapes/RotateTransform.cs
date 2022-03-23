@@ -5,19 +5,19 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.RotateTransform']/Docs" />
 	public class RotateTransform : Transform
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public RotateTransform()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public RotateTransform(double angle)
 		{
 			Angle = angle;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public RotateTransform(double angle, double centerX, double centerY)
 		{
 			Angle = angle;

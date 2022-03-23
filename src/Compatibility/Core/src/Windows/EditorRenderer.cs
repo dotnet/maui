@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EditorRenderer : ViewRenderer<Editor, FormsTextBox>
 	{
 		bool _fontApplied;
@@ -224,7 +225,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			bool editorIsDefault = editor.FontFamily == null &&
+#pragma warning disable CS0612 // Type or member is obsolete
 								   editor.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Editor), true) &&
+#pragma warning restore CS0612 // Type or member is obsolete
 								   editor.FontAttributes == FontAttributes.None;
 
 			if (editorIsDefault && !_fontApplied)

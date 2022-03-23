@@ -41,7 +41,12 @@ namespace Microsoft.Maui.DeviceTests
 					navigationRootManager = mauiContext.GetNavigationRootManager();
 					navigationRootManager.UseCustomAppTitleBar = false;
 
-					newWindowHandler = window.ToHandler(mauiContext);
+					MauiContext
+						.Services
+						.GetRequiredService<WWindow>()
+						.SetWindowHandler(window, mauiContext);
+
+					newWindowHandler = window.Handler;
 					var content = window.Content.Handler.ToPlatform();
 					await content.OnLoadedAsync();
 					await Task.Delay(10);

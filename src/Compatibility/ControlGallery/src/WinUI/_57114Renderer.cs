@@ -11,7 +11,7 @@ using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
-	public class _57114Renderer : VisualElementRenderer<Bugzilla57114._57114View, _57114NativeView>
+	public class _57114Renderer : Handlers.Compatibility.VisualElementRenderer<Bugzilla57114._57114View, _57114NativeView>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Bugzilla57114._57114View> e)
 		{
