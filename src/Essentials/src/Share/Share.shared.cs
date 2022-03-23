@@ -178,13 +178,13 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='Files']/Docs" />
-		public List<ShareFile> Files { get; } = new List<ShareFile>();
+		public List<ShareFile>? Files { get; set; } = new List<ShareFile>();
 
 		public static explicit operator ShareMultipleFilesRequest(ShareFileRequest request) =>
 			new ShareMultipleFilesRequest
 			{
 				Title = request.Title,
-				Files = { request.File! },
+				Files = new List<ShareFile> { request.File! },
 				PresentationSourceBounds = request.PresentationSourceBounds
 			};
 

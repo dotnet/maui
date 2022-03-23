@@ -6,12 +6,12 @@ using Foundation;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	class SmsImplementation : ISms
+	partial class SmsImplementation : ISms
 	{
-		internal static bool IsComposeSupported =>
+		public bool IsComposeSupported =>
 			MainThread.InvokeOnMainThread(() => NSWorkspace.SharedWorkspace.UrlForApplication(NSUrl.FromString("sms:")) != null);
 
-		public Task ComposeAsync(SmsMessage message)
+		Task PlatformComposeAsync(SmsMessage message)
 		{
 			var recipients = string.Join(",", message.Recipients.Select(r => Uri.EscapeDataString(r)));
 

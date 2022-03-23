@@ -6,16 +6,16 @@ using MessageUI;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	class SmsImplementation : ISms
+	partial class SmsImplementation : ISms
 	{
-		internal static bool IsComposeSupported
+		public bool IsComposeSupported
 #if !(MACCATALYST || MACOS)
 			=> MFMessageComposeViewController.CanSendText;
 #else
 			=> false;
 #endif
 
-		public Task ComposeAsync(SmsMessage message)
+		Task PlatformComposeAsync(SmsMessage message)
 		{
 #if !(MACCATALYST || MACOS)
 			// do this first so we can throw as early as possible

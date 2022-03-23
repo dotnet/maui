@@ -3,12 +3,12 @@ using Tizen.Applications;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	class SmsImplementation : ISms
+	partial class SmsImplementation : ISms
 	{
-		internal static bool IsComposeSupported
+		public bool IsComposeSupported
 			=> Platform.GetFeatureInfo<bool>("network.telephony.sms");
 
-		public Task ComposeAsync(SmsMessage message)
+		Task PlatformComposeAsync(SmsMessage message)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 

@@ -1,49 +1,46 @@
 #nullable enable
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.ApplicationModel.Communication;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	public interface ISms
 	{
+		bool IsComposeSupported { get; }
+
 		Task ComposeAsync(SmsMessage? message);
 	}
-}
-namespace Microsoft.Maui.Essentials
-{
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Sms.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Sms']/Docs" />
+
 	public static class Sms
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Sms.xml" path="//Member[@MemberName='ComposeAsync'][1]/Docs" />
-		public static Task ComposeAsync()
-			=> Current.ComposeAsync(null);
+		static ISms? defaultImplementation;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Sms.xml" path="//Member[@MemberName='ComposeAsync'][2]/Docs" />
-		public static Task ComposeAsync(SmsMessage message)
+		public static ISms Default =>
+			defaultImplementation ??= new SmsImplementation();
+
+		internal static void SetDefault(ISms? implementation) =>
+			defaultImplementation = implementation;
+	}
+
+	partial class SmsImplementation : ISms
+	{
+		public Task ComposeAsync() =>
+			ComposeAsync(null);
+
+		public Task ComposeAsync(SmsMessage? message)
 		{
-			if (!SmsImplementation.IsComposeSupported)
+			if (!IsComposeSupported)
 				throw new FeatureNotSupportedException();
 
 			message ??= new SmsMessage();
 
 			message.Recipients ??= new List<string>();
 
-			return Current.ComposeAsync(message);
+			return PlatformComposeAsync(message);
 		}
-		static ISms? currentImplementation;
-
-		public static ISms Current =>
-			currentImplementation ??= new SmsImplementation();
-
-		internal static void SetCurrent(ISms? implementation) =>
-			currentImplementation = implementation;
 	}
-}
-namespace Microsoft.Maui.ApplicationModel.Communication
-{
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/SmsMessage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SmsMessage']/Docs" />
 	public class SmsMessage
 	{
