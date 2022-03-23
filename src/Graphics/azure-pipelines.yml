@@ -96,12 +96,12 @@ stages:
               inputs:
                 versionSpec: '5.x'
 
-            - pwsh: |
-                $DOTNET_ROOT = "$env:ProgramFiles\dotnet"
-                $env:DOTNET_ROOT = $DOTNET_ROOT
-                echo "##vso[task.setvariable variable=DOTNET_ROOT]$DOTNET_ROOT"
-              displayName: set up the .NET root envvar
-              errorActionPreference: stop
+            # - pwsh: |
+            #     $DOTNET_ROOT = "$env:ProgramFiles\dotnet"
+            #     $env:DOTNET_ROOT = $DOTNET_ROOT
+            #     echo "##vso[task.setvariable variable=DOTNET_ROOT]$DOTNET_ROOT"
+            #   displayName: set up the .NET root envvar
+            #   errorActionPreference: stop
 
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
@@ -113,27 +113,27 @@ stages:
                 DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
                 PRIVATE_BUILD: $(PrivateBuild)
 
-            - pwsh: |
-                [xml] $fileXml = Get-Content "eng\Versions.props"
-                $DotNetVersion = $fileXml.SelectSingleNode("Project/PropertyGroup/MicrosoftDotnetSdkInternalPackageVersion").InnerText
-                $DotNetVersionBand = $fileXml.SelectSingleNode("Project/PropertyGroup/DotNetVersionBand").InnerText
+            # - pwsh: |
+            #     [xml] $fileXml = Get-Content "eng\Versions.props"
+            #     $DotNetVersion = $fileXml.SelectSingleNode("Project/PropertyGroup/MicrosoftDotnetSdkInternalPackageVersion").InnerText
+            #     $DotNetVersionBand = $fileXml.SelectSingleNode("Project/PropertyGroup/DotNetVersionBand").InnerText
 
-                echo "Installing .NET $DotNetVersion"
-                Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
-                & .\dotnet-install.ps1 -Version $DotNetVersion -InstallDir "$env:DOTNET_ROOT" -Verbose
+            #     echo "Installing .NET $DotNetVersion"
+            #     Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+            #     & .\dotnet-install.ps1 -Version $DotNetVersion -InstallDir "$env:DOTNET_ROOT" -Verbose
 
-                echo "Removing signing"
-                & "${env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\signtool.exe" remove /s "$env:DOTNET_ROOT\sdk\$DotNetVersionBand\dotnet.dll"
+            #     echo "Removing signing"
+            #     & "${env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\signtool.exe" remove /s "$env:DOTNET_ROOT\sdk\$DotNetVersionBand\dotnet.dll"
 
-                echo "Listing installed SDKs"
-                & dotnet --list-sdks
-              displayName: install .NET
-              errorActionPreference: stop
+            #     echo "Listing installed SDKs"
+            #     & dotnet --list-sdks
+            #   displayName: install .NET
+            #   errorActionPreference: stop
 
-            - pwsh: |
-                dotnet build ./build/DotNet/DotNet.csproj -p:DotNetDirectory="$env:DOTNET_ROOT" -p:InstallDotNet=false
-              displayName: install dotnet workloads
-              errorActionPreference: stop
+            # - pwsh: |
+            #     dotnet build ./build/DotNet/DotNet.csproj -p:DotNetDirectory="$env:DOTNET_ROOT" -p:InstallDotNet=false
+            #   displayName: install dotnet workloads
+            #  errorActionPreference: stop
 
             - pwsh: |
                 Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
