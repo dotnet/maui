@@ -31,25 +31,22 @@ namespace Microsoft.Maui.Authentication
 
 	public static class WebAuthenticatorExtensions
 	{
+		static IPlatformWebAuthenticatorCallback AsPlatformCallback(this IWebAuthenticator webAuthenticator)
+		{
+			if (webAuthenticator is not IPlatformWebAuthenticatorCallback platform)
+				throw new PlatformNotSupportedException("This implementation of IWebAuthenticator does not implement IPlatformWebAuthenticatorCallback.");
+			return platform;
+		}
+
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(this IWebAuthenticator webAuthenticator, Uri url, Uri callbackUrl) =>
 			webAuthenticator.AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
 
 #if IOS || MACCATALYST || MACOS
-		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, Uri uri)
-		{
-			if (webAuthenticator is not IPlatformWebAuthenticatorCallback platform)
-				throw new PlatformNotSupportedException("This implementation of IWebAuthenticator does not implement IPlatformWebAuthenticatorCallback.");
-
-			return platform.OpenUrlCallback(uri);
-		}
+		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, Uri uri) =>
+			webAuthenticator.AsPlatformCallback().OpenUrlCallback(uri);
 #elif ANDROID
-		public static bool OnResume(this IWebAuthenticator webAuthenticator, Android.Content.Intent intent)
-		{
-			if (webAuthenticator is not IPlatformWebAuthenticatorCallback platform)
-				throw new PlatformNotSupportedException("This implementation of IWebAuthenticator does not implement IPlatformWebAuthenticatorCallback.");
-
-			return platform.OnResumeCallback(intent);
-		}
+		public static bool OnResume(this IWebAuthenticator webAuthenticator, Android.Content.Intent intent) =>
+			webAuthenticator.AsPlatformCallback().OnResumeCallback(intent);
 #endif
 	}
 

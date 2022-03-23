@@ -18,7 +18,13 @@ namespace Microsoft.Maui.Media
 		{
 		}
 
-		internal Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format) =>
+		Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format, int quality) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		Task PlatformCopyToAsync(Stream destination, ScreenshotFormat format, int quality) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		Task<byte[]> PlatformToPixelBufferAsync() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

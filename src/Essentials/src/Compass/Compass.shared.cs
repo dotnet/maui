@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 	public static class CompassExtensions
 	{
+#if IOS || MACCATALYST
 		public static void SetShouldDisplayHeadingCalibration(this ICompass compass, bool shouldDisplay)
 		{
 			if (compass is IPlatformCompass platform)
@@ -45,6 +46,7 @@ namespace Microsoft.Maui.Devices.Sensors
 				platform.ShouldDisplayHeadingCalibration = shouldDisplay;
 			}
 		}
+#endif
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/CompassChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.CompassChangedEventArgs']/Docs" />

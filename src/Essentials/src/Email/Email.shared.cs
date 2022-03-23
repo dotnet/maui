@@ -40,9 +40,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 			var parts = new List<string>();
 			if (!string.IsNullOrEmpty(message?.Body))
-				parts.Add("body=" + Uri.EscapeDataString(message.Body));
+				parts.Add("body=" + Uri.EscapeDataString(message!.Body));
 			if (!string.IsNullOrEmpty(message?.Subject))
-				parts.Add("subject=" + Uri.EscapeDataString(message.Subject));
+				parts.Add("subject=" + Uri.EscapeDataString(message!.Subject));
 			if (message?.Cc?.Count > 0)
 				parts.Add("cc=" + Uri.EscapeDataString(string.Join(",", message.Cc)));
 			if (message?.Bcc?.Count > 0)

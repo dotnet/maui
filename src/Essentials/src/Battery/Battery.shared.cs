@@ -73,20 +73,20 @@ namespace Microsoft.Maui.Devices
 		static BatteryPowerSource currentSource;
 		static BatteryState currentState;
 
-		static void SetCurrent()
+		void SetCurrent()
 		{
-			currentLevel = Battery.ChargeLevel;
-			currentSource = Battery.PowerSource;
-			currentState = Battery.State;
+			currentLevel = ChargeLevel;
+			currentSource = PowerSource;
+			currentState = State;
 		}
 
-		static void OnBatteryInfoChanged(double level, BatteryState state, BatteryPowerSource source)
+		void OnBatteryInfoChanged(double level, BatteryState state, BatteryPowerSource source)
 			=> OnBatteryInfoChanged(new BatteryInfoChangedEventArgs(level, state, source));
 
-		static void OnBatteryInfoChanged()
+		void OnBatteryInfoChanged()
 			=> OnBatteryInfoChanged(ChargeLevel, State, PowerSource);
 
-		static void OnBatteryInfoChanged(BatteryInfoChangedEventArgs e)
+		void OnBatteryInfoChanged(BatteryInfoChangedEventArgs e)
 		{
 			if (currentLevel != e.ChargeLevel || currentSource != e.PowerSource || currentState != e.State)
 			{
@@ -95,13 +95,13 @@ namespace Microsoft.Maui.Devices
 			}
 		}
 
-		static void OnEnergySaverChanged()
+		void OnEnergySaverChanged()
 			=> OnEnergySaverChanged(EnergySaverStatus);
 
-		static void OnEnergySaverChanged(EnergySaverStatus saverStatus)
+		void OnEnergySaverChanged(EnergySaverStatus saverStatus)
 			=> OnEnergySaverChanged(new EnergySaverStatusChangedEventArgs(saverStatus));
 
-		static void OnEnergySaverChanged(EnergySaverStatusChangedEventArgs e)
+		void OnEnergySaverChanged(EnergySaverStatusChangedEventArgs e)
 			=> EnergySaverStatusChangedInternal?.Invoke(null, e);
 	}
 

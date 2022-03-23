@@ -35,7 +35,6 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public abstract partial class BasePermission
 		{
-			[Preserve]
 			public BasePermission()
 			{
 			}

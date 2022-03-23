@@ -57,18 +57,18 @@ namespace Microsoft.Maui
 		}
 
 #if __IOS__ || __TVOS__ || __MACOS__
-        internal static Foundation.NSUrl GetNativeUrl(Uri uri)
-        {
-            try
-            {
-                return new Foundation.NSUrl(uri.OriginalString);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Unable to create NSUrl from Original string, trying Absolute URI: {ex.Message}");
-                return new Foundation.NSUrl(uri.AbsoluteUri);
-            }
-        }
+		internal static Foundation.NSUrl GetNativeUrl(Uri uri)
+		{
+			try
+			{
+				return new Foundation.NSUrl(uri.OriginalString);
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Unable to create NSUrl from Original string, trying Absolute URI: {ex.Message}");
+				return new Foundation.NSUrl(uri.AbsoluteUri);
+			}
+		}
 #endif
 	}
 }

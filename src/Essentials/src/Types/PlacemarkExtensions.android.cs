@@ -5,7 +5,7 @@ using AndroidAddress = Android.Locations.Address;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class PlacemarkExtensions
+	static partial class PlacemarkExtensions
 	{
 		internal static IEnumerable<Placemark> ToPlacemarks(this IEnumerable<AndroidAddress> addresses)
 		{

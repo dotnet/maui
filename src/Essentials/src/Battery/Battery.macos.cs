@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Devices
 			}
 		}
 
-		public void PowerSourceNotification()
+		void PowerSourceNotification()
 			=> MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
 		public double ChargeLevel => IOKit.GetInternalBatteryChargeLevel();

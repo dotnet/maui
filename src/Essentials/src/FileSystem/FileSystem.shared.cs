@@ -42,14 +42,6 @@ namespace Microsoft.Maui.Storage
 			=> PlatformAppPackageFileExistsAsync(filename);
 	}
 
-	static partial class FileSystemUtils
-	{
-		public static string NormalizePath(string filename) =>
-			filename
-				.Replace('\\', Path.DirectorySeparatorChar)
-				.Replace('/', Path.DirectorySeparatorChar);
-	}
-
 	static class FileMimeTypes
 	{
 		internal const string All = "*/*";
@@ -170,7 +162,7 @@ namespace Microsoft.Maui.Storage
 		{
 			// try the provided type
 			if (!string.IsNullOrWhiteSpace(contentType))
-				return contentType;
+				return contentType!;
 
 			// try get from the file extension
 			var ext = Path.GetExtension(FullPath);
@@ -197,7 +189,7 @@ namespace Microsoft.Maui.Storage
 		{
 			// try the provided file name
 			if (!string.IsNullOrWhiteSpace(fileName))
-				return fileName;
+				return fileName!;
 
 			// try get from the path
 			if (!string.IsNullOrWhiteSpace(FullPath))

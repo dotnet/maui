@@ -8,7 +8,7 @@ using ObjCRuntime;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	static partial class Platform
+	static class PlatformUtils
 	{
 		internal static NSWindow GetCurrentWindow(bool throwIfNull = true)
 		{

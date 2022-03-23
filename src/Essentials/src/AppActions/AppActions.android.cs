@@ -48,6 +48,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public event EventHandler<AppActionEventArgs> AppActionActivated;
 
+		public void OnResume(Intent intent) =>
+			OnNewIntent(intent);
+
 		public void OnNewIntent(Intent intent)
 		{
 			if (intent?.Action == IntentAction)

@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.ApplicationModel
@@ -25,6 +24,7 @@ namespace Microsoft.Maui.ApplicationModel
 		void PerformActionForShortcutItem(UIKit.UIApplication application, UIKit.UIApplicationShortcutItem shortcutItem, UIKit.UIOperationHandler completionHandler);
 #elif ANDROID
 		void OnNewIntent(Android.Content.Intent? intent);
+		void OnResume(Android.Content.Intent? intent);
 #endif
 	}
 
@@ -37,6 +37,31 @@ namespace Microsoft.Maui.ApplicationModel
 
 		internal static void SetCurrent(IAppActions? implementation) =>
 			currentImplementation = implementation;
+	}
+
+	public static partial class AppActionsExtensions
+	{
+		static IPlatformAppActions AsPlatform(this IAppActions appActions)
+		{
+			if (appActions is not IPlatformAppActions platform)
+				throw new PlatformNotSupportedException("This implementation of IAppActions does not implement IPlatformAppActions.");
+
+			return platform;
+		}
+
+#if WINDOWS
+		public static Task OnLaunched(this IAppActions appActions, UI.Xaml.LaunchActivatedEventArgs e) =>
+			appActions.AsPlatform().OnLaunched(e);
+#elif IOS || MACCATALYST
+		public static void PerformActionForShortcutItem(this IAppActions appActions, UIKit.UIApplication application, UIKit.UIApplicationShortcutItem shortcutItem, UIKit.UIOperationHandler completionHandler) =>
+			appActions.AsPlatform().PerformActionForShortcutItem(application, shortcutItem, completionHandler);
+#elif ANDROID
+		public static void OnNewIntent(this IAppActions appActions, Android.Content.Intent? intent) =>
+			appActions.AsPlatform().OnNewIntent(intent);
+
+		public static void OnResume(this IAppActions appActions, Android.Content.Intent? intent) =>
+			appActions.AsPlatform().OnResume(intent);
+#endif
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppActionEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppActionEventArgs']/Docs" />

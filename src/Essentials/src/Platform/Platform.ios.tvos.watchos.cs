@@ -1,31 +1,11 @@
 using System;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using Foundation;
 using ObjCRuntime;
-using UIKit;
-using Microsoft.Maui.Authentication;
-using Microsoft.Maui.ApplicationModel;
-
-#if __IOS__
-using CoreMotion;
-#elif __WATCHOS__
-using CoreMotion;
-#endif
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	static partial class Platform
+	static class PlatformUtils
 	{
-#if __IOS__ || __TVOS__
-		public static bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
-			=> WebAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
-
-		public static bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
-			=> WebAuthenticator.OpenUrl(new Uri(userActivity?.WebPageUrl?.AbsoluteString));
-#endif
-
 #if __IOS__
 		[DllImport(Constants.SystemLibrary, EntryPoint = "sysctlbyname")]
 #else
@@ -56,93 +36,5 @@ namespace Microsoft.Maui.ApplicationModel
 
 			return returnValue;
 		}
-
-#if __IOS__ || __TVOS__
-
-		static Func<UIViewController> getCurrentController;
-
-		public static void Init(Func<UIViewController> getCurrentUIViewController)
-			=> getCurrentController = getCurrentUIViewController;
-
-		public static UIViewController GetCurrentUIViewController() =>
-			GetCurrentViewController(false);
-
-		internal static UIViewController GetCurrentViewController(bool throwIfNull = true)
-		{
-			var viewController = getCurrentController?.Invoke();
-
-			if (viewController != null)
-				return viewController;
-
-			var window = UIApplication.SharedApplication.KeyWindow;
-
-			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
-				viewController = window.RootViewController;
-
-			if (viewController == null)
-			{
-				window = UIApplication.SharedApplication
-					.Windows
-					.OrderByDescending(w => w.WindowLevel)
-					.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
-
-				if (window == null && throwIfNull)
-					throw new InvalidOperationException("Could not find current view controller.");
-				else
-					viewController = window?.RootViewController;
-			}
-
-			while (viewController?.PresentedViewController != null)
-				viewController = viewController.PresentedViewController;
-
-			if (throwIfNull && viewController == null)
-				throw new InvalidOperationException("Could not find current view controller.");
-
-			return viewController;
-		}
-
-		internal static UIWindow GetCurrentWindow(bool throwIfNull = true)
-		{
-			var window = UIApplication.SharedApplication.KeyWindow;
-
-			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
-				return window;
-
-			if (window == null)
-			{
-				window = UIApplication.SharedApplication
-					.Windows
-					.OrderByDescending(w => w.WindowLevel)
-					.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
-			}
-
-			if (throwIfNull && window == null)
-				throw new InvalidOperationException("Could not find current window.");
-
-			return window;
-		}
-#endif
-
-#if __IOS__
-		internal class UIPresentationControllerDelegate : UIAdaptivePresentationControllerDelegate
-		{
-			Action dismissHandler;
-
-			internal UIPresentationControllerDelegate(Action dismissHandler)
-				=> this.dismissHandler = dismissHandler;
-
-			public override void DidDismiss(UIPresentationController presentationController)
-			{
-				dismissHandler?.Invoke();
-				dismissHandler = null;
-			}
-
-			protected override void Dispose(bool disposing)
-			{
-				dismissHandler?.Invoke();
-				base.Dispose(disposing);
-			}
-		}
-#endif
 	}
 }

@@ -3,7 +3,6 @@ using System;
 namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DisplayInfo']/Docs" />
-	[Preserve(AllMembers = true)]
 	public readonly struct DisplayInfo : IEquatable<DisplayInfo>
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfo.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />

@@ -1,4 +1,5 @@
 using System;
+using Android.App;
 using Android.Content;
 using Android.OS;
 using Microsoft.Maui.ApplicationModel;
@@ -7,20 +8,25 @@ namespace Microsoft.Maui.Devices
 {
 	partial class BatteryImplementation : IBattery
 	{
+		static PowerManager powerManager;
+
+		static PowerManager PowerManager =>
+			powerManager ??= Application.Context.GetSystemService(Context.PowerService) as PowerManager;
+
 		BatteryBroadcastReceiver batteryReceiver;
 		EnergySaverBroadcastReceiver powerReceiver;
 
 		void StartEnergySaverListeners()
 		{
 			powerReceiver = new EnergySaverBroadcastReceiver(OnEnergySaverChanged);
-			Platform.AppContext.RegisterReceiver(powerReceiver, new IntentFilter(PowerManager.ActionPowerSaveModeChanged));
+			Application.Context.RegisterReceiver(powerReceiver, new IntentFilter(PowerManager.ActionPowerSaveModeChanged));
 		}
 
 		void StopEnergySaverListeners()
 		{
 			try
 			{
-				Platform.AppContext.UnregisterReceiver(powerReceiver);
+				Application.Context.UnregisterReceiver(powerReceiver);
 			}
 			catch (Java.Lang.IllegalArgumentException)
 			{
@@ -34,7 +40,7 @@ namespace Microsoft.Maui.Devices
 		{
 			get
 			{
-				var status = Platform.PowerManager?.IsPowerSaveMode ?? false;
+				var status = PowerManager?.IsPowerSaveMode ?? false;
 				return status ? EnergySaverStatus.On : EnergySaverStatus.Off;
 			}
 		}
@@ -44,14 +50,14 @@ namespace Microsoft.Maui.Devices
 			Permissions.EnsureDeclared<Permissions.Battery>();
 
 			batteryReceiver = new BatteryBroadcastReceiver(OnBatteryInfoChanged);
-			Platform.AppContext.RegisterReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged));
+			Application.Context.RegisterReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged));
 		}
 
 		void StopBatteryListeners()
 		{
 			try
 			{
-				Platform.AppContext.UnregisterReceiver(batteryReceiver);
+				Application.Context.UnregisterReceiver(batteryReceiver);
 			}
 			catch (Java.Lang.IllegalArgumentException)
 			{
@@ -68,7 +74,7 @@ namespace Microsoft.Maui.Devices
 				Permissions.EnsureDeclared<Permissions.Battery>();
 
 				using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
-				using (var battery = Platform.AppContext.RegisterReceiver(null, filter))
+				using (var battery = Application.Context.RegisterReceiver(null, filter))
 				{
 					var level = battery.GetIntExtra(BatteryManager.ExtraLevel, -1);
 					var scale = battery.GetIntExtra(BatteryManager.ExtraScale, -1);
@@ -88,7 +94,7 @@ namespace Microsoft.Maui.Devices
 				Permissions.EnsureDeclared<Permissions.Battery>();
 
 				using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
-				using (var battery = Platform.AppContext.RegisterReceiver(null, filter))
+				using (var battery = Application.Context.RegisterReceiver(null, filter))
 				{
 					var status = battery.GetIntExtra(BatteryManager.ExtraStatus, -1);
 					switch (status)
@@ -115,7 +121,7 @@ namespace Microsoft.Maui.Devices
 				Permissions.EnsureDeclared<Permissions.Battery>();
 
 				using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
-				using (var battery = Platform.AppContext.RegisterReceiver(null, filter))
+				using (var battery = Application.Context.RegisterReceiver(null, filter))
 				{
 					var chargePlug = battery.GetIntExtra(BatteryManager.ExtraPlugged, -1);
 

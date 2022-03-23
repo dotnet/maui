@@ -1,8 +1,5 @@
 #nullable enable
 using System;
-using System.ComponentModel;
-using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
@@ -97,7 +94,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public void Start(SensorSpeed sensorSpeed)
 		{
-			if (!PlatformIsSupported)
+			if (!IsSupported)
 				throw new FeatureNotSupportedException();
 
 			if (IsMonitoring)
