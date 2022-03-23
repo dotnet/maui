@@ -67,16 +67,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override void UpdateBackgroundColor()
 		{
-			// Background color change must be handled separately
-			// because the background would protrude through the border if the corners are rounded
-			// as the background would be applied to the renderer's FrameworkElement
-			Color backgroundColor = Element.BackgroundColor;
-
-			if (Control != null)
-			{
-				Control.Background = backgroundColor.IsDefault() ?
-					new Microsoft.UI.Xaml.Media.SolidColorBrush((global::Windows.UI.Color)Resources["SystemAltHighColor"]) : backgroundColor.ToPlatform();
-			}
+			UpdateBackground();
 		}
 
 		protected override void UpdateBackground()
