@@ -14,10 +14,12 @@ import com.microsoft.maui.ImageLoaderCallback;
 public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> {
     private final ImageLoaderCallback callback;
     private final RequestManager requestManager;
+    private final ImageView imageView;
 
     public MauiCustomViewTarget(@NonNull ImageView view, ImageLoaderCallback callback, RequestManager requestManager) {
         super(view);
 
+        this.imageView = view;
         this.callback = callback;
         this.requestManager = requestManager;
     }
@@ -32,7 +34,12 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
         callback.onComplete(false, errorDrawable, new Runnable() {
             @Override
             public void run() {
-                requestManager.clear(MauiCustomViewTarget.this);
+                view.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        requestManager.clear(MauiCustomViewTarget.this);
+                    }
+                });
             }
         });
     }
@@ -42,7 +49,12 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
         callback.onComplete(true, resource, new Runnable() {
             @Override
             public void run() {
-                requestManager.clear(MauiCustomViewTarget.this);
+                view.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        requestManager.clear(MauiCustomViewTarget.this);
+                    }
+                });
             }
         });
     }
