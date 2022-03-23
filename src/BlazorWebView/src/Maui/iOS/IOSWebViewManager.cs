@@ -203,31 +203,34 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
-				var callbackArgs = new ExternalLinkNavigationEventArgs(new Uri(navigationAction.Request.Url.ToString()));
+				var uri = new Uri(navigationAction.Request.Url.ToString());
+				var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, BlazorWebViewHandler.AppOriginUri);
+
+				// TODO: Test this on iOS, see how the logic directly below should be updated.
 
 				// TargetFrame is null for navigation to a new window (`_blank`)
 				if (navigationAction.TargetFrame is null)
 				{
-					// Open in a new browser window regardless of ExternalLinkNavigationPolicy
-					callbackArgs.ExternalLinkNavigationPolicy = ExternalLinkNavigationPolicy.OpenExternally;
+					// Open in a new browser window regardless of UrlLoadingStrategy
+					callbackArgs.UrlLoadingStrategy = UrlLoadingStrategy.OpenExternally;
 				}
 				else if (callbackArgs.Uri.Host == BlazorWebView.AppHostAddress)
 				{
-					callbackArgs.ExternalLinkNavigationPolicy = ExternalLinkNavigationPolicy.InsecureOpenInWebView;
+					callbackArgs.UrlLoadingStrategy = UrlLoadingStrategy.OpenInWebView;
 				}
 				else
 				{
-					_webView.ExternalNavigationStarting?.Invoke(callbackArgs);
+					_webView.UrlLoading?.Invoke(callbackArgs);
 				}
 
 				var url = new NSUrl(callbackArgs.Uri.ToString());
 
-				if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenExternally)
+				if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
 				{
 					UIApplication.SharedApplication.OpenUrl(url);
 				}
 
-				if (callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.InsecureOpenInWebView)
+				if (callbackArgs.UrlLoadingStrategy != UrlLoadingStrategy.OpenInWebView)
 				{
 					// Cancel any further navigation as we've either opened the link in the external browser
 					// or canceled the underlying navigation action.

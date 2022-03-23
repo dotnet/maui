@@ -6,18 +6,24 @@ namespace Microsoft.AspNetCore.Components.WebView
 	/// Used to provide information about a link (<![CDATA[<a>]]>) clicked within a Blazor WebView.
 	/// <para>
 	/// Anchor tags with target="_blank" will always open in the default
-	/// browser and the ExternalNavigationStarting event won't be called.
+	/// browser and the UrlLoading event won't be called.
 	/// </para>
 	/// </summary>
-	public class ExternalLinkNavigationEventArgs : EventArgs
+	public class UrlLoadingEventArgs : EventArgs
 	{
-		/// <summary>
-		/// Initializes a new instance of <see cref="ExternalLinkNavigationEventArgs" />.
-		/// </summary>
-		/// <param name="uri">The external <see cref="Uri">URI</see> to be navigated to.</param>
-		public ExternalLinkNavigationEventArgs(Uri uri)
+		internal static UrlLoadingEventArgs CreateWithDefaultLoadingStrategy(Uri urlToLoad, Uri appOriginUri)
+		{
+			var strategy = appOriginUri.IsBaseOf(urlToLoad) ?
+				UrlLoadingStrategy.OpenInWebView :
+				UrlLoadingStrategy.OpenExternally;
+
+			return new(urlToLoad, strategy);
+		}
+
+		private UrlLoadingEventArgs(Uri uri, UrlLoadingStrategy urlLoadingStrategy)
 		{
 			Uri = uri;
+			UrlLoadingStrategy = urlLoadingStrategy;
 		}
 
 		/// <summary>
@@ -30,6 +36,6 @@ namespace Microsoft.AspNetCore.Components.WebView
 		///
 		/// Defaults to opening links in an external browser.
 		/// </summary>
-		public ExternalLinkNavigationPolicy ExternalLinkNavigationPolicy { get; set; } = ExternalLinkNavigationPolicy.OpenExternally;
+		public UrlLoadingStrategy UrlLoadingStrategy { get; set; } = UrlLoadingStrategy.OpenExternally;
 	}
 }
