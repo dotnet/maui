@@ -39,27 +39,28 @@ namespace Microsoft.Maui.Platform
 			{
 				var service = services.GetRequiredImageSourceService(imageSource);
 
-				var applied = false;
-				IImageSourceServiceResult? result;
+				var applied = !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
 
-				if (destinationImageView is not null)
+				IImageSourceServiceResult? result = null;
+
+				if (applied)
 				{
-					result = await service.LoadDrawableAsync(imageSource, destinationImageView, cancellationToken);
-				}
-				else
-				{
-					result = await service.GetDrawableAsync(context, imageSource, cancellationToken);
-					if (setImage is not null && result is IImageSourceServiceResult<Drawable> drawableResult)
-						setImage.Invoke(drawableResult.Value);
-				}
+					if (destinationImageView is not null)
+					{
+						result = await service.LoadDrawableAsync(imageSource, destinationImageView, cancellationToken);
+					}
+					else
+					{
+						result = await service.GetDrawableAsync(context, imageSource, cancellationToken);
+						if (setImage is not null && result is IImageSourceServiceResult<Drawable> drawableResult)
+							setImage.Invoke(drawableResult.Value);
+					}
 
-				if (result is null)
-					throw new InvalidOperationException("Glide failed to load image");
-
-				applied = result is not null && !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
+					if (result is null)
+						throw new InvalidOperationException("Glide failed to load image");
+				}
 
 				events?.LoadingCompleted(applied);
-
 				return result;
 			}
 			catch (OperationCanceledException)
