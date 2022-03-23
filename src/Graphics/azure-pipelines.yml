@@ -96,10 +96,17 @@ stages:
               inputs:
                 versionSpec: '5.x'
 
+            - pwsh: |
+                $DOTNET_ROOT = "$env:ProgramFiles\dotnet"
+                $env:DOTNET_ROOT = $DOTNET_ROOT
+                echo "##vso[task.setvariable variable=DOTNET_ROOT]$DOTNET_ROOT"
+              displayName: set up the .NET root envvar
+              errorActionPreference: stop
+
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
 
-            - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration.name }}" --verbosity=diagnostic
+            - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration.name }}" --verbosity=diagnostic --DotNetDirectory "$env:DOTNET_ROOT" 
               displayName: 'Install .NET'
               retryCountOnTaskFailure: 3
               env:
@@ -110,7 +117,7 @@ stages:
                 Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
                 # Fix sdk band version in Tizen script
                 ((Get-Content -path .\workload-install.ps1 -Raw) -replace "\`$ManifestBaseName-\`$DotnetVersionBand","`$ManifestBaseName-6.0.200") | Set-Content -Path .\workload-install.ps1
-                .\workload-install.ps1 -d $(Build.SourcesDirectory)/bin/dotnet/
+                .\workload-install.ps1
               displayName: install tizen
 
             - pwsh: |
@@ -136,7 +143,7 @@ stages:
               displayName: build classic solutions
 
             - pwsh: |
-                & $(Build.SourcesDirectory)/bin/dotnet/dotnet.exe build /r ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration.name }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration.name }}-net6.binlog
+                & $env:MSBUILD_EXE /r /m ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration.name }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration.name }}-net6.binlog
               displayName: build net6 solutions
 
             - task: NuGetCommand@2
