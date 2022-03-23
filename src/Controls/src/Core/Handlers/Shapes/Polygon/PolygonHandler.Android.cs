@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				return;
 
 			if (drawable is ShapeDrawable shapeDrawable)
-				shapeDrawable.WindingMode = polygon.FillRule == FillRule.EvenOdd ? Graphics.WindingMode.EvenOdd : Graphics.WindingMode.NonZero;
+				shapeDrawable.UpdateWindingMode(polygon.FillRule == FillRule.EvenOdd ? WindingMode.EvenOdd : WindingMode.NonZero);
 
 			handler.PlatformView?.InvalidateShape(polygon);
 		}

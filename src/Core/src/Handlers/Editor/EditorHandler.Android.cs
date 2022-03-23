@@ -1,4 +1,5 @@
-﻿using Android.Content.Res;
+﻿using System;
+using Android.Content.Res;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
@@ -8,8 +9,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler : ViewHandler<IEditor, AppCompatEditText>
 	{
-		ColorStateList? _defaultPlaceholderColors;
-
 		protected override AppCompatEditText CreatePlatformView()
 		{
 			var editText = new AppCompatEditText(Context)
@@ -22,8 +21,6 @@ namespace Microsoft.Maui.Handlers
 			editText.SetSingleLine(false);
 			editText.SetHorizontallyScrolling(false);
 
-			_defaultPlaceholderColors = editText.HintTextColors;
-
 			return editText;
 		}
 
@@ -31,14 +28,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
-			platformView.FocusChange += OnFocusedChange;
 		}
 
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
-			platformView.FocusChange -= OnFocusedChange;
 		}
 
 		public static void MapBackground(IEditorHandler handler, IEditor editor) =>
@@ -56,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor)
 		{
 			if (handler is EditorHandler platformHandler)
-				handler.PlatformView?.UpdatePlaceholderColor(editor, platformHandler._defaultPlaceholderColors);
+				handler.PlatformView?.UpdatePlaceholderColor(editor);
 		}
 
 		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor) =>
@@ -101,11 +96,5 @@ namespace Microsoft.Maui.Handlers
 
 		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
 			VirtualView?.UpdateText(e);
-
-		void OnFocusedChange(object? sender, FocusChangeEventArgs e)
-		{
-			if (!e.HasFocus)
-				VirtualView?.Completed();
-		}
 	}
 }

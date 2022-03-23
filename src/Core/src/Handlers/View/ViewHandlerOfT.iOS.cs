@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 
 			var oldIndex = oldParent?.IndexOfSubview(ContainerView);
 			ContainerView.RemoveFromSuperview();
-
+			ContainerView.Dispose();
 			ContainerView = null;
 
 			if (oldIndex is int idx && idx >= 0)

@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.Tests
 	{
 		public async Task CreateRenderer(VisualElement visualElement)
 		{
+#pragma warning disable CS0612 // Type or member is obsolete
 			await visualElement.Dispatcher.DispatchAsync(() => Platform.UWP.Platform.CreateRenderer(visualElement));
+#pragma warning restore CS0612 // Type or member is obsolete
 		}
 	}
 }

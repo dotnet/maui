@@ -33,23 +33,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBackButton(this MauiToolbar nativeToolbar, Toolbar toolbar)
 		{
+			nativeToolbar.IsBackEnabled =
+				toolbar.BackButtonEnabled && toolbar.BackButtonVisible;
+
 			nativeToolbar
 				.IsBackButtonVisible = (toolbar.BackButtonVisible) ? NavigationViewBackButtonVisible.Visible : NavigationViewBackButtonVisible.Collapsed;
 
 			toolbar.Handler?.UpdateValue(nameof(Toolbar.BarBackground));
 		}
 
-		public static void UpdateBarBackgroundColor(this MauiToolbar nativeToolbar, Toolbar toolbar)
-		{
-			UpdateBarBackground(nativeToolbar, toolbar);
-		}
-
 		public static void UpdateBarBackground(this MauiToolbar nativeToolbar, Toolbar toolbar)
 		{
-			var barBackground = toolbar.BarBackground?.ToBrush() ?? 
-				toolbar.BarBackgroundColor?.ToPlatform();
-
-			nativeToolbar.Background = barBackground;
+			nativeToolbar.Background = toolbar.BarBackground?.ToBrush();
 		}
 
 		public static void UpdateTitleView(this MauiToolbar nativeToolbar, Toolbar toolbar)

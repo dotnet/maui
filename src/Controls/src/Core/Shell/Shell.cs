@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
@@ -603,7 +604,20 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='Current']/Docs" />
-		public static Shell Current => Application.Current?.MainPage as Shell;
+		public static Shell Current
+		{
+			get
+			{
+				if (Application.Current == null)
+					return null;
+
+				foreach (var window in Application.Current.Windows)
+					if (window is Window && window.IsActivated && window.Page is Shell shell)
+						return shell;
+
+				return Application.Current?.MainPage as Shell;
+			}
+		}
 
 		internal ShellNavigationManager NavigationManager => _navigationManager;
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />
@@ -1060,6 +1074,21 @@ namespace Microsoft.Maui.Controls
 
 		protected override bool OnBackButtonPressed()
 		{
+#if WINDOWS || !PLATFORM
+			var backButtonBehavior = GetBackButtonBehavior(GetVisiblePage());
+			if (backButtonBehavior != null)
+			{
+				var command = backButtonBehavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
+				var commandParameter = backButtonBehavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null);
+
+				if (command != null)
+				{
+					command.Execute(commandParameter);
+					return true;
+				}
+			}
+#endif
+
 			if (GetVisiblePage() is Page page && page.SendBackButtonPressed())
 				return true;
 
@@ -1094,9 +1123,27 @@ namespace Microsoft.Maui.Controls
 			Navigated?.Invoke(this, args);
 			OnNavigated(args);
 
+			if (_previousPage != null)
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+
 			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
 			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
 			_previousPage = null;
+
+			if (CurrentPage != null)
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+		}
+
+		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
+
+		void OnCurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			CurrentPagePropertyChanged?.Invoke(this, e);
+
+			if (e.Is(Shell.TabBarIsVisibleProperty))
+				CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 		}
 
 		void SendNavigating(ShellNavigatingEventArgs args)

@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 
+	[System.Obsolete]
 	public static class PageExtensions
 	{
 		public static FrameworkElement CreateFrameworkElement(this ContentPage contentPage)

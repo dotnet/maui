@@ -1,4 +1,5 @@
-﻿using CoreAnimation;
+﻿using System;
+using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
@@ -7,7 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : UIView
+	public partial class WrapperView : UIView, IDisposable
 	{
 		CAShapeLayer? _maskLayer;
 		CAShapeLayer? _shadowLayer;
@@ -80,6 +81,15 @@ namespace Microsoft.Maui.Platform
 			SetBorder();
 		}
 
+		public new void Dispose()
+		{
+			DisposeClip();
+			DisposeShadow();
+			DisposeBorder();
+
+			base.Dispose();
+		}
+
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (Subviews.Length == 0)
@@ -125,6 +135,11 @@ namespace Microsoft.Maui.Platform
 			mask.Path = nativePath;
 		}
 
+		void DisposeClip()
+		{			
+			MaskLayer = null;
+		}
+
 		void SetShadow()
 		{
 			var shadowLayer = ShadowLayer;
@@ -148,6 +163,12 @@ namespace Microsoft.Maui.Platform
 			else
 				shadowLayer.SetShadow(Shadow);
 		}
+
+		void DisposeShadow()
+		{	
+			ShadowLayer = null;
+		}
+
 		void SetBorder()
 		{
 			if (Border == null)
@@ -162,6 +183,11 @@ namespace Microsoft.Maui.Platform
 			}
 
 			BorderView.UpdateMauiCALayer(Border);
+		}
+
+		void DisposeBorder()
+		{
+			BorderView?.RemoveFromSuperview();
 		}
 
 		CALayer? GetLayer()

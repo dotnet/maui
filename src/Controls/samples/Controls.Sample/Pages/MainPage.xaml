@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.MainPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Name="HomePage"
     BackgroundColor="{DynamicResource BackgroundColor}"
     NavigationPage.IconColor="White"
@@ -78,7 +79,7 @@
                 <Label
                     Grid.Row="1"
                     Text="An open-source framework for building iOS, Android, macOS and Windows apps"
-                    Style="{StaticResource SubTitleStyle}"/>     
+                    Style="{StaticResource SubTitleStyle}"/>
             </Grid>
             <!-- SECTIONS -->
             <Grid

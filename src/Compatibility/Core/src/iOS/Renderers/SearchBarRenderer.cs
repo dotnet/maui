@@ -12,6 +12,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SearchBarRenderer : ViewRenderer<SearchBar, UISearchBar>
 	{
 		UIColor _cancelButtonTextColorDefaultDisabled;
@@ -309,6 +310,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_textField.Font = Element.ToUIFont();
 		}
 
+		[PortHandler]
 		void UpdateIsEnabled()
 		{
 			Control.UserInteractionEnabled = Element.IsEnabled;

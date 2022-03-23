@@ -4,6 +4,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
     xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
+    xmlns:cmp2="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
 	xmlns:d="ignoreme"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d"
@@ -71,7 +72,7 @@
 				<ColumnDefinition/>
 			</Grid.ColumnDefinitions>
 		</Grid>
-		<Label x:Name="label14" cmp:AbsoluteLayout.LayoutFlags="PositionProportional,WidthProportional" />
+        <Label x:Name="label14" cmp2:AbsoluteLayout.LayoutFlags="PositionProportional,WidthProportional" />
 		<ContentView x:Name="content0">
 			<local:ConvertibleToView/>
 		</ContentView>

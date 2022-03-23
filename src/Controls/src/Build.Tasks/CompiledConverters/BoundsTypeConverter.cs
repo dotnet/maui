@@ -33,21 +33,21 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (!hasW && xywh.Length == 4 && string.Compare("AutoSize", xywh[2].Trim(), StringComparison.OrdinalIgnoreCase) == 0)
 			{
 				hasW = true;
-				w = Compatibility.AbsoluteLayout.AutoSize;
+				w = AbsoluteLayout.AutoSize;
 			}
 
 			if (!hasH && xywh.Length == 4 && string.Compare("AutoSize", xywh[3].Trim(), StringComparison.OrdinalIgnoreCase) == 0)
 			{
 				hasH = true;
-				h = Compatibility.AbsoluteLayout.AutoSize;
+				h = AbsoluteLayout.AutoSize;
 			}
 
 			if (hasX && hasY && xywh.Length == 2)
 			{
 				hasW = true;
-				w = Compatibility.AbsoluteLayout.AutoSize;
+				w = AbsoluteLayout.AutoSize;
 				hasH = true;
-				h = Compatibility.AbsoluteLayout.AutoSize;
+				h = AbsoluteLayout.AutoSize;
 			}
 
 			if (!hasX || !hasY || !hasW || !hasH)

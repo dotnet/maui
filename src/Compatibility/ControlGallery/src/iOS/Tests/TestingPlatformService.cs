@@ -4,9 +4,12 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.Tests;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests;
 using Microsoft.Maui.Dispatching;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: Dependency(typeof(TestingPlatformService))]
+#pragma warning restore CS0612 // Type or member is obsolete
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.Tests
 {
+	[System.Obsolete]
 	class TestingPlatformService : ITestingPlatformService
 	{
 		public async Task CreateRenderer(VisualElement visualElement)

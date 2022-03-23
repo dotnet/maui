@@ -7,9 +7,12 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml.Media.Animation;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(NavPageOverrideUWP.CustomNavPageForOverride), typeof(NavPageOverrideRenderer))]
+#pragma warning restore CS0612 // Type or member is obsolete
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
+	[System.Obsolete]
 	public class NavPageOverrideRenderer : NavigationPageRenderer
 	{
 		protected override void OnElementChanged(VisualElementChangedEventArgs e)

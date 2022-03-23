@@ -7,6 +7,7 @@ using ViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	public class ItemsViewAdapter<TItemsView, TItemsViewSource> : RecyclerView.Adapter
 		where TItemsView : ItemsView
 		where TItemsViewSource : IItemsViewSource

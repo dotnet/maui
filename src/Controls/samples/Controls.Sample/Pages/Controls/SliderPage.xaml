@@ -5,50 +5,32 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Slider">
     <views:BasePage.Content>
-        <VerticalStackLayout
-            Margin="12">
-            <Label
-                Text="Default"
-                Style="{StaticResource Headline}"/>
+        <VerticalStackLayout Margin="12">
+            <Label Text="Default" Style="{StaticResource Headline}"/>
             <Slider/>
-            <Label
-                Text="Minimum (5) and Maximum (15)"
-                Style="{StaticResource Headline}"/>
-            <Slider 
-                x:Name="MinMaxSlider"
-                Maximum="15"
-                Minimum="5"
-                ValueChanged="OnValueChanged"/>
-            <Label
-                FontSize="Micro"
-                Text="{Binding Source={x:Reference MinMaxSlider}, Path=Value}"/>
-            <Label
-                Text="Disabled"
-                Style="{StaticResource Headline}"/>
-            <Slider
-                IsEnabled="False"/>
-            <Label
-                Text="MinimumTrackColor"
-                Style="{StaticResource Headline}"/>
-            <Slider
-                MinimumTrackColor="LightBlue"/>
-            <Label
-                Text="MaximumTrackColor"
-                Style="{StaticResource Headline}"/>
-            <Slider
-                MaximumTrackColor="Pink"/>
-            <Label
-                Text="ThumbColor"
-                Style="{StaticResource Headline}"/>
-            <Slider
-                ThumbColor="Orange"/>
-            <Label
-                Text="Custom Slider (Red MinimumTrackColor, Green MaximumTrackColor, Blue ThumbColor)"
-                Style="{StaticResource Headline}"/>
-            <Slider
-                MinimumTrackColor="Red"
-                MaximumTrackColor="Green"
-                ThumbColor="Blue"/>
+            
+            <Label Text="Minimum (5) and Maximum (15)" Style="{StaticResource Headline}"/>
+            <Slider x:Name="MinMaxSlider" Maximum="15" Minimum="5" ValueChanged="OnValueChanged"/>
+            <Label FontSize="Micro" Text="{Binding Source={x:Reference MinMaxSlider}, Path=Value}"/>
+            
+            <Label Text="Disabled" Style="{StaticResource Headline}"/>
+            <Slider IsEnabled="False"/>
+
+            <Label Text="MinimumTrackColor=LightBlue" Style="{StaticResource Headline}"/>
+            <Slider MinimumTrackColor="LightBlue"/>
+
+            <Label Text="MaximumTrackColor=Pink" Style="{StaticResource Headline}"/>
+            <Slider MaximumTrackColor="Pink"/>
+
+            <Label Text="ThumbColor=Orange" Style="{StaticResource Headline}"/>
+            <Slider ThumbColor="Orange"/>
+
+            <Label Text="ThumbImageSource=coffee.png" Style="{StaticResource Headline}"/>
+            <Slider x:Name="ImageSlider" ThumbImageSource="coffee.png" />
+            <Button Text="Toggle Image" Clicked="ToggleImageSource" />
+
+            <Label Text="Custom Slider (Red MinimumTrackColor, Green MaximumTrackColor, Blue ThumbColor)" Style="{StaticResource Headline}"/>
+            <Slider MinimumTrackColor="Red" MaximumTrackColor="Green" ThumbColor="Blue"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

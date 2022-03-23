@@ -14,8 +14,11 @@
             <Button 
                 x:Name="StartButton"
                 Text="Start Animation" 
-                Clicked="OnStartAnimationButtonClicked" 
-                VerticalOptions="End" />
+                Clicked="OnStartAnimationButtonClicked" />
+            <Button 
+                x:Name="StartCustomButton"
+                Text="Start Custom Animation" 
+                Clicked="OnStartCustomAnimationButtonClicked" />
             <Button
                 x:Name="CancelButton" 
                 Text="Cancel Animation" 
