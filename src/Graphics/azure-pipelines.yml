@@ -106,7 +106,7 @@ stages:
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
 
-            - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+            - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration.name }}" --verbosity=diagnostic
               displayName: 'Install .NET'
               retryCountOnTaskFailure: 3
               env:
