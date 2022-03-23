@@ -432,6 +432,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(0, shell.Navigation.ModalStack.Count);
 		}
 
+		[Test]
+		public async Task PopModalFromShellNavigationProxy()
+		{
+			Routing.RegisterRoute("ModalTestPage", typeof(ModalTestPage));
+			Shell shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute"));
+
+			await shell.GoToAsync("ModalTestPage");
+			await shell.Navigation.PopModalAsync();
+
+			Assert.AreEqual("//NewRoute", shell.CurrentState.Location.ToString());
+		}
+
+		[Test]
+		public async Task PushModalFromShellNavigationProxy()
+		{
+			ModalTestPage modalTestPage = new ModalTestPage();
+			Routing.SetRoute(modalTestPage, "ModalTestPage");
+
+			Routing.RegisterRoute("ModalTestPage", typeof(ModalTestPage));
+			Shell shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute"));
+			await shell.Navigation.PushModalAsync(modalTestPage);
+
+			Assert.AreEqual("//NewRoute/ModalTestPage", shell.CurrentState.Location.ToString());
+		}
+
 		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
 		public class ModalTestPageBase : ShellLifeCycleTests.LifeCyclePage
 		{

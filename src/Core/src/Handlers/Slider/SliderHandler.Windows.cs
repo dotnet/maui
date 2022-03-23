@@ -9,10 +9,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SliderHandler : ViewHandler<ISlider, MauiSlider>
 	{
-		static Brush? DefaultForegroundColor;
-		static Brush? DefaultBackgroundColor;
-		static Brush? DefaultThumbColor;
-
 		PointerEventHandler? _pointerPressedHandler;
 		PointerEventHandler? _pointerReleasedHandler;
 
@@ -28,8 +24,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiSlider platformView)
 		{
-			SetupDefaults(PlatformView);
-
 			platformView.ValueChanged += OnPlatformValueChanged;
 			platformView.Ready += OnPlatformViewReady;
 
@@ -54,13 +48,6 @@ namespace Microsoft.Maui.Handlers
 			_pointerReleasedHandler = null;
 		}
 
-		void SetupDefaults(MauiSlider platformView)
-		{
-			DefaultForegroundColor = platformView.Foreground;
-			DefaultBackgroundColor = platformView.Background;
-			DefaultThumbColor = platformView.Thumb?.Background;
-		}
-
 		public static void MapMinimum(ISliderHandler handler, ISlider slider)
 		{
 			handler.PlatformView?.UpdateMinimum(slider);
@@ -78,17 +65,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimumTrackColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.PlatformView?.UpdateMinimumTrackColor(slider, DefaultForegroundColor);
+			handler.PlatformView?.UpdateMinimumTrackColor(slider);
 		}
 
 		public static void MapMaximumTrackColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.PlatformView?.UpdateMaximumTrackColor(slider, DefaultBackgroundColor);
+			handler.PlatformView?.UpdateMaximumTrackColor(slider);
 		}
 
 		public static void MapThumbColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.PlatformView?.UpdateThumbColor(slider, DefaultThumbColor);
+			handler.PlatformView?.UpdateThumbColor(slider);
 		}
 
 		public static void MapThumbImageSource(ISliderHandler handler, ISlider slider)
@@ -118,7 +105,7 @@ namespace Microsoft.Maui.Handlers
 		void OnPlatformViewReady(object? sender, EventArgs e)
 		{
 			if (VirtualView != null)
-				PlatformView?.UpdateThumbColor(VirtualView, DefaultThumbColor);
+				PlatformView?.UpdateThumbColor(VirtualView);
 		}
 	}
 }

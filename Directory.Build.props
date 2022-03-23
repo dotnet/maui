@@ -23,8 +23,6 @@
     <!-- HACK: WinUI seems to have issues without this -->
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
-    <!-- Workaround: https://github.com/dotnet/sdk/issues/19050 -->
-    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
   </PropertyGroup>
 
   <!-- version number information -->

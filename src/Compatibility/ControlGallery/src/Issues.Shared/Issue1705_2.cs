@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Children.Add(_page2);
 			Children.Add(_page3);
 
-			if (DeviceInfo.Platform == DevicePlatform.UWP)
+			if (DeviceInfo.Platform == DevicePlatform.WinUI)
 				Children.Add(new HeaderIconsControlPage(this) { Title = "UWPSpecifics" });
 		}
 	}

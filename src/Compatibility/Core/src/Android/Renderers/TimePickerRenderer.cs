@@ -11,6 +11,7 @@ using ATimePicker = Android.Widget.TimePicker;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class TimePickerRendererBase<TControl> : ViewRenderer<TimePicker, TControl>, TimePickerDialog.IOnTimeSetListener, IPickerRenderer
 		where TControl : global::Android.Views.View
 	{
@@ -182,6 +183,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		abstract protected void UpdateTextColor();
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class TimePickerRenderer : TimePickerRendererBase<EditText>
 	{
 		TextColorSwitcher _textColorSwitcher;

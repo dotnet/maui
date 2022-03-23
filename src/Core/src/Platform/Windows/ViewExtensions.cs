@@ -129,15 +129,15 @@ namespace Microsoft.Maui.Platform
 		{
 			var flowDirection = view.FlowDirection;
 
-			if (flowDirection == FlowDirection.MatchParent ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			if (flowDirection == FlowDirection.MatchParent)
 			{
 				flowDirection = view?.Handler?.MauiContext?.GetFlowDirection()
 					?? FlowDirection.LeftToRight;
-			}
-			if (flowDirection == FlowDirection.MatchParent)
-			{
-				flowDirection = FlowDirection.LeftToRight;
+
+				if (flowDirection == FlowDirection.MatchParent)
+				{
+					flowDirection = FlowDirection.LeftToRight;
+				}
 			}
 
 			platformView.FlowDirection = flowDirection.ToPlatform();
@@ -253,6 +253,22 @@ namespace Microsoft.Maui.Platform
 				panel.UpdateBackground(view.Background);
 		}
 
+		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)
+		{
+			// Background and InputTransparent for Windows layouts are heavily intertwined, so setting one
+			// usuall requires setting the other at the same time
+			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
+		}
+
+		public static async Task<byte[]?> RenderAsBMP(this IView view)
+		{
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
+				return null;
+
+			return await platformView.RenderAsBMP();
+		}
+
 		public static async Task<byte[]?> RenderAsPNG(this IView view)
 		{
 			var platformView = view?.ToPlatform();
@@ -270,6 +286,19 @@ namespace Microsoft.Maui.Platform
 
 			return await platformView.RenderAsJPEG();
 		}
+
+		public static Task<byte[]?> RenderAsImage(this FrameworkElement view, RenderType type)
+		{
+			return type switch
+			{
+				RenderType.JPEG => view.RenderAsJPEG(),
+				RenderType.PNG => view.RenderAsPNG(),
+				RenderType.BMP => view.RenderAsBMP(),
+				_ => throw new NotImplementedException()
+			};
+		}
+
+		public static Task<byte[]?> RenderAsBMP(this FrameworkElement view) => view != null ? view.RenderAsBMPAsync() : Task.FromResult<byte[]?>(null);
 
 		public static Task<byte[]?> RenderAsPNG(this FrameworkElement view) => view != null ? view.RenderAsPNGAsync() : Task.FromResult<byte[]?>(null);
 
@@ -405,7 +434,7 @@ namespace Microsoft.Maui.Platform
 				// but it won't restore the focus to Control
 				ContainingPage.IsTabStop = wasTabStop;
 			}
-    }
+		}
     
 		internal static IWindow? GetHostedWindow(this IView? view)
 			=> GetHostedWindow(view?.Handler?.PlatformView as FrameworkElement);
@@ -427,8 +456,21 @@ namespace Microsoft.Maui.Platform
 						return window;
 				}
 			}
-
+			
 			return null;
+		}
+		
+		public static void UpdateInputTransparent(this FrameworkElement nativeView, IViewHandler handler, IView view)
+		{
+			if (nativeView is UIElement element)
+			{ 
+				element.IsHitTestVisible = !view.InputTransparent;
+			}
+		}
+
+		public static void UpdateInputTransparent(this LayoutPanel layoutPanel, ILayoutHandler handler, ILayout layout)
+		{
+			// Nothing to do yet, but we might need to adjust the wrapper view 
 		}
 	}
 }

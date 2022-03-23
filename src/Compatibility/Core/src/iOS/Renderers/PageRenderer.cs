@@ -12,6 +12,7 @@ using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.i
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider, IShellContentInsetObserver, Controls.Platform.Compatibility.IDisconnectable
 	{
 		bool _appeared;
@@ -322,7 +323,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Forms.IsiOS13OrNewer &&
 				previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle &&
 				UIApplication.SharedApplication.ApplicationState != UIApplicationState.Background)
-				Application.Current?.ThemeChanged();
+				((IApplication)Application.Current)?.ThemeChanged();
 		}
 
 		bool ShouldUseSafeArea()
@@ -476,7 +477,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						NativeView.UpdateBackground(Element.Background);
 					else
 					{
-						NativeView.BackgroundColor = Element.BackgroundColor?.ToUIColor() ?? ColorExtensions.BackgroundColor;
+						NativeView.BackgroundColor = Element.BackgroundColor?.ToUIColor() ?? Maui.Platform.ColorExtensions.BackgroundColor;
 					}
 				}
 			});

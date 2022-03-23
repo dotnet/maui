@@ -84,8 +84,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		// we want the list returned from here to remain point in time accurate
-		ReadOnlyCollection<ShellSection> IShellItemController.GetItems() =>
-			new ReadOnlyCollection<ShellSection>(((ShellSectionCollection)Items).VisibleItemsReadOnly.ToList());
+		ReadOnlyCollection<ShellSection> IShellItemController.GetItems() => ((ShellSectionCollection)Items).VisibleItemsReadOnly;
 
 		event NotifyCollectionChangedEventHandler IShellItemController.ItemsCollectionChanged
 		{
@@ -97,13 +96,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				var displayedPage = CurrentItem?.DisplayedPage;
-				if (displayedPage == null)
-					return true;
-
 				Shell shell = Parent as Shell;
 				if (shell == null)
 					return true;
+
+				var displayedPage = shell.GetCurrentShellPage();
 
 				if (ShellItemController.GetItems().Count <= 1)
 					return false;
@@ -328,6 +325,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Items.ToList().AsReadOnly();
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Items.ToList();
 	}
 }

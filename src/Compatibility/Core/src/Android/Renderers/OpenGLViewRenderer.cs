@@ -11,7 +11,9 @@ using Object = Java.Lang.Object;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	//public class OpenGLViewRenderer : ViewRenderer<OpenGLView, GLSurfaceView>
+#pragma warning disable CS0618 // Type or member is obsolete
 	internal class OpenGLViewRenderer : ViewRenderer<OpenGLView, GLSurfaceView>
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		bool _disposed;
 

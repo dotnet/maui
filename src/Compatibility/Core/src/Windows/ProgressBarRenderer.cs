@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, Microsoft.UI.Xaml.Controls.ProgressBar>
 	{
 		object _foregroundDefault;

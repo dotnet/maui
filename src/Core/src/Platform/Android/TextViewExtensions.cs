@@ -28,29 +28,12 @@ namespace Microsoft.Maui.Platform
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color? defaultColor)
-		{
-			var textColor = textStyle.TextColor?.ToPlatform() ?? defaultColor?.ToPlatform();
-
-			if (textColor != null)
-				textView.SetTextColor(textColor.Value);
-		}
-
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle) =>
-			textView.UpdateTextColor(textStyle, textView.TextColors);
-
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle)
 		{
 			var textColor = textStyle.TextColor;
 
 			if (textColor != null)
-			{
 				textView.SetTextColor(textColor.ToPlatform());
-				return;
-			}
-
-			if (defaultColor != null)
-				textView.SetTextColor(defaultColor);
 		}
 
 		public static void UpdateFont(this TextView textView, ITextStyle textStyle, IFontManager fontManager)

@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EntryRenderer : ViewRenderer<Entry, FormsTextBox>
 	{
 		bool _fontApplied;
@@ -220,7 +221,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (entry == null)
 				return;
 
-			bool entryIsDefault = entry.FontFamily == null && entry.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Entry), true) && entry.FontAttributes == FontAttributes.None;
+			bool entryIsDefault =
+				entry.FontFamily == null &&
+#pragma warning disable CS0612 // Type or member is obsolete
+				entry.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Entry), true) &&
+#pragma warning restore CS0612 // Type or member is obsolete
+				entry.FontAttributes == FontAttributes.None;
 
 			if (entryIsDefault && !_fontApplied)
 				return;

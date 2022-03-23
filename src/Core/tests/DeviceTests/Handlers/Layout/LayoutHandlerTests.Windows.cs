@@ -58,5 +58,26 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			Assert.Equal(expected, actual);
 		}
+
+		[Theory]
+		[InlineData(FlowDirection.LeftToRight)]
+		[InlineData(FlowDirection.RightToLeft)]
+		[InlineData(FlowDirection.MatchParent)]
+		public async Task LayoutFlowDirectionAlwaysMapToLeftToRight(FlowDirection flowDirection)
+		{
+			var layout = new LayoutStub();
+
+			layout.FlowDirection = flowDirection;
+
+			var handler = await CreateHandlerAsync(layout);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				if (handler.PlatformView is LayoutPanel layoutPanel)
+				{
+					Assert.Equal(UI.Xaml.FlowDirection.LeftToRight, layoutPanel.FlowDirection);
+				}
+			});
+		}
 	}
 }

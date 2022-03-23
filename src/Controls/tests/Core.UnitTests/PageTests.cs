@@ -23,8 +23,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var child = new Label();
 			Page root = new ContentPage { Content = child };
 
+			Assert.AreEqual(root, child.Parent);
+
 			Assert.AreEqual(((IElementController)root).LogicalChildren.Count, 1);
 			Assert.AreSame(((IElementController)root).LogicalChildren.First(), child);
+
+			((ContentPage)root).Content = null;
+			Assert.Null(child.Parent);
 		}
 
 		[Test]
@@ -35,6 +40,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			root.IsPlatformEnabled = child.IsPlatformEnabled = true;
 
 			root.Layout(new Rect(0, 0, 200, 500));
+
 
 			Assert.AreEqual(child.Width, 200);
 			Assert.AreEqual(child.Height, 500);
