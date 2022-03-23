@@ -25,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new FileImageSourceService();
 
 			// get an image
-			var result1 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var result1 = await service.GetDrawableAsync(MauiProgram.DefaultContext, imageSource);
 			var drawable1 = result1.Value;
 			var bitmapDrawable1 = Assert.IsType<BitmapDrawable>(drawable1);
 			var bitmap1 = bitmapDrawable1.Bitmap;
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(collected);
 
 			// get the image again
-			var result2 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var result2 = await service.GetDrawableAsync(MauiProgram.DefaultContext, imageSource);
 			var drawable2 = result2.Value;
 			var bitmapDrawable2 = Assert.IsType<BitmapDrawable>(drawable2);
 			var bitmap2 = bitmapDrawable2.Bitmap;
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new FileImageSourceService();
 
 			// get an image
-			var result1 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var result1 = await service.GetDrawableAsync(MauiProgram.DefaultContext, imageSource);
 			var drawable1 = result1.Value;
 			var bitmapDrawable1 = Assert.IsType<BitmapDrawable>(drawable1);
 			var bitmap1 = bitmapDrawable1.Bitmap;
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(collected);
 
 			// get the image again
-			var result2 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var result2 = await service.GetDrawableAsync(MauiProgram.DefaultContext, imageSource);
 			var drawable2 = result2.Value;
 			var bitmapDrawable2 = Assert.IsType<BitmapDrawable>(drawable2);
 			var bitmap2 = bitmapDrawable2.Bitmap;
@@ -101,12 +101,12 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new CustomImageSourceServiceStub(cache);
 
 			// get an image
-			var result1 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var result1 = await service.GetDrawableAsync(MauiProgram.DefaultContext, imageSource);
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			// get the image again
-			var result2 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var result2 = await service.GetDrawableAsync(MauiProgram.DefaultContext, imageSource);
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(2, cache.Cache[imageSource.Color].Count);
 
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.DeviceTests
 			var service = new CustomImageSourceServiceStub(cache);
 
 			// get an image
-			var result1 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var result1 = await service.GetDrawableAsync(MauiProgram.DefaultContext, imageSource);
 			var drawable1 = result1.Value;
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.DeviceTests
 			result1.Dispose();
 
 			// get the image again
-			var result2 = await service.GetDrawableAsync(Platform.DefaultContext, imageSource);
+			var result2 = await service.GetDrawableAsync(MauiProgram.DefaultContext, imageSource);
 			var drawable2 = result2.Value;
 			Assert.Equal(1, cache.Cache.Count);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					// the OnlyRetrieveFromCache means that if it is not already loaded, then throw
 					Glide
-						.With(Platform.DefaultContext)
+						.With(MauiProgram.DefaultContext)
 						.Load(bitmapFile)
 						.SetOnlyRetrieveFromCache(true)
 						.SetDiskCacheStrategy(DiskCacheStrategy.None)
