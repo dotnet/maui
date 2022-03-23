@@ -1,6 +1,8 @@
 package com.microsoft.maui.glide;
 
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,7 +27,12 @@ public class MauiCustomTarget extends CustomTarget<Drawable>
     public void onLoadFailed(@Nullable Drawable errorDrawable) {
         super.onLoadFailed(errorDrawable);
 
-        requestManager.clear(MauiCustomTarget.this);
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                requestManager.clear(MauiCustomTarget.this);
+            }
+        });
 
         callback.onComplete(false, errorDrawable, null);
     }
@@ -35,7 +42,12 @@ public class MauiCustomTarget extends CustomTarget<Drawable>
         callback.onComplete(true, resource, new Runnable() {
             @Override
             public void run() {
-                requestManager.clear(MauiCustomTarget.this);
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        requestManager.clear(MauiCustomTarget.this);
+                    }
+                });
             }
         });
     }
