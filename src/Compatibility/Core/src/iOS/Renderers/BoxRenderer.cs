@@ -9,6 +9,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class BoxRenderer : VisualElementRenderer<BoxView>
 	{
 		UIColor _colorToRenderer;

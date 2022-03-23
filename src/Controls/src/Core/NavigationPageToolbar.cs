@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls
 			if (stack.Count > 1)
 				previousPage = stack[stack.Count - 1];
 
-			_toolbarTracker.Target = navigationPage.CurrentPage;
+			_toolbarTracker.Target = navigationPage;
 			_toolbarTracker.AdditionalTargets = navigationPage.GetParentPages();
 			ToolbarItems = _toolbarTracker.ToolbarItems;
 			IsVisible = NavigationPage.GetHasNavigationBar(currentPage) && _hasAppeared;
@@ -108,19 +108,25 @@ namespace Microsoft.Maui.Controls
 			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
 
 			BarBackground = navigationPage.BarBackground;
-			if (!Brush.IsNullOrEmpty(navigationPage.BarBackground))
-				BarBackgroundColor = null;
-			else
-				BarBackgroundColor = navigationPage.BarBackgroundColor;
+			if (Brush.IsNullOrEmpty(navigationPage.BarBackground) &&
+				navigationPage.BarBackgroundColor != null)
+			{
+				BarBackground = new SolidColorBrush(navigationPage.BarBackgroundColor);
+			}
 
 #if WINDOWS
-			if (Brush.IsNullOrEmpty(BarBackground) && BarBackgroundColor == null)
+			if (Brush.IsNullOrEmpty(BarBackground))
 			{
-				BarBackgroundColor = navigationPage.CurrentPage.BackgroundColor ??
+				var backgroundColor = navigationPage.CurrentPage.BackgroundColor ??
 					navigationPage.BackgroundColor;
 
 				BarBackground = navigationPage.CurrentPage.Background ??
 					navigationPage.Background;
+
+				if (Brush.IsNullOrEmpty(BarBackground) && backgroundColor != null)
+				{
+					BarBackground = new SolidColorBrush(backgroundColor);
+				}
 			}
 #endif
 			BarTextColor = GetBarTextColor();
@@ -158,6 +164,21 @@ namespace Microsoft.Maui.Controls
 		Color GetBarTextColor() => _currentNavigationPage?.BarTextColor;
 		Color GetIconColor() => (_currentPage != null) ? NavigationPage.GetIconColor(_currentPage) : null;
 		string GetTitle() => _currentPage?.Title;
-		VisualElement GetTitleView() => (_currentNavigationPage != null) ? NavigationPage.GetTitleView(_currentNavigationPage) : null;
+		VisualElement GetTitleView()
+		{
+			if (_currentNavigationPage == null)
+			{
+				return null;
+			}
+
+			Page target = _currentNavigationPage;
+
+			if (_currentNavigationPage.CurrentPage is Page currentPage)
+			{
+				target = currentPage;
+			}
+
+			return NavigationPage.GetTitleView(target);
+		}
 	}
 }

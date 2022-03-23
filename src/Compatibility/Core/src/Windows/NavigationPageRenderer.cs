@@ -20,6 +20,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class NavigationPageRenderer : IVisualElementRenderer, ITitleProvider, ITitleIconProvider, 
 		ITitleViewProvider, IToolbarProvider, IToolBarForegroundBinder
 	{

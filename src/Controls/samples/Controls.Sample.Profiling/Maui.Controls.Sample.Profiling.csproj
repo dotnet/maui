@@ -9,9 +9,6 @@
     <ApplicationVersion>1</ApplicationVersion>
     <IsPackable>false</IsPackable>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' == '$(_MauiDotNetTfm)-ios'">iossimulator-x64</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' == '$(_MauiDotNetTfm)-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
-    <RuntimeIdentifiers Condition="'$(TargetFramework)' == '$(_MauiDotNetTfm)-android'">android-arm64;android-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -38,5 +35,7 @@
     <MauiImage Include="Resources\Images\*" />
     <MauiFont Include="Resources\Fonts\*" />
   </ItemGroup>
+
+  <Import Project="../../../Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

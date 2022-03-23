@@ -15,6 +15,7 @@ using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	internal class FlyoutPageContainer : ViewGroup, IManageFragments
 	{
 		const int DefaultFlyoutSize = 320;

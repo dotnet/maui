@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(added);
 			Assert.AreEqual(child1, contentView.Content);
+			Assert.AreEqual(child1.Parent, contentView);
 
 			added = false;
 			contentView.Content = child1;
@@ -60,6 +61,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			contentView.ChildAdded += (sender, e) => added = true;
 
 			contentView.Content = child2;
+
+			Assert.Null(child1.Parent);
 
 			Assert.True(removed);
 			Assert.True(added);

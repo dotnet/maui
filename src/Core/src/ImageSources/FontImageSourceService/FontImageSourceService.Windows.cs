@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
@@ -13,8 +14,6 @@ namespace Microsoft.Maui
 {
 	public partial class FontImageSourceService
 	{
-		const float BaseLogicalDpi = 96.0f;
-
 		public override Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
 			GetImageSourceAsync((IFontImageSource)imageSource, scale, cancellationToken);
 
@@ -51,7 +50,7 @@ namespace Microsoft.Maui
 			//       value, so just reset to 1 to keep the correct size.
 			scale = 1;
 
-			var dpi = scale * BaseLogicalDpi;
+			var dpi = scale * DeviceDisplay.BaseLogicalDpi;
 
 			var fontFamily = GetFontSource(imageSource);
 			var fontSize = (float)imageSource.Font.Size;

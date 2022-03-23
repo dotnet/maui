@@ -27,10 +27,10 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(OffsetProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/GradientStop.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/GradientStop.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public GradientStop() { }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/GradientStop.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/GradientStop.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public GradientStop(Color color, float offset)
 		{
 			Color = color;

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Size Measure(double widthConstraint, double heightConstraint)
 		{
-			return new Size(widthConstraint, heightConstraint);
+			return new Size(widthConstraint - 1, heightConstraint - 1);
 		}
 	}
 }

@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Essentials
 		public static void Start(SensorSpeed sensorSpeed)
 			=> Current.Start(sensorSpeed);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Stop']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Stop'][1]/Docs" />
 		public static void Stop()
 			=> Current.Stop();
 
@@ -77,24 +77,24 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.GyroscopeData']/Docs" />
 	public readonly struct GyroscopeData : IEquatable<GyroscopeData>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public GyroscopeData(double x, double y, double z)
 			: this((float)x, (float)y, (float)z)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public GyroscopeData(float x, float y, float z) =>
 			AngularVelocity = new Vector3(x, y, z);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='AngularVelocity']/Docs" />
 		public Vector3 AngularVelocity { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
 		public override bool Equals(object obj) =>
 			(obj is GyroscopeData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
 		public bool Equals(GyroscopeData other) =>
 			AngularVelocity.Equals(other.AngularVelocity);
 
@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Stop']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Stop'][2]/Docs" />
 		public void Stop()
 		{
 			if (!PlatformIsSupported)
