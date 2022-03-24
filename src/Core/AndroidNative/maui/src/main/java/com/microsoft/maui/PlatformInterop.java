@@ -172,7 +172,7 @@ public class PlatformInterop {
     }
 
     @NonNull
-    public static CoordinatorLayout createCoordinatorLayout(Context context)
+    public static CoordinatorLayout createShellCoordinatorLayout(Context context)
     {
         CoordinatorLayout layout = new CoordinatorLayout(context);
         layout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -180,7 +180,7 @@ public class PlatformInterop {
     }
 
     @NonNull
-    public static AppBarLayout createAppBar(Context context, int appBarStyleAttribute, CoordinatorLayout layout)
+    public static AppBarLayout createShellAppBar(Context context, int appBarStyleAttribute, CoordinatorLayout layout)
     {
         AppBarLayout appbar = new AppBarLayout(context, null, appBarStyleAttribute);
         appbar.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -189,17 +189,15 @@ public class PlatformInterop {
     }
 
     @NonNull
-    public static MaterialToolbar createMaterialToolbar(Context context, AppBarLayout appbar, int actionBarHeight, int popupTheme)
+    public static MaterialToolbar createShellToolbar(Context context, AppBarLayout appbar, int actionBarHeight, int popupTheme)
     {
-        MaterialToolbar toolbar = new MaterialToolbar(context);
-        toolbar.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, actionBarHeight));
-        toolbar.setPopupTheme(popupTheme);
+        MaterialToolbar toolbar = createToolbar(context, actionBarHeight, popupTheme);
         appbar.addView(toolbar);
         return toolbar;
     }
 
     @NonNull
-    public static TabLayout createTabLayout(Context context, AppBarLayout appbar, int actionBarHeight)
+    public static TabLayout createShellTabLayout(Context context, AppBarLayout appbar, int actionBarHeight)
     {
         TabLayout layout = new TabLayout(context);
         AppBarLayout.LayoutParams layoutParams = new AppBarLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, actionBarHeight);
@@ -211,12 +209,14 @@ public class PlatformInterop {
     }
 
     @NonNull
-    public static ViewPager2 createViewPager(Context context, CoordinatorLayout layout, TabLayout tabLayout, TabLayoutMediator.TabConfigurationStrategy tabConfigurationStrategy, FragmentStateAdapter adapter, ViewPager2.OnPageChangeCallback callback)
+    public static ViewPager2 createShellViewPager(Context context, CoordinatorLayout layout, TabLayout tabLayout, TabLayoutMediator.TabConfigurationStrategy tabConfigurationStrategy, FragmentStateAdapter adapter, ViewPager2.OnPageChangeCallback callback)
     {
         ViewPager2 pager = new ViewPager2(context);
+        CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        layoutParams.setBehavior(new AppBarLayout.ScrollingViewBehavior());
         pager.setOverScrollMode(ViewPager2.OVER_SCROLL_NEVER);
         pager.setId(View.generateViewId());
-        pager.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        pager.setLayoutParams(layoutParams);
         pager.setAdapter(adapter);
         pager.registerOnPageChangeCallback(callback);
         layout.addView(pager);

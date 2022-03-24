@@ -96,16 +96,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				throw new InvalidOperationException($"Content not found for active {shellSection}. Title: {shellSection.Title}. Route: {shellSection.Route}.");
 
 			var context = Context;
-			var root = PlatformInterop.CreateCoordinatorLayout(context);
-			var appbar = PlatformInterop.CreateAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
+			var root = PlatformInterop.CreateShellCoordinatorLayout(context);
+			var appbar = PlatformInterop.CreateShellAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
 			int actionBarHeight = context.GetActionBarHeight();
-			_toolbar = PlatformInterop.CreateMaterialToolbar(context, appbar, actionBarHeight, Resource.Style.ThemeOverlay_AppCompat_Light);
-			_tablayout = PlatformInterop.CreateTabLayout(context, appbar, actionBarHeight);
+			_toolbar = PlatformInterop.CreateShellToolbar(context, appbar, actionBarHeight, Resource.Style.ThemeOverlay_AppCompat_Light);
+			_tablayout = PlatformInterop.CreateShellTabLayout(context, appbar, actionBarHeight);
 
 			var pagerContext = MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
 			var adapter = new ShellFragmentStateAdapter(shellSection, ChildFragmentManager, pagerContext);
 			var pageChangedCallback = new ViewPagerPageChanged(this);
-			_viewPager = PlatformInterop.CreateViewPager(context, root, _tablayout, this, adapter, pageChangedCallback);
+			_viewPager = PlatformInterop.CreateShellViewPager(context, root, _tablayout, this, adapter, pageChangedCallback);
 
 			Page currentPage = null;
 			int currentIndex = -1;
