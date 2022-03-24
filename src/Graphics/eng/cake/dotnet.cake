@@ -12,21 +12,11 @@ Task("dotnet")
         if (!localDotnet) 
             return;
 
-        DotNetCoreBuild("./build/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
-            // MSBuildSettings = new DotNetCoreMSBuildSettings()
-            //     .EnableBinaryLogger($"{logDirectory}/dotnet-{configuration}.binlog")
-            //     .WithProperty("InstallWorkloadPacks", "false")
-            //     .SetConfiguration(configuration),
-
-            // if(!string.IsNullOrEmpty(dotnetInstallDirectory))
-            // {
-               MSBuildSettings= new DotNetCoreMSBuildSettings()
+            MSBuildSettings = new DotNetCoreMSBuildSettings()
                 .EnableBinaryLogger($"{logDirectory}/dotnet-{configuration}.binlog")
-                .WithProperty("InstallWorkloadPacks", "false")
-                .WithProperty("DotNetDirectory", dotnetInstallDirectory)
                 .SetConfiguration(configuration),
-            //}
         });
     });
 
@@ -39,18 +29,10 @@ Task("dotnet-local-workloads")
         DotNetCoreBuild("./build/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger($"{logDirectory}/dotnet-{configuration}.binlog")
+                .EnableBinaryLogger($"{logDirectory}/dotnet-workloads-{configuration}.binlog")
                 .SetConfiguration(configuration)
-                .WithProperty("InstallWorkloadPacks", "false"),
-        });
-
-        DotNetCoreBuild("./build/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
-        {
-            MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger($"{logDirectory}/dotnet-install-{configuration}.binlog")
-                .SetConfiguration(configuration)
-                .WithTarget("Install"),
-            ToolPath = dotnetPath,
+                .WithProperty("InstallDotNet", "false")
+                .WithProperty("DotNetDirectory", dotnetInstallDirectory+"/")
         });
     });
 

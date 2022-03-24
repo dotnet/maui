@@ -120,9 +120,16 @@ stages:
               displayName: install .NET
               errorActionPreference: stop
             
-            - pwsh: |
-                dotnet build ./build/DotNet/DotNet.csproj -p:DotNetDirectory="$env:DOTNET_ROOT"/ -p:InstallDotNet=false
-              displayName: install dotnet workloads
+            # - pwsh: |
+            #     dotnet build ./build/DotNet/DotNet.csproj -p:DotNetDirectory="$env:DOTNET_ROOT"/ -p:InstallDotNet=false
+            #   displayName: install dotnet workloads
+            #   retryCountOnTaskFailure: 3
+            #   env:
+            #     DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+            #     PRIVATE_BUILD: $(PrivateBuild)
+
+            - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+              displayName: 'install .NET workloads'
               retryCountOnTaskFailure: 3
               env:
                 DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
