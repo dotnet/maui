@@ -31,14 +31,20 @@ namespace Maui.Controls.Sample.Pages
 		void GraphicsView_StartHoverInteraction(object sender, TouchEventArgs e)
 			=> UpdateInteractions("Start Hover", e);
 
+		void GraphicsView_MoveHoverInteraction(object sender, TouchEventArgs e)
+			=> UpdateInteractions("Move Hover", e);
+
 		void GraphicsView_EndHoverInteraction(object sender, EventArgs e)
 			=> UpdateInteractions("End Hover");
 
 		void UpdateInteractions(string name, TouchEventArgs e)
-			=> Dispatcher.DispatchAsync(() =>
+		{
+
+			Dispatcher.DispatchAsync(() =>
 				labelInteractions.Text = $"{name}: "
 					+ string.Join(", ", e.Touches.Select(t => $"[{Math.Round(t.X, 1)},{Math.Round(t.Y, 1)}]"))
 					+ $" IsInsideBounds: {e.IsInsideBounds}");
+		}
 
 		void UpdateInteractions(string name)
 			=> Dispatcher.DispatchAsync(() => labelInteractions.Text = name);
