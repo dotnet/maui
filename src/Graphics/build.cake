@@ -42,6 +42,8 @@ string envProgramFiles = EnvironmentVariable("ProgramFiles(x86)");
 var configuration = GetBuildVariable("BUILD_CONFIGURATION", GetBuildVariable("configuration", "DEBUG"));
 bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.StartsWith("Hosted Agent");
 
+var dotnetInstallDirectory = EnvironmentVariable("DOTNET_ROOT");
+
 var localDotnet = GetBuildVariable("workloads",  (target == "VS-WINUI") ? "global" : "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 

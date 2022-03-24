@@ -14,9 +14,19 @@ Task("dotnet")
 
         DotNetCoreBuild("./build/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
-            MSBuildSettings = new DotNetCoreMSBuildSettings()
+            // MSBuildSettings = new DotNetCoreMSBuildSettings()
+            //     .EnableBinaryLogger($"{logDirectory}/dotnet-{configuration}.binlog")
+            //     .WithProperty("InstallWorkloadPacks", "false")
+            //     .SetConfiguration(configuration),
+
+            // if(!string.IsNullOrEmpty(dotnetInstallDirectory))
+            // {
+               MSBuildSettings= new DotNetCoreMSBuildSettings()
                 .EnableBinaryLogger($"{logDirectory}/dotnet-{configuration}.binlog")
+                .WithProperty("InstallWorkloadPacks", "false")
+                .WithProperty("DotNetDirectory", dotnetInstallDirectory)
                 .SetConfiguration(configuration),
+            //}
         });
     });
 
