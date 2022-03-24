@@ -139,15 +139,16 @@ namespace Microsoft.Maui.Platform
 			if (Border == null)
 			{
 				if (_borderView != null)
-					this.RemoveView(_borderView);
+					RemoveView(_borderView);
 				_borderView = null;
 				return;
 			}
 
 			if (_borderView == null)
 			{
-				this.AddView(_borderView = new AView(Context));
+				AddView(_borderView = new AView(Context));
 			}
+
 			_borderView.UpdateBorderStroke(Border);
 		}
 
@@ -228,12 +229,12 @@ namespace Microsoft.Maui.Platform
 
 					if (Shadow.Paint is LinearGradientPaint linearGradientPaint)
 					{
-						var linearGradientShaderFactory = PaintExtensions.GetLinearGradientShaderFactory(linearGradientPaint);
+						var linearGradientShaderFactory = PaintExtensions.GetLinearGradientShaderFactory(linearGradientPaint, shadowOpacity);
 						_shadowPaint.SetShader(linearGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
 					}
 					if (Shadow.Paint is RadialGradientPaint radialGradientPaint)
 					{
-						var radialGradientShaderFactory = PaintExtensions.GetRadialGradientShaderFactory(radialGradientPaint);
+						var radialGradientShaderFactory = PaintExtensions.GetRadialGradientShaderFactory(radialGradientPaint, shadowOpacity);
 						_shadowPaint.SetShader(radialGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
 					}
 					if (Shadow.Paint is SolidPaint solidPaint)
