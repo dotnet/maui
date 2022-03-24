@@ -38,7 +38,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVerticalTextAlignment(this UILabel platformLabel, ILabel label)
 		{
-			platformLabel.InvalidateMeasure(label);
+			if (!platformLabel.Bounds.IsEmpty)
+				platformLabel.InvalidateMeasure(label);
 		}
 		
 		public static void UpdateLineBreakMode(this UILabel platformLabel, ILabel label)
