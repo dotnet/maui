@@ -89,7 +89,8 @@
 
   <Target Name="_DownloadDotNetInstallScript"
       Inputs="$(_Inputs)"
-      Outputs="$(DotNetInstallScriptPath)">
+      Outputs="$(DotNetInstallScriptPath)"
+      Condition="'$(InstallDotNet)' != 'false'">
     <DownloadFile
         SourceUrl="$(DotNetInstallScriptUrl)"
         DestinationFolder="$(DotNetOutputPath)"
@@ -99,8 +100,9 @@
 
   <Target Name="_InstallDotNet"
       Inputs="$(_Inputs)"
-      Outputs="$(DotNetDirectory).stamp">
-    <!-- <RemoveDir Directories="$(DotNetDirectory)" /> -->
+      Outputs="$(DotNetDirectory).stamp"
+      Condition="'$(InstallDotNet)' != 'false'">
+    <RemoveDir Directories="$(DotNetDirectory)" />
     <Exec Command="$(DotNetInstallCommand)" />
     <Touch Files="$(DotNetDirectory).stamp" AlwaysCreate="true" />
   </Target>
