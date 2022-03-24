@@ -203,34 +203,30 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
-				var uri = new Uri(navigationAction.Request.Url.ToString());
-				var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, BlazorWebViewHandler.AppOriginUri);
-
-				// TODO: Test this on iOS, see how the logic directly below should be updated.
+				var requestUrl = navigationAction.Request.Url;
+				UrlLoadingStrategy strategy;
 
 				// TargetFrame is null for navigation to a new window (`_blank`)
 				if (navigationAction.TargetFrame is null)
 				{
 					// Open in a new browser window regardless of UrlLoadingStrategy
-					callbackArgs.UrlLoadingStrategy = UrlLoadingStrategy.OpenExternally;
-				}
-				else if (callbackArgs.Url.Host == BlazorWebView.AppHostAddress)
-				{
-					callbackArgs.UrlLoadingStrategy = UrlLoadingStrategy.OpenInWebView;
+					strategy = UrlLoadingStrategy.OpenExternally;
 				}
 				else
 				{
+					// Invoke the UrlLoading event to allow overriding the default link handling behavior
+					var uri = new Uri(requestUrl.ToString());
+					var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, BlazorWebViewHandler.AppOriginUri);
 					_webView.UrlLoading?.Invoke(callbackArgs);
+					strategy = callbackArgs.UrlLoadingStrategy;
 				}
 
-				var url = new NSUrl(callbackArgs.Url.ToString());
-
-				if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
+				if (strategy == UrlLoadingStrategy.OpenExternally)
 				{
-					UIApplication.SharedApplication.OpenUrl(url);
+					UIApplication.SharedApplication.OpenUrl(requestUrl);
 				}
 
-				if (callbackArgs.UrlLoadingStrategy != UrlLoadingStrategy.OpenInWebView)
+				if (strategy != UrlLoadingStrategy.OpenInWebView)
 				{
 					// Cancel any further navigation as we've either opened the link in the external browser
 					// or canceled the underlying navigation action.
@@ -240,7 +236,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				if (navigationAction.TargetFrame!.MainFrame)
 				{
-					_currentUri = url;
+					_currentUri = requestUrl;
 				}
 
 				decisionHandler(WKNavigationActionPolicy.Allow);

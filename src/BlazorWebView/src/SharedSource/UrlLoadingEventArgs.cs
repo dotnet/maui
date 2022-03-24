@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 	{
 		internal static UrlLoadingEventArgs CreateWithDefaultLoadingStrategy(Uri urlToLoad, Uri appOriginUri)
 		{
-			var strategy = appOriginUri.IsBaseOf(urlToLoad) ?
+			var strategy = urlToLoad.Host == appOriginUri.Host ?
 				UrlLoadingStrategy.OpenInWebView :
 				UrlLoadingStrategy.OpenExternally;
 
