@@ -21,7 +21,6 @@ using ParentView = System.Object;
 
 namespace Microsoft.Maui
 {
-	/// <include file="../../docs/Microsoft.Maui/ViewExtensions.xml" path="Type[@FullName='Microsoft.Maui.ViewExtensions']/Docs" />
 	public static partial class ViewExtensions
 	{
 		public static Task<Stream?> CaptureAsync(this IView view, ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100)
