@@ -18,10 +18,17 @@
                 Margin="12"
                 Text="Invalidate"
                 Clicked="OnButtonClicked"/>
+            <Label x:Name="labelInteractions" Margin="12" />
             <GraphicsView
                 x:Name="GraphicsView"
                 HeightRequest="500"
                 WidthRequest="500"
+                DragInteraction="GraphicsView_DragInteraction"
+                CancelInteraction="GraphicsView_CancelInteraction"
+                EndInteraction="GraphicsView_EndInteraction"
+                StartInteraction="GraphicsView_StartInteraction"
+                StartHoverInteraction="GraphicsView_StartHoverInteraction"
+                EndHoverInteraction="GraphicsView_EndHoverInteraction"
                 Drawable="{StaticResource GraphicsDrawable}"/>
         </StackLayout>
     </views:BasePage.Content>
