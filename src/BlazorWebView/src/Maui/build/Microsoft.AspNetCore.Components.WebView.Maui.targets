@@ -17,9 +17,24 @@
     <StaticWebAssetProjectMode>Root</StaticWebAssetProjectMode>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <_ConvertStaticWebAssetsToMauiAssetsBeforeTargets>$(_ConvertStaticWebAssetsToMauiAssetsBeforeTargets);GetMauiItems;ResizetizeCollectItems;_CollectBundleResources</_ConvertStaticWebAssetsToMauiAssetsBeforeTargets>
+    <_ConvertStaticWebAssetsToMauiAssetsBeforeTargets Condition="'$(IsHotRestartBuild)' == 'true'">$(_ConvertStaticWebAssetsToMauiAssetsBeforeTargets);_CollectHotRestartBundleResources</_ConvertStaticWebAssetsToMauiAssetsBeforeTargets>
+    <_ConvertStaticWebAssetsToMauiAssetsBeforeTargets Condition="'$(AndroidApplication)' == 'true'">$(_ConvertStaticWebAssetsToMauiAssetsBeforeTargets);_CheckForContent</_ConvertStaticWebAssetsToMauiAssetsBeforeTargets>
+    <_ConvertStaticWebAssetsToMauiAssetsDependsOn>$(_ConvertStaticWebAssetsToMauiAssetsDependsOn);ResolveProjectReferences;StaticWebAssetsPrepareForRun;StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest</_ConvertStaticWebAssetsToMauiAssetsDependsOn>
+
+    <_HideContentFromiOSBundleResourcesBeforeTargets>$(_HideContentFromiOSBundleResourcesBeforeTargets);_CollectBundleResources</_HideContentFromiOSBundleResourcesBeforeTargets>
+    <_HideContentFromiOSBundleResourcesBeforeTargets Condition="'$(IsHotRestartBuild)' == 'true'">$(_HideContentFromiOSBundleResourcesBeforeTargets);_CollectHotRestartBundleResources</_HideContentFromiOSBundleResourcesBeforeTargets>
+    <_RestoreHiddeniOSContentAfterTargets>$(_RestoreHiddeniOSContentAfterTargets);_CollectBundleResources</_RestoreHiddeniOSContentAfterTargets>
+    <_RestoreHiddeniOSContentAfterTargets Condition="'$(IsHotRestartBuild)' == 'true'">$(_RestoreHiddeniOSContentAfterTargets);_CollectHotRestartBundleResources</_RestoreHiddeniOSContentAfterTargets>
+
+    <_HideContentFromAndroidCheckBeforeTargets Condition="'$(AndroidApplication)' == 'true'">$(_HideContentFromAndroidCheckBeforeTargets);_CheckForContent</_HideContentFromAndroidCheckBeforeTargets>
+    <_RestoreHiddenAndroidContentAfterTargets Condition="'$(AndroidApplication)' == 'true'">$(_RestoreHiddenAndroidContentAfterTargets);_CheckForContent</_RestoreHiddenAndroidContentAfterTargets>
+  </PropertyGroup>
+
   <Target Name="ConvertStaticWebAssetsToMauiAssets"
-      BeforeTargets="GetMauiItems;ResizetizeCollectItems;_CollectBundleResources;_CollectHotRestartBundleResources;_CheckForContent"
-      DependsOnTargets="ResolveProjectReferences;StaticWebAssetsPrepareForRun;StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest">
+      BeforeTargets="$(_ConvertStaticWebAssetsToMauiAssetsBeforeTargets)"
+      DependsOnTargets="$(_ConvertStaticWebAssetsToMauiAssetsDependsOn)">
 
     <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_MauiStaticWebAssetWithTargetPath" />
@@ -58,7 +73,7 @@
   </Target>
 
   <!-- Targets temporarily remove Content items in various folders so that they don't conflict with iOS/MacCatalyst SDK tasks -->
-  <Target Name="HideContentFromiOSBundleResources" BeforeTargets="_CollectBundleResources;_CollectHotRestartBundleResources">
+  <Target Name="HideContentFromiOSBundleResources" BeforeTargets="$(_HideContentFromiOSBundleResourcesBeforeTargets)">
     <ItemGroup>
       <!-- Find all files outside the wwwroot folder -->
       <_NonWWWRootContent Include="@(Content)" Exclude="wwwroot/**/*" />
@@ -73,7 +88,7 @@
   </Target>
 
   <!-- Restore hidden Content items for iOS/MacCatalyst -->
-  <Target Name="RestoreHiddeniOSContent" AfterTargets="_CollectBundleResources;_CollectHotRestartBundleResources" BeforeTargets="ResolveCurrentProjectStaticWebAssetsInputs">
+  <Target Name="RestoreHiddeniOSContent" AfterTargets="$(_RestoreHiddeniOSContentAfterTargets)" BeforeTargets="ResolveCurrentProjectStaticWebAssetsInputs">
     <ItemGroup>
       <!-- Restore the previously removed Content items -->
       <Content Include="@(_TemporaryHiddenContent)" />
@@ -81,7 +96,7 @@
   </Target>
 
   <!-- Targets temporarily remove Content items in various folders so that they don't conflict with Android SDK tasks -->
-  <Target Name="HideContentFromAndroidCheck" BeforeTargets="_CheckForContent">
+  <Target Name="HideContentFromAndroidCheck" BeforeTargets="$(_HideContentFromAndroidCheckBeforeTargets)">
     <ItemGroup>
       <_TemporaryAndroidHiddenContent Include="@(Content)" />
       <Content Remove="@(Content)" />
@@ -89,7 +104,7 @@
   </Target>
 
   <!-- Restore hidden Content items for Android -->
-  <Target Name="RestoreHiddenAndroidContent" AfterTargets="_CheckForContent">
+  <Target Name="RestoreHiddenAndroidContent" AfterTargets="$(_RestoreHiddenAndroidContentAfterTargets)">
     <ItemGroup>
       <Content Include="@(_TemporaryAndroidHiddenContent)" />
     </ItemGroup>
