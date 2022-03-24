@@ -9,16 +9,11 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
-			ImageSource source = value as ImageSource;
-			if (source == null)
-			{
+			if (value is not ImageSource source)
 				return null;
-			}
 
-			IMauiContext context = source.FindMauiContext(true);
-			IImageSourceServiceProvider imageSourceServiceProvider = context.Services.GetRequiredService<IImageSourceServiceProvider>();
-			IImageSourceService imageSourceService = imageSourceServiceProvider.GetImageSourceService(source);
-			return imageSourceService.GetImageSourceAsync(source).ContinueWith(task => task.Result.Value).AsAsyncValue();
+			var context = source.FindMauiContext(true);
+			return source.GetPlatformImageAsync(context).ContinueWith(task => task.Result.Value).AsAsyncValue();
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)
