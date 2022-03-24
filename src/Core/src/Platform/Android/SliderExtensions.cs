@@ -56,8 +56,9 @@ namespace Microsoft.Maui.Platform
 			if (thumbImageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
-				var result = await service.GetDrawableAsync(thumbImageSource, context);
-				Drawable? thumbDrawable = result?.Value;
+				var result = await service.GetDrawableAsync(context, thumbImageSource);
+
+				var thumbDrawable = result?.Value;
 
 				if (seekBar.IsAlive() && thumbDrawable != null)
 					seekBar.SetThumb(thumbDrawable);
