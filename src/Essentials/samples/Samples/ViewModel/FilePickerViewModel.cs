@@ -8,6 +8,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.ApplicationModel.Communication;
 
 namespace Samples.ViewModel
 {
