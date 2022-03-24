@@ -12,6 +12,8 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
 
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ViewHelper {
@@ -135,5 +137,16 @@ public class ViewHelper {
         navigationView.setOnItemSelectedListener(listener);
         linearLayout.addView(navigationView);
         return navigationView;
+    }
+
+    @NonNull
+    public static MaterialToolbar createToolbar(Context context, int actionBarHeight, int popupTheme)
+    {
+        MaterialToolbar toolbar = new MaterialToolbar(context);
+        AppBarLayout.LayoutParams layoutParams = new AppBarLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, actionBarHeight);
+        layoutParams.setScrollFlags(0);
+        toolbar.setLayoutParams(layoutParams);
+        toolbar.setPopupTheme(popupTheme);
+        return toolbar;
     }
 }

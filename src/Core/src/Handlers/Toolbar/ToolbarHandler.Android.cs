@@ -26,18 +26,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MaterialToolbar CreatePlatformElement()
 		{
-			LayoutInflater? li = MauiContext?.GetLayoutInflater();
-			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
-
-			var view = li.Inflate(Microsoft.Maui.Resource.Layout.maui_toolbar, null)?.JavaCast<MaterialToolbar>();
-			_ = view ?? throw new InvalidOperationException($"Resource.Layout.maui_toolbar view not found");
-
-			view.LayoutParameters = new AppBarLayout.LayoutParams(LP.MatchParent, MauiContext?.Context?.GetActionBarHeight() ?? LP.WrapContent)
-			{
-				ScrollFlags = 0
-			};
-
-			return view;
+			var context = MauiContext?.Context ?? throw new InvalidOperationException("Context cannot be null");
+			return ViewHelper.CreateToolbar(context, context.GetActionBarHeight(), Resource.Style.ThemeOverlay_AppCompat_Light);
 		}
 
 		private protected override void OnDisconnectHandler(object platformView)
