@@ -95,12 +95,9 @@ namespace Microsoft.Maui.Platform
 				UpdateCursorSelection(textView, editor);
 		}
 
-		public static void UpdateHorizontalTextAlignment(this UITextView textView, ITextAlignment textAlignment)
+		public static void UpdateHorizontalTextAlignment(this UITextView textView, IEditor editor)
 		{
-			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
-			// TODO ezhart Update this when FlowDirection is available 
-			// (or update the extension to take an IEditor instead of an alignment and work it out from there) 
-			textView.TextAlignment = textAlignment.HorizontalTextAlignment.ToPlatform(true);
+			textView.TextAlignment = editor.HorizontalTextAlignment.ToPlatformHorizontal().AdjustForFlowDirection(editor);
 		}
 
 		public static void UpdatePlaceholder(this MauiTextView textView, IEditor editor) =>
