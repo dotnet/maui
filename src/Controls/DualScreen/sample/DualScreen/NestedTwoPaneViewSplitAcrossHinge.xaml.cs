@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.DualScreen;
 using Microsoft.Maui.Controls.Xaml;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 
 namespace DualScreen
 {

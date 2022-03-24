@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 

@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Xunit;
 using ABitmap = Android.Graphics.Bitmap;

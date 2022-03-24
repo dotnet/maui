@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages.SwipeViewGalleries

@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {

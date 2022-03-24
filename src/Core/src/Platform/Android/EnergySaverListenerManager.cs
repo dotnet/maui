@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Internal;
 
 namespace Microsoft.Maui.Platform

@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.SpacingGalleries;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries
 {

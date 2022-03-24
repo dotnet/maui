@@ -1,6 +1,6 @@
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery

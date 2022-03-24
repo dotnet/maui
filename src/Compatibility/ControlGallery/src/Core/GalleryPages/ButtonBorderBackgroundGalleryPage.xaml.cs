@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.Controls.Xaml;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery

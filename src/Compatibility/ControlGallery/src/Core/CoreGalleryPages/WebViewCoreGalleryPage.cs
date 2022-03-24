@@ -2,7 +2,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 

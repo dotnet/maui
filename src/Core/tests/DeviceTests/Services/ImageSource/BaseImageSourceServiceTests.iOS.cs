@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using CoreGraphics;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;

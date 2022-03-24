@@ -1,5 +1,6 @@
 using System;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls
 {

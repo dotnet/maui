@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests

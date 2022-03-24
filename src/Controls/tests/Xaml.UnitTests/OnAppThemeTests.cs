@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 

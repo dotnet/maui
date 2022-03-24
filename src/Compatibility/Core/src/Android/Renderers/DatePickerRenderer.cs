@@ -6,7 +6,7 @@ using Android.Content;
 using Android.Util;
 using Android.Widget;
 using Microsoft.Maui.Controls.Platform;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

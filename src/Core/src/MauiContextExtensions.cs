@@ -1,8 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Dispatching;
-namespace Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.ApplicationModel;
 
 #if WINDOWS
 using NativeApplication = Microsoft.UI.Xaml.Application;

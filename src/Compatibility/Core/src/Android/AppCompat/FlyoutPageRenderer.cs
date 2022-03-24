@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 	using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 	using Microsoft.Maui.Controls.Platform;
-	namespace Microsoft.Maui.Devices;
+	using Microsoft.Maui.Devices;
 	using Microsoft.Maui.Graphics;
 
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
