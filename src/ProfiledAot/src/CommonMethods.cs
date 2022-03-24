@@ -4,6 +4,7 @@
 // Culture-aware string comparisons
 // ResourceManager
 // Common Essentials methods
+// Microsoft.Maui.Graphics.Color
 // System.Threading.Tasks.Task
 // System.Net.Http.HttpClient
 
@@ -24,6 +25,9 @@ static class CommonMethods
         string someString = MauiTest.Resources.Strings.SomeString;
 
         InitializeCommonEssentials();
+
+        Color c = Color.Parse("MistyRose");
+        c = Color.Parse("#663399");
 
         using var client = new HttpClient();
         var send = client.SendAsync (new HttpRequestMessage (HttpMethod.Get, url));
