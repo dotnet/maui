@@ -38,8 +38,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVerticalTextAlignment(this UILabel platformLabel, ILabel label)
 		{
-			if (platformLabel is MauiLabel mauiLabel)
-				mauiLabel.UpdateVerticalAlignment(label);
+			platformLabel.InvalidateMeasure(label);
 		}
 		
 		public static void UpdateLineBreakMode(this UILabel platformLabel, ILabel label)

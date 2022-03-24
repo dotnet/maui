@@ -10,8 +10,6 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiLabel : UILabel
 	{
-		ILabel _label;
-
 		public UIEdgeInsets TextInsets { get; set; }
 
 		public MauiLabel(RectangleF frame) : base(frame)
@@ -44,56 +42,6 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public override SizeF SizeThatFits(SizeF size) => AddInsets(base.SizeThatFits(size));
-
-		public override void LayoutSubviews()
-		{
-			base.LayoutSubviews();
-
-			if (_label == null)
-				return;
-
-			SizeF fitSize;
-
-			nfloat labelX = Frame.X;
-			nfloat labelY = Frame.Y;
-
-			nfloat labelHeight = (nfloat)Math.Max(0, _label.Frame.Size.Height);
-			nfloat labelWidth = (nfloat)Math.Max(0, _label.Frame.Size.Width);
-
-			switch (_label.VerticalTextAlignment)
-			{
-				case Maui.TextAlignment.Start:
-					fitSize = SizeThatFits(_label.Frame.Size.ToCGSize());
-					labelHeight = (nfloat)Math.Min(Bounds.Height, fitSize.Height);
-					var startFrame = new RectangleF(labelX, labelY, labelWidth, labelHeight);
-
-					if (startFrame != RectangleF.Empty)
-						Frame = startFrame;
-					break;
-				case Maui.TextAlignment.Center:
-					var centerFrame = new RectangleF(labelX, labelY, labelWidth, labelHeight);
-
-					if (centerFrame != RectangleF.Empty)
-						Frame = centerFrame;
-					break;
-				case Maui.TextAlignment.End:
-					fitSize = SizeThatFits(_label.Frame.Size.ToCGSize());
-					var fitHeight = (nfloat)Math.Min(Bounds.Height, fitSize.Height);
-					nfloat yOffset = labelHeight - fitHeight;
-					var endFrame = new RectangleF(labelX, yOffset, labelWidth, fitHeight);
-
-					if (endFrame != RectangleF.Empty)
-						Frame = endFrame;
-					break;
-			}
-		}
-
-		public void UpdateVerticalAlignment(ILabel label)
-		{
-			_label = label;
-
-			LayoutSubviews();
-		}
 
 		SizeF AddInsets(SizeF size) => new SizeF(
 			width: size.Width + TextInsets.Left + TextInsets.Right,

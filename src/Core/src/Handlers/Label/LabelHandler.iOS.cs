@@ -1,3 +1,8 @@
+using System;
+using Microsoft.Maui.Graphics;
+using RectangleF = CoreGraphics.CGRect;
+using SizeF = CoreGraphics.CGSize;
+
 namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ViewHandler<ILabel, MauiLabel>
@@ -7,6 +12,49 @@ namespace Microsoft.Maui.Handlers
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||
 			base.NeedsContainer;
+
+
+		public override void PlatformArrange(Rect rect)
+		{
+			base.PlatformArrange(rect);
+
+			var _label = VirtualView;
+
+			if (_label == null)
+				return;
+
+			SizeF fitSize;
+			double fitHeight;
+			var bounds = PlatformView.Bounds;
+
+			switch (_label.VerticalTextAlignment)
+			{
+				case Maui.TextAlignment.Start:
+					fitSize = PlatformView.SizeThatFits(rect.Size.ToCGSize());
+					fitHeight = Math.Min(bounds.Height, fitSize.Height);
+					var startFrame = new RectangleF(rect.X, rect.Y, rect.Width, fitHeight);
+
+					if (startFrame != RectangleF.Empty)
+						PlatformView.Frame = startFrame;
+
+					break;
+
+				case Maui.TextAlignment.Center:
+					break;
+
+				case Maui.TextAlignment.End:
+					fitSize = PlatformView.SizeThatFits(rect.Size.ToCGSize());
+					fitHeight = Math.Min(bounds.Height, fitSize.Height);
+
+					var yOffset = rect.Y + rect.Height - fitHeight;
+					var endFrame = new RectangleF(rect.X, yOffset, rect.Width, fitHeight);
+
+					if (endFrame != RectangleF.Empty)
+						PlatformView.Frame = endFrame;
+
+					break;
+			}
+		}
 
 		public static void MapBackground(ILabelHandler handler, ILabel label)
 		{
