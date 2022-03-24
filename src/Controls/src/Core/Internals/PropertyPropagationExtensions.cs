@@ -1,7 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.Maui.Controls.Internals
 {
@@ -16,6 +13,9 @@ namespace Microsoft.Maui.Controls.Internals
 			if (propertyName == null || propertyName == VisualElement.VisualProperty.PropertyName)
 				SetVisualFromParent(element);
 
+			if (propertyName == null || propertyName == VisualElement.WindowProperty.PropertyName)
+				SetWindowFromParent(element);
+
 			if (propertyName == null || propertyName == Shell.NavBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.NavBarIsVisibleProperty, element);
 
@@ -24,9 +24,6 @@ namespace Microsoft.Maui.Controls.Internals
 
 			if (propertyName == null || propertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.TabBarIsVisibleProperty, element);
-
-			if (propertyName == null || propertyName == Element.WindowProperty.PropertyName)
-				SetWindowFromParent(element);
 
 			foreach (var child in children)
 			{
@@ -43,6 +40,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 			if (propertyName == null || propertyName == VisualElement.VisualProperty.PropertyName)
 				PropagateVisual(target, source);
+
+			if (propertyName == null || propertyName == VisualElement.WindowProperty.PropertyName)
+				PropagateWindow(target, source);
 
 			if (target is IPropertyPropagationController view)
 				view.PropagatePropertyChanged(propertyName);
@@ -99,7 +99,13 @@ namespace Microsoft.Maui.Controls.Internals
 
 		internal static void PropagateWindow(Element target, Element source)
 		{
-			target.SetWindow(source?.Window);
+			var controller = target as IWindowController;
+			if (controller == null)
+				return;
+
+			var sourceController = source as IWindowController;
+
+			controller.Window = sourceController?.Window;
 		}
 
 		internal static void SetWindowFromParent(Element child)

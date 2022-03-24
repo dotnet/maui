@@ -10,11 +10,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.Hosting;
 
 #if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Components.WebView.Maui;
@@ -56,20 +57,22 @@ namespace Maui.Controls.Sample
 				*/
 			}
 
-			appBuilder
-				.ConfigureMauiHandlers(handlers =>
-				{
-#if __ANDROID__
-					handlers.AddCompatibilityRenderer(typeof(CustomButton),
-						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer));
-#elif __IOS__
-					handlers.AddCompatibilityRenderer(typeof(CustomButton),
-						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
-#elif WINDOWS
-					handlers.AddCompatibilityRenderer(typeof(CustomButton),
-						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
-#endif
-				});
+//			appBuilder
+//				.ConfigureMauiHandlers(handlers =>
+//				{
+//#pragma warning disable CS0618 // Type or member is obsolete
+//#if __ANDROID__
+//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer));
+//#elif __IOS__
+//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
+//#elif WINDOWS
+//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
+//#endif
+//#pragma warning restore CS0618 // Type or member is obsolete
+//				});
 
 			// Use a "third party" library that brings in a massive amount of controls
 			appBuilder.UseBordelessEntry();
@@ -217,7 +220,8 @@ namespace Maui.Controls.Sample
 #elif WINDOWS
 					// Log everything in this one
 					events.AddWindows(windows => windows
-						//.OnNativeMessage((a, b) => LogEvent(nameof(WindowsLifecycle.OnNativeMessage)))
+						.OnPlatformMessage((a, b) => 
+							LogEvent(nameof(WindowsLifecycle.OnPlatformMessage)))
 						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))

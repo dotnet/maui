@@ -43,6 +43,17 @@
 
       <Content Remove="@(_ContentToUpdate)" />
       <Content Include="@(_ContentToUpdate)" ExcludeFromContentCheck="true" PublishFolderType="None" />
+
+      <!-- Remove the items in AppDesignerFolder ("Properties", by default) so they don't get copied to the output directory -->
+      <Content Remove="$(AppDesignerFolder)\**" Condition="'$(AppDesignerFolder)' != ''" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="_RemoveStaticWebAssetsDevelopmentManifest" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <!-- Remove the development manifest from the output since its not used and it will otherwise get incorrectly loaded in production. -->
+    <ItemGroup>
+      <ContentWithTargetPath Remove="$(StaticWebAssetDevelopmentManifestPath)" />
     </ItemGroup>
   </Target>
 

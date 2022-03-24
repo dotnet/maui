@@ -4,16 +4,64 @@
         "LanguageSet": "VS_Main_Languages",
         "LocItems": [
             {
-                "SourceFile": "src\\Compatibility\\Core\\src\\iOS\\Resources\\StringResources.resx",
-                "LclFile": "loc\\{Lang}\\src\\Compatibility\\Core\\src\\iOS\\Resources\\StringResources.resx.lcl",
+                "SourceFile": "src\\Controls\\src\\Core\\Compatibility\\iOS\\Resources\\StringResources.resx",
+                "LclFile": "loc\\{Lang}\\src\\Controls\\src\\Core\\Compatibility\\iOS\\Resources\\StringResources.resx.lcl",
                 "CopyOption": "LangIDOnName",
-                "OutputPath": "src\\Compatibility\\Core\\src\\iOS\\Resources\\"
+                "OutputPath": "src\\Controls\\src\\Core\\Compatibility\\iOS\\Resources\\"
             },
             {
                 "SourceFile": "src\\Controls\\src\\Build.Tasks\\ErrorMessages.resx",
                 "LclFile": "loc\\{Lang}\\src\\Controls\\src\\Build.Tasks\\ErrorMessages.resx.lcl",
                 "CopyOption": "LangIDOnName",
                 "OutputPath": "src\\Controls\\src\\Build.Tasks\\xlf\\"
+            },
+            {
+              "SourceFile":  ".\\src\\Templates\\src\\templates\\maui-blazor\\.template.config\\localize\\templatestrings.json",
+              "LclFile":  "loc\\{Lang}\\src\\Templates\\src\\templates\\maui-blazor\\.template.config\\localize\\templatestrings.json.lcl",
+              "CopyOption":  "LangIDOnName",
+              "OutputPath":  ".\\src\\Templates\\src\\templates\\maui-blazor\\.template.config\\localize\\"
+            },
+            {
+              "SourceFile":  ".\\src\\Templates\\src\\templates\\maui-contentpage-csharp\\.template.config\\localize\\templatestrings.json",
+              "LclFile":  "loc\\{Lang}\\src\\Templates\\src\\templates\\maui-contentpage-csharp\\.template.config\\localize\\templatestrings.json.lcl",
+              "CopyOption":  "LangIDOnName",
+              "OutputPath":  ".\\src\\Templates\\src\\templates\\maui-contentpage-csharp\\.template.config\\localize\\"
+            },
+            {
+              "SourceFile":  ".\\src\\Templates\\src\\templates\\maui-contentpage-xaml\\.template.config\\localize\\templatestrings.json",
+              "LclFile":  "loc\\{Lang}\\src\\Templates\\src\\templates\\maui-contentpage-xaml\\.template.config\\localize\\templatestrings.json.lcl",
+              "CopyOption":  "LangIDOnName",
+              "OutputPath":  ".\\src\\Templates\\src\\templates\\maui-contentpage-xaml\\.template.config\\localize\\"
+            },
+            {
+              "SourceFile":  ".\\src\\Templates\\src\\templates\\maui-contentview-csharp\\.template.config\\localize\\templatestrings.json",
+              "LclFile":  "loc\\{Lang}\\src\\Templates\\src\\templates\\maui-contentview-csharp\\.template.config\\localize\\templatestrings.json.lcl",
+              "CopyOption":  "LangIDOnName",
+              "OutputPath":  ".\\src\\Templates\\src\\templates\\maui-contentview-xaml\\.template.config\\localize\\"
+            },
+            {
+              "SourceFile":  ".\\src\\Templates\\src\\templates\\maui-contentview-xaml\\.template.config\\localize\\templatestrings.json",
+              "LclFile":  "loc\\{Lang}\\src\\Templates\\src\\templates\\maui-contentview-xaml\\.template.config\\localize\\templatestrings.json.lcl",
+              "CopyOption":  "LangIDOnName",
+              "OutputPath":  ".\\src\\Templates\\src\\templates\\maui-contentview-xaml\\.template.config\\localize\\"
+            },
+            {
+              "SourceFile":  ".\\src\\Templates\\src\\templates\\maui-lib\\.template.config\\localize\\templatestrings.json",
+              "LclFile":  "loc\\{Lang}\\src\\Templates\\src\\templates\\maui-lib\\.template.config\\localize\\templatestrings.json.lcl",
+              "CopyOption":  "LangIDOnName",
+              "OutputPath":  ".\\src\\Templates\\src\\templates\\maui-lib\\.template.config\\localize\\"
+            },
+            {
+              "SourceFile":  ".\\src\\Templates\\src\\templates\\maui-mobile\\.template.config\\localize\\templatestrings.json",
+              "LclFile":  "loc\\{Lang}\\src\\Templates\\src\\templates\\maui-mobile\\.template.config\\localize\\templatestrings.json.lcl",
+              "CopyOption":  "LangIDOnName",
+              "OutputPath":  ".\\src\\Templates\\src\\templates\\maui-mobile\\.template.config\\localize\\"
+            },
+            {
+              "SourceFile":  ".\\src\\Templates\\src\\templates\\maui-resourcedictionary-xaml\\.template.config\\localize\\templatestrings.json",
+              "LclFile":  "loc\\{Lang}\\src\\Templates\\src\\templates\\maui-resourcedictionary-xaml\\.template.config\\localize\\templatestrings.json.lcl",
+              "CopyOption":  "LangIDOnName",
+              "OutputPath":  ".\\src\\Templates\\src\\templates\\maui-resourcedictionary-xaml\\.template.config\\localize\\"
             }
         ],
         "LssFiles": [],

@@ -115,32 +115,21 @@ namespace Microsoft.Maui.Platform
 			platformView?.UpdatePlatformViewBackground(view);
 		}
 
-		public static WFlowDirection ToPlatform(this FlowDirection flowDirection)
-		{
-			if (flowDirection == FlowDirection.RightToLeft)
-				return WFlowDirection.RightToLeft;
-			else if (flowDirection == FlowDirection.LeftToRight)
-				return WFlowDirection.LeftToRight;
-
-			throw new InvalidOperationException($"Invalid FlowDirection: {flowDirection}");
-		}
-
-		public static void UpdateFlowDirection(this FrameworkElement platformView, IView view)
+		public static void UpdateFlowDirection(this FrameworkElement platformView, IView view) 
 		{
 			var flowDirection = view.FlowDirection;
-
-			if (flowDirection == FlowDirection.MatchParent ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			switch (flowDirection)
 			{
-				flowDirection = view?.Handler?.MauiContext?.GetFlowDirection()
-					?? FlowDirection.LeftToRight;
+				case FlowDirection.MatchParent:
+					platformView.ClearValue(FrameworkElement.FlowDirectionProperty);
+					break;
+				case FlowDirection.LeftToRight:
+					platformView.FlowDirection = WFlowDirection.LeftToRight;
+					break;
+				case FlowDirection.RightToLeft:
+					platformView.FlowDirection = WFlowDirection.RightToLeft;
+					break;
 			}
-			if (flowDirection == FlowDirection.MatchParent)
-			{
-				flowDirection = FlowDirection.LeftToRight;
-			}
-
-			platformView.FlowDirection = flowDirection.ToPlatform();
 		}
 
 		public static void UpdateAutomationId(this FrameworkElement platformView, IView view) =>
@@ -260,6 +249,15 @@ namespace Microsoft.Maui.Platform
 			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
 		}
 
+		public static async Task<byte[]?> RenderAsBMP(this IView view)
+		{
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
+				return null;
+
+			return await platformView.RenderAsBMP();
+		}
+
 		public static async Task<byte[]?> RenderAsPNG(this IView view)
 		{
 			var platformView = view?.ToPlatform();
@@ -277,6 +275,19 @@ namespace Microsoft.Maui.Platform
 
 			return await platformView.RenderAsJPEG();
 		}
+
+		public static Task<byte[]?> RenderAsImage(this FrameworkElement view, RenderType type)
+		{
+			return type switch
+			{
+				RenderType.JPEG => view.RenderAsJPEG(),
+				RenderType.PNG => view.RenderAsPNG(),
+				RenderType.BMP => view.RenderAsBMP(),
+				_ => throw new NotImplementedException()
+			};
+		}
+
+		public static Task<byte[]?> RenderAsBMP(this FrameworkElement view) => view != null ? view.RenderAsBMPAsync() : Task.FromResult<byte[]?>(null);
 
 		public static Task<byte[]?> RenderAsPNG(this FrameworkElement view) => view != null ? view.RenderAsPNGAsync() : Task.FromResult<byte[]?>(null);
 

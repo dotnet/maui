@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public HandlerToRendererShim(IPlatformViewHandler vh)
 		{
+			Compatibility.Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			ViewHandler = vh;
 		}
 

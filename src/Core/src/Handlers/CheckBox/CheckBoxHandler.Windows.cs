@@ -3,11 +3,11 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class CheckBoxHandler : ViewHandler<ICheckBox, MauiCheckBox>
+	public partial class CheckBoxHandler : ViewHandler<ICheckBox, CheckBox>
 	{
-		protected override MauiCheckBox CreatePlatformView() => new MauiCheckBox();
+		protected override CheckBox CreatePlatformView() => new CheckBox();
 
-		protected override void ConnectHandler(MauiCheckBox platformView)
+		protected override void ConnectHandler(CheckBox platformView)
 		{
 			base.ConnectHandler(platformView);
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Unchecked += OnChecked;
 		}
 
-		protected override void DisconnectHandler(MauiCheckBox platformView)
+		protected override void DisconnectHandler(CheckBox platformView)
 		{
 			base.DisconnectHandler(platformView);
 

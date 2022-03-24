@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Graphics
+﻿using System.Numerics;
+
+namespace Microsoft.Maui.Graphics
 {
 	public class ShapeDrawable : IDrawable
 	{
@@ -9,18 +11,31 @@
 
 		public ShapeDrawable(IShapeView? shape)
 		{
+			UpdateShapeView(shape);
+		}
+
+		internal IShapeView? ShapeView { get; set; }
+		internal WindingMode WindingMode { get; set; }
+		internal Matrix3x2? RenderTransform { get; set; }
+
+		public void UpdateShapeView(IShapeView? shape)
+		{
 			ShapeView = shape;
 		}
 
-		public IShapeView? ShapeView { get; set; }
+		public void UpdateWindingMode(WindingMode windingMode)
+		{
+			WindingMode = windingMode;
+		}
 
-		public WindingMode WindingMode { get; set; }
+		public void UpdateRenderTransform(Matrix3x2? renderTransform)
+		{
+			RenderTransform = renderTransform;
+		}
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			var rect = dirtyRect;
-
-			DrawBackground(canvas, rect);
 
 			IShape? shape = ShapeView?.Shape;
 
@@ -31,26 +46,11 @@
 
 			if (path == null)
 				return;
-					
+
+			ApplyTransform(path);
+
 			DrawStrokePath(canvas, rect, path);
-			ClipPath(canvas, path);
 			DrawFillPath(canvas, rect, path);
-		}
-
-		void DrawBackground(ICanvas canvas, RectF dirtyRect)
-		{
-			if (ShapeView == null)
-				return;
-
-			canvas.SaveState();
-
-			// Set Background
-			var backgroundPaint = ShapeView.Background;
-			canvas.SetFillPaint(backgroundPaint, dirtyRect);
-
-			canvas.FillRectangle(dirtyRect);
-
-			canvas.RestoreState();
 		}
 
 		void DrawStrokePath(ICanvas canvas, RectF dirtyRect, PathF path)
@@ -109,6 +109,8 @@
 
 			canvas.SaveState();
 
+			ClipPath(canvas, path);
+
 			// Set Fill
 			var fillPaint = ShapeView.Fill;
 			canvas.SetFillPaint(fillPaint, dirtyRect);
@@ -121,6 +123,14 @@
 		void ClipPath(ICanvas canvas, PathF path)
 		{
 			canvas.ClipPath(path, WindingMode);
+		}
+
+		void ApplyTransform(PathF path)
+		{
+			if (RenderTransform == null)
+				return;
+
+			path.Transform(RenderTransform.Value);
 		}
 	}
 }

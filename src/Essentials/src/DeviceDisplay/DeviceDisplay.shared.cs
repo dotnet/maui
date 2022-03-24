@@ -8,6 +8,12 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceDisplay']/Docs" />
 	public static partial class DeviceDisplay
 	{
+#if WINDOWS
+		internal const float BaseLogicalDpi = 96.0f;
+#elif ANDROID
+		internal const float BaseLogicalDpi = 160.0f;
+#endif
+
 		static readonly object locker = new object();
 		static IDeviceDisplay currentImplementation;
 
