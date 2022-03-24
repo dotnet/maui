@@ -1,7 +1,7 @@
 using CoreMotion;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class AccelerometerImplementation
 	{

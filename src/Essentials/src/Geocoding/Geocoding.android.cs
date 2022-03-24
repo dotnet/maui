@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Locations;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public class GeocodingImplementation : IGeocoding
 	{

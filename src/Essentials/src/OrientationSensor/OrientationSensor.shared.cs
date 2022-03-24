@@ -5,7 +5,7 @@ using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Essentials.Implementations;
 
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public interface IOrientationSensor
 	{
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class OrientationSensorImplementation : IOrientationSensor
 	{

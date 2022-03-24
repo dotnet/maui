@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Numerics;
 using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public interface IAccelerometer
 	{
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class AccelerometerImplementation : IAccelerometer
 	{

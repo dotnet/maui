@@ -4,7 +4,7 @@ using System.ComponentModel;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public interface IMagnetometer
 	{
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class MagnetometerImplementation : IMagnetometer
 	{
