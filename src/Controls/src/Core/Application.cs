@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Current']/Docs" />
 		public static Application? Current { get; set; }
 
-		Page? _pendingMainPage;
+		Page? _singleWindowMainPage;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='MainPage']/Docs" />
 		public Page? MainPage
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (Windows.Count == 0)
-					return _pendingMainPage;
+					return _singleWindowMainPage;
 
 				return Windows[0].Page;
 			}
@@ -100,11 +100,9 @@ namespace Microsoft.Maui.Controls
 
 				OnPropertyChanging();
 
-				if (Windows.Count == 0)
-				{
-					_pendingMainPage = value;
-				}
-				else
+				_singleWindowMainPage = value;
+				
+				if (Windows.Count == 1)
 				{
 					Windows[0].Page = value;
 				}

@@ -7,12 +7,16 @@ public class MainInstrumentation : Instrumentation
 {
     const string Tag = "MAUI";
 
+	public static MainInstrumentation? Instance { get; private set; }
+
     protected MainInstrumentation(IntPtr handle, JniHandleOwnership transfer)
         : base(handle, transfer) { }
 
     public override void OnCreate (Bundle? arguments)
     {
         base.OnCreate (arguments);
+
+		Instance = this;
 
         Start ();
     }
@@ -35,6 +39,7 @@ public class MainInstrumentation : Instrumentation
             var baseConfig = new DebugInProcessConfig();
 
             var config = new ManualConfig();
+
             foreach (var e in baseConfig.GetExporters())
                 config.AddExporter (e);
             foreach (var d in baseConfig.GetDiagnosers())
@@ -49,7 +54,10 @@ public class MainInstrumentation : Instrumentation
             config.UnionRule = ConfigUnionRule.AlwaysUseGlobal; // Overriding the default
             config.AddLogger(logger);
 
-            BenchmarkRunner.Run<ViewHandlerBenchmark>(config.WithOptions(ConfigOptions.DisableLogFile));
+			// ImageBenchmark class is hardcoded here for now
+			BenchmarkRunner.Run<ImageBenchmark>(config.WithOptions(ConfigOptions.DisableLogFile));
+			BenchmarkRunner.Run<ViewHandlerBenchmark>(config.WithOptions(ConfigOptions.DisableLogFile));
+
             success = true;
         } catch (Exception ex) {
             Log.Error (Tag, $"Error: {ex}");

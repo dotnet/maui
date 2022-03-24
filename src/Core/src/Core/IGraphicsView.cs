@@ -16,5 +16,12 @@ namespace Microsoft.Maui
 		/// Informs the canvas that it needs to redraw itself.
 		/// </summary>
 		void Invalidate();
+
+		void StartHoverInteraction(PointF[] points);
+		void EndHoverInteraction();
+		void StartInteraction(PointF[] points);
+		void DragInteraction(PointF[] points);
+		void EndInteraction(PointF[] points, bool isInsideBounds);
+		void CancelInteraction();
 	}
 }
