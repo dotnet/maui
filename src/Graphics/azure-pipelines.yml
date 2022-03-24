@@ -128,7 +128,7 @@ stages:
             #     DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
             #     PRIVATE_BUILD: $(PrivateBuild)
 
-            - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+            - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration.name }}" --verbosity=diagnostic
               displayName: 'install .NET workloads'
               retryCountOnTaskFailure: 3
               env:
