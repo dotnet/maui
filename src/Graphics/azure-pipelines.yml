@@ -121,7 +121,7 @@ stages:
               errorActionPreference: stop
             
             - pwsh: |
-                dotnet build ./build/DotNet/DotNet.csproj -p:DotNetDirectory="$env:DOTNET_ROOT" -p:InstallDotNet=false
+                dotnet build ./build/DotNet/DotNet.csproj -p:DotNetDirectory="$env:DOTNET_ROOT"+"/" -p:InstallDotNet=false
               displayName: install dotnet workloads
               retryCountOnTaskFailure: 3
               env:
