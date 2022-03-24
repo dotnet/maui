@@ -8,7 +8,7 @@ using Windows.UI.Core;
 using Microsoft.UI.Dispatching;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class MainThread
 	{

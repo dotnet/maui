@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Tizen.System;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	public static partial class Flashlight
 	{

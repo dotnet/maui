@@ -9,7 +9,7 @@ using TizenEmail = Tizen.Pims.Contacts.ContactsViews.Email;
 using TizenName = Tizen.Pims.Contacts.ContactsViews.Name;
 using TizenNumber = Tizen.Pims.Contacts.ContactsViews.Number;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	public static partial class Contacts
 	{

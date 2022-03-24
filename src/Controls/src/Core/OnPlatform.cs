@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Essentials;
+namespace Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {

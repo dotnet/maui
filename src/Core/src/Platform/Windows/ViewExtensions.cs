@@ -3,7 +3,7 @@ using System;
 using System.Numerics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+namespace Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using Microsoft.UI.Xaml;

@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.Maui.Essentials;
+namespace Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls

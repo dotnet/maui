@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Essentials;
 
 namespace Samples.View
 {

@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+namespace Microsoft.Maui.Devices;
 
 
 #if UITEST

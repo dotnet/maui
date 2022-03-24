@@ -1,6 +1,4 @@
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests

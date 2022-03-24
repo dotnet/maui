@@ -6,7 +6,7 @@ using Android.Content.Res;
 using Android.Provider;
 using AndroidX.Core.Content.PM;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
 	public class AppInfoImplementation : IAppInfo
 	{

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Microsoft.Maui.ApplicationModel;
 using AndroidAddress = Android.Locations.Address;
 using AndroidLocation = Android.Locations.Location;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public static partial class LocationExtensions
 	{

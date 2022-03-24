@@ -1,5 +1,4 @@
 using System.Linq;
-using Microsoft.Maui.Essentials;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests

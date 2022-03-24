@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.Maui.Essentials;
 using Xunit;
 using AndroidEnvironment = Android.OS.Environment;
 

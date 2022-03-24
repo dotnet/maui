@@ -5,7 +5,6 @@ using System.Text;
 using System.Windows.Input;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
 using Samples.ViewModel;
 
 namespace Samples.Model

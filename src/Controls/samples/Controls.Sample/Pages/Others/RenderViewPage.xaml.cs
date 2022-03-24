@@ -7,7 +7,7 @@ using System.Globalization;
 using System.IO;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+namespace Microsoft.Maui.Devices;
 using Microsoft.Maui.Platform;
 
 namespace Maui.Controls.Sample.Pages

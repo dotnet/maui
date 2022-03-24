@@ -1,6 +1,4 @@
 using System;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
 using Xunit;
 
 namespace Tests

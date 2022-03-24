@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Essentials;
+namespace Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {

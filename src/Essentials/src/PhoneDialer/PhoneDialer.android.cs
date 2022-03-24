@@ -7,7 +7,7 @@ using Java.Net;
 using Java.Util;
 using Uri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	public partial class PhoneDialerImplementation : IPhoneDialer
 	{

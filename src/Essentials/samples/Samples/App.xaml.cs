@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Essentials;
 using Samples.View;
 
 using Device = Microsoft.Maui.Controls.Device;

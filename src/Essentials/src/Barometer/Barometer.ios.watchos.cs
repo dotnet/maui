@@ -1,6 +1,8 @@
 using System;
 using CoreMotion;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.Devices.Sensors
 {

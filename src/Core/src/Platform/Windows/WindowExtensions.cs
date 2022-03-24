@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+namespace Microsoft.Maui.Devices;
 using WinRT.Interop;
 
 namespace Microsoft.Maui.Platform

@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Essentials;
+﻿namespace Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries
 {

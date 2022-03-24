@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Android.Locations;
 using Android.OS;
 using Android.Runtime;
-
+using Microsoft.Maui.ApplicationModel;
 using AndroidLocation = Android.Locations.Location;
 using LocationPower = Android.Locations.Power;
 

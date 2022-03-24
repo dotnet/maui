@@ -1,6 +1,7 @@
 using System;
 using Android.Hardware;
 using Android.Runtime;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
 {

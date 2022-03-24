@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/NavigationMode.xml" path="Type[@FullName='Microsoft.Maui.Essentials.NavigationMode']/Docs" />
 	public enum NavigationMode

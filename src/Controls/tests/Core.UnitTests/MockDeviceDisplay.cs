@@ -1,6 +1,6 @@
 ﻿#nullable enable
 using System;
-using Microsoft.Maui.Essentials;
+namespace Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

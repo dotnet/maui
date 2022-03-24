@@ -3,8 +3,9 @@ using Android.App;
 using Android.Content.Res;
 using Android.OS;
 using Android.Provider;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
 	public class DeviceInfoImplementation : IDeviceInfo
 	{
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				var currentIdiom = DeviceIdiom.Unknown;
 
 				// first try UIModeManager
-				using var uiModeManager = UiModeManager.FromContext(Essentials.Platform.AppContext);
+				using var uiModeManager = UiModeManager.FromContext(ApplicationModel.Platform.AppContext);
 
 				try
 				{
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				// then try Configuration
 				if (currentIdiom == DeviceIdiom.Unknown)
 				{
-					var configuration = Essentials.Platform.AppContext.Resources?.Configuration;
+					var configuration = ApplicationModel.Platform.AppContext.Resources?.Configuration;
 					if (configuration != null)
 					{
 						var minWidth = configuration.SmallestScreenWidthDp;
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 					else
 					{
 						// start clutching at straws
-						using var metrics = Essentials.Platform.AppContext.Resources?.DisplayMetrics;
+						using var metrics = ApplicationModel.Platform.AppContext.Resources?.DisplayMetrics;
 						if (metrics != null)
 						{
 							var minSize = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
@@ -126,10 +127,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		static string GetSystemSetting(string name, bool isGlobal = false)
 		{
-			if (isGlobal && Essentials.Platform.HasApiLevelNMr1)
-				return Settings.Global.GetString(Essentials.Platform.AppContext.ContentResolver, name);
+			if (isGlobal && ApplicationModel.Platform.HasApiLevelNMr1)
+				return Settings.Global.GetString(ApplicationModel.Platform.AppContext.ContentResolver, name);
 			else
-				return Settings.System.GetString(Essentials.Platform.AppContext.ContentResolver, name);
+				return Settings.System.GetString(ApplicationModel.Platform.AppContext.ContentResolver, name);
 		}
 	}
 }

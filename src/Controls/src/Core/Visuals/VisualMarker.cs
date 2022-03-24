@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Essentials;
+namespace Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {

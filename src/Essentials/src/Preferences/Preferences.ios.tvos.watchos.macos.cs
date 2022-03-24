@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage
 {
 	public class PreferencesImplementation : IPreferences
 	{

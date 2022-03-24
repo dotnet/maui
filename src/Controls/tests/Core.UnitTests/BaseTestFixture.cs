@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Threading;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Essentials;
+namespace Microsoft.Maui.Devices;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 

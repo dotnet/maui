@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Essentials;
+namespace Microsoft.Maui.Devices;
 using NUnit.Framework;
 using Mono.Cecil.Cil;
 using Mono.Cecil;

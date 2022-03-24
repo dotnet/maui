@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using static Android.Content.ClipboardManager;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
 	public partial class ClipboardImplementation : IClipboard
 	{

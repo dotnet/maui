@@ -1,4 +1,5 @@
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 #if __IOS__
 using ObjCRuntime;
 using UIKit;
@@ -7,7 +8,7 @@ using UIDevice = WatchKit.WKInterfaceDevice;
 using UIDeviceBatteryState = WatchKit.WKInterfaceDeviceBatteryState;
 #endif
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
 	public partial class BatteryImplementation : IBattery
 	{

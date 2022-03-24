@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests.Shared

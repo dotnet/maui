@@ -1,4 +1,3 @@
-using Microsoft.Maui.Essentials;
 
 namespace Samples.ViewModel
 {
