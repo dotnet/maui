@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 #if UITEST && __IOS__
 using Xamarin.UITest;
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 			};
 
-			if (DeviceInfo.Idiom != DeviceIdiom.Tablet || DeviceInfo.Platform != DevicePlatform.iOS)
+			if (DeviceInfo.Idiom != DeviceIdiom.Tablet || DeviceInfo.Current.Platform != DevicePlatform.iOS)
 				stackLayout.Children.Insert(0, skip);
 
 			Content = stackLayout;

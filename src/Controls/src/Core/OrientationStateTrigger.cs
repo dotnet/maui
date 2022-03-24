@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 			if (!DesignMode.IsDesignModeEnabled)
 			{
 				UpdateState();
-				DeviceDisplay.MainDisplayInfoChanged += OnInfoPropertyChanged;
+				DeviceDisplay.Current.MainDisplayInfoChanged += OnInfoPropertyChanged;
 			}
 		}
 
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnDetached();
 
-			DeviceDisplay.MainDisplayInfoChanged -= OnInfoPropertyChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged -= OnInfoPropertyChanged;
 		}
 
 		void OnInfoPropertyChanged(object sender, DisplayInfoChangedEventArgs e) =>
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateState()
 		{
-			var currentOrientation = DeviceDisplay.MainDisplayInfo.Orientation;
+			var currentOrientation = DeviceDisplay.Current.MainDisplayInfo.Orientation;
 			if (Orientation.IsLandscape())
 				SetActive(currentOrientation.IsLandscape());
 			else

@@ -1,4 +1,4 @@
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls
 
 		public static implicit operator T(OnIdiom<T> onIdiom)
 		{
-			var idiom = DeviceInfo.Idiom;
+			var idiom = DeviceInfo.Current.Idiom;
 			if (idiom == DeviceIdiom.Tablet)
 				return onIdiom._isTabletSet ? onIdiom.Tablet : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
 			else if (idiom == DeviceIdiom.Desktop)

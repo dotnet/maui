@@ -1,4 +1,4 @@
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Samples.ViewModel
 {
@@ -16,7 +16,7 @@ namespace Samples.ViewModel
 
 		public string Version => DeviceInfo.Version.ToString();
 
-		public DevicePlatform Platform => DeviceInfo.Platform;
+		public DevicePlatform Platform => DeviceInfo.Current.Platform;
 
 		public DeviceIdiom Idiom => DeviceInfo.Idiom;
 

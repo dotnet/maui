@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Essentials.Implementations;
 using Xunit;
 

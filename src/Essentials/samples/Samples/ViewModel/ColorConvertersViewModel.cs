@@ -2,7 +2,7 @@
 using System.Windows.Input;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Samples.ViewModel

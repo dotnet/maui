@@ -12,7 +12,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='NavBarHasShadowProperty']/Docs" />
 		public static readonly BindableProperty NavBarHasShadowProperty =
 			BindableProperty.CreateAttached("NavBarHasShadow", typeof(bool), typeof(Shell), default(bool),
-				defaultValueCreator: (b) => DeviceInfo.Platform == DevicePlatform.Android);
+				defaultValueCreator: (b) => DeviceInfo.Current.Platform == DevicePlatform.Android);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SearchHandlerProperty']/Docs" />
 		public static readonly BindableProperty SearchHandlerProperty =

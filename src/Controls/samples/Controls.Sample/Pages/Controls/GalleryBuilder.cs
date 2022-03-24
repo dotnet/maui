@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample.Pages
 				Text = $"{galleryName}",
 				AutomationId = automationId,
 				FontSize = 10,
-				HeightRequest = DeviceInfo.Platform == DevicePlatform.Android ? 40 : 30,
+				HeightRequest = DeviceInfo.Current.Platform == DevicePlatform.Android ? 40 : 30,
 				HorizontalOptions = LayoutOptions.Fill,
 				Margin = 5,
 				Padding = 5

@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #elif __IOS__
             // TODO: remove this as soon as the test harness can filter
             // the iOS simulator does not emulate a flashlight
-            if (DeviceInfo.DeviceType == DeviceType.Virtual && DeviceInfo.Platform == DevicePlatform.iOS)
+            if (DeviceInfo.DeviceType == DeviceType.Virtual && DeviceInfo.Current.Platform == DevicePlatform.iOS)
                 return;
 #endif
 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #elif __IOS__
             // TODO: remove this as soon as the test harness can filter
             // the iOS simulator does not emulate a flashlight
-            if (DeviceInfo.DeviceType == DeviceType.Virtual && DeviceInfo.Platform == DevicePlatform.iOS)
+            if (DeviceInfo.DeviceType == DeviceType.Virtual && DeviceInfo.Current.Platform == DevicePlatform.iOS)
                 return;
 #endif
 

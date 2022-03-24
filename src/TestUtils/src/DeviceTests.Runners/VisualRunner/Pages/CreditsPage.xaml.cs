@@ -1,6 +1,6 @@
 ﻿#nullable enable
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 {

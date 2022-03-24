@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests

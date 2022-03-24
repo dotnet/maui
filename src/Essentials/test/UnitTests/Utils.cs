@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Tests
 {

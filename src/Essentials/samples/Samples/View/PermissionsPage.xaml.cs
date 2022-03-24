@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Samples.Model;
 
 namespace Samples.View

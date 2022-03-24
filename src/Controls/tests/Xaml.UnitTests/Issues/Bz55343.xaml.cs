@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(false)]
 			public void OnPlatformFontConversion(bool useCompiledXaml)
 			{
-				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
 				var layout = new Bz55343(useCompiledXaml);
 				Assert.That(layout.label0.FontSize, Is.EqualTo(16d));
 				Assert.That(layout.label1.FontSize, Is.EqualTo(64d));

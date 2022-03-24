@@ -4,6 +4,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
+using Microsoft.Maui.ApplicationModel;
 #if WINDOWS
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -21,12 +22,13 @@ namespace Microsoft.Maui.Media
 
 		public Task<IScreenshotResult> CaptureAsync()
 		{
-			var element = Window.Current?.Content;
-			if (element == null)
-				throw new InvalidOperationException("Unable to find main window content.");
+			var element = WindowStateManager.Default.GetActiveWindow(true);
 
 			return CaptureAsync(element);
 		}
+
+		public Task<IScreenshotResult> CaptureAsync(Window window) =>
+			CaptureAsync(window.Content);
 
 		public async Task<IScreenshotResult> CaptureAsync(UIElement element)
 		{

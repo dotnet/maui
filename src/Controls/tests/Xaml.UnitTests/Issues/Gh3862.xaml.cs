@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
@@ -40,12 +40,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(false), TestCase(true)]
 			public void OnPlatformMarkupInStyle(bool useCompiledXaml)
 			{
-				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
 				var layout = new Gh3862(useCompiledXaml);
 				Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Pink));
 				Assert.That(layout.label.IsVisible, Is.False);
 
-				mockDeviceInfo.Platform = DevicePlatform.Android;
+				mockDeviceInfo.Current.Platform = DevicePlatform.Android;
 
 				layout = new Gh3862(useCompiledXaml);
 				Assert.That(layout.label.IsVisible, Is.True);

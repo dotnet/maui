@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateState()
 		{
-			var scaledScreenSize = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+			var scaledScreenSize = DeviceDisplay.Current.MainDisplayInfo.GetScaledScreenSize();
 
 			var w = scaledScreenSize.Width;
 			var h = scaledScreenSize.Height;

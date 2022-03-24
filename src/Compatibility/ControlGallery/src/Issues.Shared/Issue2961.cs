@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 #if UITEST
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					Children = { logoImg }
 				};
 
-				var paddingTop = DeviceInfo.Platform == DevicePlatform.iOS ? 40 : 2;
+				var paddingTop = DeviceInfo.Current.Platform == DevicePlatform.iOS ? 40 : 2;
 				Content = new StackLayout
 				{
 					Spacing = 0,

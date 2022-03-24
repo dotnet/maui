@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -257,7 +257,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var p = DevicePlatform.Create(platform);
 
-				mockDeviceInfo.Platform = p;
+				mockDeviceInfo.Current.Platform = p;
 				if (p == DevicePlatform.iOS)
 				{
 					DependencyService.Register<INativeValueConverterService, MockIosPlatformValueConverterService>();

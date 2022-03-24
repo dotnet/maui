@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls
 			// TODO hartez 2018-05-22 05:04 PM This 40,40 is what LV1 does; can we come up with something less arbitrary?
 			var minimumSize = new Size(40, 40);
 
-			var scaled = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+			var scaled = DeviceDisplay.Current.MainDisplayInfo.GetScaledScreenSize();
 			var maxWidth = Math.Min(scaled.Width, widthConstraint);
 			var maxHeight = Math.Min(scaled.Height, heightConstraint);
 

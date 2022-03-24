@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -40,15 +40,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				         </Button.HeightRequest>
 				 </Button>";
 
-			mockDeviceInfo.Platform = DevicePlatform.iOS;
+			mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
 			var button = new Button().LoadFromXaml(xaml);
 			Assert.AreEqual(33, button.HeightRequest);
 
-			mockDeviceInfo.Platform = DevicePlatform.Android;
+			mockDeviceInfo.Current.Platform = DevicePlatform.Android;
 			button = new Button().LoadFromXaml(xaml);
 			Assert.AreEqual(44, button.HeightRequest);
 
-			mockDeviceInfo.Platform = DevicePlatform.UWP;
+			mockDeviceInfo.Current.Platform = DevicePlatform.UWP;
 			button = new Button().LoadFromXaml(xaml);
 			Assert.AreEqual(44, button.HeightRequest);
 		}

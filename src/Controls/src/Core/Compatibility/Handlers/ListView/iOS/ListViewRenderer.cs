@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -1269,7 +1269,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_isDragging = true;
 				}
 
-				if (_isDragging && scrollView.ContentOffset.Y < -10f && _uiTableViewController._usingLargeTitles && DeviceDisplay.MainDisplayInfo.Orientation.IsPortrait())
+				if (_isDragging && scrollView.ContentOffset.Y < -10f && _uiTableViewController._usingLargeTitles && DeviceDisplay.Current.MainDisplayInfo.Orientation.IsPortrait())
 				{
 					_uiTableViewController.ForceRefreshing();
 				}

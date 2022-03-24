@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 #if UITEST
 using Xamarin.UITest;
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			KeyboardFlags spellCheckForUwp = KeyboardFlags.None;
 
-			if (DeviceInfo.Platform == DevicePlatform.WinUI)
+			if (DeviceInfo.Current.Platform == DevicePlatform.WinUI)
 			{
 				spellCheckForUwp = KeyboardFlags.Spellcheck;
 			}
@@ -68,17 +68,17 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				inputViews.Add(new EntryKeyboardFlags() { ClassId = "CustomRendererCapitalizeCharacter", FlagsToSet = KeyboardFlags.CapitalizeCharacter });
 			}
 
-			if (DeviceInfo.Platform == DevicePlatform.WinUI)
+			if (DeviceInfo.Current.Platform == DevicePlatform.WinUI)
 			{
 				layout.Children.Add(new Label() { Text = "Capitalization settings only work when using touch keyboard" });
 				layout.Children.Add(new Label() { Text = "Character doesn't do anything on UWP" });
 			}
-			else if (DeviceInfo.Platform == DevicePlatform.iOS)
+			else if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
 			{
 				layout.Children.Add(new Label() { Text = "All will use Sentence" });
 				layout.Children.Add(new Label() { Text = "No Keyboard will use Sentence" });
 			}
-			else if (DeviceInfo.Platform == DevicePlatform.Android)
+			else if (DeviceInfo.Current.Platform == DevicePlatform.Android)
 			{
 				layout.Children.Add(new Label() { Text = "All will use Sentence" });
 				layout.Children.Add(new Label() { Text = "No Keyboard will use None" });

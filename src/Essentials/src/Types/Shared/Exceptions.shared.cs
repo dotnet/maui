@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 			new NotImplementedInReferenceAssemblyException();
 #else
 		internal static FeatureNotSupportedException NotSupportedOrImplementedException =>
-			new FeatureNotSupportedException($"This API is not supported on {DeviceInfo.Platform}");
+			new FeatureNotSupportedException($"This API is not supported on {DeviceInfo.Current.Platform}");
 #endif
 
 	}

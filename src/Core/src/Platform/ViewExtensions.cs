@@ -2,6 +2,9 @@
 using System.Numerics;
 using Microsoft.Maui.Graphics;
 using System.Threading.Tasks;
+using Microsoft.Maui.Media;
+using System.IO;
+
 #if NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
 #endif
@@ -19,7 +22,7 @@ using PlatformView = System.Object;
 using ParentView = System.Object;
 #endif
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	/// <include file="../../docs/Microsoft.Maui/ViewExtensions.xml" path="Type[@FullName='Microsoft.Maui.ViewExtensions']/Docs" />
 	public static partial class ViewExtensions
@@ -36,19 +39,6 @@ namespace Microsoft.Maui
 
 		public static IPlatformViewHandler ToHandler(this IView view, IMauiContext context) =>
 			(IPlatformViewHandler)ElementExtensions.ToHandler(view, context);
-
-		public static async Task<RenderedView> RenderAsImage(this IView view, RenderType type)
-		{
-			byte[]? image = type switch
-			{
-				RenderType.PNG => await view.RenderAsPNG(),
-				RenderType.JPEG => await view.RenderAsJPEG(),
-				RenderType.BMP => await view.RenderAsBMP(),
-				_ => throw new NotImplementedException(),
-			};
-
-			return new RenderedView(image, type);
-		}
 
 		internal static T? GetParentOfType<T>(this ParentView? view)
 			where T : class
@@ -113,6 +103,5 @@ namespace Microsoft.Maui
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 #endif
-
 	}
 }

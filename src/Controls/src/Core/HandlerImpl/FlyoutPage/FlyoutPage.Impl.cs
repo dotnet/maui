@@ -1,6 +1,5 @@
 ﻿#nullable enable
-
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -30,10 +29,10 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+				if (DeviceInfo.Current.Idiom == DeviceIdiom.Phone)
 					return -1;
 
-				var scaledScreenSize = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+				var scaledScreenSize = DeviceDisplay.Current.MainDisplayInfo.GetScaledScreenSize();
 				double w = scaledScreenSize.Width;
 				return w < DefaultSmallFlyoutSize ? w : (w < DefaultFlyoutSize ? DefaultSmallFlyoutSize : DefaultFlyoutSize);
 			}
@@ -47,16 +46,16 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangingCore(args);
 
-			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+			if (DeviceInfo.Current.Idiom == DeviceIdiom.Phone)
 				return;
 
 			if (args.NewHandler == null)
 			{
-				DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+				DeviceDisplay.Current.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 			}
 			else if (args.OldHandler == null)
 			{
-				DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+				DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 			}
 		}
 

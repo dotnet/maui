@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 
 #if UITEST
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			listView.ItemsSource = Enumerable.Range(0, 100).Select(x => $"{x} Entry").ToList();
 			listViewPage.Content = listView;
 
-			if (DeviceInfo.Platform == DevicePlatform.Android)
+			if (DeviceInfo.Current.Platform == DevicePlatform.Android)
 			{
 				var touchListenter = CreateContentPage(shellItemTitle: TouchListenerTitle);
 				touchListenter.Content = new TouchTestView();

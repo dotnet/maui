@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (onPlat.Platform == null)
 						continue;
-					if (!onPlat.Platform.Contains(DeviceInfo.Platform.ToString()))
+					if (!onPlat.Platform.Contains(DeviceInfo.Current.Platform.ToString()))
 						continue;
 					return (T)s_valueConverter.Convert(onPlat.Value, typeof(T), null, null);
 				}
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls
 				// fallback for UWP
 				foreach (var onPlat in onPlatform.Platforms)
 				{
-					if (onPlat.Platform != null && onPlat.Platform.Contains("UWP") && DeviceInfo.Platform == DevicePlatform.WinUI)
+					if (onPlat.Platform != null && onPlat.Platform.Contains("UWP") && DeviceInfo.Current.Platform == DevicePlatform.WinUI)
 						return (T)s_valueConverter.Convert(onPlat.Value, typeof(T), null, null);
 				}
 			}

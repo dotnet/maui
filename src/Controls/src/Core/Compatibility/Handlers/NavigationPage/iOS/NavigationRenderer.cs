@@ -7,7 +7,7 @@ using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -1680,7 +1680,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (Superview?.Bounds.Height > 0)
 						return Superview.Bounds.Height;
 
-					return (DeviceInfo.Idiom == DeviceIdiom.Phone && DeviceDisplay.MainDisplayInfo.Orientation.IsLandscape()) ? 32 : 44;
+					return (DeviceInfo.Current.Idiom == DeviceIdiom.Phone && DeviceDisplay.Current.MainDisplayInfo.Orientation.IsLandscape()) ? 32 : 44;
 				}
 			}
 

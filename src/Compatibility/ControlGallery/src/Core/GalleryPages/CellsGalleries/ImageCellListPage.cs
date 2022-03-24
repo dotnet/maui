@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			Title = "ImageCell List Gallery - Legacy";
 
-			if (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
+			if (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
 				Padding = new Thickness(0, 0, 0, 60);
 
 			var dataTemplate = new DataTemplate(typeof(ImageCell));
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	{
 		public UrlImageCellListPage()
 		{
-			if (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
+			if (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
 				Padding = new Thickness(0, 0, 0, 60);
 
 			var dataTemplate = new DataTemplate(typeof(ImageCell));

@@ -10,7 +10,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				AutomationId = "ResizeHeaderFooter"
 			});
 
-			if (DeviceInfo.Platform == DevicePlatform.iOS)
+			if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
 			{
 				Items.Add(new MenuItem()
 				{

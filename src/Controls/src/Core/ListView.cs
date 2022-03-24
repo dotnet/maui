@@ -8,7 +8,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -114,10 +114,10 @@ namespace Microsoft.Maui.Controls
 		public ListView([Parameter("CachingStrategy")] ListViewCachingStrategy cachingStrategy) : this()
 		{
 			// Unknown => UnitTest "platform"
-			if (DeviceInfo.Platform == DevicePlatform.Unknown ||
-				DeviceInfo.Platform == DevicePlatform.Android ||
-				DeviceInfo.Platform == DevicePlatform.iOS ||
-				DeviceInfo.Platform == DevicePlatform.macOS)
+			if (DeviceInfo.Current.Platform == DevicePlatform.Unknown ||
+				DeviceInfo.Current.Platform == DevicePlatform.Android ||
+				DeviceInfo.Current.Platform == DevicePlatform.iOS ||
+				DeviceInfo.Current.Platform == DevicePlatform.macOS)
 				CachingStrategy = cachingStrategy;
 		}
 
@@ -419,7 +419,7 @@ namespace Microsoft.Maui.Controls
 			var minimumSize = new Size(40, 40);
 			Size request;
 
-			var scaled = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+			var scaled = DeviceDisplay.Current.MainDisplayInfo.GetScaledScreenSize();
 			double width = Math.Min(scaled.Width, scaled.Height);
 
 			var list = ItemsSource as IList;

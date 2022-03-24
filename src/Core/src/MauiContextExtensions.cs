@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Hosting;
 
 #if WINDOWS

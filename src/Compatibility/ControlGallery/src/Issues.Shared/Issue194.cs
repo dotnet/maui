@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Title = "Page 9"
 			};
 
-			if (DeviceInfo.Platform == DevicePlatform.iOS)
+			if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
 			{
 				// Create an overflow amount of tabs depending on device
 				if (DeviceInfo.Idiom == DeviceIdiom.Tablet)

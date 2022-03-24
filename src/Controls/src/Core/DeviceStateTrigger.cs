@@ -1,4 +1,4 @@
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -32,9 +32,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var device = DevicePlatform.Create(Device);
 			if (device == DevicePlatform.Create("UWP"))
-				SetActive(DeviceInfo.Platform == DevicePlatform.WinUI);
+				SetActive(DeviceInfo.Current.Platform == DevicePlatform.WinUI);
 			else
-				SetActive(DeviceInfo.Platform == device);
+				SetActive(DeviceInfo.Current.Platform == device);
 		}
 	}
 }

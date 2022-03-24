@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
@@ -200,9 +200,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 		static string DefaultFontFamily()
 		{
 			var fontFamily = "";
-			if (DeviceInfo.Platform == DevicePlatform.iOS)
+			if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
 				fontFamily = "Ionicons";
-			else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+			else if (DeviceInfo.Current.Platform == DevicePlatform.WinUI)
 				fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
 			else
 				fontFamily = "fonts/ionicons.ttf#";

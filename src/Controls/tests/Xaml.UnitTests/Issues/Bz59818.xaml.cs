@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(false, false)]
 			public void Bz59818(bool useCompiledXaml, bool xamlDoubleImplicitOpHack)
 			{
-				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
 
 				StaticResourceExtension.XamlDoubleImplicitOperation = xamlDoubleImplicitOpHack;
 

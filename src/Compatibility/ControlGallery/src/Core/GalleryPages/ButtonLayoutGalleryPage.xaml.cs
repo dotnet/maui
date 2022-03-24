@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using AndroidSpecific = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using ButtonImagePosition = Microsoft.Maui.Controls.Button.ButtonContentLayout.ImagePosition;
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			};
 
 			// buttons are transparent on default iOS, so we have to give them something
-			if (DeviceInfo.Platform == DevicePlatform.iOS)
+			if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
 			{
 				if (Visual != VisualMarker.Material)
 				{

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 #if UITEST
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				BackgroundColor = Colors.Aqua,
 				Orientation = ScrollOrientation.Horizontal,
-				HeightRequest = DeviceInfo.Platform == DevicePlatform.WinUI ? 80 : 44,
+				HeightRequest = DeviceInfo.Current.Platform == DevicePlatform.WinUI ? 80 : 44,
 				Content = buttonStack
 			});
 

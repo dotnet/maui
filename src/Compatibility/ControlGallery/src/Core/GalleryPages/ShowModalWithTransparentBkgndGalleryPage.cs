@@ -2,7 +2,7 @@
 using System.Linq;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 				}
 			};
 
-			if (DeviceInfo.Platform == DevicePlatform.iOS)
+			if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
 			{
 				layout.Children.Add(_modalPresentationStylesPicker);
 			}

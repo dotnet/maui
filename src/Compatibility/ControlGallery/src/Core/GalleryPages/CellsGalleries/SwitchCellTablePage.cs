@@ -1,4 +1,4 @@
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			Title = "SwitchCell Table Gallery - Legacy";
 
-			if (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
+			if (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
 				Padding = new Thickness(0, 0, 0, 60);
 
 			var tableSection = new TableSection("Section One") {

@@ -5,7 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -68,8 +69,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='RuntimePlatform']/Docs" />
-		[Obsolete("Use Essentials.DeviceInfo.Platform instead.")]
-		public static string RuntimePlatform => DeviceInfo.Platform.ToString();
+		[Obsolete("Use Essentials.DeviceInfo.Current.Platform instead.")]
+		public static string RuntimePlatform => DeviceInfo.Current.Platform.ToString();
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='FlowDirection']/Docs" />
 		[Obsolete("Use Essentials.AppInfo.RequestedLayoutDirection instead.")]

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -162,11 +162,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+				if (DeviceInfo.Current.Idiom == DeviceIdiom.Phone)
 					return false;
 
 				FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
-				var orientation = DeviceDisplay.MainDisplayInfo.Orientation;
+				var orientation = DeviceDisplay.Current.MainDisplayInfo.Orientation;
 
 				bool isSplitOnLandscape = (behavior == FlyoutLayoutBehavior.SplitOnLandscape || behavior == FlyoutLayoutBehavior.Default) && orientation.IsLandscape();
 				bool isSplitOnPortrait = behavior == FlyoutLayoutBehavior.SplitOnPortrait && orientation.IsPortrait();
@@ -179,11 +179,11 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='ShouldShowToolbarButton']/Docs" />
 		public virtual bool ShouldShowToolbarButton()
 		{
-			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+			if (DeviceInfo.Current.Idiom == DeviceIdiom.Phone)
 				return true;
 
 			FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
-			var orientation = DeviceDisplay.MainDisplayInfo.Orientation;
+			var orientation = DeviceDisplay.Current.MainDisplayInfo.Orientation;
 
 			bool isSplitOnLandscape = (behavior == FlyoutLayoutBehavior.SplitOnLandscape || behavior == FlyoutLayoutBehavior.Default) && orientation.IsLandscape();
 			bool isSplitOnPortrait = behavior == FlyoutLayoutBehavior.SplitOnPortrait && orientation.IsPortrait();
@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Controls
 
 		static object GetDefaultValue(BindableObject bindable)
 		{
-			return DeviceInfo.Platform == DevicePlatform.macOS;
+			return DeviceInfo.Current.Platform == DevicePlatform.macOS;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='.ctor']/Docs" />

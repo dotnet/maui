@@ -5,6 +5,7 @@ using Android.App;
 using Android.Content;
 using Android.Webkit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel;
 using Object = Java.Lang.Object;
 
 namespace Microsoft.Maui.Platform
@@ -84,7 +85,7 @@ namespace Microsoft.Maui.Platform
 			_activity = thisActivity as Activity;
 
 			if (_activity == null)
-				_activity = Essentials.Platform.CurrentActivity;
+				_activity = ActivityStateManager.Default.GetCurrentActivity();
 
 			if(_activity == null)
 				_handler?.MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning($"Failed to set the activity of the WebChromeClient, can't show pickers on the Webview");

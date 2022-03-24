@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {

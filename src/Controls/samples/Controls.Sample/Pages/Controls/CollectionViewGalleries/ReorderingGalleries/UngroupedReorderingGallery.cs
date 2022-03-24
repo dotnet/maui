@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.SpacingGalleries;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries
 {
@@ -78,7 +78,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries
 		{
 			generator.GenerateItems(itemsSourceType);
 
-			if (DeviceInfo.Platform == DevicePlatform.WinUI && !(collectionView.ItemsSource is INotifyCollectionChanged))
+			if (DeviceInfo.Current.Platform == DevicePlatform.WinUI && !(collectionView.ItemsSource is INotifyCollectionChanged))
 			{
 				await DisplayAlert("Warning!", "Reordering on UWP/WinUI only works with ObservableCollections!", "OK");
 			}

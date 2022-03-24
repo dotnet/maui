@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -366,7 +366,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestCase("{OnPlatform Android=23, Default=20}", "Foo", 20)]
 		public void OnPlatformExtension(string markup, string platform, int expected)
 		{
-			mockDeviceInfo.Platform = DevicePlatform.Create(platform);
+			mockDeviceInfo.Current.Platform = DevicePlatform.Create(platform);
 
 			var actual = (new MarkupExtensionParser()).ParseExpression(ref markup, new Internals.XamlServiceProvider(null, null)
 			{

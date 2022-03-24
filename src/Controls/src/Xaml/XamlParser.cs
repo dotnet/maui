@@ -32,7 +32,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -295,10 +295,10 @@ namespace Microsoft.Maui.Controls.Xaml
 
 				try
 				{
-					if (targetPlatform != DeviceInfo.Platform.ToString())
+					if (targetPlatform != DeviceInfo.Current.Platform.ToString())
 					{
 						// Special case for Windows backward compatibility
-						if (targetPlatform == "Windows" && DeviceInfo.Platform == DevicePlatform.WinUI)
+						if (targetPlatform == "Windows" && DeviceInfo.Current.Platform == DevicePlatform.WinUI)
 							continue;
 
 						prefixes.Add(prefix);

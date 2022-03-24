@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -1605,7 +1605,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void EnforcesCachingStrategy(string platform, ListViewCachingStrategy expected)
 		{
 			// we need to do this because otherwise we cant set the caching strategy
-			mockDeviceInfo.Platform = DevicePlatform.Create(platform);
+			mockDeviceInfo.Current.Platform = DevicePlatform.Create(platform);
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement);
 
 			Assert.AreEqual(expected, listView.CachingStrategy);
@@ -1628,7 +1628,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			// we need to do this because otherwise we cant set the caching strategy
-			mockDeviceInfo.Platform = DevicePlatform.Android;
+			mockDeviceInfo.Current.Platform = DevicePlatform.Android;
 
 			var bindable = new ListView(ListViewCachingStrategy.RecycleElement);
 			bindable.ItemTemplate = new DataTemplate(typeof(TextCell))

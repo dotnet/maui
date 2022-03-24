@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Essentials;
+﻿using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			Thickness padding = new Thickness(20);
 			// Padding Adjust for iPad
-			if (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
+			if (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
 				Padding = new Thickness(20, 20, 20, 60);
 
 			Content = new ScrollView

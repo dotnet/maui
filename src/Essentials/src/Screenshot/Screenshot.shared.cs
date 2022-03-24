@@ -15,12 +15,14 @@ namespace Microsoft.Maui.Media
 	public interface IPlatformScreenshot : IScreenshot
 	{
 #if ANDROID
+		Task<IScreenshotResult> CaptureAsync(Android.App.Activity activity);
 		Task<IScreenshotResult> CaptureAsync(Android.Views.View view);
 #elif IOS || MACCATALYST
 		Task<IScreenshotResult> CaptureAsync(UIKit.UIWindow window);
 		Task<IScreenshotResult> CaptureAsync(UIKit.UIView view);
-		Task<IScreenshotResult> CaptureAsync(CoreAnimation.CALayer layer, bool skipChildren);
+		//Task<IScreenshotResult> CaptureAsync(CoreAnimation.CALayer layer, bool skipChildren);
 #elif WINDOWS
+		Task<IScreenshotResult> CaptureAsync(UI.Xaml.Window window);
 		Task<IScreenshotResult> CaptureAsync(UI.Xaml.UIElement element);
 #endif
 	}
@@ -57,44 +59,41 @@ namespace Microsoft.Maui.Media
 
 	public static class ScreenshotExtensions
 	{
+		static IPlatformScreenshot AsPlatform(this IScreenshot screenshot)
+		{
+			if (screenshot is not IPlatformScreenshot platform)
+				throw new PlatformNotSupportedException("This implementation of IScreenshot does not implement IPlatformScreenshot.");
+
+			return platform;
+		}
+
 #if ANDROID
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Android.Views.View view)
-		{
-			if (screenshot is not IPlatformScreenshot platform)
-				throw new PlatformNotSupportedException("This implementation of IScreenshot does not implement IPlatformScreenshot.");
 
-			return platform.CaptureAsync(view);
-		}
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Android.App.Activity activity) =>
+			screenshot.AsPlatform().CaptureAsync(activity);
+
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Android.Views.View view) =>
+			screenshot.AsPlatform().CaptureAsync(view);
+
 #elif IOS || MACCATALYST
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UIKit.UIWindow window)
-		{
-			if (screenshot is not IPlatformScreenshot platform)
-				throw new PlatformNotSupportedException("This implementation of IScreenshot does not implement IPlatformScreenshot.");
 
-			return platform.CaptureAsync(window);
-		}
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UIKit.UIView view)
-		{
-			if (screenshot is not IPlatformScreenshot platform)
-				throw new PlatformNotSupportedException("This implementation of IScreenshot does not implement IPlatformScreenshot.");
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UIKit.UIWindow window) =>
+			screenshot.AsPlatform().CaptureAsync(window);
 
-			return platform.CaptureAsync(view);
-		}
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, CoreAnimation.CALayer layer, bool skipChildren)
-		{
-			if (screenshot is not IPlatformScreenshot platform)
-				throw new PlatformNotSupportedException("This implementation of IScreenshot does not implement IPlatformScreenshot.");
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UIKit.UIView view) =>
+			screenshot.AsPlatform().CaptureAsync(view);
 
-			return platform.CaptureAsync(layer, skipChildren);
-		}
+		//public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, CoreAnimation.CALayer layer, bool skipChildren) =>
+		//	screenshot.AsPlatform().CaptureAsync(layer, skipChildren);
+
 #elif WINDOWS
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UI.Xaml.UIElement element)
-		{
-			if (screenshot is not IPlatformScreenshot platform)
-				throw new PlatformNotSupportedException("This implementation of IScreenshot does not implement IPlatformScreenshot.");
 
-			return platform.CaptureAsync(element);
-		}
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UI.Xaml.Window window) =>
+			screenshot.AsPlatform().CaptureAsync(window);
+
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UI.Xaml.UIElement element) =>
+			screenshot.AsPlatform().CaptureAsync(element);
+
 #endif
 	}
 

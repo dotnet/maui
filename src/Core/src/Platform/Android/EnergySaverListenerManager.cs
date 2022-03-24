@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Internal;
 
 namespace Microsoft.Maui.Platform
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 
 		public EnergySaverListenerManager()
 		{
-			Battery.EnergySaverStatusChanged += OnEnergySaverStatusChanged;
+			Battery.Default.EnergySaverStatusChanged += OnEnergySaverStatusChanged;
 		}
 
 		private void OnEnergySaverStatusChanged(object? sender, EnergySaverStatusChangedEventArgs e)
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 				throw new ObjectDisposedException(null);
 
 			_listeners.Add(listener);
-			listener.OnStatusUpdated(Battery.EnergySaverStatus == EnergySaverStatus.On);
+			listener.OnStatusUpdated(Battery.Default.EnergySaverStatus == EnergySaverStatus.On);
 		}
 
 		public void Remove(IEnergySaverListener listener)
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Platform
 			{
 				if (disposing)
 				{
-					Battery.EnergySaverStatusChanged -= OnEnergySaverStatusChanged;
+					Battery.Default.EnergySaverStatusChanged -= OnEnergySaverStatusChanged;
 					_listeners.Clear();
 				}
 

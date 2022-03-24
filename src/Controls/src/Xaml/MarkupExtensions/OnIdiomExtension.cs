@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -102,15 +102,16 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		object GetValue()
 		{
-			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+			var idiom = DeviceInfo.Current.Idiom;
+			if (idiom == DeviceIdiom.Phone)
 				return Phone ?? Default;
-			if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
+			if (idiom == DeviceIdiom.Tablet)
 				return Tablet ?? Default;
-			if (DeviceInfo.Idiom == DeviceIdiom.Desktop)
+			if (idiom == DeviceIdiom.Desktop)
 				return Desktop ?? Default;
-			if (DeviceInfo.Idiom == DeviceIdiom.TV)
+			if (idiom == DeviceIdiom.TV)
 				return TV ?? Default;
-			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
+			if (idiom == DeviceIdiom.Watch)
 				return Watch ?? Default;
 			return Default;
 		}

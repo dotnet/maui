@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -41,11 +41,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true)]
 			public void BoolToVisibility(bool useCompiledXaml)
 			{
-				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
 				var layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(true, layout.label0.IsVisible);
 
-				mockDeviceInfo.Platform = DevicePlatform.Android;
+				mockDeviceInfo.Current.Platform = DevicePlatform.Android;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(false, layout.label0.IsVisible);
 			}
@@ -54,11 +54,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true)]
 			public void DoubleToWidth(bool useCompiledXaml)
 			{
-				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
 				var layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(20, layout.label0.WidthRequest);
 
-				mockDeviceInfo.Platform = DevicePlatform.Android;
+				mockDeviceInfo.Current.Platform = DevicePlatform.Android;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(30, layout.label0.WidthRequest);
 			}
@@ -67,11 +67,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true)]
 			public void StringToText(bool useCompiledXaml)
 			{
-				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
 				var layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual("Foo", layout.label0.Text);
 
-				mockDeviceInfo.Platform = DevicePlatform.Android;
+				mockDeviceInfo.Current.Platform = DevicePlatform.Android;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual("Bar", layout.label0.Text);
 			}
@@ -83,9 +83,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var layout = new OnPlatform(useCompiledXaml);
 				var onplat = layout.Resources["fontAttributes"] as OnPlatform<FontAttributes>;
 				Assert.NotNull(onplat);
-				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
 				Assert.AreEqual(FontAttributes.Bold, (FontAttributes)onplat);
-				mockDeviceInfo.Platform = DevicePlatform.Android;
+				mockDeviceInfo.Current.Platform = DevicePlatform.Android;
 				Assert.AreEqual(FontAttributes.Italic, (FontAttributes)onplat);
 
 			}
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true)]
 			public void OnPlatformAsResourceAreApplied(bool useCompiledXaml)
 			{
-				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
 				var layout = new OnPlatform(useCompiledXaml);
 				var onidiom = layout.Resources["fontSize"] as OnIdiom<double>;
 				Assert.NotNull(onidiom);
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual(20, onidiom.Phone);
 				Assert.AreEqual(FontAttributes.Bold, layout.label0.FontAttributes);
 
-				mockDeviceInfo.Platform = DevicePlatform.Android;
+				mockDeviceInfo.Current.Platform = DevicePlatform.Android;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(FontAttributes.Italic, layout.label0.FontAttributes);
 			}
@@ -111,16 +111,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true)]
 			public void OnPlatform2Syntax(bool useCompiledXaml)
 			{
-				mockDeviceInfo.Platform = DevicePlatform.Android;
+				mockDeviceInfo.Current.Platform = DevicePlatform.Android;
 				var layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(42, layout.label0.HeightRequest);
 
-				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(21, layout.label0.HeightRequest);
 
 
-				mockDeviceInfo.Platform = DevicePlatform.Create("FooBar");
+				mockDeviceInfo.Current.Platform = DevicePlatform.Create("FooBar");
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(42, layout.label0.HeightRequest);
 			}
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true)]
 			public void OnPlatformDefault(bool useCompiledXaml)
 			{
-				mockDeviceInfo.Platform = DevicePlatform.Create("\ud83d\ude80");
+				mockDeviceInfo.Current.Platform = DevicePlatform.Create("\ud83d\ude80");
 				var layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(63, layout.label0.HeightRequest);
 			}

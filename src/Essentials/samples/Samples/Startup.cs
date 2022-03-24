@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 

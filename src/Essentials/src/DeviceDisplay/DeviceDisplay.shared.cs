@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Devices
 		public DisplayInfo DisplayInfo { get; }
 	}
 
-	public static class DeviceDisplay
+	public static partial class DeviceDisplay
 	{
 #if WINDOWS
 		internal const float BaseLogicalDpi = 96.0f;

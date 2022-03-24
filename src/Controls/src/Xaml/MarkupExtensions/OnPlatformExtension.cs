@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -113,54 +113,54 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		bool TryGetValueForPlatform(out object value)
 		{
-			if (DeviceInfo.Platform == DevicePlatform.Android && Android != s_notset)
+			if (DeviceInfo.Current.Platform == DevicePlatform.Android && Android != s_notset)
 			{
 				value = Android;
 				return true;
 			}
-			if (DeviceInfo.Platform == DevicePlatform.Create("GTK") && GTK != s_notset)
+			if (DeviceInfo.Current.Platform == DevicePlatform.Create("GTK") && GTK != s_notset)
 			{
 				value = GTK;
 				return true;
 			}
-			if (DeviceInfo.Platform == DevicePlatform.iOS && iOS != s_notset)
+			if (DeviceInfo.Current.Platform == DevicePlatform.iOS && iOS != s_notset)
 			{
 				value = iOS;
 				return true;
 			}
-			if (DeviceInfo.Platform == DevicePlatform.macOS && macOS != s_notset)
+			if (DeviceInfo.Current.Platform == DevicePlatform.macOS && macOS != s_notset)
 			{
 				value = macOS;
 				return true;
 			}
-			if (DeviceInfo.Platform == DevicePlatform.MacCatalyst && MacCatalyst != s_notset)
+			if (DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && MacCatalyst != s_notset)
 			{
 				value = MacCatalyst;
 				return true;
 			}
-			if (DeviceInfo.Platform == DevicePlatform.Tizen && Tizen != s_notset)
+			if (DeviceInfo.Current.Platform == DevicePlatform.Tizen && Tizen != s_notset)
 			{
 				value = Tizen;
 				return true;
 			}
-			if (DeviceInfo.Platform == DevicePlatform.WinUI && WinUI != s_notset)
+			if (DeviceInfo.Current.Platform == DevicePlatform.WinUI && WinUI != s_notset)
 			{
 				value = WinUI;
 				return true;
 			}
 #pragma warning disable CS0618 // Type or member is obsolete
-			if (DeviceInfo.Platform == DevicePlatform.WinUI && UWP != s_notset)
+			if (DeviceInfo.Current.Platform == DevicePlatform.WinUI && UWP != s_notset)
 			{
 				value = UWP;
 				return true;
 			}
-			if (DeviceInfo.Platform == DevicePlatform.Create("UWP") && UWP != s_notset)
+			if (DeviceInfo.Current.Platform == DevicePlatform.Create("UWP") && UWP != s_notset)
 			{
 				value = UWP;
 				return true;
 			}
 #pragma warning restore CS0618 // Type or member is obsolete
-			if (DeviceInfo.Platform == DevicePlatform.Create("WPF") && WPF != s_notset)
+			if (DeviceInfo.Current.Platform == DevicePlatform.Create("WPF") && WPF != s_notset)
 			{
 				value = WPF;
 				return true;

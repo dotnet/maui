@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
@@ -70,11 +70,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public void Platform_Is_Correct()
 		{
 #if WINDOWS_UWP || WINDOWS
-			Assert.Equal(DevicePlatform.WinUI, DeviceInfo.Platform);
+			Assert.Equal(DevicePlatform.WinUI, DeviceInfo.Current.Platform);
 #elif __IOS__
-			Assert.Equal(DevicePlatform.iOS, DeviceInfo.Platform);
+			Assert.Equal(DevicePlatform.iOS, DeviceInfo.Current.Platform);
 #elif __ANDROID__
-			Assert.Equal(DevicePlatform.Android, DeviceInfo.Platform);
+			Assert.Equal(DevicePlatform.Android, DeviceInfo.Current.Platform);
 #else
 			throw new PlatformNotSupportedException();
 #endif

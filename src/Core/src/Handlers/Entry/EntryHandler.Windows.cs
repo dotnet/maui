@@ -1,17 +1,15 @@
 ﻿#nullable enable
-using System;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Windows.System;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, TextBox>
 	{
-		static readonly bool s_shouldBeDelayed = DeviceInfo.Idiom != DeviceIdiom.Desktop;
+		static readonly bool s_shouldBeDelayed = DeviceInfo.Current.Idiom != DeviceIdiom.Desktop;
 
 		protected override TextBox CreatePlatformView() =>
 			new MauiPasswordTextBox()

@@ -2,7 +2,7 @@
 using Android.App;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
-			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 		}
 
 		protected override void DisconnectHandler(MauiDatePicker platformView)
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Handlers
 				_dialog = null;
 			}
 
-			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 
 			base.DisconnectHandler(platformView);
 		}

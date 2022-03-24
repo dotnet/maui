@@ -25,7 +25,14 @@ namespace Microsoft.Maui.Media
 			if (WindowManager?.DefaultDisplay?.Flags.HasFlag(DisplayFlags.Secure) == true)
 				throw new UnauthorizedAccessException("Unable to take a screenshot of a secure window.");
 
-			var view = ActivityStateManager.Default.GetCurrentActivity(true)?.Window?.DecorView?.RootView;
+			var activity = ActivityStateManager.Default.GetCurrentActivity(true);
+
+			return CaptureAsync(activity);
+		}
+
+		public Task<IScreenshotResult> CaptureAsync(Activity activity)
+		{
+			var view = activity?.Window?.DecorView?.RootView;
 			if (view == null)
 				throw new InvalidOperationException("Unable to find the main window.");
 

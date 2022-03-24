@@ -2,8 +2,9 @@ using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -593,7 +594,7 @@ namespace Microsoft.Maui.Controls
 			var content = Content;
 			if (content is View)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<RadioButton>()?.LogWarning("Warning - {RuntimePlatform} does not support View as the {PropertyName} property of RadioButton; the return value of the ToString() method will be displayed instead.", DeviceInfo.Platform, ContentProperty.PropertyName);
+				Application.Current?.FindMauiContext()?.CreateLogger<RadioButton>()?.LogWarning("Warning - {RuntimePlatform} does not support View as the {PropertyName} property of RadioButton; the return value of the ToString() method will be displayed instead.", DeviceInfo.Current.Platform, ContentProperty.PropertyName);
 			}
 
 			return content?.ToString();

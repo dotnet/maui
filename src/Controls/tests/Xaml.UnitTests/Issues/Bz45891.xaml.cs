@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(false)]
 			public void LookForInheritanceOnOpImplicit(bool useCompiledXaml)
 			{
-				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
 				var p = new Bz45891(useCompiledXaml);
 				Assert.AreEqual("Foo", p.List.First());
 			}

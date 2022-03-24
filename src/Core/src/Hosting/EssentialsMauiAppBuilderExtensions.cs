@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Hosting
 {
+#if PLATFORM
+	using Platform = ApplicationModel.Platform;
+#endif
+
 	public interface IEssentialsBuilder
 	{
 		IEssentialsBuilder UseMapServiceToken(string token);
@@ -63,7 +68,7 @@ namespace Microsoft.Maui.Essentials
 				life.AddWindows(windows => windows
 					.OnPlatformMessage((window, args) =>
 					{
-						Platform.NewWindowProc(args.Hwnd, args.MessageId, args.WParam, args.LParam);
+						Platform.OnWindowMessage(args.Hwnd, args.MessageId, args.WParam, args.LParam);
 					})
 					.OnActivated((window, args) =>
 					{
@@ -133,7 +138,7 @@ namespace Microsoft.Maui.Essentials
 				Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
 #endif
 
-				AppActions.OnAppAction += HandleOnAppAction;
+				AppActions.Current.AppActionActivated += HandleOnAppAction;
 
 				if (_essentialsBuilder.AppActions is not null)
 				{
@@ -141,14 +146,14 @@ namespace Microsoft.Maui.Essentials
 				}
 
 				if (_essentialsBuilder.TrackVersions)
-					VersionTracking.Track();
+					VersionTracking.Default.Track();
 			}
 
 			private static async void SetAppActions(IServiceProvider services, List<AppAction> appActions)
 			{
 				try
 				{
-					await AppActions.SetAsync(appActions);
+					await AppActions.Current.SetAsync(appActions);
 				}
 				catch (FeatureNotSupportedException ex)
 				{

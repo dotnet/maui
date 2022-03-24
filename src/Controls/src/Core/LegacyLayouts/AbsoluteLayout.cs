@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (widthIsProportional)
 			{
-				result.Width = DeviceDisplay.MainDisplayInfo.DisplayRound(region.Width * bounds.Width);
+				result.Width = DeviceDisplay.Current.MainDisplayInfo.DisplayRound(region.Width * bounds.Width);
 			}
 			else if (bounds.Width != AutoSize)
 			{
@@ -242,7 +242,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (heightIsProportional)
 			{
-				result.Height = DeviceDisplay.MainDisplayInfo.DisplayRound(region.Height * bounds.Height);
+				result.Height = DeviceDisplay.Current.MainDisplayInfo.DisplayRound(region.Height * bounds.Height);
 			}
 			else if (bounds.Height != AutoSize)
 			{

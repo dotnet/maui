@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public AppTheme PlatformAppTheme => AppInfo.RequestedTheme;
+		public AppTheme PlatformAppTheme => AppInfo.Current.RequestedTheme;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
 		public AppTheme RequestedTheme => UserAppTheme != AppTheme.Unspecified ? UserAppTheme : PlatformAppTheme;

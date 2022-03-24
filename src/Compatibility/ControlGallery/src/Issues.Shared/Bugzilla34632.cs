@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 #if UITEST
 using Xamarin.UITest;
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		protected override void Init()
 		{
-			if (DeviceInfo.Platform == DevicePlatform.UWP)
+			if (DeviceInfo.Current.Platform == DevicePlatform.UWP)
 				FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split;
 			else
 				FlyoutLayoutBehavior = FlyoutLayoutBehavior.SplitOnLandscape;

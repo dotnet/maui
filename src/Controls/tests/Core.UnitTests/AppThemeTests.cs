@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 

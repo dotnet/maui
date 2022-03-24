@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	{
 		public StackLayoutGallery()
 		{
-			if (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
+			if (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
 				Padding = new Thickness(0, 0, 0, 60);
 
 			var stack = new StackLayout { Orientation = StackOrientation.Vertical };

@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Debug.WriteLine("Date changed");
 			};
 
-			Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(10, 20, 10, 5) : new Thickness(10, 0, 10, 5);
+			Padding = DeviceInfo.Current.Platform == DevicePlatform.iOS ? new Thickness(10, 20, 10, 5) : new Thickness(10, 0, 10, 5);
 
 			layout = new AbsoluteLayout
 			{

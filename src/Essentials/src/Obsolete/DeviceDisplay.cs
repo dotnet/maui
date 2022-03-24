@@ -1,15 +1,13 @@
 ﻿#nullable enable
 using System;
-using Microsoft.Maui.Devices;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceDisplay']/Docs" />
-	public static class DeviceDisplay
+	public static partial class DeviceDisplay
 	{
-		static IDeviceDisplay Current => Devices.DeviceDisplay.Current;
-
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='KeepScreenOn']/Docs" />
+		[Obsolete($"Use {nameof(DeviceDisplay)}.{nameof(Current)} instead.", true)]
 		public static bool KeepScreenOn
 		{
 			get => Current.KeepScreenOn;
@@ -17,9 +15,11 @@ namespace Microsoft.Maui.Essentials
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='MainDisplayInfo']/Docs" />
+		[Obsolete($"Use {nameof(DeviceDisplay)}.{nameof(Current)} instead.", true)]
 		public static DisplayInfo MainDisplayInfo => Current.MainDisplayInfo;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='MainDisplayInfoChanged']/Docs" />
+		[Obsolete($"Use {nameof(DeviceDisplay)}.{nameof(Current)} instead.", true)]
 		public static event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged
 		{
 			add => Current.MainDisplayInfoChanged += value;
