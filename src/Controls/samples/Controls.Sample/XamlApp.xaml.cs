@@ -34,7 +34,7 @@ namespace Maui.Controls.Sample
 		{
 			try
 			{
-				using var stream = await FileSystem.Default.OpenAppPackageFileAsync("RawAsset.txt");
+				using var stream = await FileSystem.Current.OpenAppPackageFileAsync("RawAsset.txt");
 				using var reader = new StreamReader(stream);
 
 				Debug.WriteLine($"The raw Maui asset contents: '{reader.ReadToEnd().Trim()}'");

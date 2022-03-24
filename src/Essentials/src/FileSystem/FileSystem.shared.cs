@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Storage
 		Task<bool> AppPackageFileExistsAsync(string filename);
 	}
 
-	public static class FileSystem
+	public static partial class FileSystem
 	{
 		static IFileSystem? currentImplementation;
 
