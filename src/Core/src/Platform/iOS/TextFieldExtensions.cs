@@ -35,9 +35,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
 		{
-			bool isLtr;
+			bool isLtr = true;
 
-			if (textAlignment is IView v && v.FlowDirection == FlowDirection.LeftToRight)
+			if (textAlignment is IView v && v.GetEffectiveFlowDirection() == FlowDirection.LeftToRight)
 				isLtr = true;
 			else
 				isLtr = false;
