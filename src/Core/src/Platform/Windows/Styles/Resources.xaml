@@ -6,7 +6,6 @@
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="MauiComboBoxStyle.xaml" />
-        <ResourceDictionary Source="MauiRadioButtonStyle.xaml" />
         <ResourceDictionary Source="MauiSliderStyle.xaml" />
         <ResourceDictionary Source="MauiStepperStyle.xaml" />
         <ResourceDictionary Source="WindowRootViewStyle.xaml" />
