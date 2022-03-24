@@ -1,3 +1,4 @@
+using Microsoft.Maui.Storage;
 
 namespace Samples.ViewModel
 {

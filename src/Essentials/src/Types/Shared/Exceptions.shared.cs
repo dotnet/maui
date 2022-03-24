@@ -15,7 +15,7 @@ namespace Microsoft.Maui.ApplicationModel
 	}
 
 	/// <include file="../../../docs/Microsoft.Maui.Essentials/NotImplementedInReferenceAssemblyException.xml" path="Type[@FullName='Microsoft.Maui.Essentials.NotImplementedInReferenceAssemblyException']/Docs" />
-	public class NotImplementedInReferenceAssemblyException : NotImplementedException
+	class NotImplementedInReferenceAssemblyException : NotImplementedException
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Essentials/NotImplementedInReferenceAssemblyException.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public NotImplementedInReferenceAssemblyException()

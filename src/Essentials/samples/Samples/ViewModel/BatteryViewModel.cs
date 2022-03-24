@@ -1,3 +1,4 @@
+using Microsoft.Maui.Devices;
 
 namespace Samples.ViewModel
 {

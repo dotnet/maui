@@ -1,3 +1,4 @@
+using Microsoft.Maui.ApplicationModel.Communication;
 
 namespace Samples.ViewModel
 {

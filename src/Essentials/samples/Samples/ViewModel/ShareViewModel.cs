@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Samples.Helpers;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 
 namespace Samples.ViewModel
 {
