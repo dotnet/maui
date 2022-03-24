@@ -7,7 +7,6 @@
       "src\\BlazorWebView\\src\\Maui\\Microsoft.AspNetCore.Components.WebView.Maui.csproj",
       "src\\BlazorWebView\\tests\\MauiDeviceTests\\MauiBlazorWebView.DeviceTests.csproj",
       "src\\Compatibility\\Android.AppLinks\\src\\Compatibility.Android.AppLinks.csproj",
-      "src\\Compatibility\\Android.FormsViewGroup\\src\\Compatibility.Android.FormsViewGroup.csproj",
       "src\\Compatibility\\ControlGallery\\src\\Android\\Compatibility.ControlGallery.Android.csproj",
       "src\\Compatibility\\ControlGallery\\src\\Core\\Compatibility.ControlGallery.Core.csproj",
       "src\\Compatibility\\ControlGallery\\src\\Issues.Shared\\Compatibility.ControlGallery.Issues.Shared.shproj",

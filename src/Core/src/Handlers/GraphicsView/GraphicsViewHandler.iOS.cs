@@ -1,12 +1,13 @@
-﻿using Microsoft.Maui.Graphics.Platform;
+﻿using  Microsoft.Maui.Platform;
+using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, PlatformGraphicsView>
+	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, PlatformTouchGraphicsView>
 	{
-		protected override PlatformGraphicsView CreatePlatformView()
+		protected override PlatformTouchGraphicsView CreatePlatformView()
 		{
-			return new PlatformGraphicsView();
+			return new PlatformTouchGraphicsView();
 		}
 
 		public static void MapDrawable(IGraphicsViewHandler handler, IGraphicsView graphicsView)
