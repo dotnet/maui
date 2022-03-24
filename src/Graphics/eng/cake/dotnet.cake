@@ -26,14 +26,27 @@ Task("dotnet-local-workloads")
         if (!localDotnet) 
             return;
         
-        DotNetCoreBuild("./build/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+        if(!string.IsNullOrEmpty(dotnetInstallDirectory))
         {
-            MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger($"{logDirectory}/dotnet-workloads-{configuration}.binlog")
-                .SetConfiguration(configuration)
-                .WithProperty("InstallDotNet", "false")
-                .WithProperty("DotNetDirectory", dotnetInstallDirectory+"/")
-        });
+            DotNetCoreBuild("./build/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+            {
+                MSBuildSettings = new DotNetCoreMSBuildSettings()
+                    .EnableBinaryLogger($"{logDirectory}/dotnet-workloads-{configuration}.binlog")
+                    .SetConfiguration(configuration)
+                    .WithProperty("InstallDotNet", installDotNet)
+                    .WithProperty("DotNetDirectory", dotnetInstallDirectory+"/")
+            });
+        }
+        else
+        {
+            DotNetCoreBuild("./build/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+            {
+                MSBuildSettings = new DotNetCoreMSBuildSettings()
+                    .EnableBinaryLogger($"{logDirectory}/dotnet-workloads-{configuration}.binlog")
+                    .SetConfiguration(configuration)
+                    .WithProperty("InstallDotNet", installDotNet)
+            });
+        }
     });
 
 

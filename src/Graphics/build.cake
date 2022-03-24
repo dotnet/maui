@@ -47,6 +47,8 @@ var dotnetInstallDirectory = EnvironmentVariable("DOTNET_ROOT");
 var localDotnet = GetBuildVariable("workloads",  (target == "VS-WINUI") ? "global" : "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 
+var installDotNet = GetBuildVariable("installdotnet", "true");;
+
 DirectoryPath artifactStagingDirectory = MakeAbsolute(Directory(EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", "artifacts")));
 DirectoryPath logDirectory = MakeAbsolute(Directory(EnvironmentVariable("LogDirectory", $"{artifactStagingDirectory}/logs")));
 DirectoryPath testResultsDirectory = MakeAbsolute(Directory(EnvironmentVariable("TestResultsDirectory", $"{artifactStagingDirectory}/test-results")));
