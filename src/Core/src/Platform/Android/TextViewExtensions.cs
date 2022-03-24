@@ -149,13 +149,14 @@ namespace Microsoft.Maui.Platform
 				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
 			
-		internal static void SetLineBreakMode(this TextView textView, ILineBreakMode breakMode, int maxLines = 0)
+		internal static void SetLineBreakMode(this TextView textView, ILineBreakMode breakMode, int? maxLines = null)
 		{
-			var lineBreakMode = label.LineBreakMode;
+			var lineBreakMode = breakMode.LineBreakMode;
 
-			int maxLines = label.MaxLines;
+			if (breakMode is ILabel label)
+				maxLines = label.MaxLines;
 
-			if (maxLines <= 0)
+			if (!maxLines.HasValue || maxLines <= 0)
 				maxLines = int.MaxValue;
 
 			bool singleLine = false;
@@ -191,7 +192,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			textView.SetSingleLine(singleLine);
-			textView.SetMaxLines(maxLines);
+			textView.SetMaxLines(maxLines.Value);
 		}
 	}
 }
