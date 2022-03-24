@@ -18,21 +18,27 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.PlatformArrange(rect);
 
-			var _label = VirtualView;
-
-			if (_label == null)
+			if (VirtualView == null)
 				return;
 
 			SizeF fitSize;
 			double fitHeight;
 			var bounds = PlatformView.Bounds;
+			var offsetFromParent = rect.Y;
 
-			switch (_label.VerticalTextAlignment)
+			// VerticalTextAlignment currently doesn't work
+			// if the label is inside a container
+			// Because the wrapper view resets the frame on the
+			// wrapped view
+			if (NeedsContainer)
+				offsetFromParent = 0;
+
+			switch (VirtualView.VerticalTextAlignment)
 			{
 				case Maui.TextAlignment.Start:
 					fitSize = PlatformView.SizeThatFits(rect.Size.ToCGSize());
 					fitHeight = Math.Min(bounds.Height, fitSize.Height);
-					var startFrame = new RectangleF(rect.X, rect.Y, rect.Width, fitHeight);
+					var startFrame = new RectangleF(rect.X, offsetFromParent, rect.Width, fitHeight);
 
 					if (startFrame != RectangleF.Empty)
 						PlatformView.Frame = startFrame;
@@ -46,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 					fitSize = PlatformView.SizeThatFits(rect.Size.ToCGSize());
 					fitHeight = Math.Min(bounds.Height, fitSize.Height);
 
-					var yOffset = rect.Y + rect.Height - fitHeight;
+					var yOffset = offsetFromParent + rect.Height - fitHeight;
 					var endFrame = new RectangleF(rect.X, yOffset, rect.Width, fitHeight);
 
 					if (endFrame != RectangleF.Empty)
