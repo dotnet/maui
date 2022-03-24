@@ -36,17 +36,18 @@ For example, the "preview.14" branch:
 
 Windows:
 
-```
+```bat
 iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
 .\maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
 ```
 
 MacOS:
 
-```
-curl -O https://aka.ms/dotnet/maui/maui-install.ps1
+```bash
+curl -O -L https://aka.ms/dotnet/maui/maui-install.ps1
 chmod +x maui-install.ps1
-.\maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
+sudo pwsh
+./maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
 ```
 
 
@@ -56,17 +57,18 @@ Or, the "main" branch:
 
 Windows:
 
-```
+```bat
 iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
 .\maui-install.ps1 -b 'main' -v '6.0.300-preview'
 ``` 
 
 MacOS:
 
-```
-curl -O https://aka.ms/dotnet/maui/maui-install.ps1
+```bash
+curl -O -L https://aka.ms/dotnet/maui/maui-install.ps1
 chmod +x maui-install.ps1
-.\maui-install.ps1 -b 'main' -v '6.0.300-preview'
+sudo pwsh
+./maui-install.ps1 -b 'main' -v '6.0.300-preview'
 ```
 
 ### iOS / MacCatalyst
@@ -91,6 +93,8 @@ dotnet cake --target=VS-NET6 --workloads=global
 
 ### Compile using a local `bin\dotnet`
 
+#### Windows
+
 You can run a `Cake` target to bootstrap .NET 6 in `bin\dotnet` and launch Visual Studio:
 
 ```dotnetcli
@@ -99,7 +103,6 @@ dotnet cake --target=VS-NET6
 ```
 
 _NOTES:_
-- _VS Mac is not yet supported._
 - _If the IDE doesn't show any Android devices try unloading and reloading the `Sample.Droid-net6` project._
 
 You can also run commands individually:
@@ -127,6 +130,26 @@ Try out a "single project", you will need the `-f` switch to choose the platform
 ```dotnetcli
 .\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-android
 .\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-ios
+```
+
+#### MacOS
+
+> 💡 _VS Mac is not yet supported._
+
+```bash
+# install local tools required to build (cake, pwsh, etc..)
+dotnet tool restore
+
+# build MAUI
+dotnet build Microsoft.Maui-mac.slnf
+```
+
+Try out a "single project", you will need the `-f` switch to choose the platform:
+
+```bash
+dotnet build src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-ios
+dotnet build src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-maccatalyst
+dotnet build src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-android
 ```
 
 ### Blazor Desktop
