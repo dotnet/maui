@@ -100,7 +100,7 @@
   <Target Name="_InstallDotNet"
       Inputs="$(_Inputs)"
       Outputs="$(DotNetDirectory).stamp">
-    <RemoveDir Directories="$(DotNetDirectory)" />
+    <!-- <RemoveDir Directories="$(DotNetDirectory)" /> -->
     <Exec Command="$(DotNetInstallCommand)" />
     <Touch Files="$(DotNetDirectory).stamp" AlwaysCreate="true" />
   </Target>
