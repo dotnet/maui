@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			JSComponentConfigurationStore jsComponents,
 			string hostPageRelativePath,
 			Action<UrlLoadingEventArgs> urlLoading)
-			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 
 		{
 #if WEBVIEW2_WINFORMS

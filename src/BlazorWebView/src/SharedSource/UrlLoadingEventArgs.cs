@@ -35,6 +35,10 @@ namespace Microsoft.AspNetCore.Components.WebView
 		/// The policy to use when loading links from the webview.
 		/// Defaults to <see cref="UrlLoadingStrategy.OpenExternally"/> unless <see cref="Url"/> has a host
 		/// matching the app origin, in which case the default becomes <see cref="UrlLoadingStrategy.OpenInWebView"/>.
+		/// <para>
+		/// This value should not be changed to <see cref="UrlLoadingStrategy.OpenInWebView"/> for external links
+		/// unless you can ensure they are fully trusted.
+		/// </para>
 		/// </summary>
 		public UrlLoadingStrategy UrlLoadingStrategy { get; set; }
 	}
