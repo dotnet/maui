@@ -1,6 +1,9 @@
 {
+  "sdk": {
+    "version": "6.0.300-preview"
+  },
   "tools": {
-    "dotnet": "6.0.100-rc.2.21478.25"
+    "dotnet": "6.0.300-preview"
   },
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.23",
