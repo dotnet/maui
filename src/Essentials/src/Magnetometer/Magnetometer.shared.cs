@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Numerics;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public Vector3 MagneticField { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/MagnetometerData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
-		public override bool Equals(object obj) =>
+		public override bool Equals(object? obj) =>
 			(obj is MagnetometerData data) && Equals(data);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/MagnetometerData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />

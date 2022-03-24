@@ -1,3 +1,4 @@
+using Microsoft.Maui.ApplicationModel;
 using Windows.System.Power;
 
 namespace Microsoft.Maui.Devices

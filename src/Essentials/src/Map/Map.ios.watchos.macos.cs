@@ -66,7 +66,7 @@ namespace Microsoft.Maui.ApplicationModel
 				var uri = $"http://maps.apple.com/?q={placemark.GetEscapedAddress()}";
 				var nsurl = NSUrl.FromString(uri);
 
-				await Launcher.OpenAsync(nsurl);
+				await Launcher.Default.OpenAsync(nsurl);
 #else
 				await OpenPlacemark(new MKPlacemark(default, address), options);
 #endif

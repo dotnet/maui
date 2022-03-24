@@ -1,16 +1,15 @@
 ﻿#nullable enable
+using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Authentication;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Authentication
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppleSignInAuthenticator.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppleSignInAuthenticator']/Docs" />
-	public static class AppleSignInAuthenticator
+	public static partial class AppleSignInAuthenticator
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppleSignInAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync']/Docs" />
+		[Obsolete($"Use {nameof(AppleSignInAuthenticator)}.{nameof(Default)} instead.", true)]
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticatorOptions? options = null)
-			=> Current.AuthenticateAsync(options ?? new AppleSignInAuthenticatorOptions());
-
-		static IAppleSignInAuthenticator Current => Authentication.AppleSignInAuthenticator.Default;
+			=> Default.AuthenticateAsync(options ?? new AppleSignInAuthenticatorOptions());
 	}
 }

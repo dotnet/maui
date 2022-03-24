@@ -1,14 +1,7 @@
-﻿#if WINDOWS_UWP
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Media;
-#elif WINDOWS
+﻿using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-#endif
 
 namespace Microsoft.Maui.Accessibility
 {
@@ -16,10 +9,10 @@ namespace Microsoft.Maui.Accessibility
 	{
 		public void Announce(string text)
 		{
-			if (Platform.CurrentWindow == null)
+			if (WindowStateManager.Default.GetActiveWindow() is not Window window)
 				return;
 
-			var peer = FindAutomationPeer(Platform.CurrentWindow.Content);
+			var peer = FindAutomationPeer(window.Content);
 
 			// This GUID correlates to the internal messages used by UIA to perform an announce
 			// You can extract it  by using accessibility insights to monitor UIA events

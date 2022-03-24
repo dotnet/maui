@@ -34,7 +34,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		{
 #if !(MACCATALYST || MACOS)
 			// do this first so we can throw as early as possible
-			var parentController = Platform.GetCurrentViewController();
+			var parentController = WindowStateManager.Default.GetCurrentUIViewController(true);
 
 			// create the controller
 			var controller = new MFMailComposeViewController();
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			if (controller.PresentationController != null)
 			{
 				controller.PresentationController.Delegate =
-					new Platform.UIPresentationControllerDelegate(() => tcs.TrySetResult(false));
+					new UIPresentationControllerDelegate(() => tcs.TrySetResult(false));
 			}
 
 			parentController.PresentViewController(controller, true, null);
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		{
 			var url = GetMailToUri(message);
 			var nsurl = NSUrl.FromString(url);
-			return Launcher.OpenAsync(nsurl);
+			return Launcher.Default.OpenAsync(nsurl);
 		}
 	}
 }

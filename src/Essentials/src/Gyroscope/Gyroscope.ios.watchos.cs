@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			MotionManager.GyroUpdateInterval = sensorSpeed.ToPlatform();
-			MotionManager.StartGyroUpdates(NSOperationQueue.CurrentQueue, DataUpdated);
+			MotionManager.StartGyroUpdates(NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), DataUpdated);
 		}
 
 		void DataUpdated(CMGyroData data, NSError error)

@@ -59,7 +59,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public void ShowSettingsUI()
 		{
-			var context = Platform.GetCurrentActivity(false) ?? Application.Context;
+			var context = ActivityStateManager.Default.GetCurrentActivity(false) ?? Application.Context;
 
 			var settingsIntent = new Intent();
 			settingsIntent.SetAction(global::Android.Provider.Settings.ActionApplicationDetailsSettings);

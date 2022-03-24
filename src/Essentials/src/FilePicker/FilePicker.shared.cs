@@ -53,16 +53,15 @@ namespace Microsoft.Maui.Storage
 
 		readonly IDictionary<DevicePlatform, IEnumerable<string>> fileTypes;
 
-		protected FilePickerFileType()
-		{
-		}
+		protected FilePickerFileType() =>
+			fileTypes = new Dictionary<DevicePlatform, IEnumerable<string>>();
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public FilePickerFileType(IDictionary<DevicePlatform, IEnumerable<string>> fileTypes) =>
 			this.fileTypes = fileTypes;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='Value']/Docs" />
-		public IEnumerable<string> Value => GetPlatformFileType(DeviceInfo.Platform);
+		public IEnumerable<string> Value => GetPlatformFileType(DeviceInfo.Current.Platform);
 
 		protected virtual IEnumerable<string> GetPlatformFileType(DevicePlatform platform)
 		{

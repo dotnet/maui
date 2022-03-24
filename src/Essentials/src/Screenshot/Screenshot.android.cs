@@ -7,6 +7,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Views;
 using Java.Nio;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Media
 {
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Media
 			if (WindowManager?.DefaultDisplay?.Flags.HasFlag(DisplayFlags.Secure) == true)
 				throw new UnauthorizedAccessException("Unable to take a screenshot of a secure window.");
 
-			var view = Platform.GetCurrentActivity(true)?.Window?.DecorView?.RootView;
+			var view = ActivityStateManager.Default.GetCurrentActivity(true)?.Window?.DecorView?.RootView;
 			if (view == null)
 				throw new InvalidOperationException("Unable to find the main window.");
 

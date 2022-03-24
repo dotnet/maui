@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			_listener = new AccelerometerListener(this);
+			_listener = new AccelerometerListener(OnChanged);
 
 			var delay = sensorSpeed.ToPlatform();
 			SensorManager!.RegisterListener(_listener, Sensor, delay);

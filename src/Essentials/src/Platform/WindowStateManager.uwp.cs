@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.ApplicationModel
@@ -26,6 +27,48 @@ namespace Microsoft.Maui.ApplicationModel
 
 		internal static void SetDefault(IWindowStateManager? implementation) =>
 			defaultImplementation = implementation;
+	}
+
+	static class WindowStateManagerExtensions
+	{
+		public static Window? GetActiveWindow(this IWindowStateManager manager, bool throwOnNull)
+		{
+			var window = manager.GetActiveWindow();
+			if (throwOnNull && window == null)
+				throw new NullReferenceException("The active Window can not be detected. Ensure that you have called Init in your Application class.");
+
+			return window;
+		}
+
+		public static IntPtr GetActiveWindowHandle(this IWindowStateManager manager, bool throwOnNull)
+		{
+			var window = manager.GetActiveWindow();
+			if (throwOnNull && window == null)
+				throw new NullReferenceException("The active Window can not be detected. Ensure that you have called Init in your Application class.");
+
+			if (window == null)
+				return IntPtr.Zero;
+
+			var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
+
+			return handle;
+		}
+
+		public static AppWindow? GetActiveAppWindow(this IWindowStateManager manager, bool throwOnNull)
+		{
+			var window = manager.GetActiveWindow();
+			if (throwOnNull && window == null)
+				throw new NullReferenceException("The active Window can not be detected. Ensure that you have called Init in your Application class.");
+
+			if (window == null)
+				return null;
+
+			var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
+			var windowId = UI.Win32Interop.GetWindowIdFromWindow(handle);
+			var appWindow = AppWindow.GetFromWindowId(windowId);
+
+			return appWindow;
+		}
 	}
 
 	class WindowStateManagerImplementation : IWindowStateManager

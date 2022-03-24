@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Devices
 		DeviceType DeviceType { get; }
 	}
 
-	public static class DeviceInfo
+	public static partial class DeviceInfo
 	{
 		static IDeviceInfo? currentImplementation;
 

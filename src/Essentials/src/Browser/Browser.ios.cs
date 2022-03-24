@@ -19,7 +19,7 @@ namespace Microsoft.Maui.ApplicationModel
 					await LaunchSafariViewController(uri, options);
 					break;
 				case BrowserLaunchMode.External:
-					return await Launcher.OpenAsync(uri);
+					return await Launcher.Default.OpenAsync(uri);
 			}
 
 			return true;
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var nativeUrl = new NSUrl(uri.AbsoluteUri);
 			var sfViewController = new SFSafariViewController(nativeUrl, false);
-			var vc = Platform.GetCurrentViewController();
+			var vc = WindowStateManager.Default.GetCurrentUIViewController(true)!;
 
 			if (options.PreferredToolbarColor != null)
 				sfViewController.PreferredBarTintColor = options.PreferredToolbarColor.AsUIColor();
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.ApplicationModel
 				sfViewController.PreferredControlTintColor = options.PreferredControlColor.AsUIColor();
 
 			if (sfViewController.PopoverPresentationController != null)
-				sfViewController.PopoverPresentationController.SourceView = vc.View;
+				sfViewController.PopoverPresentationController.SourceView = vc.View!;
 
 			if (options.HasFlag(BrowserLaunchFlags.PresentAsFormSheet))
 				sfViewController.ModalPresentationStyle = UIModalPresentationStyle.FormSheet;

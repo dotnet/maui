@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Devices
 		event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChanged;
 	}
 
-	public static class Battery
+	public static partial class Battery
 	{
 		static IBattery? defaultImplementation;
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using MobileCoreServices;
 using UIKit;
@@ -35,10 +36,10 @@ namespace Microsoft.Maui.Storage
 			if (documentPicker.PresentationController != null)
 			{
 				documentPicker.PresentationController.Delegate =
-					new Platform.UIPresentationControllerDelegate(() => GetFileResults(null, tcs));
+					new UIPresentationControllerDelegate(() => GetFileResults(null, tcs));
 			}
 
-			var parentController = Platform.GetCurrentViewController();
+			var parentController = WindowStateManager.Default.GetCurrentUIViewController(true);
 
 			parentController.PresentViewController(documentPicker, true, null);
 

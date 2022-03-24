@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			MotionManager.AccelerometerUpdateInterval = sensorSpeed.ToPlatform();
-			MotionManager.StartAccelerometerUpdates(NSOperationQueue.CurrentQueue, DataUpdated);
+			MotionManager.StartAccelerometerUpdates(NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), DataUpdated);
 		}
 
 		void DataUpdated(CMAccelerometerData data, NSError error)

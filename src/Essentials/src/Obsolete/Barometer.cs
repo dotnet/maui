@@ -1,32 +1,34 @@
 ﻿#nullable enable
 using System;
-using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Barometer']/Docs" />
-	public static class Barometer
+	public static partial class Barometer
 	{
+		[Obsolete($"Use {nameof(Barometer)}.{nameof(Default)} instead.", true)]
 		public static event EventHandler<BarometerChangedEventArgs> ReadingChanged
 		{
-			add => Current.ReadingChanged += value;
-			remove => Current.ReadingChanged -= value;
+			add => Default.ReadingChanged += value;
+			remove => Default.ReadingChanged -= value;
 		}
 
-		public static bool IsSupported => Current.IsSupported;
+		[Obsolete($"Use {nameof(Barometer)}.{nameof(Default)} instead.", true)]
+		public static bool IsSupported => Default.IsSupported;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
+		[Obsolete($"Use {nameof(Barometer)}.{nameof(Default)} instead.", true)]
 		public static bool IsMonitoring
-			=> Current.IsMonitoring;
+			=> Default.IsMonitoring;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='Start']/Docs" />
+		[Obsolete($"Use {nameof(Barometer)}.{nameof(Default)} instead.", true)]
 		public static void Start(SensorSpeed sensorSpeed)
-			=> Current.Start(sensorSpeed);
+			=> Default.Start(sensorSpeed);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='Stop']/Docs" />
+		[Obsolete($"Use {nameof(Barometer)}.{nameof(Default)} instead.", true)]
 		public static void Stop()
-			=> Current.Stop();
-
-		static IBarometer Current => Devices.Sensors.Barometer.Default;
+			=> Default.Stop();
 	}
 }

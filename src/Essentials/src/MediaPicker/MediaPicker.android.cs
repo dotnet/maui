@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Media
 					path = FileSystemUtils.EnsurePhysicalPath(intent.Data);
 				}
 
-				await IntermediateActivity.StartAsync(pickerIntent, Platform.requestCodeMediaPicker, onResult: OnResult);
+				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
 
 				return new FileResult(path);
 			}
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Media
 
 			var capturePhotoIntent = new Intent(photo ? MediaStore.ActionImageCapture : MediaStore.ActionVideoCapture);
 
-			if (!Platform.IsIntentSupported(capturePhotoIntent))
+			if (!PlatformUtils.IsIntentSupported(capturePhotoIntent))
 				throw new FeatureNotSupportedException($"Either there was no camera on the device or '{capturePhotoIntent.Action}' was not added to the <queries> element in the app's manifest file. See more: https://developer.android.com/about/versions/11/privacy/package-visibility");
 
 			capturePhotoIntent.AddFlags(ActivityFlags.GrantReadUriPermission);
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Media
 
 			try
 			{
-				var activity = Platform.GetCurrentActivity(true);
+				var activity = ActivityStateManager.Default.GetCurrentActivity(true);
 
 				// Create the temporary file
 				var ext = photo
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Media
 				}
 
 				// Start the capture process
-				await IntermediateActivity.StartAsync(capturePhotoIntent, Platform.requestCodeMediaCapture, OnCreate);
+				await IntermediateActivity.StartAsync(capturePhotoIntent, PlatformUtils.requestCodeMediaCapture, OnCreate);
 
 				// Return the file that we just captured
 				return new FileResult(tmpFile.AbsolutePath);

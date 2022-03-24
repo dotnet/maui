@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Numerics;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void Stop();
 	}
 
-	public static class Accelerometer
+	public static partial class Accelerometer
 	{
 		static IAccelerometer? defaultImplementation;
 

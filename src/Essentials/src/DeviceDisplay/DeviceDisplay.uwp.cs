@@ -3,6 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using Windows.Graphics.Display;
 using Windows.System.Display;
 
@@ -84,12 +85,11 @@ namespace Microsoft.Maui.Devices
 
 		DisplayInfo GetMainDisplayInfo()
 		{
-			if (Platform.CurrentWindow == null)
+			if (WindowStateManager.Default.GetActiveAppWindow(false) is not AppWindow appWindow)
 				return new DisplayInfo();
 
-			var appWindow = Platform.CurrentAppWindow;
-			var windowHandler = Platform.CurrentWindowHandle;
-			var mi = GetDisplay(windowHandler);
+			var windowHandle = UI.Win32Interop.GetWindowFromWindowId(appWindow.Id);
+			var mi = GetDisplay(windowHandle);
 
 			if (mi == null)
 				return new DisplayInfo();
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Devices
 
 			var w = vDevMode.dmPelsWidth;
 			var h = vDevMode.dmPelsHeight;
-			var dpi = GetDpiForWindow(windowHandler) / DeviceDisplay.BaseLogicalDpi;
+			var dpi = GetDpiForWindow(windowHandle) / DeviceDisplay.BaseLogicalDpi;
 
 			return new DisplayInfo(
 				width: perpendicular ? h : w,
@@ -136,10 +136,10 @@ namespace Microsoft.Maui.Devices
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
 			{
-				Platform.CurrentWindowDisplayChanged += OnWindowDisplayChanged;
-				Platform.CurrentWindowChanged += OnCurrentWindowChanged;
+				WindowStateManager.Default.ActiveWindowDisplayChanged += OnWindowDisplayChanged;
+				WindowStateManager.Default.ActiveWindowChanged += OnCurrentWindowChanged;
 
-				_currentAppWindowListeningTo = Platform.CurrentAppWindow;
+				_currentAppWindowListeningTo = WindowStateManager.Default.GetActiveAppWindow(true)!;
 				_currentAppWindowListeningTo.Changed += OnAppWindowChanged;
 			});
 		}
@@ -148,8 +148,8 @@ namespace Microsoft.Maui.Devices
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
 			{
-				Platform.CurrentWindowChanged -= OnCurrentWindowChanged;
-				Platform.CurrentWindowDisplayChanged -= OnWindowDisplayChanged;
+				WindowStateManager.Default.ActiveWindowChanged -= OnCurrentWindowChanged;
+				WindowStateManager.Default.ActiveWindowDisplayChanged -= OnWindowDisplayChanged;
 
 				if (_currentAppWindowListeningTo != null)
 					_currentAppWindowListeningTo.Changed -= OnAppWindowChanged;
@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Devices
 			if (_currentAppWindowListeningTo != null)
 				_currentAppWindowListeningTo.Changed -= OnAppWindowChanged;
 
-			_currentAppWindowListeningTo = Platform.CurrentAppWindow;
+			_currentAppWindowListeningTo = WindowStateManager.Default.GetActiveAppWindow(true)!;
 			_currentAppWindowListeningTo.Changed += OnAppWindowChanged;
 		}
 

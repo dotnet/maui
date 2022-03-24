@@ -7,7 +7,7 @@
     <WarningsNotAsErrors>BI1234</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
     <GenerateReferenceAssemblySource>true</GenerateReferenceAssemblySource>
-    <GenAPIAdditionalParameters>--writer TypeList</GenAPIAdditionalParameters>
+    <!--<GenAPIAdditionalParameters>- -api-only</GenAPIAdditionalParameters>-->
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
   <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
@@ -54,6 +54,48 @@
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'tvos' ">
     <Compile Include="**\*.tvos.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Include="**\*.tvos.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Obsolete\Accelerometer.cs" />
+    <Compile Include="Obsolete\AppActions.cs" />
+    <Compile Include="Obsolete\AppInfo.cs" />
+    <Compile Include="Obsolete\AppleSignInAuthenticator.cs" />
+    <Compile Include="Obsolete\Barometer.cs" />
+    <Compile Include="Obsolete\Battery.cs" />
+    <Compile Include="Obsolete\Browser.cs" />
+    <Compile Include="Obsolete\Clipboard.cs" />
+    <Compile Include="Obsolete\Compass.cs" />
+    <Compile Include="Obsolete\Connectivity.cs" />
+    <Compile Include="Obsolete\Contacts.cs" />
+    <Compile Include="Obsolete\DeviceDisplay.cs" />
+    <Compile Include="Obsolete\DeviceInfo.cs" />
+    <Compile Include="Obsolete\Email.cs" />
+    <Compile Include="Obsolete\FilePicker.cs" />
+    <Compile Include="Obsolete\FileSystem.cs" />
+    <Compile Include="Obsolete\Flashlight.cs" />
+    <Compile Include="Obsolete\Geocoding.cs" />
+    <Compile Include="Obsolete\Geolocation.cs" />
+    <Compile Include="Obsolete\Gyroscope.cs" />
+    <Compile Include="Obsolete\HapticFeedback.cs" />
+    <Compile Include="Obsolete\Launcher.cs" />
+    <Compile Include="Obsolete\LocationExtensions.cs" />
+    <Compile Include="Obsolete\Magnetometer.cs" />
+    <Compile Include="Obsolete\Map.cs" />
+    <Compile Include="Obsolete\MediaPicker.cs" />
+    <Compile Include="Obsolete\OrientationSensor.cs" />
+    <Compile Include="Obsolete\PhoneDialer.cs" />
+    <Compile Include="Obsolete\PlacemarkExtensions.cs" />
+    <Compile Include="Obsolete\Platform.cs" />
+    <Compile Include="Obsolete\Preferences.cs" />
+    <Compile Include="Obsolete\Screenshot.cs" />
+    <Compile Include="Obsolete\SecureStorage.cs" />
+    <Compile Include="Obsolete\SemanticScreenReader.cs" />
+    <Compile Include="Obsolete\Share.cs" />
+    <Compile Include="Obsolete\Sms.cs" />
+    <Compile Include="Obsolete\TextToSpeech.cs" />
+    <Compile Include="Obsolete\VersionTracking.cs" />
+    <Compile Include="Obsolete\Vibration.cs" />
+    <Compile Include="Obsolete\WebAuthenticator.cs" />
   </ItemGroup>
   <!-- <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'watchos' ">
     <Compile Include="**\*.watchos.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />

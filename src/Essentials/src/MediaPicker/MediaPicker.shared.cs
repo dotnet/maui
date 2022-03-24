@@ -1,5 +1,6 @@
 #nullable enable
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.Media
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Media
 		Task<FileResult> CaptureVideoAsync(MediaPickerOptions? options = null);
 	}
 
-	public static class MediaPicker
+	public static partial class MediaPicker
 	{
 		static IMediaPicker? defaultImplementation;
 

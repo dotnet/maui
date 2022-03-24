@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using AndroidX.Browser.CustomTabs;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Authentication
 {
@@ -58,7 +59,7 @@ namespace Microsoft.Maui.Authentication
 			intent.SetData(global::Android.Net.Uri.Parse(callbackUrl.OriginalString));
 
 			// Try to find the activity for the callback intent
-			if (!Platform.IsIntentSupported(intent, packageName))
+			if (!PlatformUtils.IsIntentSupported(intent, packageName))
 				throw new InvalidOperationException($"You must subclass the `{nameof(WebAuthenticatorCallbackActivity)}` and create an IntentFilter for it which matches your `{nameof(callbackUrl)}`.");
 
 			// Cancel any previous task that's still pending
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.Authentication
 			tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
 			currentRedirectUri = callbackUrl;
 
-			var parentActivity = Platform.GetCurrentActivity(true);
+			var parentActivity = ActivityStateManager.Default.GetCurrentActivity(true);
 
 			var customTabsActivityManager = CustomTabsActivityManager.From(parentActivity);
 			try
@@ -87,7 +88,7 @@ namespace Microsoft.Maui.Authentication
 				{
 					// Fall back to opening the system browser if necessary
 					var browserIntent = new Intent(Intent.ActionView, global::Android.Net.Uri.Parse(url.OriginalString));
-					Platform.CurrentActivity.StartActivity(browserIntent);
+					ActivityStateManager.Default.GetCurrentActivity().StartActivity(browserIntent);
 				}
 
 				return await tcsResponse.Task;

@@ -1,68 +1,80 @@
 ﻿#nullable enable
+using System;
 using System.Collections.Generic;
-using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="Type[@FullName='Microsoft.Maui.Essentials.VersionTracking']/Docs" />
-	public static class VersionTracking
+	public static partial class VersionTracking
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='Track']/Docs" />
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
 		public static void Track()
-			=> Current.Track();
+			=> Default.Track();
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchEver']/Docs" />
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
 		public static bool IsFirstLaunchEver
-			=> Current.IsFirstLaunchEver;
+			=> Default.IsFirstLaunchEver;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForCurrentVersion']/Docs" />
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
 		public static bool IsFirstLaunchForCurrentVersion
-			=> Current.IsFirstLaunchForCurrentVersion;
+			=> Default.IsFirstLaunchForCurrentVersion;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForCurrentBuild']/Docs" />
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
 		public static bool IsFirstLaunchForCurrentBuild
-			=> Current.IsFirstLaunchForCurrentBuild;
+			=> Default.IsFirstLaunchForCurrentBuild;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='CurrentVersion']/Docs" />
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
 		public static string CurrentVersion
-			=> Current.CurrentVersion;
+			=> Default.CurrentVersion;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='CurrentBuild']/Docs" />
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
 		public static string CurrentBuild
-			=> Current.CurrentBuild;
+			=> Default.CurrentBuild;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='PreviousVersion']/Docs" />
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
 		public static string? PreviousVersion
-			=> Current.PreviousVersion;
+			=> Default.PreviousVersion;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='PreviousBuild']/Docs" />
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
 		public static string? PreviousBuild
-			=> Current.PreviousBuild;
+			=> Default.PreviousBuild;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='FirstInstalledVersion']/Docs" />
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
 		public static string? FirstInstalledVersion
-			=> Current.FirstInstalledVersion;
+			=> Default.FirstInstalledVersion;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='FirstInstalledBuild']/Docs" />
-		public static string? FirstInstalledBuild =>
-			Current.FirstInstalledBuild;
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
+		public static string? FirstInstalledBuild
+			=> Default.FirstInstalledBuild;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='VersionHistory']/Docs" />
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
 		public static IEnumerable<string> VersionHistory
-			=> Current.VersionHistory;
+			=> Default.VersionHistory;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='BuildHistory']/Docs" />
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
 		public static IEnumerable<string> BuildHistory
-			=> Current.BuildHistory;
+			=> Default.BuildHistory;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForVersion']/Docs" />
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
 		public static bool IsFirstLaunchForVersion(string version)
-			=> Current.IsFirstLaunchForVersion(version);
+			=> Default.IsFirstLaunchForVersion(version);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForBuild']/Docs" />
+		[Obsolete($"Use {nameof(VersionTracking)}.{nameof(Default)} instead.", true)]
 		public static bool IsFirstLaunchForBuild(string build)
-			=> Current.IsFirstLaunchForBuild(build);
-
-		static IVersionTracking Current => ApplicationModel.VersionTracking.Current;
+			=> Default.IsFirstLaunchForBuild(build);
 	}
 }

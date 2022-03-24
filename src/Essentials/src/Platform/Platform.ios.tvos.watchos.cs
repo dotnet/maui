@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Foundation;
 using ObjCRuntime;
 
 namespace Microsoft.Maui.ApplicationModel
@@ -35,6 +36,11 @@ namespace Microsoft.Maui.ApplicationModel
 			Marshal.FreeHGlobal(valuePtr);
 
 			return returnValue;
+		}
+
+		internal static void BeginInvokeOnMainThread(Action action)
+		{
+			NSRunLoop.Main.BeginInvokeOnMainThread(action);
 		}
 	}
 }

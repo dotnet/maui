@@ -77,6 +77,9 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		internal const string AppActionPrefix = "XE_APP_ACTIONS-";
 
+		internal const string iconDirectory = "";
+		internal const string iconExtension = ".png";
+
 		internal static string ArgumentsToId(this string arguments)
 		{
 			if (arguments?.StartsWith(AppActionPrefix) ?? false)

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Devices
 
 			try
 			{
-				Platform.CurrentActivity?.Window?.DecorView?.PerformHapticFeedback(ConvertType(type));
+				ActivityStateManager.Default.GetCurrentActivity()?.Window?.DecorView?.PerformHapticFeedback(ConvertType(type));
 			}
 			catch (Exception ex)
 			{

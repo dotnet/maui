@@ -49,7 +49,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			var contentType = default(string);
 			foreach (var file in request.Files)
 			{
-				contentUris.Add(Platform.GetShareableFileUri(file));
+				contentUris.Add(FileSystemUtils.GetShareableFileUri(file));
 
 				if (contentType == null)
 					contentType = file.ContentType;

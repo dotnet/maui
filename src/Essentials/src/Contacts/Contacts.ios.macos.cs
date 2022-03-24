@@ -18,9 +18,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 #elif __IOS__
 		public Task<Contact> PickContactAsync()
 		{
-			var uiView = Platform.GetCurrentViewController();
-			if (uiView == null)
-				throw new ArgumentNullException($"The View Controller can't be null.");
+			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 
 			var source = new TaskCompletionSource<Contact>();
 
@@ -42,10 +40,10 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			if (picker.PresentationController != null)
 			{
 				picker.PresentationController.Delegate =
-					new Platform.UIPresentationControllerDelegate(() => source?.TrySetResult(null));
+					new UIPresentationControllerDelegate(() => source?.TrySetResult(null));
 			}
 
-			uiView.PresentViewController(picker, true, null);
+			vc.PresentViewController(picker, true, null);
 
 			return source.Task;
 		}

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			get
 			{
 				var dialIntent = ResolveDialIntent(intentCheck);
-				return Platform.IsIntentSupported(dialIntent);
+				return PlatformUtils.IsIntentSupported(dialIntent);
 			}
 		}
 
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			ValidateOpen(number);
 
 			var phoneNumber = string.Empty;
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.GetDefault(Java.Util.Locale.Category.Format).Country) ?? phoneNumber;
 			else
 				phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.Default.Country) ?? phoneNumber;
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			var dialIntent = ResolveDialIntent(phoneNumber);
 
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				flags |= ActivityFlags.LaunchAdjacent;
 			dialIntent.SetFlags(flags);
 

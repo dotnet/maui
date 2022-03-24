@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Microsoft.Maui.Devices.Sensors;
 using AndroidUri = Android.Net.Uri;
@@ -77,12 +78,12 @@ namespace Microsoft.Maui.ApplicationModel
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri));
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 #if __ANDROID_24__
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			intent.SetFlags(flags);
 
-			Platform.AppContext.StartActivity(intent);
+			Application.Context.StartActivity(intent);
 		}
 	}
 }

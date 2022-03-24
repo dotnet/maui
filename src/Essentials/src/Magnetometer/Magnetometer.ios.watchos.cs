@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			MotionManager.MagnetometerUpdateInterval = sensorSpeed.ToPlatform();
-			MotionManager.StartMagnetometerUpdates(NSOperationQueue.CurrentQueue, DataUpdated);
+			MotionManager.StartMagnetometerUpdates(NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), DataUpdated);
 		}
 
 		void DataUpdated(CMMagnetometerData data, NSError error)

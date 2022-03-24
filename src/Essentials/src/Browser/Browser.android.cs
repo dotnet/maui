@@ -41,7 +41,7 @@ namespace Microsoft.Maui.ApplicationModel
 			var tabsIntent = tabsBuilder.Build();
 			ActivityFlags? tabsFlags = null;
 
-			Context context = Platform.GetCurrentActivity(false);
+			Context? context = ActivityStateManager.Default.GetCurrentActivity(false);
 
 			if (context == null)
 			{
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.ApplicationModel
 #endif
 			intent.SetFlags(flags);
 
-			if (!Platform.IsIntentSupported(intent))
+			if (!PlatformUtils.IsIntentSupported(intent))
 				throw new FeatureNotSupportedException();
 
 			Application.Context.StartActivity(intent);

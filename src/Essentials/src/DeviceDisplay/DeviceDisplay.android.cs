@@ -20,13 +20,13 @@ namespace Microsoft.Maui.Devices
 		{
 			get
 			{
-				var window = Platform.GetCurrentActivity(true)?.Window;
+				var window = ActivityStateManager.Default.GetCurrentActivity(true)?.Window;
 				var flags = window?.Attributes?.Flags ?? 0;
 				return flags.HasFlag(WindowManagerFlags.KeepScreenOn);
 			}
 			set
 			{
-				var window = Platform.GetCurrentActivity(true)?.Window;
+				var window = ActivityStateManager.Default.GetCurrentActivity(true)?.Window;
 				if (value)
 					window?.AddFlags(WindowManagerFlags.KeepScreenOn);
 				else

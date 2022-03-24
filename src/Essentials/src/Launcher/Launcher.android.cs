@@ -1,8 +1,10 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Microsoft.Maui.Storage;
 using AndroidUri = Android.Net.Uri;
 using Uri = System.Uri;
 
@@ -27,7 +29,7 @@ namespace Microsoft.Maui.ApplicationModel
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri.OriginalString));
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 #if __ANDROID_24__
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			intent.SetFlags(flags);
@@ -38,7 +40,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		Task<bool> PlatformOpenAsync(OpenFileRequest request)
 		{
-			var contentUri = Platform.GetShareableFileUri(request.File);
+			var contentUri = FileSystemUtils.GetShareableFileUri(request.File);
 
 			var intent = new Intent(Intent.ActionView);
 			intent.SetDataAndType(contentUri, request.File.ContentType);
@@ -47,7 +49,7 @@ namespace Microsoft.Maui.ApplicationModel
 			var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 #if __ANDROID_24__
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			chooserIntent.SetFlags(flags);

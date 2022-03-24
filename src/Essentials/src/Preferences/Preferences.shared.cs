@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Storage
 	public static class Preferences
 	{
 		internal static string GetPrivatePreferencesSharedName(string feature) =>
-			$"{AppInfo.PackageName}.microsoft.maui.essentials.{feature}";
+			$"{ApplicationModel.AppInfo.Current.PackageName}.microsoft.maui.essentials.{feature}";
 
 		static IPreferences? defaultImplementation;
 

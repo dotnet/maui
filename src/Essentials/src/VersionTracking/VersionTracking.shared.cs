@@ -38,15 +38,15 @@ namespace Microsoft.Maui.ApplicationModel
 		bool IsFirstLaunchForBuild(string build);
 	}
 
-	public static class VersionTracking
+	public static partial class VersionTracking
 	{
-		static IVersionTracking? currentImplementation;
+		static IVersionTracking? defaultImplementation;
 
-		public static IVersionTracking Current =>
-			currentImplementation ??= new VersionTrackingImplementation(Preferences.Default, AppInfo.Current);
+		public static IVersionTracking Default =>
+			defaultImplementation ??= new VersionTrackingImplementation(Preferences.Default, AppInfo.Current);
 
-		internal static void SetCurrent(IVersionTracking? implementation) =>
-			currentImplementation = implementation;
+		internal static void SetDefault(IVersionTracking? implementation) =>
+			defaultImplementation = implementation;
 	}
 
 	class VersionTrackingImplementation : IVersionTracking

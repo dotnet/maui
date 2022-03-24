@@ -28,7 +28,7 @@ namespace Microsoft.Maui.ApplicationModel
 #endif
 	}
 
-	public static class AppActions
+	public static partial class AppActions
 	{
 		static IAppActions? currentImplementation;
 

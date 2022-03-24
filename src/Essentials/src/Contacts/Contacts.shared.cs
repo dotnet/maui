@@ -12,7 +12,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		Task<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken = default);
 	}
 
-	public static class Contacts
+	public static partial class Contacts
 	{
 		static IContacts? currentImplementation;
 

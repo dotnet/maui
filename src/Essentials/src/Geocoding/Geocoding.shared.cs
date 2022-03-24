@@ -41,12 +41,19 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 #if WINDOWS || TIZEN
+		public static string? GetMapServiceToken(this IGeocoding geocoding)
+		{
+			if (geocoding is not IPlatformGeocoding platform)
+				throw new PlatformNotSupportedException("This implementation of IGeocoding does not implement IPlatformGeocoding.");
+
+			return platform.MapServiceToken;
+		}
 		public static void SetMapServiceToken(this IGeocoding geocoding, string? mapServiceToken)
 		{
-			if (geocoding is IPlatformGeocoding platform)
-			{
-				platform.MapServiceToken = mapServiceToken;
-			}
+			if (geocoding is not IPlatformGeocoding platform)
+				throw new PlatformNotSupportedException("This implementation of IGeocoding does not implement IPlatformGeocoding.");
+
+			platform.MapServiceToken = mapServiceToken;
 		}
 #endif
 	}

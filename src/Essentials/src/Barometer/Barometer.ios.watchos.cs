@@ -1,6 +1,7 @@
 using System;
 using CoreMotion;
 using Foundation;
+using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			altitudeManager = new CMAltimeter();
-			altitudeManager.StartRelativeAltitudeUpdates(Platform.GetCurrentQueue(), LocationManagerUpdatedHeading);
+			altitudeManager.StartRelativeAltitudeUpdates(NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), LocationManagerUpdatedHeading);
 
 			void LocationManagerUpdatedHeading(CMAltitudeData e, NSError error)
 			{

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			new("Testing Microsoft.Maui.Essentials", "This is a test email.", "Microsoft.Maui.Essentials@example.org");
 
 		public bool IsComposeSupported
-			=> Platform.IsIntentSupported(CreateIntent(testEmail));
+			=> PlatformUtils.IsIntentSupported(CreateIntent(testEmail));
 
 		Task PlatformComposeAsync(EmailMessage message)
 		{
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 				var uris = new List<IParcelable>();
 				foreach (var attachment in message.Attachments)
 				{
-					uris.Add(Platform.GetShareableFileUri(attachment));
+					uris.Add(FileSystemUtils.GetShareableFileUri(attachment));
 				}
 
 				if (uris.Count > 1)

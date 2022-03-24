@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices
 {
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Devices
 		static IDeviceDisplay? currentImplementation;
 
 		public static IDeviceDisplay Current =>
-			currentImplementation ?? new DeviceDisplayImplementation();
+			currentImplementation ??= new DeviceDisplayImplementation();
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='SetCurrent']/Docs" />
 		internal static void SetCurrent(IDeviceDisplay? implementation) =>

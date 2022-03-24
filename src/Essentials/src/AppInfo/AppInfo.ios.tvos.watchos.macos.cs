@@ -30,7 +30,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 #if __IOS__ || __TVOS__
 		public async void ShowSettingsUI()
-			=> await Launcher.OpenAsync(UIApplication.OpenSettingsUrlString);
+			=> await Launcher.Default.OpenAsync(UIApplication.OpenSettingsUrlString);
 #elif __MACOS__
 		public void ShowSettingsUI()
 		{
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.ApplicationModel
 					return AppTheme.Unspecified;
 
 				var traits =
-					MainThread.InvokeOnMainThread(() => Platform.GetCurrentUIViewController()?.TraitCollection) ??
+					MainThread.InvokeOnMainThread(() => WindowStateManager.Default.GetCurrentUIViewController()?.TraitCollection) ??
 					UITraitCollection.CurrentTraitCollection;
 
 				var uiStyle = traits.UserInterfaceStyle;
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			get
 			{
-				var currentWindow = Platform.GetCurrentWindow(false);
+				var currentWindow = WindowStateManager.Default.GetCurrentUIWindow(false);
 				UIUserInterfaceLayoutDirection layoutDirection =
 					currentWindow?.EffectiveUserInterfaceLayoutDirection ??
 					UIApplication.SharedApplication.UserInterfaceLayoutDirection;

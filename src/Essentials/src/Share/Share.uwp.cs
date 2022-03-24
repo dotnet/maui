@@ -12,7 +12,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 	{
 		Task PlatformRequestAsync(ShareTextRequest request)
 		{
-			var hwnd = Platform.CurrentWindowHandle;
+			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
 			var dataTransferManager = DataTransferManagerHelper.GetDataTransferManager(hwnd);
 
 			dataTransferManager.DataRequested += ShareTextHandler;
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			{
 				var newRequest = e.Request;
 
-				newRequest.Data.Properties.Title = request.Title ?? AppInfo.Name;
+				newRequest.Data.Properties.Title = request.Title ?? AppInfo.Current.Name;
 
 				if (!string.IsNullOrWhiteSpace(request.Text))
 				{
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			foreach (var file in request.Files)
 				storageFiles.Add(file.File ?? await StorageFile.GetFileFromPathAsync(file.FullPath));
 
-			var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(Platform.CurrentWindow);
+			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
 			var dataTransferManager = DataTransferManagerHelper.GetDataTransferManager(hwnd);
 
 			dataTransferManager.DataRequested += ShareTextHandler;
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 				var newRequest = e.Request;
 
 				newRequest.Data.SetStorageItems(storageFiles.ToArray());
-				newRequest.Data.Properties.Title = request.Title ?? AppInfo.Name;
+				newRequest.Data.Properties.Title = request.Title ?? AppInfo.Current.Name;
 
 				dataTransferManager.DataRequested -= ShareTextHandler;
 			}

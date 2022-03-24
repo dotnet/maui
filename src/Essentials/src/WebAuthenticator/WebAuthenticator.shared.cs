@@ -42,11 +42,27 @@ namespace Microsoft.Maui.Authentication
 			webAuthenticator.AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
 
 #if IOS || MACCATALYST || MACOS
+
 		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, Uri uri) =>
 			webAuthenticator.AsPlatformCallback().OpenUrlCallback(uri);
+
+		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, UIKit.UIApplication app, Foundation.NSUrl url, Foundation.NSDictionary options) =>
+			webAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
+
+		public static bool ContinueUserActivity(this IWebAuthenticator webAuthenticator, UIKit.UIApplication application, Foundation.NSUserActivity userActivity, UIKit.UIApplicationRestorationHandler completionHandler)
+		{
+			var uri = userActivity?.WebPageUrl?.AbsoluteString;
+			if (string.IsNullOrEmpty(uri))
+				return false;
+
+			return webAuthenticator.OpenUrl(new Uri(uri));
+		}
+
 #elif ANDROID
+
 		public static bool OnResume(this IWebAuthenticator webAuthenticator, Android.Content.Intent intent) =>
 			webAuthenticator.AsPlatformCallback().OnResumeCallback(intent);
+
 #endif
 	}
 

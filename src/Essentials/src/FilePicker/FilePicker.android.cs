@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Storage
 					}
 				}
 
-				await IntermediateActivity.StartAsync(pickerIntent, Platform.requestCodeFilePicker, onResult: OnResult);
+				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeFilePicker, onResult: OnResult);
 
 				return resultList;
 			}

@@ -25,6 +25,26 @@ namespace Microsoft.Maui.ApplicationModel
 			defaultImplementation = implementation;
 	}
 
+	static class WindowStateManagerExtensions
+	{
+		public static UIViewController? GetCurrentUIViewController(this IWindowStateManager manager, bool throwOnNull)
+		{
+			var vc = manager.GetCurrentUIViewController();
+			if (throwOnNull && vc == null)
+				throw new NullReferenceException("The current view controller can not be detected.");
+
+			return vc;
+		}
+		public static UIWindow? GetCurrentUIWindow(this IWindowStateManager manager, bool throwOnNull)
+		{
+			var window = manager.GetCurrentUIWindow();
+			if (throwOnNull && window == null)
+				throw new NullReferenceException("The current window can not be detected.");
+
+			return window;
+		}
+	}
+
 	class WindowStateManagerImplementation : IWindowStateManager
 	{
 		Func<UIViewController?>? getCurrentController;
@@ -32,13 +52,7 @@ namespace Microsoft.Maui.ApplicationModel
 		public void Init(Func<UIViewController?>? getCurrentUIViewController) =>
 			getCurrentController = getCurrentUIViewController;
 
-		public UIViewController? GetCurrentUIViewController() =>
-			GetCurrentViewController(false);
-
-		public UIWindow? GetCurrentUIWindow() =>
-			GetCurrentWindow(false);
-
-		internal UIViewController? GetCurrentViewController(bool throwIfNull = true)
+		public UIViewController? GetCurrentUIViewController()
 		{
 			var viewController = getCurrentController?.Invoke();
 
@@ -57,22 +71,16 @@ namespace Microsoft.Maui.ApplicationModel
 					.OrderByDescending(w => w.WindowLevel)
 					.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
 
-				if (window == null && throwIfNull)
-					throw new InvalidOperationException("Could not find current view controller.");
-				else
-					viewController = window?.RootViewController;
+				viewController = window?.RootViewController;
 			}
 
 			while (viewController?.PresentedViewController != null)
 				viewController = viewController.PresentedViewController;
 
-			if (throwIfNull && viewController == null)
-				throw new InvalidOperationException("Could not find current view controller.");
-
 			return viewController;
 		}
 
-		internal UIWindow? GetCurrentWindow(bool throwIfNull = true)
+		public UIWindow? GetCurrentUIWindow()
 		{
 			var window = UIApplication.SharedApplication.KeyWindow;
 
@@ -86,9 +94,6 @@ namespace Microsoft.Maui.ApplicationModel
 					.OrderByDescending(w => w.WindowLevel)
 					.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
 			}
-
-			if (throwIfNull && window == null)
-				throw new InvalidOperationException("Could not find current window.");
 
 			return window;
 		}

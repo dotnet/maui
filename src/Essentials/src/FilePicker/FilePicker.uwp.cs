@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Storage
 				SuggestedStartLocation = PickerLocationId.DocumentsLibrary
 			};
 
-			var hwnd = Platform.CurrentWindowHandle;
+			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
 			WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
 
 			SetFileTypes(options, picker);

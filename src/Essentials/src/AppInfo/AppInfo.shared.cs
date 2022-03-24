@@ -24,7 +24,7 @@ namespace Microsoft.Maui.ApplicationModel
 		LayoutDirection RequestedLayoutDirection { get; }
 	}
 
-	public static class AppInfo
+	public static partial class AppInfo
 	{
 		static IAppInfo? currentImplementation;
 

@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
+using Android.OS;
 using Android.Provider;
 using Microsoft.Maui.Storage;
 using AndroidUri = Android.Net.Uri;
@@ -14,14 +16,14 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		static readonly string smsRecipientSeparator = ";";
 
 		public bool IsComposeSupported
-			=> Platform.IsIntentSupported(CreateIntent(null, new List<string> { "0000000000" }));
+			=> PlatformUtils.IsIntentSupported(CreateIntent(null, new List<string> { "0000000000" }));
 
 		Task PlatformComposeAsync(SmsMessage message)
 		{
 			var intent = CreateIntent(message?.Body, message?.Recipients);
 
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				flags |= ActivityFlags.LaunchAdjacent;
 			intent.SetFlags(flags);
 

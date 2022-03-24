@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			MotionManager.DeviceMotionUpdateInterval = sensorSpeed.ToPlatform();
 
 			// use a fixed reference frame where X points north and Z points vertically into the sky
-			MotionManager.StartDeviceMotionUpdates(CMAttitudeReferenceFrame.XTrueNorthZVertical, NSOperationQueue.CurrentQueue, DataUpdated);
+			MotionManager.StartDeviceMotionUpdates(CMAttitudeReferenceFrame.XTrueNorthZVertical, NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), DataUpdated);
 		}
 
 		void DataUpdated(CMDeviceMotion data, NSError error)

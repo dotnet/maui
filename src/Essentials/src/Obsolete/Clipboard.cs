@@ -1,32 +1,33 @@
 ﻿#nullable enable
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.ApplicationModel.DataTransfer;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Clipboard']/Docs" />
 	public static partial class Clipboard
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='SetTextAsync']/Docs" />
+		[Obsolete($"Use {nameof(Clipboard)}.{nameof(Default)} instead.", true)]
 		public static Task SetTextAsync(string? text)
-			=> Current.SetTextAsync(text ?? string.Empty);
+			=> Default.SetTextAsync(text ?? string.Empty);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='HasText']/Docs" />
+		[Obsolete($"Use {nameof(Clipboard)}.{nameof(Default)} instead.", true)]
 		public static bool HasText
-			=> Current.HasText;
+			=> Default.HasText;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='GetTextAsync']/Docs" />
+		[Obsolete($"Use {nameof(Clipboard)}.{nameof(Default)} instead.", true)]
 		public static Task<string?> GetTextAsync()
-			=> Current.GetTextAsync();
+			=> Default.GetTextAsync();
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='ClipboardContentChanged']/Docs" />
+		[Obsolete($"Use {nameof(Clipboard)}.{nameof(Default)} instead.", true)]
 		public static event EventHandler<EventArgs> ClipboardContentChanged
 		{
-			add => Current.ClipboardContentChanged += value;
-			remove => Current.ClipboardContentChanged -= value;
+			add => Default.ClipboardContentChanged += value;
+			remove => Default.ClipboardContentChanged -= value;
 		}
-
-		static IClipboard Current => ApplicationModel.DataTransfer.Clipboard.Default;
 	}
 }

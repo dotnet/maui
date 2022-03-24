@@ -26,7 +26,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 
 			var activityController = new UIActivityViewController(items.ToArray(), null);
 
-			var vc = Platform.GetCurrentViewController();
+			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 
 			if (activityController.PopoverPresentationController != null)
 			{
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 
 			var activityController = new UIActivityViewController(items.ToArray(), null);
 
-			var vc = Platform.GetCurrentViewController();
+			var vc = WindowStateManager.Default.GetCurrentUIViewController();
 
 			if (activityController.PopoverPresentationController != null)
 			{

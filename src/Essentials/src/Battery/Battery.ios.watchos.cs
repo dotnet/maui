@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Devices
 		}
 
 		void PowerChangedNotification(NSNotification notification)
-			=> MainThread.BeginInvokeOnMainThread(OnEnergySaverChanged);
+			=> PlatformUtils.BeginInvokeOnMainThread(OnEnergySaverChanged);
 
 		public EnergySaverStatus EnergySaverStatus =>
 			NSProcessInfo.ProcessInfo?.LowPowerModeEnabled == true ? EnergySaverStatus.On : EnergySaverStatus.Off;
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Devices
 		}
 
 		void BatteryInfoChangedNotification(object sender, NSNotificationEventArgs args)
-			=> MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
+			=> PlatformUtils.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
 		public double ChargeLevel
 		{

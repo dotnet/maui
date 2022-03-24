@@ -51,16 +51,17 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		readonly Action<MagnetometerData> DataCallback;
 
-		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
+		void ISensorEventListener.OnAccuracyChanged(Sensor? sensor, SensorStatus accuracy)
 		{
 		}
 
-		void ISensorEventListener.OnSensorChanged(SensorEvent e)
+		void ISensorEventListener.OnSensorChanged(SensorEvent? e)
 		{
-			if ((e?.Values?.Count ?? 0) < 3)
+			var values = e?.Values ?? Array.Empty<float>();
+			if (values.Count < 3)
 				return;
 
-			var data = new MagnetometerData(e.Values[0], e.Values[1], e.Values[2]);
+			var data = new MagnetometerData(values[0], values[1], values[2]);
 			DataCallback?.Invoke(data);
 		}
 	}

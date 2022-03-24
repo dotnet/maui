@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Authentication
 		public bool IncludeEmailScope { get; set; } = false;
 	}
 
-	public static class AppleSignInAuthenticator
+	public static partial class AppleSignInAuthenticator
 	{
 		static IAppleSignInAuthenticator? defaultImplementation;
 

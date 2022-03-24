@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void Stop();
 	}
 
-	public static class Barometer
+	public static partial class Barometer
 	{
 		static IBarometer? defaultImplementation;
 
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			!left.Equals(right);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
-		public override bool Equals(object obj) =>
+		public override bool Equals(object? obj) =>
 			(obj is BarometerData data) && Equals(data);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />

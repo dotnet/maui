@@ -91,7 +91,7 @@ namespace Microsoft.Maui.ApplicationModel
 			Finish();
 		}
 
-		public static Task<Intent> StartAsync(Intent intent, int requestCode, Action<Intent> onCreate, Action<Intent> onResult)
+		public static Task<Intent> StartAsync(Intent intent, int requestCode, Action<Intent>? onCreate = null, Action<Intent>? onResult = null)
 		{
 			// make sure we have the activity
 			var activity = ActivityStateManager.Default.GetCurrentActivity(true)!;
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		class IntermediateTask
 		{
-			public IntermediateTask(Action<Intent> onCreate, Action<Intent> onResult)
+			public IntermediateTask(Action<Intent>? onCreate, Action<Intent>? onResult)
 			{
 				Id = Guid.NewGuid().ToString();
 				TaskCompletionSource = new TaskCompletionSource<Intent>();
@@ -142,9 +142,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 			public TaskCompletionSource<Intent> TaskCompletionSource { get; }
 
-			public Action<Intent> OnCreate { get; }
+			public Action<Intent>? OnCreate { get; }
 
-			public Action<Intent> OnResult { get; }
+			public Action<Intent>? OnResult { get; }
 		}
 	}
 }

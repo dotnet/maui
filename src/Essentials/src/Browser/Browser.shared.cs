@@ -9,7 +9,7 @@ namespace Microsoft.Maui.ApplicationModel
 		Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options);
 	}
 
-	public static class Browser
+	public static partial class Browser
 	{
 		static IBrowser? defaultImplementation;
 

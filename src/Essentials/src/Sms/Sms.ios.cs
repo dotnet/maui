@@ -19,7 +19,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		{
 #if !(MACCATALYST || MACOS)
 			// do this first so we can throw as early as possible
-			var controller = Platform.GetCurrentViewController();
+			var controller = WindowStateManager.Default.GetCurrentUIViewController(true);
 
 			// create the controller
 			var messageController = new MFMessageComposeViewController();
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			if (controller.PresentationController != null)
 			{
 				controller.PresentationController.Delegate =
-					new Platform.UIPresentationControllerDelegate(() => tcs.TrySetResult(false));
+					new UIPresentationControllerDelegate(() => tcs.TrySetResult(false));
 			}
 
 			controller.PresentViewController(messageController, true, null);
