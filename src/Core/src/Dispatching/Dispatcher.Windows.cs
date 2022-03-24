@@ -35,20 +35,18 @@ namespace Microsoft.Maui.Dispatching
 
 		IDispatcherTimer CreateTimerImplementation()
 		{
-			return new DispatcherTimer(_dispatcherQueue);
+			return new DispatcherTimer(_dispatcherQueue.CreateTimer());
 		}
 	}
 
 	partial class DispatcherTimer : IDispatcherTimer
 	{
-		readonly DispatcherQueue _dispatcherQueue;
-		DispatcherQueueTimer _timer;
-		bool _started;
+		readonly DispatcherQueueTimer _timer;
 
-		public DispatcherTimer(DispatcherQueue queue)
+		public DispatcherTimer(DispatcherQueueTimer timer)
 		{
-			_dispatcherQueue = queue;
-			_timer = _dispatcherQueue.CreateTimer();
+			_timer = timer;
+			_timer.Tick += OnTimerTick;
 		}
 
 		public TimeSpan Interval
@@ -72,22 +70,6 @@ namespace Microsoft.Maui.Dispatching
 			if (IsRunning)
 				return;
 
-			if (_started)
-			{
-				// if we Start a timer that has already finished, it will immediately fire.
-				// to ensure that Start restarts the timer, we need to replace it.
-				var newTimer = _dispatcherQueue.CreateTimer();
-				newTimer.Interval = Interval;
-				newTimer.IsRepeating = IsRepeating;
-				_timer = newTimer;
-			}
-			else
-			{
-				_started = true;
-			}
-
-			_timer.Tick += OnTimerTick;
-
 			_timer.Start();
 		}
 
@@ -95,8 +77,6 @@ namespace Microsoft.Maui.Dispatching
 		{
 			if (!IsRunning)
 				return;
-
-			_timer.Tick -= OnTimerTick;
 
 			_timer.Stop();
 		}
