@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Essentials;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -70,6 +74,20 @@ namespace Maui.Controls.Sample.Pages
 				"var test = function(){ return 'This string came from Javascript!'; }; test();");
 
 			EvalResultLabel.Text = result;
+		}
+
+		async void OnLoadHtmlFileClicked(object sender, EventArgs e)
+		{
+			await LoadMauiAsset();
+		}
+
+		async Task LoadMauiAsset()
+		{
+			using var stream = await FileSystem.OpenAppPackageFileAsync(input.Text.Trim());
+			using var reader = new StreamReader(stream);
+
+			var html = reader.ReadToEnd();
+			FileWebView.Source = new HtmlWebViewSource { Html = html };
 		}
 	}
 }
