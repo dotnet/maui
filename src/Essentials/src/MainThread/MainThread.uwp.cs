@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Essentials
 
 				return CoreApplication.MainView.CoreWindow.Dispatcher?.HasThreadAccess ?? false;
 #elif WINDOWS
-				return Platform.CurrentWindow.DispatcherQueue.HasThreadAccess;
+				return Platform.CurrentWindow?.DispatcherQueue?.HasThreadAccess ?? true;
 #endif
 			}
 		}
