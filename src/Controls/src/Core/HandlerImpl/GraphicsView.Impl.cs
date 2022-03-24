@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Controls
 	public class GraphicsView : View, IGraphicsView
 	{
 		public event EventHandler<TouchEventArgs> StartHoverInteraction;
+		public event EventHandler<TouchEventArgs> MoveHoverInteraction;
 		public event EventHandler EndHoverInteraction;
 		public event EventHandler<TouchEventArgs> StartInteraction;
 		public event EventHandler<TouchEventArgs> DragInteraction;
@@ -34,6 +35,8 @@ namespace Microsoft.Maui.Controls
 
 		void IGraphicsView.EndInteraction(PointF[] points, bool isInsideBounds) => EndInteraction?.Invoke(this, new TouchEventArgs(points, isInsideBounds));
 		void IGraphicsView.StartHoverInteraction(PointF[] points) => StartHoverInteraction?.Invoke(this, new TouchEventArgs(points, true));
+
+		void IGraphicsView.MoveHoverInteraction(PointF[] points) => MoveHoverInteraction?.Invoke(this, new TouchEventArgs(points, true));
 
 		void IGraphicsView.StartInteraction(PointF[] points) => StartInteraction?.Invoke(this, new TouchEventArgs(points, true));
 	}
