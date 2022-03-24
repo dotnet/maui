@@ -20,22 +20,22 @@ namespace Microsoft.AspNetCore.Components.WebView
 			return new(urlToLoad, strategy);
 		}
 
-		private UrlLoadingEventArgs(Uri uri, UrlLoadingStrategy urlLoadingStrategy)
+		private UrlLoadingEventArgs(Uri url, UrlLoadingStrategy urlLoadingStrategy)
 		{
-			Uri = uri;
+			Url = url;
 			UrlLoadingStrategy = urlLoadingStrategy;
 		}
 
 		/// <summary>
-		/// Gets the external <see cref="Uri">URI</see> to be navigated to.
+		/// Gets the <see cref="Url">URL</see> to be loaded.
 		/// </summary>
-		public Uri Uri { get; }
+		public Uri Url { get; }
 
 		/// <summary>
-		/// The policy to use when opening external links from the webview.
-		///
-		/// Defaults to opening links in an external browser.
+		/// The policy to use when loading links from the webview.
+		/// Defaults to <see cref="UrlLoadingStrategy.OpenExternally"/> unless <see cref="Url"/> has a host
+		/// matching the app origin, in which case the default becomes <see cref="UrlLoadingStrategy.OpenInWebView"/>.
 		/// </summary>
-		public UrlLoadingStrategy UrlLoadingStrategy { get; set; } = UrlLoadingStrategy.OpenExternally;
+		public UrlLoadingStrategy UrlLoadingStrategy { get; set; }
 	}
 }

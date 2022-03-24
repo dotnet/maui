@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					// Open in a new browser window regardless of UrlLoadingStrategy
 					callbackArgs.UrlLoadingStrategy = UrlLoadingStrategy.OpenExternally;
 				}
-				else if (callbackArgs.Uri.Host == BlazorWebView.AppHostAddress)
+				else if (callbackArgs.Url.Host == BlazorWebView.AppHostAddress)
 				{
 					callbackArgs.UrlLoadingStrategy = UrlLoadingStrategy.OpenInWebView;
 				}
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					_webView.UrlLoading?.Invoke(callbackArgs);
 				}
 
-				var url = new NSUrl(callbackArgs.Uri.ToString());
+				var url = new NSUrl(callbackArgs.Url.ToString());
 
 				if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
 				{
