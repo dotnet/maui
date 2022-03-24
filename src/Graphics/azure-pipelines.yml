@@ -105,29 +105,28 @@ stages:
 
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
-
+          
             - pwsh: |
                 [xml] $fileXml = Get-Content "eng\Versions.props"
                 $DotNetVersion = $fileXml.SelectSingleNode("Project/PropertyGroup/MicrosoftDotnetSdkInternalPackageVersion").InnerText
                 $DotNetVersionBand = $fileXml.SelectSingleNode("Project/PropertyGroup/DotNetVersionBand").InnerText
-
                 echo "Installing .NET $DotNetVersion"
                 Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
                 & .\dotnet-install.ps1 -Version $DotNetVersion -InstallDir "$env:DOTNET_ROOT" -Verbose
-
                 echo "Removing signing"
                 & "${env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\signtool.exe" remove /s "$env:DOTNET_ROOT\sdk\$DotNetVersionBand\dotnet.dll"
-
                 echo "Listing installed SDKs"
                 & dotnet --list-sdks
               displayName: install .NET
               errorActionPreference: stop
-
-            - pwsh: |
-                dotnet build ./build/DotNet/DotNet.csproj -p:DotNetDirectory="$env:DOTNET_ROOT" -p:InstallDotNet=false
-              displayName: install dotnet workloads
-              errorActionPreference: stop
-
+            
+            - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration.name }}" --verbosity=diagnostic --installdotnet=false
+              displayName: 'install .NET workloads'
+              retryCountOnTaskFailure: 3
+              env:
+                DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                PRIVATE_BUILD: $(PrivateBuild)
+             
             - pwsh: |
                 Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
                 # Fix sdk band version in Tizen script
@@ -155,7 +154,7 @@ stages:
 
             - pwsh: |
                 & $env:MSBUILD_EXE /r /m ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration.name }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration.name }}.binlog
-              displayName: build classic solutions~
+              displayName: build classic solutions
 
             - pwsh: |
                 & $env:MSBUILD_EXE /r /m ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration.name }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration.name }}-net6.binlog
