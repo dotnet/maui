@@ -272,6 +272,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ElementController.SetValueFromRenderer(Editor.TextProperty, TextView.Text);
 		}
 
+		[PortHandler]
 		private void OnFrameChanged(object sender, EventArgs e)
 		{
 			// When a new line is added to the UITextView the resize happens after the view has already scrolled

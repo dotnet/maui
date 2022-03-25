@@ -4,7 +4,10 @@
 	{
 		public static IPropertyMapper<IEditor, EditorHandler> ControlsEditorMapper = 
 			new PropertyMapper<Editor, EditorHandler>(EditorHandler.Mapper)
-		{
+			{
+#if __IOS__
+			[nameof(AutoSize)] = MapAutoSize,
+#endif
 			[nameof(Text)] = MapText,
 			[nameof(TextTransform)] = MapText,
 		};

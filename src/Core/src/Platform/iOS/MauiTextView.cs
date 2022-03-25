@@ -1,18 +1,20 @@
 ﻿using System;
 using CoreGraphics;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiTextView : UITextView
+	public class MauiTextView : UITextView, IMauiTextView
 	{
 		readonly UILabel _placeholderLabel;
+		bool _textChanges;
 
 		public MauiTextView()
 		{
 			_placeholderLabel = InitPlaceholderLabel();
+			_textChanges = false;
+
 			Changed += OnChanged;
 		}
 
@@ -27,6 +29,8 @@ namespace Microsoft.Maui.Platform
 		// We use this event as a way to fire changes whenever the Text changes
 		// via code or user interaction.
 		public event EventHandler? TextSetOrChanged;
+
+		public event EventHandler? FrameChanged;
 
 		public string? PlaceholderText
 		{
@@ -52,6 +56,22 @@ namespace Microsoft.Maui.Platform
 		{
 			get => _placeholderLabel.TextColor;
 			set => _placeholderLabel.TextColor = value;
+		}
+
+		public override CGRect Frame
+		{
+			get => base.Frame;
+			set
+			{
+				base.Frame = value;
+				FrameChanged?.Invoke(this, EventArgs.Empty);
+
+				// When a new line is added to the UITextView the resize happens after the view has already scrolled
+				// This causes the view to reposition without the scroll. If TextChanges is enabled then the Frame
+				// will resize until it can't anymore and thus it should never be scrolled until the Frame can't increase in size
+				if (_textChanges)
+					ScrollRangeToVisible(new NSRange(0, 0));		
+			}
 		}
 
 		public override string? Text
@@ -86,6 +106,11 @@ namespace Microsoft.Maui.Platform
 					TextSetOrChanged?.Invoke(this, EventArgs.Empty);
 				}
 			}
+		}
+
+		public void UpdateShouldChangeScrollPosition(bool textChanges)
+		{
+			_textChanges = textChanges;
 		}
 
 		UILabel InitPlaceholderLabel()
