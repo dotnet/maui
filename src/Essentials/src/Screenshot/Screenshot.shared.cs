@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Media
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="//Member[@MemberName='IsCaptureSupported']/Docs" />
 		public static bool IsCaptureSupported
-			=> Current.IsCaptureSupported;
+			=> Default.IsCaptureSupported;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="//Member[@MemberName='CaptureAsync']/Docs" />
 		public static Task<IScreenshotResult> CaptureAsync()
@@ -59,16 +59,16 @@ namespace Microsoft.Maui.Media
 			if (!IsCaptureSupported)
 				throw new FeatureNotSupportedException();
 
-			return Current.CaptureAsync();
+			return Default.CaptureAsync();
 		}
 
-		static IScreenshot? currentImplementation;
+		static IScreenshot? defaultImplementation;
 
-		public static IScreenshot Current =>
-			currentImplementation ??= new ScreenshotImplementation();
+		public static IScreenshot Default =>
+			defaultImplementation ??= new ScreenshotImplementation();
 
-		internal static void SetCurrent(IScreenshot? implementation) =>
-			currentImplementation = implementation;
+		internal static void SetDefault(IScreenshot? implementation) =>
+			defaultImplementation = implementation;
 	}
 
 	public static class ScreenshotExtensions

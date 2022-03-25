@@ -17,18 +17,18 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Contacts.xml" path="//Member[@MemberName='PickContactAsync']/Docs" />
 		public static Task<Contact?> PickContactAsync() =>
-			Current.PickContactAsync();
+			Default.PickContactAsync();
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Contacts.xml" path="//Member[@MemberName='GetAllAsync']/Docs" />
 		public static Task<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken = default) =>
-			Current.GetAllAsync(cancellationToken);
+			Default.GetAllAsync(cancellationToken);
 
-		static IContacts? currentImplementation;
+		static IContacts? defaultImplementation;
 
-		public static IContacts Current =>
-			currentImplementation ??= new ContactsImplementation();
+		public static IContacts Default =>
+			defaultImplementation ??= new ContactsImplementation();
 
-		internal static void SetCurrent(IContacts? implementation) =>
-			currentImplementation = implementation;
+		internal static void SetDefault(IContacts? implementation) =>
+			defaultImplementation = implementation;
 	}
 }

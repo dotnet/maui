@@ -15,20 +15,18 @@ namespace Microsoft.Maui.Devices
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Flashlight.xml" path="//Member[@MemberName='TurnOnAsync']/Docs" />
 		public static Task TurnOnAsync() =>
-			Current.TurnOnAsync();
+			Default.TurnOnAsync();
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Flashlight.xml" path="//Member[@MemberName='TurnOffAsync']/Docs" />
 		public static Task TurnOffAsync() =>
-			Current.TurnOffAsync();
+			Default.TurnOffAsync();
 
-		static IFlashlight Current => Devices.Flashlight.Current;
+		static IFlashlight? defaultImplementation;
 
-		static IFlashlight? currentImplementation;
+		public static IFlashlight Default =>
+			defaultImplementation ??= new FlashlightImplementation();
 
-		public static IFlashlight Current =>
-			currentImplementation ??= new FlashlightImplementation();
-
-		internal static void SetCurrent(IFlashlight? implementation) =>
-			currentImplementation = implementation;
+		internal static void SetDefault(IFlashlight? implementation) =>
+			defaultImplementation = implementation;
 	}
 }

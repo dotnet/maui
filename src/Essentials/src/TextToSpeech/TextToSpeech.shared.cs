@@ -18,25 +18,23 @@ namespace Microsoft.Maui.Media
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='GetLocalesAsync']/Docs" />
 		public static Task<IEnumerable<Locale>> GetLocalesAsync() =>
-			Current.GetLocalesAsync();
+			Default.GetLocalesAsync();
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync'][1]/Docs" />
 		public static Task SpeakAsync(string text, CancellationToken cancelToken = default) =>
-			Current.SpeakAsync(text, default, cancelToken);
+			Default.SpeakAsync(text, default, cancelToken);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync'][2]/Docs" />
 		public static Task SpeakAsync(string text, SpeechOptions? options, CancellationToken cancelToken = default) =>
-			Current.SpeakAsync(text, options, cancelToken);
+			Default.SpeakAsync(text, options, cancelToken);
 
-		static ITextToSpeech Current => Media.TextToSpeech.Current;
+		static ITextToSpeech? defaultImplementation;
 
-		static ITextToSpeech? currentImplementation;
+		public static ITextToSpeech Default =>
+			defaultImplementation ??= new TextToSpeechImplementation();
 
-		public static ITextToSpeech Current =>
-			currentImplementation ??= new TextToSpeechImplementation();
-
-		internal static void SetCurrent(ITextToSpeech? implementation) =>
-			currentImplementation = implementation;
+		internal static void SetDefault(ITextToSpeech? implementation) =>
+			defaultImplementation = implementation;
 	}
 
 	partial class TextToSpeechImplementation : ITextToSpeech

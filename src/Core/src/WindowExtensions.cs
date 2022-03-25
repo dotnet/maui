@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 			if (window?.Handler?.PlatformView is not PlatformView platformWindow)
 				return Task.FromResult<Stream?>(null);
 
-			if (!Screenshot.Current.IsCaptureSupported)
+			if (!Screenshot.Default.IsCaptureSupported)
 				return Task.FromResult<Stream?>(null);
 
 			return CaptureAsync(platformWindow, format, quality);
@@ -31,7 +31,7 @@ namespace Microsoft.Maui
 #if PLATFORM
 		static async Task<Stream?> CaptureAsync(PlatformView window, ScreenshotFormat format, int quality)
 		{
-			var result = await Screenshot.Current.CaptureAsync(window);
+			var result = await Screenshot.Default.CaptureAsync(window);
 
 			return await result.OpenReadAsync(format, quality);
 		}
