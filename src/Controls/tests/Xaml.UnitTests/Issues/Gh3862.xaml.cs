@@ -40,12 +40,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(false), TestCase(true)]
 			public void OnPlatformMarkupInStyle(bool useCompiledXaml)
 			{
-				mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
+				mockDeviceInfo.Platform = DevicePlatform.iOS;
 				var layout = new Gh3862(useCompiledXaml);
 				Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Pink));
 				Assert.That(layout.label.IsVisible, Is.False);
 
-				mockDeviceInfo.Current.Platform = DevicePlatform.Android;
+				mockDeviceInfo.Platform = DevicePlatform.Android;
 
 				layout = new Gh3862(useCompiledXaml);
 				Assert.That(layout.label.IsVisible, Is.True);

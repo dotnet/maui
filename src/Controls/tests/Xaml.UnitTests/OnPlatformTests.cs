@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void ApplyToProperty()
 		{
-			mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
+			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var xaml = @"
 			<ContentPage 
 			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
@@ -59,15 +59,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			ContentPage layout;
 
-			mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
+			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			layout = new ContentPage().LoadFromXaml(xaml);
 			Assert.AreEqual(new Thickness(0, 20, 0, 0), layout.Padding);
 
-			mockDeviceInfo.Current.Platform = DevicePlatform.Android;
+			mockDeviceInfo.Platform = DevicePlatform.Android;
 			layout = new ContentPage().LoadFromXaml(xaml);
 			Assert.AreEqual(new Thickness(0, 0, 10, 0), layout.Padding);
 
-			mockDeviceInfo.Current.Platform = DevicePlatform.UWP;
+			mockDeviceInfo.Platform = DevicePlatform.UWP;
 			layout = new ContentPage().LoadFromXaml(xaml);
 			Assert.AreEqual(new Thickness(0, 20, 0, 20), layout.Padding);
 		}
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			Image image;
 
-			mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
+			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			image = new Image().LoadFromXaml(xaml);
 			Assert.AreEqual("icon_twitter.png", (image.Source as FileImageSource).File);
 		}
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			Image image;
 
-			mockDeviceInfo.Current.Platform = DevicePlatform.WinUI;
+			mockDeviceInfo.Platform = DevicePlatform.WinUI;
 			image = new Image().LoadFromXaml(xaml);
 			Assert.AreEqual("Images/icon_twitter.png", (image.Source as FileImageSource).File);
 		}
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			Image image;
 
-			mockDeviceInfo.Current.Platform = DevicePlatform.WinUI;
+			mockDeviceInfo.Platform = DevicePlatform.WinUI;
 			image = new Image().LoadFromXaml(xaml);
 			Assert.AreEqual("Images/icon_twitter_preferred.png", (image.Source as FileImageSource).File);
 		}

@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(false, false)]
 			public void Bz59818(bool useCompiledXaml, bool xamlDoubleImplicitOpHack)
 			{
-				mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
+				mockDeviceInfo.Platform = DevicePlatform.iOS;
 
 				StaticResourceExtension.XamlDoubleImplicitOperation = xamlDoubleImplicitOpHack;
 

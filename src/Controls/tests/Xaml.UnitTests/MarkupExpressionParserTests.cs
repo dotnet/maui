@@ -366,7 +366,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestCase("{OnPlatform Android=23, Default=20}", "Foo", 20)]
 		public void OnPlatformExtension(string markup, string platform, int expected)
 		{
-			mockDeviceInfo.Current.Platform = DevicePlatform.Create(platform);
+			mockDeviceInfo.Platform = DevicePlatform.Create(platform);
 
 			var actual = (new MarkupExtensionParser()).ParseExpression(ref markup, new Internals.XamlServiceProvider(null, null)
 			{

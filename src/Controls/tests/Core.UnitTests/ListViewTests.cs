@@ -1605,7 +1605,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void EnforcesCachingStrategy(string platform, ListViewCachingStrategy expected)
 		{
 			// we need to do this because otherwise we cant set the caching strategy
-			mockDeviceInfo.Current.Platform = DevicePlatform.Create(platform);
+			mockDeviceInfo.Platform = DevicePlatform.Create(platform);
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement);
 
 			Assert.AreEqual(expected, listView.CachingStrategy);
@@ -1628,7 +1628,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			// we need to do this because otherwise we cant set the caching strategy
-			mockDeviceInfo.Current.Platform = DevicePlatform.Android;
+			mockDeviceInfo.Platform = DevicePlatform.Android;
 
 			var bindable = new ListView(ListViewCachingStrategy.RecycleElement);
 			bindable.ItemTemplate = new DataTemplate(typeof(TextCell))

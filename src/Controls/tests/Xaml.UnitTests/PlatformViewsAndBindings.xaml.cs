@@ -257,7 +257,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var p = DevicePlatform.Create(platform);
 
-				mockDeviceInfo.Current.Platform = p;
+				mockDeviceInfo.Platform = p;
 				if (p == DevicePlatform.iOS)
 				{
 					DependencyService.Register<INativeValueConverterService, MockIosPlatformValueConverterService>();

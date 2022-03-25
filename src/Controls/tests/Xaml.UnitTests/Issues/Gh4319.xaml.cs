@@ -35,11 +35,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true), TestCase(false)]
 			public void OnPlatformMarkupAndNamedSizes(bool useCompiledXaml)
 			{
-				mockDeviceInfo.Current.Platform = DevicePlatform.iOS;
+				mockDeviceInfo.Platform = DevicePlatform.iOS;
 				var layout = new Gh4319(useCompiledXaml);
 				Assert.That(layout.label.FontSize, Is.EqualTo(4d));
 
-				mockDeviceInfo.Current.Platform = DevicePlatform.Android;
+				mockDeviceInfo.Platform = DevicePlatform.Android;
 				layout = new Gh4319(useCompiledXaml);
 				Assert.That(layout.label.FontSize, Is.EqualTo(8d));
 			}
