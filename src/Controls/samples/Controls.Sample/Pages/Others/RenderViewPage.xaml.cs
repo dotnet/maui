@@ -9,6 +9,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 
 namespace Maui.Controls.Sample.Pages
 {

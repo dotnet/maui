@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[InlineData(true)]
 		[InlineData(false)]
 #if __ANDROID__
-        [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
+		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 #endif
 		[Trait(Traits.Hardware.Flash, Traits.FeatureSupport.Supported)]
 		public Task Turn_On_Off(bool oldCameraApi)
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				return Task.CompletedTask;
 
 #if __ANDROID__
-            (Flashlight.Current as FlashlightImplementation).AlwaysUseCameraApi = oldCameraApi;
+			(Flashlight.Current as FlashlightImplementation).AlwaysUseCameraApi = oldCameraApi;
 #else
 			Utils.Unused(oldCameraApi);
 #endif

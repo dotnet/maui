@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Tests

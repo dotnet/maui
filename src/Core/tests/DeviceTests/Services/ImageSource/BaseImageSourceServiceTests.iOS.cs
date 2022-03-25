@@ -3,6 +3,7 @@ using System.IO;
 using CoreGraphics;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Storage;
 using ObjCRuntime;
 using UIKit;
 using Xunit;

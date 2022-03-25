@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests

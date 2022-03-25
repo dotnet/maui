@@ -1,3 +1,5 @@
+using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Media;
 using Xunit;
 
 namespace Tests

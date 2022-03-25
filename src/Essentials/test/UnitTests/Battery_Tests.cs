@@ -1,3 +1,5 @@
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Tests

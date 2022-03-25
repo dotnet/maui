@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.Maui.ApplicationModel;
 using Xunit;
 
 namespace Tests
