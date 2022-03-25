@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			Title = "SwitchCell List Gallery - Legacy";
 
-			if (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
+			if (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
 				Padding = new Thickness(0, 0, 0, 60);
 
 			var dataTemplate = new DataTemplate(typeof(SwitchCell))

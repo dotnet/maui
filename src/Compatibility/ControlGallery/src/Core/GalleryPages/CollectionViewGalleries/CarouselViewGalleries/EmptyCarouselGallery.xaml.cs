@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 		{
 			var random = new Random();
 
-			if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
+			if (DeviceInfo.Platform == DevicePlatform.iOS)
 			{
 				var items = new List<CarouselData>();
 

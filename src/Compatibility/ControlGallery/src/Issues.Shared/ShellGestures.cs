@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			listView.ItemsSource = Enumerable.Range(0, 100).Select(x => $"{x} Entry").ToList();
 			listViewPage.Content = listView;
 
-			if (DeviceInfo.Current.Platform == DevicePlatform.Android)
+			if (DeviceInfo.Platform == DevicePlatform.Android)
 			{
 				var touchListenter = CreateContentPage(shellItemTitle: TouchListenerTitle);
 				touchListenter.Content = new TouchTestView();

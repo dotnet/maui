@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		protected override void Init()
 		{
-			if (DeviceInfo.Current.Platform == DevicePlatform.UWP)
+			if (DeviceInfo.Platform == DevicePlatform.UWP)
 				FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split;
 			else
 				FlyoutLayoutBehavior = FlyoutLayoutBehavior.SplitOnLandscape;

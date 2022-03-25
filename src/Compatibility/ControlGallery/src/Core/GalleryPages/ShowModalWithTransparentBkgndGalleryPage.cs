@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 				}
 			};
 
-			if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
+			if (DeviceInfo.Platform == DevicePlatform.iOS)
 			{
 				layout.Children.Add(_modalPresentationStylesPicker);
 			}

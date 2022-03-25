@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 			};
 
-			if (DeviceInfo.Idiom != DeviceIdiom.Tablet || DeviceInfo.Current.Platform != DevicePlatform.iOS)
+			if (DeviceInfo.Idiom != DeviceIdiom.Tablet || DeviceInfo.Platform != DevicePlatform.iOS)
 				stackLayout.Children.Insert(0, skip);
 
 			Content = stackLayout;

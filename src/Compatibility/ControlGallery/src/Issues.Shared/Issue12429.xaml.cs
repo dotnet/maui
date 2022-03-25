@@ -34,10 +34,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			InitializeComponent();
 
 
-			if (DeviceInfo.Current.Platform == DevicePlatform.Android)
+			if (DeviceInfo.Platform == DevicePlatform.Android)
 				SmallFlyoutItem = SmallFlyoutItem / DeviceDisplay.MainDisplayInfo.Density;
 
-			if (DeviceInfo.Current.Platform == DevicePlatform.Android)
+			if (DeviceInfo.Platform == DevicePlatform.Android)
 				SizeToModifyBy = SizeToModifyBy / DeviceDisplay.MainDisplayInfo.Density;
 #endif
 

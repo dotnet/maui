@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				string text = "This Test is only Relevant on Android";
 
-				if (DeviceInfo.Current.Platform == DevicePlatform.Android)
+				if (DeviceInfo.Platform == DevicePlatform.Android)
 					text = "Toolbar Item Icon should be a hear";
 
 				ContentPage contentPage = new ContentPage()

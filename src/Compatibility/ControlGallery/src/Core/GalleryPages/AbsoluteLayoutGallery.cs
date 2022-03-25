@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	{
 		public AbsoluteLayoutGallery()
 		{
-			if (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
+			if (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
 				Padding = new Thickness(0, 0, 0, 60);
 
 			BindingContext = new AbsolutePositioningExplorationViewModel();

@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 				rl.Children.Add(addFrame,
 					Compatibility.Constraint.RelativeToParent((parent) => (parent.Width * .25) / 2),
-					Compatibility.Constraint.Constant(DeviceInfo.Current.Platform == DevicePlatform.iOS ? 60 : 40),
+					Compatibility.Constraint.Constant(DeviceInfo.Platform == DevicePlatform.iOS ? 60 : 40),
 					Compatibility.Constraint.RelativeToParent((parent) => parent.Width * .75));
 
 				Content = rl;

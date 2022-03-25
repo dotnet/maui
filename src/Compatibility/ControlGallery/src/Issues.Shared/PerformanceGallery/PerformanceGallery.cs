@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if __ANDROID__ && !LEGACY_RENDERERS
 			_DevicePlatform = "Android Fast Renderers";
 #else
-			_DevicePlatform = CrossDeviceInfo.Current.Platform.ToString();
+			_DevicePlatform = CrossDeviceInfo.Platform.ToString();
 #endif
 			_DeviceVersionNumber = CrossDeviceInfo.Current.VersionNumber.ToString();
 

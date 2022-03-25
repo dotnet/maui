@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 			};
 
-			if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
+			if (DeviceInfo.Platform == DevicePlatform.iOS)
 			{
 				var red = new Button { Text = "Red", TextColor = Colors.Red };
 				red.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(Colors.Red);

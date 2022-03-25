@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				BackgroundColor = Colors.Aqua,
 				Orientation = ScrollOrientation.Horizontal,
-				HeightRequest = DeviceInfo.Current.Platform == DevicePlatform.WinUI ? 80 : 44,
+				HeightRequest = DeviceInfo.Platform == DevicePlatform.WinUI ? 80 : 44,
 				Content = buttonStack
 			});
 

@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				int success = 0;
 
 				//some reason there's always 1 instance around i don't know why yet, if we were leaking it should be 8 here
-				if (DeviceInfo.Current.Platform == DevicePlatform.macOS)
+				if (DeviceInfo.Platform == DevicePlatform.macOS)
 					success = 4;
 
 				if (_44166NavContent.Counter + _44166Detail.Counter + _44166Master.Counter + _44166MDP.Counter == success)

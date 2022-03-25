@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			Title = "EntryCell Table Gallery - Legacy";
 
-			if (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
+			if (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
 				Padding = new Thickness(0, 0, 0, 60);
 
 			int timesEntered = 1;

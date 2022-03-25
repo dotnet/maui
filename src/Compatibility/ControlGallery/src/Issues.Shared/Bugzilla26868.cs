@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				IsGroupingEnabled = true,
 				GroupDisplayBinding = new Binding("GroupName"),
 				GroupShortNameBinding = new Binding("GroupName"),
-				HasUnevenRows = DeviceInfo.Current.Platform == DevicePlatform.Android,
+				HasUnevenRows = DeviceInfo.Platform == DevicePlatform.Android,
 
 				ItemTemplate = itemTemplate,
 				GroupHeaderTemplate = groupHeaderTemplate,

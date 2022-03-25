@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					{
 						var target = _DataSource[i];
 
-						if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
+						if (DeviceInfo.Platform == DevicePlatform.iOS)
 						{
 							if (typeof(T) == typeof(MyViewCell))
 								target.Text = "I am an exceptionally long string that should cause the label to wrap, thus increasing the size of the cell such that the entirety of the string is readable by human eyes. Hurrah.";
