@@ -31,7 +31,7 @@ namespace Maui.Controls.Sample.Pages
 			Reset();
 			stopwatch.Start();
 
-			var renderImage = await Window.CaptureAsync(vm.RenderType);
+			var renderImage = await Window.CaptureAsync();
 
 			stopwatch.Stop();
 
@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample.Pages
 			Reset();
 			stopwatch.Start();
 
-			var renderImage = await RenderButton.CaptureAsync(vm.RenderType);
+			var renderImage = await RenderButton.CaptureAsync();
 
 			stopwatch.Stop();
 
@@ -79,14 +79,14 @@ namespace Maui.Controls.Sample.Pages
 			if (renderImage is not null)
 			{
 				imageStream = new MemoryStream();
-				await renderImage.CopyToAsync(imageStream);
+				await renderImage.CopyToAsync(imageStream, vm.RenderType);
 				imageStream.Position = 0;
 
 				TestImage.Source = ImageSource.FromStream(() => imageStream);
 			}
 
 			StopwatchTime.Text = stopwatch.Elapsed.ToString();
-			RenderStats.Text = $"Size: {SizeInBytes(renderImage)}";
+			RenderStats.Text = $"Size: {SizeInBytes(imageStream)}";
 		}
 
 		void Reset()
