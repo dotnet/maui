@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Authentication
 {
 	partial class AppleSignInAuthenticatorImplementation : IAppleSignInAuthenticator
 	{
-		public Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticatorOptions options) =>
+		public Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticator.Options options) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Authentication
 	{
 		AuthManager authManager;
 
-		public async Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticatorOptions options)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticator.Options options)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
 				throw new FeatureNotSupportedException();

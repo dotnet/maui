@@ -425,10 +425,13 @@ namespace Tests
 				remove => RemovedCount++;
 			}
 
-			public DisplayInfo GetMainDisplayInfo()
+			public DisplayInfo MainDisplayInfo
 			{
-				GetMainDisplayInfoCount++;
-				return _displayInfo;
+				get
+				{
+					GetMainDisplayInfoCount++;
+					return _displayInfo;
+				}
 			}
 
 			public void StartScreenMetricsListeners()

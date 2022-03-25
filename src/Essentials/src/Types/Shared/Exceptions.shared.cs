@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.ApplicationModel
 {
 	static class ExceptionUtils
 	{
@@ -9,17 +9,27 @@ namespace Microsoft.Maui
 			new NotImplementedInReferenceAssemblyException();
 #else
 		internal static FeatureNotSupportedException NotSupportedOrImplementedException =>
-			new FeatureNotSupportedException($"This API is not supported on {DeviceInfo.Current.Platform}");
+			new FeatureNotSupportedException($"This API is not supported on {DeviceInfo.Platform}");
 #endif
 
 	}
 
 	/// <include file="../../../docs/Microsoft.Maui.Essentials/NotImplementedInReferenceAssemblyException.xml" path="Type[@FullName='Microsoft.Maui.Essentials.NotImplementedInReferenceAssemblyException']/Docs" />
-	public class NotImplementedInReferenceAssemblyException : NotImplementedException
+	class NotImplementedInReferenceAssemblyException : NotImplementedException
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Essentials/NotImplementedInReferenceAssemblyException.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public NotImplementedInReferenceAssemblyException()
 			: base("This functionality is not implemented in the portable version of this assembly. You should reference the NuGet package from your main application project in order to reference the platform-specific implementation.")
+		{
+		}
+	}
+
+	/// <include file="../../../docs/Microsoft.Maui.Essentials/PermissionException.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PermissionException']/Docs" />
+	public class PermissionException : UnauthorizedAccessException
+	{
+		/// <include file="../../../docs/Microsoft.Maui.Essentials/PermissionException.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		public PermissionException(string message)
+			: base(message)
 		{
 		}
 	}
@@ -62,19 +72,6 @@ namespace Microsoft.Maui
 		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotEnabledException.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public FeatureNotEnabledException(string message, Exception innerException)
 			: base(message, innerException)
-		{
-		}
-	}
-}
-
-namespace Microsoft.Maui.ApplicationModel
-{
-	/// <include file="../../../docs/Microsoft.Maui.Essentials/PermissionException.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PermissionException']/Docs" />
-	public class PermissionException : UnauthorizedAccessException
-	{
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/PermissionException.xml" path="//Member[@MemberName='.ctor']/Docs" />
-		public PermissionException(string message)
-			: base(message)
 		{
 		}
 	}

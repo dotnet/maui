@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged;
 
-		public DisplayInfo GetMainDisplayInfo() => _mainDisplayInfo;
+		public DisplayInfo MainDisplayInfo => _mainDisplayInfo;
 
 		public void UpdateMainDisplayInfo(DisplayInfo displayInfo)
 		{
