@@ -1,3 +1,4 @@
+using System;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Text;
@@ -73,7 +74,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateLineBreakMode(this TextView textView, ILabel label)
 		{
-			textView.SetLineBreakMode(label);
+			textView.SetLineBreakMode(label, label.MaxLines);
 		}
 
 		public static void UpdateMaxLines(this TextView textView, ILabel label)
@@ -146,14 +147,15 @@ namespace Microsoft.Maui.Platform
 			if (label.LineHeight >= 0)
 				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
-
-		internal static void SetLineBreakMode(this TextView textView, ILabel label)
+			
+		internal static void SetLineBreakMode(this TextView textView, ILineBreakMode breakMode, int? maxLines = null)
 		{
-			var lineBreakMode = label.LineBreakMode;
+			var lineBreakMode = breakMode.LineBreakMode;
 
-			int maxLines = label.MaxLines;
+			if (breakMode is ILabel label)
+				maxLines = label.MaxLines;
 
-			if (maxLines <= 0)
+			if (!maxLines.HasValue || maxLines <= 0)
 				maxLines = int.MaxValue;
 
 			bool singleLine = false;
@@ -189,7 +191,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			textView.SetSingleLine(singleLine);
-			textView.SetMaxLines(maxLines);
+			textView.SetMaxLines(maxLines.Value);
 		}
 	}
 }
