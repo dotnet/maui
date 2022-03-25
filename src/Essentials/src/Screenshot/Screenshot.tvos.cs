@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Media
 {
-	public partial class ScreenshotImplementation : IScreenshot
+	partial class ScreenshotImplementation : IScreenshot
 	{
 		public bool PlatformIsCaptureSupported =>
 			UIScreen.MainScreen != null;

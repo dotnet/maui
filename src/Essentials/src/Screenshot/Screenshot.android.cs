@@ -11,7 +11,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Media
 {
-	public partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
+	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
 	{
 		static IWindowManager windowManager;
 

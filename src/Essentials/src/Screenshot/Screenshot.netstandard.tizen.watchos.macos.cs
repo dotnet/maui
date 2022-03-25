@@ -4,7 +4,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Media
 {
-	public partial class ScreenshotImplementation : IScreenshot
+	partial class ScreenshotImplementation : IScreenshot
 	{
 		public bool IsCaptureSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;

@@ -15,7 +15,7 @@ using Windows.UI.Xaml.Media.Imaging;
 
 namespace Microsoft.Maui.Media
 {
-	public partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
+	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
 	{
 		public bool IsCaptureSupported =>
 			true;
