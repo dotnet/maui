@@ -41,8 +41,6 @@ namespace Microsoft.Maui.Handlers
 			if (_editor != null)
 				_editor.EditingChanged += OnEditingChanged;
 			
-			SetupDefaults(platformView);
-
 			base.ConnectHandler(platformView);
 		}
 
