@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests

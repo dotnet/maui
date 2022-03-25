@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Clipboard']/Docs" />
 	public partial class ClipboardImplementation : IClipboard

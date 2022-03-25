@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	public static partial class Sms
 	{

@@ -2,12 +2,15 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
 using MobileCoreServices;
 using ObjCRuntime;
 using Photos;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media
 {
 	public partial class MediaPickerImplementation : IMediaPicker
 	{

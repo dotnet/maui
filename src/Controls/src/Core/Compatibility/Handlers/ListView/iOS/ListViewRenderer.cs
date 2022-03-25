@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;

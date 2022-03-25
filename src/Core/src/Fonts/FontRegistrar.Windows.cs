@@ -1,7 +1,7 @@
 #nullable enable
 using System.IO;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui
 {

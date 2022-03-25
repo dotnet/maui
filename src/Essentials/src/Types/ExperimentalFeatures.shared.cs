@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ExperimentalFeatures.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ExperimentalFeatures']/Docs" />
 	public static class ExperimentalFeatures

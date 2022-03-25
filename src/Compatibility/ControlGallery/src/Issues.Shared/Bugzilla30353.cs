@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 #if UITEST

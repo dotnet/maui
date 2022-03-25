@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	internal static partial class MainThreadExtensions
 	{

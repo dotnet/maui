@@ -6,7 +6,8 @@ using Android.Net;
 using Android.OS;
 using Android.Webkit;
 using Microsoft.Maui;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
 using File = Java.IO.File;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui

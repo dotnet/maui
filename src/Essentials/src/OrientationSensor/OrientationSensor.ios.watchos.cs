@@ -2,8 +2,9 @@ using System;
 using System.Numerics;
 using CoreMotion;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class OrientationSensorImplementation : IOrientationSensor
 	{

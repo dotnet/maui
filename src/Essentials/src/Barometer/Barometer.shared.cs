@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public interface IBarometer
 	{
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class BarometerImplementation : IBarometer
 	{

@@ -8,7 +8,7 @@ using ObjCRuntime;
 using Photos;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage
 {
 	public partial class FileSystemImplementation : IFileSystem, IPlatformFileSystem
 	{
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 	}
 }
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	class BookmarkDataFileResult : FileResult
 	{

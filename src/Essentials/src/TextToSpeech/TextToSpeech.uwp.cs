@@ -10,7 +10,7 @@ using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Media.SpeechSynthesis;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media
 {
 	public partial class TextToSpeechImplementation : ITextToSpeech
 	{

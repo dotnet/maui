@@ -2,7 +2,7 @@ using Windows.Devices.Sensors;
 
 using WindowsCompass = Windows.Devices.Sensors.Compass;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class CompassImplementation : ICompass
 	{

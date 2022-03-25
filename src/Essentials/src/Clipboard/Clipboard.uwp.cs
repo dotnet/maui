@@ -4,7 +4,7 @@ using Windows.ApplicationModel.DataTransfer;
 
 using WindowsClipboard = Windows.ApplicationModel.DataTransfer.Clipboard;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
 	public partial class ClipboardImplementation : IClipboard
 	{

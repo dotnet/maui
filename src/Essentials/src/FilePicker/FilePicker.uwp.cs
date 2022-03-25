@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	public static partial class FilePicker
 	{

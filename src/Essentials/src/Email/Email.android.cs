@@ -6,9 +6,10 @@ using Android.Content;
 using Android.OS;
 using Android.Text;
 using Android.Webkit;
+using Microsoft.Maui.Storage;
 using Uri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	public partial class EmailImplementation : IEmail
 	{

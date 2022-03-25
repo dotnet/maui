@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.Devices;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	public interface IContacts
 	{

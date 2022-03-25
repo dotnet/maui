@@ -5,7 +5,8 @@ using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
 
 namespace Maui.Controls.Sample
 {

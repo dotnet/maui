@@ -1,7 +1,7 @@
 using Windows.Devices.Sensors;
 using WindowsGyro = Windows.Devices.Sensors.Gyrometer;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class GyroscopeImplementation : IGyroscope
 	{

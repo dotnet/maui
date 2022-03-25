@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppActions']/Docs" />
 	public partial class AppActionsImplementation : IAppActions

@@ -10,7 +10,7 @@ using Windows.Storage.Streams;
 using PlatformEmailAttachment = Windows.ApplicationModel.Email.EmailAttachment;
 using PlatformEmailMessage = Windows.ApplicationModel.Email.EmailMessage;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	public partial class EmailImplementation : IEmail
 	{

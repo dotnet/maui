@@ -1,7 +1,7 @@
 using Tizen.Sensor;
 using TizenMagnetometer = Tizen.Sensor.Magnetometer;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class MagnetometerImplementation : IMagnetometer
 	{

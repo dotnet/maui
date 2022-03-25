@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Cadenza.Collections;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Internals
 {

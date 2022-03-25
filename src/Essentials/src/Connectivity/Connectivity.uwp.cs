@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.Networking.Connectivity;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Networking
 {
 	public partial class ConnectivityImplementation : IConnectivity
 	{
