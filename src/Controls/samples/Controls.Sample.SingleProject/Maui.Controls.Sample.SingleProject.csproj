@@ -5,6 +5,8 @@
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
+    <UseMauiCore>true</UseMauiCore>
+    <UseMaui>true</UseMaui>
   </PropertyGroup>
 
   <PropertyGroup>
