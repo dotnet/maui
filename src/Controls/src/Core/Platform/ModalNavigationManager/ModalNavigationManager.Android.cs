@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var currentRootView = GetCurrentRootView() as ViewGroup;
 
-			if(_window?.PlatformActivity.GetWindow() == _window)
+			if(_window?.PlatformActivity?.GetWindow() == _window)
 			{
 				currentRootView = _window?.PlatformActivity?.Window?.DecorView as ViewGroup;
 			}
