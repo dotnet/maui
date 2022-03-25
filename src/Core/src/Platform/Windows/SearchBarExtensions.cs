@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SearchBarExtensions
 	{
-		private static readonly string[] _backgroundColorKeys =
+		private static readonly string[] BackgroundColorKeys =
 		{
 			"TextControlBackground",
 			"TextControlBackgroundPointerOver",
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			UpdateColors(platformControl.Resources, _backgroundColorKeys, searchBar.Background?.ToPlatform());
+			UpdateColors(platformControl.Resources, BackgroundColorKeys, searchBar.Background?.ToPlatform());
 		}
 
 		public static void UpdateIsEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar)
@@ -99,26 +99,12 @@ namespace Microsoft.Maui.Platform
 			if (currentControlText.Length > searchBar.MaxLength)
 				platformControl.Text = currentControlText.Substring(0, searchBar.MaxLength);
 		}
-		
-		public static void UpdateIsReadOnly(this AutoSuggestBox platformControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
+
+		public static void UpdateIsSpellCheckEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			if (queryTextBox == null)
-				queryTextBox = platformControl.GetFirstDescendant<MauiSearchTextBox>();
-
-			if (queryTextBox == null)
-				return;
-
-			queryTextBox.IsReadOnly = searchBar.IsReadOnly;
+			// AutoSuggestBox does not support this property
 		}
-    
-    public static void UpdateIsSpellCheckEnabled(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
-		{
-			if (queryTextBox == null)
-				return;
 
-			queryTextBox.IsSpellCheckEnabled = searchBar.IsSpellCheckEnabled;
-    }
-		
 		public static void UpdateIsReadOnly(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
 			platformControl.IsEnabled = searchBar.IsReadOnly;

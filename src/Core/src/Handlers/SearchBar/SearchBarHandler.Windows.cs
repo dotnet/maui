@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -82,8 +81,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsSpellCheckEnabled(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			if (handler is SearchBarHandler searchBarHandler)
-				handler.PlatformView?.UpdateIsSpellCheckEnabled(searchBar, searchBarHandler._queryTextBox);
+			handler.PlatformView?.UpdateIsSpellCheckEnabled(searchBar);
 		}
 
 		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar) 
