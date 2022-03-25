@@ -220,7 +220,7 @@ stages:
             displayName: Download Signed Packages
             inputs:
               artifactName: nuget
-              downloadPath: $(Build.StagingDirectory)\nuget-signed
+              downloadPath: $(Build.StagingDirectory)\nuget
               patterns: |
                 **/signed/*.nupkg
 
@@ -228,7 +228,7 @@ stages:
               & dotnet build -v:n
               -t:PushManifestToBuildAssetRegistry
               -p:BuildAssetRegistryToken=$(MaestroAccessToken)
-              -p:OutputPath=$(Build.StagingDirectory)\nuget-signed\
+              -p:OutputPath=$(Build.StagingDirectory)\nuget\signed\
               $(System.DefaultWorkingDirectory)\build\DotNet\Dependencies\Workloads.csproj
             displayName: generate and publish BAR manifest
             condition: and(succeeded(), eq(variables['PushPackageInfoToMaestro'], 'true'))
