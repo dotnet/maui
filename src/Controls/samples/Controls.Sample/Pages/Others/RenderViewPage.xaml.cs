@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 using Maui.Controls.Sample.ViewModels.Base;
 using Microsoft.Maui;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
