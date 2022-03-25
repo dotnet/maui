@@ -35,7 +35,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !ANDROID
 		[Theory]
 		[ClassData(typeof(PageTypes))]
 		public async Task BasicPushAndPop(Page modalPage)
@@ -57,7 +56,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(0, navPage.Navigation.ModalStack.Count);
 		}
-#endif
 
 		class PageTypes : IEnumerable<object[]>
 		{
