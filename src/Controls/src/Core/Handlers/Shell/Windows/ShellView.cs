@@ -53,7 +53,6 @@ namespace Microsoft.Maui.Controls.Platform
 			TogglePaneButton?.SetAutomationPropertiesAutomationId("OK");
 
 			base.OnApplyTemplateCore();
-
 		}
 
 		internal void UpdateFlyoutPosition()

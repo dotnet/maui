@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Android.Views;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				// Test with RTL support off 
 				SetIsRTLSupported(false);
 
-				await Device.InvokeOnMainThreadAsync(() =>
+				await Application.Current.Dispatcher.DispatchAsync(() =>
 				{
 					var entry1 = new Entry { Text = "foo", HorizontalTextAlignment = TextAlignment.Center };
 					using (var editText = GetNativeControl(entry1))
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 
 				var navPage = new NavigationPage(page);
 
-				await Device.InvokeOnMainThreadAsync(() => GetRenderer(navPage));
+				await Application.Current.Dispatcher.DispatchAsync(() => GetRenderer(navPage));
 			}
 			catch (Exception exc)
 			{

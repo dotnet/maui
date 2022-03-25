@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void MeasureExactly();
 	}
 
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer instead")]
 	public abstract class ViewRenderer : ViewRenderer<View, AView>
 	{
 		protected ViewRenderer(Context context) : base(context)
@@ -21,6 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 	}
 
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer instead")]
 	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>, IViewRenderer, ITabStop, AView.IOnFocusChangeListener where TView : View where TNativeView : AView
 	{
 		protected ViewRenderer(Context context) : base(context)

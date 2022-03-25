@@ -8,8 +8,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <WindowsPackageType>MSIX</WindowsPackageType>
     <!-- <WindowsPackageType>None</WindowsPackageType> -->
     <ApplicationTitle>.NET MAUI Controls</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sample</ApplicationId>
@@ -17,16 +15,7 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
-    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
-
-  <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(UseMaui)' != 'true' and $(TargetFramework.Contains('-windows')) ">
-    <PackageReference Include="Microsoft.Graphics.Win2D" />
-  </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -44,14 +33,10 @@
     <ProjectReference Include="..\Controls.Sample\Maui.Controls.Sample.csproj" />
   </ItemGroup>
 
-  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <OutputType>WinExe</OutputType>
-    <RuntimeIdentifier Condition="'$(Platform)' == 'x86'">win10-x86</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$(Platform)' != 'x86'">win10-x64</RuntimeIdentifier>
-  </PropertyGroup>
-
   <ItemGroup>
     <Content Remove="Properties\launchSettings.json" />
   </ItemGroup>
+
+  <Import Project="../../../Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

@@ -26,18 +26,15 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MaterialToolbar CreatePlatformElement()
 		{
-			LayoutInflater? li = MauiContext?.GetLayoutInflater();
-			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
+			var context = MauiContext?.Context ?? throw new InvalidOperationException("Context cannot be null");
+			return Microsoft.Maui.PlatformInterop.CreateToolbar(context, context.GetActionBarHeight(), Resource.Style.ThemeOverlay_AppCompat_Light);
+		}
 
-			var view = li.Inflate(Microsoft.Maui.Resource.Layout.maui_toolbar, null)?.JavaCast<MaterialToolbar>();
-			_ = view ?? throw new InvalidOperationException($"Resource.Layout.maui_toolbar view not found");
-
-			view.LayoutParameters = new AppBarLayout.LayoutParams(LP.MatchParent, MauiContext?.Context?.GetActionBarHeight() ?? LP.WrapContent)
-			{
-				ScrollFlags = 0
-			};
-
-			return view;
+		private protected override void OnDisconnectHandler(object platformView)
+		{
+			base.OnDisconnectHandler(platformView);
+			if (platformView is MaterialToolbar mt)
+				mt.RemoveFromParent();
 		}
 
 		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)
@@ -80,8 +77,8 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var appbarConfigBuilder =
-					   new AppBarConfiguration
-						   .Builder(_stackNavigationManager.NavGraph);
+					new AppBarConfiguration
+						.Builder(_stackNavigationManager.NavGraph);
 
 			if (_drawerLayout != null)
 				appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(_drawerLayout);

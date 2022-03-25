@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var imageSource = (ImageSourceStub)Activator.CreateInstance(type);
 
-			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetDrawableAsync(imageSource, Platform.DefaultContext));
+			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetDrawableAsync(MauiProgram.DefaultContext, imageSource));
 		}
 
 		[Theory]
@@ -32,9 +32,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			var imageSource = new FileImageSourceStub(filename);
 
-			using var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			using var result = await service.GetDrawableAsync(MauiProgram.DefaultContext, imageSource);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
 
 			var bitmap = bitmapDrawable.Bitmap;
 
@@ -55,13 +55,23 @@ namespace Microsoft.Maui.DeviceTests
 			var filename = CreateBitmapFile(100, 100, expectedColor);
 			var imageSource = new FileImageSourceStub(filename);
 
-			using var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			using var result = await service.GetDrawableAsync(MauiProgram.DefaultContext, imageSource);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
 
 			var bitmap = bitmapDrawable.Bitmap;
 
 			bitmap.AssertColorAtCenter(expectedColor.ToPlatform());
+		}
+
+		async Task<Drawable> GetDrawable(IImageSourceService service, IImageSource imageSource)
+		{
+			var tcsDrawable = new TaskCompletionSource<Drawable>();
+
+			// get an image
+			var result1 = await service.GetDrawableAsync(MauiProgram.DefaultContext, imageSource).ConfigureAwait(false);
+
+			return await tcsDrawable.Task.ConfigureAwait(false);
 		}
 	}
 }

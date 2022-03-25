@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DeviceStateTrigger.xml" path="//Member[@MemberName='DeviceProperty']/Docs" />
 		public static readonly BindableProperty DeviceProperty =
-		BindableProperty.Create(nameof(Device), typeof(string), typeof(DeviceStateTrigger), string.Empty,
-			propertyChanged: OnDeviceChanged);
+			BindableProperty.Create(nameof(Device), typeof(string), typeof(DeviceStateTrigger), string.Empty,
+				propertyChanged: OnDeviceChanged);
 
 		static void OnDeviceChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
@@ -31,12 +31,10 @@ namespace Microsoft.Maui.Controls
 		void UpdateState()
 		{
 			var device = DevicePlatform.Create(Device);
-			if (device == DevicePlatform.Android)
-				SetActive(DeviceInfo.Platform == DevicePlatform.Android);
-			else if (device == DevicePlatform.iOS)
-				SetActive(DeviceInfo.Platform == DevicePlatform.iOS);
-			else if (device == DevicePlatform.WinUI || device == DevicePlatform.Create("UWP"))
+			if (device == DevicePlatform.Create("UWP"))
 				SetActive(DeviceInfo.Platform == DevicePlatform.WinUI);
+			else
+				SetActive(DeviceInfo.Platform == device);
 		}
 	}
 }

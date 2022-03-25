@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 	// Also, we can probably do all that in Forms, too. 
 
+	[System.Obsolete]
 	class MotionEventHelper
 	{
 		VisualElement _element;

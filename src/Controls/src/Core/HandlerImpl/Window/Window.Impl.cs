@@ -19,9 +19,11 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty PageProperty = BindableProperty.Create(
 			nameof(Page), typeof(Page), typeof(Window), default(Page?),
+			propertyChanging: OnPageChanging,
 			propertyChanged: OnPageChanged);
 
-		public static readonly BindableProperty FlowDirectionProperty = BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
+		public static readonly BindableProperty FlowDirectionProperty =
+			BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		ReadOnlyCollection<Element>? _logicalChildren;
@@ -32,8 +34,13 @@ namespace Microsoft.Maui.Controls
 		IToolbar? IToolbarElement.Toolbar => Toolbar;
 		internal Toolbar? Toolbar
 		{
-			get => _toolbar; set
+			get => _toolbar;
+			set
 			{
+				if (_toolbar == value)
+					return;
+
+				_toolbar?.Handler?.DisconnectHandler();
 				_toolbar = value;
 				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
 			}
@@ -68,6 +75,8 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(TitleProperty, value);
 		}
 
+		string? ITitledElement.Title => Title ?? (Page as Shell)?.Title;
+
 		public Page? Page
 		{
 			get => (Page?)GetValue(PageProperty);
@@ -87,6 +96,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler? Stopped;
 		public event EventHandler? Destroying;
 		public event EventHandler<BackgroundingEventArgs>? Backgrounding;
+		public event EventHandler<DisplayDensityChangedEventArgs>? DisplayDensityChanged;
 
 		protected virtual void OnCreated() { }
 		protected virtual void OnResumed() { }
@@ -95,6 +105,7 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnStopped() { }
 		protected virtual void OnDestroying() { }
 		protected virtual void OnBackgrounding(IPersistedState state) { }
+		protected virtual void OnDisplayDensityChanged(float displayDensity) { }
 
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		{
@@ -147,6 +158,8 @@ namespace Microsoft.Maui.Controls
 
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
+
+		internal bool IsActivated { get; private set; }
 
 		IFlowDirectionController FlowController => this;
 
@@ -294,12 +307,14 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Activated()
 		{
+			IsActivated = true;
 			Activated?.Invoke(this, EventArgs.Empty);
 			OnActivated();
 		}
 
 		void IWindow.Deactivated()
 		{
+			IsActivated = false;
 			Deactivated?.Invoke(this, EventArgs.Empty);
 			OnDeactivated();
 		}
@@ -332,6 +347,19 @@ namespace Microsoft.Maui.Controls
 			OnBackgrounding(state);
 		}
 
+		void IWindow.DisplayDensityChanged(float displayDensity)
+		{
+			DisplayDensityChanged?.Invoke(this, new DisplayDensityChangedEventArgs(displayDensity));
+			OnDisplayDensityChanged(displayDensity);
+		}
+
+		float IWindow.RequestDisplayDensity()
+		{
+			var request = new DisplayDensityRequest();
+			var result = Handler?.InvokeWithResult(nameof(IWindow.RequestDisplayDensity), request);
+			return result ?? 1.0f;
+		}
+
 		FlowDirection IWindow.FlowDirection
 		{
 			get
@@ -351,6 +379,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		public float DisplayDensity => ((IWindow)this).RequestDisplayDensity();
+
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
 			base.OnHandlerChangingCore(args);
@@ -368,6 +398,23 @@ namespace Microsoft.Maui.Controls
 		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() =>
 			_visualChildren;
 
+
+		static void OnPageChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is not Window window)
+				return;
+
+			if (newValue is IToolbarElement toolbarElement &&
+				toolbarElement.Toolbar is Toolbar tb)
+			{
+				window.Toolbar = tb;
+			}
+			else
+			{
+				window.Toolbar = null;
+			}
+		}
+
 		static void OnPageChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (bindable is not Window window)
@@ -380,6 +427,9 @@ namespace Microsoft.Maui.Controls
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
 			}
+
+			if (oldPage is Shell shell)
+				shell.PropertyChanged += ShellPropertyChanged;
 
 			var newPage = newValue as Page;
 			if (newPage != null)
@@ -400,6 +450,9 @@ namespace Microsoft.Maui.Controls
 					OnPageHandlerChanged(newPage, EventArgs.Empty);
 			}
 
+			if (newPage is Shell newShell)
+				newShell.PropertyChanged += ShellPropertyChanged;
+
 			window?.Handler?.UpdateValue(nameof(IWindow.FlowDirection));
 
 			void OnPageHandlerChanged(object? sender, EventArgs e)
@@ -411,6 +464,12 @@ namespace Microsoft.Maui.Controls
 			void OnPageHandlerChanging(object? sender, HandlerChangingEventArgs e)
 			{
 				window.AlertManager.Unsubscribe();
+			}
+
+			void ShellPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == nameof(Shell.Title))
+					window?.Handler?.UpdateValue(nameof(ITitledElement.Title));
 			}
 		}
 
