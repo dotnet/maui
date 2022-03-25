@@ -16,6 +16,11 @@
     <ApplicationVersion>1</ApplicationVersion>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
   </PropertyGroup>
+   
+  <!-- Workaround for VSMac Preview to recognize all TFM's and show devices until fixed in VSMac -->
+  <ItemGroup>
+    <ProjectCapability Include="UseMauiCore" />
+  </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
