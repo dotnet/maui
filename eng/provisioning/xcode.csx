@@ -40,7 +40,7 @@ item.XcodeSelect();
 
 if(desiredXcode == "13.3")
 {
-    XcodeSimulator ("iOS", desiredXcode);
+    XcodeSimulator ("iOS", "15.4");
 }
 
 LogInstalledXcodes();
