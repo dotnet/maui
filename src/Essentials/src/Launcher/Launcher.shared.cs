@@ -2,8 +2,9 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Storage;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public interface ILauncher
 	{
@@ -58,7 +59,7 @@ namespace Microsoft.Maui.Essentials
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static ILauncher Current =>
-			currentImplementation ??= new Implementations.LauncherImplementation();
+			currentImplementation ??= new LauncherImplementation();
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetCurrent(ILauncher? implementation) =>
@@ -99,7 +100,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
 	public partial class LauncherImplementation : ILauncher
 	{

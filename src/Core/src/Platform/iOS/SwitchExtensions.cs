@@ -11,14 +11,12 @@ namespace Microsoft.Maui.Platform
 			uiSwitch.SetState(view.IsOn, true);
 		}
 
-		public static void UpdateTrackColor(this UISwitch uiSwitch, ISwitch view, UIColor? defaultOnTrackColor, UIColor? defaultOffTrackColor)
+		public static void UpdateTrackColor(this UISwitch uiSwitch, ISwitch view)
 		{
 			if (view == null)
 				return;
 
-			if (view.TrackColor == null)
-				uiSwitch.OnTintColor = defaultOnTrackColor;
-			else
+			if (view.TrackColor != null)
 				uiSwitch.OnTintColor = view.TrackColor.ToPlatform();
 
 			UIView uIView;
@@ -27,19 +25,18 @@ namespace Microsoft.Maui.Platform
 			else
 				uIView = uiSwitch.Subviews[0].Subviews[0].Subviews[0];
 
-			if (view.TrackColor == null)
-				uIView.BackgroundColor = defaultOffTrackColor;
-			else
+			if (view.TrackColor != null)
 				uIView.BackgroundColor = uiSwitch.OnTintColor;
 		}
 
-		public static void UpdateThumbColor(this UISwitch uiSwitch, ISwitch view, UIColor? defaultThumbColor)
+		public static void UpdateThumbColor(this UISwitch uiSwitch, ISwitch view)
 		{
 			if (view == null)
 				return;
 
 			Graphics.Color thumbColor = view.ThumbColor;
-			uiSwitch.ThumbTintColor = thumbColor?.ToPlatform() ?? defaultThumbColor;
+			if (thumbColor != null)
+				uiSwitch.ThumbTintColor = thumbColor?.ToPlatform();
 		}
 
 		internal static UIView GetTrackSubview(this UISwitch uISwitch)

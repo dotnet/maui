@@ -8,9 +8,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
-		static Drawable? DefaultBackground;
-		static ColorStateList? DefaultTextColors;
-
 		MauiTimePicker? _timePicker;
 		AlertDialog? _dialog;
 
@@ -42,6 +39,12 @@ namespace Microsoft.Maui.Handlers
 					return;
 
 				VirtualView.Time = new TimeSpan(args.HourOfDay, args.Minute, 0);
+				VirtualView.IsFocused = false;
+
+				if (_dialog != null)
+				{
+					_dialog = null;
+				}
 			}
 
 			var dialog = new TimePickerDialog(Context!, onTimeSetCallback, hour, minute, Use24HourView);
@@ -52,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 		// This is a Android-specific mapping
 		public static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateBackground(timePicker, DefaultBackground);
+			handler.PlatformView?.UpdateBackground(timePicker);
 		}
 
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
@@ -79,13 +82,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateTextColor(timePicker, DefaultTextColors);
-		}
-
-		static void SetupDefaults(MauiTimePicker platformView)
-		{
-			DefaultBackground = platformView.Background;
-			DefaultTextColors = platformView.TextColors;
+			handler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
 		void ShowPickerDialog()
@@ -108,7 +105,11 @@ namespace Microsoft.Maui.Handlers
 
 		void HidePickerDialog()
 		{
-			_dialog?.Hide();
+			if (_dialog != null)
+			{
+				_dialog.Hide();
+			}
+
 			_dialog = null;
 		}
 

@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class LabelRenderer : ViewRenderer<Label, NativeLabel>
 	{
 		SizeRequest _perfectSize;
@@ -93,6 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return result;
 		}
 
+		[PortHandler]
 #if __MOBILE__
 		public override void LayoutSubviews()
 		{

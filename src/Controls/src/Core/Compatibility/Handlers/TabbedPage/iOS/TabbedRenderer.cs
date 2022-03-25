@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _defaultBarColorSet;
 		bool? _defaultBarTranslucent;
 		IMauiContext _mauiContext;
+		UITabBarAppearance _tabBarAppearance;
+
 		IMauiContext MauiContext => _mauiContext;
 		public static IPropertyMapper<TabbedPage, TabbedRenderer> Mapper = new PropertyMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewMapper);
 		public static CommandMapper<TabbedPage, TabbedRenderer> CommandMapper = new CommandMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewCommandMapper);
@@ -120,6 +122,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (disposing)
 			{
+				_tabBarAppearance?.Dispose();
+				_tabBarAppearance = null;
+
 				Page.SendDisappearing();
 				Tabbed.PropertyChanged -= OnPropertyChanged;
 				Tabbed.PagesChanged -= OnPagesChanged;
@@ -321,7 +326,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!isDefaultColor)
 				_barBackgroundColorWasSet = true;
 
-			TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToPlatform();
+			if (PlatformVersion.IsAtLeast(15))
+				UpdateiOS15TabBarAppearance();
+			else
+				TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToPlatform();
 		}
 
 		void UpdateBarBackground()
@@ -370,7 +378,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			// set TintColor for selected icon
 			// setting the unselected icon tint is not supported by iOS
-			TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToPlatform();
+			if (PlatformVersion.IsAtLeast(15))
+				UpdateiOS15TabBarAppearance();
+			else
+				TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToPlatform();
 		}
 
 		void UpdateBarTranslucent()
@@ -443,10 +454,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				TabBar.TintColor = UITabBar.Appearance.TintColor;
 			}
 
-			if (Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && Tabbed.UnselectedTabColor != null)
-				TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToPlatform();
+			if (PlatformVersion.IsAtLeast(15))
+				UpdateiOS15TabBarAppearance();
 			else
-				TabBar.UnselectedItemTintColor = UITabBar.Appearance.TintColor;
+			{
+				if (Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && Tabbed.UnselectedTabColor != null)
+					TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToPlatform();
+				else
+					TabBar.UnselectedItemTintColor = UITabBar.Appearance.TintColor;
+			}
 		}
 
 		/// <summary>
@@ -470,6 +486,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			});
 
 			return source.Task;
+		}
+
+		void UpdateiOS15TabBarAppearance()
+		{
+			TabBar.UpdateiOS15TabBarAppearance(
+				ref _tabBarAppearance,
+				_defaultBarColor,
+				_defaultBarTextColor,
+				Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) ? Tabbed.SelectedTabColor : null,
+				Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? Tabbed.UnselectedTabColor : null,
+				Tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? Tabbed.BarBackgroundColor : null,
+				Tabbed.IsSet(TabbedPage.BarTextColorProperty) ? Tabbed.BarTextColor : null);
 		}
 
 		#region IPlatformViewHandler

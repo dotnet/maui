@@ -28,29 +28,12 @@ namespace Microsoft.Maui.Platform
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color? defaultColor)
-		{
-			var textColor = textStyle.TextColor?.ToPlatform() ?? defaultColor?.ToPlatform();
-
-			if (textColor != null)
-				textView.SetTextColor(textColor.Value);
-		}
-
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle) =>
-			textView.UpdateTextColor(textStyle, textView.TextColors);
-
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle)
 		{
 			var textColor = textStyle.TextColor;
 
 			if (textColor != null)
-			{
 				textView.SetTextColor(textColor.ToPlatform());
-				return;
-			}
-
-			if (defaultColor != null)
-				textView.SetTextColor(defaultColor);
 		}
 
 		public static void UpdateFont(this TextView textView, ITextStyle textStyle, IFontManager fontManager)
@@ -95,7 +78,17 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaxLines(this TextView textView, ILabel label)
 		{
-			textView.SetLineBreakMode(label);
+			var maxLines = label.MaxLines;
+
+			if (maxLines == -1) // Default value
+			{
+				// MaxLines is not explicitly set, so just let it be whatever gets set by LineBreakMode
+				textView.SetLineBreakMode(label);
+				return;
+			}
+
+			textView.SetSingleLine(maxLines == 1);
+			textView.SetMaxLines(maxLines);
 		}
 
 		public static void UpdatePadding(this TextView textView, ILabel label)
@@ -131,21 +124,20 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFlowDirection(this TextView platformView, IView view)
 		{
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			switch (view.FlowDirection)
 			{
-				platformView.LayoutDirection = ALayoutDirection.Inherit;
-				platformView.TextDirection = ATextDirection.Inherit;
-			}
-			else if (view.FlowDirection == FlowDirection.RightToLeft)
-			{
-				platformView.LayoutDirection = ALayoutDirection.Rtl;
-				platformView.TextDirection = ATextDirection.Rtl;
-			}
-			else if (view.FlowDirection == FlowDirection.LeftToRight)
-			{
-				platformView.LayoutDirection = ALayoutDirection.Ltr;
-				platformView.TextDirection = ATextDirection.Ltr;
+				case FlowDirection.MatchParent:
+					platformView.LayoutDirection = ALayoutDirection.Inherit;
+					platformView.TextDirection = ATextDirection.Inherit;
+					break;
+				case FlowDirection.RightToLeft:
+					platformView.LayoutDirection = ALayoutDirection.Rtl;
+					platformView.TextDirection = ATextDirection.Rtl;
+					break;
+				case FlowDirection.LeftToRight:
+					platformView.LayoutDirection = ALayoutDirection.Ltr;
+					platformView.TextDirection = ATextDirection.Ltr;
+					break;
 			}
 		}
 
@@ -160,6 +152,7 @@ namespace Microsoft.Maui.Platform
 			var lineBreakMode = label.LineBreakMode;
 
 			int maxLines = label.MaxLines;
+
 			if (maxLines <= 0)
 				maxLines = int.MaxValue;
 
@@ -169,6 +162,7 @@ namespace Microsoft.Maui.Platform
 			{
 				case LineBreakMode.NoWrap:
 					maxLines = 1;
+					singleLine = true;
 					textView.Ellipsize = null;
 					break;
 				case LineBreakMode.WordWrap:
@@ -184,6 +178,7 @@ namespace Microsoft.Maui.Platform
 					break;
 				case LineBreakMode.TailTruncation:
 					maxLines = 1;
+					singleLine = true;
 					textView.Ellipsize = TextUtils.TruncateAt.End;
 					break;
 				case LineBreakMode.MiddleTruncation:

@@ -1,6 +1,6 @@
 using Plat = Microsoft.Maui.Essentials.Platform;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
 	public class DeviceInfoImplementation : IDeviceInfo
 	{

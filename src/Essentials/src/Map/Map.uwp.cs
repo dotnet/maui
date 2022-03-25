@@ -1,8 +1,9 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
 	public class MapImplementation:IMap
 	{

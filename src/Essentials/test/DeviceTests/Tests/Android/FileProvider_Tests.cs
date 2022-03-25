@@ -1,12 +1,14 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Storage;
 using Xunit;
 using AndroidEnvironment = Android.OS.Environment;
 
 namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
+	using Platform = Microsoft.Maui.ApplicationModel.Platform;
+
 	public class Android_FileProvider_Tests
 	{
 		[Fact]

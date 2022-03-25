@@ -1,7 +1,7 @@
 using System;
 using TizenBattery = Tizen.System.Battery;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
 	public partial class BatteryImplementation : IBattery
 	{

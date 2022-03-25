@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Microsoft.Maui.ApplicationModel;
 using Windows.Security.Authentication.Web;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Authentication
 {
 	public partial class WebAuthenticatorImplementation : IWebAuthenticator
 	{

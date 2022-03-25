@@ -8,53 +8,41 @@ using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiSlider : Slider
+	internal class MauiSlider : Slider
 	{
-		public MauiSlider()
-		{
-			DefaultStyleKey = typeof(MauiSlider);
-			ThumbColorOver = (Brush)Resources["SystemControlHighlightChromeAltLowBrush"];
-		}
+		Thumb _thumb;
+		Style _originalThumbStyle;
 
-		public Brush ThumbColorOver
-		{
-			get { return (Brush)GetValue(ThumbColorOverProperty); }
-			set { SetValue(ThumbColorOverProperty, value); }
-		}
-
-		public static readonly DependencyProperty ThumbColorOverProperty =
-		DependencyProperty.Register(nameof(ThumbColorOver), typeof(Brush), typeof(MauiSlider), new PropertyMetadata(null));
-
-		internal Thumb Thumb { get; set; }
-		internal Thumb ImageThumb { get; set; }
+		static Style ImageThumbStyle => (Style)Application.Current.Resources["MauiSliderImageThumbStyle"];
 
 		public static readonly DependencyProperty ThumbImageSourceProperty =
 			DependencyProperty.Register(nameof(ThumbImageSource), typeof(WImageSource),
-				typeof(MauiSlider), new PropertyMetadata(null, PropertyChangedCallback));
+				typeof(MauiSlider), new PropertyMetadata(null, ThumbImageSourceChanged));
 
-		static void PropertyChangedCallback(DependencyObject dependencyObject,
+		static void ThumbImageSourceChanged(DependencyObject dependencyObject,
 			DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
 		{
 			var slider = (MauiSlider)dependencyObject;
-			SwapThumbs(slider);
+			slider.UpdateThumbStyle();
 		}
 
-		static void SwapThumbs(MauiSlider slider)
+		void UpdateThumbStyle()
 		{
-			if (slider.Thumb == null || slider.ImageThumb == null)
+			if (_thumb == null)
 			{
 				return;
 			}
 
-			if (slider.ThumbImageSource != null)
+			WImageSource imageSource = ThumbImageSource;
+			if (imageSource != null)
 			{
-				slider.Thumb.Visibility = UI.Xaml.Visibility.Collapsed;
-				slider.ImageThumb.Visibility = UI.Xaml.Visibility.Visible;
+				_thumb.Style = ImageThumbStyle;
+				_thumb.Tag = imageSource;
 			}
 			else
 			{
-				slider.Thumb.Visibility = UI.Xaml.Visibility.Visible;
-				slider.ImageThumb.Visibility = UI.Xaml.Visibility.Collapsed;
+				_thumb.Style = _originalThumbStyle;
+				_thumb.Tag = null;
 			}
 		}
 
@@ -64,23 +52,13 @@ namespace Microsoft.Maui.Platform
 			set { SetValue(ThumbImageSourceProperty, value); }
 		}
 
-		internal event EventHandler Ready;
-
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
+			_thumb = (Thumb)GetTemplateChild("HorizontalThumb");
+			_originalThumbStyle = _thumb.Style;
 
-			Thumb = GetTemplateChild("HorizontalThumb") as Thumb;
-			ImageThumb = GetTemplateChild("HorizontalImageThumb") as Thumb;
-
-			SwapThumbs(this);
-
-			OnReady();
-		}
-
-		protected virtual void OnReady()
-		{
-			Ready?.Invoke(this, EventArgs.Empty);
+			UpdateThumbStyle();
 		}
 	}
 }

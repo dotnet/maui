@@ -24,5 +24,7 @@ namespace Microsoft.Maui.Graphics
 
 		public static bool ContainsAny(this Rect rect, Point[] points)
 			=> points.Any(x => rect.Contains(x));
+		public static bool ContainsAny(this RectF rect, PointF[] points)
+			=> points.Any(rect.Contains);
 	}
 }

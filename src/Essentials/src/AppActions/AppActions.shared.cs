@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.ComponentModel;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public interface IAppActions
 	{
@@ -13,7 +11,7 @@ namespace Microsoft.Maui.Essentials
 
 		string Type { get; }
 
-		Task<IEnumerable<Maui.Essentials.AppAction>> GetAsync ();
+		Task<IEnumerable<AppAction>> GetAsync ();
 		Task SetAsync (IEnumerable<AppAction> actions);	
 
 		Task SetAsync (params AppAction[] actions);		

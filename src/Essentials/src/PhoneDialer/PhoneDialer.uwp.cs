@@ -1,7 +1,7 @@
 using Windows.ApplicationModel.Calls;
 using Windows.Foundation.Metadata;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	public partial class PhoneDialerImplementation : IPhoneDialer
 	{

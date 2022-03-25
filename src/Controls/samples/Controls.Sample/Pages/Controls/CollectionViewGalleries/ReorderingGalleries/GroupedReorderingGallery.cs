@@ -2,7 +2,7 @@
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.GroupingGalleries;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries

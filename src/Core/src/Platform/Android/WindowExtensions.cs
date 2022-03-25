@@ -4,7 +4,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Views;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.Platform
 {

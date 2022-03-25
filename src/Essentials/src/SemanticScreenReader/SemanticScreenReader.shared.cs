@@ -1,9 +1,8 @@
 ﻿#nullable enable
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Accessibility
 {
 	public interface ISemanticScreenReader
 	{
