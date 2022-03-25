@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var pickOptions = GetPickOptions(fileChooserParams);
 			var fileResults = fileChooserParams?.Mode == ChromeFileChooserMode.OpenMultiple ?
 					await FilePicker.PickMultipleAsync(pickOptions) :
-					new[] { await FilePicker.PickAsync(pickOptions) };
+					new[] { (await FilePicker.PickAsync(pickOptions))! };
 
 			if (fileResults?.All(f => f is null) ?? true)
 			{

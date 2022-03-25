@@ -31,6 +31,9 @@ namespace Microsoft.Maui.ApplicationModel
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppActions']/Docs" />
 	public static class AppActions
 	{
+		public static bool IsSupported
+			=> Current.IsSupported;
+
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='GetAsync']/Docs" />
 		public static Task<IEnumerable<AppAction>> GetAsync()
 			=> Current.GetAsync();

@@ -1,3 +1,5 @@
+using Microsoft.Maui.ApplicationModel;
+
 namespace Microsoft.Maui.Storage
 {
 	class PreferencesImplementation : IPreferences

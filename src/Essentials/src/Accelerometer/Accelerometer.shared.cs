@@ -35,6 +35,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			remove => Default.ShakeDetected -= value;
 		}
 
+		public static bool IsSupported
+			=> Default.IsSupported;
+
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
 		public static bool IsMonitoring => Default.IsMonitoring;
 

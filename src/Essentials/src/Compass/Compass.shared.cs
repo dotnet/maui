@@ -35,10 +35,10 @@ namespace Microsoft.Maui.Devices.Sensors
 			remove => Current.ReadingChanged -= value;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
 		public static bool IsSupported
 			=> Current.IsSupported;
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
 		public static bool IsMonitoring
 			=> Current.IsMonitoring;
 
