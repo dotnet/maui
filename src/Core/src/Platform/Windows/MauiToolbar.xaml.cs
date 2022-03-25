@@ -13,6 +13,10 @@ namespace Microsoft.Maui.Platform
 			= DependencyProperty.Register(nameof(IsBackButtonVisible), typeof(NavigationViewBackButtonVisible), typeof(MauiToolbar),
 				new PropertyMetadata(NavigationViewBackButtonVisible.Collapsed, OnIsBackButtonVisiblePropertyChanged));
 
+		public static readonly DependencyProperty IsBackEnabledProperty
+			= DependencyProperty.Register(nameof(IsBackEnabled), typeof(bool), typeof(MauiToolbar),
+				new PropertyMetadata(true));
+
 		MenuBar? _menuBar;
 		public MauiToolbar()
 		{
@@ -96,6 +100,13 @@ namespace Microsoft.Maui.Platform
 			get => (NavigationViewBackButtonVisible)GetValue(IsBackButtonVisibleProperty);
 			set => SetValue(IsBackButtonVisibleProperty, value);
 		}
+
+		public bool IsBackEnabled
+		{
+			get => (bool)GetValue(IsBackEnabledProperty);
+			set => SetValue(IsBackEnabledProperty, value);
+		}
+
 		static void OnIsBackButtonVisiblePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 		}

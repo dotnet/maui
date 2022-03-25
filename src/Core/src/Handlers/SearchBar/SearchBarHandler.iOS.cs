@@ -6,12 +6,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
-		UIColor? _defaultTextColor;
-
-		UIColor? _cancelButtonTextColorDefaultDisabled;
-		UIColor? _cancelButtonTextColorDefaultHighlighted;
-		UIColor? _cancelButtonTextColorDefaultNormal;
-
 		UITextField? _editor;
 
 		public UITextField? QueryEditor => _editor;
@@ -39,7 +33,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.OnEditingStopped += OnEditingEnded;
 
 			base.ConnectHandler(platformView);
-			SetupDefaults(platformView);
 		}
 
 		protected override void DisconnectHandler(MauiSearchBar platformView)
@@ -56,18 +49,9 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		void SetupDefaults(UISearchBar platformView)
+		public static void MapIsEnabled(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			_defaultTextColor = QueryEditor?.TextColor;
-
-			var cancelButton = platformView.FindDescendantView<UIButton>();
-
-			if (cancelButton != null)
-			{
-				_cancelButtonTextColorDefaultNormal = cancelButton.TitleColor(UIControlState.Normal);
-				_cancelButtonTextColorDefaultHighlighted = cancelButton.TitleColor(UIControlState.Highlighted);
-				_cancelButtonTextColorDefaultDisabled = cancelButton.TitleColor(UIControlState.Disabled);
-			}
+			handler.PlatformView?.UpdateIsEnabled(searchBar);
 		}
 
 		public static void MapText(ISearchBarHandler handler, ISearchBar searchBar)
@@ -126,7 +110,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			if (handler is SearchBarHandler platformHandler)
-				handler.QueryEditor?.UpdateTextColor(searchBar, platformHandler._defaultTextColor);
+				handler.QueryEditor?.UpdateTextColor(searchBar);
 		}
 
 		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar)
@@ -149,10 +133,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler is SearchBarHandler platformHandler)
 			{
 				handler.PlatformView?.UpdateCancelButton(
-					searchBar,
-					platformHandler._cancelButtonTextColorDefaultNormal,
-					platformHandler._cancelButtonTextColorDefaultHighlighted,
-					platformHandler._cancelButtonTextColorDefaultDisabled);
+					searchBar);
 			}
 		}
 

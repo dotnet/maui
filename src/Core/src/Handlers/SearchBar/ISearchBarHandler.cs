@@ -7,7 +7,7 @@ using PlatformView = AndroidX.AppCompat.Widget.SearchView;
 using QueryEditor = Android.Widget.EditText;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.AutoSuggestBox;
-using QueryEditor = Microsoft.Maui.Platform.MauiSearchTextBox;
+using QueryEditor = Microsoft.UI.Xaml.Controls.AutoSuggestBox;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using PlatformView = System.Object;
 using QueryEditor = System.Object;

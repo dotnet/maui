@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Class Library (Preview)",
-  "description": "A project for creating a .NET MAUI class library",
-  "postActions/openInEditor/description": "Opens Class1.cs in the editor."
+  "name": "Biblioteca de clases .NET MAUI (versión preliminar)",
+  "description": "Proyecto para crear una biblioteca de clases .NET MAUI",
+  "postActions/openInEditor/description": "Abre Class1.cs en el editor"
 }

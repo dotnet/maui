@@ -10,6 +10,7 @@
 		public const string BoxView = "BoxView";
 		public const string Button = "Button";
 		public const string CheckBox = "CheckBox";
+		public const string ContentView = "ContentView";
 		public const string DatePicker = "DatePicker";
 		public const string Dispatcher = "Dispatcher";
 		public const string Editor = "Editor";
