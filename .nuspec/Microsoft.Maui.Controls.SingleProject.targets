@@ -52,11 +52,10 @@
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
     <ApplicationManifest Condition=" Exists('$(WindowsProjectFolder)app.manifest') ">$(WindowsProjectFolder)app.manifest</ApplicationManifest>
     <PackageManifest Condition=" Exists('$(WindowsProjectFolder)Package.appxmanifest') ">$(WindowsProjectFolder)Package.appxmanifest</PackageManifest>
-    <RuntimeIdentifiers Condition=" '$(RuntimeIdentifiers)' == '' ">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <EnableDefaultPageItems>False</EnableDefaultPageItems>
     <EnableDefaultApplicationDefinition>False</EnableDefaultApplicationDefinition>
     <_SingleProjectWindowsExcludes>$(WindowsProjectFolder)/**/.*/**</_SingleProjectWindowsExcludes>
-    <WindowsPackageType Condition="'$(EnablePreviewMsixTooling)' == 'true'">MSIX</WindowsPackageType>
+    <WindowsPackageType Condition="'$(EnablePreviewMsixTooling)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">MSIX</WindowsPackageType>
   </PropertyGroup>
 
   <!--
@@ -95,6 +94,12 @@
 
   </Target>
 
+  <!-- Import Maui Single Project property pages -->
+  <PropertyGroup Condition="'$(MauiDesignTimeTargetsPath)' == ''">
+    <MauiDesignTimeTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Maui\Maui.DesignTime.targets</MauiDesignTimeTargetsPath>
+  </PropertyGroup>
+  <Import Project="$(MauiDesignTimeTargetsPath)" Condition="Exists('$(MauiDesignTimeTargetsPath)')" />
+  
   <!-- IDE capabilities -->
   <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
     <ProjectCapability Include="Msix" />

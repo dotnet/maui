@@ -115,32 +115,21 @@ namespace Microsoft.Maui.Platform
 			platformView?.UpdatePlatformViewBackground(view);
 		}
 
-		public static WFlowDirection ToPlatform(this FlowDirection flowDirection)
-		{
-			if (flowDirection == FlowDirection.RightToLeft)
-				return WFlowDirection.RightToLeft;
-			else if (flowDirection == FlowDirection.LeftToRight)
-				return WFlowDirection.LeftToRight;
-
-			throw new InvalidOperationException($"Invalid FlowDirection: {flowDirection}");
-		}
-
-		public static void UpdateFlowDirection(this FrameworkElement platformView, IView view)
+		public static void UpdateFlowDirection(this FrameworkElement platformView, IView view) 
 		{
 			var flowDirection = view.FlowDirection;
-
-			if (flowDirection == FlowDirection.MatchParent)
+			switch (flowDirection)
 			{
-				flowDirection = view?.Handler?.MauiContext?.GetFlowDirection()
-					?? FlowDirection.LeftToRight;
-
-				if (flowDirection == FlowDirection.MatchParent)
-				{
-					flowDirection = FlowDirection.LeftToRight;
-				}
+				case FlowDirection.MatchParent:
+					platformView.ClearValue(FrameworkElement.FlowDirectionProperty);
+					break;
+				case FlowDirection.LeftToRight:
+					platformView.FlowDirection = WFlowDirection.LeftToRight;
+					break;
+				case FlowDirection.RightToLeft:
+					platformView.FlowDirection = WFlowDirection.RightToLeft;
+					break;
 			}
-
-			platformView.FlowDirection = flowDirection.ToPlatform();
 		}
 
 		public static void UpdateAutomationId(this FrameworkElement platformView, IView view) =>

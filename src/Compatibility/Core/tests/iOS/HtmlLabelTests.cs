@@ -112,7 +112,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			var expected = TextType.Html;
 			var actual = await GetRendererProperty(label, renderer =>
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				var uiLabel = (UILabel)(renderer as LabelRenderer).Control;
+#pragma warning restore CS0618 // Type or member is obsolete
 				uiLabel.Frame = new CoreGraphics.CGRect(0, 0, 200, 200);
 				uiLabel.RecalculateSpanPositions(label);
 				return label.TextType;

@@ -6,6 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[Obsolete]
 	public class UIContainerView : UIView
 	{
 		readonly View _view;

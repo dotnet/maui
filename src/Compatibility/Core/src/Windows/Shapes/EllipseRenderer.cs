@@ -11,6 +11,7 @@ using WEllipse = System.Windows.Shapes.Ellipse;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 #endif
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EllipseRenderer : ShapeRenderer<Ellipse, WEllipse>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Ellipse> args)

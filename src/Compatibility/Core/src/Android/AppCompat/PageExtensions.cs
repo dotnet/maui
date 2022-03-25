@@ -6,6 +6,7 @@ using Fragment = AndroidX.Fragment.App.Fragment;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	public static class PageExtensions
 	{
 		class EmbeddedFragment : Fragment

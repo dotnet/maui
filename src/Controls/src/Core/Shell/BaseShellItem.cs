@@ -369,8 +369,7 @@ namespace Microsoft.Maui.Controls
 					selectedState.Setters.Add(new Setter
 					{
 						Property = VisualElement.BackgroundColorProperty,
-						Value = new Color(0.95f)
-
+						Value = new AppThemeBinding() { Light = Colors.Black.MultiplyAlpha(0.1f), Dark = Colors.White.MultiplyAlpha(0.1f) }
 					});
 				}
 
@@ -455,7 +454,7 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (DeviceInfo.Platform == DevicePlatform.iOS)
 				{
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = Device.GetNamedSize(NamedSize.Small, label) });
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontAttributesProperty, Value = FontAttributes.Bold });
 				}
 				else if (DeviceInfo.Platform == DevicePlatform.WinUI)

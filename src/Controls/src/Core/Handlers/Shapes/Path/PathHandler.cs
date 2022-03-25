@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Controls.Handlers
 	{
 		public static IPropertyMapper<Path, IShapeViewHandler> PathMapper = new PropertyMapper<Path, IShapeViewHandler>(Mapper)
 		{
+			[nameof(IShapeView.Shape)] = MapShape,
 			[nameof(Path.Data)] = MapData,
 			[nameof(Path.RenderTransform)] = MapRenderTransform,
 		};

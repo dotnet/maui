@@ -139,15 +139,16 @@ namespace Microsoft.Maui.Platform
 			if (Border == null)
 			{
 				if (_borderView != null)
-					this.RemoveView(_borderView);
+					RemoveView(_borderView);
 				_borderView = null;
 				return;
 			}
 
 			if (_borderView == null)
 			{
-				this.AddView(_borderView = new AView(Context));
+				AddView(_borderView = new AView(Context));
 			}
+
 			_borderView.UpdateBorderStroke(Border);
 		}
 
@@ -186,11 +187,23 @@ namespace Microsoft.Maui.Platform
 			// If need to redraw shadow
 			if (_invalidateShadow)
 			{
-				// If bounds is zero
-				if (_viewBounds.Width() != 0 && _viewBounds.Height() != 0)
+				var viewHeight = _viewBounds.Height();
+				var viewWidth = _viewBounds.Width();
+
+				if (GetChildAt(0) is AView child)
 				{
-					var bitmapHeight = _viewBounds.Height() + MaximumRadius;
-					var bitmapWidth = _viewBounds.Width() + MaximumRadius;
+					if (viewHeight == 0)
+						viewHeight = child.MeasuredHeight;
+
+					if (viewWidth == 0)
+						viewWidth = child.MeasuredWidth;
+				}
+
+				// If bounds is zero
+				if (viewHeight != 0 && viewWidth != 0)
+				{
+					var bitmapHeight = viewHeight + MaximumRadius;
+					var bitmapWidth = viewWidth + MaximumRadius;
 
 					// Reset bitmap to bounds
 					_shadowBitmap = Bitmap.CreateBitmap(
@@ -216,12 +229,12 @@ namespace Microsoft.Maui.Platform
 
 					if (Shadow.Paint is LinearGradientPaint linearGradientPaint)
 					{
-						var linearGradientShaderFactory = PaintExtensions.GetLinearGradientShaderFactory(linearGradientPaint);
+						var linearGradientShaderFactory = PaintExtensions.GetLinearGradientShaderFactory(linearGradientPaint, shadowOpacity);
 						_shadowPaint.SetShader(linearGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
 					}
 					if (Shadow.Paint is RadialGradientPaint radialGradientPaint)
 					{
-						var radialGradientShaderFactory = PaintExtensions.GetRadialGradientShaderFactory(radialGradientPaint);
+						var radialGradientShaderFactory = PaintExtensions.GetRadialGradientShaderFactory(radialGradientPaint, shadowOpacity);
 						_shadowPaint.SetShader(radialGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
 					}
 					if (Shadow.Paint is SolidPaint solidPaint)

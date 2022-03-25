@@ -119,11 +119,6 @@
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="..\..\src\Core\Platform\Android\Resources\layout\bottomtablayout.axml">
-      <Link>Resources\layout\bottomtablayout.axml</Link>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
     <AndroidResource Include="..\..\src\Core\Platform\Android\Resources\layout\flyoutcontent.axml">
       <Link>Resources\layout\flyoutcontent.axml</Link>
     </AndroidResource>
@@ -136,11 +131,6 @@
   <ItemGroup>
     <AndroidResource Include="..\..\src\Core\Platform\Android\Resources\layout\shellrootlayout.axml">
       <Link>Resources\layout\shellrootlayout.axml</Link>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\rootlayout.axml">
-      <Link>Resources\layout\rootlayout.axml</Link>
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
