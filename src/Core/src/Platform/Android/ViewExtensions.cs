@@ -77,13 +77,20 @@ namespace Microsoft.Maui.Platform
 			// So in case we're setting the focus in response to another control's un-focusing,
 			// we need to post the handling of it to the main looper so that it happens _after_ all the other focus
 			// work is done; otherwise, a call to ClearFocus on another control will kill the focus we set 
-			platformView.Post(() =>
+
+			var q = Looper.MyLooper();
+			if (q != null)
+				new Handler(q).Post(RequestFocus);
+			else
+				MainThread.InvokeOnMainThreadAsync(RequestFocus);
+
+			void RequestFocus()
 			{
 				if (platformView == null || platformView.IsDisposed())
 					return;
 
 				platformView?.RequestFocus();
-			});
+			}
 		}
 
 		public static void Unfocus(this AView platformView, IView view)
