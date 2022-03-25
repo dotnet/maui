@@ -8,7 +8,7 @@
   </PropertyGroup>
    
   <!-- Workaround for VSMac Preview -->
-  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
+  <PropertyGroup Condition=" '$([MSBuild]::IsOSPlatform('windows'))' != 'True' ">
     <UseMauiCore>True</UseMauiCore>
   </PropertyGroup>
 
