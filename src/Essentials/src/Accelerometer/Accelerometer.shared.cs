@@ -138,9 +138,10 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				PlatformStart(sensorSpeed);
 			}
-			finally
+			catch
 			{
 				IsMonitoring = false;
+				throw;
 			}
 		}
 
@@ -158,9 +159,10 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				PlatformStop();
 			}
-			finally
+			catch
 			{
 				IsMonitoring = true;
+				throw;
 			}
 		}
 
