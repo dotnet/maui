@@ -5,8 +5,11 @@
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
-    <UseMauiCore>true</UseMauiCore>
-    <UseMaui>true</UseMaui>
+  </PropertyGroup>
+   
+  <!-- Workaround for VSMac Preview -->
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
+    <UseMauiCore>True</UseMauiCore>
   </PropertyGroup>
 
   <PropertyGroup>
