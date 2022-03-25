@@ -128,6 +128,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var maxLength = textInput.MaxLength;
 
+			if (maxLength == 0)
+				textBox.IsReadOnly = true;
+
 			if (maxLength == -1)
 				maxLength = int.MaxValue;
 

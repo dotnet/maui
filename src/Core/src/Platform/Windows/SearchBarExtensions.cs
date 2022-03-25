@@ -87,6 +87,9 @@ namespace Microsoft.Maui.Platform
 
 			var maxLength = searchBar.MaxLength;
 
+			if (maxLength == 0)
+				queryTextBox.IsReadOnly = true;
+
 			if (maxLength == -1)
 				maxLength = int.MaxValue;
 
