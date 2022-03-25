@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					var hasRequestBeenHandled = false;
 					var relativePath = new Uri(AppOrigin).MakeRelativeUri(uri).ToString();
 
-					if (Path.HasExtension(relativePath))
+					if (!string.IsNullOrWhiteSpace(relativePath))
 					{
 						// This looks like a file, so we'll attempt to fetch content using the existing relative path.
 						hasRequestBeenHandled = await TryHandleWinUIStorageWebResourceRequestAsync(eventArgs, relativePath);
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					{
 						// Either no content was found at the path, or we didn't attempt to load content because of the path format.
 						// Since we're allowed to fall back on the host page, try to do so.
-						hasRequestBeenHandled = await TryHandleWinUIStorageWebResourceRequestAsync(eventArgs, _hostPageRelativePath);
+						_ = await TryHandleWinUIStorageWebResourceRequestAsync(eventArgs, _hostPageRelativePath);
 					}
 				}
 			}

@@ -75,18 +75,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				throw new ArgumentNullException(nameof(request));
 			}
 
-			var requestUri = request?.Url?.ToString();
-			var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(requestUri);
-			requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
+			var requestUriString = QueryStringHelper.RemovePossibleQueryString(request?.Url?.ToString());
 
-			if (requestUri != null &&
-				_webViewHandler != null &&
-				_webViewHandler.WebviewManager != null &&
-				_webViewHandler.WebviewManager.TryGetResponseContentInternal(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
+			if (Uri.TryCreate(requestUriString, UriKind.RelativeOrAbsolute, out var requestUri))
 			{
-				var contentType = headers["Content-Type"];
+				// We explicitly disallow fallback for framework files because StaticContentProvider prioritizes host page
+				// fallback over attempting to fetch framework files.
+				var allowFallbackOnHostPage = !requestUri.AbsolutePath.StartsWith("/_framework/", StringComparison.Ordinal);
 
-				return new WebResourceResponse(contentType, "UTF-8", statusCode, statusMessage, headers, content);
+				if (_webViewHandler != null &&
+					_webViewHandler.WebviewManager != null &&
+					_webViewHandler.WebviewManager.TryGetResponseContentInternal(requestUriString, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
+				{
+					var contentType = headers["Content-Type"];
+
+					return new WebResourceResponse(contentType, "UTF-8", statusCode, statusMessage, headers, content);
+				}
 			}
 
 			return base.ShouldInterceptRequest(view, request);
@@ -97,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			base.OnPageFinished(view, url);
 
 			// TODO: How do we know this runs only once?
-			if (view != null && AppOriginUri.IsBaseOfPage(url))
+			if (view != null && Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri) && AppOriginUri.IsBaseOf(uri))
 			{
 				// Startup scripts must run in OnPageFinished. If scripts are run earlier they will have no lasting
 				// effect because once the page content loads all the document state gets reset.
