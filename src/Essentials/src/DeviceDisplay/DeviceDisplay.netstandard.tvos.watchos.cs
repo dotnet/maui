@@ -2,14 +2,16 @@
 
 namespace Microsoft.Maui.Devices
 {
-	partial class DeviceDisplayImplementation : IDeviceDisplay
+	partial class DeviceDisplayImplementation
 	{
-		public bool KeepScreenOn { get => false; set { } }
+		protected override bool GetKeepScreenOn() => false;
 
-		DisplayInfo GetMainDisplayInfo() => default;
+		protected override void SetKeepScreenOn(bool keepScreenOn) { }
 
-		void StartScreenMetricsListeners() { }
+		protected override DisplayInfo GetMainDisplayInfo() => default;
 
-		void StopScreenMetricsListeners() { }
+		protected override void StartScreenMetricsListeners() { }
+
+		protected override void StopScreenMetricsListeners() { }
 	}
 }

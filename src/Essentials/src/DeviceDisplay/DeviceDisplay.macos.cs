@@ -11,27 +11,25 @@ namespace Microsoft.Maui.Devices
 		uint keepScreenOnId = 0;
 		NSObject? screenMetricsObserver;
 
-		public bool KeepScreenOn
-		{
-			get => keepScreenOnId != 0;
-			set
-			{
-				if (KeepScreenOn == value)
-					return;
+		protected override bool GetKeepScreenOn() => keepScreenOnId != 0;
 
-				if (value)
-				{
-					IOKit.PreventUserIdleDisplaySleep("KeepScreenOn", out keepScreenOnId);
-				}
-				else
-				{
-					if (IOKit.AllowUserIdleDisplaySleep(keepScreenOnId))
-						keepScreenOnId = 0;
-				}
+		protected override void SetKeepScreenOn(bool keepScreenOn)
+		{
+			if (KeepScreenOn == value)
+				return;
+
+			if (keepScreenOn)
+			{
+				IOKit.PreventUserIdleDisplaySleep("KeepScreenOn", out keepScreenOnId);
+			}
+			else
+			{
+				if (IOKit.AllowUserIdleDisplaySleep(keepScreenOnId))
+					keepScreenOnId = 0;
 			}
 		}
 
-		DisplayInfo GetMainDisplayInfo()
+		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			var mainScreen = NSScreen.MainScreen;
 			var frame = mainScreen.Frame;
@@ -55,13 +53,13 @@ namespace Microsoft.Maui.Devices
 				rate: (float)refreshRate);
 		}
 
-		void StartScreenMetricsListeners()
+		protected override void StartScreenMetricsListeners()
 		{
 			screenMetricsObserver ??= NSNotificationCenter.DefaultCenter.AddObserver(
 				NSApplication.DidChangeScreenParametersNotification, OnDidChangeScreenParameters);
 		}
 
-		void StopScreenMetricsListeners()
+		protected override void StopScreenMetricsListeners()
 		{
 			screenMetricsObserver?.Dispose();
 			screenMetricsObserver = null;

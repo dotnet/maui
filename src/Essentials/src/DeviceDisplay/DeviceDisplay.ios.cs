@@ -9,13 +9,11 @@ namespace Microsoft.Maui.Devices
 	{
 		NSObject? observer;
 
-		public bool KeepScreenOn
-		{
-			get => UIApplication.SharedApplication.IdleTimerDisabled;
-			set => UIApplication.SharedApplication.IdleTimerDisabled = value;
-		}
+		protected override bool GetKeepScreenOn() => UIApplication.SharedApplication.IdleTimerDisabled;
 
-		DisplayInfo GetMainDisplayInfo()
+		protected override void SetKeepScreenOn(bool keepScreenOn) => UIApplication.SharedApplication.IdleTimerDisabled = keepScreenOn;
+
+		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			var bounds = UIScreen.MainScreen.Bounds;
 			var scale = UIScreen.MainScreen.Scale;
@@ -33,14 +31,14 @@ namespace Microsoft.Maui.Devices
 				rate: rate);
 		}
 
-		void StartScreenMetricsListeners()
+		protected override void StartScreenMetricsListeners()
 		{
 			var notificationCenter = NSNotificationCenter.DefaultCenter;
 			var notification = UIApplication.DidChangeStatusBarOrientationNotification;
 			observer = notificationCenter.AddObserver(notification, OnMainDisplayInfoChanged);
 		}
 
-		void StopScreenMetricsListeners()
+		protected override void StopScreenMetricsListeners()
 		{
 			observer?.Dispose();
 			observer = null;

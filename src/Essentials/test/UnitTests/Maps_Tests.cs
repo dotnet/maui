@@ -52,7 +52,7 @@ namespace Tests
 		public async Task LaunchMap_NullPlacemark()
 		{
 			Placemark location = null;
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location));
+			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Map.OpenAsync(location));
 		}
 
 		[Fact]
@@ -65,7 +65,7 @@ namespace Tests
 				Thoroughfare = "Microsoft Building 25",
 				Locality = "Redmond"
 			};
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(placemark, null));
+			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Map.OpenAsync(placemark, null));
 		}
 	}
 }

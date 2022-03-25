@@ -12,29 +12,27 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices
 {
-	partial class DeviceDisplayImplementation : IDeviceDisplay
+	partial class DeviceDisplayImplementation
 	{
 		OrientationEventListener? orientationListener;
 
-		public bool KeepScreenOn
+		protected override bool GetKeepScreenOn()
 		{
-			get
-			{
-				var window = ActivityStateManager.Default.GetCurrentActivity(true)?.Window;
-				var flags = window?.Attributes?.Flags ?? 0;
-				return flags.HasFlag(WindowManagerFlags.KeepScreenOn);
-			}
-			set
-			{
-				var window = ActivityStateManager.Default.GetCurrentActivity(true)?.Window;
-				if (value)
-					window?.AddFlags(WindowManagerFlags.KeepScreenOn);
-				else
-					window?.ClearFlags(WindowManagerFlags.KeepScreenOn);
-			}
+			var window = ActivityStateManager.Default.GetCurrentActivity(true)?.Window;
+			var flags = window?.Attributes?.Flags ?? 0;
+			return flags.HasFlag(WindowManagerFlags.KeepScreenOn);
 		}
 
-		DisplayInfo GetMainDisplayInfo()
+		protected override void SetKeepScreenOn(bool keepScreenOn)
+		{
+			var window = ActivityStateManager.Default.GetCurrentActivity(true)?.Window;
+			if (keepScreenOn)
+				window?.AddFlags(WindowManagerFlags.KeepScreenOn);
+			else
+				window?.ClearFlags(WindowManagerFlags.KeepScreenOn);
+		}
+
+		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			using var displayMetrics = new DisplayMetrics();
 			var display = GetDefaultDisplay();
@@ -51,13 +49,13 @@ namespace Microsoft.Maui.Devices
 				rate: display?.RefreshRate ?? 0);
 		}
 
-		void StartScreenMetricsListeners()
+		protected override void StartScreenMetricsListeners()
 		{
 			orientationListener = new Listener(Application.Context, OnMainDisplayInfoChanged);
 			orientationListener.Enable();
 		}
 
-		void StopScreenMetricsListeners()
+		protected override void StopScreenMetricsListeners()
 		{
 			orientationListener?.Disable();
 			orientationListener?.Dispose();

@@ -9,39 +9,37 @@ using Windows.System.Display;
 
 namespace Microsoft.Maui.Devices
 {
-	partial class DeviceDisplayImplementation : IDeviceDisplay
+	partial class DeviceDisplayImplementation
 	{
 		readonly object locker = new object();
 		DisplayRequest? displayRequest;
 
-		public bool KeepScreenOn
+		protected override bool GetKeepScreenOn()
 		{
-			get
+			lock (locker)
 			{
-				lock (locker)
-				{
-					return displayRequest != null;
-				}
+				return displayRequest != null;
 			}
-			set
+		}
+
+		protected override void SetKeepScreenOn(bool keepScreenOn)
+		{
+			lock (locker)
 			{
-				lock (locker)
+				if (keepScreenOn)
 				{
-					if (value)
+					if (displayRequest == null)
 					{
-						if (displayRequest == null)
-						{
-							displayRequest = new DisplayRequest();
-							displayRequest.RequestActive();
-						}
+						displayRequest = new DisplayRequest();
+						displayRequest.RequestActive();
 					}
-					else
+				}
+				else
+				{
+					if (displayRequest != null)
 					{
-						if (displayRequest != null)
-						{
-							displayRequest.RequestRelease();
-							displayRequest = null;
-						}
+						displayRequest.RequestRelease();
+						displayRequest = null;
 					}
 				}
 			}
@@ -83,7 +81,7 @@ namespace Microsoft.Maui.Devices
 
 		AppWindow? _currentAppWindowListeningTo;
 
-		DisplayInfo GetMainDisplayInfo()
+		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			if (WindowStateManager.Default.GetActiveAppWindow(false) is not AppWindow appWindow)
 				return new DisplayInfo();
@@ -132,7 +130,7 @@ namespace Microsoft.Maui.Devices
 			return null;
 		}
 
-		void StartScreenMetricsListeners()
+		protected override void StartScreenMetricsListeners()
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
 			{
@@ -144,7 +142,7 @@ namespace Microsoft.Maui.Devices
 			});
 		}
 
-		void StopScreenMetricsListeners()
+		protected override void StopScreenMetricsListeners()
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
 			{

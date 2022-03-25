@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Maui.Devices
 {
-	partial class DeviceDisplayImplementation : IDeviceDisplay
+	partial class DeviceDisplayImplementation
 	{
 		[DllImport("libcapi-system-device.so.0", EntryPoint = "device_power_request_lock")]
 		static extern void RequestKeepScreenOn(int type = 1, int timeout = 0);
@@ -14,20 +14,18 @@ namespace Microsoft.Maui.Devices
 
 		bool keepScreenOn = false;
 
-		public bool KeepScreenOn
+		protected override bool GetKeepScreenOn() => keepScreenOn;
+
+		protected override void SetKeepScreenOn(bool keepScreenOn)
 		{
-			get => keepScreenOn;
-			set
-			{
-				if (value)
-					RequestKeepScreenOn();
-				else
-					ReleaseKeepScreenOn();
-				keepScreenOn = value;
-			}
+			if (keepScreenOn)
+				RequestKeepScreenOn();
+			else
+				ReleaseKeepScreenOn();
+			this.keepScreenOn = keepScreenOn;
 		}
 
-		public DisplayInfo GetMainDisplayInfo()
+		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			var display = Platform.MainWindow;
 			return new DisplayInfo(
@@ -62,12 +60,12 @@ namespace Microsoft.Maui.Devices
 			};
 		}
 
-		void StartScreenMetricsListeners()
+		protected override void StartScreenMetricsListeners()
 		{
 			Platform.MainWindow.RotationChanged += OnRotationChanged;
 		}
 
-		void StopScreenMetricsListeners()
+		protected override void StopScreenMetricsListeners()
 		{
 			Platform.MainWindow.RotationChanged -= OnRotationChanged;
 		}

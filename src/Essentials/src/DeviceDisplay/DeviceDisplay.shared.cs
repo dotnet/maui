@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices
 {
@@ -60,13 +59,23 @@ namespace Microsoft.Maui.Devices
 			currentImplementation = implementation;
 	}
 
-	partial class DeviceDisplayImplementation : IDeviceDisplay
+	sealed partial class DeviceDisplayImplementation : DeviceDisplayImplementationBase
+	{
+	}
+
+	abstract class DeviceDisplayImplementationBase : IDeviceDisplay
 	{
 		event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChangedInternal;
 
-		DisplayInfo currentMetrics;
+		DisplayInfo _currentMetrics;
 
 		public DisplayInfo MainDisplayInfo => GetMainDisplayInfo();
+
+		public bool KeepScreenOn
+		{
+			get => GetKeepScreenOn();
+			set => SetKeepScreenOn(value);
+		}
 
 		public event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged
 		{
@@ -81,33 +90,44 @@ namespace Microsoft.Maui.Devices
 			}
 			remove
 			{
+				var wasStopped = MainDisplayInfoChangedInternal is null;
 				MainDisplayInfoChangedInternal -= value;
-				if (MainDisplayInfoChangedInternal is null)
+				if (!wasStopped && MainDisplayInfoChangedInternal is null)
 					StopScreenMetricsListeners();
 			}
 		}
 
 		void SetCurrent(DisplayInfo metrics) =>
-			currentMetrics = new DisplayInfo(
+			_currentMetrics = new DisplayInfo(
 				metrics.Width, metrics.Height,
 				metrics.Density,
 				metrics.Orientation,
 				metrics.Rotation,
 				metrics.RefreshRate);
 
-		void OnMainDisplayInfoChanged(DisplayInfoChangedEventArgs e)
+		protected void OnMainDisplayInfoChanged(DisplayInfoChangedEventArgs e)
 		{
-			if (!currentMetrics.Equals(e.DisplayInfo))
+			if (!_currentMetrics.Equals(e.DisplayInfo))
 			{
 				SetCurrent(e.DisplayInfo);
 				MainDisplayInfoChangedInternal?.Invoke(null, e);
 			}
 		}
 
-		void OnMainDisplayInfoChanged()
+		protected void OnMainDisplayInfoChanged()
 		{
 			var metrics = GetMainDisplayInfo();
 			OnMainDisplayInfoChanged(new DisplayInfoChangedEventArgs(metrics));
 		}
+
+		protected abstract DisplayInfo GetMainDisplayInfo();
+
+		protected abstract bool GetKeepScreenOn();
+
+		protected abstract void SetKeepScreenOn(bool keepScreenOn);
+
+		protected abstract void StartScreenMetricsListeners();
+
+		protected abstract void StopScreenMetricsListeners();
 	}
 }
