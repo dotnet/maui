@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Speech.Tts;
+using Microsoft.Maui.ApplicationModel;
 using AndroidTextToSpeech = Android.Speech.Tts.TextToSpeech;
 using Debug = System.Diagnostics.Debug;
 using JavaLocale = Java.Util.Locale;

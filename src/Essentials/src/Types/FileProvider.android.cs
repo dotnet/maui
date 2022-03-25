@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.OS;
+using Microsoft.Maui.ApplicationModel;
 using AndroidEnvironment = Android.OS.Environment;
 using AndroidUri = Android.Net.Uri;
 using ContentFileProvider = AndroidX.Core.Content.FileProvider;

@@ -10,9 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Controls.Compatibility;
@@ -158,7 +158,7 @@ namespace Maui.Controls.Sample
 						});
 
 					// TODO: Unpackaged apps need to know the package ID and local data locations
-					if (AppInfo.Current.PackagingModel == AppPackagingModel.Packaged)
+					if (AppInfo.PackagingModel == AppPackagingModel.Packaged)
 						essentials.UseVersionTracking();
 				})
 				.ConfigureLifecycleEvents(events =>

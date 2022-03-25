@@ -3,6 +3,7 @@ using System;
 using System.Numerics;
 using CoreMotion;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
 {

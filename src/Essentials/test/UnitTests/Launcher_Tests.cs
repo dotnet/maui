@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Devices;
+using Microsoft.Maui.ApplicationModel;
 using Xunit;
 
 namespace Tests

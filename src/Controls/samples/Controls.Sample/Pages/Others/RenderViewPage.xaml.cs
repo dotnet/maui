@@ -1,100 +1,125 @@
 #nullable enable
+
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using Maui.Controls.Sample.ViewModels.Base;
 using Microsoft.Maui;
-using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Media;
-using Microsoft.Maui.Storage;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Platform;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 
 namespace Maui.Controls.Sample.Pages
 {
 	public partial class RenderViewPage
 	{
 		Stopwatch stopwatch = new Stopwatch();
-
 		RenderBindingModel vm;
-		Stream? imageStream;
+		MemoryStream? imageStream;
+		byte[]? byteStream;
 
 		public RenderViewPage()
 		{
 			InitializeComponent();
-			BindingContext = vm = new RenderBindingModel();
+			this.BindingContext = this.vm = new RenderBindingModel();
+
 		}
 
-		async void RenderWindow_Clicked(object sender, EventArgs e)
+		private async void RenderWindow_Clicked(object sender, System.EventArgs e)
 		{
 			Reset();
-
+			RenderedView? renderImage = null;
+			var window = this.GetParentWindow() as IWindow;
 			stopwatch.Start();
-			var renderImage = await Window.CaptureAsync(vm.RenderType);
+			try
+			{
+				if (window is not null)
+				{
+					renderImage = await window.RenderAsImage(vm.RenderType);
+				}
+
+			}
+			catch (System.Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+			}
 			stopwatch.Stop();
 
 			RenderView(renderImage);
 		}
 
-		async void RenderButton_Clicked(object sender, EventArgs e)
+		private async void RenderButton_Clicked(object sender, System.EventArgs e)
 		{
 			Reset();
-
+			RenderedView? renderImage = null;
 			stopwatch.Start();
-			var renderImage = await RenderButton.CaptureAsync(vm.RenderType);
+			try
+			{
+				renderImage = await this.RenderButton.RenderAsImage(vm.RenderType);
+				
+			}
+			catch (System.Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+			}
 			stopwatch.Stop();
 
 			RenderView(renderImage);
 		}
 
-		async void RenderViewSaved_Clicked(object sender, EventArgs e)
+		private async void RenderViewSaved_Clicked(object sender, System.EventArgs e)
 		{
-			if (imageStream is not null)
+			if (byteStream is not null)
 			{
 				var extension = vm.RenderType switch
 				{
-					ScreenshotFormat.Jpeg => "jpg",
-					ScreenshotFormat.Png => "png",
+					RenderType.JPEG => "jpg",
+					RenderType.PNG => "png",
+					RenderType.BMP => "bmp",
 					_ => "jpg",
 				};
-
-				string fileName = $"{Path.GetTempFileName()}.{extension}";
-				string filePath = Path.Combine(FileSystem.Current.CacheDirectory, fileName);
-
-				using (var file = File.Create(filePath))
-				{
-					imageStream.CopyTo(file);
-				}
-
-				await Share.Default.RequestAsync(new ShareFileRequest { Title = fileName, File = new ShareFile(filePath) });
+				string fileName = $"{System.IO.Path.GetTempFileName()}.{extension}";
+				string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), fileName);
+				File.WriteAllBytes(filePath, byteStream);
+				await Share.RequestAsync(new ShareFileRequest() { Title = fileName, File = new ShareFile(filePath) });
 			}
 		}
 
-		void RenderView(Stream? renderImage)
+		private void RenderView(RenderedView? renderImage)
 		{
-			if (renderImage is not null)
+			if (renderImage?.Render is not null)
 			{
-				imageStream = renderImage;
-				TestImage.Source = ImageSource.FromStream(() => imageStream);
+				try
+				{
+					byteStream = renderImage.Render;
+					imageStream = new MemoryStream(renderImage.Render);
+					this.TestImage.Source = ImageSource.FromStream(() => imageStream);
+				}
+				catch (System.Exception ex)
+				{
+					System.Diagnostics.Debug.WriteLine(ex.Message);
+				}
 			}
-
-			StopwatchTime.Text = stopwatch.Elapsed.ToString();
-			RenderStats.Text = $"Size: {SizeInBytes(renderImage)}";
+			this.StopwatchTime.Text = stopwatch.Elapsed.ToString();
+			this.RenderStats.Text = $"Type: {renderImage?.RenderType}; Size: {SizeInBytes(renderImage?.Render)}";
 		}
 
-		void Reset()
+		private void Reset()
 		{
 			stopwatch.Reset();
 			StopwatchTime.Text = string.Empty;
 			RenderStats.Text = string.Empty;
-			TestImage.Source = null;
+			this.TestImage.Source = null;
 		}
 
-		string SizeInBytes(Stream? array)
+		private string SizeInBytes(byte[]? array)
 		{
-			var sizes = new string[] { "B", "KB", "MB", "GB", "TB" };
-			var len = (double)(array?.Length ?? 0);
-
+			if (array is null)
+				return string.Empty;
+			string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+			double len = System.Convert.ToDouble(array.Length);
 			int order = 0;
 			while (len >= 1024D && order < sizes.Length - 1)
 			{
@@ -106,19 +131,36 @@ namespace Maui.Controls.Sample.Pages
 		}
 	}
 
-	public class RenderBindingModel : BaseViewModel
+	public class RenderBindingModel : INotifyPropertyChanged
 	{
-		string? _selection;
+		private string? _selection;
+
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		void OnPropertyChanged(string propertyName)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
 
 		public string? Selection
 		{
 			get => _selection;
-			set => SetProperty(ref _selection, value);
+			set
+			{
+				_selection = value;
+				OnPropertyChanged(nameof(Selection));
+			}
 		}
 
-		public ScreenshotFormat RenderType =>
-			Enum.TryParse<ScreenshotFormat>(Selection, out var format)
-				? format
-				: ScreenshotFormat.Jpeg;
+		public RenderType RenderType
+		{
+			get
+			{
+				if (_selection is null)
+					return RenderType.JPEG;
+
+				return (RenderType)System.Enum.Parse(typeof(RenderType), _selection);
+			}
+		}
 	}
 }

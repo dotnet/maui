@@ -1,6 +1,7 @@
 #nullable enable
 using System.Linq;
-using System.Numerics;
+using System.Threading.Tasks;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using Microsoft.UI.Xaml;
@@ -10,6 +11,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WinPoint = Windows.Foundation.Point;
+using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.Platform
 {

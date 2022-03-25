@@ -1,4 +1,4 @@
-using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
 
 namespace Samples.ViewModel
 {

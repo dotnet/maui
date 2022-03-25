@@ -2,6 +2,7 @@
 using System;
 using System.Globalization;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public string Model => DeviceInfo.Model;
 
-		public string SystemName => DeviceInfo.Current.Platform.ToString();
+		public string SystemName => DeviceInfo.Platform.ToString();
 
 		public string SystemVersion => DeviceInfo.VersionString;
 

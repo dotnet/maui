@@ -1,4 +1,4 @@
-using Microsoft.Maui.Devices;
+using Microsoft.Maui.Networking;
 
 namespace Samples.ViewModel
 {

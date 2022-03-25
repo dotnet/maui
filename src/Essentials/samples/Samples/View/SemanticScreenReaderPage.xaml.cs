@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Maui.Devices;
+using Microsoft.Maui.Accessibility;
 
 namespace Samples.View
 {

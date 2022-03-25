@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Devices;
+using WinRT;
 
 namespace Microsoft.Maui
 {

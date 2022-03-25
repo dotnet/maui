@@ -1,5 +1,6 @@
 #nullable enable
 using System.IO;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui

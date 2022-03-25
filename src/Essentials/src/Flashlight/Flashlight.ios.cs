@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using AVFoundation;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices
 {
