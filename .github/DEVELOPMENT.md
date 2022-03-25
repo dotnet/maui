@@ -49,7 +49,7 @@ dotnet workload install maui `
   --from-rollback-file https://aka.ms/dotnet/maui/main.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-4050c126/nuget/v3/index.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-572aeedc/nuget/v3/index.json `
-  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json" `
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json `
   --source https://api.nuget.org/v3/index.json
 ``` 
 
