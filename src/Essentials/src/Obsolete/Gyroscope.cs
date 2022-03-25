@@ -2,7 +2,7 @@
 using System;
 using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Gyroscope']/Docs" />
 	public static partial class Gyroscope

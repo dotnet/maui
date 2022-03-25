@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			double density = 1.0d;
 #if ANDROID
-			density = DeviceDisplay.MainDisplayInfo.Density;
+			density = DeviceDisplay.Current.MainDisplayInfo.Density;
 #endif
 			float x = (float)(density * Rect.X);
 			float y = (float)(density * Rect.Y);

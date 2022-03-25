@@ -13,13 +13,13 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public string UniqueIdentifier => Guid.NewGuid().ToString("N");
 
-		public string Name => DeviceInfo.Name;
+		public string Name => DeviceInfo.Current.Name;
 
-		public string Model => DeviceInfo.Model;
+		public string Model => DeviceInfo.Current.Model;
 
-		public string SystemName => DeviceInfo.Platform.ToString();
+		public string SystemName => DeviceInfo.Current.Platform.ToString();
 
-		public string SystemVersion => DeviceInfo.VersionString;
+		public string SystemVersion => DeviceInfo.Current.VersionString;
 
 		public string Locale => CultureInfo.CurrentCulture.Name;
 	}

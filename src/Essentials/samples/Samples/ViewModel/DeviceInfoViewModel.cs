@@ -32,13 +32,13 @@ namespace Samples.ViewModel
 		{
 			base.OnAppearing();
 
-			DeviceDisplay.MainDisplayInfoChanged += OnScreenMetricsChanged;
-			ScreenMetrics = DeviceDisplay.MainDisplayInfo;
+			DeviceDisplay.Current.MainDisplayInfoChanged += OnScreenMetricsChanged;
+			ScreenMetrics = DeviceDisplay.Current.MainDisplayInfo;
 		}
 
 		public override void OnDisappearing()
 		{
-			DeviceDisplay.MainDisplayInfoChanged -= OnScreenMetricsChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged -= OnScreenMetricsChanged;
 
 			base.OnDisappearing();
 		}

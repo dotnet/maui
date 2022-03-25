@@ -17,8 +17,29 @@ namespace Microsoft.Maui.Devices.Sensors
 		void Stop();
 	}
 
-	public static partial class Barometer
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Barometer']/Docs" />
+	public static class Barometer
 	{
+		public static event EventHandler<BarometerChangedEventArgs> ReadingChanged
+		{
+			add => Default.ReadingChanged += value;
+			remove => Default.ReadingChanged -= value;
+		}
+
+		public static bool IsSupported => Default.IsSupported;
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
+		public static bool IsMonitoring
+			=> Default.IsMonitoring;
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='Start']/Docs" />
+		public static void Start(SensorSpeed sensorSpeed)
+			=> Default.Start(sensorSpeed);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='Stop']/Docs" />
+		public static void Stop()
+			=> Default.Stop();
+
 		static IBarometer? defaultImplementation;
 
 		public static IBarometer Default =>

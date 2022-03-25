@@ -140,7 +140,7 @@ namespace Tests
 			DeviceDisplay.SetCurrent(display);
 			display.ResetCounts();
 
-			var main = DeviceDisplay.MainDisplayInfo;
+			var main = DeviceDisplay.Current.MainDisplayInfo;
 			Assert.Equal(expected, main);
 
 			Assert.Equal(0, display.StartedCount);
@@ -163,7 +163,7 @@ namespace Tests
 			DeviceDisplay.SetCurrent(display);
 			display.ResetCounts();
 
-			DeviceDisplay.MainDisplayInfoChanged += OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged += OnChanged;
 
 			Assert.Equal(1, display.StartedCount);
 			Assert.Equal(0, display.StoppedCount);
@@ -176,7 +176,7 @@ namespace Tests
 
 			Assert.False(display.KeepScreenOn);
 
-			DeviceDisplay.MainDisplayInfoChanged -= OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged -= OnChanged;
 
 			void OnChanged(object sender, DisplayInfoChangedEventArgs e)
 			{
@@ -191,10 +191,10 @@ namespace Tests
 			var display = new MyDisplay();
 
 			DeviceDisplay.SetCurrent(display);
-			DeviceDisplay.MainDisplayInfoChanged += OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged += OnChanged;
 			display.ResetCounts();
 
-			DeviceDisplay.MainDisplayInfoChanged += OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged += OnChanged;
 
 			Assert.Equal(0, display.StartedCount);
 			Assert.Equal(0, display.StoppedCount);
@@ -207,8 +207,8 @@ namespace Tests
 
 			Assert.False(display.KeepScreenOn);
 
-			DeviceDisplay.MainDisplayInfoChanged -= OnChanged;
-			DeviceDisplay.MainDisplayInfoChanged -= OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged -= OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged -= OnChanged;
 
 			void OnChanged(object sender, DisplayInfoChangedEventArgs e)
 			{
@@ -225,7 +225,7 @@ namespace Tests
 			DeviceDisplay.SetCurrent(display);
 			display.ResetCounts();
 
-			DeviceDisplay.MainDisplayInfoChanged -= OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged -= OnChanged;
 
 			Assert.Equal(0, display.StartedCount);
 			Assert.Equal(0, display.StoppedCount);
@@ -251,10 +251,10 @@ namespace Tests
 			var display = new MyDisplay();
 
 			DeviceDisplay.SetCurrent(display);
-			DeviceDisplay.MainDisplayInfoChanged += OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged += OnChanged;
 			display.ResetCounts();
 
-			DeviceDisplay.MainDisplayInfoChanged -= OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged -= OnChanged;
 
 			Assert.Equal(0, display.StartedCount);
 			Assert.Equal(1, display.StoppedCount);
@@ -280,11 +280,11 @@ namespace Tests
 			var display = new MyDisplay();
 
 			DeviceDisplay.SetCurrent(display);
-			DeviceDisplay.MainDisplayInfoChanged += OnChanged;
-			DeviceDisplay.MainDisplayInfoChanged += OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged += OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged += OnChanged;
 			display.ResetCounts();
 
-			DeviceDisplay.MainDisplayInfoChanged -= OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged -= OnChanged;
 
 			Assert.Equal(0, display.StartedCount);
 			Assert.Equal(0, display.StoppedCount);
@@ -297,8 +297,8 @@ namespace Tests
 
 			Assert.False(display.KeepScreenOn);
 
-			DeviceDisplay.MainDisplayInfoChanged -= OnChanged;
-			DeviceDisplay.MainDisplayInfoChanged -= OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged -= OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged -= OnChanged;
 
 			void OnChanged(object sender, DisplayInfoChangedEventArgs e)
 			{
@@ -349,7 +349,7 @@ namespace Tests
 			var display2 = new MyDisplay();
 
 			DeviceDisplay.SetCurrent(display1);
-			DeviceDisplay.MainDisplayInfoChanged += OnChanged;
+			DeviceDisplay.Current.MainDisplayInfoChanged += OnChanged;
 			display1.ResetCounts();
 
 			DeviceDisplay.SetCurrent(display2);
@@ -425,10 +425,13 @@ namespace Tests
 				remove => RemovedCount++;
 			}
 
-			public DisplayInfo GetMainDisplayInfo()
+			public DisplayInfo MainDisplayInfo
 			{
-				GetMainDisplayInfoCount++;
-				return _displayInfo;
+				get
+				{
+					GetMainDisplayInfoCount++;
+					return _displayInfo;
+				}
 			}
 
 			public void StartScreenMetricsListeners()

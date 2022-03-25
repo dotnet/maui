@@ -20,8 +20,30 @@ namespace Microsoft.Maui.Devices.Sensors
 		void Stop();
 	}
 
-	public static partial class Accelerometer
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Accelerometer']/Docs" />
+	public static class Accelerometer
 	{
+		public static event EventHandler<AccelerometerChangedEventArgs> ReadingChanged
+		{
+			add => Default.ReadingChanged += value;
+			remove => Default.ReadingChanged -= value;
+		}
+
+		public static event EventHandler ShakeDetected
+		{
+			add => Default.ShakeDetected += value;
+			remove => Default.ShakeDetected -= value;
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
+		public static bool IsMonitoring => Default.IsMonitoring;
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='Start']/Docs" />
+		public static void Start(SensorSpeed sensorSpeed) => Default.Start(sensorSpeed);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='Stop']/Docs" />
+		public static void Stop() => Default.Stop();
+
 		static IAccelerometer? defaultImplementation;
 
 		public static IAccelerometer Default =>

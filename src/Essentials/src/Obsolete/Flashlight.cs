@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Devices;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Flashlight.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Flashlight']/Docs" />
 	public static partial class Flashlight

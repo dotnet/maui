@@ -2,7 +2,7 @@
 using System;
 using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensor']/Docs" />
 	public static class OrientationSensor

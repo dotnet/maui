@@ -12,8 +12,17 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		Task<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken = default);
 	}
 
-	public static partial class Contacts
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Contacts.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Contacts']/Docs" />
+	public static class Contacts
 	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contacts.xml" path="//Member[@MemberName='PickContactAsync']/Docs" />
+		public static Task<Contact?> PickContactAsync() =>
+			Current.PickContactAsync();
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contacts.xml" path="//Member[@MemberName='GetAllAsync']/Docs" />
+		public static Task<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken = default) =>
+			Current.GetAllAsync(cancellationToken);
+
 		static IContacts? currentImplementation;
 
 		public static IContacts Current =>

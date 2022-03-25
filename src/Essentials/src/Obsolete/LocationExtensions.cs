@@ -2,7 +2,7 @@
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/LocationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.LocationExtensions']/Docs" />
 	public static class LocationExtensions

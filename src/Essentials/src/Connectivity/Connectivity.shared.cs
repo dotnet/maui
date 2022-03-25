@@ -17,8 +17,22 @@ namespace Microsoft.Maui.Networking
 	}
 
 #nullable enable
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
 	public static class Connectivity
 	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='NetworkAccess']/Docs" />
+		public static NetworkAccess NetworkAccess => Current.NetworkAccess;
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='ConnectionProfiles']/Docs" />
+		public static IEnumerable<ConnectionProfile> ConnectionProfiles => Current.ConnectionProfiles.Distinct();
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='ConnectivityChanged']/Docs" />
+		public static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged
+		{
+			add => Current.ConnectivityChanged += value;
+			remove => Current.ConnectivityChanged -= value;
+		}
+
 		static IConnectivity? currentImplementation;
 
 		public static IConnectivity Current =>

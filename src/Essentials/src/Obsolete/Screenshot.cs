@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Media;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Media
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Screenshot']/Docs" />
 	public static partial class Screenshot
@@ -19,7 +19,5 @@ namespace Microsoft.Maui.Essentials
 
 			return Current.CaptureAsync();
 		}
-
-		static IScreenshot Current => Media.Screenshot.Current;
 	}
 }
