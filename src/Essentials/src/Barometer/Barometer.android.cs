@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
 
 		static Sensor? Sensor =>
-			_sensor ??= SensorManager?.GetDefaultSensor(SensorType.Accelerometer);
+			_sensor ??= SensorManager?.GetDefaultSensor(SensorType.Pressure);
 
 		public bool IsSupported => Sensor is not null;
 
