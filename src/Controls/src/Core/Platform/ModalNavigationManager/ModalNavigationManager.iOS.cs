@@ -13,13 +13,13 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
-		UIViewController? RootViewController
+		UIViewController? ViewController
 		{
 			get
 			{
-				if (_window?.Page?.Handler?.PlatformView is UIView view)
+				if (_window?.Page?.Handler is IPlatformViewHandler viewHandler)
 				{
-					return view.Window.RootViewController;
+					return viewHandler.ViewController;
 				}
 
 				return null;
@@ -43,8 +43,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (ModalStack.Count >= 1 && controller != null)
 				await controller.DismissViewControllerAsync(animated);
-			else if (RootViewController != null)
-				await RootViewController.DismissViewControllerAsync(animated);
+			else if (ViewController != null)
+				await ViewController.DismissViewControllerAsync(animated);
 
 			// TODO MAUI
 			//modal.DisposeModalAndChildRenderers();
@@ -95,9 +95,9 @@ namespace Microsoft.Maui.Controls.Platform
 			// presentation is complete before it really is. It does not however inform you when it is really done (and thus 
 			// would be safe to dismiss the VC). Fortunately this is almost never an issue
 
-			if (RootViewController != null)
+			if (ViewController != null)
 			{
-				await RootViewController.PresentViewControllerAsync(wrapper, animated);
+				await ViewController.PresentViewControllerAsync(wrapper, animated);
 				await Task.Delay(5);
 			}
 		}
