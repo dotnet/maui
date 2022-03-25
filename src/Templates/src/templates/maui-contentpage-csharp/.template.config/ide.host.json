@@ -7,7 +7,15 @@
     "unsupportedHosts": [
         {
             "id": "vs",
-            "version": "(,17.1)"
+            "version": "(,17.2)"
         }
-    ]
+    ],
+    "requiredComponents": [ 
+        { 
+              "id": "Microsoft.VisualStudio.ComponentGroup.Maui.All", 
+              "hostId": "vs", 
+              "componentType": "SetupComponent" 
+        }
+    
+   ]
 }

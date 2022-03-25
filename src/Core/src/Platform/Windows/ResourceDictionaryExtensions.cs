@@ -47,5 +47,21 @@ namespace Microsoft.Maui.Platform
 				dictionaries.Add(dic);
 			}
 		}
+
+		internal static void RemoveKeys(this UI.Xaml.ResourceDictionary resources, IEnumerable<string> keys)
+		{
+			foreach (string key in keys)
+			{
+				resources.Remove(key);
+			}
+		}
+
+		internal static void SetValueForAllKey(this UI.Xaml.ResourceDictionary resources, IEnumerable<string> keys, object value)
+		{
+			foreach (string key in keys)
+			{
+				resources[key] = value;
+			}
+		}
 	}
 }

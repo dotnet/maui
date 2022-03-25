@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// NOTE: use named arguments for clarity
-			ViewHelper.Set(platformView,
+			PlatformInterop.Set(platformView,
 				visibility: visibility,
 				layoutDirection: (int)GetLayoutDirection(view),
 				minimumHeight: (int)context.ToPixels(view.MinimumHeight),
@@ -69,17 +69,26 @@ namespace Microsoft.Maui.Platform
 
 		public static void Focus(this AView platformView, FocusRequest request)
 		{
+			request.IsFocused = true;
+
 			// Android does the actual focus/unfocus work on the main looper
 			// So in case we're setting the focus in response to another control's un-focusing,
 			// we need to post the handling of it to the main looper so that it happens _after_ all the other focus
-			// work is done; otherwise, a call to ClearFocus on another control will kill the focus we set here
-			MainThread.BeginInvokeOnMainThread(() =>
+			// work is done; otherwise, a call to ClearFocus on another control will kill the focus we set 
+
+			var q = Looper.MyLooper();
+			if (q != null)
+				new Handler(q).Post(RequestFocus);
+			else
+				MainThread.InvokeOnMainThreadAsync(RequestFocus);
+
+			void RequestFocus()
 			{
 				if (platformView == null || platformView.IsDisposed())
 					return;
 
 				platformView?.RequestFocus();
-			});
+			}
 		}
 
 		public static void Unfocus(this AView platformView, IView view)
@@ -209,20 +218,13 @@ namespace Microsoft.Maui.Platform
 
 		static ALayoutDirection GetLayoutDirection(IView view)
 		{
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			return view.FlowDirection switch
 			{
-				return ALayoutDirection.Inherit;
-			}
-			else if (view.FlowDirection == FlowDirection.RightToLeft)
-			{
-				return ALayoutDirection.Rtl;
-			}
-			else if (view.FlowDirection == FlowDirection.LeftToRight)
-			{
-				return ALayoutDirection.Ltr;
-			}
-			return ALayoutDirection.Inherit;
+				FlowDirection.MatchParent => ALayoutDirection.Inherit,
+				FlowDirection.LeftToRight => ALayoutDirection.Ltr,
+				FlowDirection.RightToLeft => ALayoutDirection.Rtl,
+				_ => ALayoutDirection.Inherit,
+			};
 		}
 
 		public static bool GetClipToOutline(this AView view)
@@ -245,25 +247,25 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!string.IsNullOrWhiteSpace(view.AutomationId))
 			{
-				ViewHelper.SetContentDescriptionForAutomationId(platformView, view.AutomationId);
+				PlatformInterop.SetContentDescriptionForAutomationId(platformView, view.AutomationId);
 			}
 		}
 
 		public static void InvalidateMeasure(this AView platformView, IView view)
 		{
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void UpdateWidth(this AView platformView, IView view)
 		{
 			// GetDesiredSize will take the specified Width into account during the layout
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void UpdateHeight(this AView platformView, IView view)
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void UpdateMinimumHeight(this AView platformView, IView view)
@@ -272,7 +274,7 @@ namespace Microsoft.Maui.Platform
 
 			var value = (int)platformView.Context!.ToPixels(min);
 			platformView.SetMinimumHeight(value);
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void UpdateMinimumWidth(this AView platformView, IView view)
@@ -281,25 +283,26 @@ namespace Microsoft.Maui.Platform
 
 			var value = (int)platformView.Context!.ToPixels(min);
 			platformView.SetMinimumWidth(value);
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void UpdateMaximumHeight(this AView platformView, IView view)
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void UpdateMaximumWidth(this AView platformView, IView view)
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void RemoveFromParent(this AView view)
 		{
 			if (view != null)
-				ViewHelper.RemoveFromParent(view);
+				PlatformInterop.RemoveFromParent(view);
+				PlatformInterop.RemoveFromParent(view);
 		}
 
 		public static Task<byte[]?> RenderAsBMP(this IView view)

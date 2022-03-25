@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
@@ -6,6 +7,24 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SearchBarExtensions
 	{
+		private static readonly string[] _backgroundColorKeys =
+		{
+			"TextControlBackground",
+			"TextControlBackgroundPointerOver",
+			"TextControlBackgroundFocused",
+			"TextControlBackgroundDisabled"
+		};
+
+		public static void UpdateBackground(this AutoSuggestBox platformControl, ISearchBar searchBar)
+		{
+			UpdateColors(platformControl.Resources, _backgroundColorKeys, searchBar.Background?.ToPlatform());
+		}
+
+		public static void UpdateIsEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar)
+		{
+			platformControl.IsEnabled = searchBar.IsEnabled;
+		}
+
 		public static void UpdateCharacterSpacing(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
 			platformControl.CharacterSpacing = searchBar.CharacterSpacing.ToEm();
@@ -16,17 +35,18 @@ namespace Microsoft.Maui.Platform
 			platformControl.PlaceholderText = searchBar.Placeholder ?? string.Empty;
 		}
 
-		public static void UpdatePlaceholderColor(this AutoSuggestBox platformControl, ISearchBar searchBar, Brush? defaultPlaceholderColorBrush, Brush? defaultPlaceholderColorFocusBrush, MauiSearchTextBox? queryTextBox)
+		private static readonly string[] _placeholderForegroundColorKeys =
 		{
-			if (queryTextBox == null)
-				queryTextBox = platformControl.GetFirstDescendant<MauiSearchTextBox>();
+			"TextControlPlaceholderForeground",
+			"TextControlPlaceholderForegroundPointerOver",
+			"TextControlPlaceholderForegroundFocused",
+			"TextControlPlaceholderForegroundDisabled"
+		};
 
-			if (queryTextBox == null)
-				return;
-
-			Color placeholderColor = searchBar.PlaceholderColor;
-			if (placeholderColor != null)
-				queryTextBox.PlaceholderForegroundBrush = queryTextBox.PlaceholderForegroundFocusBrush = placeholderColor.ToPlatform();
+		public static void UpdatePlaceholderColor(this AutoSuggestBox platformControl, ISearchBar searchBar)
+		{
+			UpdateColors(platformControl.Resources, _placeholderForegroundColorKeys,
+				searchBar.PlaceholderColor?.ToPlatform());
 		}
 
 		public static void UpdateText(this AutoSuggestBox platformControl, ISearchBar searchBar)
@@ -34,51 +54,46 @@ namespace Microsoft.Maui.Platform
 			platformControl.Text = searchBar.Text;
 		}
 
-		public static void UpdateTextColor(this AutoSuggestBox platformControl, ISearchBar searchBar, Brush? defaultTextColorBrush, Brush? defaultTextColorFocusBrush, MauiSearchTextBox? queryTextBox)
+		private static readonly string[] _foregroundColorKeys =
 		{
-			if (queryTextBox == null)
-				queryTextBox = platformControl.GetFirstDescendant<MauiSearchTextBox>();
+			"TextControlForeground",
+			"TextControlForegroundPointerOver",
+			"TextControlForegroundFocused",
+			"TextControlForegroundDisabled"
+		};
 
-			if (queryTextBox == null)
-				return;
+		public static void UpdateTextColor(this AutoSuggestBox platformControl, ISearchBar searchBar)
+		{
+			UpdateColors(platformControl.Resources, _foregroundColorKeys, searchBar.TextColor?.ToPlatform());
+		}
 
-			Color textColor = searchBar.TextColor;
-			if (textColor != null)
-				queryTextBox.Foreground = queryTextBox.ForegroundFocusBrush = textColor.ToPlatform();
+		private static void UpdateColors(ResourceDictionary resource, string[] keys, Brush? brush)
+		{
+			if (brush is null)
+			{
+				resource.RemoveKeys(keys);
+			}
+			else
+			{
+				resource.SetValueForAllKey(keys, brush);
+			}
 		}
 
 		public static void UpdateFont(this AutoSuggestBox platformControl, ISearchBar searchBar, IFontManager fontManager) =>
 			platformControl.UpdateFont(searchBar.Font, fontManager);
 
-		public static void UpdateHorizontalTextAlignment(this AutoSuggestBox platformControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
+		public static void UpdateHorizontalTextAlignment(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			if (queryTextBox == null)
-				queryTextBox = platformControl.GetFirstDescendant<MauiSearchTextBox>();
-
-			if (queryTextBox == null)
-				return;
-
-			queryTextBox.TextAlignment = searchBar.HorizontalTextAlignment.ToPlatform();
+			platformControl.HorizontalContentAlignment = searchBar.HorizontalTextAlignment.ToPlatformHorizontalAlignment();
 		}
 
-		public static void UpdateVerticalTextAlignment(this AutoSuggestBox platformControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
+		public static void UpdateVerticalTextAlignment(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			if (queryTextBox == null)
-				return;
-
-			queryTextBox.VerticalAlignment = searchBar.VerticalTextAlignment.ToPlatformVerticalAlignment();
+			platformControl.VerticalContentAlignment = searchBar.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
-		public static void UpdateMaxLength(this AutoSuggestBox platformControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
+		public static void UpdateMaxLength(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			if (queryTextBox == null)
-				queryTextBox = platformControl.GetFirstDescendant<MauiSearchTextBox>();
-
-			if (queryTextBox == null)
-				return;
-
-			queryTextBox.MaxLength = searchBar.MaxLength;
-
 			var currentControlText = platformControl.Text;
 
 			if (currentControlText.Length > searchBar.MaxLength)
@@ -104,30 +119,14 @@ namespace Microsoft.Maui.Platform
 			queryTextBox.IsSpellCheckEnabled = searchBar.IsSpellCheckEnabled;
     }
 		
-		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar, MauiSearchTextBox? queryTextBox)
+		public static void UpdateIsReadOnly(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			if (queryTextBox == null)
-				queryTextBox = platformControl.GetFirstDescendant<MauiSearchTextBox>();
-
-			if (queryTextBox == null)
-				return;
-
-			queryTextBox.IsTextPredictionEnabled = searchBar.IsTextPredictionEnabled;
+			platformControl.IsEnabled = searchBar.IsReadOnly;
 		}
 
-		public static void UpdateCancelButtonColor(this AutoSuggestBox platformControl, ISearchBar searchBar, MauiCancelButton? cancelButton, Brush? defaultDeleteButtonBackgroundColorBrush, Brush? defaultDeleteButtonForegroundColorBrush)
+		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			if (cancelButton == null || !cancelButton.IsReady)
-				return;
-
-			Color cancelColor = searchBar.CancelButtonColor;
-			if (cancelColor != null)
-			{
-				cancelButton.ForegroundBrush = cancelColor.ToPlatform();
-				// Determine whether the background should be black or white (in order to make the foreground color visible) 
-				var bcolor = cancelColor.ToWindowsColor().GetContrastingColor().ToColor();
-				cancelButton.BackgroundBrush = bcolor.ToPlatform();
-			}
+			// AutoSuggestBox does not support this property
 		}
 	}
 }

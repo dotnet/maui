@@ -30,6 +30,8 @@ namespace Microsoft.Maui.Layouts
 		{
 			var structure = _gridStructure ?? new GridStructure(Grid, bounds.Width, bounds.Height);
 
+			var reverseColumns = Grid.ColumnDefinitions.Count > 1 && !Grid.ShouldArrangeLeftToRight();
+
 			foreach (var view in Grid)
 			{
 				if (view.Visibility == Visibility.Collapsed)
@@ -38,6 +40,12 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				var cell = structure.GetCellBoundsFor(view, bounds.Left, bounds.Top);
+
+				if (reverseColumns)
+				{
+					var adjustedXPosition = bounds.Right - cell.Left - cell.Width;
+					cell.Left = adjustedXPosition;
+				}
 
 				view.Arrange(cell);
 			}

@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Handlers
 
 		public object? QueryEditor => throw new NotImplementedException();
 
+		public static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar) { }
+		public static void MapIsEnabled(ISearchBarHandler handler, ISearchBar searchBar) { }
 		public static void MapText(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapPlaceholder(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapPlaceholderColor(IViewHandler handler, ISearchBar searchBar) { }
