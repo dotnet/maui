@@ -17,34 +17,32 @@ using ParentView = Microsoft.UI.Xaml.DependencyObject;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;
+using System;
 #endif
 
 namespace Microsoft.Maui
 {
 	public static partial class ViewExtensions
 	{
-		public static Task<Stream?> CaptureAsync(this IView view, ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100)
+		public static Task<IScreenshotResult?> CaptureAsync(this IView view)
 		{
 #if PLATFORM
 			if (view?.ToPlatform() is not PlatformView platformView)
-				return Task.FromResult<Stream?>(null);
+				return Task.FromResult<IScreenshotResult?>(null);
 
 			if (!Screenshot.Default.IsCaptureSupported)
-				return Task.FromResult<Stream?>(null);
+				return Task.FromResult<IScreenshotResult?>(null);
 
-			return CaptureAsync(platformView, format, quality);
+			return CaptureAsync(platformView);
 #else
-			return Task.FromResult<Stream?>(null);
+			return Task.FromResult<IScreenshotResult?>(null);
 #endif
 		}
 
-#if PLATFORM
-		static async Task<Stream?> CaptureAsync(PlatformView window, ScreenshotFormat format, int quality)
-		{
-			var result = await Screenshot.Default.CaptureAsync(window);
 
-			return await result.OpenReadAsync(format, quality);
-		}
+#if PLATFORM
+		async static Task<IScreenshotResult?> CaptureAsync(PlatformView window) =>
+			await Screenshot.Default.CaptureAsync(window);
 #endif
 	}
 }

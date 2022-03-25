@@ -42,9 +42,6 @@ namespace Microsoft.Maui.Media
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='CopyToAsync']/Docs" />
 		Task CopyToAsync(Stream destination, ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100);
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='ToPixelBufferAsync']/Docs" />
-		Task<byte[]> ToPixelBufferAsync();
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Screenshot']/Docs" />
@@ -132,8 +129,5 @@ namespace Microsoft.Maui.Media
 
 		public Task CopyToAsync(Stream destination, ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100)
 			=> PlatformCopyToAsync(destination, format, quality);
-
-		public Task<byte[]> ToPixelBufferAsync()
-			=> PlatformToPixelBufferAsync();
 	}
 }

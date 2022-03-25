@@ -13,28 +13,25 @@ namespace Microsoft.Maui
 {
 	public static partial class WindowExtensions
 	{
-		public static Task<Stream?> CaptureAsync(this IWindow window, ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100)
+		public static Task<IScreenshotResult?> CaptureAsync(this IWindow window)
 		{
 #if PLATFORM
-			if (window?.Handler?.PlatformView is not PlatformView platformWindow)
-				return Task.FromResult<Stream?>(null);
+			if (window?.Handler?.PlatformView is not PlatformView platformView)
+				return Task.FromResult<IScreenshotResult?>(null);
 
 			if (!Screenshot.Default.IsCaptureSupported)
-				return Task.FromResult<Stream?>(null);
+				return Task.FromResult<IScreenshotResult?>(null);
 
-			return CaptureAsync(platformWindow, format, quality);
+			return CaptureAsync(platformView);
 #else
-			return Task.FromResult<Stream?>(null);
+			return Task.FromResult<IScreenshotResult?>(null);
 #endif
 		}
 
-#if PLATFORM
-		static async Task<Stream?> CaptureAsync(PlatformView window, ScreenshotFormat format, int quality)
-		{
-			var result = await Screenshot.Default.CaptureAsync(window);
 
-			return await result.OpenReadAsync(format, quality);
-		}
+#if PLATFORM
+		async static Task<IScreenshotResult?> CaptureAsync(PlatformView window) =>
+			await Screenshot.Default.CaptureAsync(window);
 #endif
 	}
 }
