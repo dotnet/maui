@@ -18,8 +18,15 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get
 			{
+				if (_window?.Page?.Handler is IPlatformViewHandler pvh &&
+					pvh.ViewController != null)
+				{
+					return pvh.ViewController;
+				}
+
 				return MauiContext.
-						GetPlatformWindow()?.RootViewController;
+						GetPlatformWindow()?
+						.RootViewController;
 			}
 		}
 

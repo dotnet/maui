@@ -48,8 +48,10 @@ namespace Microsoft.Maui.DeviceTests
 				async (_) =>
 				{
 					await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
 					Assert.Equal(1, navPage.Navigation.ModalStack.Count);
 					await navPage.CurrentPage.Navigation.PopModalAsync();
+					await OnUnloadedAsync(modalPage);
 				});
 
 
