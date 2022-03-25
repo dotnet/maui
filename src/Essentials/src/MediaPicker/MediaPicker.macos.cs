@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media
 {
 	public partial class MediaPickerImplementation : IMediaPicker
 	{

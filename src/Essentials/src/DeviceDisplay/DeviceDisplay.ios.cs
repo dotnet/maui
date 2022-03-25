@@ -4,7 +4,7 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
 	public class DeviceDisplayImplementation : IDeviceDisplay
 	{

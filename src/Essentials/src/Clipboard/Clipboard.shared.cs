@@ -1,10 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using System.ComponentModel;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
 	public interface IClipboard
 	{

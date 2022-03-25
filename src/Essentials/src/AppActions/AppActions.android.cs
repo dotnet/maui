@@ -6,7 +6,7 @@ using Android.Content.PM;
 using Android.Graphics.Drawables;
 using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
 	public partial class AppActionsImplementation : IAppActions
 	{

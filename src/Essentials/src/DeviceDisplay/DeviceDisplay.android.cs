@@ -8,8 +8,9 @@ using Android.Provider;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
 	public class DeviceDisplayImplementation : IDeviceDisplay
 	{

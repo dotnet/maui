@@ -7,6 +7,8 @@
     <WarningsNotAsErrors>BI1234</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
+    <GenerateReferenceAssemblySource>true</GenerateReferenceAssemblySource>
+    <GenAPIAdditionalParameters>--api-only --writer TypeList</GenAPIAdditionalParameters>
   </PropertyGroup>
   <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
@@ -14,6 +16,7 @@
     <PackageReference Remove="*" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.GenAPI" Version="6.0.0-*" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Maui.Graphics" />
     <None Include="..\..\..\LICENSE" PackagePath="" Pack="true" />
     <None Include="..\..\..\Assets\xamarin.essentials_128x128.png" PackagePath="icon.png" Pack="true" />

@@ -1,10 +1,11 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Windows.ApplicationModel;
 using Windows.Storage;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage
 {
 	public partial class FileSystemImplementation : IFileSystem
 	{
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			if (filename == null)
 				throw new ArgumentNullException(nameof(filename));
 
-			if (AppInfo.PackagingModel == AppPackagingModel.Packaged)
+			if (ApplicationModel.AppInfo.PackagingModel == AppPackagingModel.Packaged)
 			{
 				filename = NormalizePath(filename);
 
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			filename = NormalizePath(filename);
 
 			string root;
-			if (AppInfo.PackagingModel == AppPackagingModel.Packaged)
+			if (ApplicationModel.AppInfo.PackagingModel == AppPackagingModel.Packaged)
 				root = Package.Current.InstalledLocation.Path;
 			else
 				root = AppContext.BaseDirectory;
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 	}
 }
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	public partial class FileBase
 	{

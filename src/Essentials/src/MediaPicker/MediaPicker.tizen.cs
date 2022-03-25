@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media
 {
 	public partial class MediaPickerImplementation : IMediaPicker
 	{

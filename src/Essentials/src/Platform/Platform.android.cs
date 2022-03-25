@@ -12,11 +12,11 @@ using Android.Net;
 using Android.Net.Wifi;
 using Android.OS;
 using Android.Views;
+using Microsoft.Maui.Storage;
 using AndroidIntent = Android.Content.Intent;
 using AndroidUri = Android.Net.Uri;
-using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Platform
 	{

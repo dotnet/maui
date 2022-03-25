@@ -1,7 +1,7 @@
 using System.Linq;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	public static partial class Preferences
 	{

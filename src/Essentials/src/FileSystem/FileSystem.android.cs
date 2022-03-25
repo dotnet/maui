@@ -4,9 +4,10 @@ using System.IO;
 using System.Threading.Tasks;
 using Android.Provider;
 using Android.Webkit;
+using Microsoft.Maui.ApplicationModel;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage
 {
 	public partial class FileSystemImplementation : IFileSystem, IPlatformFileSystem
 	{
@@ -386,7 +387,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 	}
 }
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	public partial class FileBase
 	{

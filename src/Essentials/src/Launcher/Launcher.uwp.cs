@@ -5,7 +5,7 @@ using Windows.Storage;
 using Windows.System;
 using WinLauncher = Windows.System.Launcher;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
 	public partial class LauncherImplementation
 	{

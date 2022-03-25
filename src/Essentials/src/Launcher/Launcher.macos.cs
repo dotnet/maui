@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using AppKit;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
 	public partial class LauncherImplementation
 	{

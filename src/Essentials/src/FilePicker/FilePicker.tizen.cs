@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Tizen;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	public static partial class FilePicker
 	{

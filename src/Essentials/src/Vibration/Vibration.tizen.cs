@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Tizen.System;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
 	public partial class VibrationImplementation : IVibration
 	{

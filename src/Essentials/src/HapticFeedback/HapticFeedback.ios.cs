@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
 	public partial class HapticFeedbackImplementation : IHapticFeedback
 	{

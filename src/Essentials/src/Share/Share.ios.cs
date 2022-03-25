@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
 	public class ShareImplementation : IShare
 	{

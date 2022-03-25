@@ -19,7 +19,7 @@ using WApp = Microsoft.UI.Xaml.Application;
 using WRect = Windows.Foundation.Rect;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.ListView;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.Platform;

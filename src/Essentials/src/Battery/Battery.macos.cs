@@ -1,7 +1,7 @@
 using System;
 using CoreFoundation;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
 	public partial class BatteryImplementation : IBattery
 	{

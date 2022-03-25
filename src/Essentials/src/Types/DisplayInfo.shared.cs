@@ -1,6 +1,7 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DisplayInfo']/Docs" />
 	[Preserve(AllMembers = true)]
