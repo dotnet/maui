@@ -45,11 +45,17 @@ public partial class FontManagerTests : TestBase
 	{
 		var fontName = "FooBarFont";
 		var fontWeight = FontWeight.Regular;
-		var registrar = new FontRegistrar(new EmbeddedFontLoader ());
+		var registrar = new FontRegistrar(new EmbeddedFontLoader());
 		registrar.Register("dokdo_regular.ttf", fontName, GetType().Assembly);
 		var manager = new FontManager(registrar);
 		var actual = manager.GetTypeface(Font.OfSize(fontName, 12, fontWeight));
-		var defaultFont = Typeface.Create(Typeface.Create(fontName, TypefaceStyle.Normal), (int)fontWeight, italic: false);
+		Typeface defaultFont;
+
+		if (OperatingSystem.IsAndroidVersionAtLeast(28))
+			defaultFont = Typeface.Create(Typeface.Create(fontName, TypefaceStyle.Normal), (int)fontWeight, italic: false);
+		else
+			defaultFont = Typeface.Create(Typeface.Create(fontName, TypefaceStyle.Normal), TypefaceStyle.Normal);
+
 		Assert.False(defaultFont.Equals(actual));
 	}
 }
