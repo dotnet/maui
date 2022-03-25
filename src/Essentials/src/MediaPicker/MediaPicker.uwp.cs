@@ -8,7 +8,7 @@ using Windows.Storage.Pickers;
 
 namespace Microsoft.Maui.Media
 {
-	public partial class MediaPickerImplementation : IMediaPicker
+	partial class MediaPickerImplementation : IMediaPicker
 	{
 		public bool IsCaptureSupported
 			=> true;
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Media
 		{
 			var picker = new FileOpenPicker();
 
-			var hwnd = Platform.CurrentWindowHandle;
+			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
 			WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
 
 			var defaultTypes = photo ? FilePickerFileType.Images.Value : FilePickerFileType.Videos.Value;

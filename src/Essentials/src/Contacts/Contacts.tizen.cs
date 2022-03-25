@@ -11,7 +11,7 @@ using TizenNumber = Tizen.Pims.Contacts.ContactsViews.Number;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public static partial class Contacts
+	static partial class Contacts
 	{
 		static ContactsManager manager = new ContactsManager();
 

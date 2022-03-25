@@ -3,7 +3,7 @@ using TizenCompass = Tizen.Sensor.OrientationSensor;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class CompassImplementation : ICompass
+	partial class CompassImplementation : ICompass
 	{
 		static TizenCompass DefaultSensor =>
 			(TizenCompass)Platform.GetDefaultSensor(SensorType.Compass);

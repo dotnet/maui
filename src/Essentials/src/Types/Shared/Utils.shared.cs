@@ -3,7 +3,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.ApplicationModel
+namespace Microsoft.Maui
 {
 	static class Utils
 	{

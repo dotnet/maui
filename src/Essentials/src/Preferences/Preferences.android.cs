@@ -6,9 +6,9 @@ using Android.Preferences;
 
 namespace Microsoft.Maui.Storage
 {
-	public class PreferencesImplementation : IPreferences
+	class PreferencesImplementation : IPreferences
 	{
-		static readonly object locker = new object();
+		readonly object locker = new object();
 
 		public bool ContainsKey(string key, string sharedName)
 		{

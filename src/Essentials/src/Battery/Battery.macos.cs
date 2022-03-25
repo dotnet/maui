@@ -3,17 +3,17 @@ using CoreFoundation;
 
 namespace Microsoft.Maui.Devices
 {
-	public partial class BatteryImplementation : IBattery
+	partial class BatteryImplementation : IBattery
 	{
 		CFRunLoopSource powerSourceNotification;
 
-		public void StartBatteryListeners()
+		void StartBatteryListeners()
 		{
 			powerSourceNotification = IOKit.CreatePowerSourceNotification(PowerSourceNotification);
 			CFRunLoop.Current.AddSource(powerSourceNotification, CFRunLoop.ModeDefault);
 		}
 
-		public void StopBatteryListeners()
+		void StopBatteryListeners()
 		{
 			if (powerSourceNotification != null)
 			{
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Devices
 			}
 		}
 
-		public void PowerSourceNotification()
+		void PowerSourceNotification()
 			=> MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
 		public double ChargeLevel => IOKit.GetInternalBatteryChargeLevel();
@@ -31,11 +31,11 @@ namespace Microsoft.Maui.Devices
 
 		public BatteryPowerSource PowerSource => IOKit.GetProvidingPowerSource();
 
-		public void StartEnergySaverListeners()
+		void StartEnergySaverListeners()
 		{
 		}
 
-		public void StopEnergySaverListeners()
+		void StopEnergySaverListeners()
 		{
 		}
 

@@ -7,10 +7,10 @@ using Tizen.Applications;
 
 namespace Microsoft.Maui.Media
 {
-	public partial class MediaPickerImplementation : IMediaPicker
+	partial class MediaPickerImplementation : IMediaPicker
 	{
 		public bool IsCaptureSupported
-			   => true;
+			=> true;
 
 		public async Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> await FilePicker.PickAsync(new PickOptions

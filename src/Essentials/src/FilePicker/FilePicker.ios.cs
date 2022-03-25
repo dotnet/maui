@@ -1,20 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using MobileCoreServices;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Storage
 {
-	public static partial class FilePicker
+	partial class FilePickerImplementation : IFilePicker
 	{
-		static async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+		async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
 		{
 			var allowedUtis = options?.FileTypes?.Value?.ToArray() ?? new string[]
 			{
@@ -38,10 +36,10 @@ namespace Microsoft.Maui.Storage
 			if (documentPicker.PresentationController != null)
 			{
 				documentPicker.PresentationController.Delegate =
-					new Platform.UIPresentationControllerDelegate(() => GetFileResults(null, tcs));
+					new UIPresentationControllerDelegate(() => GetFileResults(null, tcs));
 			}
 
-			var parentController = Platform.GetCurrentViewController();
+			var parentController = WindowStateManager.Default.GetCurrentUIViewController(true);
 
 			parentController.PresentViewController(documentPicker, true, null);
 
@@ -52,7 +50,7 @@ namespace Microsoft.Maui.Storage
 		{
 			try
 			{
-				var results = await FileSystem.EnsurePhysicalFileResultsAsync(urls);
+				var results = await FileSystemUtils.EnsurePhysicalFileResultsAsync(urls);
 
 				tcs.TrySetResult(results);
 			}
@@ -75,7 +73,6 @@ namespace Microsoft.Maui.Storage
 			public override void DidPickDocument(UIDocumentPickerViewController controller, NSUrl url)
 				=> PickHandler?.Invoke(new NSUrl[] { url });
 		}
-
 	}
 
 	public partial class FilePickerFileType

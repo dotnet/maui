@@ -1,6 +1,6 @@
+#nullable enable
 using System;
 using System.Numerics;
-using System.ComponentModel;
 using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
@@ -11,8 +11,6 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		bool IsMonitoring { get; }
 
-		SensorSpeed SensorSpeed { get; }
-
 		void Start(SensorSpeed sensorSpeed);
 
 		void Stop();
@@ -20,46 +18,15 @@ namespace Microsoft.Maui.Devices.Sensors
 		event EventHandler<MagnetometerChangedEventArgs> ReadingChanged;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Magnetometer']/Docs" />
 	public static partial class Magnetometer
 	{
-		public static event EventHandler<MagnetometerChangedEventArgs> ReadingChanged
-		{
-			add => Current.ReadingChanged += value;
-			remove => Current.ReadingChanged -= value;
-		}
+		static IMagnetometer? defaultImplementation;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
-		public static bool IsMonitoring
-			=> Current.IsMonitoring;
+		public static IMagnetometer Default =>
+			defaultImplementation ??= new MagnetometerImplementation();
 
-		public static bool IsSupported 
-			=> Current.IsSupported;
-
-		public static SensorSpeed SensorSpeed
-			=> Current.SensorSpeed;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="//Member[@MemberName='Start']/Docs" />
-		public static void Start(SensorSpeed sensorSpeed)
-			=> Current.Start(sensorSpeed);
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Magnetometer.xml" path="//Member[@MemberName='Stop'][1]/Docs" />
-		public static void Stop()
-			=> Current.Stop();
-
-#nullable enable
-		static IMagnetometer? currentImplementation;
-#nullable disable
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IMagnetometer Current =>
-			currentImplementation ??= new MagnetometerImplementation();
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IMagnetometer? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
+		internal static void SetDefault(IMagnetometer? implementation) =>
+			defaultImplementation = implementation;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/MagnetometerChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MagnetometerChangedEventArgs']/Docs" />
@@ -90,7 +57,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public Vector3 MagneticField { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/MagnetometerData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
-		public override bool Equals(object obj) =>
+		public override bool Equals(object? obj) =>
 			(obj is MagnetometerData data) && Equals(data);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/MagnetometerData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
@@ -113,21 +80,18 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(MagneticField.Y)}: {MagneticField.Y}, " +
 			$"{nameof(MagneticField.Z)}: {MagneticField.Z}";
 	}
-}
 
-namespace Microsoft.Maui.Devices.Sensors
-{
-	public partial class MagnetometerImplementation : IMagnetometer
+	partial class MagnetometerImplementation : IMagnetometer
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 
-		public event EventHandler<MagnetometerChangedEventArgs> ReadingChanged;
+		public event EventHandler<MagnetometerChangedEventArgs>? ReadingChanged;
 
 		public bool IsMonitoring { get; private set; }
 
 		public bool IsSupported => PlatformIsSupported;
 
-		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
+		SensorSpeed SensorSpeed { get; set; } = SensorSpeed.Default;
 
 		public void Start(SensorSpeed sensorSpeed)
 		{

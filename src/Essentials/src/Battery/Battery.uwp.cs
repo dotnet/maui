@@ -3,16 +3,16 @@ using Windows.System.Power;
 
 namespace Microsoft.Maui.Devices
 {
-	public partial class BatteryImplementation : IBattery
+	partial class BatteryImplementation : IBattery
 	{
-		public void StartEnergySaverListeners() =>
+		void StartEnergySaverListeners() =>
 			PowerManager.EnergySaverStatusChanged += ReportEnergySaverUpdated;
 
-		public void StopEnergySaverListeners() =>
+		void StopEnergySaverListeners() =>
 			PowerManager.EnergySaverStatusChanged -= ReportEnergySaverUpdated;
 
 		void ReportEnergySaverUpdated(object sender, object e)
-			=> MainThread.BeginInvokeOnMainThread(Battery.OnEnergySaverChanged);
+			=> MainThread.BeginInvokeOnMainThread(OnEnergySaverChanged);
 
 		public void StartBatteryListeners() =>
 			DefaultBattery.ReportUpdated += ReportUpdated;
@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Devices
 		public void StopBatteryListeners() =>
 			DefaultBattery.ReportUpdated -= ReportUpdated;
 
-	 	void ReportUpdated(object sender, object e)
-			=> MainThread.BeginInvokeOnMainThread(Battery.OnBatteryInfoChanged);
+		void ReportUpdated(object sender, object e)
+			=> MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
 		global::Windows.Devices.Power.Battery DefaultBattery =>
 			global::Windows.Devices.Power.Battery.AggregateBattery;

@@ -1,13 +1,17 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Tizen.Applications;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Map
+	class MapImplementation : IMap
 	{
-		internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
 			var appControl = new AppControl
@@ -23,8 +27,14 @@ namespace Microsoft.Maui.ApplicationModel
 			return Task.CompletedTask;
 		}
 
-		internal static Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
+		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
+			if (placemark == null)
+				throw new ArgumentNullException(nameof(placemark));
+
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
 			var appControl = new AppControl

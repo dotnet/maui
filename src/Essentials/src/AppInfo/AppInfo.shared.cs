@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -55,12 +54,10 @@ namespace Microsoft.Maui.ApplicationModel
 
 		static IAppInfo? currentImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IAppInfo Current =>
 			currentImplementation ??= new AppInfoImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IAppInfo? implementation) =>
+		internal static void SetCurrent(IAppInfo? implementation) =>
 			currentImplementation = implementation;
 	}
 

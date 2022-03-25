@@ -4,7 +4,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices
 {
-	public class FlashlightImplementation : IFlashlight
+	class FlashlightImplementation : IFlashlight
 	{
 		public Task TurnOnAsync()
 		{

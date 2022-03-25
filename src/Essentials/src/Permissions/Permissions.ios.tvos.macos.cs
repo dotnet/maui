@@ -30,13 +30,13 @@ namespace Microsoft.Maui.ApplicationModel
 					return status;
 				}
 #if __IOS__
-                else if (status == PermissionStatus.Limited)
-                {
-                    PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
-                        PHPhotoLibrary.SharedPhotoLibrary,
-                        Platform.GetCurrentUIViewController());
-                    return status;
-                }
+				else if (status == PermissionStatus.Limited)
+				{
+					PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
+						PHPhotoLibrary.SharedPhotoLibrary,
+						WindowStateManager.Default.GetCurrentUIViewController());
+					return status;
+				}
 #endif
 
 				EnsureMainThread();

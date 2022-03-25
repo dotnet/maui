@@ -4,7 +4,7 @@ using Windows.Services.Maps;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class LocationExtensions
+	static partial class LocationExtensions
 	{
 		internal static IEnumerable<Placemark> ToPlacemarks(this IEnumerable<MapLocation> mapLocations)
 		{

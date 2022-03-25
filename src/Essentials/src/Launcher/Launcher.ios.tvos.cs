@@ -5,12 +5,11 @@ using Foundation;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	public partial class LauncherImplementation
+	partial class LauncherImplementation
 	{
 		Task<bool> PlatformCanOpenAsync(Uri uri) =>
 			Task.FromResult(UIApplication.SharedApplication.CanOpenUrl(WebUtils.GetNativeUrl(uri)));

@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Android.OS;
+using Android.App;
 using Android.Speech.Tts;
 using Microsoft.Maui.ApplicationModel;
 using AndroidTextToSpeech = Android.Speech.Tts.TextToSpeech;
@@ -13,13 +13,13 @@ using JavaLocale = Java.Util.Locale;
 
 namespace Microsoft.Maui.Media
 {
-	public partial class TextToSpeechImplementation : ITextToSpeech
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
 		const int maxSpeechInputLengthDefault = 4000;
 
-		static WeakReference<TextToSpeechInternalImplementation> textToSpeechRef = null;
+		WeakReference<TextToSpeechInternalImplementation> textToSpeechRef = null;
 
-		static TextToSpeechInternalImplementation GetTextToSpeech()
+		TextToSpeechInternalImplementation GetTextToSpeech()
 		{
 			if (textToSpeechRef == null || !textToSpeechRef.TryGetTarget(out var tts))
 			{
@@ -30,27 +30,22 @@ namespace Microsoft.Maui.Media
 			return tts;
 		}
 
-		public Task SpeakAsync(string text, CancellationToken cancelToken)
-			=> SpeakAsync(text, default, cancelToken);
-
-		public Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken)
+		Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken)
 		{
 			var textToSpeech = GetTextToSpeech();
-
 			if (textToSpeech == null)
 				throw new PlatformNotSupportedException("Unable to start text-to-speech engine, not supported on device.");
 
 			var max = maxSpeechInputLengthDefault;
-			if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.JellyBeanMr2))
+			if (OperatingSystem.IsAndroidVersionAtLeast(18))
 				max = AndroidTextToSpeech.MaxSpeechInputLength;
 
 			return textToSpeech.SpeakAsync(text, max, options, cancelToken);
 		}
 
-		public Task<IEnumerable<Locale>> GetLocalesAsync()
+		Task<IEnumerable<Locale>> PlatformGetLocalesAsync()
 		{
 			var textToSpeech = GetTextToSpeech();
-
 			if (textToSpeech == null)
 				throw new PlatformNotSupportedException("Unable to start text-to-speech engine, not supported on device.");
 
@@ -76,7 +71,7 @@ namespace Microsoft.Maui.Media
 			try
 			{
 				// set up the TextToSpeech object
-				tts = new AndroidTextToSpeech(Platform.AppContext, this);
+				tts = new AndroidTextToSpeech(Application.Context, this);
 #pragma warning disable CS0618
 				tts.SetOnUtteranceCompletedListener(this);
 #pragma warning restore CS0618
@@ -149,11 +144,11 @@ namespace Microsoft.Maui.Media
 			if (options?.Pitch.HasValue ?? false)
 				tts.SetPitch(options.Pitch.Value);
 			else
-				tts.SetPitch(TextToSpeech.PitchDefault);
+				tts.SetPitch(TextToSpeechImplementation.PitchDefault);
 
 			tts.SetSpeechRate(1.0f);
 
-			var parts = text.SplitSpeak(max);
+			var parts = SplitSpeak(text, max);
 
 			numExpectedUtterances = parts.Count;
 
@@ -249,5 +244,70 @@ namespace Microsoft.Maui.Media
 			}
 		}
 #pragma warning restore 0618
+
+		static List<string> SplitSpeak(string text, int max)
+		{
+			var parts = new List<string>();
+			if (text.Length <= max)
+			{
+				// no need to split
+				parts.Add(text);
+			}
+			else
+			{
+				var positionbegin = 0;
+				var positionend = max;
+				var position = positionbegin;
+
+				var p = string.Empty;
+				while (position != text.Length)
+				{
+					while (positionend > positionbegin)
+					{
+						if (positionend >= text.Length)
+						{
+							// we just need the rest of it
+							p = text.Substring(positionbegin, text.Length - positionbegin);
+							parts.Add(p);
+							return parts;
+						}
+
+						var ch = text[positionend];
+						if (char.IsWhiteSpace(ch) || char.IsPunctuation(ch))
+						{
+							p = text.Substring(positionbegin, positionend - positionbegin);
+							break;
+						}
+						else if (positionend == positionbegin)
+						{
+							// no whitespace or punctuation found
+							// grab the whole buffer (max)
+							p = text.Substring(positionbegin, positionbegin + max);
+							break;
+						}
+
+						positionend--;
+					}
+					Debug.WriteLine($"p             = {p}");
+					Debug.WriteLine($"p.Length      = {p.Length}");
+					Debug.WriteLine($"positionbegin = {positionbegin}");
+					Debug.WriteLine($"positionend   = {positionend}");
+					Debug.WriteLine($"position      = {position}");
+
+					positionbegin = positionbegin + p.Length + 1;
+					positionend = positionbegin + max;
+					position = positionbegin;
+
+					Debug.WriteLine($"------------------------------");
+					Debug.WriteLine($"positionbegin = {positionbegin}");
+					Debug.WriteLine($"positionend   = {positionend}");
+					Debug.WriteLine($"position      = {position}");
+
+					parts.Add(p);
+				}
+			}
+
+			return parts;
+		}
 	}
 }

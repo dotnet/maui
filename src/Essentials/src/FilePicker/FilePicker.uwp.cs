@@ -10,9 +10,9 @@ using Windows.Storage.Pickers;
 
 namespace Microsoft.Maui.Storage
 {
-	public static partial class FilePicker
+	partial class FilePickerImplementation : IFilePicker
 	{
-		static async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+		async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
 		{
 			var picker = new FileOpenPicker
 			{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Storage
 				SuggestedStartLocation = PickerLocationId.DocumentsLibrary
 			};
 
-			var hwnd = Platform.CurrentWindowHandle;
+			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
 			WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
 
 			SetFileTypes(options, picker);
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Storage
 			{
 				foreach (var type in options.FileTypes.Value)
 				{
-					var ext = FileSystem.Extensions.Clean(type);
+					var ext = FileExtensions.Clean(type);
 					if (!string.IsNullOrWhiteSpace(ext))
 					{
 						picker.FileTypeFilter.Add(ext);
@@ -73,31 +73,31 @@ namespace Microsoft.Maui.Storage
 		static FilePickerFileType PlatformImageFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.WinUI, FileSystem.Extensions.AllImage }
+				{ DevicePlatform.WinUI, FileExtensions.AllImage }
 			});
 
 		static FilePickerFileType PlatformPngFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.WinUI, new[] { FileSystem.Extensions.Png } }
+				{ DevicePlatform.WinUI, new[] { FileExtensions.Png } }
 			});
 
 		static FilePickerFileType PlatformJpegFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.WinUI, FileSystem.Extensions.AllJpeg }
+				{ DevicePlatform.WinUI, FileExtensions.AllJpeg }
 			});
 
 		static FilePickerFileType PlatformVideoFileType() =>
-		   new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-		   {
-				{ DevicePlatform.WinUI, FileSystem.Extensions.AllVideo }
-		   });
+			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+			{
+				{ DevicePlatform.WinUI, FileExtensions.AllVideo }
+			});
 
 		static FilePickerFileType PlatformPdfFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.WinUI, new[] { FileSystem.Extensions.Pdf } }
+				{ DevicePlatform.WinUI, new[] { FileExtensions.Pdf } }
 			});
 	}
 }

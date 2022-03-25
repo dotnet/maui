@@ -9,28 +9,13 @@ using Windows.UI.Xaml;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	public class AppInfoImplementation : IAppInfo
+	class AppInfoImplementation : IAppInfo
 	{
-		static Lazy<bool> _isPackagedAppLazy = new Lazy<bool>(() =>
-		{
-			try
-			{
-				if (Package.Current != null)
-					return true;
-			}
-			catch
-			{
-				// no-op
-			}
-
-			return false;
-		});
-
 		public string PackageName => Package.Current.Id.Name;
 
 		public string Name => Package.Current.DisplayName;
 
-		public System.Version Version => Utils.ParseVersion(VersionString);
+		public Version Version => Utils.ParseVersion(VersionString);
 
 		public string VersionString
 		{
@@ -50,11 +35,31 @@ namespace Microsoft.Maui.ApplicationModel
 		public AppTheme RequestedTheme =>
 			Application.Current.RequestedTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
 
-		public AppPackagingModel PackagingModel => _isPackagedAppLazy.Value
+		public AppPackagingModel PackagingModel => AppInfoUtils.IsPackagedApp
 			? AppPackagingModel.Packaged
 			: AppPackagingModel.Unpackaged;
 
 		public LayoutDirection RequestedLayoutDirection =>
 			CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? LayoutDirection.RightToLeft : LayoutDirection.LeftToRight;
+	}
+
+	static class AppInfoUtils
+	{
+		static readonly Lazy<bool> _isPackagedAppLazy = new Lazy<bool>(() =>
+		{
+			try
+			{
+				if (Package.Current != null)
+					return true;
+			}
+			catch
+			{
+				// no-op
+			}
+
+			return false;
+		});
+
+		public static bool IsPackagedApp => _isPackagedAppLazy.Value;
 	}
 }

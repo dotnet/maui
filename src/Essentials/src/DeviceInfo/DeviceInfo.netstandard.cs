@@ -3,7 +3,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices
 {
-	public class DeviceInfoImplementation : IDeviceInfo
+	class DeviceInfoImplementation : IDeviceInfo
 	{
 		public string Model => throw ExceptionUtils.NotSupportedOrImplementedException;
 

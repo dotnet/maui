@@ -3,22 +3,18 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices
 {
-	public partial class VibrationImplementation : IVibration
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Vibration']/Docs" />
+	partial class VibrationImplementation : IVibration
 	{
 		public bool IsSupported
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void Vibrate() 
+		void PlatformVibrate()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void Vibrate(double duration) 
+		void PlatformVibrate(TimeSpan duration)
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void Vibrate(TimeSpan duration)
-			=> throw ExceptionUtils.NotSupportedOrImplementedException;
-
-		public void Cancel()
+		void PlatformCancel()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

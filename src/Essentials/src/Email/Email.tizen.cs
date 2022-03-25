@@ -4,12 +4,12 @@ using Tizen.Applications;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public partial class EmailImplementation : IEmail
+	partial class EmailImplementation : IEmail
 	{
 		public bool IsComposeSupported
 			=> Platform.GetFeatureInfo<bool>("email");
 
-		public Task ComposeAsync(EmailMessage message)
+		Task PlatformComposeAsync(EmailMessage message)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
@@ -34,17 +34,5 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 			return Task.CompletedTask;
 		}
-
-		public Task ComposeAsync(string subject, string body, params string[] to)
-			=> ComposeAsync(
-				new EmailMessage
-				{
-					Subject = subject,
-					Body = body,
-					To = to.List<string>()
-				});
-
-		public Task ComposeAsync()
-			=> ComposeAsync(null);
 	}
 }

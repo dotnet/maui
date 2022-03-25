@@ -3,7 +3,7 @@ using WindowsGyro = Windows.Devices.Sensors.Gyrometer;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class GyroscopeImplementation : IGyroscope
+	partial class GyroscopeImplementation : IGyroscope
 	{
 		// keep around a reference so we can stop this same instance
 		WindowsGyro sensor;
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		bool PlatformIsSupported =>
 			DefaultSensor != null;
 
-		public void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			sensor = DefaultSensor;
 

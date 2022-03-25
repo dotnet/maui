@@ -6,7 +6,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices
 {
-	public partial class HapticFeedbackImplementation : IHapticFeedback
+	partial class HapticFeedbackImplementation : IHapticFeedback
 	{
 		public bool IsSupported => true;
 
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Devices
 
 			try
 			{
-				Platform.CurrentActivity?.Window?.DecorView?.PerformHapticFeedback(ConvertType(type));
+				ActivityStateManager.Default.GetCurrentActivity()?.Window?.DecorView?.PerformHapticFeedback(ConvertType(type));
 			}
 			catch (Exception ex)
 			{

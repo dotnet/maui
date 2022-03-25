@@ -12,7 +12,7 @@ using TizenOrientationSensor = Tizen.Sensor.RotationVectorSensor;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Platform
+	static class PlatformUtils
 	{
 		static TizenAccelerometer accelerometer = null;
 		static TizenBarometer barometer = null;
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.ApplicationModel
 		public static string MapServiceToken { get; set; }
 	}
 
-	public enum SensorType
+	enum SensorType
 	{
 		Accelerometer,
 		Barometer,

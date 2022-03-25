@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.LifecycleEvents;
 using WinRT;
 
 namespace Microsoft.Maui

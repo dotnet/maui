@@ -1,6 +1,6 @@
+#nullable enable
 using System;
 using System.Numerics;
-using System.ComponentModel;
 using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
@@ -11,8 +11,6 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		bool IsMonitoring { get; }
 
-		SensorSpeed SensorSpeed { get; }
-
 		void Start(SensorSpeed sensorSpeed);
 
 		void Stop();
@@ -20,46 +18,15 @@ namespace Microsoft.Maui.Devices.Sensors
 		event EventHandler<GyroscopeChangedEventArgs> ReadingChanged;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Gyroscope']/Docs" />
-	public static partial class Gyroscope
+	public static class Gyroscope
 	{
-		public static event EventHandler<GyroscopeChangedEventArgs> ReadingChanged
-		{
-			add => Current.ReadingChanged += value;
-			remove => Current.ReadingChanged -= value;
-		}
+		static IGyroscope? defaultImplementation;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
-		public static bool IsMonitoring
-			=> Current.IsMonitoring;
+		public static IGyroscope Default =>
+			defaultImplementation ??= new GyroscopeImplementation();
 
-		public static bool IsSupported 
-			=> Current.IsSupported;
-
-		public static SensorSpeed SensorSpeed
-			=> Current.SensorSpeed;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Start']/Docs" />
-		public static void Start(SensorSpeed sensorSpeed)
-			=> Current.Start(sensorSpeed);
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Stop'][1]/Docs" />
-		public static void Stop()
-			=> Current.Stop();
-
-#nullable enable
-		static IGyroscope? currentImplementation;
-#nullable disable
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IGyroscope Current =>
-			currentImplementation ??= new GyroscopeImplementation();
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IGyroscope? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
+		internal static void SetDefault(IGyroscope? implementation) =>
+			defaultImplementation = implementation;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.GyroscopeChangedEventArgs']/Docs" />
@@ -90,7 +57,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public Vector3 AngularVelocity { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
-		public override bool Equals(object obj) =>
+		public override bool Equals(object? obj) =>
 			(obj is GyroscopeData data) && Equals(data);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
@@ -113,17 +80,14 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(AngularVelocity.Y)}: {AngularVelocity.Y}, " +
 			$"{nameof(AngularVelocity.Z)}: {AngularVelocity.Z}";
 	}
-}
 
-namespace Microsoft.Maui.Devices.Sensors
-{
-	public partial class GyroscopeImplementation : IGyroscope
+	partial class GyroscopeImplementation : IGyroscope
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 
-		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
+		SensorSpeed SensorSpeed { get; set; } = SensorSpeed.Default;
 
-		public event EventHandler<GyroscopeChangedEventArgs> ReadingChanged;
+		public event EventHandler<GyroscopeChangedEventArgs>? ReadingChanged;
 
 		public bool IsMonitoring { get; private set; }
 
@@ -150,7 +114,6 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Stop'][2]/Docs" />
 		public void Stop()
 		{
 			if (!PlatformIsSupported)

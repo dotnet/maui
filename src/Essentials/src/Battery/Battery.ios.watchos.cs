@@ -10,7 +10,7 @@ using UIDeviceBatteryState = WatchKit.WKInterfaceDeviceBatteryState;
 
 namespace Microsoft.Maui.Devices
 {
-	public partial class BatteryImplementation : IBattery
+	partial class BatteryImplementation : IBattery
 	{
 #if !__WATCHOS__
 		NSObject levelObserver;
@@ -19,27 +19,27 @@ namespace Microsoft.Maui.Devices
 
 		NSObject saverStatusObserver;
 
-		public void StartEnergySaverListeners()
+		void StartEnergySaverListeners()
 		{
 			saverStatusObserver = NSNotificationCenter.DefaultCenter.AddObserver(NSProcessInfo.PowerStateDidChangeNotification, PowerChangedNotification);
 		}
 
-		public void StopEnergySaverListeners()
+		void StopEnergySaverListeners()
 		{
 			saverStatusObserver?.Dispose();
 			saverStatusObserver = null;
 		}
 
 		void PowerChangedNotification(NSNotification notification)
-			=> MainThread.BeginInvokeOnMainThread(Battery.OnEnergySaverChanged);
+			=> PlatformUtils.BeginInvokeOnMainThread(OnEnergySaverChanged);
 
 		public EnergySaverStatus EnergySaverStatus =>
 			NSProcessInfo.ProcessInfo?.LowPowerModeEnabled == true ? EnergySaverStatus.On : EnergySaverStatus.Off;
 
-		public void StartBatteryListeners()
+		void StartBatteryListeners()
 		{
 #if __WATCHOS__
-            throw new FeatureNotSupportedException();
+			throw new FeatureNotSupportedException();
 #else
 			UIDevice.CurrentDevice.BatteryMonitoringEnabled = true;
 			levelObserver = UIDevice.Notifications.ObserveBatteryLevelDidChange(BatteryInfoChangedNotification);
@@ -47,10 +47,10 @@ namespace Microsoft.Maui.Devices
 #endif
 		}
 
-		public void StopBatteryListeners()
+		void StopBatteryListeners()
 		{
 #if __WATCHOS__
-            throw new FeatureNotSupportedException();
+			throw new FeatureNotSupportedException();
 #else
 			UIDevice.CurrentDevice.BatteryMonitoringEnabled = false;
 			levelObserver?.Dispose();
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Devices
 		}
 
 		void BatteryInfoChangedNotification(object sender, NSNotificationEventArgs args)
-			=> MainThread.BeginInvokeOnMainThread(Battery.OnBatteryInfoChanged);
+			=> PlatformUtils.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
 		public double ChargeLevel
 		{

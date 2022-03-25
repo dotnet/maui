@@ -9,10 +9,13 @@ using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	public class MapImplementation : IMap
+	class MapImplementation : IMap
 	{
-		public Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			if (string.IsNullOrWhiteSpace(options.Name))
 				options.Name = string.Empty;
 
@@ -21,8 +24,14 @@ namespace Microsoft.Maui.ApplicationModel
 			return OpenPlacemark(placemark, options);
 		}
 
-		public async Task OpenMapsAsync(Placemark placemark, MapLaunchOptions options)
+		public async Task OpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
+			if (placemark == null)
+				throw new ArgumentNullException(nameof(placemark));
+
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 #if __IOS__
 			var address = new MKPlacemarkAddress
 			{
@@ -57,7 +66,7 @@ namespace Microsoft.Maui.ApplicationModel
 				var uri = $"http://maps.apple.com/?q={placemark.GetEscapedAddress()}";
 				var nsurl = NSUrl.FromString(uri);
 
-				await Launcher.OpenAsync(nsurl);
+				await Launcher.Default.OpenAsync(nsurl);
 #else
 				await OpenPlacemark(new MKPlacemark(default, address), options);
 #endif

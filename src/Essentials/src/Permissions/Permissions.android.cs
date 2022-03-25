@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android;
+using Android.App;
 using Android.Content.PM;
 using Android.OS;
 using AndroidX.Core.App;
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		public static bool IsDeclaredInManifest(string permission)
 		{
-			var context = Platform.AppContext;
+			var context = Application.Context;
 			var packageInfo = context.PackageManager.GetPackageInfo(context.PackageName, PackageInfoFlags.Permissions);
 			var requestedPermissions = packageInfo?.RequestedPermissions;
 
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.ApplicationModel
 		public abstract partial class BasePlatformPermission : BasePermission
 		{
 			static readonly Dictionary<string, (int requestCode, TaskCompletionSource<PermissionStatus> tcs)> requests =
-				   new Dictionary<string, (int, TaskCompletionSource<PermissionStatus>)>();
+				new Dictionary<string, (int, TaskCompletionSource<PermissionStatus>)>();
 
 			static readonly object locker = new object();
 			static int requestCode;
@@ -39,7 +40,7 @@ namespace Microsoft.Maui.ApplicationModel
 				if (RequiredPermissions == null || RequiredPermissions.Length <= 0)
 					return Task.FromResult(PermissionStatus.Granted);
 
-				var context = Platform.AppContext;
+				var context = Application.Context;
 				var targetsMOrHigher = context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.M;
 
 				foreach (var (androidPermission, isRuntime) in RequiredPermissions)
@@ -98,7 +99,7 @@ namespace Microsoft.Maui.ApplicationModel
 					{
 						tcs = new TaskCompletionSource<PermissionStatus>();
 
-						requestCode = Platform.NextRequestCode();
+						requestCode = PlatformUtils.NextRequestCode();
 
 						requests.Add(permissionId, (requestCode, tcs));
 					}
@@ -110,7 +111,7 @@ namespace Microsoft.Maui.ApplicationModel
 				if (!MainThread.IsMainThread)
 					throw new PermissionException("Permission request must be invoked on main thread.");
 
-				ActivityCompat.RequestPermissions(Platform.GetCurrentActivity(true), runtimePermissions.ToArray(), requestCode);
+				ActivityCompat.RequestPermissions(ActivityStateManager.Default.GetCurrentActivity(true), runtimePermissions.ToArray(), requestCode);
 
 				var result = await tcs.Task;
 
@@ -138,7 +139,7 @@ namespace Microsoft.Maui.ApplicationModel
 				if (RequiredPermissions == null || RequiredPermissions.Length <= 0)
 					return false;
 
-				var activity = Platform.GetCurrentActivity(true);
+				var activity = ActivityStateManager.Default.GetCurrentActivity(true);
 				foreach (var (androidPermission, isRuntime) in RequiredPermissions)
 				{
 					if (isRuntime && ActivityCompat.ShouldShowRequestPermissionRationale(activity, androidPermission))
@@ -245,7 +246,7 @@ namespace Microsoft.Maui.ApplicationModel
 					var permissions = new List<(string, bool)>();
 #if __ANDROID_29__
 					// Check if running and targeting Q
-					if (Platform.HasApiLevelQ && Platform.AppContext.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.Q)
+					if (OperatingSystem.IsAndroidVersionAtLeast(29) && Application.Context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.Q)
 						permissions.Add((Manifest.Permission.AccessBackgroundLocation, true));
 #endif
 
@@ -311,7 +312,7 @@ namespace Microsoft.Maui.ApplicationModel
 						permissions.Add((Manifest.Permission.AddVoicemail, true));
 					if (IsDeclaredInManifest(Manifest.Permission.UseSip))
 						permissions.Add((Manifest.Permission.UseSip, true));
-					if (Platform.HasApiLevelO)
+					if (OperatingSystem.IsAndroidVersionAtLeast(26))
 					{
 						if (IsDeclaredInManifest(Manifest.Permission.AnswerPhoneCalls))
 							permissions.Add((Manifest.Permission.AnswerPhoneCalls, true));

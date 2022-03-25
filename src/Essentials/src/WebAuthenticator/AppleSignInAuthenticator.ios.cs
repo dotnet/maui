@@ -1,20 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using AuthenticationServices;
 using Foundation;
 using Microsoft.Maui.ApplicationModel;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Authentication
 {
-	public partial class AppleSignInAuthenticatorImplementation : IAppleSignInAuthenticator
+	partial class AppleSignInAuthenticatorImplementation : IAppleSignInAuthenticator
 	{
 		AuthManager authManager;
 
-		public async Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticator.Options options)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticatorOptions options)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
 				throw new FeatureNotSupportedException();
@@ -22,7 +20,7 @@ namespace Microsoft.Maui.Authentication
 			var provider = new ASAuthorizationAppleIdProvider();
 			var req = provider.CreateRequest();
 
-			authManager = new AuthManager(Platform.GetCurrentWindow());
+			authManager = new AuthManager(WindowStateManager.Default.GetCurrentUIWindow(true));
 
 			var scopes = new List<ASAuthorizationScope>();
 

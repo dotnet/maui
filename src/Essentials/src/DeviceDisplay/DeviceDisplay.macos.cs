@@ -6,20 +6,14 @@ using Foundation;
 
 namespace Microsoft.Maui.Devices
 {
-	public class DeviceDisplayImplementation : IDeviceDisplay
+	class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		uint keepScreenOnId = 0;
 		NSObject? screenMetricsObserver;
 
-		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged;
-
 		public bool KeepScreenOn
 		{
-			get
-			{
-				return keepScreenOnId != 0;
-			}
-
+			get => keepScreenOnId != 0;
 			set
 			{
 				if (KeepScreenOn == value)
@@ -37,7 +31,7 @@ namespace Microsoft.Maui.Devices
 			}
 		}
 
-		public DisplayInfo GetMainDisplayInfo()
+		DisplayInfo GetMainDisplayInfo()
 		{
 			var mainScreen = NSScreen.MainScreen;
 			var frame = mainScreen.Frame;
@@ -61,23 +55,19 @@ namespace Microsoft.Maui.Devices
 				rate: (float)refreshRate);
 		}
 
-		public void StartScreenMetricsListeners()
+		void StartScreenMetricsListeners()
 		{
-			if (screenMetricsObserver == null)
-			{
-				screenMetricsObserver = NSNotificationCenter.DefaultCenter.AddObserver(NSApplication.DidChangeScreenParametersNotification, OnDidChangeScreenParameters);
-			}
+			screenMetricsObserver ??= NSNotificationCenter.DefaultCenter.AddObserver(
+				NSApplication.DidChangeScreenParametersNotification, OnDidChangeScreenParameters);
 		}
 
-		public void StopScreenMetricsListeners()
+		void StopScreenMetricsListeners()
 		{
 			screenMetricsObserver?.Dispose();
+			screenMetricsObserver = null;
 		}
 
-		public void OnDidChangeScreenParameters(NSNotification notification)
-		{
-			var metrics = GetMainDisplayInfo();
-			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(metrics));
-		}
+		void OnDidChangeScreenParameters(NSNotification notification) =>
+			OnMainDisplayInfoChanged();
 	}
 }

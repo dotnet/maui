@@ -12,7 +12,7 @@ using ObjCRuntime;
 
 namespace Microsoft.Maui.Devices
 {
-	public class DeviceInfoImplementation : IDeviceInfo
+	class DeviceInfoImplementation : IDeviceInfo
 	{
 		public string Model
 		{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Devices
 			{
 				try
 				{
-					return ApplicationModel.Platform.GetSystemLibraryProperty("hw.machine");
+					return PlatformUtils.GetSystemLibraryProperty("hw.machine");
 				}
 				catch (Exception)
 				{

@@ -5,7 +5,7 @@ using ObjCRuntime;
 
 namespace Microsoft.Maui.Devices
 {
-	public class DeviceInfoImplementation : IDeviceInfo
+	class DeviceInfoImplementation : IDeviceInfo
 	{
 		[DllImport(Constants.SystemConfigurationLibrary)]
 		static extern IntPtr SCDynamicStoreCopyComputerName(IntPtr store, IntPtr encoding);

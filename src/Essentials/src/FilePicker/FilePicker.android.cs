@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
@@ -9,15 +8,15 @@ using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Storage
 {
-	public static partial class FilePicker
+	partial class FilePickerImplementation : IFilePicker
 	{
-		static async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+		async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
 		{
 			// Essentials supports >= API 19 where this action is available
 			var action = Intent.ActionOpenDocument;
 
 			var intent = new Intent(action);
-			intent.SetType(FileSystem.MimeTypes.All);
+			intent.SetType(FileMimeTypes.All);
 			intent.PutExtra(Intent.ExtraAllowMultiple, allowMultiple);
 
 			var allowedTypes = options?.FileTypes?.Value?.ToArray();
@@ -37,7 +36,7 @@ namespace Microsoft.Maui.Storage
 
 					if (intent.ClipData == null)
 					{
-						var path = FileSystem.EnsurePhysicalPath(intent.Data);
+						var path = FileSystemUtils.EnsurePhysicalPath(intent.Data);
 						resultList.Add(new FileResult(path));
 					}
 					else
@@ -45,13 +44,13 @@ namespace Microsoft.Maui.Storage
 						for (var i = 0; i < intent.ClipData.ItemCount; i++)
 						{
 							var uri = intent.ClipData.GetItemAt(i).Uri;
-							var path = FileSystem.EnsurePhysicalPath(uri);
+							var path = FileSystemUtils.EnsurePhysicalPath(uri);
 							resultList.Add(new FileResult(path));
 						}
 					}
 				}
 
-				await IntermediateActivity.StartAsync(pickerIntent, Platform.requestCodeFilePicker, onResult: OnResult);
+				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeFilePicker, onResult: OnResult);
 
 				return resultList;
 			}
@@ -67,31 +66,31 @@ namespace Microsoft.Maui.Storage
 		static FilePickerFileType PlatformImageFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.Android, new[] { FileSystem.MimeTypes.ImagePng, FileSystem.MimeTypes.ImageJpg } }
+				{ DevicePlatform.Android, new[] { FileMimeTypes.ImagePng, FileMimeTypes.ImageJpg } }
 			});
 
 		static FilePickerFileType PlatformPngFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.Android, new[] { FileSystem.MimeTypes.ImagePng } }
+				{ DevicePlatform.Android, new[] { FileMimeTypes.ImagePng } }
 			});
 
 		static FilePickerFileType PlatformJpegFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.Android, new[] { FileSystem.MimeTypes.ImageJpg } }
+				{ DevicePlatform.Android, new[] { FileMimeTypes.ImageJpg } }
 			});
 
 		static FilePickerFileType PlatformVideoFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.Android, new[] { FileSystem.MimeTypes.VideoAll } }
+				{ DevicePlatform.Android, new[] { FileMimeTypes.VideoAll } }
 			});
 
 		static FilePickerFileType PlatformPdfFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.Android, new[] { FileSystem.MimeTypes.Pdf } }
+				{ DevicePlatform.Android, new[] { FileMimeTypes.Pdf } }
 			});
 	}
 }

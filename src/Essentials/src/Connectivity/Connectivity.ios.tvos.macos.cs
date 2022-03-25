@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Networking
 {
-	public partial class ConnectivityImplementation : IConnectivity
+	partial class ConnectivityImplementation : IConnectivity
 	{
 #if !(MACCATALYST || MACOS)
 		// TODO: Use NWPathMonitor on > iOS 12
@@ -19,18 +19,18 @@ namespace Microsoft.Maui.Networking
 
 		static ReachabilityListener listener;
 
-		public void StartListeners()
+		void StartListeners()
 		{
 			listener = new ReachabilityListener();
-			listener.ReachabilityChanged += Connectivity.OnConnectivityChanged;
+			listener.ReachabilityChanged += OnConnectivityChanged;
 		}
 
-		public void StopListeners()
+		void StopListeners()
 		{
 			if (listener == null)
 				return;
 
-			listener.ReachabilityChanged -= Connectivity.OnConnectivityChanged;
+			listener.ReachabilityChanged -= OnConnectivityChanged;
 			listener.Dispose();
 			listener = null;
 		}

@@ -77,20 +77,13 @@ namespace Microsoft.Maui.Platform
 			// So in case we're setting the focus in response to another control's un-focusing,
 			// we need to post the handling of it to the main looper so that it happens _after_ all the other focus
 			// work is done; otherwise, a call to ClearFocus on another control will kill the focus we set 
-
-			var q = Looper.MyLooper();
-			if (q != null)
-				new Handler(q).Post(RequestFocus);
-			else
-				MainThread.InvokeOnMainThreadAsync(RequestFocus);
-
-			void RequestFocus()
+			platformView.Post(() =>
 			{
 				if (platformView == null || platformView.IsDisposed())
 					return;
 
 				platformView?.RequestFocus();
-			}
+			});
 		}
 
 		public static void Unfocus(this AView platformView, IView view)
@@ -306,50 +299,6 @@ namespace Microsoft.Maui.Platform
 				PlatformInterop.RemoveFromParent(view);
 				PlatformInterop.RemoveFromParent(view);
 		}
-
-		public static Task<byte[]?> RenderAsBMP(this IView view)
-		{
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return Task.FromResult<byte[]?>(null);
-
-			return Task.FromResult<byte[]?>(platformView.RenderAsBMP());
-		}
-
-		public static Task<byte[]?> RenderAsPNG(this IView view)
-		{
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return Task.FromResult<byte[]?>(null);
-
-			return platformView.RenderAsPNG();
-		}
-
-		public static Task<byte[]?> RenderAsJPEG(this IView view)
-		{
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return Task.FromResult<byte[]?>(null);
-
-			return platformView.RenderAsJPEG();
-		}
-
-		public static Task<byte[]?> RenderAsImage(this AView view, RenderType type)
-		{
-			return type switch
-			{
-				RenderType.JPEG => view.RenderAsJPEG(),
-				RenderType.PNG => view.RenderAsPNG(),
-				RenderType.BMP => Task.FromResult<byte[]?>(view.RenderAsBMP()),
-				_ => throw new NotImplementedException()
-			};
-		}
-
-		public static Task<byte[]?> RenderAsPNG(this AView view)
-			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Png));
-
-		public static Task<byte[]?> RenderAsJPEG(this AView view)
-			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Jpeg));
 
 		internal static Rect GetPlatformViewBounds(this IView view)
 		{

@@ -1,30 +1,37 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Android.Net;
-using Android.OS;
 using Microsoft.Maui.ApplicationModel;
 using Debug = System.Diagnostics.Debug;
 
 namespace Microsoft.Maui.Networking
 {
-	public partial class ConnectivityImplementation : IConnectivity
+	partial class ConnectivityImplementation : IConnectivity
 	{
-		static ConnectivityBroadcastReceiver conectivityReceiver;
-		static Intent connectivityIntent = new Intent(Platform.EssentialsConnectivityChanged);
-		static EssentialsNetworkCallback networkCallback;
+		public const string ConnectivityChangedAction = "com.maui.essentials.ESSENTIALS_CONNECTIVITY_CHANGED";
+		static Intent connectivityIntent = new Intent(ConnectivityChangedAction);
 
-		public void StartListeners()
+		static ConnectivityManager connectivityManager;
+
+		static ConnectivityManager ConnectivityManager =>
+			connectivityManager ??= Application.Context.GetSystemService(Context.ConnectivityService) as ConnectivityManager;
+
+		ConnectivityBroadcastReceiver conectivityReceiver;
+		EssentialsNetworkCallback networkCallback;
+
+		void StartListeners()
 		{
 			Permissions.EnsureDeclared<Permissions.NetworkState>();
 
 			var filter = new IntentFilter();
 
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 			{
 				RegisterNetworkCallback();
-				filter.AddAction(Platform.EssentialsConnectivityChanged);
+				filter.AddAction(ConnectivityChangedAction);
 			}
 			else
 			{
@@ -33,12 +40,12 @@ namespace Microsoft.Maui.Networking
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
-			conectivityReceiver = new ConnectivityBroadcastReceiver(Connectivity.OnConnectivityChanged);
+			conectivityReceiver = new ConnectivityBroadcastReceiver(OnConnectivityChanged);
 
-			Platform.AppContext.RegisterReceiver(conectivityReceiver, filter);
+			Application.Context.RegisterReceiver(conectivityReceiver, filter);
 		}
 
-		public void StopListeners()
+		void StopListeners()
 		{
 			if (conectivityReceiver == null)
 				return;
@@ -54,21 +61,23 @@ namespace Microsoft.Maui.Networking
 
 			try
 			{
-				Platform.AppContext.UnregisterReceiver(conectivityReceiver);
+				Application.Context.UnregisterReceiver(conectivityReceiver);
 			}
 			catch (Java.Lang.IllegalArgumentException)
 			{
 				Debug.WriteLine("Connectivity receiver already unregistered. Disposing of it.");
 			}
+
 			conectivityReceiver.Dispose();
 			conectivityReceiver = null;
 		}
+
 		void RegisterNetworkCallback()
 		{
-			if (!Platform.HasApiLevelN)
+			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
 				return;
 
-			var manager = Platform.ConnectivityManager;
+			var manager = ConnectivityManager;
 			if (manager == null)
 				return;
 
@@ -79,10 +88,10 @@ namespace Microsoft.Maui.Networking
 
 		void UnregisterNetworkCallback()
 		{
-			if (!Platform.HasApiLevelN)
+			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
 				return;
 
-			var manager = Platform.ConnectivityManager;
+			var manager = ConnectivityManager;
 			if (manager == null || networkCallback == null)
 				return;
 
@@ -94,17 +103,23 @@ namespace Microsoft.Maui.Networking
 
 		class EssentialsNetworkCallback : ConnectivityManager.NetworkCallback
 		{
-			public override void OnAvailable(Network network) => Platform.AppContext.SendBroadcast(connectivityIntent);
+			public override void OnAvailable(Network network) =>
+				Application.Context.SendBroadcast(connectivityIntent);
 
-			public override void OnLost(Network network) => Platform.AppContext.SendBroadcast(connectivityIntent);
+			public override void OnLost(Network network) =>
+				Application.Context.SendBroadcast(connectivityIntent);
 
-			public override void OnCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) => Platform.AppContext.SendBroadcast(connectivityIntent);
+			public override void OnCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) =>
+				Application.Context.SendBroadcast(connectivityIntent);
 
-			public override void OnUnavailable() => Platform.AppContext.SendBroadcast(connectivityIntent);
+			public override void OnUnavailable() =>
+				Application.Context.SendBroadcast(connectivityIntent);
 
-			public override void OnLinkPropertiesChanged(Network network, LinkProperties linkProperties) => Platform.AppContext.SendBroadcast(connectivityIntent);
+			public override void OnLinkPropertiesChanged(Network network, LinkProperties linkProperties) =>
+				Application.Context.SendBroadcast(connectivityIntent);
 
-			public override void OnLosing(Network network, int maxMsToLive) => Platform.AppContext.SendBroadcast(connectivityIntent);
+			public override void OnLosing(Network network, int maxMsToLive) =>
+				Application.Context.SendBroadcast(connectivityIntent);
 		}
 
 		static NetworkAccess IsBetterAccess(NetworkAccess currentAccess, NetworkAccess newAccess) =>
@@ -119,7 +134,7 @@ namespace Microsoft.Maui.Networking
 				try
 				{
 					var currentAccess = NetworkAccess.None;
-					var manager = Platform.ConnectivityManager;
+					var manager = ConnectivityManager;
 
 #pragma warning disable CS0618 // Type or member is obsolete
 					var networks = manager.GetAllNetworks();
@@ -204,7 +219,7 @@ namespace Microsoft.Maui.Networking
 			{
 				Permissions.EnsureDeclared<Permissions.NetworkState>();
 
-				var manager = Platform.ConnectivityManager;
+				var manager = ConnectivityManager;
 #pragma warning disable CS0618 // Type or member is obsolete
 				var networks = manager.GetAllNetworks();
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -296,7 +311,7 @@ namespace Microsoft.Maui.Networking
 		public override async void OnReceive(Context context, Intent intent)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
-			if (intent.Action != ConnectivityManager.ConnectivityAction && intent.Action != Platform.EssentialsConnectivityChanged)
+			if (intent.Action != ConnectivityManager.ConnectivityAction && intent.Action != ConnectivityImplementation.ConnectivityChangedAction)
 #pragma warning restore CS0618 // Type or member is obsolete
 				return;
 
