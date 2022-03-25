@@ -38,7 +38,7 @@
                          FontFamily="Arial">
                 
                 <RadioButton.Content>
-                    <Button Text="It's a button inside a button."></Button>
+                    <Button Text="It's a button inside a button." TextColor="Green"></Button>
                 </RadioButton.Content>
                 
             </RadioButton>

@@ -10,17 +10,16 @@ namespace Microsoft.Maui.Platform
 {
 	public class PlatformTouchGraphicsView : PlatformGraphicsView
 	{
-
-		IGraphicsView? graphicsView;
+		IGraphicsView? _graphicsView;
 		RectF _bounds;
 		bool _dragStarted;
 		PointF[] _lastMovedViewPoints = new PointF [0];
-		float scale = 1;
-		bool pressedContained = false;
+		float _scale = 1;
+		bool _pressedContained = false;
 
 		public PlatformTouchGraphicsView(Context context) : base(context)
 		{
-			scale = (context ?? global::Android.App.Application.Context)?.Resources?.DisplayMetrics?.Density ?? 1;
+			_scale = (context ?? global::Android.App.Application.Context)?.Resources?.DisplayMetrics?.Density ?? 1;
 		}
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
@@ -30,7 +29,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var width = right - left;
 				var height = bottom - top;
-				_bounds = new RectF(0, 0, width / scale, height / scale);
+				_bounds = new RectF(0, 0, width / _scale, height / _scale);
 			}
 		}
 
@@ -42,7 +41,7 @@ namespace Microsoft.Maui.Platform
 			int touchCount = e.PointerCount;
 			var touchPoints = new PointF[touchCount];
 			for (int i = 0; i < touchCount; i++)
-				touchPoints[i] = new PointF(e.GetX(i) / scale, e.GetY(i) / scale);
+				touchPoints[i] = new PointF(e.GetX(i) / _scale, e.GetY(i) / _scale);
 
 			var actionMasked = e.Action & MotionEventActions.Mask;
 
@@ -64,15 +63,14 @@ namespace Microsoft.Maui.Platform
 					break;
 			}
 
-
 			return true;
 		}
 		public void TouchesBegan(PointF[] points)
 		{
 			_dragStarted = false;
 			_lastMovedViewPoints = points;
-			graphicsView?.StartInteraction(points);
-			pressedContained = true;
+			_graphicsView?.StartInteraction(points);
+			_pressedContained = true;
 		}
 
 		public void TouchesMoved(PointF[] points)
@@ -91,23 +89,51 @@ namespace Microsoft.Maui.Platform
 
 			_lastMovedViewPoints = points;
 			_dragStarted = true;
-			pressedContained = _bounds.ContainsAny(points);
-			graphicsView?.DragInteraction(points);
+			_pressedContained = _bounds.ContainsAny(points);
+			_graphicsView?.DragInteraction(points);
 		}
 
 		public void TouchesEnded(PointF[] points)
 		{
-			graphicsView?.EndInteraction(points, pressedContained);
+			_graphicsView?.EndInteraction(points, _pressedContained);
 		}
 
 		public void TouchesCanceled()
 		{
-			pressedContained = false;
-			graphicsView?.CancelInteraction();
+			_pressedContained = false;
+			_graphicsView?.CancelInteraction();
 		}
 
-		public void Connect(IGraphicsView graphicsView) => this.graphicsView = graphicsView;
+		public override bool OnHoverEvent(MotionEvent? e)
+		{
+			if (e == null)
+				throw new ArgumentNullException(nameof(e));
 
-		public void Disconnect() => graphicsView = null;
+			int touchCount = e.PointerCount;
+			var touchPoints = new PointF[touchCount];
+			for (int i = 0; i < touchCount; i++)
+				touchPoints[i] = new PointF(e.GetX(i) / _scale, e.GetY(i) / _scale);
+
+			var actionMasked = e.Action & MotionEventActions.Mask;
+
+			switch (actionMasked)
+			{
+				case MotionEventActions.HoverMove:
+					_graphicsView?.MoveHoverInteraction(touchPoints);
+					break;
+				case MotionEventActions.HoverEnter:
+					_graphicsView?.StartHoverInteraction(touchPoints);
+					break;
+				case MotionEventActions.HoverExit:
+					_graphicsView?.EndHoverInteraction();
+					break;
+			}
+
+			return true;
+		}
+
+		public void Connect(IGraphicsView graphicsView) => _graphicsView = graphicsView;
+
+		public void Disconnect() => _graphicsView = null;
 	}
 }

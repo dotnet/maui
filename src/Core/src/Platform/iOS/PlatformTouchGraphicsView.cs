@@ -36,10 +36,15 @@ namespace Microsoft.Maui.Platform
 
 		void OnHover()
 		{
-			if (hoverGesture!.State == UIGestureRecognizerState.Began || hoverGesture.State == UIGestureRecognizerState.Changed)
+			if (hoverGesture!.State == UIGestureRecognizerState.Began)
 			{
 				var touch = hoverGesture.LocationInView(this);
 				graphicsView?.StartHoverInteraction(new[] { (PointF)touch.ToPoint() });
+			}
+			else if (hoverGesture.State == UIGestureRecognizerState.Changed)
+			{
+				var touch = hoverGesture.LocationInView(this);
+				graphicsView?.MoveHoverInteraction(new[] { (PointF)touch.ToPoint() });
 			}
 			else
 				graphicsView?.EndHoverInteraction();
@@ -67,6 +72,5 @@ namespace Microsoft.Maui.Platform
 			pressedContained = false;
 			graphicsView?.CancelInteraction();
 		}
-
 	}
 }

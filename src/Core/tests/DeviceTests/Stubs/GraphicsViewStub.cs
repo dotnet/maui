@@ -18,6 +18,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public void StartHoverInteraction(PointF[] points) { }
 
+		public void MoveHoverInteraction(PointF[] points) { }
+
 		public void StartInteraction(PointF[] points) { }
 	}
 }
