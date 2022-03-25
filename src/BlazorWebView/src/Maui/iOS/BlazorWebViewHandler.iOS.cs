@@ -191,26 +191,31 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			private byte[] GetResponseBytes(string url, out string contentType, out int statusCode)
 			{
-				var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(url);
 				url = QueryStringHelper.RemovePossibleQueryString(url);
-				if (_webViewHandler._webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out statusCode, out var statusMessage, out var content, out var headers))
+
+				if (Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var requestUri))
 				{
-					statusCode = 200;
-					using var ms = new MemoryStream();
+					// We explicitly disallow fallback for framework files because StaticContentProvider prioritizes host page
+					// fallback over attempting to fetch framework files.
+					var allowFallbackOnHostPage = !requestUri.AbsolutePath.StartsWith("/_framework/", StringComparison.Ordinal);
 
-					content.CopyTo(ms);
-					content.Dispose();
+					if (_webViewHandler._webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out statusCode, out var statusMessage, out var content, out var headers))
+					{
+						statusCode = 200;
+						using var ms = new MemoryStream();
 
-					contentType = headers["Content-Type"];
+						content.CopyTo(ms);
+						content.Dispose();
 
-					return ms.ToArray();
+						contentType = headers["Content-Type"];
+
+						return ms.ToArray();
+					}
 				}
-				else
-				{
-					statusCode = 404;
-					contentType = string.Empty;
-					return Array.Empty<byte>();
-				}
+
+				statusCode = 404;
+				contentType = string.Empty;
+				return Array.Empty<byte>();
 			}
 
 			[Export("webView:stopURLSchemeTask:")]
