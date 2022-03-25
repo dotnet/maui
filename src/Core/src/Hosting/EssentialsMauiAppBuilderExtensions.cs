@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Hosting
