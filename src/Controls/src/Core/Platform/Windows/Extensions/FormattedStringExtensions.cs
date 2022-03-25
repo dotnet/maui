@@ -13,15 +13,15 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static void UpdateInlines(this TextBlock textBlock, Label label)
-			=> UpdateInlines(textBlock, label.FormattedText, label.LineHeight, label.HorizontalTextAlignment, label.ToFont(), label.TextColor, label.TextTransform);
+			=> UpdateInlines(textBlock, label.RequireFontManager(false), label.FormattedText, label.LineHeight, label.HorizontalTextAlignment, label.ToFont(), label.TextColor, label.TextTransform);
 
-		public static void UpdateInlines(this TextBlock textBlock, FormattedString formattedString, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
+		public static void UpdateInlines(this TextBlock textBlock, IFontManager fontManager, FormattedString formattedString, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			textBlock.Inlines.Clear();
 			// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
 			textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
 
-			var runAndColorTuples = formattedString.ToRunAndColorsTuples(defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform);
+			var runAndColorTuples = formattedString.ToRunAndColorsTuples(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform);
 
 			var heights = new List<double>();
 			int currentTextIndex = 0;
@@ -50,14 +50,12 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public static IEnumerable<Tuple<Run, Color, Color>> ToRunAndColorsTuples(this FormattedString formattedString, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default, IFontManager? fontManager = null)
+		public static IEnumerable<Tuple<Run, Color, Color>> ToRunAndColorsTuples(this FormattedString formattedString, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			var runs = new List<Tuple<Run, Color, Color>>();
 
 			if (formattedString != null && formattedString.Spans != null)
 			{
-				fontManager = fontManager ?? formattedString.RequireFontManager();
-
 				for (var i = 0; i < formattedString.Spans.Count; i++)
 				{
 					var span = formattedString.Spans[i];
