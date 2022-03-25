@@ -1,7 +1,6 @@
 ﻿using System;
 using Android.App;
 using Android.Graphics;
-using Java.Interop;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests;
@@ -25,17 +24,21 @@ public partial class FontManagerTests : TestBase
 		var fontStyle = TypefaceStyle.Normal;
 		var fontSlant = false;
 
-		var expectedTypeface = Typeface.CreateFromAsset(Application.Context.Assets, assetName);
 		Typeface expected;
+		var expectedTypeface = Typeface.CreateFromAsset(Application.Context.Assets, assetName);
 		if (OperatingSystem.IsAndroidVersionAtLeast(28))
 			expected = Typeface.Create(expectedTypeface, (int)fontWeight, fontSlant);
 		else
 			expected = Typeface.Create(expectedTypeface, fontStyle);
 
+		Assert.NotEqual(Typeface.Default, expected);
+
 		var registrar = new FontRegistrar(fontLoader: null);
 		registrar.Register("dokdo_regular.ttf", "myalias");
 		var manager = new FontManager(registrar);
 		var actual = manager.GetTypeface(Font.OfSize(fontName, 12, fontWeight));
+
+		Assert.NotEqual(Typeface.Default, actual);
 
 		Assert.True(expected.Equals(actual));
 	}
@@ -45,17 +48,25 @@ public partial class FontManagerTests : TestBase
 	{
 		var fontName = "FooBarFont";
 		var fontWeight = FontWeight.Regular;
+		var fontStyle = TypefaceStyle.Normal;
+		var fontSlant = false;
+
 		var registrar = new FontRegistrar(new EmbeddedFontLoader());
 		registrar.Register("dokdo_regular.ttf", fontName, GetType().Assembly);
 		var manager = new FontManager(registrar);
 		var actual = manager.GetTypeface(Font.OfSize(fontName, 12, fontWeight));
-		Typeface defaultFont;
 
+		Assert.NotEqual(Typeface.Default, actual);
+
+		Typeface expected;
+		var expectedTypeface = Typeface.Create(fontName, TypefaceStyle.Normal);
 		if (OperatingSystem.IsAndroidVersionAtLeast(28))
-			defaultFont = Typeface.Create(Typeface.Create(fontName, TypefaceStyle.Normal), (int)fontWeight, italic: false);
+			expected = Typeface.Create(expectedTypeface, (int)fontWeight, italic: fontSlant);
 		else
-			defaultFont = Typeface.Create(Typeface.Create(fontName, TypefaceStyle.Normal), TypefaceStyle.Normal);
+			expected = Typeface.Create(expectedTypeface, fontStyle);
 
-		Assert.False(defaultFont.Equals(actual));
+		Assert.NotEqual(Typeface.Default, expected);
+
+		Assert.False(expected.Equals(actual));
 	}
 }
