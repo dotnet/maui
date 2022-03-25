@@ -45,12 +45,12 @@ namespace Microsoft.Maui.DeviceTests
 				try
 				{
 					linearLayoutCompat.Id = AView.GenerateViewId();
+					rootView.AddView(linearLayoutCompat);
 					fragmentManager
 						.BeginTransaction()
 						.Add(linearLayoutCompat.Id, viewFragment)
 						.Commit();
 
-					rootView.AddView(linearLayoutCompat);
 					await viewFragment.FinishedLoading;
 
 					if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
