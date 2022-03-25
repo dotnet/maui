@@ -16,7 +16,7 @@ namespace Samples.ViewModel
 
 		public string Version => DeviceInfo.Version.ToString();
 
-		public DevicePlatform Platform => DeviceInfo.Current.Platform;
+		public DevicePlatform Platform => DeviceInfo.Platform;
 
 		public DeviceIdiom Idiom => DeviceInfo.Idiom;
 
@@ -32,13 +32,13 @@ namespace Samples.ViewModel
 		{
 			base.OnAppearing();
 
-			DeviceDisplay.Current.MainDisplayInfoChanged += OnScreenMetricsChanged;
-			ScreenMetrics = DeviceDisplay.Current.MainDisplayInfo;
+			DeviceDisplay.MainDisplayInfoChanged += OnScreenMetricsChanged;
+			ScreenMetrics = DeviceDisplay.MainDisplayInfo;
 		}
 
 		public override void OnDisappearing()
 		{
-			DeviceDisplay.Current.MainDisplayInfoChanged -= OnScreenMetricsChanged;
+			DeviceDisplay.MainDisplayInfoChanged -= OnScreenMetricsChanged;
 
 			base.OnDisappearing();
 		}
