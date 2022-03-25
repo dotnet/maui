@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.Authentication;
 
 #if __IOS__
 using CoreMotion;
@@ -12,9 +13,8 @@ using CoreMotion;
 using CoreMotion;
 #endif
 
-using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Platform
 	{

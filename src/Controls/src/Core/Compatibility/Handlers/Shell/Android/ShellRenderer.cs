@@ -10,7 +10,7 @@ using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;

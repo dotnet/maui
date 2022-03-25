@@ -125,21 +125,20 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFlowDirection(this TextView platformView, IView view)
 		{
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			switch (view.FlowDirection)
 			{
-				platformView.LayoutDirection = ALayoutDirection.Inherit;
-				platformView.TextDirection = ATextDirection.Inherit;
-			}
-			else if (view.FlowDirection == FlowDirection.RightToLeft)
-			{
-				platformView.LayoutDirection = ALayoutDirection.Rtl;
-				platformView.TextDirection = ATextDirection.Rtl;
-			}
-			else if (view.FlowDirection == FlowDirection.LeftToRight)
-			{
-				platformView.LayoutDirection = ALayoutDirection.Ltr;
-				platformView.TextDirection = ATextDirection.Ltr;
+				case FlowDirection.MatchParent:
+					platformView.LayoutDirection = ALayoutDirection.Inherit;
+					platformView.TextDirection = ATextDirection.Inherit;
+					break;
+				case FlowDirection.RightToLeft:
+					platformView.LayoutDirection = ALayoutDirection.Rtl;
+					platformView.TextDirection = ATextDirection.Rtl;
+					break;
+				case FlowDirection.LeftToRight:
+					platformView.LayoutDirection = ALayoutDirection.Ltr;
+					platformView.TextDirection = ATextDirection.Ltr;
+					break;
 			}
 		}
 

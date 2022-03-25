@@ -28,6 +28,7 @@
                 EndInteraction="GraphicsView_EndInteraction"
                 StartInteraction="GraphicsView_StartInteraction"
                 StartHoverInteraction="GraphicsView_StartHoverInteraction"
+                MoveHoverInteraction="GraphicsView_MoveHoverInteraction"
                 EndHoverInteraction="GraphicsView_EndHoverInteraction"
                 Drawable="{StaticResource GraphicsDrawable}"/>
         </StackLayout>

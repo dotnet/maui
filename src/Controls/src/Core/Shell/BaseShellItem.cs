@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -369,8 +369,7 @@ namespace Microsoft.Maui.Controls
 					selectedState.Setters.Add(new Setter
 					{
 						Property = VisualElement.BackgroundColorProperty,
-						Value = new Color(0.95f)
-
+						Value = new AppThemeBinding() { Light = Colors.Black.MultiplyAlpha(0.1f), Dark = Colors.White.MultiplyAlpha(0.1f) }
 					});
 				}
 

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using Microsoft.Maui.Storage;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public interface IVersionTracking
 	{
@@ -105,7 +106,7 @@ namespace Microsoft.Maui.Essentials
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IVersionTracking Current =>
-			currentImplementation ??= new Implementations.VersionTrackingImplementation();
+			currentImplementation ??= new VersionTrackingImplementation();
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetCurrent(IVersionTracking? implementation) =>
@@ -114,7 +115,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
 	public class VersionTrackingImplementation : IVersionTracking
 	{

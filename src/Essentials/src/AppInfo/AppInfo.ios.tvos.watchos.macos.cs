@@ -9,7 +9,7 @@ using UIKit;
 using AppKit;
 #endif
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
 	public class AppInfoImplementation : IAppInfo
 	{

@@ -10,7 +10,7 @@ using TizenGyroscope = Tizen.Sensor.Gyroscope;
 using TizenMagnetometer = Tizen.Sensor.Magnetometer;
 using TizenOrientationSensor = Tizen.Sensor.RotationVectorSensor;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Platform
 	{

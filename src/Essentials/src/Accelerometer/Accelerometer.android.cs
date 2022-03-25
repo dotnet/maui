@@ -1,7 +1,8 @@
 using Android.Hardware;
 using Android.Runtime;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class AccelerometerImplementation
 	{

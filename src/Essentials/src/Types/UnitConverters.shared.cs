@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Media
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="Type[@FullName='Microsoft.Maui.Essentials.UnitConverters']/Docs" />
 	public static class UnitConverters

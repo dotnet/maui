@@ -36,6 +36,7 @@
 
   <ItemGroup>
     <ThirdPartyScript Include="OpenSans-Regular.ttf" />
+    <ThirdPartyScript Include="OpenSans-Semibold.ttf" />
     <ThirdPartyScript Include="open-iconic.ttf" />
   </ItemGroup>
 

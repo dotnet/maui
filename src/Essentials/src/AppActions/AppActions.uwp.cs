@@ -11,7 +11,7 @@ using Windows.ApplicationModel.Activation;
 using Microsoft.UI.Xaml;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class AppActions
 	{
@@ -31,9 +31,9 @@ namespace Microsoft.Maui.Essentials
 			}
 #endif
 
-			if (args?.StartsWith(Implementations.AppActionsExtensions.AppActionPrefix) ?? false)
+			if (args?.StartsWith(AppActionsExtensions.AppActionPrefix) ?? false)
 			{
-				var id = Implementations.AppActionsExtensions.ArgumentsToId(args);
+				var id = AppActionsExtensions.ArgumentsToId(args);
 
 				if (!string.IsNullOrEmpty(id))
 				{
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
 	public class AppActionsImplementation : IAppActions
 	{

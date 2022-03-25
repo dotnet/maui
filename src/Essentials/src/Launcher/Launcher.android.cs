@@ -6,7 +6,7 @@ using Android.Content.PM;
 using AndroidUri = Android.Net.Uri;
 using Uri = System.Uri;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
 	public partial class LauncherImplementation
 	{

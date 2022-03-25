@@ -2,7 +2,7 @@ using System;
 using Windows.Devices.Sensors;
 using WindowsMagnetometer = Windows.Devices.Sensors.Magnetometer;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class MagnetometerImplementation : IMagnetometer
 	{

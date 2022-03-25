@@ -4,8 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoreLocation;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class GeolocationImplementation : IGeolocation
 	{

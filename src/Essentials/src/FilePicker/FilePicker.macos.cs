@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using AppKit;
 using MobileCoreServices;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	public static partial class FilePicker
 	{

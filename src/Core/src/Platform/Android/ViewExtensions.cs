@@ -9,9 +9,11 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Core.Content;
 using AndroidX.Core.View;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Media;
 using Microsoft.Maui.Primitives;
 using AColor = Android.Graphics.Color;
 using ALayoutDirection = Android.Views.LayoutDirection;
@@ -43,7 +45,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// NOTE: use named arguments for clarity
-			ViewHelper.Set(platformView,
+			PlatformInterop.Set(platformView,
 				visibility: visibility,
 				layoutDirection: (int)GetLayoutDirection(view),
 				minimumHeight: (int)context.ToPixels(view.MinimumHeight),
@@ -247,25 +249,25 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!string.IsNullOrWhiteSpace(view.AutomationId))
 			{
-				ViewHelper.SetContentDescriptionForAutomationId(platformView, view.AutomationId);
+				PlatformInterop.SetContentDescriptionForAutomationId(platformView, view.AutomationId);
 			}
 		}
 
 		public static void InvalidateMeasure(this AView platformView, IView view)
 		{
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void UpdateWidth(this AView platformView, IView view)
 		{
 			// GetDesiredSize will take the specified Width into account during the layout
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void UpdateHeight(this AView platformView, IView view)
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void UpdateMinimumHeight(this AView platformView, IView view)
@@ -274,7 +276,7 @@ namespace Microsoft.Maui.Platform
 
 			var value = (int)platformView.Context!.ToPixels(min);
 			platformView.SetMinimumHeight(value);
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void UpdateMinimumWidth(this AView platformView, IView view)
@@ -283,25 +285,26 @@ namespace Microsoft.Maui.Platform
 
 			var value = (int)platformView.Context!.ToPixels(min);
 			platformView.SetMinimumWidth(value);
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void UpdateMaximumHeight(this AView platformView, IView view)
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void UpdateMaximumWidth(this AView platformView, IView view)
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
-			ViewHelper.RequestLayoutIfNeeded(platformView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void RemoveFromParent(this AView view)
 		{
 			if (view != null)
-				ViewHelper.RemoveFromParent(view);
+				PlatformInterop.RemoveFromParent(view);
+				PlatformInterop.RemoveFromParent(view);
 		}
 
 		public static Task<byte[]?> RenderAsBMP(this IView view)

@@ -2,7 +2,7 @@ using System;
 using Windows.Devices.Sensors;
 using WinBarometer = Windows.Devices.Sensors.Barometer;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public partial class BarometerImplementation : IBarometer
 	{

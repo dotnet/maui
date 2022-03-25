@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage
 {
 	public partial class FileSystemImplementation : IFileSystem
 	{
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 	}
 }
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	public partial class FileBase
 	{

@@ -30,7 +30,7 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 
 Install the .NET MAUI workload using the versions from a particular branch:  
 
-For example, the "preview.14" branch:
+#### Preview 14 branch
 
 ```
 iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
@@ -39,11 +39,18 @@ iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
 
 > NOTE: the branch (`-b 'release/6.0.2xx-preview14'`) and version (`-v 6.0.200-preview`) parameters. The "preview 14" branch currently requires the 6.0.200 SDK band since the manifests are all in that SDK band - this will change in the future
 
-Or, the "main" branch:
+#### main branch
 
+1. First, install .NET SDK 6.0.300
+
+2. Next run the following workload command:
 ```
-iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
-.\maui-install.ps1 -b 'main' -v '6.0.300-preview'
+dotnet workload install maui `
+  --from-rollback-file https://aka.ms/dotnet/maui/main.json `
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-4050c126/nuget/v3/index.json `
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-572aeedc/nuget/v3/index.json `
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json" `
+  --source https://api.nuget.org/v3/index.json
 ``` 
 
 ### iOS / MacCatalyst

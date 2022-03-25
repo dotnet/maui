@@ -1,6 +1,7 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
 	public class DeviceInfoImplementation : IDeviceInfo
 	{
