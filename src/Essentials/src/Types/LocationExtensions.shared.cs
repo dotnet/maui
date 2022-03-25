@@ -5,7 +5,7 @@ using Microsoft.Maui.Devices.Sensors;
 namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/LocationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.LocationExtensions']/Docs" />
-	public static class LocationExtensions
+	public static partial class LocationExtensions
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/LocationExtensions.xml" path="//Member[@MemberName='CalculateDistance'][2]/Docs" />
 		public static double CalculateDistance(this Location locationStart, double latitudeEnd, double longitudeEnd, DistanceUnits units) =>

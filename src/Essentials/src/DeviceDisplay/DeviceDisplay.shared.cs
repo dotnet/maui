@@ -24,8 +24,26 @@ namespace Microsoft.Maui.Devices
 		public DisplayInfo DisplayInfo { get; }
 	}
 
-	public static partial class DeviceDisplay
+	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceDisplay']/Docs" />
+	public static class DeviceDisplay
 	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='KeepScreenOn']/Docs" />
+		public static bool KeepScreenOn
+		{
+			get => Current.KeepScreenOn;
+			set => Current.KeepScreenOn = value;
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='MainDisplayInfo']/Docs" />
+		public static DisplayInfo MainDisplayInfo => Current.MainDisplayInfo;
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='MainDisplayInfoChanged']/Docs" />
+		public static event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged
+		{
+			add => Current.MainDisplayInfoChanged += value;
+			remove => Current.MainDisplayInfoChanged -= value;
+		}
+
 #if WINDOWS
 		internal const float BaseLogicalDpi = 96.0f;
 #elif ANDROID

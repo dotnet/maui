@@ -9,6 +9,13 @@ namespace Microsoft.Maui.Accessibility
 
 	public static partial class SemanticScreenReader
 	{
+		public static void Announce(string text)
+		{
+			Current.Announce(text);
+		}
+
+		static ISemanticScreenReader Current => Accessibility.SemanticScreenReader.Default;
+
 		static ISemanticScreenReader? defaultImplementation;
 
 		public static ISemanticScreenReader Default =>
