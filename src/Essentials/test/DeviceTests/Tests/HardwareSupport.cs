@@ -1,4 +1,5 @@
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
@@ -31,7 +32,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public static bool HasGyroscope =>
 #if __ANDROID__
 			// Android emulators and devices have gyros
-			ApplicationModel.Platform.SensorManager?.GetDefaultSensor(Android.Hardware.SensorType.Gyroscope) != null;
+			Android.App.Application.Context.GetSystemService(Android.Content.Context.SensorService) is Android.Hardware.SensorManager sensorManager &&
+			sensorManager.GetDefaultSensor(Android.Hardware.SensorType.Gyroscope) is not null;
 #elif __IOS__
 			// all iOS devices (and only devices) have a gyroscope
 			DeviceInfo.DeviceType == DeviceType.Physical;
@@ -68,7 +70,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public static bool HasFlash =>
 #if __ANDROID__
 			// TODO: android emulates the lamp, I think...
-			ApplicationModel.Platform.HasSystemFeature(Android.Content.PM.PackageManager.FeatureCameraFlash);
+			PlatformUtils.HasSystemFeature(Android.Content.PM.PackageManager.FeatureCameraFlash);
 #elif __IOS__
 			// all iOS devices (and only devices) have a camera
 			DeviceInfo.DeviceType == DeviceType.Physical;

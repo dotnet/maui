@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Storage
 	{
 #if !NETSTANDARD
 		// Special Alias that is only used for Secure Storage. All others should use: Preferences.GetPrivatePreferencesSharedName
-		static readonly string Alias = Preferences.GetPrivatePreferencesSharedName("preferences");
+		internal static readonly string Alias = Preferences.GetPrivatePreferencesSharedName("preferences");
 #endif
 
 		public Task<string> GetAsync(string key)

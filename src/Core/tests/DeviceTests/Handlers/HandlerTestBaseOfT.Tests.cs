@@ -229,10 +229,12 @@ namespace Microsoft.Maui.DeviceTests
 				Width = 100,
 			};
 
-			var result = await GetValueAsync(view, handler => handler.VirtualView.CaptureAsync(type));
-
+			var result = await GetValueAsync(view, handler => handler.VirtualView.CaptureAsync());
 			Assert.NotNull(result);
-			Assert.True(result.Length > 0);
+
+			using var stream = await result.OpenReadAsync(type);
+
+			Assert.True(stream.Length > 0);
 		}
 	}
 }
