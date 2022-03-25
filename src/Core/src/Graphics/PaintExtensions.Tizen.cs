@@ -1,16 +1,9 @@
-﻿using EColor = ElmSharp.Color;
-using TColor = Tizen.UIExtensions.Common.Color;
+﻿using TColor = Tizen.UIExtensions.Common.Color;
 
 namespace Microsoft.Maui.Graphics
 {
 	public static partial class PaintExtensions
 	{
-		public static EColor ToPlatformEFL(this Paint paint)
-		{
-			var color = paint.ToColor();
-			return color != null ? color.ToPlatformEFL() : EColor.Default;
-		}
-
 		public static TColor ToPlatform(this Paint paint)
 		{
 			var color = paint.ToColor();

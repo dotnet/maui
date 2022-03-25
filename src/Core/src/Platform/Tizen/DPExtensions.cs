@@ -5,6 +5,8 @@ using ESize = ElmSharp.Size;
 using TRect = Tizen.UIExtensions.Common.Rect;
 using TSize = Tizen.UIExtensions.Common.Size;
 using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
+using Point = Microsoft.Maui.Graphics.Point;
+using EPoint = ElmSharp.Point;
 
 namespace Microsoft.Maui.Platform
 {
@@ -105,6 +107,16 @@ namespace Microsoft.Maui.Platform
 		public static double ConvertToDPFont(int eflPt)
 		{
 			return ConvertToScaledDP(eflPt / DeviceInfo.ElmScale);
+		}
+
+		public static Point ToPoint(this EPoint point)
+		{
+			return new Point(DPExtensions.ConvertToScaledDP(point.X), DPExtensions.ConvertToScaledDP(point.Y));
+		}
+
+		public static PointF ToPointF(this EPoint point)
+		{
+			return new PointF((float)DPExtensions.ConvertToScaledDP(point.X), (float)DPExtensions.ConvertToScaledDP(point.Y));
 		}
 	}
 }

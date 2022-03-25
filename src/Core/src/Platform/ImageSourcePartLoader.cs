@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Platform
 
 				if (imageSource != null)
 				{
-#if IOS || ANDROID || WINDOWS || TIZEN
+#if IOS || ANDROID || WINDOWS
 					var result = await imageSource.UpdateSourceAsync(PlatformView, ImageSourceServiceProvider, SetImage!, token)
 						.ConfigureAwait(false);
 
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Platform
 					var result = await imageSource.UpdateSourceAsync(image, ImageSourceServiceProvider, SetImage!, token)
 						.ConfigureAwait(false);
 
-						SourceManager.CompleteLoad(result);
+					SourceManager.CompleteLoad(result);
 #else
 					await Task.CompletedTask;
 #endif
