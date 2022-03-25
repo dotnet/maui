@@ -2,10 +2,10 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
 
-#if __IOS__ || MACCATALYST
+#if IOS || MACCATALYST
 using PlatformImage = UIKit.UIImage;
 using PlatformView = UIKit.UIView;
-#elif MONOANDROID
+#elif ANDROID
 using PlatformImage = Android.Graphics.Drawables.Drawable;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Platform
 
 				if (imageSource != null)
 				{
-#if __IOS__ || __ANDROID__ || WINDOWS
+#if IOS || ANDROID || WINDOWS
 					var result = await imageSource.UpdateSourceAsync(PlatformView, ImageSourceServiceProvider, SetImage!, token)
 						.ConfigureAwait(false);
 

@@ -94,6 +94,12 @@
 
   </Target>
 
+  <!-- Import Maui Single Project property pages -->
+  <PropertyGroup Condition="'$(MauiDesignTimeTargetsPath)' == ''">
+    <MauiDesignTimeTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Maui\Maui.DesignTime.targets</MauiDesignTimeTargetsPath>
+  </PropertyGroup>
+  <Import Project="$(MauiDesignTimeTargetsPath)" Condition="Exists('$(MauiDesignTimeTargetsPath)')" />
+  
   <!-- IDE capabilities -->
   <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
     <ProjectCapability Include="Msix" />
