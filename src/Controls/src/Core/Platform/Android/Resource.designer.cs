@@ -41,6 +41,9 @@ namespace Microsoft.Maui.Controls
 			// aapt resource value: 0x7F030007
 			public static int actionBarSize = 2130903047;
 
+			// aapt resource value: 0x7F030033
+			public static int appBarLayoutStyle = 2130903091;
+
 			// aapt resource value: 0x7F030066
 			public static int bottomNavigationViewStyle = 2130903142;
 
@@ -72,15 +75,6 @@ namespace Microsoft.Maui.Controls
 
 		public partial class Id
 		{
-			// aapt resource value: 0x7F0800F4
-			public static int main_tablayout = 2131230964;
-
-			// aapt resource value: 0x7F0800F5
-			public static int main_viewpager = 2131230965;
-
-			// aapt resource value: 0x7F08010C
-			public static int main_toolbar = 2131230988;
-
 			// aapt resource value: 0x7F080063
 			public static int navigationlayout_bottomtabs = 2131230819;
 
@@ -119,9 +113,6 @@ namespace Microsoft.Maui.Controls
 			// aapt resource value: 0x7F0B002F
 			public static int flyoutcontent = 2131427375;
 
-			// aapt resource value: 0x7F0B006B
-			public static int rootlayout = 2131427435;
-
 			// aapt resource value: 0x7F0B006F
 			public static int shellcontent = 2131427439;
 
@@ -137,6 +128,17 @@ namespace Microsoft.Maui.Controls
 			public static int design_bottom_navigation_height = 2131099751;
 
 			static Dimension()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+		}
+
+		public partial class Style
+		{
+			// aapt resource value: 0x7F0E01E8
+			public static int ThemeOverlay_AppCompat_Light = 2131624424;
+
+			static Style()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
 			}

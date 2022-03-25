@@ -78,7 +78,17 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaxLines(this TextView textView, ILabel label)
 		{
-			textView.SetLineBreakMode(label);
+			var maxLines = label.MaxLines;
+
+			if (maxLines == -1) // Default value
+			{
+				// MaxLines is not explicitly set, so just let it be whatever gets set by LineBreakMode
+				textView.SetLineBreakMode(label);
+				return;
+			}
+
+			textView.SetSingleLine(maxLines == 1);
+			textView.SetMaxLines(maxLines);
 		}
 
 		public static void UpdatePadding(this TextView textView, ILabel label)
@@ -143,6 +153,7 @@ namespace Microsoft.Maui.Platform
 			var lineBreakMode = label.LineBreakMode;
 
 			int maxLines = label.MaxLines;
+
 			if (maxLines <= 0)
 				maxLines = int.MaxValue;
 
@@ -152,6 +163,7 @@ namespace Microsoft.Maui.Platform
 			{
 				case LineBreakMode.NoWrap:
 					maxLines = 1;
+					singleLine = true;
 					textView.Ellipsize = null;
 					break;
 				case LineBreakMode.WordWrap:
@@ -167,6 +179,7 @@ namespace Microsoft.Maui.Platform
 					break;
 				case LineBreakMode.TailTruncation:
 					maxLines = 1;
+					singleLine = true;
 					textView.Ellipsize = TextUtils.TruncateAt.End;
 					break;
 				case LineBreakMode.MiddleTruncation:

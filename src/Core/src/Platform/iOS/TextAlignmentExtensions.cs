@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Platform
 	public static class TextAlignmentExtensions
 	{
 		public static UITextAlignment ToPlatform(this TextAlignment alignment, IView view)
-			=> alignment.ToPlatform(view.FlowDirection == FlowDirection.LeftToRight);
+			=> alignment.ToPlatform(view.GetEffectiveFlowDirection() == FlowDirection.LeftToRight);
 
 		public static UITextAlignment ToPlatform(this TextAlignment alignment, bool isLtr)
 		{
