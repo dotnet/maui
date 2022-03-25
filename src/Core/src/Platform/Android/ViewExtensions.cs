@@ -310,12 +310,12 @@ namespace Microsoft.Maui.Platform
 			if (provider == null)
 				return;
 
-			var context = platformView.Context;
+			Context? context = platformView.Context;
 
 			if (context == null)
 				return;
 
-			var backgroundImageSource = viewBackgroundImagePart.Source;
+			IImageSource? backgroundImageSource = viewBackgroundImagePart.Source;
 
 			if (backgroundImageSource != null)
 			{
