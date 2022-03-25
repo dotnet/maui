@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 		string AutomationId { get; }
 
 		/// <summary>
-		/// Direction in which the UI elements on the page are scanned by the eye
+		/// Direction in which the UI elements are scanned by the eye
 		/// </summary>
 		FlowDirection FlowDirection { get; }
 

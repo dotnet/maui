@@ -6,6 +6,11 @@
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+   
+  <!-- Workaround for VSMac Preview -->
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('macos'))">
+    <UseMauiCore>True</UseMauiCore>
+  </PropertyGroup>
 
   <PropertyGroup>
     <!-- <WindowsPackageType>None</WindowsPackageType> -->
