@@ -274,6 +274,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					}
 					_tableViewController = new FormsUITableViewController(e.NewElement, _usingLargeTitles);
 					SetNativeControl(_tableViewController.TableView);
+					
+					if (Forms.IsiOS15OrNewer)
+						_tableViewController.TableView.SectionHeaderTopPadding = new nfloat(0);
 
 					_backgroundUIView = _tableViewController.TableView.BackgroundView;
 

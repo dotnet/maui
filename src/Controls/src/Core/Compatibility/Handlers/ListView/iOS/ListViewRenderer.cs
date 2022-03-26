@@ -228,6 +228,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 					_tableViewController = new FormsUITableViewController(e.NewElement, _usingLargeTitles);
 					SetNativeControl(_tableViewController.TableView);
+					
+					if (PlatformVersion.IsAtLeast(15))
+						_tableViewController.TableView.SectionHeaderTopPadding = new nfloat(0);
 
 					_backgroundUIView = _tableViewController.TableView.BackgroundView;
 
