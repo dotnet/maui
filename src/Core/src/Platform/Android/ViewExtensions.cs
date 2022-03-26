@@ -307,50 +307,6 @@ namespace Microsoft.Maui.Platform
 				PlatformInterop.RemoveFromParent(view);
 		}
 
-		public static Task<byte[]?> RenderAsBMP(this IView view)
-		{
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return Task.FromResult<byte[]?>(null);
-
-			return Task.FromResult<byte[]?>(platformView.RenderAsBMP());
-		}
-
-		public static Task<byte[]?> RenderAsPNG(this IView view)
-		{
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return Task.FromResult<byte[]?>(null);
-
-			return platformView.RenderAsPNG();
-		}
-
-		public static Task<byte[]?> RenderAsJPEG(this IView view)
-		{
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return Task.FromResult<byte[]?>(null);
-
-			return platformView.RenderAsJPEG();
-		}
-
-		public static Task<byte[]?> RenderAsImage(this AView view, RenderType type)
-		{
-			return type switch
-			{
-				RenderType.JPEG => view.RenderAsJPEG(),
-				RenderType.PNG => view.RenderAsPNG(),
-				RenderType.BMP => Task.FromResult<byte[]?>(view.RenderAsBMP()),
-				_ => throw new NotImplementedException()
-			};
-		}
-
-		public static Task<byte[]?> RenderAsPNG(this AView view)
-			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Png));
-
-		public static Task<byte[]?> RenderAsJPEG(this AView view)
-			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Jpeg));
-
 		internal static Rect GetPlatformViewBounds(this IView view)
 		{
 			var platformView = view?.ToPlatform();

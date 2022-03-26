@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Authentication
 			else
 			{
 				// otherwise, resume the auth flow and finish this activity
-				WebAuthenticator.OnResume(Intent!);
+				WebAuthenticator.Default.OnResume(Intent!);
 
 				Finish();
 			}

@@ -3,16 +3,16 @@ using Tizen.Network.Connection;
 
 namespace Microsoft.Maui.Networking
 {
-	public partial class ConnectivityImplementation : IConnectivity
+	partial class ConnectivityImplementation : IConnectivity
 	{
-		static IList<ConnectionProfile> profiles = new List<ConnectionProfile>();
+		IList<ConnectionProfile> profiles = new List<ConnectionProfile>();
 
-		internal static void OnChanged(object sender, object e)
+		void OnChanged(object sender, object e)
 		{
 			GetProfileListAsync();
 		}
 
-		internal static async void GetProfileListAsync()
+		async void GetProfileListAsync()
 		{
 			var list = await ConnectionProfileManager.GetProfileListAsync(ProfileListType.Connected);
 			profiles.Clear();
@@ -66,14 +66,14 @@ namespace Microsoft.Maui.Networking
 			}
 		}
 
-		public void StartListeners()
+		void StartListeners()
 		{
 			Permissions.EnsureDeclared<Permissions.NetworkState>();
 			ConnectionManager.ConnectionTypeChanged += OnChanged;
 			GetProfileListAsync();
 		}
 
-		public void StopListeners()
+		void StopListeners()
 		{
 			ConnectionManager.ConnectionTypeChanged -= OnChanged;
 		}

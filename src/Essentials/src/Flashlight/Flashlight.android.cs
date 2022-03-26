@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using Android.App;
+using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
 using Android.Hardware.Camera2;
@@ -9,8 +11,13 @@ using Camera = Android.Hardware.Camera;
 
 namespace Microsoft.Maui.Devices
 {
-	public class FlashlightImplementation : IFlashlight
+	class FlashlightImplementation : IFlashlight
 	{
+		static CameraManager cameraManager;
+
+		static CameraManager CameraManager =>
+			cameraManager ??= Application.Context.GetSystemService(Context.CameraService) as CameraManager;
+
 		static readonly object locker = new object();
 
 #pragma warning disable CS0618
@@ -19,7 +26,7 @@ namespace Microsoft.Maui.Devices
 		SurfaceTexture surface;
 
 		internal bool IsSupported
-			=> Platform.HasSystemFeature(PackageManager.FeatureCameraFlash);
+			=> PlatformUtils.HasSystemFeature(PackageManager.FeatureCameraFlash);
 
 		internal bool AlwaysUseCameraApi { get; set; } = false;
 
@@ -53,15 +60,14 @@ namespace Microsoft.Maui.Devices
 				{
 					if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M) && !AlwaysUseCameraApi)
 					{
-						var cameraManager = Platform.CameraManager;
-						foreach (var id in cameraManager.GetCameraIdList())
+						foreach (var id in CameraManager.GetCameraIdList())
 						{
-							var hasFlash = cameraManager.GetCameraCharacteristics(id).Get(CameraCharacteristics.FlashInfoAvailable);
+							var hasFlash = CameraManager.GetCameraCharacteristics(id).Get(CameraCharacteristics.FlashInfoAvailable);
 							if (Java.Lang.Boolean.True.Equals(hasFlash))
 							{
 								try
 								{
-									cameraManager.SetTorchMode(id, switchOn);
+									CameraManager.SetTorchMode(id, switchOn);
 									break;
 								}
 								catch (Exception ex)

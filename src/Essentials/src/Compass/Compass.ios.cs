@@ -2,7 +2,7 @@ using CoreLocation;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class CompassImplementation : ICompass, IPlatformCompass
+	partial class CompassImplementation : ICompass, IPlatformCompass
 	{
 		// The angular distance is measured relative to the last delivered heading event. Align with UWP numbers
 		internal const double FastestFilter = .01;

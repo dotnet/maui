@@ -5,7 +5,7 @@ using Tizen.Applications;
 
 namespace Microsoft.Maui.Storage
 {
-	public partial class FileSystemImplementation : IFileSystem
+	partial class FileSystemImplementation : IFileSystem
 	{
 		string PlatformCacheDirectory
 			=> Application.Current.DirectoryInfo.Cache;
@@ -38,10 +38,7 @@ namespace Microsoft.Maui.Storage
 		static string NormalizePath(string filename) =>
 			filename.Replace('\\', Path.DirectorySeparatorChar);
 	}
-}
 
-namespace Microsoft.Maui.Storage
-{
 	public partial class FileBase
 	{
 		string PlatformGetContentType(string extension)

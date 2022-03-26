@@ -4,13 +4,13 @@ using WinBarometer = Windows.Devices.Sensors.Barometer;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class BarometerImplementation : IBarometer
+	partial class BarometerImplementation : IBarometer
 	{
 		WinBarometer sensor;
 
 		WinBarometer DefaultBarometer => WinBarometer.GetDefault();
 
-		bool PlatformIsSupported =>
+		public bool IsSupported =>
 			DefaultBarometer != null;
 
 		void PlatformStart(SensorSpeed sensorSpeed)

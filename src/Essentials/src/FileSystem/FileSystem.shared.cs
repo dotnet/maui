@@ -1,8 +1,7 @@
+#nullable enable
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using System.ComponentModel;
-using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Storage
 {
@@ -15,18 +14,6 @@ namespace Microsoft.Maui.Storage
 		Task<Stream> OpenAppPackageFileAsync(string filename);
 
 		Task<bool> AppPackageFileExistsAsync(string filename);
-	}
-
-	public interface IPlatformFileSystem
-	{
-#if ANDROID
-		Java.IO.File GetTemporaryFile(Java.IO.File root, string fileName);
-
-		string EnsurePhysicalPath(Android.Net.Uri uri, bool requireExtendedAccess = true);
-#endif
-#if IOS || MACCATALYST
-		Task<FileResult[]> EnsurePhysicalFileResultsAsync(params Foundation.NSUrl[] urls);
-#endif
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileSystem']/Docs" />
@@ -47,123 +34,102 @@ namespace Microsoft.Maui.Storage
 		public static Task<bool> AppPackageFileExistsAsync(string filename)
 			=> Current.AppPackageFileExistsAsync(filename);
 
-
-#if ANDROID
-		internal static Java.IO.File GetTemporaryFile(Java.IO.File root, string fileName)
-		{
-			if (Current is IPlatformFileSystem p)
-				return p.GetTemporaryFile(root, fileName);
-			
-			throw ExceptionUtils.NotSupportedOrImplementedException;
-		}
-
-		internal static string EnsurePhysicalPath(Android.Net.Uri uri, bool requireExtendedAccess = true)
-		{
-			if (Current is IPlatformFileSystem p)
-				return p.EnsurePhysicalPath(uri, requireExtendedAccess);
-			
-			throw ExceptionUtils.NotSupportedOrImplementedException;
-		}
-#endif
-
-#if IOS || MACCATALYST
-		internal static Task<FileResult[]> EnsurePhysicalFileResultsAsync(params Foundation.NSUrl[] urls)
-		{
-			if (Current is IPlatformFileSystem p)
-				return p.EnsurePhysicalFileResultsAsync(urls);
-
-			throw ExceptionUtils.NotSupportedOrImplementedException;
-		}
-#endif
-
-
-		internal static class MimeTypes
-		{
-			internal const string All = "*/*";
-
-			internal const string ImageAll = "image/*";
-			internal const string ImagePng = "image/png";
-			internal const string ImageJpg = "image/jpeg";
-
-			internal const string VideoAll = "video/*";
-
-			internal const string EmailMessage = "message/rfc822";
-
-			internal const string Pdf = "application/pdf";
-
-			internal const string TextPlain = "text/plain";
-
-			internal const string OctetStream = "application/octet-stream";
-		}
-
-		internal static class Extensions
-		{
-			internal const string Png = ".png";
-			internal const string Jpg = ".jpg";
-			internal const string Jpeg = ".jpeg";
-			internal const string Gif = ".gif";
-			internal const string Bmp = ".bmp";
-
-			internal const string Avi = ".avi";
-			internal const string Flv = ".flv";
-			internal const string Gifv = ".gifv";
-			internal const string Mp4 = ".mp4";
-			internal const string M4v = ".m4v";
-			internal const string Mpg = ".mpg";
-			internal const string Mpeg = ".mpeg";
-			internal const string Mp2 = ".mp2";
-			internal const string Mkv = ".mkv";
-			internal const string Mov = ".mov";
-			internal const string Qt = ".qt";
-			internal const string Wmv = ".wmv";
-
-			internal const string Pdf = ".pdf";
-
-			internal static string[] AllImage =>
-				new[] { Png, Jpg, Jpeg, Gif, Bmp };
-
-			internal static string[] AllJpeg =>
-				new[] { Jpg, Jpeg };
-
-			internal static string[] AllVideo =>
-				new[] { Mp4, Mov, Avi, Wmv, M4v, Mpg, Mpeg, Mp2, Mkv, Flv, Gifv, Qt };
-
-			internal static string Clean(string extension, bool trimLeadingPeriod = false)
-			{
-				if (string.IsNullOrWhiteSpace(extension))
-					return string.Empty;
-
-				extension = extension.TrimStart('*');
-				extension = extension.TrimStart('.');
-
-				if (!trimLeadingPeriod)
-					extension = "." + extension;
-
-				return extension;
-			}
-		}
-
-#nullable enable
 		static IFileSystem? currentImplementation;
-#nullable disable
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IFileSystem Current =>
 			currentImplementation ??= new FileSystemImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IFileSystem? implementation) =>
+		internal static void SetCurrent(IFileSystem? implementation) =>
 			currentImplementation = implementation;
-#nullable disable
+	}
+
+	public partial class FileSystemImplementation
+	{
+		public string CacheDirectory
+			=> PlatformCacheDirectory;
+
+		public string AppDataDirectory
+			=> PlatformAppDataDirectory;
+
+		public Task<Stream> OpenAppPackageFileAsync(string filename)
+			=> PlatformOpenAppPackageFileAsync(filename);
+
+		public Task<bool> AppPackageFileExistsAsync(string filename)
+			=> PlatformAppPackageFileExistsAsync(filename);
+	}
+
+	static class FileMimeTypes
+	{
+		internal const string All = "*/*";
+
+		internal const string ImageAll = "image/*";
+		internal const string ImagePng = "image/png";
+		internal const string ImageJpg = "image/jpeg";
+
+		internal const string VideoAll = "video/*";
+
+		internal const string EmailMessage = "message/rfc822";
+
+		internal const string Pdf = "application/pdf";
+
+		internal const string TextPlain = "text/plain";
+
+		internal const string OctetStream = "application/octet-stream";
+	}
+
+	static class FileExtensions
+	{
+		internal const string Png = ".png";
+		internal const string Jpg = ".jpg";
+		internal const string Jpeg = ".jpeg";
+		internal const string Gif = ".gif";
+		internal const string Bmp = ".bmp";
+
+		internal const string Avi = ".avi";
+		internal const string Flv = ".flv";
+		internal const string Gifv = ".gifv";
+		internal const string Mp4 = ".mp4";
+		internal const string M4v = ".m4v";
+		internal const string Mpg = ".mpg";
+		internal const string Mpeg = ".mpeg";
+		internal const string Mp2 = ".mp2";
+		internal const string Mkv = ".mkv";
+		internal const string Mov = ".mov";
+		internal const string Qt = ".qt";
+		internal const string Wmv = ".wmv";
+
+		internal const string Pdf = ".pdf";
+
+		internal static string[] AllImage =>
+			new[] { Png, Jpg, Jpeg, Gif, Bmp };
+
+		internal static string[] AllJpeg =>
+			new[] { Jpg, Jpeg };
+
+		internal static string[] AllVideo =>
+			new[] { Mp4, Mov, Avi, Wmv, M4v, Mpg, Mpeg, Mp2, Mkv, Flv, Gifv, Qt };
+
+		internal static string Clean(string extension, bool trimLeadingPeriod = false)
+		{
+			if (string.IsNullOrWhiteSpace(extension))
+				return string.Empty;
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+				extension = "." + extension;
+
+			return extension;
+		}
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileBase']/Docs" />
 	public abstract partial class FileBase
 	{
-		internal const string DefaultContentType = FileSystem.MimeTypes.OctetStream;
+		internal const string DefaultContentType = FileMimeTypes.OctetStream;
 
-		string contentType;
+		string? contentType;
 
 		// The caller must setup FullPath at least!!!
 		internal FileBase()
@@ -199,7 +165,7 @@ namespace Microsoft.Maui.Storage
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="//Member[@MemberName='FullPath']/Docs" />
-		public string FullPath { get; internal set; }
+		public string FullPath { get; internal set; } = null!;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="//Member[@MemberName='ContentType']/Docs" />
 		public string ContentType
@@ -212,7 +178,7 @@ namespace Microsoft.Maui.Storage
 		{
 			// try the provided type
 			if (!string.IsNullOrWhiteSpace(contentType))
-				return contentType;
+				return contentType!;
 
 			// try get from the file extension
 			var ext = Path.GetExtension(FullPath);
@@ -226,7 +192,7 @@ namespace Microsoft.Maui.Storage
 			return DefaultContentType;
 		}
 
-		string fileName;
+		string? fileName;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="//Member[@MemberName='FileName']/Docs" />
 		public string FileName
@@ -239,7 +205,7 @@ namespace Microsoft.Maui.Storage
 		{
 			// try the provided file name
 			if (!string.IsNullOrWhiteSpace(fileName))
-				return fileName;
+				return fileName!;
 
 			// try get from the path
 			if (!string.IsNullOrWhiteSpace(FullPath))
@@ -301,23 +267,5 @@ namespace Microsoft.Maui.Storage
 			: base(file)
 		{
 		}
-	}
-}
-
-namespace Microsoft.Maui.Storage
-{
-	public partial class FileSystemImplementation
-	{
-		public string CacheDirectory
-			=> PlatformCacheDirectory;
-
-		public string AppDataDirectory
-			=> PlatformAppDataDirectory;
-
-		public Task<Stream> OpenAppPackageFileAsync(string filename)
-			=> PlatformOpenAppPackageFileAsync(filename);
-
-		public Task<bool> AppPackageFileExistsAsync(string filename)
-			=> PlatformAppPackageFileExistsAsync(filename);
 	}
 }

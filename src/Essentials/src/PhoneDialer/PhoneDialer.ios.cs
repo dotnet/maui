@@ -1,11 +1,10 @@
 using System;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public partial class PhoneDialerImplementation : IPhoneDialer
+	partial class PhoneDialerImplementation : IPhoneDialer
 	{
 		const string noNetworkProviderCode = "65535";
 
@@ -16,7 +15,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			ValidateOpen(number);
 
 			var nsUrl = CreateNsUrl(number);
-			await Launcher.OpenAsync(nsUrl);
+			await Launcher.Default.OpenAsync(nsUrl);
 		}
 
 		static NSUrl CreateNsUrl(string number) => new NSUrl(new Uri($"tel:{number}").AbsoluteUri);

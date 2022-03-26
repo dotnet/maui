@@ -1,5 +1,5 @@
+#nullable enable
 using System;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Storage;
@@ -8,17 +8,11 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	public interface ILauncher
 	{
-		Task<bool> CanOpenAsync(string uri);
-
 		Task<bool> CanOpenAsync(Uri uri);
-
-		Task<bool> OpenAsync(string uri);
 
 		Task<bool> OpenAsync(Uri uri);
 
 		Task<bool> OpenAsync(OpenFileRequest request);
-		
-		Task<bool> TryOpenAsync(string uri);
 
 		Task<bool> TryOpenAsync(Uri uri);
 	}
@@ -54,17 +48,64 @@ namespace Microsoft.Maui.ApplicationModel
 		public static Task<bool> TryOpenAsync(Uri uri)
 			=> Current.TryOpenAsync(uri);
 
-#nullable enable
-		static ILauncher? currentImplementation;
+		static ILauncher Current => ApplicationModel.Launcher.Default;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static ILauncher Current =>
-			currentImplementation ??= new LauncherImplementation();
+		static ILauncher? defaultImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(ILauncher? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
+		public static ILauncher Default =>
+			defaultImplementation ??= new LauncherImplementation();
+
+		internal static void SetDefault(ILauncher? implementation) =>
+			defaultImplementation = implementation;
+	}
+
+	partial class LauncherImplementation : ILauncher
+	{
+		public Task<bool> CanOpenAsync(Uri uri)
+		{
+			if (uri == null)
+				throw new ArgumentNullException(nameof(uri));
+
+			return PlatformCanOpenAsync(uri);
+		}
+
+		public Task<bool> OpenAsync(Uri uri)
+		{
+			if (uri == null)
+				throw new ArgumentNullException(nameof(uri));
+
+			return PlatformOpenAsync(uri);
+		}
+
+		public Task<bool> OpenAsync(OpenFileRequest request)
+		{
+			if (request == null)
+				throw new ArgumentNullException(nameof(request));
+			if (request.File == null)
+				throw new ArgumentNullException(nameof(request.File));
+
+			return PlatformOpenAsync(request);
+		}
+
+		public Task<bool> TryOpenAsync(Uri uri)
+		{
+			if (uri == null)
+				throw new ArgumentNullException(nameof(uri));
+
+			return PlatformTryOpenAsync(uri);
+		}
+	}
+
+	public static class LauncherExtensions
+	{
+		public static Task<bool> CanOpenAsync(this ILauncher launcher, string uri) =>
+			launcher.CanOpenAsync(new Uri(uri));
+
+		public static Task<bool> OpenAsync(this ILauncher launcher, string uri) =>
+			launcher.OpenAsync(new Uri(uri));
+
+		public static Task<bool> TryOpenAsync(this ILauncher launcher, string uri) =>
+			launcher.TryOpenAsync(new Uri(uri));
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OpenFileRequest']/Docs" />
@@ -90,76 +131,12 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='Title']/Docs" />
-		public string Title { get; set; }
+		public string? Title { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='File']/Docs" />
-		public ReadOnlyFile File { get; set; }
+		public ReadOnlyFile? File { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='PresentationSourceBounds']/Docs" />
 		public Rect PresentationSourceBounds { get; set; } = Rect.Zero;
-	}
-}
-
-namespace Microsoft.Maui.ApplicationModel
-{
-	public partial class LauncherImplementation : ILauncher
-	{
-		public Task<bool> CanOpenAsync(string uri)
-		{
-			if (string.IsNullOrWhiteSpace(uri))
-				throw new ArgumentNullException(nameof(uri));
-
-			return CanOpenAsync(new Uri(uri));
-		}
-
-		public Task<bool> CanOpenAsync(Uri uri)
-		{
-			if (uri == null)
-				throw new ArgumentNullException(nameof(uri));
-
-			return PlatformCanOpenAsync(uri);
-		}
-
-		public Task<bool> OpenAsync(string uri)
-		{
-			if (string.IsNullOrWhiteSpace(uri))
-				throw new ArgumentNullException(nameof(uri));
-
-			return OpenAsync(new Uri(uri));
-		}
-
-		public Task<bool> OpenAsync(Uri uri)
-		{
-			if (uri == null)
-				throw new ArgumentNullException(nameof(uri));
-
-			return PlatformOpenAsync(uri);
-		}
-
-		public Task<bool> OpenAsync(OpenFileRequest request)
-		{
-			if (request == null)
-				throw new ArgumentNullException(nameof(request));
-			if (request.File == null)
-				throw new ArgumentNullException(nameof(request.File));
-
-			return PlatformOpenAsync(request);
-		}
-
-		public Task<bool> TryOpenAsync(string uri)
-		{
-			if (string.IsNullOrWhiteSpace(uri))
-				throw new ArgumentNullException(nameof(uri));
-
-			return TryOpenAsync(new Uri(uri));
-		}
-
-		public Task<bool> TryOpenAsync(Uri uri)
-		{
-			if (uri == null)
-				throw new ArgumentNullException(nameof(uri));
-
-			return PlatformTryOpenAsync(uri);
-		}
 	}
 }

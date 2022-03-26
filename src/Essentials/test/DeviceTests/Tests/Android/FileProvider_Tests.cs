@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			Assert.False(FileProvider.IsFileInPublicLocation(file));
 
 			// Actually get a safe shareable file uri
-			var shareableUri = Platform.GetShareableFileUri(new ReadOnlyFile(file));
+			var shareableUri = FileSystemUtils.GetShareableFileUri(new ReadOnlyFile(file));
 
 			// Launch an intent to let tye user pick where to open this content
 			var intent = new Android.Content.Intent(Android.Content.Intent.ActionSend);
@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				FileProvider.TemporaryLocation = location;
 
 				// get the uri
-				return Platform.GetShareableFileUri(new ReadOnlyFile(file));
+				return FileSystemUtils.GetShareableFileUri(new ReadOnlyFile(file));
 			}
 			finally
 			{

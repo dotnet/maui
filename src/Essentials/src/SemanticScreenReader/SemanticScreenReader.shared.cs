@@ -1,6 +1,4 @@
 ﻿#nullable enable
-using System.ComponentModel;
-using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Accessibility
 {
@@ -16,14 +14,14 @@ namespace Microsoft.Maui.Accessibility
 			Current.Announce(text);
 		}
 
-		static ISemanticScreenReader? currentImplementation;
+		static ISemanticScreenReader Current => Accessibility.SemanticScreenReader.Default;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static ISemanticScreenReader Current =>
-			currentImplementation ??= new SemanticScreenReaderImplementation();
+		static ISemanticScreenReader? defaultImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(ISemanticScreenReader? implementation) =>
-			currentImplementation = implementation;
+		public static ISemanticScreenReader Default =>
+			defaultImplementation ??= new SemanticScreenReaderImplementation();
+
+		internal static void SetDefault(ISemanticScreenReader? implementation) =>
+			defaultImplementation = implementation;
 	}
 }

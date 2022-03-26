@@ -4,7 +4,7 @@ using WindowsCompass = Windows.Devices.Sensors.Compass;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class CompassImplementation : ICompass
+	partial class CompassImplementation : ICompass
 	{
 		// Magic numbers from https://docs.microsoft.com/en-us/uwp/api/windows.devices.sensors.compass.reportinterval#Windows_Devices_Sensors_Compass_ReportInterval
 		internal const uint FastestInterval = 8;

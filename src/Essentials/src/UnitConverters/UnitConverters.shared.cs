@@ -29,15 +29,15 @@ namespace Microsoft.Maui.Media
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='CelsiusToFahrenheit']/Docs" />
 		public static double CelsiusToFahrenheit(double celsius) =>
-			(celsius * 1.8) + 32.0;
+			celsius * 1.8 + 32.0;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='CelsiusToKelvin']/Docs" />
 		public static double CelsiusToKelvin(double celsius) =>
-		   celsius + celsiusToKelvin;
+			celsius + celsiusToKelvin;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='KelvinToCelsius']/Docs" />
 		public static double KelvinToCelsius(double kelvin) =>
-		   kelvin - celsiusToKelvin;
+			kelvin - celsiusToKelvin;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='MilesToMeters']/Docs" />
 		public static double MilesToMeters(double miles) =>
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Media
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='StonesToPounds']/Docs" />
 		public static double StonesToPounds(double stones) =>
-		   stones * stonesToPounds;
+			stones * stonesToPounds;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='KilogramsToPounds']/Docs" />
 		public static double KilogramsToPounds(double kilograms) =>
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Media
 			var dLat2 = Math.Sin(dLat / 2) * Math.Sin(dLat / 2);
 			var dLon2 = Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
 
-			var a = dLat2 + (dLon2 * Math.Cos(lat1) * Math.Cos(lat2));
+			var a = dLat2 + dLon2 * Math.Cos(lat1) * Math.Cos(lat2);
 			var c = 2 * Math.Asin(Math.Sqrt(a));
 
 			return meanEarthRadiusInKilometers * c;

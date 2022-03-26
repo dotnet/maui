@@ -1,125 +1,112 @@
 #nullable enable
-
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
+using Maui.Controls.Sample.ViewModels.Base;
 using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Platform;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Media;
+using Microsoft.Maui.Storage;
 
 namespace Maui.Controls.Sample.Pages
 {
 	public partial class RenderViewPage
 	{
-		Stopwatch stopwatch = new Stopwatch();
-		RenderBindingModel vm;
+		readonly Stopwatch stopwatch = new Stopwatch();
+		readonly RenderBindingModel vm;
+
 		MemoryStream? imageStream;
-		byte[]? byteStream;
 
 		public RenderViewPage()
 		{
 			InitializeComponent();
-			this.BindingContext = this.vm = new RenderBindingModel();
-
+			BindingContext = vm = new RenderBindingModel();
 		}
 
-		private async void RenderWindow_Clicked(object sender, System.EventArgs e)
+		async void RenderWindow_Clicked(object sender, EventArgs e)
 		{
 			Reset();
-			RenderedView? renderImage = null;
-			var window = this.GetParentWindow() as IWindow;
 			stopwatch.Start();
-			try
-			{
-				if (window is not null)
-				{
-					renderImage = await window.RenderAsImage(vm.RenderType);
-				}
 
-			}
-			catch (System.Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine(ex.Message);
-			}
+			var renderImage = await Window.CaptureAsync();
+
 			stopwatch.Stop();
 
-			RenderView(renderImage);
+			await RenderView(renderImage);
 		}
 
-		private async void RenderButton_Clicked(object sender, System.EventArgs e)
+		async void RenderButton_Clicked(object sender, EventArgs e)
 		{
 			Reset();
-			RenderedView? renderImage = null;
 			stopwatch.Start();
-			try
-			{
-				renderImage = await this.RenderButton.RenderAsImage(vm.RenderType);
-				
-			}
-			catch (System.Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine(ex.Message);
-			}
+
+			var renderImage = await RenderButton.CaptureAsync();
+
 			stopwatch.Stop();
 
-			RenderView(renderImage);
+			await RenderView(renderImage);
 		}
 
-		private async void RenderViewSaved_Clicked(object sender, System.EventArgs e)
+		async void RenderViewSaved_Clicked(object sender, EventArgs e)
 		{
-			if (byteStream is not null)
+			if (imageStream is not null)
 			{
 				var extension = vm.RenderType switch
 				{
-					RenderType.JPEG => "jpg",
-					RenderType.PNG => "png",
-					RenderType.BMP => "bmp",
-					_ => "jpg",
+					ScreenshotFormat.Jpeg => ".jpg",
+					ScreenshotFormat.Png => ".png",
+					_ => ".jpg",
 				};
-				string fileName = $"{System.IO.Path.GetTempFileName()}.{extension}";
-				string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), fileName);
-				File.WriteAllBytes(filePath, byteStream);
-				await Share.RequestAsync(new ShareFileRequest() { Title = fileName, File = new ShareFile(filePath) });
+
+				var fileName = Path.GetTempFileName() + extension;
+				var filePath = Path.Combine(FileSystem.CacheDirectory, fileName);
+
+				File.WriteAllBytes(filePath, imageStream.ToArray());
+
+				await Share.RequestAsync(new ShareFileRequest
+				{
+					Title = fileName,
+					File = new ShareFile(filePath)
+				});
 			}
 		}
 
-		private void RenderView(RenderedView? renderImage)
+		async Task RenderView(IScreenshotResult? renderImage)
 		{
-			if (renderImage?.Render is not null)
+			if (renderImage is not null)
 			{
-				try
-				{
-					byteStream = renderImage.Render;
-					imageStream = new MemoryStream(renderImage.Render);
-					this.TestImage.Source = ImageSource.FromStream(() => imageStream);
-				}
-				catch (System.Exception ex)
-				{
-					System.Diagnostics.Debug.WriteLine(ex.Message);
-				}
+				imageStream = new MemoryStream();
+				await renderImage.CopyToAsync(imageStream, vm.RenderType);
+				imageStream.Position = 0;
+
+				TestImage.Source = ImageSource.FromStream(() => imageStream);
 			}
-			this.StopwatchTime.Text = stopwatch.Elapsed.ToString();
-			this.RenderStats.Text = $"Type: {renderImage?.RenderType}; Size: {SizeInBytes(renderImage?.Render)}";
+
+			StopwatchTime.Text = stopwatch.Elapsed.ToString();
+			RenderStats.Text = $"Size: {SizeInBytes(imageStream)}";
 		}
 
-		private void Reset()
+		void Reset()
 		{
 			stopwatch.Reset();
+
 			StopwatchTime.Text = string.Empty;
 			RenderStats.Text = string.Empty;
-			this.TestImage.Source = null;
+
+			TestImage.Source = null;
 		}
 
-		private string SizeInBytes(byte[]? array)
+		static string SizeInBytes(Stream? stream)
 		{
-			if (array is null)
-				return string.Empty;
+			if (stream is null)
+				return "<null>";
+
 			string[] sizes = { "B", "KB", "MB", "GB", "TB" };
-			double len = System.Convert.ToDouble(array.Length);
+
+			double len = stream.Length;
 			int order = 0;
 			while (len >= 1024D && order < sizes.Length - 1)
 			{
@@ -131,36 +118,19 @@ namespace Maui.Controls.Sample.Pages
 		}
 	}
 
-	public class RenderBindingModel : INotifyPropertyChanged
+	public class RenderBindingModel : BaseViewModel
 	{
-		private string? _selection;
-
-		public event PropertyChangedEventHandler? PropertyChanged;
-
-		void OnPropertyChanged(string propertyName)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-		}
+		string? _selection;
 
 		public string? Selection
 		{
 			get => _selection;
-			set
-			{
-				_selection = value;
-				OnPropertyChanged(nameof(Selection));
-			}
+			set => SetProperty(ref _selection, value);
 		}
 
-		public RenderType RenderType
-		{
-			get
-			{
-				if (_selection is null)
-					return RenderType.JPEG;
-
-				return (RenderType)System.Enum.Parse(typeof(RenderType), _selection);
-			}
-		}
+		public ScreenshotFormat RenderType =>
+			Enum.TryParse<ScreenshotFormat>(Selection, out var format)
+				? format
+				: ScreenshotFormat.Jpeg;
 	}
 }

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.Maui.Devices;
+using System.Threading.Tasks;
 using Microsoft.Maui.Media;
 using WinRT.Interop;
 
@@ -59,25 +59,6 @@ namespace Microsoft.Maui.Platform
 
 			var windowId = UI.Win32Interop.GetWindowIdFromWindow(hwnd);
 			return UI.Windowing.AppWindow.GetFromWindowId(windowId);
-		}
-
-		public static async Task<RenderedView?> RenderAsImage(this IWindow window, RenderType type)
-		{
-			if (window.Handler?.PlatformView is not UI.Xaml.Window win)
-				return null;
-
-			if (win.Content is not UI.Xaml.FrameworkElement element)
-				return null;
-
-			var image = type switch
-			{
-				RenderType.JPEG => await element.RenderAsJPEGAsync(),
-				RenderType.PNG => await element.RenderAsPNGAsync(),
-				RenderType.BMP => await element.RenderAsBMPAsync(),
-				_ => throw new NotImplementedException(),
-			};
-
-			return new RenderedView(image, type);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppInfo']/Docs" />
-	public class AppInfoImplementation : IAppInfo
+	class AppInfoImplementation : IAppInfo
 	{
 		public string PackageName => throw ExceptionUtils.NotSupportedOrImplementedException;
 

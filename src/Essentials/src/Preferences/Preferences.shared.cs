@@ -1,25 +1,24 @@
 #nullable enable
 using System;
-using System.ComponentModel;
-using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Storage
 {
 	public interface IPreferences
 	{
-		bool ContainsKey(string key, string? sharedName);
-		void Remove(string key, string? sharedName);
-		void Clear(string? sharedName);
-		void Set<T>(string key, T value, string? sharedName);
-		T Get<T>(string key, T defaultValue, string? sharedName);
+		bool ContainsKey(string key, string? sharedName = null);
+
+		void Remove(string key, string? sharedName = null);
+
+		void Clear(string? sharedName = null);
+
+		void Set<T>(string key, T value, string? sharedName = null);
+
+		T Get<T>(string key, T defaultValue, string? sharedName = null);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Preferences']/Docs" />
+/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Preferences']/Docs" />
 	public static class Preferences
 	{
-		internal static string GetPrivatePreferencesSharedName(string feature) =>
-			$"{AppInfo.PackageName}.microsoft.maui.essentials.{feature}";
-
 		// overloads
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='ContainsKey'][1]/Docs" />
@@ -162,14 +161,17 @@ namespace Microsoft.Maui.Storage
 		public static void Set(string key, DateTime value, string? sharedName) =>
 			Current.Set<long>(key, value.ToBinary(), sharedName);
 
-		static IPreferences? currentImplementation;
+		static IPreferences Current => Storage.Preferences.Default;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IPreferences Current =>
-			currentImplementation ??= new PreferencesImplementation();
+		internal static string GetPrivatePreferencesSharedName(string feature) =>
+			$"{ApplicationModel.AppInfo.Current.PackageName}.microsoft.maui.essentials.{feature}";
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IPreferences? implementation) =>
-			currentImplementation = implementation;
+		static IPreferences? defaultImplementation;
+
+		public static IPreferences Default =>
+			defaultImplementation ??= new PreferencesImplementation();
+
+		internal static void SetDefault(IPreferences? implementation) =>
+			defaultImplementation = implementation;
 	}
 }

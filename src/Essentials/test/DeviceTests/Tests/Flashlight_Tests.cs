@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				return Task.CompletedTask;
 
 #if __ANDROID__
-			(Flashlight.Current as FlashlightImplementation).AlwaysUseCameraApi = oldCameraApi;
+			(Flashlight.Default as FlashlightImplementation).AlwaysUseCameraApi = oldCameraApi;
 #else
 			Utils.Unused(oldCameraApi);
 #endif

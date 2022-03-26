@@ -4,9 +4,9 @@ using Tizen.Applications;
 
 namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public class ShareImplementation : IShare
+	partial class ShareImplementation : IShare
 	{
-		public Task RequestAsync(ShareTextRequest request)
+		Task PlatformRequestAsync(ShareTextRequest request)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
@@ -29,7 +29,10 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			return Task.CompletedTask;
 		}
 
-		public Task RequestAsync(ShareMultipleFilesRequest request)
+		Task PlatformRequestAsync(ShareFileRequest request) =>
+			PlatformRequestAsync((ShareMultipleFilesRequest)request);
+
+		Task PlatformRequestAsync(ShareMultipleFilesRequest request)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 

@@ -7,7 +7,7 @@ using Windows.ApplicationModel.Contacts;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public class ContactsImplementation:IContacts
+	class ContactsImplementation : IContacts
 	{
 		public async Task<Contact> PickContactAsync()
 		{

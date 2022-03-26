@@ -11,11 +11,12 @@ using SafariServices;
 using ObjCRuntime;
 using UIKit;
 using WebKit;
+using Microsoft.Maui.Authentication;
 using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Authentication
 {
-	public partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
+	partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{
 #if __IOS__
 		const int asWebAuthenticationSessionErrorCodeCanceledLogin = 1;
@@ -73,7 +74,7 @@ namespace Microsoft.Maui.Authentication
 
 				if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
 				{
-					var ctx = new ContextProvider(Platform.GetCurrentWindow());
+					var ctx = new ContextProvider(WindowStateManager.Default.GetCurrentUIWindow());
 					was.PresentationContextProvider = ctx;
 					was.PrefersEphemeralWebBrowserSession = prefersEphemeralWebBrowserSession;
 				}
@@ -117,7 +118,7 @@ namespace Microsoft.Maui.Authentication
 			};
 
 			currentViewController = controller;
-			await Platform.GetCurrentUIViewController().PresentViewControllerAsync(controller, true);
+			await WindowStateManager.Default.GetCurrentUIViewController().PresentViewControllerAsync(controller, true);
 #else
 			var opened = UIApplication.SharedApplication.OpenUrl(url);
 			if (!opened)

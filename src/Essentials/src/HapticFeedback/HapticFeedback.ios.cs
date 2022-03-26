@@ -1,11 +1,8 @@
-using System;
-using System.Threading.Tasks;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Devices
 {
-	public partial class HapticFeedbackImplementation : IHapticFeedback
+	partial class HapticFeedbackImplementation : IHapticFeedback
 	{
 		public bool IsSupported => true;
 
@@ -30,7 +27,7 @@ namespace Microsoft.Maui.Devices
 			impact.Dispose();
 		}
 
-		public void LongPress()
+		void LongPress()
 		{
 			var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Medium);
 			impact.Prepare();

@@ -2,7 +2,7 @@ using Windows.Storage;
 
 namespace Microsoft.Maui.Storage
 {
-	public class PreferencesImplementation:IPreferences
+	class PreferencesImplementation : IPreferences
 	{
 		static readonly object locker = new object();
 

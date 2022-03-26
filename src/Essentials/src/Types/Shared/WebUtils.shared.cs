@@ -42,6 +42,15 @@ namespace Microsoft.Maui.ApplicationModel
 			return d;
 		}
 
+		internal static Uri EscapeUri(Uri uri)
+		{
+			if (uri == null)
+				throw new ArgumentNullException(nameof(uri));
+
+			var idn = new global::System.Globalization.IdnMapping();
+			return new Uri(uri.Scheme + "://" + idn.GetAscii(uri.Authority) + uri.PathAndQuery + uri.Fragment);
+		}
+
 		internal static bool CanHandleCallback(Uri expectedUrl, Uri callbackUrl)
 		{
 			if (!callbackUrl.Scheme.Equals(expectedUrl.Scheme, StringComparison.OrdinalIgnoreCase))

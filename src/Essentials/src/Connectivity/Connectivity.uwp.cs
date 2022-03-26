@@ -5,16 +5,16 @@ using Windows.Networking.Connectivity;
 
 namespace Microsoft.Maui.Networking
 {
-	public partial class ConnectivityImplementation : IConnectivity
+	partial class ConnectivityImplementation : IConnectivity
 	{
-		public void StartListeners() =>
-			 NetworkInformation.NetworkStatusChanged += NetworkStatusChanged;
+		void StartListeners() =>
+			NetworkInformation.NetworkStatusChanged += NetworkStatusChanged;
 
-		static void NetworkStatusChanged(object sender) =>
-			Connectivity.OnConnectivityChanged();
+		void StopListeners() =>
+			NetworkInformation.NetworkStatusChanged -= NetworkStatusChanged;
 
-		public void StopListeners() =>
-			 NetworkInformation.NetworkStatusChanged -= NetworkStatusChanged;
+		void NetworkStatusChanged(object sender) =>
+			OnConnectivityChanged();
 
 		public NetworkAccess NetworkAccess
 		{

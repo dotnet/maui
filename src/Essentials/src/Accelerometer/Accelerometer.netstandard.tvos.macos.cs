@@ -3,7 +3,7 @@ using Microsoft.Maui.ApplicationModel;
 namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Accelerometer']/Docs" />
-	public partial class AccelerometerImplementation
+	partial class AccelerometerImplementation
 	{
 		public bool IsSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;

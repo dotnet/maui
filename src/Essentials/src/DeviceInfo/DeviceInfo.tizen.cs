@@ -1,20 +1,18 @@
-using Plat = Microsoft.Maui.Essentials.Platform;
-
 namespace Microsoft.Maui.Devices
 {
-	public class DeviceInfoImplementation : IDeviceInfo
+	class DeviceInfoImplementation : IDeviceInfo
 	{
 		public string Model
-			=> Plat.GetSystemInfo("model_name");
+			=> Platform.GetSystemInfo("model_name");
 
 		public string Manufacturer
-			=> Plat.GetSystemInfo("manufacturer");
+			=> Platform.GetSystemInfo("manufacturer");
 
 		public string Name
-			=> Plat.GetSystemInfo("device_name");
+			=> Platform.GetSystemInfo("device_name");
 
 		public string VersionString
-			=> Plat.GetFeatureInfo("platform.version");
+			=> Platform.GetFeatureInfo("platform.version");
 
 		public Version Version => Utils.ParseVersion(VersionString);
 
@@ -45,9 +43,9 @@ namespace Microsoft.Maui.Devices
 		{
 			get
 			{
-				var arch = Plat.GetFeatureInfo("platform.core.cpu.arch");
-				var armv7 = Plat.GetFeatureInfo<bool>("platform.core.cpu.arch.armv7");
-				var x86 = Plat.GetFeatureInfo<bool>("platform.core.cpu.arch.x86");
+				var arch = Platform.GetFeatureInfo("platform.core.cpu.arch");
+				var armv7 = Platform.GetFeatureInfo<bool>("platform.core.cpu.arch.armv7");
+				var x86 = Platform.GetFeatureInfo<bool>("platform.core.cpu.arch.x86");
 
 				if (arch != null && arch.Equals("armv7") && armv7 && !x86)
 					return DeviceType.Physical;

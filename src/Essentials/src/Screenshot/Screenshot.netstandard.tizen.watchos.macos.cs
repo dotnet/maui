@@ -4,7 +4,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Media
 {
-	public partial class ScreenshotImplementation : IScreenshot
+	partial class ScreenshotImplementation : IScreenshot
 	{
 		public bool IsCaptureSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
@@ -13,13 +13,19 @@ namespace Microsoft.Maui.Media
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 
-	internal partial class ScreenshotResult
+	partial class ScreenshotResult
 	{
 		ScreenshotResult()
 		{
 		}
 
-		internal Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format) =>
+		Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format, int quality) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		Task PlatformCopyToAsync(Stream destination, ScreenshotFormat format, int quality) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		Task<byte[]> PlatformToPixelBufferAsync() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

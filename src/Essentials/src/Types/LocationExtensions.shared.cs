@@ -1,5 +1,6 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Devices.Sensors
 {

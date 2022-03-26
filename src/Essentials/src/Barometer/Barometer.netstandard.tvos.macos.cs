@@ -3,7 +3,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class BarometerImplementation : IBarometer
+	partial class BarometerImplementation : IBarometer
 	{
 		void PlatformStart(SensorSpeed sensorSpeed)
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void PlatformStop()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		bool PlatformIsSupported
+		public bool IsSupported
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

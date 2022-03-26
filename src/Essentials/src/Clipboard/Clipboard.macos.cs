@@ -5,7 +5,7 @@ using Foundation;
 
 namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public partial class ClipboardImplementation : IClipboard
+	partial class ClipboardImplementation : IClipboard
 	{
 		readonly string pasteboardType = NSPasteboard.NSPasteboardTypeString;
 		readonly string[] pasteboardTypes = { pasteboardType };
@@ -32,10 +32,10 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 				new ObjCRuntime.Class[] { new ObjCRuntime.Class(typeof(NSString)) },
 				null)?[0]?.ToString();
 
-		internal void StartClipboardListeners()
+		void StartClipboardListeners()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		internal void StopClipboardListeners()
+		void StopClipboardListeners()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

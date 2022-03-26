@@ -1,6 +1,6 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
@@ -11,6 +11,9 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 	public interface IShare
 	{
 		Task RequestAsync(ShareTextRequest request);
+
+		Task RequestAsync(ShareFileRequest request);
+
 		Task RequestAsync(ShareMultipleFilesRequest request);
 	}
 
@@ -19,14 +22,38 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][1]/Docs" />
 		public static Task RequestAsync(string text) =>
-			RequestAsync(new ShareTextRequest(text));
+			Current.RequestAsync(text);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][5]/Docs" />
 		public static Task RequestAsync(string text, string title) =>
-			RequestAsync(new ShareTextRequest(text, title));
+			Current.RequestAsync(text, title);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][4]/Docs" />
-		public static Task RequestAsync(ShareTextRequest request)
+		public static Task RequestAsync(ShareTextRequest request) =>
+			Current.RequestAsync(request);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][2]/Docs" />
+		public static Task RequestAsync(ShareFileRequest request) =>
+			Current.RequestAsync(request);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][3]/Docs" />
+		public static Task RequestAsync(ShareMultipleFilesRequest request) =>
+			Current.RequestAsync(request);
+
+		static IShare Current => ApplicationModel.DataTransfer.Share.Default;
+
+		static IShare? defaultImplementation;
+
+		public static IShare Default =>
+			defaultImplementation ??= new ShareImplementation();
+
+		internal static void SetDefault(IShare? implementation) =>
+			defaultImplementation = implementation;
+	}
+
+	partial class ShareImplementation : IShare
+	{
+		public Task RequestAsync(ShareTextRequest request)
 		{
 			if (request == null)
 				throw new ArgumentNullException(nameof(request));
@@ -34,11 +61,10 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			if (string.IsNullOrEmpty(request.Text) && string.IsNullOrEmpty(request.Uri))
 				throw new ArgumentException($"Both the {nameof(request.Text)} and {nameof(request.Uri)} are invalid. Make sure to include at least one of them in the request.");
 
-			return Current.RequestAsync(request);
+			return PlatformRequestAsync(request);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][2]/Docs" />
-		public static Task RequestAsync(ShareFileRequest request)
+		public Task RequestAsync(ShareFileRequest request)
 		{
 			if (request == null)
 				throw new ArgumentNullException(nameof(request));
@@ -46,45 +72,41 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			if (request.File == null)
 				throw new ArgumentException(FileNullExeption(nameof(request.File)));
 
-			return Current.RequestAsync((ShareMultipleFilesRequest)request);
+			return PlatformRequestAsync(request);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Share.xml" path="//Member[@MemberName='RequestAsync'][3]/Docs" />
-		public static Task RequestAsync(ShareMultipleFilesRequest request)
+		public Task RequestAsync(ShareMultipleFilesRequest request)
 		{
 			if (request == null)
 				throw new ArgumentNullException(nameof(request));
 
-			if (!(request.Files?.Count() > 0))
+			if (!(request.Files?.Count > 0))
 				throw new ArgumentException(FileNullExeption(nameof(request.Files)));
 
 			if (request.Files.Any(file => file == null))
 				throw new ArgumentException(FileNullExeption(nameof(request.Files)));
 
-			return Current.RequestAsync(request);
+			return PlatformRequestAsync(request);
 		}
 
 		static string FileNullExeption(string file)
 			=> $"The {file} parameter in the request files is invalid";
+	}
 
-#nullable enable
-		static IShare? currentImplementation;
+	public static class ShareExtensions
+	{
+		public static Task RequestAsync(this IShare share, string text) =>
+			share.RequestAsync(new ShareTextRequest(text));
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IShare Current =>
-			currentImplementation ??= new ShareImplementation();
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IShare? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
+		public static Task RequestAsync(this IShare share, string text, string title) =>
+			share.RequestAsync(new ShareTextRequest(text, title));
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ShareRequestBase.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ShareRequestBase']/Docs" />
 	public abstract class ShareRequestBase
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareRequestBase.xml" path="//Member[@MemberName='Title']/Docs" />
-		public string Title { get; set; }
+		public string? Title { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareRequestBase.xml" path="//Member[@MemberName='PresentationSourceBounds']/Docs" />
 		public Rect PresentationSourceBounds { get; set; } = Rect.Zero;
@@ -99,20 +121,21 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareTextRequest.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
-		public ShareTextRequest(string text) => Text = text;
+		public ShareTextRequest(string text) =>
+			Text = text;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareTextRequest.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public ShareTextRequest(string text, string title)
 			: this(text) => Title = title;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareTextRequest.xml" path="//Member[@MemberName='Subject']/Docs" />
-		public string Subject { get; set; }
-
 		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareTextRequest.xml" path="//Member[@MemberName='Text']/Docs" />
-		public string Text { get; set; }
+		public string? Text { get; set; }
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareTextRequest.xml" path="//Member[@MemberName='Subject']/Docs" />
+		public string? Subject { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareTextRequest.xml" path="//Member[@MemberName='Uri']/Docs" />
-		public string Uri { get; set; }
+		public string? Uri { get; set; }
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ShareFileRequest.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ShareFileRequest']/Docs" />
@@ -146,7 +169,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			=> File = new ShareFile(file);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareFileRequest.xml" path="//Member[@MemberName='File']/Docs" />
-		public ShareFile File { get; set; }
+		public ShareFile? File { get; set; }
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ShareMultipleFilesRequest']/Docs" />
@@ -178,17 +201,18 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='Files']/Docs" />
-		public List<ShareFile> Files { get; set; }
+		public List<ShareFile>? Files { get; set; } = new List<ShareFile>();
 
-		public static explicit operator ShareMultipleFilesRequest(ShareFileRequest request)
-		{
-			var requestFiles = new ShareMultipleFilesRequest(request.Title, new ShareFile[] { request.File });
-			requestFiles.PresentationSourceBounds = request.PresentationSourceBounds;
-			return requestFiles;
-		}
+		public static explicit operator ShareMultipleFilesRequest(ShareFileRequest request) =>
+			new ShareMultipleFilesRequest
+			{
+				Title = request.Title,
+				Files = new List<ShareFile> { request.File! },
+				PresentationSourceBounds = request.PresentationSourceBounds
+			};
 
 		static IEnumerable<ShareFile> ConvertList(IEnumerable<FileBase> files)
-			=> files?.Select(file => new ShareFile(file));
+			=> files?.Select(file => new ShareFile(file)) ?? Array.Empty<ShareFile>();
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ShareFile.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ShareFile']/Docs" />

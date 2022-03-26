@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Hosting
 				life.AddWindows(windows => windows
 					.OnPlatformMessage((window, args) =>
 					{
-						ApplicationModel.Platform.NewWindowProc(args.Hwnd, args.MessageId, args.WParam, args.LParam);
+						ApplicationModel.Platform.OnWindowMessage(args.Hwnd, args.MessageId, args.WParam, args.LParam);
 					})
 					.OnActivated((window, args) =>
 					{

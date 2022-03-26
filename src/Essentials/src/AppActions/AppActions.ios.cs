@@ -1,18 +1,17 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	public partial class AppActionsImplementation : IAppActions
+	partial class AppActionsImplementation : IAppActions, IPlatformAppActions
 	{
-		public string Type => "XE_APP_ACTION_TYPE";
+		public const string ShortcutType = "XE_APP_ACTION_TYPE";
 
-		public bool IsSupported
-			=> true;
+		public bool IsSupported => true;
 
 		public Task<IEnumerable<AppAction>> GetAsync()
 		{
@@ -32,13 +31,20 @@ namespace Microsoft.Maui.ApplicationModel
 			return Task.CompletedTask;
 		}
 
-		public Task SetAsync(params AppAction[] actions)
-		{	
-			return SetAsync(actions.AsEnumerable<AppAction>());
+		public event EventHandler<AppActionEventArgs> AppActionActivated;
+
+		public void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
+		{
+			if (shortcutItem.Type == ShortcutType)
+			{
+				var appAction = shortcutItem.ToAppAction();
+
+				AppActionActivated?.Invoke(null, new AppActionEventArgs(appAction));
+			}
 		}
 	}
 
-	internal static partial class AppActionsExtensions
+	static partial class AppActionsExtensions
 	{
 		internal static AppAction ToAppAction(this UIApplicationShortcutItem shortcutItem)
 		{
@@ -70,12 +76,11 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 
 			return new UIApplicationShortcutItem(
-				action.Type,
+				AppActionsImplementation.ShortcutType,
 				action.Title,
 				action.Subtitle,
 				action.Icon != null ? UIApplicationShortcutIcon.FromTemplateImageName(action.Icon) : null,
 				new NSDictionary<NSString, NSObject>(keys.ToArray(), values.ToArray()));
 		}
-
 	}
 }

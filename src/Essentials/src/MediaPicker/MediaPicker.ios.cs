@@ -6,13 +6,12 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
 using MobileCoreServices;
-using ObjCRuntime;
 using Photos;
 using UIKit;
 
 namespace Microsoft.Maui.Media
 {
-	public partial class MediaPickerImplementation : IMediaPicker
+	partial class MediaPickerImplementation : IMediaPicker
 	{
 		static UIImagePickerController picker;
 
@@ -23,13 +22,23 @@ namespace Microsoft.Maui.Media
 			=> PhotoAsync(options, true, true);
 
 		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
-			=> PhotoAsync(options, true, false);
+		{
+			if (!IsCaptureSupported)
+				throw new FeatureNotSupportedException();
+
+			return PhotoAsync(options, true, false);
+		}
 
 		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, false, true);
 
 		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
-			=> PhotoAsync(options, false, false);
+		{
+			if (!IsCaptureSupported)
+				throw new FeatureNotSupportedException();
+
+			return PhotoAsync(options, false, false);
+		}
 
 		public async Task<FileResult> PhotoAsync(MediaPickerOptions options, bool photo, bool pickExisting)
 		{
@@ -51,7 +60,7 @@ namespace Microsoft.Maui.Media
 			if (!pickExisting)
 				await Permissions.EnsureGrantedAsync<Permissions.Camera>();
 
-			var vc = Platform.GetCurrentViewController(true);
+			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 
 			picker = new UIImagePickerController();
 			picker.SourceType = sourceType;
@@ -63,7 +72,7 @@ namespace Microsoft.Maui.Media
 			if (!string.IsNullOrWhiteSpace(options?.Title))
 				picker.Title = options.Title;
 
-			if (DeviceInfo.Idiom == DeviceIdiom.Tablet && picker.PopoverPresentationController != null && vc.View != null)
+			if (DeviceInfo.Current.Idiom == DeviceIdiom.Tablet && picker.PopoverPresentationController != null && vc.View != null)
 				picker.PopoverPresentationController.SourceRect = vc.View.Bounds;
 
 			var tcs = new TaskCompletionSource<FileResult>(picker);
@@ -79,7 +88,7 @@ namespace Microsoft.Maui.Media
 			if (picker.PresentationController != null)
 			{
 				picker.PresentationController.Delegate =
-					new Platform.UIPresentationControllerDelegate(() => GetFileResult(null, tcs));
+					new UIPresentationControllerDelegate(() => GetFileResult(null, tcs));
 			}
 
 			await vc.PresentViewControllerAsync(picker, true);

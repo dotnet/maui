@@ -4,7 +4,7 @@ using Windows.Foundation.Metadata;
 
 namespace Microsoft.Maui.Devices
 {
-	public partial class VibrationImplementation : IVibration
+	partial class VibrationImplementation : IVibration
 	{
 		public bool IsSupported
 			=> ApiInformation.IsTypePresent("Windows.Phone.Devices.Notification.VibrationDevice") && DefaultDevice != null;
@@ -12,16 +12,13 @@ namespace Microsoft.Maui.Devices
 		static VibrationDevice DefaultDevice =>
 			throw new NotImplementedException("WINUI"); //VibrationDevice.GetDefault();
 
-		public void Vibrate() 
+		void PlatformVibrate()
 			=> throw new NotImplementedException("WINUI");// DefaultDevice.Vibrate(duration);
 
-		public void Vibrate(double duration) 
-			=> throw new NotImplementedException("WINUI");// DefaultDevice.Vibrate(duration);
-
-		public void Vibrate(TimeSpan duration) =>
+		void PlatformVibrate(TimeSpan duration) =>
 			throw new NotImplementedException("WINUI");// DefaultDevice.Vibrate(duration);
 
-		public void Cancel() =>
+		void PlatformCancel() =>
 			throw new NotImplementedException("WINUI");//DefaultDevice.Cancel();
 	}
 }
