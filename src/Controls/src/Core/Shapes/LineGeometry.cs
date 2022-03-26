@@ -1,3 +1,4 @@
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -43,8 +44,19 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineGeometry.xml" path="//Member[@MemberName='AppendPath']/Docs" />
 		public override void AppendPath(PathF path)
 		{
-			path.Move((float)StartPoint.X, (float)StartPoint.Y);
-			path.LineTo((float)EndPoint.X, (float)EndPoint.Y);
+			double density = 1.0d;
+#if ANDROID
+			density = DeviceDisplay.MainDisplayInfo.Density;
+#endif
+
+			float startPointX = (float)(density * StartPoint.X);
+			float startPointY = (float)(density * StartPoint.Y);
+
+			float endPointX = (float)(density * EndPoint.X);
+			float endPointY = (float)(density * EndPoint.Y);
+
+			path.Move(startPointX, startPointY);
+			path.LineTo(endPointX, endPointY);
 		}
 	}
 }

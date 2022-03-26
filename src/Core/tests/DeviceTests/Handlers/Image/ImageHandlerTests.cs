@@ -139,7 +139,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await Task.Delay(1000);
 
-			Assert.Equal(new[] { "LoadingStarted", "LoadingFailed" }, order);
+			Assert.Equal(new List<string> { "LoadingStarted", "LoadingFailed" }, order);
 			Assert.NotNull(exception);
 		}
 

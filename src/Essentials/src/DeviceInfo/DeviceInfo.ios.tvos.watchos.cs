@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using Microsoft.Maui.ApplicationModel;
 #if __WATCHOS__
 using WatchKit;
 using UIDevice = WatchKit.WKInterfaceDevice;
@@ -9,7 +10,7 @@ using UIKit;
 
 using ObjCRuntime;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
 	public class DeviceInfoImplementation : IDeviceInfo
 	{
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			{
 				try
 				{
-					return Essentials.Platform.GetSystemLibraryProperty("hw.machine");
+					return ApplicationModel.Platform.GetSystemLibraryProperty("hw.machine");
 				}
 				catch (Exception)
 				{

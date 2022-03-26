@@ -1,9 +1,9 @@
 #nullable enable
 using System;
 using System.ComponentModel;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	public interface IPreferences
 	{

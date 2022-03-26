@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchOptions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BrowserLaunchOptions']/Docs" />
 	public class BrowserLaunchOptions

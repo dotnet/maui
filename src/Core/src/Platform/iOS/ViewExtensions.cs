@@ -4,8 +4,9 @@ using System.Numerics;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Media;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
@@ -117,15 +118,18 @@ namespace Microsoft.Maui.Platform
 		{
 			UISemanticContentAttribute updateValue = platformView.SemanticContentAttribute;
 
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			switch (view.FlowDirection)
 			{
-				updateValue = UISemanticContentAttribute.Unspecified;
+				case FlowDirection.MatchParent:
+					updateValue = UISemanticContentAttribute.Unspecified;
+					break;
+				case FlowDirection.LeftToRight:
+					updateValue = UISemanticContentAttribute.ForceLeftToRight;
+					break;
+				case FlowDirection.RightToLeft:
+					updateValue = UISemanticContentAttribute.ForceRightToLeft;
+					break;
 			}
-			else if (view.FlowDirection == FlowDirection.RightToLeft)
-				updateValue = UISemanticContentAttribute.ForceRightToLeft;
-			else if (view.FlowDirection == FlowDirection.LeftToRight)
-				updateValue = UISemanticContentAttribute.ForceLeftToRight;
 
 			if (updateValue != platformView.SemanticContentAttribute)
 				platformView.SemanticContentAttribute = updateValue;

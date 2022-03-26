@@ -1,8 +1,8 @@
 using System;
-
+using Microsoft.Maui.Media;
 using static System.Math;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DistanceUnits.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DistanceUnits']/Docs" />
 	public enum DistanceUnits

@@ -1,45 +1,58 @@
-﻿using ObjCRuntime;
-using UIKit;
+﻿using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class TextAlignmentExtensions
 	{
-		public static UITextAlignment ToPlatform(this TextAlignment alignment, IView view)
-			=> alignment.ToPlatform(view.FlowDirection == FlowDirection.LeftToRight);
+		public static UITextAlignment ToPlatformHorizontal(this TextAlignment alignment, IView view)
+			=> alignment.ToPlatformHorizontal().AdjustForFlowDirection(view);
 
-		public static UITextAlignment ToPlatform(this TextAlignment alignment, bool isLtr)
+		public static UITextAlignment ToPlatformHorizontal(this TextAlignment alignment)
 		{
-			switch (alignment)
+			return alignment switch
 			{
-				case TextAlignment.Center:
-					return UITextAlignment.Center;
-				case TextAlignment.End:
-					if (isLtr)
-						return UITextAlignment.Right;
-					else
-						return UITextAlignment.Left;
-				default:
-					if (isLtr)
-						return UITextAlignment.Left;
-					else
-						return UITextAlignment.Right;
-			}
+				TextAlignment.Center => UITextAlignment.Center,
+				TextAlignment.End => UITextAlignment.Right,
+				TextAlignment.Start => UITextAlignment.Left,
+				_ => UITextAlignment.Left,
+			};
 		}
 
-		public static UIControlContentVerticalAlignment ToPlatform(this TextAlignment alignment)
+		public static UIControlContentVerticalAlignment ToPlatformVertical(this TextAlignment alignment)
 		{
-			switch (alignment)
+			return alignment switch
 			{
-				case TextAlignment.Center:
-					return UIControlContentVerticalAlignment.Center;
-				case TextAlignment.End:
-					return UIControlContentVerticalAlignment.Bottom;
-				case TextAlignment.Start:
-					return UIControlContentVerticalAlignment.Top;
-				default:
-					return UIControlContentVerticalAlignment.Top;
+				TextAlignment.Center => UIControlContentVerticalAlignment.Center,
+				TextAlignment.End => UIControlContentVerticalAlignment.Bottom,
+				TextAlignment.Start => UIControlContentVerticalAlignment.Top,
+				_ => UIControlContentVerticalAlignment.Top,
+			};
+		}
+
+		public static UITextAlignment AdjustForFlowDirection(this UITextAlignment textAlignment, IView view) 
+		{
+			if (textAlignment == UITextAlignment.Center)
+			{
+				// Shortcut center; we don't need to bother checking the flow direction in this case
+				return textAlignment;
 			}
+
+			var flowDirection = view.GetEffectiveFlowDirection();
+
+			if (flowDirection == FlowDirection.RightToLeft)
+			{
+				if (textAlignment == UITextAlignment.Left)
+				{
+					return UITextAlignment.Right;
+				}
+
+				if (textAlignment == UITextAlignment.Right)
+				{
+					return UITextAlignment.Left;
+				}
+			}
+
+			return textAlignment;
 		}
 	}
 }

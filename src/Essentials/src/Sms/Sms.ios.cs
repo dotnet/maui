@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using MessageUI;
 #endif
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	public class SmsImplementation : ISms
 	{

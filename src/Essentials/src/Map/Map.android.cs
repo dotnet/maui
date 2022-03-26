@@ -1,9 +1,10 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Android.Content;
+using Microsoft.Maui.Devices.Sensors;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
 	public class MapImplementation : IMap
 	{

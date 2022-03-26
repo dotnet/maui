@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;

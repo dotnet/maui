@@ -1,10 +1,11 @@
 using System;
 using System.Diagnostics;
+using Microsoft.Maui.ApplicationModel;
 using Windows.Security.ExchangeActiveSyncProvisioning;
 using Windows.System.Profile;
 using Windows.UI.ViewManagement;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
 	public class DeviceInfoImplementation : IDeviceInfo
 	{
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 						{
 							try
 							{
-								var currentHandle = Essentials.Platform.CurrentWindowHandle;
+								var currentHandle = ApplicationModel.Platform.CurrentWindowHandle;
 								var settings = UIViewSettingsInterop.GetForWindow(currentHandle);
 								var uiMode = settings.UserInteractionMode;
 								currentIdiom = uiMode == UserInteractionMode.Mouse ? DeviceIdiom.Desktop : DeviceIdiom.Tablet;

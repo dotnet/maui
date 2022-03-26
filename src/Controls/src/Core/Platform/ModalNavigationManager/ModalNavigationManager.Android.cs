@@ -16,8 +16,18 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
-		ViewGroup _rootDecorView => (_window?.NativeActivity?.Window?.DecorView as ViewGroup) ??
-			throw new InvalidOperationException("Root View Needs to be set");
+		ViewGroup GetModalParentView()
+		{
+			var currentRootView = GetCurrentRootView() as ViewGroup;
+
+			if(_window?.PlatformActivity?.GetWindow() == _window)
+			{
+				currentRootView = _window?.PlatformActivity?.Window?.DecorView as ViewGroup;
+			}
+
+			return currentRootView ??
+				throw new InvalidOperationException("Root View Needs to be set");
+		}
 
 		bool _navAnimationInProgress;
 		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
@@ -49,9 +59,9 @@ namespace Microsoft.Maui.Controls.Platform
 				ModalContainer? modalContainer = null;
 
 
-				for (int i = 0; i <= _rootDecorView.ChildCount; i++)
+				for (int i = 0; i <= GetModalParentView().ChildCount; i++)
 				{
-					if (_rootDecorView.GetChildAt(i) is ModalContainer mc &&
+					if (GetModalParentView().GetChildAt(i) is ModalContainer mc &&
 						mc.Modal == modal)
 					{
 						modalContainer = mc;
@@ -63,7 +73,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (animated)
 				{
 					modalContainer
-						.Animate()?.TranslationY(_rootDecorView.Height)?
+						.Animate()?.TranslationY(GetModalParentView().Height)?
 						.SetInterpolator(new AccelerateInterpolator(1))?.SetDuration(300)?.SetListener(new GenericAnimatorListener
 						{
 							OnEnd = a =>
@@ -85,17 +95,14 @@ namespace Microsoft.Maui.Controls.Platform
 			return source.Task;
 		}
 
-		// The CurrentPage doesn't represent the root of the native hierarchy.
+		// The CurrentPage doesn't represent the root of the platform hierarchy.
 		// So we need to retrieve the root view the page is part of if we want
 		// to be sure to disable all focusability
 		AView GetCurrentRootView()
 		{
-			return CurrentPage
-					.Handler
-					?.MauiContext
+			return MauiContext
 					?.GetNavigationRootManager()
-					.RootView ??
-					CurrentPage.ToPlatform() ??
+					?.RootView ??
 					throw new InvalidOperationException("Current Root View cannot be null");
 		}
 
@@ -116,15 +123,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		Task PresentModal(Page modal, bool animated)
 		{
-			var modalContainer = new ModalContainer(_window, modal);
+			var parentView = GetModalParentView();
+			var modalContainer = new ModalContainer(MauiContext, modal, parentView);
 
-			_rootDecorView.AddView(modalContainer);
 
 			var source = new TaskCompletionSource<bool>();
 			NavAnimationInProgress = true;
 			if (animated)
 			{
-				modalContainer.TranslationY = _rootDecorView.Height;
+				modalContainer.TranslationY = GetModalParentView().Height;
 				modalContainer?.Animate()?.TranslationY(0)?.SetInterpolator(new DecelerateInterpolator(1))?.SetDuration(300)?.SetListener(new GenericAnimatorListener
 				{
 					OnEnd = a =>
@@ -191,9 +198,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 			NavigationRootManager? NavigationRootManager => _modalFragment.NavigationRootManager;
 
-			public ModalContainer(IWindow window, Page modal) : base(window.Handler?.MauiContext?.Context ?? throw new ArgumentNullException($"{nameof(window.Handler.MauiContext.Context)}"))
+			public ModalContainer(
+				IMauiContext mauiContext,
+				Page modal,
+				ViewGroup parentView)
+				: base(mauiContext?.Context ?? throw new ArgumentNullException($"{nameof(mauiContext.Context)}"))
 			{
-				_windowMauiContext = window.Handler.MauiContext;
+				_windowMauiContext = mauiContext;
 				Modal = modal;
 
 				_backgroundView = new AView(_windowMauiContext.Context);
@@ -206,6 +217,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 				_modalFragment = new ModalFragment(_windowMauiContext, modal);
 				_fragmentManager = _windowMauiContext.GetFragmentManager();
+
+
+				parentView.AddView(this);
 
 				_fragmentManager
 					.BeginTransaction()
@@ -221,8 +235,13 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				var rootView =
-					NavigationRootManager.RootView;
+				var rootView = NavigationRootManager.RootView;
+
+				if (widthMeasureSpec.GetMode() == MeasureSpecMode.AtMost)
+					widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(widthMeasureSpec.GetSize());
+
+				if (heightMeasureSpec.GetMode() == MeasureSpecMode.AtMost)
+					heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(heightMeasureSpec.GetSize());
 
 				rootView.Measure(widthMeasureSpec, heightMeasureSpec);
 				SetMeasuredDimension(rootView.MeasuredWidth, rootView.MeasuredHeight);

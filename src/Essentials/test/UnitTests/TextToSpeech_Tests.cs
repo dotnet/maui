@@ -1,4 +1,5 @@
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Media;
 using Xunit;
 
 namespace Tests

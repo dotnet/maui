@@ -3,6 +3,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Media;
 #elif WINDOWS
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -12,7 +13,7 @@ using Microsoft.UI.Xaml.Media;
 
 
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Accessibility
 {
 	public partial class SemanticScreenReaderImplementation : ISemanticScreenReader
 	{

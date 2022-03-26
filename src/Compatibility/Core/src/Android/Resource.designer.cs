@@ -55,17 +55,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		public partial class Id
-		{
-			// aapt resource value: 0x7F080051
-			public static int main_appbar = 2131230801;
-
-			static Id()
-			{
-				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
-			}
-		}
-
 		public partial class Layout
 		{
 			// aapt resource value: 0x7F0B0072

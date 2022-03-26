@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.ApplicationModel.Communication;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
+	using Contacts = ApplicationModel.Communication.Contacts;
+
 	public class Contacts_Tests
 	{
 		[Fact]
@@ -18,8 +21,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				await Permissions.RequestAsync<Permissions.ContactsRead>();
 			});
 
-			var list = new List<Microsoft.Maui.Essentials.Contact>();
-			var contacts = await Microsoft.Maui.Essentials.Contacts.GetAllAsync();
+			var list = new List<Contact>();
+			var contacts = await Contacts.GetAllAsync();
 
 			foreach (var contact in contacts.Take(10))
 				list?.Add(contact);

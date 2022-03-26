@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Window
 	{
-		internal Activity NativeActivity =>
+		internal Activity PlatformActivity =>
 			(Handler?.PlatformView as Activity) ?? throw new InvalidOperationException("Window should have an Activity set.");
 
 		public static void MapContent(WindowHandler handler, IWindow view)

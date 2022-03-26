@@ -3,8 +3,9 @@
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Media
 {
 	public interface IScreenshot
 	{
@@ -46,7 +47,7 @@ namespace Microsoft.Maui.Essentials
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IScreenshot Current =>
-			currentImplementation ??= new Implementations.ScreenshotImplementation();
+			currentImplementation ??= new ScreenshotImplementation();
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetCurrent(IScreenshot? implementation) =>
@@ -63,7 +64,7 @@ namespace Microsoft.Maui.Essentials
 	}
 }
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media
 {
 	internal partial class ScreenshotResult : IScreenshotResult
 	{

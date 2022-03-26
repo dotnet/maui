@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
+using Microsoft.Maui.Storage;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
 	public class ShareImplementation : IShare
 	{

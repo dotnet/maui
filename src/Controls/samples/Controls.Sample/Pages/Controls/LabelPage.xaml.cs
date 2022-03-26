@@ -18,5 +18,19 @@ namespace Maui.Controls.Sample.Pages
 			if (span != null)
 				span.TextColor = Color.FromRgb((byte)rnd.Next(0, 254), (byte)rnd.Next(0, 254), (byte)rnd.Next(0, 254));
 		}
+
+		void ChangeFormattedString_Clicked(object sender, System.EventArgs e)
+		{
+			labelFormattedString.FormattedText = new FormattedString
+			{
+				Spans =
+			{
+				new Span
+				{
+					Text = "Testing"
+				}
+			}
+			};
+		}
 	}
 }

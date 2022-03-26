@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.ButtonPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
     Title="Button">
     <views:BasePage.Resources>
         <ResourceDictionary>
@@ -181,11 +182,25 @@
                     Background="LightGrey"
                     Padding="{Binding Text, Source={Reference paddingEntry}, Converter={StaticResource ThicknessConverter}}"/>
                 <Label
+                    Text="LineBreakMode"
+                    Style="{StaticResource Headline}"/>
+                <Button 
+                    x:Name="LineBreakModeButton"
+                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."/>  
+                <Button
+                    Text="Update LineBreakMode"
+                    Clicked="OnLineBreakModeButtonClicked"/>
+                <Label
                     Text="Using VisualStates"
                     Style="{StaticResource Headline}"/>
                 <Button
                     Text="B" 
                     Style="{StaticResource CustomButtonStyle}" />
+                <Label
+                    Text="Using Custom Button"
+                    Style="{StaticResource Headline}"/>
+                <local:CustomButton
+                    Text="Custom Button" />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

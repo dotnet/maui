@@ -8,7 +8,7 @@ using Contacts;
 using ContactsUI;
 #endif
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	public class ContactsImplementation : IContacts
 	{

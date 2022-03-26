@@ -6,7 +6,7 @@ using AOrientation = Android.Widget.Orientation;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : ViewHandler<IStepper, LinearLayout>, IAndroidStepperHandler
+	public partial class StepperHandler : ViewHandler<IStepper, MauiStepper>, IAndroidStepperHandler
 	{
 		AButton? _downButton;
 		AButton? _upButton;
@@ -16,9 +16,9 @@ namespace Microsoft.Maui.Handlers
 
 		AButton? IAndroidStepperHandler.DownButton => _downButton;
 
-		protected override LinearLayout CreatePlatformView()
+		protected override MauiStepper CreatePlatformView()
 		{
-			var stepperLayout = new LinearLayout(Context)
+			var stepperLayout = new MauiStepper(Context)
 			{
 				Orientation = AOrientation.Horizontal,
 				Focusable = true,
