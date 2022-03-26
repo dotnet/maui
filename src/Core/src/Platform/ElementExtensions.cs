@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Platform
 
 		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
 		{
-			var handler = view.Handler ?? view.ToHandler(context);
+			var handler = view.ToHandler(context);
 
 			if (handler.PlatformView is not PlatformView result)
 			{
