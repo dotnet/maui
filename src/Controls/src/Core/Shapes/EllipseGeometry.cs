@@ -1,3 +1,4 @@
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			double density = 1.0d;
 #if ANDROID
-			density = Essentials.DeviceDisplay.MainDisplayInfo.Density;
+			density = DeviceDisplay.MainDisplayInfo.Density;
 #endif
 
 			var centerX = (float)(density * RadiusX);

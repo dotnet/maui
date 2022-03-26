@@ -4,21 +4,22 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Android.OS;
+using Android.App;
 using Android.Speech.Tts;
+using Microsoft.Maui.ApplicationModel;
 using AndroidTextToSpeech = Android.Speech.Tts.TextToSpeech;
 using Debug = System.Diagnostics.Debug;
 using JavaLocale = Java.Util.Locale;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media
 {
-	public partial class TextToSpeechImplementation : ITextToSpeech
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
 		const int maxSpeechInputLengthDefault = 4000;
 
-		static WeakReference<TextToSpeechInternalImplementation> textToSpeechRef = null;
+		WeakReference<TextToSpeechInternalImplementation> textToSpeechRef = null;
 
-		static TextToSpeechInternalImplementation GetTextToSpeech()
+		TextToSpeechInternalImplementation GetTextToSpeech()
 		{
 			if (textToSpeechRef == null || !textToSpeechRef.TryGetTarget(out var tts))
 			{
@@ -29,27 +30,22 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return tts;
 		}
 
-		public Task SpeakAsync(string text, CancellationToken cancelToken)
-			=> SpeakAsync(text, default, cancelToken);
-
-		public Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken)
+		Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken)
 		{
 			var textToSpeech = GetTextToSpeech();
-
 			if (textToSpeech == null)
 				throw new PlatformNotSupportedException("Unable to start text-to-speech engine, not supported on device.");
 
 			var max = maxSpeechInputLengthDefault;
-			if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.JellyBeanMr2))
+			if (OperatingSystem.IsAndroidVersionAtLeast(18))
 				max = AndroidTextToSpeech.MaxSpeechInputLength;
 
 			return textToSpeech.SpeakAsync(text, max, options, cancelToken);
 		}
 
-		public Task<IEnumerable<Locale>> GetLocalesAsync()
+		Task<IEnumerable<Locale>> PlatformGetLocalesAsync()
 		{
 			var textToSpeech = GetTextToSpeech();
-
 			if (textToSpeech == null)
 				throw new PlatformNotSupportedException("Unable to start text-to-speech engine, not supported on device.");
 
@@ -75,7 +71,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			try
 			{
 				// set up the TextToSpeech object
-				tts = new AndroidTextToSpeech(Platform.AppContext, this);
+				tts = new AndroidTextToSpeech(Application.Context, this);
 #pragma warning disable CS0618
 				tts.SetOnUtteranceCompletedListener(this);
 #pragma warning restore CS0618
@@ -148,11 +144,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 			if (options?.Pitch.HasValue ?? false)
 				tts.SetPitch(options.Pitch.Value);
 			else
-				tts.SetPitch(TextToSpeech.PitchDefault);
+				tts.SetPitch(TextToSpeechImplementation.PitchDefault);
 
 			tts.SetSpeechRate(1.0f);
 
-			var parts = text.SplitSpeak(max);
+			var parts = TextToSpeech.SplitSpeak(text, max);
 
 			numExpectedUtterances = parts.Count;
 

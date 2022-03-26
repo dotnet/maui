@@ -1,18 +1,24 @@
+#nullable enable
 using CoreMotion;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class AccelerometerImplementation
+	partial class AccelerometerImplementation
 	{
+		static CMMotionManager? motionManager;
+
+		static CMMotionManager MotionManager =>
+			motionManager ??= new CMMotionManager();
+
 		public bool IsSupported =>
-			Platform.MotionManager?.AccelerometerAvailable ?? false;
+			MotionManager.AccelerometerAvailable;
 
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			var manager = Platform.MotionManager;
-			manager.AccelerometerUpdateInterval = sensorSpeed.ToPlatform();
-			manager.StartAccelerometerUpdates(Platform.GetCurrentQueue(), DataUpdated);
+			MotionManager.AccelerometerUpdateInterval = sensorSpeed.ToPlatform();
+			MotionManager.StartAccelerometerUpdates(NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), DataUpdated);
 		}
 
 		void DataUpdated(CMAccelerometerData data, NSError error)
@@ -26,6 +32,6 @@ namespace Microsoft.Maui.Essentials.Implementations
 		}
 
 		void PlatformStop() =>
-			Platform.MotionManager?.StopAccelerometerUpdates();
+			MotionManager.StopAccelerometerUpdates();
 	}
 }

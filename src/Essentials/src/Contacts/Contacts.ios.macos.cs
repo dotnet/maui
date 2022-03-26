@@ -8,19 +8,17 @@ using Contacts;
 using ContactsUI;
 #endif
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public class ContactsImplementation : IContacts
+	class ContactsImplementation : IContacts
 	{
 #if __MACOS__
-        static Task<Contact> PlatformPickContactAsync() => throw ExceptionUtils.NotSupportedOrImplementedException;
-
+		public Task<Contact> PickContactAsync() =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
 #elif __IOS__
 		public Task<Contact> PickContactAsync()
 		{
-			var uiView = Platform.GetCurrentViewController();
-			if (uiView == null)
-				throw new ArgumentNullException($"The View Controller can't be null.");
+			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 
 			var source = new TaskCompletionSource<Contact>();
 
@@ -42,15 +40,15 @@ namespace Microsoft.Maui.Essentials.Implementations
 			if (picker.PresentationController != null)
 			{
 				picker.PresentationController.Delegate =
-					new Platform.UIPresentationControllerDelegate(() => source?.TrySetResult(null));
+					new UIPresentationControllerDelegate(() => source?.TrySetResult(null));
 			}
 
-			uiView.PresentViewController(picker, true, null);
+			vc.PresentViewController(picker, true, null);
 
 			return source.Task;
 		}
-
 #endif
+
 		public Task<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			var keys = new[]

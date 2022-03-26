@@ -94,6 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return result;
 		}
 
+		[PortHandler]
 #if __MOBILE__
 		public override void LayoutSubviews()
 		{

@@ -13,7 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using WListView = Microsoft.UI.Xaml.Controls.ListView;
 using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WApp = Microsoft.UI.Xaml.Application;

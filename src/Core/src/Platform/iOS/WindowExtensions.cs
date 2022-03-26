@@ -29,21 +29,5 @@ namespace Microsoft.Maui.Platform
 
 		public static float GetDisplayDensity(this UIWindow uiWindow) =>
 			(float)(uiWindow.Screen?.Scale ?? new nfloat(1.0f));
-
-		public static async Task<RenderedView?> RenderAsImage(this IWindow window, RenderType type)
-		{
-			if (window?.ToPlatform() is not UIWindow win)
-				return null;
-
-			var image = type switch
-			{
-				RenderType.JPEG => await win.RenderAsJPEG(),
-				RenderType.PNG => await win.RenderAsPNG(),
-				RenderType.BMP => await win.RenderAsBMP(),
-				_ => throw new NotImplementedException(),
-			};
-
-			return new RenderedView(image, type);
-		}
 	}
 }
