@@ -8,9 +8,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4050c126c96204c3c4cdd9f3ba715a0779201719</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.300-rc.1.30">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.300-rc.1.32">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>1f907f01c3e239ee24ddecc43787c5cae527491f</Sha>
+      <Sha>4b33a6229c9babde795dea48d20ca86d8f9f9c97</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.4.100-rc.1.92">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
@@ -33,4 +33,10 @@
       <Sha>572aeedcfa16bdb619fafcecf5924e5c6b65b07b</Sha>
     </Dependency>
   </ProductDependencies>
+  <ToolsetDependencies>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="7.0.0-beta.22171.2">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>c8a95297e2622251c125aa5c0ef7c822275a792d</Sha>
+    </Dependency>
+  </ToolsetDependencies>
 </Dependencies>

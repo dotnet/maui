@@ -1,1 +1,52 @@
-<Project />
+<Project>
+  <PropertyGroup>
+    <_RepositoryPath>$(MSBuildThisFileDirectory)../../../</_RepositoryPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(MicrosoftDotNetBuildTasksFeedPackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.DotNet.Arcade.Sdk" Version="$(MicrosoftDotNetBuildTasksFeedPackageVersion)" PrivateAssets="all" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.SharedFramework.Sdk" Version="$(MicrosoftDotNetBuildTasksFeedPackageVersion)" />
+  <UsingTask TaskName="GenerateBuildManifest" AssemblyFile="$(_MicrosoftDotNetBuildTasksFeedTaskDir)Microsoft.DotNet.Build.Tasks.Feed.dll" />
+
+  <Target Name="PushManifestToBuildAssetRegistry" >
+    <ItemGroup>
+      <BuildArtifacts Include="$(OutputPath)*.nupkg" />
+    </ItemGroup>
+
+    <Error Condition="'@(BuildArtifacts)' == ''" Text="No packages to create manifest from." />
+
+    <ItemGroup>
+      <ManifestBuildData Include="InitialAssetsLocation=https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json" />
+      <ManifestBuildData Include="AzureDevOpsBuildId=$(BUILD_BUILDID)" />
+      <ManifestBuildData Include="AzureDevOpsBuildDefinitionId=$(SYSTEM_DEFINITIONID)" />
+      <ManifestBuildData Include="AzureDevOpsProject=$(SYSTEM_TEAMPROJECT)" />
+      <ManifestBuildData Include="AzureDevOpsBuildNumber=$(BUILD_BUILDNUMBER)" />
+      <ManifestBuildData Include="AzureDevOpsRepository=$(BUILD_REPOSITORY_URI)" />
+      <ManifestBuildData Include="AzureDevOpsBranch=$(BUILD_SOURCEBRANCH)" />
+    </ItemGroup>
+
+    <GenerateBuildManifest
+        Artifacts="@(BuildArtifacts)"
+        OutputPath="$(OutputPath)bar-manifests\AssetManifest.xml"
+        BuildId="$(BUILD_BUILDNUMBER)"
+        BuildData="@(ManifestBuildData)"
+        RepoUri="$(BUILD_REPOSITORY_URI)"
+        RepoBranch="$(BUILD_SOURCEBRANCH)"
+        RepoCommit="$(BUILD_SOURCEVERSION)"
+        PublishingVersion="3" />
+
+    <MSBuild
+        Targets="Restore"
+        Projects="$(PkgMicrosoft_DotNet_Arcade_Sdk)\tools\SdkTasks\PublishBuildAssets.proj"
+        Properties="Configuration=$(Configuration);RepoRoot=$(_RepositoryPath);VersionPrefix=$(PackageVersion)"
+    />
+
+    <MSBuild
+        Projects="$(PkgMicrosoft_DotNet_Arcade_Sdk)\tools\SdkTasks\PublishBuildAssets.proj"
+        Properties="Configuration=$(Configuration);RepoRoot=$(_RepositoryPath);VersionPrefix=$(PackageVersion);ManifestsPath=$(OutputPath)bar-manifests;MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com"
+    />
+  </Target>
+</Project>
