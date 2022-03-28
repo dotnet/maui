@@ -172,6 +172,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			InitializeContentConstraints(nativeView);
 
+			UpdateVisualStates();
+
 			renderer.Element.MeasureInvalidated += MeasureInvalidated;
 		}
 
@@ -236,14 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				base.Selected = value;
 
-				var element = VisualElementRenderer?.Element;
-
-				if (element != null)
-				{
-					VisualStateManager.GoToState(element, value
-						? VisualStateManager.CommonStates.Selected
-						: VisualStateManager.CommonStates.Normal);
-				}
+				UpdateVisualStates();
 			}
 		}
 
@@ -292,6 +287,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			return true;
+		}
+
+		void UpdateVisualStates()
+		{
+			var element = VisualElementRenderer?.Element;
+
+			if (element != null)
+			{
+				VisualStateManager.GoToState(element, Selected
+					? VisualStateManager.CommonStates.Selected
+					: VisualStateManager.CommonStates.Normal);
+			}
 		}
 	}
 }

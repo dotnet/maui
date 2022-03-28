@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal Application(bool setCurrentApplication)
-		{			
+		{
 			if (setCurrentApplication)
 				SetCurrentApplication(this);
 
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls
 				OnPropertyChanging();
 
 				_singleWindowMainPage = value;
-				
+
 				if (Windows.Count == 1)
 				{
 					Windows[0].Page = value;
@@ -179,8 +179,36 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
 		public AppTheme RequestedTheme => UserAppTheme != AppTheme.Unspecified ? UserAppTheme : PlatformAppTheme;
 
+		static Color? _accentColor;
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='AccentColor']/Docs" />
-		public static Color? AccentColor { get; set; }
+		public static Color? AccentColor
+		{
+			get => _accentColor ??= GetAccentColor();
+			set => _accentColor = value;
+		}
+
+
+		static Color? GetAccentColor()
+		{
+#if WINDOWS
+			if (UI.Xaml.Application.Current.Resources.TryGetValue("SystemColorControlAccentBrush", out object accent) &&
+				accent is UI.Xaml.Media.SolidColorBrush scb)
+			{
+				return scb.ToColor();
+			}
+
+			return null;
+#elif ANDROID
+			if (Current?.Windows?.Count > 0)
+				return Current.Windows[0].MauiContext.Context?.GetAccentColor();
+
+			return null;
+#elif IOS
+			return ColorExtensions.AccentColor.ToColor();
+#else
+			return Color.FromRgba(50, 79, 133, 255);
+#endif
+		}
 
 		public event EventHandler<AppThemeChangedEventArgs> RequestedThemeChanged
 		{

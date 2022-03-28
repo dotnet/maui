@@ -173,6 +173,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (_root is ViewGroup vg)
 					vg.RemoveView(_shellPageContainer);
+
+				_shellPageContainer.Dispose();
 			}
 
 			_root?.Dispose();
@@ -186,6 +188,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_root = null;
 			_viewhandler = null;
 			_shellContent = null;
+			_shellPageContainer = null;
 		}
 
 		protected override void Dispose(bool disposing)
