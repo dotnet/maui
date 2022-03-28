@@ -15,6 +15,10 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IBorderView, IBorderHandler> Mapper = new PropertyMapper<IBorderView, IBorderHandler>(ViewMapper)
 		{
+#if __ANDROID__
+			[nameof(IContentView.Height)] = MapHeight,
+			[nameof(IContentView.Width)] = MapWidth,
+#endif
 			[nameof(IContentView.Background)] = MapBackground,
 			[nameof(IContentView.Content)] = MapContent,
 			[nameof(IBorderStroke.Shape)] = MapStrokeShape,
