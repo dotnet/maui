@@ -1,6 +1,8 @@
 using System;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.UI.Xaml.Input;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class KeyboardConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
@@ -10,7 +12,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (keyboard == null)
 				return null;
 
-			return keyboard.ToInputScope();
+
+			var result = new InputScope();
+			result.Names.Add(keyboard.ToInputScopeName());
+			return result;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)

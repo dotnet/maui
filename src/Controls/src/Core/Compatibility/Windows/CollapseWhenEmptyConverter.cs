@@ -1,7 +1,7 @@
 using System;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class CollapseWhenEmptyConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
