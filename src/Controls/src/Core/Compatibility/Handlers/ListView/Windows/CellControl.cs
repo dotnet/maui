@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var color = switchCell.OnColor.IsDefault()
 				? _defaultOnColor
 				: new WSolidColorBrush(switchCell.OnColor.ToWindowsColor());
-			
+
 			var nativeSwitch = this.GetFirstDescendant<ToggleSwitch>();
 
 			// change fill color in switch rectangle
@@ -215,12 +215,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			var visualStates = vState.Storyboard.Children;
-			foreach (ObjectAnimationUsingKeyFrames item in visualStates)
+			foreach (var state in visualStates)
 			{
-				if ((string)item.GetValue(Storyboard.TargetNameProperty) == "SwitchKnobBounds")
+				// in XF we were setting the MinWidth of the ToggleSwitch to zero which looks to 
+				// setup the visual states of ToggleSwitch to all be ObjectAnimationUsingKeyFrames.
+				// This MinWidth was removed which is why this check was added
+				//
+				// If you find yourself here trying to figure out a SwitchCell issue
+				// Try setting the MinWidth on ToggleSwitch to zero	
+				if (state is ObjectAnimationUsingKeyFrames item)
 				{
-					item.KeyFrames[0].Value = color;
-					break;
+					if ((string)item.GetValue(Storyboard.TargetNameProperty) == "SwitchKnobBounds")
+					{
+						item.KeyFrames[0].Value = color;
+						break;
+					}
 				}
 			}
 		}

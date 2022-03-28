@@ -30,5 +30,29 @@ namespace Microsoft.Maui.Platform
 				.SetBottomRightCorner(CornerFamily.Rounded, radius)
 				.Build();
 		}
+
+		public static void UpdatePadding(this ShapeableImageView platformButton, IImageButton imageButton)
+		{
+			platformButton.SetContentPadding(imageButton);
+
+			// NOTE(jpr): post on handler to get around an Android Framework bug.
+			// see: https://github.com/material-components/material-components-android/issues/2063
+			platformButton.Post(() =>
+			{
+				platformButton.SetContentPadding(imageButton);
+			});
+		}
+
+		internal static void SetContentPadding(this ShapeableImageView platformButton, IImageButton imageButton)
+		{
+			var padding = imageButton.Padding;
+
+			platformButton.SetContentPadding(
+				(int)platformButton.Context.ToPixels(padding.Left),
+				(int)platformButton.Context.ToPixels(padding.Top),
+				(int)platformButton.Context.ToPixels(padding.Right),
+				(int)platformButton.Context.ToPixels(padding.Bottom)
+			);
+		}
 	}
 }

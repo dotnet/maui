@@ -58,6 +58,11 @@ namespace Microsoft.Maui.Handlers
 			(handler.PlatformView as ShapeableImageView)?.UpdateCornerRadius(buttonStroke);
 		}
 
+		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton)
+		{
+			(handler.PlatformView as ShapeableImageView)?.UpdatePadding(imageButton);
+		}
+
 		void OnFocusChange(object? sender, View.FocusChangeEventArgs e)
 		{
 			if (VirtualView != null)
