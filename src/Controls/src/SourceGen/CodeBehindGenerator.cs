@@ -33,10 +33,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 		public void Initialize(IncrementalGeneratorInitializationContext initContext)
 		{
-			//#if DEBUG
-			//			if (!System.Diagnostics.Debugger.IsAttached)
-			//				System.Diagnostics.Debugger.Launch();
-			//#endif
+#if DEBUG
+			if (!System.Diagnostics.Debugger.IsAttached)
+				System.Diagnostics.Debugger.Launch();
+#endif
 			var projectItemProvider = initContext.AdditionalTextsProvider
 				.Combine(initContext.AnalyzerConfigOptionsProvider)
 				.Select(ComputeProjectItem);
@@ -76,13 +76,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 		static ProjectItem? ComputeProjectItem((AdditionalText, AnalyzerConfigOptionsProvider) tuple, CancellationToken cancellationToken)
 		{
-			var (additionalText, globalOptions) = tuple;
-			var options = globalOptions.GetOptions(additionalText);
-			if (!options.TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind is null)
+			var (additionalText, optionsProvider) = tuple;
+			var fileOptions = optionsProvider.GetOptions(additionalText);
+			var globalOptions = optionsProvider.GlobalOptions;
+			if (!fileOptions.TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind is null)
 				return null;
-			options.TryGetValue("build_metadata.additionalfiles.TargetPath", out var targetPath);
-			options.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
-			options.TryGetValue("build_metadata.additionalfiles.RelativePath", out var relativePath);
+			fileOptions.TryGetValue("build_metadata.additionalfiles.TargetPath", out var targetPath);
+			fileOptions.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
+			fileOptions.TryGetValue("build_metadata.additionalfiles.RelativePath", out var relativePath);
 			return new ProjectItem(additionalText, targetPath: targetPath, relativePath: relativePath, manifestResourceName: manifestResourceName, kind: kind);
 		}
 
@@ -274,6 +275,8 @@ namespace Microsoft.Maui.Controls.SourceGen
 			if (root == null)
 				return false;
 
+			ApplyTransforms(root);
+
 			foreach (XmlAttribute attr in root.Attributes)
 			{
 				if (attr.Name == "xmlns")
@@ -458,6 +461,16 @@ namespace Microsoft.Maui.Controls.SourceGen
 				sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.TargetPath.Replace('\\', '/')}\", null)]");
 
 			sourceProductionContext.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
+		}
+
+		static void ApplyTransforms(XmlNode node)
+		{
+			//if (release)
+			//	SimplifyOnPlatform(node, targetFramework);
+		}
+
+		static void SimplifyOnPlatform(XmlNode node, string targetFramework)
+		{
 
 		}
 
