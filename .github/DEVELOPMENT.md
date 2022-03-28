@@ -45,9 +45,7 @@ MacOS:
 
 ```bash
 curl -O -L https://aka.ms/dotnet/maui/maui-install.ps1
-chmod +x maui-install.ps1
-sudo pwsh
-./maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
+sudo pwsh -File ./maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
 ```
 
 
@@ -74,9 +72,7 @@ MacOS:
 
 ```bash
 curl -O -L https://aka.ms/dotnet/maui/maui-install.ps1
-chmod +x maui-install.ps1
-sudo pwsh
-./maui-install.ps1 -b 'main' -v '6.0.300-preview'
+sudo pwsh -File ./maui-install.ps1 -b 'main' -v '6.0.300-preview'
 ```
 
 ### iOS / MacCatalyst
