@@ -70,5 +70,22 @@ namespace Microsoft.Maui.DeviceTests
 			var platformText = await GetPlatformText(handler);
 			Assert.Equal(expected, platformText);
 		}
+
+		[Fact]
+		public async Task MaxLengthIsReadOnlyValueTest()
+		{
+			Editor editor = new Editor();
+			editor.MaxLength = 0;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<EditorHandler>(editor);
+				var platformControl = GetPlatformControl(handler);
+				editor.MaxLength = 10;
+#if WINDOWS
+				Assert.False(platformControl.IsReadOnly);
+#endif
+			});
+		}
 	}
 }

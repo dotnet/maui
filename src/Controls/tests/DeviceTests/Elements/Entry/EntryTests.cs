@@ -79,5 +79,22 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0, cursorPosition);
 #endif
 		}
+
+		[Fact]
+		public async Task MaxLengthIsReadOnlyValueTest()
+		{
+			Entry entry = new Entry();
+			entry.MaxLength = 0;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+				var platformControl = GetPlatformControl(handler);
+				entry.MaxLength = 10;
+#if WINDOWS
+				Assert.False(platformControl.IsReadOnly);
+#endif
+			});
+		}
 	}
 }

@@ -101,6 +101,8 @@ namespace Microsoft.Maui.Platform
 
 			if (maxLength == 0)
 				MauiAutoSuggestBox.SetIsReadOnly(platformControl, true);
+			else
+				MauiAutoSuggestBox.SetIsReadOnly(platformControl, searchBar.IsReadOnly);
 
 			var currentControlText = platformControl.Text;
 
