@@ -3,7 +3,7 @@
 using System;
 using System.Reflection;
 using ElmSharp;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Extensions.DependencyInjection;
 using Tizen.UIExtensions.ElmSharp;
 using EBox = ElmSharp.Box;

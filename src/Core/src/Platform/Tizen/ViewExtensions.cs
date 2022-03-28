@@ -172,58 +172,6 @@ namespace Microsoft.Maui.Platform
 			platformView.Resize(view.Width.ToScaledPixel(), view.Height.ToScaledPixel());
 		}
 
-		public static async Task<byte[]?> RenderAsBMP(this IView view)
-		{
-			Debug.WriteLine("RenderAsBMP() is not supported on Tizen yet.");
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return null;
-
-			return await platformView.RenderAsBMP();
-		}
-
-		public static async Task<byte[]?> RenderAsPNG(this IView view)
-		{
-			Debug.WriteLine("RenderAsPNG() is not supported on Tizen yet.");
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return null;
-
-			return await platformView.RenderAsPNG();
-		}
-
-		public static async Task<byte[]?> RenderAsJPEG(this IView view)
-		{
-			Debug.WriteLine("RenderAsJPEG() is not supported on Tizen yet.");
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return null;
-
-			return await platformView.RenderAsJPEG();
-		}
-
-		// TODO : The following renderAsXXX() methods and Essentials.Screenshot APIs need to be implemented later.
-		public static Task<byte[]?> RenderAsImage(this EvasObject platformView, RenderType type)
-		{
-			Debug.WriteLine("RenderAsImage() is not supported on Tizen yet.");
-			return type switch
-			{
-				RenderType.JPEG => platformView.RenderAsJPEG(),
-				RenderType.PNG => platformView.RenderAsPNG(),
-				RenderType.BMP => platformView.RenderAsBMP(),
-				_ => throw new NotImplementedException()
-			};
-		}
-
-		public static Task<byte[]?> RenderAsBMP(this EvasObject platformView)
-			=> Task.FromResult<byte[]?>(null);
-
-		public static Task<byte[]?> RenderAsPNG(this EvasObject platformView)
-			=> Task.FromResult<byte[]?>(null);
-
-		public static Task<byte[]?> RenderAsJPEG(this EvasObject platformView)
-			=> Task.FromResult<byte[]?>(null);
-
 		internal static Rect GetPlatformViewBounds(this IView view)
 		{
 			var platformView = view?.ToPlatform();

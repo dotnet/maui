@@ -1,12 +1,13 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.System;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class FlashlightImplementation:IFlashlight
+	class FlashlightImplementation : IFlashlight
 	{
 		internal static bool IsSupported
-			=> Platform.GetFeatureInfo<bool>("camera.back.flash");
+			=> PlatformUtils.GetFeatureInfo<bool>("camera.back.flash");
 
 		public Task TurnOnAsync()
 		{

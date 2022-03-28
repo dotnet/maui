@@ -39,10 +39,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(button);
 		}
 
-		public static void MapImageSource(IButtonHandler handler, IImageButton image) =>
+		public static void MapImageSource(IButtonHandler handler, IImage image) =>
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapImageSourceAsync(IButtonHandler handler, IImageButton image)
+		public static Task MapImageSourceAsync(IButtonHandler handler, IImage image)
 		{
 			if (image.Source == null)
 			{
@@ -68,6 +68,9 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke) { }
+
+		[MissingMapper]
+		public static void MapLineBreakMode(IButtonHandler handler, IButton button) { }
 
 		void OnButtonClicked(object? sender, EventArgs e)
 		{

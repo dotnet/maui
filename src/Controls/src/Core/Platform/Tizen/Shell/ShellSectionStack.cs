@@ -3,7 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using ElmSharp;
 using EBox = ElmSharp.Box;
 

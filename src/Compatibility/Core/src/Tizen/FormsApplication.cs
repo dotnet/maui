@@ -9,7 +9,7 @@ using Tizen.Applications;
 using Tizen.Common;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using EWindow = ElmSharp.Window;
 using ELayout = ElmSharp.Layout;
 using EDisplayRotation = ElmSharp.DisplayRotation;

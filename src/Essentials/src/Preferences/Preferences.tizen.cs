@@ -1,9 +1,9 @@
 using System.Linq;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage
 {
-	public class PreferencesImplementation : IPreferences
+	class PreferencesImplementation : IPreferences
 	{
 		const string separator = "~";
 

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using ElmSharp;
 using ElmSharp.Wearable;
 using EBox = ElmSharp.Box;

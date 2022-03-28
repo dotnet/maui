@@ -1,16 +1,17 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Sensor;
 using TizenBarometerSensor = Tizen.Sensor.PressureSensor;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class BarometerImplementation : IBarometer
+	partial class BarometerImplementation : IBarometer
 	{
 		public bool IsSupported
 			=> TizenBarometerSensor.IsSupported;
 
 		TizenBarometerSensor DefaultSensor
-			=> (TizenBarometerSensor)Platform.GetDefaultSensor(SensorType.Barometer);
+			=> (TizenBarometerSensor)PlatformUtils.GetDefaultSensor(SensorType.Barometer);
 
 		TizenBarometerSensor sensor = null;
 

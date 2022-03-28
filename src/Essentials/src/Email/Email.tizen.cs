@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Applications;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 	partial class EmailImplementation : IEmail
 	{
 		public bool IsComposeSupported
-			=> Platform.GetFeatureInfo<bool>("email");
+			=> PlatformUtils.GetFeatureInfo<bool>("email");
 
 		Task PlatformComposeAsync(EmailMessage message)
 		{

@@ -4,7 +4,7 @@ using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Controls.Xaml.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

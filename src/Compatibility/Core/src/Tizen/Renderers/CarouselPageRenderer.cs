@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using ElmSharp;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using EBox = ElmSharp.Box;
 using ELayout = ElmSharp.Layout;
 using ERect = ElmSharp.Rect;

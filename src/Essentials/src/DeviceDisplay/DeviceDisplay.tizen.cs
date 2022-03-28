@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Applications;
 
 namespace Microsoft.Maui.Devices
@@ -12,8 +13,16 @@ namespace Microsoft.Maui.Devices
 		[DllImport("libcapi-system-device.so.0", EntryPoint = "device_power_release_lock")]
 		static extern void ReleaseKeepScreenOn(int type = 1);
 
-		static bool keepScreenOn = false;
-		public event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged;
+		static CoreUIApplication CoreUIApplication => Application.Current as CoreUIApplication;
+		static int displayWidth = PlatformUtils.GetFeatureInfo<int>("screen.width");
+		static int displayHeight = PlatformUtils.GetFeatureInfo<int>("screen.height");
+		static int displayDpi = DeviceInfo.Idiom == DeviceIdiom.TV ? 72 : PlatformUtils.GetFeatureInfo<int>("screen.dpi");
+		DisplayOrientation displayOrientation;
+		DisplayRotation displayRotation = DisplayRotation.Rotation0;
+
+		bool keepScreenOn = false;
+
+		protected override bool GetKeepScreenOn() => keepScreenOn;
 
 		protected override void SetKeepScreenOn(bool keepScreenOn)
 		{
@@ -24,21 +33,7 @@ namespace Microsoft.Maui.Devices
 			this.keepScreenOn = keepScreenOn;
 		}
 
-		static CoreUIApplication CoreUIApplication
-		{
-			get
-			{
-				return Application.Current as CoreUIApplication;
-			}
-		}
-
-		static int displayWidth = Platform.GetFeatureInfo<int>("screen.width");
-		static int displayHeight = Platform.GetFeatureInfo<int>("screen.height");
-		static int displayDpi = DeviceInfo.Idiom == DeviceIdiom.TV ? 72 : Platform.GetFeatureInfo<int>("screen.dpi");
-		DisplayOrientation displayOrientation;
-		DisplayRotation displayRotation = DisplayRotation.Rotation0;
-
-		public DisplayInfo GetMainDisplayInfo()
+		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			return new DisplayInfo(
 				width: displayWidth,
@@ -102,8 +97,7 @@ namespace Microsoft.Maui.Devices
 					displayOrientation = DisplayOrientation.Unknown;
 					break;
 			}
-			var metrics = GetMainDisplayInfo();
-			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(metrics));
+			OnMainDisplayInfoChanged();
 		}
 	}
 }

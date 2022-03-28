@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.Tizen.FontNamedSizeService))]

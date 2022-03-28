@@ -9,9 +9,9 @@ using TizenEmail = Tizen.Pims.Contacts.ContactsViews.Email;
 using TizenName = Tizen.Pims.Contacts.ContactsViews.Name;
 using TizenNumber = Tizen.Pims.Contacts.ContactsViews.Number;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public class ContactsImplementation:IContacts
+	class ContactsImplementation:IContacts
 	{
 		static ContactsManager manager = new ContactsManager();
 

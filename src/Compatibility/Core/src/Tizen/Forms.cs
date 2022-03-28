@@ -10,7 +10,7 @@ using Tizen.Applications;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using ELayout = ElmSharp.Layout;
 using TSystemInfo = Tizen.System.Information;
 using Size = Microsoft.Maui.Graphics.Size;

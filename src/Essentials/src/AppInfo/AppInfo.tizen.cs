@@ -3,7 +3,7 @@ using Tizen.Applications;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	public class AppInfoImplementation : IAppInfo
+	class AppInfoImplementation : IAppInfo
 	{
 		public string PackageName
 			=> Application.Current.ApplicationInfo.PackageId;

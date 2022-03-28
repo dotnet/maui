@@ -2,18 +2,21 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public class GeocodingImplementation: IGeocoding
+	class GeocodingImplementation: IGeocoding
 	{
+		public string? MapServiceToken { get; set; }
+
 		public async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
 		{
 			ValidateMapServiceToken();
 
 			Permissions.EnsureDeclared<Permissions.Maps>();
 
-			var map = await Platform.GetMapServiceAsync(MapServiceToken);
+			var map = await PlatformUtils.GetMapServiceAsync(MapServiceToken);
 			var request = map.CreateReverseGeocodeRequest(latitude, longitude);
 
 			var list = new List<Placemark>();
@@ -43,7 +46,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			Permissions.EnsureDeclared<Permissions.Maps>();
 
-			var map = await Platform.GetMapServiceAsync(MapServiceToken);
+			var map = await PlatformUtils.GetMapServiceAsync(MapServiceToken);
 			var request = map.CreateGeocodeRequest(address);
 			var list = new List<Location>();
 			foreach (var position in await request.GetResponseAsync())
@@ -53,7 +56,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		void ValidateMapServiceToken()
 		{
-			if (string.IsNullOrWhiteSpace(MapServiceToken) && string.IsNullOrWhiteSpace(MapService.ServiceToken))
+			if (string.IsNullOrWhiteSpace(MapServiceToken) && string.IsNullOrWhiteSpace(MapServiceToken))
 				throw new ArgumentNullException(nameof(MapServiceToken), "Please set the map service token to be able to use this API.");
 		}
 	}

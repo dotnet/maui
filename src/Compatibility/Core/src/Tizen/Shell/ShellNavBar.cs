@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using ElmSharp;
 using EBox = ElmSharp.Box;
 using EButton = ElmSharp.Button;

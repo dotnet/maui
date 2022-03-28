@@ -4,7 +4,7 @@ using ElmSharp;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using EEntry = ElmSharp.Entry;
 using NIEntry = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IEntry;
 

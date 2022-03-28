@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using ElmSharp;
 using ElmSharp.Wearable;
 #pragma warning disable CS0612 // Type or member is obsolete
