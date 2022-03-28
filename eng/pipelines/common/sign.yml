@@ -34,6 +34,14 @@ stages:
                 install Microsoft.Maui.Graphics -Prerelease -Version $(MauiGraphicsVersion)
                 -OutputDirectory $(Build.StagingDirectory)\maui-graphics
                 -Source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json
+          - task: NuGetCommand@2
+            displayName: Download Microsoft.Maui.Graphics.Win2D.WinUI.Desktop
+            inputs:
+              command: custom
+              arguments: >-
+                install Microsoft.Maui.Graphics.Win2D.WinUI.Desktop -Prerelease -Version $(MauiGraphicsVersion)
+                -OutputDirectory $(Build.StagingDirectory)\maui-graphics
+                -Source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json
           - task: CopyFiles@2
             inputs:
               sourceFolder: $(Build.StagingDirectory)\maui-graphics

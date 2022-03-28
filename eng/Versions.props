@@ -34,7 +34,7 @@
     <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.2</MicrosoftWindowsDesktopAppRuntimewinx64Version>
     <!-- Other packages -->
     <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
-    <MicrosoftMauiGraphicsVersion>6.0.200-preview.14.1092</MicrosoftMauiGraphicsVersion>
+    <MicrosoftMauiGraphicsVersion>6.0.200-preview.14.1091</MicrosoftMauiGraphicsVersion>
     <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
     <_MicrosoftWebWebView2Version>1.0.1020.30</_MicrosoftWebWebView2Version>
 
