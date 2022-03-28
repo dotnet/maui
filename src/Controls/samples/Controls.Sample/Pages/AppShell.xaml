@@ -8,7 +8,28 @@
     FlyoutBackground="{AppThemeBinding Dark=Black, Light=White}"
     Title="Welcome to Shell"
     >
-    <Shell.FlyoutHeader>
+
+    <TabBar>
+        <ContentPage Title="Tab 1">
+            <CollectionView HeightRequest="500" x:Name="cv1">
+                <CollectionView.Header>
+                    <StackLayout>
+                        <Label Text="Hello there"></Label>
+                    </StackLayout>
+                </CollectionView.Header>
+            </CollectionView>
+        </ContentPage>
+        <ContentPage Title="Tab 2">
+            <CollectionView HeightRequest="500" x:Name="cv2">
+                <CollectionView.Header>
+                    <StackLayout>
+                        <Label Text="Hello there"></Label>
+                    </StackLayout>
+                </CollectionView.Header>
+            </CollectionView>
+        </ContentPage>
+    </TabBar>
+    <!--<Shell.FlyoutHeader>
         <Image Source="dotnet_bot.png"></Image>
     </Shell.FlyoutHeader>
     <FlyoutItem Title = "Flyout Item 1">
@@ -31,5 +52,5 @@
     <ShellSection Title="Flyout Item 3">
         <ShellContent Title = "Semantics Page" ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>
         <ShellContent Title = "Button Page" ContentTemplate="{DataTemplate pages:ButtonPage}"></ShellContent>
-    </ShellSection>
+    </ShellSection>-->
 </Shell>
