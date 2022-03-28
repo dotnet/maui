@@ -133,7 +133,7 @@ stages:
               vmImage: ${{ BuildPlatform.vmImage }}
               ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
                 demands:
-                  - macOS.Name -equals BigSur
+                  - macOS.Name -equals Monterey
                   - macOS.Architecture -equals x64
                   - Agent.HasDevices -equals False
                   - Agent.IsPaired -equals False
@@ -185,7 +185,7 @@ stages:
             vmImage: ${{ PackPlatform.vmImage }}
             ${{ if startsWith(PackPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
               demands:
-                - macOS.Name -equals BigSur
+                - macOS.Name -equals Monterey
                 - macOS.Architecture -equals x64
                 - Agent.HasDevices -equals False
                 - Agent.IsPaired -equals False
@@ -217,7 +217,7 @@ stages:
               vmImage: ${{ BuildPlatform.vmImage }}
               ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
                 demands:
-                  - macOS.Name -equals BigSur
+                  - macOS.Name -equals Monterey
                   - macOS.Architecture -equals x64
                   - Agent.HasDevices -equals False
                   - Agent.IsPaired -equals False
@@ -275,7 +275,7 @@ stages:
               vmImage: ${{ BuildPlatform.vmImage }}
               ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
                 demands:
-                  - macOS.Name -equals BigSur
+                  - macOS.Name -equals Monterey
                   - macOS.Architecture -equals x64
                   - Agent.HasDevices -equals False
                   - Agent.IsPaired -equals False

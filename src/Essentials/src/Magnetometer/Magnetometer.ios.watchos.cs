@@ -1,18 +1,24 @@
+#nullable enable
 using CoreMotion;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class MagnetometerImplementation : IMagnetometer
+	partial class MagnetometerImplementation : IMagnetometer
 	{
+		static CMMotionManager? motionManager;
+
+		static CMMotionManager MotionManager =>
+			motionManager ??= new CMMotionManager();
+
 		bool PlatformIsSupported =>
-			Platform.MotionManager?.MagnetometerAvailable ?? false;
+			MotionManager.MagnetometerAvailable;
 
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			var manager = Platform.MotionManager;
-			manager.MagnetometerUpdateInterval = sensorSpeed.ToPlatform();
-			manager.StartMagnetometerUpdates(Platform.GetCurrentQueue(), DataUpdated);
+			MotionManager.MagnetometerUpdateInterval = sensorSpeed.ToPlatform();
+			MotionManager.StartMagnetometerUpdates(NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), DataUpdated);
 		}
 
 		void DataUpdated(CMMagnetometerData data, NSError error)
@@ -26,6 +32,6 @@ namespace Microsoft.Maui.Essentials.Implementations
 		}
 
 		void PlatformStop() =>
-			Platform.MotionManager?.StopMagnetometerUpdates();
+			MotionManager.StopMagnetometerUpdates();
 	}
 }

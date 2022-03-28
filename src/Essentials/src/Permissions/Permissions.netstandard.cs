@@ -1,12 +1,16 @@
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Permissions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Permissions']/Docs" />
 	public static partial class Permissions
 	{
-		public partial class BasePlatformPermission : BasePermission
+		public abstract partial class BasePlatformPermission : BasePermission
 		{
+			protected BasePlatformPermission()
+			{
+			}
+
 			public override Task<PermissionStatus> CheckStatusAsync() =>
 				throw ExceptionUtils.NotSupportedOrImplementedException;
 

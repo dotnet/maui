@@ -1,12 +1,14 @@
-namespace Microsoft.Maui.Essentials.Implementations
+using Microsoft.Maui.ApplicationModel;
+
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Battery']/Docs" />
-	public partial class BatteryImplementation : IBattery
+	partial class BatteryImplementation : IBattery
 	{
-		public void StartBatteryListeners() =>
+		void StartBatteryListeners() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void StopBatteryListeners() =>
+		void StopBatteryListeners() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		public double ChargeLevel =>
@@ -18,10 +20,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public BatteryPowerSource PowerSource =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void StartEnergySaverListeners() =>
+		void StartEnergySaverListeners() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void StopEnergySaverListeners() =>
+		void StopEnergySaverListeners() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		public EnergySaverStatus EnergySaverStatus =>

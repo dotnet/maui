@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Dispatching
 			set => _timer.IsRepeating = value;
 		}
 
-		public bool IsRunning => _timer.IsRunning;
+		public bool IsRunning { get; private set; }
 
 		public event EventHandler? Tick;
 
@@ -68,6 +68,8 @@ namespace Microsoft.Maui.Dispatching
 		{
 			if (IsRunning)
 				return;
+
+			IsRunning = true;
 
 			_timer.Tick += OnTimerTick;
 
@@ -79,13 +81,20 @@ namespace Microsoft.Maui.Dispatching
 			if (!IsRunning)
 				return;
 
+			IsRunning = false;
+
 			_timer.Tick -= OnTimerTick;
 
 			_timer.Stop();
 		}
 
-		void OnTimerTick(DispatcherQueueTimer sender, object args) =>
+		void OnTimerTick(DispatcherQueueTimer sender, object args)
+		{
 			Tick?.Invoke(this, EventArgs.Empty);
+
+			if (!IsRepeating)
+				Stop();
+		}
 	}
 
 	public partial class DispatcherProvider

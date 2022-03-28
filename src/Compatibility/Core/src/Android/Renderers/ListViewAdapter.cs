@@ -612,6 +612,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				// we need to reset the ListView's adapter to reflect the changes on page B
 				// If there header and footer are present at the reset time of the adapter
 				// they will be DOUBLE added to the ViewGround (the ListView) causing indexes to be off by one. 
+				
+				if (_realListView.IsDisposed())
+					return;
+
 				_realListView.RemoveHeaderView(HeaderView);
 				_realListView.RemoveFooterView(FooterView);
 				_realListView.Adapter = _realListView.Adapter;

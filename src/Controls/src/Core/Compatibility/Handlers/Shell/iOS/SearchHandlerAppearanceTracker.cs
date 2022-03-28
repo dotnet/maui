@@ -2,7 +2,7 @@ using System;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -63,6 +63,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_uiSearchBar.UpdateFlowDirection(shell);
 			_numericAccessoryView.UpdateFlowDirection(shell);
+			
+			var uiTextField = _uiSearchBar.FindDescendantView<UITextField>();
+			UpdateSearchBarHorizontalTextAlignment(uiTextField, shell);
 		}
 
 		void SearchHandlerFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -271,15 +274,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_defaultClearIconTintColor = _defaultClearIconTintColor ?? uiButton?.TintColor;
 
 			SetSearchBarIconColor(uiButton, targetColor, _defaultClearIconTintColor);
-
 		}
 
-		void UpdateSearchBarHorizontalTextAlignment(UITextField textField)
+		void UpdateSearchBarHorizontalTextAlignment(UITextField textField, IView view = null)
 		{
 			if (textField == null)
 				return;
 
-			textField.TextAlignment = _searchHandler.HorizontalTextAlignment.ToPlatform(EffectiveFlowDirection.Explicit.ToFlowDirection() == FlowDirection.LeftToRight);
+			textField.TextAlignment = _searchHandler.HorizontalTextAlignment.ToPlatformHorizontal();
+			if(view != null)
+			{
+				textField.TextAlignment = textField.TextAlignment.AdjustForFlowDirection(view);
+			}
 		}
 
 		void UpdateSearchBarVerticalTextAlignment(UITextField textField)
@@ -287,7 +293,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (textField == null)
 				return;
 
-			textField.VerticalAlignment = _searchHandler.VerticalTextAlignment.ToPlatform();
+			textField.VerticalAlignment = _searchHandler.VerticalTextAlignment.ToPlatformVertical();
 		}
 
 		void UpdateKeyboard()
