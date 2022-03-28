@@ -378,5 +378,29 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(arrangedWidth, actual.Width);
 			Assert.Equal(arrangedHeight, actual.Height);
 		}
+
+		[Fact(DisplayName = "RTL layout starts at right edge")]
+		public void RtlShouldStartAtRightEdge()
+		{
+			var stack = BuildStack(viewCount: 2, viewWidth: 100, viewHeight: 100);
+			stack.FlowDirection.Returns(FlowDirection.RightToLeft);
+			stack.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+			stack.Spacing.Returns(0);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
+
+			// Arranging in a larger space than measured to simulate a Fill situation
+			var rightEdge = measuredSize.Width * 2;
+			manager.ArrangeChildren(new Rect(0, 0, rightEdge, measuredSize.Height));
+
+			// We expect that the starting view (0) should be arranged on the right,
+			// and the next rectangle (1) should be on the left
+			var expectedRectangle0 = new Rect(rightEdge - 100, 0, 100, 100);
+			var expectedRectangle1 = new Rect(rightEdge - 200, 0, 100, 100);
+
+			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
+			stack[1].Received().Arrange(Arg.Is(expectedRectangle1));
+		}
 	}
 }

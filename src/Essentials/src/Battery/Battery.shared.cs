@@ -1,9 +1,7 @@
+#nullable enable
 using System;
-using System.ComponentModel;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	public interface IBattery
 	{
@@ -15,21 +13,86 @@ namespace Microsoft.Maui.Essentials
 
 		EnergySaverStatus EnergySaverStatus { get; }
 
-		void StartEnergySaverListeners();
+		event EventHandler<BatteryInfoChangedEventArgs> BatteryInfoChanged;
 
-		void StopEnergySaverListeners();
-
-		void StartBatteryListeners();
-
-		void StopBatteryListeners();
+		event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChanged;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Battery']/Docs" />
-	public static partial class Battery
+	public static class Battery
 	{
-		static event EventHandler<BatteryInfoChangedEventArgs> BatteryInfoChangedInternal;
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='ChargeLevel']/Docs" />
+		public static double ChargeLevel => Default.ChargeLevel;
 
-		static event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChangedInternal;
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='State']/Docs" />
+		public static BatteryState State => Default.State;
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='PowerSource']/Docs" />
+		public static BatteryPowerSource PowerSource => Default.PowerSource;
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='EnergySaverStatus']/Docs" />
+		public static EnergySaverStatus EnergySaverStatus => Default.EnergySaverStatus;
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='BatteryInfoChanged']/Docs" />
+		public static event EventHandler<BatteryInfoChangedEventArgs> BatteryInfoChanged
+		{
+			add => Default.BatteryInfoChanged += value;
+			remove => Default.BatteryInfoChanged -= value;
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='EnergySaverStatusChanged']/Docs" />
+		public static event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChanged
+		{
+			add => Default.EnergySaverStatusChanged += value;
+			remove => Default.EnergySaverStatusChanged -= value;
+		}
+
+		static IBattery? defaultImplementation;
+
+		public static IBattery Default =>
+			defaultImplementation ??= new BatteryImplementation();
+
+		internal static void SetDefault(IBattery? implementation) =>
+			defaultImplementation = implementation;
+	}
+
+	partial class BatteryImplementation : IBattery
+	{
+		event EventHandler<BatteryInfoChangedEventArgs>? BatteryInfoChangedInternal;
+
+		event EventHandler<EnergySaverStatusChangedEventArgs>? EnergySaverStatusChangedInternal;
+
+		public event EventHandler<BatteryInfoChangedEventArgs> BatteryInfoChanged
+		{
+			add
+			{
+				if (BatteryInfoChangedInternal == null)
+					StartBatteryListeners();
+				BatteryInfoChangedInternal += value;
+			}
+			remove
+			{
+				BatteryInfoChangedInternal -= value;
+				if (BatteryInfoChangedInternal == null)
+					StopBatteryListeners();
+			}
+		}
+
+		public event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChanged
+		{
+			add
+			{
+				if (EnergySaverStatusChangedInternal == null)
+					StartEnergySaverListeners();
+				EnergySaverStatusChangedInternal += value;
+			}
+			remove
+			{
+				EnergySaverStatusChangedInternal -= value;
+				if (EnergySaverStatusChangedInternal == null)
+					StopEnergySaverListeners();
+			}
+		}
 
 		// a cache so that events aren't fired unnecessarily
 		// this is mainly an issue on Android, but we can stiil do this everywhere
@@ -37,81 +100,20 @@ namespace Microsoft.Maui.Essentials
 		static BatteryPowerSource currentSource;
 		static BatteryState currentState;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='ChargeLevel']/Docs" />
-		public static double ChargeLevel => Current.ChargeLevel;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='State']/Docs" />
-		public static BatteryState State => Current.State;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='PowerSource']/Docs" />
-		public static BatteryPowerSource PowerSource => Current.PowerSource;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='EnergySaverStatus']/Docs" />
-		public static EnergySaverStatus EnergySaverStatus => Current.EnergySaverStatus;
-
-		public static event EventHandler<BatteryInfoChangedEventArgs> BatteryInfoChanged
+		void SetCurrent()
 		{
-			add
-			{
-				var wasRunning = BatteryInfoChangedInternal != null;
-
-				BatteryInfoChangedInternal += value;
-
-				if (!wasRunning && BatteryInfoChangedInternal != null)
-				{
-					SetCurrent();
-					Current.StartBatteryListeners();
-				}
-			}
-
-			remove
-			{
-				var wasRunning = BatteryInfoChangedInternal != null;
-
-				BatteryInfoChangedInternal -= value;
-
-				if (wasRunning && BatteryInfoChangedInternal == null)
-					Current.StopBatteryListeners();
-			}
+			currentLevel = ChargeLevel;
+			currentSource = PowerSource;
+			currentState = State;
 		}
 
-		public static event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChanged
-		{
-			add
-			{
-				var wasRunning = EnergySaverStatusChangedInternal != null;
-
-				EnergySaverStatusChangedInternal += value;
-
-				if (!wasRunning && EnergySaverStatusChangedInternal != null)
-					Current.StartEnergySaverListeners();
-			}
-
-			remove
-			{
-				var wasRunning = EnergySaverStatusChangedInternal != null;
-
-				EnergySaverStatusChangedInternal -= value;
-
-				if (wasRunning && EnergySaverStatusChangedInternal == null)
-					Current.StopEnergySaverListeners();
-			}
-		}
-
-		static void SetCurrent()
-		{
-			currentLevel = Battery.ChargeLevel;
-			currentSource = Battery.PowerSource;
-			currentState = Battery.State;
-		}
-
-		internal static void OnBatteryInfoChanged(double level, BatteryState state, BatteryPowerSource source)
+		void OnBatteryInfoChanged(double level, BatteryState state, BatteryPowerSource source)
 			=> OnBatteryInfoChanged(new BatteryInfoChangedEventArgs(level, state, source));
 
-		internal static void OnBatteryInfoChanged()
+		void OnBatteryInfoChanged()
 			=> OnBatteryInfoChanged(ChargeLevel, State, PowerSource);
 
-		internal static void OnBatteryInfoChanged(BatteryInfoChangedEventArgs e)
+		void OnBatteryInfoChanged(BatteryInfoChangedEventArgs e)
 		{
 			if (currentLevel != e.ChargeLevel || currentSource != e.PowerSource || currentState != e.State)
 			{
@@ -120,29 +122,14 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		internal static void OnEnergySaverChanged()
+		void OnEnergySaverChanged()
 			=> OnEnergySaverChanged(EnergySaverStatus);
 
-		internal static void OnEnergySaverChanged(EnergySaverStatus saverStatus)
+		void OnEnergySaverChanged(EnergySaverStatus saverStatus)
 			=> OnEnergySaverChanged(new EnergySaverStatusChangedEventArgs(saverStatus));
 
-		internal static void OnEnergySaverChanged(EnergySaverStatusChangedEventArgs e)
+		void OnEnergySaverChanged(EnergySaverStatusChangedEventArgs e)
 			=> EnergySaverStatusChangedInternal?.Invoke(null, e);
-
-
-#nullable enable
-		static IBattery? currentImplementation;
-#nullable disable
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IBattery Current =>
-			currentImplementation ??= new BatteryImplementation();
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IBattery? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryState.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BatteryState']/Docs" />

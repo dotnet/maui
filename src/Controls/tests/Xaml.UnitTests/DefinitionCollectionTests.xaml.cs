@@ -2,9 +2,12 @@
 // Licensed under the MIT License.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
+using Mono.Cecil.Cil;
+using Mono.Cecil;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -42,6 +45,26 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(rowdef[4].Height, Is.EqualTo(new GridLength(20, GridUnitType.Absolute)));
 
 			}
+
+			[Test]
+			public void DefinitionCollectionsReplacedAtCompilation()
+			{
+				MockCompiler.Compile(typeof(DefinitionCollectionTests), out var methodDef);
+				Assert.That(!methodDef.Body.Instructions.Any(instr=>InstructionIsDefColConvCtor(methodDef, instr)), "This Xaml still generates [Row|Col]DefinitionCollectionTypeConverter ctor");
+			}
+
+			bool InstructionIsDefColConvCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)
+ 			{
+ 				if (instruction.OpCode != OpCodes.Newobj)
+ 					return false;
+ 				if (!(instruction.Operand is MethodReference methodRef))
+ 					return false;
+ 				if (Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter))))
+ 					return true;
+ 				if (Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter))))
+ 					return true;
+ 				return false;
+ 			}
 		}
 	}
 }

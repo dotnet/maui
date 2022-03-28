@@ -2,7 +2,7 @@
 
 [![Build Status](https://dev.azure.com/xamarin/public/_apis/build/status/MAUI-public?repoName=dotnet%2Fmaui&branchName=main&label=Public)](https://dev.azure.com/xamarin/public/_build/latest?definitionId=57&repoName=dotnet%2Fmaui&branchName=main) [![Build Status](https://devdiv.visualstudio.com/DevDiv/_apis/build/status/MAUI?repoName=dotnet%2Fmaui&branchName=main&label=Private)](https://devdiv.visualstudio.com/DevDiv/_build/latest?definitionId=13330&repoName=dotnet%2Fmaui&branchName=main)
 
-.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
+.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
 
 ## Getting Started ##
 
@@ -14,12 +14,13 @@
 
 ## Overview
 
-.NET Multi-platform App UI (.NET MAUI) is the evolution of Xamarin.Forms that expands capabilities beyond mobile Android and iOS into native desktop apps for Windows and macOS. With .NET MAUI, you can build native apps that perform great for any device that runs Windows, macOS, Android, & iOS from a single codebase. Coupled with Visual Studio productivity tools and emulators, .NET and Visual Studio significantly speed up the development process for building apps that target the widest possible set of native devices. Use a single development stack that supports the best of breed solutions for all modern workloads with a unified SDK, base class libraries, and toolchain. [Read More](https://docs.microsoft.com/dotnet/maui/what-is-maui)
+.NET Multi-platform App UI (.NET MAUI) is the evolution of Xamarin.Forms that expands capabilities beyond mobile Android and iOS into desktop apps for Windows and macOS. With .NET MAUI, you can build apps that perform great for any device that runs Windows, macOS, Android, & iOS from a single codebase. Coupled with Visual Studio productivity tools and emulators, .NET and Visual Studio significantly speed up the development process for building apps that target the widest possible set of devices. Use a single development stack that supports the best of breed solutions for all modern workloads with a unified SDK, base class libraries, and toolchain. [Read More](https://docs.microsoft.com/dotnet/maui/what-is-maui)
 
 ![.NET MAUI Weather App on all platforms](Assets/maui-weather-hero-sm.png)
 
 ## Current News
 
+* March 16, 2022 - [Announcing .NET MAUI Preview 14](https://devblogs.microsoft.com/dotnet/dotnet-maui-preview-14/)
 * February 15, 2022 - [Announcing .NET MAUI Preview 13](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-13/)
 * January 19, 2022 - [Announcing .NET MAUI Preview 12](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-12/)
 * December 14, 2021 - [Announcing .NET MAUI Preview 11](https://devblogs.microsoft.com/dotnet/announcing-dotnet-maui-preview-11/)

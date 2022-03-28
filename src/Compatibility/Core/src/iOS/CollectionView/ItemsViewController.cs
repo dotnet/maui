@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public TItemsView ItemsView { get; }
 		protected ItemsViewLayout ItemsViewLayout { get; set; }
 		bool _initialized;
-		bool _isEmpty;
+		bool _isEmpty = true;
 		bool _emptyViewDisplayed;
 		bool _disposed;
 
@@ -212,6 +212,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			_measurementCells.Clear();
 			ItemsViewLayout?.ClearCellSizeCache();
+			ItemsSource?.Dispose();
 			ItemsSource = CreateItemsViewSource();
 			CollectionView.ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
@@ -470,7 +471,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 			}
 
-			if (CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			bool isRtl;
+
+			if (PlatformVersion.IsAtLeast(10))
+				isRtl = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
+			else
+				isRtl = CollectionView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;
+
+			if (isRtl)
 			{
 				if (_emptyUIView.Transform.A == -1)
 				{
@@ -621,6 +629,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (CollectionView.Hidden)
 				{
+					CollectionView.ReloadData();
 					CollectionView.Hidden = false;
 					Layout.InvalidateLayout();
 					CollectionView.LayoutIfNeeded();

@@ -8,7 +8,7 @@ using CoreTelephony;
 using CoreFoundation;
 using SystemConfiguration;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Networking
 {
 	enum NetworkStatus
 	{

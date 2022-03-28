@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			handler.ToPlatform().UpdateBackground(image);
+			handler.ToPlatform().UpdateOpacity(image);
 		}
 
 		public static void MapAspect(IImageHandler handler, IImage image) =>

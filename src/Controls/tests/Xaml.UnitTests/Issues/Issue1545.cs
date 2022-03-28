@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;

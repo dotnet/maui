@@ -6,7 +6,8 @@ using Android.Net;
 using Android.OS;
 using Android.Webkit;
 using Microsoft.Maui;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
 using File = Java.IO.File;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var pickOptions = GetPickOptions(fileChooserParams);
 			var fileResults = fileChooserParams?.Mode == ChromeFileChooserMode.OpenMultiple ?
 					await FilePicker.PickMultipleAsync(pickOptions) :
-					new[] { await FilePicker.PickAsync(pickOptions) };
+					new[] { (await FilePicker.PickAsync(pickOptions))! };
 
 			if (fileResults?.All(f => f is null) ?? true)
 			{
