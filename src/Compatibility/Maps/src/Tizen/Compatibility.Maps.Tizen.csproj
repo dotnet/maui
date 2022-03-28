@@ -8,10 +8,6 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
-  <!-- <ItemGroup>
-    <PackageReference Include="Tizen.NET" Version="4.0.0" />
-  </ItemGroup> -->
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
