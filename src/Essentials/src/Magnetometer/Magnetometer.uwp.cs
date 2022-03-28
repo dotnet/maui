@@ -2,9 +2,9 @@ using System;
 using Windows.Devices.Sensors;
 using WindowsMagnetometer = Windows.Devices.Sensors.Magnetometer;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class MagnetometerImplementation : IMagnetometer
+	partial class MagnetometerImplementation : IMagnetometer
 	{
 		// keep around a reference so we can stop this same instance
 		WindowsMagnetometer sensor;

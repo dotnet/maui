@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public MauiShapeView(Context? context) : base(context)
 		{
-
+			ClipToOutline = true;
 		}
 	}
 }

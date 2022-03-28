@@ -1,8 +1,7 @@
 using System;
+using Microsoft.Maui.Media;
 
-using static System.Math;
-
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DistanceUnits.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DistanceUnits']/Docs" />
 	public enum DistanceUnits
@@ -114,7 +113,7 @@ namespace Microsoft.Maui.Essentials
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][3]/Docs" />
 		public static double CalculateDistance(Location locationStart, double latitudeEnd, double longitudeEnd, DistanceUnits units) =>
-		   CalculateDistance(locationStart.Latitude, locationStart.Longitude, latitudeEnd, longitudeEnd, units);
+			CalculateDistance(locationStart.Latitude, locationStart.Longitude, latitudeEnd, longitudeEnd, units);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][1]/Docs" />
 		public static double CalculateDistance(Location locationStart, Location locationEnd, DistanceUnits units) =>

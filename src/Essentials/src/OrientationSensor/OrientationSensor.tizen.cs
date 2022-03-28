@@ -1,9 +1,9 @@
 using Tizen.Sensor;
 using TizenRotationVectorSensor = Tizen.Sensor.RotationVectorSensor;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class OrientationSensorImplementation : IOrientationSensor
+	partial class OrientationSensorImplementation : IOrientationSensor
 	{
 		static TizenRotationVectorSensor DefaultSensor
 			=> (TizenRotationVectorSensor)Platform.GetDefaultSensor(SensorType.OrientationSensor);

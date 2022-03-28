@@ -1,23 +1,24 @@
+#nullable enable
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Clipboard']/Docs" />
-	public partial class ClipboardImplementation : IClipboard
+	partial class ClipboardImplementation : IClipboard
 	{
-		public Task SetTextAsync(string text)
+		public Task SetTextAsync(string? text)
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		public bool HasText
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public Task<string> GetTextAsync()
+		public Task<string?> GetTextAsync()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void StartClipboardListeners()
+		void StartClipboardListeners()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void StopClipboardListeners()
+		void StopClipboardListeners()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

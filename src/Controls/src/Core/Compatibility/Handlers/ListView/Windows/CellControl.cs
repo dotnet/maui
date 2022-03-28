@@ -330,17 +330,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// If there is a ListView, load the Cell content from the ItemTemplate.
 			// Otherwise, the given Cell is already a templated Cell from a TableView.
 			ListView lv = _listView.Value;
+
 			if (lv != null)
 			{
-				// 🚀 If there is an old cell, check if it was a group header
-				// we need this later to know whether we can recycle this cell
-				bool? wasGroupHeader = null;
-				var oldCell = Cell;
-				if (oldCell != null)
-				{
-					wasGroupHeader = oldCell.GetIsGroupHeader<ItemsView<Cell>, Cell>();
-				}
-
+				Cell oldCell = Cell;
 				bool isGroupHeader = IsGroupHeader;
 				DataTemplate template = isGroupHeader ? lv.GroupHeaderTemplate : lv.ItemTemplate;
 				object bindingContext = newContext;
@@ -358,15 +351,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						sameTemplate = oldTemplate == template;
 					}
 				}
-				// 🚀 if there is no datatemplateselector, we now verify if the old cell
-				// was a groupheader and whether the new one is as well.
-				// Again, this is only to verify we can reuse this cell
-				else if (wasGroupHeader.HasValue)
-				{
-					sameTemplate = wasGroupHeader == isGroupHeader;
-				}
 
-				// reuse cell
+				// Reuse cell
 				var canReuseCell = Cell != null && sameTemplate;
 
 				// 🚀 If we can reuse the cell, just reuse it...
@@ -403,7 +389,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (Cell != cell)
 				Cell = cell;
-			// 🚀 even if the cell did not change, we **must** call SendDisappearing() and SendAppearing()
+
+			// 🚀 Even if the cell did not change, we **must** call SendDisappearing() and SendAppearing()
 			// because frameworks such as Reactive UI rely on this! (this.WhenActivated())
 			else if (Cell != null)
 			{

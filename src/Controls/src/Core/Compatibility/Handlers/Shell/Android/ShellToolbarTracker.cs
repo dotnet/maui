@@ -185,7 +185,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_currentMenuItems?.Clear();
 				_currentToolbarItems?.Clear();
 
+				_drawerLayout.RemoveDrawerListener(_drawerToggle);
 				_drawerToggle?.Dispose();
+
+				_toolbar.RemoveAllViews();
 			}
 
 			_currentMenuItems = null;

@@ -1,12 +1,13 @@
 ﻿#nullable enable
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class PickerExtensions
 	{
-		public static void UpdateTitle(this MauiComboBox nativeComboBox, IPicker picker)
+		public static void UpdateTitle(this ComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.Header = null;
 
@@ -15,39 +16,72 @@ namespace Microsoft.Maui.Platform
 
 			nativeComboBox.DataContext = picker;
 		}
-		public static void UpdateTextColor(this MauiComboBox nativeComboBox, IPicker picker)
+
+		public static void UpdateBackground(this ComboBox nativeComboBox, IPicker picker)
 		{
-			nativeComboBox.UpdateTextColor(picker, null);
+			var platformBrush = picker.Background?.ToPlatform();
+
+			if (platformBrush == null)
+			{
+				nativeComboBox.Resources.RemoveKeys(_backgroundColorResourceKeys);
+			}
+			else
+			{
+				nativeComboBox.Resources.SetValueForAllKey(_backgroundColorResourceKeys, platformBrush);
+			}
 		}
 
-		public static void UpdateTextColor(this MauiComboBox nativeComboBox, IPicker picker, WBrush? defaultForeground)
+		static readonly string[] _backgroundColorResourceKeys =
 		{
-			Color color = picker.TextColor;
-			if (color.IsDefault() && defaultForeground == null)
-				return;
+			"ComboBoxBackground",
+			"ComboBoxBackgroundPointerOver",
+			"ComboBoxBackgroundPressed",
+			"ComboBoxBackgroundDisabled",
+			"ComboBoxBackgroundUnfocused",
+		};
 
-			nativeComboBox.Foreground = color.IsDefault() ? (defaultForeground ?? color.ToPlatform()) : color.ToPlatform();
+
+		public static void UpdateTextColor(this ComboBox nativeComboBox, IPicker picker)
+		{
+			var platformBrush = picker.TextColor?.ToPlatform();
+			if (platformBrush == null)
+			{
+				nativeComboBox.Resources.RemoveKeys(_textColorResourceKeys);
+			}
+			else
+			{
+				nativeComboBox.Resources.SetValueForAllKey(_textColorResourceKeys, platformBrush);
+				nativeComboBox.Foreground = platformBrush;
+			}
 		}
 
-		public static void UpdateSelectedIndex(this MauiComboBox nativeComboBox, IPicker picker)
+		static readonly string[] _textColorResourceKeys =
+		{
+			"ComboBoxForeground",
+			"ComboBoxForegroundDisabled",
+			"ComboBoxForegroundFocused",
+			"ComboBoxForegroundFocusedPressed",
+		};
+
+		public static void UpdateSelectedIndex(this ComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.SelectedIndex = picker.SelectedIndex;
 		}
 
-		public static void UpdateCharacterSpacing(this MauiComboBox nativeComboBox, IPicker picker)
+		public static void UpdateCharacterSpacing(this ComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.CharacterSpacing = picker.CharacterSpacing.ToEm();
 		}
 
-		public static void UpdateFont(this MauiComboBox nativeComboBox, IPicker picker, IFontManager fontManager) =>
+		public static void UpdateFont(this ComboBox nativeComboBox, IPicker picker, IFontManager fontManager) =>
 			nativeComboBox.UpdateFont(picker.Font, fontManager); 
 		
-		public static void UpdateHorizontalTextAlignment(this MauiComboBox nativeComboBox, IPicker picker)
+		public static void UpdateHorizontalTextAlignment(this ComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.HorizontalContentAlignment = picker.HorizontalTextAlignment.ToPlatformHorizontalAlignment();
 		}
 
-		public static void UpdateVerticalTextAlignment(this MauiComboBox nativeComboBox, IPicker picker)
+		public static void UpdateVerticalTextAlignment(this ComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.VerticalContentAlignment = picker.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}

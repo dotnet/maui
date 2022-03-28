@@ -4,18 +4,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tizen.Uix.Tts;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media
 {
-	public partial class TextToSpeechImplementation : ITextToSpeech
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
-		static TtsClient tts = null;
-		static TaskCompletionSource<bool> tcsInitialize = null;
-		static TaskCompletionSource<bool> tcsUtterances = null;
+		TtsClient tts = null;
+		TaskCompletionSource<bool> tcsInitialize = null;
+		TaskCompletionSource<bool> tcsUtterances = null;
 
-		public Task SpeakAsync(string text, CancellationToken cancelToken)
-			=> SpeakAsync(text, default, cancelToken);
-
-		public async Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
+		async Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
 		{
 			await Initialize();
 
@@ -56,7 +53,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			await tcsUtterances.Task;
 		}
 
-		public async Task<IEnumerable<Locale>> GetLocalesAsync()
+		async Task<IEnumerable<Locale>> PlatformGetLocalesAsync()
 		{
 			await Initialize();
 			var list = new List<Locale>();
@@ -65,7 +62,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return list;
 		}
 
-		static Task<bool> Initialize()
+		Task<bool> Initialize()
 		{
 			if (tcsInitialize != null && tts != null)
 				return tcsInitialize.Task;

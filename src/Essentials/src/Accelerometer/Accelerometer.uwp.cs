@@ -1,9 +1,9 @@
 using Windows.Devices.Sensors;
 using WindowsAccelerometer = Windows.Devices.Sensors.Accelerometer;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class AccelerometerImplementation
+	partial class AccelerometerImplementation
 	{
 		// keep around a reference so we can stop this same instance
 		WindowsAccelerometer sensor;

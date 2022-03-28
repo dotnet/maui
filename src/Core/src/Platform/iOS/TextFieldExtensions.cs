@@ -13,12 +13,11 @@ namespace Microsoft.Maui.Platform
 			textField.Text = entry.Text;
 		}
 
-		public static void UpdateTextColor(this UITextField textField, ITextStyle textStyle, UIColor? defaultTextColor = null)
+		public static void UpdateTextColor(this UITextField textField, ITextStyle textStyle)
 		{
-			// Default value of color documented to be black in iOS docs
-
 			var textColor = textStyle.TextColor;
-			textField.TextColor = textColor.ToPlatform(defaultTextColor ?? ColorExtensions.LabelColor);
+			if (textColor != null)
+				textField.TextColor = textColor.ToPlatform(ColorExtensions.LabelColor);
 		}
 
 		public static void UpdateIsPassword(this UITextField textField, IEntry entry)
@@ -36,19 +35,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
 		{
-			bool isLtr;
+			if (textAlignment is IView view)
+			{
+				textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToPlatformHorizontal().AdjustForFlowDirection(view);
+				return;
+			}
 
-			if (textAlignment is IView v && v.FlowDirection == FlowDirection.LeftToRight)
-				isLtr = true;
-			else
-				isLtr = false;
-
-			textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToPlatform(isLtr);
+			textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToPlatformHorizontal();
 		}
 
 		public static void UpdateVerticalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
 		{
-			textField.VerticalAlignment = textAlignment.VerticalTextAlignment.ToPlatform();
+			textField.VerticalAlignment = textAlignment.VerticalTextAlignment.ToPlatformVertical();
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this UITextField textField, IEntry entry)

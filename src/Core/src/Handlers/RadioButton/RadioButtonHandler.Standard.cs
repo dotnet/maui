@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreatePlatformView() => throw new NotImplementedException();
 
+		public static void MapBackground(IRadioButtonHandler handler, IRadioButton radioButton) { }
 		public static void MapIsChecked(IRadioButtonHandler handler, IRadioButton radioButton) { }
 		public static void MapContent(IRadioButtonHandler handler, IRadioButton radioButton) { }
 		public static void MapTextColor(IRadioButtonHandler handler, ITextStyle textStyle) { }

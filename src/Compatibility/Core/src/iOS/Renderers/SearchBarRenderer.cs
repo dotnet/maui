@@ -4,7 +4,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -310,6 +310,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_textField.Font = Element.ToUIFont();
 		}
 
+		[PortHandler]
 		void UpdateIsEnabled()
 		{
 			Control.UserInteractionEnabled = Element.IsEnabled;

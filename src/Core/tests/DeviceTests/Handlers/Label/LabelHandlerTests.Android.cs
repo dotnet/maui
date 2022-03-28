@@ -96,6 +96,29 @@ namespace Microsoft.Maui.DeviceTests
 			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
+		[Fact(DisplayName = "Validate MaxLines setting TextDecorations")]
+		public async Task ValidateMaxLinesSettingTextDecorations()
+		{
+			int xplatMaxLines = 2;
+
+			var labelHandler = new LabelStub()
+			{
+				MaxLines = xplatMaxLines,
+				LineBreakMode = LineBreakMode.TailTruncation
+			};
+
+			var values = await GetValueAsync(labelHandler, (handler) =>
+			{
+				return new
+				{
+					ViewValue = labelHandler.MaxLines,
+					PlatformViewValue = GetNativeMaxLines(handler)
+				};
+			});
+
+			Assert.Equal(xplatMaxLines, values.ViewValue);
+		}
+
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 

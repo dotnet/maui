@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI ContentPage (C#) (Preview)",
-  "postActions/openInEditor/description": "Opens NewPage1.cs in the editor.",
-  "symbols/namespace/description": "Namespace for the generated code."
+  "name": "..NET MAUI ContentPage (C#) (プレビュー)",
+  "postActions/openInEditor/description": "エディターで NewPage1.cs を開きます。",
+  "symbols/namespace/description": "生成されたコードの名前空間。"
 }

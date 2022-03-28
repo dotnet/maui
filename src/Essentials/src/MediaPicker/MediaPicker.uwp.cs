@@ -1,12 +1,14 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Storage;
 using Windows.Media.Capture;
 using Windows.Storage.Pickers;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media
 {
-	public partial class MediaPickerImplementation : IMediaPicker
+	partial class MediaPickerImplementation : IMediaPicker
 	{
 		public bool IsCaptureSupported
 			=> true;
@@ -21,7 +23,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		{
 			var picker = new FileOpenPicker();
 
-			var hwnd = Platform.CurrentWindowHandle;
+			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
 			WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
 
 			var defaultTypes = photo ? FilePickerFileType.Images.Value : FilePickerFileType.Videos.Value;

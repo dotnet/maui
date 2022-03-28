@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/SensorSpeed.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SensorSpeed']/Docs" />
 	public enum SensorSpeed

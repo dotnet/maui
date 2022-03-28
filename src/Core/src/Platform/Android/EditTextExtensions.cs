@@ -32,19 +32,14 @@ namespace Microsoft.Maui.Platform
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
-		public static void UpdateTextColor(this EditText editText, ITextStyle entry, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this EditText editText, ITextStyle entry)
 		{
-			editText.UpdateTextColor(entry.TextColor, defaultColor);
+			editText.UpdateTextColor(entry.TextColor);
 		}
 
-		public static void UpdateTextColor(this EditText editText, Graphics.Color textColor, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this EditText editText, Graphics.Color textColor)
 		{
-			if (textColor == null)
-			{
-				if (defaultColor != null)
-					editText.SetTextColor(defaultColor);
-			}
-			else
+			if (textColor != null)
 			{
 				var androidColor = textColor.ToPlatform();
 				if (!editText.TextColors.IsOneColor(ColorStates.EditText, androidColor))
@@ -128,18 +123,14 @@ namespace Microsoft.Maui.Platform
 			editText.Hint = textInput.Placeholder;
 		}
 
-		public static void UpdatePlaceholderColor(this EditText editText, IPlaceholder placeholder, ColorStateList? defaultColor)
+		public static void UpdatePlaceholderColor(this EditText editText, IPlaceholder placeholder)
 		{
-			editText.UpdatePlaceholderColor(placeholder.PlaceholderColor, defaultColor);
+			editText.UpdatePlaceholderColor(placeholder.PlaceholderColor);
 		}
 
-		public static void UpdatePlaceholderColor(this EditText editText, Graphics.Color placeholderTextColor, ColorStateList? defaultColor)
+		public static void UpdatePlaceholderColor(this EditText editText, Graphics.Color placeholderTextColor)
 		{
-			if (placeholderTextColor == null)
-			{
-				editText.SetHintTextColor(defaultColor);
-			}
-			else
+			if (placeholderTextColor != null)
 			{
 				var androidColor = placeholderTextColor.ToPlatform();
 				if (!editText.HintTextColors.IsOneColor(ColorStates.EditText, androidColor))
@@ -188,7 +179,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var drawable = getClearButtonDrawable?.Invoke();
 
-				if (entry.FlowDirection == FlowDirection.RightToLeft)
+				if (entry.GetEffectiveFlowDirection() == FlowDirection.RightToLeft)
 				{
 					editText.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
 				}

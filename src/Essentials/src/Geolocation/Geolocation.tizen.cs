@@ -2,9 +2,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tizen.Location;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class GeolocationImplementation : IGeolocation
+	partial class GeolocationImplementation : IGeolocation
 	{
 		Location lastKnownLocation = new Location();
 
@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
+			_ = request ?? throw new ArgumentNullException(nameof(request));
+
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
 			Locator service = null;

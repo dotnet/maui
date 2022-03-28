@@ -2,6 +2,9 @@
 
 // string interpolation
 // Culture-aware string comparisons
+// ResourceManager
+// Common Essentials methods
+// Microsoft.Maui.Graphics.Color
 // System.Threading.Tasks.Task
 // System.Net.Http.HttpClient
 
@@ -19,6 +22,13 @@ static class CommonMethods
         foo.StartsWith("f");
         foo.Contains("o");
 
+        string someString = MauiTest.Resources.Strings.SomeString;
+
+        InitializeCommonEssentials();
+
+        Color c = Color.Parse("MistyRose");
+        c = Color.Parse("#663399");
+
         using var client = new HttpClient();
         var send = client.SendAsync (new HttpRequestMessage (HttpMethod.Get, url));
         var getstring = client.GetStringAsync (url);
@@ -26,5 +36,12 @@ static class CommonMethods
         var text = getstring.Result;
 
         return text;
+    }
+
+    private static void InitializeCommonEssentials()
+    {
+        NetworkAccess networkAccess = Connectivity.NetworkAccess;
+        DeviceIdiom deviceIdiom = DeviceInfo.Idiom;
+        AppTheme appTheme = AppInfo.RequestedTheme;
     }
 }

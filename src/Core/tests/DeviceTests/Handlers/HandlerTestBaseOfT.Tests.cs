@@ -1,15 +1,14 @@
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Media;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
-		protected async Task<RenderedView> GetRenderedView(IViewHandler viewHandler, RenderType type) =>
-			await (viewHandler.VirtualView).RenderAsImage(type);
-
 		[Fact(DisplayName = "Automation Id is set correctly")]
 		[InlineData()]
 		public async Task SetAutomationId()
@@ -220,10 +219,9 @@ namespace Microsoft.Maui.DeviceTests
 			, Skip = "iOS and Windows can't render elements to images from test runner. It's missing the required root windows."
 #endif
 			)]
-		[InlineData(RenderType.JPEG)]
-		[InlineData(RenderType.PNG)]
-		[InlineData(RenderType.BMP)]
-		public async Task RendersAsImage(RenderType type)
+		[InlineData(ScreenshotFormat.Jpeg)]
+		[InlineData(ScreenshotFormat.Png)]
+		public async Task RendersAsImage(ScreenshotFormat type)
 		{
 			var view = new TStub()
 			{
@@ -231,9 +229,12 @@ namespace Microsoft.Maui.DeviceTests
 				Width = 100,
 			};
 
-			var result = await (await GetValueAsync(view, handler => GetRenderedView(handler, type)));
+			var result = await GetValueAsync(view, handler => handler.VirtualView.CaptureAsync());
 			Assert.NotNull(result);
-			Assert.NotNull(result?.Render);
+
+			using var stream = await result.OpenReadAsync(type);
+
+			Assert.True(stream.Length > 0);
 		}
 	}
 }
