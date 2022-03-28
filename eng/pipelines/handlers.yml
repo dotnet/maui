@@ -104,7 +104,7 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/dev/pjc/convert-pre
+      ref: refs/heads/main
     - repository: sdk-insertions
       type: github
       name: xamarin/sdk-insertions
