@@ -79,9 +79,9 @@
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>3f4da9ced34942d83054e647f3b1d9d7dde281e8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Maui.Graphics" Version="6.0.300-rc.1.1184">
+    <Dependency Name="Microsoft.Maui.Graphics" Version="6.0.300-rc.1.1191">
       <Uri>https://github.com/dotnet/Microsoft.Maui.Graphics</Uri>
-      <Sha>78fafb45ff1f771e1910411eacc29d0342e891c5</Sha>
+      <Sha>e4d637e83e0fdef96743027b1e15961bddc2cb37</Sha>
     </Dependency>
   </ProductDependencies>
 </Dependencies>
