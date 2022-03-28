@@ -89,7 +89,3 @@ stages:
       parameters:
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
-
-
-
-

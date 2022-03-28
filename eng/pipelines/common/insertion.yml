@@ -6,7 +6,7 @@ stages:
   - template: vs-insertion/stage/v1.yml@xamarin-templates
     parameters:
       dependsOn: nuget_signing
-      approvalTimeoutInMinutes: 30
+      approvalTimeoutInMinutes: 1
       symbolArtifactName: nuget
       symbolArtifactPatterns: |
         **/signed/*.nupkg
