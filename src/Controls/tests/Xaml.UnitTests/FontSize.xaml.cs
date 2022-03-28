@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Essentials;
 using NUnit.Framework;
 using Mono.Cecil.Cil;
 using Mono.Cecil;
@@ -46,9 +45,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var page = new FontSize(useCompiledXaml);
 				Assert.That (page.l42.FontSize, Is.EqualTo(42));
+
+#pragma warning disable CS0612 // Type or member is obsolete
 				Assert.That (page.lmedium.FontSize, Is.EqualTo(Device.GetNamedSize(NamedSize.Medium, page.lmedium)));
 				Assert.That (page.ldefault.FontSize, Is.EqualTo(Device.GetNamedSize(NamedSize.Default, page.ldefault)));
 				Assert.That (page.bdefault.FontSize, Is.EqualTo(Device.GetNamedSize(NamedSize.Default, page.bdefault)));
+#pragma warning restore CS0612 // Type or member is obsolete
 
 			}
 		}
