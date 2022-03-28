@@ -87,48 +87,33 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				var uri = new Uri(requestUri);
 				if (new Uri(AppOrigin).IsBaseOf(uri))
 				{
-					var hasRequestBeenHandled = false;
 					var relativePath = new Uri(AppOrigin).MakeRelativeUri(uri).ToString();
 
-					if (!string.IsNullOrWhiteSpace(relativePath))
+					// If the path does not end in a file extension (or is empty), it's most likely referring to a page,
+					// in which case we should allow falling back on the host page.
+					if (allowFallbackOnHostPage && !Path.HasExtension(relativePath))
 					{
-						// This looks like a file, so we'll attempt to fetch content using the existing relative path.
-						hasRequestBeenHandled = await TryHandleWinUIStorageWebResourceRequestAsync(eventArgs, relativePath);
+						relativePath = _hostPageRelativePath;
 					}
+					relativePath = Path.Combine(_contentRootDir, relativePath.Replace('/', '\\'));
 
-					if (!hasRequestBeenHandled && allowFallbackOnHostPage)
+					var winUIItem = await Package.Current.InstalledLocation.TryGetItemAsync(relativePath);
+					if (winUIItem != null)
 					{
-						// Either no content was found at the path, or we didn't attempt to load content because of the path format.
-						// Since we're allowed to fall back on the host page, try to do so.
-						_ = await TryHandleWinUIStorageWebResourceRequestAsync(eventArgs, _hostPageRelativePath);
+						statusCode = 200;
+						statusMessage = "OK";
+						var contentType = StaticContentProvider.GetResponseContentTypeOrDefault(relativePath);
+						headers = StaticContentProvider.GetResponseHeaders(contentType);
+						var headerString = GetHeaderString(headers);
+						var stream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
+
+						eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(stream.AsRandomAccessStream(), statusCode, statusMessage, headerString);
 					}
 				}
 			}
 
 			// Notify WebView2 that the deferred (async) operation is complete and we set a response.
 			deferral.Complete();
-		}
-
-		private async Task<bool> TryHandleWinUIStorageWebResourceRequestAsync(CoreWebView2WebResourceRequestedEventArgs eventArgs, string relativePath)
-		{
-			var path = Path.Combine(_contentRootDir, relativePath.Replace('/', '\\'));
-			var winUIItem = await Package.Current.InstalledLocation.TryGetItemAsync(path);
-
-			if (winUIItem is null)
-			{
-				return false;
-			}
-
-			var statusCode = 200;
-			var statusMessage = "OK";
-			var contentType = StaticContentProvider.GetResponseContentTypeOrDefault(path);
-			var headers = StaticContentProvider.GetResponseHeaders(contentType);
-			var headerString = GetHeaderString(headers);
-			var stream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(path);
-
-			eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(stream.AsRandomAccessStream(), statusCode, statusMessage, headerString);
-
-			return true;
 		}
 
 		/// <inheritdoc />
