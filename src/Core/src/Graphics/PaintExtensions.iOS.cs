@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Graphics
 			return new CGPoint(x, y);
 		}
 
-		static NSNumber[] GetCAGradientLayerLocations(List<GradientStop> gradientStops)
+		static NSNumber[] GetCAGradientLayerLocations(List<PaintGradientStop> gradientStops)
 		{
 			if (gradientStops == null || gradientStops.Count == 0)
 				return new NSNumber[0];
