@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/MapLaunchOptions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MapLaunchOptions']/Docs" />
 	public class MapLaunchOptions

@@ -12,6 +12,10 @@
                 Style="{StaticResource Headline}"/>
             <TimePicker/>
             <Label
+                Text="Default with time"
+                Style="{StaticResource Headline}"/>
+            <TimePicker Time="4:15:26"/>
+            <Label
                 Text="Disabled"
                 Style="{StaticResource Headline}"/>
             <TimePicker

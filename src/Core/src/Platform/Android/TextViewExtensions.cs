@@ -1,3 +1,4 @@
+using System;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Text;
@@ -73,12 +74,22 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateLineBreakMode(this TextView textView, ILabel label)
 		{
-			textView.SetLineBreakMode(label);
+			textView.SetLineBreakMode(label, label.MaxLines);
 		}
 
 		public static void UpdateMaxLines(this TextView textView, ILabel label)
 		{
-			textView.SetLineBreakMode(label);
+			var maxLines = label.MaxLines;
+
+			if (maxLines == -1) // Default value
+			{
+				// MaxLines is not explicitly set, so just let it be whatever gets set by LineBreakMode
+				textView.SetLineBreakMode(label);
+				return;
+			}
+
+			textView.SetSingleLine(maxLines == 1);
+			textView.SetMaxLines(maxLines);
 		}
 
 		public static void UpdatePadding(this TextView textView, ILabel label)
@@ -114,21 +125,20 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFlowDirection(this TextView platformView, IView view)
 		{
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			switch (view.FlowDirection)
 			{
-				platformView.LayoutDirection = ALayoutDirection.Inherit;
-				platformView.TextDirection = ATextDirection.Inherit;
-			}
-			else if (view.FlowDirection == FlowDirection.RightToLeft)
-			{
-				platformView.LayoutDirection = ALayoutDirection.Rtl;
-				platformView.TextDirection = ATextDirection.Rtl;
-			}
-			else if (view.FlowDirection == FlowDirection.LeftToRight)
-			{
-				platformView.LayoutDirection = ALayoutDirection.Ltr;
-				platformView.TextDirection = ATextDirection.Ltr;
+				case FlowDirection.MatchParent:
+					platformView.LayoutDirection = ALayoutDirection.Inherit;
+					platformView.TextDirection = ATextDirection.Inherit;
+					break;
+				case FlowDirection.RightToLeft:
+					platformView.LayoutDirection = ALayoutDirection.Rtl;
+					platformView.TextDirection = ATextDirection.Rtl;
+					break;
+				case FlowDirection.LeftToRight:
+					platformView.LayoutDirection = ALayoutDirection.Ltr;
+					platformView.TextDirection = ATextDirection.Ltr;
+					break;
 			}
 		}
 
@@ -137,13 +147,15 @@ namespace Microsoft.Maui.Platform
 			if (label.LineHeight >= 0)
 				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
-
-		internal static void SetLineBreakMode(this TextView textView, ILabel label)
+			
+		internal static void SetLineBreakMode(this TextView textView, ILineBreakMode breakMode, int? maxLines = null)
 		{
-			var lineBreakMode = label.LineBreakMode;
+			var lineBreakMode = breakMode.LineBreakMode;
 
-			int maxLines = label.MaxLines;
-			if (maxLines <= 0)
+			if (breakMode is ILabel label)
+				maxLines = label.MaxLines;
+
+			if (!maxLines.HasValue || maxLines <= 0)
 				maxLines = int.MaxValue;
 
 			bool singleLine = false;
@@ -152,6 +164,7 @@ namespace Microsoft.Maui.Platform
 			{
 				case LineBreakMode.NoWrap:
 					maxLines = 1;
+					singleLine = true;
 					textView.Ellipsize = null;
 					break;
 				case LineBreakMode.WordWrap:
@@ -167,6 +180,7 @@ namespace Microsoft.Maui.Platform
 					break;
 				case LineBreakMode.TailTruncation:
 					maxLines = 1;
+					singleLine = true;
 					textView.Ellipsize = TextUtils.TruncateAt.End;
 					break;
 				case LineBreakMode.MiddleTruncation:
@@ -177,7 +191,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			textView.SetSingleLine(singleLine);
-			textView.SetMaxLines(maxLines);
+			textView.SetMaxLines(maxLines.Value);
 		}
 	}
 }

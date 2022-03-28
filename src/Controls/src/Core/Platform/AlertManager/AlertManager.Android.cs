@@ -297,7 +297,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool PageIsInThisContext(IView page)
 			{
-				var platformView = page.ToPlatform(MauiContext);
+				var platformView = page.ToPlatform();
 
 				if (platformView.Context == null)
 				{

@@ -1,16 +1,19 @@
 using System;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Provider;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Storage;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media
 {
-	public partial class MediaPickerImplementation : IMediaPicker
+	partial class MediaPickerImplementation : IMediaPicker
 	{
 		public bool IsCaptureSupported
-			=> Platform.AppContext.PackageManager.HasSystemFeature(PackageManager.FeatureCameraAny);
+			=> Application.Context.PackageManager.HasSystemFeature(PackageManager.FeatureCameraAny);
 
 		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> PickAsync(options, true);
@@ -21,7 +24,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo)
 		{
 			var intent = new Intent(Intent.ActionGetContent);
-			intent.SetType(photo ? FileSystem.MimeTypes.ImageAll : FileSystem.MimeTypes.VideoAll);
+			intent.SetType(photo ? FileMimeTypes.ImageAll : FileMimeTypes.VideoAll);
 
 			var pickerIntent = Intent.CreateChooser(intent, options?.Title);
 
@@ -34,10 +37,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 					// so this means that it will always be cleaned up by the time we need it because we are using
 					// an intermediate activity.
 
-					path = FileSystem.EnsurePhysicalPath(intent.Data);
+					path = FileSystemUtils.EnsurePhysicalPath(intent.Data);
 				}
 
-				await IntermediateActivity.StartAsync(pickerIntent, Platform.requestCodeMediaPicker, onResult: OnResult);
+				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
 
 				return new FileResult(path);
 			}
@@ -55,12 +58,15 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public async Task<FileResult> CaptureAsync(MediaPickerOptions options, bool photo)
 		{
+			if (!IsCaptureSupported)
+				throw new FeatureNotSupportedException();
+
 			await Permissions.EnsureGrantedAsync<Permissions.Camera>();
 			await Permissions.EnsureGrantedAsync<Permissions.StorageWrite>();
 
 			var capturePhotoIntent = new Intent(photo ? MediaStore.ActionImageCapture : MediaStore.ActionVideoCapture);
 
-			if (!Platform.IsIntentSupported(capturePhotoIntent))
+			if (!PlatformUtils.IsIntentSupported(capturePhotoIntent))
 				throw new FeatureNotSupportedException($"Either there was no camera on the device or '{capturePhotoIntent.Action}' was not added to the <queries> element in the app's manifest file. See more: https://developer.android.com/about/versions/11/privacy/package-visibility");
 
 			capturePhotoIntent.AddFlags(ActivityFlags.GrantReadUriPermission);
@@ -68,14 +74,14 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			try
 			{
-				var activity = Platform.GetCurrentActivity(true);
+				var activity = ActivityStateManager.Default.GetCurrentActivity(true);
 
 				// Create the temporary file
 				var ext = photo
-					? FileSystem.Extensions.Jpg
-					: FileSystem.Extensions.Mp4;
+					? FileExtensions.Jpg
+					: FileExtensions.Mp4;
 				var fileName = Guid.NewGuid().ToString("N") + ext;
-				var tmpFile = FileSystem.GetTemporaryFile(Platform.AppContext.CacheDir, fileName);
+				var tmpFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
 
 				// Set up the content:// uri
 				AndroidUri outputUri = null;
@@ -91,7 +97,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				}
 
 				// Start the capture process
-				await IntermediateActivity.StartAsync(capturePhotoIntent, Platform.requestCodeMediaCapture, OnCreate);
+				await IntermediateActivity.StartAsync(capturePhotoIntent, PlatformUtils.requestCodeMediaCapture, OnCreate);
 
 				// Return the file that we just captured
 				return new FileResult(tmpFile.AbsolutePath);

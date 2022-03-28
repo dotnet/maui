@@ -1,9 +1,8 @@
 #nullable enable
-using System;
-using System.Numerics;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using Microsoft.UI.Xaml;
@@ -13,6 +12,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WinPoint = Windows.Foundation.Point;
+using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.Platform
 {
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Platform
 			platformView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
 		}
 
-		public static void UpdateBackground(this ContentPanel platformView, IBorderStroke border) 
+		public static void UpdateBackground(this ContentPanel platformView, IBorderStroke border)
 		{
 			var hasBorder = border.Shape != null && border.Stroke != null;
 
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Platform
 			{
 				platformView?.UpdateBorderBackground(border);
 			}
-			else if(border is IView v)
+			else if (border is IView v)
 			{
 				platformView?.UpdatePlatformViewBackground(v);
 			}
@@ -115,32 +115,21 @@ namespace Microsoft.Maui.Platform
 			platformView?.UpdatePlatformViewBackground(view);
 		}
 
-		public static WFlowDirection ToPlatform(this FlowDirection flowDirection)
-		{
-			if (flowDirection == FlowDirection.RightToLeft)
-				return WFlowDirection.RightToLeft;
-			else if (flowDirection == FlowDirection.LeftToRight)
-				return WFlowDirection.LeftToRight;
-
-			throw new InvalidOperationException($"Invalid FlowDirection: {flowDirection}");
-		}
-
 		public static void UpdateFlowDirection(this FrameworkElement platformView, IView view)
 		{
 			var flowDirection = view.FlowDirection;
-
-			if (flowDirection == FlowDirection.MatchParent)
+			switch (flowDirection)
 			{
-				flowDirection = view?.Handler?.MauiContext?.GetFlowDirection()
-					?? FlowDirection.LeftToRight;
-
-				if (flowDirection == FlowDirection.MatchParent)
-				{
-					flowDirection = FlowDirection.LeftToRight;
-				}
+				case FlowDirection.MatchParent:
+					platformView.ClearValue(FrameworkElement.FlowDirectionProperty);
+					break;
+				case FlowDirection.LeftToRight:
+					platformView.FlowDirection = WFlowDirection.LeftToRight;
+					break;
+				case FlowDirection.RightToLeft:
+					platformView.FlowDirection = WFlowDirection.RightToLeft;
+					break;
 			}
-
-			platformView.FlowDirection = flowDirection.ToPlatform();
 		}
 
 		public static void UpdateAutomationId(this FrameworkElement platformView, IView view) =>
@@ -230,8 +219,8 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateBorderBackground(this FrameworkElement platformView, IBorderStroke border)
 		{
 
-			if(border is IView v)
-			(platformView as ContentPanel)?.UpdateBackground(v.Background);
+			if (border is IView v)
+				(platformView as ContentPanel)?.UpdateBackground(v.Background);
 
 			if (platformView is Control control)
 				control.UpdateBackground((Paint?)null);
@@ -259,50 +248,6 @@ namespace Microsoft.Maui.Platform
 			// usuall requires setting the other at the same time
 			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
 		}
-
-		public static async Task<byte[]?> RenderAsBMP(this IView view)
-		{
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return null;
-
-			return await platformView.RenderAsBMP();
-		}
-
-		public static async Task<byte[]?> RenderAsPNG(this IView view)
-		{
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return null;
-
-			return await platformView.RenderAsPNG();
-		}
-
-		public static async Task<byte[]?> RenderAsJPEG(this IView view)
-		{
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return null;
-
-			return await platformView.RenderAsJPEG();
-		}
-
-		public static Task<byte[]?> RenderAsImage(this FrameworkElement view, RenderType type)
-		{
-			return type switch
-			{
-				RenderType.JPEG => view.RenderAsJPEG(),
-				RenderType.PNG => view.RenderAsPNG(),
-				RenderType.BMP => view.RenderAsBMP(),
-				_ => throw new NotImplementedException()
-			};
-		}
-
-		public static Task<byte[]?> RenderAsBMP(this FrameworkElement view) => view != null ? view.RenderAsBMPAsync() : Task.FromResult<byte[]?>(null);
-
-		public static Task<byte[]?> RenderAsPNG(this FrameworkElement view) => view != null ? view.RenderAsPNGAsync() : Task.FromResult<byte[]?>(null);
-
-		public static Task<byte[]?> RenderAsJPEG(this FrameworkElement view) => view != null ? view.RenderAsJPEGAsync() : Task.FromResult<byte[]?>(null);
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
@@ -352,7 +297,7 @@ namespace Microsoft.Maui.Platform
 			return new Rect();
 		}
 
-		internal static Graphics.Rect GetBoundingBox(this IView view) 
+		internal static Graphics.Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
 
 		internal static Graphics.Rect GetBoundingBox(this FrameworkElement? platformView)
@@ -435,7 +380,7 @@ namespace Microsoft.Maui.Platform
 				ContainingPage.IsTabStop = wasTabStop;
 			}
 		}
-    
+
 		internal static IWindow? GetHostedWindow(this IView? view)
 			=> GetHostedWindow(view?.Handler?.PlatformView as FrameworkElement);
 
@@ -448,7 +393,7 @@ namespace Microsoft.Maui.Platform
 				return null;
 
 			var windows = WindowExtensions.GetWindows();
-			foreach(var window in windows)
+			foreach (var window in windows)
 			{
 				if (window.Handler?.PlatformView is Microsoft.UI.Xaml.Window win)
 				{
@@ -456,14 +401,14 @@ namespace Microsoft.Maui.Platform
 						return window;
 				}
 			}
-			
+
 			return null;
 		}
-		
+
 		public static void UpdateInputTransparent(this FrameworkElement nativeView, IViewHandler handler, IView view)
 		{
 			if (nativeView is UIElement element)
-			{ 
+			{
 				element.IsHitTestVisible = !view.InputTransparent;
 			}
 		}

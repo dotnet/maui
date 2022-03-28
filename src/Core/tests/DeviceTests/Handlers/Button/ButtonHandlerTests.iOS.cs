@@ -57,7 +57,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(UIAccessibilityTrait.Button, trait);
 		}
 
-
 		bool ImageSourceLoaded(ButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView.ImageView.Image != null;
 
@@ -89,5 +88,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			return attributedText.GetCharacterSpacing();
 		}
+
+		UILineBreakMode GetNativeLineBreakMode(ButtonHandler buttonHandler) =>
+			GetNativeButton(buttonHandler).TitleLabel.LineBreakMode;
 	}
 }
