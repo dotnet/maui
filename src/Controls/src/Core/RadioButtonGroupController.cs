@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls
 
 			if (radioButtonValue != null)
 			{
-				MessagingCenter.Send(_layout, RadioButtonGroup.GroupValueChangedMessage,
+				MessagingCenter.Send<Element, RadioButtonGroupValueChanged>(_layout, RadioButtonGroup.GroupValueChangedMessage,
 					new RadioButtonGroupValueChanged(_groupName, RadioButtonGroup.GetVisualRoot(_layout), radioButtonValue));
 			}
 		}
