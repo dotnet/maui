@@ -142,15 +142,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		static ColorStateList MakeColorStateList(int titleColorInt, int disabledColorInt, int defaultColor)
 		{
-			var states = new int[][] {
-				new int[] { -R.Attribute.StateEnabled },
-				new int[] {R.Attribute.StateChecked },
-				new int[] { }
-			};
-
-			var colors = new[] { disabledColorInt, titleColorInt, defaultColor };
-
-			return new ColorStateList(states, colors);
+			return ColorStateListExtensions.CreateSwitch(disabledColorInt, titleColorInt, defaultColor);
 		}
 
 		#region IDisposable
