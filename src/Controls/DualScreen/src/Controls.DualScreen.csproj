@@ -45,8 +45,6 @@
     <Compile Include="**\*.android.*.cs" />
     <AndroidResource Include="Resources\xml\*.xml" />
     <PackageReference Include="Xamarin.DuoSdk" Version="0.0.3.4" />
-    <ProjectReference Include="..\..\..\Compatibility\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj">
-    </ProjectReference>
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Android\Compatibility.Android.csproj">
     </ProjectReference>
   </ItemGroup>
