@@ -27,6 +27,8 @@ namespace Microsoft.Maui.Platform
 		static float s_displayDensity = float.MinValue;
 
 		static int? _actionBarHeight;
+		static int? _statusBarHeight;
+		static int? _navigationBarHeight;
 		// TODO FromPixels/ToPixels is both not terribly descriptive and also possibly sort of inaccurate?
 		// These need better names. It's really To/From Device-Independent, but that doesn't exactly roll off the tongue.
 
@@ -295,11 +297,48 @@ namespace Microsoft.Maui.Platform
 			return rc ?? Color.FromArgb("#ff33b5e5");
 		}
 
-
 		public static int GetActionBarHeight(this Context context)
 		{
 			_actionBarHeight ??= (int)context.GetThemeAttributePixels(Resource.Attribute.actionBarSize);
 			return _actionBarHeight.Value;
+		}
+
+		internal static int GetStatusBarHeight(this Context context)
+		{
+			if (_statusBarHeight != null)
+				return _statusBarHeight.Value;
+
+			var resources = context.Resources;
+
+			if (resources == null)
+				return 0;
+
+			int resourceId = resources.GetIdentifier("status_bar_height", "dimen", "android");
+			if (resourceId > 0)
+			{
+				_statusBarHeight = resources.GetDimensionPixelSize(resourceId);
+			}
+
+			return _statusBarHeight ?? 0;
+		}
+
+		internal static int GetNavigationBarHeight(this Context context)
+		{
+			if (_navigationBarHeight != null)
+				return _navigationBarHeight.Value;
+
+			var resources = context.Resources;
+
+			if (resources == null)
+				return 0;
+
+			int resourceId = resources.GetIdentifier("navigation_bar_height", "dimen", "android");
+			if (resourceId > 0)
+			{
+				_navigationBarHeight = resources.GetDimensionPixelSize(resourceId);
+			}
+
+			return _navigationBarHeight ?? 0;
 		}
 
 		internal static int CreateMeasureSpec(this Context context, double constraint, double explicitSize, double maximumSize)
