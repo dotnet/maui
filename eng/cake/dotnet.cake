@@ -316,7 +316,6 @@ Task("VS-NET6")
         // VS has trouble building all the references correctly so this makes sure everything is built
         // and we're ready to go right when VS launches
         
-        RunMSBuildWithDotNet("./src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup.csproj");
         RunMSBuildWithDotNet("./src/Compatibility/Core/src/Compatibility.csproj");
         StartVisualStudioForDotNet6();
     });
