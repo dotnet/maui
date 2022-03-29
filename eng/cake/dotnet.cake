@@ -211,13 +211,14 @@ Task("dotnet-pack-additional")
 Task("dotnet-pack-library-packs")
     .Does(() =>
     {
-        var destDir = $"./artifacts/additional-library-packs";
+        var tempDir = $"./artifacts/library-packs-temp";
+
+        var destDir = $"./artifacts/library-packs";
+        EnsureDirectoryExists(destDir);
+        CleanDirectories(destDir);
 
         void Download(string id, string version, params string[] sources)
         {
-            var tempDir = $"./artifacts/additional-library-packs-temp";
-            EnsureDirectoryExists(destDir);
-
             version = XmlPeek("./eng/Versions.props", "/Project/PropertyGroup/" + version);
 
             NuGetInstall(id, new NuGetInstallSettings
@@ -236,9 +237,6 @@ Task("dotnet-pack-library-packs")
         Download("Microsoft.Maui.Graphics.Win2D.WinUI.Desktop", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json", "https://api.nuget.org/v3/index.json");
         Download("Microsoft.WindowsAppSDK", "MicrosoftWindowsAppSDKPackageVersion", "https://api.nuget.org/v3/index.json");
         Download("Microsoft.Windows.SDK.BuildTools", "MicrosoftWindowsSDKBuildToolsPackageVersion", "https://api.nuget.org/v3/index.json");
-
-        Zip(destDir, $"{destDir}.zip");
-        CleanDirectories(destDir);
     });
 
 Task("dotnet-pack")

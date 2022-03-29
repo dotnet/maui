@@ -25,15 +25,6 @@ stages:
           signType: Real
           preConvertSteps:
             - task: DownloadPipelineArtifact@2
-              displayName: Download Additional Library Packs
               inputs:
-                artifactName: nuget
-                downloadPath: $(Build.StagingDirectory)\nugets
-                patterns: |
-                  **/additional-library-packs.zip
-            - task: ExtractFiles@1
-              displayName: Extract Additional Library Packs
-              inputs:
-                sourceFolder: $(Build.StagingDirectory)\**\additional-library-packs.zip
-                destinationFolder: $(Build.StagingDirectory)\nugets\signed
-                cleanDestinationFolder: false
+                artifactName: library-packs
+                downloadPath: $(Build.StagingDirectory)\nugets\signed
