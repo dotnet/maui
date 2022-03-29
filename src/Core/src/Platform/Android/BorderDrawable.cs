@@ -276,7 +276,7 @@ namespace Microsoft.Maui.Platform
 				{
 					_borderPaint.StrokeWidth = _strokeThickness;
 
-					if (_borderColor != null)
+					if (_borderColor != null && OperatingSystem.IsAndroidVersionAtLeast(29))
 						_borderPaint.Color = _borderColor.Value;
 					else
 					{
@@ -404,7 +404,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (platformPaint != null)
 			{
-				if (_backgroundColor != null)
+				if (_backgroundColor != null && OperatingSystem.IsAndroidVersionAtLeast(29))
 					platformPaint.Color = _backgroundColor.Value;
 				else
 				{

@@ -219,6 +219,7 @@ namespace Microsoft.Maui.Essentials
 		{
 			var tcsStream = new TaskCompletionSource<Stream>();
 
+			System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(13));
 			PHImageManager.DefaultManager.RequestImageData(phAsset, null, new PHImageDataHandler((data, str, orientation, dict) =>
 				tcsStream.TrySetResult(data.AsStream())));
 

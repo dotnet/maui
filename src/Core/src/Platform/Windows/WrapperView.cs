@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Platform
 			var pathSize = new Graphics.Rect(0, 0, width, height);
 			var clipPath = clipGeometry.PathForBounds(pathSize);
 			var device = CanvasDevice.GetSharedDevice();
+			System.Diagnostics.Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18362));
 			var geometry = clipPath.AsPath(device);
 
 			var path = new CompositionPath(geometry);

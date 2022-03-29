@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public async Task<FileResult> PhotoAsync(MediaPickerOptions options, bool photo, bool pickExisting)
 		{
+			System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
 			var sourceType = pickExisting ? UIImagePickerControllerSourceType.PhotoLibrary : UIImagePickerControllerSourceType.Camera;
 			var mediaType = photo ? UTType.Image : UTType.Movie;
 
@@ -122,6 +123,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 					if (!assetUrl.Scheme.Equals("assets-library", StringComparison.OrdinalIgnoreCase))
 						return new UIDocumentFileResult(assetUrl);
 
+					System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
 					phAsset = info.ValueForKey(UIImagePickerController.PHAsset) as PHAsset;
 				}
 			}

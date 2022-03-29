@@ -15,6 +15,7 @@ using Android.Views;
 using AndroidIntent = Android.Content.Intent;
 using AndroidUri = Android.Net.Uri;
 using Microsoft.Maui.Essentials.Implementations;
+using System.Runtime.Versioning;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -168,12 +169,16 @@ namespace Microsoft.Maui.Essentials
 
 		internal static readonly bool HasApiLevelKitKat = OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.Kitkat);
 
+		[SupportedOSPlatformGuard("android24.0")]
 		internal static readonly bool HasApiLevelN = OperatingSystem.IsAndroidVersionAtLeast(24);
 
+		[SupportedOSPlatformGuard("android31.0")]
 		internal static readonly bool HasApiLevelS = OperatingSystem.IsAndroidVersionAtLeast(31);
 
+		[SupportedOSPlatformGuard("android25.0")]
 		internal static readonly bool HasApiLevelNMr1 = OperatingSystem.IsAndroidVersionAtLeast(25);
 
+		[SupportedOSPlatformGuard("android26.0")]
 		internal static readonly bool HasApiLevelO = OperatingSystem.IsAndroidVersionAtLeast(26);
 
 		internal static readonly bool HasApiLevelQ = OperatingSystem.IsAndroidVersionAtLeast(29);

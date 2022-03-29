@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Versioning;
 using Android.OS;
 
 namespace Microsoft.Maui.Platform
@@ -7,8 +8,10 @@ namespace Microsoft.Maui.Platform
 	{
 		public static bool IsAtLeast(BuildVersionCodes buildVersionCode) => OperatingSystem.IsAndroidVersionAtLeast((int)buildVersionCode);
 
+		[SupportedOSPlatformGuard("android28.0")]
 		public static bool IsAtLeast(int apiLevel) => OperatingSystem.IsAndroidVersionAtLeast(apiLevel);
 
+		[SupportedOSPlatformGuard("android29.0")]
 		public static bool Supports(int platformApi) => OperatingSystem.IsAndroidVersionAtLeast(platformApi);
 	}
 

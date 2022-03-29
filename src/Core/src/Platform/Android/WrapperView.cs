@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using System;
 using Android.Content;
 using Android.Graphics;
 using Android.Views;
@@ -224,7 +225,7 @@ namespace Microsoft.Maui.Platform
 						var radialGradientShaderFactory = PaintExtensions.GetRadialGradientShaderFactory(radialGradientPaint);
 						_shadowPaint.SetShader(radialGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
 					}
-					if (Shadow.Paint is SolidPaint solidPaint)
+					if (Shadow.Paint is SolidPaint solidPaint && OperatingSystem.IsAndroidVersionAtLeast(29))
 					{
 						solidColor = solidPaint.ToColor();
 						_shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToPlatform();
@@ -269,7 +270,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Reset alpha to draw child with full alpha
-			if (solidColor != null)
+			if (solidColor != null && OperatingSystem.IsAndroidVersionAtLeast(29))
 				_shadowPaint.Color = solidColor.ToPlatform();
 
 			// Draw shadow bitmap

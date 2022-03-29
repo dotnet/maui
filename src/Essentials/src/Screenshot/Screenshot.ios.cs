@@ -322,6 +322,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public bool IsCaptureSupported =>
 			true;
 
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		public Task<IScreenshotResult> CaptureAsync()
 		{
 			var scenes = UIApplication.SharedApplication.ConnectedScenes;

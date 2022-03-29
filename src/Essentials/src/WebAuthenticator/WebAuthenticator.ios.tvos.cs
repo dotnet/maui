@@ -84,7 +84,9 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 				using (was)
 				{
+#pragma warning disable CA1416 // Analyzer bug
 					was.Start();
+#pragma warning restore CA1416
 					return await tcsResponse.Task;
 				}
 			}
@@ -138,7 +140,9 @@ namespace Microsoft.Maui.Essentials.Implementations
 				{
 					foreach (var cookie in cookies)
 					{
+#pragma warning disable CA1416 // Known false positive 
 						WKWebsiteDataStore.DefaultDataStore.HttpCookieStore.DeleteCookie(cookie, null);
+#pragma warning restore CA1416
 					}
 				});
 			}

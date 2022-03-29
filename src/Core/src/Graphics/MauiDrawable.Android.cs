@@ -365,7 +365,7 @@ namespace Microsoft.Maui.Graphics
 					if (_borderPathEffect != null)
 						_borderPaint.SetPathEffect(_borderPathEffect);
 
-					if (_borderColor != null)
+					if (_borderColor != null && OperatingSystem.IsAndroidVersionAtLeast(29))
 						_borderPaint.Color = _borderColor.Value;
 					else
 					{
@@ -503,7 +503,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			if (platformPaint != null)
 			{
-				if (_backgroundColor != null)
+				if (_backgroundColor != null && OperatingSystem.IsAndroidVersionAtLeast(29))
 					platformPaint.Color = _backgroundColor.Value;
 				else
 				{

@@ -86,12 +86,15 @@ namespace Microsoft.Maui.Essentials
 			if (viewController != null)
 				return viewController;
 
-			var window = UIApplication.SharedApplication.KeyWindow;
+			UIWindow window = null; 
+			
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				window = UIApplication.SharedApplication.KeyWindow;
 
 			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
 				viewController = window.RootViewController;
 
-			if (viewController == null)
+			if (viewController == null && !OperatingSystem.IsIOSVersionAtLeast(15))
 			{
 				window = UIApplication.SharedApplication
 					.Windows
@@ -115,12 +118,15 @@ namespace Microsoft.Maui.Essentials
 
 		internal static UIWindow GetCurrentWindow(bool throwIfNull = true)
 		{
-			var window = UIApplication.SharedApplication.KeyWindow;
+			UIWindow window = null;
+			
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				window = UIApplication.SharedApplication.KeyWindow;
 
 			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
 				return window;
 
-			if (window == null)
+			if (window == null && !OperatingSystem.IsIOSVersionAtLeast(15))
 			{
 				window = UIApplication.SharedApplication
 					.Windows

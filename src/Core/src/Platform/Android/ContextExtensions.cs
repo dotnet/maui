@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Platform
 					{
 						if (context.Resources != null)
 						{
-							if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
+							if (OperatingSystem.IsAndroidVersionAtLeast(23))
 								return context.Resources.GetColor(mTypedValue.ResourceId, context.Theme);
 							else
 #pragma warning disable CS0618 // Type or member is obsolete

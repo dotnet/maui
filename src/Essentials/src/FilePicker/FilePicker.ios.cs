@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Foundation;
 using MobileCoreServices;
@@ -14,6 +16,7 @@ namespace Microsoft.Maui.Essentials
 	{
 		static async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
 		{
+			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
 			var allowedUtis = options?.FileTypes?.Value?.ToArray() ?? new string[]
 			{
 				UTType.Content,
@@ -76,6 +79,7 @@ namespace Microsoft.Maui.Essentials
 
 	}
 
+	[UnsupportedOSPlatform("ios14.0")]
 	public partial class FilePickerFileType
 	{
 		static FilePickerFileType PlatformImageFileType() =>

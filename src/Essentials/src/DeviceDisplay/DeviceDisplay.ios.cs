@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
@@ -35,6 +36,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public void StartScreenMetricsListeners()
 		{
 			var notificationCenter = NSNotificationCenter.DefaultCenter;
+			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(13));
 			var notification = UIApplication.DidChangeStatusBarOrientationNotification;
 			observer = notificationCenter.AddObserver(notification, OnScreenMetricsChanged);
 		}
@@ -53,6 +55,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		DisplayOrientation CalculateOrientation()
 		{
+			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(9));
 			var orientation = UIApplication.SharedApplication.StatusBarOrientation;
 
 			if (orientation.IsLandscape())
@@ -63,6 +66,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		DisplayRotation CalculateRotation()
 		{
+			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(9));
 			var orientation = UIApplication.SharedApplication.StatusBarOrientation;
 
 			switch (orientation)

@@ -69,6 +69,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			try
 			{
+				System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(11));
 				// we need to await to keep the geocoder alive until after the async
 				return await geocoder.GeocodeAddressAsync(address);
 			}

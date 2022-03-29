@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Android.App;
 using Android.Views;
 using Microsoft.Maui.Graphics;
@@ -16,7 +17,7 @@ namespace Microsoft.Maui
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
 			var nativeScroll = scrollBar.ToPlatform();
-			if (nativeScroll != null)
+			if (nativeScroll != null && OperatingSystem.IsAndroidVersionAtLeast(23))
 			{
 				nativeScroll.ScrollChange += OnScrollChange;
 				_scrollViews.Add(scrollBar, nativeScroll);
@@ -28,7 +29,7 @@ namespace Microsoft.Maui
 		{
 			foreach (var scrollBar in _scrollViews.Values)
 			{
-				if (!scrollBar.IsDisposed())
+				if (!scrollBar.IsDisposed() && OperatingSystem.IsAndroidVersionAtLeast(23))
 					scrollBar.ScrollChange -= OnScrollChange;
 			}
 

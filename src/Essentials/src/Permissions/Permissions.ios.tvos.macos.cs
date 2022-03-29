@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Photos;
 
@@ -13,6 +14,9 @@ namespace Microsoft.Maui.Essentials
 			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
 				() => new string[] { "NSPhotoLibraryUsageDescription" };
 
+			[SupportedOSPlatform("tvos14.0")]
+			[SupportedOSPlatform("macos11.0")]
+			[SupportedOSPlatform("ios14.0")]
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
@@ -20,6 +24,9 @@ namespace Microsoft.Maui.Essentials
 				return Task.FromResult(GetPhotoPermissionStatus(PHAccessLevel.ReadWrite));
 			}
 
+			[SupportedOSPlatform("tvos14.0")]
+			[SupportedOSPlatform("macos11.0")]
+			[SupportedOSPlatform("ios14.0")]
 			public override async Task<PermissionStatus> RequestAsync()
 			{
 				EnsureDeclared();
@@ -85,12 +92,17 @@ namespace Microsoft.Maui.Essentials
 			=> status switch
 			{
 				PHAuthorizationStatus.Authorized => PermissionStatus.Granted,
+#pragma warning disable CA1416
 				PHAuthorizationStatus.Limited => PermissionStatus.Limited,
+#pragma warning restore CA1416
 				PHAuthorizationStatus.Denied => PermissionStatus.Denied,
 				PHAuthorizationStatus.Restricted => PermissionStatus.Restricted,
 				_ => PermissionStatus.Unknown,
 			};
 
+		[SupportedOSPlatformGuard("iOS14.0")]
+		[SupportedOSPlatformGuard("macOS11.0")]
+		[SupportedOSPlatformGuard("tvOS14.0")]
 		static bool CheckOSVersionForPhotos()
 		{
 			return OperatingSystem.IsIOSVersionAtLeast(14, 0) ||

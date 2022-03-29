@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Content.PM;
@@ -11,9 +12,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 	public partial class AppActionsImplementation : IAppActions
 	{
 		public string Type => "XE_APP_ACTION_TYPE";
+		[SupportedOSPlatformGuard("android26.0")]
 		public bool IsSupported
 			=> Platform.HasApiLevelNMr1;
 
+		[SupportedOSPlatform("android26.0")]
 		public Task<IEnumerable<AppAction>> GetAsync()
 		{
 			if (!IsSupported)
@@ -26,6 +29,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 #endif
 		}
 
+		[SupportedOSPlatform("android26.0")]
 		public Task SetAsync(IEnumerable<AppAction> actions)
 		{
 			if (!IsSupported)
@@ -46,6 +50,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 	internal static partial class AppActionsExtensions
 	{
+		[SupportedOSPlatform("android25.0")]
 		internal static AppAction ToAppAction(this ShortcutInfo shortcutInfo) =>
 			new AppAction(shortcutInfo.Id, shortcutInfo.ShortLabel, shortcutInfo.LongLabel);
 
@@ -60,7 +65,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 				intent.GetStringExtra(extraAppActionTitle),
 				intent.GetStringExtra(extraAppActionSubtitle),
 				intent.GetStringExtra(extraAppActionIcon));
-				
+
+		[SupportedOSPlatform("android25.0")]
 		internal static ShortcutInfo ToShortcutInfo(this AppAction action)
 		{
 			var shortcut = new ShortcutInfo.Builder(Platform.AppContext, action.Id)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Versioning;
 using Android.Graphics;
 using Android.Webkit;
 
@@ -64,6 +65,7 @@ namespace Microsoft.Maui.Platform
 			base.OnPageFinished(view, url);
 		}
 
+		[SupportedOSPlatform("android23.0")]
 		public override void OnReceivedError(WebView? view, IWebResourceRequest? request, WebResourceError? error)
 		{
 			if (request != null && request.Url?.ToString() == _handler?.PlatformView.Url)

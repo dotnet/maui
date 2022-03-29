@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using Foundation;
 using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
@@ -16,6 +17,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			{
 				case BrowserLaunchMode.SystemPreferred:
 					var nativeUrl = new NSUrl(uri.AbsoluteUri);
+					Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(11));
 					var sfViewController = new SFSafariViewController(nativeUrl, false);
 					var vc = Platform.GetCurrentViewController();
 
