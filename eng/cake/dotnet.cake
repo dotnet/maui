@@ -180,7 +180,6 @@ Task("dotnet-test")
 Task("dotnet-pack-maui")
     .Does(() =>
     {
-        return;
         DotNetCoreTool("pwsh", new DotNetCoreToolSettings
         {
             DiagnosticOutput = true,
