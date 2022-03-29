@@ -199,7 +199,7 @@ Task("dotnet-pack-additional")
         NuGetInstall("_NativeAssets.windows", new NuGetInstallSettings
         {
             Version = nativeAssetsVersion,
-            ExcludeVersion  = true,
+            ExcludeVersion = true,
             OutputDirectory = assetsDir,
             Source = new[] { "https://aka.ms/skiasharp-eap/index.json" },
         });
@@ -224,12 +224,12 @@ Task("dotnet-pack-library-packs")
             NuGetInstall(id, new NuGetInstallSettings
             {
                 Version = version,
-                ExcludeVersion  = true,
+                ExcludeVersion = false,
                 OutputDirectory = tempDir,
                 Source = sources,
             });
 
-            CopyFiles($"{tempDir}/**/" + id + ".nupkg", destDir, false);
+            CopyFiles($"{tempDir}/**/" + id + "." + version + ".nupkg", destDir, false);
             CleanDirectories(tempDir);
         }
 
