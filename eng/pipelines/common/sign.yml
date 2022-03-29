@@ -1,6 +1,3 @@
-parameters:
-  preConvertSteps: [ ]
-
 stages:
   - stage: nuget_signing
     dependsOn: pack_net6
@@ -26,4 +23,9 @@ stages:
           artifactPath: signed
           propsArtifactName: nuget
           signType: Real
-          preConvertSteps: ${{ parameters.preConvertSteps }}
+          preConvertSteps:
+            - task: ExtractFiles@1
+              inputs:
+                sourceFolder: $(Build.StagingDirectory)\nugets\additional-library-packs.zip
+                destinationFolder: $(Build.StagingDirectory)\nugets\signed
+                cleanDestinationFolder: false
