@@ -49,6 +49,14 @@
                         </FontImageSource>
                     </Image.Source>
                 </Image>
+                <Label
+                    Text="Opacity (0.5)"
+                    Style="{StaticResource Headline}"/>
+                <Image 
+                    Opacity="0.5"
+                    Background="Black"
+                    Source="dotnet_bot.png"
+                   />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
