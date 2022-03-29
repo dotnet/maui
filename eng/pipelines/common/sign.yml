@@ -2,6 +2,8 @@ stages:
   - stage: nuget_signing
     dependsOn: pack_net6
     displayName: Sign Nuget
+    variables:
+      MauiGraphicsVersion: $[ stageDependencies.pack_net6.pack_net6_Windows.outputs['PackMaui.MicrosoftMauiGraphicsVersion'] ]
     jobs:
       - template: sign-artifacts/jobs/v2.yml@xamarin-templates
         parameters:
@@ -23,3 +25,27 @@ stages:
           artifactPath: signed
           propsArtifactName: nuget
           signType: Real
+          preConvertSteps:
+          - task: NuGetCommand@2
+            displayName: Download Microsoft.Maui.Graphics
+            inputs:
+              command: custom
+              arguments: >-
+                install Microsoft.Maui.Graphics -Prerelease -Version $(MauiGraphicsVersion)
+                -OutputDirectory $(Build.StagingDirectory)\maui-graphics
+                -Source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json
+          - task: NuGetCommand@2
+            displayName: Download Microsoft.Maui.Graphics.Win2D.WinUI.Desktop
+            inputs:
+              command: custom
+              arguments: >-
+                install Microsoft.Maui.Graphics.Win2D.WinUI.Desktop -Prerelease -Version $(MauiGraphicsVersion)
+                -OutputDirectory $(Build.StagingDirectory)\maui-graphics
+                -Source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json
+                -Source https://api.nuget.org/v3/index.json
+          - task: CopyFiles@2
+            inputs:
+              sourceFolder: $(Build.StagingDirectory)\maui-graphics
+              contents: '**\Microsoft.Maui.Graphics.*.nupkg'
+              targetFolder: $(Build.StagingDirectory)\nugets\signed
+              flattenFolders: true
