@@ -70,12 +70,26 @@
         NewValue="$(MicrosoftMauiGraphicsVersion)"
     />
     <ReplaceText
+        Input="$(IntermediateOutputPath)WorkloadManifest.json"
+        Output="$(IntermediateOutputPath)WorkloadManifest.json"
+        OldValue="@WASDK_VERSION@"
+        NewValue="$(MicrosoftWindowsAppSDKPackageVersion)"
+    />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)WorkloadManifest.json"
+        Output="$(IntermediateOutputPath)WorkloadManifest.json"
+        OldValue="@WASDK_BUILD_TOOLS_VERSION@"
+        NewValue="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
+    />
+    <ReplaceText
         Input="%(_JsonVariableMatrix.OutputPath)"
         Output="%(_JsonVariableMatrix.OutputPath)"
         OldValue="%(_JsonVariableMatrix.OldValue)"
         NewValue="%(_JsonVariableMatrix.NewValue)"
     />
     <Message Text="##vso[task.setvariable variable=MicrosoftMauiGraphicsVersion;isOutput=true]$(MicrosoftMauiGraphicsVersion)" Importance="high" />
+    <Message Text="##vso[task.setvariable variable=MicrosoftWindowsAppSDKPackageVersion;isOutput=true]$(MicrosoftWindowsAppSDKPackageVersion)" Importance="high" />
+    <Message Text="##vso[task.setvariable variable=MicrosoftWindowsSDKBuildToolsPackageVersion;isOutput=true]$(MicrosoftWindowsSDKBuildToolsPackageVersion)" Importance="high" />
     <ItemGroup>
       <FileWrites Include="@(_JsonInputFile->'%(OutputPath)')" />
       <None Include="%(_JsonInputFile.OutputPath)" Link="$([System.IO.Path]::GetFileName('%(_JsonInputFile.OutputPath)'))" CopyToOutputDirectory="PreserveNewest" Pack="%(_JsonInputFile.Pack)" PackagePath="data" Visible="false" />
