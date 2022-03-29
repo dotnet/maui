@@ -4,6 +4,7 @@ using Tizen.UIExtensions.Common;
 using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 using TSize = Tizen.UIExtensions.Common.Size;
+using TTouch = Tizen.NUI.Touch;
 
 namespace Microsoft.Maui.Platform
 {
@@ -24,6 +25,13 @@ namespace Microsoft.Maui.Platform
 		public TSize Measure(double availableWidth, double availableHeight)
 		{
 			return CrossPlatformMeasure?.Invoke(availableWidth.ToScaledDP(), availableHeight.ToScaledDP()).ToPixel() ?? new TSize(0, 0);
+		}
+
+		public bool InputTransparent { get; set; } = false;
+
+		protected override bool HitTest(TTouch touch)
+		{
+			return !InputTransparent;
 		}
 
 		void OnLayoutUpdated(object? sender, LayoutEventArgs e)
