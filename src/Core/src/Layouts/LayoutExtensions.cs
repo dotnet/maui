@@ -22,6 +22,11 @@ namespace Microsoft.Maui.Layouts
 			widthConstraint -= margin.HorizontalThickness;
 			heightConstraint -= margin.VerticalThickness;
 
+			if (Double.IsPositiveInfinity(widthConstraint))
+            {
+				widthConstraint = view.DesiredSize.Width;
+			}
+
 			// Ask the handler to do the actual measuring
 			var measureWithMargins = view.Handler.GetDesiredSize(widthConstraint, heightConstraint);
 
