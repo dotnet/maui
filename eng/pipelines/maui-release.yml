@@ -85,6 +85,28 @@ stages:
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/sign.yml                                     # Sign only using the private server
+      parameters:
+        preConvertSteps:
+          - template: download-library-nuget.yml
+            parameters:
+              id: Microsoft.Maui.Graphics
+              version: $[ stageDependencies.pack_net6.pack_net6_Windows.outputs['PackMaui.MicrosoftMauiGraphicsVersion'] ]
+              sources: [ 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json' ]
+          - template: download-library-nuget.yml
+            parameters:
+              id: Microsoft.Maui.Graphics.Win2D.WinUI.Desktop
+              version: $[ stageDependencies.pack_net6.pack_net6_Windows.outputs['PackMaui.MicrosoftMauiGraphicsVersion'] ]
+              sources:
+                - 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json'
+                - 'https://api.nuget.org/v3/index.json'
+          - template: download-library-nuget.yml
+            parameters:
+              id: Microsoft.WindowsAppSDK
+              version: $[ stageDependencies.pack_net6.pack_net6_Windows.outputs['PackMaui.MicrosoftWindowsAppSDKPackageVersion'] ]
+          - template: download-library-nuget.yml
+            parameters:
+              id: Microsoft.Windows.SDK.BuildTools
+              version: $[ stageDependencies.pack_net6.pack_net6_Windows.outputs['PackMaui.MicrosoftWindowsSDKBuildToolsPackageVersion'] ]
     - template: common/insertion.yml                                # Insert on VS and SDK
       parameters:
         poolName: $(windowsNet6VmPool)
