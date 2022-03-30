@@ -17,11 +17,6 @@ namespace Microsoft.Maui.Platform
 			platformDatePicker.UpdateDate(datePicker, picker);
 		}
 
-		public static void UpdateFormat(this UIDatePicker picker, IDatePicker datePicker)
-		{
-			picker.UpdateDate(datePicker);
-		}
-
 		public static void UpdateDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			platformDatePicker.UpdateDate(datePicker, null);
@@ -48,12 +43,6 @@ namespace Microsoft.Maui.Platform
 
 			// HACK This forces the color to update; there's probably a more elegant way to make this happen
 			platformDatePicker.UpdateDate(datePicker);
-		}
-
-		public static void UpdateDate(this UIDatePicker picker, IDatePicker datePicker)
-		{
-			if (picker != null && picker.Date.ToDateTime().Date != datePicker.Date.Date)
-				picker.SetDate(datePicker.Date.ToNSDate(), false);
 		}
 
 		public static void UpdateDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIDatePicker? picker)
@@ -103,14 +92,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimumDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIDatePicker? picker)
 		{
-			picker?.UpdateMinimumDate(datePicker);
-		}
-
-		public static void UpdateMinimumDate(this UIDatePicker platformDatePicker, IDatePicker datePicker)
-		{
-			if (platformDatePicker != null)
+			if (picker != null)
 			{
-				platformDatePicker.MinimumDate = datePicker.MinimumDate.ToNSDate();
+				picker.MinimumDate = datePicker.MinimumDate.ToNSDate();
 			}
 		}
 
@@ -121,14 +105,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaximumDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIDatePicker? picker)
 		{
-			picker?.UpdateMaximumDate(datePicker);
-		}
-
-		public static void UpdateMaximumDate(this UIDatePicker platformDatePicker, IDatePicker datePicker)
-		{
-			if (platformDatePicker != null)
+			if (picker != null)
 			{
-				platformDatePicker.MaximumDate = datePicker.MaximumDate.ToNSDate();
+				picker.MaximumDate = datePicker.MaximumDate.ToNSDate();
 			}
 		}
 

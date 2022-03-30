@@ -12,10 +12,6 @@
                 Style="{StaticResource Headline}"/>
             <DatePicker/>
             <Label
-                Text="Default with date"
-                Style="{StaticResource Headline}"/>
-            <DatePicker Date="06/21/2018"/>
-            <Label
                 Text="Disabled"
                 Style="{StaticResource Headline}"/>
             <DatePicker

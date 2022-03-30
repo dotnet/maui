@@ -12,11 +12,6 @@ namespace Microsoft.Maui.Platform
 			mauiTimePicker.UpdateTime(timePicker, null);
 		}
 
-		public static void UpdateFormat(this UIDatePicker picker, ITimePicker timePicker)
-		{
-			picker.UpdateTime(timePicker);
-		}
-
 		public static void UpdateFormat(this MauiTimePicker mauiTimePicker, ITimePicker timePicker, UIDatePicker? picker)
 		{
 			mauiTimePicker.UpdateTime(timePicker, picker);
@@ -27,15 +22,10 @@ namespace Microsoft.Maui.Platform
 			mauiTimePicker.UpdateTime(timePicker, null);
 		}
 
-		public static void UpdateTime(this UIDatePicker picker, ITimePicker timePicker)
+		public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker, UIDatePicker? picker)
 		{
 			if (picker != null)
 				picker.Date = new DateTime(1, 1, 1).Add(timePicker.Time).ToNSDate();
-		}
-
-		public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker, UIDatePicker? picker)
-		{
-			picker?.UpdateTime(timePicker);
 
 			var cultureInfo = Culture.CurrentCulture;
 
