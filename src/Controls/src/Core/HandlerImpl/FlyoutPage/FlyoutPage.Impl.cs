@@ -41,28 +41,5 @@ namespace Microsoft.Maui.Controls
 #else
 		double IFlyoutView.FlyoutWidth => -1;
 #endif
-
-
-		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
-		{
-			base.OnHandlerChangingCore(args);
-
-			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
-				return;
-
-			if (args.NewHandler == null)
-			{
-				DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
-			}
-			else if (args.OldHandler == null)
-			{
-				DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
-			}
-		}
-
-		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
-		{
-			Handler?.UpdateValue(nameof(FlyoutBehavior));
-		}
 	}
 }
