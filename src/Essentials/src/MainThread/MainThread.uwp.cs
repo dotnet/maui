@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using Microsoft.UI.Dispatching;
 
@@ -6,11 +7,11 @@ namespace Microsoft.Maui.ApplicationModel
 	public static partial class MainThread
 	{
 		static bool PlatformIsMainThread =>
-			WindowStateManager.Default.GetActiveWindow().DispatcherQueue.HasThreadAccess;
+			TryGetDispatcherQueue()?.HasThreadAccess ?? false;
 
 		static void PlatformBeginInvokeOnMainThread(Action action)
 		{
-			var dispatcher = WindowStateManager.Default.GetActiveWindow().DispatcherQueue;
+			var dispatcher = TryGetDispatcherQueue();
 
 			if (dispatcher == null)
 				throw new InvalidOperationException("Unable to find main thread.");
@@ -18,5 +19,9 @@ namespace Microsoft.Maui.ApplicationModel
 			if (!dispatcher.TryEnqueue(DispatcherQueuePriority.Normal, () => action()))
 				throw new InvalidOperationException("Unable to queue on the main thread.");
 		}
+
+		static DispatcherQueue? TryGetDispatcherQueue() =>
+			DispatcherQueue.GetForCurrentThread() ??
+			WindowStateManager.Default.GetActiveWindow(false)?.DispatcherQueue;
 	}
 }
