@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls
 			var italic = (attributes & FontAttributes.Italic) != 0;
 			return font.WithWeight(bold ? FontWeight.Bold : FontWeight.Regular, italic ? FontSlant.Italic : FontSlant.Default);
 		}
+
 		public static FontAttributes GetFontAttributes(this Font font)
 		{
 			FontAttributes attributes = font.Weight == FontWeight.Bold ? FontAttributes.Bold : FontAttributes.None;

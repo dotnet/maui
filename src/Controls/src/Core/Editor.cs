@@ -140,9 +140,6 @@ namespace Microsoft.Maui.Controls
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
 			UpdateAutoSizeOption();
 
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
-			UpdateAutoSizeOption();
-
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			this.GetDefaultFontSize();
 

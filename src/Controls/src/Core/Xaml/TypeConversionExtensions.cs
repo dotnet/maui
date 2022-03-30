@@ -37,16 +37,6 @@ namespace Microsoft.Maui.Controls.Xaml
 {
 	static class TypeConversionExtensions
 	{
-		internal static Dictionary<Type, Type> KnownConverters = new Dictionary<Type, Type>
-		{
-			{ typeof(Font), typeof(FontTypeConverter) }
-		};
-
-		private static Dictionary<Type, Func<TypeConverter>> KnownConverterFactories = new()
-		{
-			{ typeof(Font), () => new FontTypeConverter() }
-		};
-
 		internal static object ConvertTo(this object value, Type toType, Func<ParameterInfo> pinfoRetriever,
 			IServiceProvider serviceProvider, out Exception exception)
 		{
@@ -76,8 +66,6 @@ namespace Microsoft.Maui.Controls.Xaml
 				var converterTypeName = toType.GetTypeInfo().CustomAttributes.GetTypeConverterTypeName();
 				if (minfoRetriever != null && (memberInfo = minfoRetriever()) != null)
 					converterTypeName = memberInfo.CustomAttributes.GetTypeConverterTypeName() ?? converterTypeName;
-				if (converterTypeName == null && KnownConverterFactories.TryGetValue(toType, out var converterFactory))
-					return converterFactory();
 				if (converterTypeName == null)
 					return null;
 				var convertertype = Type.GetType(converterTypeName);
