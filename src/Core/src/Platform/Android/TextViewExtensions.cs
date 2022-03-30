@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Platform
 				maxLines = int.MaxValue;
 
 			bool singleLine = false;
-			bool shouldSetSingleLine = !OperatingSystem.IsAndroidVersionAtLeast(22); // TODO ezhart verify this on 22-25
+			bool shouldSetSingleLine = !OperatingSystem.IsAndroidVersionAtLeast(23); 
 
 			switch (lineBreakMode)
 			{
