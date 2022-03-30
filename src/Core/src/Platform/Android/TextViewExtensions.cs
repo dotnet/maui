@@ -79,17 +79,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaxLines(this TextView textView, ILabel label)
 		{
-			var maxLines = label.MaxLines;
-
-			if (maxLines == -1) // Default value
-			{
-				// MaxLines is not explicitly set, so just let it be whatever gets set by LineBreakMode
-				textView.SetLineBreakMode(label);
-				return;
-			}
-
-			textView.SetSingleLine(maxLines == 1);
-			textView.SetMaxLines(maxLines);
+			// Linebreak mode also handles settng MaxLines
+			textView.SetLineBreakMode(label);
 		}
 
 		public static void UpdatePadding(this TextView textView, ILabel label)
@@ -159,12 +150,12 @@ namespace Microsoft.Maui.Platform
 				maxLines = int.MaxValue;
 
 			bool singleLine = false;
+			bool shouldSetSingleLine = !OperatingSystem.IsAndroidVersionAtLeast(22); // TODO ezhart verify this on 22-25
 
 			switch (lineBreakMode)
 			{
 				case LineBreakMode.NoWrap:
 					maxLines = 1;
-					singleLine = true;
 					textView.Ellipsize = null;
 					break;
 				case LineBreakMode.WordWrap:
@@ -174,23 +165,36 @@ namespace Microsoft.Maui.Platform
 					textView.Ellipsize = null;
 					break;
 				case LineBreakMode.HeadTruncation:
-					maxLines = 1;
-					singleLine = true; // Workaround for bug in older Android API versions (https://bugzilla.xamarin.com/show_bug.cgi?id=49069)
+					maxLines = 1; // If maxLines is anything greater than 1, the truncation will be ignored: https://developer.android.com/reference/android/widget/TextView#setEllipsize(android.text.TextUtils.TruncateAt)
+
+					if (shouldSetSingleLine) 
+					{
+						singleLine = true; // Workaround for bug in older Android API versions (https://issuetracker.google.com/issues/36950033) (https://bugzilla.xamarin.com/show_bug.cgi?id=49069)
+					}
+
 					textView.Ellipsize = TextUtils.TruncateAt.Start;
 					break;
 				case LineBreakMode.TailTruncation:
-					maxLines = 1;
-					singleLine = true;
+
+					// Leaving this in for now to preserve existing behavior
+					// Technically, we don't _need_ this for Labels; they will handle Ellipsization at the end just fine, even with multiple lines
+					// But we don't have a mechanism for setting MaxLines on other controls (e.g., Button) right now, so we need to force it here or
+					// they will potentially exceed a single line. Also, changing this behavior the for Labels would technically be breaking (though
+					// possibly less surprising than what happens currently).
+					maxLines = 1; 
 					textView.Ellipsize = TextUtils.TruncateAt.End;
 					break;
 				case LineBreakMode.MiddleTruncation:
-					maxLines = 1;
-					singleLine = true; // Workaround for bug in older Android API versions (https://bugzilla.xamarin.com/show_bug.cgi?id=49069)
+					maxLines = 1; // If maxLines is anything greater than 1, the truncation will be ignored: https://developer.android.com/reference/android/widget/TextView#setEllipsize(android.text.TextUtils.TruncateAt)
 					textView.Ellipsize = TextUtils.TruncateAt.Middle;
 					break;
 			}
 
-			textView.SetSingleLine(singleLine);
+			if (shouldSetSingleLine) // Save ourselves this trip across the bridge if we're on an API level that doesn't need it
+			{
+				textView.SetSingleLine(singleLine);
+			}
+
 			textView.SetMaxLines(maxLines.Value);
 		}
 	}
