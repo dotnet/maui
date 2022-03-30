@@ -113,11 +113,11 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		}
 
 		/// <summary>
-		/// Allows customizing how external links are opened.
-		/// Opens external links in the system browser by default.
+		/// Allows customizing how links are opened.
+		/// By default, opens internal links in the webview and external links in an external app.
 		/// </summary>
 		[Category("Action")]
-		[Description("Allows customizing how external links are opened. Opens external links in the system browser by default.")]
+		[Description("Allows customizing how links are opened. By default, opens internal links in the webview and external links in an external app.")]
 		public EventHandler<UrlLoadingEventArgs> UrlLoading;
 
 		private void OnHostPagePropertyChanged() => StartWebViewCoreIfPossible();
