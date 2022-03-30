@@ -10,6 +10,11 @@
   </PropertyGroup>
 
   <Target Name="AddStaticWebAssetsForClickOnce" AfterTargets="ComputeFilesToPublish" Condition="'$(PublishProtocol)' == 'ClickOnce'">
+    <!-- Remove the development manifest from the output since its not used and it will otherwise get incorrectly loaded in production. -->
+    <ItemGroup>
+      <ContentWithTargetPath Remove="$(StaticWebAssetDevelopmentManifestPath)" />
+    </ItemGroup>
+
     <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_ClickOnceAssetCandidate" />
     </ComputeStaticWebAssetsTargetPaths>
@@ -19,6 +24,11 @@
   </Target>
 
   <Target Name="AddStaticWebAssetsForAppXBundle" BeforeTargets="PublishItemsOutputGroup" Condition="'$(PublishProtocol)' == 'FileSystem'">
+    <!-- Remove the development manifest from the output since its not used and it will otherwise get incorrectly loaded in production. -->
+    <ItemGroup>
+      <ContentWithTargetPath Remove="$(StaticWebAssetDevelopmentManifestPath)" />
+    </ItemGroup>
+
     <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_AppXBundleAssetCandidate" />
     </ComputeStaticWebAssetsTargetPaths>
