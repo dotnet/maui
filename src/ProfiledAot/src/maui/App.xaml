@@ -8,9 +8,8 @@
         <ResourceDictionary Source="Resources/Styles.xaml" />
         <!-- Everything to create in addition to the template -->
         <ResourceDictionary>
-          <SolidColorBrush x:Key="ProfiledAot_AppThemeBinding" Color="{AppThemeBinding Default=Black}"/>
-          <SolidColorBrush x:Key="ProfiledAot_OnIdiom" Color="{OnIdiom Default=Black}"/>
-          <CollectionView x:Key="ProfiledAot_CollectionView" Margin="{AppThemeBinding Default=1,1,1,1}" />
+          <SolidColorBrush x:Key="ProfiledAot_AppThemeBinding_Color" Color="{AppThemeBinding Default=Black}"/>
+          <CollectionView x:Key="ProfiledAot_CollectionView_OnIdiom_Thickness" Margin="{OnIdiom Default=1,1,1,1}" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
