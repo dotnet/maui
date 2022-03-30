@@ -1,31 +1,22 @@
-﻿Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationEventArgs
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationEventArgs.ExternalLinkNavigationEventArgs(System.Uri! uri) -> void
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationEventArgs.ExternalLinkNavigationPolicy.get -> Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationEventArgs.ExternalLinkNavigationPolicy.set -> void
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationEventArgs.Uri.get -> System.Uri!
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy.CancelNavigation = 2 -> Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy.InsecureOpenInWebView = 1 -> Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy.OpenInExternalBrowser = 0 -> Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy
-Microsoft.AspNetCore.Components.WebView.Maui.AndroidWebKitWebViewManager
+﻿Microsoft.AspNetCore.Components.WebView.Maui.AndroidWebKitWebViewManager
 Microsoft.AspNetCore.Components.WebView.Maui.AndroidWebKitWebViewManager.AndroidWebKitWebViewManager(Android.Webkit.WebView! webview, System.IServiceProvider! services, Microsoft.AspNetCore.Components.Dispatcher! dispatcher, Microsoft.Extensions.FileProviders.IFileProvider! fileProvider, Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore! jsComponents, string! hostPageRelativePath) -> void
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorAndroidWebView
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorAndroidWebView.BlazorAndroidWebView(Android.Content.Context! context) -> void
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.BlazorWebView() -> void
-Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.ExternalNavigationStarting -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationEventArgs!>?
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.HostPage.get -> string?
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.HostPage.set -> void
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.RootComponents.get -> Microsoft.AspNetCore.Components.WebView.Maui.RootComponentsCollection!
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.UrlLoading -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs!>?
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.BlazorWebViewHandler() -> void
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.BlazorWebViewHandler(Microsoft.Maui.PropertyMapper? mapper) -> void
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.CreateFileProvider(string! contentRootDir) -> Microsoft.Extensions.FileProviders.IFileProvider!
-Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.ExternalNavigationStarting -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationEventArgs!>?
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.HostPage.get -> string?
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.JSComponents.get -> Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore!
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.RootComponents.get -> Microsoft.AspNetCore.Components.WebView.Maui.RootComponentsCollection!
+Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.UrlLoading -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs!>?
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.ComponentType.get -> System.Type?
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.ComponentType.set -> void
@@ -37,6 +28,14 @@ Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.Selector.set -> void
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponentsCollection
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponentsCollection.JSComponents.get -> Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore!
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponentsCollection.RootComponentsCollection(Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore! jsComponents) -> void
+Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs
+Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.Url.get -> System.Uri!
+Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.UrlLoadingStrategy.get -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
+Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.UrlLoadingStrategy.set -> void
+Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
+Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.CancelLoad = 2 -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
+Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.OpenExternally = 0 -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
+Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.OpenInWebView = 1 -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
 Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions
 override Microsoft.AspNetCore.Components.WebView.Maui.AndroidWebKitWebViewManager.NavigateCore(System.Uri! absoluteUri) -> void
 override Microsoft.AspNetCore.Components.WebView.Maui.AndroidWebKitWebViewManager.SendMessage(string! message) -> void
@@ -44,7 +43,7 @@ override Microsoft.AspNetCore.Components.WebView.Maui.BlazorAndroidWebView.OnKey
 override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.CreatePlatformView() -> Microsoft.AspNetCore.Components.WebView.Maui.BlazorAndroidWebView!
 override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.DisconnectHandler(Microsoft.AspNetCore.Components.WebView.Maui.BlazorAndroidWebView! platformView) -> void
 static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.MapHostPage(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! handler, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView! webView) -> void
-static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.MapNotifyExternalNavigationStarting(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! handler, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView! webView) -> void
+static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.MapNotifyUrlLoading(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! handler, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView! webView) -> void
 static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.MapRootComponents(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! handler, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView! webView) -> void
 static Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions.AddBlazorWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
