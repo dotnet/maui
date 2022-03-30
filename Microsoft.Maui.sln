@@ -198,10 +198,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiBlazorWebView.DeviceTes
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedSource", "SharedSource", "{4F2926C8-43AB-4328-A735-D9EAD699F81D}"
 	ProjectSection(SolutionItems) = preProject
-		src\BlazorWebView\src\SharedSource\ExternalLinkNavigationEventArgs.cs = src\BlazorWebView\src\SharedSource\ExternalLinkNavigationEventArgs.cs
-		src\BlazorWebView\src\SharedSource\ExternalLinkNavigationPolicy.cs = src\BlazorWebView\src\SharedSource\ExternalLinkNavigationPolicy.cs
 		src\BlazorWebView\src\SharedSource\QueryStringHelper.cs = src\BlazorWebView\src\SharedSource\QueryStringHelper.cs
+		src\BlazorWebView\src\SharedSource\UrlLoadingStrategy.cs = src\BlazorWebView\src\SharedSource\UrlLoadingStrategy.cs
 		src\BlazorWebView\src\SharedSource\WebView2WebViewManager.cs = src\BlazorWebView\src\SharedSource\WebView2WebViewManager.cs
+		src\BlazorWebView\src\SharedSource\UrlLoadingEventArgs.cs = src\BlazorWebView\src\SharedSource\UrlLoadingEventArgs.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.Droid", "src\Core\tests\Benchmarks.Droid\Benchmarks.Droid.csproj", "{5B56A734-D53C-4635-A53E-F889FCFCDD66}"
