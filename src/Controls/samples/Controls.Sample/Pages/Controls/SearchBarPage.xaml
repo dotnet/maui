@@ -74,6 +74,11 @@
                 <SearchBar
                     IsTextPredictionEnabled="False"/>
                 <Label
+                    Text="TextChanged"
+                    Style="{StaticResource Headline}"/>
+                <SearchBar
+                    TextChanged="OnSearchBarTextChanged"/>
+                <Label
                     Text="Background color"
                     Style="{StaticResource Headline}"/>
                 <SearchBar
