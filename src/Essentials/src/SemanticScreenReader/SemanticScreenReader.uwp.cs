@@ -1,27 +1,18 @@
-﻿#if WINDOWS_UWP
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Media;
-#elif WINDOWS
+﻿using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-#endif
 
-
-
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Accessibility
 {
-	public partial class SemanticScreenReaderImplementation : ISemanticScreenReader
+	partial class SemanticScreenReaderImplementation : ISemanticScreenReader
 	{
 		public void Announce(string text)
 		{
-			if (Platform.CurrentWindow == null)
+			if (WindowStateManager.Default.GetActiveWindow() is not Window window)
 				return;
 
-			var peer = FindAutomationPeer(Platform.CurrentWindow.Content);
+			var peer = FindAutomationPeer(window.Content);
 
 			// This GUID correlates to the internal messages used by UIA to perform an announce
 			// You can extract it  by using accessibility insights to monitor UIA events
@@ -34,8 +25,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 		}
 
 		// This isn't great but it's the only way I've found to announce with WinUI.
-		// You have to locate a control that has an automation peer and then use that 
-		// to perform the announce operation. This creates scenarios where the 
+		// You have to locate a control that has an automation peer and then use that
+		// to perform the announce operation. This creates scenarios where the
 		// screen might not have any automation peers on it to use but in those cases
 		// you really shouldn't be using the announce API
 		static AutomationPeer FindAutomationPeer(DependencyObject depObj)

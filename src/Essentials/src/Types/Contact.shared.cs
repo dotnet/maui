@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Contact']/Docs" />
 	public class Contact

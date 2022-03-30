@@ -2,7 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tizen.Security;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{

@@ -2,7 +2,7 @@
 using Android.App;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Handlers
 {

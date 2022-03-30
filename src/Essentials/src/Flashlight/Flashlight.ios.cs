@@ -1,9 +1,10 @@
 using System.Threading.Tasks;
 using AVFoundation;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class FlashlightImplementation : IFlashlight
+	class FlashlightImplementation : IFlashlight
 	{
 		public Task TurnOnAsync()
 		{

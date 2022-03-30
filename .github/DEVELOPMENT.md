@@ -21,7 +21,8 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
    dotnet nuget locals all --clear
    ```
    > NOTE: this is going to contain the "stable" versions of the packages, so you will have to clear the NuGet cache when this feed changes and when .NET ships. The various `darc-pub-dotnet-*` feeds are temporary and are generated on various builds. These feeds my disappear and be replaced with new ones as new builds come out. Make sure to verify that you are on the latest here and clear the nuget cache if it changes.
-4. If you're on Windows install [SDK 20348](https://go.microsoft.com/fwlink/?linkid=2164145)
+4. If you're on a Windows development machine, install [SDK 20348](https://go.microsoft.com/fwlink/?linkid=2164145)
+5. If you're on a MacOS development machine, install [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-macos)
    
 
 ### .NET MAUI Workload
@@ -30,21 +31,49 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 
 Install the .NET MAUI workload using the versions from a particular branch:  
 
-For example, the "preview.14" branch:
+#### Preview 14 branch
 
-```
+
+Windows:
+
+```bat
 iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
 .\maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
-``` 
+```
+
+MacOS:
+
+```bash
+curl -O -L https://aka.ms/dotnet/maui/maui-install.ps1
+sudo pwsh -File ./maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
+```
+
 
 > NOTE: the branch (`-b 'release/6.0.2xx-preview14'`) and version (`-v 6.0.200-preview`) parameters. The "preview 14" branch currently requires the 6.0.200 SDK band since the manifests are all in that SDK band - this will change in the future
 
-Or, the "main" branch:
+#### main branch
+
+Windows:
+
+1. First, install .NET SDK 6.0.300
+
+2. Next run the following workload command:
 
 ```
-iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
-.\maui-install.ps1 -b 'main' -v '6.0.300-preview'
+dotnet workload install maui `
+  --from-rollback-file https://aka.ms/dotnet/maui/main.json `
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-4050c126/nuget/v3/index.json `
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-572aeedc/nuget/v3/index.json `
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json `
+  --source https://api.nuget.org/v3/index.json
 ``` 
+
+MacOS:
+
+```bash
+curl -O -L https://aka.ms/dotnet/maui/maui-install.ps1
+sudo pwsh -File ./maui-install.ps1 -b 'main' -v '6.0.300-preview'
+```
 
 ### iOS / MacCatalyst
 
@@ -68,6 +97,8 @@ dotnet cake --target=VS-NET6 --workloads=global
 
 ### Compile using a local `bin\dotnet`
 
+#### Windows
+
 You can run a `Cake` target to bootstrap .NET 6 in `bin\dotnet` and launch Visual Studio:
 
 ```dotnetcli
@@ -76,7 +107,6 @@ dotnet cake --target=VS-NET6
 ```
 
 _NOTES:_
-- _VS Mac is not yet supported._
 - _If the IDE doesn't show any Android devices try unloading and reloading the `Sample.Droid-net6` project._
 
 You can also run commands individually:
@@ -104,6 +134,26 @@ Try out a "single project", you will need the `-f` switch to choose the platform
 ```dotnetcli
 .\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-android
 .\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-ios
+```
+
+#### MacOS
+
+> 💡 _VS Mac is not yet supported._
+
+```bash
+# install local tools required to build (cake, pwsh, etc..)
+dotnet tool restore
+
+# build MAUI
+dotnet build Microsoft.Maui-mac.slnf
+```
+
+Try out a "single project", you will need the `-f` switch to choose the platform:
+
+```bash
+dotnet build src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-ios
+dotnet build src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-maccatalyst
+dotnet build src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-android
 ```
 
 ### Blazor Desktop

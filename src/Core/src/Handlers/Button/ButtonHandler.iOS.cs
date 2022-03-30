@@ -74,6 +74,12 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdatePadding(button, DefaultPadding);
 		}
 
+		public static void MapLineBreakMode(IButtonHandler handler, IButton button)
+		{
+			if (button is ILineBreakMode lineBreakMode)
+				handler.PlatformView?.UpdateLineBreakMode(lineBreakMode);
+		}
+
 		public static void MapFont(IButtonHandler handler, ITextStyle button)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
@@ -99,10 +105,10 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapImageSource(IButtonHandler handler, IImageButton image) =>
+		public static void MapImageSource(IButtonHandler handler, IImage image) =>
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapImageSourceAsync(IButtonHandler handler, IImageButton image)
+		public static Task MapImageSourceAsync(IButtonHandler handler, IImage image)
 		{
 			if (image.Source == null)
 			{

@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Dispatching
 
 		public TimeSpan Interval { get; set; }
 
-		public bool IsRepeating { get; set; }
+		public bool IsRepeating { get; set; } = true;
 
 		public bool IsRunning { get; private set; }
 

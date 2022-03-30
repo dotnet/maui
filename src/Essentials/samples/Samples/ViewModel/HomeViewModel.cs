@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
 using Samples.Model;
 using Samples.View;
 

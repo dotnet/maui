@@ -6,9 +6,9 @@ using CoreVideo;
 using Foundation;
 using ObjCRuntime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Platform
+	static class PlatformUtils
 	{
 		internal static NSWindow GetCurrentWindow(bool throwIfNull = true)
 		{
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Essentials
 		}
 	}
 
-	internal static class CoreGraphicsInterop
+	static class CoreGraphicsInterop
 	{
 		public static uint MainDisplayId => CGMainDisplayID();
 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Essentials
 		}
 	}
 
-	internal static class CVDisplayLinkInterop
+	static class CVDisplayLinkInterop
 	{
 		[DllImport(Constants.CoreGraphicsLibrary)]
 		static extern int CVDisplayLinkCreateWithCGDisplay(uint display, out IntPtr handle);
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Essentials
 		}
 	}
 
-	internal static class IOKit
+	static class IOKit
 	{
 		const string IOKitLibrary = "/System/Library/Frameworks/IOKit.framework/IOKit";
 		const string IOPlatformExpertDeviceClassName = "IOPlatformExpertDevice";

@@ -1,3 +1,6 @@
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.ApplicationModel;
+
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	static class HardwareSupport
@@ -8,7 +11,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			true;
 #elif __IOS__
 			// all iOS devices (and only devices) have an accelerometer
-			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
+			DeviceInfo.DeviceType == DeviceType.Physical;
 #elif WINDOWS_UWP || WINDOWS
 			// UWP does not emulate, and only some devices have, an accelerometer
 			global::Windows.Devices.Sensors.Accelerometer.GetDefault() != null;
@@ -20,7 +23,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			true;
 #elif __IOS__
 			// all iOS devices (and only devices) have a magnetometer
-			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
+			DeviceInfo.DeviceType == DeviceType.Physical;
 #elif WINDOWS_UWP || WINDOWS
 			// UWP does not emulate, and only some devices have, a magnetometer
 			global::Windows.Devices.Sensors.Magnetometer.GetDefault() != null;
@@ -29,10 +32,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public static bool HasGyroscope =>
 #if __ANDROID__
 			// Android emulators and devices have gyros
-			Microsoft.Maui.Essentials.Platform.SensorManager?.GetDefaultSensor(Android.Hardware.SensorType.Gyroscope) != null;
+			Android.App.Application.Context.GetSystemService(Android.Content.Context.SensorService) is Android.Hardware.SensorManager sensorManager &&
+			sensorManager.GetDefaultSensor(Android.Hardware.SensorType.Gyroscope) is not null;
 #elif __IOS__
 			// all iOS devices (and only devices) have a gyroscope
-			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
+			DeviceInfo.DeviceType == DeviceType.Physical;
 #elif WINDOWS_UWP || WINDOWS
 			// UWP does not emulate, and only some devices have, a gyroscope
 			global::Windows.Devices.Sensors.Gyrometer.GetDefault() != null;
@@ -44,7 +48,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			true;
 #elif __IOS__
 			// all iOS devices (and only devices) have a compass
-			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
+			DeviceInfo.DeviceType == DeviceType.Physical;
 #elif WINDOWS_UWP || WINDOWS
 			// UWP does not emulate, and only some devices have, a compass
 			global::Windows.Devices.Sensors.Compass.GetDefault() != null;
@@ -56,7 +60,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			true;
 #elif __IOS__
 			// all iOS devices (and only devices) have a battery
-			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
+			DeviceInfo.DeviceType == DeviceType.Physical;
 #elif WINDOWS_UWP || WINDOWS
 			// UWP appears to emulate a battery
 			// TODO: verify this
@@ -66,10 +70,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public static bool HasFlash =>
 #if __ANDROID__
 			// TODO: android emulates the lamp, I think...
-			Microsoft.Maui.Essentials.Platform.HasSystemFeature(Android.Content.PM.PackageManager.FeatureCameraFlash);
+			PlatformUtils.HasSystemFeature(Android.Content.PM.PackageManager.FeatureCameraFlash);
 #elif __IOS__
 			// all iOS devices (and only devices) have a camera
-			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
+			DeviceInfo.DeviceType == DeviceType.Physical;
 #elif WINDOWS_UWP || WINDOWS
 			// TODO: most UWP devices don't have a camera lamp (mobile devices do, we we don't care about those)
 			false;
@@ -80,7 +84,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			true;
 #elif __IOS__
 			// iphone 6 and never have a barometer. looking in how to test this.
-			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
+			DeviceInfo.DeviceType == DeviceType.Physical;
 #elif WINDOWS_UWP || WINDOWS
 			// TODO: most UWP devices don't have a barometer (mobile devices do, we we don't care about those)
 			false;

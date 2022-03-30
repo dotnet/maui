@@ -3,6 +3,7 @@ parameters:
   poolName: ''
   provisionatorChannel: latest
   artifact: 'nuget'
+  libraryPacksArtifact: 'library-packs'
 
 steps:
   - ${{ if eq(parameters.platform, 'macOS') }}:
@@ -24,6 +25,7 @@ steps:
       PRIVATE_BUILD: $(PrivateBuild)
   - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
     displayName: 'Pack .NET Maui'
+    name: PackMaui
     env:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
@@ -39,6 +41,7 @@ steps:
         artifacts/**/*.zip
         artifacts/vs-workload.props
         eng/automation/SignList.xml
+        !artifacts/library-packs/**
       TargetFolder: $(build.artifactstagingdirectory)
       flattenFolders: true
   - task: CopyFiles@2
@@ -63,4 +66,21 @@ steps:
     displayName: publish artifacts
     inputs:
       ArtifactName: ${{ parameters.artifact }}
-        
+  - task: DeleteFiles@1
+    inputs:
+      SourceFolder: $(build.artifactstagingdirectory)
+      Contents: '**/*'
+  - task: CopyFiles@2
+    condition: always()
+    displayName: 'Copy library packs to staging'
+    inputs:
+      Contents: |
+        artifacts/library-packs/**
+      TargetFolder: $(build.artifactstagingdirectory)
+      flattenFolders: true
+  - task: PublishBuildArtifacts@1
+    condition: always()
+    displayName: publish library packs artifacts
+    inputs:
+      ArtifactName: ${{ parameters.libraryPacksArtifact }}
+

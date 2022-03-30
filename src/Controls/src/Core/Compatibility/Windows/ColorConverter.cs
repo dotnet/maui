@@ -5,7 +5,7 @@ using Windows.UI;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public sealed class ColorConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{

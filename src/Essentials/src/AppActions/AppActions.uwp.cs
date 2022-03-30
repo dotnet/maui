@@ -4,58 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.StartScreen;
-
-#if WINDOWS_UWP
-using Windows.ApplicationModel.Activation;
-#elif WINDOWS
 using Microsoft.UI.Xaml;
-#endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class AppActions
+	class AppActionsImplementation : IAppActions, IPlatformAppActions
 	{
-		public static string IconDirectory { get; set; } = "";
-
-		public static string IconExtension { get; set; } = "png";
-
-		internal static async Task OnLaunched(LaunchActivatedEventArgs e)
-		{
-			var args = e?.Arguments;
-#if !WINDOWS_UWP
-			if (string.IsNullOrEmpty(args))
-			{
-				var cliArgs = Environment.GetCommandLineArgs();
-				if (cliArgs?.Length > 1)
-					args = cliArgs[1];
-			}
-#endif
-
-			if (args?.StartsWith(Implementations.AppActionsExtensions.AppActionPrefix) ?? false)
-			{
-				var id = Implementations.AppActionsExtensions.ArgumentsToId(args);
-
-				if (!string.IsNullOrEmpty(id))
-				{
-					var actions = await AppActions.GetAsync();
-					var appAction = actions.FirstOrDefault(a => a.Id == id);
-
-					if (appAction != null)
-						InvokeOnAppAction(null, appAction);
-				}
-			}
-		}
-	}
-}
-
-namespace Microsoft.Maui.Essentials.Implementations
-{
-	public class AppActionsImplementation : IAppActions
-	{
-		public string Type => "XE_APP_ACTION_TYPE";
-
-		public bool IsSupported
-		   => true;
+		public bool IsSupported => true;
 
 		public async Task<IEnumerable<AppAction>> GetAsync()
 		{
@@ -88,15 +43,42 @@ namespace Microsoft.Maui.Essentials.Implementations
 			await jumpList.SaveAsync();
 		}
 
-		public Task SetAsync(params AppAction[] actions)
-		{	
-			return SetAsync(actions.AsEnumerable<AppAction>());
+		public event EventHandler<AppActionEventArgs> AppActionActivated;
+
+		public async Task OnLaunched(LaunchActivatedEventArgs e)
+		{
+			var args = e?.Arguments;
+#if !WINDOWS_UWP
+			if (string.IsNullOrEmpty(args))
+			{
+				var cliArgs = Environment.GetCommandLineArgs();
+				if (cliArgs?.Length > 1)
+					args = cliArgs[1];
+			}
+#endif
+
+			if (args?.StartsWith(AppActionsExtensions.AppActionPrefix) ?? false)
+			{
+				var id = AppActionsExtensions.ArgumentsToId(args);
+
+				if (!string.IsNullOrEmpty(id))
+				{
+					var actions = await GetAsync();
+					var appAction = actions.FirstOrDefault(a => a.Id == id);
+
+					if (appAction != null)
+						AppActionActivated?.Invoke(null, new AppActionEventArgs(appAction));
+				}
+			}
 		}
 	}
 
-	internal static class AppActionsExtensions
+	static partial class AppActionsExtensions
 	{
 		internal const string AppActionPrefix = "XE_APP_ACTIONS-";
+
+		internal const string iconDirectory = "";
+		internal const string iconExtension = ".png";
 
 		internal static string ArgumentsToId(this string arguments)
 		{
@@ -119,11 +101,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			if (!string.IsNullOrEmpty(action.Icon))
 			{
-				var dir = AppActions.IconDirectory.Trim('/', '\\').Replace('\\', '/');
+				var dir = iconDirectory?.Trim('/', '\\').Replace('\\', '/');
 				if (!string.IsNullOrEmpty(dir))
 					dir += "/";
 
-				var ext = AppActions.IconExtension;
+				var ext = iconExtension;
 				if (!string.IsNullOrEmpty(ext) && !ext.StartsWith("."))
 					ext = "." + ext;
 

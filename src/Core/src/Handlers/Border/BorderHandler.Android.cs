@@ -46,6 +46,18 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView.AddView(view.ToPlatform(handler.MauiContext));
 		}
 
+		public static void MapHeight(IBorderHandler handler, IBorderView border)
+		{
+			handler.PlatformView?.UpdateHeight(border);
+			handler.PlatformView?.InvalidateBorderStrokeBounds();
+		}
+
+		public static void MapWidth(IBorderHandler handler, IBorderView border)
+		{
+			handler.PlatformView?.UpdateWidth(border);
+			handler.PlatformView?.InvalidateBorderStrokeBounds();
+		}
+
 		public static void MapContent(IBorderHandler handler, IBorderView border)
 		{
 			UpdateContent(handler);

@@ -33,9 +33,15 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this UILabel platformLabel, ILabel label)
 		{
-			platformLabel.TextAlignment = label.HorizontalTextAlignment.ToPlatform(label);
+			platformLabel.TextAlignment = label.HorizontalTextAlignment.ToPlatformHorizontal(label);
 		}
 
+		public static void UpdateVerticalTextAlignment(this UILabel platformLabel, ILabel label)
+		{
+			if (!platformLabel.Bounds.IsEmpty)
+				platformLabel.InvalidateMeasure(label);
+		}
+		
 		public static void UpdateLineBreakMode(this UILabel platformLabel, ILabel label)
 		{
 			platformLabel.SetLineBreakMode(label);

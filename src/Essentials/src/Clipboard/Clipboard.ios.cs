@@ -1,38 +1,42 @@
+#nullable enable
 using System;
 using System.Threading.Tasks;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public partial class ClipboardImplementation : IClipboard
+	partial class ClipboardImplementation : IClipboard
 	{
-		public Task SetTextAsync(string text)
+		NSObject? observer;
+
+		public Task SetTextAsync(string? text)
 		{
 			UIPasteboard.General.String = text;
 			return Task.CompletedTask;
 		}
 
-		NSObject observer;
-
 		public bool HasText
 			=> UIPasteboard.General.HasStrings;
 
-		public Task<string> GetTextAsync()
+		public Task<string?> GetTextAsync()
 			=> Task.FromResult(UIPasteboard.General.String);
 
-		public void StartClipboardListeners()
+		void StartClipboardListeners()
 		{
 			observer = NSNotificationCenter.DefaultCenter.AddObserver(
 				UIPasteboard.ChangedNotification,
 				ClipboardChangedObserver);
 		}
 
-		public void StopClipboardListeners()
-			=> NSNotificationCenter.DefaultCenter.RemoveObserver(observer);
+		void StopClipboardListeners()
+		{
+			if (observer is not null)
+				NSNotificationCenter.DefaultCenter.RemoveObserver(observer);
+		}
 
 		public void ClipboardChangedObserver(NSNotification notification)
-			=> Clipboard.ClipboardChangedInternal();
+			=> OnClipboardContentChanged();
 	}
 }

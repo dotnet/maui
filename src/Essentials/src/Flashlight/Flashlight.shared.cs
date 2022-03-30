@@ -1,34 +1,32 @@
 #nullable enable
-using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	public interface IFlashlight
 	{
 		Task TurnOnAsync();
+
 		Task TurnOffAsync();
 	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Flashlight.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Flashlight']/Docs" />
 	public static partial class Flashlight
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Flashlight.xml" path="//Member[@MemberName='TurnOnAsync']/Docs" />
 		public static Task TurnOnAsync() =>
-			Current.TurnOnAsync();
+			Default.TurnOnAsync();
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Flashlight.xml" path="//Member[@MemberName='TurnOffAsync']/Docs" />
 		public static Task TurnOffAsync() =>
-			Current.TurnOffAsync();
+			Default.TurnOffAsync();
 
-		static IFlashlight? currentImplementation;
+		static IFlashlight? defaultImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IFlashlight Current =>
-			currentImplementation ??= new FlashlightImplementation();
+		public static IFlashlight Default =>
+			defaultImplementation ??= new FlashlightImplementation();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IFlashlight? implementation) =>
-			currentImplementation = implementation;
+		internal static void SetDefault(IFlashlight? implementation) =>
+			defaultImplementation = implementation;
 	}
 }
