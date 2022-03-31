@@ -103,8 +103,7 @@
           "Microsoft.Maui.Controls.Runtime.win",
           "Microsoft.Maui.Essentials.Ref.win",
           "Microsoft.Maui.Essentials.Runtime.win",
-          "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop",
-          "Microsoft.WindowsAppSDK"
+          "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
       ]
     }
   },
@@ -248,10 +247,6 @@
     "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop": {
       "kind": "library",
       "version": "@MAUI_GRAPHICS_VERSION@"
-    },
-    "Microsoft.WindowsAppSDK": {
-      "kind": "library",
-      "version": "@WASDK_VERSION@"
     },
     "Microsoft.Maui.Sdk": {
       "kind": "sdk",
