@@ -26,6 +26,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -42,24 +43,25 @@ namespace Microsoft.Maui.Controls.Xaml
 			{ typeof(Font), typeof(FontTypeConverter) }
 		};
 
-		private static Dictionary<Type, Func<TypeConverter>> KnownConverterFactories = new()
+		static Dictionary<Type, Func<TypeConverter>> KnownConverterFactories = new()
 		{
 			{ typeof(Font), () => new FontTypeConverter() }
 		};
+
+		// caches both Type and MemberInfo keys to their corresponding TypeConverter
+		static readonly ConcurrentDictionary<MemberInfo, TypeConverter> s_converterCache = new();
 
 		internal static object ConvertTo(this object value, Type toType, Func<ParameterInfo> pinfoRetriever,
 			IServiceProvider serviceProvider, out Exception exception)
 		{
 			Func<TypeConverter> getConverter = () =>
 			{
-				ParameterInfo pInfo;
-				if (pinfoRetriever == null || (pInfo = pinfoRetriever()) == null)
+				if (pinfoRetriever == null || pinfoRetriever() is not ParameterInfo pInfo)
 					return null;
 
-				var converterTypeName = pInfo.CustomAttributes.GetTypeConverterTypeName();
-				if (converterTypeName == null)
+				var convertertype = pInfo.CustomAttributes.GetTypeConverterType();
+				if (convertertype == null)
 					return null;
-				var convertertype = Type.GetType(converterTypeName);
 				return (TypeConverter)Activator.CreateInstance(convertertype);
 			};
 
@@ -71,23 +73,47 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			Func<TypeConverter> getConverter = () =>
 			{
-				MemberInfo memberInfo;
+				TypeConverter converter = null;
+				if (minfoRetriever != null && minfoRetriever() is MemberInfo memberInfo)
+				{
+					if (!s_converterCache.TryGetValue(memberInfo, out converter))
+					{
+						if (memberInfo.CustomAttributes.GetTypeConverterType() is Type converterType)
+						{
+							converter = (TypeConverter)Activator.CreateInstance(converterType);
+						}
 
-				var converterTypeName = toType.GetTypeInfo().CustomAttributes.GetTypeConverterTypeName();
-				if (minfoRetriever != null && (memberInfo = minfoRetriever()) != null)
-					converterTypeName = memberInfo.CustomAttributes.GetTypeConverterTypeName() ?? converterTypeName;
-				if (converterTypeName == null && KnownConverterFactories.TryGetValue(toType, out var converterFactory))
+						// cache the result, even if it is null
+						s_converterCache[memberInfo] = converter;
+					}
+
+					if (converter is not null)
+					{
+						return converter;
+					}
+				}
+
+				if (KnownConverterFactories.TryGetValue(toType, out var converterFactory))
 					return converterFactory();
-				if (converterTypeName == null)
-					return null;
-				var convertertype = Type.GetType(converterTypeName);
-				return (TypeConverter)Activator.CreateInstance(convertertype);
+
+				if (!s_converterCache.TryGetValue(toType, out converter))
+				{
+					if (toType.CustomAttributes.GetTypeConverterType() is Type converterType)
+					{
+						converter = (TypeConverter)Activator.CreateInstance(converterType);
+					}
+
+					// cache the result, even if it is null
+					s_converterCache[toType] = converter;
+				}
+
+				return converter;
 			};
 
 			return ConvertTo(value, toType, getConverter, serviceProvider, out exception);
 		}
 
-		static string GetTypeConverterTypeName(this IEnumerable<CustomAttributeData> attributes)
+		static Type GetTypeConverterType(this IEnumerable<CustomAttributeData> attributes)
 		{
 			foreach (var converterAttribute in attributes)
 			{
@@ -95,18 +121,18 @@ namespace Microsoft.Maui.Controls.Xaml
 					continue;
 				var ctor = converterAttribute.ConstructorArguments[0];
 				if (ctor.ArgumentType == typeof(string))
-					return (string)ctor.Value;
+					return Type.GetType((string)ctor.Value);
 				if (ctor.ArgumentType == typeof(Type))
-					return ((Type)ctor.Value).AssemblyQualifiedName;
+					return (Type)ctor.Value;
 			}
 			return null;
 		}
 
 		//Don't change the name or the signature of this, it's used by XamlC
 		public static object ConvertTo(
-			this object value, 
+			this object value,
 			Type toType,
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type convertertype, 
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type convertertype,
 			IServiceProvider serviceProvider)
 		{
 			Exception exception = null;

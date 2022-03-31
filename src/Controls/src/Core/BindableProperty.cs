@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls
 			if (defaultBindingMode != BindingMode.Default && defaultBindingMode != BindingMode.OneWay && defaultBindingMode != BindingMode.OneWayToSource && defaultBindingMode != BindingMode.TwoWay && defaultBindingMode != BindingMode.OneTime)
 				throw new ArgumentException($"Not a valid type of BindingMode. Property: {returnType} {declaringType.Name}.{propertyName}. Default binding mode: {defaultBindingMode}", nameof(defaultBindingMode));
 
-			if (defaultValue == null && Nullable.GetUnderlyingType(returnType) == null && returnType.GetTypeInfo().IsValueType)
+			if (defaultValue == null && Nullable.GetUnderlyingType(returnType) == null && returnType.IsValueType)
 				defaultValue = Activator.CreateInstance(returnType);
 
 			if (defaultValue != null && !returnType.IsInstanceOfType(defaultValue))
@@ -95,7 +95,6 @@ namespace Microsoft.Maui.Controls
 
 			PropertyName = propertyName;
 			ReturnType = returnType;
-			ReturnTypeInfo = returnType.GetTypeInfo();
 			DeclaringType = declaringType;
 			DefaultValue = defaultValue;
 			DefaultBindingMode = defaultBindingMode;
@@ -136,8 +135,6 @@ namespace Microsoft.Maui.Controls
 		internal BindingPropertyChangedDelegate PropertyChanged { get; private set; }
 
 		internal BindingPropertyChangingDelegate PropertyChanging { get; private set; }
-
-		internal TypeInfo ReturnTypeInfo { get; }
 
 		internal ValidateValueDelegate ValidateValue { get; private set; }
 
@@ -204,35 +201,40 @@ namespace Microsoft.Maui.Controls
 
 		internal bool TryConvert(ref object value)
 		{
+			Type returnType = ReturnType;
+
 			if (value == null)
-				return !ReturnTypeInfo.IsValueType || ReturnTypeInfo.IsGenericType && ReturnTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>);
+				return !returnType.IsValueType || returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>);
 
 			Type valueType = value.GetType();
-			Type type = ReturnType;
+
+			// already the same type, no need to convert
+			if (returnType == valueType)
+				return true;
 
 			// Dont support arbitrary IConvertible by limiting which types can use this
-			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo) && Array.IndexOf(convertibleTo, type) != -1)
+			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo) && Array.IndexOf(convertibleTo, returnType) != -1)
 			{
-				value = Convert.ChangeType(value, type);
+				value = Convert.ChangeType(value, returnType);
 				return true;
 			}
-			if (KnownTypeConverters.TryGetValue(type, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
+			if (KnownTypeConverters.TryGetValue(returnType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
 			{
 				value = typeConverterTo.ConvertFromInvariantString(value.ToString());
 				return true;
 			}
-			if (ReturnTypeInfo.IsAssignableFrom(valueType.GetTypeInfo()))
+			if (returnType.IsAssignableFrom(valueType))
 				return true;
 
-			var cast = type.GetImplicitConversionOperator(fromType: valueType, toType: type) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: type);
+			var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
 			if (cast != null)
 			{
 				value = cast.Invoke(null, new[] { value });
 				return true;
 			}
-			if (KnownIValueConverters.TryGetValue(type, out IValueConverter valueConverter))
+			if (KnownIValueConverters.TryGetValue(returnType, out IValueConverter valueConverter))
 			{
-				value = valueConverter.Convert(value, type, null, CultureInfo.CurrentUICulture);
+				value = valueConverter.Convert(value, returnType, null, CultureInfo.CurrentUICulture);
 				return true;
 			}
 
