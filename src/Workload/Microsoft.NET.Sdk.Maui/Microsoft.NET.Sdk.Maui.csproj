@@ -82,6 +82,12 @@
         NewValue="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
     />
     <ReplaceText
+        Input="$(IntermediateOutputPath)WorkloadManifest.json"
+        Output="$(IntermediateOutputPath)WorkloadManifest.json"
+        OldValue="@WIN2D_VERSION@"
+        NewValue="$(MicrosoftGraphicsWin2DPackageVersion)"
+    />
+    <ReplaceText
         Input="%(_JsonVariableMatrix.OutputPath)"
         Output="%(_JsonVariableMatrix.OutputPath)"
         OldValue="%(_JsonVariableMatrix.OldValue)"

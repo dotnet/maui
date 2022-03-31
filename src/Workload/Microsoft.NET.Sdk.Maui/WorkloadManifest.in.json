@@ -258,6 +258,10 @@
       "kind": "library",
       "version": "@WASDK_BUILD_TOOLS_VERSION@"
     },
+    "Microsoft.Graphics.Win2D": {
+      "kind": "library",
+      "version": "@WIN2D_VERSION@"
+    },
     "Microsoft.Maui.Sdk": {
       "kind": "sdk",
       "version": "@VERSION@"
