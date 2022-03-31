@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Accessibility;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
 
 namespace Issue4169;
 
 public partial class MainPage : ContentPage
 {
-	//int count = 0;
+	int count = 0;
 
 	public MainPage()
 	{
