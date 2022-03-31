@@ -52,8 +52,21 @@
     <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Pages\ReproPage.xaml.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>ReproPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
   <Import Project="../../../Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
+  <ItemGroup>
+    <MauiXaml Update="Pages\ReproPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
 
 </Project>
