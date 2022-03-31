@@ -1,7 +1,10 @@
 using System;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Graphics.Drawables;
+using Android.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Load.Engine;
 using Bumptech.Glide.Request.Transition;
@@ -146,6 +149,79 @@ namespace Microsoft.Maui.DeviceTests
 			result2.Dispose();
 		}
 
+		[Fact]
+		public async Task LoadDrawableAsyncCorrectlyFetchesDrawable()
+		{
+			var imageSource = new CustomImageSourceStub(Colors.Red);
+
+			var cache = new CustomImageCacheStub();
+			var service = new CustomImageSourceServiceStub(cache);
+
+			var imageView = new ImageView(MauiProgram.DefaultContext);
+
+			// get an image
+			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
+			Assert.Equal(1, cache.Cache.Count);
+			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
+
+			// get the image again as a load
+			var result2 = await service.LoadDrawableAsync(imageSource, imageView);
+			Assert.Equal(1, cache.Cache.Count);
+			Assert.Equal(2, cache.Cache[imageSource.Color].Count);
+
+			// make sure it was NOT collected and we got the same image
+			Assert.Equal(result1.Value, imageView.Drawable);
+
+			result1.Dispose();
+			result2.Dispose();
+		}
+
+		[Fact]
+		public async Task DisposingLoadDrawableAsyncDoesNotDisposeRealBitmap()
+		{
+			var imageSource = new CustomImageSourceStub(Colors.Red);
+
+			var cache = new CustomImageCacheStub();
+			var service = new CustomImageSourceServiceStub(cache);
+
+			var imageView = new ImageView(MauiProgram.DefaultContext);
+
+			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
+			var result2 = await service.LoadDrawableAsync(imageSource, imageView);
+			
+			// dispose proxy
+			result2.Dispose();
+
+			// ensure the count went down
+			Assert.Equal(1, cache.Cache.Count);
+			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
+
+			result1.Dispose();
+		}
+
+		[Fact]
+		public async Task DisposingLoadDrawableAsyncBaseDoesNotDisposeRealBitmap()
+		{
+			var imageSource = new CustomImageSourceStub(Colors.Red);
+
+			var cache = new CustomImageCacheStub();
+			var service = new CustomImageSourceServiceStub(cache);
+
+			var imageView = new ImageView(MauiProgram.DefaultContext);
+
+			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
+			var result2 = await service.LoadDrawableAsync(imageSource, imageView);
+
+			// dispose drawable
+			result1.Dispose();
+
+			// ensure the count went down
+			Assert.Equal(1, cache.Cache.Count);
+			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
+
+			result2.Dispose();
+		}
+
 		async Task<bool> TryCollectFile(string bitmapFile)
 		{
 			var collected = false;
@@ -204,6 +280,30 @@ namespace Microsoft.Maui.DeviceTests
 			public override void OnResourceReady(Java.Lang.Object resource, ITransition transition)
 			{
 				tcsResult.TrySetResult(true);
+			}
+		}
+
+		class LoadDrawableAsyncImageSourceServiceStub : ImageSourceService
+		{
+			readonly CustomImageCacheStub _cache;
+
+			public LoadDrawableAsyncImageSourceServiceStub(CustomImageCacheStub cache)
+			{
+				_cache = cache;
+			}
+
+			public override Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+			{
+				if (imageSource is not ICustomImageSourceStub imageSourceStub)
+					return Task.FromResult<IImageSourceServiceResult<Drawable>>(null);
+
+				var color = imageSourceStub.Color;
+
+				var drawable = _cache.Get(color);
+
+				var result = new ImageSourceServiceResult(drawable, () => _cache.Return(color));
+
+				return Task.FromResult<IImageSourceServiceResult<Drawable>>(result);
 			}
 		}
 	}
