@@ -32,7 +32,7 @@
             TextColor="BlanchedAlmond"
             HorizontalOptions="Center" />
     </VerticalStackLayout>
-    
+
     -->
 
 </views:BasePage>
