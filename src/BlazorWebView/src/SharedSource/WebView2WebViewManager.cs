@@ -67,6 +67,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment _coreWebView2Environment;
 		private readonly Action<UrlLoadingEventArgs> _urlLoading;
+		private readonly Action<BlazorWebViewInitializingEventArgs> _blazorWebViewInitializing;
 		private readonly BlazorWebViewDeveloperTools _developerTools;
 
 		/// <summary>
@@ -79,6 +80,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="urlLoading">Callback invoked when a url is about to load.</param>
+		/// <param name="blazorWebViewInitializing">Callback invoked when the webview is being initialized.</param>
 		internal WebView2WebViewManager(
 			WebView2Control webview!!,
 			IServiceProvider services,
@@ -86,7 +88,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			IFileProvider fileProvider,
 			JSComponentConfigurationStore jsComponents,
 			string hostPageRelativePath,
-			Action<UrlLoadingEventArgs> urlLoading)
+			Action<UrlLoadingEventArgs> urlLoading,
+			Action<BlazorWebViewInitializingEventArgs> blazorWebViewInitializing)
 			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 
 		{
@@ -108,6 +111,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			_webview = webview;
 			_urlLoading = urlLoading;
+			_blazorWebViewInitializing = blazorWebViewInitializing;
 			_developerTools = services.GetRequiredService<BlazorWebViewDeveloperTools>();
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
@@ -173,23 +177,38 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		private async Task InitializeWebView2()
 		{
+			var args = new BlazorWebViewInitializingEventArgs();
 #if WEBVIEW2_MAUI
-            _coreWebView2Environment = await CoreWebView2Environment.CreateAsync()
+			((BlazorWebView)_blazorWebViewHandler.VirtualView).NotifyBlazorWebViewInitializing(args);
+            _coreWebView2Environment = await CoreWebView2Environment.CreateWithOptionsAsync(
+				browserExecutableFolder: args.BrowserExecutableFolder,
+				userDataFolder: args.UserDataFolder,
+				options: args.EnvironmentOptions)
 				.AsTask()
 				.ConfigureAwait(true);
 			await _webview.EnsureCoreWebView2Async();
 
 			var developerTools = _blazorWebViewHandler.DeveloperTools;
 #elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-			var userDataFolder = GetWebView2UserDataFolder();
-			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolder)
+			_blazorWebViewInitializing?.Invoke(args);
+			var userDataFolder = args.UserDataFolder ?? GetWebView2UserDataFolder();
+			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync(
+				browserExecutableFolder: args.BrowserExecutableFolder,
+				userDataFolder: userDataFolder,
+				options: args.EnvironmentOptions)
 				.ConfigureAwait(true);
+
 			await _webview.EnsureCoreWebView2Async(_coreWebView2Environment);
 
 			var developerTools = _developerTools;
 #endif
 
 			ApplyDefaultWebViewSettings(developerTools);
+
+			if (args.OnWebViewInitialized != null)
+			{
+				await args.OnWebViewInitialized(_webview).ConfigureAwait(true);
+			}
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
 

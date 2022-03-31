@@ -120,6 +120,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		[Description("Allows customizing how links are opened. By default, opens internal links in the webview and external links in an external app.")]
 		public EventHandler<UrlLoadingEventArgs> UrlLoading;
 
+		/// <summary>
+		/// Allows customizing the web view initialization process.
+		/// </summary>
+		[Category("Action")]
+		[Description("Allows customizing the web view initialization process.")]
+		public EventHandler<BlazorWebViewInitializingEventArgs> BlazorWebViewInitializing;
+
 		private void OnHostPagePropertyChanged() => StartWebViewCoreIfPossible();
 
 		private void OnServicesPropertyChanged() => StartWebViewCoreIfPossible();
@@ -170,7 +177,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				fileProvider,
 				RootComponents.JSComponents,
 				hostPageRelativePath,
-				(args) => UrlLoading?.Invoke(this, args));
+				(args) => UrlLoading?.Invoke(this, args),
+				(args) => BlazorWebViewInitializing?.Invoke(this, args));
 
 			foreach (var rootComponent in RootComponents)
 			{

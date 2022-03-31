@@ -57,6 +57,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			name: nameof(UrlLoading),
 			propertyType: typeof(EventHandler<UrlLoadingEventArgs>),
 			ownerType: typeof(BlazorWebView));
+
+		/// <summary>
+		/// The backing store for the <see cref="UrlLoading"/> property.
+		/// </summary>
+		public static readonly DependencyProperty BlazorWebViewInitializingProperty = DependencyProperty.Register(
+			name: nameof(BlazorWebViewInitializing),
+			propertyType: typeof(EventHandler<BlazorWebViewInitializingEventArgs>),
+			ownerType: typeof(BlazorWebView));
+
 		#endregion
 
 		private const string WebViewTemplateChildName = "WebView";
@@ -115,6 +124,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		{
 			get => (EventHandler<UrlLoadingEventArgs>)GetValue(UrlLoadingProperty);
 			set => SetValue(UrlLoadingProperty, value);
+		}
+
+		/// <summary>
+		/// Allows customizing how links are opened.
+		/// By default, opens internal links in the webview and external links in an external app.
+		/// </summary>
+		public EventHandler<BlazorWebViewInitializingEventArgs> BlazorWebViewInitializing
+		{
+			get => (EventHandler<BlazorWebViewInitializingEventArgs>)GetValue(BlazorWebViewInitializingProperty);
+			set => SetValue(BlazorWebViewInitializingProperty, value);
 		}
 
 		/// <summary>
@@ -197,7 +216,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				fileProvider,
 				RootComponents.JSComponents,
 				hostPageRelativePath,
-				(args) => UrlLoading?.Invoke(this, args));
+				(args) => UrlLoading?.Invoke(this, args),
+				(args) => BlazorWebViewInitializing?.Invoke(this, args));
 
 			foreach (var rootComponent in RootComponents)
 			{

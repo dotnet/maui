@@ -32,6 +32,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		event EventHandler<UrlLoadingEventArgs>? UrlLoading;
 
 		/// <summary>
+		/// Allows customizing how links are opened.
+		/// By default, opens internal links in the webview and external links in an external app.
+		/// </summary>
+		event EventHandler<BlazorWebViewInitializingEventArgs>? BlazorWebViewInitializing;
+
+		/// <summary>
 		/// Creates a file provider for static assets used in the <see cref="BlazorWebView"/>. The default implementation
 		/// serves files from a platform-specific location. Override this method to return a custom <see cref="IFileProvider"/> to serve assets such
 		/// as <c>wwwroot/index.html</c>. Call the base method and combine its return value with a <see cref="CompositeFileProvider"/>
