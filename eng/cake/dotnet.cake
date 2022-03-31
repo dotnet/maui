@@ -235,8 +235,6 @@ Task("dotnet-pack-library-packs")
 
         Download("Microsoft.Maui.Graphics", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json");
         Download("Microsoft.Maui.Graphics.Win2D.WinUI.Desktop", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json", "https://api.nuget.org/v3/index.json");
-        Download("Microsoft.WindowsAppSDK", "MicrosoftWindowsAppSDKPackageVersion", "https://api.nuget.org/v3/index.json");
-        Download("Microsoft.Windows.SDK.BuildTools", "MicrosoftWindowsSDKBuildToolsPackageVersion", "https://api.nuget.org/v3/index.json");
     });
 
 Task("dotnet-pack")
