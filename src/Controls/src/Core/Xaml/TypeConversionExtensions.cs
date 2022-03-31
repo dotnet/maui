@@ -48,7 +48,8 @@ namespace Microsoft.Maui.Controls.Xaml
 			{ typeof(Font), () => new FontTypeConverter() }
 		};
 
-		static readonly ConcurrentDictionary<Type, TypeConverter> s_converterCache = new();
+		// caches both Type and MemberInfo keys to their corresponding TypeConverter
+		static readonly ConcurrentDictionary<MemberInfo, TypeConverter> s_converterCache = new();
 
 		internal static object ConvertTo(this object value, Type toType, Func<ParameterInfo> pinfoRetriever,
 			IServiceProvider serviceProvider, out Exception exception)
@@ -72,25 +73,40 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			Func<TypeConverter> getConverter = () =>
 			{
+				TypeConverter converter = null;
 				if (minfoRetriever != null && minfoRetriever() is MemberInfo memberInfo)
 				{
-					if (memberInfo.CustomAttributes.GetTypeConverterType() is Type converterType)
+					if (!s_converterCache.TryGetValue(memberInfo, out converter))
 					{
-						return (TypeConverter)Activator.CreateInstance(converterType);
+						if (memberInfo.CustomAttributes.GetTypeConverterType() is Type converterType)
+						{
+							converter = (TypeConverter)Activator.CreateInstance(converterType);
+						}
+
+						// cache the result, even if it is null
+						s_converterCache[memberInfo] = converter;
+					}
+
+					if (converter is not null)
+					{
+						return converter;
 					}
 				}
 
 				if (KnownConverterFactories.TryGetValue(toType, out var converterFactory))
 					return converterFactory();
 
-				if (!s_converterCache.TryGetValue(toType, out TypeConverter converter))
+				if (!s_converterCache.TryGetValue(toType, out converter))
 				{
 					if (toType.CustomAttributes.GetTypeConverterType() is Type converterType)
 					{
 						converter = (TypeConverter)Activator.CreateInstance(converterType);
 					}
+
+					// cache the result, even if it is null
 					s_converterCache[toType] = converter;
 				}
+
 				return converter;
 			};
 
