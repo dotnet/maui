@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayRotation.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DisplayRotation']/Docs" />
 	public enum DisplayRotation

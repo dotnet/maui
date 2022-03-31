@@ -177,8 +177,7 @@ Task("dotnet-test")
             throw new Exception("Some tests failed. Check the logs or test results.");
     });
 
-Task("dotnet-pack")
-    .Description("Build and create .NET 6 NuGet packages")
+Task("dotnet-pack-maui")
     .Does(() =>
     {
         DotNetCoreTool("pwsh", new DotNetCoreToolSettings
@@ -186,7 +185,11 @@ Task("dotnet-pack")
             DiagnosticOutput = true,
             ArgumentCustomization = args => args.Append($"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\"")
         });
+    });
 
+Task("dotnet-pack-additional")
+    .Does(() =>
+    {
         // Download some additional symbols that need to be archived along with the maui symbols:
         //  - _NativeAssets.windows
         //     - libSkiaSharp.pdb
@@ -196,7 +199,7 @@ Task("dotnet-pack")
         NuGetInstall("_NativeAssets.windows", new NuGetInstallSettings
         {
             Version = nativeAssetsVersion,
-            ExcludeVersion  = true,
+            ExcludeVersion = true,
             OutputDirectory = assetsDir,
             Source = new[] { "https://aka.ms/skiasharp-eap/index.json" },
         });
@@ -204,6 +207,42 @@ Task("dotnet-pack")
             DeleteFile(nupkg);
         Zip(assetsDir, $"{assetsDir}.zip");
     });
+
+Task("dotnet-pack-library-packs")
+    .Does(() =>
+    {
+        var tempDir = $"./artifacts/library-packs-temp";
+
+        var destDir = $"./artifacts/library-packs";
+        EnsureDirectoryExists(destDir);
+        CleanDirectories(destDir);
+
+        void Download(string id, string version, params string[] sources)
+        {
+            version = XmlPeek("./eng/Versions.props", "/Project/PropertyGroup/" + version);
+
+            NuGetInstall(id, new NuGetInstallSettings
+            {
+                Version = version,
+                ExcludeVersion = false,
+                OutputDirectory = tempDir,
+                Source = sources,
+            });
+
+            CopyFiles($"{tempDir}/**/" + id + "." + version + ".nupkg", destDir, false);
+            CleanDirectories(tempDir);
+        }
+
+        Download("Microsoft.Maui.Graphics", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json");
+        Download("Microsoft.Maui.Graphics.Win2D.WinUI.Desktop", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json", "https://api.nuget.org/v3/index.json");
+        Download("Microsoft.WindowsAppSDK", "MicrosoftWindowsAppSDKPackageVersion", "https://api.nuget.org/v3/index.json");
+        Download("Microsoft.Windows.SDK.BuildTools", "MicrosoftWindowsSDKBuildToolsPackageVersion", "https://api.nuget.org/v3/index.json");
+    });
+
+Task("dotnet-pack")
+    .IsDependentOn("dotnet-pack-maui")
+    .IsDependentOn("dotnet-pack-additional")
+    .IsDependentOn("dotnet-pack-library-packs");
 
 Task("dotnet-build-test")
     .IsDependentOn("dotnet")

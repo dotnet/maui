@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			[nameof(IBlazorWebView.HostPage)] = MapHostPage,
 			[nameof(IBlazorWebView.RootComponents)] = MapRootComponents,
-			[nameof(IBlazorWebView.ExternalNavigationStarting)] = MapNotifyExternalNavigationStarting,
+			[nameof(IBlazorWebView.UrlLoading)] = MapNotifyUrlLoading,
 		};
 
 		/// <summary>
@@ -63,23 +63,23 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		/// <summary>
-		/// Maps the <see cref="BlazorWebView.NotifyExternalNavigationStarting"/> property to the specified handler.
+		/// Maps the <see cref="BlazorWebView.NotifyUrlLoading"/> property to the specified handler.
 		/// </summary>
 		/// <param name="handler">The <see cref="BlazorWebViewHandler"/>.</param>
 		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
-		public static void MapNotifyExternalNavigationStarting(BlazorWebViewHandler handler, IBlazorWebView webView)
+		public static void MapNotifyUrlLoading(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !NETSTANDARD
 			if (webView is BlazorWebView bwv)
 			{
-				handler.ExternalNavigationStarting = bwv.NotifyExternalNavigationStarting;
+				handler.UrlLoading = bwv.NotifyUrlLoading;
 			}
 #endif
 		}
 
 #if !NETSTANDARD
 		private string? HostPage { get; set; }
-		internal Action<ExternalLinkNavigationEventArgs>? ExternalNavigationStarting;
+		internal Action<UrlLoadingEventArgs>? UrlLoading;
 
 		private RootComponentsCollection? _rootComponents;
 		private RootComponentsCollection? RootComponents

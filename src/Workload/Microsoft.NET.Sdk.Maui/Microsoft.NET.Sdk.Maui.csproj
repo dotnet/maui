@@ -64,6 +64,24 @@
         NewValue="$(PackageReferenceVersion)"
     />
     <ReplaceText
+        Input="$(IntermediateOutputPath)WorkloadManifest.json"
+        Output="$(IntermediateOutputPath)WorkloadManifest.json"
+        OldValue="@MAUI_GRAPHICS_VERSION@"
+        NewValue="$(MicrosoftMauiGraphicsVersion)"
+    />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)WorkloadManifest.json"
+        Output="$(IntermediateOutputPath)WorkloadManifest.json"
+        OldValue="@WASDK_VERSION@"
+        NewValue="$(MicrosoftWindowsAppSDKPackageVersion)"
+    />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)WorkloadManifest.json"
+        Output="$(IntermediateOutputPath)WorkloadManifest.json"
+        OldValue="@WASDK_BUILD_TOOLS_VERSION@"
+        NewValue="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
+    />
+    <ReplaceText
         Input="%(_JsonVariableMatrix.OutputPath)"
         Output="%(_JsonVariableMatrix.OutputPath)"
         OldValue="%(_JsonVariableMatrix.OldValue)"

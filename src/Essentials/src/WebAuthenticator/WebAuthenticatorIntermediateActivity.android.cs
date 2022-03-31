@@ -3,7 +3,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Authentication
 {
 	[Activity(ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, Exported = true)]
 	class WebAuthenticatorIntermediateActivity : Activity
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			else
 			{
 				// otherwise, resume the auth flow and finish this activity
-				WebAuthenticator.OnResume(Intent!);
+				WebAuthenticator.Default.OnResume(Intent!);
 
 				Finish();
 			}

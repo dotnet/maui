@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using AppKit;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public partial class LauncherImplementation
+	partial class LauncherImplementation
 	{
 		Task<bool> PlatformCanOpenAsync(Uri uri) =>
 			Task.FromResult(NSWorkspace.SharedWorkspace.UrlForApplication(WebUtils.GetNativeUrl(uri)) != null);

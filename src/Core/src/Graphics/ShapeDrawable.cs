@@ -37,8 +37,6 @@ namespace Microsoft.Maui.Graphics
 		{
 			var rect = dirtyRect;
 
-			DrawBackground(canvas, rect);
-
 			IShape? shape = ShapeView?.Shape;
 
 			if (shape == null)
@@ -53,22 +51,6 @@ namespace Microsoft.Maui.Graphics
 
 			DrawStrokePath(canvas, rect, path);
 			DrawFillPath(canvas, rect, path);
-		}
-
-		void DrawBackground(ICanvas canvas, RectF dirtyRect)
-		{
-			if (ShapeView == null)
-				return;
-
-			canvas.SaveState();
-
-			// Set Background
-			var backgroundPaint = ShapeView.Background;
-			canvas.SetFillPaint(backgroundPaint, dirtyRect);
-
-			canvas.FillRectangle(dirtyRect);
-
-			canvas.RestoreState();
 		}
 
 		void DrawStrokePath(ICanvas canvas, RectF dirtyRect, PathF path)
@@ -101,13 +83,10 @@ namespace Microsoft.Maui.Graphics
 			var strokeDashPattern = ShapeView.StrokeDashPattern;
 			canvas.StrokeDashPattern = strokeDashPattern;
 
-			// Set StrokeDashPattern
-			/*
+			// Set StrokeDashOffset	
 			var strokeDashOffset = ShapeView.StrokeDashOffset;
-			// TODO: Implement StrokeDashOffset in Microsoft.Maui.Graphics.
 			canvas.StrokeDashOffset = strokeDashOffset;
-			*/
-
+			
 			// Set StrokeMiterLimit
 			var strokeMiterLimit = ShapeView.StrokeMiterLimit;
 			canvas.MiterLimit = strokeMiterLimit;

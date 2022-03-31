@@ -1,14 +1,20 @@
+using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
+using Microsoft.Maui.Devices.Sensors;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public class MapImplementation : IMap
+	class MapImplementation : IMap
 	{
-		public Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			var uri = string.Empty;
 			var lat = latitude.ToString(CultureInfo.InvariantCulture);
 			var lng = longitude.ToString(CultureInfo.InvariantCulture);
@@ -29,7 +35,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return Task.CompletedTask;
 		}
 
-		internal static string GetMode(NavigationMode mode)
+		static string GetMode(NavigationMode mode)
 		{
 			switch (mode)
 			{
@@ -43,8 +49,14 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return string.Empty;
 		}
 
-		public Task OpenMapsAsync(Placemark placemark, MapLaunchOptions options)
+		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
+			if (placemark == null)
+				throw new ArgumentNullException(nameof(placemark));
+
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			var uri = string.Empty;
 			if (options.NavigationMode == NavigationMode.None)
 			{
@@ -66,12 +78,12 @@ namespace Microsoft.Maui.Essentials.Implementations
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri));
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 #if __ANDROID_24__
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			intent.SetFlags(flags);
 
-			Platform.AppContext.StartActivity(intent);
+			Application.Context.StartActivity(intent);
 		}
 	}
 }

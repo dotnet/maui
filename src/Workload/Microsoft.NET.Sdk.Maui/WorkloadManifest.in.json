@@ -29,6 +29,7 @@
           "Microsoft.Maui.Dependencies",
           "Microsoft.Maui.Sdk",
           "Microsoft.Maui.Extensions",
+          "Microsoft.Maui.Graphics",
           "Microsoft.Maui.Resizetizer.Sdk",
           "Microsoft.Maui.Templates",
           "Microsoft.Maui.Core.Ref.any",
@@ -101,7 +102,10 @@
           "Microsoft.Maui.Controls.Ref.win",
           "Microsoft.Maui.Controls.Runtime.win",
           "Microsoft.Maui.Essentials.Ref.win",
-          "Microsoft.Maui.Essentials.Runtime.win"
+          "Microsoft.Maui.Essentials.Runtime.win",
+          "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop",
+          "Microsoft.WindowsAppSDK",
+          "Microsoft.Windows.SDK.BuildTools"
       ]
     }
   },
@@ -237,6 +241,22 @@
     "Microsoft.Maui.Extensions": {
       "kind": "library",
       "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Graphics": {
+      "kind": "library",
+      "version": "@MAUI_GRAPHICS_VERSION@"
+    },
+    "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop": {
+      "kind": "library",
+      "version": "@MAUI_GRAPHICS_VERSION@"
+    },
+    "Microsoft.WindowsAppSDK": {
+      "kind": "library",
+      "version": "@WASDK_VERSION@"
+    },
+    "Microsoft.Windows.SDK.BuildTools": {
+      "kind": "library",
+      "version": "@WASDK_BUILD_TOOLS_VERSION@"
     },
     "Microsoft.Maui.Sdk": {
       "kind": "sdk",

@@ -29,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
-    <AndroidResource Include="Compatibility\Android\Resources\Layout\rootlayout.axml" />
     <AndroidResource Include="Compatibility\Android\Resources\Layout\flyoutcontent.axml" />
     <AndroidResource Include="Compatibility\Android\Resources\Layout\shellcontent.axml" />
   </ItemGroup>

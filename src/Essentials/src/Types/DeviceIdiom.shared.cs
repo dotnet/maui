@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceIdiom.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceIdiom']/Docs" />
 	public readonly struct DeviceIdiom : IEquatable<DeviceIdiom>

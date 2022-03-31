@@ -2,41 +2,37 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Android.Content.Res;
-using Android.Provider;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class DeviceDisplayImplementation : IDeviceDisplay
+	partial class DeviceDisplayImplementation
 	{
 		OrientationEventListener? orientationListener;
 
-		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged;
-
-		public bool KeepScreenOn
+		protected override bool GetKeepScreenOn()
 		{
-			get
-			{
-				var window = Platform.GetCurrentActivity(true)?.Window;
-				var flags = window?.Attributes?.Flags ?? 0;
-				return flags.HasFlag(WindowManagerFlags.KeepScreenOn);
-			}
-
-			set
-			{
-				var window = Platform.GetCurrentActivity(true)?.Window;
-				if (value)
-					window?.AddFlags(WindowManagerFlags.KeepScreenOn);
-				else
-					window?.ClearFlags(WindowManagerFlags.KeepScreenOn);
-			}
+			var window = ActivityStateManager.Default.GetCurrentActivity(true)?.Window;
+			var flags = window?.Attributes?.Flags ?? 0;
+			return flags.HasFlag(WindowManagerFlags.KeepScreenOn);
 		}
 
-		public DisplayInfo GetMainDisplayInfo()
+		protected override void SetKeepScreenOn(bool keepScreenOn)
+		{
+			var window = ActivityStateManager.Default.GetCurrentActivity(true)?.Window;
+			if (keepScreenOn)
+				window?.AddFlags(WindowManagerFlags.KeepScreenOn);
+			else
+				window?.ClearFlags(WindowManagerFlags.KeepScreenOn);
+		}
+
+		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			using var displayMetrics = new DisplayMetrics();
 			var display = GetDefaultDisplay();
@@ -49,34 +45,25 @@ namespace Microsoft.Maui.Essentials.Implementations
 				height: displayMetrics?.HeightPixels ?? 0,
 				density: displayMetrics?.Density ?? 0,
 				orientation: CalculateOrientation(),
-				rotation: CalculateRotation(),
+				rotation: CalculateRotation(display),
 				rate: display?.RefreshRate ?? 0);
 		}
 
-		public void StartScreenMetricsListeners()
+		protected override void StartScreenMetricsListeners()
 		{
-			orientationListener = new Listener(Platform.AppContext, OnScreenMetricsChanged);
+			orientationListener = new Listener(Application.Context, OnMainDisplayInfoChanged);
 			orientationListener.Enable();
 		}
 
-		public void StopScreenMetricsListeners()
+		protected override void StopScreenMetricsListeners()
 		{
 			orientationListener?.Disable();
 			orientationListener?.Dispose();
 			orientationListener = null;
 		}
 
-		void OnScreenMetricsChanged()
-		{
-			var metrics = GetMainDisplayInfo();
-			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(metrics));
-		}
-
-		DisplayRotation CalculateRotation()
-		{
-			var display = GetDefaultDisplay();
-
-			return display?.Rotation switch
+		static DisplayRotation CalculateRotation(Display? display) =>
+			display?.Rotation switch
 			{
 				SurfaceOrientation.Rotation270 => DisplayRotation.Rotation270,
 				SurfaceOrientation.Rotation180 => DisplayRotation.Rotation180,
@@ -84,24 +71,21 @@ namespace Microsoft.Maui.Essentials.Implementations
 				SurfaceOrientation.Rotation0 => DisplayRotation.Rotation0,
 				_ => DisplayRotation.Unknown,
 			};
-		}
 
-		DisplayOrientation CalculateOrientation()
-		{
-			return Platform.AppContext.Resources?.Configuration?.Orientation switch
+		static DisplayOrientation CalculateOrientation() =>
+			Application.Context.Resources?.Configuration?.Orientation switch
 			{
 				Orientation.Landscape => DisplayOrientation.Landscape,
 				Orientation.Portrait => DisplayOrientation.Portrait,
 				Orientation.Square => DisplayOrientation.Portrait,
 				_ => DisplayOrientation.Unknown
 			};
-		}
 
-		Display? GetDefaultDisplay()
+		static Display? GetDefaultDisplay()
 		{
 			try
 			{
-				using var service = Platform.AppContext.GetSystemService(Context.WindowService);
+				using var service = Application.Context.GetSystemService(Context.WindowService);
 				using var windowManager = service?.JavaCast<IWindowManager>();
 				return windowManager?.DefaultDisplay;
 			}

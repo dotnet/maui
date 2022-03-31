@@ -596,9 +596,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (element is BindableObject bindable)
 			{
 				//SetValue doesn't throw on mismatching type, so check before to get a chance to try the property setting or the collection adding
-				var nullable = property.ReturnTypeInfo.IsGenericType &&
-							   property.ReturnTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>);
-				if ((convertedValue == null && (!property.ReturnTypeInfo.IsValueType || nullable)) ||
+				var nullable = property.ReturnType.IsGenericType &&
+							   property.ReturnType.GetGenericTypeDefinition() == typeof(Nullable<>);
+				if ((convertedValue == null && (!property.ReturnType.IsValueType || nullable)) ||
 					(property.ReturnType.IsInstanceOfType(convertedValue)))
 				{
 					try
@@ -803,13 +803,10 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			exception = null;
 
-			if (property?.ReturnTypeInfo?.GenericTypeArguments == null)
+			if (property?.ReturnType?.GenericTypeArguments == null)
 				return false;
 
-			if (property.ReturnType == null)
-				return false;
-
-			if (property.ReturnTypeInfo.GenericTypeArguments.Length != 1 || !property.ReturnTypeInfo.GenericTypeArguments[0].IsInstanceOfType(value))
+			if (property.ReturnType.GenericTypeArguments.Length != 1 || !property.ReturnType.GenericTypeArguments[0].IsInstanceOfType(value))
 				return false;
 
 			// This might be a collection we can add to; see if we can find an Add method

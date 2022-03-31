@@ -4,40 +4,32 @@ using AppKit;
 using CoreVideo;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class DeviceDisplayImplementation : IDeviceDisplay
+	class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		uint keepScreenOnId = 0;
 		NSObject? screenMetricsObserver;
 
-		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged;
+		protected override bool GetKeepScreenOn() => keepScreenOnId != 0;
 
-		public bool KeepScreenOn
+		protected override void SetKeepScreenOn(bool keepScreenOn)
 		{
-			get
+			if (KeepScreenOn == value)
+				return;
+
+			if (keepScreenOn)
 			{
-				return keepScreenOnId != 0;
+				IOKit.PreventUserIdleDisplaySleep("KeepScreenOn", out keepScreenOnId);
 			}
-
-			set
+			else
 			{
-				if (KeepScreenOn == value)
-					return;
-
-				if (value)
-				{
-					IOKit.PreventUserIdleDisplaySleep("KeepScreenOn", out keepScreenOnId);
-				}
-				else
-				{
-					if (IOKit.AllowUserIdleDisplaySleep(keepScreenOnId))
-						keepScreenOnId = 0;
-				}
+				if (IOKit.AllowUserIdleDisplaySleep(keepScreenOnId))
+					keepScreenOnId = 0;
 			}
 		}
 
-		public DisplayInfo GetMainDisplayInfo()
+		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			var mainScreen = NSScreen.MainScreen;
 			var frame = mainScreen.Frame;
@@ -61,23 +53,19 @@ namespace Microsoft.Maui.Essentials.Implementations
 				rate: (float)refreshRate);
 		}
 
-		public void StartScreenMetricsListeners()
+		protected override void StartScreenMetricsListeners()
 		{
-			if (screenMetricsObserver == null)
-			{
-				screenMetricsObserver = NSNotificationCenter.DefaultCenter.AddObserver(NSApplication.DidChangeScreenParametersNotification, OnDidChangeScreenParameters);
-			}
+			screenMetricsObserver ??= NSNotificationCenter.DefaultCenter.AddObserver(
+				NSApplication.DidChangeScreenParametersNotification, OnDidChangeScreenParameters);
 		}
 
-		public void StopScreenMetricsListeners()
+		protected override void StopScreenMetricsListeners()
 		{
 			screenMetricsObserver?.Dispose();
+			screenMetricsObserver = null;
 		}
 
-		public void OnDidChangeScreenParameters(NSNotification notification)
-		{
-			var metrics = GetMainDisplayInfo();
-			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(metrics));
-		}
+		void OnDidChangeScreenParameters(NSNotification notification) =>
+			OnMainDisplayInfoChanged();
 	}
 }
