@@ -44,6 +44,7 @@ namespace Microsoft.Maui
 			{
 				canvas.SaveState();
 				Color color = Shadow.Paint.ToColor() != null ? Shadow.Paint.ToColor()!.MultiplyAlpha(Shadow.Opacity) : Colors.Black.MultiplyAlpha(Shadow.Opacity);
+				canvas.FillColor = color;
 				canvas.SetShadow(
 						new SizeF((float)Shadow.Offset.X, (float)Shadow.Offset.Y),
 						(int)Shadow.Radius,

@@ -89,7 +89,9 @@ namespace Microsoft.Maui.Platform
 				((MauiDrawable)_drawableCanvas.Value.Drawable).Clip = Clip;
 				UpdateDrawableCanvas(false);
 			}
-			_clipperView.Value.Invalidate();
+
+			if (_clipperView.IsValueCreated || Clip is not null)
+				_clipperView.Value.Invalidate();
 		}
 
 		void UpdateDrawableCanvas(Paint? paint)
@@ -132,7 +134,6 @@ namespace Microsoft.Maui.Platform
 			var clipPath = Clip?.PathForBounds(new Rect(0, 0, width, height)) ?? null;
 			if (clipPath == null)
 			{
-				canvas.FillRectangle(e.DirtyRect);
 				return;
 			}
 			canvas.FillPath(clipPath);
