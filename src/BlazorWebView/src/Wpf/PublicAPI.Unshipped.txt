@@ -1,23 +1,22 @@
-﻿Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationEventArgs
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationEventArgs.ExternalLinkNavigationEventArgs(System.Uri uri) -> void
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationEventArgs.ExternalLinkNavigationPolicy.get -> Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationEventArgs.ExternalLinkNavigationPolicy.set -> void
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationEventArgs.Uri.get -> System.Uri
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy.CancelNavigation = 2 -> Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy.InsecureOpenInWebView = 1 -> Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy
-Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy.OpenInExternalBrowser = 0 -> Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationPolicy
+﻿Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs
+Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.Url.get -> System.Uri
+Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.UrlLoadingStrategy.get -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
+Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.UrlLoadingStrategy.set -> void
+Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
+Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.CancelLoad = 2 -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
+Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.OpenExternally = 0 -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
+Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.OpenInWebView = 1 -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
 Microsoft.AspNetCore.Components.WebView.WebView2.WebView2WebViewManager
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.BlazorWebView() -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.ExternalNavigationStarting.get -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.ExternalLinkNavigationEventArgs>
-Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.ExternalNavigationStarting.set -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.HostPage.get -> string
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.HostPage.set -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.RootComponents.get -> Microsoft.AspNetCore.Components.WebView.Wpf.RootComponentsCollection
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.Services.get -> System.IServiceProvider
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.Services.set -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UrlLoading.get -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs>
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UrlLoading.set -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.WebView.get -> Microsoft.Web.WebView2.Wpf.WebView2
 Microsoft.AspNetCore.Components.WebView.Wpf.RootComponent
 Microsoft.AspNetCore.Components.WebView.Wpf.RootComponent.ComponentType.get -> System.Type
@@ -35,9 +34,9 @@ override Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.OnApplyTempla
 override Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.OnInitialized(System.EventArgs e) -> void
 static Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions.AddBlazorWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
 static Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions.AddWpfBlazorWebView(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
-static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.ExternalNavigationStartingProperty -> System.Windows.DependencyProperty
 static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.HostPageProperty -> System.Windows.DependencyProperty
 static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.RootComponentsProperty -> System.Windows.DependencyProperty
 static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.ServicesProperty -> System.Windows.DependencyProperty
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UrlLoadingProperty -> System.Windows.DependencyProperty
 virtual Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.CreateFileProvider(string contentRootDir) -> Microsoft.Extensions.FileProviders.IFileProvider
 virtual Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.DisposeAsyncCore() -> System.Threading.Tasks.ValueTask
