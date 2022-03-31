@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ImageButtonRenderer : ViewRenderer<ImageButton, FormsButton>, IImageVisualElementRenderer
 	{
 		bool _measured;
@@ -211,6 +212,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			else if (e.PropertyName == ImageButton.SourceProperty.PropertyName)
 				await TryUpdateSource().ConfigureAwait(false);
 		}
+
+		[PortHandler]
 		void UpdatePadding()
 		{
 			_image.Margin = WinUIHelpers.CreateThickness(0);

@@ -5,7 +5,7 @@ using Android.Views;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using APlatform = Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform;
 using Fragment = AndroidX.Fragment.App.Fragment;
@@ -15,6 +15,7 @@ using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	internal class FlyoutPageContainer : ViewGroup, IManageFragments
 	{
 		const int DefaultFlyoutSize = 320;

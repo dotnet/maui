@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete]
 	public class ItemContentControl : ContentControl
 	{
 		VisualElement _visualElement;

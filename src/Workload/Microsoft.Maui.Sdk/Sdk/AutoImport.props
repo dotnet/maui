@@ -1,6 +1,12 @@
 <!-- all <ItemGroup/>'s must check if $(EnableDefaultMauiItems) is true -->
 <Project>
 
+  <ItemDefinitionGroup>
+    <MauiXaml>
+      <SubType>Designer</SubType>
+    </MauiXaml>
+  </ItemDefinitionGroup>
+
   <ItemGroup Condition=" '$(UseMaui)' == 'true' and ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') ">
     <!-- %(Sdk) is only here if something later needs to identify these -->
     <Using Include="Microsoft.Extensions.DependencyInjection" Sdk="Maui" />
@@ -8,9 +14,18 @@
     <Using Include="Microsoft.Maui.Controls" Sdk="Maui" />
     <Using Include="Microsoft.Maui.Controls.Hosting" Sdk="Maui" />
     <Using Include="Microsoft.Maui.Controls.Xaml" Sdk="Maui" />
-    <Using Include="Microsoft.Maui.Graphics" Sdk="Maui" />
-    <Using Include="Microsoft.Maui.Essentials" Sdk="Maui" />
     <Using Include="Microsoft.Maui.Hosting" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Graphics" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Accessibility" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.ApplicationModel" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.ApplicationModel.Communication" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.ApplicationModel.DataTransfer" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Authentication" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Devices" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Devices.Sensors" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Media" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Networking" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Storage" Sdk="Maui" />
   </ItemGroup>
 
   <!-- Default .NET MAUI files-->

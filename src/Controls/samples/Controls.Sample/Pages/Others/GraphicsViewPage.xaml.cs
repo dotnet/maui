@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Linq;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
@@ -11,9 +14,39 @@ namespace Maui.Controls.Sample.Pages
 		}
 
 		void OnButtonClicked(object sender, EventArgs e)
+			=> GraphicsView.Invalidate();
+
+		void GraphicsView_DragInteraction(object sender, TouchEventArgs e)
+			=> UpdateInteractions("Drag Touches", e);
+
+		void GraphicsView_CancelInteraction(object sender, EventArgs e)
+			=> UpdateInteractions("Cancel Touches");
+
+		void GraphicsView_EndInteraction(object sender, TouchEventArgs e)
+			=> UpdateInteractions("End Touches", e);
+
+		void GraphicsView_StartInteraction(object sender, TouchEventArgs e)
+			=> UpdateInteractions("Start Touch", e);
+
+		void GraphicsView_StartHoverInteraction(object sender, TouchEventArgs e)
+			=> UpdateInteractions("Start Hover", e);
+
+		void GraphicsView_MoveHoverInteraction(object sender, TouchEventArgs e)
+			=> UpdateInteractions("Move Hover", e);
+
+		void GraphicsView_EndHoverInteraction(object sender, EventArgs e)
+			=> UpdateInteractions("End Hover");
+
+		void UpdateInteractions(string name, TouchEventArgs e)
 		{
-			GraphicsView.Invalidate();
+			Dispatcher.DispatchAsync(() =>
+				labelInteractions.Text = $"{name}: "
+					+ string.Join(", ", e.Touches.Select(t => $"[{Math.Round(t.X, 1)},{Math.Round(t.Y, 1)}]"))
+					+ $" IsInsideBounds: {e.IsInsideBounds}");
 		}
+
+		void UpdateInteractions(string name)
+			=> Dispatcher.DispatchAsync(() => labelInteractions.Text = name);
 	}
 
 	public class GraphicsDrawable : IDrawable

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateBorderStroke(this AView platformView, IBorderStroke border)
 		{
-			//Always set the drawable first
+			// Always set the drawable first
 			platformView.UpdateMauiDrawable(border);
 
 			var borderShape = border.Shape;
@@ -119,6 +119,14 @@ namespace Microsoft.Maui.Platform
 			mauiDrawable?.SetBorderLineJoin(border.StrokeLineJoin);
 		}
 
+		public static void InvalidateBorderStrokeBounds(this AView platformView)
+		{
+			if (platformView.Background is not MauiDrawable mauiDrawable)
+				return;
+
+			mauiDrawable.InvalidateBorderBounds();
+		}
+
 		internal static void UpdateMauiDrawable(this AView platformView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
@@ -139,6 +147,7 @@ namespace Microsoft.Maui.Platform
 				mauiDrawable.SetBackground(v.Background);
 			else
 				mauiDrawable.SetBackground(new SolidPaint(Colors.Transparent));
+
 			mauiDrawable.SetBorderShape(border.Shape);
 		}
 	}

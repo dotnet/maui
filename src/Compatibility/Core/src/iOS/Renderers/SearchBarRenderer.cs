@@ -4,7 +4,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -12,6 +12,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SearchBarRenderer : ViewRenderer<SearchBar, UISearchBar>
 	{
 		UIColor _cancelButtonTextColorDefaultDisabled;
@@ -309,6 +310,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_textField.Font = Element.ToUIFont();
 		}
 
+		[PortHandler]
 		void UpdateIsEnabled()
 		{
 			Control.UserInteractionEnabled = Element.IsEnabled;
@@ -329,7 +331,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
 
 				var color = Element.IsEnabled && targetColor != null
-					? targetColor : ColorExtensions.PlaceholderColor.ToColor();
+					? targetColor : Maui.Platform.ColorExtensions.PlaceholderColor.ToColor();
 
 				_textField.AttributedPlaceholder = formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: color);
 				_textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);

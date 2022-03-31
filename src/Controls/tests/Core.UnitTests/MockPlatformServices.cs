@@ -7,15 +7,20 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: Dependency(typeof(MockResourcesProvider))]
 [assembly: Dependency(typeof(MockFontNamedSizeService))]
+#pragma warning restore CS0612 // Type or member is obsolete
+
 [assembly: Dependency(typeof(MockPlatformSizeService))]
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	[Obsolete]
 	internal class MockResourcesProvider : Internals.ISystemResourcesProvider
 	{
 		public Internals.IResourceDictionary GetSystemResources()
@@ -49,6 +54,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
+	[Obsolete]
 	public class MockFontNamedSizeService : IFontNamedSizeService
 	{
 		public double GetNamedSize(NamedSize size, Type targetElement, bool useOldSizes)

@@ -375,7 +375,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
-			_flyoutController.View.BackgroundColor = ColorExtensions.BackgroundColor;
+			_flyoutController.View.BackgroundColor = Maui.Platform.ColorExtensions.BackgroundColor;
 		}
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()

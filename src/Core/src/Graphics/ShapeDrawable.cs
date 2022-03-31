@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Graphics
+﻿using System.Numerics;
+
+namespace Microsoft.Maui.Graphics
 {
 	public class ShapeDrawable : IDrawable
 	{
@@ -9,10 +11,27 @@
 
 		public ShapeDrawable(IShapeView? shape)
 		{
+			UpdateShapeView(shape);
+		}
+
+		internal IShapeView? ShapeView { get; set; }
+		internal WindingMode WindingMode { get; set; }
+		internal Matrix3x2? RenderTransform { get; set; }
+
+		public void UpdateShapeView(IShapeView? shape)
+		{
 			ShapeView = shape;
 		}
 
-		public IShapeView? ShapeView { get; set; }
+		public void UpdateWindingMode(WindingMode windingMode)
+		{
+			WindingMode = windingMode;
+		}
+
+		public void UpdateRenderTransform(Matrix3x2? renderTransform)
+		{
+			RenderTransform = renderTransform;
+		}
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
@@ -27,6 +46,8 @@
 
 			if (path == null)
 				return;
+
+			ApplyTransform(path);
 
 			DrawStrokePath(canvas, rect, path);
 			DrawFillPath(canvas, rect, path);
@@ -62,6 +83,10 @@
 			var strokeDashPattern = ShapeView.StrokeDashPattern;
 			canvas.StrokeDashPattern = strokeDashPattern;
 
+			// Set StrokeDashOffset	
+			var strokeDashOffset = ShapeView.StrokeDashOffset;
+			canvas.StrokeDashOffset = strokeDashOffset;
+			
 			// Set StrokeMiterLimit
 			var strokeMiterLimit = ShapeView.StrokeMiterLimit;
 			canvas.MiterLimit = strokeMiterLimit;
@@ -81,6 +106,8 @@
 
 			canvas.SaveState();
 
+			ClipPath(canvas, path);
+
 			// Set Fill
 			var fillPaint = ShapeView.Fill;
 			canvas.SetFillPaint(fillPaint, dirtyRect);
@@ -88,6 +115,19 @@
 			canvas.FillPath(path);
 
 			canvas.RestoreState();
+		}
+
+		void ClipPath(ICanvas canvas, PathF path)
+		{
+			canvas.ClipPath(path, WindingMode);
+		}
+
+		void ApplyTransform(PathF path)
+		{
+			if (RenderTransform == null)
+				return;
+
+			path.Transform(RenderTransform.Value);
 		}
 	}
 }

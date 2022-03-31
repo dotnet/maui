@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
@@ -6,6 +7,14 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static class MauiProgram
 	{
+#if ANDROID
+		public static Android.Content.Context DefaultContext { get; private set; }
+#elif WINDOWS
+		public static UI.Xaml.Window DefaultWindow { get; private set; }
+#endif
+
+		public static IApplication DefaultTestApp { get; private set; }
+
 		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
@@ -15,12 +24,12 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID
 					life.AddAndroid(android =>
 					{
-						android.OnCreate((a, b) => Platform.Init(a));
+						android.OnCreate((a, b) => DefaultContext = a);
 					});
 #elif WINDOWS
 					life.AddWindows(windows =>
 					{
-						windows.OnWindowCreated((w) => Platform.Init(w));
+						windows.OnWindowCreated((w) => DefaultWindow = w);
 					});
 #endif
 				})
@@ -37,7 +46,11 @@ namespace Microsoft.Maui.DeviceTests
 				})
 				.UseVisualRunner();
 
-			return appBuilder.Build();
+			var mauiApp = appBuilder.Build();
+
+			DefaultTestApp = mauiApp.Services.GetRequiredService<IApplication>();
+
+			return mauiApp;
 		}
 	}
 }

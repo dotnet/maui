@@ -1,25 +1,110 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.ComponentModel;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
+using Debug = System.Diagnostics.Debug;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Media
 {
 	public interface ITextToSpeech
 	{
 		Task<IEnumerable<Locale>> GetLocalesAsync();
-		
-		Task SpeakAsync(string text, CancellationToken cancelToken);
 
-		Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken);
-
+		Task SpeakAsync(string text, SpeechOptions? options = default, CancellationToken cancelToken = default);
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="Type[@FullName='Microsoft.Maui.Essentials.TextToSpeech']/Docs" />
 	public static partial class TextToSpeech
+	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='GetLocalesAsync']/Docs" />
+		public static Task<IEnumerable<Locale>> GetLocalesAsync() =>
+			Default.GetLocalesAsync();
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync'][1]/Docs" />
+		public static Task SpeakAsync(string text, CancellationToken cancelToken = default) =>
+			Default.SpeakAsync(text, default, cancelToken);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync'][2]/Docs" />
+		public static Task SpeakAsync(string text, SpeechOptions? options, CancellationToken cancelToken = default) =>
+			Default.SpeakAsync(text, options, cancelToken);
+
+		static ITextToSpeech? defaultImplementation;
+
+		public static ITextToSpeech Default =>
+			defaultImplementation ??= new TextToSpeechImplementation();
+
+		internal static void SetDefault(ITextToSpeech? implementation) =>
+			defaultImplementation = implementation;
+
+		internal static List<string> SplitSpeak(string text, int max)
+		{
+			var parts = new List<string>();
+			if (text.Length <= max)
+			{
+				// no need to split
+				parts.Add(text);
+			}
+			else
+			{
+				var positionbegin = 0;
+				var positionend = max;
+				var position = positionbegin;
+
+				var p = string.Empty;
+				while (position != text.Length)
+				{
+					while (positionend > positionbegin)
+					{
+						if (positionend >= text.Length)
+						{
+							// we just need the rest of it
+							p = text.Substring(positionbegin, text.Length - positionbegin);
+							parts.Add(p);
+							return parts;
+						}
+
+						var ch = text[positionend];
+						if (char.IsWhiteSpace(ch) || char.IsPunctuation(ch))
+						{
+							p = text.Substring(positionbegin, positionend - positionbegin);
+							break;
+						}
+						else if (positionend == positionbegin)
+						{
+							// no whitespace or punctuation found
+							// grab the whole buffer (max)
+							p = text.Substring(positionbegin, positionbegin + max);
+							break;
+						}
+
+						positionend--;
+					}
+
+					Debug.WriteLine($"p             = {p}");
+					Debug.WriteLine($"p.Length      = {p.Length}");
+					Debug.WriteLine($"positionbegin = {positionbegin}");
+					Debug.WriteLine($"positionend   = {positionend}");
+					Debug.WriteLine($"position      = {position}");
+
+					positionbegin = positionbegin + p.Length + 1;
+					positionend = positionbegin + max;
+					position = positionbegin;
+
+					Debug.WriteLine($"------------------------------");
+					Debug.WriteLine($"positionbegin = {positionbegin}");
+					Debug.WriteLine($"positionend   = {positionend}");
+					Debug.WriteLine($"position      = {position}");
+
+					parts.Add(p);
+				}
+			}
+
+			return parts;
+		}
+	}
+
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
 		internal const float PitchMax = 2.0f;
 		internal const float PitchDefault = 1.0f;
@@ -29,18 +114,12 @@ namespace Microsoft.Maui.Essentials
 		internal const float VolumeDefault = 0.5f;
 		internal const float VolumeMin = 0.0f;
 
-		static SemaphoreSlim semaphore;
+		SemaphoreSlim? semaphore;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='GetLocalesAsync']/Docs" />
-		public static Task<IEnumerable<Locale>> GetLocalesAsync() =>
-			Current.GetLocalesAsync();
+		public Task<IEnumerable<Locale>> GetLocalesAsync() =>
+			PlatformGetLocalesAsync();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync']/Docs" />
-		public static Task SpeakAsync(string text, CancellationToken cancelToken = default) =>
-			SpeakAsync(text, default, cancelToken);
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync']/Docs" />
-		public static async Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
+		public async Task SpeakAsync(string text, SpeechOptions? options = default, CancellationToken cancelToken = default)
 		{
 			if (string.IsNullOrEmpty(text))
 				throw new ArgumentNullException(nameof(text), "Text cannot be null or empty string");
@@ -63,7 +142,7 @@ namespace Microsoft.Maui.Essentials
 			try
 			{
 				await semaphore.WaitAsync(cancelToken);
-				await Current.SpeakAsync(text, options, cancelToken);
+				await PlatformSpeakAsync(text, options, cancelToken);
 			}
 			finally
 			{
@@ -71,27 +150,6 @@ namespace Microsoft.Maui.Essentials
 					semaphore.Release();
 			}
 		}
-
-		internal static float Normalize(float min, float max, float percent)
-		{
-			var range = max - min;
-			var add = range * percent;
-			return min + add;
-		}
-		
-#nullable enable
-		static ITextToSpeech? currentImplementation;
-#nullable disable
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static ITextToSpeech Current =>
-			currentImplementation ??= new TextToSpeechImplementation();
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(ITextToSpeech? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Locale']/Docs" />
@@ -122,7 +180,7 @@ namespace Microsoft.Maui.Essentials
 	public class SpeechOptions
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="//Member[@MemberName='Locale']/Docs" />
-		public Locale Locale { get; set; }
+		public Locale? Locale { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="//Member[@MemberName='Pitch']/Docs" />
 		public float? Pitch { get; set; }

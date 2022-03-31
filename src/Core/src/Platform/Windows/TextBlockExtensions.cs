@@ -133,9 +133,10 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateLineBreakMode(this TextBlock platformControl, ILabel label)
+		public static void UpdateLineBreakMode(this TextBlock platformControl, ILineBreakMode breakMode)
 		{
-			var lineBreakMode = label.LineBreakMode;
+			var lineBreakMode = breakMode.LineBreakMode;
+			var label = breakMode as ILabel;
 
 			switch (lineBreakMode)
 			{
@@ -154,24 +155,30 @@ namespace Microsoft.Maui.Platform
 				case LineBreakMode.HeadTruncation:
 					// TODO: This truncates at the end.
 					platformControl.TextTrimming = TextTrimming.WordEllipsis;
-					platformControl.DetermineTruncatedTextWrapping();
+
+					if (label != null)
+						platformControl.DetermineTruncatedTextWrapping(label);
 					break;
 				case LineBreakMode.TailTruncation:
 					platformControl.TextTrimming = TextTrimming.CharacterEllipsis;
-					platformControl.DetermineTruncatedTextWrapping();
+
+					if (label != null)
+						platformControl.DetermineTruncatedTextWrapping(label);
 					break;
 				case LineBreakMode.MiddleTruncation:
 					// TODO: This truncates at the end.
 					platformControl.TextTrimming = TextTrimming.WordEllipsis;
-					platformControl.DetermineTruncatedTextWrapping();
+
+					if (label != null)
+						platformControl.DetermineTruncatedTextWrapping(label);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 		}
 
-		internal static void DetermineTruncatedTextWrapping(this TextBlock textBlock) =>
-			textBlock.TextWrapping = textBlock.MaxLines > 1 ? TextWrapping.Wrap : TextWrapping.NoWrap;
+		internal static void DetermineTruncatedTextWrapping(this TextBlock textBlock, ILabel label) =>
+			textBlock.TextWrapping = label.MaxLines > 1 ? TextWrapping.Wrap : TextWrapping.NoWrap;
 
 		internal static void UpdateTextPlainText(this TextBlock platformControl, IText label)
 		{

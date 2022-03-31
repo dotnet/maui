@@ -1,74 +1,59 @@
 #nullable enable
 using System;
-using System.ComponentModel;
 using System.Numerics;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public interface IAccelerometer
 	{
 		event EventHandler<AccelerometerChangedEventArgs>? ReadingChanged;
+
 		event EventHandler? ShakeDetected;
+
 		bool IsSupported { get; }
+
 		bool IsMonitoring { get; }
+
 		void Start(SensorSpeed sensorSpeed);
+
 		void Stop();
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Accelerometer']/Docs" />
-	public static partial class Accelerometer
+	public static class Accelerometer
 	{
 		public static event EventHandler<AccelerometerChangedEventArgs> ReadingChanged
 		{
-			add => Current.ReadingChanged += value;
-			remove => Current.ReadingChanged -= value;
+			add => Default.ReadingChanged += value;
+			remove => Default.ReadingChanged -= value;
 		}
 
 		public static event EventHandler ShakeDetected
 		{
-			add => Current.ShakeDetected += value;
-			remove => Current.ShakeDetected -= value;
+			add => Default.ShakeDetected += value;
+			remove => Default.ShakeDetected -= value;
 		}
 
-		internal static bool IsSupported => Current.IsSupported;
+		public static bool IsSupported
+			=> Default.IsSupported;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
-		public static bool IsMonitoring => Current.IsMonitoring;
+		public static bool IsMonitoring => Default.IsMonitoring;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='Start']/Docs" />
-		public static void Start(SensorSpeed sensorSpeed)
-		{
-			if (!Current.IsSupported)
-				throw new FeatureNotSupportedException();
-
-			if (Current.IsMonitoring)
-				throw new InvalidOperationException("Accelerometer has already been started.");
-
-			Current.Start(sensorSpeed);
-		}
+		public static void Start(SensorSpeed sensorSpeed) => Default.Start(sensorSpeed);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='Stop']/Docs" />
-		public static void Stop()
-		{
-			if (!Current.IsSupported)
-				throw new FeatureNotSupportedException();
+		public static void Stop() => Default.Stop();
 
-			if (!Current.IsMonitoring)
-				return;
+		static IAccelerometer? defaultImplementation;
 
-			Current.Stop();
-		}
+		public static IAccelerometer Default =>
+			defaultImplementation ??= new AccelerometerImplementation();
 
-		static IAccelerometer? currentImplementation;
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IAccelerometer Current =>
-			currentImplementation ??= new AccelerometerImplementation();
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IAccelerometer? implementation) =>
-			currentImplementation = implementation;
+		internal static void SetDefault(IAccelerometer? implementation) =>
+			defaultImplementation = implementation;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AccelerometerChangedEventArgs']/Docs" />
@@ -84,24 +69,24 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AccelerometerData']/Docs" />
 	public readonly struct AccelerometerData : IEquatable<AccelerometerData>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public AccelerometerData(double x, double y, double z)
 			: this((float)x, (float)y, (float)z)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public AccelerometerData(float x, float y, float z) =>
 			Acceleration = new Vector3(x, y, z);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Acceleration']/Docs" />
 		public Vector3 Acceleration { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
 		public override bool Equals(object? obj) =>
 			(obj is AccelerometerData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
 		public bool Equals(AccelerometerData other) =>
 			Acceleration.Equals(other.Acceleration);
 
@@ -109,7 +94,7 @@ namespace Microsoft.Maui.Essentials
 			left.Equals(right);
 
 		public static bool operator !=(AccelerometerData left, AccelerometerData right) =>
-		   !left.Equals(right);
+			!left.Equals(right);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
 		public override int GetHashCode() =>
@@ -121,11 +106,8 @@ namespace Microsoft.Maui.Essentials
 			$"{nameof(Acceleration.Y)}: {Acceleration.Y}, " +
 			$"{nameof(Acceleration.Z)}: {Acceleration.Z}";
 	}
-}
 
-namespace Microsoft.Maui.Essentials.Implementations
-{
-	public partial class AccelerometerImplementation : IAccelerometer
+	partial class AccelerometerImplementation : IAccelerometer
 	{
 		const double accelerationThreshold = 169;
 
@@ -143,6 +125,12 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public void Start(SensorSpeed sensorSpeed)
 		{
+			if (!IsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (IsMonitoring)
+				throw new InvalidOperationException("Accelerometer has already been started.");
+
 			IsMonitoring = true;
 			useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
 
@@ -159,6 +147,12 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public void Stop()
 		{
+			if (!IsSupported)
+				throw new FeatureNotSupportedException();
+
+			if (!IsMonitoring)
+				return;
+
 			IsMonitoring = false;
 
 			try

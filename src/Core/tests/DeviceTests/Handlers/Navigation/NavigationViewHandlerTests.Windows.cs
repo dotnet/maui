@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(async () =>
 			{
 				FrameworkElement frameworkElement = null;
-				var content = (Panel)DefaultWindow.Content;
+				var content = (Panel)MauiProgram.DefaultWindow.Content;
 				try
 				{
 					var mauiContext = MauiContext.MakeScoped(true);

@@ -1,44 +1,65 @@
+#nullable enable
 using System;
+using Android.App;
+using Android.Content;
 #if __ANDROID_26__
-using Android;
 using Android.OS;
+using Microsoft.Maui.ApplicationModel;
 #endif
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class VibrationImplementation : IVibration
+	partial class VibrationImplementation : IVibration
 	{
+		static VibratorManager? VibratorManager =>
+			OperatingSystem.IsAndroidVersionAtLeast(31)
+				? Application.Context.GetSystemService(Context.VibratorManagerService) as VibratorManager
+				: null;
+
+		static Vibrator? VibratorManagerVibrator =>
+			OperatingSystem.IsAndroidVersionAtLeast(31)
+				? VibratorManager?.DefaultVibrator
+				: null;
+
+		static Vibrator? VibratorServiceVibrator =>
+#pragma warning disable CS0618 // Type or member is obsolete
+			Application.Context.GetSystemService(Context.VibratorService) as Vibrator;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+		static Vibrator? vibrator;
+
+		static Vibrator? Vibrator =>
+			vibrator ??= (VibratorManagerVibrator ?? VibratorServiceVibrator);
+
 		public bool IsSupported => true;
 
-		public void Vibrate() 
-			=> Vibrate(TimeSpan.FromMilliseconds(500));
+		void PlatformVibrate() =>
+			PlatformVibrate(TimeSpan.FromMilliseconds(500));
 
-		public void Vibrate(double duration) 
-			=> Vibrate(TimeSpan.FromMilliseconds(duration));
-
-		public void Vibrate(TimeSpan duration)
+		void PlatformVibrate(TimeSpan duration)
 		{
 			Permissions.EnsureDeclared<Permissions.Vibrate>();
 
 			var time = (long)duration.TotalMilliseconds;
 #if __ANDROID_26__
-			if (Platform.HasApiLevelO)
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
-				Platform.Vibrator.Vibrate(VibrationEffect.CreateOneShot(time, VibrationEffect.DefaultAmplitude));
-				return;
+				Vibrator?.Vibrate(VibrationEffect.CreateOneShot(time, VibrationEffect.DefaultAmplitude));
 			}
+			else
 #endif
-
+			{
 #pragma warning disable CS0618 // Type or member is obsolete
-			Platform.Vibrator.Vibrate(time);
+				Vibrator?.Vibrate(time);
 #pragma warning restore CS0618 // Type or member is obsolete
+			}
 		}
 
-		public void Cancel()
+		void PlatformCancel()
 		{
 			Permissions.EnsureDeclared<Permissions.Vibrate>();
 
-			Platform.Vibrator.Cancel();
+			Vibrator?.Cancel();
 		}
 	}
 }

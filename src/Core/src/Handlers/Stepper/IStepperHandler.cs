@@ -1,7 +1,7 @@
 ﻿#if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIStepper;
 #elif MONOANDROID
-using PlatformView = Android.Widget.LinearLayout;
+using PlatformView = Microsoft.Maui.Platform.MauiStepper;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.MauiStepper;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)

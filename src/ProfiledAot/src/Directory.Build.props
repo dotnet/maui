@@ -5,5 +5,11 @@
     <AndroidEnableAotProfiler>true</AndroidEnableAotProfiler>
     <RunAOTCompilation>false</RunAOTCompilation>
   </PropertyGroup>
+  
   <Import Project="../../../Directory.Build.props" />
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Strings.resx" LogicalName="Strings.resources" />
+    <Compile Include="$(MSBuildThisFileDirectory)Strings.Designer.cs" />
+  </ItemGroup>
 </Project>

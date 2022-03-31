@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
@@ -20,7 +20,10 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
+
+#pragma warning disable CS0612 // Type or member is obsolete
 		readonly Lazy<IResourceDictionary> _systemResources;
+#pragma warning restore CS0612 // Type or member is obsolete
 
 		IAppIndexingProvider? _appIndexProvider;
 		ReadOnlyCollection<Element>? _logicalChildren;
@@ -34,17 +37,22 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal Application(bool setCurrentApplication)
-		{			
+		{
 			if (setCurrentApplication)
 				SetCurrentApplication(this);
 
+#pragma warning disable CS0612 // Type or member is obsolete
 			_systemResources = new Lazy<IResourceDictionary>(() =>
 			{
 				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
 				systemResources.ValuesChanged += OnParentResourcesChanged;
 				return systemResources;
 			});
+#pragma warning restore CS0612 // Type or member is obsolete
+
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
+
+			_lastAppTheme = PlatformAppTheme;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Quit']/Docs" />
@@ -73,7 +81,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Current']/Docs" />
 		public static Application? Current { get; set; }
 
-		Page? _pendingMainPage;
+		Page? _singleWindowMainPage;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='MainPage']/Docs" />
 		public Page? MainPage
@@ -81,7 +89,7 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (Windows.Count == 0)
-					return _pendingMainPage;
+					return _singleWindowMainPage;
 
 				return Windows[0].Page;
 			}
@@ -92,11 +100,9 @@ namespace Microsoft.Maui.Controls
 
 				OnPropertyChanging();
 
-				if (Windows.Count == 0)
-				{
-					_pendingMainPage = value;
-				}
-				else
+				_singleWindowMainPage = value;
+
+				if (Windows.Count == 1)
 				{
 					Windows[0].Page = value;
 				}
@@ -164,14 +170,45 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				_userAppTheme = value;
-				TriggerThemeChangedActual(new AppThemeChangedEventArgs(value));
+				TriggerThemeChangedActual();
 			}
 		}
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
-		public AppTheme RequestedTheme => AppInfo.RequestedTheme;
 
+		public AppTheme PlatformAppTheme => AppInfo.RequestedTheme;
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
+		public AppTheme RequestedTheme => UserAppTheme != AppTheme.Unspecified ? UserAppTheme : PlatformAppTheme;
+
+		static Color? _accentColor;
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='AccentColor']/Docs" />
-		public static Color? AccentColor { get; set; }
+		public static Color? AccentColor
+		{
+			get => _accentColor ??= GetAccentColor();
+			set => _accentColor = value;
+		}
+
+
+		static Color? GetAccentColor()
+		{
+#if WINDOWS
+			if (UI.Xaml.Application.Current.Resources.TryGetValue("SystemColorControlAccentBrush", out object accent) &&
+				accent is UI.Xaml.Media.SolidColorBrush scb)
+			{
+				return scb.ToColor();
+			}
+
+			return null;
+#elif ANDROID
+			if (Current?.Windows?.Count > 0)
+				return Current.Windows[0].MauiContext.Context?.GetAccentColor();
+
+			return null;
+#elif IOS
+			return ColorExtensions.AccentColor.ToColor();
+#else
+			return Color.FromRgba(50, 79, 133, 255);
+#endif
+		}
 
 		public event EventHandler<AppThemeChangedEventArgs> RequestedThemeChanged
 		{
@@ -183,19 +220,21 @@ namespace Microsoft.Maui.Controls
 		AppTheme _lastAppTheme = AppTheme.Unspecified;
 		AppTheme _userAppTheme = AppTheme.Unspecified;
 
-		void TriggerThemeChangedActual(AppThemeChangedEventArgs args)
+		void TriggerThemeChangedActual()
 		{
+			var newTheme = RequestedTheme;
+
 			// On iOS the event is triggered more than once.
 			// To minimize that for us, we only do it when the theme actually changes and it's not currently firing
-			if (_themeChangedFiring || RequestedTheme == _lastAppTheme)
+			if (_themeChangedFiring || newTheme == _lastAppTheme)
 				return;
 
 			try
 			{
 				_themeChangedFiring = true;
-				_lastAppTheme = RequestedTheme;
+				_lastAppTheme = newTheme;
 
-				_weakEventManager.HandleEvent(this, args, nameof(RequestedThemeChanged));
+				_weakEventManager.HandleEvent(this, new AppThemeChangedEventArgs(newTheme), nameof(RequestedThemeChanged));
 			}
 			finally
 			{

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Maui.Graphics;
-using GraphicsGradientStop = Microsoft.Maui.Graphics.GradientStop;
+using GraphicsGradientStop = Microsoft.Maui.Graphics.PaintGradientStop;
 
 namespace Microsoft.Maui.Controls
 {

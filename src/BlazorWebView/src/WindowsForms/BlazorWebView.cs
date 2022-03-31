@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		/// </summary>
 		[Category("Action")]
 		[Description("Allows customizing how external links are opened. Opens external links in the system browser by default.")]
-		public EventHandler<ExternalLinkNavigationEventArgs> ExternalNavigationStarting;
+		public EventHandler<UrlLoadingEventArgs> UrlLoading;
 
 		private void OnHostPagePropertyChanged() => StartWebViewCoreIfPossible();
 
@@ -169,7 +170,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				fileProvider,
 				RootComponents.JSComponents,
 				hostPageRelativePath,
-				(args) => ExternalNavigationStarting?.Invoke(this, args));
+				(args) => UrlLoading?.Invoke(this, args));
 
 			foreach (var rootComponent in RootComponents)
 			{

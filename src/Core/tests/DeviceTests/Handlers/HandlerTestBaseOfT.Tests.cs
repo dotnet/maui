@@ -1,6 +1,8 @@
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Media;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -28,8 +30,22 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				FlowDirection = flowDirection
 			};
+
+			var expectedFlowDirection = flowDirection;
+
+#if WINDOWS
+			if (view is LayoutStub)
+			{
+				// On Windows, we deliberately _do not_ set the platform FlowDirection
+				// for Layouts, because the cross-platform layout code is already taking
+				// flow direction into account. The result of setting the cross-platform
+				// flow direction will always be Microsoft.UI.Xaml.FlowDirection.LeftToRight
+				expectedFlowDirection = FlowDirection.LeftToRight;
+			}
+#endif
+
 			var id = await GetValueAsync(view, handler => GetFlowDirection(handler));
-			Assert.Equal(view.FlowDirection, id);
+			Assert.Equal(expectedFlowDirection, id);
 		}
 
 		[Theory(DisplayName = "Opacity is set correctly")]
@@ -196,6 +212,29 @@ namespace Microsoft.Maui.DeviceTests
 
 			var platformViewTransform = await GetValueAsync(view, handler => GetViewTransform(handler));
 			Assert.NotEqual(platformViewTransform, new System.Numerics.Matrix4x4());
+		}
+
+		[Theory(DisplayName = "View Renders To Image"
+#if !__ANDROID__
+			, Skip = "iOS and Windows can't render elements to images from test runner. It's missing the required root windows."
+#endif
+			)]
+		[InlineData(ScreenshotFormat.Jpeg)]
+		[InlineData(ScreenshotFormat.Png)]
+		public async Task RendersAsImage(ScreenshotFormat type)
+		{
+			var view = new TStub()
+			{
+				Height = 100,
+				Width = 100,
+			};
+
+			var result = await GetValueAsync(view, handler => handler.VirtualView.CaptureAsync());
+			Assert.NotNull(result);
+
+			using var stream = await result.OpenReadAsync(type);
+
+			Assert.True(stream.Length > 0);
 		}
 	}
 }

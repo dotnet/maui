@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceIdiom.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceIdiom']/Docs" />
 	public readonly struct DeviceIdiom : IEquatable<DeviceIdiom>
@@ -40,14 +40,14 @@ namespace Microsoft.Maui.Essentials
 		public static DeviceIdiom Create(string deviceIdiom) =>
 			new DeviceIdiom(deviceIdiom);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceIdiom.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceIdiom.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
 		public bool Equals(DeviceIdiom other) =>
 			Equals(other.deviceIdiom);
 
 		internal bool Equals(string other) =>
 			string.Equals(deviceIdiom, other, StringComparison.Ordinal);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceIdiom.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceIdiom.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
 		public override bool Equals(object obj) =>
 			obj is DeviceIdiom && Equals((DeviceIdiom)obj);
 

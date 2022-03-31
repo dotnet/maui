@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DevicePlatform']/Docs" />
 	public readonly struct DevicePlatform : IEquatable<DevicePlatform>
@@ -51,14 +51,14 @@ namespace Microsoft.Maui.Essentials
 		public static DevicePlatform Create(string devicePlatform) =>
 			new DevicePlatform(devicePlatform);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
 		public bool Equals(DevicePlatform other) =>
 			Equals(other.devicePlatform);
 
 		internal bool Equals(string other) =>
 			string.Equals(devicePlatform, other, StringComparison.Ordinal);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
 		public override bool Equals(object obj) =>
 			obj is DevicePlatform && Equals((DevicePlatform)obj);
 

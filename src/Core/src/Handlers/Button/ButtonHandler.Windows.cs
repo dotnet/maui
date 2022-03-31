@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Handlers
 		protected override Button CreatePlatformView() =>
 			new Button
 			{
+				AllowFocusOnInteraction = false,
 				VerticalAlignment = VerticalAlignment.Stretch,
 				HorizontalAlignment = HorizontalAlignment.Stretch,
 				Content = new StackPanel
@@ -115,7 +116,13 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdatePadding(button);
 		}
 
-		public static void MapImageSource(IButtonHandler handler, IButton image) =>
+		public static void MapLineBreakMode(IButtonHandler handler, IButton button)
+		{
+			if (button is ILineBreakMode lineBreakMode)
+				handler.PlatformView?.UpdateLineBreakMode(lineBreakMode);
+		}
+
+		public static void MapImageSource(IButtonHandler handler, IImage image) =>
 			handler
 				.ImageSourceLoader
 				.UpdateImageSourceAsync()

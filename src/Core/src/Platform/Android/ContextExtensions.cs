@@ -8,6 +8,7 @@ using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
+using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Primitives.Dimension;
 using AActivity = Android.App.Activity;
 using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
@@ -277,6 +278,24 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		internal static Color GetAccentColor(this Context context)
+		{
+			Color? rc = null;
+			using (var value = new TypedValue())
+			{
+				if (context.Theme != null)
+				{
+					if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true)) // Android 5.0+
+					{
+						rc = Color.FromUint((uint)value.Data);
+					}
+				}
+			}
+
+			return rc ?? Color.FromArgb("#ff33b5e5");
+		}
+
+
 		public static int GetActionBarHeight(this Context context)
 		{
 			_actionBarHeight ??= (int)context.GetThemeAttributePixels(Resource.Attribute.actionBarSize);
@@ -310,5 +329,8 @@ namespace Microsoft.Maui.Platform
 
 			return mode.MakeMeasureSpec(deviceConstraint);
 		}
+
+		public static float GetDisplayDensity(this Context context) =>
+			context.Resources?.DisplayMetrics?.Density ?? 1.0f;
 	}
 }

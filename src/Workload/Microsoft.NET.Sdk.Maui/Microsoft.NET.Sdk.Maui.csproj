@@ -37,7 +37,7 @@
       <_VersionsToReplace Include="MicrosoftMacCatalystSdkPackageVersion" />
       <_VersionsToReplace Include="MicrosoftmacOSSdkPackageVersion" />
       <_VersionsToReplace Include="MicrosofttvOSSdkPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion" />
+      <_VersionsToReplace Include="MicrosoftNETWorkloadEmscriptenPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreAuthorizationPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsAnalyzersPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsFormsPackageVersion" />
@@ -62,6 +62,24 @@
         Output="%(_JsonInputFile.OutputPath)"
         OldValue="@VERSION@"
         NewValue="$(PackageReferenceVersion)"
+    />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)WorkloadManifest.json"
+        Output="$(IntermediateOutputPath)WorkloadManifest.json"
+        OldValue="@MAUI_GRAPHICS_VERSION@"
+        NewValue="$(MicrosoftMauiGraphicsVersion)"
+    />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)WorkloadManifest.json"
+        Output="$(IntermediateOutputPath)WorkloadManifest.json"
+        OldValue="@WASDK_VERSION@"
+        NewValue="$(MicrosoftWindowsAppSDKPackageVersion)"
+    />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)WorkloadManifest.json"
+        Output="$(IntermediateOutputPath)WorkloadManifest.json"
+        OldValue="@WASDK_BUILD_TOOLS_VERSION@"
+        NewValue="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
     />
     <ReplaceText
         Input="%(_JsonVariableMatrix.OutputPath)"

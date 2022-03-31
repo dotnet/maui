@@ -9,9 +9,9 @@ using UIKit;
 using AppKit;
 #endif
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public class AppInfoImplementation : IAppInfo
+	class AppInfoImplementation : IAppInfo
 	{
 		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 
@@ -26,21 +26,21 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public string BuildString => GetBundleValue("CFBundleVersion");
 
 		string GetBundleValue(string key)
-		   => NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
+			=> NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
 
 #if __IOS__ || __TVOS__
 		public async void ShowSettingsUI()
-			=> await Launcher.OpenAsync(UIApplication.OpenSettingsUrlString);
+			=> await Launcher.Default.OpenAsync(UIApplication.OpenSettingsUrlString);
 #elif __MACOS__
-        public void ShowSettingsUI()
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                var prefsApp = ScriptingBridge.SBApplication.FromBundleIdentifier("com.apple.systempreferences");
-                prefsApp.SendMode = ScriptingBridge.AESendMode.NoReply;
-                prefsApp.Activate();
-            });
-        }
+		public void ShowSettingsUI()
+		{
+			MainThread.BeginInvokeOnMainThread(() =>
+			{
+				var prefsApp = ScriptingBridge.SBApplication.FromBundleIdentifier("com.apple.systempreferences");
+				prefsApp.SendMode = ScriptingBridge.AESendMode.NoReply;
+				prefsApp.Activate();
+			});
+		}
 #else
 		public void ShowSettingsUI() =>
 			throw new FeatureNotSupportedException();
@@ -54,8 +54,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 				if ((OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13, 0)) || (OperatingSystem.IsTvOS() && !OperatingSystem.IsTvOSVersionAtLeast(13, 0)))
 					return AppTheme.Unspecified;
 
-				var uiStyle = Platform.GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
-					UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
+				var traits =
+					MainThread.InvokeOnMainThread(() => WindowStateManager.Default.GetCurrentUIViewController()?.TraitCollection) ??
+					UITraitCollection.CurrentTraitCollection;
+
+				var uiStyle = traits.UserInterfaceStyle;
 
 				return uiStyle switch
 				{
@@ -66,8 +69,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 #elif __MACOS__
-        public AppTheme RequestedTheme
-        {
+		public AppTheme RequestedTheme
+		{
 			get
 			{
 				if (OperatingSystem.IsMacOSVersionAtLeast(10, 14))
@@ -86,7 +89,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				}
 				return AppTheme.Light;
 			}
-        }
+		}
 #else
 		public AppTheme RequestedTheme =>
 			AppTheme.Unspecified;
@@ -97,7 +100,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		{
 			get
 			{
-				var currentWindow = Platform.GetCurrentWindow(false);
+				var currentWindow = WindowStateManager.Default.GetCurrentUIWindow(false);
 				UIUserInterfaceLayoutDirection layoutDirection =
 					currentWindow?.EffectiveUserInterfaceLayoutDirection ??
 					UIApplication.SharedApplication.UserInterfaceLayoutDirection;

@@ -123,24 +123,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public override void Draw(Canvas? canvas)
-		{
-			try
-			{
-				if (canvas != null)
-					canvas.ClipRect(canvas.ClipBounds);
-
-				base.Draw(canvas);
-			}
-			catch (Java.Lang.NullPointerException)
-			{
-				// This will most likely never run since UpdateScrollBars is called 
-				// when the scrollbars visibilities are updated but I left it here
-				// just in case there's an edge case that causes an exception
-				this.HandleScrollBarVisibilityChange();
-			}
-		}
-
 		public override bool OnInterceptTouchEvent(MotionEvent? ev)
 		{
 			// See also MauiHorizontalScrollView notes in OnInterceptTouchEvent

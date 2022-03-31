@@ -1,4 +1,7 @@
 ﻿using System;
+using Microsoft.Maui.Devices;
+using System.Threading.Tasks;
+using Microsoft.Maui.Media;
 using WinRT.Interop;
 
 namespace Microsoft.Maui.Platform
@@ -35,6 +38,27 @@ namespace Microsoft.Maui.Platform
 				throw new NullReferenceException("The Window Handle is null.");
 
 			return hwnd;
+		}
+
+		public static float GetDisplayDensity(this UI.Xaml.Window platformWindow)
+		{
+			var hwnd = platformWindow.GetWindowHandle();
+
+			if (hwnd == IntPtr.Zero)
+				return 1.0f;
+
+			return PlatformMethods.GetDpiForWindow(hwnd) / DeviceDisplay.BaseLogicalDpi;
+		}
+
+		public static UI.Windowing.AppWindow? GetAppWindow(this UI.Xaml.Window platformWindow)
+		{
+			var hwnd = platformWindow.GetWindowHandle();
+
+			if (hwnd == IntPtr.Zero)
+				return null;
+
+			var windowId = UI.Win32Interop.GetWindowIdFromWindow(hwnd);
+			return UI.Windowing.AppWindow.GetFromWindowId(windowId);
 		}
 	}
 }

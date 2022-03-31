@@ -3,10 +3,11 @@ using Android.App;
 using Android.Content.Res;
 using Android.OS;
 using Android.Provider;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class DeviceInfoImplementation : IDeviceInfo
+	class DeviceInfoImplementation : IDeviceInfo
 	{
 		const int tabletCrossover = 600;
 
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				var currentIdiom = DeviceIdiom.Unknown;
 
 				// first try UIModeManager
-				using var uiModeManager = UiModeManager.FromContext(Essentials.Platform.AppContext);
+				using var uiModeManager = UiModeManager.FromContext(Application.Context);
 
 				try
 				{
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				// then try Configuration
 				if (currentIdiom == DeviceIdiom.Unknown)
 				{
-					var configuration = Essentials.Platform.AppContext.Resources?.Configuration;
+					var configuration = Application.Context.Resources?.Configuration;
 					if (configuration != null)
 					{
 						var minWidth = configuration.SmallestScreenWidthDp;
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 					else
 					{
 						// start clutching at straws
-						using var metrics = Essentials.Platform.AppContext.Resources?.DisplayMetrics;
+						using var metrics = Application.Context.Resources?.DisplayMetrics;
 						if (metrics != null)
 						{
 							var minSize = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
@@ -126,10 +127,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		static string GetSystemSetting(string name, bool isGlobal = false)
 		{
-			if (isGlobal && Essentials.Platform.HasApiLevelNMr1)
-				return Settings.Global.GetString(Essentials.Platform.AppContext.ContentResolver, name);
+			if (isGlobal && OperatingSystem.IsAndroidVersionAtLeast(25))
+				return Settings.Global.GetString(Application.Context.ContentResolver, name);
 			else
-				return Settings.System.GetString(Essentials.Platform.AppContext.ContentResolver, name);
+				return Settings.System.GetString(Application.Context.ContentResolver, name);
 		}
 	}
 }

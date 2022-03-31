@@ -10,9 +10,11 @@ using WStretch = Microsoft.UI.Xaml.Media.Stretch;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using System;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ButtonRenderer : ViewRenderer<Button, FormsButton>
 	{
 		bool _fontApplied;
@@ -80,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateLineBreakMode();
 		}
 
-
+		[PortHandler]
 		void UpdateLineBreakMode()
 		{
 			_textBlock = Control.GetTextBlock(Control.Content);
@@ -304,7 +306,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (textStyle.Font == Font.Default && !_fontApplied)
 				return;
 
-			Font fontToApply = textStyle.Font == Font.Default ? Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)) : textStyle.Font;
+			Font fontToApply = textStyle.Font == Font.Default
+#pragma warning disable CS0612 // Type or member is obsolete
+				? Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false))
+#pragma warning restore CS0612 // Type or member is obsolete
+				: textStyle.Font;
 
 			Control.ApplyFont(fontToApply, Element.RequireFontManager());
 			_fontApplied = true;

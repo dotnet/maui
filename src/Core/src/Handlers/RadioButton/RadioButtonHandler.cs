@@ -3,7 +3,7 @@ using PlatformView = Microsoft.Maui.Platform.ContentView;
 #elif MONOANDROID
 using PlatformView = Android.Views.View;
 #elif WINDOWS
-using PlatformView = Microsoft.Maui.Platform.MauiRadioButton;
+using PlatformView = Microsoft.UI.Xaml.Controls.RadioButton;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IRadioButton, IRadioButtonHandler> Mapper = new PropertyMapper<IRadioButton, IRadioButtonHandler>(ViewHandler.ViewMapper)
 		{
-#if ANDROID
+#if ANDROID || WINDOWS
 			[nameof(IRadioButton.Background)] = MapBackground,
 #endif
 			[nameof(IRadioButton.IsChecked)] = MapIsChecked,

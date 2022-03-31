@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Photos;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
@@ -30,13 +30,13 @@ namespace Microsoft.Maui.Essentials
 					return status;
 				}
 #if __IOS__
-                else if (status == PermissionStatus.Limited)
-                {
-                    PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
-                        PHPhotoLibrary.SharedPhotoLibrary,
-                        Platform.GetCurrentUIViewController());
-                    return status;
-                }
+				else if (status == PermissionStatus.Limited)
+				{
+					PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
+						PHPhotoLibrary.SharedPhotoLibrary,
+						WindowStateManager.Default.GetCurrentUIViewController());
+					return status;
+				}
 #endif
 
 				EnsureMainThread();

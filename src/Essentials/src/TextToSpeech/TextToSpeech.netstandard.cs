@@ -1,19 +1,16 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="Type[@FullName='Microsoft.Maui.Essentials.TextToSpeech']/Docs" />
-	public partial class TextToSpeechImplementation : ITextToSpeech
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
-		public Task SpeakAsync(string text, CancellationToken cancelToken) =>
+		Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken) =>
-			throw ExceptionUtils.NotSupportedOrImplementedException;
-
-		public Task<IEnumerable<Locale>> GetLocalesAsync() =>
+		Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

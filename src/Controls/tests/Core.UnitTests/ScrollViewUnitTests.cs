@@ -307,6 +307,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(changed);
 			Assert.AreEqual(child, scrollView.Content);
+			Assert.AreEqual(child.Parent, scrollView);
 
 			changed = false;
 
@@ -318,6 +319,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(changed);
 			Assert.Null(scrollView.Content);
+			Assert.Null(child.Parent);
 		}
 
 		[Test]

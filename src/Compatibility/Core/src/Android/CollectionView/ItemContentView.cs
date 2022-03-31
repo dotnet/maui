@@ -5,6 +5,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	public class ItemContentView : ViewGroup
 	{
 		protected IVisualElementRenderer Content;
@@ -54,6 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				RemoveView(Content.View);
 			}
 
+			Content?.Dispose();
 			Content = null;
 			_size = null;
 		}

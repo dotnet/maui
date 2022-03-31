@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public RootComponentsCollection RootComponents { get; }
 
 		/// <inheritdoc/>
-		public event EventHandler<ExternalLinkNavigationEventArgs>? ExternalNavigationStarting;
+		public event EventHandler<UrlLoadingEventArgs>? UrlLoading;
 
 		/// <inheritdoc/>
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
@@ -43,9 +43,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
 		}
 
-		internal void NotifyExternalNavigationStarting(ExternalLinkNavigationEventArgs args)
+		internal void NotifyUrlLoading(UrlLoadingEventArgs args)
 		{
-			ExternalNavigationStarting?.Invoke(this, args);
+			UrlLoading?.Invoke(this, args);
 		}
 	}
 }

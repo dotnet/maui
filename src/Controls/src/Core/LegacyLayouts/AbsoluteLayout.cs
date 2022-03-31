@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public AbsoluteLayout()
 		{
+			Hosting.CompatibilityCheck.CheckForCompatibility();
 			_children = new AbsoluteElementCollection(InternalChildren, this);
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<AbsoluteLayout>>(() =>
 				new PlatformConfigurationRegistry<AbsoluteLayout>(this));

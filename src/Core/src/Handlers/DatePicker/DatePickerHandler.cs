@@ -1,5 +1,7 @@
-﻿#if __IOS__ || MACCATALYST
+﻿#if IOS && !MACCATALYST
 using PlatformView = Microsoft.Maui.Platform.MauiDatePicker;
+#elif MACCATALYST
+using PlatformView = UIKit.UIDatePicker;
 #elif MONOANDROID
 using PlatformView = Microsoft.Maui.Platform.MauiDatePicker;
 #elif WINDOWS
@@ -16,6 +18,8 @@ namespace Microsoft.Maui.Handlers
 		{
 #if __ANDROID__
 			[nameof(IDatePicker.Background)] = MapBackground,
+#elif __IOS__
+			[nameof(IDatePicker.FlowDirection)] = MapFlowDirection,
 #endif
 			[nameof(IDatePicker.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IDatePicker.Date)] = MapDate,

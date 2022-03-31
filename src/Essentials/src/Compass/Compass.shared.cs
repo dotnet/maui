@@ -1,9 +1,8 @@
+#nullable enable
 using System;
-using System.ComponentModel;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public interface ICompass
 	{
@@ -11,12 +10,10 @@ namespace Microsoft.Maui.Essentials
 
 		bool IsMonitoring { get; }
 
-		SensorSpeed SensorSpeed { get; }
-
 		void Start(SensorSpeed sensorSpeed);
 
 		void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter);
-		
+
 		void Stop();
 
 		event EventHandler<CompassChangedEventArgs> ReadingChanged;
@@ -30,7 +27,7 @@ namespace Microsoft.Maui.Essentials
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Compass']/Docs" />
-	public static partial class Compass
+	public static class Compass
 	{
 		public static event EventHandler<CompassChangedEventArgs> ReadingChanged
 		{
@@ -38,21 +35,22 @@ namespace Microsoft.Maui.Essentials
 			remove => Current.ReadingChanged -= value;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
-		public static bool IsSupported 
+		public static bool IsSupported
 			=> Current.IsSupported;
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
 		public static bool IsMonitoring
 			=> Current.IsMonitoring;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][0]/Docs" />
-		public static void Start(SensorSpeed sensorSpeed) => Start(sensorSpeed, true);
-
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][1]/Docs" />
+		public static void Start(SensorSpeed sensorSpeed)
+			=> Start(sensorSpeed, true);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][2]/Docs" />
 		public static void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 			=> Current.Start(sensorSpeed, applyLowPassFilter);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop'][1]/Docs" />
 		public static void Stop()
 			=> Current.Stop();
 
@@ -73,19 +71,28 @@ namespace Microsoft.Maui.Essentials
 		}
 #endif
 
-#nullable enable
-		static ICompass? currentImplementation;
-#nullable disable
+		static ICompass Current => Devices.Sensors.Compass.Default;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static ICompass Current =>
-			currentImplementation ??= new CompassImplementation();
+		static ICompass? defaultImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(ICompass? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
+		public static ICompass Default =>
+			defaultImplementation ??= new CompassImplementation();
+
+		internal static void SetDefault(ICompass? implementation) =>
+			defaultImplementation = implementation;
+	}
+
+	public static class CompassExtensions
+	{
+#if IOS || MACCATALYST
+		public static void SetShouldDisplayHeadingCalibration(this ICompass compass, bool shouldDisplay)
+		{
+			if (compass is IPlatformCompass platform)
+			{
+				platform.ShouldDisplayHeadingCalibration = shouldDisplay;
+			}
+		}
+#endif
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/CompassChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.CompassChangedEventArgs']/Docs" />
@@ -109,11 +116,11 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='HeadingMagneticNorth']/Docs" />
 		public double HeadingMagneticNorth { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
-		public override bool Equals(object obj) =>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		public override bool Equals(object? obj) =>
 			(obj is CompassData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
 		public bool Equals(CompassData other) =>
 			HeadingMagneticNorth.Equals(other.HeadingMagneticNorth);
 
@@ -131,22 +138,19 @@ namespace Microsoft.Maui.Essentials
 		public override string ToString() =>
 			$"{nameof(HeadingMagneticNorth)}: {HeadingMagneticNorth}";
 	}
-}
 
-namespace Microsoft.Maui.Essentials.Implementations
-{
-	public partial class CompassImplementation : ICompass
+	partial class CompassImplementation : ICompass
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 
-		public event EventHandler<CompassChangedEventArgs> ReadingChanged;
+		public event EventHandler<CompassChangedEventArgs>? ReadingChanged;
 
 		public bool IsSupported
 			=> PlatformIsSupported;
 
 		public bool IsMonitoring { get; private set; }
 
-		public SensorSpeed SensorSpeed { get; private set; }
+		SensorSpeed SensorSpeed { get; set; }
 
 		public void Start(SensorSpeed sensorSpeed) => Start(sensorSpeed, true);
 
@@ -159,7 +163,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				throw new InvalidOperationException("Compass has already been started.");
 
 			IsMonitoring = true;
-			
+
 
 			try
 			{
@@ -172,7 +176,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop'][2]/Docs" />
 		public void Stop()
 		{
 			if (!PlatformIsSupported)

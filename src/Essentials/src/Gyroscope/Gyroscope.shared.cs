@@ -1,18 +1,15 @@
+#nullable enable
 using System;
 using System.Numerics;
-using System.ComponentModel;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public interface IGyroscope
 	{
 		bool IsSupported { get; }
 
 		bool IsMonitoring { get; }
-
-		SensorSpeed SensorSpeed { get; }
 
 		void Start(SensorSpeed sensorSpeed);
 
@@ -34,33 +31,26 @@ namespace Microsoft.Maui.Essentials
 		public static bool IsMonitoring
 			=> Current.IsMonitoring;
 
-		public static bool IsSupported 
+		public static bool IsSupported
 			=> Current.IsSupported;
-
-		public static SensorSpeed SensorSpeed
-			=> Current.SensorSpeed;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Start']/Docs" />
 		public static void Start(SensorSpeed sensorSpeed)
 			=> Current.Start(sensorSpeed);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Stop']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Stop'][1]/Docs" />
 		public static void Stop()
 			=> Current.Stop();
 
-#nullable enable
-		static IGyroscope? currentImplementation;
-#nullable disable
+		static IGyroscope Current => Devices.Sensors.Gyroscope.Default;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IGyroscope Current =>
-			currentImplementation ??= new GyroscopeImplementation();
+		static IGyroscope? defaultImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-#nullable enable
-		public static void SetCurrent(IGyroscope? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
+		public static IGyroscope Default =>
+			defaultImplementation ??= new GyroscopeImplementation();
+
+		internal static void SetDefault(IGyroscope? implementation) =>
+			defaultImplementation = implementation;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.GyroscopeChangedEventArgs']/Docs" />
@@ -77,24 +67,24 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.GyroscopeData']/Docs" />
 	public readonly struct GyroscopeData : IEquatable<GyroscopeData>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public GyroscopeData(double x, double y, double z)
 			: this((float)x, (float)y, (float)z)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public GyroscopeData(float x, float y, float z) =>
 			AngularVelocity = new Vector3(x, y, z);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='AngularVelocity']/Docs" />
 		public Vector3 AngularVelocity { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
-		public override bool Equals(object obj) =>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		public override bool Equals(object? obj) =>
 			(obj is GyroscopeData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
 		public bool Equals(GyroscopeData other) =>
 			AngularVelocity.Equals(other.AngularVelocity);
 
@@ -114,17 +104,14 @@ namespace Microsoft.Maui.Essentials
 			$"{nameof(AngularVelocity.Y)}: {AngularVelocity.Y}, " +
 			$"{nameof(AngularVelocity.Z)}: {AngularVelocity.Z}";
 	}
-}
 
-namespace Microsoft.Maui.Essentials.Implementations
-{
-	public partial class GyroscopeImplementation : IGyroscope
+	partial class GyroscopeImplementation : IGyroscope
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 
-		public SensorSpeed SensorSpeed { get; private set; } = SensorSpeed.Default;
+		SensorSpeed SensorSpeed { get; set; } = SensorSpeed.Default;
 
-		public event EventHandler<GyroscopeChangedEventArgs> ReadingChanged;
+		public event EventHandler<GyroscopeChangedEventArgs>? ReadingChanged;
 
 		public bool IsMonitoring { get; private set; }
 
@@ -151,7 +138,6 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Stop']/Docs" />
 		public void Stop()
 		{
 			if (!PlatformIsSupported)

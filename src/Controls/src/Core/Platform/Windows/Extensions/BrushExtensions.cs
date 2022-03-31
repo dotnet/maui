@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var wRadialGradientBrush = new WRadialGradientBrush()
 				{
+					GradientOrigin = new WPoint(radialGradientBrush.Center.X, radialGradientBrush.Center.Y),
 					Center = new WPoint(radialGradientBrush.Center.X, radialGradientBrush.Center.Y),
 					RadiusX = radialGradientBrush.Radius,
 					RadiusY = radialGradientBrush.Radius

@@ -2,8 +2,8 @@
 using Android.Content;
 using Android.Runtime;
 using Android.Webkit;
+using Java.Net;
 using AWebView = Android.Webkit.WebView;
-using AUri = Android.Net.Uri;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
 		private static readonly string AppOrigin = $"https://{BlazorWebView.AppHostAddress}/";
+
+		private static readonly Uri AppOriginUri = new(AppOrigin);
 
 		private readonly BlazorWebViewHandler? _webViewHandler;
 
@@ -29,40 +31,41 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		public override bool ShouldOverrideUrlLoading(AWebView? view, IWebResourceRequest? request)
+			=> ShouldOverrideUrlLoadingCore(request) || base.ShouldOverrideUrlLoading(view, request);
+
+		private bool ShouldOverrideUrlLoadingCore(IWebResourceRequest? request)
 		{
-			// Handle redirects to the app custom scheme by reloading the URL in the view.
-			// Handle navigation to external URLs using the system browser, unless overriden.
-			var requestUri = request?.Url?.ToString();
-			if (Uri.TryCreate(requestUri, UriKind.RelativeOrAbsolute, out var uri))
+			if (_webViewHandler is null || !Uri.TryCreate(request?.Url?.ToString(), UriKind.RelativeOrAbsolute, out var uri))
 			{
-				if (uri.Host == BlazorWebView.AppHostAddress &&
-					view is not null && 
-					request is not null && 
-					request.IsRedirect && 
-					request.IsForMainFrame)
-				{
-					view.LoadUrl(uri.ToString());
-					return true;
-				}
-				else if (uri.Host != BlazorWebView.AppHostAddress && _webViewHandler != null)
-				{
-					var callbackArgs = new ExternalLinkNavigationEventArgs(uri);
-					_webViewHandler.ExternalNavigationStarting?.Invoke(callbackArgs);
-
-					if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
-					{
-						var intent = new Intent(Intent.ActionView, AUri.Parse(requestUri));
-						_webViewHandler.Context.StartActivity(intent);
-					}
-
-					if (callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.InsecureOpenInWebView)
-					{
-						return true;
-					}
-				}
+				return false;
 			}
 
-			return base.ShouldOverrideUrlLoading(view, request);
+			// This method never gets called for navigation to a new window ('_blank'),
+			// so we know we can safely invoke the UrlLoading event.
+			var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, AppOriginUri);
+			_webViewHandler.UrlLoading?.Invoke(callbackArgs);
+
+			if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
+			{
+				try
+				{
+					var intent = Intent.ParseUri(uri.OriginalString, IntentUriType.Scheme);
+					_webViewHandler.Context.StartActivity(intent);
+				}
+				catch (URISyntaxException)
+				{
+					// This can occur if there is a problem with the URI formatting given its specified scheme.
+					// Other platforms will silently ignore formatting issues, so we do the same here.
+				}
+				catch (ActivityNotFoundException)
+				{
+					// Do nothing if there is no activity to handle the intent. This is consistent with the
+					// behavior on other platforms when a URL with an unknown scheme is clicked.
+				}
+				return true;
+			}
+
+			return callbackArgs.UrlLoadingStrategy != UrlLoadingStrategy.OpenInWebView;
 		}
 
 		public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
@@ -72,22 +75,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				throw new ArgumentNullException(nameof(request));
 			}
 
-			var allowFallbackOnHostPage = false;
-
 			var requestUri = request?.Url?.ToString();
-			var appBaseUri = new Uri(AppOrigin);
-			var fileUri = requestUri != null ? new Uri(requestUri) : null;
-
-			if (fileUri != null && appBaseUri.IsBaseOf(fileUri))
-			{
-				var relativePath = appBaseUri.MakeRelativeUri(fileUri).ToString();
-				if (string.IsNullOrEmpty(relativePath))
-				{
-					// For app root, use host page (something like wwwroot/index.html)
-					allowFallbackOnHostPage = true;
-				}
-			}
-
+			var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(requestUri);
 			requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
 
 			if (requestUri != null &&
@@ -108,7 +97,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			base.OnPageFinished(view, url);
 
 			// TODO: How do we know this runs only once?
-			if (view != null && url == AppOrigin)
+			if (view != null && AppOriginUri.IsBaseOfPage(url))
 			{
 				// Startup scripts must run in OnPageFinished. If scripts are run earlier they will have no lasting
 				// effect because once the page content loads all the document state gets reset.
@@ -127,50 +116,50 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// Set up JS ports
 			view.EvaluateJavascript(@"
 
-        const channel = new MessageChannel();
-        var nativeJsPortOne = channel.port1;
-        var nativeJsPortTwo = channel.port2;
-        window.addEventListener('message', function (event) {
-            if (event.data != 'capturePort') {
-                nativeJsPortOne.postMessage(event.data)
-            }
-            else if (event.data == 'capturePort') {
-                if (event.ports[0] != null) {
-                    nativeJsPortTwo = event.ports[0]
-                }
-            }
-        }, false);
+		const channel = new MessageChannel();
+		var nativeJsPortOne = channel.port1;
+		var nativeJsPortTwo = channel.port2;
+		window.addEventListener('message', function (event) {
+			if (event.data != 'capturePort') {
+				nativeJsPortOne.postMessage(event.data)
+			}
+			else if (event.data == 'capturePort') {
+				if (event.ports[0] != null) {
+					nativeJsPortTwo = event.ports[0]
+				}
+			}
+		}, false);
 
-        nativeJsPortOne.addEventListener('message', function (event) {
-        }, false);
+		nativeJsPortOne.addEventListener('message', function (event) {
+		}, false);
 
-        nativeJsPortTwo.addEventListener('message', function (event) {
-            // data from native code to JS
-            if (window.external.__callback) {
-                window.external.__callback(event.data);
-            }
-        }, false);
-        nativeJsPortOne.start();
-        nativeJsPortTwo.start();
+		nativeJsPortTwo.addEventListener('message', function (event) {
+			// data from native code to JS
+			if (window.external.__callback) {
+				window.external.__callback(event.data);
+			}
+		}, false);
+		nativeJsPortOne.start();
+		nativeJsPortTwo.start();
 
-        window.external.sendMessage = function (message) {
-            // data from JS to native code
-            nativeJsPortTwo.postMessage(message);
-        };
+		window.external.sendMessage = function (message) {
+			// data from JS to native code
+			nativeJsPortTwo.postMessage(message);
+		};
 
-        window.external.receiveMessage = function (callback) {
-            window.external.__callback = callback;
-        }
+		window.external.receiveMessage = function (callback) {
+			window.external.__callback = callback;
+		}
 
-        ", new JavaScriptValueCallback(() =>
+		", new JavaScriptValueCallback(() =>
 			{
 				// Set up Server ports
 				_webViewHandler?.WebviewManager?.SetUpMessageChannel();
 
 				// Start Blazor
 				view.EvaluateJavascript(@"
-                    Blazor.start();
-                ", new JavaScriptValueCallback(() =>
+					Blazor.start();
+				", new JavaScriptValueCallback(() =>
 				{
 					// Done; no more action required
 				}));

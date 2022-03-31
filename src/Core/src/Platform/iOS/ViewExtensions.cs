@@ -4,8 +4,9 @@ using System.Numerics;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Media;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
@@ -117,15 +118,18 @@ namespace Microsoft.Maui.Platform
 		{
 			UISemanticContentAttribute updateValue = platformView.SemanticContentAttribute;
 
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			switch (view.FlowDirection)
 			{
-				updateValue = UISemanticContentAttribute.Unspecified;
+				case FlowDirection.MatchParent:
+					updateValue = UISemanticContentAttribute.Unspecified;
+					break;
+				case FlowDirection.LeftToRight:
+					updateValue = UISemanticContentAttribute.ForceLeftToRight;
+					break;
+				case FlowDirection.RightToLeft:
+					updateValue = UISemanticContentAttribute.ForceRightToLeft;
+					break;
 			}
-			else if (view.FlowDirection == FlowDirection.RightToLeft)
-				updateValue = UISemanticContentAttribute.ForceRightToLeft;
-			else if (view.FlowDirection == FlowDirection.LeftToRight)
-				updateValue = UISemanticContentAttribute.ForceLeftToRight;
 
 			if (updateValue != platformView.SemanticContentAttribute)
 				platformView.SemanticContentAttribute = updateValue;
@@ -327,33 +331,6 @@ namespace Microsoft.Maui.Platform
 			{
 				view.Subviews[n].RemoveFromSuperview();
 			}
-		}
-
-		public static Task<byte[]?> RenderAsPNG(this IView view) => view != null ? view.RenderAsImage(true) : Task.FromResult<byte[]?>(null);
-
-		public static Task<byte[]?> RenderAsJPEG(this IView view) => view != null ? view.RenderAsImage(false) : Task.FromResult<byte[]?>(null);
-
-		public static Task<byte[]?> RenderAsPNG(this UIView view, bool skipChildren = true) => view != null ? view.RenderAsImage(skipChildren, true) : Task.FromResult<byte[]?>(null);
-
-		public static Task<byte[]?> RenderAsJPEG(this UIView view, bool skipChildren = true) => view != null ? view.RenderAsImage(skipChildren, false) : Task.FromResult<byte[]?>(null);
-
-		static Task<byte[]?> RenderAsImage(this UIView platformView, bool skipChildren, bool asPng)
-		{
-			byte[]? result;
-			if (asPng)
-				result = platformView?.Window?.RenderAsPng(platformView.Layer, UIScreen.MainScreen.Scale, skipChildren);
-			else
-				result = platformView?.Window?.RenderAsJpeg(platformView.Layer, UIScreen.MainScreen.Scale, skipChildren);
-			return Task.FromResult<byte[]?>(result);
-		}
-
-		static Task<byte[]?> RenderAsImage(this IView view, bool asPng)
-		{
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return Task.FromResult<byte[]?>(null);
-			var skipChildren = !(view is IView && !(view is ILayout));
-			return platformView.RenderAsImage(skipChildren, asPng);
 		}
 
 		internal static Rect GetPlatformViewBounds(this IView view)

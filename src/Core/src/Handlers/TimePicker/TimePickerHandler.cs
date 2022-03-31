@@ -1,5 +1,7 @@
-﻿#if __IOS__ || MACCATALYST
+﻿#if __IOS__ && !MACCATALYST
 using PlatformView = Microsoft.Maui.Platform.MauiTimePicker;
+#elif MACCATALYST
+using PlatformView = UIKit.UIDatePicker;
 #elif MONOANDROID
 using PlatformView = Microsoft.Maui.Platform.MauiTimePicker;
 #elif WINDOWS
@@ -16,6 +18,8 @@ namespace Microsoft.Maui.Handlers
 		{
 #if __ANDROID__
 			[nameof(ITimePicker.Background)] = MapBackground,
+#elif __IOS__
+			[nameof(ITimePicker.FlowDirection)] = MapFlowDirection,
 #endif
 			[nameof(ITimePicker.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ITimePicker.Font)] = MapFont,

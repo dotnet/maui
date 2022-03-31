@@ -13,14 +13,14 @@ namespace Microsoft.Maui
 		/// <include file="../../docs/Microsoft.Maui/SizeRequest.xml" path="//Member[@MemberName='Minimum']/Docs" />
 		public Size Minimum { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui/SizeRequest.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/SizeRequest.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public SizeRequest(Size request, Size minimum)
 		{
 			Request = request;
 			Minimum = minimum;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/SizeRequest.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/SizeRequest.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public SizeRequest(Size request)
 		{
 			Request = request;

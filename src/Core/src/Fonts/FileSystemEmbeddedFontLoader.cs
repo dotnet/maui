@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.Extensions.Logging;
 
@@ -7,18 +8,37 @@ namespace Microsoft.Maui
 {
 	public class FileSystemEmbeddedFontLoader : IEmbeddedFontLoader
 	{
-		readonly string _rootPath;
-		readonly ILogger<EmbeddedFontLoader>? _logger;
+		string? _rootPath;
+		readonly Func<string>? _getRootPath;
+		readonly IServiceProvider? _serviceProvider;
 
-		public FileSystemEmbeddedFontLoader(string rootPath, ILogger<EmbeddedFontLoader>? logger = null)
+		public FileSystemEmbeddedFontLoader(string rootPath, IServiceProvider? serviceProvider = null)
 		{
-			_rootPath = rootPath;
-			_logger = logger;
+			_rootPath = rootPath ?? throw new ArgumentNullException(nameof(rootPath));
+			_serviceProvider = serviceProvider;
+		}
+
+		// Allows for delay-loading _rootPath, in case it is expensive and isn't always used.
+		private protected FileSystemEmbeddedFontLoader(Func<string> getRootPath, IServiceProvider? serviceProvider = null)
+		{
+			_getRootPath = getRootPath;
+			_serviceProvider = serviceProvider;
+		}
+
+		private string RootPath
+		{
+			get
+			{
+				Debug.Assert(_rootPath != null || _getRootPath != null, $"The ctor should have set either {nameof(_rootPath)} or {nameof(_getRootPath)}.");
+				
+				return _rootPath ??= _getRootPath!();
+			}
 		}
 
 		public string? LoadFont(EmbeddedFont font)
 		{
-			var filePath = Path.Combine(_rootPath, font.FontName!);
+			string rootPath = RootPath;
+			var filePath = Path.Combine(rootPath, font.FontName!);
 			if (File.Exists(filePath))
 				return filePath;
 
@@ -27,8 +47,8 @@ namespace Microsoft.Maui
 				if (font.ResourceStream == null)
 					throw new InvalidOperationException("ResourceStream was null.");
 
-				if (!Directory.Exists(_rootPath))
-					Directory.CreateDirectory(_rootPath);
+				if (!Directory.Exists(rootPath))
+					Directory.CreateDirectory(rootPath);
 
 				using (var fileStream = File.Create(filePath))
 				{
@@ -39,7 +59,7 @@ namespace Microsoft.Maui
 			}
 			catch (Exception ex)
 			{
-				_logger?.LogWarning(ex, "Unable copy font {Font} to local file system.", font.FontName);
+				_serviceProvider?.CreateLogger<EmbeddedFontLoader>()?.LogWarning(ex, "Unable copy font {Font} to local file system.", font.FontName);
 
 				File.Delete(filePath);
 			}

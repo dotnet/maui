@@ -9,6 +9,7 @@ using Object = Java.Lang.Object;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete("Use Microsoft.Maui.Platform.MauiWebViewClient instead")]
 	public class FormsWebChromeClient : WebChromeClient
 	{
 		Activity _activity;

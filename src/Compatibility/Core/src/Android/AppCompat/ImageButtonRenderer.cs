@@ -16,6 +16,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ImageButtonRenderer :
 		AppCompatImageButton,
 		IVisualElementRenderer,
@@ -268,7 +269,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return base.OnTouchEvent(e);
 		}
 
-
+		[PortHandler]
 		void UpdatePadding()
 		{
 			SetPadding(

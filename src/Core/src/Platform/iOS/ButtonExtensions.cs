@@ -28,18 +28,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateText(this UIButton platformButton, IText button) =>
 			platformButton.SetTitle(button.Text, UIControlState.Normal);
 
-		public static void UpdateTextColor(this UIButton platformButton, ITextStyle button) =>
-			platformButton.UpdateTextColor(button);
-
-		public static void UpdateTextColor(this UIButton platformButton, ITextStyle button, UIColor? buttonTextColorDefaultNormal, UIColor? buttonTextColorDefaultHighlighted, UIColor? buttonTextColorDefaultDisabled)
+		public static void UpdateTextColor(this UIButton platformButton, ITextStyle button)
 		{
-			if (button.TextColor == null)
-			{
-				platformButton.SetTitleColor(buttonTextColorDefaultNormal, UIControlState.Normal);
-				platformButton.SetTitleColor(buttonTextColorDefaultHighlighted, UIControlState.Highlighted);
-				platformButton.SetTitleColor(buttonTextColorDefaultDisabled, UIControlState.Disabled);
-			}
-			else
+			if (button.TextColor != null)
 			{
 				var color = button.TextColor.ToPlatform();
 
@@ -83,6 +74,20 @@ namespace Microsoft.Maui.Platform
 				(float)padding.Left,
 				(float)bottom,
 				(float)padding.Right);
+		}
+
+		public static void UpdateLineBreakMode(this UIButton nativeButton, ILineBreakMode button)
+		{
+			nativeButton.TitleLabel.LineBreakMode = button.LineBreakMode switch
+			{
+				LineBreakMode.NoWrap => UILineBreakMode.Clip,
+				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
+				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
+				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
+				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+				_ => throw new ArgumentOutOfRangeException()
+			};
 		}
 	}
 }

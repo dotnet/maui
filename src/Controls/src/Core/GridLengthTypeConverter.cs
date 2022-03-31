@@ -1,10 +1,12 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/GridLengthTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.GridLengthTypeConverter']/Docs" />
+	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.GridLengthTypeConverter")]
 	public class GridLengthTypeConverter : TypeConverter
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/GridLengthTypeConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
