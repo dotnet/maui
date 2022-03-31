@@ -22,8 +22,8 @@ namespace Microsoft.Maui
 			CancellationToken cancellationToken = default);
 
 		public abstract Task<IImageSourceServiceResult<Android.Graphics.Drawables.Drawable>?> GetDrawableAsync(
-			Android.Content.Context context,
 			IImageSource imageSource,
+			Android.Content.Context context,
 			CancellationToken cancellationToken = default);
 #elif __IOS__
 		public abstract Task<IImageSourceServiceResult<UIKit.UIImage>?> GetImageAsync(

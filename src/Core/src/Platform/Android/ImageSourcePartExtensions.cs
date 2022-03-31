@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Platform
 					}
 					else
 					{
-						result = await service.GetDrawableAsync(context, imageSource, cancellationToken);
+						result = await service.GetDrawableAsync(imageSource, context, cancellationToken);
 						if (setImage is not null && result is IImageSourceServiceResult<Drawable> drawableResult)
 							setImage.Invoke(drawableResult.Value);
 					}
