@@ -155,7 +155,7 @@ namespace Microsoft.Maui.DeviceTests
 			var imageSource = new CustomImageSourceStub(Colors.Red);
 
 			var cache = new CustomImageCacheStub();
-			var service = new CustomImageSourceServiceStub(cache);
+			var service = new LoadDrawableAsyncImageSourceServiceStub(cache);
 
 			var imageView = new ImageView(MauiProgram.DefaultContext);
 
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.DeviceTests
 			var imageSource = new CustomImageSourceStub(Colors.Red);
 
 			var cache = new CustomImageCacheStub();
-			var service = new CustomImageSourceServiceStub(cache);
+			var service = new LoadDrawableAsyncImageSourceServiceStub(cache);
 
 			var imageView = new ImageView(MauiProgram.DefaultContext);
 
@@ -205,7 +205,7 @@ namespace Microsoft.Maui.DeviceTests
 			var imageSource = new CustomImageSourceStub(Colors.Red);
 
 			var cache = new CustomImageCacheStub();
-			var service = new CustomImageSourceServiceStub(cache);
+			var service = new LoadDrawableAsyncImageSourceServiceStub(cache);
 
 			var imageView = new ImageView(MauiProgram.DefaultContext);
 
