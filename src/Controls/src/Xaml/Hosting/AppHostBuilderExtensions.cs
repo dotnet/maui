@@ -206,6 +206,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			Label.RemapForControls();
 			Button.RemapForControls();
 			RadioButton.RemapForControls();
+			Page.RemapForControls();
 			FlyoutPage.RemapForControls();
 			Toolbar.RemapForControls();
 			Window.RemapForControls();

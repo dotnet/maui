@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls
 	public partial class Page : IView, ITitledElement, IToolbarElement
 	{
 		Toolbar _toolbar;
+
 		IToolbar IToolbarElement.Toolbar
 		{
 			get => _toolbar;
@@ -24,6 +25,16 @@ namespace Microsoft.Maui.Controls
 
 				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
 			}
+		}
+
+		public static IPropertyMapper<IContentView, PageHandler> ControlsPageMapper = new PropertyMapper<IContentView, PageHandler>(PageHandler.Mapper)
+		{
+			[nameof(BackgroundColor)] = (handler, __) => handler.UpdateValue(nameof(IContentView.Background)),
+		};
+
+		internal new static void RemapForControls()
+		{
+			PageHandler.Mapper = ControlsPageMapper;
 		}
 
 		internal void SendNavigatedTo(NavigatedToEventArgs args)
