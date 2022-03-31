@@ -7,8 +7,6 @@
     Title="Blazor">
 
     <!--
-    xmlns:b="clr-namespace:Microsoft.AspNetCore.Components.WebView.Maui;assembly=Microsoft.AspNetCore.Components.WebView.Maui"
-
     <VerticalStackLayout
         Margin="12"
         Spacing="5"
@@ -18,23 +16,23 @@
             FontSize="24"
             TextColor="BlanchedAlmond"
             HorizontalOptions="Center" />
-        <b:BlazorWebView
+        <BlazorWebView
             HostPage="wwwroot/index.html"
             BackgroundColor="Orange"
             HeightRequest="400"
             MinimumHeightRequest="400"
             VerticalOptions="FillAndExpand">
-            <b:BlazorWebView.RootComponents>
-                <b:RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
-            </b:BlazorWebView.RootComponents>
-        </b:BlazorWebView>
+            <BlazorWebView.RootComponents>
+                <RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
+            </BlazorWebView.RootComponents>
+        </BlazorWebView>
         <Label
             Text="Thank you for using Blazor and .NET MAUI!"
             FontSize="24"
             TextColor="BlanchedAlmond"
             HorizontalOptions="Center" />
     </VerticalStackLayout>
-
+    
     -->
 
 </views:BasePage>
