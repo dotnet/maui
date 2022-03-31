@@ -10,10 +10,10 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			var path = new PathF();
 
-			float x = (float)StrokeThickness / 2;
-			float y = (float)StrokeThickness / 2;
-			float w = (float)(Width - StrokeThickness);
-			float h = (float)(Height - StrokeThickness);
+			float x = 0;
+			float y = 0;
+			float w = (float)Width;
+			float h = (float)Height;
 
 			path.AppendEllipse(x, y, w, h);
 

@@ -173,38 +173,25 @@ namespace Microsoft.Maui.Controls.Shapes
 				brush.Parent = this;
 		}
 
-		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
+		PathF IShape.PathForBounds(Rect viewBounds)
 		{
-			bool getBoundsByFlattening = false;
-
-			if (HeightRequest < 0 && WidthRequest < 0)
-			{
-				getBoundsByFlattening = true;
-				Frame = viewBounds;
-			}
+			Frame = viewBounds;
 
 			var path = GetPath();
 
-			if (getBoundsByFlattening)
-			{
-				var boundsByFlattening = path.GetBoundsByFlattening();
+			UpdateApect(path, viewBounds);
 
-				HeightRequest = boundsByFlattening.Height;
-				WidthRequest = boundsByFlattening.Width;
-			}
+			return path;
+		}
 
+		void UpdateApect(PathF path, Rect viewBounds)
+		{
 #if !NETSTANDARD
 
-			RectF pathBounds = viewBounds;
+			RectF pathBounds = path.GetBoundsByFlattening();
 
-			try
-			{
-				pathBounds = path.GetBoundsByFlattening();
-			}
-			catch (Exception exc)
-			{
-				Application.Current?.FindMauiContext()?.CreateLogger<Shape>()?.LogWarning(exc,"Exception while getting shape Bounds");
-			}
+			if (pathBounds.Size.Height > viewBounds.Size.Height && pathBounds.Size.Width > viewBounds.Size.Width)
+				return;
 
 			var transform = Matrix3x2.Identity;
 
@@ -258,8 +245,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (!transform.IsIdentity)
 				path.Transform(transform);
 #endif
-
-			return path;
 		}
 	}
 }

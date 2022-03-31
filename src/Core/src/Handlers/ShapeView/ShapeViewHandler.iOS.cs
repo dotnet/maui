@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(IShapeViewHandler handler, IShapeView shapeView)
 		{
+			handler.PlatformView?.UpdateBackground(shapeView);
 			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 

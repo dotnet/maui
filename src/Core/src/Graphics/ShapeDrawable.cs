@@ -4,6 +4,8 @@ namespace Microsoft.Maui.Graphics
 {
 	public class ShapeDrawable : IDrawable
 	{
+		bool _adjustedShape;
+
 		public ShapeDrawable()
 		{
 
@@ -21,6 +23,7 @@ namespace Microsoft.Maui.Graphics
 		public void UpdateShapeView(IShapeView? shape)
 		{
 			ShapeView = shape;
+			_adjustedShape = false;
 		}
 
 		public void UpdateWindingMode(WindingMode windingMode)
@@ -35,22 +38,66 @@ namespace Microsoft.Maui.Graphics
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
-			var rect = dirtyRect;
+			if (ShapeView == null)
+				return;
 
 			IShape? shape = ShapeView?.Shape;
 
 			if (shape == null)
 				return;
 
+			var rect = dirtyRect;
+			
 			PathF? path = shape.PathForBounds(rect);
 
 			if (path == null)
 				return;
 
+			AdjustShape(canvas, dirtyRect, path);
 			ApplyTransform(path);
 
 			DrawStrokePath(canvas, rect, path);
 			DrawFillPath(canvas, rect, path);
+		}
+
+		void AdjustShape(ICanvas canvas, RectF dirtyRect, PathF path)
+		{
+			// Adjust the Shape position and size based on the
+			// StrokeThickness property value.
+
+			if (_adjustedShape || ShapeView == null)
+				return;
+
+			float strokeThickness = (float)ShapeView.StrokeThickness;
+
+			float tX = strokeThickness / 2;
+			float tY = strokeThickness / 2;
+
+			canvas.Translate(tX, tY);
+
+			float viewWidth = dirtyRect.Width;
+			float viewHeight = dirtyRect.Height;
+
+			RectF bounds = path.GetBoundsByFlattening();
+
+			float pathWidth = bounds.Width;
+			float pathHeight = bounds.Height;
+
+			if (pathHeight > viewHeight && pathWidth > viewWidth)
+			{
+				pathWidth = viewWidth;
+				pathHeight = viewHeight;
+			}
+
+			float strokeWidth = pathWidth - strokeThickness;
+			float strokeHeight = pathHeight - strokeThickness;
+
+			float sX = strokeWidth / pathWidth;
+			float sY = strokeHeight / pathHeight;
+
+			canvas.Scale(sX, sY);
+
+			_adjustedShape = true;
 		}
 
 		void DrawStrokePath(ICanvas canvas, RectF dirtyRect, PathF path)
