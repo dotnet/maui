@@ -48,7 +48,7 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		public override async Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(Context context, IImageSource imageSource, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			var streamImageSource = (IStreamImageSource)imageSource;
 

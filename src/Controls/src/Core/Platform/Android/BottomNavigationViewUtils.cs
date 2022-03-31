@@ -102,8 +102,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var imageSourceService = provider.GetRequiredImageSourceService(source);
 
 			var result = await imageSourceService.GetDrawableAsync(
-				context.Context,
-				source);
+				source,
+				context.Context);
 
 			if (result is not null)
 				menuItem?.SetIcon(result.Value);
