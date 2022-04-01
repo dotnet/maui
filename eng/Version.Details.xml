@@ -12,21 +12,21 @@
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
       <Sha>5ba8c310b69f6ef2d63b13ae4373872baec75314</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.4.100-rc.1.125">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.4.100-rc.1.126">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>4b11b5ca005a88606f0deff3dff816cfc4112dea</Sha>
+      <Sha>9f2735684cbb390bb4fd98171e473e2d875d0627</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk" Version="15.4.100-rc.1.125">
+    <Dependency Name="Microsoft.iOS.Sdk" Version="15.4.100-rc.1.126">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>4b11b5ca005a88606f0deff3dff816cfc4112dea</Sha>
+      <Sha>9f2735684cbb390bb4fd98171e473e2d875d0627</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.4.100-rc.1.125">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.4.100-rc.1.126">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>4b11b5ca005a88606f0deff3dff816cfc4112dea</Sha>
+      <Sha>9f2735684cbb390bb4fd98171e473e2d875d0627</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk" Version="12.3.100-rc.1.125">
+    <Dependency Name="Microsoft.macOS.Sdk" Version="12.3.100-rc.1.126">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>4b11b5ca005a88606f0deff3dff816cfc4112dea</Sha>
+      <Sha>9f2735684cbb390bb4fd98171e473e2d875d0627</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.300" Version="6.0.4" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
@@ -85,15 +85,18 @@
     </Dependency>
     <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="1.0.0-prerelease.21558.2">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha></Sha>
+      <Sha>
+      </Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21558.2">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha></Sha>
+      <Sha>
+      </Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="1.0.0-prerelease.21558.2">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha></Sha>
+      <Sha>
+      </Sha>
     </Dependency>
   </ProductDependencies>
 </Dependencies>
