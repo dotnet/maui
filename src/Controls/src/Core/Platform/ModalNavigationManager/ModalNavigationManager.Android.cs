@@ -211,9 +211,6 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateBackgroundColor();
 				AddView(_backgroundView);
 
-				// Don't let touch events pass through to the view being covered up
-				this.Touch += (_, args) => args.Handled = true;
-
 				Id = AView.GenerateViewId();
 
 				Modal.PropertyChanged += OnModalPagePropertyChanged;
@@ -228,6 +225,12 @@ namespace Microsoft.Maui.Controls.Platform
 					.BeginTransaction()
 					.Add(this.Id, _modalFragment)
 					.Commit();
+			}
+
+			public override bool OnTouchEvent(MotionEvent? e)
+			{
+				// Don't let touch events pass through to the view being covered up
+				return true;
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
