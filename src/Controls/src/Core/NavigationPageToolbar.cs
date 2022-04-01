@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls
 			if (_currentNavigationPage == navigationPage)
 			{
 				IsVisible = hasAppeared;
+				UpdateBackButton();
 				return;
 			}
 
@@ -47,7 +48,24 @@ namespace Microsoft.Maui.Controls
 			ApplyChanges(_currentNavigationPage);
 		}
 
+		void UpdateBackButton()
+		{
+			if (_currentPage == null || _currentNavigationPage == null)
+				return;
 
+			var stack = _currentNavigationPage.Navigation.NavigationStack;
+			if (stack.Count == 0)
+				return;
+
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage && stack.Count == 1)
+				_drawerToggleVisible = true;
+			else
+				_drawerToggleVisible = false;
+
+			BackButtonVisible = NavigationPage.GetHasBackButton(_currentPage) && stack.Count > 1;
+		}
 
 		void UpdateCurrentPage()
 		{
@@ -86,14 +104,7 @@ namespace Microsoft.Maui.Controls
 			ToolbarItems = _toolbarTracker.ToolbarItems;
 			IsVisible = NavigationPage.GetHasNavigationBar(currentPage) && _hasAppeared;
 
-			// Set this before BackButtonVisible triggers an update to the handler
-			// This way all useful information is present
-			if (Parent is FlyoutPage && stack.Count == 1)
-				_drawerToggleVisible = true;
-			else
-				_drawerToggleVisible = false;
-
-			BackButtonVisible = NavigationPage.GetHasBackButton(currentPage) && stack.Count > 1;
+			UpdateBackButton();
 
 			if (navigationPage.IsSet(PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))
 				BarHeight = PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.GetBarHeight(navigationPage);
