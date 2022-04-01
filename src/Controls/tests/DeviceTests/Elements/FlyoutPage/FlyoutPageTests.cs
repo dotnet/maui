@@ -33,6 +33,26 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #if !IOS
+
+		[Fact(DisplayName = "FlyoutPage With Toolbar")]
+		public async Task FlyoutPageWithToolbar()
+		{
+			SetupBuilder();
+			var flyoutPage = new FlyoutPage()
+			{
+				Detail = new NavigationPage(new ContentPage() { Title = "Detail" }),
+				Flyout = new ContentPage() { Title = "Flyout" }
+			};
+
+			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
+			{
+				// validate that nothing crashes
+
+				return Task.CompletedTask;
+			});
+		}
+
+
 		[Fact(DisplayName = "Details View Updates")]
 		public async Task DetailsViewUpdates()
 		{
