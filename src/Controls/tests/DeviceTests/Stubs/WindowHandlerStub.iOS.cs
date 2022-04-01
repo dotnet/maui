@@ -16,16 +16,17 @@ namespace Microsoft.Maui.DeviceTests
 		private static void MapContent(WindowHandlerStub handler, IWindow window)
 		{
 			var view = window.Content.ToPlatform(handler.MauiContext);
-			handler.PlatformView.RootViewController.View.AddSubview(view);
+
+			var vc =
+				(window.Content.Handler as IPlatformViewHandler)
+					.ViewController;
+
+			handler.PlatformView.RootViewController.PresentViewController(vc, false, null);
 		}
 
 		protected override void DisconnectHandler(UIWindow platformView)
 		{
-			VirtualView
-				.Content
-				.ToPlatform()
-				.RemoveFromSuperview();
-				
+			platformView.RootViewController.DismissViewController(false, null);
 			base.DisconnectHandler(platformView);
 		}
 
