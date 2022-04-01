@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using Foundation;
 using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;

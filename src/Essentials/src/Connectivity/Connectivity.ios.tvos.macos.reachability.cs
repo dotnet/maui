@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Networking
 			remoteHostReachability = null;
 
 #if !(MACCATALYST || MACOS)
-#pragma warning disable CA1416
+#pragma warning disable CA1416 // Somehow the if def not working for the analyzer
 			ConnectivityImplementation.CellularData.RestrictionDidUpdateNotifier = null;
 #pragma warning restore CA1416
 #endif

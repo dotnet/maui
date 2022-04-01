@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Media
 
 		public Task<IScreenshotResult> CaptureAsync()
 		{
+			System.Diagnostics.Debug.Assert(OperatingSystem.IsIOSVersionAtLeast(13));
 			var scenes = UIApplication.SharedApplication.ConnectedScenes;
 			var currentScene = scenes.ToArray().Where(n => n.ActivationState == UISceneActivationState.ForegroundActive).FirstOrDefault();
 			if (currentScene == null)
@@ -237,7 +238,6 @@ namespace Microsoft.Maui.Media
 	{
 		readonly UIImage bmp;
 
-		//[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		internal ScreenshotResult(UIImage bmp)
 			: base()
 		{
