@@ -48,6 +48,13 @@ namespace Microsoft.Maui.Platform
 							width,
 							height);
 
+						// sometimes RenderAsync produces a 0x0 bitmap for images
+						// in such case we will fall back to GetAlphaMask.
+						if (bitmap.PixelWidth == 0 && element is Image image)
+						{
+							return image.GetAlphaMask();
+						}
+
 						var pixels = await bitmap.GetPixelsAsync();
 
 						using (var softwareBitmap = SoftwareBitmap.CreateCopyFromBuffer(
