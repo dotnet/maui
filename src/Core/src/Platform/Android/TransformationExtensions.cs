@@ -28,12 +28,22 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateScaleX(this AView platformView, IView view)
 		{
-			platformView.ScaleX = (float)(view.Scale * view.ScaleX);
+			var scale = view.Scale;
+
+			if (double.IsNaN(scale))
+				return;
+
+			platformView.ScaleX = (float)(scale * view.ScaleX);
 		}
 
 		public static void UpdateScaleY(this AView platformView, IView view)
 		{
-			platformView.ScaleY = (float)(view.Scale * view.ScaleY);
+			var scale = view.Scale;
+
+			if (double.IsNaN(scale))
+				return;
+
+			platformView.ScaleY = (float)(scale * view.ScaleY);
 		}
 
 		public static void UpdateRotation(this AView platformView, IView view)
@@ -57,7 +67,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var pivotX = (float)(view.AnchorX * platformView.Context.ToPixels(view.Frame.Width));
-			ViewHelper.SetPivotXIfNeeded(platformView, pivotX);
+			PlatformInterop.SetPivotXIfNeeded(platformView, pivotX);
 		}
 
 		public static void UpdateAnchorY(this AView platformView, IView view)
@@ -66,7 +76,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var pivotY = (float)(view.AnchorY * platformView.Context.ToPixels(view.Frame.Height));
-			ViewHelper.SetPivotYIfNeeded(platformView, pivotY);
+			PlatformInterop.SetPivotYIfNeeded(platformView, pivotY);
 		}
 	}
 }

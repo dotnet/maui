@@ -4,15 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
-using ObjCRuntime;
 using Photos;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage
 {
-	public partial class FileSystemImplementation : IFileSystem, IPlatformFileSystem
+	static partial class FileSystemUtils
 	{
-		public async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
+		public static async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
 		{
 			if (urls == null || urls.Length == 0)
 				return Array.Empty<FileResult>();
@@ -47,10 +46,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return await tcs.Task;
 		}
 	}
-}
 
-namespace Microsoft.Maui.Essentials
-{
 	class BookmarkDataFileResult : FileResult
 	{
 		NSData bookmark;
@@ -190,7 +186,7 @@ namespace Microsoft.Maui.Essentials
 		{
 			uiImage = image;
 
-			FullPath = Guid.NewGuid().ToString() + FileSystem.Extensions.Png;
+			FullPath = Guid.NewGuid().ToString() + FileExtensions.Png;
 			FileName = FullPath;
 		}
 

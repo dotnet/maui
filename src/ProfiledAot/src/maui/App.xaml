@@ -4,33 +4,12 @@
              xmlns:local="clr-namespace:maui"
              x:Class="maui.App">
     <Application.Resources>
+        <!-- NOTE: if the template ever drastically changes, compare this to the template! -->
+        <ResourceDictionary Source="Resources/Styles.xaml" />
+        <!-- Everything to create in addition to the template -->
         <ResourceDictionary>
-
-            <Color x:Key="PrimaryColor">#512bdf</Color>
-            <Color x:Key="SecondaryColor">White</Color>
-            
-            
-            <Color x:Key="LightColor">White</Color>
-            <Color x:Key="DarkColor">Black</Color>
-
-            <Style TargetType="Page" ApplyToDerivedTypes="True">
-                <Setter Property="BackgroundColor"
-                        Value="{AppThemeBinding Light={StaticResource LightColor}, Dark={StaticResource DarkColor}}" />
-            </Style>
-
-            <Style TargetType="Label">
-                <Setter Property="TextColor" Value="{StaticResource PrimaryColor}" />
-                <!-- This line is the only change from the template, to use {OnPlatform} -->
-                <Setter Property="FontFamily" Value="{OnPlatform Default=OpenSansRegular, Android=OpenSansRegular}" />
-            </Style>
-
-            <Style TargetType="Button">
-                <Setter Property="TextColor" Value="{StaticResource SecondaryColor}" />
-                <Setter Property="FontFamily" Value="OpenSansRegular" />
-                <Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" />
-                <Setter Property="Padding" Value="14,10" />
-            </Style>
-
+          <SolidColorBrush x:Key="ProfiledAot_AppThemeBinding_Color" Color="{AppThemeBinding Default=Black}"/>
+          <CollectionView x:Key="ProfiledAot_CollectionView_OnIdiom_Thickness" Margin="{OnIdiom Default=1,1,1,1}" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

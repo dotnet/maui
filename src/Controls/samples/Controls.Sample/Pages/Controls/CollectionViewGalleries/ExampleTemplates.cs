@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries

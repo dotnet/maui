@@ -1,5 +1,7 @@
-﻿#if __IOS__ || MACCATALYST
+﻿#if IOS && !MACCATALYST
 using PlatformView = Microsoft.Maui.Platform.MauiDatePicker;
+#elif MACCATALYST
+using PlatformView = UIKit.UIDatePicker;
 #elif MONOANDROID
 using PlatformView = Microsoft.Maui.Platform.MauiDatePicker;
 #elif WINDOWS

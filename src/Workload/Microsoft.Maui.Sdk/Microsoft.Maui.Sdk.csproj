@@ -72,6 +72,12 @@
         OldValue="@TFM@"
         NewValue="$(_MauiDotNetTfm)"
     />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)BundledVersions.targets"
+        Output="$(IntermediateOutputPath)BundledVersions.targets"
+        OldValue="@MicrosoftWindowsSDKBuildToolsPackageVersion@"
+        NewValue="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
+    />
     <ItemGroup>
       <None
           Include="$(IntermediateOutputPath)BundledVersions.targets"

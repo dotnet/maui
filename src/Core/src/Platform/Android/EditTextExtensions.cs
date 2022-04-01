@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var drawable = getClearButtonDrawable?.Invoke();
 
-				if (entry.FlowDirection == FlowDirection.RightToLeft)
+				if (entry.GetEffectiveFlowDirection() == FlowDirection.RightToLeft)
 				{
 					editText.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
 				}

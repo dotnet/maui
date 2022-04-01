@@ -1,13 +1,12 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-
 using Foundation;
 using Security;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage
 {
-	public partial class SecureStorageImplementation : ISecureStorage, IPlatformSecureStorage
+	partial class SecureStorageImplementation : ISecureStorage, IPlatformSecureStorage
 	{
 		public SecAccessible DefaultAccessible { get; set; }
 
@@ -15,7 +14,6 @@ namespace Microsoft.Maui.Essentials.Implementations
 		{
 			if (string.IsNullOrWhiteSpace(key))
 				throw new ArgumentNullException(nameof(key));
-
 			if (value == null)
 				throw new ArgumentNullException(nameof(value));
 
@@ -39,14 +37,12 @@ namespace Microsoft.Maui.Essentials.Implementations
 		bool PlatformRemove(string key)
 		{
 			var kc = new KeyChain(DefaultAccessible);
-
 			return kc.Remove(key, Alias);
 		}
 
 		void PlatformRemoveAll()
 		{
 			var kc = new KeyChain(DefaultAccessible);
-
 			kc.RemoveAll(Alias);
 		}
 	}

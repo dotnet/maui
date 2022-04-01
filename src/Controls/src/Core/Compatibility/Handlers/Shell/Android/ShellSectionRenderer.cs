@@ -95,39 +95,31 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (shellSection.CurrentItem == null)
 				throw new InvalidOperationException($"Content not found for active {shellSection}. Title: {shellSection.Title}. Route: {shellSection.Route}.");
 
-			var root = inflater.Inflate(Controls.Resource.Layout.rootlayout, null).JavaCast<CoordinatorLayout>();
-
-			_toolbar = root.FindViewById<AToolbar>(Controls.Resource.Id.main_toolbar);
-
-			_viewPager = root.FindViewById<ViewPager2>(Controls.Resource.Id.main_viewpager);
-			_tablayout = root.FindViewById<TabLayout>(Controls.Resource.Id.main_tablayout);
-
-			//_viewPager.EnableGesture = false;
-
-			//_viewPager.AddOnPageChangeListener(this);
-			_viewPager.Id = AView.GenerateViewId();
+			var context = Context;
+			var root = PlatformInterop.CreateShellCoordinatorLayout(context);
+			var appbar = PlatformInterop.CreateShellAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
+			int actionBarHeight = context.GetActionBarHeight();
+			_toolbar = PlatformInterop.CreateShellToolbar(context, appbar, actionBarHeight, Resource.Style.ThemeOverlay_AppCompat_Light);
+			_tablayout = PlatformInterop.CreateShellTabLayout(context, appbar, actionBarHeight);
 
 			var pagerContext = MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
-			_viewPager.Adapter = new ShellFragmentStateAdapter(shellSection, ChildFragmentManager, pagerContext);
-			_viewPager.OverScrollMode = OverScrollMode.Never;
-			_viewPager.RegisterOnPageChangeCallback(new ViewPagerPageChanged(this));
-			new TabLayoutMediator(_tablayout, _viewPager, this)
-				.Attach();
-
-			//_tablayout.SetupWithViewPager(_viewPager);
+			var adapter = new ShellFragmentStateAdapter(shellSection, ChildFragmentManager, pagerContext);
+			var pageChangedCallback = new ViewPagerPageChanged(this);
+			_viewPager = PlatformInterop.CreateShellViewPager(context, root, _tablayout, this, adapter, pageChangedCallback);
 
 			Page currentPage = null;
 			int currentIndex = -1;
-			var currentItem = ShellSection.CurrentItem;
+			var currentItem = shellSection.CurrentItem;
+			var items = SectionController.GetItems();
 
-			while (currentIndex < 0 && SectionController.GetItems().Count > 0 && ShellSection.CurrentItem != null)
+			while (currentIndex < 0 && items.Count > 0 && shellSection.CurrentItem != null)
 			{
-				currentItem = ShellSection.CurrentItem;
+				currentItem = shellSection.CurrentItem;
 				currentPage = ((IShellContentController)shellSection.CurrentItem).GetOrCreateContent();
 
 				// current item hasn't changed
 				if (currentItem == shellSection.CurrentItem)
-					currentIndex = SectionController.GetItems().IndexOf(currentItem);
+					currentIndex = items.IndexOf(currentItem);
 			}
 
 			_toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
@@ -135,7 +127,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_viewPager.CurrentItem = currentIndex;
 
-			if (SectionController.GetItems().Count == 1)
+			if (items.Count == 1)
 			{
 				UpdateTablayoutVisibility();
 			}

@@ -7,7 +7,7 @@ using AVFoundation;
 using MediaPlayer;
 using Speech;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{

@@ -1,32 +1,33 @@
-﻿using System.Runtime.Versioning;
+﻿using System;
+using System.Diagnostics;
 using Microsoft.Maui.Graphics.Win2D;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, W2DGraphicsView>
+	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, PlatformTouchGraphicsView>
 	{
-		[SupportedOSPlatform("windows10.0.18362")]
-		protected override W2DGraphicsView CreatePlatformView()
+		protected override PlatformTouchGraphicsView CreatePlatformView()
 		{
-			return new W2DGraphicsView();
+			Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18362));
+			return new PlatformTouchGraphicsView();
 		}
 
-		[SupportedOSPlatform("windows10.0.18362")]
 		public static void MapDrawable(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
+			Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18362));
 			handler.PlatformView?.UpdateDrawable(graphicsView);
 		}
 
-		[SupportedOSPlatform("windows10.0.18362")]
 		public static void MapFlowDirection(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
+			Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18362));
 			handler.PlatformView?.UpdateFlowDirection(graphicsView);
 			handler.PlatformView?.Invalidate();
 		}
 
-		[SupportedOSPlatform("windows10.0.18362")]
 		public static void MapInvalidate(IGraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
 		{
+			Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18362));
 			handler.PlatformView?.Invalidate();
 		}
 	}

@@ -4,8 +4,9 @@ using System.Numerics;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Media;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
@@ -117,15 +118,18 @@ namespace Microsoft.Maui.Platform
 		{
 			UISemanticContentAttribute updateValue = platformView.SemanticContentAttribute;
 
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			switch (view.FlowDirection)
 			{
-				updateValue = UISemanticContentAttribute.Unspecified;
+				case FlowDirection.MatchParent:
+					updateValue = UISemanticContentAttribute.Unspecified;
+					break;
+				case FlowDirection.LeftToRight:
+					updateValue = UISemanticContentAttribute.ForceLeftToRight;
+					break;
+				case FlowDirection.RightToLeft:
+					updateValue = UISemanticContentAttribute.ForceRightToLeft;
+					break;
 			}
-			else if (view.FlowDirection == FlowDirection.RightToLeft)
-				updateValue = UISemanticContentAttribute.ForceRightToLeft;
-			else if (view.FlowDirection == FlowDirection.LeftToRight)
-				updateValue = UISemanticContentAttribute.ForceLeftToRight;
 
 			if (updateValue != platformView.SemanticContentAttribute)
 				platformView.SemanticContentAttribute = updateValue;
@@ -327,71 +331,6 @@ namespace Microsoft.Maui.Platform
 			{
 				view.Subviews[n].RemoveFromSuperview();
 			}
-		}
-
-		public static Task<byte[]?> RenderAsBMP(this IView view)
-		{
-			(UIView? platformView, bool skipChildren) = view.GetPlatformRenderBase();
-			if (platformView is null)
-				return Task.FromResult<byte[]?>(null);
-
-			return platformView.RenderAsBMP(skipChildren);
-		}
-
-		public static Task<byte[]?> RenderAsPNG(this IView view)
-		{
-			(UIView? platformView, bool skipChildren) = view.GetPlatformRenderBase();
-			if (platformView is null)
-				return Task.FromResult<byte[]?>(null);
-
-			return platformView.RenderAsPNG(skipChildren);
-		}
-
-		public static Task<byte[]?> RenderAsJPEG(this IView view)
-		{
-			(UIView? platformView, bool skipChildren) = view.GetPlatformRenderBase();
-			if (platformView is null)
-				return Task.FromResult<byte[]?>(null);
-
-			return platformView.RenderAsJPEG(skipChildren);
-		}
-
-		public static Task<byte[]?> RenderAsImage(this UIView view, RenderType type, bool skipChildren = true)
-		{
-			return type switch
-			{
-				RenderType.JPEG => view.RenderAsJPEG(skipChildren),
-				RenderType.PNG => view.RenderAsPNG(skipChildren),
-				RenderType.BMP => view.RenderAsBMP(skipChildren),
-				_ => throw new NotImplementedException()
-			};
-		}
-
-		public static Task<byte[]?> RenderAsBMP(this UIWindow window, bool skipChildren = false)
-			=> Task.FromResult(window?.RenderAsBmp(window.Layer, UIScreen.MainScreen.Scale, skipChildren));
-
-		public static Task<byte[]?> RenderAsPNG(this UIWindow window, bool skipChildren = false)
-			=> Task.FromResult(window?.RenderAsPng(window.Layer, UIScreen.MainScreen.Scale, skipChildren));
-
-		public static Task<byte[]?> RenderAsJPEG(this UIWindow window, bool skipChildren = false)
-			=> Task.FromResult(window?.RenderAsJpeg(window.Layer, UIScreen.MainScreen.Scale, skipChildren));
-
-		public static Task<byte[]?> RenderAsBMP(this UIView view, bool skipChildren = true)
-			=> Task.FromResult(view?.Window?.RenderAsBmp(view.Layer, UIScreen.MainScreen.Scale, skipChildren));
-
-		public static Task<byte[]?> RenderAsPNG(this UIView view, bool skipChildren = true)
-			=> Task.FromResult(view?.Window?.RenderAsPng(view.Layer, UIScreen.MainScreen.Scale, skipChildren));
-
-		public static Task<byte[]?> RenderAsJPEG(this UIView view, bool skipChildren = true)
-			=> Task.FromResult(view?.Window?.RenderAsJpeg(view.Layer, UIScreen.MainScreen.Scale, skipChildren));
-
-		static (UIView? View, bool SkipChildren) GetPlatformRenderBase(this IView view)
-		{
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return (null, false);
-			var skipChildren = !(view is IView && !(view is ILayout));
-			return (platformView, skipChildren);
 		}
 
 		internal static Rect GetPlatformViewBounds(this IView view)

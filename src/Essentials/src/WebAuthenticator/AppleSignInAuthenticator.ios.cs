@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using AuthenticationServices;
 using Foundation;
-using ObjCRuntime;
+using Microsoft.Maui.ApplicationModel;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Authentication
 {
-	public partial class AppleSignInAuthenticatorImplementation : IAppleSignInAuthenticator
+	partial class AppleSignInAuthenticatorImplementation : IAppleSignInAuthenticator
 	{
 		AuthManager authManager;
 
@@ -21,7 +20,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			var provider = new ASAuthorizationAppleIdProvider();
 			var req = provider.CreateRequest();
 
-			authManager = new AuthManager(Platform.GetCurrentWindow());
+			authManager = new AuthManager(WindowStateManager.Default.GetCurrentUIWindow(true));
 
 			var scopes = new List<ASAuthorizationScope>();
 

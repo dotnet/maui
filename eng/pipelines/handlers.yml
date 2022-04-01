@@ -131,12 +131,11 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
-                demands:
-                  - macOS.Name -equals BigSur
-                  - macOS.Architecture -equals x64
-                  - Agent.HasDevices -equals False
-                  - Agent.IsPaired -equals False
+              demands:
+                - macOS.Name -equals Monterey
+                - macOS.Architecture -equals x64
+                - Agent.HasDevices -equals False
+                - Agent.IsPaired -equals False
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@xamarin-templates
@@ -183,12 +182,11 @@ stages:
           pool:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
-            ${{ if startsWith(PackPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
-              demands:
-                - macOS.Name -equals BigSur
-                - macOS.Architecture -equals x64
-                - Agent.HasDevices -equals False
-                - Agent.IsPaired -equals False
+            demands:
+              - macOS.Name -equals Monterey
+              - macOS.Architecture -equals x64
+              - Agent.HasDevices -equals False
+              - Agent.IsPaired -equals False
           steps:
             - template: common/pack.yml
               parameters:
@@ -215,12 +213,11 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
-                demands:
-                  - macOS.Name -equals BigSur
-                  - macOS.Architecture -equals x64
-                  - Agent.HasDevices -equals False
-                  - Agent.IsPaired -equals False
+              demands:
+                - macOS.Name -equals Monterey
+                - macOS.Architecture -equals x64
+                - Agent.HasDevices -equals False
+                - Agent.IsPaired -equals False
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@xamarin-templates
@@ -273,12 +270,11 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
-                demands:
-                  - macOS.Name -equals BigSur
-                  - macOS.Architecture -equals x64
-                  - Agent.HasDevices -equals False
-                  - Agent.IsPaired -equals False
+              demands:
+                - macOS.Name -equals Monterey
+                - macOS.Architecture -equals x64
+                - Agent.HasDevices -equals False
+                - Agent.IsPaired -equals False
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@xamarin-templates
@@ -319,4 +315,3 @@ stages:
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
     - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
     - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
-    - template: common/sign.yml                                     # Sign only using the private server

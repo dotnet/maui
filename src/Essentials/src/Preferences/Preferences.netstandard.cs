@@ -1,7 +1,8 @@
-namespace Microsoft.Maui.Essentials.Implementations
+using Microsoft.Maui.ApplicationModel;
+
+namespace Microsoft.Maui.Storage
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Preferences']/Docs" />
-	public class PreferencesImplementation : IPreferences
+	class PreferencesImplementation : IPreferences
 	{
 		public bool ContainsKey(string key, string sharedName) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;

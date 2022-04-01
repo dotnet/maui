@@ -1,54 +1,88 @@
 ﻿#nullable enable
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Runtime;
-using Bumptech.Glide;
-using Bumptech.Glide.Load.Engine;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.BumptechGlide;
 
 namespace Microsoft.Maui
 {
 	public partial class StreamImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>
-			GetDrawableAsync((IStreamImageSource)imageSource, context, cancellationToken);
-
-		public async Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IStreamImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult?> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
-			if (imageSource.IsEmpty)
-				return null;
+			var streamImageSource = (IStreamImageSource)imageSource;
 
-			try
+			if (!streamImageSource.IsEmpty)
 			{
-				var stream = await imageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+				Stream? stream = null;
+				try
+				{
+					stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+					
+					var callback = new ImageLoaderCallback();
 
-				// We can use the .NET stream directly because we register the InputStreamModelLoader.
-				// There are 2 alternatives:
-				//  - Load the bitmap manually and pass that along, but then we do not get the decoding features.
-				//  - Copy the stream into a byte array and that is double memory usage - especially for large streams.
-				var inputStream = new InputStreamAdapter(stream);
+					PlatformInterop.LoadImageFromStream(imageView, stream, callback);
 
-				var result = await Glide
-					.With(context)
-					.Load(inputStream)
-					.SetDiskCacheStrategy(DiskCacheStrategy.None)
-					.SubmitAsync(context, cancellationToken)
-					.ConfigureAwait(false);
+					var result = await callback.Result;
 
-				if (result == null)
-					throw new InvalidOperationException("Unable to load image stream.");
+					stream?.Dispose();
 
-				return result;
+					return result;
+				}
+				catch (Exception ex)
+				{
+					Logger?.LogWarning(ex, "Unable to load image stream.");
+					throw;
+				}
+				finally
+				{
+					if (stream != null)
+						GC.KeepAlive(stream);
+				}
 			}
-			catch (Exception ex)
+
+			return null;
+		}
+
+		public override async Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		{
+			var streamImageSource = (IStreamImageSource)imageSource;
+
+			if (!streamImageSource.IsEmpty)
 			{
-				Logger?.LogWarning(ex, "Unable to load image stream.");
-				throw;
+				Stream? stream = null;
+
+				try
+				{
+					stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+
+					var drawableCallback = new ImageLoaderResultCallback();
+
+					PlatformInterop.LoadImageFromStream(context, stream, drawableCallback);
+
+					var result = await drawableCallback.Result.ConfigureAwait(false);
+
+					stream?.Dispose();
+
+					return result;
+				}
+				catch (Exception ex)
+				{
+					Logger?.LogWarning(ex, "Unable to load image stream.");
+					throw;
+				}
+				finally
+				{
+					if (stream != null)
+						GC.KeepAlive(stream);
+				}
 			}
+
+			return null;
 		}
 	}
 }

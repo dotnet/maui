@@ -321,6 +321,13 @@ namespace Microsoft.Maui.Graphics
 			InvalidateSelf();
 		}
 
+		public void InvalidateBorderBounds()
+		{
+			_bounds = null;
+
+			InvalidateSelf();
+		}
+
 		protected override void OnBoundsChange(ARect? bounds)
 		{
 			if (_bounds != bounds)

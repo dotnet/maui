@@ -20,14 +20,39 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCornerRadius(this ShapeableImageView platformButton, IButtonStroke buttonStroke)
 		{
+			var radius = platformButton.Context.ToPixels(buttonStroke.CornerRadius);
 			platformButton.ShapeAppearanceModel =
 				platformButton.ShapeAppearanceModel
 				.ToBuilder()
-				.SetTopLeftCorner(CornerFamily.Rounded, buttonStroke.CornerRadius)
-				.SetTopRightCorner(CornerFamily.Rounded, buttonStroke.CornerRadius)
-				.SetBottomLeftCorner(CornerFamily.Rounded, buttonStroke.CornerRadius)
-				.SetBottomRightCorner(CornerFamily.Rounded, buttonStroke.CornerRadius)
+				.SetTopLeftCorner(CornerFamily.Rounded, radius)
+				.SetTopRightCorner(CornerFamily.Rounded, radius)
+				.SetBottomLeftCorner(CornerFamily.Rounded, radius)
+				.SetBottomRightCorner(CornerFamily.Rounded, radius)
 				.Build();
+		}
+
+		public static void UpdatePadding(this ShapeableImageView platformButton, IImageButton imageButton)
+		{
+			platformButton.SetContentPadding(imageButton);
+
+			// NOTE(jpr): post on handler to get around an Android Framework bug.
+			// see: https://github.com/material-components/material-components-android/issues/2063
+			platformButton.Post(() =>
+			{
+				platformButton.SetContentPadding(imageButton);
+			});
+		}
+
+		internal static void SetContentPadding(this ShapeableImageView platformButton, IImageButton imageButton)
+		{
+			var padding = imageButton.Padding;
+
+			platformButton.SetContentPadding(
+				(int)platformButton.Context.ToPixels(padding.Left),
+				(int)platformButton.Context.ToPixels(padding.Top),
+				(int)platformButton.Context.ToPixels(padding.Right),
+				(int)platformButton.Context.ToPixels(padding.Bottom)
+			);
 		}
 	}
 }
