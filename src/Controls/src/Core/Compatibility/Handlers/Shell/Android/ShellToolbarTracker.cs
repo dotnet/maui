@@ -430,7 +430,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
 
-				if(backButtonVisible)
+				if (backButtonVisible)
 					toolbar.NavigationIcon = icon;
 			}
 			else if (_flyoutBehavior == FlyoutBehavior.Flyout || !defaultDrawerArrowDrawable)
@@ -563,7 +563,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnToolbarPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (_toolbar != null && ShellContext.Shell.CurrentPage == Page)
+			{
 				ApplyToolbarChanges((Toolbar)sender, (Toolbar)_toolbar);
+				UpdateToolbarIconAccessibilityText(_platformToolbar, ShellContext.Shell);
+			}
 		}
 
 		protected virtual void UpdatePageTitle(AToolbar toolbar, Page page)
