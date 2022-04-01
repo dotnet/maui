@@ -1,10 +1,7 @@
-﻿using Android.Content.Res;
-using Android.Graphics.Drawables;
-using Android.Runtime;
+﻿using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
-using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
 using static Android.Views.View;
@@ -16,11 +13,10 @@ namespace Microsoft.Maui.Handlers
 	{
 		Drawable? _clearButtonDrawable;
 
-		protected override AppCompatEditText CreatePlatformView()
-		{
-			var nativeEntry = new AppCompatEditText(Context);
-			return nativeEntry;
-		}
+		protected override AppCompatEditText CreatePlatformView() 
+			=> new AppCompatEditText(Context);
+
+		internal ImeAction CurrentInputImeFlag { get; set; }
 
 		// Returns the default 'X' char drawable in the AppCompatEditText.
 		protected virtual Drawable GetClearButtonDrawable() =>
@@ -85,8 +81,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapKeyboard(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateKeyboard(entry);
 
-		public static void MapReturnType(IEntryHandler handler, IEntry entry) =>
+		public static void MapReturnType(IEntryHandler handler, IEntry entry)
+		{
 			handler.PlatformView?.UpdateReturnType(entry);
+
+			if (handler is EntryHandler platformHandler)
+				platformHandler.CurrentInputImeFlag = platformHandler.PlatformView.ImeOptions;
+		}
 
 		public static void MapCharacterSpacing(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateCharacterSpacing(entry);
@@ -121,11 +122,35 @@ namespace Microsoft.Maui.Handlers
 
 		void OnEditorAction(object? sender, EditorActionEventArgs e)
 		{
-			if (e.IsCompletedAction())
-			{
-				// TODO: Dismiss keyboard for hardware / physical keyboards
+			if (VirtualView == null || PlatformView == null)
+				return;
 
-				VirtualView?.Completed();
+			// Fire Completed and dismiss keyboard for hardware / physical keyboards
+			if (e.ActionId == ImeAction.Done || e.ActionId == CurrentInputImeFlag || (e.ActionId == ImeAction.ImeNull && e.Event?.KeyCode == Keycode.Enter && e.Event.Action == KeyEventActions.Up))
+			{
+				View? nextFocus = null;
+
+				if (CurrentInputImeFlag == ImeAction.Next)
+				{
+					nextFocus = PlatformView.FocusSearch(FocusSearchDirection.Forward);
+				}
+
+				if (nextFocus != null)
+				{
+					nextFocus.RequestFocus();
+
+					if (!nextFocus.OnCheckIsTextEditor())
+					{
+						PlatformView.HideKeyboard();
+					}
+				}
+				else
+				{
+					PlatformView.ClearFocus();
+					PlatformView.HideKeyboard();
+				}
+
+				VirtualView.Completed();
 			}
 
 			e.Handled = true;
