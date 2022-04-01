@@ -13,6 +13,7 @@ trigger:
     exclude:
     - .github/*
     - docs/*
+    - src/Templates/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
     - LICENSE.TXT
@@ -32,6 +33,7 @@ pr:
     exclude:
     - .github/*
     - docs/*
+    - src/Templates/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
     - LICENSE.TXT
