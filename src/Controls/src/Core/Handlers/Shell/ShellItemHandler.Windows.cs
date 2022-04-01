@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Collections.ObjectModel;
 using WApp = Microsoft.UI.Xaml.Application;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -167,7 +168,22 @@ namespace Microsoft.Maui.Controls.Handlers
 				void SetValues(BaseShellItem bsi, NavigationViewItemViewModel vm)
 				{
 					vm.Content = bsi.Title;
-					vm.Icon = bsi.Icon?.ToIconSource(MauiContext!)?.CreateIconElement();
+					var iconSource = bsi.Icon?.ToIconSource(MauiContext!);
+
+					if (iconSource != null)
+					{
+						if (vm.Foreground != null)
+						{
+							iconSource.Foreground = vm.Foreground;
+						}
+						else if (PlatformView.Resources.TryGetValue("NavigationViewItemForeground", out object nviForeground) &&
+							nviForeground is WBrush brush)
+						{
+							iconSource.Foreground = brush;
+						}
+					}
+
+					vm.Icon = iconSource?.CreateIconElement();
 				}
 			});
 
@@ -186,7 +202,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void UpdateSearchHandler()
 		{
-			if(ShellItemNavigationView.AutoSuggestBox == null)
+			if (ShellItemNavigationView.AutoSuggestBox == null)
 				ShellItemNavigationView.AutoSuggestBox = new Microsoft.UI.Xaml.Controls.AutoSuggestBox() { Width = 300 };
 
 			if (VirtualView.Parent is not Shell shell)
@@ -268,9 +284,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			IShellItemController shellItemController = item;
 
-			if(shellItemController.ShowTabs)
+			if (shellItemController.ShowTabs)
 			{
-				handler.ShellItemNavigationView.PaneDisplayMode 
+				handler.ShellItemNavigationView.PaneDisplayMode
 					= NavigationViewPaneDisplayMode.Top;
 			}
 			else

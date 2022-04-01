@@ -303,8 +303,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-
-
 		bool IViewHandler.HasContainer { get => false; set { } }
 
 		object IViewHandler.ContainerView => null;
