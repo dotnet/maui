@@ -1,5 +1,6 @@
 using System;
 using Foundation;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -52,6 +53,17 @@ namespace Microsoft.Maui.Handlers
 				_editor.EditingChanged -= OnEditingChanged;
 
 			base.DisconnectHandler(platformView);
+		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			if (double.IsInfinity(widthConstraint) || double.IsInfinity(heightConstraint))
+			{
+				PlatformView.SizeToFit();
+				return new Size(PlatformView.Frame.Width, PlatformView.Frame.Height);
+			}
+
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		public static void MapIsEnabled(ISearchBarHandler handler, ISearchBar searchBar)
