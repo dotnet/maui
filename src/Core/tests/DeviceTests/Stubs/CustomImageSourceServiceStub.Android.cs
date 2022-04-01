@@ -31,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			return Task.FromResult<IImageSourceServiceResult>(result);
 		}
 
-		public Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(Context context, IImageSource imageSource, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is not ICustomImageSourceStub imageSourceStub)
 				return Task.FromResult<IImageSourceServiceResult<Drawable>>(null);
