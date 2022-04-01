@@ -265,21 +265,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var activity = AndroidContext.GetActivity();
 			var window = activity?.Window;
 			var decorView = window?.DecorView;
-			var resources = AndroidContext.Resources;
 
-			int statusBarHeight = 0;
-			int resourceId = resources.GetIdentifier("status_bar_height", "dimen", "android");
-			if (resourceId > 0)
-			{
-				statusBarHeight = resources.GetDimensionPixelSize(resourceId);
-			}
-
-			int navigationBarHeight = 0;
-			resourceId = resources.GetIdentifier("navigation_bar_height", "dimen", "android");
-			if (resourceId > 0)
-			{
-				navigationBarHeight = resources.GetDimensionPixelSize(resourceId);
-			}
+			int statusBarHeight = AndroidContext.GetStatusBarHeight();
+			int navigationBarHeight = AndroidContext.GetNavigationBarHeight();
 			
 			// we are using the split drawable here to avoid GPU overdraw.
 			// All it really is is a drawable that only draws under the statusbar/bottom bar to make sure
@@ -302,8 +290,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				decorView.SetBackground(split);
 			}
 		}
-
-
 
 		bool IViewHandler.HasContainer { get => false; set { } }
 

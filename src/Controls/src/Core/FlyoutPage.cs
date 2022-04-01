@@ -297,6 +297,9 @@ namespace Microsoft.Maui.Controls
 		public FlyoutPage()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<FlyoutPage>>(() => new PlatformConfigurationRegistry<FlyoutPage>(this));
+
+			this.Loaded += OnLoaded;
+			this.Unloaded += OnUnloaded;
 		}
 
 		readonly Lazy<PlatformConfigurationRegistry<FlyoutPage>> _platformConfigurationRegistry;
@@ -305,6 +308,22 @@ namespace Microsoft.Maui.Controls
 		public new IPlatformElementConfiguration<T, FlyoutPage> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
+		}
+
+		void OnUnloaded(object sender, EventArgs e)
+		{
+			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+		}
+
+		void OnLoaded(object sender, EventArgs e)
+		{
+			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+			Handler?.UpdateValue(nameof(FlyoutBehavior));
+		}
+
+		void OnMainDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)
+		{
+			Handler?.UpdateValue(nameof(FlyoutBehavior));
 		}
 	}
 }

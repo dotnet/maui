@@ -189,14 +189,6 @@ public class PlatformInterop {
     }
 
     @NonNull
-    public static MaterialToolbar createShellToolbar(Context context, AppBarLayout appbar, int actionBarHeight, int popupTheme)
-    {
-        MaterialToolbar toolbar = createToolbar(context, actionBarHeight, popupTheme);
-        appbar.addView(toolbar);
-        return toolbar;
-    }
-
-    @NonNull
     public static TabLayout createShellTabLayout(Context context, AppBarLayout appbar, int actionBarHeight)
     {
         TabLayout layout = new TabLayout(context);

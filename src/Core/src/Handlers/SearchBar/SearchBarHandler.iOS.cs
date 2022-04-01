@@ -31,7 +31,10 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.OnEditingStarted += OnEditingStarted;
 			platformView.OnEditingStopped += OnEditingEnded;
-
+				
+			if (_editor != null)
+				_editor.EditingChanged += OnEditingChanged;
+			
 			base.ConnectHandler(platformView);
 		}
 
@@ -45,6 +48,8 @@ namespace Microsoft.Maui.Handlers
 			platformView.OnEditingStarted -= OnEditingStarted;
 			platformView.OnEditingStopped -= OnEditingEnded;
 
+			if (_editor != null)
+				_editor.EditingChanged -= OnEditingChanged;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -170,6 +175,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (VirtualView != null)
 				VirtualView.IsFocused = true;
+		}
+
+		void OnEditingChanged(object? sender, EventArgs e)
+		{
+			if (VirtualView == null || _editor == null)
+				return;
+
+			VirtualView.UpdateText(_editor.Text);
 		}
 	}
 }

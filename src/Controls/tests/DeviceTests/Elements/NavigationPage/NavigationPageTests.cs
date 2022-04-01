@@ -36,11 +36,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				Assert.False(IsBackButtonVisible(handler.MauiContext));
+				Assert.False(IsBackButtonVisible(handler));
 				await navPage.PushAsync(new ContentPage());
-				Assert.True(IsBackButtonVisible(handler.MauiContext));
+				Assert.True(IsBackButtonVisible(handler));
 				await navPage.PopAsync();
-				Assert.False(IsBackButtonVisible(handler.MauiContext));
+				Assert.False(IsBackButtonVisible(handler));
 			});
 		}
 
@@ -54,9 +54,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await navPage.PushAsync(new ContentPage());
 				NavigationPage.SetHasBackButton(navPage.CurrentPage, false);
-				Assert.False(IsBackButtonVisible(handler.MauiContext));
+				Assert.False(IsBackButtonVisible(handler));
 				NavigationPage.SetHasBackButton(navPage.CurrentPage, true);
-				Assert.True(IsBackButtonVisible(handler.MauiContext));
+				Assert.True(IsBackButtonVisible(handler));
 			});
 		}
 
