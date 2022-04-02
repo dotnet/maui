@@ -568,11 +568,14 @@
             Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);@(AppxManifest)"
             Outputs="$(_MauiManifestStampFile);$(_MauiIntermediateManifest)Package.appxmanifest">
 
+        <_WindowsApplicationId Condition="'$(_WindowsApplicationId)' == '' and '$(ApplicationIdGuid)' != ''">$(ApplicationIdGuid)</_WindowsApplicationId>
+        <_WindowsApplicationId Condition="'$(_WindowsApplicationId)' == '' and '$(ApplicationId)' != ''">$(ApplicationId)</_WindowsApplicationId>
+        
         <GeneratePackageAppxManifest
             IntermediateOutputPath="$(_MauiIntermediateManifest)"
             AppxManifest="@(AppxManifest)"
             GeneratedFilename="Package.appxmanifest"
-            ApplicationId="$(ApplicationIdGuid)"
+            ApplicationId="$(_WindowsApplicationId)"
             ApplicationDisplayVersion="$(ApplicationDisplayVersion)"
             ApplicationVersion="$(ApplicationVersion)"
             ApplicationTitle="$(ApplicationTitle)"
