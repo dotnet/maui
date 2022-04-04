@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Platform
 
 		public static bool IsInstanceOfType(this Type self, object o)
 		{
-			return self.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo());
+			return self.IsAssignableFrom(o.GetType());
 		}
 
 		static IEnumerable<T> GetParts<T>(Type type, Func<TypeInfo, IEnumerable<T>> selector)

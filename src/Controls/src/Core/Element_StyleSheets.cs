@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 					while (t != typeof(BindableObject))
 					{
 						list.Add(t.Name);
-						t = t.GetTypeInfo().BaseType;
+						t = t.BaseType;
 					}
 					_styleSelectableNameAndBaseNames = list.ToArray();
 				}

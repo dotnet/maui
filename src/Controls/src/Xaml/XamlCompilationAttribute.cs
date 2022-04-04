@@ -26,13 +26,13 @@ namespace Microsoft.Maui.Controls.Xaml
 	{
 		public static bool IsCompiled(this Type type)
 		{
-			var attr = type.GetTypeInfo().GetCustomAttribute<XamlCompilationAttribute>();
+			var attr = type.GetCustomAttribute<XamlCompilationAttribute>();
 			if (attr != null)
 				return attr.XamlCompilationOptions == XamlCompilationOptions.Compile;
-			attr = type.GetTypeInfo().Module.GetCustomAttribute<XamlCompilationAttribute>();
+			attr = type.Module.GetCustomAttribute<XamlCompilationAttribute>();
 			if (attr != null)
 				return attr.XamlCompilationOptions == XamlCompilationOptions.Compile;
-			attr = type.GetTypeInfo().Assembly.GetCustomAttribute<XamlCompilationAttribute>();
+			attr = type.Assembly.GetCustomAttribute<XamlCompilationAttribute>();
 			if (attr != null)
 				return attr.XamlCompilationOptions == XamlCompilationOptions.Compile;
 

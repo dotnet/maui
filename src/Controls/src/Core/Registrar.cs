@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls.Internals
 					if (visualRenderers.TryGetValue(_defaultVisualType, out handlerType))
 						return true;
 
-				viewType = viewType.GetTypeInfo().BaseType;
+				viewType = viewType.BaseType;
 			}
 
 			handlerType = (null, 0);
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Internals
 					  visualRenderers.ContainsKey(_defaultVisualType)))
 				{
 					// get RenderWith attribute for just this type, do not inherit attributes from base types
-					var attribute = viewType.GetTypeInfo().GetCustomAttributes<RenderWithAttribute>(false).FirstOrDefault();
+					var attribute = viewType.GetCustomAttributes<RenderWithAttribute>(false).FirstOrDefault();
 					if (attribute == null)
 					{
 						// TODO this doesn't appear to do anything. Register just returns as a NOOP if the renderer is null
@@ -236,7 +236,7 @@ namespace Microsoft.Maui.Controls.Internals
 						if (specificTypeRenderer.Name.StartsWith("_", StringComparison.Ordinal))
 						{
 							// TODO: Remove attribute2 once renderer names have been unified across all platforms
-							var attribute2 = specificTypeRenderer.GetTypeInfo().GetCustomAttribute<RenderWithAttribute>();
+							var attribute2 = specificTypeRenderer.GetCustomAttribute<RenderWithAttribute>();
 							if (attribute2 != null)
 							{
 								for (int i = 0; i < attribute2.SupportedVisuals.Length; i++)
@@ -256,7 +256,7 @@ namespace Microsoft.Maui.Controls.Internals
 							{
 								Register(viewType, null, new[] { visualType }); // Cache this result so we don't work through this chain again
 
-								viewType = viewType.GetTypeInfo().BaseType;
+								viewType = viewType.BaseType;
 								continue;
 							}
 						}
@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Controls.Internals
 					}
 				}
 
-				viewType = viewType.GetTypeInfo().BaseType;
+				viewType = viewType.BaseType;
 			}
 		}
 	}
@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls.Internals
 			var properties = new Dictionary<string, IList<StylePropertyAttribute>>();
 			if (DisableCSS)
 				return properties;
-			var assembly = typeof(StylePropertyAttribute).GetTypeInfo().Assembly;
+			var assembly = typeof(StylePropertyAttribute).Assembly;
 			var styleAttributes = assembly.GetCustomAttributesSafe(typeof(StylePropertyAttribute));
 			var stylePropertiesLength = styleAttributes?.Length ?? 0;
 			for (var i = 0; i < stylePropertiesLength; i++)
