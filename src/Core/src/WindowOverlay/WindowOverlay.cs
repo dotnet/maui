@@ -69,7 +69,7 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public float Density => Window?.RequestDisplayDensity() ?? 0f;
+		public float Density => Window?.RequestDisplayDensity() ?? 1f;
 
 		/// <inheritdoc/>
 		public event EventHandler<WindowOverlayTappedEventArgs>? Tapped;
