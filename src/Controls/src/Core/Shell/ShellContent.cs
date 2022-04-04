@@ -3,11 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-
-#if NETSTANDARD1_0
-using System.Linq;
-#endif
-
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 
@@ -297,12 +292,7 @@ namespace Microsoft.Maui.Controls
 			var type = content.GetType();
 			var typeInfo = type.GetTypeInfo();
 
-#if NETSTANDARD1_0
-			var queryPropertyAttributes = typeInfo.GetCustomAttributes(typeof(QueryPropertyAttribute), true).ToArray();
-#else
 			var queryPropertyAttributes = typeInfo.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
-#endif
-
 			if (queryPropertyAttributes.Length == 0)
 				return;
 

@@ -384,23 +384,7 @@ namespace Microsoft.Maui.Controls
 						FieldInfo bindablePropertyField = sourceType.GetDeclaredField(part.Content + "Property");
 						if (bindablePropertyField != null && bindablePropertyField.FieldType == typeof(BindableProperty) && sourceType.ImplementedInterfaces.Contains(typeof(IElementController)))
 						{
-							MethodInfo setValueMethod = null;
-#if NETSTANDARD1_0
-							foreach (MethodInfo m in sourceType.AsType().GetRuntimeMethods())
-							{
-								if (m.Name.EndsWith("IElementController.SetValueFromRenderer"))
-								{
-									ParameterInfo[] parameters = m.GetParameters();
-									if (parameters.Length == 2 && parameters[0].ParameterType == typeof(BindableProperty))
-									{
-										setValueMethod = m;
-										break;
-									}
-								}
-							}
-#else
-							setValueMethod = typeof(IElementController).GetMethod("SetValueFromRenderer", new[] { typeof(BindableProperty), typeof(object) });
-#endif
+							MethodInfo setValueMethod = typeof(IElementController).GetMethod("SetValueFromRenderer", new[] { typeof(BindableProperty), typeof(object) });
 							if (setValueMethod != null)
 							{
 								part.LastSetter = setValueMethod;
@@ -410,34 +394,36 @@ namespace Microsoft.Maui.Controls
 						}
 					}
 				}
-#if !NETSTANDARD1_0
+
 				if (property != null
 					&& part.NextPart != null
-					&& property.PropertyType.IsGenericType
-					&& (property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,,>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,,,>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,,,,>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,,,,,>))
-					&& property.GetCustomAttribute(typeof(TupleElementNamesAttribute)) is TupleElementNamesAttribute tupleEltNames)
+					&& property.PropertyType.IsGenericType)
 				{
-					//modify the nextPart to access the tuple item via the ITuple indexer
-					var nextPart = part.NextPart;
-					var name = nextPart.Content;
-					var index = tupleEltNames.TransformNames.IndexOf(name);
-					if (index >= 0)
+					Type genericTypeDefinition = property.PropertyType.GetGenericTypeDefinition();
+					if ((genericTypeDefinition == typeof(ValueTuple<>)
+						|| genericTypeDefinition == typeof(ValueTuple<,>)
+						|| genericTypeDefinition == typeof(ValueTuple<,,>)
+						|| genericTypeDefinition == typeof(ValueTuple<,,,>)
+						|| genericTypeDefinition == typeof(ValueTuple<,,,,>)
+						|| genericTypeDefinition == typeof(ValueTuple<,,,,,>)
+						|| genericTypeDefinition == typeof(ValueTuple<,,,,,,>)
+						|| genericTypeDefinition == typeof(ValueTuple<,,,,,,,>))
+						&& property.GetCustomAttribute(typeof(TupleElementNamesAttribute)) is TupleElementNamesAttribute tupleEltNames)
 					{
-						nextPart.IsIndexer = true;
-						nextPart.Content = index.ToString();
+						//modify the nextPart to access the tuple item via the ITuple indexer
+						var nextPart = part.NextPart;
+						var name = nextPart.Content;
+						var index = tupleEltNames.TransformNames.IndexOf(name);
+						if (index >= 0)
+						{
+							nextPart.IsIndexer = true;
+							nextPart.Content = index.ToString();
+						}
 					}
 				}
-#endif
 			}
-
 		}
+
 		static readonly Type[] DecimalTypes = { typeof(float), typeof(decimal), typeof(double) };
 
 		internal static bool TryConvert(ref object value, BindableProperty targetProperty, Type convertTo, bool toTarget)
