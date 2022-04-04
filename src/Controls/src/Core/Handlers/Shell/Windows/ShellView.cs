@@ -33,6 +33,17 @@ namespace Microsoft.Maui.Controls.Platform
 			MenuItemsSource = FlyoutItems;
 		}
 
+
+		private protected override void UpdateFlyoutCustomContent()
+		{
+			base.UpdateFlyoutCustomContent();
+
+			if (FlyoutCustomContent == null)
+				MenuItemsSource = FlyoutItems;
+			else
+				MenuItemsSource = null;
+		}
+
 		internal void SetElement(VisualElement element)
 		{
 			if (Element != null && element != null)
@@ -41,9 +52,9 @@ namespace Microsoft.Maui.Controls.Platform
 			Element = (Shell)element;
 			ShellController.AddAppearanceObserver(this, Element);
 		}
-		
+
 		internal Shell Element { get; set; }
-		
+
 		private protected override void OnApplyTemplateCore()
 		{
 			_shellSplitView = new ShellSplitView(RootSplitView);
