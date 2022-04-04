@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 
@@ -27,10 +28,16 @@ namespace Microsoft.Maui.Platform
                 //generates a shadow with a size more smaller than the control size. 
 				if (element is TextBlock textElement)
 				{
-					mask = textElement.GetAlphaMask();
+					return textElement.GetAlphaMask();
 				}
-				// We also use this option with images and shapes, even though have the option to
-				// get the AlphaMask directly (in case it is clipped).
+				if (element is Image image)
+				{
+					return image.GetAlphaMask();
+				}
+				if (element is Shape shape)
+				{
+					return shape.GetAlphaMask();
+				}
 				else if (element is FrameworkElement frameworkElement)
 				{
 					var height = (int)frameworkElement.ActualHeight;
@@ -47,13 +54,6 @@ namespace Microsoft.Maui.Platform
 							element,
 							width,
 							height);
-
-						// sometimes RenderAsync produces a 0x0 bitmap for images
-						// in such case we will fall back to GetAlphaMask.
-						if (bitmap.PixelWidth == 0 && element is Image image)
-						{
-							return image.GetAlphaMask();
-						}
 
 						var pixels = await bitmap.GetPixelsAsync();
 
