@@ -15,7 +15,6 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static readonly global::Windows.UI.Color DefaultForegroundColor = Microsoft.UI.Colors.White;
 		internal static readonly global::Windows.UI.Color DefaultTitleColor = Microsoft.UI.Colors.White;
 		internal static readonly global::Windows.UI.Color DefaultUnselectedColor = global::Windows.UI.Color.FromArgb(180, 255, 255, 255);
-		Control TogglePaneButton { get; set; }
 		double _flyoutHeight = -1d;
 		double _flyoutWidth = -1d;
 
@@ -49,7 +48,6 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_shellSplitView = new ShellSplitView(RootSplitView);
 			_shellSplitView.FlyoutBackdrop = _flyoutBackdrop;
-			TogglePaneButton = (Control)GetTemplateChild("TogglePaneButton");
 			TogglePaneButton?.SetAutomationPropertiesAutomationId("OK");
 
 			base.OnApplyTemplateCore();

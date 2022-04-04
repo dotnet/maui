@@ -7,6 +7,35 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     IsSettingsVisible = "false"
-    IsPaneToggleButtonVisible = "True"
-    IsTitleBarAutoPaddingEnabled = "false">
+	IsPaneToggleButtonVisible = "false"
+	PaneDisplayMode = "Left"
+	IsTitleBarAutoPaddingEnabled = "false"
+	IsBackButtonVisible = "Collapsed">
+    <!--<platform:MauiNavigationView.Toolbar>
+        <platform:TestMauiToolbar>
+        </platform:TestMauiToolbar>
+    </platform:MauiNavigationView.Toolbar>-->
+    <!--<platform:MauiNavigationView.MenuItems>
+        <NavigationViewItem Content="Item 1"></NavigationViewItem>
+        <NavigationViewItem Content="Item 2"></NavigationViewItem>
+    </platform:MauiNavigationView.MenuItems>-->
+    <!--<platform:MauiNavigationView.PaneHeader>
+        <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <TextBlock Text="header"></TextBlock>
+        </StackPanel>
+    </platform:MauiNavigationView.PaneHeader>
+    <platform:MauiNavigationView.PaneFooter>
+        <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <TextBlock Text="footer"></TextBlock>
+        </StackPanel>
+    </platform:MauiNavigationView.PaneFooter>-->
+    <platform:MauiNavigationView.FlyoutCustomContent>
+        <ScrollViewer Height="1900"
+                      Background="Purple"
+                  HorizontalScrollBarVisibility="Auto" 
+                  VerticalScrollBarVisibility="Auto">
+            <TextBlock Width="300" TextWrapping="Wrap"
+            Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ac mi ipsum. Phasellus vel malesuada mauris. Donec pharetra, enim sit amet mattis tincidunt, felis nisi semper lectus, vel porta diam nisi in augue. Pellentesque lacus tortor, aliquam et faucibus id, rhoncus ut justo. Sed id lectus odio, eget pulvinar diam. Suspendisse eleifend ornare libero, in luctus purus aliquet non. Sed interdum, sem vitae rutrum rhoncus, felis ligula ultrices sem, in eleifend eros ante id neque." />
+        </ScrollViewer>
+    </platform:MauiNavigationView.FlyoutCustomContent>
 </platform:MauiNavigationView>

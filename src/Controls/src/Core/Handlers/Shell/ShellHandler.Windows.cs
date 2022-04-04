@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapFlyout(ShellHandler handler, IFlyoutView flyoutView)
 		{
-			handler.PlatformView.ReplacePaneMenuItemsWithCustomContent(flyoutView.Flyout);
+			handler.PlatformView.FlyoutCustomContent = flyoutView.Flyout?.ToPlatform(handler.MauiContext);
 		}
 
 		public static void MapIsPresented(ShellHandler handler, IFlyoutView flyoutView)

@@ -21,8 +21,11 @@ namespace Microsoft.Maui.Platform
 			_rootView.OnAppTitleBarChanged += OnAppTitleBarChanged;
 		}
 
-		private void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
+		void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
 		{
+			_platformWindow
+				.GetWindow()?
+				.BackButtonClicked();
 		}
 
 		internal bool UseCustomAppTitleBar
@@ -56,7 +59,7 @@ namespace Microsoft.Maui.Platform
 
 		public FrameworkElement RootView => _rootView;
 
-		public virtual void Connect(object platformView)
+		public virtual void Connect(UIElement platformView)
 		{
 			bool firstConnect = _rootView.Content == null;
 

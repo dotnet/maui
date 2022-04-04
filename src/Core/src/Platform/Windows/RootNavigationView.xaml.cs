@@ -11,14 +11,29 @@ namespace Microsoft.Maui.Platform
 {
 	// This is needed by WinUI because of 
 	// https://github.com/microsoft/microsoft-ui-xaml/issues/2698#issuecomment-648751713
+	// This file currently doesn't have a XAML part because code generation currently breaks for
+	// our WinUI files if a xaml file inherits from a xaml file
 	[Microsoft.UI.Xaml.Data.Bindable]
 	public partial class RootNavigationView : MauiNavigationView
 	{
-		double _paneHeaderContentHeight;
+		//double _paneHeaderContentHeight;
 		MauiToolbar? _headerControl;
 		double AppBarTitleHeight => _useCustomAppTitleBar ? _appBarTitleHeight : 0;
 		double _appBarTitleHeight;
 		bool _useCustomAppTitleBar;
+
+		public RootNavigationView()
+		{
+			InitializeComponent();
+
+			RegisterPropertyChangedCallback(IsBackButtonVisibleProperty, BackButtonVisibleChanged);
+			RegisterPropertyChangedCallback(OpenPaneLengthProperty, PaneLengthPropertyChanged);
+			RegisterPropertyChangedCallback(HeaderProperty, HeaderPropertyChanged);
+			RegisterPropertyChangedCallback(PaneFooterProperty, HeaderPropertyChanged);
+			RegisterPropertyChangedCallback(PaneDisplayModeProperty, PaneDisplayModeChanged);
+			this.PaneOpened += (_, __) => UpdatePaneContentGridMargin();
+			this.DisplayModeChanged += (_, __) => UpdateNavigationAndPaneButtonHolderGridStyles();
+		}
 
 		internal MauiToolbar? HeaderControl
 		{
@@ -29,7 +44,7 @@ namespace Microsoft.Maui.Platform
 					return;
 
 				_headerControl = value;
-				UpdateTopNavAreaMargin();				
+				UpdateTopNavAreaMargin();
 			}
 		}
 
@@ -39,22 +54,9 @@ namespace Microsoft.Maui.Platform
 			private set;
 		}
 
-		public RootNavigationView()
-		{
-			InitializeComponent();
-			RegisterPropertyChangedCallback(IsBackButtonVisibleProperty, BackButtonVisibleChanged);
-			RegisterPropertyChangedCallback(OpenPaneLengthProperty, PaneLengthPropertyChanged);
-			RegisterPropertyChangedCallback(HeaderProperty, HeaderPropertyChanged);
-			RegisterPropertyChangedCallback(PaneFooterProperty, HeaderPropertyChanged);
-			RegisterPropertyChangedCallback(PaneDisplayModeProperty, PaneDisplayModeChanged);
-			this.PaneOpened += (_, __) => UpdatePaneContentGridMargin();
-			this.DisplayModeChanged += (_, __) => UpdateNavigationAndPaneButtonHolderGridStyles();
-		}
-
 		void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp)
 		{
 			UpdateTopNavAreaMargin();
-			UpdateFlyoutPanelMargin();
 			UpdatePaneContentGridMargin();
 		}
 
@@ -65,7 +67,7 @@ namespace Microsoft.Maui.Platform
 				HeaderControl = mauiToolbar;
 			else
 				base.ToolbarChanged();
-				
+
 		}
 
 		void UpdateTopNavAreaMargin()
@@ -161,7 +163,6 @@ namespace Microsoft.Maui.Platform
 			IsBackEnabled = (IsBackButtonVisible == NavigationViewBackButtonVisible.Visible) &&
 				(_headerControl?.IsBackEnabled ?? true);
 
-			UpdateFlyoutPanelMargin();
 			UpdateTopNavAreaMargin();
 		}
 
@@ -191,7 +192,7 @@ namespace Microsoft.Maui.Platform
 
 			// This is the height taken up by the backbutton/pane toggle button
 			// we use this to offset the height of our flyout content
-			((FrameworkElement)GetTemplateChild("PaneHeaderContentBorder")).SizeChanged += OnPaneHeaderContentBorderSizeChanged;
+			//	((FrameworkElement)GetTemplateChild("PaneHeaderContentBorder")).SizeChanged += OnPaneHeaderContentBorderSizeChanged;
 
 			PaneContentGrid.RowDefinitions[1]
 				.RegisterPropertyChangedCallback(RowDefinition.HeightProperty, PaneContentTopPaddingChanged);
@@ -279,7 +280,6 @@ namespace Microsoft.Maui.Platform
 
 			UpdatePaneContentGridMargin();
 			UpdateTopNavAreaMargin();
-			UpdateFlyoutPanelMargin();
 			UpdateContentGridMargin();
 		}
 
@@ -301,11 +301,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void OnPaneHeaderContentBorderSizeChanged(object sender, SizeChangedEventArgs e)
-		{
-			_paneHeaderContentHeight = ((FrameworkElement)sender).ActualHeight;
-			UpdateFlyoutPaneSize();
-		}
+		//void OnPaneHeaderContentBorderSizeChanged(object sender, SizeChangedEventArgs e)
+		//{
+		//	_paneHeaderContentHeight = ((FrameworkElement)sender).ActualHeight;
+		//	UpdateFlyoutPaneSize();
+		//}
 
 		void OnPaneContentGridSizeChanged(object sender, SizeChangedEventArgs e)
 		{
@@ -317,17 +317,21 @@ namespace Microsoft.Maui.Platform
 		{
 			if (PaneContentGrid == null)
 				return;
-						
-			FlyoutPaneSize = new Size(OpenPaneLength, PaneContentGrid.ActualHeight - _paneHeaderContentHeight);
-			_flyoutPanel.ContentHeight = FlyoutPaneSize.Height;
+
+			var newSize = new Size(OpenPaneLength, PaneContentGrid.ActualHeight - PaneContentGrid.RowDefinitions[1].Height.Value);
+
+			if (newSize == FlyoutPaneSize)
+				return;
+
+			FlyoutPaneSize = newSize;
+
 			_flyoutPanel.ContentWidth = FlyoutPaneSize.Width;
 			_flyoutPanel.InvalidateMeasure();
-			UpdateFlyoutPanelMargin();
 		}
 
 		readonly FlyoutPanel _flyoutPanel = new FlyoutPanel();
 
-		internal void ReplacePaneMenuItemsWithCustomContent(UIElement? customContent)
+		void ReplacePaneMenuItemsWithCustomContent(UIElement? customContent)
 		{
 			_flyoutPanel.Children.Clear();
 
@@ -342,38 +346,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal void UpdateFlyoutPanelMargin()
-		{
-			//// The left pane on NavigationView currently doesn't account for a custom title bar
-			//// If you hide the backbutton and pane toggle button it will shift content up into the custom title
-			//// bar. There currently isn't a property associated with this padding it's just set inside the
-			//// source code on the PaneContentGrid
-
-			//if (ContentPaneTopPadding != null &&
-			//	ButtonHolderGrid != null &&
-			//	PaneContentGrid != null)
-			//{
-			//	// PaneContentGrid is the top most container on the SplitView
-			//	// This tells us the spacing that's been placed around it so that we
-			//	// can offset our content relative to the AppTitleBar
-			//	var leftPaneMarginHeight = PaneContentGrid.Margin.Top;
-
-			//	if (ButtonHolderGrid.ActualHeight == 0)
-			//	{
-			//		if (AppBarTitleHeight < leftPaneMarginHeight)
-			//			ContentPaneTopPadding.Height = leftPaneMarginHeight;
-			//		else
-			//			ContentPaneTopPadding.Height = AppBarTitleHeight - leftPaneMarginHeight;
-			//	}
-			//	else
-			//	{
-
-			//		ContentPaneTopPadding.Height = Math.Max(ButtonHolderGrid.Margin.Top +
-			//			ButtonHolderGrid.Margin.Bottom - leftPaneMarginHeight, 0);
-			//	}
-			//}
-		}
-
 		// We use a container because if we just assign our Flyout to the PaneFooter on the NavigationView 
 		// The measure call passes in PositiveInfinity for the measurements which causes the layout system
 		// to crash. So we use this Panel to facilitate more constrained measuring values
@@ -383,7 +355,6 @@ namespace Microsoft.Maui.Platform
 			{
 			}
 
-			public double ContentHeight { get; set; }
 			public double ContentWidth { get; set; }
 
 			FrameworkElement? FlyoutContent =>
@@ -394,10 +365,10 @@ namespace Microsoft.Maui.Platform
 				if (FlyoutContent == null)
 					return new Size(0, 0);
 
-				if (ContentHeight * ContentWidth == 0)
+				if (ContentWidth == 0)
 					return new Size(0, 0);
 
-				FlyoutContent.Measure(new Size(ContentWidth, ContentHeight));
+				FlyoutContent.Measure(new Size(ContentWidth, availableSize.Height));
 				return FlyoutContent.DesiredSize;
 			}
 
@@ -405,6 +376,12 @@ namespace Microsoft.Maui.Platform
 			{
 				if (FlyoutContent == null)
 					return new Size(0, 0);
+
+				if (finalSize.Width * finalSize.Height == 0 &&
+					FlyoutContent.ActualWidth * FlyoutContent.ActualHeight == 0)
+				{
+					return finalSize;
+				}
 
 				FlyoutContent.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
 				return new Size(FlyoutContent.ActualWidth, FlyoutContent.ActualHeight);
