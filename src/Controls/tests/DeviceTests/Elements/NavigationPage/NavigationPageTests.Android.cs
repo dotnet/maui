@@ -16,31 +16,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.NavigationPage)]
 	public partial class NavigationPageTests : HandlerTestBase
 	{
-		MaterialToolbar GetPlatformToolbar(IElementHandler handler) =>
-			GetPlatformToolbar(handler.MauiContext);
-
-		MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
-		{
-			var navManager = mauiContext.GetNavigationRootManager();
-			ViewGroup appbarLayout =
-				navManager?.RootView?.FindViewById<ViewGroup>(Resource.Id.navigationlayout_appbar);
-
-			var toolBar = appbarLayout?.GetFirstChildOfType<MaterialToolbar>();
-
-			toolBar = toolBar ?? navManager.ToolbarElement?.Toolbar?.Handler?.PlatformView as
-				MaterialToolbar;
-
-			return toolBar;
-		}
-
-		public bool IsBackButtonVisible(IElementHandler handler) =>
-			IsBackButtonVisible(handler.MauiContext);
-
-		public bool IsBackButtonVisible(IMauiContext mauiContext)
-		{
-			return GetPlatformToolbar(mauiContext)?.NavigationIcon != null;
-		}
-
 		public bool IsNavigationBarVisible(IElementHandler handler) =>
 			IsNavigationBarVisible(handler.MauiContext);
 

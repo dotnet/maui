@@ -45,7 +45,7 @@ namespace Microsoft.Maui
 			return Task.FromResult<IImageSourceServiceResult?>(null);
 		}
 
-		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(Context context, IImageSource imageSource, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			var fontImageSource = (IFontImageSource)imageSource;
 			if (!fontImageSource.IsEmpty)

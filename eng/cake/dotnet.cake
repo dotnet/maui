@@ -235,8 +235,6 @@ Task("dotnet-pack-library-packs")
 
         Download("Microsoft.Maui.Graphics", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json");
         Download("Microsoft.Maui.Graphics.Win2D.WinUI.Desktop", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json", "https://api.nuget.org/v3/index.json");
-        Download("Microsoft.WindowsAppSDK", "MicrosoftWindowsAppSDKPackageVersion", "https://api.nuget.org/v3/index.json");
-        Download("Microsoft.Windows.SDK.BuildTools", "MicrosoftWindowsSDKBuildToolsPackageVersion", "https://api.nuget.org/v3/index.json");
     });
 
 Task("dotnet-pack")
@@ -352,11 +350,6 @@ Task("VS-NET6")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        // VS has trouble building all the references correctly so this makes sure everything is built
-        // and we're ready to go right when VS launches
-        
-        RunMSBuildWithDotNet("./src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup.csproj");
-        RunMSBuildWithDotNet("./src/Compatibility/Core/src/Compatibility.csproj");
         StartVisualStudioForDotNet6();
     });
 

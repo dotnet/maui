@@ -83,7 +83,7 @@ sudo pwsh -File ./maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-pr
 
 ### iOS / MacCatalyst
 
-iOS and MacCatalyst will require Xcode 13.1 Stable. You can get this [here](https://developer.apple.com/download/more/?name=Xcode).
+iOS and MacCatalyst will require Xcode 13.3 Stable. You can get this [here](https://developer.apple.com/download/more/?name=Xcode).
 
 ### Android
 
