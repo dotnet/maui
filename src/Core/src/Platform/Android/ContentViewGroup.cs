@@ -1,15 +1,20 @@
 ﻿using System;
 using Android.Content;
+using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
-using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Graphics.Platform;
+using Rect = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
 	// TODO ezhart At this point, this is almost exactly a clone of LayoutViewGroup; we may be able to drop this class entirely
 	public class ContentViewGroup : ViewGroup
 	{
+		IBorderStroke? _clip;
+
 		public ContentViewGroup(Context context) : base(context)
 		{
 		}
@@ -28,6 +33,14 @@ namespace Microsoft.Maui.Platform
 
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
+		}
+
+		protected override void DispatchDraw(Canvas? canvas)
+		{
+			if (Stroke != null)
+				ClipChild(canvas);
+
+			base.DispatchDraw(canvas);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -84,7 +97,38 @@ namespace Microsoft.Maui.Platform
 			CrossPlatformArrange(destination);
 		}
 
+		internal IBorderStroke? Clip
+		{
+			get => _clip;
+			set
+			{
+				_clip = value;
+				PostInvalidate();
+			}
+		}
+
 		internal Func<double, double, Graphics.Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Graphics.Rect, Graphics.Size>? CrossPlatformArrange { get; set; }
+
+		void ClipChild(Canvas? canvas)
+		{
+			if (Clip == null || canvas == null)
+				return;
+
+			double density = DeviceDisplay.MainDisplayInfo.Density;
+			var strokeThickness = (float)(Clip.StrokeThickness * density);
+
+			float x = (float)strokeThickness / 2;
+			float y = (float)strokeThickness / 2;
+			float w = (float)(canvas.Width - strokeThickness);
+			float h = (float)(canvas.Height - strokeThickness);
+
+			var bounds = new Graphics.RectF(x, y, w, h);
+			var path = Clip.Shape?.PathForBounds(bounds);
+			var currentPath = path?.AsAndroidPath();
+
+			if (currentPath != null)
+				canvas.ClipPath(currentPath);
+		}
 	}
 }
