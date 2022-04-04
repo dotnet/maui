@@ -1,8 +1,8 @@
 using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui;
 using System.Threading;
-using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Foldable;
 
 namespace Microsoft.Maui.Controls.Foldable
