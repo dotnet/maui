@@ -30,21 +30,29 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, platformText);
 		}
 
+#if WINDOWS
+		// Only Windows needs the IsReadOnly workaround for MaxLength==0 to prevent text from being entered
 		[Fact]
 		public async Task MaxLengthIsReadOnlyValueTest()
 		{
 			SearchBar searchBar = new SearchBar();
-			searchBar.MaxLength = 0;
 
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<SearchBarHandler>(searchBar);
 				var platformControl = GetPlatformControl(handler);
+
+				searchBar.MaxLength = 0;
+				Assert.True(MauiAutoSuggestBox.GetIsReadOnly(platformControl));
+				searchBar.IsReadOnly = false;
+				Assert.True(MauiAutoSuggestBox.GetIsReadOnly(platformControl));
+
 				searchBar.MaxLength = 10;
-#if WINDOWS
 				Assert.False(MauiAutoSuggestBox.GetIsReadOnly(platformControl));
-#endif
+				searchBar.IsReadOnly = true;
+				Assert.True(MauiAutoSuggestBox.GetIsReadOnly(platformControl));
 			});
 		}
+#endif
 	}
 }
