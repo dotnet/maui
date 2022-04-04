@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Platform
 			mauiDrawable.SetBorderShape(border.Shape);
 
 			if (platformView is ContentViewGroup contentViewGroup)
-				contentViewGroup.Stroke = border;
+				contentViewGroup.Clip = border;
 		}
 	}
 }

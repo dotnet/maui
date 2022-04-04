@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 
 		protected override void DispatchDraw(Canvas? canvas)
 		{
-			if (Stroke != null)
+			if (Clip != null)
 				ClipChild(canvas);
 
 			base.DispatchDraw(canvas);
