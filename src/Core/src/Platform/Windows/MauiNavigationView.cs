@@ -35,6 +35,8 @@ namespace Microsoft.Maui.Platform
 		internal ColumnDefinition? PaneHeaderToggleButtonColumn { get; private set; }
 		internal ContentControl? PaneCustomContentBorder { get; private set; }
 		internal RowDefinition? ItemsContainerRow { get; private set; }
+		internal RowDefinition? PaneContentGridToggleButtonRow { get; private set; }
+		internal RowDefinition? PaneHeaderContentBorderRow { get; private set; }
 
 		public MauiNavigationView()
 		{
@@ -62,6 +64,8 @@ namespace Microsoft.Maui.Platform
 			PaneHeaderToggleButtonColumn = (ColumnDefinition)GetTemplateChild("PaneHeaderToggleButtonColumn");
 			PaneCustomContentBorder = (ContentControl)GetTemplateChild("PaneCustomContentBorder");
 			ItemsContainerRow = (RowDefinition)GetTemplateChild("ItemsContainerRow");
+			PaneContentGridToggleButtonRow = (RowDefinition)GetTemplateChild("PaneContentGridToggleButtonRow");
+			PaneHeaderContentBorderRow = (RowDefinition)GetTemplateChild("PaneHeaderContentBorderRow");
 
 			UpdateNavigationBackButtonSize();
 			UpdateNavigationViewContentMargin();
@@ -79,11 +83,23 @@ namespace Microsoft.Maui.Platform
 			NavigationViewCloseButton.RegisterPropertyChangedCallback(Button.HeightProperty, (_, __) => UpdateNavigationBackButtonSize());
 			NavigationViewCloseButton.RegisterPropertyChangedCallback(Button.WidthProperty, (_, __) => UpdateNavigationBackButtonSize());
 
+
+			// These columns create a left padding on the PaneHeader
+			// So this code just removes that padding
 			PaneHeaderCloseButtonColumn.RegisterPropertyChangedCallback(ColumnDefinition.WidthProperty, (_, __) => PaneHeaderCloseButtonColumn.Width = new WGridLength(0));
 			PaneHeaderToggleButtonColumn.RegisterPropertyChangedCallback(ColumnDefinition.WidthProperty, (_, __) => PaneHeaderToggleButtonColumn.Width = new WGridLength(0));
-
 			PaneHeaderToggleButtonColumn.Width = new WGridLength(0);
 			PaneHeaderCloseButtonColumn.Width = new WGridLength(0);
+
+			// When the NavigationView is in locked mode the min height on the PaneHeader row gets set to 40
+			// Which creates space between the title bar and the top of the flyout content
+			PaneContentGridToggleButtonRow.MinHeight = 0;
+			PaneContentGridToggleButtonRow.RegisterPropertyChangedCallback(RowDefinition.MinHeightProperty, (_, __) =>
+				PaneContentGridToggleButtonRow.MinHeight = 0);
+
+			PaneHeaderContentBorderRow.MinHeight = 0;
+			PaneHeaderContentBorderRow.RegisterPropertyChangedCallback(RowDefinition.MinHeightProperty, (_, __) =>
+				PaneHeaderContentBorderRow.MinHeight = 0);
 
 			UpdateMenuItemsContainerHeight();
 		}

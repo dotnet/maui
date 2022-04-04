@@ -200,13 +200,11 @@ namespace Microsoft.Maui.Platform
 			ButtonHolderGrid!.SizeChanged += (_, args) =>
 			{
 				UpdateNavigationAndPaneButtonHolderGridStyles();
-				UpdatePaneContentGridMargin();
 			};
 
 			TogglePaneButton!.SizeChanged += (_, args) =>
 			{
 				UpdateNavigationAndPaneButtonHolderGridStyles();
-				UpdatePaneContentGridMargin();
 			};
 
 			UpdateTopNavAreaMargin();
@@ -300,12 +298,6 @@ namespace Microsoft.Maui.Platform
 				ContentPaneTopPadding.Height = 0;
 			}
 		}
-
-		//void OnPaneHeaderContentBorderSizeChanged(object sender, SizeChangedEventArgs e)
-		//{
-		//	_paneHeaderContentHeight = ((FrameworkElement)sender).ActualHeight;
-		//	UpdateFlyoutPaneSize();
-		//}
 
 		void OnPaneContentGridSizeChanged(object sender, SizeChangedEventArgs e)
 		{
