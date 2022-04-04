@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 				var windowManager = handler.MauiContext.GetNavigationRootManager();
-				windowManager.SetMenuBar(mb.MenuBar);
+				windowManager.SetMenuBar(mb.MenuBar?.ToPlatform(handler.MauiContext!) as MenuBar);
 			}
 		}
 
