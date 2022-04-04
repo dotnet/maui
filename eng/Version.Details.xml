@@ -8,23 +8,23 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>323bf2dd0ef1004687a8bafa10a0c66f63252dee</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="32.0.300-rc.1.4">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="32.0.300-rc.1.4" CoherentParentDependency="Microsoft.Maui.Graphics">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
       <Sha>5ba8c310b69f6ef2d63b13ae4373872baec75314</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.4.100-rc.1.127">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.4.100-rc.1.127" CoherentParentDependency="Microsoft.Maui.Graphics">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>c31664c2f843d00c267d7bd5a019a5c812936a6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk" Version="15.4.100-rc.1.127">
+    <Dependency Name="Microsoft.iOS.Sdk" Version="15.4.100-rc.1.127" CoherentParentDependency="Microsoft.Maui.Graphics">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>c31664c2f843d00c267d7bd5a019a5c812936a6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.4.100-rc.1.127">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.4.100-rc.1.127" CoherentParentDependency="Microsoft.Maui.Graphics">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>c31664c2f843d00c267d7bd5a019a5c812936a6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk" Version="12.3.100-rc.1.127">
+    <Dependency Name="Microsoft.macOS.Sdk" Version="12.3.100-rc.1.127" CoherentParentDependency="Microsoft.Maui.Graphics">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>c31664c2f843d00c267d7bd5a019a5c812936a6b</Sha>
     </Dependency>
