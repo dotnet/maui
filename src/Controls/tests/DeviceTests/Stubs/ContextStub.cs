@@ -24,6 +24,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public object GetService(Type serviceType)
 		{
+			if (serviceType == typeof(IApplication))
+				return Controls.Application.Current;
+
 			if (serviceType == typeof(IAnimationManager))
 				return _manager ??= _services.GetRequiredService<IAnimationManager>();
 #if ANDROID

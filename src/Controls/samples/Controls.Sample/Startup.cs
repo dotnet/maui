@@ -15,6 +15,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Hosting;
 
@@ -239,7 +240,7 @@ namespace Maui.Controls.Sample
 			// If someone wanted to completely turn off the CascadeInputTransparent behavior in their application, this next line would be an easy way to do it
 			// Microsoft.Maui.Controls.Layout.ControlsLayoutMapper.ModifyMapping(nameof(Microsoft.Maui.Controls.Layout.CascadeInputTransparent), (_, _, _) => { });
 
-			return appBuilder.Build();
+			return appBuilder.UseFoldable().Build();
 		}
 	}
 }
