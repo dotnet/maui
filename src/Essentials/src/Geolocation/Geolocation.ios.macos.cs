@@ -19,7 +19,14 @@ namespace Microsoft.Maui.Devices.Sensors
 			var manager = new CLLocationManager();
 			var location = manager.Location;
 
-			return location?.ToLocation();
+			var reducedAccuracy = false;
+#if __IOS__
+            if (Platform.HasOSVersion(14, 0))
+            {
+                reducedAccuracy = manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy;
+            }
+#endif
+            return location?.ToLocation(reducedAccuracy);
 		}
 
 		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
@@ -54,6 +61,19 @@ namespace Microsoft.Maui.Devices.Sensors
 #endif
 
 			manager.StartUpdatingLocation();
+
+			var reducedAccuracy = false;
+#if __IOS__
+            if (Platform.HasOSVersion(14, 0))
+            {
+                if (request.RequestFullAccuracy && manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy)
+                {
+                    await manager.RequestTemporaryFullAccuracyAuthorizationAsync("XamarinEssentialsFullAccuracyUsageDescription");
+                }
+
+                reducedAccuracy = manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy;
+            }
+#endif
 
 			var clLocation = await tcs.Task;
 
