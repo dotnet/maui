@@ -5,6 +5,9 @@
 		public static IPropertyMapper<IEntry, EntryHandler> ControlsEntryMapper = 
 			new PropertyMapper<Entry, EntryHandler>(EntryHandler.Mapper)
 		{
+#if ANDROID
+			[nameof(PlatformConfiguration.AndroidSpecific.ImeFlags)] = MapImeOptions,
+#endif
 			[nameof(Text)] = MapText,
 			[nameof(TextTransform)] = MapText,
 		};

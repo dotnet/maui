@@ -9,6 +9,7 @@ using Android.Util;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
+using AAplication = Android.App.Application;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -129,7 +130,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				paint.TextSize = TypedValue.ApplyDimension(
 					Font.AutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip,
-					value, Context?.Resources?.DisplayMetrics ?? Android.App.Application.Context.Resources!.DisplayMetrics);
+					value, Context?.Resources?.DisplayMetrics ?? AAplication.Context.Resources!.DisplayMetrics);
 
 				paint.LetterSpacing = CharacterSpacing;
 

@@ -1,10 +1,19 @@
 ﻿using Android.Widget;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform.Android;
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	public static class EditTextExtensions
 	{
+		public static void UpdateImeOptions(this EditText editText, Entry entry)
+		{
+			var imeOptions = entry.OnThisPlatform().ImeOptions().ToPlatform();
+
+			editText.ImeOptions = imeOptions;
+		}
+		
 		public static void UpdateText(this EditText editText, InputView inputView)
 		{
 			// Is UpdateText being called only to transform the text
