@@ -104,11 +104,13 @@ namespace Microsoft.Maui.ApplicationModel
 
 		internal static void SetDefault(IVersionTracking? implementation) =>
 			defaultImplementation = implementation;
+
+		internal static void InitVersionTracking() =>
+			(Default as VersionTrackingImplementation)?.InitVersionTracking();
 	}
 
 	class VersionTrackingImplementation : IVersionTracking
 	{
-		const string versionTrailKey = "VersionTracking.Trail";
 		const string versionsKey = "VersionTracking.Versions";
 		const string buildsKey = "VersionTracking.Builds";
 

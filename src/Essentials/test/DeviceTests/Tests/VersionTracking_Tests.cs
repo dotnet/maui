@@ -14,7 +14,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
         const string currentVersion = "1.0.1.0";
         const string currentBuild = "1";
 
-        const string versionTrailKey = "VersionTracking.Trail";
         const string versionsKey = "VersionTracking.Versions";
         const string buildsKey = "VersionTracking.Builds";
         static readonly string sharedName = Preferences.GetPrivatePreferencesSharedName("versiontracking");
@@ -99,7 +98,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
             Preferences.Set(versionsKey, string.Join("|", new string[] { currentVersion, "1.0.2", "1.0.3" }), sharedName);
 
             VersionTracking.InitVersionTracking();
-            output.WriteLine(VersionTracking.GetStatus());
+            output.WriteLine((VersionTracking.Default as VersionTrackingImplementation)?.GetStatus());
 
             Assert.Equal(currentVersion, VersionTracking.CurrentVersion);
             Assert.Equal("1.0.3", VersionTracking.PreviousVersion);
@@ -124,7 +123,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
             Preferences.Set(buildsKey, string.Join("|", new string[] { currentBuild, "10", "20" }), sharedName);
 
             VersionTracking.InitVersionTracking();
-            output.WriteLine(VersionTracking.GetStatus());
+            output.WriteLine((VersionTracking.Default as VersionTrackingImplementation)?.GetStatus());
 
             Assert.Equal(currentBuild, VersionTracking.CurrentBuild);
             Assert.Equal("20", VersionTracking.PreviousBuild);
