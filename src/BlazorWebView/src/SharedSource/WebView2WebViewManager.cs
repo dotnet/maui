@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			ApplyDefaultWebViewSettings(developerTools);
 
-			args?.OnWebViewInitialized(_webview);
+			args.OnWebViewInitialized?.Invoke(_webview);
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
 

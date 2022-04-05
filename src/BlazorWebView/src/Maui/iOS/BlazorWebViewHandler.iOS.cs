@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				AutosizesSubviews = true
 			};
 
-			args?.OnWebViewInitialized(webview);
+			args.OnWebViewInitialized?.Invoke(webview);
 
 			return webview;
 		}

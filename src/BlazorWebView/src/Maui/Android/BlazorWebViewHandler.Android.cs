@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var args = new BlazorWebViewInitializingEventArgs();
 			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitializing(args);
-			args?.OnWebViewInitialized(PlatformView);
+			args.OnWebViewInitialized?.Invoke(PlatformView);
 
 			if (RootComponents != null)
 			{
