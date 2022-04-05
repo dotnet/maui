@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			var reducedAccuracy = false;
 #if __IOS__
-            if (Platform.HasOSVersion(14, 0))
+            if (OperatingSystem.IsIOSVersionAtLeast(14, 0))
             {
                 reducedAccuracy = manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy;
             }
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			var reducedAccuracy = false;
 #if __IOS__
-            if (Platform.HasOSVersion(14, 0))
+            if (OperatingSystem.IsIOSVersionAtLeast(14, 0))
             {
                 if (request.RequestFullAccuracy && manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy)
                 {
