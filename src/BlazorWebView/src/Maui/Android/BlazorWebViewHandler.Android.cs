@@ -99,6 +99,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				VirtualView.JSComponents,
 				hostPageRelativePath);
 
+			var args = new BlazorWebViewInitializingEventArgs();
+			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitializing(args);
+			args?.OnWebViewInitialized(PlatformView);
+
 			if (RootComponents != null)
 			{
 				foreach (var rootComponent in RootComponents)

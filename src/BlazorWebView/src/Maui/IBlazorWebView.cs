@@ -32,8 +32,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		event EventHandler<UrlLoadingEventArgs>? UrlLoading;
 
 		/// <summary>
-		/// Allows customizing how links are opened.
-		/// By default, opens internal links in the webview and external links in an external app.
+		/// Allows customizing the web view initialization process.
 		/// </summary>
 		event EventHandler<BlazorWebViewInitializingEventArgs>? BlazorWebViewInitializing;
 

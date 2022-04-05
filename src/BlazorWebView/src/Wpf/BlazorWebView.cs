@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			ownerType: typeof(BlazorWebView));
 
 		/// <summary>
-		/// The backing store for the <see cref="UrlLoading"/> property.
+		/// The backing store for the <see cref="BlazorWebViewInitializing"/> property.
 		/// </summary>
 		public static readonly DependencyProperty BlazorWebViewInitializingProperty = DependencyProperty.Register(
 			name: nameof(BlazorWebViewInitializing),
@@ -127,8 +127,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		}
 
 		/// <summary>
-		/// Allows customizing how links are opened.
-		/// By default, opens internal links in the webview and external links in an external app.
+		/// Allows customizing the web view initialization process.
 		/// </summary>
 		public EventHandler<BlazorWebViewInitializingEventArgs> BlazorWebViewInitializing
 		{
