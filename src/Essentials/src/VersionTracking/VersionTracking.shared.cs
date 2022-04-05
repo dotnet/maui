@@ -119,6 +119,10 @@ namespace Microsoft.Maui.ApplicationModel
 
 		Dictionary<string, List<string>> versionTrail = null!;
 
+		string LastInstalledVersion => versionTrail[versionsKey]?.LastOrDefault() ?? string.Empty;
+
+        string LastInstalledBuild => versionTrail[buildsKey]?.LastOrDefault() ?? string.Empty;
+
 		public VersionTrackingImplementation(IPreferences preferences, IAppInfo appInfo)
 		{
 			this.preferences = preferences;
@@ -132,6 +136,17 @@ namespace Microsoft.Maui.ApplicationModel
 			if (versionTrail != null)
 				return;
 
+			InitVersionTracking();
+		}
+
+		/// <summary>
+        /// Initialize VersionTracking module, load data and track current version
+        /// </summary>
+        /// <remarks>
+        /// For internal use. Usually only called once in production code, but multiple times in unit tests
+        /// </remarks>
+        internal void InitVersionTracking()
+		{
 			IsFirstLaunchEver = !preferences.ContainsKey(versionsKey, sharedName) || !preferences.ContainsKey(buildsKey, sharedName);
 			if (IsFirstLaunchEver)
 			{
@@ -150,15 +165,19 @@ namespace Microsoft.Maui.ApplicationModel
 				};
 			}
 
-			IsFirstLaunchForCurrentVersion = !versionTrail[versionsKey].Contains(CurrentVersion);
+			IsFirstLaunchForCurrentVersion = !versionTrail[versionsKey].Contains(CurrentVersion) || CurrentVersion != LastInstalledVersion;
 			if (IsFirstLaunchForCurrentVersion)
 			{
+				// Avoid duplicates and move current version to end of list if already present
+                versionTrail[versionsKey].RemoveAll(v => v == CurrentVersion);
 				versionTrail[versionsKey].Add(CurrentVersion);
 			}
 
-			IsFirstLaunchForCurrentBuild = !versionTrail[buildsKey].Contains(CurrentBuild);
+			IsFirstLaunchForCurrentBuild = !versionTrail[buildsKey].Contains(CurrentBuild) || CurrentBuild != LastInstalledBuild;
 			if (IsFirstLaunchForCurrentBuild)
 			{
+				// Avoid duplicates and move current build to end of list if already present
+                versionTrail[buildsKey].RemoveAll(b => b == CurrentBuild);
 				versionTrail[buildsKey].Add(CurrentBuild);
 			}
 
