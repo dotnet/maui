@@ -295,14 +295,8 @@ namespace Microsoft.Maui.Controls
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
 			var type = content.GetType();
-			var typeInfo = type.GetTypeInfo();
 
-#if NETSTANDARD1_0
-			var queryPropertyAttributes = typeInfo.GetCustomAttributes(typeof(QueryPropertyAttribute), true).ToArray();
-#else
-			var queryPropertyAttributes = typeInfo.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
-#endif
-
+			var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
 			if (queryPropertyAttributes.Length == 0)
 				return;
 
