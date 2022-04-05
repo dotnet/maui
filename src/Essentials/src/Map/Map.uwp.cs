@@ -94,7 +94,7 @@ namespace Microsoft.Maui.ApplicationModel
 			return string.Empty;
 		}
 
-		Task<bool> TryLaunchUri(Uri uri)
+		async Task<bool> TryLaunchUri(Uri uri)
 		{
 			var canLaunch = await CanLaunchUri(uri);
 
