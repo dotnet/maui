@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Devices
 
 		void OnMainDisplayInfoChanged(NSNotification obj) =>
 			OnMainDisplayInfoChanged();
-
+#pragma warning disable CA1416 // UIApplication.StatusBarOrientation has [UnsupportedOSPlatform("ios9.0")] https://github.com/xamarin/xamarin-macios/issues/14619
 		static DisplayOrientation CalculateOrientation() =>
 			UIApplication.SharedApplication.StatusBarOrientation.IsLandscape()
 				? DisplayOrientation.Landscape
@@ -63,5 +63,6 @@ namespace Microsoft.Maui.Devices
 				UIInterfaceOrientation.LandscapeRight => DisplayRotation.Rotation90,
 				_ => DisplayRotation.Unknown,
 			};
+#pragma warning restore CA1416
 	}
 }
