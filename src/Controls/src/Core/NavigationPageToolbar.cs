@@ -48,6 +48,35 @@ namespace Microsoft.Maui.Controls
 			ApplyChanges(_currentNavigationPage);
 		}
 
+		bool GetBackButtonVisibleCalculated()
+		{
+			if (_currentPage == null || _currentNavigationPage == null)
+				return false;
+
+			var stack = _currentNavigationPage.Navigation.NavigationStack;
+			if (stack.Count == 0)
+				return false;
+
+			return stack.Count > 1;
+		}
+
+		bool GetBackButtonVisible()
+		{
+			if (_currentPage == null)
+				return false;
+
+			return NavigationPage.GetHasBackButton(_currentPage) && GetBackButtonVisibleCalculated();
+		}
+
+		bool _backButtonVisible;
+		bool _userChanged;
+
+		public override bool BackButtonVisible
+		{
+			get => GetBackButtonVisible();
+			set => _backButtonVisible = value;
+		}
+
 		void UpdateBackButton()
 		{
 			if (_currentPage == null || _currentNavigationPage == null)
@@ -64,7 +93,18 @@ namespace Microsoft.Maui.Controls
 			else
 				_drawerToggleVisible = false;
 
-			BackButtonVisible = NavigationPage.GetHasBackButton(_currentPage) && stack.Count > 1;
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+			{
+				SetProperty(ref _backButtonVisible, NavigationPage.GetHasBackButton(_currentPage), nameof(BackButtonVisible));
+				_userChanged = true;
+			}
+			else
+			{
+				if (_userChanged)
+					_backButtonVisible = GetBackButtonVisible();
+				else
+					SetProperty(ref _backButtonVisible, NavigationPage.GetHasBackButton(_currentPage), nameof(BackButtonVisible));
+			}
 		}
 
 		void UpdateCurrentPage()

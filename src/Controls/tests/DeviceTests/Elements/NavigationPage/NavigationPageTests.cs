@@ -189,6 +189,38 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(IsBackButtonVisible(navPage.Handler));
 			});
 		}
+
+		// We only want to fire BackButtonVisible Toolbar events if the user
+		// is changing the default behavior of the BackButtonVisibility
+		// this way the platform animations are allowed to just happen naturally
+		[Fact(DisplayName = "Pushing And Popping Doesnt Fire BackButtonVisible Toolbar Events")]
+		public async Task PushingAndPoppingDoesntFireBackButtonVisibleToolbarEvents()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				Title = "Page Title"
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				bool failed = false;
+				var toolbar = (NavigationPageToolbar)navPage.FindMyToolbar();
+				toolbar.PropertyChanged += (_, args) =>
+				{
+					if (args.PropertyName == nameof(Toolbar.BackButtonVisible) ||
+						args.PropertyName == nameof(Toolbar.DrawerToggleVisible))
+					{
+						failed = true;
+					}
+				};
+
+				await navPage.Navigation.PushAsync(new ContentPage());
+				Assert.False(failed);
+				await navPage.Navigation.PopAsync();
+				Assert.True(failed);
+			});
+		}
 	}
 }
 #endif
