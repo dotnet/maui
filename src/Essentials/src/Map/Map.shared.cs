@@ -10,6 +10,10 @@ namespace Microsoft.Maui.ApplicationModel
 		Task OpenAsync(double latitude, double longitude, MapLaunchOptions options);
 
 		Task OpenAsync(Placemark placemark, MapLaunchOptions options);
+
+		Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options);
+
+        Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options);
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Map']/Docs" />
@@ -38,6 +42,45 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="//Member[@MemberName='OpenAsync'][5]/Docs" />
 		public static Task OpenAsync(Placemark placemark, MapLaunchOptions options) =>
 			Current.OpenAsync(placemark, options);
+
+		public static Task<bool> TryOpenAsync(Location location) =>
+            TryOpenAsync(location, new MapLaunchOptions());
+
+        public static Task<bool> TryOpenAsync(Location location, MapLaunchOptions options)
+        {
+            if (location == null)
+                throw new ArgumentNullException(nameof(location));
+
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+
+            return TryOpenAsync(location.Latitude, location.Longitude, options);
+        }
+
+        public static Task<bool> TryOpenAsync(double latitude, double longitude) =>
+            TryOpenAsync(latitude, longitude, new MapLaunchOptions());
+
+        public static Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
+        {
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+
+            return TryOpenAsync(latitude, longitude, options);
+        }
+
+        public static Task<bool> TryOpenAsync(Placemark placemark) =>
+            TryOpenAsync(placemark, new MapLaunchOptions());
+
+        public static Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
+        {
+            if (placemark == null)
+                throw new ArgumentNullException(nameof(placemark));
+
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+
+            return TryOpenAsync(placemark, options);
+        }
 
 		static IMap Current => ApplicationModel.Map.Default;
 

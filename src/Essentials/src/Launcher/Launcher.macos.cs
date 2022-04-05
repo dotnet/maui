@@ -14,7 +14,7 @@ namespace Microsoft.Maui.ApplicationModel
 		Task<bool> PlatformOpenAsync(Uri uri) =>
 			Task.FromResult(NSWorkspace.SharedWorkspace.OpenUrl(WebUtils.GetNativeUrl(uri)));
 
-		Task<bool> PlatformTryOpenAsync(Uri uri)
+		internal Task<bool> PlatformTryOpenAsync(Uri uri)
 		{
 			var nativeUrl = WebUtils.GetNativeUrl(uri);
 			var canOpen = NSWorkspace.SharedWorkspace.UrlForApplication(nativeUrl) != null;

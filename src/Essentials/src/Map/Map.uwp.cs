@@ -2,12 +2,41 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Maui.Devices.Sensors;
+using Windows.System;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	class MapImplementation:IMap
+	class MapImplementation : IMap
 	{
 		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
+		{
+            var uri = GetMapsUri(latitude, longitude, options);
+
+            return LaunchUri(uri);
+        }
+
+        public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
+        {
+            var uri = GetMapsUri(placemark, options);
+
+            return LaunchUri(uri);
+        }
+
+        public async Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
+        {
+            var uri = GetMapsUri(latitude, longitude, options);
+
+            return await TryLaunchUri(uri);
+        }
+
+        public async Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
+        {
+            var uri = GetMapsUri(placemark, options);
+
+            return await TryLaunchUri(uri);
+        }
+        
+		public Uri GetMapsUri(double latitude, double longitude, MapLaunchOptions options)
 		{
 			if (options == null)
 				throw new ArgumentNullException(nameof(options));
@@ -26,7 +55,23 @@ namespace Microsoft.Maui.ApplicationModel
 				uri = $"bingmaps:?rtp=~pos.{lat}_{lng}_{name}{GetMode(options.NavigationMode)}";
 			}
 
-			return LaunchUri(new Uri(uri));
+			return new Uri(uri);
+        }
+
+        internal static Uri GetMapsUri(Placemark placemark, MapLaunchOptions options)
+        {
+            var uri = string.Empty;
+
+            if (options.NavigationMode == NavigationMode.None)
+            {
+                uri = $"bingmaps:?where={placemark.GetEscapedAddress()}";
+            }
+            else
+            {
+                uri = $"bingmaps:?rtp=~adr.{placemark.GetEscapedAddress()}{GetMode(options.NavigationMode)}";
+            }
+
+            return new Uri(uri);
 		}
 
 		static string GetMode(NavigationMode mode)
@@ -43,7 +88,7 @@ namespace Microsoft.Maui.ApplicationModel
 			return string.Empty;
 		}
 
-		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
+		internal async Task<bool> TryLaunchUri(Uri uri)
 		{
 			if (placemark == null)
 				throw new ArgumentNullException(nameof(placemark));
@@ -51,21 +96,23 @@ namespace Microsoft.Maui.ApplicationModel
 			if (options == null)
 				throw new ArgumentNullException(nameof(options));
 
-			var uri = string.Empty;
+			var canLaunch = await CanLaunchUri(uri);
 
-			if (options.NavigationMode == NavigationMode.None)
-			{
-				uri = $"bingmaps:?where={placemark.GetEscapedAddress()}";
-			}
-			else
-			{
-				uri = $"bingmaps:?rtp=~adr.{placemark.GetEscapedAddress()}{GetMode(options.NavigationMode)}";
-			}
+            if (canLaunch)
+            {
+                await LaunchUri(uri);
+            }
 
-			return LaunchUri(new Uri(uri));
+            return canLaunch;
 		}
 
-		static Task LaunchUri(Uri mapsUri) =>
+		Task LaunchUri(Uri mapsUri) =>
 			global::Windows.System.Launcher.LaunchUriAsync(mapsUri).AsTask();
+
+		async Task<bool> CanLaunchUri(Uri uri)
+        {
+            var supported = await global::Windows.System.Launcher.QueryUriSupportAsync(uri, LaunchQuerySupportType.Uri);
+            return supported == LaunchQuerySupportStatus.Available;
+        }
 	}
 }
