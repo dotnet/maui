@@ -215,6 +215,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			TabbedPage.RemapForControls();
 			Layout.RemapForControls();
 			Shape.RemapForControls();
+			WebView.RemapForControls();
 
 			return builder;
 		}

@@ -393,6 +393,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			ElementController.CanGoForward = Control.CanGoForward();
 		}
 
+		[PortHandler]
 		void UpdateMixedContentMode()
 		{
 			if (Control != null)
@@ -401,6 +402,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		void UpdateEnableZoomControls()
 		{
 			var value = Element.OnThisPlatform().ZoomControlsEnabled();
@@ -408,6 +410,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Control.Settings.BuiltInZoomControls = value;
 		}
 
+		[PortHandler]
 		void UpdateDisplayZoomControls()
 		{
 			Control.Settings.DisplayZoomControls = Element.OnThisPlatform().ZoomControlsDisplayed();
