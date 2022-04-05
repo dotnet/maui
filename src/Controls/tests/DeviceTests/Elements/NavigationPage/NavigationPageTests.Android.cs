@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Android.Views;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;

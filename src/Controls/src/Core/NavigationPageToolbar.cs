@@ -108,16 +108,18 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_userChanged)
 				{
+					SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
+				}
+				else
+				{
 #if ANDROID
 					_backButtonVisible = GetBackButtonVisible();
 #else
 					SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
 #endif
 				}
-				else
-				{
-					SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
-				}
+
+				_userChanged = false;
 			}
 		}
 
