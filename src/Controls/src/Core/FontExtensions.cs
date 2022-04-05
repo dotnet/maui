@@ -26,7 +26,13 @@ namespace Microsoft.Maui.Controls
 			return attributes;
 		}
 
-		public static Font ToFont(this IFontElement element) =>
-			Font.OfSize(element.FontFamily, element.FontSize, enableScaling: element.FontAutoScalingEnabled).WithAttributes(element.FontAttributes);
+		public static Font ToFont(this IFontElement element, double? defaultSize = null)
+		{
+			var size = element.FontSize;
+			if (defaultSize.HasValue && (size == 0 || size == double.NaN))
+				size = defaultSize.Value;
+
+			return Font.OfSize(element.FontFamily, size, enableScaling: element.FontAutoScalingEnabled).WithAttributes(element.FontAttributes);
+		}
 	}
 }

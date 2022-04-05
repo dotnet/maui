@@ -22,7 +22,7 @@
       "src/Controls/src/Xaml/Controls.Xaml.csproj",
       "src/Controls/src/Xaml.Design/Controls.Xaml.Design.csproj",
       "src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj",
-      "src/Controls/DualScreen/**",
+      "src/Controls/Foldable/**",
       "src/Core/tests/Benchmarks/Core.Benchmarks.csproj",
       "src/Templates/**",
       "src/Workload/Microsoft.Maui.Controls.Ref/Microsoft.Maui.Controls.Ref.csproj",

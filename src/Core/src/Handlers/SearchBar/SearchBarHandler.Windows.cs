@@ -108,6 +108,7 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.UpdatePlaceholderColor(VirtualView);
 				PlatformView?.UpdateHorizontalTextAlignment(VirtualView);
 				PlatformView?.UpdateMaxLength(VirtualView);
+				PlatformView?.UpdateIsReadOnly(VirtualView);
 			}
 		}
 

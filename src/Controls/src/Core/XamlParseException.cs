@@ -4,10 +4,8 @@ using System.Xml;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
-#if !NETSTANDARD1_0
 	/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="Type[@FullName='Microsoft.Maui.Controls.Xaml.XamlParseException']/Docs" />
 	[Serializable]
-#endif
 	public class XamlParseException : Exception
 	{
 		readonly string _unformattedMessage;
