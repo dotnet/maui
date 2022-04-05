@@ -28,13 +28,9 @@ namespace Microsoft.Maui.Platform
 				.BackButtonClicked();
 		}
 
-		internal bool UseCustomAppTitleBar
-		{
-			get => _platformWindow.ExtendsContentIntoTitleBar;
-			set => _platformWindow.ExtendsContentIntoTitleBar = value;
-		}
+		internal FrameworkElement? AppTitleBar => _rootView.AppTitleBar;
 
-		internal FrameworkElement? AppTitleBar => _rootView.AppTitleBar as FrameworkElement;
+		internal FrameworkElement? AppTitleBarContentControl => _rootView.AppTitleBarContentControl;
 		internal MauiToolbar? ToolBar => _toolbar ?? _rootView?.NavigationViewControl?.Toolbar as MauiToolbar;
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
@@ -88,7 +84,9 @@ namespace Microsoft.Maui.Platform
 			{
 				_platformWindow.Activated += OnWindowActivated;
 
-				UpdateAppTitleBar(true);
+				if (_rootView.AppTitleBarContentControl != null && _platformWindow.ExtendsContentIntoTitleBar)
+					UpdateAppTitleBar(true);
+
 				SetWindowTitle(_platformWindow.GetWindow()?.Title);
 			}
 		}
@@ -101,9 +99,6 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateAppTitleBar(bool isActive)
 		{
-			if (!UseCustomAppTitleBar)
-				return;
-
 			if (_rootView.AppTitleBarContentControl != null &&
 				_platformWindow.ExtendsContentIntoTitleBar)
 			{

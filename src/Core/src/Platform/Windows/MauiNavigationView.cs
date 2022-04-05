@@ -101,7 +101,13 @@ namespace Microsoft.Maui.Platform
 			PaneHeaderContentBorderRow.RegisterPropertyChangedCallback(RowDefinition.MinHeightProperty, (_, __) =>
 				PaneHeaderContentBorderRow.MinHeight = 0);
 
+
+			// WinUI has this set to -1,3,-1,3 but I'm not really sure why
+			// It causes the content to not be flush up against the title bar
+			PaneContentGrid.Margin = new WThickness(-1, 0, -1, 0);
 			UpdateMenuItemsContainerHeight();
+
+
 		}
 
 
@@ -339,21 +345,20 @@ namespace Microsoft.Maui.Platform
 				if (PaneToggleButtonHeight != TogglePaneButton.Height)
 				{
 					TogglePaneButton.Height = PaneToggleButtonHeight;
-
 					var togglePaneButtonMinHeight = Math.Min((double)Application.Current.Resources["PaneToggleButtonHeight"], PaneToggleButtonHeight);
-					if (TogglePaneButton.MinHeight != PaneToggleButtonHeight)
-						TogglePaneButton.MinHeight = PaneToggleButtonHeight;
+					if (TogglePaneButton.MinHeight != togglePaneButtonMinHeight)
+						TogglePaneButton.MinHeight = togglePaneButtonMinHeight;
+				}
 
-					if (TogglePaneButton.GetFirstDescendant<Grid>() is Grid grid)
-					{
-						if (grid.Height != PaneToggleButtonHeight)
-							grid.Height = PaneToggleButtonHeight;
+				if (TogglePaneButton.GetFirstDescendant<Grid>() is Grid grid)
+				{
+					if (grid.Height != PaneToggleButtonHeight)
+						grid.Height = PaneToggleButtonHeight;
 
-						// The row definition is bound to PaneToggleButtonHeight
-						// the height is bound to MinHeight of the button
-						if (grid.RowDefinitions[0].Height.Value != PaneToggleButtonHeight)
-							grid.RowDefinitions[0].Height = new WGridLength(PaneToggleButtonHeight);
-					}
+					// The row definition is bound to PaneToggleButtonHeight
+					// the height is bound to MinHeight of the button
+					if (grid.RowDefinitions[0].Height.Value != PaneToggleButtonHeight)
+						grid.RowDefinitions[0].Height = new WGridLength(PaneToggleButtonHeight);
 				}
 
 				if (PaneToggleButtonWidth != TogglePaneButton.Width)
