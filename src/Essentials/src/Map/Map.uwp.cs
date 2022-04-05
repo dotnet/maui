@@ -36,7 +36,7 @@ namespace Microsoft.Maui.ApplicationModel
             return await TryLaunchUri(uri);
         }
         
-		public Uri GetMapsUri(double latitude, double longitude, MapLaunchOptions options)
+		Uri GetMapsUri(double latitude, double longitude, MapLaunchOptions options)
 		{
 			if (options == null)
 				throw new ArgumentNullException(nameof(options));
@@ -58,8 +58,14 @@ namespace Microsoft.Maui.ApplicationModel
 			return new Uri(uri);
         }
 
-        internal static Uri GetMapsUri(Placemark placemark, MapLaunchOptions options)
+        Uri GetMapsUri(Placemark placemark, MapLaunchOptions options)
         {
+			if (placemark == null)
+				throw new ArgumentNullException(nameof(placemark));
+
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
             var uri = string.Empty;
 
             if (options.NavigationMode == NavigationMode.None)
@@ -74,7 +80,7 @@ namespace Microsoft.Maui.ApplicationModel
             return new Uri(uri);
 		}
 
-		static string GetMode(NavigationMode mode)
+		string GetMode(NavigationMode mode)
 		{
 			switch (mode)
 			{
@@ -88,14 +94,8 @@ namespace Microsoft.Maui.ApplicationModel
 			return string.Empty;
 		}
 
-		internal async Task<bool> TryLaunchUri(Uri uri)
+		Task<bool> TryLaunchUri(Uri uri)
 		{
-			if (placemark == null)
-				throw new ArgumentNullException(nameof(placemark));
-
-			if (options == null)
-				throw new ArgumentNullException(nameof(options));
-
 			var canLaunch = await CanLaunchUri(uri);
 
             if (canLaunch)
