@@ -65,16 +65,16 @@ namespace Microsoft.Maui.Platform
 		/*
 		 * The important thing to know going into reading this method is that it's not possible to
 		 * modify the backstack. You can only push and pop to and from the top of the stack.
-		 * So if a user uses an API like `RemovePage` or `InsertPage` we will typically ignore processing those platformly
+		 * So if a user uses an API like `RemovePage` or `InsertPage` we will typically ignore processing those here
 		 * unless it requires changes to the NavBar (i.e removing the first page with only 2 pages on the stack).
 		 * Once the user performs an operation that changes the currently visible page then we process any stack changes
 		 * that have occurred.
 		 * Let's say the user has pages A,B,C,D on the stack 
 		 * If they remove Page B and Page C then we don't do anything. Then if the user pushes E onto the stack
 		 * we just transform A,B,C,D into A,D,E.
-		 * Platformly that's a "pop" but we use the correct animation for a "push" so visually it looks like a push.
+		 * Platform wise that's a "pop" but we use the correct animation for a "push" so visually it looks like a push.
 		 * This is also the reason why we aren't using the custom animation features on the navigation component itself.
-		 * Because we might be platformly popping but visually pushing.
+		 * Because we might be popping but visually pushing.
 		 * 
 		 * The Fragments that are on the stack also do not have a hard connection to the page they originally rendereded.
 		 * Whenever a fragment is the "visible" fragment it just figures out what the current page is and displays that.
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Platform
 
 				// There's only one page on the stack then we trigger back button visibility logic
 				// so that it can add a back button if it needs to
-				if (previousNavigationStackCount == 1)
+				if (previousNavigationStackCount == 1 || newPageStack.Count == 1)
 					TriggerBackButtonVisibleUpdate();
 
 				return;

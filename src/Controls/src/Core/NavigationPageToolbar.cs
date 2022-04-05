@@ -93,17 +93,31 @@ namespace Microsoft.Maui.Controls
 			else
 				_drawerToggleVisible = false;
 
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
 			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
 			{
-				SetProperty(ref _backButtonVisible, NavigationPage.GetHasBackButton(_currentPage), nameof(BackButtonVisible));
+				SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
 				_userChanged = true;
 			}
 			else
 			{
 				if (_userChanged)
+				{
+#if ANDROID
 					_backButtonVisible = GetBackButtonVisible();
+#else
+					SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
+#endif
+				}
 				else
-					SetProperty(ref _backButtonVisible, NavigationPage.GetHasBackButton(_currentPage), nameof(BackButtonVisible));
+				{
+					SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
+				}
 			}
 		}
 
