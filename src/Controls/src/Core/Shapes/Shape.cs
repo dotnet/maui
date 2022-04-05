@@ -195,64 +195,65 @@ namespace Microsoft.Maui.Controls.Shapes
 
 #if !NETSTANDARD
 
-			RectF pathBounds = viewBounds;
-
-			try
-			{
-				pathBounds = path.GetBoundsByFlattening();
-			}
-			catch (Exception exc)
-			{
-				Application.Current?.FindMauiContext()?.CreateLogger<Shape>()?.LogWarning(exc,"Exception while getting shape Bounds");
-			}
-
-			var transform = Matrix3x2.Identity;
+			RectF pathBounds = path.Bounds;
 
 			viewBounds.X += StrokeThickness / 2;
 			viewBounds.Y += StrokeThickness / 2;
 			viewBounds.Width -= StrokeThickness;
 			viewBounds.Height -= StrokeThickness;
 
-			float calculatedWidth = (float)(viewBounds.Width / pathBounds.Width);
-			float calculatedHeight = (float)(viewBounds.Height / pathBounds.Height);
-
-			float widthScale = float.IsNaN(calculatedWidth) ? 0 : calculatedWidth;
-			float heightScale = float.IsNaN(calculatedHeight) ? 0 : calculatedHeight;
-
-			switch (Aspect)
+			Matrix3x2 transform;
+			if (Aspect == Stretch.None)
 			{
-				case Stretch.None:
-					break;
+				transform = Matrix3x2.CreateTranslation(
+					(float)(viewBounds.Left - pathBounds.Left),
+					(float)(viewBounds.Top - pathBounds.Top));
+			}
+			else
+			{
+				transform = Matrix3x2.Identity;
 
-				case Stretch.Fill:
-					transform *= Matrix3x2.CreateScale(widthScale, heightScale);
+				float calculatedWidth = (float)(viewBounds.Width / pathBounds.Width);
+				float calculatedHeight = (float)(viewBounds.Height / pathBounds.Height);
 
-					transform *= Matrix3x2.CreateTranslation(
-						(float)(viewBounds.Left - widthScale * pathBounds.Left),
-						(float)(viewBounds.Top - heightScale * pathBounds.Top));
-					break;
+				float widthScale = float.IsNaN(calculatedWidth) ? 0 : calculatedWidth;
+				float heightScale = float.IsNaN(calculatedHeight) ? 0 : calculatedHeight;
 
-				case Stretch.Uniform:
-					float minScale = Math.Min(widthScale, heightScale);
+				switch (Aspect)
+				{
+					case Stretch.None:
+						break;
 
-					transform *= Matrix3x2.CreateScale(minScale, minScale);
+					case Stretch.Fill:
+						transform *= Matrix3x2.CreateScale(widthScale, heightScale);
 
-					transform *= Matrix3x2.CreateTranslation(
-						(float)(viewBounds.Left - minScale * pathBounds.Left +
-						(viewBounds.Width - minScale * pathBounds.Width) / 2),
-						(float)(viewBounds.Top - minScale * pathBounds.Top +
-						(viewBounds.Height - minScale * pathBounds.Height) / 2));
-					break;
+						transform *= Matrix3x2.CreateTranslation(
+							(float)(viewBounds.Left - widthScale * pathBounds.Left),
+							(float)(viewBounds.Top - heightScale * pathBounds.Top));
+						break;
 
-				case Stretch.UniformToFill:
-					float maxScale = Math.Max(widthScale, heightScale);
+					case Stretch.Uniform:
+						float minScale = Math.Min(widthScale, heightScale);
 
-					transform *= Matrix3x2.CreateScale(maxScale, maxScale);
+						transform *= Matrix3x2.CreateScale(minScale, minScale);
 
-					transform *= Matrix3x2.CreateTranslation(
-						(float)(viewBounds.Left - maxScale * pathBounds.Left),
-						(float)(viewBounds.Top - maxScale * pathBounds.Top));
-					break;
+						transform *= Matrix3x2.CreateTranslation(
+							(float)(viewBounds.Left - minScale * pathBounds.Left +
+							(viewBounds.Width - minScale * pathBounds.Width) / 2),
+							(float)(viewBounds.Top - minScale * pathBounds.Top +
+							(viewBounds.Height - minScale * pathBounds.Height) / 2));
+						break;
+
+					case Stretch.UniformToFill:
+						float maxScale = Math.Max(widthScale, heightScale);
+
+						transform *= Matrix3x2.CreateScale(maxScale, maxScale);
+
+						transform *= Matrix3x2.CreateTranslation(
+							(float)(viewBounds.Left - maxScale * pathBounds.Left),
+							(float)(viewBounds.Top - maxScale * pathBounds.Top));
+						break;
+				}
 			}
 
 			if (!transform.IsIdentity)
@@ -260,6 +261,25 @@ namespace Microsoft.Maui.Controls.Shapes
 #endif
 
 			return path;
+		}
+
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		{
+			var result = base.MeasureOverride(widthConstraint, heightConstraint);
+			if (result.Width != 0 && result.Height != 0)
+			{
+				return result;
+			}
+
+			var boundsByFlattening = this.GetPath().Bounds.Size;
+
+			result.Height = boundsByFlattening.Height + StrokeThickness;
+			result.Width = boundsByFlattening.Width + StrokeThickness;
+
+			HeightRequest = result.Height;
+			WidthRequest = result.Width;
+
+			return result;
 		}
 	}
 }
