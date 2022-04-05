@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromResource'][2]/Docs" />
 		public static ImageSource FromResource(string resource, Type resolvingType)
 		{
-			return FromResource(resource, resolvingType.GetTypeInfo().Assembly);
+			return FromResource(resource, resolvingType.Assembly);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromResource'][1]/Docs" />

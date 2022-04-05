@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 			for (int i = 0; i < attrList.Count; i++)
 			{
 				styleAttribute = attrList[i];
-				if (styleAttribute.TargetType.GetTypeInfo().IsAssignableFrom(GetType().GetTypeInfo()))
+				if (styleAttribute.TargetType.IsAssignableFrom(GetType()))
 					break;
 				styleAttribute = null;
 			}

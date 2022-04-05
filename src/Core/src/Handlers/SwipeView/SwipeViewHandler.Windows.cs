@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Handlers
 
 			foreach (var item in items)
 			{
-				if (item is ISwipeItemMenuItem &&
+				if (CanAddSwipeItems(swipeItems) && item is ISwipeItemMenuItem &&
 					item.ToHandler(handler.MauiContext!).PlatformView is WSwipeItem swipeItem)
 				{
 					swipeItem.BehaviorOnInvoked = items.SwipeBehaviorOnInvoked.ToPlatform();
@@ -185,6 +185,15 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			return swipeItems;
+		}
+
+		static bool CanAddSwipeItems(WSwipeItems swipeItems)
+		{
+			// On Windows, the SwipeItems can only contain one single SwipeItem using the Execute mode.
+			if (swipeItems.Mode == UI.Xaml.Controls.SwipeMode.Execute && swipeItems.Count > 0)
+				return false;
+
+			return true;
 		}
 
 		static WSwipeItems? GetWindowsSwipeItems(ISwipeItems swipeItems, ISwipeView swipeView, WSwipeControl swipeControl)
