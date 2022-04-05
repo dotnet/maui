@@ -28,6 +28,7 @@ namespace Microsoft.Maui.ApplicationModel
 		private static async Task LaunchSafariViewController(Uri uri, BrowserLaunchOptions options)
 		{
 			var nativeUrl = new NSUrl(uri.AbsoluteUri);
+			System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(11));
 			var sfViewController = new SFSafariViewController(nativeUrl, false);
 			var vc = WindowStateManager.Default.GetCurrentUIViewController(true)!;
 

@@ -29,6 +29,7 @@ namespace Microsoft.Maui.ApplicationModel
 			[SupportedOSPlatform("ios14.0")]
 			public override async Task<PermissionStatus> RequestAsync()
 			{
+
 				EnsureDeclared();
 
 				var status = GetPhotoPermissionStatus(PHAccessLevel.ReadWrite);
@@ -37,13 +38,15 @@ namespace Microsoft.Maui.ApplicationModel
 					return status;
 				}
 #if __IOS__
-				else if (status == PermissionStatus.Limited)
-				{
-					PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
-						PHPhotoLibrary.SharedPhotoLibrary,
-						WindowStateManager.Default.GetCurrentUIViewController());
-					return status;
-				}
+#pragma warning disable CA1416 // Somehow this if def is not working
+                else if (status == PermissionStatus.Limited)
+                {
+                    PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
+                        PHPhotoLibrary.SharedPhotoLibrary,
+                        WindowStateManager.Default.GetCurrentUIViewController());
+                    return status;
+                }
+#pragma warning restore CA1416
 #endif
 
 				EnsureMainThread();
@@ -57,6 +60,9 @@ namespace Microsoft.Maui.ApplicationModel
 			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
 				() => new string[] { "NSPhotoLibraryAddUsageDescription" };
 
+			[SupportedOSPlatform("tvos14.0")]
+			[SupportedOSPlatform("macos11.0")]
+			[SupportedOSPlatform("ios14.0")]
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
@@ -64,6 +70,9 @@ namespace Microsoft.Maui.ApplicationModel
 				return Task.FromResult(GetPhotoPermissionStatus(PHAccessLevel.AddOnly));
 			}
 
+			[SupportedOSPlatform("tvos14.0")]
+			[SupportedOSPlatform("macos11.0")]
+			[SupportedOSPlatform("ios14.0")]
 			public override async Task<PermissionStatus> RequestAsync()
 			{
 				EnsureDeclared();

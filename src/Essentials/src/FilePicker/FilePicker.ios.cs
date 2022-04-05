@@ -79,34 +79,49 @@ namespace Microsoft.Maui.Storage
 
 	public partial class FilePickerFileType
 	{
-		static FilePickerFileType PlatformImageFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileType PlatformImageFileType()
+		{
+			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
+			return new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.iOS, new[] { (string)UTType.Image } }
 			});
+		}
 
-		static FilePickerFileType PlatformPngFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileType PlatformPngFileType()
+		{
+			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
+			return new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.iOS, new[] { (string)UTType.PNG } }
 			});
+		}
 
-		static FilePickerFileType PlatformJpegFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileType PlatformJpegFileType()
+		{
+			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
+			return new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.iOS, new[] { (string)UTType.JPEG } }
 			});
+		}
 
-		static FilePickerFileType PlatformVideoFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileType PlatformVideoFileType()
+		{
+			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
+			return new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.iOS, new string[] { UTType.MPEG4, UTType.Video, UTType.AVIMovie, UTType.AppleProtectedMPEG4Video, "mp4", "m4v", "mpg", "mpeg", "mp2", "mov", "avi", "mkv", "flv", "gifv", "qt" } }
 			});
+		}
 
-		static FilePickerFileType PlatformPdfFileType() =>
-			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileType PlatformPdfFileType()
+		{
+			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
+			return new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.iOS, new[] { (string)UTType.PDF } }
 			});
+		}
 	}
 }

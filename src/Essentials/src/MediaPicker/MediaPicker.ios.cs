@@ -141,6 +141,7 @@ namespace Microsoft.Maui.Media
 			}
 
 #if !MACCATALYST
+#pragma warning disable CA1416 // https://github.com/dotnet/roslyn-analyzers/issues/5938
 			if (phAsset == null)
 			{
 				assetUrl = info[UIImagePickerController.ReferenceUrl] as NSUrl;
@@ -148,6 +149,7 @@ namespace Microsoft.Maui.Media
 				if (assetUrl != null)
 					phAsset = PHAsset.FetchAssets(new NSUrl[] { assetUrl }, null)?.LastObject as PHAsset;
 			}
+#pragma warning restore CA1416 // analyzer bug
 #endif
 
 			if (phAsset == null || assetUrl == null)

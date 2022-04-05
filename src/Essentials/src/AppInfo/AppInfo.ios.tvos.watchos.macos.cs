@@ -27,8 +27,7 @@ namespace Microsoft.Maui.ApplicationModel
 		public string BuildString => GetBundleValue("CFBundleVersion");
 
 		[UnsupportedOSPlatformGuard("ios13.0")]
-		[UnsupportedOSPlatformGuard("tvos13.0")]
-		private static readonly bool IsIosTvOs13OrBefore = (OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13, 0)) ||
+		private static readonly bool IsIos12TvOs13OrBefore = (OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13, 0)) ||
 			(OperatingSystem.IsTvOS() && !OperatingSystem.IsTvOSVersionAtLeast(13, 0));
 
 		string GetBundleValue(string key)
@@ -57,7 +56,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			get
 			{
-				if (IsIosTvOs13OrBefore)
+				if (IsIos12TvOs13OrBefore)
 					return AppTheme.Unspecified;
 
 				var traits =
