@@ -3,13 +3,13 @@
 	public partial class WebView
 	{
 		public static IPropertyMapper<IWebView, WebViewHandler> ControlsWebViewMapper = new PropertyMapper<WebView, WebViewHandler>(WebViewHandler.Mapper)
-			{
+		{
 #if ANDROID
-				["DisplayZoomControls"] = MapDisplayZoomControls,
-				["EnableZoomControls"] = MapEnableZoomControls,
-				["MixedContentMode"] = MapMixedContentMode,
+			[nameof(PlatformConfiguration.AndroidSpecific.WebView.DisplayZoomControlsProperty.PropertyName)] = MapDisplayZoomControls,
+			[nameof(PlatformConfiguration.AndroidSpecific.WebView.EnableZoomControlsProperty.PropertyName)] = MapEnableZoomControls,
+			[nameof(PlatformConfiguration.AndroidSpecific.WebView.MixedContentModeProperty.PropertyName)] = MapMixedContentMode,
 #endif
-			};
+		};
 
 		internal static new void RemapForControls()
 		{

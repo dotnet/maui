@@ -2,15 +2,15 @@
 {
 	public partial class Entry
 	{
-		public static IPropertyMapper<IEntry, EntryHandler> ControlsEntryMapper = 
+		public static IPropertyMapper<IEntry, EntryHandler> ControlsEntryMapper =
 			new PropertyMapper<Entry, EntryHandler>(EntryHandler.Mapper)
-		{
+			{
 #if ANDROID
-			[nameof(PlatformConfiguration.AndroidSpecific.ImeFlags)] = MapImeOptions,
+				[nameof(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName)] = MapImeOptions,
 #endif
-			[nameof(Text)] = MapText,
-			[nameof(TextTransform)] = MapText,
-		};
+				[nameof(Text)] = MapText,
+				[nameof(TextTransform)] = MapText,
+			};
 
 		internal static new void RemapForControls()
 		{
