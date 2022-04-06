@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public async Task<Location> GetLastKnownLocationAsync()
 		{
-			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
+			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
 
 			AndroidLocation bestLocation = null;
 
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		{
 			_ = request ?? throw new ArgumentNullException(nameof(request));
 
-			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
+			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
 
 			var enabledProviders = LocationManager.GetProviders(true);
 			var hasProviders = enabledProviders.Any(p => !ignoredProviders.Contains(p));
