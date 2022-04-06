@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			ownerType: typeof(BlazorWebView));
 
 		/// <summary>
-		/// The backing store for the <see cref="BlazorWebViewInitializing"/> property.
+		/// The backing store for the <see cref="BlazorWebViewInitializing"/> event.
 		/// </summary>
 		public static readonly DependencyProperty BlazorWebViewInitializingProperty = DependencyProperty.Register(
 			name: nameof(BlazorWebViewInitializing),
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			ownerType: typeof(BlazorWebView));
 
 		/// <summary>
-		/// The backing store for the <see cref="BlazorWebViewInitialized"/> property.
+		/// The backing store for the <see cref="BlazorWebViewInitialized"/> event.
 		/// </summary>
 		public static readonly DependencyProperty BlazorWebViewInitializedProperty = DependencyProperty.Register(
 			name: nameof(BlazorWebViewInitialized),

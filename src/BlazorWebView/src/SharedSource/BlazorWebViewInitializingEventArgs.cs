@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 	/// <summary>
 	/// Allows configuring the underlying web view when the application is initializing.
 	/// </summary>
-	public partial class BlazorWebViewInitializingEventArgs : EventArgs
+	public class BlazorWebViewInitializingEventArgs : EventArgs
 	{
 #nullable disable
 #if WINDOWS
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
 #elif MACCATALYST || IOS
 		/// <summary>
-		/// Gets or sets the configuration web view configuration.
+		/// Gets or sets the web view <see cref="WKWebViewConfiguration"/>.
 		/// </summary>
 		public WKWebViewConfiguration Configuration { get; set; }
 #endif

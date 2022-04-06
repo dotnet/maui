@@ -32,12 +32,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		event EventHandler<UrlLoadingEventArgs>? UrlLoading;
 
 		/// <summary>
-		/// Allows customizing the web view configuration before it is created.
+		/// Raised before the web view is initialized. On some platforms this enables customizing the web view configuration.
 		/// </summary>
 		event EventHandler<BlazorWebViewInitializingEventArgs>? BlazorWebViewInitializing;
 
 		/// <summary>
-		/// Allows customizing the web view configuration after it has been created but before any component has been rendered.
+		/// Raised after the web view is initialized but before any component has been rendered. The event arguments provide the instance of the platform-specific web view control.
 		/// </summary>
 		event EventHandler<BlazorWebViewInitializedEventArgs>? BlazorWebViewInitialized;
 
