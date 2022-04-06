@@ -13,7 +13,7 @@
   <ItemGroup>
     <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.18362.18" TargetingPackVersion="10.0.18362.18" />
     <PackageReference Include="Microsoft.WindowsAppSdk" Version="1.0.1" />
-    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>
