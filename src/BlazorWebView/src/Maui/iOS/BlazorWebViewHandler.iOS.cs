@@ -51,6 +51,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			var config = new WKWebViewConfiguration();
 
+			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
+			{
+				Configuration = config
+			});
+
 			config.Preferences.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("developerExtrasEnabled"));
 
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(MessageReceived), "webwindowinterop");
@@ -60,11 +65,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
-			return new WKWebView(RectangleF.Empty, config)
+			var webview = new WKWebView(RectangleF.Empty, config)
 			{
 				BackgroundColor = UIColor.Clear,
 				AutosizesSubviews = true
 			};
+
+			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
+			{
+				WebView = webview
+			});
+
+			return webview;
 		}
 
 		private void MessageReceived(Uri uri, string message)
