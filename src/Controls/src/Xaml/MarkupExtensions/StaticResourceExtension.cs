@@ -38,38 +38,39 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			var bp = targetProperty as BindableProperty;
 			var pi = targetProperty as PropertyInfo;
+			Type valueType = value.GetType();
 			var propertyType = bp?.ReturnType ?? pi?.PropertyType;
 			if (propertyType == null)
 			{
-				if (value.GetType().GetTypeInfo().IsGenericType && (value.GetType().GetGenericTypeDefinition() == typeof(OnPlatform<>) || value.GetType().GetGenericTypeDefinition() == typeof(OnIdiom<>)))
+				if (valueType.IsGenericType && (valueType.GetGenericTypeDefinition() == typeof(OnPlatform<>) || valueType.GetGenericTypeDefinition() == typeof(OnIdiom<>)))
 				{
 					// This is only there to support our backward compat story with pre 2.3.3 compiled Xaml project who was not providing TargetProperty
-					var method = value.GetType().GetRuntimeMethod("op_Implicit", new[] { value.GetType() });
+					var method = valueType.GetRuntimeMethod("op_Implicit", new[] { valueType });
 					value = method.Invoke(null, new[] { value });
 				}
 				return value;
 			}
-			if (propertyType.IsAssignableFrom(value.GetType()))
+			if (propertyType.IsAssignableFrom(valueType))
 				return value;
-			var implicit_op = value.GetType().GetImplicitConversionOperator(fromType: value.GetType(), toType: propertyType)
-							?? propertyType.GetImplicitConversionOperator(fromType: value.GetType(), toType: propertyType);
+			var implicit_op = valueType.GetImplicitConversionOperator(fromType: valueType, toType: propertyType)
+							?? propertyType.GetImplicitConversionOperator(fromType: valueType, toType: propertyType);
 			if (implicit_op != null)
 				return implicit_op.Invoke(value, new[] { value });
 
 			//Special case for https://bugzilla.xamarin.com/show_bug.cgi?id=59818
 			//On OnPlatform, check for an opImplicit from the targetType
 			if (XamlDoubleImplicitOperation
-				&& value.GetType().GetTypeInfo().IsGenericType
-				&& (value.GetType().GetGenericTypeDefinition() == typeof(OnPlatform<>)))
+				&& valueType.IsGenericType
+				&& (valueType.GetGenericTypeDefinition() == typeof(OnPlatform<>)))
 			{
-				var tType = value.GetType().GenericTypeArguments[0];
+				var tType = valueType.GenericTypeArguments[0];
 				var opImplicit = tType.GetImplicitConversionOperator(fromType: tType, toType: propertyType)
 								?? propertyType.GetImplicitConversionOperator(fromType: tType, toType: propertyType);
 
 				if (opImplicit != null)
 				{
 					//convert the OnPlatform<T> to T
-					var opPlatformImplicitConversionOperator = value.GetType().GetImplicitConversionOperator(fromType: value.GetType(), toType: tType);
+					var opPlatformImplicitConversionOperator = valueType.GetImplicitConversionOperator(fromType: valueType, toType: tType);
 					value = opPlatformImplicitConversionOperator.Invoke(null, new[] { value });
 
 					//and convert to toType

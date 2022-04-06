@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				contentPage.ToolbarItems.Add(new ToolbarItem() { Text = "BAD" });
 				contentPage.ToolbarItems.Add(new ToolbarItem()
 				{
-					IconImageSource = ImageSource.FromResource("Microsoft.Maui.Controls.ControlGallery.GalleryPages.crimson.jpg", typeof(Issue9360NavigationPage).GetTypeInfo().Assembly)
+					IconImageSource = ImageSource.FromResource("Microsoft.Maui.Controls.ControlGallery.GalleryPages.crimson.jpg", typeof(Issue9360NavigationPage).Assembly)
 				});
 
 				contentPage.ToolbarItems.Add(new ToolbarItem()

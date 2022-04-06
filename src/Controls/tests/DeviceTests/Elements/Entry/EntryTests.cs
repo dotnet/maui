@@ -79,5 +79,30 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0, cursorPosition);
 #endif
 		}
+
+#if WINDOWS
+		// Only Windows needs the IsReadOnly workaround for MaxLength==0 to prevent text from being entered
+		[Fact]
+		public async Task MaxLengthIsReadOnlyValueTest()
+		{
+			Entry entry = new Entry();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+				var platformControl = GetPlatformControl(handler);
+
+				entry.MaxLength = 0;
+				Assert.True(platformControl.IsReadOnly);
+				entry.IsReadOnly = false;
+				Assert.True(platformControl.IsReadOnly);
+
+				entry.MaxLength = 10;
+				Assert.False(platformControl.IsReadOnly);
+				entry.IsReadOnly = true;
+				Assert.True(platformControl.IsReadOnly);
+			});
+		}
+#endif
 	}
 }
