@@ -40,6 +40,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public event EventHandler<BlazorWebViewInitializingEventArgs>? BlazorWebViewInitializing;
 
 		/// <inheritdoc />
+		public event EventHandler<BlazorWebViewInitializedEventArgs>? BlazorWebViewInitialized;
+
+		/// <inheritdoc />
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
 			// Call into the platform-specific code to get that platform's asset file provider
@@ -53,5 +56,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		internal void NotifyBlazorWebViewInitializing(BlazorWebViewInitializingEventArgs args) =>
 			BlazorWebViewInitializing?.Invoke(this, args);
+
+		internal void NotifyBlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args) =>
+			BlazorWebViewInitialized?.Invoke(this, args);
 	}
 }

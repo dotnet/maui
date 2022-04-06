@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 #if WEBVIEW2_WINFORMS
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
@@ -38,27 +37,8 @@ namespace Microsoft.AspNetCore.Components.WebView
 		/// Gets or sets the environment options for the <see cref="WebView2Control"/>.
 		/// </summary>
 		public CoreWebView2EnvironmentOptions EnvironmentOptions { get; set; }
-#endif
 
-#if WINDOWS
-		/// <summary>
-		/// Gets or sets a function that will be invoked once the web view has been initialized with
-		/// the default values to allow further configuring additional options.
-		/// </summary>
-		public Action<WebView2Control> OnWebViewInitialized { get; set; }
-#elif ANDROID
-		/// <summary>
-		/// Gets or sets a function that will be invoked once the web view has been initialized with
-		/// the default values to allow further configuring additional options.
-		/// </summary>
-		public Action<AWebView> OnWebViewInitialized { get; set; }
 #elif MACCATALYST || IOS
-		/// <summary>
-		/// Gets or sets a function that will be invoked once the web view has been initialized with
-		/// the default values to allow further configuring additional options.
-		/// </summary>
-		public Action<WKWebView> OnWebViewInitialized { get; set; }
-
 		/// <summary>
 		/// Gets or sets the configuration web view configuration.
 		/// </summary>

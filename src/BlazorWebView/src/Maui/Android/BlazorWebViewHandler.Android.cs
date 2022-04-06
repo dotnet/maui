@@ -99,9 +99,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				VirtualView.JSComponents,
 				hostPageRelativePath);
 
-			var args = new BlazorWebViewInitializingEventArgs();
-			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitializing(args);
-			args.OnWebViewInitialized?.Invoke(PlatformView);
+			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs());
+			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
+			{
+				WebView = PlatformView,
+			});
 
 			if (RootComponents != null)
 			{

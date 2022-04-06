@@ -51,12 +51,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			var config = new WKWebViewConfiguration();
 
-			var args = new BlazorWebViewInitializingEventArgs()
+			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
 			{
 				Configuration = config
-			};
-
-			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitializing(args);
+			});
 
 			config.Preferences.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("developerExtrasEnabled"));
 
@@ -73,7 +71,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				AutosizesSubviews = true
 			};
 
-			args.OnWebViewInitialized?.Invoke(webview);
+			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
+			{
+				WebView = webview
+			});
 
 			return webview;
 		}

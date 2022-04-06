@@ -121,11 +121,18 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		public EventHandler<UrlLoadingEventArgs> UrlLoading;
 
 		/// <summary>
-		/// Allows customizing the web view initialization process.
+		/// Allows customizing the web view before it is created.
 		/// </summary>
 		[Category("Action")]
-		[Description("Allows customizing the web view initialization process.")]
+		[Description("Allows customizing the web view before it is created.")]
 		public EventHandler<BlazorWebViewInitializingEventArgs> BlazorWebViewInitializing;
+
+		/// <summary>
+		/// Allows customizing the web view after it is created.
+		/// </summary>
+		[Category("Action")]
+		[Description("Allows customizing the web view after it is created.")]
+		public EventHandler<BlazorWebViewInitializedEventArgs> BlazorWebViewInitialized;
 
 		private void OnHostPagePropertyChanged() => StartWebViewCoreIfPossible();
 
@@ -178,7 +185,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				RootComponents.JSComponents,
 				hostPageRelativePath,
 				(args) => UrlLoading?.Invoke(this, args),
-				(args) => BlazorWebViewInitializing?.Invoke(this, args));
+				(args) => BlazorWebViewInitializing?.Invoke(this, args),
+				(args) => BlazorWebViewInitialized?.Invoke(this, args));
 
 			foreach (var rootComponent in RootComponents)
 			{
