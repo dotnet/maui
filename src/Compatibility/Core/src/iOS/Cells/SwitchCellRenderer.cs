@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (switchCell.OnColor == null)
 					uiSwitch.OnTintColor = _defaultOnColor;
 				else
-					uiSwitch.OnTintColor = switchCell.OnColor.ToUIColor();
+					uiSwitch.OnTintColor = switchCell.OnColor.ToPlatform();
 			}
 		}
 	}

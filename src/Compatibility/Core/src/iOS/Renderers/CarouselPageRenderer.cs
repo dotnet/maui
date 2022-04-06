@@ -368,7 +368,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					if (Element.BackgroundColor == null)
 						View.BackgroundColor = UIColor.White;
 					else
-						View.BackgroundColor = Element.BackgroundColor.ToUIColor();
+						View.BackgroundColor = Element.BackgroundColor.ToPlatform();
 
 					Brush background = Element.Background;
 					View.UpdateBackground(background);

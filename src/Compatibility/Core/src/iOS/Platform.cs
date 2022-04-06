@@ -432,7 +432,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void PresentAlert(AlertArguments arguments)
 		{
-			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToUIColor() };
+			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToPlatform() };
 
 			var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
 			var oldFrame = alert.View.Frame;
@@ -455,7 +455,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void PresentPrompt(PromptArguments arguments)
 		{
-			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToUIColor() };
+			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToPlatform() };
 
 			var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
 			alert.AddTextField(uiTextField =>
@@ -477,7 +477,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void PresentActionSheet(ActionSheetArguments arguments)
 		{
 			var alert = UIAlertController.Create(arguments.Title, null, UIAlertControllerStyle.ActionSheet);
-			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToUIColor() };
+			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToPlatform() };
 
 			// Clicking outside of an ActionSheet is an implicit cancel on iPads. If we don't handle it, it freezes the app.
 			if (arguments.Cancel != null || UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
@@ -506,7 +506,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		static void PresentPopUp(UIWindow window, UIAlertController alert, ActionSheetArguments arguments = null)
 		{
 			window.RootViewController = new UIViewController();
-			window.RootViewController.View.BackgroundColor = Colors.Transparent.ToUIColor();
+			window.RootViewController.View.BackgroundColor = Colors.Transparent.ToPlatform();
 			window.WindowLevel = UIWindowLevel.Alert + 1;
 			window.MakeKeyAndVisible();
 

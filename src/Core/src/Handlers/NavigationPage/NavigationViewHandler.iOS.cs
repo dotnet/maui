@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Handlers
 		////		//	parentingViewController?.SetupDefaultNavigationBarAppearance();
 		////		//}
 		////		//else
-		////		//	navigationBarAppearance.BackgroundColor = barBackgroundColor.ToUIColor();
+		////		//	navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
 
 		////		var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
 		////		navigationBarAppearance.BackgroundImage = backgroundImage;
@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Handlers
 
 		////	//NavigationBar.TintColor = iconColor == null || NavPage.OnThisPlatform().GetStatusBarTextColorMode() == StatusBarTextColorMode.DoNotAdjust
 		////	//	? UINavigationBar.Appearance.TintColor
-		////	//	: iconColor.ToUIColor();
+		////	//	: iconColor.ToPlatform();
 		////}
 
 

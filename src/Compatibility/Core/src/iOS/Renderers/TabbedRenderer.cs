@@ -364,7 +364,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (!isDefaultColor)
 				_barBackgroundColorWasSet = true;
 
-			TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToUIColor();
+			TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToPlatform();
 		}
 
 		void UpdateBarBackground()
@@ -401,7 +401,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (isDefaultColor)
 				tabBarTextColor = _defaultBarTextColor;
 			else
-				tabBarTextColor = barTextColor.ToUIColor();
+				tabBarTextColor = barTextColor.ToPlatform();
 
 			var attributes = new UIStringAttributes();
 			attributes.ForegroundColor = tabBarTextColor;
@@ -413,7 +413,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			// set TintColor for selected icon
 			// setting the unselected icon tint is not supported by iOS
-			TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToUIColor();
+			TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToPlatform();
 		}
 
 		void UpdateBarTranslucent()
@@ -484,7 +484,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) && Tabbed.SelectedTabColor != null)
 			{
-				TabBar.TintColor = Tabbed.SelectedTabColor.ToUIColor();
+				TabBar.TintColor = Tabbed.SelectedTabColor.ToPlatform();
 			}
 			else
 			{
@@ -492,7 +492,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			if (Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && Tabbed.UnselectedTabColor != null)
-				TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToUIColor();
+				TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToPlatform();
 			else
 				TabBar.UnselectedItemTintColor = UITabBar.Appearance.TintColor;
 		}

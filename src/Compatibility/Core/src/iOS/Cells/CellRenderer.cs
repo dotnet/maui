@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #endif
 			if (defaultBgColor != null)
 			{
-				uiBgColor = defaultBgColor.ToUIColor();
+				uiBgColor = defaultBgColor.ToPlatform();
 			}
 			else
 			{
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				else
 				{
 					if (cell.RealParent is VisualElement element && element.BackgroundColor != null)
-						uiBgColor = element.BackgroundColor.ToUIColor();
+						uiBgColor = element.BackgroundColor.ToPlatform();
 				}
 			}
 

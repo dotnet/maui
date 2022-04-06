@@ -20,17 +20,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			return UIColor.FromPatternImage(image);
 		}
-
-		public static UIColor ToUIColor(this Color color)
-		{
-			return new UIColor(color.Red, color.Green, color.Blue, color.Alpha);
-		}
-
-		public static UIColor ToUIColor(this Color color, Color defaultColor)
-			=> color?.ToUIColor() ?? defaultColor?.ToUIColor();
-
-		public static UIColor ToUIColor(this Color color, UIColor defaultColor)
-			=> color?.ToUIColor() ?? defaultColor;
 	}
 
 	public static class PointExtensions

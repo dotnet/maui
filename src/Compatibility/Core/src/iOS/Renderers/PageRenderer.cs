@@ -477,7 +477,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						NativeView.UpdateBackground(Element.Background);
 					else
 					{
-						NativeView.BackgroundColor = Element.BackgroundColor?.ToUIColor() ?? Maui.Platform.ColorExtensions.BackgroundColor;
+						NativeView.BackgroundColor = Element.BackgroundColor?.ToPlatform() ?? Maui.Platform.ColorExtensions.BackgroundColor;
 					}
 				}
 			});

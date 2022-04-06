@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (sectionHeaderTextColor != null)
 				{
-					header.TextLabel.TextColor = sectionHeaderTextColor.ToUIColor();
+					header.TextLabel.TextColor = sectionHeaderTextColor.ToPlatform();
 				}
 			}
 		}

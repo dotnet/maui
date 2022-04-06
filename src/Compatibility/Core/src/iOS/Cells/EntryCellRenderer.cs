@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		static void UpdateLabelColor(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
-			cell.TextLabel.TextColor = entryCell.LabelColor.ToUIColor(DefaultTextColor);
+			cell.TextLabel.TextColor = entryCell.LabelColor.ToPlatform(DefaultTextColor);
 		}
 
 		static void UpdatePlaceholder(EntryCellTableViewCell cell, EntryCell entryCell)

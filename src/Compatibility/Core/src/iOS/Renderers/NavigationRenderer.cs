@@ -658,7 +658,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateBackgroundColor()
 		{
 			var color = Element.BackgroundColor == null ? Maui.Platform.ColorExtensions.BackgroundColor.ToColor() : Element.BackgroundColor;
-			View.BackgroundColor = color.ToUIColor();
+			View.BackgroundColor = color.ToPlatform();
 		}
 
 		void UpdateBarBackground()
@@ -679,7 +679,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					parentingViewController?.SetupDefaultNavigationBarAppearance();
 				}
 				else
-					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToUIColor();
+					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
 
 				var barBackgroundBrush = NavPage.BarBackground;
 				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
@@ -694,7 +694,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// Set navigation bar background color
 				NavigationBar.BarTintColor = barBackgroundColor == null
 					? UINavigationBar.Appearance.BarTintColor
-					: barBackgroundColor.ToUIColor();
+					: barBackgroundColor.ToPlatform();
 
 				var barBackgroundBrush = NavPage.BarBackground;
 				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
@@ -710,7 +710,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var globalTitleTextAttributes = UINavigationBar.Appearance.TitleTextAttributes;
 			var titleTextAttributes = new UIStringAttributes
 			{
-				ForegroundColor = barTextColor == null ? globalTitleTextAttributes?.ForegroundColor : barTextColor.ToUIColor(),
+				ForegroundColor = barTextColor == null ? globalTitleTextAttributes?.ForegroundColor : barTextColor.ToPlatform(),
 				Font = globalTitleTextAttributes?.Font
 			};
 
@@ -722,7 +722,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				largeTitleTextAttributes = new UIStringAttributes
 				{
-					ForegroundColor = barTextColor == null ? globalLargeTitleTextAttributes?.ForegroundColor : barTextColor.ToUIColor(),
+					ForegroundColor = barTextColor == null ? globalLargeTitleTextAttributes?.ForegroundColor : barTextColor.ToPlatform(),
 					Font = globalLargeTitleTextAttributes?.Font
 				};
 			}
@@ -753,7 +753,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			NavigationBar.TintColor = iconColor == null || NavPage.OnThisPlatform().GetStatusBarTextColorMode() == StatusBarTextColorMode.DoNotAdjust
 				? UINavigationBar.Appearance.TintColor
-				: iconColor.ToUIColor();
+				: iconColor.ToPlatform();
 		}
 
 		void SetStatusBarStyle()
