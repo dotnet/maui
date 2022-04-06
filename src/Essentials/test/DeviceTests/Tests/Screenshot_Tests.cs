@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		static bool CanExecuteTest()
 		{
 #if __IOS__
-			return PlatformVersion.IsAtLeast(13);
+			return OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13);
 #else
 			return true;
 #endif
