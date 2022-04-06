@@ -17,9 +17,11 @@ namespace Microsoft.Maui
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
 			var nativeScroll = scrollBar.ToPlatform();
-			if (nativeScroll != null && OperatingSystem.IsAndroidVersionAtLeast(23))
+			if (nativeScroll != null)
 			{
-				nativeScroll.ScrollChange += OnScrollChange;
+				if (OperatingSystem.IsAndroidVersionAtLeast(23))
+					nativeScroll.ScrollChange += OnScrollChange;
+
 				_scrollViews.Add(scrollBar, nativeScroll);
 			}
 		}

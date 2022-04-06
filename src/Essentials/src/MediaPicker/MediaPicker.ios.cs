@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Media
 				return null;
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			string originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
-#pragma warning disable CA1416
+#pragma warning restore CA1416
 			return new PHAssetFileResult(assetUrl, phAsset, originalFilename);
 		}
 

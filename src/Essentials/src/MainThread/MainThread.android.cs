@@ -11,10 +11,8 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			get
 			{
-				if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
-#pragma warning disable CA1416 // Validate platform compatibility, the analyzer could not track version from enums
+				if (OperatingSystem.IsAndroidVersionAtLeast(23))
 					return Looper.MainLooper.IsCurrentThread;
-#pragma warning restore CA1416 // Validate platform compatibility
 
 				return Looper.MyLooper() == Looper.MainLooper;
 			}

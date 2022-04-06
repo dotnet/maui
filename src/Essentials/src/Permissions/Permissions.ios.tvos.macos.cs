@@ -29,7 +29,6 @@ namespace Microsoft.Maui.ApplicationModel
 			[SupportedOSPlatform("ios14.0")]
 			public override async Task<PermissionStatus> RequestAsync()
 			{
-
 				EnsureDeclared();
 
 				var status = GetPhotoPermissionStatus(PHAccessLevel.ReadWrite);
@@ -38,14 +37,14 @@ namespace Microsoft.Maui.ApplicationModel
 					return status;
 				}
 #if __IOS__
-#pragma warning disable CA1416 // Somehow this if def is not working
-                else if (status == PermissionStatus.Limited)
-                {
-                    PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
-                        PHPhotoLibrary.SharedPhotoLibrary,
-                        WindowStateManager.Default.GetCurrentUIViewController());
-                    return status;
-                }
+#pragma warning disable CA1416 // Somehow this if def is not working, could not where it is defined
+				else if (status == PermissionStatus.Limited)
+				{
+					PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
+						PHPhotoLibrary.SharedPhotoLibrary,
+						WindowStateManager.Default.GetCurrentUIViewController());
+						return status;
+				}
 #pragma warning restore CA1416
 #endif
 
@@ -101,7 +100,7 @@ namespace Microsoft.Maui.ApplicationModel
 			=> status switch
 			{
 				PHAuthorizationStatus.Authorized => PermissionStatus.Granted,
-#pragma warning disable CA1416
+#pragma warning disable CA1416 // 'PHAuthorizationStatus.Limited' is only supported on 'ios' 14.0 and later. 
 				PHAuthorizationStatus.Limited => PermissionStatus.Limited,
 #pragma warning restore CA1416
 				PHAuthorizationStatus.Denied => PermissionStatus.Denied,

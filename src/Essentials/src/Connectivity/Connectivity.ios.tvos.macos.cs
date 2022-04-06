@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Networking
 	{
 #if !(MACCATALYST || MACOS)
 		// TODO: Use NWPathMonitor on > iOS 12
-#pragma warning disable BI1234, CA1416
+#pragma warning disable BI1234, CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
 		static readonly Lazy<CTCellularData> cellularData = new Lazy<CTCellularData>(() => new CTCellularData());
 
 		internal static CTCellularData CellularData => cellularData.Value;
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Networking
 				var restricted = false;
 #if !(MACCATALYST || MACOS)
 				// TODO: Use NWPathMonitor on > iOS 12
-#pragma warning disable BI1234, CA1416
+#pragma warning disable BI1234, CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
 				restricted = CellularData.RestrictedState == CTCellularDataRestrictedState.Restricted;
 #pragma warning restore BI1234, CA1416
 #endif

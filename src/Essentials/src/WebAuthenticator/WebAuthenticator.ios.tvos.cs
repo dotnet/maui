@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Authentication
 
 				using (was)
 				{
-#pragma warning disable CA1416 // Analyzer bug
+#pragma warning disable CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
 					was.Start();
 #pragma warning restore CA1416
 					return await tcsResponse.Task;
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Authentication
 				{
 					foreach (var cookie in cookies)
 					{
-#pragma warning disable CA1416 // Known false positive 
+#pragma warning disable CA1416 // Known false positive with lambda, instead suppressing we can also Assert here
 						WKWebsiteDataStore.DefaultDataStore.HttpCookieStore.DeleteCookie(cookie, null);
 #pragma warning restore CA1416
 					}

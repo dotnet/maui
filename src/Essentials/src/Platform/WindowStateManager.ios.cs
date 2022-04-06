@@ -59,8 +59,7 @@ namespace Microsoft.Maui.ApplicationModel
 			if (viewController != null)
 				return viewController;
 
-#pragma warning disable CA1416 // This call site is reachable on: 'iOS' 10.0 and later, 'maccatalyst' 10.0 and later.
-			                   // 'UIApplication.KeyWindow' is unsupported on: 'ios' 13.0 and later, 'maccatalyst' 13.0 and later.
+#pragma warning disable CA1416 // This call site is reachable on: 'iOS' 10.0 and later. 'UIApplication.KeyWindow' is unsupported on: 'ios' 13.0 and later.
 			var window = UIApplication.SharedApplication.KeyWindow;
 
 			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
@@ -68,8 +67,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 			if (viewController == null)
 			{
-				// This call site is reachable on: 'iOS' 10.0 and later, 'maccatalyst' 10.0 and later.
-				// 'UIApplication.Windows.get' is unsupported on: 'ios' 15.0 and later, 'maccatalyst' 15.0 and later.
+				// This call site is reachable on: 'iOS' 10.0 and later. 'UIApplication.Windows.get' is unsupported on: 'ios' 15.0 and later.
 				window = UIApplication.SharedApplication
 					.Windows
 					.OrderByDescending(w => w.WindowLevel)
@@ -86,8 +84,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public UIWindow? GetCurrentUIWindow()
 		{
-			// This call site is reachable on: 'iOS' 10.0 and later, 'maccatalyst' 10.0 and later.
-			// 'UIApplication.KeyWindow.get' is unsupported on: 'ios' 13.0 and later, 'maccatalyst' 13.0 and later.
+			// This call site is reachable on: 'iOS' 10.0 and later.0 'UIApplication.KeyWindow.get' is unsupported on: 'ios' 13.0 and later.
 			var window = UIApplication.SharedApplication.KeyWindow;
 
 			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
@@ -95,8 +92,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 			if (window == null)
 			{
-				// This call site is reachable on: 'iOS' 10.0 and later, 'maccatalyst' 10.0 and later.
-				// 'UIApplication.Windows.get' is unsupported on: 'ios' 15.0 and later, 'maccatalyst' 15.0 and later.
+				// This call site is reachable on: 'iOS' 10.0 and later. 'UIApplication.Windows.get' is unsupported on: 'ios' 15.0 and later.
 				window = UIApplication.SharedApplication
 					.Windows
 					.OrderByDescending(w => w.WindowLevel)

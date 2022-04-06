@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Media
 		{
 			System.Diagnostics.Debug.Assert(OperatingSystem.IsIOSVersionAtLeast(13));
 			var scenes = UIApplication.SharedApplication.ConnectedScenes;
-#pragma warning disable CA1416 // Known false positice with Lambda expression
+#pragma warning disable CA1416 // Known false positive with Lambda expression
 			var currentScene = scenes.ToArray().Where(n => n.ActivationState == UISceneActivationState.ForegroundActive).FirstOrDefault();
 #pragma warning restore CA1416
 			if (currentScene == null)

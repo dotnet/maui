@@ -121,7 +121,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			}
 
 			public Action<CNContact> DidSelectContactHandler { get; }
-#pragma warning disable CA1416 // UIViewController.DismissModalViewController(bool) has UnsupportedOSPlatform("ios6.0")] https://github.com/xamarin/xamarin-macios/issues/14619
+#pragma warning disable CA1416 // picker.DismissModalViewController(bool) has UnsupportedOSPlatform("ios6.0")]. (Deprecated but still works)
 			public override void ContactPickerDidCancel(CNContactPickerViewController picker)
 			{
 				DidSelectContactHandler?.Invoke(default);

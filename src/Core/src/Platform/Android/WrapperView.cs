@@ -238,10 +238,12 @@ namespace Microsoft.Maui.Platform
 						var radialGradientShaderFactory = PaintExtensions.GetRadialGradientShaderFactory(radialGradientPaint, shadowOpacity);
 						_shadowPaint.SetShader(radialGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
 					}
-					if (Shadow.Paint is SolidPaint solidPaint && OperatingSystem.IsAndroidVersionAtLeast(29))
+					if (Shadow.Paint is SolidPaint solidPaint)
 					{
 						solidColor = solidPaint.ToColor();
-						_shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToPlatform();
+
+						if (OperatingSystem.IsAndroidVersionAtLeast(29))
+							_shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToPlatform();
 					}
 
 					// Apply the shadow radius 
