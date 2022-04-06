@@ -1,11 +1,18 @@
 #nullable enable
 using System;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	public static class VisualElementExtensions
 	{
+		public static void UpdateAccessKey(this FrameworkElement platformView, View view)
+		{
+			if (platformView != null && view != null)
+				AccessKeyHelper.UpdateAccessKey(platformView, view);
+		}
+
 		internal static void Cleanup(this Element self)
 		{
 			if (self == null)
