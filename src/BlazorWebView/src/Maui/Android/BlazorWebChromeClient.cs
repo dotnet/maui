@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (view?.Context is not null)
 			{
 				// Intercept _blank target <a> tags to always open in device browser
-				// regardless of ExternalLinkMode.OpenInWebview
+				// regardless of UrlLoadingStrategy.OpenInWebview
 				var requestUrl = view.GetHitTestResult().Extra;
 				var intent = new Intent(Intent.ActionView, Uri.Parse(requestUrl));
 				view.Context.StartActivity(intent);

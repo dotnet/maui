@@ -49,7 +49,7 @@ namespace Microsoft.Maui
 #if IOS || MACCATALYST
 			return imageSourceService.GetImageAsync(imageSource);
 #elif ANDROID
-			return imageSourceService.GetDrawableAsync(mauiContext.Context!, imageSource);
+			return imageSourceService.GetDrawableAsync(imageSource, mauiContext.Context!);
 #elif WINDOWS
 			return imageSourceService.GetImageSourceAsync(imageSource);
 #else

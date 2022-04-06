@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (formattedString == null)
 				return new SpannableString(string.Empty);
 
+			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
+
 			var builder = new StringBuilder();
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
@@ -70,7 +72,7 @@ namespace Microsoft.Maui.Controls.Platform
 					spannable.SetSpan(new LineHeightSpan(textPaint, lineHeight), start, end, SpanTypes.InclusiveExclusive);
 				}
 
-				var font = span.ToFont();
+				var font = span.ToFont(defaultFontSize);
 				if (font.IsDefault && defaultFont.HasValue)
 					font = defaultFont.Value;
 

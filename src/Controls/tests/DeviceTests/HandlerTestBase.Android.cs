@@ -10,6 +10,9 @@ using ALayoutInflater = Android.Views.LayoutInflater;
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;
 using ImportantForAccessibility = Android.Views.ImportantForAccessibility;
+using Google.Android.Material.AppBar;
+using AndroidX.CoordinatorLayout.Widget;
+using Android.Graphics.Drawables;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -30,13 +33,14 @@ namespace Microsoft.Maui.DeviceTests
 			return (AView)viewHandler.PlatformView;
 		}
 
+		static Drawable _decorDrawable;
 		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)
 			where THandler : class, IElementHandler
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
 				AViewGroup rootView = MauiContext.Context.GetActivity().Window.DecorView as AViewGroup;
-				var decorBackground = rootView.Background;
+				_decorDrawable ??= rootView.Background;
 				var linearLayoutCompat = new LinearLayoutCompat(MauiContext.Context);
 
 				var fragmentManager = MauiContext.GetFragmentManager();
@@ -52,6 +56,9 @@ namespace Microsoft.Maui.DeviceTests
 						.Commit();
 
 					await viewFragment.FinishedLoading;
+
+					if (window.Content is Shell shell)
+						await OnLoadedAsync(shell.CurrentPage);
 
 					if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
 						await action((THandler)window.Handler);
@@ -81,8 +88,8 @@ namespace Microsoft.Maui.DeviceTests
 						await viewFragment.View.OnUnloadedAsync();
 
 					// This is mainly to remove changes to the decor view that shell imposes
-					if (decorBackground != rootView.Background)
-						rootView.Background = decorBackground;
+					if (_decorDrawable != rootView.Background)
+						rootView.Background = _decorDrawable;
 
 					// Unset the Support Action bar if the calling code has set the support action bar
 					if (MauiContext.Context.GetActivity() is AppCompatActivity aca)
@@ -91,6 +98,53 @@ namespace Microsoft.Maui.DeviceTests
 					}
 				}
 			});
+		}
+
+		protected MaterialToolbar GetPlatformToolbar(IElementHandler handler)
+		{
+			if (handler is Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer sr)
+			{
+				var shell = handler.VirtualView as Shell;
+				var currentPage = shell.CurrentPage;
+				var pagePlatformView = currentPage.Handler.PlatformView as AView;
+				var parentContainer = pagePlatformView.GetParentOfType<CoordinatorLayout>();
+				var toolbar = parentContainer.GetFirstChildOfType<MaterialToolbar>();
+				return toolbar;
+			}
+			else
+			{
+				return GetPlatformToolbar(handler.MauiContext);
+			}
+		}
+
+		protected MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
+		{
+			var navManager = mauiContext.GetNavigationRootManager();
+			var appbarLayout =
+				navManager?.RootView?.FindViewById<AViewGroup>(Resource.Id.navigationlayout_appbar);
+
+			var toolBar = appbarLayout?.GetFirstChildOfType<MaterialToolbar>();
+
+			toolBar = toolBar ?? navManager.ToolbarElement?.Toolbar?.Handler?.PlatformView as
+				MaterialToolbar;
+
+			if (toolBar == null)
+			{
+				appbarLayout =
+					(navManager?.RootView as AViewGroup)?.GetFirstChildOfType<AppBarLayout>();
+
+				toolBar = appbarLayout?.GetFirstChildOfType<MaterialToolbar>();
+			}
+
+			return toolBar;
+		}
+
+		protected bool IsBackButtonVisible(IElementHandler handler) =>
+			GetPlatformToolbar(handler)?.NavigationIcon != null;
+
+		bool IsBackButtonVisible(IMauiContext mauiContext)
+		{
+			return GetPlatformToolbar(mauiContext)?.NavigationIcon != null;
 		}
 
 		class WindowTestFragment : Fragment

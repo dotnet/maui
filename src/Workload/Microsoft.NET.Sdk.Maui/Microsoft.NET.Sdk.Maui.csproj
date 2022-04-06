@@ -75,7 +75,6 @@
         OldValue="%(_JsonVariableMatrix.OldValue)"
         NewValue="%(_JsonVariableMatrix.NewValue)"
     />
-    <Message Text="##vso[task.setvariable variable=MicrosoftMauiGraphicsVersion;isOutput=true]$(MicrosoftMauiGraphicsVersion)" Importance="high" />
     <ItemGroup>
       <FileWrites Include="@(_JsonInputFile->'%(OutputPath)')" />
       <None Include="%(_JsonInputFile.OutputPath)" Link="$([System.IO.Path]::GetFileName('%(_JsonInputFile.OutputPath)'))" CopyToOutputDirectory="PreserveNewest" Pack="%(_JsonInputFile.Pack)" PackagePath="data" Visible="false" />

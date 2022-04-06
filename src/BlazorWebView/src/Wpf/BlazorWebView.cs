@@ -51,11 +51,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			typeMetadata: new PropertyMetadata(OnServicesPropertyChanged));
 
 		/// <summary>
-		/// The backing store for the <see cref="ExternalNavigationStarting"/> property.
+		/// The backing store for the <see cref="UrlLoading"/> property.
 		/// </summary>
-		public static readonly DependencyProperty ExternalNavigationStartingProperty = DependencyProperty.Register(
-			name: nameof(ExternalNavigationStarting),
-			propertyType: typeof(EventHandler<ExternalLinkNavigationEventArgs>),
+		public static readonly DependencyProperty UrlLoadingProperty = DependencyProperty.Register(
+			name: nameof(UrlLoading),
+			propertyType: typeof(EventHandler<UrlLoadingEventArgs>),
 			ownerType: typeof(BlazorWebView));
 		#endregion
 
@@ -108,13 +108,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			(RootComponentsCollection)GetValue(RootComponentsProperty);
 
 		/// <summary>
-		/// Allows customizing how external links are opened.
-		/// Opens external links in the system browser by default.
+		/// Allows customizing how links are opened.
+		/// By default, opens internal links in the webview and external links in an external app.
 		/// </summary>
-		public EventHandler<ExternalLinkNavigationEventArgs> ExternalNavigationStarting
+		public EventHandler<UrlLoadingEventArgs> UrlLoading
 		{
-			get => (EventHandler<ExternalLinkNavigationEventArgs>)GetValue(ExternalNavigationStartingProperty);
-			set => SetValue(ExternalNavigationStartingProperty, value);
+			get => (EventHandler<UrlLoadingEventArgs>)GetValue(UrlLoadingProperty);
+			set => SetValue(UrlLoadingProperty, value);
 		}
 
 		/// <summary>
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				fileProvider,
 				RootComponents.JSComponents,
 				hostPageRelativePath,
-				(args) => ExternalNavigationStarting?.Invoke(this, args));
+				(args) => UrlLoading?.Invoke(this, args));
 
 			foreach (var rootComponent in RootComponents)
 			{

@@ -26,13 +26,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #pragma warning restore 618
 			};
 
-			// To allow overriding ExternalLinkMode.InsecureOpenInWebView and open links in browser with a _blank target
-			blazorAndroidWebView.Settings.SetSupportMultipleWindows(true);
-
 			BlazorAndroidWebView.SetWebContentsDebuggingEnabled(enabled: DeveloperTools.Enabled);
 
 			if (blazorAndroidWebView.Settings != null)
 			{
+				// To allow overriding UrlLoadingStrategy.OpenInWebView and open links in browser with a _blank target
+				blazorAndroidWebView.Settings.SetSupportMultipleWindows(true);
 				blazorAndroidWebView.Settings.JavaScriptEnabled = true;
 				blazorAndroidWebView.Settings.DomStorageEnabled = true;
 			}

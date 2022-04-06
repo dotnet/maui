@@ -59,12 +59,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// </summary>
 		protected static readonly string AppOrigin = $"https://{AppHostAddress}/";
 
+		private static readonly Uri AppOriginUri = new(AppOrigin);
+
 		private readonly WebView2Control _webview;
 		private readonly Task _webviewReadyTask;
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment _coreWebView2Environment;
-		private readonly Action<ExternalLinkNavigationEventArgs> _externalNavigationStarting;
+		private readonly Action<UrlLoadingEventArgs> _urlLoading;
 		private readonly BlazorWebViewDeveloperTools _developerTools;
 
 		/// <summary>
@@ -76,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-		/// <param name="externalNavigationStarting">Callback invoked when external navigation starts.</param>
+		/// <param name="urlLoading">Callback invoked when a url is about to load.</param>
 		internal WebView2WebViewManager(
 			WebView2Control webview!!,
 			IServiceProvider services,
@@ -84,8 +86,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			IFileProvider fileProvider,
 			JSComponentConfigurationStore jsComponents,
 			string hostPageRelativePath,
-			Action<ExternalLinkNavigationEventArgs> externalNavigationStarting)
-			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+			Action<UrlLoadingEventArgs> urlLoading)
+			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 
 		{
 #if WEBVIEW2_WINFORMS
@@ -105,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #endif
 
 			_webview = webview;
-			_externalNavigationStarting = externalNavigationStarting;
+			_urlLoading = urlLoading;
 			_developerTools = services.GetRequiredService<BlazorWebViewDeveloperTools>();
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
@@ -258,22 +260,22 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		private void CoreWebView2_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
 		{
-			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri) && uri.Host != AppHostAddress)
+			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
 			{
-				var callbackArgs = new ExternalLinkNavigationEventArgs(uri);
+				var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, AppOriginUri);
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-				_externalNavigationStarting?.Invoke(callbackArgs);
+				_urlLoading?.Invoke(callbackArgs);
 #elif WEBVIEW2_MAUI
-				_blazorWebViewHandler.ExternalNavigationStarting?.Invoke(callbackArgs);
+				_blazorWebViewHandler.UrlLoading?.Invoke(callbackArgs);
 #endif
 
-				if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
+				if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
 				{
 					LaunchUriInExternalBrowser(uri);
 				}
 
-				args.Cancel = callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.InsecureOpenInWebView;
+				args.Cancel = callbackArgs.UrlLoadingStrategy != UrlLoadingStrategy.OpenInWebView;
 			}
 		}
 

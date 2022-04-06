@@ -105,12 +105,17 @@ namespace Microsoft.Maui.Controls
 				foreach (var child in LogicalChildrenInternal)
 					yield return child;
 
-				foreach (var child in ChildrenNotDrawnByThisElement)
-					yield return child;
+				var childrenNotDrawnByThisElement = ChildrenNotDrawnByThisElement;
+				if (childrenNotDrawnByThisElement is not null)
+				{
+					foreach (var child in childrenNotDrawnByThisElement)
+						yield return child;
+				}
 			}
 		}
 
-		internal virtual IEnumerable<Element> ChildrenNotDrawnByThisElement => EmptyChildren;
+		// return null by default so we don't need to foreach over an empty collection in OnPropertyChanged
+		internal virtual IEnumerable<Element> ChildrenNotDrawnByThisElement => null;
 
 		IReadOnlyList<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
 
@@ -377,10 +382,14 @@ namespace Microsoft.Maui.Controls
 
 			Handler?.UpdateValue(propertyName);
 
-			foreach (var logicalChildren in ChildrenNotDrawnByThisElement)
+			var childrenNotDrawnByThisElement = ChildrenNotDrawnByThisElement;
+			if (childrenNotDrawnByThisElement is not null)
 			{
-				if (logicalChildren is IPropertyPropagationController controller)
-					PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { logicalChildren });
+				foreach (var logicalChildren in childrenNotDrawnByThisElement)
+				{
+					if (logicalChildren is IPropertyPropagationController controller)
+						PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { logicalChildren });
+				}
 			}
 
 			if (_effects?.Count > 0)

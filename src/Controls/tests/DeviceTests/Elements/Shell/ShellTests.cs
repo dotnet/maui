@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !IOS
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -39,6 +40,40 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<ShellContent, ShellContentHandler>();
 #endif
 				});
+			});
+		}
+
+		[Fact(DisplayName = "Set Has Back Button")]
+		public async Task SetHasBackButton()
+		{
+			SetupBuilder();
+
+			var shell = await InvokeOnMainThreadAsync<Shell>(() =>
+			{
+				return new Shell()
+				{
+					Items =
+					{
+						new ContentPage()
+					}
+				};
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				Assert.False(IsBackButtonVisible(shell.Handler));
+				await shell.Navigation.PushAsync(new ContentPage());
+				Assert.True(IsBackButtonVisible(shell.Handler));
+
+				BackButtonBehavior behavior = new BackButtonBehavior()
+				{
+					IsVisible = false
+				};
+
+				Shell.SetBackButtonBehavior(shell.CurrentPage, behavior);
+				Assert.False(IsBackButtonVisible(shell.Handler));
+				behavior.IsVisible = true;
+				NavigationPage.SetHasBackButton(shell.CurrentPage, true);
 			});
 		}
 
@@ -98,3 +133,4 @@ namespace Microsoft.Maui.DeviceTests
 			});
 	}
 }
+#endif

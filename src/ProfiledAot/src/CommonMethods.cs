@@ -4,6 +4,7 @@
 // Culture-aware string comparisons
 // ResourceManager
 // Common Essentials methods
+// GridLayoutManager
 // Microsoft.Maui.Graphics.Color
 // System.Threading.Tasks.Task
 // System.Net.Http.HttpClient
@@ -25,6 +26,8 @@ static class CommonMethods
         string someString = MauiTest.Resources.Strings.SomeString;
 
         InitializeCommonEssentials();
+
+        _ = new Microsoft.Maui.Layouts.GridLayoutManager(new Grid()).Measure(100, 100);
 
         Color c = Color.Parse("MistyRose");
         c = Color.Parse("#663399");
