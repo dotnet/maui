@@ -6,6 +6,8 @@
     <RootNamespace>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</RootNamespace>
     <AssemblyName>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</AssemblyName>
     <LangVersion>10.0</LangVersion>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
   <ItemGroup>
