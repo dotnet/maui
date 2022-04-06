@@ -196,15 +196,18 @@ namespace Microsoft.Maui.Platform
 				if (_appTitleBarHeight > 0)
 				{
 					NavigationViewControl.UpdateAppTitleBar(_appTitleBarHeight);
+				}
+
+				var thing = NavigationViewControl.ButtonHolderGrid;
 			}
 		}
 
-		void OnNavigationViewControlOnApplyTemplateFinished(object sender, EventArgs e)
+		void OnNavigationViewControlOnApplyTemplateFinished(object? sender, EventArgs e)
 		{
 			if (NavigationViewControl != null)
 			{
 				NavigationViewControl.OnApplyTemplateFinished -= OnNavigationViewControlOnApplyTemplateFinished;
-				NavigationViewControl.ButtonHolderGrid.SizeChanged += OnButtonHolderGridSizeChanged;
+				NavigationViewControl.ButtonHolderGrid!.SizeChanged += OnButtonHolderGridSizeChanged;
 			}
 		}
 
@@ -247,7 +250,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (AppTitleBarContentControl == null)
+			if (AppTitleBarContentControl == null || AppTitleBarContainer == null)
 				return;
 
 			WThickness currMargin = AppTitleBarContainer.Margin;
