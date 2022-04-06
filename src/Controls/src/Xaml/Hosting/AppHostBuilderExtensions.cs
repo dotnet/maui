@@ -216,6 +216,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			Layout.RemapForControls();
 			RefreshView.RemapForControls();
 			Shape.RemapForControls();
+			WebView.RemapForControls();
 
 			return builder;
 		}

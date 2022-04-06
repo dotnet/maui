@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Web.Http;
@@ -21,6 +20,8 @@ namespace Microsoft.Maui.Handlers
 			get => _eventState;
 			set => _eventState = value;
 		}
+
+		internal bool IsJavaScriptAlertEnabled { get; set; }
     
 		protected override void ConnectHandler(WebView2 platformView)
 		{
@@ -36,6 +37,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.CoreWebView2.HistoryChanged -= OnHistoryChanged;
 				platformView.CoreWebView2.NavigationStarting -= OnNavigationStarting;
 				platformView.CoreWebView2.NavigationCompleted -= OnNavigationCompleted;
+				platformView.CoreWebView2.WebMessageReceived -= OnWebMessageReceived;
 			}
 
 			platformView.CoreWebView2Initialized -= OnCoreWebView2Initialized;
@@ -45,9 +47,10 @@ namespace Microsoft.Maui.Handlers
 
 		void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
 		{
+			sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
 			sender.CoreWebView2.NavigationStarting += OnNavigationStarting;
 			sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
-			sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
+			sender.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
 		}
 
 		void OnHistoryChanged(CoreWebView2 sender, object args)
@@ -75,6 +78,12 @@ namespace Microsoft.Maui.Handlers
 				if (cancel)
 					_eventState = WebNavigationEvent.NewPage;
 			}
+		}
+
+		async void OnWebMessageReceived(CoreWebView2 sender, CoreWebView2WebMessageReceivedEventArgs e)
+		{
+			if (IsJavaScriptAlertEnabled)
+				await new global::Windows.UI.Popups.MessageDialog(e.TryGetWebMessageAsString()).ShowAsync();
 		}
 
 		public static void MapSource(IWebViewHandler handler, IWebView webView)
@@ -116,7 +125,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.Eval(webView, script);
 		}
 
-		void NavigationSucceeded(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs e)
+		async void NavigationSucceeded(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs e)
 		{
 			var uri = sender.Source;
 
@@ -125,6 +134,11 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView is null)
 				return;
+
+			PlatformView?.UpdateCanGoBackForward(VirtualView);
+
+			if (IsJavaScriptAlertEnabled)
+				await sender.ExecuteScriptAsync("window.alert = function(message){ window.external.notify(message); };");
 		}
 
 		void NavigationFailed(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs e)
