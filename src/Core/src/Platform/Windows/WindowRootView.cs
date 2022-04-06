@@ -26,6 +26,8 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal ContentControl? AppTitleBarContentControl { get; private set; }
+		internal FrameworkElement? AppTitleBarContainer { get; private set; }
+
 		Image? AppFontIcon { get; set; }
 		internal TextBlock? AppTitle { get; private set; }
 
@@ -37,7 +39,7 @@ namespace Microsoft.Maui.Platform
 			set => SetValue(AppTitleBarTemplateProperty, value);
 		}
 
-		public FrameworkElement? AppTitleBar
+		internal FrameworkElement? AppTitleBar
 		{
 			get
 			{
@@ -56,6 +58,11 @@ namespace Microsoft.Maui.Platform
 
 				if (_appTitleBar != null)
 				{
+					OnAppTitleBarChanged?.Invoke(this, EventArgs.Empty);
+				}
+				else
+				{
+					_appTitleBar = cp;
 					OnAppTitleBarChanged?.Invoke(this, EventArgs.Empty);
 				}
 
@@ -95,29 +102,59 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnApplyTemplate();
 
-			AppTitleBarContentControl = (ContentControl?)GetTemplateChild("AppTitleBarContentControl");
+			AppTitleBarContainer = (FrameworkElement)GetTemplateChild("AppTitleBarContainer");
+			AppTitleBarContentControl = (ContentControl?)GetTemplateChild("AppTitleBarContentControl") ??
+				AppTitleBarContainer.GetDescendantByName<ContentControl>("AppTitleBarContentControl");
 
 			if (AppTitleBarContentControl != null)
 			{
-				if (AppTitleBar == null)
-					AppTitleBarContentControl.Loaded += OnAppTitleBarContentControlLoaded;
-				else
-					LoadAppTitleBarControls();
-
-				AppTitleBarContentControl.SizeChanged += (_, __) =>
-				{
-					if (_appTitleBarHeight != AppTitleBarContentControl.ActualHeight)
-					{
-						_appTitleBarHeight = AppTitleBarContentControl.ActualHeight;
-						NavigationViewControl?.UpdateAppTitleBar(_appTitleBarHeight);
-					}
-				};
+				LoadAppTitleBarContainer();
+			}
+			else
+			{
+				AppTitleBarContainer.Loaded += OnAppTitleBarContainerLoaded;
 			}
 
 			OnApplyTemplateFinished?.Invoke(this, EventArgs.Empty);
 
 			UpdateAppTitleBarMargins();
 			SetWindowTitle(_windowTitle);
+
+			void OnAppTitleBarContainerLoaded(object sender, RoutedEventArgs e)
+			{
+				AppTitleBarContainer.Loaded -= OnAppTitleBarContainerLoaded;
+
+				AppTitleBarContentControl =
+					AppTitleBarContainer.GetDescendantByName<ContentControl>("AppTitleBarContentControl");
+
+				LoadAppTitleBarContainer();
+			}
+		}
+
+		void LoadAppTitleBarContainer()
+		{
+			if (AppTitleBarContentControl == null)
+				return;
+
+			if (AppTitleBar == null)
+				AppTitleBarContentControl.Loaded += OnAppTitleBarContentControlLoaded;
+			else
+				LoadAppTitleBarControls();
+
+			AppTitleBarContentControl.SizeChanged += (_, __) =>
+			{
+				if (_appTitleBarHeight != AppTitleBarContentControl.ActualHeight)
+				{
+					_appTitleBarHeight = AppTitleBarContentControl.ActualHeight;
+					NavigationViewControl?.UpdateAppTitleBar(_appTitleBarHeight);
+				}
+			};
+
+			void OnAppTitleBarContentControlLoaded(object sender, RoutedEventArgs e)
+			{
+				LoadAppTitleBarControls();
+				AppTitleBarContentControl.Loaded -= OnAppTitleBarContentControlLoaded;
+			}
 		}
 
 		void LoadAppTitleBarControls()
@@ -141,11 +178,6 @@ namespace Microsoft.Maui.Platform
 			UpdateAppTitleBarMargins();
 		}
 
-		private void OnAppTitleBarContentControlLoaded(object sender, RoutedEventArgs e)
-		{
-			LoadAppTitleBarControls();
-		}
-
 		protected override void OnContentChanged(object oldContent, object newContent)
 		{
 			base.OnContentChanged(oldContent, newContent);
@@ -154,13 +186,25 @@ namespace Microsoft.Maui.Platform
 				NavigationViewControl = mnv;
 				NavigationViewControl.DisplayModeChanged += OnNavigationViewControlDisplayModeChanged;
 				NavigationViewControl.BackRequested += OnNavigationViewBackRequested;
+				NavigationViewControl.OnApplyTemplateFinished += OnNavigationViewControlOnApplyTemplateFinished;
 				NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, AppBarNavigationIconsChanged);
 				NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, AppBarNavigationIconsChanged);
 				NavigationViewControl.RegisterPropertyChangedCallback(MauiNavigationView.NavigationBackButtonWidthProperty, AppBarNavigationIconsChanged);
 
 				ContentChanged?.Invoke(this, EventArgs.Empty);
 
-				NavigationViewControl.UpdateAppTitleBar(_appTitleBarHeight);
+				if (_appTitleBarHeight > 0)
+				{
+					NavigationViewControl.UpdateAppTitleBar(_appTitleBarHeight);
+			}
+		}
+
+		void OnNavigationViewControlOnApplyTemplateFinished(object sender, EventArgs e)
+		{
+			if (NavigationViewControl != null)
+			{
+				NavigationViewControl.OnApplyTemplateFinished -= OnNavigationViewControlOnApplyTemplateFinished;
+				NavigationViewControl.ButtonHolderGrid.SizeChanged += OnButtonHolderGridSizeChanged;
 			}
 		}
 
@@ -203,15 +247,12 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			NavigationViewControl.ButtonHolderGrid.SizeChanged -= ButtonHolderGrid_SizeChanged;
-			NavigationViewControl.ButtonHolderGrid.SizeChanged += ButtonHolderGrid_SizeChanged;
-
 			if (AppTitleBarContentControl == null)
 				return;
 
-			WThickness currMargin = AppTitleBarContentControl.Margin;
+			WThickness currMargin = AppTitleBarContainer.Margin;
 			var leftIndent = NavigationViewControl.ButtonHolderGrid.ActualWidth;
-			AppTitleBarContentControl.Margin = new WThickness(leftIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
+			AppTitleBarContainer.Margin = new WThickness(leftIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
 
 			// If the AppIcon loads correctly then we set a margin for the text from the image
 			if (_hasTitleBarImage)
@@ -235,8 +276,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// TODO MAUI CLEANUP
-		private void ButtonHolderGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+		void OnButtonHolderGridSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			UpdateAppTitleBarMargins();
 		}

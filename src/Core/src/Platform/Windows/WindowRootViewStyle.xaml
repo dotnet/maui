@@ -3,8 +3,16 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:maui="using:Microsoft.Maui.Platform">
 
-    <maui:AppTitleBarDataTemplateSelector x:Key="MauiAppTitleBarTemplateSelector"/>
-    
+    <maui:DefaultOrUserDataTemplateSelector 
+        UserTemplateName="MauiAppTitleBarTemplate" 
+        DefaultTemplateName="MauiAppTitleBarTemplateDefault"
+        x:Key="MauiAppTitleBarTemplateSelector"/>
+
+    <maui:DefaultOrUserDataTemplateSelector 
+        UserTemplateName="MauiAppTitleBarContainerTemplate" 
+        DefaultTemplateName="MauiAppTitleBarContainerTemplateDefault"
+        x:Key="MauiAppTitleBarContainerTemplateSelector"/>
+
     <DataTemplate x:Key="MauiAppTitleBarTemplateDefault">
         <Border
             Canvas.ZIndex="1" 
@@ -25,7 +33,17 @@
             </StackPanel>
         </Border>
     </DataTemplate>
-    
+
+    <DataTemplate x:Key="MauiAppTitleBarContainerTemplateDefault">
+        <ContentControl 
+            IsTabStop="False"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
+            ContentTemplateSelector="{StaticResource MauiAppTitleBarTemplateSelector}"
+            x:Name="AppTitleBarContentControl">
+        </ContentControl>
+    </DataTemplate>
+
     <Style TargetType="maui:WindowRootView">
         <Setter Property="Template">
             <Setter.Value>
@@ -50,14 +68,15 @@
 
                         </Page.Resources>
                         <Grid x:Name="RootGrid" RowSpacing="0" ColumnSpacing="0" Margin="0" Padding="0">
-                            <ContentControl 
-                                IsTabStop="False"
-                                VerticalAlignment="Top"
-                                VerticalContentAlignment="Stretch"
-                                Canvas.ZIndex="1" 
-                                Margin="0,0,0,0"
-                                ContentTemplateSelector="{StaticResource MauiAppTitleBarTemplateSelector}"
-                                x:Name="AppTitleBarContentControl">
+                            <ContentControl x:Name="AppTitleBarContainer"
+                                            IsTabStop="False"
+                                            VerticalAlignment="Top"
+                                            VerticalContentAlignment="Stretch"
+                                            HorizontalContentAlignment="Stretch"
+                                            Canvas.ZIndex="1" 
+                                            Margin="0,0,0,0"
+                                            ContentTemplateSelector="{StaticResource MauiAppTitleBarContainerTemplateSelector}"
+                                            >
                             </ContentControl>
                             <ContentPresenter Canvas.ZIndex="0"></ContentPresenter>
                         </Grid>
@@ -66,5 +85,4 @@
             </Setter.Value>
         </Setter>
     </Style>
-
 </ResourceDictionary> 
