@@ -102,8 +102,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				var window = MauiProgram.DefaultWindow;
-
 				FrameworkElement frameworkElement = null;
 				var content = (Panel)window.Content;
 				try
