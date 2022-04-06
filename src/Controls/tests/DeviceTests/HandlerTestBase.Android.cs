@@ -50,6 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					linearLayoutCompat.Id = AView.GenerateViewId();
 					rootView.AddView(linearLayoutCompat);
+
 					fragmentManager
 						.BeginTransaction()
 						.Add(linearLayoutCompat.Id, viewFragment)
@@ -76,16 +77,18 @@ namespace Microsoft.Maui.DeviceTests
 						window.Handler.DisconnectHandler();
 					}
 
-					rootView.RemoveView(linearLayoutCompat);
-
 					fragmentManager
 						.BeginTransaction()
 						.Remove(viewFragment)
 						.Commit();
 
+					rootView.RemoveView(linearLayoutCompat);
+
 					await linearLayoutCompat.OnUnloadedAsync();
 					if (viewFragment.View != null)
 						await viewFragment.View.OnUnloadedAsync();
+
+					await viewFragment.FinishedDestroying;
 
 					// This is mainly to remove changes to the decor view that shell imposes
 					if (_decorDrawable != rootView.Background)
@@ -96,6 +99,11 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						aca.SetSupportActionBar(null);
 					}
+
+					// Ideally this wouldn't be needed but I haven't found the right platform
+					// component I can key into for knowing when the world can move on
+					await Task.Delay(1000);
+					fragmentManager.ExecutePendingTransactions();
 				}
 			});
 		}
@@ -150,12 +158,15 @@ namespace Microsoft.Maui.DeviceTests
 		class WindowTestFragment : Fragment
 		{
 			TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> _finishedDestroying = new TaskCompletionSource<bool>();
 			readonly IMauiContext _mauiContext;
 			readonly IWindow _window;
 
 			public IMauiContext ScopedMauiContext { get; set; }
 
 			public Task FinishedLoading => _taskCompletionSource.Task;
+
+			public Task FinishedDestroying => _taskCompletionSource.Task;
 
 			public WindowTestFragment(IMauiContext mauiContext, IWindow window)
 			{
@@ -177,6 +188,12 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				base.OnResume();
 				_taskCompletionSource.SetResult(true);
+			}
+
+			public override void OnDestroy()
+			{
+				base.OnDestroy();
+				_finishedDestroying.SetResult(true);
 			}
 		}
 	}
