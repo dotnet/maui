@@ -2,12 +2,15 @@
 {
 	public partial class Entry
 	{
-		public static IPropertyMapper<IEntry, EntryHandler> ControlsEntryMapper = 
+		public static IPropertyMapper<IEntry, EntryHandler> ControlsEntryMapper =
 			new PropertyMapper<Entry, EntryHandler>(EntryHandler.Mapper)
-		{
-			[nameof(Text)] = MapText,
-			[nameof(TextTransform)] = MapText,
-		};
+			{
+#if WINDOWS
+				[nameof(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName)] = MapDetectReadingOrderFromContent,
+#endif
+				[nameof(Text)] = MapText,
+				[nameof(TextTransform)] = MapText,
+			};
 
 		internal static new void RemapForControls()
 		{
