@@ -82,6 +82,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal Action<UrlLoadingEventArgs>? UrlLoading;
 
 		private RootComponentsCollection? _rootComponents;
+
 		private RootComponentsCollection? RootComponents
 		{
 			get => _rootComponents;
