@@ -280,14 +280,11 @@ public class PlatformInterop {
     {
         RequestManager glide = Glide.with(imageView);
 
-        MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback, glide);
-
         FontModel fontModel = new FontModel(color, glyph, textSize, typeface);
-
         glide
             .load(fontModel)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
-            .into(target);
+            .into(imageView);
     }
 
     public static void loadImageFromFile(Context context, String file, ImageLoaderCallback callback)
