@@ -127,7 +127,7 @@ Task("dotnet-templates")
 
                 var type = forceDotNetBuild ? "DotNet" : "MSBuild";
                 var name = template.Replace("-", "_").Replace(" ", "_");
-                var projectName = $"{templatesTest}{name}{forceDotNetBuild}";
+                var projectName = $"{templatesTest}{name}_{type}";
                 StartProcess(dn, $"new {template} -o \"{projectName}\"");
 
                 // Build
