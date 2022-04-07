@@ -43,7 +43,8 @@
       <!-- Look for WinUI .pri files a directory above ref/*.dll files -->
       <Content
           Include="@(_AssemblyFiles->'%(RootDir)%(Directory)../%(FileName).pri')"
-          TargetPath=""
+          TargetPath="%(PackagePath)\%(FileName).pri"
+          Link=""
           Condition="Exists('%(RootDir)%(Directory)../%(FileName).pri')"
       />
     </ItemGroup>
