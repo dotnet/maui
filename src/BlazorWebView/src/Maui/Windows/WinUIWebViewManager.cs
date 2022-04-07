@@ -28,14 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			try
 			{
-				if (Package.Current != null)
-				{
-					_isPackagedApp = true;
-				}
-				else
-				{
-					_isPackagedApp = false;
-				}
+				_isPackagedApp = Package.Current != null;
 			}
 			catch
 			{
