@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.ViewModels
 				new SectionModel(typeof(AndroidTabbedPageSwipePage), "TabbedPage platform-specifics",
 					"This Android platform-specific is used to enable swiping with a horizontal finger gesture between pages in a TabbedPage."),
 
-				new SectionModel(typeof(AndroidTitleViewPage), "NavigationPage BarHeight with TitleView",
+				new SectionModel(typeof(AndroidNavigationPage), "NavigationPage BarHeight with TitleView",
 					"This Android platform-specific sets the height of the navigation bar on a NavigationPage."),
 
 				new SectionModel(typeof(AndroidWebViewPage), "WebView Mixed Content with Zoom",

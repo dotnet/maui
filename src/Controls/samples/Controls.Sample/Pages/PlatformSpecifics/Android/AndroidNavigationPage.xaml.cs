@@ -4,10 +4,10 @@ namespace Maui.Controls.Sample.Pages
 {
     public partial class AndroidNavigationPage : NavigationPage
     {
-        public AndroidNavigationPage(Page page)
+        public AndroidNavigationPage()
         {
             InitializeComponent();
-            PushAsync(page);
+            PushAsync(new AndroidTitleViewPage());
         }
     }
 }
