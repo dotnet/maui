@@ -101,7 +101,7 @@ namespace Maui.Controls.Sample.Pages
 
 			if (_state == State.SingleSelection)
 			{
-				elements = VisualTreeElementExtensions.GetVisualTreeElements(this.Window, x, y, UsePlatformViewBoundsCheckBox.IsChecked);
+				elements = VisualTreeElementExtensions.GetVisualTreeElements(this.Window, x, y);
 			}
 			else if (_state == State.RectangleSelectionPickFirst)
 			{
@@ -113,7 +113,7 @@ namespace Maui.Controls.Sample.Pages
 			else if (_state == State.RectangleSelectionPickSecond)
 			{
 				var rect = GetCurrentRect();
-				elements = VisualTreeElementExtensions.GetVisualTreeElements(this.Window, rect.Left, rect.Top, rect.Right, rect.Bottom, UsePlatformViewBoundsCheckBox.IsChecked);
+				elements = VisualTreeElementExtensions.GetVisualTreeElements(this.Window, rect.Left, rect.Top, rect.Right, rect.Bottom);
 				_state = State.RectangleSelectionPickFirst;
 				_overlay.Invalidate();
 			}

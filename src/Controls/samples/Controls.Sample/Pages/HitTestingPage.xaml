@@ -8,7 +8,7 @@
         <VerticalStackLayout Spacing="25" Padding="30" >
 
             <Label x:Name="SelectionLabel" Text="Selected: -" HorizontalOptions="Center" />
-            <Picker x:Name="ModePicker" ItemsSource="{Binding HitTestOptionNames}" SelectedIndexChanged="ModeSelectionChanged" SelectedIndex="0" HorizontalOptions="Center" />
+            <Picker x:Name="ModePicker" Title="Mode" ItemsSource="{Binding HitTestOptionNames}" SelectedIndexChanged="ModeSelectionChanged" SelectedIndex="0" HorizontalOptions="Center" />
             <CheckBox x:Name="UsePlatformViewBoundsCheckBox" />
 
             <Label Text="Lorem ipsum dolor sit ame" FontSize="18" FontAttributes="Bold" HorizontalOptions="Start" />
