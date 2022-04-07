@@ -525,11 +525,6 @@ namespace Microsoft.Maui.Controls
 				OnPropertyChanged(property.PropertyName);
 
 				property.PropertyChanged?.Invoke(this, original, value);
-
-				//if (this is Element element)
-				//{
-				//	element.Handler?.UpdateValue(property.PropertyName);
-				//}
 			}
 		}
 
