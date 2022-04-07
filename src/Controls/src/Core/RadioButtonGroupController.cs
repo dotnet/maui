@@ -100,6 +100,11 @@ namespace Microsoft.Maui.Controls
 			{
 				_layout.SetValue(RadioButtonGroup.SelectedValueProperty, radioButton.Value);
 			}
+
+			if (radioButton.Value.Equals(this.SelectedValue))
+			{
+				radioButton.IsChecked = true;
+			}
 		}
 
 		void UpdateGroupName(Element element, string name, string oldName = null)
