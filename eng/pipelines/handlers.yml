@@ -140,7 +140,7 @@ stages:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml@xamarin-templates
                   parameters:
-                    UninstallMono: false
+                    UninstallMono: true
                     UninstallXamarinMac: false
                     CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
