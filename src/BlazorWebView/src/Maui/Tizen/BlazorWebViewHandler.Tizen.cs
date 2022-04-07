@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		";
 
 		private TizenWebViewManager? _webviewManager;
-		private WebViewExtension.InterceptRequestCallback? _interceptRequestCallback;
+		private WebViewExtensions.InterceptRequestCallback? _interceptRequestCallback;
 
 		private TWebView NativeWebView => PlatformView.WebView;
 

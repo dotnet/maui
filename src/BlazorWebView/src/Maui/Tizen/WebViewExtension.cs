@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// <summary>
 	/// WebViewExtension
 	/// </summary>
-    internal static class WebViewExtension
+    internal static class WebViewExtensions
     {
         public const string ChromiumEwk = "libchromium-ewk.so";
 
