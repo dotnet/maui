@@ -13,6 +13,7 @@ using ImportantForAccessibility = Android.Views.ImportantForAccessibility;
 using Google.Android.Material.AppBar;
 using AndroidX.CoordinatorLayout.Widget;
 using Android.Graphics.Drawables;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -106,6 +107,25 @@ namespace Microsoft.Maui.DeviceTests
 					fragmentManager.ExecutePendingTransactions();
 				}
 			});
+		}
+
+		public bool ToolbarItemsMatch(
+			IElementHandler handler,
+			params ToolbarItem[] toolbarItems)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			var menu = toolbar.Menu;
+
+			Assert.Equal(toolbarItems.Length, menu.Size());
+
+			for (var i = 0; i < toolbarItems.Length; i++)
+			{
+				ToolbarItem toolbarItem = toolbarItems[i];
+				var primaryCommand = menu.GetItem(i);
+				Assert.Equal(toolbarItem.Text, $"{primaryCommand.TitleFormatted}");
+			}
+
+			return true;
 		}
 
 		protected MaterialToolbar GetPlatformToolbar(IElementHandler handler)

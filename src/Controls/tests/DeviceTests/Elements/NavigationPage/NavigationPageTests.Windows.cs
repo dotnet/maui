@@ -32,24 +32,6 @@ namespace Microsoft.Maui.DeviceTests
 			return header?.Visibility == UI.Xaml.Visibility.Visible;
 		}
 
-		public bool ToolbarItemsMatch(
-			IElementHandler handler,
-			params ToolbarItem[] toolbarItems)
-		{
-			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
-			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
-
-			Assert.Equal(toolbarItems.Length, windowHeader.CommandBar.PrimaryCommands.Count);
-			for (var i = 0; i < toolbarItems.Length; i++)
-			{
-				ToolbarItem toolbarItem = toolbarItems[i];
-				var primaryCommand = ((WAppBarButton)windowHeader.CommandBar.PrimaryCommands[i]);
-				Assert.Equal(toolbarItem, primaryCommand.DataContext);
-			}
-
-			return true;
-		}
-
 		string GetToolbarTitle(IElementHandler handler) =>
 			GetPlatformToolbar(handler).Title;
 
