@@ -148,6 +148,9 @@ stages:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
                   provisionatorChannel: ${{ parameters.provisionatorChannel }}
+              - bash: |
+                  cd /Library/Frameworks/Xamarin.Android.framework/
+                  find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
               - pwsh: msbuild /r ./App1/App1.sln
 
   - template: common/security-compliance.yml
