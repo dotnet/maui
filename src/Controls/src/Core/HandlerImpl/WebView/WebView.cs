@@ -5,7 +5,7 @@
 		public static IPropertyMapper<IWebView, WebViewHandler> ControlsWebViewMapper = new PropertyMapper<WebView, WebViewHandler>(WebViewHandler.Mapper)
 		{
 #if WINDOWS
-			[nameof(PlatformConfiguration.WindowsSpecific.WebView.IsJavaScriptAlertEnabledProperty.PropertyName)] = MapIsJavaScriptAlertEnabled,
+			[PlatformConfiguration.WindowsSpecific.WebView.IsJavaScriptAlertEnabledProperty.PropertyName] = MapIsJavaScriptAlertEnabled,
 #endif
 		};
 

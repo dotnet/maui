@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 			[nameof(FormattedText)] = MapText,
 			[nameof(TextTransform)] = MapText,
 #if WINDOWS
-			[nameof(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName)] = MapDetectReadingOrderFromContent,
+			[PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName] = MapDetectReadingOrderFromContent,
 #endif
 #if __IOS__
 			[nameof(TextDecorations)] = MapTextDecorations,

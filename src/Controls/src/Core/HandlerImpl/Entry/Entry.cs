@@ -6,7 +6,7 @@
 			new PropertyMapper<Entry, EntryHandler>(EntryHandler.Mapper)
 			{
 #if WINDOWS
-				[nameof(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName)] = MapDetectReadingOrderFromContent,
+				[PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName] = MapDetectReadingOrderFromContent,
 #endif
 				[nameof(Text)] = MapText,
 				[nameof(TextTransform)] = MapText,

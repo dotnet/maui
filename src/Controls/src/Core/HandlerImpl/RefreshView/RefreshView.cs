@@ -5,7 +5,7 @@
 		public static IPropertyMapper<IRefreshView, RefreshViewHandler> ControlsRefreshViewMapper = new PropertyMapper<RefreshView, RefreshViewHandler>(RefreshViewHandler.Mapper)
 		{
 #if WINDOWS
-			[nameof(PlatformConfiguration.WindowsSpecific.RefreshView.RefreshPullDirectionProperty.PropertyName)] = MapRefreshPullDirection,
+			[PlatformConfiguration.WindowsSpecific.RefreshView.RefreshPullDirectionProperty.PropertyName] = MapRefreshPullDirection,
 #endif
 		};
 

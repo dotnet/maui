@@ -7,10 +7,10 @@
 		public static IPropertyMapper<IView, IViewHandler> ControlsVisualElementMapper = new PropertyMapper<View, IViewHandler>(Element.ControlsElementMapper)
 		{
 #if WINDOWS
-			[nameof(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName)] = MapAccessKeyHorizontalOffset,
-			[nameof(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyPlacementProperty.PropertyName)] = MapAccessKeyPlacement,
-			[nameof(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName)] = MapAccessKey,
-			[nameof(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName)] = MapAccessKeyVerticalOffset,
+			[PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName] = MapAccessKeyHorizontalOffset,
+			[PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyPlacementProperty.PropertyName] = MapAccessKeyPlacement,
+			[PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName] = MapAccessKey,
+			[PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName] = MapAccessKeyVerticalOffset,
 #endif
 			[nameof(BackgroundColor)] = MapBackgroundColor,
 		};
