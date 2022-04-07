@@ -36,10 +36,10 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
 		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetVisualTreeDescendants(this IVisualTreeElement visualElement) =>
+		public static IReadOnlyList<IVisualTreeElement> GetVisualTreeDescendants(this IVisualTreeElement visualElement) =>
 			visualElement.GetVisualTreeDescendantsInternal();
 
-		static IList<IVisualTreeElement> GetVisualTreeDescendantsInternal(this IVisualTreeElement visualElement, IList<IVisualTreeElement>? elements = null)
+		static List<IVisualTreeElement> GetVisualTreeDescendantsInternal(this IVisualTreeElement visualElement, List<IVisualTreeElement>? elements = null)
 		{
 			if (elements == null)
 				elements = new List<IVisualTreeElement>();
@@ -61,7 +61,7 @@ namespace Microsoft.Maui
 		/// <param name="x2">The X point.</param>
 		/// <param name="y2">The Y point.</param>
 		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, double x1, double y1, double x2, double y2) =>
+		public static IReadOnlyList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, double x1, double y1, double x2, double y2) =>
 			GetVisualTreeElements(visualElement, new Rect(x1, y1, x2 - x1, y2 - y1));
 
 		/// <summary>
@@ -70,7 +70,7 @@ namespace Microsoft.Maui
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
 		/// <param name="rectangle">The rectangle.</param>
 		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Rect rectangle)
+		public static IReadOnlyList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Rect rectangle)
 		{
 #if WINDOWS
 			return GetVisualTreeElementsWindowsInternal(visualElement,
@@ -89,7 +89,7 @@ namespace Microsoft.Maui
 		/// <param name="x">The X point.</param>
 		/// <param name="y">The Y point.</param>
 		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, double x, double y) =>
+		public static IReadOnlyList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, double x, double y) =>
 			GetVisualTreeElements(visualElement, new Point(x, y));
 
 		/// <summary>
@@ -98,7 +98,7 @@ namespace Microsoft.Maui
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
 		/// <param name="point"><see cref="Point"/>.</param>
 		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Point point)
+		public static IReadOnlyList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Point point)
 		{
 #if WINDOWS
 			return GetVisualTreeElementsWindowsInternal(visualElement,
