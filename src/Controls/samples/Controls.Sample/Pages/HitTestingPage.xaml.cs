@@ -16,6 +16,7 @@ namespace Maui.Controls.Sample.Pages
 			RectangleSelectionPickSecond
 		}
 
+		Microsoft.Maui.Controls.Window _window;
 		WindowOverlay _overlay;
 		double _firstPosX;
 		double _firstPosY;
@@ -23,38 +24,31 @@ namespace Maui.Controls.Sample.Pages
 		double _currentMousePosY;
 		State _state = State.SingleSelection;
 		bool _tappedWithoutMove;
+		IView _selectedView;
 
 		Microsoft.Maui.Controls.View[] _allChildren = null;
 
-		public string[] HitTestOptionNames { get; } =
-		{
-			"Single Selection",
-			"Rectangle Selection",
-		};
 
 		public HitTestingPage()
 		{
 			InitializeComponent();
-			this.BindingContext = this;
 		}
 
-		void ModeSelectionChanged(object sender, EventArgs e)
+		private void RectangleSelectionCheckBox_CheckedChanged(object sender, Microsoft.Maui.Controls.CheckedChangedEventArgs e)
 		{
-			_state = ModePicker.SelectedIndex == 0 ? State.SingleSelection : State.RectangleSelectionPickFirst;
-			Debug.WriteLine($"State: {_state}");
+			_state = RectangleSelectionCheckBox.IsChecked ? State.RectangleSelectionPickFirst : State.SingleSelection;
 		}
 
 		private void ContentPage_Loaded(object sender, EventArgs e)
 		{
-			var window = this.GetParentWindow();
-
-			_overlay = new WindowOverlay(window);
+			_window = this.GetParentWindow();
+			_overlay = new WindowOverlay(_window);
 			_overlay.AddWindowElement(this);
-			window.AddOverlay(_overlay);
+			_window.AddOverlay(_overlay);
 
 			_allChildren = this.GetVisualTreeDescendants()
 				.OfType<Microsoft.Maui.Controls.View>()
-				.Where(x => x != ModePicker)
+				.Where(x => x != RectangleSelectionCheckBox)
 				.ToArray();
 #if WINDOWS
 			var platformChildren = _allChildren.Select(v => v.Handler.PlatformView).OfType<Microsoft.UI.Xaml.UIElement>();
@@ -78,6 +72,12 @@ namespace Maui.Controls.Sample.Pages
 				HandlePointerMoved(pos.Position.X, pos.Position.Y);
 			}
 #endif
+		}
+
+		private void ContentPage_Unloaded(object sender, EventArgs e)
+		{
+			_overlay.RemoveWindowElement(this);
+			_window.RemoveOverlay(_overlay);
 		}
 
 		private void HandlePointerMoved(double x, double y)
@@ -127,26 +127,35 @@ namespace Maui.Controls.Sample.Pages
 			var e = elements.FirstOrDefault() as Microsoft.Maui.Controls.View;
 
 			if (e != null)
+			{
 				e.BackgroundColor = new Microsoft.Maui.Graphics.Color(255, 0, 0);
+				_selectedView = e;
+				_overlay.Invalidate();
+			}
 		}
 
-		// IWindowOverlayElement/IDrawable is implemented to show the rectangle selection lasso
+		// IWindowOverlayElement/IDrawable is implemented to show the rectangle selection lasso, and the selected element's Frame
 
 		bool IWindowOverlayElement.Contains(Point point)
 		{
-			return GetCurrentRect().Contains(point);
+			return this.Frame.Contains(point);
 		}
 
 		void IDrawable.Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			if (_state == State.RectangleSelectionPickSecond)
 			{
-				canvas.SaveState();
 				Rect rect = GetCurrentRect();
 				canvas.StrokeColor = Colors.Pink;
 				canvas.StrokeSize = 2;
 				canvas.DrawRectangle(rect);
-				canvas.RestoreState();
+			}
+
+			if (_selectedView != null)
+			{
+				canvas.StrokeColor = Colors.Gray;
+				canvas.StrokeSize = 2;
+				canvas.DrawRectangle(_selectedView.Frame);
 			}
 		}
 
@@ -157,6 +166,6 @@ namespace Maui.Controls.Sample.Pages
 			double maxX = Math.Max(_firstPosX, _currentMousePosX);
 			double maxY = Math.Max(_firstPosY, _currentMousePosY);
 			return Rect.FromLTRB(minX, minY, maxX, maxY);
-		}
+		}	
 	}
 }

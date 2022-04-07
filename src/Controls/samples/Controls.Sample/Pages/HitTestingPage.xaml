@@ -2,14 +2,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Pages.HitTestingPage"
              BackgroundColor="{DynamicResource SecondaryColor}"
-             Loaded="ContentPage_Loaded">
+             Loaded="ContentPage_Loaded"
+             Unloaded="ContentPage_Unloaded">
 
     <ScrollView>
         <VerticalStackLayout Spacing="25" Padding="30" >
 
             <Label x:Name="SelectionLabel" Text="Selected: -" HorizontalOptions="Center" />
-            <Picker x:Name="ModePicker" Title="Mode" ItemsSource="{Binding HitTestOptionNames}" SelectedIndexChanged="ModeSelectionChanged" SelectedIndex="0" HorizontalOptions="Center" />
-            <CheckBox x:Name="UsePlatformViewBoundsCheckBox" />
+            <HorizontalStackLayout>
+                <Label Text="Rectangle Selection" VerticalOptions="Center" />
+                <CheckBox x:Name="RectangleSelectionCheckBox" CheckedChanged="RectangleSelectionCheckBox_CheckedChanged" />
+            </HorizontalStackLayout>
 
             <Label Text="Lorem ipsum dolor sit ame" FontSize="18" FontAttributes="Bold" HorizontalOptions="Start" />
             <Label Text="Lorem ipsum dolor sit ame" FontSize="18" FontAttributes="Bold" HorizontalOptions="End" />
