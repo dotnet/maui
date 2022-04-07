@@ -295,7 +295,6 @@ namespace Microsoft.Maui.Platform
 			return rc ?? Color.FromArgb("#ff33b5e5");
 		}
 
-
 		public static int GetActionBarHeight(this Context context)
 		{
 			_actionBarHeight ??= (int)context.GetThemeAttributePixels(Resource.Attribute.actionBarSize);
@@ -332,5 +331,16 @@ namespace Microsoft.Maui.Platform
 
 		public static float GetDisplayDensity(this Context context) =>
 			context.Resources?.DisplayMetrics?.Density ?? 1.0f;
+
+		public static Rect ToCrossPlatformRectInReferenceFrame(this Context context, int left, int top, int right, int bottom) 
+		{
+			var deviceIndependentLeft = context.FromPixels(left);
+			var deviceIndependentTop = context.FromPixels(top);
+			var deviceIndependentRight = context.FromPixels(right);
+			var deviceIndependentBottom = context.FromPixels(bottom);
+
+			return Rect.FromLTRB(0, 0,
+				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
+		}
 	}
 }

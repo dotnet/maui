@@ -46,6 +46,16 @@ namespace Microsoft.Maui.Handlers
 			return result;
 		}
 
+		public override void PlatformArrange(Rect rect)
+		{
+			base.PlatformArrange(rect);
+
+			if (GetInsetPanel(PlatformView) == null)
+			{
+				VirtualView.CrossPlatformArrange(rect);
+			}
+		}
+
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			if (handler.PlatformView == null || handler.MauiContext == null)

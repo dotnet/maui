@@ -66,20 +66,14 @@ namespace Microsoft.Maui.Platform
 			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
 		}
 
-		protected override void OnLayout(bool changed, int l, int t, int r, int b)
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
 			if (CrossPlatformArrange == null || Context == null)
 			{
 				return;
 			}
 
-			var deviceIndependentLeft = Context.FromPixels(l);
-			var deviceIndependentTop = Context.FromPixels(t);
-			var deviceIndependentRight = Context.FromPixels(r);
-			var deviceIndependentBottom = Context.FromPixels(b);
-
-			var destination = Rect.FromLTRB(0, 0,
-				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
+			var destination = Context!.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
 
 			CrossPlatformArrange(destination);
 		}

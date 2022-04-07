@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 			platformView.ScrollChange += ScrollChange;
+			platformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
 		protected override void DisconnectHandler(MauiScrollView platformView)
@@ -32,16 +33,15 @@ namespace Microsoft.Maui.Handlers
 			platformView.ScrollChange -= ScrollChange;
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		public override void PlatformArrange(Rect frame)
 		{
-			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
+			base.PlatformArrange(frame);
 
-			if (FindInsetPanel(this) == null)
+			if (FindInsetPanel(this) is ContentViewGroup paddingLayer)
 			{
-				VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+				var (l, t, r, b) = Context.ToPixels(frame);
+				paddingLayer.Layout(0, 0, r - l, b - t);
 			}
-
-			return result;
 		}
 
 		void ScrollChange(object? sender, AndroidX.Core.Widget.NestedScrollView.ScrollChangeEventArgs e)
@@ -183,7 +183,6 @@ namespace Microsoft.Maui.Handlers
 			var paddingShim = new ContentViewGroup(handler.MauiContext.Context)
 			{
 				CrossPlatformMeasure = IncludeScrollViewInsets(scrollView.CrossPlatformMeasure, scrollView),
-				CrossPlatformArrange = scrollView.CrossPlatformArrange,
 				Tag = InsetPanelTag
 			};
 
