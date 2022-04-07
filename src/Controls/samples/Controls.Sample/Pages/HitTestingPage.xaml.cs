@@ -24,10 +24,8 @@ namespace Maui.Controls.Sample.Pages
 		double _currentMousePosY;
 		State _state = State.SingleSelection;
 		bool _tappedWithoutMove;
-		IView _selectedView;
 
 		Microsoft.Maui.Controls.View[] _allChildren = null;
-
 
 		public HitTestingPage()
 		{
@@ -94,8 +92,9 @@ namespace Maui.Controls.Sample.Pages
 
 		private void HandleTapped(double x, double y)
 		{
-			if (_tappedWithoutMove)
+			if (_tappedWithoutMove) // "Tapped" may fire multiple times for containers & overlapping controls
 				return;
+
 			_tappedWithoutMove = true;
 			IEnumerable<IVisualTreeElement> elements = null;
 
@@ -129,12 +128,10 @@ namespace Maui.Controls.Sample.Pages
 			if (e != null)
 			{
 				e.BackgroundColor = new Microsoft.Maui.Graphics.Color(255, 0, 0);
-				_selectedView = e;
-				_overlay.Invalidate();
 			}
 		}
 
-		// IWindowOverlayElement/IDrawable is implemented to show the rectangle selection lasso, and the selected element's Frame
+		// IWindowOverlayElement/IDrawable is implemented to show the rectangle selection lasso
 
 		bool IWindowOverlayElement.Contains(Point point)
 		{
@@ -149,13 +146,6 @@ namespace Maui.Controls.Sample.Pages
 				canvas.StrokeColor = Colors.Pink;
 				canvas.StrokeSize = 2;
 				canvas.DrawRectangle(rect);
-			}
-
-			if (_selectedView != null)
-			{
-				canvas.StrokeColor = Colors.Gray;
-				canvas.StrokeSize = 2;
-				canvas.DrawRectangle(_selectedView.Frame);
 			}
 		}
 
