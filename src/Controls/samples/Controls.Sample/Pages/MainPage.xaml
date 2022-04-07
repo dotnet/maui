@@ -7,7 +7,6 @@
     x:Name="HomePage"
     BackgroundColor="{DynamicResource BackgroundColor}"
     NavigationPage.IconColor="White"
-    Shell.NavBarIsVisible="False"
     Title="Gallery">
     <views:BasePage.Resources>
         <ResourceDictionary>
