@@ -127,10 +127,11 @@ Task("dotnet-templates")
 
                 var type = forceDotNetBuild ? "DotNet" : "MSBuild";
                 var name = template.Replace("-", "_").Replace(" ", "_");
-                StartProcess(dn, $"new {template} -o \"{templatesTest}{name}{forceDotNetBuild}\"");
+                var projectName = $"{templatesTest}{name}{forceDotNetBuild}";
+                StartProcess(dn, $"new {template} -o \"{projectName}\"");
 
                 // Build
-                RunMSBuildWithDotNet($"{templatesTest}{name}", properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
+                RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
             }
         }
 
