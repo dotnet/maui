@@ -281,7 +281,7 @@ public class PlatformInterop {
         RequestManager glide = Glide.with(imageView);
 
         MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback, glide);
-        
+
         FontModel fontModel = new FontModel(color, glyph, textSize, typeface);
 
         glide
