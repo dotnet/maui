@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetNativeMinimum(SliderHandler sliderHandler)
 		{
-			if (PlatformVersion.Supports(PlatformApis.SeekBarSetMin))
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
 				return GetNativeSlider(sliderHandler).Min;
 			}

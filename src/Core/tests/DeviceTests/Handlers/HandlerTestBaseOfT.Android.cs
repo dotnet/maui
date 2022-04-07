@@ -207,7 +207,7 @@ namespace Microsoft.Maui.DeviceTests
 			// AccessibilityHeading is only available on API 28+
 			// With lower Apis you use ViewCompat.SetAccessibilityHeading
 			// but there exists no ViewCompat.GetAccessibilityHeading
-			if (PlatformVersion.IsAtLeast(28))
+			if (OperatingSystem.IsAndroidVersionAtLeast(28))
 				return ((View)viewHandler.PlatformView).AccessibilityHeading
 					? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
 

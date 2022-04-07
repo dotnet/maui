@@ -43,7 +43,7 @@ namespace Microsoft.Maui.ApplicationModel
 					PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
 						PHPhotoLibrary.SharedPhotoLibrary,
 						WindowStateManager.Default.GetCurrentUIViewController());
-						return status;
+					return status;
 				}
 #pragma warning restore CA1416
 #endif

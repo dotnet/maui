@@ -25,37 +25,40 @@ namespace Microsoft.Maui.Handlers
 		void BuildNewMenu()
 		{
 			UIMenu? lastFoundMenu = null;
-			foreach (var item in VirtualView)
+			if (OperatingSystem.IsIOSVersionAtLeast(13)) // UIMenu is supported from iOS 13.0
 			{
-				var handler = item.ToHandler(MauiContext!);
-				var menuItem = (UIMenu)handler!.PlatformView!;
-
-				UIMenu? catalystMenu = null;
-
-				var identifierConstant = menuItem.Identifier.GetConstant();
-				if (identifierConstant != null)
-				{	
-					catalystMenu = PlatformView.GetMenu(identifierConstant);
-				}
-
-				lastFoundMenu = catalystMenu ?? lastFoundMenu;
-
-				if (catalystMenu == null)
+				foreach (var item in VirtualView)
 				{
-					
-					if (lastFoundMenu != null)
-					{
-						var fileMenuId = lastFoundMenu.GetIdentifier();
+					var handler = item.ToHandler(MauiContext!);
+					var menuItem = (UIMenu)handler!.PlatformView!;
 
-						PlatformView.InsertSiblingMenuAfter(menuItem, fileMenuId);
-					}
-					else
+					UIMenu? catalystMenu = null;
+
+					var identifierConstant = menuItem.Identifier.GetConstant();
+					if (identifierConstant != null)
 					{
-						PlatformView.InsertSiblingMenuBefore(menuItem, UIMenuIdentifier.File.GetConstant());
+						catalystMenu = PlatformView.GetMenu(identifierConstant);
 					}
+
+					lastFoundMenu = catalystMenu ?? lastFoundMenu;
+
+					if (catalystMenu == null)
+					{
+
+						if (lastFoundMenu != null)
+						{
+							var fileMenuId = lastFoundMenu.GetIdentifier();
+
+							PlatformView.InsertSiblingMenuAfter(menuItem, fileMenuId);
+						}
+						else
+						{
+							PlatformView.InsertSiblingMenuBefore(menuItem, UIMenuIdentifier.File.GetConstant());
+						}
+					}
+
+					lastFoundMenu = menuItem;
 				}
-
-				lastFoundMenu = menuItem;
 			}
 		}
 
@@ -81,9 +84,10 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void Rebuild()
 		{
-			UIMenuSystem
-				.MainSystem
-				.SetNeedsRebuild();
+			if (OperatingSystem.IsIOSVersionAtLeast(13))
+				UIMenuSystem
+					.MainSystem
+					.SetNeedsRebuild();
 		}
 	}
 }

@@ -30,8 +30,11 @@ namespace Microsoft.Maui.Platform
 			ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
 			HorizontalAlignment = UIControlContentHorizontalAlignment.Left;
 			VerticalAlignment = UIControlContentVerticalAlignment.Center;
-			AdjustsImageWhenDisabled = false;
-			AdjustsImageWhenHighlighted = false;
+			if (!OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				AdjustsImageWhenDisabled = false;
+				AdjustsImageWhenHighlighted = false;
+			}
 			TouchUpInside += OnTouchUpInside;
 		}
 
@@ -48,7 +51,8 @@ namespace Microsoft.Maui.Platform
 			{
 				_minimumViewSize = value;
 				var xOffset = (value - DefaultSize + LineWidth) / 4;
-				ContentEdgeInsets = new UIEdgeInsets(0, xOffset, 0, 0);
+				if (!OperatingSystem.IsIOSVersionAtLeast(15))
+					ContentEdgeInsets = new UIEdgeInsets(0, xOffset, 0, 0);
 			}
 		}
 

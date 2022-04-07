@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Foundation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
@@ -18,11 +19,12 @@ namespace Microsoft.Maui.Platform
 			var state = args?.State;
 			var userActivity = state.ToUserActivity(MauiUIApplicationDelegate.MauiSceneConfigurationKey);
 
-			UIApplication.SharedApplication.RequestSceneSessionActivation(
-				null,
-				userActivity,
-				null,
-				err => application.Handler?.MauiContext?.CreateLogger<IApplication>()?.LogError(new NSErrorException(err), err.Description));
+			if (OperatingSystem.IsIOSVersionAtLeast(13))
+				UIApplication.SharedApplication.RequestSceneSessionActivation(
+					null,
+					userActivity,
+					null,
+					err => application.Handler?.MauiContext?.CreateLogger<IApplication>()?.LogError(new NSErrorException(err), err.Description));
 		}
 
 		public static void CreatePlatformWindow(this IUIApplicationDelegate platformApplication, IApplication application, UIApplication uiApplication, NSDictionary launchOptions)
@@ -46,18 +48,21 @@ namespace Microsoft.Maui.Platform
 		{
 			// Find any userinfo/dictionaries we might pass into the activation state
 			var dicts = new List<NSDictionary>();
-			if (scene.UserActivity?.UserInfo is not null)
-				dicts.Add(scene.UserActivity.UserInfo);
-			if (session.UserInfo is not null)
-				dicts.Add(session.UserInfo);
-			if (session.StateRestorationActivity?.UserInfo is not null)
-				dicts.Add(session.StateRestorationActivity.UserInfo);
-			if (connectionOptions.UserActivities is not null)
+			if (OperatingSystem.IsIOSVersionAtLeast(13))
 			{
-				foreach (var u in connectionOptions.UserActivities)
+				if (scene.UserActivity?.UserInfo is not null)
+					dicts.Add(scene.UserActivity.UserInfo);
+				if (session.UserInfo is not null)
+					dicts.Add(session.UserInfo);
+				if (session.StateRestorationActivity?.UserInfo is not null)
+					dicts.Add(session.StateRestorationActivity.UserInfo);
+				if (connectionOptions.UserActivities is not null)
 				{
-					if (u is NSUserActivity userActivity && userActivity.UserInfo is not null)
-						dicts.Add(userActivity.UserInfo);
+					foreach (var u in connectionOptions.UserActivities)
+					{
+						if (u is NSUserActivity userActivity && userActivity.UserInfo is not null)
+							dicts.Add(userActivity.UserInfo);
+					}
 				}
 			}
 
@@ -74,19 +79,23 @@ namespace Microsoft.Maui.Platform
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
 				return null;
 
-			var uiWindow = windowScene is not null
+			UIWindow? uiWindow = null;
+
+			if (OperatingSystem.IsIOSVersionAtLeast(13))
+			{
+				uiWindow = windowScene is not null
 				? new UIWindow(windowScene)
 				: new UIWindow();
+				var mauiContext = applicationContext.MakeWindowScope(uiWindow, out var windowScope);
 
-			var mauiContext = applicationContext.MakeWindowScope(uiWindow, out var windowScope);
+				applicationContext.Services?.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
-			applicationContext.Services?.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
+				var activationState = new ActivationState(mauiContext, states);
 
-			var activationState = new ActivationState(mauiContext, states);
+				var mauiWindow = application.CreateWindow(activationState);
 
-			var mauiWindow = application.CreateWindow(activationState);
-
-			uiWindow.SetWindowHandler(mauiWindow, mauiContext);
+				uiWindow.SetWindowHandler(mauiWindow, mauiContext);
+			}
 
 			return uiWindow;
 		}

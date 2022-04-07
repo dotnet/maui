@@ -27,9 +27,10 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (MauiUIApplicationDelegate.Current.MenuBuilder == null)
 				{
-					UIMenuSystem
-						.MainSystem
-						.SetNeedsRebuild();
+					if (OperatingSystem.IsIOSVersionAtLeast(13))
+						UIMenuSystem
+							.MainSystem
+							.SetNeedsRebuild();
 				}
 				else
 				{

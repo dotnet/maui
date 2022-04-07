@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		protected override UIMenu CreatePlatformElement()
 		{
 			IUIMenuBuilder? uIMenuBuilder = null;
-
+#pragma warning disable CA1416 //
 			if (VirtualView.Parent?.Handler?.PlatformView is IUIMenuBuilder builder)
 			{
 				uIMenuBuilder = builder;
@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 						null,
 						MauiContext!,
 						uIMenuBuilder);
+#pragma warning restore
 		}
 
 		public void Add(IMenuElement view)

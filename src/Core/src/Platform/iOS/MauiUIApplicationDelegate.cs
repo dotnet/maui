@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
@@ -65,6 +66,7 @@ namespace Microsoft.Maui
 		}
 
 		[Export("application:configurationForConnectingSceneSession:options:")]
+		[SupportedOSPlatform("ios13.1")]
 		public virtual UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
 			=> new(MauiUIApplicationDelegate.MauiSceneConfigurationKey, connectingSceneSession.Role);
 

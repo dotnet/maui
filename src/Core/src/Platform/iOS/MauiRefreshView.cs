@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Platform
 			UserInteractionEnabled = true;
 		}
 
-		bool CanUseRefreshControlProperty() =>
-			this.GetNavigationController()?.NavigationBar?.PrefersLargeTitles ?? true;
+		bool CanUseRefreshControlProperty() => 
+			OperatingSystem.IsIOSVersionAtLeast(11) ? this.GetNavigationController()?.NavigationBar?.PrefersLargeTitles ?? true : true;
 	}
 }

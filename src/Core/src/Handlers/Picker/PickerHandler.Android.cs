@@ -113,14 +113,16 @@ namespace Microsoft.Maui.Handlers
 			{
 				using (var builder = new AlertDialog.Builder(Context))
 				{
+					var title = VirtualView.Title ?? string.Empty;
 					if (VirtualView.TitleColor == null)
 					{
-						builder.SetTitle(VirtualView.Title ?? string.Empty);
+						builder.SetTitle(title);
 					}
 					else
 					{
-						var title = new SpannableString(VirtualView.Title ?? string.Empty);
-						title.SetSpan(new ForegroundColorSpan(VirtualView.TitleColor.ToPlatform()), 0, title.Length(), SpanTypes.ExclusiveExclusive);
+						var spanTitle = new SpannableString(title);
+						var length = OperatingSystem.IsAndroidVersionAtLeast(29) ? spanTitle.Length() : title.Length;
+						spanTitle.SetSpan(new ForegroundColorSpan(VirtualView.TitleColor.ToPlatform()), 0, length, SpanTypes.ExclusiveExclusive);
 						builder.SetTitle(title);
 					}
 

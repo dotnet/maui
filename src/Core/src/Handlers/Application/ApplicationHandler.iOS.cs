@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
-			if (args is IWindow window)
+			if (args is IWindow window && OperatingSystem.IsIOSVersionAtLeast(13))
 			{
 				// See if the window's handler has an associated UIWindowScene and UISceneSession
 				var sceneSession = (window.Handler?.PlatformView as UIWindow)?.WindowScene?.Session;

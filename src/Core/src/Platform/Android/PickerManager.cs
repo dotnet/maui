@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Android.Text;
 using Android.Text.Style;
 using Android.Views;
@@ -59,8 +60,10 @@ namespace Microsoft.Maui.Platform
 			if (titleColor == null)
 				return new Java.Lang.String(title);
 
-			var spannableTitle = new SpannableString(title ?? string.Empty);
-			spannableTitle.SetSpan(new ForegroundColorSpan(titleColor.ToPlatform()), 0, spannableTitle.Length(), SpanTypes.ExclusiveExclusive);
+			title = title ?? string.Empty;
+			var spannableTitle = new SpannableString(title);
+			var length = OperatingSystem.IsAndroidVersionAtLeast(29) ? spannableTitle.Length() : title.Length;
+			spannableTitle.SetSpan(new ForegroundColorSpan(titleColor.ToPlatform()), 0, length, SpanTypes.ExclusiveExclusive);
 			return spannableTitle;
 		}
 	}

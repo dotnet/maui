@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			var parts = instruction.Data.Split(' ', '=');
 			var indexOfCompile = Array.IndexOf(parts, "compile");
 			if (indexOfCompile != -1)
-				return parts[indexOfCompile + 1].Trim('"', '\'').Equals("true", StringComparison.InvariantCultureIgnoreCase);
+				return parts[indexOfCompile + 1].Trim('"', '\'').Equals("true", StringComparison.OrdinalIgnoreCase);
 			return false;
 		}
 

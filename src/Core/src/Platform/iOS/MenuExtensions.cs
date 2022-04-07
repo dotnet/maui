@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Platform
 			// menu into it
 			if (Enum.TryParse(typeof(UIMenuIdentifier), title, out object? result))
 			{
-				if (result != null)
+				if (result != null && OperatingSystem.IsIOSVersionAtLeast(13))
 				{
 					platformMenu =
 						uIMenuBuilder.GetMenu(((UIMenuIdentifier)result).GetConstant());
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Platform
 			// This means we are merging into an existing menu
 			if (platformMenu != null)
 			{
-				if (platformMenuElements.Length > 0)
+				if (platformMenuElements.Length > 0 && OperatingSystem.IsIOSVersionAtLeast(13))
 				{
 					var menuContainer =
 						UIMenu.Create(String.Empty,
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Platform
 					uIMenuBuilder.InsertChildMenuAtStart(menuContainer, platformMenu.GetIdentifier());
 				}
 			}
-			else
+			else if (OperatingSystem.IsIOSVersionAtLeast(15)) // UIMenu.Create is supported from 13.0, UIMenuOptions.SingleSelection is from version 15.0
 			{
 				// This means we are creating our own new menu/submenu
 				platformMenu =
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Platform
 						UIMenuOptions.SingleSelection, platformMenuElements);
 			}
 
-			return platformMenu;
+			return platformMenu!; // TODO: Seems not expected to return null, need to handle OS versions below 13 
 		}
 	}
 }

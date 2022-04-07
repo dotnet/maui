@@ -78,7 +78,10 @@ namespace Microsoft.Maui
 
 			Directory.CreateDirectory(directory);
 
-			var result = imageData.Save(path, true);
+			bool result = false;
+
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				result = imageData.Save(path, true);
 
 			if (result == false)
 				throw new InvalidOperationException($"Unable to cache image at '{path}'.");

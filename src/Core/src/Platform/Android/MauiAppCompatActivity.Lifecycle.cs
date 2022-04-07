@@ -1,3 +1,4 @@
+using System;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -85,7 +86,8 @@ namespace Microsoft.Maui
 		{
 			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnRequestPermissionsResult>(del => del(this, requestCode, permissions, grantResults));
 
-			base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
+				base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 		}
 
 		protected override void OnRestoreInstanceState(Bundle savedInstanceState)

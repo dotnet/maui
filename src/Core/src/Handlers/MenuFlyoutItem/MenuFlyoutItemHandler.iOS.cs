@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		static Dictionary<int, IMenuElement> menus = new Dictionary<int, IMenuElement>();
 
+#pragma warning disable CA1416 // TODO: 'IMenuElement' is only supported on: 'ios' 13.0 and later
 		protected override UIMenuElement CreatePlatformElement()
 		{
 			int index = menus.Count;
@@ -49,6 +50,7 @@ namespace Microsoft.Maui.Handlers
 				menus[index].Clicked();
 			}
 		}
+#pragma warning restore CA1416
 
 		internal static void Reset()
 		{

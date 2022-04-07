@@ -69,6 +69,7 @@ namespace Microsoft.Maui.Platform
 			if (bottom == 0.0)
 				bottom = AlmostZero;
 
+			System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(15), "'UIButton.ContentEdgeInsets' is unsupported on: 'ios' 15.0 and later.");
 			platformButton.ContentEdgeInsets = new UIEdgeInsets(
 				(float)top,
 				(float)padding.Left,

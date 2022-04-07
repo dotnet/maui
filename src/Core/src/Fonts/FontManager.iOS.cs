@@ -167,7 +167,10 @@ namespace Microsoft.Maui
 			UIFont ApplyScaling(Font font, UIFont uiFont)
 			{
 				if (font.AutoScalingEnabled)
+				{
+					System.Diagnostics.Debug.Assert(OperatingSystem.IsIOSVersionAtLeast(11));
 					return UIFontMetrics.DefaultMetrics.GetScaledFont(uiFont);
+				}
 
 				return uiFont;
 			}

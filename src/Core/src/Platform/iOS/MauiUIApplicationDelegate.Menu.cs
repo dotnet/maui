@@ -15,7 +15,8 @@ namespace Microsoft.Maui
 		{
 			MenuFlyoutItemHandler.Reset();
 
-			base.BuildMenu(builder);
+			if (OperatingSystem.IsIOSVersionAtLeast(13))
+				base.BuildMenu(builder);
 
 			MenuBuilder = builder;
 
