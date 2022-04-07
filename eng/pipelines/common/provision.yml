@@ -35,7 +35,7 @@ steps:
       condition: and(eq(variables['provisioning'], 'true'),ne('${{ parameters.poolName }}', 'Azure Pipelines'))
       inputs:
         provisioning_script: $(provisionator.path)
-        provisioning_extra_args: $(provisionator.extraArguments)
+        provisioning_extra_args: $(provisionator.extraArguments) --force
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
