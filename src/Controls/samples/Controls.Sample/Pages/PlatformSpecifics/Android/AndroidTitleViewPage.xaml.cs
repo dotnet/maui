@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample.Pages
     {
         ICommand _returnToPlatformSpecificsPage;
 
-		public AndroidTitleViewPage(ICommand restore)
+		public AndroidTitleViewPage()
 		{
 			InitializeComponent();
 		}
