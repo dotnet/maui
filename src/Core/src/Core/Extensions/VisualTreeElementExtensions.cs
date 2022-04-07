@@ -53,13 +53,13 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Gets list of a Visual Tree Elements children based off of a given x, y point.
+		/// Gets list of a Visual Tree Elements children based off of a rectangle defined by it's coordinates.
 		/// </summary>
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
-		/// <param name="x1">The X point.</param>
-		/// <param name="y1">The Y point.</param>
-		/// <param name="x2">The X point.</param>
-		/// <param name="y2">The Y point.</param>
+		/// <param name="x1">The X coordinate of the top left point.</param>
+		/// <param name="y1">The Y coordinate of the top left point.</param>
+		/// <param name="x2">The X coordinate of the bottom right point.</param>
+		/// <param name="y2">The Y coordinate of the bottom right point.</param>
 		/// <returns>List of Children Elements.</returns>
 		public static IReadOnlyList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, double x1, double y1, double x2, double y2) =>
 			GetVisualTreeElements(visualElement, new Rect(x1, y1, x2 - x1, y2 - y1));
