@@ -92,6 +92,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.DeviceTests.Runne
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.DeviceTests", "src\Core\tests\DeviceTests\Core.DeviceTests.csproj", "{50BCB5CD-DC2A-42AA-B921-D99B19625CE1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Foldable", "src\Controls\Foldable\src\Controls.Foldable.csproj", "{F0A48792-ACD7-4B72-83EB-C56A70FA5A3A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -207,6 +209,10 @@ Global
 		{50BCB5CD-DC2A-42AA-B921-D99B19625CE1}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{50BCB5CD-DC2A-42AA-B921-D99B19625CE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50BCB5CD-DC2A-42AA-B921-D99B19625CE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0A48792-ACD7-4B72-83EB-C56A70FA5A3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0A48792-ACD7-4B72-83EB-C56A70FA5A3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0A48792-ACD7-4B72-83EB-C56A70FA5A3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0A48792-ACD7-4B72-83EB-C56A70FA5A3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -249,6 +255,7 @@ Global
 		{527A5A06-46E8-4F34-BEA5-F297FBBF04DC} = {FBA6A516-2B6A-48A9-B64F-B012114B9501}
 		{7BEF8AD2-3A1D-4920-9036-473B9A6D5B0D} = {FBA6A516-2B6A-48A9-B64F-B012114B9501}
 		{50BCB5CD-DC2A-42AA-B921-D99B19625CE1} = {C564DDD6-DE79-45CD-88EA-3F690481572A}
+		{F0A48792-ACD7-4B72-83EB-C56A70FA5A3A} = {50C758FE-4E10-409A-94F5-A75480960864}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
