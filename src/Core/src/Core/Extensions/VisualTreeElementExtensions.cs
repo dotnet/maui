@@ -7,6 +7,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using WinPoint = Windows.Foundation.Point;
+using WinRect = Windows.Foundation.Rect;
 #endif
 
 namespace Microsoft.Maui
@@ -71,17 +72,20 @@ namespace Microsoft.Maui
 		/// <param name="rectangle">The rectangle.</param>
 		/// <param name="usePlatformViewBounds">If true, use platform view bounds for given elements. Else, use the Elements Frame.</param>
 		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Rect rectangle, bool usePlatformViewBounds = true) =>
-			GetVisualTreeElementsInternal(
+		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Rect rectangle, bool usePlatformViewBounds = true)
+		{
+#if WINDOWS
+			if (usePlatformViewBounds)
+			{
+				return GetVisualTreeElementsWindowsInternal(visualElement,
+					uiElement => VisualTreeHelper.FindElementsInHostCoordinates(new WinRect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height), uiElement));
+			}
+#endif
+			return GetVisualTreeElementsInternal(
 				visualElement,
-				new List<Point>
-				{
-					new Point(rectangle.X, rectangle.Y),
-					new Point(rectangle.X + rectangle.Width, rectangle.Y + rectangle.Height),
-					new Point(rectangle.X + rectangle.Width, rectangle.Y),
-					new Point(rectangle.X, rectangle.Y + rectangle.Height)
-				},
+				bounds => bounds.IntersectsWith(rectangle),
 				usePlatformViewBounds);
+		}
 
 		/// <summary>
 		/// Gets list of a Visual Tree Elements children based off of a given x, y point.
@@ -101,21 +105,21 @@ namespace Microsoft.Maui
 		/// <param name="point"><see cref="Point"/>.</param>
 		/// <param name="usePlatformViewBounds">If true, use platform view bounds for given elements. Else, use the Element's Frame.</param>
 		/// <returns>List of Children Elements.</returns>
-		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Point point, bool usePlatformViewBounds = true) =>
-#if WINDOWS
-			GetVisualTreeElementsWindowsInternal(visualElement, new List<Point>() { point }, usePlatformViewBounds);
-#else
-			GetVisualTreeElementsInternal(visualElement, new List<Point>() { point }, usePlatformViewBounds);
-#endif
-
-#if WINDOWS
-		static IList<IVisualTreeElement> GetVisualTreeElementsWindowsInternal(IVisualTreeElement visualElement, IList<Point> points, bool usePlatformViewBounds = true)
+		public static IList<IVisualTreeElement> GetVisualTreeElements(this IVisualTreeElement visualElement, Point point, bool usePlatformViewBounds = true)
 		{
-			if (!usePlatformViewBounds)
+#if WINDOWS
+			if (usePlatformViewBounds)
 			{
-				return GetVisualTreeElementsInternal(visualElement, points, false);
+				return GetVisualTreeElementsWindowsInternal(visualElement,
+						uiElement => VisualTreeHelper.FindElementsInHostCoordinates(new WinPoint(point.X, point.Y), uiElement));
 			}
+#endif
+			return GetVisualTreeElementsInternal(visualElement, bounds => bounds.Contains(point), usePlatformViewBounds);
+		}
 
+#if WINDOWS
+		static IList<IVisualTreeElement> GetVisualTreeElementsWindowsInternal(IVisualTreeElement visualElement, Func<UIElement, IEnumerable<UIElement>> findChildren)
+		{
 			UIElement? uiElement = null;
 			var visualElements = new List<IVisualTreeElement>();
 			if (visualElement is IWindow window)
@@ -129,13 +133,7 @@ namespace Microsoft.Maui
 
 			if (uiElement != null)
 			{
-				var uiElements = new List<UIElement>();
-				foreach (var point in points)
-				{
-					uiElements.AddRange(VisualTreeHelper.FindElementsInHostCoordinates(new WinPoint(point.X, point.Y), uiElement));
-				}
-
-				var uniqueElements = uiElements.Distinct();
+				var uniqueElements = findChildren(uiElement).Distinct();
 				var viewTree = visualElement.GetVisualTreeDescendants().Where(n => n is IView).Select(n => new Tuple<IView, object?>((IView)n, ((IView)n).ToPlatform()));
 				var testList = viewTree.Where(n => uniqueElements.Contains(n.Item2)).Select(n => n.Item1);
 				if (testList != null && testList.Any())
@@ -147,30 +145,26 @@ namespace Microsoft.Maui
 		}
 #endif
 
-		static IList<IVisualTreeElement> GetVisualTreeElementsInternal(IVisualTreeElement visualElement, IList<Point> points, bool usePlatformViewBounds = true, IList<IVisualTreeElement>? elements = null)
+		static IList<IVisualTreeElement> GetVisualTreeElementsInternal(IVisualTreeElement visualElement,
+			Predicate<Rect> intersectElementBounds,
+			bool usePlatformViewBounds = true,
+			IList<IVisualTreeElement>? elements = null)
 		{
 			if (elements == null)
 				elements = new List<IVisualTreeElement>();
 
 			if (visualElement is IView view)
 			{
-				if (usePlatformViewBounds)
-				{
-					var bounds = view.GetPlatformViewBounds();
-					if (points.All(n => bounds.Contains(n)))
-						elements.Add(visualElement);
-				}
-				else if (points.All(n => view.Frame.Contains(n)))
-				{
+				Rect bounds = usePlatformViewBounds ? view.GetPlatformViewBounds() : view.Frame;
+				if (intersectElementBounds(bounds))
 					elements.Add(visualElement);
-				}
 			}
 
 			var children = visualElement.GetVisualChildren();
 
 			foreach (var child in children)
 			{
-				GetVisualTreeElementsInternal(child, points, usePlatformViewBounds, elements);
+				GetVisualTreeElementsInternal(child, intersectElementBounds, usePlatformViewBounds, elements);
 			}
 
 			return elements.Reverse().ToList();

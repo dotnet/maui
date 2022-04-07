@@ -101,7 +101,7 @@ namespace Maui.Controls.Sample.Pages
 
 			if (_state == State.SingleSelection)
 			{
-				elements = VisualTreeElementExtensions.GetVisualTreeElements(this.Window, x, y);
+				elements = VisualTreeElementExtensions.GetVisualTreeElements(this.Window, x, y, UsePlatformViewBoundsCheckBox.IsChecked);
 			}
 			else if (_state == State.RectangleSelectionPickFirst)
 			{
@@ -113,7 +113,7 @@ namespace Maui.Controls.Sample.Pages
 			else if (_state == State.RectangleSelectionPickSecond)
 			{
 				var rect = GetCurrentRect();
-				elements = VisualTreeElementExtensions.GetVisualTreeElements(this.Window, rect.Left, rect.Top, rect.Right, rect.Bottom);
+				elements = VisualTreeElementExtensions.GetVisualTreeElements(this.Window, rect.Left, rect.Top, rect.Right, rect.Bottom, UsePlatformViewBoundsCheckBox.IsChecked);
 				_state = State.RectangleSelectionPickFirst;
 				_overlay.Invalidate();
 			}
@@ -128,13 +128,6 @@ namespace Maui.Controls.Sample.Pages
 
 			if (e != null)
 				e.BackgroundColor = new Microsoft.Maui.Graphics.Color(255, 0, 0);
-
-#if WINDOWS
-			Windows.Foundation.Point pt = new Windows.Foundation.Point(x, y);
-			Microsoft.UI.Xaml.UIElement window = (Microsoft.UI.Xaml.UIElement)this.Handler.PlatformView;
-			var wElements = Microsoft.UI.Xaml.Media.VisualTreeHelper.FindElementsInHostCoordinates(pt, window).ToArray();
-			Debug.WriteLine("FindElementsInHostCoordinates: " + string.Join(' ', wElements.Select(x => x.GetType().Name)));
-#endif
 		}
 
 		// IWindowOverlayElement/IDrawable is implemented to show the rectangle selection lasso
