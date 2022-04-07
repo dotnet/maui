@@ -509,6 +509,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return start;
 		}
 
+		[PortHandler]
 		void UpdateCursorColor()
 		{
 			var control = Control;
