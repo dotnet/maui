@@ -43,6 +43,25 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
+		public async Task BackButtonVisibilityChangesWithPushPop()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				Assert.False(IsBackButtonVisible(handler));
+				await shell.Navigation.PushAsync(new ContentPage());
+				Assert.True(IsBackButtonVisible(handler));
+				await shell.Navigation.PopAsync();
+				Assert.False(IsBackButtonVisible(handler));
+			});
+		}
+
 		[Fact(DisplayName = "Set Has Back Button")]
 		public async Task SetHasBackButton()
 		{
@@ -52,10 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				return new Shell()
 				{
-					Items =
-					{
-						new ContentPage()
-					}
+					Items = { new ContentPage() }
 				};
 			});
 
@@ -86,10 +102,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				return new Shell()
 				{
-					Items =
-						{
-							new ContentPage()
-						}
+					Items = { new ContentPage() }
 				};
 			});
 
