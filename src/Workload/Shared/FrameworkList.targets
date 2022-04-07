@@ -44,6 +44,7 @@
       <Content
           Include="@(_AssemblyFiles->'%(RootDir)%(Directory)../%(FileName).pri')"
           TargetPath=""
+          Link=""
           Condition="Exists('%(RootDir)%(Directory)../%(FileName).pri')"
       />
     </ItemGroup>
