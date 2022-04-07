@@ -440,6 +440,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return accessoryView;
 		}
 
+		[PortHandler]
 		void UpdateSearchBarStyle()
 		{
 			Control.SearchBarStyle = Element.OnThisPlatform().GetSearchBarStyle().ToPlatformSearchBarStyle();
