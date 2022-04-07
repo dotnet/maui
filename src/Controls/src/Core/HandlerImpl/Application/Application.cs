@@ -6,7 +6,7 @@
 			new PropertyMapper<Application, ApplicationHandler>(ApplicationHandler.Mapper)
 			{
 #if ANDROID
-				[nameof(PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName)] = MapWindowSoftInputModeAdjust,
+				[PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName] = MapWindowSoftInputModeAdjust,
 #endif
 			};
 

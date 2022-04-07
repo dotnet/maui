@@ -6,7 +6,7 @@
 			new PropertyMapper<Entry, EntryHandler>(EntryHandler.Mapper)
 			{
 #if ANDROID
-				[nameof(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName)] = MapImeOptions,
+				[PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName] = MapImeOptions,
 #endif
 				[nameof(Text)] = MapText,
 				[nameof(TextTransform)] = MapText,

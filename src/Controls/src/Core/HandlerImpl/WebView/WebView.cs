@@ -5,9 +5,9 @@
 		public static IPropertyMapper<IWebView, WebViewHandler> ControlsWebViewMapper = new PropertyMapper<WebView, WebViewHandler>(WebViewHandler.Mapper)
 		{
 #if ANDROID
-			[nameof(PlatformConfiguration.AndroidSpecific.WebView.DisplayZoomControlsProperty.PropertyName)] = MapDisplayZoomControls,
-			[nameof(PlatformConfiguration.AndroidSpecific.WebView.EnableZoomControlsProperty.PropertyName)] = MapEnableZoomControls,
-			[nameof(PlatformConfiguration.AndroidSpecific.WebView.MixedContentModeProperty.PropertyName)] = MapMixedContentMode,
+			[PlatformConfiguration.AndroidSpecific.WebView.DisplayZoomControlsProperty.PropertyName] = MapDisplayZoomControls,
+			[PlatformConfiguration.AndroidSpecific.WebView.EnableZoomControlsProperty.PropertyName] = MapEnableZoomControls,
+			[PlatformConfiguration.AndroidSpecific.WebView.MixedContentModeProperty.PropertyName] = MapMixedContentMode,
 #endif
 		};
 
