@@ -53,9 +53,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Pages\ReproPage.xaml.cs">
+    <Compile Update="Pages\HitTestingPage.xaml.cs">
       <SubType>Code</SubType>
-      <DependentUpon>ReproPage.xaml</DependentUpon>
+      <DependentUpon>HitTestingPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 
@@ -64,7 +64,7 @@
   <Import Project="../../../Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
   <ItemGroup>
-    <MauiXaml Update="Pages\ReproPage.xaml">
+    <MauiXaml Update="Pages\HitTestingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
   </ItemGroup>
