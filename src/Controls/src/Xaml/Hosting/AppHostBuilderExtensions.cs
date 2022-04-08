@@ -205,14 +205,17 @@ namespace Microsoft.Maui.Controls.Hosting
 			VisualElement.RemapForControls();
 			Label.RemapForControls();
 			Button.RemapForControls();
+			DatePicker.RemapForControls();
 			RadioButton.RemapForControls();
 			FlyoutPage.RemapForControls();
 			Toolbar.RemapForControls();
 			Window.RemapForControls();
 			Editor.RemapForControls();
 			Entry.RemapForControls();
+			Picker.RemapForControls();
 			SearchBar.RemapForControls();
 			TabbedPage.RemapForControls();
+			TimePicker.RemapForControls();
 			Layout.RemapForControls();
 			Shape.RemapForControls();
 

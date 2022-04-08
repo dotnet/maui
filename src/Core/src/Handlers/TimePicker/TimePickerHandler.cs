@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ITimePickerHandler
 	{
-		public static IPropertyMapper<ITimePicker, ITimePickerHandler> TimePickerMapper = new PropertyMapper<ITimePicker, ITimePickerHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<ITimePicker, ITimePickerHandler> Mapper = new PropertyMapper<ITimePicker, ITimePickerHandler>(ViewHandler.ViewMapper)
 		{
 #if __ANDROID__
 			[nameof(ITimePicker.Background)] = MapBackground,
@@ -32,11 +32,11 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		public TimePickerHandler() : base(TimePickerMapper)
+		public TimePickerHandler() : base(Mapper)
 		{
 		}
 
-		public TimePickerHandler(IPropertyMapper mapper) : base(mapper ?? TimePickerMapper)
+		public TimePickerHandler(IPropertyMapper mapper) : base(mapper ?? Mapper)
 		{
 		}
 

@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using System;
 using Foundation;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Platform
 {
@@ -43,7 +42,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var selectedIndex = picker.SelectedIndex;
 
-			platformPicker.Text = selectedIndex == -1 ? "" : picker.GetItem(selectedIndex);
+			platformPicker.Text = selectedIndex == -1 ? string.Empty : picker.GetItem(selectedIndex);
 
 			var pickerView = platformPicker.UIPickerView;
 			pickerView?.ReloadAllComponents();

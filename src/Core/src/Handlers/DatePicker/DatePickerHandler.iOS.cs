@@ -48,6 +48,8 @@ namespace Microsoft.Maui.Handlers
 
 		internal UIDatePicker? DatePickerDialog { get { return _picker; } }
 
+		internal bool UpdateImmediately { get; set; }
+
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
 			if (_picker is UIDatePicker picker)
@@ -127,7 +129,8 @@ namespace Microsoft.Maui.Handlers
 
 		void OnValueChanged(object? sender, EventArgs? e)
 		{
-			SetVirtualViewDate();
+			if (UpdateImmediately)	// Platform Specific
+				SetVirtualViewDate();
 
 			if (VirtualView != null)
 				VirtualView.IsFocused = true;
