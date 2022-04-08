@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls
 				_layout.SetValue(RadioButtonGroup.SelectedValueProperty, radioButton.Value);
 			}
 
-			if (radioButton.Value.Equals(this.SelectedValue))
+			if (object.Equals(radioButton.Value, this.SelectedValue))
 			{
 				radioButton.IsChecked = true;
 			}

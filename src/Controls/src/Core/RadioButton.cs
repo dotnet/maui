@@ -472,7 +472,7 @@ namespace Microsoft.Maui.Controls
 
 		void HandleRadioButtonGroupValueChanged(Element layout, RadioButtonGroupValueChanged args)
 		{
-			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || !Value.Equals(args.Value) || !MatchesScope(args))
+			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || !object.Equals(Value, args.Value) || !MatchesScope(args))
 			{
 				return;
 			}
