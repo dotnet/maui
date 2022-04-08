@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly string _hostPageRelativePath;
 		private readonly string _contentRootDir;
 
+#pragma warning disable RS0022
 		/// <summary>
 		/// Initializes a new instance of <see cref="WinUIWebViewManager"/>
 		/// </summary>
@@ -49,6 +50,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_hostPageRelativePath = hostPageRelativePath;
 			_contentRootDir = contentRootDir;
 		}
+#pragma warning restore RS0022
 
 		/// <inheritdoc />
 		protected override async Task HandleWebResourceRequest(CoreWebView2WebResourceRequestedEventArgs eventArgs)
