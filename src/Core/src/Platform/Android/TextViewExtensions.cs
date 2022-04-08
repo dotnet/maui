@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var newText = label.Text ?? string.Empty;
 
-			if (PlatformVersion.IsAtLeast(24))
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				textView.SetText(Html.FromHtml(newText, FromHtmlOptions.ModeCompact), BufferType.Spannable);
 			else
 #pragma warning disable CS0618 // Type or member is obsolete
