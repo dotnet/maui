@@ -46,6 +46,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
 
     @Override
     public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+        this.imageView.setImageDrawable(resource);
         callback.onComplete(true, resource, new Runnable() {
             @Override
             public void run() {
