@@ -28,7 +28,6 @@
       "packs": [
           "Microsoft.Maui.Dependencies",
           "Microsoft.Maui.Sdk",
-          "Microsoft.Maui.Extensions",
           "Microsoft.Maui.Graphics",
           "Microsoft.Maui.Resizetizer.Sdk",
           "Microsoft.Maui.Templates",
@@ -234,10 +233,6 @@
     },
     "Microsoft.Maui.Essentials.Runtime.win": {
       "kind": "framework",
-      "version": "@VERSION@"
-    },
-    "Microsoft.Maui.Extensions": {
-      "kind": "library",
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Graphics": {
