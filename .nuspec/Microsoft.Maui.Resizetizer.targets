@@ -564,6 +564,7 @@
             DependsOnTargets="MauiGeneratePackageAppxManifest" />
 
     <Target Name="MauiGeneratePackageAppxManifest"
+            Condition="'$(WindowsPackageType)' != 'None'"
             DependsOnTargets="$(MauiGeneratePackageAppxManifestDependsOnTargets)"
             Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);@(AppxManifest)"
             Outputs="$(_MauiManifestStampFile);$(_MauiIntermediateManifest)Package.appxmanifest">
@@ -572,7 +573,7 @@
             <_MauiWindowsApplicationId Condition="'$(_MauiWindowsApplicationId)' == '' and '$(ApplicationIdGuid)' != ''">$(ApplicationIdGuid)</_MauiWindowsApplicationId>
             <_MauiWindowsApplicationId Condition="'$(_MauiWindowsApplicationId)' == '' and '$(ApplicationId)' != ''">$(ApplicationId)</_MauiWindowsApplicationId>
         </PropertyGroup>
-        
+
         <GeneratePackageAppxManifest
             IntermediateOutputPath="$(_MauiIntermediateManifest)"
             AppxManifest="@(AppxManifest)"
