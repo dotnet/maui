@@ -20,6 +20,11 @@ public partial class FontManagerTests : TestBase
 	[InlineData("insubfolder.ttf#insubfolder", "Fonts/insubfolder.ttf")]
 	public void CanLoadFonts(string fontName, string assetName)
 	{
+		// skip on older androids for now
+		// https://github.com/dotnet/maui/issues/5903
+		if (!OperatingSystem.IsAndroidVersionAtLeast(28))
+			return;
+
 		var fontWeight = FontWeight.Regular;
 		var fontStyle = TypefaceStyle.Normal;
 		var fontSlant = false;
@@ -46,6 +51,11 @@ public partial class FontManagerTests : TestBase
 	[Fact]
 	public void CanLoadEmbeddedFont()
 	{
+		// skip on older androids for now
+		// https://github.com/dotnet/maui/issues/5903
+		if (!OperatingSystem.IsAndroidVersionAtLeast(28))
+			return;
+
 		var fontName = "FooBarFont";
 		var fontWeight = FontWeight.Regular;
 		var fontStyle = TypefaceStyle.Normal;
