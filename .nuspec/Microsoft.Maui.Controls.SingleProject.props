@@ -3,6 +3,7 @@
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
     <OutputType Condition="'$(OutputType)' == 'Exe'">WinExe</OutputType>
     <EnablePreviewMsixTooling Condition="'$(EnablePreviewMsixTooling)' == '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">true</EnablePreviewMsixTooling>
+    <WindowsPackageType Condition=" '$(WindowsPackageType)' == '' and '$(EnablePreviewMsixTooling)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') ">MSIX</WindowsPackageType>
     <_SingleProjectRIDRequired Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">true</_SingleProjectRIDRequired>
     <_SingleProjectRIDSpecified Condition="'$(RuntimeIdentifier)' != '' or '$(RuntimeIdentifiers)' != ''">true</_SingleProjectRIDSpecified>
   </PropertyGroup>

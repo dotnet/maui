@@ -55,7 +55,6 @@
     <EnableDefaultPageItems>False</EnableDefaultPageItems>
     <EnableDefaultApplicationDefinition>False</EnableDefaultApplicationDefinition>
     <_SingleProjectWindowsExcludes>$(WindowsProjectFolder)/**/.*/**</_SingleProjectWindowsExcludes>
-    <WindowsPackageType Condition=" '$(WindowsPackageType)' == '' and '$(EnablePreviewMsixTooling)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') ">MSIX</WindowsPackageType>
   </PropertyGroup>
 
   <!--
@@ -90,6 +89,21 @@
           Include="$(WindowsProjectFolder)**/*.xaml" />
       <EmbeddedResource Remove="@(_MauiXamlToRemove)" />
       <MauiXaml Remove="@(_MauiXamlToRemove)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!-- This is required because the "CalculateAppxGenerateProjectPriEnabled" target explicitly depends
+        on "_ValidatePresenceOfAppxManifestItems" and we need to get in before then. -->
+  <Target Name="_ValidateWindowsPackageTypeBeforeTarget"
+          BeforeTargets="_ValidateWindowsPackageType"
+          DependsOnTargets="_MauiRemoveRemoveAppxManifestForUnpackaged" />
+
+  <Target Name="_MauiRemoveRemoveAppxManifestForUnpackaged"
+          Condition="'$(WindowsPackageType)' == 'None' and '@(AppxManifest)' != ''">
+
+    <ItemGroup>
+      <AppxManifest Remove="@(AppxManifest)" />
     </ItemGroup>
 
   </Target>
