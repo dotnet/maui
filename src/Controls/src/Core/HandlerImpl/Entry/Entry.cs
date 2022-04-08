@@ -7,6 +7,7 @@
 			{
 #if IOS
 				[PlatformConfiguration.iOSSpecific.Entry.CursorColorProperty.PropertyName] = MapCursorColor,
+				[PlatformConfiguration.iOSSpecific.Entry.AdjustsFontSizeToFitWidthProperty.PropertyName] = MapAdjustsFontSizeToFitWidth,
 #endif
 				[nameof(Text)] = MapText,
 				[nameof(TextTransform)] = MapText,

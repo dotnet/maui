@@ -17,6 +17,11 @@ namespace Microsoft.Maui.Controls.Platform
 					textField.TintColor = color.ToPlatform();
 			}
 		}
+
+		public static void UpdateAdjustsFontSizeToFitWidth(this UITextField textField, Entry entry)
+		{
+			textField.AdjustsFontSizeToFitWidth = entry.OnThisPlatform().AdjustsFontSizeToFitWidth();
+		}
 		
 		public static void UpdateText(this UITextView textView, InputView inputView)
 		{
