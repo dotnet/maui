@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 				else
 				{
-					var path = Path.Combine(Environment.CurrentDirectory, relativePath);
+					var path = Path.Combine(AppContext.BaseDirectory, relativePath);
 					if (File.Exists(path))
 					{
 						// NOTE: This is stream copying is to work around a hanging bug in WinRT with managed streams.
