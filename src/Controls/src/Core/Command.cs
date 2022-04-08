@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			// Not a Nullable, if it's a value type then null is not valid
-			return !t.GetTypeInfo().IsValueType;
+			return !t.IsValueType;
 		}
 	}
 

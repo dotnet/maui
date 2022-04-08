@@ -200,13 +200,13 @@ namespace Microsoft.Maui.Controls.Xaml
 				var ignoreCase = (serviceProvider?.GetService(typeof(IConverterOptions)) as IConverterOptions)?.IgnoreCase ?? false;
 
 				//If the type is nullable, as the value is not null, it's safe to assume we want the built-in conversion
-				if (toType.GetTypeInfo().IsGenericType && toType.GetGenericTypeDefinition() == typeof(Nullable<>))
+				if (toType.IsGenericType && toType.GetGenericTypeDefinition() == typeof(Nullable<>))
 					toType = Nullable.GetUnderlyingType(toType);
 
 				//Obvious Built-in conversions
 				try
 				{
-					if (toType.GetTypeInfo().IsEnum)
+					if (toType.IsEnum)
 						return Enum.Parse(toType, str, ignoreCase);
 					if (toType == typeof(SByte))
 						return SByte.Parse(str, CultureInfo.InvariantCulture);

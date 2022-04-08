@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls
 				return false;
 			do
 			{
-				targetType = targetType.GetTypeInfo().BaseType;
+				targetType = targetType.BaseType;
 				if (TargetType == targetType)
 					return true;
 			} while (targetType != typeof(Element));

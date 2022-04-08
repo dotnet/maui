@@ -3,7 +3,7 @@ using Android.OS;
 
 namespace Microsoft.Maui.Platform
 {
-	public static partial class PlatformVersion
+	internal static partial class PlatformVersion
 	{
 		public static bool IsAtLeast(BuildVersionCodes buildVersionCode) => OperatingSystem.IsAndroidVersionAtLeast((int)buildVersionCode);
 
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Platform
 		public static bool Supports(int platformApi) => OperatingSystem.IsAndroidVersionAtLeast(platformApi);
 	}
 
-	public static class PlatformApis
+	internal static class PlatformApis
 	{
 		public const int BlendModeColorFilter = 29;
 		public const int SeekBarSetMin = 26;

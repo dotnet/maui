@@ -214,7 +214,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 		public static FontWeight GetFontWeight(this Typeface typeface) =>
-			PlatformVersion.IsAtLeast(28)
+			OperatingSystem.IsAndroidVersionAtLeast(28)
 				? (FontWeight)typeface.Weight
 				: typeface.IsBold ? FontWeight.Bold : FontWeight.Regular;
 	}

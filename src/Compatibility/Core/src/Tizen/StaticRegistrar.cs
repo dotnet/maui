@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				if (_handlers.TryGetValue(viewType, out handler))
 					return true;
 
-				viewType = viewType.GetTypeInfo().BaseType;
+				viewType = viewType.BaseType;
 			}
 			handler = null;
 			return false;

@@ -69,29 +69,14 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromResource'][2]/Docs" />
 		public static ImageSource FromResource(string resource, Type resolvingType)
 		{
-			return FromResource(resource, resolvingType.GetTypeInfo().Assembly);
+			return FromResource(resource, resolvingType.Assembly);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromResource'][1]/Docs" />
 		public static ImageSource FromResource(string resource, Assembly sourceAssembly = null)
 		{
-#if !NETSTANDARD1_0
 			sourceAssembly = sourceAssembly ?? Assembly.GetCallingAssembly();
-#else
-			if (sourceAssembly == null)
-			{
-				MethodInfo callingAssemblyMethod = typeof(Assembly).GetTypeInfo().GetDeclaredMethod("GetCallingAssembly");
-				if (callingAssemblyMethod != null)
-				{
-					sourceAssembly = (Assembly)callingAssemblyMethod.Invoke(null, new object[0]);
-				}
-				else
-				{
-					Microsoft.Maui.Controls.Application.Current?.FindMauiContext()?.CreateLogger<ImageSource>()?.LogWarning("Cannot find CallingAssembly, pass resolvingType to FromResource to ensure proper resolution");
-					return null;
-				}
-			}
-#endif
+
 			return FromStream(() => sourceAssembly.GetManifestResourceStream(resource));
 		}
 
