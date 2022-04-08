@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Permissions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Permissions']/Docs" />
 	public static partial class Permissions
@@ -33,9 +33,17 @@ namespace Microsoft.Maui.Essentials
 				throw new PermissionException($"{typeof(TPermission).Name} permission was not granted: {status}");
 		}
 
+		internal static async Task EnsureGrantedOrRestrictedAsync<TPermission>()
+            where TPermission : BasePermission, new()
+        {
+            var status = await RequestAsync<TPermission>();
+
+            if (status != PermissionStatus.Granted && status != PermissionStatus.Restricted)
+                throw new PermissionException($"{typeof(TPermission).Name} permission was not granted or restricted: {status}");
+        }
+
 		public abstract partial class BasePermission
 		{
-			[Preserve]
 			public BasePermission()
 			{
 			}
@@ -49,7 +57,6 @@ namespace Microsoft.Maui.Essentials
 			public abstract bool ShouldShowRationale();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Battery']/Docs" />
 		public partial class Battery
 		{
 		}
@@ -74,7 +81,6 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Flashlight.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Flashlight']/Docs" />
 		public partial class Flashlight
 		{
 		}
@@ -127,7 +133,6 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Sms.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Sms']/Docs" />
 		public partial class Sms
 		{
 		}

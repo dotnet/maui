@@ -5,22 +5,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using AppKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media
 {
-	public partial class TextToSpeechImplementation : ITextToSpeech
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
-		static readonly Lazy<NSSpeechSynthesizer> speechSynthesizer = new Lazy<NSSpeechSynthesizer>(() =>
+		readonly Lazy<NSSpeechSynthesizer> speechSynthesizer = new Lazy<NSSpeechSynthesizer>(() =>
 			new NSSpeechSynthesizer { Delegate = new SpeechSynthesizerDelegate() });
 
-		public Task<IEnumerable<Locale>> GetLocalesAsync() =>
+		Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
 			Task.FromResult(NSSpeechSynthesizer.AvailableVoices
 				.Select(voice => NSSpeechSynthesizer.AttributesForVoice(voice))
 				.Select(attribute => new Locale(attribute["VoiceLanguage"]?.ToString(), null, attribute["VoiceName"]?.ToString(), attribute["VoiceIdentifier"]?.ToString())));
 
-		public Task SpeakAsync(string text, CancellationToken cancelToken)
-			=> SpeakAsync(text, default, cancelToken);
-
-		public async Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
+		async Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
 		{
 			var ss = speechSynthesizer.Value;
 			var ssd = (SpeechSynthesizerDelegate)ss.Delegate;

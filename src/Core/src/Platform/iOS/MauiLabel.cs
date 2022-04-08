@@ -1,8 +1,10 @@
-﻿using System;
-using CoreAnimation;
-using CoreGraphics;
-using ObjCRuntime;
+﻿#nullable disable
+
+using System;
 using UIKit;
+using ObjCRuntime;
+using RectangleF = CoreGraphics.CGRect;
+using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Platform
 {
@@ -10,7 +12,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public UIEdgeInsets TextInsets { get; set; }
 
-		public MauiLabel(CGRect frame) : base(frame)
+		public MauiLabel(RectangleF frame) : base(frame)
 		{
 		}
 
@@ -18,7 +20,7 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		public override void DrawText(CGRect rect) =>
+		public override void DrawText(RectangleF rect) =>
 			base.DrawText(TextInsets.InsetRect(rect));
 
 		public override void InvalidateIntrinsicContentSize()
@@ -39,9 +41,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public override CGSize SizeThatFits(CGSize size) => AddInsets(base.SizeThatFits(size));
+		public override SizeF SizeThatFits(SizeF size) => AddInsets(base.SizeThatFits(size));
 
-		CGSize AddInsets(CGSize size) => new CGSize(
+		SizeF AddInsets(SizeF size) => new SizeF(
 			width: size.Width + TextInsets.Left + TextInsets.Right,
 			height: size.Height + TextInsets.Top + TextInsets.Bottom);
 	}

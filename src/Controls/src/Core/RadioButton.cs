@@ -2,8 +2,9 @@ using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -34,8 +35,6 @@ namespace Microsoft.Maui.Controls
 		static ControlTemplate s_defaultTemplate;
 
 		readonly Lazy<PlatformConfigurationRegistry<RadioButton>> _platformConfigurationRegistry;
-
-		static bool? s_rendererAvailable;
 
 		public event EventHandler<CheckedChangedEventArgs> CheckedChanged;
 
@@ -298,22 +297,6 @@ namespace Microsoft.Maui.Controls
 			return base.OnMeasure(widthConstraint, heightConstraint);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='ResolveControlTemplate']/Docs" />
-		public override ControlTemplate ResolveControlTemplate()
-		{
-			var template = base.ResolveControlTemplate();
-
-			if (template == null)
-			{
-				if (!RendererAvailable)
-				{
-					ControlTemplate = DefaultTemplate;
-				}
-			}
-
-			return ControlTemplate;
-		}
-
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
@@ -350,19 +333,6 @@ namespace Microsoft.Maui.Controls
 			{
 				_tapGestureRecognizer.Tapped -= SelectRadioButton;
 				GestureRecognizers.Remove(_tapGestureRecognizer);
-			}
-		}
-
-		static bool RendererAvailable
-		{
-			get
-			{
-				if (!s_rendererAvailable.HasValue)
-				{
-					s_rendererAvailable = Internals.Registrar.Registered.GetHandlerType(typeof(RadioButton)) != null;
-				}
-
-				return s_rendererAvailable.Value;
 			}
 		}
 

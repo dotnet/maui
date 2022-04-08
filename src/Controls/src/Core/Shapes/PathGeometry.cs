@@ -1,4 +1,5 @@
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			double density = 1.0d;
 #if ANDROID
-			density = Essentials.DeviceDisplay.MainDisplayInfo.Density;
+			density = DeviceDisplay.MainDisplayInfo.Density;
 #endif
 
 			foreach (var figure in Figures)

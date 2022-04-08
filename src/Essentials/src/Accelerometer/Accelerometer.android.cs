@@ -1,32 +1,40 @@
+#nullable enable
+using System;
+using Android.App;
+using Android.Content;
 using Android.Hardware;
-using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class AccelerometerImplementation
+	partial class AccelerometerImplementation
 	{
-		public bool IsSupported =>
-			Platform.SensorManager?.GetDefaultSensor(SensorType.Accelerometer) != null;
+		static SensorManager? _sensorManager;
+		static Sensor? _accelerometer;
 
-		AccelerometerListener listener;
-		Sensor accelerometer;
+		static SensorManager? SensorManager =>
+			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
+
+		static Sensor? Sensor =>
+			_accelerometer ??= SensorManager?.GetDefaultSensor(SensorType.Accelerometer);
+
+		public bool IsSupported => Sensor is not null;
+
+		AccelerometerListener? _listener;
 
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
+			_listener = new AccelerometerListener(OnChanged);
+
 			var delay = sensorSpeed.ToPlatform();
-			listener = new AccelerometerListener(this);
-			accelerometer = Platform.SensorManager.GetDefaultSensor(SensorType.Accelerometer);
-			Platform.SensorManager.RegisterListener(listener, accelerometer, delay);
+			SensorManager!.RegisterListener(_listener, Sensor, delay);
 		}
 
 		void PlatformStop()
 		{
-			if (listener == null || accelerometer == null)
-				return;
+			SensorManager!.UnregisterListener(_listener, Sensor);
 
-			Platform.SensorManager.UnregisterListener(listener, accelerometer);
-			listener.Dispose();
-			listener = null;
+			_listener!.Dispose();
+			_listener = null;
 		}
 	}
 
@@ -35,24 +43,25 @@ namespace Microsoft.Maui.Essentials.Implementations
 		// acceleration due to gravity
 		const double gravity = 9.81;
 
-		AccelerometerImplementation _accelerometer;
-
-		internal AccelerometerListener(AccelerometerImplementation accelerometer)
+		public AccelerometerListener(Action<AccelerometerData> changeHandler)
 		{
-			_accelerometer = accelerometer;
+			ChangeHandler = changeHandler;
 		}
 
-		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
+		public readonly Action<AccelerometerData> ChangeHandler;
+
+		void ISensorEventListener.OnAccuracyChanged(Sensor? sensor, SensorStatus accuracy)
 		{
 		}
 
-		void ISensorEventListener.OnSensorChanged(SensorEvent e)
+		void ISensorEventListener.OnSensorChanged(SensorEvent? e)
 		{
-			if ((e?.Values?.Count ?? 0) < 3)
+			var values = e?.Values ?? Array.Empty<float>();
+			if (values.Count < 3)
 				return;
 
-			var data = new AccelerometerData(e.Values[0] / gravity, e.Values[1] / gravity, e.Values[2] / gravity);
-			_accelerometer.OnChanged(data);
+			var data = new AccelerometerData(values[0] / gravity, values[1] / gravity, values[2] / gravity);
+			ChangeHandler?.Invoke(data);
 		}
 	}
 }

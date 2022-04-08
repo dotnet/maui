@@ -1,14 +1,15 @@
+#nullable enable
 using System;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 
 using WindowsClipboard = Windows.ApplicationModel.DataTransfer.Clipboard;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public partial class ClipboardImplementation : IClipboard
+	partial class ClipboardImplementation : IClipboard
 	{
-		public Task SetTextAsync(string text)
+		public Task SetTextAsync(string? text)
 		{
 			var dataPackage = new DataPackage();
 			dataPackage.SetText(text);
@@ -19,20 +20,20 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public bool HasText
 			=> WindowsClipboard.GetContent().Contains(StandardDataFormats.Text);
 
-		public Task<string> GetTextAsync()
+		public Task<string?> GetTextAsync()
 		{
 			var clipboardContent = WindowsClipboard.GetContent();
 			return clipboardContent.Contains(StandardDataFormats.Text)
 				? clipboardContent.GetTextAsync().AsTask()
-				: Task.FromResult<string>(null);
+				: Task.FromResult<string?>(null);
 		}
 
-		public void StartClipboardListeners()
+		void StartClipboardListeners()
 			=> WindowsClipboard.ContentChanged += ClipboardChangedEventListener;
 
-		public void StopClipboardListeners()
+		void StopClipboardListeners()
 			=> WindowsClipboard.ContentChanged -= ClipboardChangedEventListener;
 
-		public void ClipboardChangedEventListener(object sender, object val) => Clipboard.ClipboardChangedInternal();
+		public void ClipboardChangedEventListener(object? sender, object val) => OnClipboardContentChanged();
 	}
 }

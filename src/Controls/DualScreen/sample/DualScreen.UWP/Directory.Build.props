@@ -1,3 +1,0 @@
-<Project>
-  <Import Project="..\..\..\..\..\SampleImports\Directory.Build.props" />
- </Project>

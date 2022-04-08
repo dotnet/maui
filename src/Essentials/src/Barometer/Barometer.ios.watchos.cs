@@ -1,20 +1,21 @@
 using System;
 using CoreMotion;
 using Foundation;
+using Microsoft.Maui.Media;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class BarometerImplementation : IBarometer
+	partial class BarometerImplementation : IBarometer
 	{
 		CMAltimeter altitudeManager;
 
-		bool PlatformIsSupported
+		public bool IsSupported
 			=> CMAltimeter.IsRelativeAltitudeAvailable;
 
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			altitudeManager = new CMAltimeter();
-			altitudeManager.StartRelativeAltitudeUpdates(Platform.GetCurrentQueue(), LocationManagerUpdatedHeading);
+			altitudeManager.StartRelativeAltitudeUpdates(NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), LocationManagerUpdatedHeading);
 
 			void LocationManagerUpdatedHeading(CMAltitudeData e, NSError error)
 			{

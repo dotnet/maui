@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Storage;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests

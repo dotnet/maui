@@ -12,6 +12,7 @@
 		public const string Gesture = "Gesture";
 		public const string Label = "Label";
 		public const string Layout = "Layout";
+		public const string Modal = "Modal";
 		public const string NavigationPage = "NavigationPage";
 		public const string SearchBar = "SearchBar";
 		public const string Shell = "Shell";

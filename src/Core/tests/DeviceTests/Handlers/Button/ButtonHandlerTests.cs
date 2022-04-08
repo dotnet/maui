@@ -122,5 +122,30 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected.Right, native.Right, Precision);
 			Assert.Equal(expected.Bottom, native.Bottom, Precision);
 		}
+
+		[Fact(DisplayName = "LineBreakMode Initializes Correctly")]
+		public async Task LineBreakModeInitializesCorrectly()
+		{
+			var xplatLineBreakMode = LineBreakMode.TailTruncation;
+
+			var button = new ButtonStub()
+			{
+				LineBreakMode = xplatLineBreakMode
+			};
+
+			var expectedValue = xplatLineBreakMode.ToPlatform();
+
+			var values = await GetValueAsync(button, (handler) =>
+			{
+				return new
+				{
+					ViewValue = button.LineBreakMode,
+					NativeViewValue = GetNativeLineBreakMode(handler)
+				};
+			});
+
+			Assert.Equal(xplatLineBreakMode, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue);
+		}
 	}
 }

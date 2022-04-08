@@ -212,6 +212,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			else if (e.PropertyName == ImageButton.SourceProperty.PropertyName)
 				await TryUpdateSource().ConfigureAwait(false);
 		}
+
+		[PortHandler]
 		void UpdatePadding()
 		{
 			_image.Margin = WinUIHelpers.CreateThickness(0);
