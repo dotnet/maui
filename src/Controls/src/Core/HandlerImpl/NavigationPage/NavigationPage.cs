@@ -7,6 +7,7 @@
 			{
 #if IOS
 				[PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName] = MapPrefersLargeTitles,
+				[PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName] = MapIsNavigationBarTranslucent,
 #endif
 			};
 

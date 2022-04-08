@@ -555,6 +555,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				NavigationBar.PrefersLargeTitles = NavPage.OnThisPlatform().PrefersLargeTitles();
 		}
 
+		[PortHandler]
 		void UpdateTranslucent()
 		{
 			NavigationBar.Translucent = NavPage.OnThisPlatform().IsNavigationBarTranslucent();
