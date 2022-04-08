@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Tizen.NUI.Components;
 using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui
@@ -17,11 +18,10 @@ namespace Microsoft.Maui
 			if (nativeScroll != null)
 			{
 				_scrollViews.Add(scrollBar, nativeScroll);
-				// TODO
-				//if (nativeScroll is Scroller scroller)
-				//{
-				//	scroller.Scrolled += OnScrolled;
-				//}
+				if (nativeScroll is ScrollableBase scroller)
+				{
+					scroller.Scrolling -= OnScrolled;
+				}
 			}
 		}
 
@@ -40,11 +40,10 @@ namespace Microsoft.Maui
 		{
 			foreach (var scroll in _scrollViews.Values)
 			{
-				// TODO
-				//if (scroll is Scroller scroller)
-				//{
-				//	scroller.Scrolled -= OnScrolled;
-				//}
+				if (scroll is ScrollableBase scroller)
+				{
+					scroller.Scrolling -= OnScrolled;
+				}
 			}
 			_scrollViews.Clear();
 		}
