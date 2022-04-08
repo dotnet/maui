@@ -1,4 +1,15 @@
-﻿Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs
+﻿Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.BlazorWebViewInitializedEventArgs() -> void
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.WebView.get -> Microsoft.Web.WebView2.Wpf.WebView2
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.BlazorWebViewInitializingEventArgs() -> void
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.BrowserExecutableFolder.get -> string
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.BrowserExecutableFolder.set -> void
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.EnvironmentOptions.get -> Microsoft.Web.WebView2.Core.CoreWebView2EnvironmentOptions
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.EnvironmentOptions.set -> void
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.UserDataFolder.get -> string
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.UserDataFolder.set -> void
+Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs
 Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.Url.get -> System.Uri
 Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.UrlLoadingStrategy.get -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
 Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.UrlLoadingStrategy.set -> void
@@ -9,6 +20,10 @@ Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.OpenInWebView = 1 -> 
 Microsoft.AspNetCore.Components.WebView.WebView2.WebView2WebViewManager
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.BlazorWebView() -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.BlazorWebViewInitialized.get -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs>
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.BlazorWebViewInitialized.set -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.BlazorWebViewInitializing.get -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs>
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.BlazorWebViewInitializing.set -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.HostPage.get -> string
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.HostPage.set -> void
@@ -34,6 +49,8 @@ override Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.OnApplyTempla
 override Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.OnInitialized(System.EventArgs e) -> void
 static Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions.AddBlazorWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
 static Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions.AddWpfBlazorWebView(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.BlazorWebViewInitializedProperty -> System.Windows.DependencyProperty
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.BlazorWebViewInitializingProperty -> System.Windows.DependencyProperty
 static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.HostPageProperty -> System.Windows.DependencyProperty
 static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.RootComponentsProperty -> System.Windows.DependencyProperty
 static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.ServicesProperty -> System.Windows.DependencyProperty

@@ -1,4 +1,15 @@
-﻿Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs
+﻿Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.BlazorWebViewInitializedEventArgs() -> void
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.WebView.get -> Microsoft.Web.WebView2.WinForms.WebView2
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.BlazorWebViewInitializingEventArgs() -> void
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.BrowserExecutableFolder.get -> string
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.BrowserExecutableFolder.set -> void
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.EnvironmentOptions.get -> Microsoft.Web.WebView2.Core.CoreWebView2EnvironmentOptions
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.EnvironmentOptions.set -> void
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.UserDataFolder.get -> string
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.UserDataFolder.set -> void
+Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs
 Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.Url.get -> System.Uri
 Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.UrlLoadingStrategy.get -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
 Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.UrlLoadingStrategy.set -> void
@@ -9,6 +20,8 @@ Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.OpenInWebView = 1 -> 
 Microsoft.AspNetCore.Components.WebView.WebView2.WebView2WebViewManager
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.BlazorWebView() -> void
+Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.BlazorWebViewInitialized -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs>
+Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.BlazorWebViewInitializing -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs>
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.HostPage.get -> string
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.HostPage.set -> void
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.RootComponents.get -> Microsoft.AspNetCore.Components.WebView.WindowsForms.RootComponentsCollection
