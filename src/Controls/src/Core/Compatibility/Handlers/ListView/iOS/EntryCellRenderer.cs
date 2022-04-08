@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -42,6 +43,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
 			UpdateBackground(tvc, entryCell);
+			System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14), "TODO: Unsupported on iOS from version 14.0");
 			UpdateLabel(tvc, entryCell);
 			UpdateText(tvc, entryCell);
 			UpdateKeyboard(tvc, entryCell);
@@ -58,6 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var entryCell = (EntryCell)sender;
 			var realCell = (EntryCellTableViewCell)GetRealCell(entryCell);
 
+			System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14), "TODO: Unsupported on iOS from version 14.0");
 			if (e.PropertyName == EntryCell.LabelProperty.PropertyName)
 				UpdateLabel(realCell, entryCell);
 			else if (e.PropertyName == EntryCell.TextProperty.PropertyName)
@@ -100,8 +103,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		static void UpdateIsEnabled(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			cell.UserInteractionEnabled = entryCell.IsEnabled;
-			cell.TextLabel.Enabled = entryCell.IsEnabled;
-			cell.DetailTextLabel.Enabled = entryCell.IsEnabled;
+			if (!OperatingSystem.IsIOSVersionAtLeast(14))
+			{
+				cell.TextLabel.Enabled = entryCell.IsEnabled;
+				cell.DetailTextLabel.Enabled = entryCell.IsEnabled;
+			}
 			cell.TextField.Enabled = entryCell.IsEnabled;
 		}
 
@@ -110,11 +116,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			cell.TextField.ApplyKeyboard(entryCell.Keyboard);
 		}
 
+		[UnsupportedOSPlatform("ios14.0")]
 		static void UpdateLabel(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			cell.TextLabel.Text = entryCell.Label;
 		}
 
+		[UnsupportedOSPlatform("ios14.0")]
 		static void UpdateLabelColor(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			cell.TextLabel.TextColor = entryCell.LabelColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
@@ -152,10 +160,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void LayoutSubviews()
 			{
 				base.LayoutSubviews();
-
+#pragma warning disable CA1416 // TODO:  'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and late
 				// simple algorithm to generally line up entries
 				var start = (nfloat)Math.Round(Math.Max(Frame.Width * 0.3, TextLabel.Frame.Right + 10));
 				TextField.Frame = new RectangleF(start, (Frame.Height - 30) / 2, Frame.Width - TextLabel.Frame.Left - start, 30);
+#pragma warning restore CA1416
 				// Centers TextField Content  (iOS6)
 				TextField.VerticalAlignment = UIControlContentVerticalAlignment.Center;
 			}

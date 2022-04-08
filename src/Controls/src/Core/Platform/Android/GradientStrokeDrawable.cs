@@ -30,7 +30,8 @@ namespace Microsoft.Maui.Controls.Platform
 		public void SetStroke(int strokeWidth, AColor strokeColor)
 		{
 			_strokePaint.StrokeWidth = strokeWidth;
-			_strokePaint.Color = strokeColor;
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				_strokePaint.Color = strokeColor;
 			InvalidateSelf();
 		}
 
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			base.OnDraw(shape, canvas, paint);
 
-			if (_backgroundColor != null)
+			if (_backgroundColor != null && OperatingSystem.IsAndroidVersionAtLeast(29))
 				paint.Color = _backgroundColor.Value;
 
 			shape.Draw(canvas, _strokePaint);

@@ -58,10 +58,9 @@ namespace Microsoft.Maui.Controls.Platform
 			float distanceFromCenter = (float)Math.Abs(width / 2 - _center.X);
 			float radius = (width / 2 + distanceFromCenter) * 1.1f;
 
-			var paint = new Paint
-			{
-				Color = _endColor
-			};
+			var paint = new Paint()
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				paint.Color = _endColor;
 
 			canvas.DrawCircle(centerX, centerY, radius * _progress, paint);
 		}

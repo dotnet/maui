@@ -725,7 +725,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					var paint = new Paint { AntiAlias = true };
 					paint.TextSize = _defaultSize;
-					paint.Color = pressed ? _pressedBackgroundColor.ToPlatform() : TintColor.ToPlatform();
+					if (OperatingSystem.IsAndroidVersionAtLeast(29))
+						paint.Color = pressed ? _pressedBackgroundColor.ToPlatform() : TintColor.ToPlatform();
 					paint.SetStyle(Paint.Style.Fill);
 					var y = (Bounds.Height() + paint.TextSize) / 2;
 					canvas.DrawText(Text, 0, y, paint);

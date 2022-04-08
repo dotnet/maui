@@ -274,7 +274,9 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					var color = item.IsEnabled ? tintColor.ToPlatform() : tintColor.MultiplyAlpha(0.302f).ToPlatform();
 					SpannableString titleTinted = new SpannableString(item.Text);
+#pragma warning disable CA1416 // TODO:   'SpannableString.Length()' is only supported on: 'android' 29.0 and later.
 					titleTinted.SetSpan(new ForegroundColorSpan(color), 0, titleTinted.Length(), 0);
+#pragma warning restore CA1416
 					newTitle = titleTinted;
 				}
 				else

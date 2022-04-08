@@ -46,7 +46,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			tvc.Cell = item;
 			tvc.PropertyChanged += HandlePropertyChanged;
 			tvc.AccessoryView = uiSwitch;
-			tvc.TextLabel.Text = boolCell.Text;
+			if (!OperatingSystem.IsIOSVersionAtLeast(14))
+				tvc.TextLabel.Text = boolCell.Text;
 
 			uiSwitch.On = boolCell.On;
 
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				((UISwitch)realCell.AccessoryView).SetState(boolCell.On, true);
 				UpdateOnColor(realCell, boolCell);
 			}
-			else if (e.PropertyName == SwitchCell.TextProperty.PropertyName)
+			else if (e.PropertyName == SwitchCell.TextProperty.PropertyName && !OperatingSystem.IsIOSVersionAtLeast(14))
 				realCell.TextLabel.Text = boolCell.Text;
 			else if (e.PropertyName == Cell.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled(realCell, boolCell);
@@ -106,8 +107,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateIsEnabled(CellTableViewCell cell, SwitchCell switchCell)
 		{
 			cell.UserInteractionEnabled = switchCell.IsEnabled;
-			cell.TextLabel.Enabled = switchCell.IsEnabled;
-			cell.DetailTextLabel.Enabled = switchCell.IsEnabled;
+			if (!OperatingSystem.IsIOSVersionAtLeast(14))
+			{
+				cell.TextLabel.Enabled = switchCell.IsEnabled;
+				cell.DetailTextLabel.Enabled = switchCell.IsEnabled;
+			}
 			var uiSwitch = cell.AccessoryView as UISwitch;
 			if (uiSwitch != null)
 				uiSwitch.Enabled = switchCell.IsEnabled;

@@ -153,8 +153,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (!FlyoutPageController.ShouldShowSplitMode && _presented)
 				Presented = false;
-
+#pragma warning disable CA1416 // TODO: API has [UnsupportedOSPlatform("ios8.0")], needs check
 			base.WillRotate(toInterfaceOrientation, duration);
+#pragma warning restore
 		}
 
 		protected override void Dispose(bool disposing)
@@ -275,9 +276,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var view = _detailController.View;
 				view.Frame = target;
 				detailView.Layer.Opacity = (float)opacity;
-				UIView.SetAnimationCurve(UIViewAnimationCurve.EaseOut);
-				UIView.SetAnimationDuration(250);
-				UIView.CommitAnimations();
+				if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				{
+					UIView.SetAnimationCurve(UIViewAnimationCurve.EaseOut);
+					UIView.SetAnimationDuration(250);
+					UIView.CommitAnimations();
+				}
 			}
 			else
 			{
@@ -358,7 +362,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_detailController.AddChildViewController(detailRenderer.ViewController);
 
 			SetNeedsStatusBarAppearanceUpdate();
-			if (PlatformVersion.Supports(PlatformApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
+			if (OperatingSystem.IsIOSVersionAtLeast(11) && PlatformVersion.Supports(PlatformApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			if (detailRenderer.ViewController.View.Superview != null)

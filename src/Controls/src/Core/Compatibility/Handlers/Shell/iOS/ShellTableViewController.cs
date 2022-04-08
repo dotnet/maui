@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewDidLoad();
 
 			TableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				TableView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 
 			TableView.Source = _source;
@@ -86,7 +86,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void ViewSafeAreaInsetsDidChange()
 		{
 			ShellFlyoutContentManager.SetHeaderContentInset();
-			base.ViewSafeAreaInsetsDidChange();
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
+				base.ViewSafeAreaInsetsDidChange();
 		}
 
 		protected override void Dispose(bool disposing)

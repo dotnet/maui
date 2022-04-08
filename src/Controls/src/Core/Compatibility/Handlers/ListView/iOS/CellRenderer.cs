@@ -48,7 +48,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
-			tvc.TextLabel.Text = item.ToString();
+			if (!OperatingSystem.IsIOSVersionAtLeast(14))
+				tvc.TextLabel.Text = item.ToString();
 
 			UpdateBackground(tvc, item);
 
@@ -83,7 +84,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public virtual void SetBackgroundColor(UITableViewCell tableViewCell, Cell cell, UIColor color)
 		{
-			tableViewCell.TextLabel.BackgroundColor = color;
+			if (!OperatingSystem.IsIOSVersionAtLeast(14))
+				tableViewCell.TextLabel.BackgroundColor = color;
 			tableViewCell.ContentView.BackgroundColor = color;
 			tableViewCell.BackgroundColor = color;
 		}

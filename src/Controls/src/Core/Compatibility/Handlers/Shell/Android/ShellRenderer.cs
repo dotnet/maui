@@ -360,8 +360,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				using (var paint = new Paint())
 				{
-
-					paint.Color = Color;
+					if (OperatingSystem.IsAndroidVersionAtLeast(29))
+						paint.Color = Color;
 
 					canvas.DrawRect(new ARect(0, 0, bounds.Right, TopSize), paint);
 

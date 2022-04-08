@@ -386,7 +386,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				button.SetBackgroundImage(DestructiveBackground, UIControlState.Normal);
 
 			button.SetTitle(item.Text, UIControlState.Normal);
-			button.TitleEdgeInsets = new UIEdgeInsets(0, 15, 0, 15);
+			if (!OperatingSystem.IsIOSVersionAtLeast(15))
+				button.TitleEdgeInsets = new UIEdgeInsets(0, 15, 0, 15);
 
 			button.Enabled = item.IsEnabled;
 
@@ -555,7 +556,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				var button = new UIButton(new RectangleF(0, 0, largestWidth, height));
 				button.SetBackgroundImage(NormalBackground, UIControlState.Normal);
-				button.TitleEdgeInsets = new UIEdgeInsets(0, 15, 0, 15);
+				if (!OperatingSystem.IsIOSVersionAtLeast(15))
+					button.TitleEdgeInsets = new UIEdgeInsets(0, 15, 0, 15);
 				button.SetTitle(StringResources.More, UIControlState.Normal);
 
 				var moreWidth = button.TitleLabel.SizeThatFits(new SizeF(width, height)).Width + 30;

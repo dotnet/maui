@@ -70,7 +70,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			void UpdateIsEnabled(bool isEnabled)
 			{
 				UserInteractionEnabled = isEnabled;
-				TextLabel.Enabled = isEnabled;
+				if (!OperatingSystem.IsIOSVersionAtLeast(14))
+					TextLabel.Enabled = isEnabled;
 			}
 
 			void ViewCellPropertyChanged(object sender, PropertyChangedEventArgs e)

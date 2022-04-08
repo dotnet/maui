@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -30,10 +31,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			tvc.Cell = textCell;
 			tvc.PropertyChanged = HandleCellPropertyChanged;
 
-			tvc.TextLabel.Text = textCell.Text;
-			tvc.DetailTextLabel.Text = textCell.Detail;
-			tvc.TextLabel.TextColor = (textCell.TextColor ?? DefaultTextColor).ToPlatform();
-			tvc.DetailTextLabel.TextColor = (textCell.DetailColor ?? DefaultDetailColor).ToPlatform();
+			if (!OperatingSystem.IsIOSVersionAtLeast(14))
+			{
+				tvc.TextLabel.Text = textCell.Text;
+				tvc.DetailTextLabel.Text = textCell.Detail;
+				tvc.TextLabel.TextColor = (textCell.TextColor ?? DefaultTextColor).ToPlatform();
+				tvc.DetailTextLabel.TextColor = (textCell.DetailColor ?? DefaultDetailColor).ToPlatform();
+			}
 
 			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
@@ -52,20 +56,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var textCell = (TextCell)sender;
 			var tvc = (CellTableViewCell)GetRealCell(textCell);
 
-			if (args.PropertyName == TextCell.TextProperty.PropertyName)
+			if (!OperatingSystem.IsIOSVersionAtLeast(14))
 			{
-				tvc.TextLabel.Text = ((TextCell)tvc.Cell).Text;
-				tvc.TextLabel.SizeToFit();
+				if (args.PropertyName == TextCell.TextProperty.PropertyName)
+				{
+					tvc.TextLabel.Text = ((TextCell)tvc.Cell).Text;
+					tvc.TextLabel.SizeToFit();
+				}
+				else if (args.PropertyName == TextCell.DetailProperty.PropertyName)
+				{
+					tvc.DetailTextLabel.Text = ((TextCell)tvc.Cell).Detail;
+					tvc.DetailTextLabel.SizeToFit();
+				}
+				else if (args.PropertyName == TextCell.TextColorProperty.PropertyName)
+					tvc.TextLabel.TextColor = textCell.TextColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
+				else if (args.PropertyName == TextCell.DetailColorProperty.PropertyName)
+					tvc.DetailTextLabel.TextColor = textCell.DetailColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
 			}
-			else if (args.PropertyName == TextCell.DetailProperty.PropertyName)
-			{
-				tvc.DetailTextLabel.Text = ((TextCell)tvc.Cell).Detail;
-				tvc.DetailTextLabel.SizeToFit();
-			}
-			else if (args.PropertyName == TextCell.TextColorProperty.PropertyName)
-				tvc.TextLabel.TextColor = textCell.TextColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
-			else if (args.PropertyName == TextCell.DetailColorProperty.PropertyName)
-				tvc.DetailTextLabel.TextColor = textCell.DetailColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
 			else if (args.PropertyName == Cell.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled(tvc, textCell);
 			else if (args.PropertyName == TextCell.AutomationIdProperty.PropertyName)
@@ -87,8 +94,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		static void UpdateIsEnabled(CellTableViewCell cell, TextCell entryCell)
 		{
 			cell.UserInteractionEnabled = entryCell.IsEnabled;
-			cell.TextLabel.Enabled = entryCell.IsEnabled;
-			cell.DetailTextLabel.Enabled = entryCell.IsEnabled;
+			if (!OperatingSystem.IsIOSVersionAtLeast(14))
+			{
+				cell.TextLabel.Enabled = entryCell.IsEnabled;
+				cell.DetailTextLabel.Enabled = entryCell.IsEnabled;
+			}
 		}
 	}
 }

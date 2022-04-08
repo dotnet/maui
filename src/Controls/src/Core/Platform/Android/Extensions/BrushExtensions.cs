@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (paint == null || brush == null || brush.IsEmpty)
 				return;
 
-			if (brush is SolidColorBrush solidColorBrush)
+			if (brush is SolidColorBrush solidColorBrush && OperatingSystem.IsAndroidVersionAtLeast(29))
 			{
 				var backgroundColor = solidColorBrush.Color;
 				paint.Color = backgroundColor.ToPlatform();
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static bool UseGradients(this GradientDrawable gradientDrawable)
 		{
-			if (!PlatformVersion.IsAtLeast(24))
+			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
 				return false;
 
 			var colors = gradientDrawable.GetColors();

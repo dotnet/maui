@@ -68,7 +68,9 @@ namespace Microsoft.Maui.Controls.Platform
 			void OnPageBusy(IView sender, bool enabled)
 			{
 				_busyCount = Math.Max(0, enabled ? _busyCount + 1 : _busyCount - 1);
+#pragma warning disable CA1416 // TODO:  'UIApplication.NetworkActivityIndicatorVisible' is unsupported on: 'ios' 13.0 and later
 				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = _busyCount > 0;
+#pragma warning restore CA1416
 			}
 
 			void OnAlertRequested(IView sender, AlertArguments arguments)
