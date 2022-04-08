@@ -11,6 +11,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
+	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 	public partial class ShellTests
 	{
 		[Fact(DisplayName = "Shell with Flyout Disabled Doesn't Render Flyout")]

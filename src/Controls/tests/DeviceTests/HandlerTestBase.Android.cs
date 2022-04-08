@@ -102,11 +102,6 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						aca.SetSupportActionBar(null);
 					}
-
-					// Ideally this wouldn't be needed but I haven't found the right platform
-					// component I can key into for knowing when the world can move on
-					await Task.Delay(1000);
-					fragmentManager.ExecutePendingTransactions();
 				}
 			});
 		}
@@ -230,6 +225,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			public FakeActivityRootView(Context context) : base(context)
 			{
+				Id = AView.GenerateViewId();
 			}
 		}
 	}

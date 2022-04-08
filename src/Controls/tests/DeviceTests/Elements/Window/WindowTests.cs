@@ -20,6 +20,9 @@ namespace Microsoft.Maui.DeviceTests
 {
 
 	[Category(TestCategory.Window)]
+#if ANDROID
+	[Collection(HandlerTestBase.RunInNewWindowCollection)]
+#endif
 	public partial class WindowTests : HandlerTestBase
 	{
 		void SetupBuilder()
