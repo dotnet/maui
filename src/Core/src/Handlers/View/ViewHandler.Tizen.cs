@@ -59,8 +59,37 @@ namespace Microsoft.Maui.Handlers
 		{
 			UpdateTransformation(handler, view);
 		}
-
 		public static void MapContextFlyout(IViewHandler handler, IView view) { }
+
+		public static void MapToolbar(IViewHandler handler, IView view)
+		{
+			if (handler.VirtualView is not IToolbarElement te || te.Toolbar == null)
+				return;
+
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			var platformToolbar = te.Toolbar?.ToPlatform(handler.MauiContext);
+
+			if (handler.PlatformView is IToolbarContainer toolbarContainer)
+			{
+				toolbarContainer.SetToolbar((MauiToolbar)platformToolbar!);
+			}
+			else
+			{
+				handler.MauiContext.GetToolbarContainer()?.SetToolbar((MauiToolbar)platformToolbar!);
+			}
+		}
+
+		internal static void MapToolbar(IElementHandler handler, IToolbarElement toolbarElement)
+		{
+			if (toolbarElement.Toolbar == null)
+				return;
+
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(handler.MauiContext)} null");
+
+			var platformToolbar = toolbarElement.Toolbar?.ToPlatform(handler.MauiContext);
+			handler.MauiContext.GetToolbarContainer()?.SetToolbar((MauiToolbar)platformToolbar!);
+		}
 
 		internal static void UpdateTransformation(IViewHandler handler, IView view)
 		{

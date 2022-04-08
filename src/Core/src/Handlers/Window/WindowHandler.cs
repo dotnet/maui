@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IWindow.Title)] = MapTitle,
 			[nameof(IWindow.Content)] = MapContent,
-#if ANDROID || WINDOWS
+#if ANDROID || WINDOWS || TIZEN
 			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
 #if WINDOWS || IOS

@@ -1,47 +1,31 @@
 ﻿#nullable enable
 
-using System.Collections.Generic;
-using Tizen.UIExtensions.NUI;
-
 namespace Microsoft.Maui.Handlers
 {
-	// TODO : Need to implement
 	public partial class NavigationViewHandler :
-		ViewHandler<IStackNavigationView, NavigationStack>, IPlatformViewHandler
+		ViewHandler<IStackNavigationView, StackNavigationManager>, IPlatformViewHandler
 	{
-		public IStackNavigationView NavigationView => ((IStackNavigationView)VirtualView);
-
-		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
-
-		protected override NavigationStack CreatePlatformView()
+		protected override StackNavigationManager CreatePlatformView()
 		{
-			return new NavigationStack()
-			{
-				PushAnimation = (v, p) => v.Opacity = 0.5f + 0.5f * (float)p,
-				PopAnimation = (v, p) => v.Opacity = 0.5f + 0.5f * (float)(1 - p)
-			};
+			return new StackNavigationManager();
 		}
 
-		public static void RequestNavigation(INavigationViewHandler arg1, IStackNavigationView arg2, object? arg3)
+		protected override void ConnectHandler(StackNavigationManager platformView)
 		{
-			if (arg1 is NavigationViewHandler platformHandler && arg3 is NavigationRequest navigationRequest)
-			{
-				platformHandler.NavigationStack = navigationRequest.NavigationStack;
-			}
-			//if (arg3 is NavigationRequest args)
-			//	arg1.OnPushRequested(args);
+			base.ConnectHandler(platformView);
+			platformView.Connect(VirtualView);
 		}
 
-		protected override void ConnectHandler(NavigationStack nativeView)
+		protected override void DisconnectHandler(StackNavigationManager platformView)
 		{
-			base.ConnectHandler(nativeView);
-			if (VirtualView == null)
-				return;
+			base.DisconnectHandler(platformView);
+			platformView.Disconnect();
 		}
 
-		protected override void DisconnectHandler(NavigationStack nativeView)
+		public static void RequestNavigation(INavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
 		{
-			base.DisconnectHandler(nativeView);
+			if (arg1 is NavigationViewHandler platformHandler && arg3 is NavigationRequest ea)
+				platformHandler.PlatformView?.RequestNavigation(ea);
 		}
 	}
 }

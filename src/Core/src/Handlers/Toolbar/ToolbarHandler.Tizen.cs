@@ -1,16 +1,12 @@
-﻿using NView = Tizen.NUI.BaseComponents.View;
-
-namespace Microsoft.Maui.Handlers
+﻿namespace Microsoft.Maui.Handlers
 {
-	public partial class ToolbarHandler : ElementHandler<IToolbar, NView>
+	public partial class ToolbarHandler : ElementHandler<IToolbar, MauiToolbar>
 	{
-		protected override NView CreatePlatformElement()
-		{
-			throw new System.NotImplementedException();
-		}
+		protected override MauiToolbar CreatePlatformElement() => new();
 
 		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)
 		{
+			arg1.PlatformView.UpdateTitle(arg2);
 		}
 	}
 }

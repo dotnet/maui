@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.HotReload;
 using Tizen.UIExtensions.NUI;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Platform
 {
@@ -21,6 +22,8 @@ namespace Microsoft.Maui.Platform
 			set => SetView(value);
 		}
 
+		public NView? CurrentPlatformView { get; private set; }
+
 		void SetView(IElement? view, bool forceRefresh = false)
 		{
 			if (view == _view && !forceRefresh)
@@ -35,6 +38,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			Children.Clear();
+			CurrentPlatformView = null;
 
 			if (_view != null)
 			{
@@ -43,6 +47,7 @@ namespace Microsoft.Maui.Platform
 				nativeView.WidthSpecification = Tizen.NUI.BaseComponents.LayoutParamPolicies.MatchParent;
 				nativeView.HeightSpecification = Tizen.NUI.BaseComponents.LayoutParamPolicies.MatchParent;
 				Children.Add(nativeView);
+				CurrentPlatformView = nativeView;
 			}
 		}
 

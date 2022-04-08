@@ -80,7 +80,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (image == null)
 				return false;
 			var path = ResourcePath.GetPath(imageSource);
-			image.ResourceUrl = path;
 			return await image.LoadAsync(path);
 		}
 	}

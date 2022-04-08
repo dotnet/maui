@@ -17,7 +17,12 @@ namespace Microsoft.Maui.Handlers
 
 			if (window.VisualDiagnosticsOverlay != null)
 				window.VisualDiagnosticsOverlay.Initialize();
+		}
 
+		public static void MapToolbar(IWindowHandler handler, IWindow view)
+		{
+			if (view is IToolbarElement tb)
+				ViewHandler.MapToolbar(handler, tb);
 		}
 
 		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)

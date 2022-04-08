@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				await _modalStack.Pop(animated);
 				CurrentPageController?.SendAppearing();
+				(modal.Handler as IPlatformViewHandler)?.Dispose();
 			}
 			return modal;
 		}

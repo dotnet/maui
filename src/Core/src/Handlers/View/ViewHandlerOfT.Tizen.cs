@@ -97,6 +97,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var bounds = PlatformView.GetBounds();
 			var parent = PlatformView.GetParent();
+
 			var containable = parent as IContainable<NView>;
 			if (containable != null)
 			{
@@ -113,14 +114,12 @@ namespace Microsoft.Maui.Handlers
 
 			if (containable != null)
 			{
-				containable.Children.Add(PlatformView);
+				containable.Children.Add(ContainerView);
 			}
 			else
 			{
-				parent?.Add(PlatformView);
+				parent?.Add(ContainerView);
 			}
-
-			parent?.Add(ContainerView);
 			ContainerView.UpdateBounds(bounds);
 		}
 
