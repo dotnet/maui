@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.DisconnectHandler(platformView);
 			platformView.ScrollChange -= ScrollChange;
+			platformView.CrossPlatformArrange = null;
 		}
 
 		public override void PlatformArrange(Rect frame)
