@@ -217,6 +217,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			TabbedPage.RemapForControls();
 			TimePicker.RemapForControls();
 			Layout.RemapForControls();
+			ScrollView.RemapForControls();
 			Shape.RemapForControls();
 
 			return builder;
