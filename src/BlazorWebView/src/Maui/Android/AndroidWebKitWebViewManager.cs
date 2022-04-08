@@ -6,8 +6,8 @@ using Android.Webkit;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using AWebView = Android.Webkit.WebView;
 using AUri = Android.Net.Uri;
+using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
