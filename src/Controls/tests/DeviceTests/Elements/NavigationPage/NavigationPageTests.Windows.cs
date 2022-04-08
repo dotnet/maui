@@ -52,5 +52,22 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(navView.IsBackEnabled);
 			});
 		}
+
+		[Fact(DisplayName = "App Title Bar Margin Sets when Back Button Visible")]
+		public async Task AppTitleBarMarginSetsWhenBackButtonVisible()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
+			{
+				var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
+				await navPage.PushAsync(new ContentPage());
+
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var rootView = rootManager.RootView as WindowRootView;
+				Assert.True(rootView.AppTitleBar.Margin.Left > 20);
+			});
+		}
 	}
 }

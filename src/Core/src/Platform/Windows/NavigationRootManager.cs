@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -12,8 +9,6 @@ namespace Microsoft.Maui.Platform
 	{
 		IMauiContext _mauiContext;
 		WindowRootView _rootView;
-		MauiToolbar? _toolbar;
-		IMenuBar? _menuBar;
 
 		public NavigationRootManager(IMauiContext mauiContext)
 		{
@@ -25,7 +20,7 @@ namespace Microsoft.Maui.Platform
 
 		internal bool UseCustomAppTitleBar { get; set; } = true;
 		internal FrameworkElement? AppTitleBar => _rootView.AppTitleBar;
-		internal MauiToolbar? ToolBar => _toolbar;
+		internal MauiToolbar? Toolbar => _rootView.Toolbar;
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
 		{
@@ -34,11 +29,6 @@ namespace Microsoft.Maui.Platform
 				var platformWindow = _mauiContext.GetPlatformWindow();
 				platformWindow.ExtendsContentIntoTitleBar = true;
 				UpdateAppTitleBar(true);
-			}
-
-			if (_rootView.NavigationViewControl != null)
-			{
-				_rootView.NavigationViewControl.HeaderControl = _toolbar;
 			}
 		}
 
@@ -55,6 +45,17 @@ namespace Microsoft.Maui.Platform
 		public virtual void Connect(IView view)
 		{
 			bool firstConnect = _rootView.Content == null;
+
+			if (!firstConnect)
+			{
+				// We need to make sure to clear out the root view content 
+				// before creating the new view.
+				// The new view might try to act on the old content if we don't
+				// It might have code in the handler that retrieves the rootmanager
+				// in order to setup the toolbar or other components				
+				_rootView.Content = null;
+			}
+
 			var platformView = view.ToPlatform(_mauiContext);
 
 			NavigationView rootNavigationView;
@@ -121,26 +122,12 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetMenuBar(IMenuBar? menuBar)
 		{
-			_menuBar = menuBar;
-
-			if (_toolbar == null)
-				return;
-
-			if (menuBar != null)
-				_toolbar.SetMenuBar((MenuBar)menuBar.ToPlatform(_mauiContext));
-			else
-				_toolbar.SetMenuBar(null);
+			_rootView.MenuBar = menuBar?.ToPlatform(_mauiContext) as MenuBar;
 		}
 
 		internal void SetToolbar(FrameworkElement? toolBar)
 		{
-			_toolbar = toolBar as MauiToolbar;
-			SetMenuBar(_menuBar);
-
-			if (_rootView.NavigationViewControl != null)
-			{
-				_rootView.NavigationViewControl.HeaderControl = _toolbar;
-			}
+			_rootView.Toolbar = toolBar as MauiToolbar;
 		}
 
 		void OnWindowActivated(object sender, WindowActivatedEventArgs e)

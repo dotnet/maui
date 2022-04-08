@@ -14,6 +14,8 @@ using Google.Android.Material.AppBar;
 using AndroidX.CoordinatorLayout.Widget;
 using Android.Graphics.Drawables;
 using Xunit;
+using AndroidX.AppCompat.Graphics.Drawable;
+using Android.Content;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -167,12 +169,12 @@ namespace Microsoft.Maui.DeviceTests
 			return toolBar;
 		}
 
-		protected bool IsBackButtonVisible(IElementHandler handler) =>
-			GetPlatformToolbar(handler)?.NavigationIcon != null;
-
-		bool IsBackButtonVisible(IMauiContext mauiContext)
+		protected bool IsBackButtonVisible(IElementHandler handler)
 		{
-			return GetPlatformToolbar(mauiContext)?.NavigationIcon != null;
+			if (GetPlatformToolbar(handler)?.NavigationIcon is DrawerArrowDrawable dad)
+				return dad.Progress == 1;
+
+			return false;
 		}
 
 		class WindowTestFragment : Fragment
@@ -188,6 +190,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			public Task FinishedDestroying => _taskCompletionSource.Task;
 
+			public FakeActivityRootView FakeActivityRootView { get; set; }
+
 			public WindowTestFragment(IMauiContext mauiContext, IWindow window)
 			{
 				_mauiContext = mauiContext;
@@ -198,10 +202,15 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 				_ = _window.ToHandler(ScopedMauiContext);
-				var rootView = ScopedMauiContext.GetNavigationRootManager().RootView;
 
+				var rootView = ScopedMauiContext.GetNavigationRootManager().RootView;
 				rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(500, 500);
-				return rootView;
+
+				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
+				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(500, 500);
+				FakeActivityRootView.AddView(rootView);
+
+				return FakeActivityRootView;
 			}
 
 			public override void OnResume()
@@ -214,6 +223,13 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				base.OnDestroy();
 				_finishedDestroying.SetResult(true);
+			}
+		}
+
+		public class FakeActivityRootView : LinearLayoutCompat
+		{
+			public FakeActivityRootView(Context context) : base(context)
+			{
 			}
 		}
 	}

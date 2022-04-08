@@ -52,31 +52,26 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 			var toolbarItem = new ToolbarItem() { Text = "Toolbar Item 1" };
-			var navPage = new NavigationPage(new ContentPage()
-			{
-				ToolbarItems =
-				{
-					toolbarItem
-				}
-			});
+			var firstPage = new ContentPage();
 
-			var window = new Window(navPage);
+			var window = new Window(firstPage);
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
 			{
 				var contentPage = new ContentPage()
 				{
 					ToolbarItems =
-					{
-						toolbarItem
-					}
+				{
+					toolbarItem
+				}
 				};
 
 				var shell = new Shell() { CurrentItem = contentPage };
 				window.Page = shell;
 
+				
 				await OnLoadedAsync(shell);
-				await OnLoadedAsync(contentPage);
+				await OnLoadedAsync(shell.CurrentPage);
 
 				ToolbarItemsMatch(handler, toolbarItem);
 			});

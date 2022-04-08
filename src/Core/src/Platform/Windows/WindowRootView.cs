@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
@@ -9,6 +10,15 @@ namespace Microsoft.Maui.Platform
 
 	public partial class WindowRootView : ContentControl
 	{
+
+		public event TypedEventHandler<NavigationView, NavigationViewBackRequestedEventArgs>? BackRequested;
+		bool _hasTitleBarImage = false;
+		internal event EventHandler? OnApplyTemplateFinished;
+		internal event EventHandler? ContentChanged;
+		string? _windowTitle;
+		MauiToolbar? _toolbar;
+		MenuBar? _menuBar;
+
 		public WindowRootView()
 		{
 		}
@@ -18,11 +28,32 @@ namespace Microsoft.Maui.Platform
 		public TextBlock? AppTitle { get; private set; }
 		public RootNavigationView? NavigationViewControl { get; private set; }
 		public FrameworkElement? AppTitleBar { get; private set; }
-		public event TypedEventHandler<NavigationView, NavigationViewBackRequestedEventArgs>? BackRequested;
-		bool _hasTitleBarImage = false;
-		internal event EventHandler? OnApplyTemplateFinished;
-		internal event EventHandler? ContentChanged;
-		string? _windowTitle;
+
+		internal MauiToolbar? Toolbar
+		{
+			get => _toolbar;
+			set
+			{
+				if (_toolbar != null)
+					_toolbar.SetMenuBar(null);
+
+				_toolbar = value;
+				if (NavigationViewControl != null)
+					NavigationViewControl.Toolbar = Toolbar;
+
+				_toolbar?.SetMenuBar(MenuBar);
+			}
+		}
+
+		internal MenuBar? MenuBar
+		{
+			get => _menuBar;
+			set
+			{
+				_menuBar = value;
+				Toolbar?.SetMenuBar(value);
+			}
+		}
 
 		protected override void OnApplyTemplate()
 		{
@@ -42,19 +73,37 @@ namespace Microsoft.Maui.Platform
 			SetWindowTitle(_windowTitle);
 		}
 
+
+		ActionDisposable? _contentChanged;
+
 		protected override void OnContentChanged(object oldContent, object newContent)
 		{
+			_contentChanged?.Dispose();
+			_contentChanged = null;
+
 			base.OnContentChanged(oldContent, newContent);
+
 			if (newContent is RootNavigationView mnv)
 			{
 				NavigationViewControl = mnv;
 				NavigationViewControl.DisplayModeChanged += OnNavigationViewControlDisplayModeChanged;
 				NavigationViewControl.BackRequested += OnNavigationViewBackRequested;
-				NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, AppBarNavigationIconsChanged);
-				NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, AppBarNavigationIconsChanged);
+				NavigationViewControl.Toolbar = Toolbar;
+				var backButtonToken = NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, AppBarNavigationIconsChanged);
+				var paneToggleToken = NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, AppBarNavigationIconsChanged);
 
-				ContentChanged?.Invoke(this, EventArgs.Empty);
+				_contentChanged = new ActionDisposable(() =>
+				{
+					mnv.DisplayModeChanged -= OnNavigationViewControlDisplayModeChanged;
+					mnv.BackRequested -= OnNavigationViewBackRequested;
+					mnv.Toolbar = null;
+					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, backButtonToken);
+					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, paneToggleToken);
+					NavigationViewControl = null;
+				});
 			}
+
+			ContentChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		void OnNavigationViewBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args) =>

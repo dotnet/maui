@@ -78,6 +78,15 @@ namespace Microsoft.Maui.DeviceTests
 						await testingRootPanel.OnLoadedAsync();
 						await Task.Delay(10);
 					}
+
+					// reset the appbar title to our test runner
+					MauiProgram
+						.CurrentWindow
+						.GetWindow()
+						.Handler
+						.MauiContext
+						.GetNavigationRootManager()
+						.UpdateAppTitleBar(true);
 				}
 			});
 		}
@@ -146,6 +155,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
 			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
+			Assert.NotNull(windowHeader?.CommandBar?.PrimaryCommands);
 
 			Assert.Equal(toolbarItems.Length, windowHeader.CommandBar.PrimaryCommands.Count);
 			for (var i = 0; i < toolbarItems.Length; i++)

@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 				_navigationView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
 				_navigationView.SetApplicationResource("NavigationViewHeaderMargin", null);
 				_navigationView.SetApplicationResource("NavigationViewMinimalContentGridBorderThickness", null);
-				
+
 				return _navigationView;
 			}
 
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
-			if(_callConnectHandler)
+			if (_callConnectHandler)
 			{
 				OnConnectHandler();
 			}
@@ -111,8 +111,10 @@ namespace Microsoft.Maui.Controls
 
 				void OnContentChanged(object? sender, EventArgs e)
 				{
-					wrv.ContentChanged -= OnContentChanged;
 					SetupNavigationLocals();
+
+					if (_navigationView != null)
+						wrv.ContentChanged -= OnContentChanged;
 				}
 			}
 
