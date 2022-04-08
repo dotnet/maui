@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler : INavigationViewHandler
 	{
-		public static PropertyMapper<IStackNavigationView, INavigationViewHandler> Mapper = new(ViewMapper)
+		public static IPropertyMapper<IStackNavigationView, INavigationViewHandler> Mapper = new PropertyMapper<IStackNavigationView, INavigationViewHandler>(ViewMapper)
 		{
 		};
 
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public NavigationViewHandler(PropertyMapper? mapper = null) : base(mapper ?? Mapper, CommandMapper)
+		public NavigationViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper, CommandMapper)
 		{
 		}
 
