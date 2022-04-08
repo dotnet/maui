@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
-using Windows.Storage.Streams;
 using Windows.Storage;
+using Windows.Storage.Streams;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -33,8 +33,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="jsComponents">The <see cref="JSComponentConfigurationStore"/>.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="contentRootDir">Path to the directory containing application content files.</param>
-        /// <param name="webViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
-        public WinUIWebViewManager(
+		/// <param name="webViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
+		public WinUIWebViewManager(
 			WebView2Control webview,
 			IServiceProvider services,
 			Dispatcher dispatcher,

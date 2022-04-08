@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			var args = new BlazorWebViewInitializingEventArgs();
 #if WEBVIEW2_MAUI
 			((BlazorWebView)_blazorWebViewHandler.VirtualView).NotifyBlazorWebViewInitializing(args);
-            _coreWebView2Environment = await CoreWebView2Environment.CreateWithOptionsAsync(
+			_coreWebView2Environment = await CoreWebView2Environment.CreateWithOptionsAsync(
 				browserExecutableFolder: args.BrowserExecutableFolder,
 				userDataFolder: args.UserDataFolder,
 				options: args.EnvironmentOptions)
