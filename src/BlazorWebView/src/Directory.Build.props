@@ -6,4 +6,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="All" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);RS0041</NoWarn>
+  </PropertyGroup>
+
 </Project>
