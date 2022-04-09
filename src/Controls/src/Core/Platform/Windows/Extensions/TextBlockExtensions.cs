@@ -80,6 +80,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 			return height;
 		}
+
+		public static void UpdateMaxLines(this TextBlock platformControl, Label label)
+		{
+			if (label.MaxLines >= 0)
+			{
+				platformControl.MaxLines = label.MaxLines;
+			}
+			else
+			{
+				platformControl.MaxLines = 0;
+			}
+		}
 	}
 
 }

@@ -47,14 +47,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapVerticalTextAlignment(ILabelHandler handler, ILabel label) =>
 			handler.PlatformView?.UpdateVerticalTextAlignment(label);
 
-		public static void MapLineBreakMode(ILabelHandler handler, ILabel label) =>
-			handler.PlatformView?.UpdateLineBreakMode(label);
-
 		public static void MapTextDecorations(ILabelHandler handler, ILabel label) =>
 			handler.PlatformView?.UpdateTextDecorations(label);
-
-		public static void MapMaxLines(ILabelHandler handler, ILabel label) =>
-			handler.PlatformView?.UpdateMaxLines(label);
 
 		public static void MapPadding(ILabelHandler handler, ILabel label) =>
 			handler.PlatformView?.UpdatePadding(label);
