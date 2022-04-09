@@ -3,10 +3,11 @@ using Android.App;
 using Android.Content.Res;
 using Android.OS;
 using Android.Provider;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class DeviceInfoImplementation : IDeviceInfo
+	class DeviceInfoImplementation : IDeviceInfo
 	{
 		const int tabletCrossover = 600;
 
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				var currentIdiom = DeviceIdiom.Unknown;
 
 				// first try UIModeManager
-				using var uiModeManager = UiModeManager.FromContext(Essentials.Platform.AppContext);
+				using var uiModeManager = UiModeManager.FromContext(Application.Context);
 
 				try
 				{
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				// then try Configuration
 				if (currentIdiom == DeviceIdiom.Unknown)
 				{
-					var configuration = Essentials.Platform.AppContext.Resources?.Configuration;
+					var configuration = Application.Context.Resources?.Configuration;
 					if (configuration != null)
 					{
 						var minWidth = configuration.SmallestScreenWidthDp;
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 					else
 					{
 						// start clutching at straws
-						using var metrics = Essentials.Platform.AppContext.Resources?.DisplayMetrics;
+						using var metrics = Application.Context.Resources?.DisplayMetrics;
 						if (metrics != null)
 						{
 							var minSize = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
@@ -99,23 +100,23 @@ namespace Microsoft.Maui.Essentials.Implementations
 			get
 			{
 				var isEmulator =
-					(Build.Brand.StartsWith("generic", StringComparison.InvariantCulture) && Build.Device.StartsWith("generic", StringComparison.InvariantCulture)) ||
-					Build.Fingerprint.StartsWith("generic", StringComparison.InvariantCulture) ||
-					Build.Fingerprint.StartsWith("unknown", StringComparison.InvariantCulture) ||
-					Build.Hardware.Contains("goldfish") ||
-					Build.Hardware.Contains("ranchu") ||
-					Build.Model.Contains("google_sdk") ||
-					Build.Model.Contains("Emulator") ||
-					Build.Model.Contains("Android SDK built for x86") ||
-					Build.Manufacturer.Contains("Genymotion") ||
-					Build.Manufacturer.Contains("VS Emulator") ||
-					Build.Product.Contains("emulator") ||
-					Build.Product.Contains("google_sdk") ||
-					Build.Product.Contains("sdk") ||
-					Build.Product.Contains("sdk_google") ||
-					Build.Product.Contains("sdk_x86") ||
-					Build.Product.Contains("simulator") ||
-					Build.Product.Contains("vbox86p");
+					(Build.Brand.StartsWith("generic", StringComparison.Ordinal) && Build.Device.StartsWith("generic", StringComparison.Ordinal)) ||
+					Build.Fingerprint.StartsWith("generic", StringComparison.Ordinal) ||
+					Build.Fingerprint.StartsWith("unknown", StringComparison.Ordinal) ||
+					Build.Hardware.Contains("goldfish", StringComparison.Ordinal) ||
+					Build.Hardware.Contains("ranchu", StringComparison.Ordinal) ||
+					Build.Model.Contains("google_sdk", StringComparison.Ordinal) ||
+					Build.Model.Contains("Emulator", StringComparison.Ordinal) ||
+					Build.Model.Contains("Android SDK built for x86", StringComparison.Ordinal) ||
+					Build.Manufacturer.Contains("Genymotion", StringComparison.Ordinal) ||
+					Build.Manufacturer.Contains("VS Emulator", StringComparison.Ordinal) ||
+					Build.Product.Contains("emulator", StringComparison.Ordinal) ||
+					Build.Product.Contains("google_sdk", StringComparison.Ordinal) ||
+					Build.Product.Contains("sdk", StringComparison.Ordinal) ||
+					Build.Product.Contains("sdk_google", StringComparison.Ordinal) ||
+					Build.Product.Contains("sdk_x86", StringComparison.Ordinal) ||
+					Build.Product.Contains("simulator", StringComparison.Ordinal) ||
+					Build.Product.Contains("vbox86p", StringComparison.Ordinal);
 
 				if (isEmulator)
 					return DeviceType.Virtual;
@@ -126,10 +127,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		static string GetSystemSetting(string name, bool isGlobal = false)
 		{
-			if (isGlobal && Essentials.Platform.HasApiLevelNMr1)
-				return Settings.Global.GetString(Essentials.Platform.AppContext.ContentResolver, name);
+			if (isGlobal && OperatingSystem.IsAndroidVersionAtLeast(25))
+				return Settings.Global.GetString(Application.Context.ContentResolver, name);
 			else
-				return Settings.System.GetString(Essentials.Platform.AppContext.ContentResolver, name);
+				return Settings.System.GetString(Application.Context.ContentResolver, name);
 		}
 	}
 }

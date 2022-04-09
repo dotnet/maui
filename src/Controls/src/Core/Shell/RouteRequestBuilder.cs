@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 		readonly List<string> _globalRouteMatches = new List<string>();
 		readonly List<string> _matchedSegments = new List<string>();
 		readonly List<string> _fullSegments = new List<string>();
-		readonly string[] _allSegments = null;
+		readonly List<string> _allSegments = null;
 		readonly static string _uriSeparator = "/";
 
 		public Shell Shell { get; private set; }
@@ -22,13 +22,13 @@ namespace Microsoft.Maui.Controls
 		public object LowestChild =>
 			(object)Content ?? (object)Section ?? (object)Item ?? (object)Shell;
 
-		public RouteRequestBuilder(string[] allSegments)
+		public RouteRequestBuilder(List<string> allSegments)
 		{
 			_allSegments = allSegments;
 		}
 
 
-		public RouteRequestBuilder(string shellSegment, string userSegment, object node, string[] allSegments) : this(allSegments)
+		public RouteRequestBuilder(string shellSegment, string userSegment, object node, List<string> allSegments) : this(allSegments)
 		{
 			if (node != null)
 				AddMatch(shellSegment, userSegment, node);
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls
 		string GetNextSegment(IReadOnlyList<string> matchedSegments)
 		{
 			var nextMatch = matchedSegments.Count;
-			if (nextMatch >= _allSegments.Length)
+			if (nextMatch >= _allSegments.Count)
 				return null;
 
 			return _allSegments[nextMatch];
@@ -218,22 +218,22 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				var nextMatch = _matchedSegments.Count;
-				if (nextMatch >= _allSegments.Length)
+				if (nextMatch >= _allSegments.Count)
 					return null;
 
 				return Routing.FormatRoute(String.Join(_uriSeparator, _allSegments.Skip(nextMatch)));
 			}
 		}
 
-		public string[] RemainingSegments
+		public List<string> RemainingSegments
 		{
 			get
 			{
 				var nextMatch = _matchedSegments.Count;
-				if (nextMatch >= _allSegments.Length)
+				if (nextMatch >= _allSegments.Count)
 					return null;
 
-				return _allSegments.Skip(nextMatch).ToArray();
+				return _allSegments.Skip(nextMatch).ToList();
 			}
 		}
 
@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Controls
 		public string PathNoImplicit => MakeUriString(_matchedSegments);
 		public string PathFull => MakeUriString(_fullSegments);
 
-		public bool IsFullMatch => _matchedSegments.Count == _allSegments.Length;
+		public bool IsFullMatch => _matchedSegments.Count == _allSegments.Count;
 		public List<string> GlobalRouteMatches => _globalRouteMatches;
 		public List<string> SegmentsMatched => _matchedSegments;
 		public IReadOnlyList<string> FullSegments => _fullSegments;

@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && Element.CancelButtonColor.IsDefault)
 				return;
 
-			Control.SetClearButtonColor(Element.CancelButtonColor.ToNative());
+			Control.SetClearButtonColor(Element.CancelButtonColor.ToPlatform());
 		}
 
 		/// <summary>
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void HorizontalTextAlignmentPropertyHandler()
 		{
-			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
+			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
 		}
 
 		/// <summary>
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && Element.TextColor.IsDefault)
 				return;
 
-			Control.PlaceholderColor = Element.PlaceholderColor.ToNative();
+			Control.PlaceholderColor = Element.PlaceholderColor.ToPlatform();
 		}
 
 		/// <summary>
@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && Element.TextColor.IsDefault)
 				return;
 
-			Control.TextColor = Element.TextColor.ToNative();
+			Control.TextColor = Element.TextColor.ToPlatform();
 		}
 
 		/// <summary>

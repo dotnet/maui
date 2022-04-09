@@ -1,9 +1,13 @@
-﻿namespace Microsoft.Maui.Controls
+﻿using System.Collections.Generic;
+
+namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Picker.xml" path="Type[@FullName='Microsoft.Maui.Controls.Picker']/Docs" />
 	public partial class Picker : IPicker
 	{
 		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
+
+		IList<string> IPicker.Items => Items;
 
 		int IItemDelegate<string>.GetCount() => Items?.Count ?? ItemsSource?.Count ?? 0;
 

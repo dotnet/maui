@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (ActualWidth > 0 && ActualHeight > 0 && DataContext != null)
 				{
 					var page = (Page)DataContext;
-					((Page)page.RealParent).ContainerArea = new Rectangle(0, 0, ActualWidth, ActualHeight);
+					((Page)page.RealParent).ContainerArea = new Rect(0, 0, ActualWidth, ActualHeight);
 				}
 			};
 		}

@@ -12,13 +12,14 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
 {
 	/// <summary>
-	/// A Windows Presentation Foundation (WPF) control for hosting Blazor web components locally in Windows desktop applications.
+	/// A Windows Presentation Foundation (WPF) control for hosting Razor components locally in Windows desktop applications.
 	/// </summary>
 	public class BlazorWebView : Control, IAsyncDisposable
 	{
@@ -48,9 +49,34 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			propertyType: typeof(IServiceProvider),
 			ownerType: typeof(BlazorWebView),
 			typeMetadata: new PropertyMetadata(OnServicesPropertyChanged));
+
+		/// <summary>
+		/// The backing store for the <see cref="UrlLoading"/> property.
+		/// </summary>
+		public static readonly DependencyProperty UrlLoadingProperty = DependencyProperty.Register(
+			name: nameof(UrlLoading),
+			propertyType: typeof(EventHandler<UrlLoadingEventArgs>),
+			ownerType: typeof(BlazorWebView));
+
+		/// <summary>
+		/// The backing store for the <see cref="BlazorWebViewInitializing"/> event.
+		/// </summary>
+		public static readonly DependencyProperty BlazorWebViewInitializingProperty = DependencyProperty.Register(
+			name: nameof(BlazorWebViewInitializing),
+			propertyType: typeof(EventHandler<BlazorWebViewInitializingEventArgs>),
+			ownerType: typeof(BlazorWebView));
+
+		/// <summary>
+		/// The backing store for the <see cref="BlazorWebViewInitialized"/> event.
+		/// </summary>
+		public static readonly DependencyProperty BlazorWebViewInitializedProperty = DependencyProperty.Register(
+			name: nameof(BlazorWebViewInitialized),
+			propertyType: typeof(EventHandler<BlazorWebViewInitializedEventArgs>),
+			ownerType: typeof(BlazorWebView));
+
 		#endregion
 
-		private const string webViewTemplateChildName = "WebView";
+		private const string WebViewTemplateChildName = "WebView";
 		private WebView2Control _webview;
 		private WebView2WebViewManager _webviewManager;
 		private bool _isDisposed;
@@ -67,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			Template = new ControlTemplate
 			{
-				VisualTree = new FrameworkElementFactory(typeof(WebView2Control), webViewTemplateChildName)
+				VisualTree = new FrameworkElementFactory(typeof(WebView2Control), WebViewTemplateChildName)
 			};
 		}
 
@@ -83,7 +109,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 		/// <summary>
 		/// Path to the host page within the application's static files. For example, <code>wwwroot\index.html</code>.
-		/// This property must be set to a valid value for the Blazor components to start.
+		/// This property must be set to a valid value for the Razor components to start.
 		/// </summary>
 		public string HostPage
 		{
@@ -99,8 +125,36 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			(RootComponentsCollection)GetValue(RootComponentsProperty);
 
 		/// <summary>
+		/// Allows customizing how links are opened.
+		/// By default, opens internal links in the webview and external links in an external app.
+		/// </summary>
+		public EventHandler<UrlLoadingEventArgs> UrlLoading
+		{
+			get => (EventHandler<UrlLoadingEventArgs>)GetValue(UrlLoadingProperty);
+			set => SetValue(UrlLoadingProperty, value);
+		}
+
+		/// <summary>
+		/// Allows customizing the web view before it is created.
+		/// </summary>
+		public EventHandler<BlazorWebViewInitializingEventArgs> BlazorWebViewInitializing
+		{
+			get => (EventHandler<BlazorWebViewInitializingEventArgs>)GetValue(BlazorWebViewInitializingProperty);
+			set => SetValue(BlazorWebViewInitializingProperty, value);
+		}
+
+		/// <summary>
+		/// Allows customizing the web view after it is created.
+		/// </summary>
+		public EventHandler<BlazorWebViewInitializedEventArgs> BlazorWebViewInitialized
+		{
+			get => (EventHandler<BlazorWebViewInitializedEventArgs>)GetValue(BlazorWebViewInitializedProperty);
+			set => SetValue(BlazorWebViewInitializedProperty, value);
+		}
+
+		/// <summary>
 		/// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
-		/// This property must be set to a valid value for the Blazor components to start.
+		/// This property must be set to a valid value for the Razor components to start.
 		/// </summary>
 		public IServiceProvider Services
 		{
@@ -131,7 +185,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			if (_webview == null)
 			{
-				_webview = (WebView2Control)GetTemplateChild(webViewTemplateChildName);
+				_webview = (WebView2Control)GetTemplateChild(WebViewTemplateChildName);
 				StartWebViewCoreIfPossible();
 			}
 		}
@@ -171,7 +225,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
 
-			_webviewManager = new WebView2WebViewManager(_webview, Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			_webviewManager = new WebView2WebViewManager(
+				_webview,
+				Services,
+				ComponentsDispatcher,
+				fileProvider,
+				RootComponents.JSComponents,
+				hostPageRelativePath,
+				(args) => UrlLoading?.Invoke(this, args),
+				(args) => BlazorWebViewInitializing?.Invoke(this, args),
+				(args) => BlazorWebViewInitialized?.Invoke(this, args));
+
 			foreach (var rootComponent in RootComponents)
 			{
 				// Since the page isn't loaded yet, this will always complete synchronously
@@ -218,7 +282,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// <returns>Returns a <see cref="IFileProvider"/> for static assets.</returns>
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
-			return new PhysicalFileProvider(contentRootDir);
+			if (Directory.Exists(contentRootDir))
+			{
+				// Typical case after publishing, or if you're copying content to the bin dir in development for some nonstandard reason
+				return new PhysicalFileProvider(contentRootDir);
+			}
+			else
+			{
+				// Typical case in development, as the files come from Microsoft.AspNetCore.Components.WebView.StaticContentProvider
+				// instead and aren't copied to the bin dir
+				return new NullFileProvider();
+			}
 		}
 
 		private void CheckDisposed()
@@ -229,11 +303,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			}
 		}
 
+		/// <summary>
+		/// Allows asynchronous disposal of the <see cref="BlazorWebView" />.
+		/// </summary>
 		protected virtual async ValueTask DisposeAsyncCore()
 		{
-			// Dispose this component's contents that user-written disposal logic and Blazor disposal logic will complete
-			// first. Then dispose the WebView2 control. This order is critical because once the WebView2 is disposed it
-			// will prevent and Blazor code from working because it requires the WebView to exist.
+			// Dispose this component's contents that user-written disposal logic and Razor component disposal logic will
+			// complete first. Then dispose the WebView2 control. This order is critical because once the WebView2 is
+			// disposed it will prevent and Razor component code from working because it requires the WebView to exist.
 			if (_webviewManager != null)
 			{
 				await _webviewManager.DisposeAsync()
@@ -245,6 +322,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			_webview = null;
 		}
 
+		/// <inheritdoc />
 		public async ValueTask DisposeAsync()
 		{
 			if (_isDisposed)
@@ -259,7 +337,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			// Suppress finalization.
 			GC.SuppressFinalize(this);
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize	
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 		}
 	}
 }

@@ -86,7 +86,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(imageLoaded);
 				var expectedColor = Color.FromArgb(colorHex);
-				await handler.NativeView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor);
 			});
 		}
 
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 				var scaled = user;
 
 #if __ANDROID__
-				scaled = handler.NativeView.Context!.ToPixels(scaled);
+				scaled = handler.PlatformView.Context!.ToPixels(scaled);
 #endif
 
 				return (scaled, native);
@@ -121,6 +121,31 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected.Top, native.Top, Precision);
 			Assert.Equal(expected.Right, native.Right, Precision);
 			Assert.Equal(expected.Bottom, native.Bottom, Precision);
+		}
+
+		[Fact(DisplayName = "LineBreakMode Initializes Correctly")]
+		public async Task LineBreakModeInitializesCorrectly()
+		{
+			var xplatLineBreakMode = LineBreakMode.TailTruncation;
+
+			var button = new ButtonStub()
+			{
+				LineBreakMode = xplatLineBreakMode
+			};
+
+			var expectedValue = xplatLineBreakMode.ToPlatform();
+
+			var values = await GetValueAsync(button, (handler) =>
+			{
+				return new
+				{
+					ViewValue = button.LineBreakMode,
+					NativeViewValue = GetNativeLineBreakMode(handler)
+				};
+			});
+
+			Assert.Equal(xplatLineBreakMode, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue);
 		}
 	}
 }

@@ -3,14 +3,17 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.OS;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.Content;
 using AndroidX.Core.View;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Media;
 using Microsoft.Maui.Primitives;
 using AColor = Android.Graphics.Color;
 using ALayoutDirection = Android.Views.LayoutDirection;
@@ -22,9 +25,9 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
-		public static void Initialize(this AView nativeView, IView view)
+		public static void Initialize(this AView platformView, IView view)
 		{
-			var context = nativeView.Context;
+			var context = platformView.Context;
 			if (context == null)
 				return;
 
@@ -38,11 +41,11 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				visibility = (int)view.Visibility.ToNativeVisibility();
+				visibility = (int)view.Visibility.ToPlatformVisibility();
 			}
 
 			// NOTE: use named arguments for clarity
-			ViewHelper.Set(nativeView,
+			PlatformInterop.Set(platformView,
 				visibility: visibility,
 				layoutDirection: (int)GetLayoutDirection(view),
 				minimumHeight: (int)context.ToPixels(view.MinimumHeight),
@@ -61,34 +64,63 @@ namespace Microsoft.Maui.Platform
 			);
 		}
 
-		public static void UpdateIsEnabled(this AView nativeView, IView view)
+		public static void UpdateIsEnabled(this AView platformView, IView view)
 		{
-			nativeView.Enabled = view.IsEnabled;
+			platformView.Enabled = view.IsEnabled;
 		}
 
-		public static void UpdateVisibility(this AView nativeView, IView view)
+		public static void Focus(this AView platformView, FocusRequest request)
 		{
-			nativeView.Visibility = view.Visibility.ToNativeVisibility();
+			request.IsFocused = true;
+
+			// Android does the actual focus/unfocus work on the main looper
+			// So in case we're setting the focus in response to another control's un-focusing,
+			// we need to post the handling of it to the main looper so that it happens _after_ all the other focus
+			// work is done; otherwise, a call to ClearFocus on another control will kill the focus we set 
+
+			var q = Looper.MyLooper();
+			if (q != null)
+				new Handler(q).Post(RequestFocus);
+			else
+				MainThread.InvokeOnMainThreadAsync(RequestFocus);
+
+			void RequestFocus()
+			{
+				if (platformView == null || platformView.IsDisposed())
+					return;
+
+				platformView?.RequestFocus();
+			}
 		}
 
-		public static void UpdateClip(this AView nativeView, IView view)
+		public static void Unfocus(this AView platformView, IView view)
 		{
-			if (nativeView is WrapperView wrapper)
+			platformView.ClearFocus();
+		}
+
+		public static void UpdateVisibility(this AView platformView, IView view)
+		{
+			platformView.Visibility = view.Visibility.ToPlatformVisibility();
+		}
+
+		public static void UpdateClip(this AView platformView, IView view)
+		{
+			if (platformView is WrapperView wrapper)
 				wrapper.Clip = view.Clip;
 		}
 
-		public static void UpdateShadow(this AView nativeView, IView view)
+		public static void UpdateShadow(this AView platformView, IView view)
 		{
-			if (nativeView is WrapperView wrapper)
+			if (platformView is WrapperView wrapper)
 				wrapper.Shadow = view.Shadow;
 		}
-		public static void UpdateBorder(this AView nativeView, IView view)
+		public static void UpdateBorder(this AView platformView, IView view)
 		{
-			if (nativeView is WrapperView wrapper)
+			if (platformView is WrapperView wrapper)
 				wrapper.Border = (view as IBorder)?.Border;
 		}
 
-		public static ViewStates ToNativeVisibility(this Visibility visibility)
+		public static ViewStates ToPlatformVisibility(this Visibility visibility)
 		{
 			return visibility switch
 			{
@@ -131,83 +163,70 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateBackground(this ContentViewGroup nativeView, IBorderStroke border)
+		public static void UpdateBackground(this ContentViewGroup platformView, IBorderStroke border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (hasBorder)
-				nativeView.UpdateMauiDrawable(border);
+				platformView.UpdateBorderStroke(border);
 		}
 
-		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackground = null) =>
-			nativeView.UpdateBackground(view.Background, defaultBackground);
+		public static void UpdateBackground(this AView platformView, IView view) =>
+			platformView.UpdateBackground(view.Background);
 
-		public static void UpdateBackground(this AView nativeView, Paint? background, Drawable? defaultBackground = null)
+		public static void UpdateBackground(this AView platformView, Paint? background)
 		{
-			// Remove previous background gradient if any
-			if (nativeView.Background is MauiDrawable mauiDrawable)
-			{
-				nativeView.Background = null;
-				mauiDrawable.Dispose();
-			}
-
 			var paint = background;
 
-			if (paint.IsNullOrEmpty())
+			if (!paint.IsNullOrEmpty())
 			{
-				if (defaultBackground != null)
-					nativeView.Background = defaultBackground;
-			}
-			else
-			{
+				// Remove previous background gradient if any
+				if (platformView.Background is MauiDrawable mauiDrawable)
+				{
+					platformView.Background = null;
+					mauiDrawable.Dispose();
+				}
 				if (paint is SolidPaint solidPaint)
 				{
 					if (solidPaint.Color is Color backgroundColor)
-						nativeView.SetBackgroundColor(backgroundColor.ToNative());
+						platformView.SetBackgroundColor(backgroundColor.ToPlatform());
 				}
 				else
 				{
-					if (paint!.ToDrawable(nativeView.Context) is Drawable drawable)
-						nativeView.Background = drawable;
+					if (paint!.ToDrawable(platformView.Context) is Drawable drawable)
+						platformView.Background = drawable;
 				}
 			}
 		}
 
-		public static void UpdateOpacity(this AView nativeView, IView view)
+		public static void UpdateOpacity(this AView platformView, IView view)
 		{
-			nativeView.Alpha = (float)view.Opacity;
+			platformView.Alpha = (float)view.Opacity;
 		}
 
-		public static void UpdateFlowDirection(this AView nativeView, IView view)
+		public static void UpdateFlowDirection(this AView platformView, IView view)
 		{
 			// I realize I could call this method as an extension method
 			// But I'm being explicit so if the TextViewExtensions version gets deleted
 			// we'll get a compile time exception opposed to an infinite loop
-			if (nativeView is TextView textview)
+			if (platformView is TextView textview)
 			{
 				TextViewExtensions.UpdateFlowDirection(textview, view);
 				return;
 			}
 
-			nativeView.LayoutDirection = GetLayoutDirection(view);
+			platformView.LayoutDirection = GetLayoutDirection(view);
 		}
 
 		static ALayoutDirection GetLayoutDirection(IView view)
 		{
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			return view.FlowDirection switch
 			{
-				return ALayoutDirection.Inherit;
-			}
-			else if (view.FlowDirection == FlowDirection.RightToLeft)
-			{
-				return ALayoutDirection.Rtl;
-			}
-			else if (view.FlowDirection == FlowDirection.LeftToRight)
-			{
-				return ALayoutDirection.Ltr;
-			}
-			return ALayoutDirection.Inherit;
+				FlowDirection.MatchParent => ALayoutDirection.Inherit,
+				FlowDirection.LeftToRight => ALayoutDirection.Ltr,
+				FlowDirection.RightToLeft => ALayoutDirection.Rtl,
+				_ => ALayoutDirection.Inherit,
+			};
 		}
 
 		public static bool GetClipToOutline(this AView view)
@@ -226,127 +245,104 @@ namespace Microsoft.Maui.Platform
 			view.ClipToOutline = value;
 		}
 
-		public static void UpdateAutomationId(this AView nativeView, IView view)
+		public static void UpdateAutomationId(this AView platformView, IView view)
 		{
 			if (!string.IsNullOrWhiteSpace(view.AutomationId))
 			{
-				ViewHelper.SetContentDescriptionForAutomationId(nativeView, view.AutomationId);
+				PlatformInterop.SetContentDescriptionForAutomationId(platformView, view.AutomationId);
 			}
 		}
 
-		public static void InvalidateMeasure(this AView nativeView, IView view)
+		public static void InvalidateMeasure(this AView platformView, IView view)
 		{
-			ViewHelper.RequestLayoutIfNeeded(nativeView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
-		public static void UpdateWidth(this AView nativeView, IView view)
+		public static void UpdateWidth(this AView platformView, IView view)
 		{
 			// GetDesiredSize will take the specified Width into account during the layout
-			ViewHelper.RequestLayoutIfNeeded(nativeView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
-		public static void UpdateHeight(this AView nativeView, IView view)
+		public static void UpdateHeight(this AView platformView, IView view)
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
-			ViewHelper.RequestLayoutIfNeeded(nativeView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
-		public static void UpdateMinimumHeight(this AView nativeView, IView view)
+		public static void UpdateMinimumHeight(this AView platformView, IView view)
 		{
 			var min = Dimension.ResolveMinimum(view.MinimumHeight);
 
-			var value = (int)nativeView.Context!.ToPixels(min);
-			nativeView.SetMinimumHeight(value);
-			ViewHelper.RequestLayoutIfNeeded(nativeView);
+			var value = (int)platformView.Context!.ToPixels(min);
+			platformView.SetMinimumHeight(value);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
-		public static void UpdateMinimumWidth(this AView nativeView, IView view)
+		public static void UpdateMinimumWidth(this AView platformView, IView view)
 		{
 			var min = Dimension.ResolveMinimum(view.MinimumWidth);
 
-			var value = (int)nativeView.Context!.ToPixels(min);
-			nativeView.SetMinimumWidth(value);
-			ViewHelper.RequestLayoutIfNeeded(nativeView);
+			var value = (int)platformView.Context!.ToPixels(min);
+			platformView.SetMinimumWidth(value);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
-		public static void UpdateMaximumHeight(this AView nativeView, IView view)
+		public static void UpdateMaximumHeight(this AView platformView, IView view)
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
-			ViewHelper.RequestLayoutIfNeeded(nativeView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
-		public static void UpdateMaximumWidth(this AView nativeView, IView view)
+		public static void UpdateMaximumWidth(this AView platformView, IView view)
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
-			ViewHelper.RequestLayoutIfNeeded(nativeView);
+			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
 		public static void RemoveFromParent(this AView view)
 		{
 			if (view != null)
-				ViewHelper.RemoveFromParent(view);
+				PlatformInterop.RemoveFromParent(view);
+				PlatformInterop.RemoveFromParent(view);
 		}
 
-		public static Task<byte[]?> RenderAsPNG(this IView view)
+		internal static Rect GetPlatformViewBounds(this IView view)
 		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView == null)
-				return Task.FromResult<byte[]?>(null);
-
-			return nativeView.RenderAsPNG();
-		}
-
-		public static Task<byte[]?> RenderAsJPEG(this IView view)
-		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView == null)
-				return Task.FromResult<byte[]?>(null);
-
-			return nativeView.RenderAsJPEG();
-		}
-
-		public static Task<byte[]?> RenderAsPNG(this AView view)
-			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Png));
-
-		public static Task<byte[]?> RenderAsJPEG(this AView view)
-			=> Task.FromResult<byte[]?>(view.RenderAsImage(Android.Graphics.Bitmap.CompressFormat.Jpeg));
-
-		internal static Rectangle GetNativeViewBounds(this IView view)
-		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView?.Context == null)
+			var platformView = view?.ToPlatform();
+			if (platformView?.Context == null)
 			{
-				return new Rectangle();
+				return new Rect();
 			}
 
-			return nativeView.GetNativeViewBounds();
+			return platformView.GetPlatformViewBounds();
 		}
 
-		internal static Rectangle GetNativeViewBounds(this View nativeView)
+		internal static Rect GetPlatformViewBounds(this View platformView)
 		{
-			if (nativeView?.Context == null)
-				return new Rectangle();
+			if (platformView?.Context == null)
+				return new Rect();
 
 			var location = new int[2];
-			nativeView.GetLocationOnScreen(location);
-			return new Rectangle(
+			platformView.GetLocationOnScreen(location);
+			return new Rect(
 				location[0],
 				location[1],
-				(int)nativeView.Context.ToPixels(nativeView.Width),
-				(int)nativeView.Context.ToPixels(nativeView.Height));
+				(int)platformView.Context.ToPixels(platformView.Width),
+				(int)platformView.Context.ToPixels(platformView.Height));
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView == null)
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
 				return new Matrix4x4();
-			return nativeView.GetViewTransform();
+			return platformView.GetViewTransform();
 		}
 
 		internal static Matrix4x4 GetViewTransform(this View view)
 		{
-			if (view?.Matrix == null || view.Matrix.IsIdentity)
+			if (view?.Matrix == null)
 				return new Matrix4x4();
 
 			var m = new float[16];
@@ -386,56 +382,86 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view)
+		internal static Graphics.Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
 
-		internal static Graphics.Rectangle GetBoundingBox(this View? nativeView)
+		internal static Graphics.Rect GetBoundingBox(this View? platformView)
 		{
-			if (nativeView == null)
-				return new Rectangle();
+			if (platformView == null)
+				return new Rect();
 
 			var rect = new Android.Graphics.Rect();
-			nativeView.GetGlobalVisibleRect(rect);
-			return new Rectangle(rect.ExactCenterX() - (rect.Width() / 2), rect.ExactCenterY() - (rect.Height() / 2), (float)rect.Width(), (float)rect.Height());
+			platformView.GetGlobalVisibleRect(rect);
+			return new Rect(rect.ExactCenterX() - (rect.Width() / 2), rect.ExactCenterY() - (rect.Height() / 2), (float)rect.Width(), (float)rect.Height());
 		}
 
+		internal static bool IsLoaded(this View frameworkElement) =>
+			frameworkElement.IsAttachedToWindow;
 
-		internal static void OnLoaded(this View frameworkElement, Action action)
+		internal static IDisposable OnLoaded(this View frameworkElement, Action action)
 		{
-			if (frameworkElement.IsAttachedToWindow)
+			if (frameworkElement.IsLoaded())
 			{
 				action();
+				return new ActionDisposable(() => { });
 			}
 
 			EventHandler<AView.ViewAttachedToWindowEventArgs>? routedEventHandler = null;
-			routedEventHandler = (_, __) =>
+			ActionDisposable disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
 					frameworkElement.ViewAttachedToWindow -= routedEventHandler;
+			});
 
+			routedEventHandler = (_, __) =>
+			{
+				disposable.Dispose();
 				action();
 			};
 
 			frameworkElement.ViewAttachedToWindow += routedEventHandler;
+			return disposable;
 		}
 
-		internal static void OnUnloaded(this View frameworkElement, Action action)
+		internal static IDisposable OnUnloaded(this View view, Action action)
 		{
-			if (!frameworkElement.IsAttachedToWindow)
+			if (!view.IsLoaded())
 			{
 				action();
+				return new ActionDisposable(() => { });
 			}
 
 			EventHandler<AView.ViewDetachedFromWindowEventArgs>? routedEventHandler = null;
-			routedEventHandler = (_, __) =>
+			ActionDisposable disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
-					frameworkElement.ViewDetachedFromWindow -= routedEventHandler;
+					view.ViewDetachedFromWindow -= routedEventHandler;
+			});
+
+			routedEventHandler = (_, __) =>
+			{
+				disposable.Dispose();
+				// This event seems to fire prior to the view actually being
+				// detached from the window
+				if (view.IsLoaded())
+				{
+					var q = Looper.MyLooper();
+					if (q != null)
+					{
+						new Handler(q).Post(() =>
+						{
+							action.Invoke();
+						});
+
+						return;
+					}
+				}
 
 				action();
 			};
 
-			frameworkElement.ViewDetachedFromWindow += routedEventHandler;
+			view.ViewDetachedFromWindow += routedEventHandler;
+			return disposable;
 		}
 
 		internal static IViewParent? GetParent(this View? view)
@@ -460,7 +486,7 @@ namespace Microsoft.Maui.Platform
 			var deviceIndependentTop = context.FromPixels(top);
 			var deviceIndependentRight = context.FromPixels(right);
 			var deviceIndependentBottom = context.FromPixels(bottom);
-			var destination = Rectangle.FromLTRB(0, 0,
+			var destination = Rect.FromLTRB(0, 0,
 				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
 
 			if (!view.Frame.Equals(destination))
@@ -486,6 +512,30 @@ namespace Microsoft.Maui.Platform
 				platformView.Right,
 				platformView.Left,
 				context);
+		}
+
+		internal static IWindow? GetHostedWindow(this IView? view)
+			=> GetHostedWindow(view?.Handler?.PlatformView as View);
+
+		internal static IWindow? GetHostedWindow(this View? view)
+			=> GetWindowFromActivity(view?.Context?.GetActivity());
+
+		internal static IWindow? GetWindowFromActivity(this Android.App.Activity? activity)
+		{
+			if (activity is null)
+				return null;
+
+			var windows = WindowExtensions.GetWindows();
+			foreach (var window in windows)
+			{
+				if (window.Handler?.PlatformView is Android.App.Activity active)
+				{
+					if (active == activity)
+						return window;
+				}
+			}
+
+			return null;
 		}
 	}
 }

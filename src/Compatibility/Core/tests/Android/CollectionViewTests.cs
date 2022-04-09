@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Dispatching;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			cv.ItemsLayout = itemsLayout;
 
 			// Creating the renderer is enough to cause the ClassNotFoundException on older APIs
-			await Device.InvokeOnMainThreadAsync(() => { GetRenderer(cv).Dispose(); });
+			await cv.Dispatcher.DispatchAsync(() => { GetRenderer(cv).Dispose(); });
 		}
 	}
 }

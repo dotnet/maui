@@ -9,14 +9,19 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder();
 		builder
-			.RegisterBlazorMauiWebView()
 			.UseMauiApp<App>()
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 			});
 
-		builder.Services.AddBlazorWebView();
+		builder.Services.AddMauiBlazorWebView();
+//-:cnd:noEmit
+#if DEBUG
+		builder.Services.AddBlazorWebViewDeveloperTools();
+#endif
+//+:cnd:noEmit
+
 		builder.Services.AddSingleton<WeatherForecastService>();
 
 		return builder.Build();

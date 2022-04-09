@@ -1,14 +1,15 @@
+using System.Linq;
 using System.Threading.Tasks;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public static partial class Email
+	partial class EmailImplementation : IEmail
 	{
-		internal static bool IsComposeSupported
+		public bool IsComposeSupported
 			=> Platform.GetFeatureInfo<bool>("email");
 
-		static Task PlatformComposeAsync(EmailMessage message)
+		Task PlatformComposeAsync(EmailMessage message)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 

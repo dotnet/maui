@@ -6,13 +6,13 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using WinRT;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public static partial class Share
+	partial class ShareImplementation : IShare
 	{
-		static Task PlatformRequestAsync(ShareTextRequest request)
+		Task PlatformRequestAsync(ShareTextRequest request)
 		{
-			var hwnd = Platform.CurrentWindowHandle;
+			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
 			var dataTransferManager = DataTransferManagerHelper.GetDataTransferManager(hwnd);
 
 			dataTransferManager.DataRequested += ShareTextHandler;
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Essentials
 			{
 				var newRequest = e.Request;
 
-				newRequest.Data.Properties.Title = request.Title ?? AppInfo.Name;
+				newRequest.Data.Properties.Title = request.Title ?? AppInfo.Current.Name;
 
 				if (!string.IsNullOrWhiteSpace(request.Text))
 				{
@@ -41,13 +41,16 @@ namespace Microsoft.Maui.Essentials
 			return Task.CompletedTask;
 		}
 
-		static async Task PlatformRequestAsync(ShareMultipleFilesRequest request)
+		Task PlatformRequestAsync(ShareFileRequest request) =>
+			PlatformRequestAsync((ShareMultipleFilesRequest)request);
+
+		async Task PlatformRequestAsync(ShareMultipleFilesRequest request)
 		{
 			var storageFiles = new List<IStorageFile>();
 			foreach (var file in request.Files)
 				storageFiles.Add(file.File ?? await StorageFile.GetFileFromPathAsync(file.FullPath));
 
-			var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(Platform.CurrentWindow);
+			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
 			var dataTransferManager = DataTransferManagerHelper.GetDataTransferManager(hwnd);
 
 			dataTransferManager.DataRequested += ShareTextHandler;
@@ -59,13 +62,11 @@ namespace Microsoft.Maui.Essentials
 				var newRequest = e.Request;
 
 				newRequest.Data.SetStorageItems(storageFiles.ToArray());
-				newRequest.Data.Properties.Title = request.Title ?? AppInfo.Name;
+				newRequest.Data.Properties.Title = request.Title ?? AppInfo.Current.Name;
 
 				dataTransferManager.DataRequested -= ShareTextHandler;
 			}
 		}
-
-
 	}
 
 	static class DataTransferManagerHelper

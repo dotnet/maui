@@ -22,12 +22,12 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<SliderHandler>(slider);
 				await Task.Delay(1000);
-				await handler.NativeView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
 			});
 		}
 
 		UISlider GetNativeSlider(SliderHandler sliderHandler) =>
-			sliderHandler.NativeView;
+			sliderHandler.PlatformView;
 
 		double GetNativeProgress(SliderHandler sliderHandler) =>
 			GetNativeSlider(sliderHandler).Value;

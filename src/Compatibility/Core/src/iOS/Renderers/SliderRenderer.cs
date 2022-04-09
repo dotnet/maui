@@ -9,6 +9,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Slid
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SliderRenderer : ViewRenderer<Slider, UISlider>
 	{
 		SizeF _fitSize;
@@ -148,7 +149,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				Control?.SetThumbImage(uiimage, UIControlState.Normal);
 
-				((IVisualElementController)Element).NativeSizeChanged();
+				((IVisualElementController)Element).PlatformSizeChanged();
 			});
 		}
 

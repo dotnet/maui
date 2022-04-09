@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public async Task CanOpen(string uri)
 		{
 #if __IOS__
-            if (DeviceInfo.DeviceType == DeviceType.Virtual && (uri.Contains("tel:") || uri.Contains("mailto:")))
+            if (DeviceInfo.DeviceType == DeviceType.Virtual && (uri.Contains("tel:", StringComparison.Ordinal) || uri.Contains("mailto:", StringComparison.Ordinal)))
             {
                 Assert.False(await Launcher.CanOpenAsync(uri));
                 return;
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public async Task CanOpenUri(string uri)
 		{
 #if __IOS__
-            if (DeviceInfo.DeviceType == DeviceType.Virtual && (uri.Contains("tel:") || uri.Contains("mailto:")))
+            if (DeviceInfo.DeviceType == DeviceType.Virtual && (uri.Contains("tel:", StringComparison.Ordinal) || uri.Contains("mailto:", StringComparison.Ordinal)))
             {
                 Assert.False(await Launcher.CanOpenAsync(new Uri(uri)));
                 return;
@@ -112,7 +113,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public async Task TryOpen(string uri)
 		{
 #if __IOS__
-            if (DeviceInfo.DeviceType == DeviceType.Virtual && (uri.Contains("tel:") || uri.Contains("mailto:")))
+            if (DeviceInfo.DeviceType == DeviceType.Virtual && (uri.Contains("tel:", StringComparison.Ordinal) || uri.Contains("mailto:", StringComparison.Ordinal)))
             {
                 Assert.False(await Launcher.TryOpenAsync(uri));
                 return;

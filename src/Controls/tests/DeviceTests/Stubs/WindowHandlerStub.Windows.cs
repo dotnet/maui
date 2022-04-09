@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			var windowManager = handler.MauiContext.GetNavigationRootManager();
 			windowManager.Connect(handler.VirtualView.Content);
-			var rootPanel = handler.NativeView.Content as WPanel;
+			var rootPanel = handler.PlatformView.Content as WPanel;
 
 			if (rootPanel == null)
 				return;
@@ -27,14 +27,14 @@ namespace Microsoft.Maui.DeviceTests
 				rootPanel.Children.Add(windowManager.RootView);
 		}
 
-		protected override void DisconnectHandler(UI.Xaml.Window nativeView)
+		protected override void DisconnectHandler(UI.Xaml.Window platformView)
 		{
 			var windowManager = MauiContext.GetNavigationRootManager();
-			var rootPanel = nativeView.Content as WPanel;
+			var rootPanel = platformView.Content as WPanel;
 			rootPanel.Children.Remove(windowManager.RootView);
 			windowManager.Disconnect();
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public WindowHandlerStub()
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 		}
 
-		protected override WWindow CreateNativeElement()
+		protected override WWindow CreatePlatformElement()
 		{
 			return MauiProgram.CurrentWindow;
 		}

@@ -1,9 +1,9 @@
 using System.Globalization;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public class AppInfoImplementation
+	class AppInfoImplementation
 	{
 		public string PackageName
 			=> Application.Current.ApplicationInfo.PackageId;
@@ -27,5 +27,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public AppTheme RequestedTheme
 			=> AppTheme.Unspecified;
+
+		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 	}
 }

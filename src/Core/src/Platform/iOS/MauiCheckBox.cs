@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Platform
 					return;
 
 				_tintColor = value;
-				CheckBoxTintUIColor = CheckBoxTintColor?.ToNative();
+				CheckBoxTintUIColor = CheckBoxTintColor?.ToPlatform();
 			}
 		}
 

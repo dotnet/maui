@@ -10,6 +10,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete]
 	internal class OpenGLViewRenderer : ViewRenderer<OpenGLView, GLKView>
 	{
 		CADisplayLink _displayLink;
@@ -94,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_displayLink = null;
 				}
 			});
-			_displayLink.AddToRunLoop(NSRunLoop.Current, NSRunLoop.NSRunLoopCommonModes);
+			_displayLink.AddToRunLoop(NSRunLoop.Current, NSRunLoopMode.Common);
 		}
 
 		class Delegate : GLKViewDelegate, IGLKViewDelegate

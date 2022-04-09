@@ -17,25 +17,15 @@
 		<ResourceDictionary Source="TabbedPageStyle.xaml" />
 		<ResourceDictionary Source="SliderStyle.xaml" />
         <ResourceDictionary Source="PickerStyle.xaml" />
-        <ResourceDictionary Source="../Handlers/ListView/Windows/ListViewStyles.xaml" />
-        <ResourceDictionary Source="../Handlers/TableView/Windows/TableViewStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <x:Boolean x:Key="MicrosoftMauiControlsCompatibilityIncluded">true</x:Boolean>
 
-    <uwp:CaseConverter x:Key="LowerConverter" ConvertToUpper="False" />
-	<uwp:CaseConverter x:Key="UpperConverter" ConvertToUpper="True" />
-	<uwp:HeightConverter x:Key="HeightConverter" />
-	<uwp:CollapseWhenEmptyConverter x:Key="CollapseWhenEmpty" />
 	<uwp:BoolToVisibilityConverter x:Key="BoolVisibilityConverter" />
     <uwp:BrushConverter x:Key="BrushConverter" />
 	<uwp:BoolToVisibilityConverter x:Key="InvertedBoolVisibilityConverter" FalseIsVisible="True" />
 	<uwp:PageToRenderedElementConverter x:Key="PageToRenderer" />
-    <maui:ImageConverter x:Key="ImageConverter" />
-	<uwp:ColorConverter x:Key="ColorConverter" />
-	<uwp:HorizontalTextAlignmentConverter x:Key="HorizontalTextAlignmentConverter" />
 	<uwp:TextAlignmentToHorizontalAlignmentConverter x:Key="AlignmentConverter" />
-	<uwp:KeyboardConverter x:Key="KeyboardConverter" />
     <uwp:MasterBackgroundConverter x:Key="MasterBackgroundConverter" />
     <uwp:ImageSourceIconElementConverter x:Key="ImageSourceIconElementConverter" />
     <!-- We probably want to keep this in sync with AppBarThemeCompactHeight in FlyoutPageControlStyle.xaml (in uwp:FormsCommandBar.Resources) -->
@@ -154,7 +144,7 @@
         </Setter>
     </Style>
 
-    <DataTemplate x:Key="TextCell">
+    <DataTemplate x:Key="CompatibilityTextCell">
 		<StackPanel AutomationProperties.AutomationId="{Binding AutomationId}">
 			<TextBlock
 				Text="{Binding Text}"
@@ -170,8 +160,8 @@
 				x:Name="detail"/>
 		</StackPanel>
 	</DataTemplate>
-	
-	<DataTemplate x:Key="ListViewHeaderTextCell">
+
+    <DataTemplate x:Key="CompatibilityListViewHeaderTextCell">
 		<StackPanel>
 			<TextBlock
 				Text="{Binding Text}"
@@ -188,7 +178,7 @@
 		</StackPanel>
 	</DataTemplate>
 
-	<DataTemplate x:Key="ImageCell">
+    <DataTemplate x:Key="CompatibilityImageCell">
 		<Grid AutomationProperties.AutomationId="{Binding AutomationId}">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto" />
@@ -219,8 +209,8 @@
 				x:Name="detail" />
 		</Grid>
 	</DataTemplate>
-	
-	<DataTemplate x:Key="SwitchCell">
+
+    <DataTemplate x:Key="CompatibilitySwitchCell">
 		<Grid HorizontalAlignment="Stretch" x:Name="ParentGrid"  AutomationProperties.AutomationId="{Binding AutomationId}">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
@@ -233,7 +223,7 @@
 		</Grid>
 	</DataTemplate>
 
-	<DataTemplate x:Key="EntryCell">
+	<DataTemplate x:Key="CompatibilityEntryCell">
         <uwp:EntryCellTextBox  AutomationProperties.AutomationId="{Binding AutomationId}" IsEnabled="{Binding IsEnabled}" Header="{Binding}" Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextAlignment="{Binding HorizontalTextAlignment,Converter={StaticResource HorizontalTextAlignmentConverter}}" PlaceholderText="{Binding Placeholder}"  InputScope="{Binding Keyboard,Converter={StaticResource KeyboardConverter}}" HorizontalAlignment="Stretch">
 			<uwp:EntryCellTextBox.HeaderTemplate>
 				<DataTemplate>
@@ -261,7 +251,7 @@
 		</Setter>
 	</Style>
 
-	<Style TargetType="ToggleSwitch">
+    <Style TargetType="ToggleSwitch" x:Key="CompatibilityToggleSwitch">
 		<Setter Property="MinWidth" Value="0"/>
 	</Style>
 </ResourceDictionary>

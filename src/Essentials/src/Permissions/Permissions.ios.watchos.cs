@@ -6,7 +6,7 @@ using CoreMotion;
 using EventKit;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Essentials
 				if (!CMMotionActivityManager.IsActivityAvailable)
 					return PermissionStatus.Disabled;
 
-				if (Platform.HasOSVersion(11, 0))
+				if (OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsWatchOSVersionAtLeast(4, 0))
 				{
 					switch (CMMotionActivityManager.AuthorizationStatus)
 					{

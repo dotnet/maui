@@ -6,6 +6,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.ApplicationModel;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -17,7 +19,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-
+			AppInfo.SetCurrent(new MockAppInfo());
 		}
 
 		[TearDown]
@@ -333,7 +335,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public TestShell(params ShellItem[] shellItems) : this()
 			{
-				_ = new Window() { Page = this };
 				shellItems.ForEach(x => Items.Add(x));
 			}
 

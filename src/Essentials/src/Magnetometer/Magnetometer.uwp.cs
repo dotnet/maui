@@ -2,20 +2,20 @@ using System;
 using Windows.Devices.Sensors;
 using WindowsMagnetometer = Windows.Devices.Sensors.Magnetometer;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Magnetometer
+	partial class MagnetometerImplementation : IMagnetometer
 	{
 		// keep around a reference so we can stop this same instance
-		static WindowsMagnetometer sensor;
+		WindowsMagnetometer sensor;
 
-		internal static WindowsMagnetometer DefaultSensor =>
+		static WindowsMagnetometer DefaultSensor =>
 			WindowsMagnetometer.GetDefault();
 
-		internal static bool IsSupported =>
+		bool PlatformIsSupported =>
 			DefaultSensor != null;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			sensor = DefaultSensor;
 
@@ -25,17 +25,18 @@ namespace Microsoft.Maui.Essentials
 			sensor.ReadingChanged += DataUpdated;
 		}
 
-		static void DataUpdated(object sender, MagnetometerReadingChangedEventArgs e)
+		void DataUpdated(object sender, MagnetometerReadingChangedEventArgs e)
 		{
 			var reading = e.Reading;
 			var data = new MagnetometerData(reading.MagneticFieldX, reading.MagneticFieldY, reading.MagneticFieldZ);
-			OnChanged(data);
+			RaiseReadingChanged(data);
 		}
 
-		internal static void PlatformStop()
+		void PlatformStop()
 		{
 			sensor.ReadingChanged -= DataUpdated;
 			sensor.ReportInterval = 0;
+			sensor = null;
 		}
 	}
 }

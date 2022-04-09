@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 			return _manager.Measure(widthConstraint, heightConstraint);
 		}
 
-		public Size ArrangeChildren(Rectangle bounds)
+		public Size ArrangeChildren(Rect bounds)
 		{
 			return _manager.ArrangeChildren(bounds);
 		}

@@ -17,15 +17,43 @@
     <StaticWebAssetProjectMode>Root</StaticWebAssetProjectMode>
   </PropertyGroup>
 
-  <Target Name="ConvertStaticWebAssetsToMauiAssets" BeforeTargets="GetMauiItems;ResizetizeCollectItems" DependsOnTargets="ResolveProjectReferences;StaticWebAssetsPrepareForRun;StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest">
+  <Target Name="ConvertStaticWebAssetsToMauiAssets"
+      BeforeTargets="GetMauiItems;ResizetizeCollectItems;_CollectBundleResources;_CollectHotRestartBundleResources;_CheckForContent"
+      DependsOnTargets="ResolveProjectReferences;StaticWebAssetsPrepareForRun;StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest">
+
     <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_MauiStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
+
     <ItemGroup>
       <MauiAsset Include="%(_MauiStaticWebAssetWithTargetPath.Identity)">
         <Link>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</Link>
         <TargetPath>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</TargetPath>
       </MauiAsset>
+    </ItemGroup>
+
+    <!-- Update Content files that are managed by the Razor SDK to opt out of iOS and Android content-checks -->
+    <ItemGroup>
+      <!-- .razor.css scoped css files -->
+      <_ContentNotScopedCssFiles Include="@(Content)" Exclude="@(ScopedCssInput)" />
+      <_ContentToUpdate Include="@(Content)" Exclude="@(_ContentNotScopedCssFiles)" />
+
+      <!-- .razor files -->
+      <_ContentToUpdate Include="@(Content->WithMetadataValue('Extension', '.razor'))" />
+
+      <Content Remove="@(_ContentToUpdate)" />
+      <Content Include="@(_ContentToUpdate)" ExcludeFromContentCheck="true" PublishFolderType="None" />
+
+      <!-- Remove the items in AppDesignerFolder ("Properties", by default) so they don't get copied to the output directory -->
+      <Content Remove="$(AppDesignerFolder)\**" Condition="'$(AppDesignerFolder)' != ''" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="_RemoveStaticWebAssetsDevelopmentManifest" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <!-- Remove the development manifest from the output since its not used and it will otherwise get incorrectly loaded in production. -->
+    <ItemGroup>
+      <ContentWithTargetPath Remove="$(StaticWebAssetDevelopmentManifestPath)" />
     </ItemGroup>
   </Target>
 

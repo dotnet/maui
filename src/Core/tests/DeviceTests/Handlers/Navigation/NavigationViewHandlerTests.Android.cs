@@ -16,14 +16,16 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class NavigationViewHandlerTests
 	{
 		int GetNativeNavigationStackCount(NavigationViewHandler navigationViewHandler) =>
-			navigationViewHandler.StackNavigationManager.NavHost.NavController.BackStack.Size() - 1;
+			navigationViewHandler.StackNavigationManager.NavHost.NavController.BackQueue.Size() - 1;
 
 		Task CreateNavigationViewHandlerAsync(IStackNavigationView navigationView, Func<NavigationViewHandler, Task> action)
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				ViewGroup rootView = (DefaultContext as AppCompatActivity).Window.DecorView as ViewGroup;
-				var linearLayoutCompat = new LinearLayoutCompat(DefaultContext);
+				var context = MauiProgram.DefaultContext;
+
+				var rootView = (context as AppCompatActivity).Window.DecorView as ViewGroup;
+				var linearLayoutCompat = new LinearLayoutCompat(context);
 				var fragmentManager = MauiContext.GetFragmentManager();
 				var viewFragment = new NavViewFragment(MauiContext);
 

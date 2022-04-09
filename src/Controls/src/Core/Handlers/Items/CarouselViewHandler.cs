@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Handlers;
-
-namespace Microsoft.Maui.Controls.Handlers.Items
+﻿namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class CarouselViewHandler
 	{
@@ -29,7 +24,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
 			[Controls.CarouselView.IsSwipeEnabledProperty.PropertyName] = MapIsSwipeEnabled,
 			[Controls.CarouselView.PeekAreaInsetsProperty.PropertyName] = MapPeekAreaInsets,
-			[Controls.CarouselView.IsBounceEnabledProperty.PropertyName] = MapIsBounceEnabled
+			[Controls.CarouselView.IsBounceEnabledProperty.PropertyName] = MapIsBounceEnabled,
+			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
+			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem
 		};
 	}
 }

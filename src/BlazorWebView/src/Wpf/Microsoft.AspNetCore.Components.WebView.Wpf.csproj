@@ -10,6 +10,7 @@
     <DefineConstants>$(DefineConstants);WEBVIEW2_WPF</DefineConstants>
     <UseWPF>true</UseWPF>
     <Nullable>disable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\SharedSource\**\*.cs" Link="SharedSource\%(Filename)%(Extension)"/>
+    <Compile Include="..\SharedSource\**\*.cs" Link="SharedSource\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

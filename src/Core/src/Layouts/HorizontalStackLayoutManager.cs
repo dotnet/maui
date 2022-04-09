@@ -41,73 +41,64 @@ namespace Microsoft.Maui.Layouts
 			return new Size(finalWidth, finalHeight);
 		}
 
-		public override Size ArrangeChildren(Rectangle bounds)
+		public override Size ArrangeChildren(Rect bounds)
 		{
 			var padding = Stack.Padding;
 			double top = padding.Top + bounds.Top;
-			double left = padding.Left + bounds.Left;
+			
 			var height = bounds.Height - padding.VerticalThickness;
 			double stackWidth;
 
-			if (Stack.FlowDirection == FlowDirection.LeftToRight)
+			bool leftToRight = Stack.ShouldArrangeLeftToRight();
+
+			// Figure out where we're starting from (the left edge of the padded area, or the right edge)
+			double xPosition = leftToRight ? padding.Left + bounds.Left : bounds.Right - padding.Right;
+
+			// If we're arranging from the right, spacing will be added to the left
+			double spacingDelta = leftToRight ? Stack.Spacing : -Stack.Spacing;
+
+			for (int n = 0; n < Stack.Count; n++)
 			{
-				stackWidth = ArrangeLeftToRight(height, left, top, Stack.Spacing, Stack);
+				var child = Stack[n];
+
+				if (child.Visibility == Visibility.Collapsed)
+				{
+					continue;
+				}
+
+				xPosition += leftToRight 
+					? ArrangeChildFromLeftEdge(child, height, top, xPosition) 
+					: ArrangeChildFromRightEdge(child, height, top, xPosition);
+
+				if (n < Stack.Count - 1)
+				{
+					// If we have more than one child and we're not on the last one, add spacing
+					xPosition += spacingDelta;
+				}
 			}
-			else
-			{
-				// We _could_ simply reverse the list of child views when arranging from right to left, 
-				// but this way we avoid extra list and enumerator allocations
-				stackWidth = ArrangeRightToLeft(height, left, top, Stack.Spacing, Stack);
-			}
+
+			// If we started from the left, the total width is the current x position;
+			// If we started from the right, it's the difference between the right edge and the current x position
+			stackWidth = leftToRight ? xPosition : bounds.Right - xPosition;
 
 			var actual = new Size(stackWidth, height);
 
 			return actual.AdjustForFill(bounds, Stack);
 		}
 
-		static double ArrangeLeftToRight(double height, double left, double top, double spacing, IList<IView> children)
+		static double ArrangeChildFromLeftEdge(IView child, double height, double top, double x)
 		{
-			double xPosition = left;
-
-			for (int n = 0; n < children.Count; n++)
-			{
-				var child = children[n];
-
-				if (child.Visibility == Visibility.Collapsed)
-				{
-					continue;
-				}
-
-				xPosition += ArrangeChild(child, height, top, spacing, xPosition);
-			}
-
-			return xPosition;
-		}
-
-		static double ArrangeRightToLeft(double height, double left, double top, double spacing, IList<IView> children)
-		{
-			double xPostition = left;
-
-			for (int n = children.Count - 1; n >= 0; n--)
-			{
-				var child = children[n];
-
-				if (child.Visibility == Visibility.Collapsed)
-				{
-					continue;
-				}
-
-				xPostition += ArrangeChild(child, height, top, spacing, xPostition);
-			}
-
-			return xPostition;
-		}
-
-		static double ArrangeChild(IView child, double height, double top, double spacing, double x)
-		{
-			var destination = new Rectangle(x, top, child.DesiredSize.Width, height);
+			var destination = new Rect(x, top, child.DesiredSize.Width, height);
 			child.Arrange(destination);
-			return destination.Width + spacing;
+			return destination.Width;
+		}
+
+		static double ArrangeChildFromRightEdge(IView child, double height, double top, double x)
+		{
+			var width = child.DesiredSize.Width;
+			var destination = new Rect(x - width, top, width, height);
+			child.Arrange(destination);
+			return -destination.Width;
 		}
 	}
 }

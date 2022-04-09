@@ -1,4 +1,5 @@
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
@@ -6,19 +7,19 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Figures")]
 	public sealed class PathGeometry : Geometry
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public PathGeometry()
 		{
 			Figures = new PathFigureCollection();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public PathGeometry(PathFigureCollection figures)
 		{
 			Figures = figures;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public PathGeometry(PathFigureCollection figures, FillRule fillRule)
 		{
 			Figures = figures;
@@ -51,81 +52,99 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='AppendPath']/Docs" />
 		public override void AppendPath(PathF path)
 		{
-			foreach (var f in Figures)
+			double density = 1.0d;
+#if ANDROID
+			density = DeviceDisplay.MainDisplayInfo.Density;
+#endif
+
+			foreach (var figure in Figures)
 			{
-				foreach (var s in f.Segments)
+				float startPointX = (float)(density * figure.StartPoint.X);
+				float startPointY = (float)(density * figure.StartPoint.Y);
+
+				path.MoveTo(startPointX, startPointY);
+
+				foreach (var segment in figure.Segments)
 				{
-					if (s is ArcSegment arcSegment)
-						AddArc(path, arcSegment);
-					else if (s is BezierSegment bezierSegment)
-						AddBezier(path, bezierSegment);
-					else if (s is LineSegment lineSegment)
-						AddLine(path, lineSegment);
-					else if (s is PolyBezierSegment polyBezierSegment)
-						AddPolyBezier(path, polyBezierSegment);
-					else if (s is PolyLineSegment polyLineSegment)
-						AddPolyLine(path, polyLineSegment);
-					else if (s is PolyQuadraticBezierSegment polyQuadraticBezierSegment)
-						AddPolyQuad(path, polyQuadraticBezierSegment);
-					else if (s is QuadraticBezierSegment quadraticBezierSegment)
-						AddQuad(path, quadraticBezierSegment);
+					if (segment is ArcSegment arcSegment)
+						AddArc(path, arcSegment, density);
+					else if (segment is BezierSegment bezierSegment)
+						AddBezier(path, bezierSegment, density);
+					else if (segment is LineSegment lineSegment)
+						AddLine(path, lineSegment, density);
+					else if (segment is PolyBezierSegment polyBezierSegment)
+						AddPolyBezier(path, polyBezierSegment, density);
+					else if (segment is PolyLineSegment polyLineSegment)
+						AddPolyLine(path, polyLineSegment, density);
+					else if (segment is PolyQuadraticBezierSegment polyQuadraticBezierSegment)
+						AddPolyQuad(path, polyQuadraticBezierSegment, density);
+					else if (segment is QuadraticBezierSegment quadraticBezierSegment)
+						AddQuad(path, quadraticBezierSegment, density);
 				}
+
+				if (figure.IsClosed)
+					path.Close();
 			}
 		}
 
-		void AddArc(PathF path, ArcSegment arcSegment)
+		void AddArc(PathF path, ArcSegment arcSegment, double density)
 		{
 			path.AddArc(
-				(float)arcSegment.Point.X,
-				(float)arcSegment.Point.Y,
-				(float)arcSegment.Point.X + (float)arcSegment.Size.Width,
-				(float)arcSegment.Point.Y + (float)arcSegment.Size.Height,
-				(float)arcSegment.RotationAngle,
-				(float)arcSegment.RotationAngle,
+				(float)(density * arcSegment.Point.X),
+				(float)(density * arcSegment.Point.Y),
+				(float)(density * arcSegment.Point.X + density * arcSegment.Size.Width),
+				(float)(density * arcSegment.Point.Y + density * arcSegment.Size.Height),
+				(float)(density * arcSegment.RotationAngle),
+				(float)(density * arcSegment.RotationAngle),
 				arcSegment.SweepDirection == SweepDirection.Clockwise);
 		}
 
-		void AddLine(PathF path, LineSegment lineSegment)
+		void AddLine(PathF path, LineSegment lineSegment, double density)
 		{
-			path.LineTo((float)lineSegment.Point.X, (float)lineSegment.Point.Y);
+			path.LineTo(
+				(float)(density * lineSegment.Point.X), 
+				(float)(density * lineSegment.Point.Y));
 		}
 
-		void AddPolyLine(PathF path, PolyLineSegment polyLineSegment)
+		void AddPolyLine(PathF path, PolyLineSegment polyLineSegment, double density)
 		{
 			foreach (var p in polyLineSegment.Points)
-				path.LineTo((float)p.X, (float)p.Y);
+				path.LineTo(
+					(float)(density * p.X), 
+					(float)(density * p.Y));
 		}
 
-		void AddBezier(PathF path, BezierSegment bezierSegment)
+		void AddBezier(PathF path, BezierSegment bezierSegment, double density)
 		{
-			path.CurveTo(
-				(float)bezierSegment.Point1.X, (float)bezierSegment.Point1.Y,
-				(float)bezierSegment.Point2.X, (float)bezierSegment.Point2.Y,
-				(float)bezierSegment.Point3.X, (float)bezierSegment.Point3.Y);
+			path.CurveTo(	
+				(float)(density * bezierSegment.Point1.X), (float)(density * bezierSegment.Point1.Y),
+				(float)(density * bezierSegment.Point2.X), (float)(density * bezierSegment.Point2.Y),
+				(float)(density * bezierSegment.Point3.X), (float)(density * bezierSegment.Point3.Y));
 		}
 
-		void AddPolyBezier(PathF path, PolyBezierSegment polyBezierSegment)
+		void AddPolyBezier(PathF path, PolyBezierSegment polyBezierSegment, double density)
 		{
 			for (int bez = 0; bez < polyBezierSegment.Points.Count; bez += 3)
 			{
 				if (bez + 2 > polyBezierSegment.Points.Count - 1)
 					break;
 
-				var pt1 = new PointF((float)polyBezierSegment.Points[bez].X, (float)polyBezierSegment.Points[bez].Y);
-				var pt2 = new PointF((float)polyBezierSegment.Points[bez + 1].X, (float)polyBezierSegment.Points[bez + 1].Y);
-				var pt3 = new PointF((float)polyBezierSegment.Points[bez + 2].X, (float)polyBezierSegment.Points[bez + 2].Y);
+				var pt1 = new PointF((float)(density * polyBezierSegment.Points[bez].X), (float)(density * polyBezierSegment.Points[bez].Y));
+				var pt2 = new PointF((float)(density * polyBezierSegment.Points[bez + 1].X), (float)(density * polyBezierSegment.Points[bez + 1].Y));
+				var pt3 = new PointF((float)(density * polyBezierSegment.Points[bez + 2].X), (float)(density * polyBezierSegment.Points[bez + 2].Y));
 
 				path.CurveTo(pt1, pt2, pt3);
 			}
 		}
 
-		void AddQuad(PathF path, QuadraticBezierSegment quadraticBezierSegment)
+		void AddQuad(PathF path, QuadraticBezierSegment quadraticBezierSegment, double density)
 		{
-			path.QuadTo((float)quadraticBezierSegment.Point1.X, (float)quadraticBezierSegment.Point1.Y,
-							(float)quadraticBezierSegment.Point2.X, (float)quadraticBezierSegment.Point2.Y);
+			path.QuadTo(
+				(float)(density * quadraticBezierSegment.Point1.X), (float)(density * quadraticBezierSegment.Point1.Y),
+				(float)(density * quadraticBezierSegment.Point2.X), (float)(density * quadraticBezierSegment.Point2.Y));
 		}
 
-		void AddPolyQuad(PathF path, PolyQuadraticBezierSegment polyQuadraticBezierSegment)
+		void AddPolyQuad(PathF path, PolyQuadraticBezierSegment polyQuadraticBezierSegment, double density)
 		{
 			var points = polyQuadraticBezierSegment.Points;
 
@@ -136,8 +155,8 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (i + 1 > polyQuadraticBezierSegment.Points.Count - 1)
 						break;
 
-					var pt1 = new PointF((float)points[i].X, (float)points[i].Y);
-					var pt2 = new PointF((float)points[i + 1].X, (float)points[i + 1].Y);
+					var pt1 = new PointF((float)(density * points[i].X), (float)(density * points[i].Y));
+					var pt2 = new PointF((float)(density * points[i + 1].X), (float)(density * points[i + 1].Y));
 
 					path.QuadTo(pt1, pt2);
 				}

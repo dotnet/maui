@@ -8,6 +8,7 @@ using WView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	public class FormsWebViewClient : WebViewClient
 	{
 		WebNavigationResult _navigationResult = WebNavigationResult.Success;
@@ -29,10 +30,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override bool ShouldOverrideUrlLoading(WView view, string url)
 			=> SendNavigatingCanceled(url);
 
+		[PortHandler]
 		// api 24+
 		public override bool ShouldOverrideUrlLoading(WView view, IWebResourceRequest request)
 			=> SendNavigatingCanceled(request?.Url?.ToString());
 
+		[PortHandler]
 		public override void OnPageStarted(WView view, string url, Bitmap favicon)
 		{
 			if (_renderer?.Element == null || string.IsNullOrWhiteSpace(url) || url == WebViewRenderer.AssetBaseUrl)
@@ -56,6 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler("Partially ported")]
 		public override void OnPageFinished(WView view, string url)
 		{
 			if (_renderer?.Element == null || url == WebViewRenderer.AssetBaseUrl)
@@ -96,6 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 #pragma warning restore 618
 		}
 
+		[PortHandler]
 		public override void OnReceivedError(WView view, IWebResourceRequest request, WebResourceError error)
 		{
 			if (request.Url.ToString() == _renderer?.Control.Url)
@@ -107,6 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnReceivedError(view, request, error);
 		}
 
+		[PortHandler]
 		protected override void Dispose(bool disposing)
 		{
 			base.Dispose(disposing);

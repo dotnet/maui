@@ -4,9 +4,9 @@ using CoreTelephony;
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Networking
 {
-	public static partial class Connectivity
+	partial class ConnectivityImplementation : IConnectivity
 	{
 #if !(MACCATALYST || MACOS)
 		// TODO: Use NWPathMonitor on > iOS 12
@@ -19,13 +19,13 @@ namespace Microsoft.Maui.Essentials
 
 		static ReachabilityListener listener;
 
-		static void StartListeners()
+		void StartListeners()
 		{
 			listener = new ReachabilityListener();
 			listener.ReachabilityChanged += OnConnectivityChanged;
 		}
 
-		static void StopListeners()
+		void StopListeners()
 		{
 			if (listener == null)
 				return;
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Essentials
 			listener = null;
 		}
 
-		static NetworkAccess PlatformNetworkAccess
+		public NetworkAccess NetworkAccess
 		{
 			get
 			{
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static IEnumerable<ConnectionProfile> PlatformConnectionProfiles
+		public IEnumerable<ConnectionProfile> ConnectionProfiles
 		{
 			get
 			{

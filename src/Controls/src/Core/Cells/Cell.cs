@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 {
 	// Don't add IElementConfiguration<Cell> because it kills performance on UWP structures that use Cells
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Cell']/Docs" />
-	public abstract class Cell : Element, ICellController, IFlowDirectionController, IPropertyPropagationController, IVisualController
+	public abstract class Cell : Element, ICellController, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='DefaultCellHeight']/Docs" />
 		public const int DefaultCellHeight = 40;
@@ -66,6 +66,20 @@ namespace Microsoft.Maui.Controls
 
 		IFlowDirectionController FlowController => this;
 		IPropertyPropagationController PropertyPropagationController => this;
+
+		Window _window;
+		Window IWindowController.Window
+		{
+			get => _window;
+			set
+			{
+				if (value == _window)
+					return;
+
+				_window = value;
+				OnPropertyChanged(VisualElement.WindowProperty.PropertyName);
+			}
+		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='ContextActions']/Docs" />
 		public IList<MenuItem> ContextActions

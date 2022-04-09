@@ -38,7 +38,7 @@ namespace Microsoft.Maui.DeviceTests
 			var uiimage = Assert.IsType<UIImage>(result.Value);
 
 			var expectedColor = Color.FromArgb(colorHex);
-			uiimage.AssertColorAtCenter(expectedColor.ToNative());
+			uiimage.AssertColorAtCenter(expectedColor.ToPlatform());
 		}
 
 		[Theory]
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var uiimage = Assert.IsType<UIImage>(drawable.Value);
 
-			uiimage.AssertColorAtCenter(expectedColor.ToNative());
+			uiimage.AssertColorAtCenter(expectedColor.ToPlatform());
 		}
 	}
 }

@@ -2,20 +2,21 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Android.Views;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
-	public static partial class HapticFeedback
+	partial class HapticFeedbackImplementation : IHapticFeedback
 	{
-		internal static bool IsSupported => true;
+		public bool IsSupported => true;
 
-		static void PlatformPerform(HapticFeedbackType type)
+		public void Perform(HapticFeedbackType type)
 		{
 			Permissions.EnsureDeclared<Permissions.Vibrate>();
 
 			try
 			{
-				Platform.CurrentActivity?.Window?.DecorView?.PerformHapticFeedback(ConvertType(type));
+				ActivityStateManager.Default.GetCurrentActivity()?.Window?.DecorView?.PerformHapticFeedback(ConvertType(type));
 			}
 			catch (Exception ex)
 			{

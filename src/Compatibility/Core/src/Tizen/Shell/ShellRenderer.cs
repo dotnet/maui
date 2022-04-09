@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFlyoutBackgroundColor()
 		{
-			_navigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToNative();
+			_navigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToPlatform();
 		}
 
 		void UpdateFlyoutBackgroundImageAspect()

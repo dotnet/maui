@@ -16,8 +16,8 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
-					return UIColor.LabelColor;
+				if (PlatformVersion.IsAtLeast(13))
+					return UIColor.Label;
 
 				return UIColor.Black;
 			}
@@ -28,8 +28,8 @@ namespace Microsoft.Maui.Platform
 			get
 			{
 
-				if (NativeVersion.IsAtLeast(13))
-					return UIColor.PlaceholderTextColor;
+				if (PlatformVersion.IsAtLeast(13))
+					return UIColor.PlaceholderText;
 
 				return SeventyPercentGrey;
 			}
@@ -40,10 +40,10 @@ namespace Microsoft.Maui.Platform
 			get
 			{
 
-				if (NativeVersion.IsAtLeast(13))
-					return UIColor.SecondaryLabelColor;
+				if (PlatformVersion.IsAtLeast(13))
+					return UIColor.SecondaryLabel;
 
-				return new Color(.32f, .4f, .57f).ToNative();
+				return new Color(.32f, .4f, .57f).ToPlatform();
 			}
 		}
 
@@ -52,8 +52,8 @@ namespace Microsoft.Maui.Platform
 			get
 			{
 
-				if (NativeVersion.IsAtLeast(13))
-					return UIColor.SystemBackgroundColor;
+				if (PlatformVersion.IsAtLeast(13))
+					return UIColor.SystemBackground;
 
 				return UIColor.White;
 			}
@@ -63,8 +63,8 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
-					return UIColor.SeparatorColor;
+				if (PlatformVersion.IsAtLeast(13))
+					return UIColor.Separator;
 
 				return UIColor.Gray;
 			}
@@ -74,8 +74,8 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
-					return UIColor.OpaqueSeparatorColor;
+				if (PlatformVersion.IsAtLeast(13))
+					return UIColor.OpaqueSeparator;
 
 				return UIColor.Black;
 			}
@@ -85,8 +85,8 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
-					return UIColor.SystemGroupedBackgroundColor;
+				if (PlatformVersion.IsAtLeast(13))
+					return UIColor.SystemGroupedBackground;
 
 				return new UIColor(247f / 255f, 247f / 255f, 247f / 255f, 1);
 			}
@@ -96,10 +96,10 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
-					return UIColor.SystemBlueColor;
+				if (PlatformVersion.IsAtLeast(13))
+					return UIColor.SystemBlue;
 
-				return Color.FromRgba(50, 79, 133, 255).ToNative();
+				return Color.FromRgba(50, 79, 133, 255).ToPlatform();
 			}
 		}
 
@@ -107,8 +107,8 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
-					return UIColor.SystemRedColor;
+				if (PlatformVersion.IsAtLeast(13))
+					return UIColor.SystemRed;
 
 				return UIColor.FromRGBA(255, 0, 0, 255);
 			}
@@ -118,8 +118,8 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
-					return UIColor.SystemGrayColor;
+				if (PlatformVersion.IsAtLeast(13))
+					return UIColor.SystemGray;
 
 				return UIColor.Gray;
 			}
@@ -129,8 +129,8 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (NativeVersion.IsAtLeast(13))
-					return UIColor.SystemGray2Color;
+				if (PlatformVersion.IsAtLeast(13))
+					return UIColor.SystemGray2;
 
 				return UIColor.LightGray;
 			}
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Platform
 
 		public static CGColor ToCGColor(this Color color)
 		{
-			return color.ToNative().CGColor;
+			return color.ToPlatform().CGColor;
 		}
 
 		public static UIColor FromPatternImageFromBundle(string bgImage)
@@ -160,15 +160,15 @@ namespace Microsoft.Maui.Platform
 			return new Color((float)red, (float)green, (float)blue, (float)alpha);
 		}
 
-		public static UIColor ToNative(this Color color)
+		public static UIColor ToPlatform(this Color color)
 		{
 			return new UIColor(color.Red, color.Green, color.Blue, color.Alpha);
 		}
 
-		public static UIColor? ToNative(this Color? color, Color? defaultColor)
-			=> color?.ToNative() ?? defaultColor?.ToNative();
+		public static UIColor? ToPlatform(this Color? color, Color? defaultColor)
+			=> color?.ToPlatform() ?? defaultColor?.ToPlatform();
 
-		public static UIColor ToNative(this Color? color, UIColor defaultColor)
-			=> color?.ToNative() ?? defaultColor;
+		public static UIColor ToPlatform(this Color? color, UIColor defaultColor)
+			=> color?.ToPlatform() ?? defaultColor;
 	}
 }

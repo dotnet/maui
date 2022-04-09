@@ -18,6 +18,7 @@ using WSnapPointsType = Microsoft.UI.Xaml.Controls.SnapPointsType;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class CarouselViewRenderer : ItemsViewRenderer<CarouselView>
 	{
 		ScrollViewer _scrollViewer;
@@ -32,8 +33,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override IItemsLayout Layout => CarouselView?.ItemsLayout;
 		LinearItemsLayout CarouselItemsLayout => CarouselView?.ItemsLayout;
 
+		[PortHandler]
 		UWPDataTemplate CarouselItemsViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["CarouselItemsViewDefaultTemplate"];
 
+		[PortHandler("Partially ported")]
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
 		{
 			base.OnElementPropertyChanged(sender, changedProperty);
@@ -84,6 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		protected override void TearDownOldElement(ItemsView oldElement)
 		{
 			base.TearDownOldElement(oldElement);
@@ -108,6 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		protected override void UpdateItemsSource()
 		{
 			var itemsSource = Element.ItemsSource;
@@ -123,6 +128,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.UpdateItemsSource();
 		}
 
+		[PortHandler]
 		protected override CollectionViewSource CreateCollectionViewSource()
 		{
 			var collectionViewSource = TemplatedItemSourceFactory.Create(Element.ItemsSource, Element.ItemTemplate, Element,
@@ -138,6 +144,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			};
 		}
 
+		[PortHandler]
 		protected override ICollectionView GetCollectionView(CollectionViewSource collectionViewSource)
 		{
 			_view = new LoopableCollectionView(base.GetCollectionView(collectionViewSource));
@@ -150,11 +157,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return _view;
 		}
 
+		[PortHandler]
 		protected override ListViewBase SelectListViewBase()
 		{
 			return CreateCarouselListLayout(CarouselItemsLayout.Orientation);
 		}
 
+		[PortHandler]
 		protected override void UpdateItemTemplate()
 		{
 			if (Element == null || ListViewBase == null)
@@ -163,6 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			ListViewBase.ItemTemplate = CarouselItemsViewTemplate;
 		}
 
+		[PortHandler]
 		protected override ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, ItemsLayoutOrientation orientation, bool advancing)
 		{
 			args = base.ComputeVisibleIndexes(args, orientation, advancing);
@@ -177,6 +187,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return args;
 		}
 
+		[PortHandler]
 		void CollectionItemsSourceChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			var carouselPosition = CarouselView.Position;
@@ -208,6 +219,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			SetCarouselViewPosition(carouselPosition);
 		}
 
+		[PortHandler]
 		void OnScrollViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
 		{
 			CarouselView.SetIsDragging(true);
@@ -216,18 +228,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		private LoopableCollectionView _view;
 
+		[PortHandler]
 		void OnScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
 		{
 			CarouselView.SetIsDragging(e.IsIntermediate);
 			CarouselView.IsScrolling = e.IsIntermediate;
 		}
 
+		[PortHandler]
 		void UpdatePeekAreaInsets()
 		{
 			ListViewBase.Padding = WinUIHelpers.CreateThickness(CarouselView.PeekAreaInsets.Left, CarouselView.PeekAreaInsets.Top, CarouselView.PeekAreaInsets.Right, CarouselView.PeekAreaInsets.Bottom);
 			UpdateItemsSource();
 		}
 
+		[PortHandler]
 		void UpdateIsSwipeEnabled()
 		{
 			if (CarouselView == null)
@@ -248,6 +263,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateIsBounceEnabled()
 		{
 			if (_scrollViewer != null)
@@ -266,6 +282,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_scrollViewer.Padding = WinUIHelpers.CreateThickness(0, 0, 0, itemSpacing);
 		}
 
+		[PortHandler]
 		void UpdateSnapPointsType()
 		{
 			if (_scrollViewer == null)
@@ -278,6 +295,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_scrollViewer.VerticalSnapPointsType = GetWindowsSnapPointsType(CarouselItemsLayout.SnapPointsType);
 		}
 
+		[PortHandler]
 		void UpdateSnapPointsAlignment()
 		{
 			if (_scrollViewer == null)
@@ -290,6 +308,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_scrollViewer.VerticalSnapPointsAlignment = GetWindowsSnapPointsAlignment(CarouselItemsLayout.SnapPointsAlignment);
 		}
 
+		[PortHandler]
 		int GetItemPositionInCarousel(object item)
 		{
 			for (int n = 0; n < ItemCount; n++)
@@ -306,6 +325,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return -1;
 		}
 
+		[PortHandler]
 		void UpdateCarouselViewInitialPosition()
 		{
 			if (Element.Loop && ListViewBase.Items.Count > 0)
@@ -326,6 +346,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void CarouselScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
 			var position = e.CenterItemIndex;
@@ -343,12 +364,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			SetCarouselViewPosition(position);
 		}
 
+		[PortHandler]
 		void UpdateFromCurrentItem()
 		{
 			var currentItemPosition = GetItemPositionInCarousel(CarouselView.CurrentItem);
 			CarouselView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: CarouselView.AnimateCurrentItemChanges);
 		}
 
+		[PortHandler]
 		void UpdateFromPosition()
 		{
 			if (CollectionViewSource == null)
@@ -362,6 +385,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			SetCarouselViewCurrentItem(carouselPosition);
 		}
 
+		[PortHandler]
 		void SetCarouselViewPosition(int position)
 		{
 			if (ItemCount == 0)
@@ -380,6 +404,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void SetCarouselViewCurrentItem(int carouselPosition)
 		{
 			if (!IsValidPosition(carouselPosition))
@@ -392,6 +417,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			CarouselView.SetValueFromRenderer(CarouselView.CurrentItemProperty, item);
 		}
 
+		[PortHandler]
 		bool IsValidPosition(int position)
 		{
 			if (ItemCount == 0)
@@ -403,6 +429,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return true;
 		}
 
+		[PortHandler]
 		ListViewBase CreateCarouselListLayout(ItemsLayoutOrientation layoutOrientation)
 		{
 			Microsoft.UI.Xaml.Controls.ListView listView;
@@ -434,6 +461,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return listView;
 		}
 
+		[PortHandler]
 		double GetItemWidth()
 		{
 			var itemWidth = ActualWidth;
@@ -446,6 +474,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return Math.Max(itemWidth, 0);
 		}
 
+		[PortHandler]
 		double GetItemHeight()
 		{
 			var itemHeight = ActualHeight;
@@ -458,6 +487,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return Math.Max(itemHeight, 0);
 		}
 
+		[PortHandler]
 		Thickness GetItemSpacing()
 		{
 			var itemSpacing = CarouselItemsLayout.ItemSpacing;
@@ -471,6 +501,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return new Thickness(0);
 		}
 
+		[PortHandler]
 		WSnapPointsType GetWindowsSnapPointsType(SnapPointsType snapPointsType)
 		{
 			switch (snapPointsType)
@@ -486,6 +517,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return WSnapPointsType.None;
 		}
 
+		[PortHandler]
 		WSnapPointsAlignment GetWindowsSnapPointsAlignment(SnapPointsAlignment snapPointsAlignment)
 		{
 			switch (snapPointsAlignment)
@@ -501,6 +533,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return WSnapPointsAlignment.Center;
 		}
 
+		[PortHandler]
 		protected override void OnScrollViewerFound(ScrollViewer scrollViewer)
 		{
 			base.OnScrollViewerFound(scrollViewer);
@@ -513,6 +546,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateScrollBarVisibilityForLoop();
 		}
 
+		[PortHandler("Partially ported")]
 		void InitialSetup(object sender, Microsoft.UI.Xaml.SizeChangedEventArgs e)
 		{
 			if (e.NewSize.Width > 0 && e.NewSize.Height > 0)
@@ -528,6 +562,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateScrollBarVisibilityForLoop()
 		{
 			if (_scrollViewer == null)

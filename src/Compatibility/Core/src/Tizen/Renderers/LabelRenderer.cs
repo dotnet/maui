@@ -52,8 +52,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				nativeSpan.FontAttributes = span.FontAttributes;
 				nativeSpan.FontFamily = span.FontFamily;
 				nativeSpan.FontSize = span.FontSize;
-				nativeSpan.ForegroundColor = span.TextColor.ToNative();
-				nativeSpan.BackgroundColor = span.BackgroundColor.ToNative();
+				nativeSpan.ForegroundColor = span.TextColor.ToPlatform();
+				nativeSpan.BackgroundColor = span.BackgroundColor.ToPlatform();
 				nativeSpan.Underline = (textDecorations & TextDecorations.Underline) != 0;
 				nativeSpan.Strikethrough = (textDecorations & TextDecorations.Strikethrough) != 0;
 				nativeSpan.LineHeight = span.LineHeight;
@@ -85,17 +85,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateTextColor()
 		{
-			Control.TextColor = Element.TextColor.ToNative();
+			Control.TextColor = Element.TextColor.ToPlatform();
 		}
 
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
+			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
 		}
 
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalTextAlignment = Element.VerticalTextAlignment.ToNative();
+			Control.VerticalTextAlignment = Element.VerticalTextAlignment.ToPlatform();
 		}
 
 		void UpdateFontProperties()

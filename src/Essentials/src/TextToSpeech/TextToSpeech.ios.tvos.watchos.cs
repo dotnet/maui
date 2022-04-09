@@ -5,22 +5,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using AVFoundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Media
 {
-	public static partial class TextToSpeech
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
-		static readonly Lazy<AVSpeechSynthesizer> speechSynthesizer = new Lazy<AVSpeechSynthesizer>();
+		readonly Lazy<AVSpeechSynthesizer> speechSynthesizer = new(() => new AVSpeechSynthesizer());
 
-		internal static Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
+		Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
 			Task.FromResult(AVSpeechSynthesisVoice.GetSpeechVoices()
 				.Select(v => new Locale(v.Language, null, v.Name, v.Identifier)));
-
-		internal static async Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
+		
+		async Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken)
 		{
-			using (var speechUtterance = GetSpeechUtterance(text, options))
-			{
-				await SpeakUtterance(speechUtterance, cancelToken);
-			}
+			using var speechUtterance = GetSpeechUtterance(text, options);
+			await SpeakUtterance(speechUtterance, cancelToken);
 		}
 
 		static AVSpeechUtterance GetSpeechUtterance(string text, SpeechOptions options)
@@ -46,15 +44,11 @@ namespace Microsoft.Maui.Essentials
 			return speechUtterance;
 		}
 
-		internal static async Task SpeakUtterance(AVSpeechUtterance speechUtterance, CancellationToken cancelToken)
+		async Task SpeakUtterance(AVSpeechUtterance speechUtterance, CancellationToken cancelToken)
 		{
 			var tcsUtterance = new TaskCompletionSource<bool>();
 			try
 			{
-				// Ensures linker doesn't remove.
-				if (DateTime.UtcNow.Ticks < 0)
-					new AVSpeechSynthesizer();
-
 				speechSynthesizer.Value.DidFinishSpeechUtterance += OnFinishedSpeechUtterance;
 				speechSynthesizer.Value.SpeakUtterance(speechUtterance);
 				using (cancelToken.Register(TryCancel))

@@ -35,10 +35,10 @@
                 FontSize="Large"
                 Text="Label with a Shadow">
                 <Label.Shadow>
-                    <Shadow Brush="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
-                            Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
-                            Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"
-                            />
+                    <Shadow 
+                        Brush="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                        Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
+                        Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"/>
                 </Label.Shadow>
             </Label>
             <Label
@@ -57,11 +57,10 @@
                 Stroke="{Binding Source={x:Reference FillColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
                 >
                 <Rectangle.Shadow>
-                    <Shadow 
-                            Brush="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
-                            Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
-                            Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"
-                            />
+                    <Shadow    
+                        Brush="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                        Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
+                        Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"/>
                 </Rectangle.Shadow>
             </Rectangle>
             <Label
@@ -82,10 +81,10 @@
                         RadiusY="50"/>
                 </Image.Clip>
                 <Image.Shadow>
-                    <Shadow Brush="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
-                            Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
-                            Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"
-                            />
+                    <Shadow 
+                        Brush="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                        Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
+                        Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"/>
                 </Image.Shadow>
             </Image>
             <Label

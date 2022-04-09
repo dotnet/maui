@@ -12,9 +12,11 @@
     <None Update="@(None)" PackagePath="" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" />
+    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.SingleProject.props" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.SingleProject.targets" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.targets" />
     <_Files Include="$(MauiNuSpecDirectory)maui.aotprofile" />
+    <_Files Include="$(MauiNuSpecDirectory)maui-blazor.aotprofile" />
     <_Files Include="$(PkgMicrosoft_Maui_Graphics)\lib\netstandard2.0\Microsoft.Maui.Graphics.dll" />
     <_Files Include="$(PkgMicrosoft_Maui_Graphics)\lib\netstandard2.0\Microsoft.Maui.Graphics.pdb" />
     <_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.dll" />
@@ -29,6 +31,8 @@
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Build.Tasks\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Build.Tasks.dll" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Build.Tasks\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Build.Tasks.pdb" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Build.Tasks\bin\$(Configuration)\netstandard2.0\*\Microsoft.Maui.Controls.Build.Tasks.resources.dll" />
+    <_Files Include="$(MauiRootDirectory)src\Essentials\src\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Essentials.dll" />
+    <_Files Include="$(MauiRootDirectory)src\Essentials\src\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Essentials.pdb" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.dll" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.pdb" />
     <_Files Include="$(MauiRootDirectory)src\Controls\src\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.dll" />
@@ -67,6 +71,12 @@
         Output="$(IntermediateOutputPath)BundledVersions.targets"
         OldValue="@TFM@"
         NewValue="$(_MauiDotNetTfm)"
+    />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)BundledVersions.targets"
+        Output="$(IntermediateOutputPath)BundledVersions.targets"
+        OldValue="@MicrosoftWindowsSDKBuildToolsPackageVersion@"
+        NewValue="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
     />
     <ItemGroup>
       <None

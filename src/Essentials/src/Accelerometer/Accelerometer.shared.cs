@@ -1,10 +1,113 @@
+#nullable enable
 using System;
 using System.Numerics;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
+	public interface IAccelerometer
+	{
+		event EventHandler<AccelerometerChangedEventArgs>? ReadingChanged;
+
+		event EventHandler? ShakeDetected;
+
+		bool IsSupported { get; }
+
+		bool IsMonitoring { get; }
+
+		void Start(SensorSpeed sensorSpeed);
+
+		void Stop();
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Accelerometer']/Docs" />
-	public static partial class Accelerometer
+	public static class Accelerometer
+	{
+		public static event EventHandler<AccelerometerChangedEventArgs> ReadingChanged
+		{
+			add => Default.ReadingChanged += value;
+			remove => Default.ReadingChanged -= value;
+		}
+
+		public static event EventHandler ShakeDetected
+		{
+			add => Default.ShakeDetected += value;
+			remove => Default.ShakeDetected -= value;
+		}
+
+		public static bool IsSupported
+			=> Default.IsSupported;
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
+		public static bool IsMonitoring => Default.IsMonitoring;
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='Start']/Docs" />
+		public static void Start(SensorSpeed sensorSpeed) => Default.Start(sensorSpeed);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='Stop']/Docs" />
+		public static void Stop() => Default.Stop();
+
+		static IAccelerometer? defaultImplementation;
+
+		public static IAccelerometer Default =>
+			defaultImplementation ??= new AccelerometerImplementation();
+
+		internal static void SetDefault(IAccelerometer? implementation) =>
+			defaultImplementation = implementation;
+	}
+
+	/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AccelerometerChangedEventArgs']/Docs" />
+	public class AccelerometerChangedEventArgs : EventArgs
+	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		public AccelerometerChangedEventArgs(AccelerometerData reading) => Reading = reading;
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerChangedEventArgs.xml" path="//Member[@MemberName='Reading']/Docs" />
+		public AccelerometerData Reading { get; }
+	}
+
+	/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AccelerometerData']/Docs" />
+	public readonly struct AccelerometerData : IEquatable<AccelerometerData>
+	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		public AccelerometerData(double x, double y, double z)
+			: this((float)x, (float)y, (float)z)
+		{
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		public AccelerometerData(float x, float y, float z) =>
+			Acceleration = new Vector3(x, y, z);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Acceleration']/Docs" />
+		public Vector3 Acceleration { get; }
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		public override bool Equals(object? obj) =>
+			(obj is AccelerometerData data) && Equals(data);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
+		public bool Equals(AccelerometerData other) =>
+			Acceleration.Equals(other.Acceleration);
+
+		public static bool operator ==(AccelerometerData left, AccelerometerData right) =>
+			left.Equals(right);
+
+		public static bool operator !=(AccelerometerData left, AccelerometerData right) =>
+			!left.Equals(right);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
+		public override int GetHashCode() =>
+			Acceleration.GetHashCode();
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='ToString']/Docs" />
+		public override string ToString() =>
+			$"{nameof(Acceleration.X)}: {Acceleration.X}, " +
+			$"{nameof(Acceleration.Y)}: {Acceleration.Y}, " +
+			$"{nameof(Acceleration.Z)}: {Acceleration.Z}";
+	}
+
+	partial class AccelerometerImplementation : IAccelerometer
 	{
 		const double accelerationThreshold = 169;
 
@@ -14,15 +117,13 @@ namespace Microsoft.Maui.Essentials
 
 		static bool useSyncContext;
 
-		public static event EventHandler<AccelerometerChangedEventArgs> ReadingChanged;
+		public event EventHandler<AccelerometerChangedEventArgs>? ReadingChanged;
 
-		public static event EventHandler ShakeDetected;
+		public event EventHandler? ShakeDetected;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
-		public static bool IsMonitoring { get; private set; }
+		public bool IsMonitoring { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='Start']/Docs" />
-		public static void Start(SensorSpeed sensorSpeed)
+		public void Start(SensorSpeed sensorSpeed)
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
@@ -44,8 +145,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Accelerometer.xml" path="//Member[@MemberName='Stop']/Docs" />
-		public static void Stop()
+		public void Stop()
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
@@ -66,10 +166,10 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		internal static void OnChanged(AccelerometerData reading) =>
+		internal void OnChanged(AccelerometerData reading) =>
 			OnChanged(new AccelerometerChangedEventArgs(reading));
 
-		internal static void OnChanged(AccelerometerChangedEventArgs e)
+		internal void OnChanged(AccelerometerChangedEventArgs e)
 		{
 			if (useSyncContext)
 				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
@@ -80,15 +180,15 @@ namespace Microsoft.Maui.Essentials
 				ProcessShakeEvent(e.Reading.Acceleration);
 		}
 
-		static void ProcessShakeEvent(Vector3 acceleration)
+		void ProcessShakeEvent(Vector3 acceleration)
 		{
-			var now = DateTime.UtcNow.Nanoseconds();
+			var now = Nanoseconds(DateTime.UtcNow);
 
 			var x = acceleration.X * gravity;
 			var y = acceleration.Y * gravity;
 			var z = acceleration.Z * gravity;
 
-			var g = x.Square() + y.Square() + z.Square();
+			var g = x * x + y * y + z * z;
 			queue.Add(now, g > accelerationThreshold);
 
 			if (queue.IsShaking)
@@ -101,62 +201,9 @@ namespace Microsoft.Maui.Essentials
 				else
 					ShakeDetected?.Invoke(null, args);
 			}
+
+			static long Nanoseconds(DateTime time) =>
+				(time.Ticks / TimeSpan.TicksPerMillisecond) * 1_000_000;
 		}
-
-		static double Square(this double q) => q * q;
-
-		internal static long Nanoseconds(this DateTime time) =>
-			(time.Ticks / TimeSpan.TicksPerMillisecond) * 1_000_000;
-	}
-
-	/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AccelerometerChangedEventArgs']/Docs" />
-	public class AccelerometerChangedEventArgs : EventArgs
-	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
-		public AccelerometerChangedEventArgs(AccelerometerData reading) => Reading = reading;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerChangedEventArgs.xml" path="//Member[@MemberName='Reading']/Docs" />
-		public AccelerometerData Reading { get; }
-	}
-
-	/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AccelerometerData']/Docs" />
-	public readonly struct AccelerometerData : IEquatable<AccelerometerData>
-	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
-		public AccelerometerData(double x, double y, double z)
-			: this((float)x, (float)y, (float)z)
-		{
-		}
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
-		public AccelerometerData(float x, float y, float z) =>
-			Acceleration = new Vector3(x, y, z);
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Acceleration']/Docs" />
-		public Vector3 Acceleration { get; }
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
-		public override bool Equals(object obj) =>
-			(obj is AccelerometerData data) && Equals(data);
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
-		public bool Equals(AccelerometerData other) =>
-			Acceleration.Equals(other.Acceleration);
-
-		public static bool operator ==(AccelerometerData left, AccelerometerData right) =>
-			left.Equals(right);
-
-		public static bool operator !=(AccelerometerData left, AccelerometerData right) =>
-		   !left.Equals(right);
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
-		public override int GetHashCode() =>
-			Acceleration.GetHashCode();
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='ToString']/Docs" />
-		public override string ToString() =>
-			$"{nameof(Acceleration.X)}: {Acceleration.X}, " +
-			$"{nameof(Acceleration.Y)}: {Acceleration.Y}, " +
-			$"{nameof(Acceleration.Z)}: {Acceleration.Z}";
 	}
 }

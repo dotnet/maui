@@ -6,50 +6,44 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, TimePicker>
 	{
-		WBrush? _defaultForeground;
+		protected override TimePicker CreatePlatformView() => new TimePicker();
 
-		protected override TimePicker CreateNativeView() => new TimePicker();
-
-		protected override void ConnectHandler(TimePicker nativeView)
+		protected override void ConnectHandler(TimePicker platformView)
 		{
-			nativeView.TimeChanged += OnControlTimeChanged;
+			platformView.TimeChanged += OnControlTimeChanged;
 		}
 
-		protected override void DisconnectHandler(TimePicker nativeView)
+		protected override void DisconnectHandler(TimePicker platformView)
 		{
-			nativeView.TimeChanged -= OnControlTimeChanged;
+			platformView.TimeChanged -= OnControlTimeChanged;
 		}
 
-		void SetupDefaults(TimePicker nativeView)
+		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			_defaultForeground = nativeView.Foreground;
+			handler.PlatformView?.UpdateTime(timePicker);
 		}
 
-		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapTime(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateTime(timePicker);
+			handler.PlatformView?.UpdateTime(timePicker);
 		}
 
-		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapCharacterSpacing(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateTime(timePicker);
+			handler.PlatformView?.UpdateCharacterSpacing(timePicker);
 		}
 
-		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
-		{
-			handler.NativeView?.UpdateCharacterSpacing(timePicker);
-		}
-
-		public static void MapFont(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapFont(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(timePicker, fontManager);
+			handler.PlatformView?.UpdateFont(timePicker, fontManager);
 		}
 
-		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.NativeView?.UpdateTextColor(timePicker, handler._defaultForeground);
+			if (handler is TimePickerHandler platformHandler)
+				handler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
 		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)

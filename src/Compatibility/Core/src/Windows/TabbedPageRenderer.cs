@@ -346,7 +346,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Element.BarBackgroundColor.IsDefault() && defaultColor != null)
 				return (WBrush)defaultColor;
-			return Element.BarBackgroundColor.ToNative();
+			return Element.BarBackgroundColor.ToPlatform();
 		}
 
 		WBrush GetBarForegroundBrush()
@@ -354,7 +354,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			object defaultColor = Microsoft.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
 			if (Element.BarTextColor.IsDefault() && defaultColor != null)
 				return (WBrush)defaultColor;
-			return Element.BarTextColor.ToNative();
+			return Element.BarTextColor.ToPlatform();
 		}
 
 		void UpdateBarBackgroundColor()
@@ -631,7 +631,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 						_defaultSelectedColor = tabBarTextBlock.Foreground;
 
 					if (Element.IsSet(TabbedPage.SelectedTabColorProperty) && Element.SelectedTabColor != null)
-						tabBarTextBlock.Foreground = Element.SelectedTabColor.ToNative();
+						tabBarTextBlock.Foreground = Element.SelectedTabColor.ToPlatform();
 					else
 						tabBarTextBlock.Foreground = _defaultSelectedColor;
 				}
@@ -641,7 +641,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 						_defaultUnselectedColor = tabBarTextBlock.Foreground;
 
 					if (Element.IsSet(TabbedPage.SelectedTabColorProperty) && Element.UnselectedTabColor != null)
-						tabBarTextBlock.Foreground = Element.UnselectedTabColor.ToNative();
+						tabBarTextBlock.Foreground = Element.UnselectedTabColor.ToPlatform();
 					else
 						tabBarTextBlock.Foreground = _defaultUnselectedColor;
 				}

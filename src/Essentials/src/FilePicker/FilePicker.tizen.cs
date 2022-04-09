@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using Tizen;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
-	public static partial class FilePicker
+	partial class FilePickerImplementation : IFilePicker
 	{
-		static async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+		async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 			await Permissions.EnsureGrantedAsync<Permissions.StorageRead>();

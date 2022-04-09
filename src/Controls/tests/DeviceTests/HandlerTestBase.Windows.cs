@@ -15,13 +15,14 @@ using System.Threading.Tasks;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
+using WPoint = Windows.Foundation.Point;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase
 	{
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			((AccessibilityView)((DependencyObject)viewHandler.NativeView).GetValue(NativeAutomationProperties.AccessibilityViewProperty))
+			((AccessibilityView)((DependencyObject)viewHandler.PlatformView).GetValue(NativeAutomationProperties.AccessibilityViewProperty))
 			== AccessibilityView.Content;
 
 		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)
@@ -40,7 +41,12 @@ namespace Microsoft.Maui.DeviceTests
 					navigationRootManager = mauiContext.GetNavigationRootManager();
 					navigationRootManager.UseCustomAppTitleBar = false;
 
-					newWindowHandler = window.ToHandler(mauiContext);
+					MauiContext
+						.Services
+						.GetRequiredService<WWindow>()
+						.SetWindowHandler(window, mauiContext);
+
+					newWindowHandler = window.Handler;
 					var content = window.Content.Handler.ToPlatform();
 					await content.OnLoadedAsync();
 					await Task.Delay(10);
@@ -49,6 +55,10 @@ namespace Microsoft.Maui.DeviceTests
 						await action((THandler)newWindowHandler);
 					else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
 						await action((THandler)window.Content.Handler);
+					else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
+						await action((THandler)cp.Content.Handler);
+					else
+						throw new Exception($"I can't work with {typeof(THandler)}");
 
 				}
 				finally
@@ -93,6 +103,14 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		protected double DistanceYFromTheBottomOfTheAppTitleBar(IElement element)
+		{
+			var handler = element.Handler;
+			var rootManager = handler.MauiContext.GetNavigationRootManager();
+			var position = element.GetLocationRelativeTo(rootManager.AppTitleBar);
+			var distance = rootManager.AppTitleBar.Height - position.Value.Y;
+			return distance;
+		}
 
 		MauiNavigationView GetMauiNavigationView(NavigationRootManager navigationRootManager)
 		{
@@ -102,6 +120,22 @@ namespace Microsoft.Maui.DeviceTests
 		protected MauiNavigationView GetMauiNavigationView(IMauiContext mauiContext)
 		{
 			return GetMauiNavigationView(mauiContext.GetNavigationRootManager());
+		}
+
+		protected bool IsBackButtonVisible(IElementHandler handler) =>
+			IsBackButtonVisible(handler.MauiContext);
+
+		bool IsBackButtonVisible(IMauiContext mauiContext)
+		{
+			var navView = GetMauiNavigationView(mauiContext);
+			return navView.IsBackButtonVisible == UI.Xaml.Controls.NavigationViewBackButtonVisible.Visible;
+		}
+
+		protected MauiToolbar GetPlatformToolbar(IElementHandler handler)
+		{
+			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
+			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
+			return windowHeader;
 		}
 	}
 }

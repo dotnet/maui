@@ -12,7 +12,8 @@ using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.i
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
-	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider, IShellContentInsetObserver, IDisconnectable
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
+	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider, IShellContentInsetObserver, Controls.Platform.Compatibility.IDisconnectable
 	{
 		bool _appeared;
 		bool _disposed;
@@ -99,7 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (rect != _pageContainer.Frame)
 				_pageContainer.Frame = rect;
 
-			Element.Layout(new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Element.Layout(new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public override void LoadView()
@@ -213,7 +214,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			NativeView?.Window?.EndEditing(true);
 		}
 
-		void IDisconnectable.Disconnect()
+		void Controls.Platform.Compatibility.IDisconnectable.Disconnect()
 		{
 			if (_shellSection != null)
 			{
@@ -243,7 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (disposing)
 			{
-				(this as IDisconnectable).Disconnect();
+				(this as Controls.Platform.Compatibility.IDisconnectable).Disconnect();
 
 				_packager?.Dispose();
 				_tracker?.Dispose();
@@ -322,7 +323,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Forms.IsiOS13OrNewer &&
 				previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle &&
 				UIApplication.SharedApplication.ApplicationState != UIApplicationState.Background)
-				Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme));
+				((IApplication)Application.Current)?.ThemeChanged();
 		}
 
 		bool ShouldUseSafeArea()
@@ -430,6 +431,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			NativeView?.SetNeedsLayout();
 		}
 
+		[PortHandler]
 		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
 			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
@@ -475,7 +477,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						NativeView.UpdateBackground(Element.Background);
 					else
 					{
-						NativeView.BackgroundColor = Element.BackgroundColor?.ToUIColor() ?? ColorExtensions.BackgroundColor;
+						NativeView.BackgroundColor = Element.BackgroundColor?.ToUIColor() ?? Maui.Platform.ColorExtensions.BackgroundColor;
 					}
 				}
 			});
@@ -487,6 +489,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				NavigationItem.Title = Page.Title;
 		}
 
+		[PortHandler]
 		IEnumerable<UIView> ViewAndSuperviewsOfView(UIView view)
 		{
 			while (view != null)

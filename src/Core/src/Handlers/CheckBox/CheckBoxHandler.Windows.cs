@@ -3,40 +3,40 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class CheckBoxHandler : ViewHandler<ICheckBox, MauiCheckBox>
+	public partial class CheckBoxHandler : ViewHandler<ICheckBox, CheckBox>
 	{
-		protected override MauiCheckBox CreateNativeView() => new MauiCheckBox();
+		protected override CheckBox CreatePlatformView() => new CheckBox();
 
-		protected override void ConnectHandler(MauiCheckBox nativeView)
+		protected override void ConnectHandler(CheckBox platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.Checked += OnChecked;
-			nativeView.Unchecked += OnChecked;
+			platformView.Checked += OnChecked;
+			platformView.Unchecked += OnChecked;
 		}
 
-		protected override void DisconnectHandler(MauiCheckBox nativeView)
+		protected override void DisconnectHandler(CheckBox platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
-			nativeView.Checked -= OnChecked;
-			nativeView.Unchecked -= OnChecked;
+			platformView.Checked -= OnChecked;
+			platformView.Unchecked -= OnChecked;
 		}
 
-		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
+		public static void MapIsChecked(ICheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateIsChecked(check);
+			handler.PlatformView?.UpdateIsChecked(check);
 		}
 
-		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
+		public static void MapForeground(ICheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateForeground(check);
+			handler.PlatformView?.UpdateForeground(check);
 		}
 
 		void OnChecked(object sender, RoutedEventArgs e)
 		{
-			if (sender is CheckBox nativeView && VirtualView != null)
-				VirtualView.IsChecked = nativeView.IsChecked == true;
+			if (sender is CheckBox platformView && VirtualView != null)
+				VirtualView.IsChecked = platformView.IsChecked == true;
 		}
 	}
 }

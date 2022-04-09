@@ -2,9 +2,9 @@ using Windows.Devices.Sensors;
 
 using WindowsCompass = Windows.Devices.Sensors.Compass;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Compass
+	partial class CompassImplementation : ICompass
 	{
 		// Magic numbers from https://docs.microsoft.com/en-us/uwp/api/windows.devices.sensors.compass.reportinterval#Windows_Devices_Sensors_Compass_ReportInterval
 		internal const uint FastestInterval = 8;
@@ -12,15 +12,15 @@ namespace Microsoft.Maui.Essentials
 		internal const uint NormalInterval = 33;
 
 		// keep around a reference so we can stop this same instance
-		static WindowsCompass sensor;
+		WindowsCompass sensor;
 
-		internal static WindowsCompass DefaultCompass =>
+		static WindowsCompass DefaultCompass =>
 			WindowsCompass.GetDefault();
 
-		internal static bool IsSupported =>
+		bool PlatformIsSupported =>
 			DefaultCompass != null;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
+		void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
 			sensor = DefaultCompass;
 
@@ -40,13 +40,13 @@ namespace Microsoft.Maui.Essentials
 			sensor.ReadingChanged += CompassReportedInterval;
 		}
 
-		static void CompassReportedInterval(object sender, CompassReadingChangedEventArgs e)
+		void CompassReportedInterval(object sender, CompassReadingChangedEventArgs e)
 		{
 			var data = new CompassData(e.Reading.HeadingMagneticNorth);
-			OnChanged(data);
+			RaiseReadingChanged(data);
 		}
 
-		internal static void PlatformStop()
+		void PlatformStop()
 		{
 			sensor.ReadingChanged -= CompassReportedInterval;
 			sensor.ReportInterval = 0;

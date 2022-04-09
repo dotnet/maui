@@ -2,13 +2,13 @@ using System;
 using System.Threading.Tasks;
 using AppKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
-	public static partial class HapticFeedback
+	partial class HapticFeedbackImplementation : IHapticFeedback
 	{
-		internal static bool IsSupported => true;
+		public bool IsSupported => true;
 
-		static void PlatformPerform(HapticFeedbackType type)
+		public void Perform(HapticFeedbackType type)
 		{
 			if (type == HapticFeedbackType.LongPress)
 				NSHapticFeedbackManager.DefaultPerformer.PerformFeedback(NSHapticFeedbackPattern.Generic, NSHapticFeedbackPerformanceTime.Default);

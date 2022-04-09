@@ -26,9 +26,11 @@ namespace Microsoft.Maui.Layouts
 			return new Size(measuredWidth, measuredHeight);
 		}
 
-		public override Size ArrangeChildren(Rectangle bounds)
+		public override Size ArrangeChildren(Rect bounds)
 		{
 			var structure = _gridStructure ?? new GridStructure(Grid, bounds.Width, bounds.Height);
+
+			var reverseColumns = Grid.ColumnDefinitions.Count > 1 && !Grid.ShouldArrangeLeftToRight();
 
 			foreach (var view in Grid)
 			{
@@ -38,6 +40,12 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				var cell = structure.GetCellBoundsFor(view, bounds.Left, bounds.Top);
+
+				if (reverseColumns)
+				{
+					var adjustedXPosition = bounds.Right - cell.Left - cell.Width;
+					cell.Left = adjustedXPosition;
+				}
 
 				view.Arrange(cell);
 			}
@@ -199,7 +207,7 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			public Rectangle GetCellBoundsFor(IView view, double xOffset, double yOffset)
+			public Rect GetCellBoundsFor(IView view, double xOffset, double yOffset)
 			{
 				var firstColumn = _grid.GetColumn(view).Clamp(0, _columns.Length - 1);
 				var columnSpan = _grid.GetColumnSpan(view).Clamp(1, _columns.Length - firstColumn);
@@ -229,7 +237,7 @@ namespace Microsoft.Maui.Layouts
 				width += (columnSpan - 1) * _columnSpacing;
 				height += (rowSpan - 1) * _rowSpacing;
 
-				return new Rectangle(left + xOffset, top + yOffset, width, height);
+				return new Rect(left + xOffset, top + yOffset, width, height);
 			}
 
 			public double GridHeight()

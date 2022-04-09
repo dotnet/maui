@@ -9,7 +9,7 @@
     <Nullable>disable</Nullable>
     <!--<DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>-->
     <AndroidLinkMode>None</AndroidLinkMode>
-    <NoWarn>IL2036;0618</NoWarn>
+    <NoWarn>IL2036;0618;0612</NoWarn>
   </PropertyGroup>
 
     <!--
@@ -47,7 +47,6 @@
     <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\..\..\Compatibility\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj" />
     <ProjectReference Include="..\..\..\..\Compatibility\Core\src\Compatibility.csproj" />
     <ProjectReference Include="..\..\..\..\Compatibility\Android.AppLinks\src\Compatibility.Android.AppLinks.csproj" />
     <ProjectReference Include="..\..\..\..\Compatibility\Core\tests\Android\Compatibility.Android.UnitTests.csproj" />

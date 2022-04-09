@@ -1,4 +1,4 @@
-using FormsDevice = Microsoft.Maui.Controls.Device;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DeviceStateTrigger.xml" path="//Member[@MemberName='DeviceProperty']/Docs" />
 		public static readonly BindableProperty DeviceProperty =
-		BindableProperty.Create(nameof(Device), typeof(string), typeof(DeviceStateTrigger), string.Empty,
-			propertyChanged: OnDeviceChanged);
+			BindableProperty.Create(nameof(Device), typeof(string), typeof(DeviceStateTrigger), string.Empty,
+				propertyChanged: OnDeviceChanged);
 
 		static void OnDeviceChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
@@ -30,18 +30,11 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateState()
 		{
-			switch (Device)
-			{
-				case FormsDevice.Android:
-					SetActive(FormsDevice.RuntimePlatform == FormsDevice.Android);
-					break;
-				case FormsDevice.iOS:
-					SetActive(FormsDevice.RuntimePlatform == FormsDevice.iOS);
-					break;
-				case FormsDevice.UWP:
-					SetActive(FormsDevice.RuntimePlatform == FormsDevice.UWP);
-					break;
-			}
+			var device = DevicePlatform.Create(Device);
+			if (device == DevicePlatform.Create("UWP"))
+				SetActive(DeviceInfo.Platform == DevicePlatform.WinUI);
+			else
+				SetActive(DeviceInfo.Platform == device);
 		}
 	}
 }

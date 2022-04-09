@@ -106,35 +106,40 @@ namespace Microsoft.Maui.Controls
 				newPage.SendAppearing();
 		}
 
-
-		IToolbar IStackNavigation.Toolbar
+		void UpdateToolbar()
 		{
-			get
+			// Update the Container level Toolbar with my Toolbar information
+			if (FindMyToolbar() is NavigationPageToolbar ct)
 			{
-				if (this.Toolbar != null)
-					return Toolbar;
-
-				var rootPage = this.FindParentWith(x => (x is IWindow te || Navigation.ModalStack.Contains(x)), true);
-				if (this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), false) is IToolbarElement te)
-				{
-					// This means I'm inside a Modal Page so we shouldn't return the Toolbar from the window
-					if (rootPage is not IWindow && te is IWindow)
-						return null;
-
-					return te.Toolbar;
-				}
-
-				return null;
+				ct.ApplyNavigationPage(this, HasAppeared);
 			}
+		}
+
+		internal IToolbar FindMyToolbar()
+		{
+			if (this.Toolbar != null)
+				return Toolbar;
+
+			var rootPage = this.FindParentWith(x => (x is IWindow te || Navigation.ModalStack.Contains(x)), true);
+			if (this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), false) is IToolbarElement te)
+			{
+				// This means I'm inside a Modal Page so we shouldn't return the Toolbar from the window
+				if (rootPage is not IWindow && te is IWindow)
+					return null;
+
+				return te.Toolbar;
+			}
+
+			return null;
 		}
 
 		void OnNavigatingFrom(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
-			if (this is IStackNavigation te && te.Toolbar is NavigationPageToolbar ct)
+			if (FindMyToolbar() is NavigationPageToolbar ct)
 			{
 				// If the root page is being covered by a Modal Page then we don't worry about hiding the nav bar
-				bool coveredByModal = te.Toolbar.Parent is Window && Navigation.ModalStack.Count > 0;
+				bool coveredByModal = ct.Parent is Window && Navigation.ModalStack.Count > 0;
 				ct.ApplyNavigationPage(this, coveredByModal);
 			}
 		}
@@ -142,7 +147,7 @@ namespace Microsoft.Maui.Controls
 		void OnAppearing(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
-			if (this is IStackNavigation te && te.Toolbar is NavigationPageToolbar ct)
+			if (FindMyToolbar() is NavigationPageToolbar ct)
 			{
 				ct.ApplyNavigationPage(this, HasAppeared);
 			}
@@ -271,7 +276,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangedCore();
 
-			if (Handler == null && (this as IStackNavigation).Toolbar is IToolbar tb)
+			if (Handler == null && FindMyToolbar() is IToolbar tb)
 			{
 				tb.Handler = null;
 				if (tb.Parent is Window w)
@@ -333,13 +338,28 @@ namespace Microsoft.Maui.Controls
 				if (Owner.InternalChildren.Contains(page))
 					throw new ArgumentException("Cannot insert page which is already in the navigation stack");
 
-				int index = Owner.InternalChildren.IndexOf(before);
-				Owner.InternalChildren.Insert(index, page);
 
-				if (index == 0)
-					Owner.RootPage = page;
+				Owner.SendHandlerUpdateAsync(false,
+					() =>
+					{
+						int index = Owner.InternalChildren.IndexOf(before);
+						Owner.InternalChildren.Insert(index, page);
 
-				Owner.SendHandlerUpdate(false);
+						if (index == 0)
+							Owner.RootPage = page;
+					},
+					() =>
+					{
+					},
+					() =>
+					{
+						// If no other pending operations happen
+						// Then update the toolbar to match
+						// the current navigation stack
+						if (Owner._waitingCount == 0)
+							Owner.UpdateToolbar();
+
+					}).FireAndForget();
 			}
 
 			protected async override Task<Page> OnPopAsync(bool animated)
@@ -451,13 +471,26 @@ namespace Microsoft.Maui.Controls
 				if (!Owner.InternalChildren.Contains(page))
 					throw new ArgumentException("Page to remove must be contained on this Navigation Page");
 
-				Owner.RemoveFromInnerChildren(page);
+				Owner.SendHandlerUpdateAsync(false,
+					() =>
+					{
+						Owner.RemoveFromInnerChildren(page);
 
-				if (Owner.RootPage == page)
-					Owner.RootPage = (Page)Owner.InternalChildren.First();
+						if (Owner.RootPage == page)
+							Owner.RootPage = (Page)Owner.InternalChildren[0];
+					},
+					() =>
+					{
+					},
+					() =>
+					{
+						// If no other pending operations happen
+						// Then update the toolbar to match
+						// the current navigation stack
+						if (Owner._waitingCount == 0)
+							Owner.UpdateToolbar();
 
-
-				Owner.SendHandlerUpdate(false);
+					}).FireAndForget();
 			}
 		}
 	}

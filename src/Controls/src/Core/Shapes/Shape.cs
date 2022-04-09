@@ -173,16 +173,29 @@ namespace Microsoft.Maui.Controls.Shapes
 				brush.Parent = this;
 		}
 
-		PathF IShape.PathForBounds(Graphics.Rectangle viewBounds)
+		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
+			bool getBoundsByFlattening = false;
+
 			if (HeightRequest < 0 && WidthRequest < 0)
+			{
+				getBoundsByFlattening = true;
 				Frame = viewBounds;
+			}
 
 			var path = GetPath();
 
+			if (getBoundsByFlattening)
+			{
+				var boundsByFlattening = path.GetBoundsByFlattening();
+
+				HeightRequest = boundsByFlattening.Height;
+				WidthRequest = boundsByFlattening.Width;
+			}
+
 #if !NETSTANDARD
 
-			RectangleF pathBounds = viewBounds;
+			RectF pathBounds = viewBounds;
 
 			try
 			{
@@ -195,54 +208,55 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			var transform = Matrix3x2.Identity;
 
-			if (Aspect != Stretch.None)
+			viewBounds.X += StrokeThickness / 2;
+			viewBounds.Y += StrokeThickness / 2;
+			viewBounds.Width -= StrokeThickness;
+			viewBounds.Height -= StrokeThickness;
+
+			float calculatedWidth = (float)(viewBounds.Width / pathBounds.Width);
+			float calculatedHeight = (float)(viewBounds.Height / pathBounds.Height);
+
+			float widthScale = float.IsNaN(calculatedWidth) ? 0 : calculatedWidth;
+			float heightScale = float.IsNaN(calculatedHeight) ? 0 : calculatedHeight;
+
+			switch (Aspect)
 			{
-				viewBounds.X += StrokeThickness / 2;
-				viewBounds.Y += StrokeThickness / 2;
-				viewBounds.Width -= StrokeThickness;
-				viewBounds.Height -= StrokeThickness;
+				case Stretch.None:
+					break;
 
-				float factorX = (float)viewBounds.Width / pathBounds.Width;
-				float factorY = (float)viewBounds.Height / pathBounds.Height;
+				case Stretch.Fill:
+					transform *= Matrix3x2.CreateScale(widthScale, heightScale);
 
-				if (Aspect == Stretch.Uniform)
-				{
-					var factor = Math.Min(factorX, factorY);
+					transform *= Matrix3x2.CreateTranslation(
+						(float)(viewBounds.Left - widthScale * pathBounds.Left),
+						(float)(viewBounds.Top - heightScale * pathBounds.Top));
+					break;
 
-					var width = pathBounds.Width * factor;
-					var height = pathBounds.Height * factor;
+				case Stretch.Uniform:
+					float minScale = Math.Min(widthScale, heightScale);
 
-					var translateX = (float)((viewBounds.Width - width) / 2 + viewBounds.X);
-					var translateY = (float)((viewBounds.Height - height) / 2 + viewBounds.Y);
+					transform *= Matrix3x2.CreateScale(minScale, minScale);
 
-					transform = Matrix3x2.CreateTranslation(-pathBounds.X, -pathBounds.Y);
-					transform *= Matrix3x2.CreateTranslation(translateX, translateY);
-					transform *= Matrix3x2.CreateScale(factor, factor);
-				}
-				else if (Aspect == Stretch.UniformToFill)
-				{
-					var factor = (float)Math.Max(factorX, factorY);
+					transform *= Matrix3x2.CreateTranslation(
+						(float)(viewBounds.Left - minScale * pathBounds.Left +
+						(viewBounds.Width - minScale * pathBounds.Width) / 2),
+						(float)(viewBounds.Top - minScale * pathBounds.Top +
+						(viewBounds.Height - minScale * pathBounds.Height) / 2));
+					break;
 
-					transform = Matrix3x2.CreateScale(factor, factor);
+				case Stretch.UniformToFill:
+					float maxScale = Math.Max(widthScale, heightScale);
 
-					var translateX = (float)(viewBounds.Left - factor * pathBounds.Left);
-					var translateY = (float)(viewBounds.Top - factor * pathBounds.Top);
+					transform *= Matrix3x2.CreateScale(maxScale, maxScale);
 
-					transform *= Matrix3x2.CreateTranslation(translateX, translateY);
-				}
-				else if (Aspect == Stretch.Fill)
-				{
-					transform = Matrix3x2.CreateScale(factorX, factorY);
-
-					var translateX = (float)(viewBounds.Left - factorX * pathBounds.Left);
-					var translateY = (float)(viewBounds.Top - factorY * pathBounds.Top);
-
-					transform *= Matrix3x2.CreateTranslation(translateX, translateY);
-				}
-
-				if (!transform.IsIdentity)
-					path.Transform(transform);
+					transform *= Matrix3x2.CreateTranslation(
+						(float)(viewBounds.Left - maxScale * pathBounds.Left),
+						(float)(viewBounds.Top - maxScale * pathBounds.Top));
+					break;
 			}
+
+			if (!transform.IsIdentity)
+				path.Transform(transform);
 #endif
 
 			return path;

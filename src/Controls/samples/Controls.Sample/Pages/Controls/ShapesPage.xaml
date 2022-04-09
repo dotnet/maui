@@ -99,6 +99,9 @@
                 WidthRequest="150"
                 HeightRequest="150" />
 
+            <Button
+                Text="More samples"
+                Clicked="OnMoreSamplesClicked" />
         </VerticalStackLayout>
     </ScrollView>
 </views:BasePage>

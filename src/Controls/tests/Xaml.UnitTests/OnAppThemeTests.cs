@@ -1,4 +1,6 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
@@ -7,10 +9,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[TestFixture]
 	public class OnAppThemeTests : BaseTestFixture
 	{
+		MockAppInfo mockAppInfo;
+
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
+			AppInfo.SetCurrent(mockAppInfo = new MockAppInfo());
 			Application.Current = new MockApplication();
 		}
 
@@ -18,6 +23,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public override void TearDown()
 		{
 			Application.Current = null;
+			AppInfo.SetCurrent(null);
 			base.TearDown();
 		}
 
@@ -30,11 +36,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" TextColor=""{AppThemeBinding Light = Green, Dark = Red}
 			"">This text is green or red depending on Light (or default) or Dark</Label>";
 
-			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Light;
+			mockAppInfo.RequestedTheme = AppTheme.Light;
 			var label = new Label().LoadFromXaml(xaml);
 			Assert.AreEqual(Colors.Green, label.TextColor);
 
-			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Dark;
+			mockAppInfo.RequestedTheme = AppTheme.Dark;
 			label = new Label().LoadFromXaml(xaml);
 			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
@@ -52,11 +58,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</Label.TextColor>
 			</Label> ";
 
-			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Light;
+			mockAppInfo.RequestedTheme = AppTheme.Light;
 			var label = new Label().LoadFromXaml(xaml);
 			Assert.AreEqual(Colors.Green, label.TextColor);
 
-			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Dark;
+			mockAppInfo.RequestedTheme = AppTheme.Dark;
 			label = new Label().LoadFromXaml(xaml);
 			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
@@ -74,7 +80,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</Label.TextColor>
 			</Label> ";
 
-			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Unspecified;
+			mockAppInfo.RequestedTheme = AppTheme.Unspecified;
 			var label = new Label().LoadFromXaml(xaml);
 			Assert.AreEqual(Colors.Green, label.TextColor);
 		}
@@ -92,7 +98,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</Label.TextColor>
 			</Label> ";
 
-			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Light;
+			mockAppInfo.RequestedTheme = AppTheme.Light;
 			var label = new Label().LoadFromXaml(xaml);
 			Assert.AreEqual(Colors.Green, label.TextColor);
 		}
@@ -110,11 +116,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</Label.TextColor>
 			</Label> ";
 
-			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Light;
+			mockAppInfo.RequestedTheme = AppTheme.Light;
 			var label = new Label().LoadFromXaml(xaml);
 			Assert.AreEqual(Colors.Green, label.TextColor);
 
-			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Dark;
+			mockAppInfo.RequestedTheme = AppTheme.Dark;
 			label = new Label().LoadFromXaml(xaml);
 			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
@@ -132,7 +138,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</Label.TextColor>
 			</Label> ";
 
-			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Unspecified;
+			mockAppInfo.RequestedTheme = AppTheme.Unspecified;
 			var label = new Label().LoadFromXaml(xaml);
 			Assert.AreEqual(Colors.Green, label.TextColor);
 		}
@@ -150,7 +156,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</Label.TextColor>
 			</Label> ";
 
-			((MockPlatformServices)Device.PlatformServices).RequestedTheme = OSAppTheme.Unspecified;
+			mockAppInfo.RequestedTheme = AppTheme.Unspecified;
 			var label = new Label().LoadFromXaml(xaml);
 			Assert.AreEqual(Colors.Green, label.TextColor);
 		}

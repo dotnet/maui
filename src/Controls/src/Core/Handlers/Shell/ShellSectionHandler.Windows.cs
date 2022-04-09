@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 		}
 
-		protected override WFrame CreateNativeElement()
+		protected override WFrame CreatePlatformElement()
 		{
 			_navigationManager = CreateNavigationManager();
 			return new WFrame();
@@ -87,16 +87,16 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected virtual StackNavigationManager CreateNavigationManager() =>
 			_navigationManager ??= new StackNavigationManager(MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null"));
 
-		protected override void ConnectHandler(WFrame nativeView)
+		protected override void ConnectHandler(WFrame platformView)
 		{
-			_navigationManager?.Connect(VirtualView, nativeView);
-			base.ConnectHandler(nativeView);
+			_navigationManager?.Connect(VirtualView, platformView);
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(WFrame nativeView)
+		protected override void DisconnectHandler(WFrame platformView)
 		{
-			_navigationManager?.Disconnect(VirtualView, nativeView);
-			base.DisconnectHandler(nativeView);
+			_navigationManager?.Disconnect(VirtualView, platformView);
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void RequestNavigation(ShellSectionHandler handler, IStackNavigation view, object? arg3)

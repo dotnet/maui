@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls
 			if (_currentNavigationPage == navigationPage)
 			{
 				IsVisible = hasAppeared;
+				UpdateBackButton();
 				return;
 			}
 
@@ -47,7 +48,80 @@ namespace Microsoft.Maui.Controls
 			ApplyChanges(_currentNavigationPage);
 		}
 
+		bool GetBackButtonVisibleCalculated()
+		{
+			if (_currentPage == null || _currentNavigationPage == null)
+				return false;
 
+			var stack = _currentNavigationPage.Navigation.NavigationStack;
+			if (stack.Count == 0)
+				return false;
+
+			return stack.Count > 1;
+		}
+
+		bool GetBackButtonVisible()
+		{
+			if (_currentPage == null)
+				return false;
+
+			return NavigationPage.GetHasBackButton(_currentPage) && GetBackButtonVisibleCalculated();
+		}
+
+		bool _backButtonVisible;
+		bool _userChanged;
+
+		public override bool BackButtonVisible
+		{
+			get => GetBackButtonVisible();
+			set => _backButtonVisible = value;
+		}
+
+		void UpdateBackButton()
+		{
+			if (_currentPage == null || _currentNavigationPage == null)
+				return;
+
+			var stack = _currentNavigationPage.Navigation.NavigationStack;
+			if (stack.Count == 0)
+				return;
+
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage && stack.Count == 1)
+				_drawerToggleVisible = true;
+			else
+				_drawerToggleVisible = false;
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+			{
+				SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
+				_userChanged = true;
+			}
+			else
+			{
+				if (_userChanged)
+				{
+					SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
+				}
+				else
+				{
+#if ANDROID
+					_backButtonVisible = GetBackButtonVisible();
+#else
+					SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
+#endif
+				}
+
+				_userChanged = false;
+			}
+		}
 
 		void UpdateCurrentPage()
 		{
@@ -81,19 +155,12 @@ namespace Microsoft.Maui.Controls
 			if (stack.Count > 1)
 				previousPage = stack[stack.Count - 1];
 
-			_toolbarTracker.Target = navigationPage.CurrentPage;
+			_toolbarTracker.Target = navigationPage;
 			_toolbarTracker.AdditionalTargets = navigationPage.GetParentPages();
 			ToolbarItems = _toolbarTracker.ToolbarItems;
 			IsVisible = NavigationPage.GetHasNavigationBar(currentPage) && _hasAppeared;
 
-			// Set this before BackButtonVisible triggers an update to the handler
-			// This way all useful information is present
-			if (Parent is FlyoutPage && stack.Count == 1)
-				_drawerToggleVisible = true;
-			else
-				_drawerToggleVisible = false;
-
-			BackButtonVisible = NavigationPage.GetHasBackButton(currentPage) && stack.Count > 1;
+			UpdateBackButton();
 
 			if (navigationPage.IsSet(PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))
 				BarHeight = PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.GetBarHeight(navigationPage);
@@ -108,19 +175,25 @@ namespace Microsoft.Maui.Controls
 			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
 
 			BarBackground = navigationPage.BarBackground;
-			if (!Brush.IsNullOrEmpty(navigationPage.BarBackground))
-				BarBackgroundColor = null;
-			else
-				BarBackgroundColor = navigationPage.BarBackgroundColor;
+			if (Brush.IsNullOrEmpty(navigationPage.BarBackground) &&
+				navigationPage.BarBackgroundColor != null)
+			{
+				BarBackground = new SolidColorBrush(navigationPage.BarBackgroundColor);
+			}
 
 #if WINDOWS
-			if (Brush.IsNullOrEmpty(BarBackground) && BarBackgroundColor == null)
+			if (Brush.IsNullOrEmpty(BarBackground))
 			{
-				BarBackgroundColor = navigationPage.CurrentPage.BackgroundColor ??
+				var backgroundColor = navigationPage.CurrentPage.BackgroundColor ??
 					navigationPage.BackgroundColor;
 
 				BarBackground = navigationPage.CurrentPage.Background ??
 					navigationPage.Background;
+
+				if (Brush.IsNullOrEmpty(BarBackground) && backgroundColor != null)
+				{
+					BarBackground = new SolidColorBrush(backgroundColor);
+				}
 			}
 #endif
 			BarTextColor = GetBarTextColor();
@@ -158,6 +231,21 @@ namespace Microsoft.Maui.Controls
 		Color GetBarTextColor() => _currentNavigationPage?.BarTextColor;
 		Color GetIconColor() => (_currentPage != null) ? NavigationPage.GetIconColor(_currentPage) : null;
 		string GetTitle() => _currentPage?.Title;
-		VisualElement GetTitleView() => (_currentNavigationPage != null) ? NavigationPage.GetTitleView(_currentNavigationPage) : null;
+		VisualElement GetTitleView()
+		{
+			if (_currentNavigationPage == null)
+			{
+				return null;
+			}
+
+			Page target = _currentNavigationPage;
+
+			if (_currentNavigationPage.CurrentPage is Page currentPage)
+			{
+				target = currentPage;
+			}
+
+			return NavigationPage.GetTitleView(target);
+		}
 	}
 }

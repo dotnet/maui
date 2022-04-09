@@ -51,7 +51,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			if (!_testCases.TryGetValue(testResult.TestCase, out TestCaseViewModel? testCase))
 			{
 				// no matching reference, search by Unique ID as a fallback
-				testCase = _testCases.FirstOrDefault(kvp => kvp.Key.UniqueID?.Equals(testResult.TestCase.UniqueID) ?? false).Value;
+				testCase = _testCases.FirstOrDefault(kvp => kvp.Key.UniqueID?.Equals(testResult.TestCase.UniqueID, StringComparison.Ordinal) ?? false).Value;
 
 				if (testCase == null)
 					return;

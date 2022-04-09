@@ -15,19 +15,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void Subscribe(Window window)
 		{
-			var nativeWindow = window.MauiContext.GetNativeWindow();
+			var platformWindow = window.MauiContext.GetPlatformWindow();
 
-			if (Subscriptions.Any(s => s.Window == nativeWindow))
+			if (Subscriptions.Any(s => s.Window == platformWindow))
 				return;
 
-			Subscriptions.Add(new AlertRequestHelper(nativeWindow, window.MauiContext));
+			Subscriptions.Add(new AlertRequestHelper(platformWindow, window.MauiContext));
 		}
 
 		internal void Unsubscribe(Window window)
 		{
-			var nativeWindow = window.MauiContext.GetNativeWindow();
+			var platformWindow = window.MauiContext.GetPlatformWindow();
 
-			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
+			var toRemove = Subscriptions.Where(s => s.Window == platformWindow).ToList();
 
 			foreach (AlertRequestHelper alertRequestHelper in toRemove)
 			{
@@ -182,11 +182,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 					if (pageParent != null)
 						actionSheet.ShowAt(pageParent);
+					else
+						arguments.SetResult(null);
 				}
 				catch (ArgumentException) // If the page is not in the visual tree
 				{
-					if (UI.Xaml.Window.Current.Content is FrameworkElement mainPage)
+					if (UI.Xaml.Window.Current != null && UI.Xaml.Window.Current.Content is FrameworkElement mainPage)
 						actionSheet.ShowAt(mainPage);
+					else
+						arguments.SetResult(null);
 				}
 			}
 

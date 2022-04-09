@@ -1,26 +1,31 @@
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Media
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Screenshot']/Docs" />
-	public static partial class Screenshot
+	partial class ScreenshotImplementation : IScreenshot
 	{
-		static bool PlatformIsCaptureSupported =>
+		public bool IsCaptureSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task<ScreenshotResult> PlatformCaptureAsync() =>
+		public Task<IScreenshotResult> CaptureAsync() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ScreenshotResult']/Docs" />
-	public partial class ScreenshotResult
+	partial class ScreenshotResult
 	{
 		ScreenshotResult()
 		{
 		}
 
-		internal Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format) =>
+		Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format, int quality) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		Task PlatformCopyToAsync(Stream destination, ScreenshotFormat format, int quality) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		Task<byte[]> PlatformToPixelBufferAsync() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

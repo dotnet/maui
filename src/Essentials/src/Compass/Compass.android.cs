@@ -1,36 +1,44 @@
 using System;
+using Android.App;
+using Android.Content;
 using Android.Hardware;
-using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Compass
+	partial class CompassImplementation : ICompass
 	{
-		internal static bool IsSupported =>
-			Platform.SensorManager?.GetDefaultSensor(SensorType.Accelerometer) != null &&
-			Platform.SensorManager?.GetDefaultSensor(SensorType.MagneticField) != null;
+		static SensorManager _sensorManager;
+		static Sensor _accelerometer;
+		static Sensor _magnetic;
 
-		static SensorListener listener;
-		static Sensor magnetometer;
-		static Sensor accelerometer;
+		static SensorManager SensorManager =>
+			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
+		static Sensor Accelerometer =>
+			_accelerometer ??= SensorManager?.GetDefaultSensor(SensorType.Accelerometer);
+
+		static Sensor MagneticField =>
+			_magnetic ??= SensorManager?.GetDefaultSensor(SensorType.MagneticField);
+
+		bool PlatformIsSupported => Accelerometer is not null && MagneticField is not null;
+
+		SensorListener listener;
+
+		void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
 			var delay = sensorSpeed.ToPlatform();
-			accelerometer = Platform.SensorManager.GetDefaultSensor(SensorType.Accelerometer);
-			magnetometer = Platform.SensorManager.GetDefaultSensor(SensorType.MagneticField);
-			listener = new SensorListener(accelerometer.Name, magnetometer.Name, delay, applyLowPassFilter);
-			Platform.SensorManager.RegisterListener(listener, accelerometer, delay);
-			Platform.SensorManager.RegisterListener(listener, magnetometer, delay);
+			listener = new SensorListener(Accelerometer.Name, MagneticField.Name, delay, applyLowPassFilter, RaiseReadingChanged);
+			SensorManager.RegisterListener(listener, Accelerometer, delay);
+			SensorManager.RegisterListener(listener, MagneticField, delay);
 		}
 
-		internal static void PlatformStop()
+		void PlatformStop()
 		{
 			if (listener == null)
 				return;
 
-			Platform.SensorManager.UnregisterListener(listener, accelerometer);
-			Platform.SensorManager.UnregisterListener(listener, magnetometer);
+			SensorManager.UnregisterListener(listener, Accelerometer);
+			SensorManager.UnregisterListener(listener, MagneticField);
 			listener.Dispose();
 			listener = null;
 		}
@@ -50,11 +58,14 @@ namespace Microsoft.Maui.Essentials
 		string accelerometer;
 		bool applyLowPassFilter;
 
-		internal SensorListener(string accelerometer, string magnetometer, SensorDelay delay, bool applyLowPassFilter)
+		Action<CompassData> callback;
+
+		internal SensorListener(string accelerometer, string magnetometer, SensorDelay delay, bool applyLowPassFilter, Action<CompassData> callback)
 		{
 			this.magnetometer = magnetometer;
 			this.accelerometer = accelerometer;
 			this.applyLowPassFilter = applyLowPassFilter;
+			this.callback = callback;
 		}
 
 		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, SensorStatus accuracy)
@@ -91,7 +102,7 @@ namespace Microsoft.Maui.Essentials
 				var azimuthInDegress = (Java.Lang.Math.ToDegrees(azimuthInRadians) + 360.0) % 360.0;
 
 				var data = new CompassData(azimuthInDegress);
-				Compass.OnChanged(data);
+				callback?.Invoke(data);
 				lastMagnetometerSet = false;
 				lastAccelerometerSet = false;
 			}

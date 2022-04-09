@@ -6,7 +6,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class WebViewHandlerTests
 	{
 		WKWebView GetNativeWebView(WebViewHandler webViewHandler) =>
-			webViewHandler.NativeView;
+			webViewHandler.PlatformView;
 
 		string GetNativeSource(WebViewHandler webViewHandler) =>
 			GetNativeWebView(webViewHandler).Url.AbsoluteString;

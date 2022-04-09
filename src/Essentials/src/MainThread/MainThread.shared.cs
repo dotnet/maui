@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MainThread']/Docs" />
 	public static partial class MainThread
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][1]/Docs" />
 		public static Task InvokeOnMainThreadAsync(Action action)
 		{
 			if (IsMainThread)
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Essentials
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync&lt;T&gt;'][2]/Docs" />
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func)
 		{
 			if (IsMainThread)
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Essentials
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][2]/Docs" />
 		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask)
 		{
 			if (IsMainThread)
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Essentials
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync&lt;T&gt;'][1]/Docs" />
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask)
 		{
 			if (IsMainThread)

@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Layouts
 				measureWithMargins.Height + margin.VerticalThickness);
 		}
 
-		public static Rectangle ComputeFrame(this IView view, Rectangle bounds)
+		public static Rect ComputeFrame(this IView view, Rect bounds)
 		{
 			Thickness margin = view.Margin;
 
@@ -63,16 +63,24 @@ namespace Microsoft.Maui.Layouts
 			var frameX = AlignHorizontal(view, bounds, margin);
 			var frameY = AlignVertical(view, bounds, margin);
 
-			return new Rectangle(frameX, frameY, frameWidth, frameHeight);
+			return new Rect(frameX, frameY, frameWidth, frameHeight);
 		}
 
-		static double AlignHorizontal(IView view, Rectangle bounds, Thickness margin)
+		static double AlignHorizontal(IView view, Rect bounds, Thickness margin)
 		{
 			var alignment = view.HorizontalLayoutAlignment;
+
+			if (alignment == LayoutAlignment.Fill && IsExplicitSet(view.Width))
+			{
+				// If the view has an explicit width set and the layout alignment is Fill,
+				// we just treat the view as centered within the space it "fills"
+				alignment = LayoutAlignment.Center;
+			}
+
 			var desiredWidth = view.DesiredSize.Width;
 			var startX = bounds.X;
 
-			if (view.FlowDirection == FlowDirection.LeftToRight)
+			if (view.ShouldArrangeLeftToRight())
 			{
 				return AlignHorizontal(startX, margin.Left, margin.Right, bounds.Width, desiredWidth, alignment);
 			}
@@ -112,11 +120,20 @@ namespace Microsoft.Maui.Layouts
 			return frameX;
 		}
 
-		static double AlignVertical(IView view, Rectangle bounds, Thickness margin)
+		static double AlignVertical(IView view, Rect bounds, Thickness margin)
 		{
+			var alignment = view.VerticalLayoutAlignment;
+
+			if (alignment == LayoutAlignment.Fill && IsExplicitSet(view.Height))
+			{
+				// If the view has an explicit height set and the layout alignment is Fill,
+				// we just treat the view as centered within the space it "fills"
+				alignment = LayoutAlignment.Center;
+			}
+
 			double frameY = bounds.Y + margin.Top;
 
-			switch (view.VerticalLayoutAlignment)
+			switch (alignment)
 			{
 				case LayoutAlignment.Center:
 					frameY += (bounds.Height - view.DesiredSize.Height) / 2;
@@ -150,7 +167,7 @@ namespace Microsoft.Maui.Layouts
 			return new Size(contentSize.Width + inset.HorizontalThickness, contentSize.Height + inset.VerticalThickness);
 		}
 
-		public static void ArrangeContent(this IContentView contentView, Rectangle bounds)
+		public static void ArrangeContent(this IContentView contentView, Rect bounds)
 		{
 			if (contentView.PresentedContent == null)
 			{
@@ -159,13 +176,13 @@ namespace Microsoft.Maui.Layouts
 
 			var padding = contentView.Padding;
 
-			var targetBounds = new Rectangle(bounds.Left + padding.Left, bounds.Top + padding.Top,
+			var targetBounds = new Rect(bounds.Left + padding.Left, bounds.Top + padding.Top,
 				bounds.Width - padding.HorizontalThickness, bounds.Height - padding.VerticalThickness);
 
 			_ = contentView.PresentedContent.Arrange(targetBounds);
 		}
 
-		public static Size AdjustForFill(this Size size, Rectangle bounds, IView view)
+		public static Size AdjustForFill(this Size size, Rect bounds, IView view)
 		{
 			if (view.HorizontalLayoutAlignment == LayoutAlignment.Fill)
 			{
@@ -179,5 +196,18 @@ namespace Microsoft.Maui.Layouts
 
 			return size;
 		}
+
+		public static bool ShouldArrangeLeftToRight(this IView view) 
+		{
+			var viewFlowDirection = view.GetEffectiveFlowDirection();
+
+			// The various platforms handle layout and flow direction in different ways; some platforms
+			// helpfully flip the coordinates of arrange calls when in RTL mode, others don't
+			// So this gives us a place to ask the platform (via LayoutHandler) whether we need to do 
+			// the layout work to flip RTL stuff in our cross-platform layouts or not.
+			var layoutFlowDirection = LayoutHandler.GetLayoutFlowDirection(viewFlowDirection);
+
+			return layoutFlowDirection == FlowDirection.LeftToRight;
+		} 
 	}
 }

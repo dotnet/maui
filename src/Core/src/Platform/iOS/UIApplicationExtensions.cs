@@ -1,3 +1,4 @@
+using System;
 using ObjCRuntime;
 using UIKit;
 
@@ -5,6 +6,22 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class UIApplicationExtensions
 	{
+		internal static UIEdgeInsets GetSafeAreaInsetsForWindow(this UIApplication application)
+		{
+			UIEdgeInsets safeAreaInsets;
+
+			if (!OperatingSystem.IsIOSVersionAtLeast(11))
+				safeAreaInsets = new UIEdgeInsets(UIApplication.SharedApplication.StatusBarFrame.Size.Height, 0, 0, 0);
+			else if (application.GetKeyWindow() is UIWindow keyWindow)
+				safeAreaInsets = keyWindow.SafeAreaInsets;
+			else if (application.Windows.Length > 0)
+				safeAreaInsets = application.Windows[0].SafeAreaInsets;
+			else
+				safeAreaInsets = UIEdgeInsets.Zero;
+
+			return safeAreaInsets;
+		}
+
 		public static UIWindow? GetKeyWindow(this UIApplication application)
 		{
 			var windows = application.Windows;
@@ -22,14 +39,14 @@ namespace Microsoft.Maui.Platform
 		public static IWindow? GetWindow(this UIApplication application) =>
 			application.GetKeyWindow().GetWindow();
 
-		public static IWindow? GetWindow(this UIWindow? nativeWindow)
+		public static IWindow? GetWindow(this UIWindow? platformWindow)
 		{
-			if (nativeWindow is null)
+			if (platformWindow is null)
 				return null;
 
 			foreach (var window in MauiUIApplicationDelegate.Current.Application.Windows)
 			{
-				if (window?.Handler?.NativeView == nativeWindow)
+				if (window?.Handler?.PlatformView == platformWindow)
 					return window;
 			}
 

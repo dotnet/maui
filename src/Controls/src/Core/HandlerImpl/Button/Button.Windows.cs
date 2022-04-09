@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(ButtonHandler handler, Button button)
 		{
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
-			handler.NativeView?.UpdateText(text);
+			handler.PlatformView?.UpdateText(text);
 			button.Handler?.UpdateValue(nameof(Button.ContentLayout));
 		}
 	}

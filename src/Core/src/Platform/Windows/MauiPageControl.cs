@@ -40,9 +40,9 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			if (_indicatorView.IndicatorColor is SolidPaint solidPaint)
-				_fillColor = solidPaint?.ToNative();
+				_fillColor = solidPaint?.ToPlatform();
 			if (_indicatorView.SelectedIndicatorColor is SolidPaint selectedSolidPaint)
-				_selectedColor = selectedSolidPaint.ToNative();
+				_selectedColor = selectedSolidPaint.ToPlatform();
 			var position = _indicatorView.Position;
 			int i = 0;
 			foreach (var item in Items)

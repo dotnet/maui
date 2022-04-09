@@ -7,7 +7,7 @@
 
 		public static void MapCanReorderItems(ReorderableItemsViewHandler<TItemsView> handler, ReorderableItemsView itemsView)
 		{
-			(handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateCanReorderItems();
+			(handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateCanReorderItems();
 		}
 	}
 }

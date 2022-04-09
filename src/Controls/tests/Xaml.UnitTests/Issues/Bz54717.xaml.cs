@@ -20,16 +20,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[SetUp]
-			public void Setup()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
 			[TearDown]
 			public void TearDown()
 			{
-				Device.PlatformServices = null;
 				Application.Current = null;
 			}
 

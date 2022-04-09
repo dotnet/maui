@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DevicePlatform']/Docs" />
 	public readonly struct DevicePlatform : IEquatable<DevicePlatform>
@@ -25,7 +25,10 @@ namespace Microsoft.Maui.Essentials
 		public static DevicePlatform Tizen { get; } = new DevicePlatform(nameof(Tizen));
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='UWP']/Docs" />
-		public static DevicePlatform UWP { get; } = new DevicePlatform(nameof(UWP));
+		[Obsolete("Use WinUI instead.")]
+		public static DevicePlatform UWP { get; } = new DevicePlatform(nameof(WinUI));
+
+		public static DevicePlatform WinUI { get; } = new DevicePlatform(nameof(WinUI));
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='watchOS']/Docs" />
 		public static DevicePlatform watchOS { get; } = new DevicePlatform(nameof(watchOS));
@@ -48,20 +51,24 @@ namespace Microsoft.Maui.Essentials
 		public static DevicePlatform Create(string devicePlatform) =>
 			new DevicePlatform(devicePlatform);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
 		public bool Equals(DevicePlatform other) =>
 			Equals(other.devicePlatform);
 
 		internal bool Equals(string other) =>
 			string.Equals(devicePlatform, other, StringComparison.Ordinal);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='Equals'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
 		public override bool Equals(object obj) =>
 			obj is DevicePlatform && Equals((DevicePlatform)obj);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
 		public override int GetHashCode() =>
-			devicePlatform == null ? 0 : devicePlatform.GetHashCode();
+			devicePlatform == null ? 0 : devicePlatform.GetHashCode(
+					#if !NETSTANDARD2_0
+					StringComparison.Ordinal
+					#endif
+				);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='ToString']/Docs" />
 		public override string ToString() =>

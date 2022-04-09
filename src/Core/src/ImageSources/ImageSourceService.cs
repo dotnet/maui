@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,28 @@ namespace Microsoft.Maui
 		public ILogger? Logger { get; }
 
 #if __ANDROID__
+		public virtual async Task<IImageSourceServiceResult?> LoadDrawableAsync(
+			IImageSource imageSource,
+			Android.Widget.ImageView imageView,
+			CancellationToken cancellationToken = default)
+		{
+			var realResult = await GetDrawableAsync(imageSource, imageView.Context!, cancellationToken);
+
+			if (realResult is null)
+			{
+				imageView.SetImageDrawable(null);
+				return null;
+			}
+
+			imageView.SetImageDrawable(realResult.Value);
+
+			var result = new ImageSourceServiceLoadResult(
+				realResult.IsResolutionDependent,
+				() => realResult.Dispose());
+
+			return result;
+		}
+
 		public abstract Task<IImageSourceServiceResult<Android.Graphics.Drawables.Drawable>?> GetDrawableAsync(
 			IImageSource imageSource,
 			Android.Content.Context context,

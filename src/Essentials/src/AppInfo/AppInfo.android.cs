@@ -1,22 +1,24 @@
+using System;
 using System.Globalization;
+using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
 using Android.Provider;
 using AndroidX.Core.Content.PM;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public class AppInfoImplementation : IAppInfo
+	class AppInfoImplementation : IAppInfo
 	{
-		public string PackageName => Platform.AppContext.PackageName;
+		public string PackageName => Application.Context.PackageName;
 
 		public string Name
 		{
 			get
 			{
-				var applicationInfo = Platform.AppContext.ApplicationInfo;
-				var packageManager = Platform.AppContext.PackageManager;
+				var applicationInfo = Application.Context.ApplicationInfo;
+				var packageManager = Application.Context.PackageManager;
 				return applicationInfo.LoadLabel(packageManager);
 			}
 		}
@@ -27,8 +29,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 		{
 			get
 			{
-				var pm = Platform.AppContext.PackageManager;
-				var packageName = Platform.AppContext.PackageName;
+				var pm = Application.Context.PackageManager;
+				var packageName = Application.Context.PackageName;
 				using (var info = pm.GetPackageInfo(packageName, PackageInfoFlags.MetaData))
 				{
 					return info.VersionName;
@@ -40,8 +42,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 		{
 			get
 			{
-				var pm = Platform.AppContext.PackageManager;
-				var packageName = Platform.AppContext.PackageName;
+				var pm = Application.Context.PackageManager;
+				var packageName = Application.Context.PackageName;
 				using (var info = pm.GetPackageInfo(packageName, PackageInfoFlags.MetaData))
 				{
 #if __ANDROID_28__
@@ -57,7 +59,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public void ShowSettingsUI()
 		{
-			var context = Platform.GetCurrentActivity(false) ?? Platform.AppContext;
+			var context = ActivityStateManager.Default.GetCurrentActivity(false) ?? Application.Context;
 
 			var settingsIntent = new Intent();
 			settingsIntent.SetAction(global::Android.Provider.Settings.ActionApplicationDetailsSettings);
@@ -67,7 +69,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			var flags = ActivityFlags.NewTask | ActivityFlags.NoHistory | ActivityFlags.ExcludeFromRecents;
 
 #if __ANDROID_24__
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			settingsIntent.SetFlags(flags);
@@ -76,11 +78,29 @@ namespace Microsoft.Maui.Essentials.Implementations
 		}
 
 		public AppTheme RequestedTheme
-			=> (Platform.AppContext.Resources.Configuration.UiMode & UiMode.NightMask) switch
+			=> (Application.Context.Resources.Configuration.UiMode & UiMode.NightMask) switch
 			{
 				UiMode.NightYes => AppTheme.Dark,
 				UiMode.NightNo => AppTheme.Light,
 				_ => AppTheme.Unspecified
 			};
+
+		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
+
+		public LayoutDirection RequestedLayoutDirection
+		{
+			get
+			{
+				if (!OperatingSystem.IsAndroidVersionAtLeast(17))
+					return LayoutDirection.LeftToRight;
+
+				var config = Application.Context.Resources?.Configuration;
+				if (config == null)
+					return LayoutDirection.Unknown;
+
+				return (config.LayoutDirection == Android.Views.LayoutDirection.Rtl) ? LayoutDirection.RightToLeft :
+					LayoutDirection.LeftToRight;
+			}
+		}
 	}
 }

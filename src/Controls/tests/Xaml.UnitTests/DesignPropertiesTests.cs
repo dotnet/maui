@@ -7,9 +7,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[TestFixture]
 	public class DesignPropertiesTests
 	{
-		[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
-		[TearDown] public void TearDown() => Device.PlatformServices = null;
-
 		[Test]
 		public void DesignProperties()
 		{

@@ -36,22 +36,22 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 		LayoutView GetNativeLayout(LayoutHandler layoutHandler)
 		{
-			return layoutHandler.NativeView;
+			return layoutHandler.PlatformView;
 		}
 
 		double GetNativeChildCount(LayoutHandler layoutHandler)
 		{
-			return layoutHandler.NativeView.Subviews.Length;
+			return layoutHandler.PlatformView.Subviews.Length;
 		}
 
-		double GetNativeChildCount(object nativeView)
+		double GetNativeChildCount(object platformView)
 		{
-			return (nativeView as UIView).Subviews.Length;
+			return (platformView as UIView).Subviews.Length;
 		}
 
 		IReadOnlyList<UIView> GetNativeChildren(LayoutHandler layoutHandler)
 		{
-			return layoutHandler.NativeView.Subviews;
+			return layoutHandler.PlatformView.Subviews;
 		}
 
 		Task ValidateHasColor(ILayout layout, Color color, Action action = null)
@@ -76,13 +76,13 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			string expected = await InvokeOnMainThreadAsync(() =>
 			{
-				return children.OrderBy(nativeView => GetNativeText(nativeView))
-					.Aggregate("", (str, nativeView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(nativeView));
+				return children.OrderBy(platformView => GetNativeText(platformView))
+					.Aggregate("", (str, platformView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(platformView));
 			});
 
 			string actual = await InvokeOnMainThreadAsync(() =>
 			{
-				return children.Aggregate("", (str, nativeView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(nativeView));
+				return children.Aggregate("", (str, platformView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(platformView));
 			});
 
 			Assert.Equal(expected, actual);

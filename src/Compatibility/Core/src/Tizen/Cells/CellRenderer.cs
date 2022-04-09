@@ -100,9 +100,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			var nativeSpan = new Native.Span();
 			nativeSpan.Text = span.Text;
-			nativeSpan.ForegroundColor = span.TextColor.ToNative();
+			nativeSpan.ForegroundColor = span.TextColor.ToPlatform();
 			nativeSpan.FontAttributes = span.FontAttributes;
-			nativeSpan.BackgroundColor = span.BackgroundColor.ToNative();
+			nativeSpan.BackgroundColor = span.BackgroundColor.ToPlatform();
 			nativeSpan.FontSize = span.FontSize;
 			nativeSpan.FontFamily = span.FontFamily;
 			return nativeSpan;

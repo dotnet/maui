@@ -26,12 +26,12 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Maui.Controls.Platform
 {
 	// TODO MAUI: can we convert this over to using IView
-	public class VisualElementTracker<TElement, TNativeElement> : IDisposable where TElement : VisualElement where TNativeElement : FrameworkElement
+	public class VisualElementTracker<TElement, TPlatformElement> : IDisposable where TElement : VisualElement where TPlatformElement : FrameworkElement
 	{
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 		readonly List<uint> _fingers = new List<uint>();
 		FrameworkElement? _container;
-		TNativeElement? _control;
+		TPlatformElement? _control;
 		TElement? _element;
 
 		bool _invalidateArrangeNeeded = false;
@@ -65,13 +65,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 				UpdatingGestureRecognizers();
 
-				UpdateNativeControl();
+				UpdatePlatformControl();
 			}
 		}
 
 		public bool PreventGestureBubbling { get; set; }
 
-		public TNativeElement? Control
+		public TPlatformElement? Control
 		{
 			get { return _control; }
 			set
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				_control = value;
-				UpdateNativeControl();
+				UpdatePlatformControl();
 
 				if (PreventGestureBubbling)
 				{
@@ -207,7 +207,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (!args.Handled && renderer != null)
 				{
-					if (renderer.NativeView is Microsoft.UI.Xaml.Controls.Image nativeImage &&
+					if (renderer.PlatformView is Microsoft.UI.Xaml.Controls.Image nativeImage &&
 						nativeImage.Source is BitmapImage bi && bi.UriSource != null)
 					{
 						e.Data.SetBitmap(RandomAccessStreamReference.CreateFromUri(bi.UriSource));
@@ -278,7 +278,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 
-				UpdateNativeControl();
+				UpdatePlatformControl();
 			}
 		}
 
@@ -404,7 +404,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		protected virtual void UpdateNativeControl()
+		protected virtual void UpdatePlatformControl()
 		{
 			if (Element == null || Container == null)
 				return;
@@ -479,7 +479,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void MaybeInvalidate()
 		{
-			if (Element?.IsInNativeLayout == true)
+			if (Element?.IsInPlatformLayout == true)
 				return;
 
 			var parent = (FrameworkElement?)Container?.Parent;
@@ -584,7 +584,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnRedrawNeeded(object? sender, EventArgs e)
 		{
-			UpdateNativeControl();
+			UpdatePlatformControl();
 		}
 
 		void OnTap(object? sender, TappedRoutedEventArgs e)

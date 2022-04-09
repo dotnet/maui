@@ -1,11 +1,11 @@
 #if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIButton;
+using PlatformView = UIKit.UIButton;
 #elif MONOANDROID
-using NativeView = Google.Android.Material.Button.MaterialButton;
+using PlatformView = Google.Android.Material.Button.MaterialButton;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.Controls.Button;
+using PlatformView = Microsoft.UI.Xaml.Controls.Button;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using NativeView = System.Object;
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -16,9 +16,9 @@ namespace Microsoft.Maui.Handlers
 		public ImageSourcePartLoader ImageSourceLoader =>
 			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => (VirtualView as IImageButton), OnSetImageSource);
 
-		public static IPropertyMapper<IImageButton, IButtonHandler> ImageButtonMapper = new PropertyMapper<IImageButton, IButtonHandler>()
+		public static IPropertyMapper<IImage, IButtonHandler> ImageButtonMapper = new PropertyMapper<IImage, IButtonHandler>()
 		{
-			[nameof(IImageButton.Source)] = MapImageSource
+			[nameof(IImage.Source)] = MapImageSource
 		};
 
 		public static IPropertyMapper<ITextButton, IButtonHandler> TextButtonMapper = new PropertyMapper<ITextButton, IButtonHandler>()
@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IButton.Background)] = MapBackground,
 			[nameof(IButton.Padding)] = MapPadding,
+			[nameof(ILineBreakMode.LineBreakMode)] = MapLineBreakMode,
 			[nameof(IButtonStroke.StrokeThickness)] = MapStrokeThickness,
 			[nameof(IButtonStroke.StrokeColor)] = MapStrokeColor,
 			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius
@@ -51,6 +52,6 @@ namespace Microsoft.Maui.Handlers
 
 		IButton IButtonHandler.VirtualView => VirtualView;
 
-		NativeView IButtonHandler.NativeView => NativeView;
+		PlatformView IButtonHandler.PlatformView => PlatformView;
 	}
 }

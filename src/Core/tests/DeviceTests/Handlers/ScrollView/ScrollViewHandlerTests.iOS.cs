@@ -32,9 +32,9 @@ namespace Microsoft.Maui.DeviceTests
 
 				var scrollViewHandler = CreateHandler(scrollView);
 
-				foreach (var nativeView in scrollViewHandler.NativeView.Subviews)
+				foreach (var platformView in scrollViewHandler.PlatformView.Subviews)
 				{
-					if (nativeView is MauiTextField)
+					if (platformView is MauiTextField)
 					{
 						return true;
 					}

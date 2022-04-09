@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Hosting
@@ -11,6 +10,6 @@ namespace Microsoft.Maui.Controls.Hosting
 			where TEffect : RoutingEffect
 			where TPlatformEffect : PlatformEffect, new();
 
-		IEffectsBuilder Add(Type TEffect, Type TPlatformEffect);
+		IEffectsBuilder Add(Type TEffect, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type TPlatformEffect);
 	}
 }

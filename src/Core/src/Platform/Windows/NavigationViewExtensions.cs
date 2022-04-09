@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTopNavigationViewItemTextColor(this MauiNavigationView navigationView, Paint? paint)
 		{
-			var brush = paint?.ToNative();
+			var brush = paint?.ToPlatform();
 
 			if (navigationView.TopNavArea != null)
 			{
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTopNavigationViewItemBackgroundUnselectedColor(this MauiNavigationView navigationView, Paint? paint)
 		{
-			var brush = paint?.ToNative();
+			var brush = paint?.ToPlatform();
 			if (navigationView.TopNavArea != null)
 			{
 				if (brush is null)
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTopNavigationViewItemBackgroundSelectedColor(this MauiNavigationView navigationView, Paint? paint)
 		{
-			var brush = paint?.ToNative();
+			var brush = paint?.ToPlatform();
 			if (navigationView.TopNavArea != null)
 			{
 				if (brush is null)
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdatePaneBackground(this MauiNavigationView navigationView, Paint? paint)
 		{
 			var rootSplitView = navigationView.RootSplitView;
-			var brush = paint?.ToNative();
+			var brush = paint?.ToPlatform();
 
 			if (brush == null)
 			{
@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Platform
 			else
 				navigationView.OpenPaneLength = 320;
 			// At some point this Template Setting is going to show up with a bump to winui
-			//handler.NativeView.OpenPaneLength = handler.NativeView.TemplateSettings.OpenPaneWidth;
+			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
 		}
 	}
 }

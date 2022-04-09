@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			SetWeight(1, 1);
 			Homogeneous = true;
 			SelectionMode = GenItemSelectionMode.Always;
-			BackgroundColor = ShellRenderer.DefaultBackgroundColor.ToNative();
+			BackgroundColor = ShellRenderer.DefaultBackgroundColor.ToPlatform();
 			_defaultClass = new GenItemClass(ThemeConstants.GenItemClass.Styles.Full)
 			{
 				GetContentHandler = GetContent,

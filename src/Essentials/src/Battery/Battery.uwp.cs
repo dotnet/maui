@@ -1,31 +1,32 @@
+using Microsoft.Maui.ApplicationModel;
 using Windows.System.Power;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
-	public static partial class Battery
+	partial class BatteryImplementation : IBattery
 	{
-		static void StartEnergySaverListeners() =>
+		void StartEnergySaverListeners() =>
 			PowerManager.EnergySaverStatusChanged += ReportEnergySaverUpdated;
 
-		static void StopEnergySaverListeners() =>
+		void StopEnergySaverListeners() =>
 			PowerManager.EnergySaverStatusChanged -= ReportEnergySaverUpdated;
 
-		static void ReportEnergySaverUpdated(object sender, object e)
+		void ReportEnergySaverUpdated(object sender, object e)
 			=> MainThread.BeginInvokeOnMainThread(OnEnergySaverChanged);
 
-		static void StartBatteryListeners() =>
+		public void StartBatteryListeners() =>
 			DefaultBattery.ReportUpdated += ReportUpdated;
 
-		static void StopBatteryListeners() =>
+		public void StopBatteryListeners() =>
 			DefaultBattery.ReportUpdated -= ReportUpdated;
 
-		static void ReportUpdated(object sender, object e)
+		void ReportUpdated(object sender, object e)
 			=> MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
-		static global::Windows.Devices.Power.Battery DefaultBattery =>
+		global::Windows.Devices.Power.Battery DefaultBattery =>
 			global::Windows.Devices.Power.Battery.AggregateBattery;
 
-		static double PlatformChargeLevel
+		public double ChargeLevel
 		{
 			get
 			{
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static BatteryState PlatformState
+		public BatteryState State
 		{
 			get
 			{
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static BatteryPowerSource PlatformPowerSource
+		public BatteryPowerSource PowerSource
 		{
 			get
 			{
@@ -87,7 +88,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static EnergySaverStatus PlatformEnergySaverStatus =>
+		public EnergySaverStatus EnergySaverStatus =>
 			PowerManager.EnergySaverStatus == global::Windows.System.Power.EnergySaverStatus.On ? EnergySaverStatus.On : EnergySaverStatus.Off;
 	}
 }

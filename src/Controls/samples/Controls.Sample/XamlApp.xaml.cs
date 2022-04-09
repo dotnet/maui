@@ -5,7 +5,8 @@ using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
 
 namespace Maui.Controls.Sample
 {
@@ -18,6 +19,8 @@ namespace Maui.Controls.Sample
 			Services = services;
 
 			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
+
+			Debug.WriteLine($"Current app theme: {RequestedTheme}");
 
 			RequestedThemeChanged += (sender, args) =>
 			{
@@ -47,7 +50,6 @@ namespace Maui.Controls.Sample
 		protected override Window CreateWindow(IActivationState activationState)
 		{
 			var window = new Window(Services.GetRequiredService<Page>());
-
 			window.Title = ".NET MAUI Samples Gallery";
 			return window;
 		}

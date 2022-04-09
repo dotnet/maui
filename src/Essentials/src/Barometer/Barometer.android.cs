@@ -1,50 +1,60 @@
+#nullable enable
 using System;
+using Android.App;
+using Android.Content;
 using Android.Hardware;
-using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Barometer
+	partial class BarometerImplementation : IBarometer
 	{
-		internal static bool IsSupported =>
-			   DefaultBarometer != null;
+		static SensorManager? _sensorManager;
+		static Sensor? _sensor;
 
-		static Sensor DefaultBarometer => Platform.SensorManager?.GetDefaultSensor(SensorType.Pressure);
+		static SensorManager? SensorManager =>
+			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
 
-		static Sensor barometer;
+		static Sensor? Sensor =>
+			_sensor ??= SensorManager?.GetDefaultSensor(SensorType.Pressure);
 
-		static BarometerListener listener;
+		public bool IsSupported => Sensor is not null;
 
-		static void PlatformStart(SensorSpeed sensorSpeed)
+		BarometerListener? _listener;
+
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			listener = new BarometerListener();
-			barometer = DefaultBarometer;
-			Platform.SensorManager.RegisterListener(listener, barometer, sensorSpeed.ToPlatform());
+			_listener = new BarometerListener(RaiseReadingChanged);
+			SensorManager!.RegisterListener(_listener, Sensor, sensorSpeed.ToPlatform());
 		}
 
-		static void PlatformStop()
+		void PlatformStop()
 		{
-			if (listener == null)
-				return;
-
-			Platform.SensorManager.UnregisterListener(listener, barometer);
-			listener.Dispose();
-			listener = null;
+			SensorManager!.UnregisterListener(_listener, Sensor);
+			_listener!.Dispose();
+			_listener = null;
 		}
 	}
 
 	class BarometerListener : Java.Lang.Object, ISensorEventListener, IDisposable
 	{
-		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
+		public BarometerListener(Action<BarometerData> changeHandler)
+		{
+			ChangeHandler = changeHandler;
+		}
+
+		public readonly Action<BarometerData> ChangeHandler;
+
+		void ISensorEventListener.OnAccuracyChanged(Sensor? sensor, SensorStatus accuracy)
 		{
 		}
 
-		void ISensorEventListener.OnSensorChanged(SensorEvent e)
+		void ISensorEventListener.OnSensorChanged(SensorEvent? e)
 		{
-			if ((e?.Values?.Count ?? 0) <= 0)
+			var values = e?.Values ?? Array.Empty<float>();
+			if (values.Count < 1)
 				return;
 
-			Barometer.OnChanged(new BarometerData(e.Values[0]));
+			ChangeHandler?.Invoke(new BarometerData(values[0]));
 		}
 	}
 }

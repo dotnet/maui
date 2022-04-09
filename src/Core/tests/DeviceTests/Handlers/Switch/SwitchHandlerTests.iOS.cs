@@ -11,11 +11,11 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class SwitchHandlerTests
 	{
 		UISwitch GetNativeSwitch(SwitchHandler switchHandler) =>
-			(UISwitch)switchHandler.NativeView;
+			(UISwitch)switchHandler.PlatformView;
 
 		// This will not fire a ValueChanged event on native
 		void SetIsOn(SwitchHandler switchHandler, bool value) =>
-			switchHandler.NativeView.SetState(value, true);
+			switchHandler.PlatformView.SetState(value, true);
 
 		bool GetNativeIsOn(SwitchHandler switchHandler) =>
 		  GetNativeSwitch(switchHandler).On;

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -21,7 +21,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
 			DeviceDisplay.SetCurrent(new MockDeviceDisplay());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
@@ -1599,14 +1598,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.That(cell.Parent, Is.Null);
 		}
 
-		[TestCase(Device.Android, ListViewCachingStrategy.RecycleElement)]
-		[TestCase(Device.iOS, ListViewCachingStrategy.RecycleElement)]
-		[TestCase(Device.UWP, ListViewCachingStrategy.RetainElement)]
+		[TestCase("Android", ListViewCachingStrategy.RecycleElement)]
+		[TestCase("iOS", ListViewCachingStrategy.RecycleElement)]
+		[TestCase("UWP", ListViewCachingStrategy.RetainElement)]
 		[TestCase("Other", ListViewCachingStrategy.RetainElement)]
 		public void EnforcesCachingStrategy(string platform, ListViewCachingStrategy expected)
 		{
 			// we need to do this because otherwise we cant set the caching strategy
-			mockDeviceInfo.RuntimePlatform = platform;
+			mockDeviceInfo.Platform = DevicePlatform.Create(platform);
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement);
 
 			Assert.AreEqual(expected, listView.CachingStrategy);

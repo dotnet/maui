@@ -1,19 +1,19 @@
 using System;
 using CoreFoundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
-	public static partial class Battery
+	partial class BatteryImplementation : IBattery
 	{
-		static CFRunLoopSource powerSourceNotification;
+		CFRunLoopSource powerSourceNotification;
 
-		static void StartBatteryListeners()
+		void StartBatteryListeners()
 		{
 			powerSourceNotification = IOKit.CreatePowerSourceNotification(PowerSourceNotification);
 			CFRunLoop.Current.AddSource(powerSourceNotification, CFRunLoop.ModeDefault);
 		}
 
-		static void StopBatteryListeners()
+		void StopBatteryListeners()
 		{
 			if (powerSourceNotification != null)
 			{
@@ -22,23 +22,23 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static void PowerSourceNotification()
+		void PowerSourceNotification()
 			=> MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
-		static double PlatformChargeLevel => IOKit.GetInternalBatteryChargeLevel();
+		public double ChargeLevel => IOKit.GetInternalBatteryChargeLevel();
 
-		static BatteryState PlatformState => IOKit.GetInternalBatteryState();
+		public BatteryState State => IOKit.GetInternalBatteryState();
 
-		static BatteryPowerSource PlatformPowerSource => IOKit.GetProvidingPowerSource();
+		public BatteryPowerSource PowerSource => IOKit.GetProvidingPowerSource();
 
-		static void StartEnergySaverListeners()
+		void StartEnergySaverListeners()
 		{
 		}
 
-		static void StopEnergySaverListeners()
+		void StopEnergySaverListeners()
 		{
 		}
 
-		static EnergySaverStatus PlatformEnergySaverStatus => EnergySaverStatus.Off;
+		public EnergySaverStatus EnergySaverStatus => EnergySaverStatus.Off;
 	}
 }

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Linq;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
@@ -11,14 +14,44 @@ namespace Maui.Controls.Sample.Pages
 		}
 
 		void OnButtonClicked(object sender, EventArgs e)
+			=> GraphicsView.Invalidate();
+
+		void GraphicsView_DragInteraction(object sender, TouchEventArgs e)
+			=> UpdateInteractions("Drag Touches", e);
+
+		void GraphicsView_CancelInteraction(object sender, EventArgs e)
+			=> UpdateInteractions("Cancel Touches");
+
+		void GraphicsView_EndInteraction(object sender, TouchEventArgs e)
+			=> UpdateInteractions("End Touches", e);
+
+		void GraphicsView_StartInteraction(object sender, TouchEventArgs e)
+			=> UpdateInteractions("Start Touch", e);
+
+		void GraphicsView_StartHoverInteraction(object sender, TouchEventArgs e)
+			=> UpdateInteractions("Start Hover", e);
+
+		void GraphicsView_MoveHoverInteraction(object sender, TouchEventArgs e)
+			=> UpdateInteractions("Move Hover", e);
+
+		void GraphicsView_EndHoverInteraction(object sender, EventArgs e)
+			=> UpdateInteractions("End Hover");
+
+		void UpdateInteractions(string name, TouchEventArgs e)
 		{
-			GraphicsView.Invalidate();
+			Dispatcher.DispatchAsync(() =>
+				labelInteractions.Text = $"{name}: "
+					+ string.Join(", ", e.Touches.Select(t => $"[{Math.Round(t.X, 1)},{Math.Round(t.Y, 1)}]"))
+					+ $" IsInsideBounds: {e.IsInsideBounds}");
 		}
+
+		void UpdateInteractions(string name)
+			=> Dispatcher.DispatchAsync(() => labelInteractions.Text = name);
 	}
 
 	public class GraphicsDrawable : IDrawable
 	{
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			canvas.SaveState();
 
@@ -178,14 +211,14 @@ namespace Maui.Controls.Sample.Pages
 			linearGradientPaint.StartPoint = new Point(0.1, 0.1);
 			linearGradientPaint.EndPoint = new Point(0.9, 0.9);
 
-			var linearRectangleRectangle = new RectangleF(50, 700, 100, 50);
+			var linearRectangleRectangle = new RectF(50, 700, 100, 50);
 			canvas.SetFillPaint(linearGradientPaint, linearRectangleRectangle);
 			canvas.FillRectangle(linearRectangleRectangle);
 
 			linearGradientPaint.StartPoint = new Point(0.1, 0.1);
 			linearGradientPaint.EndPoint = new Point(0.9, 0.9);
 
-			var linearEllipseRectangle = new RectangleF(200, 700, 100, 50);
+			var linearEllipseRectangle = new RectF(200, 700, 100, 50);
 			canvas.SetFillPaint(linearGradientPaint, linearEllipseRectangle);
 			canvas.FillEllipse(linearEllipseRectangle);
 
@@ -193,7 +226,7 @@ namespace Maui.Controls.Sample.Pages
 			linearGradientPaint.StartPoint = new Point(0.1, 0.1);
 			linearGradientPaint.EndPoint = new Point(0.9, 0.9);
 
-			var linearRoundedRectangleRectangle = new RectangleF(350, 700, 100, 50);
+			var linearRoundedRectangleRectangle = new RectF(350, 700, 100, 50);
 			canvas.SetFillPaint(linearGradientPaint, linearRoundedRectangleRectangle);
 			canvas.FillRoundedRectangle(linearRoundedRectangleRectangle, 25);
 
@@ -206,7 +239,7 @@ namespace Maui.Controls.Sample.Pages
 			linearGradientPaint.StartPoint = new Point(0.1, 0.1);
 			linearGradientPaint.EndPoint = new Point(0.9, 0.9);
 
-			var linearPathRectangle = new RectangleF(500, 700, 200, 50);
+			var linearPathRectangle = new RectF(500, 700, 200, 50);
 			canvas.SetFillPaint(linearGradientPaint, linearPathRectangle);
 			canvas.FillPath(path);
 
@@ -223,14 +256,14 @@ namespace Maui.Controls.Sample.Pages
 			radialGradientPaint.Center = new Point(0.5, 0.5);
 			radialGradientPaint.Radius = 0.5;
 
-			var radialRectangleRectangle = new RectangleF(50, 800, 100, 50);
+			var radialRectangleRectangle = new RectF(50, 800, 100, 50);
 			canvas.SetFillPaint(radialGradientPaint, radialRectangleRectangle);
 			canvas.FillRectangle(radialRectangleRectangle);
 
 			radialGradientPaint.Center = new Point(0.5, 0.5);
 			radialGradientPaint.Radius = 0.5;
 
-			var radialEllipseRectangle = new RectangleF(200, 800, 100, 50);
+			var radialEllipseRectangle = new RectF(200, 800, 100, 50);
 			canvas.SetFillPaint(radialGradientPaint, radialEllipseRectangle);
 			canvas.FillEllipse(radialEllipseRectangle);
 
@@ -238,7 +271,7 @@ namespace Maui.Controls.Sample.Pages
 			radialGradientPaint.Center = new Point(0.5, 0.5);
 			radialGradientPaint.Radius = 0.5;
 
-			var radialRoundedRectangleRectangle = new RectangleF(350, 800, 100, 50);
+			var radialRoundedRectangleRectangle = new RectF(350, 800, 100, 50);
 			canvas.SetFillPaint(radialGradientPaint, radialRoundedRectangleRectangle);
 			canvas.FillRoundedRectangle(radialRoundedRectangleRectangle, 25);
 
@@ -251,7 +284,7 @@ namespace Maui.Controls.Sample.Pages
 			radialGradientPaint.Center = new Point(0.5, 0.5);
 			radialGradientPaint.Radius = 0.5;
 
-			var radialPathRectangle = new RectangleF(550, 800, 200, 50);
+			var radialPathRectangle = new RectF(550, 800, 200, 50);
 			canvas.SetFillPaint(radialGradientPaint, radialPathRectangle);
 			canvas.FillPath(path);
 

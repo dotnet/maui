@@ -6,22 +6,13 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs" />
 	public abstract partial class Element : BindableObject, IElement, INameScope, IElementController, IVisualTreeElement
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='MenuProperty']/Docs" />
-		public static readonly BindableProperty MenuProperty = BindableProperty.CreateAttached(nameof(Menu), typeof(Menu), typeof(Element), null);
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='GetMenu']/Docs" />
-		public static Menu GetMenu(BindableObject bindable) => (Menu)bindable.GetValue(MenuProperty);
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='SetMenu']/Docs" />
-		public static void SetMenu(BindableObject bindable, Menu menu) => bindable.SetValue(MenuProperty, menu);
-
-		internal static readonly ReadOnlyCollection<Element> EmptyChildren = new ReadOnlyCollection<Element>(new Element[0]);
+		internal static readonly ReadOnlyCollection<Element> EmptyChildren = new ReadOnlyCollection<Element>(Array.Empty<Element>());
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='AutomationIdProperty']/Docs" />
 		public static readonly BindableProperty AutomationIdProperty = BindableProperty.Create(nameof(AutomationId), typeof(string), typeof(Element), null);
@@ -45,7 +36,6 @@ namespace Microsoft.Maui.Controls
 
 		string _styleId;
 
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='AutomationId']/Docs" />
 		public string AutomationId
 		{
@@ -65,7 +55,6 @@ namespace Microsoft.Maui.Controls
 			get => (string)GetValue(ClassIdProperty);
 			set => SetValue(ClassIdProperty, value);
 		}
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Effects']/Docs" />
 		public IList<Effect> Effects
 		{
@@ -116,12 +105,17 @@ namespace Microsoft.Maui.Controls
 				foreach (var child in LogicalChildrenInternal)
 					yield return child;
 
-				foreach (var child in ChildrenNotDrawnByThisElement)
-					yield return child;
+				var childrenNotDrawnByThisElement = ChildrenNotDrawnByThisElement;
+				if (childrenNotDrawnByThisElement is not null)
+				{
+					foreach (var child in childrenNotDrawnByThisElement)
+						yield return child;
+				}
 			}
 		}
 
-		internal virtual IEnumerable<Element> ChildrenNotDrawnByThisElement => EmptyChildren;
+		// return null by default so we don't need to foreach over an empty collection in OnPropertyChanged
+		internal virtual IEnumerable<Element> ChildrenNotDrawnByThisElement => null;
 
 		IReadOnlyList<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
 
@@ -260,14 +254,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		void IElementController.SetValueFromRenderer(BindableProperty property, object value) => SetValueFromRenderer(property, value);
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='SetValueFromRenderer'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='SetValueFromRenderer'][1]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueFromRenderer(BindableProperty property, object value)
 		{
 			SetValueCore(property, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='SetValueFromRenderer'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='SetValueFromRenderer'][2]/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueFromRenderer(BindablePropertyKey property, object value)
 		{
@@ -388,10 +382,14 @@ namespace Microsoft.Maui.Controls
 
 			Handler?.UpdateValue(propertyName);
 
-			foreach (var logicalChildren in ChildrenNotDrawnByThisElement)
+			var childrenNotDrawnByThisElement = ChildrenNotDrawnByThisElement;
+			if (childrenNotDrawnByThisElement is not null)
 			{
-				if (logicalChildren is IPropertyPropagationController controller)
-					PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { logicalChildren });
+				foreach (var logicalChildren in childrenNotDrawnByThisElement)
+				{
+					if (logicalChildren is IPropertyPropagationController controller)
+						PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { logicalChildren });
+				}
 			}
 
 			if (_effects?.Count > 0)

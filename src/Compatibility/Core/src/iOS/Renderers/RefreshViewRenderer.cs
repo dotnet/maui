@@ -8,6 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class RefreshViewRenderer : ViewRenderer<RefreshView, UIView>, IEffectControlProvider
 	{
 		bool _isDisposed;
@@ -259,7 +260,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		bool CanUseRefreshControlProperty()
 		{
-			return Forms.IsiOS10OrNewer && !_usingLargeTitles;
+			return !_usingLargeTitles;
 		}
 
 		void OnRefresh(object sender, EventArgs e)

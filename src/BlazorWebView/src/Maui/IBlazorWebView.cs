@@ -1,14 +1,45 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using System;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	/// <summary>
+	/// Defines a contract for a view that renders Blazor content.
+	/// </summary>
 	public interface IBlazorWebView : IView
 	{
-		string? HostPage { get; set; }
+		/// <summary>
+		/// Gets the path to the HTML file to render.
+		/// </summary>
+		string? HostPage { get; }
+
+		/// <summary>
+		/// Gets a collection of <see cref="RootComponent"/> items.
+		/// </summary>
 		RootComponentsCollection RootComponents { get; }
+
+		/// <summary>
+		/// Gets the <see cref="JSComponentConfigurationStore"/>.
+		/// </summary>
 		JSComponentConfigurationStore JSComponents { get; }
+
+		/// <summary>
+		/// Allows customizing how links are opened.
+		/// By default, opens internal links in the webview and external links in an external app.
+		/// </summary>
+		event EventHandler<UrlLoadingEventArgs>? UrlLoading;
+
+		/// <summary>
+		/// Raised before the web view is initialized. On some platforms this enables customizing the web view configuration.
+		/// </summary>
+		event EventHandler<BlazorWebViewInitializingEventArgs>? BlazorWebViewInitializing;
+
+		/// <summary>
+		/// Raised after the web view is initialized but before any component has been rendered. The event arguments provide the instance of the platform-specific web view control.
+		/// </summary>
+		event EventHandler<BlazorWebViewInitializedEventArgs>? BlazorWebViewInitialized;
 
 		/// <summary>
 		/// Creates a file provider for static assets used in the <see cref="BlazorWebView"/>. The default implementation

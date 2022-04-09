@@ -1,12 +1,13 @@
+#nullable enable
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Browser']/Docs" />
-	public static partial class Browser
+	partial class BrowserImplementation : IBrowser
 	{
-		static Task<bool> PlatformOpenAsync(Uri uri, BrowserLaunchOptions options) =>
+		public Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

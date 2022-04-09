@@ -538,7 +538,7 @@ namespace Microsoft.Windows.Shell
 			[SecurityCritical]
 			get
 			{
-				// We're only detecting this state to work around .Net 3.5 issues.
+				// We're only detecting this state to work around .NET 3.5 issues.
 				// This logic won't work correctly when those issues are fixed.
 				Assert.IsTrue(IsPresentationFrameworkVersionLessThan4);
 
@@ -1069,7 +1069,7 @@ namespace Microsoft.Windows.Shell
 		[SecurityCritical]
 		private IntPtr _HandleEnterSizeMove(WM uMsg, IntPtr wParam, IntPtr lParam, out bool handled)
 		{
-			// This is only intercepted to deal with bugs in Window in .Net 3.5 and below.
+			// This is only intercepted to deal with bugs in Window in .NET 3.5 and below.
 			Assert.IsTrue(IsPresentationFrameworkVersionLessThan4);
 
 			_isUserResizing = true;
@@ -1182,7 +1182,7 @@ namespace Microsoft.Windows.Shell
 
 		private IntPtr _HandleExitSizeMove(WM uMsg, IntPtr wParam, IntPtr lParam, out bool handled)
 		{
-			// This is only intercepted to deal with bugs in Window in .Net 3.5 and below.
+			// This is only intercepted to deal with bugs in Window in .NET 3.5 and below.
 			Assert.IsTrue(IsPresentationFrameworkVersionLessThan4);
 
 			_isUserResizing = false;
@@ -1202,7 +1202,7 @@ namespace Microsoft.Windows.Shell
 
 		private IntPtr _HandleMove(WM uMsg, IntPtr wParam, IntPtr lParam, out bool handled)
 		{
-			// This is only intercepted to deal with bugs in Window in .Net 3.5 and below.
+			// This is only intercepted to deal with bugs in Window in .NET 3.5 and below.
 			Assert.IsTrue(IsPresentationFrameworkVersionLessThan4);
 
 			if (_isUserResizing)

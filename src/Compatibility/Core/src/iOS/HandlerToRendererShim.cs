@@ -10,16 +10,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public class HandlerToRendererShim : IVisualElementRenderer
 	{
-		public HandlerToRendererShim(INativeViewHandler vh)
+		public HandlerToRendererShim(IPlatformViewHandler vh)
 		{
+			Compatibility.Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			ViewHandler = vh;
 		}
 
-		INativeViewHandler ViewHandler { get; }
+		IPlatformViewHandler ViewHandler { get; }
 
 		public VisualElement Element { get; private set; }
 
-		public UIView NativeView => ViewHandler.ContainerView ?? ViewHandler.NativeView;
+		public UIView NativeView => ViewHandler.ContainerView ?? ViewHandler.PlatformView;
 
 		public UIViewController ViewController => ViewHandler.ViewController;
 
@@ -60,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		// any layout that's inside a shimmed ScrollView. 
 		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
 		{
-			ViewHandler?.NativeArrange(Element.Bounds);
+			ViewHandler?.PlatformArrange(Element.Bounds);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -76,7 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetElementSize(Size size)
 		{
-			Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Layout.LayoutChildIntoBoundingRegion(Element, new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 	}
 }

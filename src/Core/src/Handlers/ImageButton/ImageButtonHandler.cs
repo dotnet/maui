@@ -1,20 +1,20 @@
 ﻿#if __IOS__ || MACCATALYST
-using NativeImage = UIKit.UIImage;
-using NativeImageView = UIKit.UIImageView;
-using NativeView = UIKit.UIButton;
+using PlatformImage = UIKit.UIImage;
+using PlatformImageView = UIKit.UIImageView;
+using PlatformView = UIKit.UIButton;
 #elif MONOANDROID
-using NativeImage = Android.Graphics.Drawables.Drawable;
-using NativeImageView = Android.Widget.ImageView;
-using NativeView = Google.Android.Material.ImageView.ShapeableImageView;
+using PlatformImage = Android.Graphics.Drawables.Drawable;
+using PlatformImageView = Android.Widget.ImageView;
+using PlatformView = Google.Android.Material.ImageView.ShapeableImageView;
 #elif WINDOWS
 using System;
-using NativeImage = Microsoft.UI.Xaml.Media.ImageSource;
-using NativeImageView = Microsoft.UI.Xaml.Controls.Image;
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
+using PlatformImageView = Microsoft.UI.Xaml.Controls.Image;
+using PlatformView = Microsoft.UI.Xaml.Controls.Button;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using NativeImage = System.Object;
-using NativeImageView = System.Object;
-using NativeView = System.Object;
+using PlatformImage = System.Object;
+using PlatformImageView = System.Object;
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -28,9 +28,14 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IButtonStroke.StrokeThickness)] = MapStrokeThickness,
 			[nameof(IButtonStroke.StrokeColor)] = MapStrokeColor,
 			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius,
+			[nameof(IImageButton.Padding)] = MapPadding,
 #if WINDOWS
 			[nameof(IImageButton.Background)] = MapBackground,
 #endif
+		};
+
+		public static CommandMapper<IImageButton, IImageButtonHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
+		{
 		};
 
 		ImageSourcePartLoader? _imageSourcePartLoader;
@@ -45,18 +50,21 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		IImageButton IImageButtonHandler.TypedVirtualView => VirtualView;
+		IImageButton IImageButtonHandler.VirtualView => VirtualView;
 
-		IImage IImageHandler.TypedVirtualView => VirtualView;
+		IImage IImageHandler.VirtualView => VirtualView;
 
-		NativeImageView IImageHandler.TypedNativeView =>
+		PlatformImageView IImageHandler.PlatformView =>
 #if __IOS__
-			NativeView.ImageView;
+			PlatformView.ImageView;
 #elif WINDOWS
-			NativeView.GetContent<NativeImageView>() ?? throw new InvalidOperationException("ImageButton did not contain an Image element.");
+			PlatformView.GetContent<PlatformImageView>() ?? throw new InvalidOperationException("ImageButton did not contain an Image element.");
 #else
-			NativeView;
+			PlatformView;
 #endif
+
+		PlatformView IImageButtonHandler.PlatformView => PlatformView;
+
 		ImageSourcePartLoader IImageHandler.SourceLoader => SourceLoader;
 	}
 }

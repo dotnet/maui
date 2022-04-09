@@ -1,4 +1,4 @@
 <Project>
-  <Import Project="Maui.InTree.targets" Condition=" '$(UseMaui)' != 'true' " />
+  <Import Project="../../Maui.InTree.targets" Condition=" '$(UseMaui)' != 'true' " />
   <Import Project="../../../Directory.Build.targets" />
 </Project>

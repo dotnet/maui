@@ -12,16 +12,17 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		bool _nativeViewLoaded;
 
-		public HandlerToRendererShim(INativeViewHandler vh)
+		public HandlerToRendererShim(IPlatformViewHandler vh)
 		{
+			Compatibility.Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			ViewHandler = vh;
 		}
 
-		INativeViewHandler ViewHandler { get; }
+		IPlatformViewHandler ViewHandler { get; }
 
 		public VisualElement Element { get; private set; }
 
-		public FrameworkElement ContainerElement => ViewHandler.ContainerView ?? ViewHandler.NativeView;
+		public FrameworkElement ContainerElement => ViewHandler.ContainerView ?? ViewHandler.PlatformView;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				ViewHandler.SetVirtualView((IView)element);
 			}
 
-			if (ViewHandler.NativeView is FrameworkElement frameworkElement)
+			if (ViewHandler.PlatformView is FrameworkElement frameworkElement)
 			{
 				frameworkElement.Loaded += NativeViewLoaded;
 			}
@@ -71,17 +72,17 @@ namespace Microsoft.Maui.Controls.Compatibility
 			((FrameworkElement)sender).Loaded -= NativeViewLoaded;
 
 			// For old-school renderers on Windows, VisualElementRenderer watches for the Loaded event and 
-			// sets IsNativeStateConsistent, which invalidates the measure for the element. This tells everything 
+			// sets IsPlatformStateConsistent, which invalidates the measure for the element. This tells everything 
 			// to lay out again because all the layout activity previous to that was invalid - the state of the control
 			// was undefined with regard to measurement, and internal stuff like DesiredSize might be wrong or reset
 			// at this point. Since we're using a shim to imitate a renderer, we're dealing with legacy layouts. Which
 			// means we have to deal with the fact that they've started doing measure/layout even though it's not
-			// time for that yet. So we need to imitate what VisualElementRenderer does and update IsNativeStateConsistent
+			// time for that yet. So we need to imitate what VisualElementRenderer does and update IsPlatformStateConsistent
 			// and force a re-layout with new measurements.
 
 			if (Element is VisualElement visualElement)
 			{
-				visualElement.IsNativeStateConsistent = true;
+				visualElement.IsPlatformStateConsistent = true;
 
 				if (visualElement is Layout layout)
 				{
@@ -119,7 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public UIElement GetNativeElement()
 		{
-			return (FrameworkElement)ViewHandler.NativeView;
+			return (FrameworkElement)ViewHandler.PlatformView;
 		}
 	}
 }

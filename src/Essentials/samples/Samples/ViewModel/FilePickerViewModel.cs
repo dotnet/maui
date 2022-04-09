@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Storage;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.ApplicationModel.Communication;
 
 namespace Samples.ViewModel
 {
@@ -90,7 +92,7 @@ namespace Samples.ViewModel
 				{
 					{ DevicePlatform.iOS, new[] { "public.my.comic.extension" } }, // or general UTType values
                     { DevicePlatform.Android, new[] { "application/comics" } },
-					{ DevicePlatform.UWP, new[] { ".cbr", ".cbz" } },
+					{ DevicePlatform.WinUI, new[] { ".cbr", ".cbz" } },
 					{ DevicePlatform.Tizen, new[] { "*/*" } },
 					{ DevicePlatform.macOS, new[] { "cbr", "cbz" } }, // or general UTType values
                 });

@@ -4,9 +4,9 @@ using System.Linq;
 using CoreLocation;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class LocationExtensions
+	static partial class LocationExtensions
 	{
 		[System.Runtime.InteropServices.DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
 		static extern CLAuthorizationStatus CLAuthorizationStatus_objc_msgSend(IntPtr receiver, IntPtr selector);
@@ -34,8 +34,8 @@ namespace Microsoft.Maui.Essentials
 				VerticalAccuracy = location.VerticalAccuracy,
 				Timestamp = location.Timestamp.ToDateTime(),
 #if __IOS__ || __WATCHOS__
-                Course = location.Course < 0 ? default(double?) : location.Course,
-                Speed = location.Speed < 0 ? default(double?) : location.Speed,
+				Course = location.Course < 0 ? default(double?) : location.Course,
+				Speed = location.Speed < 0 ? default(double?) : location.Speed,
 #endif
 				IsFromMockProvider = DeviceInfo.DeviceType == DeviceType.Virtual,
 				AltitudeReferenceSystem = AltitudeReferenceSystem.Geoid
@@ -55,13 +55,10 @@ namespace Microsoft.Maui.Essentials
 
 		internal static CLAuthorizationStatus GetAuthorizationStatus(this CLLocationManager locationManager)
 		{
-#if __MACOS__
-            if (DeviceInfo.Version >= new Version(11, 0))
-#elif __WATCHOS__
-            if (Platform.HasOSVersion(7, 0))
-#else
-			if (Platform.HasOSVersion(14, 0))
-#endif
+			if (OperatingSystem.IsIOSVersionAtLeast(14, 0) ||
+				OperatingSystem.IsMacOSVersionAtLeast(11, 0) ||
+				OperatingSystem.IsWatchOSVersionAtLeast(7, 0) ||
+				OperatingSystem.IsTvOSVersionAtLeast(14, 0))
 			{
 				// return locationManager.AuthorizationStatus;
 

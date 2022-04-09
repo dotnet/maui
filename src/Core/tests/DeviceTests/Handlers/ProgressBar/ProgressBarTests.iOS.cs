@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ProgressBarHandlerTests
 	{
 		UIProgressView GetNativeProgressBar(ProgressBarHandler progressBarHandler) =>
-			progressBarHandler.NativeView;
+			progressBarHandler.PlatformView;
 
 		double GetNativeProgress(ProgressBarHandler progressBarHandler) =>
 			GetNativeProgressBar(progressBarHandler).Progress;

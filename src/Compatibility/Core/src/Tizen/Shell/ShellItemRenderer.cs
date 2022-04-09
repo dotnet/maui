@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		List<EToolbarItem> _tabsItems = new List<EToolbarItem>();
 
 		bool _disposed = false;
-		EColor _tabBarBackgroudColor = ShellRenderer.DefaultBackgroundColor.ToNative();
-		EColor _tabBarTitleColor = ShellRenderer.DefaultTitleColor.ToNative();
+		EColor _tabBarBackgroudColor = ShellRenderer.DefaultBackgroundColor.ToPlatform();
+		EColor _tabBarTitleColor = ShellRenderer.DefaultTitleColor.ToPlatform();
 
 		public ShellItemRenderer(ShellItem item)
 		{
@@ -284,8 +284,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			var tabBarBackgroudColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor ?? Color.Default;
 			var tabBarTitleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor ?? Color.Default;
-			TabBarBackgroundColor = tabBarBackgroudColor.IsDefault ? ShellRenderer.DefaultBackgroundColor.ToNative() : tabBarBackgroudColor.ToNative();
-			TabBarTitleColor = tabBarTitleColor.IsDefault ? ShellRenderer.DefaultTitleColor.ToNative() : tabBarTitleColor.ToNative();
+			TabBarBackgroundColor = tabBarBackgroudColor.IsDefault ? ShellRenderer.DefaultBackgroundColor.ToPlatform() : tabBarBackgroudColor.ToPlatform();
+			TabBarTitleColor = tabBarTitleColor.IsDefault ? ShellRenderer.DefaultTitleColor.ToPlatform() : tabBarTitleColor.ToPlatform();
 		}
 
 		void UpdateTabsBackgroudColor(EColor color)
@@ -345,7 +345,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				last.Delete();
 
 				//The source of icon resources is https://materialdesignicons.com/
-				var assembly = typeof(ShellItemRenderer).GetTypeInfo().Assembly;
+				var assembly = typeof(ShellItemRenderer).Assembly;
 				var assemblyName = assembly.GetName().Name;
 				_moreTabItem = AppendTabsItem("More", ImageSource.FromResource(assemblyName + "." + _dotsIcon, assembly));
 				_tabsItems.Add(_moreTabItem);

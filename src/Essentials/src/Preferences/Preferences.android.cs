@@ -4,11 +4,11 @@ using Android.App;
 using Android.Content;
 using Android.Preferences;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage
 {
-	public class PreferencesImplementation:IPreferences
+	class PreferencesImplementation : IPreferences
 	{
-		static readonly object locker = new object();
+		readonly object locker = new object();
 
 		public bool ContainsKey(string key, string sharedName)
 		{
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 									if (!double.TryParse(savedDouble, NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out var outDouble))
 									{
 										var maxString = Convert.ToString(double.MaxValue, CultureInfo.InvariantCulture);
-										outDouble = savedDouble.Equals(maxString) ? double.MaxValue : double.MinValue;
+										outDouble = savedDouble.Equals(maxString, StringComparison.Ordinal) ? double.MaxValue : double.MinValue;
 									}
 
 									value = outDouble;

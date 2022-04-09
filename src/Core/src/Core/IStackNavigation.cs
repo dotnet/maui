@@ -7,7 +7,6 @@ namespace Microsoft.Maui
 	/// </summary>
 	public interface IStackNavigation
 	{
-		IToolbar Toolbar { get; }
 		void RequestNavigation(NavigationRequest eventArgs);
 		void NavigationFinished(IReadOnlyList<IView> newStack);
 	}

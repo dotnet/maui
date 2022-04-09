@@ -1,13 +1,15 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Android.OS;
+using Microsoft.Maui.Storage;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public static partial class Share
+	partial class ShareImplementation : IShare
 	{
-		static Task PlatformRequestAsync(ShareTextRequest request)
+		Task PlatformRequestAsync(ShareTextRequest request)
 		{
 			var items = new List<string>();
 			if (!string.IsNullOrWhiteSpace(request.Text))
@@ -21,7 +23,7 @@ namespace Microsoft.Maui.Essentials
 			}
 
 			var intent = new Intent(Intent.ActionSend);
-			intent.SetType(FileSystem.MimeTypes.TextPlain);
+			intent.SetType(FileMimeTypes.TextPlain);
 			intent.PutExtra(Intent.ExtraText, string.Join(System.Environment.NewLine, items));
 
 			if (!string.IsNullOrWhiteSpace(request.Subject))
@@ -32,24 +34,27 @@ namespace Microsoft.Maui.Essentials
 			var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 			chooserIntent.SetFlags(flags);
-			Platform.AppContext.StartActivity(chooserIntent);
+			Application.Context.StartActivity(chooserIntent);
 
 			return Task.CompletedTask;
 		}
 
-		static Task PlatformRequestAsync(ShareMultipleFilesRequest request)
+		Task PlatformRequestAsync(ShareFileRequest request) =>
+			PlatformRequestAsync((ShareMultipleFilesRequest)request);
+
+		Task PlatformRequestAsync(ShareMultipleFilesRequest request)
 		{
 			// load the data we need
 			var contentUris = new List<IParcelable>(request.Files.Count);
 			var contentType = default(string);
 			foreach (var file in request.Files)
 			{
-				contentUris.Add(Platform.GetShareableFileUri(file));
+				contentUris.Add(FileSystemUtils.GetShareableFileUri(file));
 
 				if (contentType == null)
 					contentType = file.ContentType;
 				else if (contentType != file.ContentType)
-					contentType = FileSystem.MimeTypes.All;
+					contentType = FileMimeTypes.All;
 			}
 
 			var intentType = contentUris.Count > 1
@@ -71,7 +76,7 @@ namespace Microsoft.Maui.Essentials
 			var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 			chooserIntent.SetFlags(flags);
-			Platform.AppContext.StartActivity(chooserIntent);
+			Application.Context.StartActivity(chooserIntent);
 
 			return Task.CompletedTask;
 		}

@@ -9,13 +9,72 @@
             <VerticalStackLayout    
                 Margin="12">
                 <Label
+                    Text="HtmlWebViewSource (String)"
+                    Style="{StaticResource Headline}"/>
+                <WebView 
+                    HeightRequest="150"
+                    HorizontalOptions="FillAndExpand">
+                    <WebView.Source>
+                        <HtmlWebViewSource>
+                            <HtmlWebViewSource.Html>
+                                <![CDATA[
+                                <html>
+                                <head>
+                                </head>
+                                <body>
+                                <h1>.NET MAUI</h1>
+                                <p>This is a local html source.</p>
+                                </body>
+                                </html>                    
+                                ]]>
+                            </HtmlWebViewSource.Html>
+                        </HtmlWebViewSource>
+                    </WebView.Source>
+                </WebView>
+                <Label
+                    Text="HtmlWebViewSource (File)"
+                    Style="{StaticResource Headline}"/>
+                <WebView 
+                    x:Name="FileWebView" 
+                    HeightRequest="150"
+                    HorizontalOptions="FillAndExpand">
+                    <WebView.Source>
+                        <HtmlWebViewSource>
+                            <HtmlWebViewSource.Html>
+                                <![CDATA[
+                                <HTML>
+                                <BODY>
+                                <H1>.NET MAUI</H1>
+                                <P>Welcome to WebView.</P>
+                                </BODY>
+                                </HTML>
+                                ]]>
+                            </HtmlWebViewSource.Html>
+                        </HtmlWebViewSource>
+                    </WebView.Source>
+                </WebView>
+                <StackLayout
+                    Orientation="Horizontal">
+                    <Entry 
+                        x:Name="input"
+                        WidthRequest="150" 
+                        Margin="12" 
+                        Text="index.html"/>
+                    <Button
+                        Margin="12" 
+                        Text="Load" 
+                        Clicked="OnLoadHtmlFileClicked" 
+                        HeightRequest="48" 
+                        WidthRequest="150" />
+                </StackLayout>
+                <Label
                     Text="UrlWebViewSource"
                     Style="{StaticResource Headline}"/>
                 <WebView 
                     x:Name="MauiWebView"
                     Source="https://github.com/dotnet/maui"
-                    HeightRequest="300"
-                    WidthRequest="300" />
+                    HeightRequest="200"
+                    HorizontalOptions="FillAndExpand" />
                 <Label
                     Text="Go Back"
                     Style="{StaticResource Headline}"/>

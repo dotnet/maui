@@ -16,8 +16,8 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly IMauiContext _mauiContext;
 		Action<AView> _onCreateCallback;
 		AView _pageContainer;
-		INativeViewHandler _viewhandler;
-		AView NativeView => _viewhandler?.NativeView as AView;
+		IPlatformViewHandler _viewhandler;
+		AView PlatformView => _viewhandler?.PlatformView as AView;
 
 		public FragmentContainer(IMauiContext mauiContext)
 		{
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (Page != null)
 			{
-				_pageContainer = Page?.Handler?.NativeView as AView;
+				_pageContainer = Page?.Handler?.PlatformView as AView;
 
 				if (_pageContainer == null)
 				{
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Platform
 						_mauiContext.MakeScoped(inflater, ChildFragmentManager);
 
 					_pageContainer = Page.ToPlatform(scopedContext);
-					_viewhandler = (INativeViewHandler)Page.Handler;
+					_viewhandler = (IPlatformViewHandler)Page.Handler;
 				}
 				else
 				{

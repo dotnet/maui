@@ -23,12 +23,12 @@ namespace Microsoft.Maui
 
 		readonly ConcurrentDictionary<string, FontFamily> _fonts = new();
 		readonly IFontRegistrar _fontRegistrar;
-		readonly ILogger<FontManager>? _logger;
+		readonly IServiceProvider? _serviceProvider;
 
-		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
+		public FontManager(IFontRegistrar fontRegistrar, IServiceProvider? serviceProvider = null)
 		{
 			_fontRegistrar = fontRegistrar;
-			_logger = logger;
+			_serviceProvider = serviceProvider;
 		}
 
 		public FontFamily DefaultFontFamily =>
@@ -64,7 +64,7 @@ namespace Microsoft.Maui
 			// First check Alias
 			if (_fontRegistrar.GetFont(fontFamily) is string fontPostScriptName)
 			{
-				if (fontPostScriptName!.Contains("://") && fontPostScriptName.Contains("#"))
+				if (fontPostScriptName.Contains("://", StringComparison.Ordinal) && fontPostScriptName.Contains("#", StringComparison.Ordinal))
 				{
 					// The registrar has given us a perfect path, so use it exactly
 					yield return fontPostScriptName;
@@ -155,7 +155,7 @@ namespace Microsoft.Maui
 			{
 				// the CanvasFontSet constructor can throw an exception in case something's wrong with the font. It should not crash the app
 
-				_logger?.LogError(ex, "Error loading font '{Font}'.", fontFile);
+				_serviceProvider?.CreateLogger<FontManager>()?.LogError(ex, "Error loading font '{Font}'.", fontFile);
 
 				return null;
 			}

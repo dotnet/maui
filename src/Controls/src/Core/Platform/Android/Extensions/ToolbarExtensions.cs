@@ -6,7 +6,6 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
-#nullable enable
 using Android.Text;
 using Android.Text.Style;
 using Android.Views;
@@ -23,7 +22,6 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class ToolbarExtensions
 	{
-		static Drawable? _defaultNavigationIcon;
 		static ColorStateList? _defaultTitleTextColor;
 		static int? _defaultNavigationIconColor;
 
@@ -79,11 +77,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBackButton(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
-			_defaultNavigationIcon ??= nativeToolbar.NavigationIcon;
-
 			if (toolbar.BackButtonVisible)
 			{
-				nativeToolbar.NavigationIcon ??= _defaultNavigationIcon;
+				var context =
+					nativeToolbar.Context?.GetThemedContext() ??
+					nativeToolbar.Context ??
+					toolbar.Handler?.MauiContext?.Context;
+
+				nativeToolbar.NavigationIcon ??= new DrawerArrowDrawable(context!)
+				{
+					Progress = 1
+				};
 
 				var backButtonTitle = toolbar.BackButtonTitle;
 				ImageSource image = toolbar.TitleIcon;
@@ -101,44 +105,55 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 			{
 				if (!toolbar.DrawerToggleVisible)
+				{
 					nativeToolbar.NavigationIcon = null;
+				}
+				else
+				{
+					nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
+				}
 			}
 
 			nativeToolbar.UpdateIconColor(toolbar);
 			nativeToolbar.UpdateBarTextColor(toolbar);
 		}
 
-		public static void UpdateBarBackgroundColor(this AToolbar nativeToolbar, Toolbar toolbar)
-		{
-			var tintColor = toolbar.BarBackgroundColor;
-
-			if (tintColor == null)
-			{
-				nativeToolbar.BackgroundTintMode = null;
-			}
-			else
-			{
-				nativeToolbar.BackgroundTintMode = PorterDuff.Mode.Src;
-				nativeToolbar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToNative());
-			}
-		}
-
 		public static void UpdateBarBackground(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
 			Brush barBackground = toolbar.BarBackground;
-			nativeToolbar.UpdateBackground(barBackground);
+
+			if (barBackground is SolidColorBrush solidColor)
+			{
+				var tintColor = solidColor.Color;
+				if (tintColor == null)
+				{
+					nativeToolbar.BackgroundTintMode = null;
+				}
+				else
+				{
+					nativeToolbar.BackgroundTintMode = PorterDuff.Mode.Src;
+					nativeToolbar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToPlatform());
+				}
+			}
+			else
+			{
+				nativeToolbar.UpdateBackground(barBackground);
+
+				if (Brush.IsNullOrEmpty(barBackground))
+					nativeToolbar.BackgroundTintMode = null;
+			}
 		}
 
 		public static void UpdateIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
 			var navIconColor = toolbar.IconColor;
 			if (navIconColor != null && nativeToolbar.NavigationIcon != null)
-				nativeToolbar.NavigationIcon.SetColorFilter(navIconColor, FilterMode.SrcAtop);
-		}
+			{
+				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable dad)
+					dad.Color = Android.Graphics.Color.White;
 
-		public static void UpdateTitle(this AToolbar nativeToolbar, Toolbar toolbar)
-		{
-			nativeToolbar.Title = toolbar?.Title ?? string.Empty;
+				nativeToolbar.NavigationIcon.SetColorFilter(navIconColor, FilterMode.SrcAtop);
+			}
 		}
 
 		public static void UpdateBarTextColor(this AToolbar nativeToolbar, Toolbar toolbar)
@@ -156,7 +171,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (textColor != null)
 			{
-				nativeToolbar.SetTitleTextColor(textColor.ToNative().ToArgb());
+				nativeToolbar.SetTitleTextColor(textColor.ToPlatform().ToArgb());
 			}
 			else
 			{
@@ -168,7 +183,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (textColor != null)
 				{
 					_defaultNavigationIconColor = icon.Color;
-					icon.Color = textColor.ToNative().ToArgb();
+					icon.Color = textColor.ToPlatform().ToArgb();
 				}
 				else if (_defaultNavigationIconColor != null)
 				{
@@ -257,7 +272,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (item.Order != ToolbarItemOrder.Secondary && tintColor != null && tintColor != null)
 				{
-					var color = item.IsEnabled ? tintColor.ToNative() : tintColor.MultiplyAlpha(0.302f).ToNative();
+					var color = item.IsEnabled ? tintColor.ToPlatform() : tintColor.MultiplyAlpha(0.302f).ToPlatform();
 					SpannableString titleTinted = new SpannableString(item.Text);
 					titleTinted.SetSpan(new ForegroundColorSpan(color), 0, titleTinted.Length(), 0);
 					newTitle = titleTinted;
@@ -304,20 +319,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 			menuitem.SetOnMenuItemClickListener(new GenericMenuClickListener(((IMenuItemController)item).Activate));
 
-			if (item.Order != ToolbarItemOrder.Secondary && !NativeVersion.IsAtLeast(26) && (tintColor != null && tintColor != null))
+			if (item.Order != ToolbarItemOrder.Secondary && !OperatingSystem.IsAndroidVersionAtLeast(26) && (tintColor != null && tintColor != null))
 			{
 				var view = toolbar.FindViewById(menuitem.ItemId);
 				if (view is ATextView textView)
 				{
 					if (item.IsEnabled)
-						textView.SetTextColor(tintColor.ToNative());
+						textView.SetTextColor(tintColor.ToPlatform());
 					else
-						textView.SetTextColor(tintColor.MultiplyAlpha(0.302f).ToNative());
+						textView.SetTextColor(tintColor.MultiplyAlpha(0.302f).ToPlatform());
 				}
 			}
 		}
 
-		internal static void UpdateMenuItemIcon(IMauiContext mauiContext, IMenuItem menuItem, ToolbarItem toolBarItem, Color? tintColor)
+		internal static void UpdateMenuItemIcon(this IMauiContext mauiContext, IMenuItem menuItem, ToolbarItem toolBarItem, Color? tintColor)
 		{
 			toolBarItem.IconImageSource.LoadImage(mauiContext, result =>
 			{
@@ -334,7 +349,7 @@ namespace Microsoft.Maui.Controls.Platform
 					using (var iconDrawable = newDrawable.Mutate())
 					{
 						if (tintColor != null)
-							iconDrawable.SetColorFilter(tintColor.ToNative(Colors.White), FilterMode.SrcAtop);
+							iconDrawable.SetColorFilter(tintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
 
 						if (!menuItem.IsEnabled)
 						{

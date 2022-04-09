@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 			var mainBundlePath = Foundation.NSBundle.MainBundle.BundlePath;
 
 #if MACCATALYST
-			// MacOS Apps have Contents folder in the bundle root, iOS does not
+			// macOS Apps have Contents folder in the bundle root, iOS does not
 			mainBundlePath = Path.Combine(mainBundlePath, "Contents");
 #endif
 

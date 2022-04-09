@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Controls
 				var bold = false;
 				var italic = false;
 				double size = -1;
+#pragma warning disable CS0612 // Type or member is obsolete
 				NamedSize namedSize = 0;
+#pragma warning restore CS0612 // Type or member is obsolete
 
 				// check if last is a size
 				string last = parts.Last();
@@ -42,11 +44,13 @@ namespace Microsoft.Maui.Controls
 					size = trySize;
 					parts.RemoveAt(parts.Count - 1);
 				}
+#pragma warning disable CS0612 // Type or member is obsolete
 				else if (Enum.TryParse(last, out NamedSize tryNamedSize))
 				{
 					namedSize = tryNamedSize;
 					parts.RemoveAt(parts.Count - 1);
 				}
+#pragma warning restore CS0612 // Type or member is obsolete
 
 				// check if first is a name
 				foreach (string part in parts)
@@ -74,17 +78,25 @@ namespace Microsoft.Maui.Controls
 					attributes |= FontAttributes.Bold;
 				if (italic)
 					attributes |= FontAttributes.Italic;
+
+#pragma warning disable CS0612 // Type or member is obsolete
 				if (size == -1 && namedSize == 0)
 					namedSize = NamedSize.Medium;
+#pragma warning restore CS0612 // Type or member is obsolete
 
 				if (name != null)
 				{
+#pragma warning disable CS0612 // Type or member is obsolete
 					if (size == -1)
 						size = Device.GetNamedSize(namedSize, null, false);
+#pragma warning restore CS0612 // Type or member is obsolete
 					return Font.OfSize(name, size).WithAttributes(attributes);
 				}
+
+#pragma warning disable CS0612 // Type or member is obsolete
 				if (size == -1)
-					return Font.SystemFontOfSize(Device.GetNamedSize(namedSize, null, false)).WithAttributes(attributes);
+					size = Device.GetNamedSize(namedSize, null, false);
+#pragma warning restore CS0612 // Type or member is obsolete
 				return Font.SystemFontOfSize(size).WithAttributes(attributes);
 			}
 

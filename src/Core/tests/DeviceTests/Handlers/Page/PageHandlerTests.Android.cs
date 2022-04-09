@@ -13,7 +13,7 @@ namespace Microsoft.Maui.DeviceTests
 		public View GetNativePageContent(PageHandler handler)
 		{
 			int childCount = 0;
-			if (handler.NativeView is ViewGroup view)
+			if (handler.PlatformView is ViewGroup view)
 			{
 				childCount = view.ChildCount;
 				if (childCount == 1)

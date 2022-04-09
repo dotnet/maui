@@ -32,21 +32,16 @@ namespace Microsoft.Maui.Platform
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
-		public static void UpdateTextColor(this EditText editText, ITextStyle entry, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this EditText editText, ITextStyle entry)
 		{
-			editText.UpdateTextColor(entry.TextColor, defaultColor);
+			editText.UpdateTextColor(entry.TextColor);
 		}
 
-		public static void UpdateTextColor(this EditText editText, Graphics.Color textColor, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this EditText editText, Graphics.Color textColor)
 		{
-			if (textColor == null)
+			if (textColor != null)
 			{
-				if (defaultColor != null)
-					editText.SetTextColor(defaultColor);
-			}
-			else
-			{
-				var androidColor = textColor.ToNative();
+				var androidColor = textColor.ToPlatform();
 				if (!editText.TextColors.IsOneColor(ColorStates.EditText, androidColor))
 					editText.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}
@@ -97,6 +92,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void SetLengthFilter(this EditText editText, int maxLength)
 		{
+			if (maxLength == -1)
+				maxLength = int.MaxValue;
+
 			var currentFilters = new List<IInputFilter>(editText.GetFilters() ?? new IInputFilter[0]);
 			var changed = false;
 
@@ -110,7 +108,7 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			if (maxLength > 0)
+			if (maxLength >= 0)
 			{
 				currentFilters.Add(new InputFilterLengthFilter(maxLength));
 				changed = true;
@@ -128,20 +126,16 @@ namespace Microsoft.Maui.Platform
 			editText.Hint = textInput.Placeholder;
 		}
 
-		public static void UpdatePlaceholderColor(this EditText editText, IPlaceholder placeholder, ColorStateList? defaultColor)
+		public static void UpdatePlaceholderColor(this EditText editText, IPlaceholder placeholder)
 		{
-			editText.UpdatePlaceholderColor(placeholder.PlaceholderColor, defaultColor);
+			editText.UpdatePlaceholderColor(placeholder.PlaceholderColor);
 		}
 
-		public static void UpdatePlaceholderColor(this EditText editText, Graphics.Color placeholderTextColor, ColorStateList? defaultColor)
+		public static void UpdatePlaceholderColor(this EditText editText, Graphics.Color placeholderTextColor)
 		{
-			if (placeholderTextColor == null)
+			if (placeholderTextColor != null)
 			{
-				editText.SetHintTextColor(defaultColor);
-			}
-			else
-			{
-				var androidColor = placeholderTextColor.ToNative();
+				var androidColor = placeholderTextColor.ToPlatform();
 				if (!editText.HintTextColors.IsOneColor(ColorStates.EditText, androidColor))
 					editText.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
 			}
@@ -155,6 +149,8 @@ namespace Microsoft.Maui.Platform
 
 			editText.FocusableInTouchMode = isEditable;
 			editText.Focusable = isEditable;
+
+			editText.SetCursorVisible(isEditable);
 		}
 
 		public static void UpdateKeyboard(this EditText editText, IEntry entry)
@@ -186,7 +182,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var drawable = getClearButtonDrawable?.Invoke();
 
-				if (entry.FlowDirection == FlowDirection.RightToLeft)
+				if (entry.GetEffectiveFlowDirection() == FlowDirection.RightToLeft)
 				{
 					editText.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
 				}
@@ -221,7 +217,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateReturnType(this EditText editText, IEntry entry)
 		{
-			editText.ImeOptions = entry.ReturnType.ToNative();
+			editText.ImeOptions = entry.ReturnType.ToPlatform();
 		}
 
 		public static void UpdateCursorPosition(this EditText editText, ITextInput entry)
@@ -341,9 +337,9 @@ namespace Microsoft.Maui.Platform
 		/// This will return True to handle OnTouch to prevent re-activating keyboard after clearing the text.
 		/// </summary>
 		/// <returns>True if clear button is clicked and Text is cleared. False if not.</returns>
-		internal static bool HandleClearButtonTouched(this EditText? nativeView, FlowDirection flowDirection, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
+		internal static bool HandleClearButtonTouched(this EditText? platformView, FlowDirection flowDirection, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
 		{
-			if (nativeView is null)
+			if (platformView is null)
 				return false;
 
 			var motionEvent = touchEvent?.Event;
@@ -363,20 +359,20 @@ namespace Microsoft.Maui.Platform
 			var y = motionEvent.GetY();
 
 			if ((flowDirection != FlowDirection.LeftToRight
-				|| x < nativeView.Right - buttonWidth
-				|| x > nativeView.Right - nativeView.PaddingRight
-				|| y < nativeView.PaddingTop
-				|| y > nativeView.Height - nativeView.PaddingBottom) &&
+				|| x < platformView.Right - buttonWidth
+				|| x > platformView.Right - platformView.PaddingRight
+				|| y < platformView.PaddingTop
+				|| y > platformView.Height - platformView.PaddingBottom) &&
 				(flowDirection != FlowDirection.RightToLeft
-				|| x < nativeView.Left + nativeView.PaddingLeft
-				|| x > nativeView.Left + buttonWidth
-				|| y < nativeView.PaddingTop
-				|| y > nativeView.Height - nativeView.PaddingBottom))
+				|| x < platformView.Left + platformView.PaddingLeft
+				|| x > platformView.Left + buttonWidth
+				|| y < platformView.PaddingTop
+				|| y > platformView.Height - platformView.PaddingBottom))
 			{
 				return false;
 			}
 
-			nativeView.Text = null;
+			platformView.Text = null;
 			return true;
 		}
 	}

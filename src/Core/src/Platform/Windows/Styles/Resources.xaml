@@ -5,9 +5,6 @@
     x:Class="Microsoft.Maui.Platform.Resources">
 
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="MauiActivityIndicatorStyle.xaml" />
-        <ResourceDictionary Source="MauiAutoSuggestBoxStyle.xaml" />
-        <ResourceDictionary Source="MauiCheckBoxStyle.xaml" />
         <ResourceDictionary Source="MauiComboBoxStyle.xaml" />
         <ResourceDictionary Source="MauiSliderStyle.xaml" />
         <ResourceDictionary Source="MauiStepperStyle.xaml" />
