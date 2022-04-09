@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
 		private static readonly string AppOrigin = $"https://{BlazorWebView.AppHostAddress}/";
+		private static readonly Uri AppOriginUri = new(AppOrigin);
 		private static readonly AUri AndroidAppOriginUri = AUri.Parse(AppOrigin)!;
 		private readonly AWebView _webview;
 		private WebMessagePort[]? _nativeToJSPorts;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		public AndroidWebKitWebViewManager(AWebView webview!!, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
-			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 		{
 #if WEBVIEW2_MAUI
 			if (services.GetService<MauiBlazorMarkerService>() is null)
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var nativeToJs = new BlazorWebMessageCallback(message =>
 			{
-				MessageReceived(new Uri(AppOrigin), message!);
+				MessageReceived(AppOriginUri, message!);
 			});
 
 			var destPort = new[] { _nativeToJSPorts[1] };

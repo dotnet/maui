@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// </summary>
 		protected static readonly string AppOrigin = $"https://{AppHostAddress}/";
 
-		private static readonly Uri AppOriginUri = new(AppOrigin);
+		internal static readonly Uri AppOriginUri = new(AppOrigin);
 
 		private readonly WebView2Control _webview;
 		private readonly Task _webviewReadyTask;
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			string hostPageRelativePath,
 			BlazorWebViewHandler blazorWebViewHandler
 		)
-			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 		{
 			if (services.GetService<MauiBlazorMarkerService>() is null)
 			{
