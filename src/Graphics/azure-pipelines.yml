@@ -128,10 +128,10 @@ stages:
                 PRIVATE_BUILD: $(PrivateBuild)
              
             - pwsh: |
+                [xml] $fileXml = Get-Content "eng\Versions.props"
+                $DotNetVersionBand = $fileXml.SelectSingleNode("Project/PropertyGroup/DotNetVersionBand").InnerText
                 Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-                # Fix sdk band version in Tizen script
-                ((Get-Content -path .\workload-install.ps1 -Raw) -replace "\`$ManifestBaseName-\`$DotnetVersionBand","`$ManifestBaseName-6.0.200") | Set-Content -Path .\workload-install.ps1
-                .\workload-install.ps1
+                .\workload-install.ps1 -DotnetTargetVersionBand $DotNetVersionBand
               displayName: install tizen
 
             - pwsh: |
