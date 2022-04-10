@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static bool UseGradients(this GradientDrawable gradientDrawable)
 		{
-			if (!PlatformVersion.IsAtLeast(24))
+			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
 				return false;
 
 			var colors = gradientDrawable.GetColors();

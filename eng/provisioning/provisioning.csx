@@ -100,16 +100,25 @@ string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS"
 if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 {
 	AndroidSdk()
+		.ApiLevel((AndroidApiLevel)21)
+		.ApiLevel((AndroidApiLevel)22)
+		.ApiLevel((AndroidApiLevel)23)
 		.ApiLevel((AndroidApiLevel)24)
 		.ApiLevel((AndroidApiLevel)28)
 		.ApiLevel((AndroidApiLevel)29)
 		.ApiLevel((AndroidApiLevel)30)
 		.ApiLevel((AndroidApiLevel)31)
-    	.VirtualDevice(
-        	"Android_API30",
-        	AndroidApiLevel.R,
-        	AndroidSystemImageApi.GooglePlayStore,
-        	AndroidSystemImageAbi.x86,
+		.VirtualDevice(
+			"Android_API23",
+			(AndroidApiLevel)23,
+			AndroidSystemImageApi.Google,
+			AndroidSystemImageAbi.x86,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API30",
+			AndroidApiLevel.R,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.x86,
 			AndroidVirtualDevice.NEXUS_5X)
 		.SdkManagerPackage ("build-tools;29.0.3");
 }

@@ -100,6 +100,11 @@ namespace Microsoft.Maui.Controls
 			{
 				_layout.SetValue(RadioButtonGroup.SelectedValueProperty, radioButton.Value);
 			}
+
+			if (object.Equals(radioButton.Value, this.SelectedValue))
+			{
+				radioButton.IsChecked = true;
+			}
 		}
 
 		void UpdateGroupName(Element element, string name, string oldName = null)
@@ -131,7 +136,7 @@ namespace Microsoft.Maui.Controls
 
 			if (radioButtonValue != null)
 			{
-				MessagingCenter.Send(_layout, RadioButtonGroup.GroupValueChangedMessage,
+				MessagingCenter.Send<Element, RadioButtonGroupValueChanged>(_layout, RadioButtonGroup.GroupValueChangedMessage,
 					new RadioButtonGroupValueChanged(_groupName, RadioButtonGroup.GetVisualRoot(_layout), radioButtonValue));
 			}
 		}
