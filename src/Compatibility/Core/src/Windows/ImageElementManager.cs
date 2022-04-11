@@ -1,12 +1,12 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using WStretch = Microsoft.UI.Xaml.Media.Stretch;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -15,11 +15,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		static bool _nativeAnimationSupport = false;
 		static ImageElementManager()
 		{
-			if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "AutoPlay"))
-				if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "IsPlaying"))
-					if (global::Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Play"))
-						if (global::Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Stop"))
-							_nativeAnimationSupport = true;
+			// Workaround https://github.com/microsoft/WindowsAppSDK/issues/2382.
+			// ApiInformation.IsPropertyPresent and IsMethodPresent will throw in an unpackaged app.
+			if (AppInfo.PackagingModel == AppPackagingModel.Unpackaged)
+			{
+				_nativeAnimationSupport = true;
+			}
+			else
+			{
+				if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "AutoPlay"))
+					if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "IsPlaying"))
+						if (global::Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Play"))
+							if (global::Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Stop"))
+								_nativeAnimationSupport = true;
+			}
 		}
 
 		public static void Init(IImageVisualElementRenderer renderer)

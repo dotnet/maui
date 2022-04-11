@@ -1,12 +1,8 @@
 ﻿#nullable enable
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.UI.Xaml;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation.Metadata;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
-using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui.Platform
 {
@@ -18,11 +14,20 @@ namespace Microsoft.Maui.Platform
 
 		static ImageViewExtensions()
 		{
-			IsAnimationSupported =
-				ApiInformation.IsPropertyPresent(BitmapImageTypeName, nameof(BitmapImage.IsAnimatedBitmap)) &&
-				ApiInformation.IsPropertyPresent(BitmapImageTypeName, nameof(BitmapImage.IsPlaying)) &&
-				ApiInformation.IsPropertyPresent(BitmapImageTypeName, nameof(BitmapImage.Play)) &&
-				ApiInformation.IsPropertyPresent(BitmapImageTypeName, nameof(BitmapImage.Stop));
+			// Workaround https://github.com/microsoft/WindowsAppSDK/issues/2382.
+			// ApiInformation.IsPropertyPresent and IsMethodPresent will throw in an unpackaged app.
+			if (AppInfo.PackagingModel == AppPackagingModel.Unpackaged)
+			{
+				IsAnimationSupported = true;
+			}
+			else
+			{
+				IsAnimationSupported =
+					ApiInformation.IsPropertyPresent(BitmapImageTypeName, nameof(BitmapImage.IsAnimatedBitmap)) &&
+					ApiInformation.IsPropertyPresent(BitmapImageTypeName, nameof(BitmapImage.IsPlaying)) &&
+					ApiInformation.IsMethodPresent(BitmapImageTypeName, nameof(BitmapImage.Play)) &&
+					ApiInformation.IsMethodPresent(BitmapImageTypeName, nameof(BitmapImage.Stop));
+			}
 		}
 
 		public static void Clear(this WImage imageView)
