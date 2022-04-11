@@ -69,8 +69,21 @@ namespace Maui.Controls.Sample.Pages
 				var pos = args.GetCurrentPoint(null);
 				HandlePointerMoved(pos.Position.X, pos.Position.Y);
 			}
+#else
+			RectangleSelectionCheckBox.IsEnabled = false;
+			_overlay.Tapped += DoHandleOverlayTapped;
+
+			void DoHandleOverlayTapped(object sender, WindowOverlayTappedEventArgs e)
+			{
+				var p = e.Point;
+				Debug.Print($"{sender.GetType().Name} tapped! ({p.X};{p.Y})");
+				_tappedWithoutMove = false; // No mouse move on iOS/Android
+				HandleTapped(p.X, p.Y);
+			}
 #endif
 		}
+
+		
 
 		private void ContentPage_Unloaded(object sender, EventArgs e)
 		{

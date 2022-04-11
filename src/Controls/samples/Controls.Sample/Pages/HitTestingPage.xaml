@@ -10,7 +10,7 @@
 
             <Label x:Name="SelectionLabel" Text="Selected: -" HorizontalOptions="Center" />
             <HorizontalStackLayout>
-                <Label Text="Rectangle Selection" VerticalOptions="Center" />
+                <Label Text="Rectangle Selection" VerticalOptions="Center" FontSize="8" />
                 <CheckBox x:Name="RectangleSelectionCheckBox" CheckedChanged="RectangleSelectionCheckBox_CheckedChanged" />
             </HorizontalStackLayout>
 
@@ -27,8 +27,8 @@
             <Image
                 Source="dotnet_bot.png"
                 SemanticProperties.Description="Cute dot net bot waving hi to you!"
-                WidthRequest="250"
-                HeightRequest="310"
+                WidthRequest="125"
+                HeightRequest="155"
                 HorizontalOptions="Center" />
 
         </VerticalStackLayout>
