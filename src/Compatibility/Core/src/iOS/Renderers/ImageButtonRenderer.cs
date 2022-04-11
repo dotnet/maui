@@ -92,6 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void UpdatePadding(UIButton button = null)
 		{
 			var uiElement = button ?? Control;

@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Networking
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
-	public partial class ConnectivityImplementation : IConnectivity
+	partial class ConnectivityImplementation : IConnectivity
 	{
 		public NetworkAccess NetworkAccess =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
@@ -11,10 +12,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public IEnumerable<ConnectionProfile> ConnectionProfiles =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void StartListeners() =>
+		void StartListeners() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public void StopListeners() =>
+		void StopListeners() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

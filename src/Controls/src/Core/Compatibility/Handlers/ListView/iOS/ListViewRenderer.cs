@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -228,6 +228,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 					_tableViewController = new FormsUITableViewController(e.NewElement, _usingLargeTitles);
 					SetNativeControl(_tableViewController.TableView);
+					
+					if (PlatformVersion.IsAtLeast(15))
+						_tableViewController.TableView.SectionHeaderTopPadding = new nfloat(0);
 
 					_backgroundUIView = _tableViewController.TableView.BackgroundView;
 

@@ -1,9 +1,9 @@
 using Tizen.Sensor;
 using TizenGyroscope = Tizen.Sensor.Gyroscope;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class GyroscopeImplementation : IGyroscope
+	class GyroscopeImplementation : IGyroscope
 	{
 		static TizenGyroscope DefaultSensor =>
 			(TizenGyroscope)Platform.GetDefaultSensor(SensorType.Gyroscope);
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		TizenGyroscope sensor;
 
-		public void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			sensor = DefaultSensor;
 			sensor.Interval = sensorSpeed.ToPlatform();
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			sensor.Start();
 		}
 
-		public void PlatformStop()
+		void PlatformStop()
 		{
 			sensor.DataUpdated -= DataUpdated;
 			sensor.Stop();

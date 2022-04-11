@@ -1,3 +1,4 @@
+using System;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Text;
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var newText = label.Text ?? string.Empty;
 
-			if (PlatformVersion.IsAtLeast(24))
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				textView.SetText(Html.FromHtml(newText, FromHtmlOptions.ModeCompact), BufferType.Spannable);
 			else
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -73,22 +74,13 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateLineBreakMode(this TextView textView, ILabel label)
 		{
-			textView.SetLineBreakMode(label);
+			textView.SetLineBreakMode(label, label.MaxLines);
 		}
 
 		public static void UpdateMaxLines(this TextView textView, ILabel label)
 		{
-			var maxLines = label.MaxLines;
-
-			if (maxLines == -1) // Default value
-			{
-				// MaxLines is not explicitly set, so just let it be whatever gets set by LineBreakMode
-				textView.SetLineBreakMode(label);
-				return;
-			}
-
-			textView.SetSingleLine(maxLines == 1);
-			textView.SetMaxLines(maxLines);
+			// Linebreak mode also handles settng MaxLines
+			textView.SetLineBreakMode(label);
 		}
 
 		public static void UpdatePadding(this TextView textView, ILabel label)
@@ -124,21 +116,20 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFlowDirection(this TextView platformView, IView view)
 		{
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			switch (view.FlowDirection)
 			{
-				platformView.LayoutDirection = ALayoutDirection.Inherit;
-				platformView.TextDirection = ATextDirection.Inherit;
-			}
-			else if (view.FlowDirection == FlowDirection.RightToLeft)
-			{
-				platformView.LayoutDirection = ALayoutDirection.Rtl;
-				platformView.TextDirection = ATextDirection.Rtl;
-			}
-			else if (view.FlowDirection == FlowDirection.LeftToRight)
-			{
-				platformView.LayoutDirection = ALayoutDirection.Ltr;
-				platformView.TextDirection = ATextDirection.Ltr;
+				case FlowDirection.MatchParent:
+					platformView.LayoutDirection = ALayoutDirection.Inherit;
+					platformView.TextDirection = ATextDirection.Inherit;
+					break;
+				case FlowDirection.RightToLeft:
+					platformView.LayoutDirection = ALayoutDirection.Rtl;
+					platformView.TextDirection = ATextDirection.Rtl;
+					break;
+				case FlowDirection.LeftToRight:
+					platformView.LayoutDirection = ALayoutDirection.Ltr;
+					platformView.TextDirection = ATextDirection.Ltr;
+					break;
 			}
 		}
 
@@ -147,23 +138,24 @@ namespace Microsoft.Maui.Platform
 			if (label.LineHeight >= 0)
 				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
-
-		internal static void SetLineBreakMode(this TextView textView, ILabel label)
+			
+		internal static void SetLineBreakMode(this TextView textView, ILineBreakMode breakMode, int? maxLines = null)
 		{
-			var lineBreakMode = label.LineBreakMode;
+			var lineBreakMode = breakMode.LineBreakMode;
 
-			int maxLines = label.MaxLines;
+			if (breakMode is ILabel label)
+				maxLines = label.MaxLines;
 
-			if (maxLines <= 0)
+			if (!maxLines.HasValue || maxLines <= 0)
 				maxLines = int.MaxValue;
 
 			bool singleLine = false;
+			bool shouldSetSingleLine = !OperatingSystem.IsAndroidVersionAtLeast(23); 
 
 			switch (lineBreakMode)
 			{
 				case LineBreakMode.NoWrap:
 					maxLines = 1;
-					singleLine = true;
 					textView.Ellipsize = null;
 					break;
 				case LineBreakMode.WordWrap:
@@ -173,24 +165,37 @@ namespace Microsoft.Maui.Platform
 					textView.Ellipsize = null;
 					break;
 				case LineBreakMode.HeadTruncation:
-					maxLines = 1;
-					singleLine = true; // Workaround for bug in older Android API versions (https://bugzilla.xamarin.com/show_bug.cgi?id=49069)
+					maxLines = 1; // If maxLines is anything greater than 1, the truncation will be ignored: https://developer.android.com/reference/android/widget/TextView#setEllipsize(android.text.TextUtils.TruncateAt)
+
+					if (shouldSetSingleLine) 
+					{
+						singleLine = true; // Workaround for bug in older Android API versions (https://issuetracker.google.com/issues/36950033) (https://bugzilla.xamarin.com/show_bug.cgi?id=49069)
+					}
+
 					textView.Ellipsize = TextUtils.TruncateAt.Start;
 					break;
 				case LineBreakMode.TailTruncation:
-					maxLines = 1;
-					singleLine = true;
+
+					// Leaving this in for now to preserve existing behavior
+					// Technically, we don't _need_ this for Labels; they will handle Ellipsization at the end just fine, even with multiple lines
+					// But we don't have a mechanism for setting MaxLines on other controls (e.g., Button) right now, so we need to force it here or
+					// they will potentially exceed a single line. Also, changing this behavior the for Labels would technically be breaking (though
+					// possibly less surprising than what happens currently).
+					maxLines = 1; 
 					textView.Ellipsize = TextUtils.TruncateAt.End;
 					break;
 				case LineBreakMode.MiddleTruncation:
-					maxLines = 1;
-					singleLine = true; // Workaround for bug in older Android API versions (https://bugzilla.xamarin.com/show_bug.cgi?id=49069)
+					maxLines = 1; // If maxLines is anything greater than 1, the truncation will be ignored: https://developer.android.com/reference/android/widget/TextView#setEllipsize(android.text.TextUtils.TruncateAt)
 					textView.Ellipsize = TextUtils.TruncateAt.Middle;
 					break;
 			}
 
-			textView.SetSingleLine(singleLine);
-			textView.SetMaxLines(maxLines);
+			if (shouldSetSingleLine) // Save ourselves this trip across the bridge if we're on an API level that doesn't need it
+			{
+				textView.SetSingleLine(singleLine);
+			}
+
+			textView.SetMaxLines(maxLines.Value);
 		}
 	}
 }

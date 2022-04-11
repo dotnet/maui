@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
+using System.Reflection;
 #elif WEBVIEW2_WPF
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
@@ -29,6 +30,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
+using System.Reflection;
 #elif WEBVIEW2_MAUI
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,12 +59,16 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// </summary>
 		protected static readonly string AppOrigin = $"https://{AppHostAddress}/";
 
+		private static readonly Uri AppOriginUri = new(AppOrigin);
+
 		private readonly WebView2Control _webview;
 		private readonly Task _webviewReadyTask;
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment _coreWebView2Environment;
-		private readonly Action<ExternalLinkNavigationEventArgs> _externalNavigationStarting;
+		private readonly Action<UrlLoadingEventArgs> _urlLoading;
+		private readonly Action<BlazorWebViewInitializingEventArgs> _blazorWebViewInitializing;
+		private readonly Action<BlazorWebViewInitializedEventArgs> _blazorWebViewInitialized;
 		private readonly BlazorWebViewDeveloperTools _developerTools;
 
 		/// <summary>
@@ -74,16 +80,20 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-		/// <param name="externalNavigationStarting">Callback invoked when external navigation starts.</param>
-		public WebView2WebViewManager(
+		/// <param name="urlLoading">Callback invoked when a url is about to load.</param>
+		/// <param name="blazorWebViewInitializing">Callback invoked before the webview is initialized.</param>
+		/// <param name="blazorWebViewInitialized">Callback invoked after the webview is initialized.</param>
+		internal WebView2WebViewManager(
 			WebView2Control webview!!,
 			IServiceProvider services,
 			Dispatcher dispatcher,
 			IFileProvider fileProvider,
 			JSComponentConfigurationStore jsComponents,
 			string hostPageRelativePath,
-			Action<ExternalLinkNavigationEventArgs> externalNavigationStarting)
-			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+			Action<UrlLoadingEventArgs> urlLoading,
+			Action<BlazorWebViewInitializingEventArgs> blazorWebViewInitializing,
+			Action<BlazorWebViewInitializedEventArgs> blazorWebViewInitialized)
+			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 
 		{
 #if WEBVIEW2_WINFORMS
@@ -103,7 +113,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #endif
 
 			_webview = webview;
-			_externalNavigationStarting = externalNavigationStarting;
+			_urlLoading = urlLoading;
+			_blazorWebViewInitializing = blazorWebViewInitializing;
+			_blazorWebViewInitialized = blazorWebViewInitialized;
 			_developerTools = services.GetRequiredService<BlazorWebViewDeveloperTools>();
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
@@ -125,7 +137,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="blazorWebViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
-		public WebView2WebViewManager(
+		internal WebView2WebViewManager(
 			WebView2Control webview!!,
 			IServiceProvider services,
 			Dispatcher dispatcher,
@@ -169,19 +181,45 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		private async Task InitializeWebView2()
 		{
-			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync()
+			var args = new BlazorWebViewInitializingEventArgs();
 #if WEBVIEW2_MAUI
+			((BlazorWebView)_blazorWebViewHandler.VirtualView).NotifyBlazorWebViewInitializing(args);
+			_coreWebView2Environment = await CoreWebView2Environment.CreateWithOptionsAsync(
+				browserExecutableFolder: args.BrowserExecutableFolder,
+				userDataFolder: args.UserDataFolder,
+				options: args.EnvironmentOptions)
 				.AsTask()
-#endif
 				.ConfigureAwait(true);
 			await _webview.EnsureCoreWebView2Async();
 
-#if WEBVIEW2_MAUI
-            var developerTools = _blazorWebViewHandler.DeveloperTools;
+			var developerTools = _blazorWebViewHandler.DeveloperTools;
 #elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+			_blazorWebViewInitializing?.Invoke(args);
+			var userDataFolder = args.UserDataFolder ?? GetWebView2UserDataFolder();
+			_coreWebView2Environment = await CoreWebView2Environment.CreateAsync(
+				browserExecutableFolder: args.BrowserExecutableFolder,
+				userDataFolder: userDataFolder,
+				options: args.EnvironmentOptions)
+				.ConfigureAwait(true);
+
+			await _webview.EnsureCoreWebView2Async(_coreWebView2Environment);
+
 			var developerTools = _developerTools;
 #endif
+
 			ApplyDefaultWebViewSettings(developerTools);
+
+#if WEBVIEW2_MAUI
+			((BlazorWebView)_blazorWebViewHandler.VirtualView).NotifyBlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
+			{
+				WebView = _webview,
+			});
+#elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+			_blazorWebViewInitialized?.Invoke(new BlazorWebViewInitializedEventArgs
+			{
+				WebView = _webview,
+			});
+#endif
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
 
@@ -252,22 +290,22 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		private void CoreWebView2_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
 		{
-			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri) && uri.Host != AppHostAddress)
+			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
 			{
-				var callbackArgs = new ExternalLinkNavigationEventArgs(uri);
+				var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, AppOriginUri);
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-				_externalNavigationStarting?.Invoke(callbackArgs);
+				_urlLoading?.Invoke(callbackArgs);
 #elif WEBVIEW2_MAUI
-				_blazorWebViewHandler.ExternalNavigationStarting?.Invoke(callbackArgs);
+				_blazorWebViewHandler.UrlLoading?.Invoke(callbackArgs);
 #endif
 
-				if (callbackArgs.ExternalLinkNavigationPolicy == ExternalLinkNavigationPolicy.OpenInExternalBrowser)
+				if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
 				{
 					LaunchUriInExternalBrowser(uri);
 				}
 
-				args.Cancel = callbackArgs.ExternalLinkNavigationPolicy != ExternalLinkNavigationPolicy.InsecureOpenInWebView;
+				args.Cancel = callbackArgs.UrlLoadingStrategy != UrlLoadingStrategy.OpenInWebView;
 			}
 		}
 
@@ -309,6 +347,26 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			// Desktop applications almost never want to show a URL preview when hovering over a link
 			_webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
 		}
+
+#if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+		private static string GetWebView2UserDataFolder()
+		{
+			if (Assembly.GetEntryAssembly() is { } mainAssembly)
+			{
+				// In case the application is running from a non-writable location (e.g., program files if you're not running
+				// elevated), use our own convention of %LocalAppData%\YourApplicationName.WebView2.
+				// We may be able to remove this if https://github.com/MicrosoftEdge/WebView2Feedback/issues/297 is fixed.
+				var applicationName = mainAssembly.GetName().Name;
+				var result = Path.Combine(
+					Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+					$"{applicationName}.WebView2");
+
+				return result;
+			}
+
+			return null;
+		}
+#endif
 	}
 }
 

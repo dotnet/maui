@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using CoreLocation;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{

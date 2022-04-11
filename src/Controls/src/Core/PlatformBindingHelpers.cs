@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Internals
 		static BindableProperty CreateBindableProperty<TPlatformView>(string targetProperty, Type propertyType = null, object defaultValue = null) where TPlatformView : class
 		{
 			propertyType = propertyType ?? typeof(object);
-			defaultValue = defaultValue ?? (propertyType.GetTypeInfo().IsValueType ? Activator.CreateInstance(propertyType) : null);
+			defaultValue = defaultValue ?? (propertyType.IsValueType ? Activator.CreateInstance(propertyType) : null);
 			return BindableProperty.Create(
 				targetProperty,
 				propertyType,

@@ -1,49 +1,37 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Text;
-using Android.Webkit;
+using Microsoft.Maui.Storage;
 using Uri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public partial class EmailImplementation : IEmail
+	partial class EmailImplementation : IEmail
 	{
 		static EmailMessage testEmail =>
-			new ("Testing Microsoft.Maui.Essentials", "This is a test email.", "Microsoft.Maui.Essentials@example.org");
+			new("Testing Microsoft.Maui.Essentials", "This is a test email.", "Microsoft.Maui.Essentials@example.org");
 
 		public bool IsComposeSupported
-			=> Platform.IsIntentSupported(CreateIntent(testEmail));
+			=> PlatformUtils.IsIntentSupported(CreateIntent(testEmail));
 
-		public Task ComposeAsync(EmailMessage message)
+		Task PlatformComposeAsync(EmailMessage message)
 		{
 			var intent = CreateIntent(message);
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 #if __ANDROID_24__
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			intent.SetFlags(flags);
 
-			Platform.AppContext.StartActivity(intent);
+			Application.Context.StartActivity(intent);
 
 			return Task.FromResult(true);
 		}
-
-		public Task ComposeAsync(string subject, string body, params string[] to)
-			=> ComposeAsync(
-				new EmailMessage()
-				{
-					Subject = subject,
-					Body = body,
-					To = to.ToList()
-				});
-
-		public Task ComposeAsync()
-			=> ComposeAsync(null);
 
 		static Intent CreateIntent(EmailMessage message)
 		{
@@ -58,7 +46,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			if (action == Intent.ActionSendto)
 				intent.SetData(Uri.Parse("mailto:"));
 			else
-				intent.SetType(FileSystem.MimeTypes.EmailMessage);
+				intent.SetType(FileMimeTypes.EmailMessage);
 
 			if (!string.IsNullOrEmpty(message?.Body))
 			{
@@ -66,7 +54,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				{
 					ISpanned html;
 #if __ANDROID_24__
-					if (Platform.HasApiLevelN)
+					if (OperatingSystem.IsAndroidVersionAtLeast(24))
 					{
 						html = Html.FromHtml(message.Body, FromHtmlOptions.ModeLegacy);
 					}
@@ -98,7 +86,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				var uris = new List<IParcelable>();
 				foreach (var attachment in message.Attachments)
 				{
-					uris.Add(Platform.GetShareableFileUri(attachment));
+					uris.Add(FileSystemUtils.GetShareableFileUri(attachment));
 				}
 
 				if (uris.Count > 1)

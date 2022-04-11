@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			handler.ToPlatform().UpdateBackground(image);
+			handler.ToPlatform().UpdateOpacity(image);
 		}
 
 		public static void MapAspect(IImageHandler handler, IImage image) =>
@@ -44,6 +45,25 @@ namespace Microsoft.Maui.Handlers
 		void OnSetImageSource(Drawable? obj)
 		{
 			PlatformView.SetImageDrawable(obj);
+		}
+
+		public override void PlatformArrange(Graphics.Rect frame)
+		{
+			if (PlatformView.GetScaleType() == ImageView.ScaleType.CenterCrop)
+			{
+				// If the image is center cropped (AspectFill), then the size of the image likely exceeds
+				// the view size in some dimension. So we need to clip to the to the view's bounds.
+
+				var (left, top, right, bottom) = PlatformView.Context!.ToPixels(frame);
+				var clipRect = new Android.Graphics.Rect(left, top, right, bottom);
+				PlatformView.ClipBounds = clipRect;
+			}
+			else
+			{
+				PlatformView.ClipBounds = null;
+			}
+
+			base.PlatformArrange(frame);
 		}
 	}
 }

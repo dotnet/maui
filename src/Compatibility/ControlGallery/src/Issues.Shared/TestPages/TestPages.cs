@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		public static void NavigateToIssue(Type type, IApp app)
 		{
-			var typeIssueAttribute = type.GetTypeInfo().GetCustomAttribute<IssueAttribute>();
+			var typeIssueAttribute = type.GetCustomAttribute<IssueAttribute>();
 
 			string cellName = "";
 			if (typeIssueAttribute.IssueTracker.ToString() != "None" &&

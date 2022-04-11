@@ -16,14 +16,31 @@ namespace Microsoft.Maui
 		public ILogger? Logger { get; }
 
 #if __ANDROID__
-		public abstract Task<IImageSourceServiceResult?> LoadDrawableAsync(
+		public virtual async Task<IImageSourceServiceResult?> LoadDrawableAsync(
 			IImageSource imageSource,
 			Android.Widget.ImageView imageView,
-			CancellationToken cancellationToken = default);
+			CancellationToken cancellationToken = default)
+		{
+			var realResult = await GetDrawableAsync(imageSource, imageView.Context!, cancellationToken);
+
+			if (realResult is null)
+			{
+				imageView.SetImageDrawable(null);
+				return null;
+			}
+
+			imageView.SetImageDrawable(realResult.Value);
+
+			var result = new ImageSourceServiceLoadResult(
+				realResult.IsResolutionDependent,
+				() => realResult.Dispose());
+
+			return result;
+		}
 
 		public abstract Task<IImageSourceServiceResult<Android.Graphics.Drawables.Drawable>?> GetDrawableAsync(
-			Android.Content.Context context,
 			IImageSource imageSource,
+			Android.Content.Context context,
 			CancellationToken cancellationToken = default);
 #elif __IOS__
 		public abstract Task<IImageSourceServiceResult<UIKit.UIImage>?> GetImageAsync(

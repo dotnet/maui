@@ -18,7 +18,6 @@ using AndroidX.Core.Content;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
-using Microsoft.Maui.Controls.DualScreen.Android;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;

@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	static class SensorSpeedExtensions
 	{

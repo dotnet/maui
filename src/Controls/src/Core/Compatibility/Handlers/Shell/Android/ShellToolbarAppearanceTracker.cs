@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		bool _disposed;
 		IShellContext _shellContext;
-		int _titleTextColor = -1;
 
 		public ShellToolbarAppearanceTracker(IShellContext shellContext)
 		{
@@ -34,25 +33,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
 		{
-			var titleArgb = title.ToPlatform(ShellRenderer.DefaultTitleColor).ToArgb();
-
-			if (_titleTextColor != titleArgb)
-			{
-				toolbar.SetTitleTextColor(titleArgb);
-				_titleTextColor = titleArgb;
-			}
-
-			var newColor = background.ToPlatform(ShellRenderer.DefaultBackgroundColor);
-			if (!(toolbar.Background is ColorDrawable cd) || cd.Color != newColor)
-			{
-				using (var colorDrawable = new ColorDrawable(background.ToPlatform(ShellRenderer.DefaultBackgroundColor)))
-					toolbar.SetBackground(colorDrawable);
-			}
-
-			var newTintColor = foreground ?? ShellRenderer.DefaultForegroundColor;
-
-			if (toolbarTracker.TintColor != newTintColor)
-				toolbarTracker.TintColor = newTintColor;
+			_shellContext.Shell.Toolbar.BarTextColor = title ?? ShellRenderer.DefaultTitleColor;
+			_shellContext.Shell.Toolbar.BarBackground = new SolidColorBrush(background ?? ShellRenderer.DefaultBackgroundColor);
+			_shellContext.Shell.Toolbar.IconColor = foreground ?? ShellRenderer.DefaultForegroundColor;
 		}
 
 		#region IDisposable

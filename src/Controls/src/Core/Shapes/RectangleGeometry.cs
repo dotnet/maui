@@ -1,4 +1,6 @@
+using Microsoft.Maui.Devices;
 using Rect = Microsoft.Maui.Graphics.Rect;
+
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RectangleGeometry.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.RectangleGeometry']/Docs" />
@@ -32,7 +34,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			double density = 1.0d;
 #if ANDROID
-			density = Essentials.DeviceDisplay.MainDisplayInfo.Density;
+			density = DeviceDisplay.MainDisplayInfo.Density;
 #endif
 			float x = (float)(density * Rect.X);
 			float y = (float)(density * Rect.Y);
