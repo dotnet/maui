@@ -206,7 +206,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory(DisplayName = "Negative MaxLines value with wrap is correct")]
 #if __IOS__
 		[InlineData(0)]
-#elif __ANDROID__
+#else 
 		[InlineData(int.MaxValue)]
 #endif
 		public async Task NegativeMaxValueWithWrapIsCorrect(int expectedLines)

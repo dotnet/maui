@@ -10,6 +10,11 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class TextBlockExtensions
 	{
+		public static void UpdateLineBreakMode(this TextBlock textBlock, Label label)
+		{
+			textBlock.UpdateLineBreakMode(label.LineBreakMode);
+		}
+
 		public static void UpdateLineBreakMode(this TextBlock textBlock, LineBreakMode lineBreakMode)
 		{
 			if (textBlock == null)
