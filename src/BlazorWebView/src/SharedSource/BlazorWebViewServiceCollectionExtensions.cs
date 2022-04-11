@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.DependencyInjection
 #endif
 
 #if WEBVIEW2_MAUI
-			return new MauiBlazorWebViewBuilder();
+			return new MauiBlazorWebViewBuilder(services);
 #elif WEBVIEW2_WINFORMS
 			return services;
 #elif WEBVIEW2_WPF
@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection
 			services.AddSingleton<BlazorWebViewDeveloperTools>(new BlazorWebViewDeveloperTools { Enabled = true });
 
 #if WEBVIEW2_MAUI
-			return new MauiBlazorWebViewBuilder();
+			return new MauiBlazorWebViewBuilder(services);
 #elif WEBVIEW2_WINFORMS
 			return services;
 #elif WEBVIEW2_WPF

@@ -23,6 +23,7 @@ Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.JSComponents.get -> 
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.RootComponents.get -> Microsoft.AspNetCore.Components.WebView.Maui.RootComponentsCollection!
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.UrlLoading -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs!>?
 Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder
+Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.ComponentType.get -> System.Type?
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.ComponentType.set -> void
