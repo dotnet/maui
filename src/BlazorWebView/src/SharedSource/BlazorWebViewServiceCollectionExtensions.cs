@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
 #elif WEBVIEW2_WPF
 		public static IServiceCollection AddWpfBlazorWebView(this IServiceCollection services)
 #elif WEBVIEW2_MAUI
-		public static IServiceCollection AddMauiBlazorWebView(this IServiceCollection services)
+		public static IMauiBlazorWebViewBuilder AddMauiBlazorWebView(this IServiceCollection services)
 #else
 #error Must define WEBVIEW2_WINFORMS, WEBVIEW2_WPF, WEBVIEW2_MAUI
 #endif
@@ -44,7 +44,14 @@ namespace Microsoft.Extensions.DependencyInjection
 #elif WEBVIEW2_WPF
 			services.TryAddSingleton<WpfBlazorMarkerService>();
 #endif
+
+#if WEBVIEW2_MAUI
+			return new MauiBlazorWebViewBuilder();
+#elif WEBVIEW2_WINFORMS
 			return services;
+#elif WEBVIEW2_WPF
+			return services;
+#endif
 		}
 
 		/// <summary>
@@ -52,9 +59,25 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// </summary>
 		/// <param name="services">The <see cref="IServiceCollection"/>.</param>
 		/// <returns>The <see cref="IServiceCollection"/>.</returns>
+#if WEBVIEW2_WINFORMS
 		public static IServiceCollection AddBlazorWebViewDeveloperTools(this IServiceCollection services)
+#elif WEBVIEW2_WPF
+		public static IServiceCollection AddBlazorWebViewDeveloperTools(this IServiceCollection services)
+#elif WEBVIEW2_MAUI
+		public static IMauiBlazorWebViewBuilder AddBlazorWebViewDeveloperTools(this IServiceCollection services)
+#else
+#error Must define WEBVIEW2_WINFORMS, WEBVIEW2_WPF, WEBVIEW2_MAUI
+#endif
 		{
-			return services.AddSingleton<BlazorWebViewDeveloperTools>(new BlazorWebViewDeveloperTools { Enabled = true });
+			services.AddSingleton<BlazorWebViewDeveloperTools>(new BlazorWebViewDeveloperTools { Enabled = true });
+
+#if WEBVIEW2_MAUI
+			return new MauiBlazorWebViewBuilder();
+#elif WEBVIEW2_WINFORMS
+			return services;
+#elif WEBVIEW2_WPF
+			return services;
+#endif
 		}
 	}
 }
