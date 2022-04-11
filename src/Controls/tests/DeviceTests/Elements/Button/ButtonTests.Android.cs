@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).Text);
 		}
 
-		TextUtils.TruncateAt? GetNativeLineBreakMode(ButtonHandler buttonHandler) =>
+		TextUtils.TruncateAt? GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
 			GetPlatformButton(buttonHandler).Ellipsize;
 	}
 }
