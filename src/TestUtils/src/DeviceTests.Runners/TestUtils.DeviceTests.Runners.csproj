@@ -1,9 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.props" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.props" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" />
-
   <PropertyGroup>
     <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatformsNoMacCat)</TargetFrameworks>
     <SingleProject>true</SingleProject>
@@ -41,10 +37,7 @@
     </Compile>
   </ItemGroup>
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.targets" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.targets" />
-
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
 
 </Project>
