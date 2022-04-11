@@ -64,6 +64,12 @@
         NewValue="$(PackageReferenceVersion)"
     />
     <ReplaceText
+        Input="$(IntermediateOutputPath)WorkloadManifest.json"
+        Output="$(IntermediateOutputPath)WorkloadManifest.json"
+        OldValue="@MAUI_GRAPHICS_VERSION@"
+        NewValue="$(MicrosoftMauiGraphicsVersion)"
+    />
+    <ReplaceText
         Input="%(_JsonVariableMatrix.OutputPath)"
         Output="%(_JsonVariableMatrix.OutputPath)"
         OldValue="%(_JsonVariableMatrix.OldValue)"

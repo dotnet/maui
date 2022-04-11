@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using CoreLocation;
 using Foundation;
+using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
@@ -186,9 +187,9 @@ namespace Microsoft.Maui.Essentials
 						}
 
 						del.AuthorizationStatusChanged -= LocationAuthCallback;
-						tcs.TrySetResult(GetLocationStatus(whenInUse));
 						locationManager?.Dispose();
 						locationManager = null;
+						tcs.TrySetResult(GetLocationStatus(whenInUse));
 					}
 					catch (Exception ex)
 					{

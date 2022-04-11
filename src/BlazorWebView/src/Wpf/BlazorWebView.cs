@@ -51,12 +51,29 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			typeMetadata: new PropertyMetadata(OnServicesPropertyChanged));
 
 		/// <summary>
-		/// The backing store for the <see cref="ExternalNavigationStarting"/> property.
+		/// The backing store for the <see cref="UrlLoading"/> property.
 		/// </summary>
-		public static readonly DependencyProperty ExternalNavigationStartingProperty = DependencyProperty.Register(
-			name: nameof(ExternalNavigationStarting),
-			propertyType: typeof(EventHandler<ExternalLinkNavigationEventArgs>),
+		public static readonly DependencyProperty UrlLoadingProperty = DependencyProperty.Register(
+			name: nameof(UrlLoading),
+			propertyType: typeof(EventHandler<UrlLoadingEventArgs>),
 			ownerType: typeof(BlazorWebView));
+
+		/// <summary>
+		/// The backing store for the <see cref="BlazorWebViewInitializing"/> event.
+		/// </summary>
+		public static readonly DependencyProperty BlazorWebViewInitializingProperty = DependencyProperty.Register(
+			name: nameof(BlazorWebViewInitializing),
+			propertyType: typeof(EventHandler<BlazorWebViewInitializingEventArgs>),
+			ownerType: typeof(BlazorWebView));
+
+		/// <summary>
+		/// The backing store for the <see cref="BlazorWebViewInitialized"/> event.
+		/// </summary>
+		public static readonly DependencyProperty BlazorWebViewInitializedProperty = DependencyProperty.Register(
+			name: nameof(BlazorWebViewInitialized),
+			propertyType: typeof(EventHandler<BlazorWebViewInitializedEventArgs>),
+			ownerType: typeof(BlazorWebView));
+
 		#endregion
 
 		private const string WebViewTemplateChildName = "WebView";
@@ -108,13 +125,31 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			(RootComponentsCollection)GetValue(RootComponentsProperty);
 
 		/// <summary>
-		/// Allows customizing how external links are opened.
-		/// Opens external links in the system browser by default.
+		/// Allows customizing how links are opened.
+		/// By default, opens internal links in the webview and external links in an external app.
 		/// </summary>
-		public EventHandler<ExternalLinkNavigationEventArgs> ExternalNavigationStarting
+		public EventHandler<UrlLoadingEventArgs> UrlLoading
 		{
-			get => (EventHandler<ExternalLinkNavigationEventArgs>)GetValue(ExternalNavigationStartingProperty);
-			set => SetValue(ExternalNavigationStartingProperty, value);
+			get => (EventHandler<UrlLoadingEventArgs>)GetValue(UrlLoadingProperty);
+			set => SetValue(UrlLoadingProperty, value);
+		}
+
+		/// <summary>
+		/// Allows customizing the web view before it is created.
+		/// </summary>
+		public EventHandler<BlazorWebViewInitializingEventArgs> BlazorWebViewInitializing
+		{
+			get => (EventHandler<BlazorWebViewInitializingEventArgs>)GetValue(BlazorWebViewInitializingProperty);
+			set => SetValue(BlazorWebViewInitializingProperty, value);
+		}
+
+		/// <summary>
+		/// Allows customizing the web view after it is created.
+		/// </summary>
+		public EventHandler<BlazorWebViewInitializedEventArgs> BlazorWebViewInitialized
+		{
+			get => (EventHandler<BlazorWebViewInitializedEventArgs>)GetValue(BlazorWebViewInitializedProperty);
+			set => SetValue(BlazorWebViewInitializedProperty, value);
 		}
 
 		/// <summary>
@@ -197,7 +232,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				fileProvider,
 				RootComponents.JSComponents,
 				hostPageRelativePath,
-				(args) => ExternalNavigationStarting?.Invoke(this, args));
+				(args) => UrlLoading?.Invoke(this, args),
+				(args) => BlazorWebViewInitializing?.Invoke(this, args),
+				(args) => BlazorWebViewInitialized?.Invoke(this, args));
 
 			foreach (var rootComponent in RootComponents)
 			{

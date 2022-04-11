@@ -99,7 +99,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var root = PlatformInterop.CreateShellCoordinatorLayout(context);
 			var appbar = PlatformInterop.CreateShellAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
 			int actionBarHeight = context.GetActionBarHeight();
-			_toolbar = PlatformInterop.CreateShellToolbar(context, appbar, actionBarHeight, Resource.Style.ThemeOverlay_AppCompat_Light);
+
+			var shellToolbar = new Toolbar(shellSection);
+			ShellToolbarTracker.ApplyToolbarChanges(_shellContext.Shell.Toolbar, shellToolbar);
+			_toolbar = (AToolbar)shellToolbar.ToPlatform(_shellContext.Shell.FindMauiContext());
+			appbar.AddView(_toolbar);
 			_tablayout = PlatformInterop.CreateShellTabLayout(context, appbar, actionBarHeight);
 
 			var pagerContext = MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
@@ -123,6 +127,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
+			_toolbarTracker.SetToolbar(shellToolbar);
 			_toolbarTracker.Page = currentPage;
 
 			_viewPager.CurrentItem = currentIndex;
@@ -165,6 +170,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_rootView != null)
 			{
 				UnhookEvents();
+
+				_shellContext?.Shell?.Toolbar?.Handler?.DisconnectHandler();
 
 				//_viewPager.RemoveOnPageChangeListener(this);
 				var adapter = _viewPager.Adapter;

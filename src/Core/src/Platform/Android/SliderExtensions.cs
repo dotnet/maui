@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Platform
 			if (thumbImageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
-				var result = await service.GetDrawableAsync(context, thumbImageSource);
+				var result = await service.GetDrawableAsync(thumbImageSource, context);
 
 				var thumbDrawable = result?.Value;
 

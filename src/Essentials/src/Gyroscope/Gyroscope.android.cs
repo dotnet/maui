@@ -1,32 +1,41 @@
+#nullable enable
 using System;
+using Android.App;
+using Android.Content;
 using Android.Hardware;
-using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class GyroscopeImplementation : IGyroscope
+	partial class GyroscopeImplementation : IGyroscope
 	{
-		bool PlatformIsSupported =>
-			   Platform.SensorManager?.GetDefaultSensor(SensorType.Gyroscope) != null;
+		static SensorManager? _sensorManager;
+		static Sensor? gyroscope;
 
-		GyroscopeListener listener;
-		Sensor gyroscope;
+		static SensorManager? SensorManager =>
+			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
+
+		static Sensor? Sensor =>
+			gyroscope ??= SensorManager?.GetDefaultSensor(SensorType.Gyroscope);
+
+		bool PlatformIsSupported =>
+			Sensor is not null;
+
+		GyroscopeListener? listener;
 
 		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var delay = sensorSpeed.ToPlatform();
 
 			listener = new GyroscopeListener(RaiseReadingChanged);
-			gyroscope = Platform.SensorManager.GetDefaultSensor(SensorType.Gyroscope);
-			Platform.SensorManager.RegisterListener(listener, gyroscope, delay);
+			SensorManager!.RegisterListener(listener, Sensor, delay);
 		}
 
 		void PlatformStop()
 		{
-			if (listener == null || gyroscope == null)
+			if (listener == null || Sensor == null)
 				return;
 
-			Platform.SensorManager.UnregisterListener(listener, gyroscope);
+			SensorManager!.UnregisterListener(listener, Sensor);
 			listener.Dispose();
 			listener = null;
 		}
@@ -41,16 +50,17 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		readonly Action<GyroscopeData> Callback;
 
-		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
+		void ISensorEventListener.OnAccuracyChanged(Sensor? sensor, SensorStatus accuracy)
 		{
 		}
 
-		void ISensorEventListener.OnSensorChanged(SensorEvent e)
+		void ISensorEventListener.OnSensorChanged(SensorEvent? e)
 		{
-			if ((e?.Values?.Count ?? 0) < 3)
+			var values = e?.Values ?? Array.Empty<float>();
+			if (values.Count < 3)
 				return;
 
-			var data = new GyroscopeData(e.Values[0], e.Values[1], e.Values[2]);
+			var data = new GyroscopeData(values[0], values[1], values[2]);
 			Callback?.Invoke(data);
 		}
 	}

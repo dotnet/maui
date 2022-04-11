@@ -3,6 +3,7 @@
     "path": "Microsoft.Maui.sln",
     "projects": [
       "src\\BlazorWebView\\samples\\MauiRazorClassLibrarySample\\MauiRazorClassLibrarySample.csproj",
+      "src\\Controls\\Foldable\\src\\Controls.Foldable.csproj",
       "src\\Controls\\samples\\Controls.Sample.Sandbox\\Maui.Controls.Sample.Sandbox.csproj",
       "src\\Controls\\samples\\Controls.Sample.SingleProject\\Maui.Controls.Sample.SingleProject.csproj",
       "src\\Controls\\samples\\Controls.Sample\\Maui.Controls.Sample.csproj"

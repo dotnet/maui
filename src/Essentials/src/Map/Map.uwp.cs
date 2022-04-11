@@ -1,13 +1,17 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public class MapImplementation:IMap
+	class MapImplementation:IMap
 	{
-		public Task OpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			var lat = latitude.ToString(CultureInfo.InvariantCulture);
 			var lng = longitude.ToString(CultureInfo.InvariantCulture);
 			var name = options.Name ?? string.Empty;
@@ -25,7 +29,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return LaunchUri(new Uri(uri));
 		}
 
-		internal static string GetMode(NavigationMode mode)
+		static string GetMode(NavigationMode mode)
 		{
 			switch (mode)
 			{
@@ -39,8 +43,14 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return string.Empty;
 		}
 
-		public Task OpenMapsAsync(Placemark placemark, MapLaunchOptions options)
+		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
+			if (placemark == null)
+				throw new ArgumentNullException(nameof(placemark));
+
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			var uri = string.Empty;
 
 			if (options.NavigationMode == NavigationMode.None)

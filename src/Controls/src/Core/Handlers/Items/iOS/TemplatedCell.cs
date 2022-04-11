@@ -172,6 +172,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			InitializeContentConstraints(platformView);
 
+			UpdateVisualStates();
+
 			(renderer.VirtualView as View).MeasureInvalidated += MeasureInvalidated;
 		}
 
@@ -244,14 +246,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				base.Selected = value;
 
-				var element = PlatformHandler?.VirtualView as VisualElement;
-
-				if (element != null)
-				{
-					VisualStateManager.GoToState(element, value
-						? VisualStateManager.CommonStates.Selected
-						: VisualStateManager.CommonStates.Normal);
-				}
+				UpdateVisualStates();
 			}
 		}
 
@@ -300,6 +295,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			return true;
+		}
+
+		void UpdateVisualStates()
+		{
+			if (PlatformHandler?.VirtualView is VisualElement element)
+			{
+				VisualStateManager.GoToState(element, Selected
+					? VisualStateManager.CommonStates.Selected
+					: VisualStateManager.CommonStates.Normal);
+			}
 		}
 	}
 }

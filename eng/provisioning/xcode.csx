@@ -38,6 +38,11 @@ else
 Console.WriteLine("Selected version: {0}", item.Version);
 item.XcodeSelect();
 
+// if(desiredXcode == "13.3")
+// {
+//     XcodeSimulator ("iOS", "15.4");
+// }
+
 LogInstalledXcodes();
 
 var appleSdkOverride = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library", "Preferences", "Xamarin", "Settings.plist");

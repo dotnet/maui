@@ -211,7 +211,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 				else
 				{
-					var assembly = typeof(ShellNavBar).GetTypeInfo().Assembly;
+					var assembly = typeof(ShellNavBar).Assembly;
 					var assemblyName = assembly.GetName().Name;
 					source = ImageSource.FromResource(assemblyName + "." + _backIconRes, assembly);
 				}
@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 				else
 				{
-					var assembly = typeof(ShellNavBar).GetTypeInfo().Assembly;
+					var assembly = typeof(ShellNavBar).Assembly;
 					var assemblyName = assembly.GetName().Name;
 					source = ImageSource.FromResource(assemblyName + "." + _menuIconRes, assembly);
 				}

@@ -1,27 +1,35 @@
 using System;
+using Android.App;
+using Android.Content;
 using Android.Hardware;
-using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class CompassImplementation : ICompass
+	partial class CompassImplementation : ICompass
 	{
-		bool PlatformIsSupported =>
-			Platform.SensorManager?.GetDefaultSensor(SensorType.Accelerometer) != null &&
-			Platform.SensorManager?.GetDefaultSensor(SensorType.MagneticField) != null;
+		static SensorManager _sensorManager;
+		static Sensor _accelerometer;
+		static Sensor _magnetic;
+
+		static SensorManager SensorManager =>
+			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
+
+		static Sensor Accelerometer =>
+			_accelerometer ??= SensorManager?.GetDefaultSensor(SensorType.Accelerometer);
+
+		static Sensor MagneticField =>
+			_magnetic ??= SensorManager?.GetDefaultSensor(SensorType.MagneticField);
+
+		bool PlatformIsSupported => Accelerometer is not null && MagneticField is not null;
 
 		SensorListener listener;
-		Sensor magnetometer;
-		Sensor accelerometer;
 
 		void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
 			var delay = sensorSpeed.ToPlatform();
-			accelerometer = Platform.SensorManager.GetDefaultSensor(SensorType.Accelerometer);
-			magnetometer = Platform.SensorManager.GetDefaultSensor(SensorType.MagneticField);
-			listener = new SensorListener(accelerometer.Name, magnetometer.Name, delay, applyLowPassFilter, RaiseReadingChanged);
-			Platform.SensorManager.RegisterListener(listener, accelerometer, delay);
-			Platform.SensorManager.RegisterListener(listener, magnetometer, delay);
+			listener = new SensorListener(Accelerometer.Name, MagneticField.Name, delay, applyLowPassFilter, RaiseReadingChanged);
+			SensorManager.RegisterListener(listener, Accelerometer, delay);
+			SensorManager.RegisterListener(listener, MagneticField, delay);
 		}
 
 		void PlatformStop()
@@ -29,8 +37,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 			if (listener == null)
 				return;
 
-			Platform.SensorManager.UnregisterListener(listener, accelerometer);
-			Platform.SensorManager.UnregisterListener(listener, magnetometer);
+			SensorManager.UnregisterListener(listener, Accelerometer);
+			SensorManager.UnregisterListener(listener, MagneticField);
 			listener.Dispose();
 			listener = null;
 		}

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Android.Webkit;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using AWebView = Android.Webkit.WebView;
 using AUri = Android.Net.Uri;
+using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private static readonly string AppOrigin = $"https://{BlazorWebView.AppHostAddress}/";
 		private static readonly AUri AndroidAppOriginUri = AUri.Parse(AppOrigin)!;
 		private readonly AWebView _webview;
+		private WebMessagePort[]? _nativeToJSPorts;
 
 		/// <summary>
 		/// Constructs an instance of <see cref="AndroidWebKitWebViewManager"/>.
@@ -62,18 +64,31 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		internal void SetUpMessageChannel()
 		{
-			var nativeToJsPorts = _webview.CreateWebMessageChannel();
+			_nativeToJSPorts = _webview.CreateWebMessageChannel();
 
 			var nativeToJs = new BlazorWebMessageCallback(message =>
 			{
 				MessageReceived(new Uri(AppOrigin), message!);
 			});
 
-			var destPort = new[] { nativeToJsPorts[1] };
+			var destPort = new[] { _nativeToJSPorts[1] };
 
-			nativeToJsPorts[0].SetWebMessageCallback(nativeToJs);
+			_nativeToJSPorts[0].SetWebMessageCallback(nativeToJs);
 
 			_webview.PostWebMessage(new WebMessage("capturePort", destPort), AndroidAppOriginUri);
+		}
+
+		protected override async ValueTask DisposeAsyncCore()
+		{
+			await base.DisposeAsyncCore();
+
+			if (_nativeToJSPorts is not null)
+			{
+				foreach (var port in _nativeToJSPorts)
+				{
+					port?.Close();
+				}
+			}
 		}
 
 		private class BlazorWebMessageCallback : WebMessagePort.WebMessageCallback

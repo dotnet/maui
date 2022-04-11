@@ -3,7 +3,7 @@ using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Platform
 {

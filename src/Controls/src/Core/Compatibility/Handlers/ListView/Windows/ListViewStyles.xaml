@@ -7,11 +7,19 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:primitiveContract7Present="using:Microsoft.UI.Xaml.Controls.Primitives?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:xf="using:Microsoft.Maui.Controls.Platform"
+    xmlns:maui="using:Microsoft.Maui.Controls.Platform"
 	xmlns:platform="using:Microsoft.Maui.Controls.Platform.Compatibility">
 
 
+    <platform:HeightConverter x:Key="HeightConverter" />
     <platform:ListViewGroupStyleSelector x:Key="ListViewGroupSelector" />
+    <platform:CaseConverter x:Key="LowerConverter" ConvertToUpper="False" />
+    <platform:CaseConverter x:Key="UpperConverter" ConvertToUpper="True" />
+    <platform:ColorConverter x:Key="ColorConverter" />
+    <platform:CollapseWhenEmptyConverter x:Key="CollapseWhenEmpty" />
+    <platform:HorizontalTextAlignmentConverter x:Key="HorizontalTextAlignmentConverter" />
+    <maui:ImageConverter x:Key="ImageConverter" />
+    <platform:KeyboardConverter x:Key="KeyboardConverter" />
 
     <DataTemplate x:Key="View">
         <ContentPresenter Content="{Binding Converter={StaticResource ViewToRenderer}}" />

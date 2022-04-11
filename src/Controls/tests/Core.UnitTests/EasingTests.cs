@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using Microsoft.Maui.Converters;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Android.Animation;
 using Android.Content;
 using Android.Graphics;
@@ -193,6 +191,15 @@ namespace Microsoft.Maui.Platform
 			{
 				_hScrollView.Layout(0, 0, right - left, bottom - top);
 			}
+
+			if (CrossPlatformArrange == null)
+			{
+				return;
+			}
+
+			var destination = Context!.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
+
+			CrossPlatformArrange(destination);
 		}
 
 		public void ScrollTo(int x, int y, bool instant, Action finished)
@@ -269,6 +276,8 @@ namespace Microsoft.Maui.Platform
 
 			animator.Start();
 		}
+
+		internal Func<Graphics.Rect, Graphics.Size>? CrossPlatformArrange { get; set; }
 	}
 
 	internal class MauiHorizontalScrollView : HorizontalScrollView, IScrollBarView

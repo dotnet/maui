@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Android.Views;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -16,29 +15,36 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.NavigationPage)]
 	public partial class NavigationPageTests : HandlerTestBase
 	{
-		MaterialToolbar GetPlatformToolbar(IElementHandler handler) =>
-			GetPlatformToolbar(handler.MauiContext);
-
-		MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
+		// We only want to fire BackButtonVisible Toolbar events if the user
+		// is changing the default behavior of the BackButtonVisibility
+		// this way the platform animations are allowed to just happen naturally
+		[Fact(DisplayName = "Pushing And Popping Doesnt Fire BackButtonVisible Toolbar Events")]
+		public async Task PushingAndPoppingDoesntFireBackButtonVisibleToolbarEvents()
 		{
-			var navManager = mauiContext.GetNavigationRootManager();
-			ViewGroup appbarLayout =
-				navManager?.RootView?.FindViewById<ViewGroup>(Resource.Id.navigationlayout_appbar);
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				Title = "Page Title"
+			});
 
-			var toolBar = appbarLayout?.GetFirstChildOfType<MaterialToolbar>();
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				bool failed = false;
+				var toolbar = (NavigationPageToolbar)navPage.FindMyToolbar();
+				toolbar.PropertyChanged += (_, args) =>
+				{
+					if (args.PropertyName == nameof(Toolbar.BackButtonVisible) ||
+						args.PropertyName == nameof(Toolbar.DrawerToggleVisible))
+					{
+						failed = true;
+					}
+				};
 
-			toolBar = toolBar ?? navManager.ToolbarElement?.Toolbar?.Handler?.PlatformView as
-				MaterialToolbar;
-
-			return toolBar;
-		}
-
-		public bool IsBackButtonVisible(IElementHandler handler) =>
-			IsBackButtonVisible(handler.MauiContext);
-
-		public bool IsBackButtonVisible(IMauiContext mauiContext)
-		{
-			return GetPlatformToolbar(mauiContext)?.NavigationIcon != null;
+				await navPage.Navigation.PushAsync(new ContentPage());
+				Assert.False(failed);
+				await navPage.Navigation.PopAsync();
+				Assert.False(failed);
+			});
 		}
 
 		public bool IsNavigationBarVisible(IElementHandler handler) =>

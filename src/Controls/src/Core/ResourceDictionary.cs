@@ -361,7 +361,7 @@ namespace Microsoft.Maui.Controls
 
 				var lineInfo = (serviceProvider.GetService(typeof(Xaml.IXmlLineInfoProvider)) as Xaml.IXmlLineInfoProvider)?.XmlLineInfo;
 				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
-				var assembly = rootObjectType.GetTypeInfo().Assembly;
+				var assembly = rootObjectType.Assembly;
 
 				if (value.IndexOf(";assembly=", StringComparison.Ordinal) != -1)
 				{

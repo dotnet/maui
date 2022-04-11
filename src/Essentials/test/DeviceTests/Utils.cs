@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {

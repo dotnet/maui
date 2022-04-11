@@ -345,7 +345,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				last.Delete();
 
 				//The source of icon resources is https://materialdesignicons.com/
-				var assembly = typeof(ShellItemRenderer).GetTypeInfo().Assembly;
+				var assembly = typeof(ShellItemRenderer).Assembly;
 				var assemblyName = assembly.GetName().Name;
 				_moreTabItem = AppendTabsItem("More", ImageSource.FromResource(assemblyName + "." + _dotsIcon, assembly));
 				_tabsItems.Add(_moreTabItem);

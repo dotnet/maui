@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Hosting
 {
 	public interface IEssentialsBuilder
 	{
@@ -26,52 +27,52 @@ namespace Microsoft.Maui.Essentials
 			builder.ConfigureLifecycleEvents(life =>
 			{
 #if __ANDROID__
-				Platform.Init(MauiApplication.Current);
+				ApplicationModel.Platform.Init(MauiApplication.Current);
 
 				life.AddAndroid(android => android
 					.OnCreate((activity, savedInstanceState) =>
 					{
-						Platform.Init(activity, savedInstanceState);
+						ApplicationModel.Platform.Init(activity, savedInstanceState);
 					})
 					.OnRequestPermissionsResult((activity, requestCode, permissions, grantResults) =>
 					{
-						Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+						ApplicationModel.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 					})
 					.OnNewIntent((activity, intent) =>
 					{
-						Platform.OnNewIntent(intent);
+						ApplicationModel.Platform.OnNewIntent(intent);
 					})
 					.OnResume((activity) =>
 					{
-						Platform.OnResume();
+						ApplicationModel.Platform.OnResume();
 					}));
 #elif __IOS__
 				life.AddiOS(ios => ios
 					.ContinueUserActivity((application, userActivity, completionHandler) =>
 					{
-						return Platform.ContinueUserActivity(application, userActivity, completionHandler);
+						return ApplicationModel.Platform.ContinueUserActivity(application, userActivity, completionHandler);
 					})
 					.OpenUrl((application, url, options) =>
 					{
-						return Platform.OpenUrl(application, url, options);
+						return ApplicationModel.Platform.OpenUrl(application, url, options);
 					})
 					.PerformActionForShortcutItem((application, shortcutItem, completionHandler) =>
 					{
-						Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
+						ApplicationModel.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
 					}));
 #elif WINDOWS
 				life.AddWindows(windows => windows
 					.OnPlatformMessage((window, args) =>
 					{
-						Platform.NewWindowProc(args.Hwnd, args.MessageId, args.WParam, args.LParam);
+						ApplicationModel.Platform.OnWindowMessage(args.Hwnd, args.MessageId, args.WParam, args.LParam);
 					})
 					.OnActivated((window, args) =>
 					{
-						Platform.OnActivated(window, args);
+						ApplicationModel.Platform.OnActivated(window, args);
 					})
 					.OnLaunched((application, args) =>
 					{
-						Platform.OnLaunched(args);
+						ApplicationModel.Platform.OnLaunched(args);
 					}));
 #endif
 			});
@@ -130,7 +131,7 @@ namespace Microsoft.Maui.Essentials
 				}
 
 #if WINDOWS
-				Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
+				ApplicationModel.Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
 #endif
 
 				AppActions.OnAppAction += HandleOnAppAction;
@@ -166,7 +167,7 @@ namespace Microsoft.Maui.Essentials
 
 		class EssentialsBuilder : IEssentialsBuilder
 		{
-		List<AppAction>? _appActions;
+			List<AppAction>? _appActions;
 			internal Action<AppAction>? AppActionHandlers;
 			internal bool TrackVersions;
 

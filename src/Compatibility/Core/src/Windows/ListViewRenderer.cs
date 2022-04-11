@@ -13,7 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using WListView = Microsoft.UI.Xaml.Controls.ListView;
 using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WApp = Microsoft.UI.Xaml.Application;
@@ -782,7 +782,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			bool areEqual = false;
 
-			if (Element.SelectedItem != null && Element.SelectedItem.GetType().GetTypeInfo().IsValueType)
+			if (Element.SelectedItem != null && Element.SelectedItem.GetType().IsValueType)
 				areEqual = Element.SelectedItem.Equals(List.SelectedItem);
 			else
 				areEqual = Element.SelectedItem == List.SelectedItem;

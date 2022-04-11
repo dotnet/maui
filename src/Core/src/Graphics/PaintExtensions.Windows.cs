@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Graphics
 			throw new NotImplementedException();
 		}
 
-		static void AddRange(this IList<WGradientStop> nativeStops, IEnumerable<GradientStop> stops)
+		static void AddRange(this IList<WGradientStop> nativeStops, IEnumerable<PaintGradientStop> stops)
 		{
 			foreach (var stop in stops.OrderBy(x => x.Offset))
 			{
