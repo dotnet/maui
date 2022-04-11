@@ -469,8 +469,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			if (cell == null)
 				cell = new UITableViewCell(UITableViewCellStyle.Subtitle, _cellIdentifier);
 
+#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 			// set the item text
 			cell.TextLabel.Text = _tableItems[indexPath.Row]; //.Items[indexPath.Row].Heading;
+#pragma warning restore CA1416
 
 			// if it's a cell style that supports a subheading, set it
 			//			if(item.CellStyle == UITableViewCellStyle.Subtitle 

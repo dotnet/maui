@@ -99,6 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			cell.TextField.TextAlignment = entryCell.HorizontalTextAlignment.ToPlatformTextAlignment(viewController?.EffectiveFlowDirection ?? default(EffectiveFlowDirection));
 		}
 
+#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 		static void UpdateIsEnabled(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			cell.UserInteractionEnabled = entryCell.IsEnabled;
@@ -161,7 +162,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// Centers TextField Content  (iOS6)
 				TextField.VerticalAlignment = UIControlContentVerticalAlignment.Center;
 			}
-
+#pragma warning restore CA1416
 			public event EventHandler TextFieldTextChanged;
 
 			static bool OnShouldReturn(UITextField view)

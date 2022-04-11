@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 
 namespace Microsoft.Maui.Handlers
@@ -8,7 +7,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override W2DGraphicsView CreatePlatformView()
 		{
-			System.Diagnostics.Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18362));
 			return new W2DGraphicsView();
 		}
 

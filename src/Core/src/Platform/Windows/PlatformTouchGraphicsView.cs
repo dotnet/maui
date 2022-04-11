@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Versioning;
 using System.Text;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Graphics.Win2D;
@@ -16,20 +15,17 @@ namespace Microsoft.Maui.Platform
 		bool _isTouching = false;
 		bool _isInBounds = false;
 
-		[SupportedOSPlatform("windows10.0.18362")]
 		public PlatformTouchGraphicsView()
 		{
 			Content = _platformGraphicsView = new W2DGraphicsView();
 		}
 
-		[SupportedOSPlatform("windows10.0.18362")]
 		public void UpdateDrawable(IGraphicsView graphicsView)
 		{
 			_platformGraphicsView.UpdateDrawable(graphicsView);
 			_graphicsView = graphicsView;
 		}
 
-		[SupportedOSPlatform("windows10.0.18362")]
 		public void Invalidate() => _platformGraphicsView.Invalidate();
 
 		PointF[] GetViewPoints(PointerRoutedEventArgs e)

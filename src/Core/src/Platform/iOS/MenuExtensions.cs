@@ -88,9 +88,11 @@ namespace Microsoft.Maui.Platform
 			else if (OperatingSystem.IsIOSVersionAtLeast(15)) // UIMenu.Create is supported from 13.0, UIMenuOptions.SingleSelection is from version 15.0
 			{
 				// This means we are creating our own new menu/submenu
+#pragma warning disable CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
 				platformMenu =
 					UIMenu.Create(title, uiImage, UIMenuIdentifier.None,
 						UIMenuOptions.SingleSelection, platformMenuElements);
+#pragma warning restore CA1416
 			}
 
 			return platformMenu!; // TODO: Seems not expected to return null, need to handle OS versions below 13 
