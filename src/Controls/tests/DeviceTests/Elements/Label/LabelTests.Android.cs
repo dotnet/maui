@@ -16,10 +16,10 @@ namespace Microsoft.Maui.DeviceTests
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 
-		TextUtils.TruncateAt GetNativeLineBreakMode(LabelHandler labelHandler) =>
+		TextUtils.TruncateAt GetPlatformLineBreakMode(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).Ellipsize;
 
-		int GetNativeMaxLines(LabelHandler labelHandler) =>
+		int GetPlatformMaxLines(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).MaxLines;
 	}
 }

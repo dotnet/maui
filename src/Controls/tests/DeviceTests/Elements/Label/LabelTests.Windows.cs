@@ -14,10 +14,10 @@ namespace Microsoft.Maui.DeviceTests
 		// LineBreakMode is a fundamentally incorrect conflation of wrapping and trimming. 
 		// But for now we have to preserve the old Forms behavior and make the tests pass, so
 		// these tests will consider Windows's "LineBreakMode" to be it's text trimming mode
-		TextTrimming GetNativeLineBreakMode(LabelHandler labelHandler) =>
+		TextTrimming GetPlatformLineBreakMode(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).TextTrimming; 
 
-		int GetNativeMaxLines(LabelHandler labelHandler) =>
+		int GetPlatformMaxLines(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).MaxLines;
 	}
 }

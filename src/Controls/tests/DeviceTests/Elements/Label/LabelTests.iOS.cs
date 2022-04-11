@@ -13,10 +13,10 @@ namespace Microsoft.Maui.DeviceTests
 		UILabel GetPlatformLabel(LabelHandler labelHandler) =>
 			(UILabel)labelHandler.PlatformView;
 
-		UILineBreakMode GetNativeLineBreakMode(LabelHandler labelHandler) =>
+		UILineBreakMode GetPlatformLineBreakMode(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).LineBreakMode;
 
-		int GetNativeMaxLines(LabelHandler labelHandler) =>
+		int GetPlatformMaxLines(LabelHandler labelHandler) =>
  			(int)GetPlatformLabel(labelHandler).Lines;
 	}
 }
