@@ -109,7 +109,7 @@ steps:
 
     - pwsh: |
         Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-        .\workload-install.ps1
+        .\workload-install.ps1 -v 7.0.100-preview.13.6
       displayName: 'Install Tizen'
 
   # Prepare Both
