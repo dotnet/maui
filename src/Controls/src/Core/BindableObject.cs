@@ -522,8 +522,11 @@ namespace Microsoft.Maui.Controls
 					_applying = false;
 				}
 
-				OnPropertyChanged(property.PropertyName, false);
+				// Avoid notifying the handlers before firing property.PropertyChanged
+				OnPropertyChanged(property.PropertyName, requireHandlerUpdate: false);
 				property.PropertyChanged?.Invoke(this, original, value);
+
+				// Now, notify the handlers
 				if (this is Element element)
 					element.DoUpdateHandler(property.PropertyName);
 			}
