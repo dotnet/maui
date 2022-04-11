@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Versioning;
 using Foundation;
 #if __IOS__ || __TVOS__
 using ObjCRuntime;
@@ -25,10 +24,6 @@ namespace Microsoft.Maui.ApplicationModel
 		public string VersionString => GetBundleValue("CFBundleShortVersionString");
 
 		public string BuildString => GetBundleValue("CFBundleVersion");
-
-		[UnsupportedOSPlatformGuard("ios13.0")]
-		private static readonly bool IsIos12TvOs13OrBefore = (OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13, 0)) ||
-			(OperatingSystem.IsTvOS() && !OperatingSystem.IsTvOSVersionAtLeast(13, 0));
 
 		string GetBundleValue(string key)
 			=> NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
@@ -56,7 +51,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			get
 			{
-				if (IsIos12TvOs13OrBefore)
+				if ((OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13, 0)) ||	(OperatingSystem.IsTvOS() && !OperatingSystem.IsTvOSVersionAtLeast(13, 0)))
 					return AppTheme.Unspecified;
 
 				var traits =

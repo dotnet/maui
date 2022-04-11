@@ -64,8 +64,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		//[SupportedOSPlatformGuard("ios11.0")]
-		//[SupportedOSPlatformGuard("tvos11.0")]
 		internal static bool IsiOS12OrNewer
 		{
 			get
@@ -101,6 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		[SupportedOSPlatformGuard("ios15.0")]
+		[SupportedOSPlatformGuard("tvos15.0")]
 		internal static bool IsiOS15OrNewer
 		{
 			get
@@ -119,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			IsInitializedRenderers = true;
 		}
 
-		[SupportedOSPlatformGuard("ios11.0")]
+		[SupportedOSPlatformGuard("ios11.0")] // TODO: it is not explicitly guard iOS version 11.0, but always used before calling something supported from version 11.0
 		internal static bool RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden
 		{
 			get

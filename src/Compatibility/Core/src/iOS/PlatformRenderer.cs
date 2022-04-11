@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
 		{
-#pragma warning disable CA1416 // The API has [UnsupportedOSPlatform("ios6.0")]
+#pragma warning disable CA1416 // TODO: The API has [UnsupportedOSPlatform("ios6.0")]
 			if ((ChildViewControllers != null) && (ChildViewControllers.Length > 0))
 			{
 				return ChildViewControllers[0].ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);

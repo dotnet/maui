@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Versioning;
 using Android.Content;
 using Android.Runtime;
 using Android.Webkit;
@@ -31,7 +32,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		public override bool ShouldOverrideUrlLoading(AWebView? view, IWebResourceRequest? request)
+#pragma warning disable CA1416 // TODO: base.ShouldOverrideUrlLoading(,) is supported from Android 24.0
 			=> ShouldOverrideUrlLoadingCore(request) || base.ShouldOverrideUrlLoading(view, request);
+#pragma warning restore CA1416
 
 		private bool ShouldOverrideUrlLoadingCore(IWebResourceRequest? request)
 		{
@@ -92,6 +95,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return base.ShouldInterceptRequest(view, request);
 		}
 
+		[SupportedOSPlatform("android23.0")]
 		public override void OnPageFinished(AWebView? view, string? url)
 		{
 			base.OnPageFinished(view, url);
@@ -105,6 +109,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 		}
 
+		[SupportedOSPlatform("android23.0")]
 		private void RunBlazorStartupScripts(AWebView view)
 		{
 			// TODO: we need to protect against double initialization because the

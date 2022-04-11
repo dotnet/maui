@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -63,7 +64,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				new NSString(BlazorInitScript), WKUserScriptInjectionTime.AtDocumentEnd, true));
 
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
-			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
+				config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
 			var webview = new WKWebView(RectangleF.Empty, config)
 			{
@@ -182,6 +184,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 
 			[Export("webView:startURLSchemeTask:")]
+			[SupportedOSPlatform("ios11.0")]
 			public void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
 				var responseBytes = GetResponseBytes(urlSchemeTask.Request.Url.AbsoluteString, out var contentType, statusCode: out var statusCode);

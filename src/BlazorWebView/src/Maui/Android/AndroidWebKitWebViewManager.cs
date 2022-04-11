@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Android.Webkit;
 using Microsoft.AspNetCore.Components.Web;
@@ -54,6 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		/// <inheritdoc />
+		[SupportedOSPlatform("android23.0")]
 		protected override void SendMessage(string message)
 		{
 			_webview.PostWebMessage(new WebMessage(message), AndroidAppOriginUri);
@@ -62,6 +64,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers) =>
 			TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
 
+		[SupportedOSPlatform("android23.0")]
 		internal void SetUpMessageChannel()
 		{
 			_nativeToJSPorts = _webview.CreateWebMessageChannel();
@@ -78,6 +81,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webview.PostWebMessage(new WebMessage("capturePort", destPort), AndroidAppOriginUri);
 		}
 
+		[SupportedOSPlatform("android23.0")]
 		protected override async ValueTask DisposeAsyncCore()
 		{
 			await base.DisposeAsyncCore();
@@ -100,6 +104,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				_onMessageReceived = onMessageReceived ?? throw new ArgumentNullException(nameof(onMessageReceived));
 			}
 
+			[SupportedOSPlatform("android23.0")]
 			public override void OnMessage(WebMessagePort? port, WebMessage? message)
 			{
 				if (message is null)

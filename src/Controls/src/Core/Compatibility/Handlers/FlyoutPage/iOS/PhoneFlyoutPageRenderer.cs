@@ -149,13 +149,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
 			if (!FlyoutPageController.ShouldShowSplitMode && _presented)
 				Presented = false;
-#pragma warning disable CA1416 // TODO: API has [UnsupportedOSPlatform("ios8.0")], needs check
+
 			base.WillRotate(toInterfaceOrientation, duration);
-#pragma warning restore
 		}
 
 		protected override void Dispose(bool disposing)
