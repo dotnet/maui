@@ -9,8 +9,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler : ViewHandler<IEditor, MauiTextView>
 	{
-		//static readonly int BaseHeight = 30;
-
 		protected override MauiTextView CreatePlatformView() => new MauiTextView();
 
 		protected override void ConnectHandler(MauiTextView platformView)
