@@ -199,7 +199,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			path.AddRoundRect(rect, borderRadius, borderRadius, APath.Direction.Cw);
 
-			paint.Color = pressed ? PressedBackgroundColor.ToAndroid() : BackgroundColor.ToAndroid();
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				paint.Color = pressed ? PressedBackgroundColor.ToAndroid() : BackgroundColor.ToAndroid();
 			paint.SetStyle(Paint.Style.Fill);
 			paint.SetShadowLayer(_shadowRadius, _shadowDx, _shadowDy, _shadowColor);
 
@@ -291,7 +292,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				path.AddRoundRect(rect, borderRadius, borderRadius, APath.Direction.Cw);
 				paint.StrokeWidth = borderWidth;
 				paint.SetStyle(Paint.Style.Stroke);
-				paint.Color = BorderElement.BorderColor.ToAndroid(Graphics.Colors.Black);
+				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+					paint.Color = BorderElement.BorderColor.ToAndroid(Graphics.Colors.Black);
 
 				canvas.DrawPath(path, paint);
 			}

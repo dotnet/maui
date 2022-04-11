@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool? s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden;
 
 		[SupportedOSPlatformGuard("ios11.0")]
-		[SupportedOSPlatformGuard("tvos11.0")]
+		//[SupportedOSPlatformGuard("tvos11.0")] TODO: the block guarded by this property calling API unsupported on TvOS or version not supported
 		internal static bool IsiOS11OrNewer
 		{
 			get
@@ -64,6 +64,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		//[SupportedOSPlatformGuard("ios11.0")]
+		//[SupportedOSPlatformGuard("tvos11.0")]
 		internal static bool IsiOS12OrNewer
 		{
 			get
@@ -74,6 +76,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		[SupportedOSPlatformGuard("ios13.0")]
+		//[SupportedOSPlatformGuard("tvos13.0")] TODO: the block guarded by this property calling API unsupported on TvOS or version not supported
 		internal static bool IsiOS13OrNewer
 		{
 			get
@@ -84,6 +88,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		[SupportedOSPlatformGuard("ios14.0")]
+		//[SupportedOSPlatformGuard("tvos14.0")] TODO: the block guarded by this property calling API unsupported on TvOS
 		internal static bool IsiOS14OrNewer
 		{
 			get
@@ -94,6 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		[SupportedOSPlatformGuard("ios15.0")]
 		internal static bool IsiOS15OrNewer
 		{
 			get
@@ -112,6 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			IsInitializedRenderers = true;
 		}
 
+		[SupportedOSPlatformGuard("ios11.0")]
 		internal static bool RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden
 		{
 			get

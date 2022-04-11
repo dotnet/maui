@@ -350,7 +350,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			shape.SetIntrinsicHeight((int)Context.ToPixels(indicatorSize));
 			shape.SetIntrinsicWidth((int)Context.ToPixels(indicatorSize));
-			shape.Paint.Color = color;
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				shape.Paint.Color = color;
 
 			return shape;
 		}

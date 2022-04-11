@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
@@ -97,6 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		//TODO: this was deprecated in iOS8.0 and is not called in 9.0+
+		[UnsupportedOSPlatform("ios8.0")]
 		public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
 		{
 			base.DidRotate(fromInterfaceOrientation);
@@ -761,6 +763,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var barTextColor = NavPage.BarTextColor;
 			var statusBarColorMode = NavPage.OnThisPlatform().GetStatusBarTextColorMode();
 
+#pragma warning disable CA1416 // TODO: UIApplication.StatusBarStyle has [UnsupportedOSPlatform("ios9.0")]
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor?.GetLuminosity() <= 0.5)
 			{
 				// Use dark text color for status bar
@@ -778,6 +781,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// Use light text color for status bar
 				UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.LightContent;
 			}
+#pragma warning restore CA1416
 		}
 
 		void UpdateToolBarVisible()
@@ -993,8 +997,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			public ParentingViewController(NavigationRenderer navigation)
 			{
+#pragma warning disable CA1416 // TODO: 'UIViewController.AutomaticallyAdjustsScrollViewInsets' is unsupported on: 'ios' 11.0 and later
 				AutomaticallyAdjustsScrollViewInsets = false;
-
+#pragma warning restore CA1416
 				_navigation = new WeakReference<NavigationRenderer>(navigation);
 			}
 
@@ -1022,6 +1027,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			public event EventHandler Appearing;
 
+			[UnsupportedOSPlatform("ios8.0")]
 			public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
 			{
 				base.DidRotate(fromInterfaceOrientation);
@@ -1466,9 +1472,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
 			{
 				IVisualElementRenderer childRenderer;
+#pragma warning disable CA1416 // TODO: ShouldAutorotateToInterfaceOrientation(...) has [UnsupportedOSPlatform("ios6.0")]
 				if (Child != null && (childRenderer = Platform.GetRenderer(Child)) != null)
 					return childRenderer.ViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
 				return base.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+#pragma warning restore CA1416
 			}
 
 			public override bool ShouldAutomaticallyForwardRotationMethods => true;

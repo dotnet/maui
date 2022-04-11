@@ -576,7 +576,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			UIDragInteraction uIDragInteraction = null;
 			UIDropInteraction uIDropInteraction = null;
 
-			if (_dragAndDropDelegate != null)
+			if (_dragAndDropDelegate != null && OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				foreach (var interaction in _renderer.NativeView.Interactions)
 				{
@@ -635,10 +635,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 
 #if __MOBILE__
-			if (!dragFound && uIDragInteraction != null)
+			if (Forms.IsiOS11OrNewer && !dragFound && uIDragInteraction != null)
 				_renderer.NativeView.RemoveInteraction(uIDragInteraction);
 
-			if (!dropFound && uIDropInteraction != null)
+			if (Forms.IsiOS11OrNewer && !dropFound && uIDropInteraction != null)
 				_renderer.NativeView.RemoveInteraction(uIDropInteraction);
 #endif
 

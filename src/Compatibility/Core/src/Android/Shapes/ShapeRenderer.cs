@@ -254,7 +254,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					if (_fill is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
 						fillColor = solidColorBrush.Color.ToAndroid();
 
-					_drawable.Paint.Color = fillColor;
+					if (OperatingSystem.IsAndroidVersionAtLeast(29))
+						_drawable.Paint.Color = fillColor;
 				}
 
 				_drawable.Draw(canvas);
@@ -284,7 +285,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					if (_stroke is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
 						strokeColor = solidColorBrush.Color.ToAndroid();
 
-					_drawable.Paint.Color = strokeColor;
+					if (OperatingSystem.IsAndroidVersionAtLeast(29))
+						_drawable.Paint.Color = strokeColor;
 				}
 
 				_drawable.Draw(canvas);

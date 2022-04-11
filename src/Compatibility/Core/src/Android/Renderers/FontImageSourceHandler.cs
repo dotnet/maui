@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				using var paint = new Paint
 				{
 					TextSize = TypedValue.ApplyDimension(ComplexUnitType.Dip, (float)fontsource.Size, context.Resources.DisplayMetrics),
+#pragma warning disable CA1416 // TODO:  Paint.Color.set' is only supported on: 'android' 29.0 and later.
 					Color = (fontsource.Color != null ? fontsource.Color : Colors.White).ToAndroid(),
+#pragma warning restore CA1416
 					TextAlign = Paint.Align.Left,
 					AntiAlias = true,
 				};
