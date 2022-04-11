@@ -33,13 +33,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		public RootComponentsCollection RootComponents { get; }
 
-		/// <inheritdoc />
+		/// <summary>
+		/// Allows customizing how links are opened.
+		/// By default, opens internal links in the webview and external links in an external app.
+		/// </summary>
 		public event EventHandler<UrlLoadingEventArgs>? UrlLoading;
 
-		/// <inheritdoc />
+		/// <summary>
+		/// Raised before the web view is initialized. On some platforms this enables customizing the web view configuration.
+		/// </summary>
 		public event EventHandler<BlazorWebViewInitializingEventArgs>? BlazorWebViewInitializing;
 
-		/// <inheritdoc />
+		/// <summary>
+		/// Raised after the web view is initialized but before any component has been rendered. The event arguments provide the instance of the platform-specific web view control.
+		/// </summary>
 		public event EventHandler<BlazorWebViewInitializedEventArgs>? BlazorWebViewInitialized;
 
 		/// <inheritdoc />
@@ -49,15 +56,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
 		}
 
-		internal void NotifyUrlLoading(UrlLoadingEventArgs args)
-		{
+		void IBlazorWebView.SendUrlLoading(UrlLoadingEventArgs args) =>
 			UrlLoading?.Invoke(this, args);
-		}
 
-		internal void NotifyBlazorWebViewInitializing(BlazorWebViewInitializingEventArgs args) =>
+		void IBlazorWebView.SendBlazorWebViewInitializing(BlazorWebViewInitializingEventArgs args) =>
 			BlazorWebViewInitializing?.Invoke(this, args);
 
-		internal void NotifyBlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args) =>
+		void IBlazorWebView.SendBlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args) =>
 			BlazorWebViewInitialized?.Invoke(this, args);
 	}
 }
