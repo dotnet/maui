@@ -69,19 +69,19 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateBackground(button);
 		}
 
-		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
+		public static void MapStrokeColor(IButtonHandler handler, IButton button)
 		{
-			handler.PlatformView?.UpdateStrokeColor(buttonStroke);
+			handler.PlatformView?.UpdateStrokeColor(button);
 		}
 
-		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke)
+		public static void MapStrokeThickness(IButtonHandler handler, IButton button)
 		{
-			handler.PlatformView?.UpdateStrokeThickness(buttonStroke);
+			handler.PlatformView?.UpdateStrokeThickness(button);
 		}
 
-		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke)
+		public static void MapCornerRadius(IButtonHandler handler, IButton button)
 		{
-			handler.PlatformView?.UpdateCornerRadius(buttonStroke);
+			handler.PlatformView?.UpdateCornerRadius(button);
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)
