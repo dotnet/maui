@@ -7,9 +7,9 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Rectangle.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Rectangle']/Docs" />
 	public partial class Rectangle : IShape
 	{
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		protected override void UpdateHandler(string propertyName)
 		{
-			base.OnPropertyChanged(propertyName);
+			base.UpdateHandler(propertyName);
 
 			if (propertyName == RadiusXProperty.PropertyName ||
 				propertyName == RadiusYProperty.PropertyName)

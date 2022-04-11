@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(titleView, BindingContext);
 		}
 
-		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null, bool requireHandlerUpdate = true)
 			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
 		protected virtual void OnPropertyChanging([CallerMemberName] string propertyName = null)
@@ -522,9 +522,10 @@ namespace Microsoft.Maui.Controls
 					_applying = false;
 				}
 
-				OnPropertyChanged(property.PropertyName);
-
+				OnPropertyChanged(property.PropertyName, false);
 				property.PropertyChanged?.Invoke(this, original, value);
+				if (this is Element element)
+					element.DoUpdateHandler(property.PropertyName);
 			}
 		}
 

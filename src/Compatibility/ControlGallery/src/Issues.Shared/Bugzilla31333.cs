@@ -73,9 +73,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				set { SetValue(IsControlFocusedProperty, value); }
 			}
 
-			protected override void OnPropertyChanged(string propertyName = null)
+			protected override void OnPropertyChanged(string propertyName = null, bool requireHandlerUpdate = true)
 			{
-				base.OnPropertyChanged(propertyName);
+				base.OnPropertyChanged(propertyName, requireHandlerUpdate);
 				if (propertyName == IsControlFocusedProperty.PropertyName)
 				{
 					if (IsControlFocused)
@@ -107,9 +107,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				set { SetValue(IsControlFocusedProperty, value); }
 			}
 
-			protected override void OnPropertyChanged(string propertyName = null)
+			protected override void OnPropertyChanged(string propertyName = null, bool requireHandlerUpdate = true)
 			{
-				base.OnPropertyChanged(propertyName);
+				base.OnPropertyChanged(propertyName, requireHandlerUpdate);
 				if (propertyName == IsControlFocusedProperty.PropertyName)
 				{
 					if (IsControlFocused)

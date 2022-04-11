@@ -22,11 +22,11 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(StreamProperty, value); }
 		}
 
-		protected override void OnPropertyChanged(string propertyName)
+		protected override void OnPropertyChanged(string propertyName, bool requireHandlerUpdate = true)
 		{
 			if (propertyName == StreamProperty.PropertyName)
 				OnSourceChanged();
-			base.OnPropertyChanged(propertyName);
+			base.OnPropertyChanged(propertyName, requireHandlerUpdate);
 		}
 
 		async Task<Stream> IStreamImageSource.GetStreamAsync(CancellationToken userToken)

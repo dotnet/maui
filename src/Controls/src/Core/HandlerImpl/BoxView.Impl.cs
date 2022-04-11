@@ -7,9 +7,9 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/BoxView.xml" path="Type[@FullName='Microsoft.Maui.Controls.BoxView']/Docs" />
 	public partial class BoxView : IShapeView, IShape
 	{
-		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+		protected override void UpdateHandler(string propertyName)
 		{
-			base.OnPropertyChanged(propertyName);
+			base.UpdateHandler(propertyName);
 
 			if (propertyName == BackgroundColorProperty.PropertyName ||
 				propertyName == ColorProperty.PropertyName ||

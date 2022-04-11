@@ -6,9 +6,9 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Path']/Docs" />
 	public partial class Path : IShape
 	{
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		protected override void UpdateHandler(string propertyName)
 		{
-			base.OnPropertyChanged(propertyName);
+			base.UpdateHandler(propertyName);
 
 			if (propertyName == DataProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IShapeView.Shape));

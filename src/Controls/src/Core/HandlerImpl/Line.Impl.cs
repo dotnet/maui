@@ -6,9 +6,9 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Line']/Docs" />
 	public partial class Line : IShape
 	{
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		protected override void UpdateHandler(string propertyName)
 		{
-			base.OnPropertyChanged(propertyName);
+			base.UpdateHandler(propertyName);
 
 			if (propertyName == X1Property.PropertyName ||
 				propertyName == Y1Property.PropertyName ||

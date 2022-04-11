@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		protected override void OnPropertyChanged(string propertyName)
+		protected override void OnPropertyChanged(string propertyName, bool requireHandlerUpdate = true)
 		{
 			if (propertyName == "BindingContext")
 			{
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls
 					SetInheritedBindingContext(source, BindingContext);
 			}
 
-			base.OnPropertyChanged(propertyName);
+			base.OnPropertyChanged(propertyName, requireHandlerUpdate);
 		}
 
 		protected void OnSourceChanged(object sender, EventArgs e)

@@ -376,11 +376,14 @@ namespace Microsoft.Maui.Controls
 			(this as IPropertyPropagationController)?.PropagatePropertyChanged(null);
 		}
 
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null, bool requireHandlerUpdate = true)
 		{
-			base.OnPropertyChanged(propertyName);
+			base.OnPropertyChanged(propertyName, requireHandlerUpdate);
 
-			Handler?.UpdateValue(propertyName);
+			if (requireHandlerUpdate)
+			{
+				UpdateHandler(propertyName);
+			}
 
 			var childrenNotDrawnByThisElement = ChildrenNotDrawnByThisElement;
 			if (childrenNotDrawnByThisElement is not null)
@@ -401,6 +404,13 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
+
+		protected virtual void UpdateHandler(string propertyName)
+		{
+			Handler?.UpdateValue(propertyName);
+		}
+
+		internal void DoUpdateHandler(string propertyName) => UpdateHandler(propertyName);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Descendants']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]

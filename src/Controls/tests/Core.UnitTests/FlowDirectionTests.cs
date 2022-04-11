@@ -734,9 +734,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			public int FlowDirectionPropertyChangedCount { get; private set; }
 
-			protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+			protected override void OnPropertyChanged([CallerMemberName] string propertyName = null, bool requireHandlerUpdate = true)
 			{
-				base.OnPropertyChanged(propertyName);
+				base.OnPropertyChanged(propertyName, requireHandlerUpdate);
 
 				if (propertyName == View.FlowDirectionProperty.PropertyName)
 					FlowDirectionPropertyChangedCount++;

@@ -210,13 +210,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 			page.Content = grid;
 		}
 
-		protected override void OnPropertyChanged(string propertyName = null)
+		protected override void OnPropertyChanged(string propertyName = null, bool requireHandlerUpdate = true)
 		{
 			if (propertyName == "SafeAreaInsets")
 			{
 				safeLimits.Text = $" Top:{On<iOS>().SafeAreaInsets().Top} - Bottom:{On<iOS>().SafeAreaInsets().Bottom} - Left:{On<iOS>().SafeAreaInsets().Left} - Right:{On<iOS>().SafeAreaInsets().Right}";
 			}
-			base.OnPropertyChanged(propertyName);
+			base.OnPropertyChanged(propertyName, requireHandlerUpdate);
 		}
 
 		ContentPage GetGroupedListView(ICommand restore)
