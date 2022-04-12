@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
@@ -12,25 +11,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	public static class ImageElementManager
 	{
-		static bool _nativeAnimationSupport = false;
-		static ImageElementManager()
-		{
-			// Workaround https://github.com/microsoft/WindowsAppSDK/issues/2382.
-			// ApiInformation.IsPropertyPresent and IsMethodPresent will throw in an unpackaged app.
-			if (AppInfo.PackagingModel == AppPackagingModel.Unpackaged)
-			{
-				_nativeAnimationSupport = true;
-			}
-			else
-			{
-				if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "AutoPlay"))
-					if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "IsPlaying"))
-						if (global::Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Play"))
-							if (global::Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Stop"))
-								_nativeAnimationSupport = true;
-			}
-		}
-
 		public static void Init(IImageVisualElementRenderer renderer)
 		{
 			renderer.ElementPropertyChanged += OnElementPropertyChanged;
@@ -68,15 +48,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (renderer.GetImage()?.Source is BitmapImage bitmapImage)
 			{
-				if (_nativeAnimationSupport)
-				{
-					if (controller.IsAnimationPlaying && !bitmapImage.IsPlaying)
-						bitmapImage.Play();
-					else if (!controller.IsAnimationPlaying && bitmapImage.IsPlaying)
-						bitmapImage.Stop();
+				if (controller.IsAnimationPlaying && !bitmapImage.IsPlaying)
+					bitmapImage.Play();
+				else if (!controller.IsAnimationPlaying && bitmapImage.IsPlaying)
+					bitmapImage.Stop();
 
-					bitmapImage.RegisterPropertyChangedCallback(BitmapImage.IsPlayingProperty, OnIsPlaying);
-				}
+				bitmapImage.RegisterPropertyChangedCallback(BitmapImage.IsPlayingProperty, OnIsPlaying);
 			}
 		}
 
@@ -165,7 +142,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (renderer.IsDisposed)
 					return;
 
-				if (imagesource is BitmapImage bitmapImage && _nativeAnimationSupport)
+				if (imagesource is BitmapImage bitmapImage)
 					bitmapImage.AutoPlay = false;
 
 				if (Control != null)
