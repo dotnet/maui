@@ -2,12 +2,34 @@
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.ShapeView)]
 	public partial class ShapeViewHandlerTests : HandlerTestBase<ShapeViewHandler, ShapeViewStub>
 	{
+		[Theory(DisplayName = "Shape Background Initializes Correctly")]
+		[InlineData(0xFF0000)]
+		[InlineData(0x00FF00)]
+		[InlineData(0x0000FF)]
+		public async Task BackgroundInitializesCorrectly(uint color)
+		{
+			var expected = Color.FromUint(color);
+
+			var rectangle = new ShapeViewStub()
+			{
+				Shape = new RectangleShapeStub(),
+				Stroke = new SolidPaintStub(Colors.Red),
+				StrokeThickness = 2,
+				Background = new SolidPaintStub(expected),
+				Height = 100,
+				Width = 100
+			};
+
+			await ValidateHasColor(rectangle, expected);
+		}
+
 		[Fact(DisplayName = "Rectangle Initializes Correctly")]
 		public async Task RectangleInitializesCorrectly()
 		{
