@@ -11,8 +11,6 @@ namespace Microsoft.Maui.Platform
 {
 	// This is needed by WinUI because of 
 	// https://github.com/microsoft/microsoft-ui-xaml/issues/2698#issuecomment-648751713
-	// This file currently doesn't have a XAML part because code generation currently breaks for
-	// our WinUI files if a xaml file inherits from a xaml file
 	[Microsoft.UI.Xaml.Data.Bindable]
 	public partial class RootNavigationView : MauiNavigationView
 	{
