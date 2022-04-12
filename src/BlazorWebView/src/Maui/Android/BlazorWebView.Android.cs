@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// <summary>
 	/// A Blazor Web View implemented using <see cref="AWebView"/>.
 	/// </summary>
-	public class BlazorAndroidWebView : AWebView
+	internal class BlazorAndroidWebView : AWebView
 	{
 		/// <summary>
 		/// Initializes a new instance of <see cref="BlazorAndroidWebView"/>
