@@ -79,9 +79,9 @@
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>3f4da9ced34942d83054e647f3b1d9d7dde281e8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Maui.Graphics" Version="6.0.300-rc.2.1290">
+    <Dependency Name="Microsoft.Maui.Graphics" Version="6.0.300-rc.2.1292">
       <Uri>https://github.com/dotnet/Microsoft.Maui.Graphics</Uri>
-      <Sha>e229e0dc9357d1b71cfd2bc146a154f1c2dec013</Sha>
+      <Sha>913c35f633db5a61e4c885d9860438d3c23576d9</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="1.0.0-prerelease.22208.2">
       <Uri>https://github.com/dotnet/xharness</Uri>
