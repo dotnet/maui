@@ -266,7 +266,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (initialUpdate)
 			{
-				t.SetReorderingAllowed(true);
+				t.SetReorderingAllowedEx(true);
 			}
 
 			t.CommitAllowingStateLossEx();

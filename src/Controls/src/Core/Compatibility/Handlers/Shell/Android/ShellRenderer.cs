@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (previousView == null)
 			{
 				transaction
-					.SetReorderingAllowed(true);
+					.SetReorderingAllowedEx(true);
 			}
 
 			transaction.CommitAllowingStateLossEx();
