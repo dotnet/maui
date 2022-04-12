@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
 #if WEBVIEW2_WINFORMS
 		public static IWindowsFormsBlazorWebViewBuilder AddWindowsFormsBlazorWebView(this IServiceCollection services)
 #elif WEBVIEW2_WPF
-		public static IServiceCollection AddWpfBlazorWebView(this IServiceCollection services)
+		public static IWpfBlazorWebViewBuilder AddWpfBlazorWebView(this IServiceCollection services)
 #elif WEBVIEW2_MAUI
 		public static IServiceCollection AddMauiBlazorWebView(this IServiceCollection services)
 #else
@@ -45,7 +45,7 @@ namespace Microsoft.Extensions.DependencyInjection
 			return new WindowsFormsBlazorWebViewBuilder(services);
 #elif WEBVIEW2_WPF
 			services.TryAddSingleton<WpfBlazorMarkerService>();
-			return services;
+			return new WpfBlazorWebViewBuilder(services);
 #endif
 		}
 
