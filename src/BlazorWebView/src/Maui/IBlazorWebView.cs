@@ -39,18 +39,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// Notifies the control that the UrlLoading event should be raised with the specified <paramref name="args"/>.
 		/// </summary>
 		/// <param name="args">The arguments for the event.</param>
-		void SendUrlLoading(UrlLoadingEventArgs args);
+		void UrlLoading(UrlLoadingEventArgs args);
 
 		/// <summary>
 		/// Notifies the control that the BlazorWebViewInitializing event should be raised with the specified <paramref name="args"/>.
 		/// </summary>
 		/// <param name="args">The arguments for the event.</param>
-		void SendBlazorWebViewInitializing(BlazorWebViewInitializingEventArgs args);
+		void BlazorWebViewInitializing(BlazorWebViewInitializingEventArgs args);
 
 		/// <summary>
 		/// Notifies the control that the BlazorWebViewInitialized event should be raised with the specified <paramref name="args"/>.
 		/// </summary>
 		/// <param name="args">The arguments for the event.</param>
-		void SendBlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args);
+		void BlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args);
 	}
 }

@@ -15,13 +15,13 @@ Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.BlazorWebViewHandler() -> void
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.BlazorWebViewHandler(Microsoft.Maui.PropertyMapper? mapper) -> void
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView
+Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.BlazorWebViewInitialized(Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs! args) -> void
+Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.BlazorWebViewInitializing(Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs! args) -> void
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.CreateFileProvider(string! contentRootDir) -> Microsoft.Extensions.FileProviders.IFileProvider!
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.HostPage.get -> string?
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.JSComponents.get -> Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore!
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.RootComponents.get -> Microsoft.AspNetCore.Components.WebView.Maui.RootComponentsCollection!
-Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.SendBlazorWebViewInitialized(Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs! args) -> void
-Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.SendBlazorWebViewInitializing(Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs! args) -> void
-Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.SendUrlLoading(Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs! args) -> void
+Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.UrlLoading(Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs! args) -> void
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.ComponentType.get -> System.Type?
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.ComponentType.set -> void

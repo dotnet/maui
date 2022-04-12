@@ -56,13 +56,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
 		}
 
-		void IBlazorWebView.SendUrlLoading(UrlLoadingEventArgs args) =>
+		void IBlazorWebView.UrlLoading(UrlLoadingEventArgs args) =>
 			UrlLoading?.Invoke(this, args);
 
-		void IBlazorWebView.SendBlazorWebViewInitializing(BlazorWebViewInitializingEventArgs args) =>
+		void IBlazorWebView.BlazorWebViewInitializing(BlazorWebViewInitializingEventArgs args) =>
 			BlazorWebViewInitializing?.Invoke(this, args);
 
-		void IBlazorWebView.SendBlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args) =>
+		void IBlazorWebView.BlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args) =>
 			BlazorWebViewInitialized?.Invoke(this, args);
 	}
 }
