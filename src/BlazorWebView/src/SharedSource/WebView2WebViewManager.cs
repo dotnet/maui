@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		private readonly Task _webviewReadyTask;
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-		private protected CoreWebView2Environment _coreWebView2Environment;
+		private protected CoreWebView2Environment? _coreWebView2Environment;
 		private readonly Action<UrlLoadingEventArgs> _urlLoading;
 		private readonly Action<BlazorWebViewInitializingEventArgs> _blazorWebViewInitializing;
 		private readonly Action<BlazorWebViewInitializedEventArgs> _blazorWebViewInitialized;
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			{
 				var headerString = GetHeaderString(headers);
 
-				eventArgs.Response = _coreWebView2Environment.CreateWebResourceResponse(content, statusCode, statusMessage, headerString);
+				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(content, statusCode, statusMessage, headerString);
 			}
 #elif WEBVIEW2_MAUI
 			// No-op here because all the work is done in the derived WinUIWebViewManager
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		{
 		}
 
-		private void CoreWebView2_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
+		private void CoreWebView2_NavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs args)
 		{
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
 			{
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			}
 		}
 
-		private void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs args)
+		private void CoreWebView2_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs args)
 		{
 			// Intercept _blank target <a> tags to always open in device browser.
 			// The ExternalLinkCallback is not invoked.
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		}
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-		private static string GetWebView2UserDataFolder()
+		private static string? GetWebView2UserDataFolder()
 		{
 			if (Assembly.GetEntryAssembly() is { } mainAssembly)
 			{
