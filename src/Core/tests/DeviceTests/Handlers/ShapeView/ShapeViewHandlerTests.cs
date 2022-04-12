@@ -13,7 +13,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var rectangle = new ShapeViewStub()
 			{
-				Shape = new RectangleStub(),
+				Shape = new RectangleShapeStub(),
 				Fill = new SolidPaintStub(Colors.Red),
 				Height = 50,
 				Width = 100
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var rectangle = new ShapeViewStub()
 			{
-				Shape = new RoundRectangleStub(),
+				Shape = new RoundRectangleShapeStub(),
 				Fill = new SolidPaintStub(Colors.Orange),
 				Height = 50,
 				Width = 100
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var ellipse = new ShapeViewStub()
 			{
-				Shape = new EllipseStub(),
+				Shape = new EllipseShapeStub(),
 				Fill = new SolidPaintStub(Colors.Blue),
 				Height = 50,
 				Width = 100
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var line = new ShapeViewStub()
 			{
-				Shape = new LineStub { X1 = 0, Y1 = 0, X2 = 90, Y2 = 45 },
+				Shape = new LineShapeStub { X1 = 0, Y1 = 0, X2 = 90, Y2 = 45 },
 				Stroke = new SolidPaintStub(Colors.Purple),
 				StrokeThickness = 4,
 				Height = 50,
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var polyline = new ShapeViewStub()
 			{
-				Shape = new PolylineStub { Points = new PointCollectionStub() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } },
+				Shape = new PolylineShapeStub { Points = new PointCollectionStub() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } },
 				Stroke = new SolidPaintStub(Colors.Green),
 				StrokeThickness = 4,
 				Height = 50,
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var polygon = new ShapeViewStub()
 			{
-				Shape = new PolygonStub { Points = new PointCollectionStub() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } },
+				Shape = new PolygonShapeStub { Points = new PointCollectionStub() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } },
 				Fill = new SolidPaintStub(Colors.Lime),
 				Stroke = new SolidPaintStub(Colors.Black),
 				StrokeThickness = 4,
