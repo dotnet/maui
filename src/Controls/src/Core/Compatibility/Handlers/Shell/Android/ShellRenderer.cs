@@ -230,6 +230,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.FragmentOpen);
 
 			transaction.ReplaceEx(_frameLayout.Id, fragment);
+
+			// Don't force the commit if this is our first load 
+			if (previousView == null)
+			{
+				transaction
+					.SetReorderingAllowed(true);
+			}
+
 			transaction.CommitAllowingStateLossEx();
 
 			void OnDestroyed(object sender, EventArgs args)
