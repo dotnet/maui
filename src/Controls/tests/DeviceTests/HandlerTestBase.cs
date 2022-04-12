@@ -102,11 +102,9 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = Activator.CreateInstance<THandler>();
 
 			handler.SetMauiContext(mauiContext);
-
+			
+			handler.SetVirtualView(element);
 			element.Handler = handler;
-
-			if (handler.VirtualView != element)
-				handler.SetVirtualView(element);
 
 			if (element is IView view && handler is IViewHandler viewHandler)
 			{
