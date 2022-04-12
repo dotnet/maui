@@ -70,7 +70,6 @@ namespace Microsoft.Maui.DeviceTests
 				await OnLoadedAsync(details2.CurrentPage);
 				var detailView2 = (details2.CurrentPage.Handler as IPlatformViewHandler)?.PlatformView;
 				Assert.NotNull(detailView2);
-				await detailView2.OnLoadedAsync();
 			});
 		}
 
