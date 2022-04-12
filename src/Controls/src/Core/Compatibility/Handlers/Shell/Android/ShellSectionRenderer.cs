@@ -68,7 +68,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		TabLayout _tablayout;
 		IShellTabLayoutAppearanceTracker _tabLayoutAppearanceTracker;
 		AToolbar _toolbar;
-		ShellFragmentStateAdapter _adapter;
 		IShellToolbarAppearanceTracker _toolbarAppearanceTracker;
 		IShellToolbarTracker _toolbarTracker;
 		ViewPager2 _viewPager;
@@ -86,13 +85,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellContext = shellContext;
 		}
 
+
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
-			if (_rootView != null)
-			{
-				return _rootView;
-			}
-
 			var shellSection = ShellSection;
 			if (shellSection == null)
 				return null;
@@ -112,10 +107,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_tablayout = PlatformInterop.CreateShellTabLayout(context, appbar, actionBarHeight);
 
 			var pagerContext = MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
-			_adapter = new ShellFragmentStateAdapter(shellSection, ChildFragmentManager, pagerContext);
+			var adapter = new ShellFragmentStateAdapter(shellSection, ChildFragmentManager, pagerContext);
 			var pageChangedCallback = new ViewPagerPageChanged(this);
-			_viewPager = PlatformInterop.CreateShellViewPager(context, root, _tablayout, this, _adapter, pageChangedCallback);
-			_viewPager.SaveEnabled = false;
+			_viewPager = PlatformInterop.CreateShellViewPager(context, root, _tablayout, this, adapter, pageChangedCallback);
+
 			Page currentPage = null;
 			int currentIndex = -1;
 			var currentItem = shellSection.CurrentItem;
@@ -170,6 +165,46 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		void Destroy()
+		{
+			if (_rootView != null)
+			{
+				UnhookEvents();
+
+				_shellContext?.Shell?.Toolbar?.Handler?.DisconnectHandler();
+
+				//_viewPager.RemoveOnPageChangeListener(this);
+				var adapter = _viewPager.Adapter;
+				_viewPager.Adapter = null;
+				adapter.Dispose();
+
+				_tablayout.LayoutChange -= OnTabLayoutChange;
+				_toolbarAppearanceTracker.Dispose();
+				_tabLayoutAppearanceTracker.Dispose();
+				_toolbarTracker.Dispose();
+				_tablayout.Dispose();
+				_toolbar.Dispose();
+				_viewPager.Dispose();
+				_rootView.Dispose();
+			}
+
+			_toolbarAppearanceTracker = null;
+			_tabLayoutAppearanceTracker = null;
+			_toolbarTracker = null;
+			_tablayout = null;
+			_toolbar = null;
+			_viewPager = null;
+			_rootView = null;
+
+		}
+
+		// Use OnDestroy instead of OnDestroyView because OnDestroyView will be
+		// called before the animation completes. This causes tons of tiny issues.
+		public override void OnDestroy()
+		{
+			Destroy();
+			base.OnDestroy();
+		}
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -179,35 +214,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (disposing)
 			{
-
-				if (_rootView != null)
-				{
-					UnhookEvents();
-
-					_shellContext?.Shell?.Toolbar?.Handler?.DisconnectHandler();
-
-					var adapter = _viewPager.Adapter;
-					_viewPager.Adapter = null;
-					_adapter?.Dispose();
-
-					_tablayout.LayoutChange -= OnTabLayoutChange;
-					_toolbarAppearanceTracker.Dispose();
-					_tabLayoutAppearanceTracker.Dispose();
-					_toolbarTracker.Dispose();
-					_tablayout.Dispose();
-					_toolbar.Dispose();
-					_viewPager.Dispose();
-					_rootView.Dispose();
-				}
-
-				_adapter = null;
-				_toolbarAppearanceTracker = null;
-				_tabLayoutAppearanceTracker = null;
-				_toolbarTracker = null;
-				_tablayout = null;
-				_toolbar = null;
-				_viewPager = null;
-				_rootView = null;
+				Destroy();
 			}
 		}
 

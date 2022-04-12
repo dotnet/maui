@@ -84,7 +84,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 				_shellSection = null;
+
 				_items = null;
+
+				_createdShellContent?.Clear();
+				_createdShellContent = null;
 			}
 
 			base.Dispose(disposing);
