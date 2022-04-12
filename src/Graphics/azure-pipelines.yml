@@ -131,7 +131,7 @@ stages:
                 [xml] $fileXml = Get-Content "eng\Versions.props"
                 $DotNetVersionBand = $fileXml.SelectSingleNode("Project/PropertyGroup/DotNetVersionBand").InnerText
                 Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-                .\workload-install.ps1 -DotnetTargetVersionBand $DotNetVersionBand
+                .\workload-install.ps1 -DotnetTargetVersionBand $DotNetVersionBand -v 7.0.100-preview.13.30
               displayName: install tizen
 
             - pwsh: |
@@ -242,27 +242,27 @@ stages:
             displayName: add build to default darc channel
             condition: and(succeeded(), eq(variables['PushPackageInfoToMaestro'], 'true'))
 
-    - stage: sbom
-      displayName: 'Software Bill of Materials'
-      dependsOn: [ 'windows', 'nuget_signing' ]
-      condition: succeeded('windows')
-      jobs:
-      - template: compliance/sbom/job.v1.yml@xamarin-templates
-        parameters:
-          jobName: SBOM_PR
-          jobDisplayName: 'Software Bill of Materials (PR)'
-          artifactNames: ['nuget']
-          artifactMap: ['nuget/Release']
-          packageName: 'Microsoft Maui Graphics'
-          packageFilter: '*.nupkg'
-          condition: not(${{ variables['signingCondition'] }})                    # Executed when signing is not enabled such as for pull request builds (PRs)
+    # - stage: sbom
+    #   displayName: 'Software Bill of Materials'
+    #   dependsOn: [ 'windows', 'nuget_signing' ]
+    #   condition: succeeded('windows')
+    #   jobs:
+    #   - template: compliance/sbom/job.v1.yml@xamarin-templates
+    #     parameters:
+    #       jobName: SBOM_PR
+    #       jobDisplayName: 'Software Bill of Materials (PR)'
+    #       artifactNames: ['nuget']
+    #       artifactMap: ['nuget/Release']
+    #       packageName: 'Microsoft Maui Graphics'
+    #       packageFilter: '*.nupkg'
+    #       condition: not(${{ variables['signingCondition'] }})                    # Executed when signing is not enabled such as for pull request builds (PRs)
 
-      - template: compliance/sbom/job.v1.yml@xamarin-templates
-        parameters:
-          jobName: SBOM_CI
-          jobDisplayName: 'Software Bill of Materials (CI)'
-          artifactNames: ['nuget']
-          artifactMap: ['nuget/signed']
-          packageName: 'Microsoft Maui Graphics'
-          packageFilter: '*.nupkg'
-          condition: and(succeeded(), ${{ variables['signingCondition'] }} )      # Executed when signing is enabled such as for continuous integration builds (CIs)
+    #   - template: compliance/sbom/job.v1.yml@xamarin-templates
+    #     parameters:
+    #       jobName: SBOM_CI
+    #       jobDisplayName: 'Software Bill of Materials (CI)'
+    #       artifactNames: ['nuget']
+    #       artifactMap: ['nuget/signed']
+    #       packageName: 'Microsoft Maui Graphics'
+    #       packageFilter: '*.nupkg'
+    #       condition: and(succeeded(), ${{ variables['signingCondition'] }} )      # Executed when signing is enabled such as for continuous integration builds (CIs)
