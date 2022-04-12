@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 {
 	/// <summary>
-	/// A builder for WindowsForms Blazor WebViews.
+	/// A builder for Windows Forms Blazor WebViews.
 	/// </summary>
 	public interface IWindowsFormsBlazorWebViewBuilder
 	{
