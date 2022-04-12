@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// This method never gets called for navigation to a new window ('_blank'),
 			// so we know we can safely invoke the UrlLoading event.
 			var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, AppOriginUri);
-			_webViewHandler.SendUrlLoading(callbackArgs);
+			_webViewHandler.UrlLoading(callbackArgs);
 
 			if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
 			{

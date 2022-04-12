@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		{
 			var args = new BlazorWebViewInitializingEventArgs();
 #if WEBVIEW2_MAUI
-			_blazorWebViewHandler.VirtualView.SendBlazorWebViewInitializing(args);
+			_blazorWebViewHandler.VirtualView.BlazorWebViewInitializing(args);
 			_coreWebView2Environment = await CoreWebView2Environment.CreateWithOptionsAsync(
 				browserExecutableFolder: args.BrowserExecutableFolder,
 				userDataFolder: args.UserDataFolder,
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			ApplyDefaultWebViewSettings(developerTools);
 
 #if WEBVIEW2_MAUI
-			_blazorWebViewHandler.VirtualView.SendBlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
+			_blazorWebViewHandler.VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
 			{
 				WebView = _webview,
 			});
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 				_urlLoading?.Invoke(callbackArgs);
 #elif WEBVIEW2_MAUI
-				_blazorWebViewHandler.SendUrlLoading(callbackArgs);
+				_blazorWebViewHandler.UrlLoading(callbackArgs);
 #endif
 
 				if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
