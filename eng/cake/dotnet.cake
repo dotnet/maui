@@ -119,17 +119,20 @@ Task("dotnet-templates")
 
         foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
         {
-            var name = template.Replace("-", "_").Replace(" ", "_");
-            StartProcess(dn, $"new {template} -o \"{templatesTest}{name}\"");
-
-            // Design-time build without restore
-            foreach (var framework in frameworks)
+            foreach (var forceDotNetBuild in new [] { true, false })
             {
-                RunMSBuildWithDotNet($"{templatesTest}{name}", designTime, target: "Compile", restore: false, warningsAsError: true, targetFramework: framework);
-            }
+                // macOS does not support msbuild
+                if (!IsRunningOnWindows() && !forceDotNetBuild)
+                    continue;
 
-            // Build
-            RunMSBuildWithDotNet($"{templatesTest}{name}", properties, warningsAsError: true);
+                var type = forceDotNetBuild ? "DotNet" : "MSBuild";
+                var name = template.Replace("-", "_").Replace(" ", "_");
+                var projectName = $"{templatesTest}{name}_{type}";
+                StartProcess(dn, $"new {template} -o \"{projectName}\"");
+
+                // Build
+                RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
+            }
         }
 
         try
@@ -489,18 +492,22 @@ void RunMSBuildWithDotNet(
     string target = "Build",
     bool warningsAsError = false,
     bool restore = true,
-    string targetFramework = null)
+    string targetFramework = null,
+    bool forceDotNetBuild = false)
 {
+    var useDotNetBuild = forceDotNetBuild || !IsRunningOnWindows() || target == "Run";
+
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
+    var type = useDotNetBuild ? "dotnet" : "msbuild";
     var binlog = string.IsNullOrEmpty(targetFramework) ?
-        $"\"{logDirectory}/{name}-{configuration}-{target}.binlog\"" :
-        $"\"{logDirectory}/{name}-{configuration}-{target}-{targetFramework}.binlog\"";
+        $"\"{logDirectory}/{name}-{configuration}-{target}-{type}.binlog\"" :
+        $"\"{logDirectory}/{name}-{configuration}-{target}-{targetFramework}-{type}.binlog\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
     // If we're not on Windows, use ./bin/dotnet/dotnet
-    if (!IsRunningOnWindows() || target == "Run")
+    if (useDotNetBuild)
     {
         var msbuildSettings = new DotNetCoreMSBuildSettings()
             .SetConfiguration(configuration)

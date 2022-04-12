@@ -105,5 +105,9 @@
         Update="Microsoft.Web.WebView2"
         Version="$(_MicrosoftWebWebView2Version)"
     />
+    <PackageReference
+        Update="Microsoft.CodeAnalysis.PublicApiAnalyzers"
+        Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)"
+    />
   </ItemGroup>
 </Project>
