@@ -33,7 +33,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IButton.Background)] = MapBackground,
 			[nameof(IButton.Padding)] = MapPadding,
-			[nameof(ILineBreakMode.LineBreakMode)] = MapLineBreakMode,
 			[nameof(IButtonStroke.StrokeThickness)] = MapStrokeThickness,
 			[nameof(IButtonStroke.StrokeColor)] = MapStrokeColor,
 			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius

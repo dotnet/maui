@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls
 {
@@ -77,6 +78,16 @@ namespace Microsoft.Maui.Controls
 			}
 
 			LabelHandler.MapTextColor(handler, label);
+		}
+
+		public static void MapLineBreakMode(ILabelHandler handler, Label label)
+		{
+			handler.PlatformView?.UpdateLineBreakMode(label);
+		}
+
+		public static void MapMaxLines(ILabelHandler handler, Label label)
+		{
+			handler.PlatformView?.UpdateMaxLines(label);
 		}
 	}
 }

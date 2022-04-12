@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// An implementation of <see cref="WebViewManager"/> that uses the Android WebKit WebView browser control
 	/// to render web content.
 	/// </summary>
-	public class AndroidWebKitWebViewManager : WebViewManager
+	internal class AndroidWebKitWebViewManager : WebViewManager
 	{
 		// Using an IP address means that WebView doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since

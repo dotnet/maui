@@ -3,13 +3,8 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Represents a View that displays text.
 	/// </summary>
-	public interface ILabel : IView, IText, ITextAlignment, IPadding, ILineBreakMode
+	public interface ILabel : IView, IText, ITextAlignment, IPadding
 	{
-		/// <summary>
-		/// Gets the maximum number of lines allowed in the Label.
-		/// </summary>
-		int MaxLines { get; }
-
 		/// <summary>
 		/// Gets the text decoration applied to the Label.
 		/// Underline and strike-through text decorations can be applied.

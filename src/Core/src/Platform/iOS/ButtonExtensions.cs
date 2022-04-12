@@ -78,18 +78,6 @@ namespace Microsoft.Maui.Platform
 #pragma warning restore CA1416
 		}
 
-		public static void UpdateLineBreakMode(this UIButton nativeButton, ILineBreakMode button)
-		{
-			nativeButton.TitleLabel.LineBreakMode = button.LineBreakMode switch
-			{
-				LineBreakMode.NoWrap => UILineBreakMode.Clip,
-				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
-				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
-				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
-				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
-				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
-				_ => throw new ArgumentOutOfRangeException()
-			};
-		}
+		
 	}
 }
