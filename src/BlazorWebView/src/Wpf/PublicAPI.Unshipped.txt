@@ -11,7 +11,6 @@ Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
 Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.CancelLoad = 2 -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
 Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.OpenExternally = 0 -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
 Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.OpenInWebView = 1 -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
-Microsoft.AspNetCore.Components.WebView.WebView2.WebView2WebViewManager
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.BlazorWebView() -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.BlazorWebViewInitialized.get -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs!>!
