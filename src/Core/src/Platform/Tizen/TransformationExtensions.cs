@@ -19,10 +19,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTranslate(this NView platformView, IView view)
 		{
-			var frame = view.Frame;
-			frame.X += view.TranslationX;
-			frame.Y += view.TranslationY;
-			platformView.UpdateBounds(frame.ToPixel());
+			var location = view.Frame.Location;
+			location.X += view.TranslationX;
+			location.Y += view.TranslationY;
+			platformView.UpdatePosition(location.ToPixel());
 		}
 
 		public static void UpdateScale(this NView platformView, IView view)

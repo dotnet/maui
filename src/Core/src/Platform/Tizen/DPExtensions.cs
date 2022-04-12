@@ -2,6 +2,7 @@
 using Microsoft.Maui.Graphics;
 using TRect = Tizen.UIExtensions.Common.Rect;
 using TSize = Tizen.UIExtensions.Common.Size;
+using TPoint = Tizen.UIExtensions.Common.Point;
 using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 using Point = Microsoft.Maui.Graphics.Point;
 using EPoint = ElmSharp.Point;
@@ -18,6 +19,11 @@ namespace Microsoft.Maui.Platform
 		public static TRect ToPixel(this Rect rect)
 		{
 			return new TRect(ConvertToScaledPixel(rect.X), ConvertToScaledPixel(rect.Y), ConvertToScaledPixel(rect.Width), ConvertToScaledPixel(rect.Height));
+		}
+
+		public static TPoint ToPixel(this Point point)
+		{
+			return new TPoint(ConvertToScaledPixel(point.X), ConvertToScaledPixel(point.Y));
 		}
 
 		public static Size ToDP(this TSize size)
