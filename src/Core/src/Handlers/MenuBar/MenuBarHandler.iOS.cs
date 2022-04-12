@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using Foundation;
 using Microsoft.Maui.Platform;
-using UIKit;
 using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 
 				var identifierConstant = menuItem.Identifier.GetConstant();
 				if (identifierConstant != null)
-				{	
+				{
 					catalystMenu = PlatformView.GetMenu(identifierConstant);
 				}
 
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 
 				if (catalystMenu == null)
 				{
-					
+
 					if (lastFoundMenu != null)
 					{
 						var fileMenuId = lastFoundMenu.GetIdentifier();

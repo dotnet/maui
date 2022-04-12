@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Platform
 			if (!platformLabel.Bounds.IsEmpty)
 				platformLabel.InvalidateMeasure(label);
 		}
-		
+
 		public static void UpdateLineBreakMode(this UILabel platformLabel, ILabel label)
 		{
 			platformLabel.SetLineBreakMode(label);

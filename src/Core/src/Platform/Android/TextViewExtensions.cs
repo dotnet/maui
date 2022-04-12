@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Platform
 			if (label.LineHeight >= 0)
 				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
-			
+
 		internal static void SetLineBreakMode(this TextView textView, ILineBreakMode breakMode, int? maxLines = null)
 		{
 			var lineBreakMode = breakMode.LineBreakMode;
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Platform
 				maxLines = int.MaxValue;
 
 			bool singleLine = false;
-			bool shouldSetSingleLine = !OperatingSystem.IsAndroidVersionAtLeast(23); 
+			bool shouldSetSingleLine = !OperatingSystem.IsAndroidVersionAtLeast(23);
 
 			switch (lineBreakMode)
 			{
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Platform
 				case LineBreakMode.HeadTruncation:
 					maxLines = 1; // If maxLines is anything greater than 1, the truncation will be ignored: https://developer.android.com/reference/android/widget/TextView#setEllipsize(android.text.TextUtils.TruncateAt)
 
-					if (shouldSetSingleLine) 
+					if (shouldSetSingleLine)
 					{
 						singleLine = true; // Workaround for bug in older Android API versions (https://issuetracker.google.com/issues/36950033) (https://bugzilla.xamarin.com/show_bug.cgi?id=49069)
 					}
@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Platform
 					// But we don't have a mechanism for setting MaxLines on other controls (e.g., Button) right now, so we need to force it here or
 					// they will potentially exceed a single line. Also, changing this behavior the for Labels would technically be breaking (though
 					// possibly less surprising than what happens currently).
-					maxLines = 1; 
+					maxLines = 1;
 					textView.Ellipsize = TextUtils.TruncateAt.End;
 					break;
 				case LineBreakMode.MiddleTruncation:
