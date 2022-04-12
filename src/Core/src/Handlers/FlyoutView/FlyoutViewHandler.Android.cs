@@ -80,8 +80,6 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-
-
 		void UpdateDetail()
 		{
 			LayoutViews();
