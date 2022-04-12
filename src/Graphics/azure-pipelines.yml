@@ -131,7 +131,7 @@ stages:
                 [xml] $fileXml = Get-Content "eng\Versions.props"
                 $DotNetVersionBand = $fileXml.SelectSingleNode("Project/PropertyGroup/DotNetVersionBand").InnerText
                 Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-                .\workload-install.ps1 -DotnetTargetVersionBand $DotNetVersionBand
+                .\workload-install.ps1 -DotnetTargetVersionBand $DotNetVersionBand -v 7.0.100-preview.13.30
               displayName: install tizen
 
             - pwsh: |
