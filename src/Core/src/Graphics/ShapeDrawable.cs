@@ -106,11 +106,15 @@ namespace Microsoft.Maui.Graphics
 
 			canvas.SaveState();
 
+			canvas.FillColor = Colors.Transparent;
+
 			ClipPath(canvas, path);
 
 			// Set Fill
 			var fillPaint = ShapeView.Fill;
-			canvas.SetFillPaint(fillPaint, dirtyRect);
+
+			if (fillPaint != null)
+				canvas.SetFillPaint(fillPaint, dirtyRect);
 
 			canvas.FillPath(path);
 
