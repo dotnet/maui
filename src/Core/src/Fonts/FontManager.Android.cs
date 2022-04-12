@@ -135,7 +135,7 @@ namespace Microsoft.Maui
 					result = Typeface.Create(fontFamily, style);
 			}
 
-			if (PlatformVersion.IsAtLeast(28))
+			if (OperatingSystem.IsAndroidVersionAtLeast(28))
 				result = Typeface.Create(result, (int)weight, italic);
 			else
 				result = Typeface.Create(result, style);

@@ -12,7 +12,7 @@
     <GenerateReferenceAssemblySource>true</GenerateReferenceAssemblySource>
     <GenAPIAdditionalParameters>--api-only --writer CSDecl</GenAPIAdditionalParameters>
   </PropertyGroup>
-  <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <!-- remove other AndroidX packages from the MultiTargeting -->
     <PackageReference Remove="*" />
