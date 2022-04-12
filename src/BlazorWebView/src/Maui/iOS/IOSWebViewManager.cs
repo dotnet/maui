@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// An implementation of <see cref="WebViewManager"/> that uses the <see cref="WKWebView"/> browser control
 	/// to render web content.
 	/// </summary>
-	public class IOSWebViewManager : WebViewManager
+	internal class IOSWebViewManager : WebViewManager
 	{
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
 		private readonly WKWebView _webview;

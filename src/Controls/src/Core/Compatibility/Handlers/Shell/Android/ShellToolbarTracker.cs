@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_flyoutBehavior == behavior)
 				return;
+
 			_flyoutBehavior = behavior;
 
 			if (Page != null)
@@ -80,8 +81,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_platformToolbar.SetNavigationOnClickListener(this);
 			((IShellController)ShellContext.Shell).AddFlyoutBehaviorObserver(this);
 			ShellContext.Shell.Toolbar.PropertyChanged += OnToolbarPropertyChanged;
+			ShellContext.Shell.Navigated += OnShellNavigated;
 		}
-
 
 		void IShellToolbarTracker.SetToolbar(IToolbar toolbar)
 		{
@@ -183,6 +184,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				((IShellController)ShellContext.Shell)?.RemoveFlyoutBehaviorObserver(this);
 				ShellContext.Shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
+				ShellContext.Shell.Navigated -= OnShellNavigated;
 				UpdateTitleView(ShellContext.AndroidContext, _platformToolbar, null);
 
 				if (_searchView != null)
@@ -263,6 +265,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					shellToolbar.ApplyChanges();
 				}
+			}
+		}
+
+		void OnShellNavigated(object sender, ShellNavigatedEventArgs e)
+		{
+			if (_disposed || Page == null)
+				return;
+
+			if (ShellContext?.Shell?.Toolbar is ShellToolbar shellToolbar &&
+					Page == ShellContext?.Shell?.CurrentPage)
+			{
+				UpdateLeftBarButtonItem();
 			}
 		}
 

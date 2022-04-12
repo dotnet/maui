@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs
 Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.BlazorWebViewInitializedEventArgs() -> void
 Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs
@@ -22,8 +22,6 @@ Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.HostPage.get -> stri
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.JSComponents.get -> Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore!
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.RootComponents.get -> Microsoft.AspNetCore.Components.WebView.Maui.RootComponentsCollection!
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.UrlLoading -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs!>?
-Microsoft.AspNetCore.Components.WebView.Maui.IOSWebViewManager
-Microsoft.AspNetCore.Components.WebView.Maui.IOSWebViewManager.IOSWebViewManager(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! blazorMauiWebViewHandler, WebKit.WKWebView! webview, System.IServiceProvider! provider, Microsoft.AspNetCore.Components.Dispatcher! dispatcher, Microsoft.Extensions.FileProviders.IFileProvider! fileProvider, Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore! jsComponents, string! hostPageRelativePath) -> void
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.ComponentType.get -> System.Type?
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.ComponentType.set -> void
@@ -46,8 +44,6 @@ Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.OpenInWebView = 1 -> 
 Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions
 override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.CreatePlatformView() -> WebKit.WKWebView!
 override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.DisconnectHandler(WebKit.WKWebView! platformView) -> void
-override Microsoft.AspNetCore.Components.WebView.Maui.IOSWebViewManager.NavigateCore(System.Uri! absoluteUri) -> void
-override Microsoft.AspNetCore.Components.WebView.Maui.IOSWebViewManager.SendMessage(string! message) -> void
 static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.MapHostPage(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! handler, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView! webView) -> void
 static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.MapNotifyUrlLoading(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! handler, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView! webView) -> void
 static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.MapRootComponents(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! handler, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView! webView) -> void

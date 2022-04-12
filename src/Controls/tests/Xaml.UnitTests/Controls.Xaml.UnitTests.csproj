@@ -51,4 +51,6 @@
     <Compile Include="..\Core.UnitTests\BaseTestFixture.cs" />
   </ItemGroup>
 
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
 </Project>
