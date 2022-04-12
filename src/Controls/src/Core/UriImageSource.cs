@@ -115,6 +115,10 @@ namespace Microsoft.Maui.Controls
 			{
 				using var client = new HttpClient();
 
+				// TODO: USER-AGENT should be configurable by the user.
+				//       Also, is this a reasonable default? Perhaps we could include the name of the application?
+				client.DefaultRequestHeaders.Add("User-Agent", ".NET MAUI App");
+
 				// Do not remove this await otherwise the client will dispose before
 				// the stream even starts
 				return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
