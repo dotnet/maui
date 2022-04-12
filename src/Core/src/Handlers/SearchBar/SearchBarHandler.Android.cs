@@ -1,6 +1,7 @@
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Widget;
+using static Android.Views.View;
 using static AndroidX.AppCompat.Widget.SearchView;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -28,12 +29,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.QueryTextChange += OnQueryTextChange;
 			platformView.QueryTextSubmit += OnQueryTextSubmit;
+			platformView.FocusChange += OnFocusedChange;
 		}
 
 		protected override void DisconnectHandler(SearchView platformView)
 		{
 			platformView.QueryTextChange -= OnQueryTextChange;
 			platformView.QueryTextSubmit -= OnQueryTextSubmit;
+			platformView.FocusChange -= OnFocusedChange;
 		}
 
 		// This is a Android-specific mapping
@@ -120,6 +123,23 @@ namespace Microsoft.Maui.Handlers
 		{
 			VirtualView.UpdateText(e.NewText);
 			e.Handled = true;
+		}
+
+		void OnFocusedChange(object? sender, FocusChangeEventArgs e)
+		{
+			var platformView = sender as SearchView;
+
+			if (e.HasFocus)
+			{
+				// Post this to the main looper queue so it doesn't happen until the other focus stuff has resolved
+				// Otherwise, ShowKeyboard will be called before this control is truly focused, and we will potentially
+				// be displaying the wrong keyboard
+				platformView?.PostShowKeyboard();
+			}
+			else
+			{
+				platformView?.HideKeyboard();
+			}
 		}
 	}
 }

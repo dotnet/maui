@@ -128,6 +128,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Internals.TextTransformUtilites.SetPlainText(Element, s?.ToString());
 		}
 
+		[PortHandler]
 		protected override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
 		{
 			if (!e.Focus)

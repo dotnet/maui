@@ -1,6 +1,4 @@
-﻿using System;
-using Android.Content.Res;
-using Android.Views;
+﻿using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
 using static Android.Views.View;
@@ -28,12 +26,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
+			platformView.FocusChange += OnFocusedChange;
 		}
 
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
+			platformView.FocusChange -= OnFocusedChange;
 		}
 
 		public static void MapBackground(IEditorHandler handler, IEditor editor) =>
@@ -95,6 +95,23 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
-			VirtualView?.UpdateText(e);
+			VirtualView?.UpdateText(e); 
+		
+		void OnFocusedChange(object? sender, FocusChangeEventArgs e)
+		{
+			var platformView = sender as AppCompatEditText;
+
+			if (e.HasFocus)
+			{
+				// Post this to the main looper queue so it doesn't happen until the other focus stuff has resolved
+				// Otherwise, ShowKeyboard will be called before this control is truly focused, and we will potentially
+				// be displaying the wrong keyboard
+				platformView?.PostShowKeyboard();
+			}
+			else
+			{
+				platformView?.HideKeyboard();
+			}
+		}
 	}
 }

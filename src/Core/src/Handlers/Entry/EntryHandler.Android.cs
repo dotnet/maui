@@ -109,6 +109,20 @@ namespace Microsoft.Maui.Handlers
 		// This will eliminate additional native property setting if not required.
 		void OnFocusedChange(object? sender, FocusChangeEventArgs e)
 		{
+			var platformView = sender as AppCompatEditText;
+
+			if (e.HasFocus)
+			{
+				// Post this to the main looper queue so it doesn't happen until the other focus stuff has resolved
+				// Otherwise, ShowKeyboard will be called before this control is truly focused, and we will potentially
+				// be displaying the wrong keyboard
+				platformView?.PostShowKeyboard();
+			}
+			else
+			{
+				platformView?.HideKeyboard();
+			}
+
 			if (VirtualView?.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
 				UpdateValue(nameof(IEntry.ClearButtonVisibility));
 		}

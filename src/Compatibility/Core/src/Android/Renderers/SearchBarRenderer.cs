@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return new SearchView(context);
 		}
 
+		[PortHandler]
 		protected override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
 		{
 			if (!e.Focus)
