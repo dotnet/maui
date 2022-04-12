@@ -37,7 +37,7 @@ namespace Microsoft.Maui.ApplicationModel
 					return status;
 				}
 #if __IOS__
-#pragma warning disable CA1416 // Somehow this if def is not working, could not where it is defined
+#pragma warning disable CA1416 // Somehow this __IOS__ if def is not working, could not find where it is defined
 				else if (status == PermissionStatus.Limited)
 				{
 					PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(

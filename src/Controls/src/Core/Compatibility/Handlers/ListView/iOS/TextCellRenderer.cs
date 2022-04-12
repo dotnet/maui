@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -31,17 +30,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			tvc.Cell = textCell;
 			tvc.PropertyChanged = HandleCellPropertyChanged;
 
-			if (!OperatingSystem.IsIOSVersionAtLeast(14))
-			{
-				tvc.TextLabel.Text = textCell.Text;
-				tvc.DetailTextLabel.Text = textCell.Detail;
-				tvc.TextLabel.TextColor = (textCell.TextColor ?? DefaultTextColor).ToPlatform();
-				tvc.DetailTextLabel.TextColor = (textCell.DetailColor ?? DefaultDetailColor).ToPlatform();
-			}
+#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel', DetailTextLabel is unsupported on: 'ios' 14.0 and later
+			tvc.TextLabel.Text = textCell.Text;
+			tvc.DetailTextLabel.Text = textCell.Detail;
+			tvc.TextLabel.TextColor = (textCell.TextColor ?? DefaultTextColor).ToPlatform();
+			tvc.DetailTextLabel.TextColor = (textCell.DetailColor ?? DefaultDetailColor).ToPlatform();
 
 			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
 			UpdateIsEnabled(tvc, textCell);
+#pragma warning restore CA1416
 
 			UpdateBackground(tvc, item);
 
@@ -56,28 +54,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var textCell = (TextCell)sender;
 			var tvc = (CellTableViewCell)GetRealCell(textCell);
 
-			if (!OperatingSystem.IsIOSVersionAtLeast(14))
+#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel', DetailTextLabel is unsupported on: 'ios' 14.0 and later
+			if (args.PropertyName == TextCell.TextProperty.PropertyName)
 			{
-				if (args.PropertyName == TextCell.TextProperty.PropertyName)
-				{
-					tvc.TextLabel.Text = ((TextCell)tvc.Cell).Text;
-					tvc.TextLabel.SizeToFit();
-				}
-				else if (args.PropertyName == TextCell.DetailProperty.PropertyName)
-				{
-					tvc.DetailTextLabel.Text = ((TextCell)tvc.Cell).Detail;
-					tvc.DetailTextLabel.SizeToFit();
-				}
-				else if (args.PropertyName == TextCell.TextColorProperty.PropertyName)
-					tvc.TextLabel.TextColor = textCell.TextColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
-				else if (args.PropertyName == TextCell.DetailColorProperty.PropertyName)
-					tvc.DetailTextLabel.TextColor = textCell.DetailColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
+				tvc.TextLabel.Text = ((TextCell)tvc.Cell).Text;
+				tvc.TextLabel.SizeToFit();
 			}
+			else if (args.PropertyName == TextCell.DetailProperty.PropertyName)
+			{
+				tvc.DetailTextLabel.Text = ((TextCell)tvc.Cell).Detail;
+				tvc.DetailTextLabel.SizeToFit();
+			}
+			else if (args.PropertyName == TextCell.TextColorProperty.PropertyName)
+				tvc.TextLabel.TextColor = textCell.TextColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
+			else if (args.PropertyName == TextCell.DetailColorProperty.PropertyName)
+				tvc.DetailTextLabel.TextColor = textCell.DetailColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
+
 			else if (args.PropertyName == Cell.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled(tvc, textCell);
 			else if (args.PropertyName == TextCell.AutomationIdProperty.PropertyName)
 				UpdateAutomationId(tvc, textCell);
-
+#pragma warning restore CA1416
 			HandlePropertyChanged(tvc, args);
 		}
 		void UpdateAutomationId(CellTableViewCell tvc, TextCell cell)
@@ -91,14 +88,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			//as the the sender for this method is a CellTableViewCell
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios14.0")]
 		static void UpdateIsEnabled(CellTableViewCell cell, TextCell entryCell)
 		{
 			cell.UserInteractionEnabled = entryCell.IsEnabled;
-			if (!OperatingSystem.IsIOSVersionAtLeast(14))
-			{
-				cell.TextLabel.Enabled = entryCell.IsEnabled;
-				cell.DetailTextLabel.Enabled = entryCell.IsEnabled;
-			}
+			cell.TextLabel.Enabled = entryCell.IsEnabled;
+			cell.DetailTextLabel.Enabled = entryCell.IsEnabled;
 		}
 	}
 }

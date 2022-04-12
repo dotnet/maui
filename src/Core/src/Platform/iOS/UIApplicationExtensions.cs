@@ -14,10 +14,10 @@ namespace Microsoft.Maui.Platform
 				safeAreaInsets = new UIEdgeInsets(UIApplication.SharedApplication.StatusBarFrame.Size.Height, 0, 0, 0);
 			else if (application.GetKeyWindow() is UIWindow keyWindow)
 				safeAreaInsets = keyWindow.SafeAreaInsets;
-#pragma warning disable CA1416 // 'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later.
+#pragma warning disable CA1416 // TODO: 'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later.
 			else if (application.Windows.Length > 0)
 				safeAreaInsets = application.Windows[0].SafeAreaInsets;
-#pragma warning restore CA1416 // Not sure safe to suppress
+#pragma warning restore CA1416
 			else
 				safeAreaInsets = UIEdgeInsets.Zero;
 
@@ -26,16 +26,15 @@ namespace Microsoft.Maui.Platform
 
 		public static UIWindow? GetKeyWindow(this UIApplication application)
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(15))
-			{
-				var windows = application.Windows;
+#pragma warning disable CA1416 // TODO: 'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later.
+			var windows = application.Windows;
+#pragma warning restore CA1416
 
-				for (int i = 0; i < windows.Length; i++)
-				{
-					var window = windows[i];
-					if (window.IsKeyWindow)
-						return window;
-				}
+			for (int i = 0; i < windows.Length; i++)
+			{
+				var window = windows[i];
+				if (window.IsKeyWindow)
+					return window;
 			}
 
 			return null;
@@ -60,9 +59,10 @@ namespace Microsoft.Maui.Platform
 
 		public static IWindow? GetWindow(this UIWindowScene? windowScene)
 		{
-			if (windowScene is null || !OperatingSystem.IsIOSVersionAtLeast(13))
+			if (windowScene is null)
 				return null;
 
+#pragma warning disable CA1416 // TODO: 'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later
 			foreach (var window in windowScene.Windows)
 			{
 				var managedWindow = window.GetWindow();
@@ -70,6 +70,7 @@ namespace Microsoft.Maui.Platform
 				if (managedWindow is not null)
 					return managedWindow;
 			}
+#pragma warning restore CA1416
 
 			return null;
 		}

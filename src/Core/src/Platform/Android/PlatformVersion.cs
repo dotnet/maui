@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.Versioning;
 using Android.OS;
 
 namespace Microsoft.Maui.Platform

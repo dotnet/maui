@@ -41,7 +41,7 @@ namespace Microsoft.Maui
 
 			_graphicsView = new W2DGraphicsView() { Drawable = this };
 			if (_graphicsView == null)
-				return false;	
+				return false;
 
 			_platformElement.Tapped += ViewTapped;
 			_platformElement.PointerMoved += PointerMoved;

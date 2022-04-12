@@ -100,14 +100,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			cell.TextField.UpdateHorizontalTextAlignment(entryCell);
 		}
 
+		[UnsupportedOSPlatform("ios14.0")]
 		static void UpdateIsEnabled(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			cell.UserInteractionEnabled = entryCell.IsEnabled;
-			if (!OperatingSystem.IsIOSVersionAtLeast(14))
-			{
-				cell.TextLabel.Enabled = entryCell.IsEnabled;
-				cell.DetailTextLabel.Enabled = entryCell.IsEnabled;
-			}
+			cell.TextLabel.Enabled = entryCell.IsEnabled;
+			cell.DetailTextLabel.Enabled = entryCell.IsEnabled;
 			cell.TextField.Enabled = entryCell.IsEnabled;
 		}
 

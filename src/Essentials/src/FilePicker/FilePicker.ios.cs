@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
@@ -15,7 +14,7 @@ namespace Microsoft.Maui.Storage
 	{
 		async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
 		{
-			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
+#pragma warning disable CA1416 // TODO: UTType has [UnsupportedOSPlatform("ios14.0")]
 			var allowedUtis = options?.FileTypes?.Value?.ToArray() ?? new string[]
 			{
 				UTType.Content,
@@ -28,6 +27,7 @@ namespace Microsoft.Maui.Storage
 			// Use Open instead of Import so that we can attempt to use the original file.
 			// If the file is from an external provider, then it will be downloaded.
 			using var documentPicker = new UIDocumentPickerViewController(allowedUtis, UIDocumentPickerMode.Open);
+#pragma warning restore CA1416 // Constructor UIDocumentPickerViewController  has [UnsupportedOSPlatform("ios14.0")]
 			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
 				documentPicker.AllowsMultipleSelection = allowMultiple;
 			documentPicker.Delegate = new PickerDelegate
@@ -79,49 +79,36 @@ namespace Microsoft.Maui.Storage
 
 	public partial class FilePickerFileType
 	{
-		static FilePickerFileType PlatformImageFileType()
-		{
-			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
-			return new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+#pragma warning disable CA1416 // TODO: UTType has [UnsupportedOSPlatform("ios14.0")]
+		static FilePickerFileType PlatformImageFileType() =>
+			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.iOS, new[] { (string)UTType.Image } }
 			});
-		}
 
-		static FilePickerFileType PlatformPngFileType()
-		{
-			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
-			return new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileType PlatformPngFileType() =>
+			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.iOS, new[] { (string)UTType.PNG } }
 			});
-		}
 
-		static FilePickerFileType PlatformJpegFileType()
-		{
-			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
-			return new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileType PlatformJpegFileType() =>
+			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.iOS, new[] { (string)UTType.JPEG } }
 			});
-		}
 
-		static FilePickerFileType PlatformVideoFileType()
-		{
-			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
-			return new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileType PlatformVideoFileType() =>
+			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.iOS, new string[] { UTType.MPEG4, UTType.Video, UTType.AVIMovie, UTType.AppleProtectedMPEG4Video, "mp4", "m4v", "mpg", "mpeg", "mp2", "mov", "avi", "mkv", "flv", "gifv", "qt" } }
 			});
-		}
 
-		static FilePickerFileType PlatformPdfFileType()
-		{
-			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
-			return new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+		static FilePickerFileType PlatformPdfFileType() =>
+			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
 				{ DevicePlatform.iOS, new[] { (string)UTType.PDF } }
 			});
-		}
+#pragma warning restore CA1416
 	}
 }

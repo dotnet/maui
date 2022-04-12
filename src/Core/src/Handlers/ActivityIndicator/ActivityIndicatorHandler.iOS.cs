@@ -1,5 +1,4 @@
-﻿using System;
-using CoreGraphics;
+﻿using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
 
@@ -7,13 +6,12 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ActivityIndicatorHandler : ViewHandler<IActivityIndicator, MauiActivityIndicator>
 	{
-		protected override MauiActivityIndicator CreatePlatformView()
+		protected override MauiActivityIndicator CreatePlatformView() => new MauiActivityIndicator(CGRect.Empty, VirtualView)
 		{
-			var activityIndicator = new MauiActivityIndicator(CGRect.Empty, VirtualView);
-			if (!OperatingSystem.IsIOSVersionAtLeast(13)) // 'UIActivityIndicatorViewStyle.Gray' is unsupported on: 'ios' 13.0 and later
-				activityIndicator.ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray;
-			return activityIndicator;
-		}
+#pragma warning disable CA1416 // TODO: 'UIActivityIndicatorViewStyle.Gray' is unsupported on: 'ios' 13.0 and later
+			ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray
+#pragma warning restore CA1416
+		};
 
 		public static void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{

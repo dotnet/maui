@@ -59,7 +59,7 @@ namespace Microsoft.Maui.ApplicationModel
 			if (viewController != null)
 				return viewController;
 
-#pragma warning disable CA1416 // This call site is reachable on: 'iOS' 10.0 and later. 'UIApplication.KeyWindow' is unsupported on: 'ios' 13.0 and later.
+#pragma warning disable CA1416 // TODO: 'UIApplication.KeyWindow' is unsupported on: 'ios' 13.0 and later.
 			var window = UIApplication.SharedApplication.KeyWindow;
 
 			if (window != null && window.WindowLevel == UIWindowLevel.Normal)

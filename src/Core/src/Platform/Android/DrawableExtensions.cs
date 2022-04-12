@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.Versioning;
 using Android.Graphics;
 using AColor = Android.Graphics.Color;
 using AColorFilter = Android.Graphics.ColorFilter;
@@ -10,7 +9,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class DrawableExtensions
 	{
-		[SupportedOSPlatform("android29.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("android29.0")]
 		public static BlendMode? GetFilterMode(FilterMode mode)
 		{
 			switch (mode)

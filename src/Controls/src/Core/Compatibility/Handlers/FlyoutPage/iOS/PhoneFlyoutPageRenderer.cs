@@ -276,12 +276,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var view = _detailController.View;
 				view.Frame = target;
 				detailView.Layer.Opacity = (float)opacity;
-				if (!OperatingSystem.IsIOSVersionAtLeast(13))
-				{
-					UIView.SetAnimationCurve(UIViewAnimationCurve.EaseOut);
-					UIView.SetAnimationDuration(250);
-					UIView.CommitAnimations();
-				}
+#pragma warning disable CA1416 // TODO:  'UIView.SetAnimationCurve(UIViewAnimationCurve)' is unsupported on: 'ios' 13.0 and later
+				UIView.SetAnimationCurve(UIViewAnimationCurve.EaseOut);
+				UIView.SetAnimationDuration(250);
+				UIView.CommitAnimations();
+#pragma warning restore CA1416
 			}
 			else
 			{

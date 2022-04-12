@@ -78,10 +78,9 @@ namespace Microsoft.Maui
 
 			Directory.CreateDirectory(directory);
 
-			bool result = false;
-
-			if (!OperatingSystem.IsIOSVersionAtLeast(13))
-				result = imageData.Save(path, true);
+#pragma warning disable CA1416 // TODO: 'NSData.Save(string, bool)' is unsupported on: 'ios' 13.0 and later
+			var result = imageData.Save(path, true);
+#pragma warning restore CA1416
 
 			if (result == false)
 				throw new InvalidOperationException($"Unable to cache image at '{path}'.");

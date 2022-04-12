@@ -168,7 +168,7 @@ namespace Microsoft.Maui
 			{
 				if (font.AutoScalingEnabled)
 				{
-					System.Diagnostics.Debug.Assert(OperatingSystem.IsIOSVersionAtLeast(11));
+					System.Diagnostics.Debug.Assert(OperatingSystem.IsIOSVersionAtLeast(11), "UIFontMetrics.DefaultMetrics is supported on 'ios' 11.0 and later");
 					return UIFontMetrics.DefaultMetrics.GetScaledFont(uiFont);
 				}
 

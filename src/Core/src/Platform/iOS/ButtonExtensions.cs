@@ -69,12 +69,13 @@ namespace Microsoft.Maui.Platform
 			if (bottom == 0.0)
 				bottom = AlmostZero;
 
-			System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(15), "'UIButton.ContentEdgeInsets' is unsupported on: 'ios' 15.0 and later.");
+#pragma warning disable CA1416 // TODO: 'UIButton.ContentEdgeInsets' is unsupported on: 'ios' 15.0 and later.
 			platformButton.ContentEdgeInsets = new UIEdgeInsets(
 				(float)top,
 				(float)padding.Left,
 				(float)bottom,
 				(float)padding.Right);
+#pragma warning restore CA1416
 		}
 
 		public static void UpdateLineBreakMode(this UIButton nativeButton, ILineBreakMode button)

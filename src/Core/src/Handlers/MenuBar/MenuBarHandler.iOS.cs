@@ -25,41 +25,40 @@ namespace Microsoft.Maui.Handlers
 		void BuildNewMenu()
 		{
 			UIMenu? lastFoundMenu = null;
-			if (OperatingSystem.IsIOSVersionAtLeast(13)) // UIMenu is supported from iOS 13.0
+#pragma warning disable CA1416 // TODO: 'IUIMenuBuilder' is only supported on: 'ios' 13.0 and later
+			foreach (var item in VirtualView)
 			{
-				foreach (var item in VirtualView)
+				var handler = item.ToHandler(MauiContext!);
+				var menuItem = (UIMenu)handler!.PlatformView!;
+
+				UIMenu? catalystMenu = null;
+
+				var identifierConstant = menuItem.Identifier.GetConstant();
+				if (identifierConstant != null)
 				{
-					var handler = item.ToHandler(MauiContext!);
-					var menuItem = (UIMenu)handler!.PlatformView!;
-
-					UIMenu? catalystMenu = null;
-
-					var identifierConstant = menuItem.Identifier.GetConstant();
-					if (identifierConstant != null)
-					{
-						catalystMenu = PlatformView.GetMenu(identifierConstant);
-					}
-
-					lastFoundMenu = catalystMenu ?? lastFoundMenu;
-
-					if (catalystMenu == null)
-					{
-
-						if (lastFoundMenu != null)
-						{
-							var fileMenuId = lastFoundMenu.GetIdentifier();
-
-							PlatformView.InsertSiblingMenuAfter(menuItem, fileMenuId);
-						}
-						else
-						{
-							PlatformView.InsertSiblingMenuBefore(menuItem, UIMenuIdentifier.File.GetConstant());
-						}
-					}
-
-					lastFoundMenu = menuItem;
+					catalystMenu = PlatformView.GetMenu(identifierConstant);
 				}
+
+				lastFoundMenu = catalystMenu ?? lastFoundMenu;
+
+				if (catalystMenu == null)
+				{
+
+					if (lastFoundMenu != null)
+					{
+						var fileMenuId = lastFoundMenu.GetIdentifier();
+
+						PlatformView.InsertSiblingMenuAfter(menuItem, fileMenuId);
+					}
+					else
+					{
+						PlatformView.InsertSiblingMenuBefore(menuItem, UIMenuIdentifier.File.GetConstant());
+					}
+				}
+
+				lastFoundMenu = menuItem;
 			}
+#pragma warning restore CA1416
 		}
 
 		public void Add(IMenuBarItem view)

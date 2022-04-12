@@ -398,7 +398,7 @@ namespace Microsoft.Maui.Platform
 			var imageSize = button.ImageView.Image.Size;
 
 			var titleEdgeInsets = new UIEdgeInsets(spacing, -imageSize.Width, -imageSize.Height, 0.0f);
-#pragma warning disable CA1416 // Has [UnsupportedOSPlatform("ios15.0")], no sure if we want to add conditional instead
+#pragma warning disable CA1416 // TODO: 'TitleEdgeInsets', 'ImageEdgeInsets' has [UnsupportedOSPlatform("ios15.0")]
 			button.TitleEdgeInsets = titleEdgeInsets;
 
 			var labelString = button.TitleLabel.Text ?? string.Empty;
