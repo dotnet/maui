@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #if !NETSTANDARD
 		private string? HostPage { get; set; }
 
-		internal void SendUrlLoading(UrlLoadingEventArgs args) =>
+		internal void UrlLoading(UrlLoadingEventArgs args) =>
 			VirtualView.UrlLoading(args);
 
 		private RootComponentsCollection? _rootComponents;
