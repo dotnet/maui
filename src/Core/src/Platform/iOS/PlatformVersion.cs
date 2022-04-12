@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class PlatformVersion
+	internal static class PlatformVersion
 	{
 		public static bool IsAtLeast(int version)
 		{
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 
-	public static class PlatformApis
+	internal static class PlatformApis
 	{
 		public const string RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden = "RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden";
 		public const int UIActivityIndicatorViewStyleMedium = 13;

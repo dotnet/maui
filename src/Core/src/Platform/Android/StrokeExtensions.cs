@@ -149,6 +149,9 @@ namespace Microsoft.Maui.Platform
 				mauiDrawable.SetBackground(new SolidPaint(Colors.Transparent));
 
 			mauiDrawable.SetBorderShape(border.Shape);
+
+			if (platformView is ContentViewGroup contentViewGroup)
+				contentViewGroup.Clip = border;
 		}
 	}
 }

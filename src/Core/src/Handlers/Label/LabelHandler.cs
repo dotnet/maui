@@ -15,8 +15,12 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(ViewHandler.ViewMapper)
 		{
-#if WINDOWS || __IOS__
+#if __IOS__
 			[nameof(ILabel.Background)] = MapBackground,
+			[nameof(ILabel.Opacity)] = MapOpacity,
+#elif WINDOWS
+			[nameof(ILabel.Background)] = MapBackground,
+			[nameof(ILabel.Height)] = MapHeight,
 			[nameof(ILabel.Opacity)] = MapOpacity,
 #endif
 			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,

@@ -15,6 +15,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Hosting;
 
@@ -221,8 +222,8 @@ namespace Maui.Controls.Sample
 #elif WINDOWS
 					// Log everything in this one
 					events.AddWindows(windows => windows
-						.OnPlatformMessage((a, b) => 
-							LogEvent(nameof(WindowsLifecycle.OnPlatformMessage)))
+						// .OnPlatformMessage((a, b) => 
+						//	LogEvent(nameof(WindowsLifecycle.OnPlatformMessage)))
 						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
@@ -235,6 +236,9 @@ namespace Maui.Controls.Sample
 						return true;
 					}
 				});
+
+			//appBuilder
+			//	.UseFoldable();
 
 			// If someone wanted to completely turn off the CascadeInputTransparent behavior in their application, this next line would be an easy way to do it
 			// Microsoft.Maui.Controls.Layout.ControlsLayoutMapper.ModifyMapping(nameof(Microsoft.Maui.Controls.Layout.CascadeInputTransparent), (_, _, _) => { });

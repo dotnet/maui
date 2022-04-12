@@ -23,11 +23,7 @@ namespace Microsoft.Maui.Platform
 		{
 			try
 			{
-#if !NETSTANDARD1_0
 				return assembly.GetCustomAttributes(attrType, true);
-#else
-				return assembly.GetCustomAttributes(attrType).ToArray();
-#endif
 			}
 			catch (FileNotFoundException)
 			{
