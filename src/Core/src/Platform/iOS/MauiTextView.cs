@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiTextView : UITextView
 	{
 		readonly UILabel _placeholderLabel;
+		TextAlignment _verticalTextAlignment;
 
 		public MauiTextView()
 		{
@@ -68,6 +69,26 @@ namespace Microsoft.Maui.Platform
 					HidePlaceholderIfTextIsPresent(value);
 					TextSetOrChanged?.Invoke(this, EventArgs.Empty);
 				}
+			}
+		}
+
+		public override CGSize ContentSize
+		{
+			get => base.ContentSize;
+			set
+			{
+				base.ContentSize = value;
+				AdjustContentSize();
+			}
+		}
+
+		public TextAlignment VerticalTextAlignment
+		{
+			get => _verticalTextAlignment;
+			set
+			{
+				_verticalTextAlignment = value;
+				AdjustContentSize();
 			}
 		}
 
@@ -132,6 +153,28 @@ namespace Microsoft.Maui.Platform
 		{
 			HidePlaceholderIfTextIsPresent(Text);
 			TextSetOrChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		void AdjustContentSize()
+		{
+			if (Bounds.Height <= 0)
+				return;
+
+			var availableSpace = Bounds.Height - ContentSize.Height;
+			var insetTop = (nfloat)0.0f;
+			var insetBottom = (nfloat)0.0f;
+
+			if (VerticalTextAlignment == Maui.TextAlignment.Center)
+			{
+				insetTop = insetBottom = (nfloat)Math.Max(0, availableSpace / 2.0);
+			}
+
+			if (VerticalTextAlignment == Maui.TextAlignment.End)
+			{
+				insetTop = (nfloat)Math.Max(0, availableSpace);
+			}
+
+			ContentInset = new UIEdgeInsets(insetTop, ContentInset.Left, insetBottom, ContentInset.Right);
 		}
 	}
 }
