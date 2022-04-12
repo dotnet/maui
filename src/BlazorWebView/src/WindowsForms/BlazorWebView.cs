@@ -53,11 +53,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public WebView2Control WebView => _webview;
 
-		/// <summary>
-		/// Returns the current <see cref="WebView2WebViewManager"/> used by this control.
-		/// </summary>
-		public WebView2WebViewManager WebViewManager => _webviewManager!;
-
 		private WindowsFormsDispatcher ComponentsDispatcher { get; }
 
 		/// <inheritdoc />
