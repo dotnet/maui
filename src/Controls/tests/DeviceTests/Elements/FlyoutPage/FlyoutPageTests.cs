@@ -52,6 +52,27 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Details View Updates w/NavigationPage")]
+		public async Task DetailsViewUpdatesWithNavigationPage()
+		{
+			SetupBuilder();
+			var flyoutPage = new FlyoutPage()
+			{
+				Detail = new NavigationPage(new ContentPage() { Title = "Detail" }),
+				Flyout = new ContentPage() { Title = "Flyout" }
+			};
+
+			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
+			{
+				var details2 = new NavigationPage(new ContentPage() { Title = "Detail" });
+
+				flyoutPage.Detail = details2;
+				await OnLoadedAsync(details2.CurrentPage);
+				var detailView2 = (details2.CurrentPage.Handler as IPlatformViewHandler)?.PlatformView;
+				Assert.NotNull(detailView2);
+				await detailView2.OnLoadedAsync();
+			});
+		}
 
 		[Fact(DisplayName = "Details View Updates")]
 		public async Task DetailsViewUpdates()
