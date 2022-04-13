@@ -36,11 +36,6 @@ namespace Microsoft.Maui.Platform
 			platformLabel.VerticalTextAlignment = label.VerticalTextAlignment.ToPlatform();
 		}
 
-		public static void UpdateLineBreakMode(this Label platformLabel, ILabel label)
-		{
-			platformLabel.LineBreakMode = label.LineBreakMode.ToPlatform();
-		}
-
 		public static void UpdateTextDecorations(this Label platformLabel, ILabel label)
 		{
 			platformLabel.TextDecorations = label.TextDecorations.ToPlatform();
