@@ -92,11 +92,10 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(flyoutView, dl);
 
 				flyoutPage.Detail = details2;
-				var detailView2 = details2.ToPlatform();
 
-				await detailView2.OnLoadedAsync();
+				await OnLoadedAsync(details2);
 				await detailView.OnUnloadedAsync();
-				dl = FindPlatformFlyoutView(detailView2);
+				dl = FindPlatformFlyoutView(details2.ToPlatform());
 				Assert.Equal(flyoutView, dl);
 				Assert.Null(FindPlatformFlyoutView(detailView));
 			});

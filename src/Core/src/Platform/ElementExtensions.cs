@@ -101,13 +101,8 @@ namespace Microsoft.Maui.Platform
 			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
 				return replaceableView.ReplacedView.ToPlatform();
 
-			if (view.Handler == null)
-			{
-				var mauiContext = view.Parent?.Handler?.MauiContext ??
-					throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
 
-				return view.ToPlatform(mauiContext);
-			}
+			_ = view.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
 
 			if (view.Handler is IViewHandler viewHandler)
 			{
