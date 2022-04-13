@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls
 					(sender as Page).ParentSet -= OnPresentedPageParentSet;
 				}
 			}
-			else
+			else if (IsVisibleContent && page.IsVisible)
 			{
 				page.SendAppearing();
 			}
