@@ -31,6 +31,9 @@ namespace Microsoft.Maui
 
 		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
 		{
+			if (!viewHandler.CanUpdateProperty())
+				return;
+
 			var action = GetProperty(key);
 			action?.Invoke(viewHandler, virtualView);
 		}
