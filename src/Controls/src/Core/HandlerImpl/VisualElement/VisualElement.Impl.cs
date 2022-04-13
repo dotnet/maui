@@ -172,6 +172,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		FlowDirection IView.FlowDirection => FlowDirection;
+		EffectiveFlowDirection IView.EffectiveFlowDirection => FlowController.EffectiveFlowDirection;
 
 		Primitives.LayoutAlignment IView.HorizontalLayoutAlignment => default;
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => default;

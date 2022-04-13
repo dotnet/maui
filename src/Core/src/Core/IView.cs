@@ -20,6 +20,11 @@ namespace Microsoft.Maui
 		FlowDirection FlowDirection { get; }
 
 		/// <summary>
+		/// Indicate whether the layout direction was explicitly set, and whether the layout direction is right-to-left.
+		/// </summary>
+		EffectiveFlowDirection EffectiveFlowDirection { get; }
+
+		/// <summary>
 		/// Determines the horizontal aspect of this element's arrangement in a container
 		/// </summary>
 		LayoutAlignment HorizontalLayoutAlignment { get; }

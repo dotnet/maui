@@ -1,11 +1,10 @@
-using System;
-using System.ComponentModel;
+﻿using System;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Platform
 {
-	internal static class EffectiveFlowDirectionExtensions
+	public static class EffectiveFlowDirectionExtensions
 	{
-		internal static EffectiveFlowDirection ToEffectiveFlowDirection(this FlowDirection self, bool isExplicit = false)
+		public static EffectiveFlowDirection ToEffectiveFlowDirection(this FlowDirection self, bool isExplicit = false)
 		{
 			switch (self)
 			{
@@ -38,7 +37,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal static FlowDirection ToFlowDirection(this EffectiveFlowDirection self)
+		public static FlowDirection ToFlowDirection(this EffectiveFlowDirection self)
 		{
 			if (self.IsLeftToRight())
 				return FlowDirection.LeftToRight;
@@ -48,25 +47,21 @@ namespace Microsoft.Maui.Controls
 			throw new InvalidOperationException($"Cannot convert {self} to {nameof(FlowDirection)}.");
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/EffectiveFlowDirectionExtensions.xml" path="//Member[@MemberName='IsRightToLeft']/Docs" />
 		public static bool IsRightToLeft(this EffectiveFlowDirection self)
 		{
 			return (self & EffectiveFlowDirection.RightToLeft) == EffectiveFlowDirection.RightToLeft;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/EffectiveFlowDirectionExtensions.xml" path="//Member[@MemberName='IsLeftToRight']/Docs" />
 		public static bool IsLeftToRight(this EffectiveFlowDirection self)
 		{
 			return (self & EffectiveFlowDirection.RightToLeft) != EffectiveFlowDirection.RightToLeft;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/EffectiveFlowDirectionExtensions.xml" path="//Member[@MemberName='IsImplicit']/Docs" />
 		public static bool IsImplicit(this EffectiveFlowDirection self)
 		{
 			return (self & EffectiveFlowDirection.Explicit) != EffectiveFlowDirection.Explicit;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/EffectiveFlowDirectionExtensions.xml" path="//Member[@MemberName='IsExplicit']/Docs" />
 		public static bool IsExplicit(this EffectiveFlowDirection self)
 		{
 			return (self & EffectiveFlowDirection.Explicit) == EffectiveFlowDirection.Explicit;

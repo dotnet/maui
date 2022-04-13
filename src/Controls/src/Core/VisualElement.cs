@@ -340,6 +340,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		EffectiveFlowDirection _effectiveFlowDirection = default(EffectiveFlowDirection);
+		
 		EffectiveFlowDirection IFlowDirectionController.EffectiveFlowDirection
 		{
 			get => _effectiveFlowDirection;
