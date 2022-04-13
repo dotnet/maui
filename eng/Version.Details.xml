@@ -35,45 +35,37 @@
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="6.0.3" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="6.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c911002ab43b7b989ed67090f2a48d9073d5118d</Sha>
+      <Sha>f9ae0f5d30be2de3c0de61b5673bd8873231d70a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="6.0.3" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+    <Dependency Name="Microsoft.AspNetCore.Components" Version="6.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c911002ab43b7b989ed67090f2a48d9073d5118d</Sha>
+      <Sha>f9ae0f5d30be2de3c0de61b5673bd8873231d70a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components" Version="6.0.3" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="6.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c911002ab43b7b989ed67090f2a48d9073d5118d</Sha>
+      <Sha>f9ae0f5d30be2de3c0de61b5673bd8873231d70a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="6.0.3" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.AspNetCore.Components.Forms" Version="6.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c911002ab43b7b989ed67090f2a48d9073d5118d</Sha>
+      <Sha>f9ae0f5d30be2de3c0de61b5673bd8873231d70a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Forms" Version="6.0.3" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="6.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c911002ab43b7b989ed67090f2a48d9073d5118d</Sha>
+      <Sha>f9ae0f5d30be2de3c0de61b5673bd8873231d70a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="6.0.3" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="6.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c911002ab43b7b989ed67090f2a48d9073d5118d</Sha>
+      <Sha>f9ae0f5d30be2de3c0de61b5673bd8873231d70a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="6.0.3" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+    <Dependency Name="Microsoft.AspNetCore.Metadata" Version="6.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c911002ab43b7b989ed67090f2a48d9073d5118d</Sha>
+      <Sha>f9ae0f5d30be2de3c0de61b5673bd8873231d70a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Metadata" Version="6.0.3" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.JSInterop" Version="6.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c911002ab43b7b989ed67090f2a48d9073d5118d</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.JSInterop" Version="6.0.3" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c911002ab43b7b989ed67090f2a48d9073d5118d</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="6.0.3" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>1217354ca79000178dca5bca83fe6ec490e1d2d6</Sha>
+      <Sha>f9ae0f5d30be2de3c0de61b5673bd8873231d70a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Tasks" Version="7.0.100-preview.2.22102.8">
       <Uri>https://github.com/dotnet/templating</Uri>
