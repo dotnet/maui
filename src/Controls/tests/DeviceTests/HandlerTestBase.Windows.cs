@@ -118,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = element.Handler;
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			var position = element.GetLocationRelativeTo(rootManager.AppTitleBar);
-			var distance = rootManager.AppTitleBar.Height - position.Value.Y;
+			var distance = rootManager.AppTitleBar.ActualHeight - position.Value.Y;
 			return distance;
 		}
 

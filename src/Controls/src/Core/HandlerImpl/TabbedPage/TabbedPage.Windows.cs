@@ -1,21 +1,15 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Handlers;
+using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WFrame = Microsoft.UI.Xaml.Controls.Frame;
 using WApp = Microsoft.UI.Xaml.Application;
 using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Media.Animation;
 using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
 using WPage = Microsoft.UI.Xaml.Controls.Page;
-using WThickness = Microsoft.UI.Xaml.Thickness;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
-using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -24,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		MauiNavigationView? _navigationView;
 		NavigationRootManager? _navigationRootManager;
 		WFrame? _navigationFrame;
-		bool _callConnectHandler;
+		bool _connectedToHandler;
 		WFrame NavigationFrame => _navigationFrame ?? throw new ArgumentNullException(nameof(NavigationFrame));
 		IMauiContext MauiContext => this.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 
@@ -51,7 +45,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_navigationRootManager = MauiContext.GetNavigationRootManager();
-
 			return _navigationFrame;
 		}
 
@@ -66,31 +59,31 @@ namespace Microsoft.Maui.Controls
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
-			if (_callConnectHandler)
-			{
-				OnConnectHandler();
-			}
-			_callConnectHandler = false;
+
+			if (Handler != null)
+				OnHandlerConnected();
 		}
 
 		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args)
 		{
-			_callConnectHandler = false;
+			_connectedToHandler = false;
 
 			if (args.OldHandler != null && args.NewHandler == null)
-				OnDisconnectHandler(args.OldHandler.PlatformView as FrameworkElement);
-			else if (args.OldHandler == null && args.NewHandler != null)
-				_callConnectHandler = true;
+				OnHandlerDisconnected(args.OldHandler.PlatformView as FrameworkElement);
 		}
 
-		void OnConnectHandler()
+		void OnHandlerConnected()
 		{
+			if (_connectedToHandler)
+				return;
+
+			_connectedToHandler = true;
+
 			if (this.HasAppeared)
 				OnTabbedPageAppearing(this, EventArgs.Empty);
 
 			Appearing += OnTabbedPageAppearing;
 			Disappearing += OnTabbedPageDisappearing;
-
 			NavigationFrame.Navigated += OnNavigated;
 
 			// If CreatePlatformView didn't set the NavigationView then that means we are using the
@@ -125,8 +118,12 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnDisconnectHandler(FrameworkElement? platformView)
+		void OnHandlerDisconnected(FrameworkElement? platformView)
 		{
+			if (!_connectedToHandler)
+				return;
+
+			_connectedToHandler = false;
 			if (_navigationView != null)
 			{
 				_navigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
@@ -142,6 +139,7 @@ namespace Microsoft.Maui.Controls
 				_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
 
 			OnTabbedPageDisappearing(this, EventArgs.Empty);
+
 			_navigationView = null;
 			_navigationRootManager = null;
 			_navigationFrame = null;
@@ -162,6 +160,8 @@ namespace Microsoft.Maui.Controls
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
 		{
 			UpdateValuesWaitingForNavigationView();
+			if (sender is MauiNavigationView mnv)
+				mnv.OnApplyTemplateFinished -= OnApplyTemplateFinished;
 		}
 
 		void OnNavigationViewSizeChanged(object sender, SizeChangedEventArgs e)

@@ -66,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var rootManager = handler.MauiContext.GetNavigationRootManager();
 				var rootView = rootManager.RootView as WindowRootView;
-				Assert.True(rootView.AppTitleBar.Margin.Left > 20);
+				Assert.True(rootView.AppTitleBarContainer.Margin.Left > 20);
 			});
 		}
 	}

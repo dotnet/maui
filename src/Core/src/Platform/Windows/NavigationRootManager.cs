@@ -9,6 +9,8 @@ namespace Microsoft.Maui.Platform
 	{
 		Window _platformWindow;
 		WindowRootView _rootView;
+		bool _firstConnect;
+		bool _disconnected;
 
 		public NavigationRootManager(Window platformWindow)
 		{
@@ -53,7 +55,7 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Connect(UIElement platformView)
 		{
-			bool firstConnect = _rootView.Content == null;
+			bool firstConnect = _firstConnect;
 
 			if (!firstConnect)
 			{
@@ -63,6 +65,8 @@ namespace Microsoft.Maui.Platform
 				// It might have code in the handler that retrieves this class.
 				_rootView.Content = null;
 			}
+
+			_firstConnect = false;
 
 			NavigationView rootNavigationView;
 			if (platformView is NavigationView nv)
@@ -85,21 +89,27 @@ namespace Microsoft.Maui.Platform
 				_rootView.Content = rootNavigationView;
 			}
 
-			if (firstConnect)
+			if (_disconnected)
 			{
 				_platformWindow.Activated += OnWindowActivated;
+			}
 
+			if (firstConnect)
+			{
 				if (_rootView.AppTitleBarContentControl != null && _platformWindow.ExtendsContentIntoTitleBar)
 					UpdateAppTitleBar(true);
 
 				SetWindowTitle(_platformWindow.GetWindow()?.Title);
 			}
+
+			_disconnected = false;
 		}
 
 		public virtual void Disconnect()
 		{
 			_platformWindow.Activated -= OnWindowActivated;
 			_rootView.Content = null;
+			_disconnected = true;
 		}
 
 		internal void UpdateAppTitleBar(bool isActive)
