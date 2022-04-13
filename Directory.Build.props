@@ -87,6 +87,9 @@
     <PackageVersion>$(DotNetVersionBand)-dev</PackageVersion>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts</PackageOutputPath>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="all" />
+  </ItemGroup>
   <!-- This target is replaced by GitInfo when restored. Allows Versions.targets to rely on it before restore. -->
   <Target Name="GitVersion" />
   <Target Name="GitInfo" />
