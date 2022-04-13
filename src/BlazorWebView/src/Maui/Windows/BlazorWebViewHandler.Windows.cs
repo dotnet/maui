@@ -73,6 +73,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				contentRootDir,
 				this);
 
+			StaticContentHotReloadManager.Default.AttachToWebViewManagerIfEnabled(_webviewManager);
+
 			if (RootComponents != null)
 			{
 				foreach (var rootComponent in RootComponents)
