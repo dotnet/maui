@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Authentication
 				{
 					foreach (var cookie in cookies)
 					{
-#pragma warning disable CA1416 // Known false positive with lambda, instead suppressing we can also Assert here
+#pragma warning disable CA1416 // Known false positive with lambda, here we can also assert the version
 						WKWebsiteDataStore.DefaultDataStore.HttpCookieStore.DeleteCookie(cookie, null);
 #pragma warning restore CA1416
 					}

@@ -24,8 +24,8 @@ namespace Microsoft.Maui.ApplicationModel
 				return Task.FromResult(GetPhotoPermissionStatus(PHAccessLevel.ReadWrite));
 			}
 
-			[SupportedOSPlatform("tvos14.0")]
-			[SupportedOSPlatform("macos11.0")]
+			/*[SupportedOSPlatform("tvos14.0")] TODO: adding these attributes causes warning in below if def, if we want to add this we need to use norma if condition instead of if def below
+			[SupportedOSPlatform("macos11.0")] This call site is reachable on: 'ios' 14.0 and later, 'maccatalyst' 14.0 and later, 'macOS/OSX' 11.0 and later, 'tvos' 14.0 and later. 'PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker is only supported on: 'ios' 14.0 and later, 'maccatalyst' 14.0 and later*/
 			[SupportedOSPlatform("ios14.0")]
 			public override async Task<PermissionStatus> RequestAsync()
 			{
@@ -37,7 +37,6 @@ namespace Microsoft.Maui.ApplicationModel
 					return status;
 				}
 #if __IOS__
-#pragma warning disable CA1416 // Somehow this __IOS__ if def is not working, could not find where it is defined
 				else if (status == PermissionStatus.Limited)
 				{
 					PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
@@ -45,7 +44,6 @@ namespace Microsoft.Maui.ApplicationModel
 						WindowStateManager.Default.GetCurrentUIViewController());
 					return status;
 				}
-#pragma warning restore CA1416
 #endif
 
 				EnsureMainThread();
