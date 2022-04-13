@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				VirtualView.JSComponents,
 				hostPageRelativePath);
 
-			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
+			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager, AppOrigin);
 
 			if (RootComponents != null)
 			{

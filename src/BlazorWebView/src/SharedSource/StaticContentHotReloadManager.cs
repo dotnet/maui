@@ -16,47 +16,43 @@ namespace Microsoft.AspNetCore.Components.WebView
 	{
 		private delegate void ContentUpdatedHandler(string url);
 		private static event ContentUpdatedHandler? OnContentUpdated;
+		private static string AppOrigin = default!;
 
-		private static readonly Dictionary<string, (string? ContentType, byte[] Content)> _updatedContent = new(StringComparer.Ordinal)
-		{
-			{ "_framework/static-content-hot-reload.js", (ContentType: "text/javascript", Content: Encoding.UTF8.GetBytes(@"
+		private static readonly Dictionary<string, (string? ContentType, byte[] Content)> _updatedContentByAbsoluteUrl = new(StringComparer.Ordinal);
+
+		private static readonly string StaticContentHotReloadModuleSource = @"
 	export function notifyContentUpdated(url) {
 		console.log('IN notifyContentUpdated');
 		console.log(url);
+		debugger;
 	}
-")) },
-		};
+";
 
 		/// <summary>
 		/// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.
 		/// </summary>
 		public static void UpdateContent(string assemblyName, string relativePath, byte[] content)
 		{
-			var url = GetUrlForStaticContent(assemblyName, relativePath);
-			_updatedContent[url] = (ContentType: null, Content: content);
-			OnContentUpdated?.Invoke(url);
+			var absoluteUrl = GetAbsoluteUrlForStaticContent(assemblyName, relativePath);
+			_updatedContentByAbsoluteUrl[absoluteUrl] = (ContentType: null, Content: content);
+			OnContentUpdated?.Invoke(absoluteUrl);
 		}
 
-		public static void AttachToWebViewManagerIfEnabled(WebViewManager manager)
+		public static void AttachToWebViewManagerIfEnabled(WebViewManager manager, string appOrigin)
 		{
 			if (MetadataUpdater.IsSupported)
 			{
+				AppOrigin = appOrigin;
+				_updatedContentByAbsoluteUrl[AppOrigin + "_framework/static-content-hot-reload.js"] =
+					(ContentType: "text/javascript", Content: Encoding.UTF8.GetBytes(StaticContentHotReloadModuleSource));
+
 				manager.AddRootComponentAsync(typeof(StaticContentUpdater), "body::after", ParameterView.Empty);
 			}
 		}
 
-		public static bool TryReplaceResponseContent(string appOrigin, string requestUri, ref int responseStatusCode, ref Stream responseContent, IDictionary<string, string> responseHeaders)
+		public static bool TryReplaceResponseContent(string requestAbsoluteUri, ref int responseStatusCode, ref Stream responseContent, IDictionary<string, string> responseHeaders)
 		{
-			if (!MetadataUpdater.IsSupported
-				|| !(new Uri(requestUri) is Uri requestUriParsed)
-				|| !(new Uri(appOrigin) is Uri appOriginUri)
-				|| !appOriginUri.IsBaseOf(requestUriParsed))
-			{
-				return false;
-			}
-
-			var relativeUri = appOriginUri.MakeRelativeUri(requestUriParsed).ToString();
-			if (_updatedContent.TryGetValue(relativeUri, out var values))
+			if (MetadataUpdater.IsSupported && _updatedContentByAbsoluteUrl.TryGetValue(requestAbsoluteUri, out var values))
 			{
 				responseStatusCode = 200;
 				responseContent = new MemoryStream(values.Content);
@@ -73,7 +69,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 			}
 		}
 		
-		private static string GetUrlForStaticContent(string assemblyName, string relativePath)
+		private static string GetAbsoluteUrlForStaticContent(string assemblyName, string relativePath)
 		{
 			// This logic might not cover every circumstance if the developer customizes the host page path
 			// or is doing something custom with static web assets. However it should cover any mainstream
@@ -99,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 				relativePath = $"_content/{assemblyName}/{relativePath}";
 			}
 
-			return relativePath;
+			return AppOrigin + relativePath;
 		}
 
 		// To provide a consistent way of transporting the data across all platforms,

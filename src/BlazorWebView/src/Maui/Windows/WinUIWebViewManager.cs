@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 				
 				var hotReloadedContent = Stream.Null;
-				if (StaticContentHotReloadManager.TryReplaceResponseContent(AppOrigin, requestUri, ref statusCode, ref hotReloadedContent, headers))
+				if (StaticContentHotReloadManager.TryReplaceResponseContent(requestUri, ref statusCode, ref hotReloadedContent, headers))
 				{
 					stream = new InMemoryRandomAccessStream();
 					var memStream = new MemoryStream();

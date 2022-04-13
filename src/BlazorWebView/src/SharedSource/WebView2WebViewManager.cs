@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <summary>
 		/// Gets the application's base URI. Defaults to <c>https://0.0.0.0/</c>
 		/// </summary>
-		protected static readonly string AppOrigin = $"https://{AppHostAddress}/";
+		protected internal static readonly string AppOrigin = $"https://{AppHostAddress}/";
 
 		private static readonly Uri AppOriginUri = new(AppOrigin);
 
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 			{
-				StaticContentHotReloadManager.TryReplaceResponseContent(AppOrigin, requestUri, ref statusCode, ref content, headers);
+				StaticContentHotReloadManager.TryReplaceResponseContent(requestUri, ref statusCode, ref content, headers);
 
 				var headerString = GetHeaderString(headers);
 				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(content, statusCode, statusMessage, headerString);
