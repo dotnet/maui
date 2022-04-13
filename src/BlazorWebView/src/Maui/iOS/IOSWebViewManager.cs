@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// </summary>
 	internal class IOSWebViewManager : WebViewManager
 	{
+		private static readonly string AppOrigin = $"https://{BlazorWebView.AppHostAddress}/";
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
 		private readonly WKWebView _webview;
 
@@ -55,8 +56,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webview.LoadRequest(request);
 		}
 
-		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers) =>
-			TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
+		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
+		{
+			var defaultResult = TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
+			var hotReloadedResult = StaticContentHotReloadManager.TryReplaceResponseContent(AppOrigin, uri, ref statusCode, ref content, headers);
+			return defaultResult || hotReloadedResult;
+		}
 
 		/// <inheritdoc />
 		protected override void SendMessage(string message)

@@ -271,8 +271,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 			{
-				var headerString = GetHeaderString(headers);
+				StaticContentHotReloadManager.TryReplaceResponseContent(AppOrigin, requestUri, ref statusCode, ref content, headers);
 
+				var headerString = GetHeaderString(headers);
 				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(content, statusCode, statusMessage, headerString);
 			}
 #elif WEBVIEW2_MAUI

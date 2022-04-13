@@ -108,7 +108,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				statusMessage = "OK";
 				var contentType = StaticContentProvider.GetResponseContentTypeOrDefault(relativePath);
 				headers = StaticContentProvider.GetResponseHeaders(contentType);
-				var headerString = GetHeaderString(headers);
 				IRandomAccessStream? stream = null;
 				if (_isPackagedApp)
 				{
@@ -133,8 +132,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						await stream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
 					}
 				}
+				
+				var hotReloadedContent = Stream.Null;
+				if (StaticContentHotReloadManager.TryReplaceResponseContent(AppOrigin, requestUri, ref statusCode, ref hotReloadedContent, headers))
+				{
+					stream = new InMemoryRandomAccessStream();
+					var memStream = new MemoryStream();
+					hotReloadedContent.CopyTo(memStream);
+					await stream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
+				}
+
 				if (stream != null)
 				{
+					var headerString = GetHeaderString(headers);
 					eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
 						stream,
 						statusCode,
