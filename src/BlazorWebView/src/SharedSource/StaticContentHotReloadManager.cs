@@ -22,9 +22,8 @@ namespace Microsoft.AspNetCore.Components.WebView
 
 		private static readonly string StaticContentHotReloadModuleSource = @"
 	export function notifyContentUpdated(url) {
-		console.log('IN notifyContentUpdated');
-		console.log(url);
-		debugger;
+		const tagsToUpdate = Array.from(document.querySelectorAll('link[rel=stylesheet]')).filter(x => x.href === url);
+		tagsToUpdate.forEach(tag => tag.href += '');
 	}
 ";
 
