@@ -12,6 +12,16 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable RS0016 // Add public types and members to the declared API
+	public static class TemporaryStaticContent
+	{
+		public static void UpdateContent(string assemblyName, string relativePath, byte[] contents)
+			=> StaticContentHotReloadManager.UpdateContent(assemblyName, relativePath, contents);
+	}
+#pragma warning restore RS0016 // Add public types and members to the declared API
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+
 	internal static class StaticContentHotReloadManager
 	{
 		private delegate void ContentUpdatedHandler(string url);
@@ -22,8 +32,16 @@ namespace Microsoft.AspNetCore.Components.WebView
 
 		private static readonly string StaticContentHotReloadModuleSource = @"
 	export function notifyContentUpdated(url) {
-		const tagsToUpdate = Array.from(document.querySelectorAll('link[rel=stylesheet]')).filter(x => x.href === url);
-		tagsToUpdate.forEach(tag => tag.href += '');
+		const allLinkElems = Array.from(document.querySelectorAll('link[rel=stylesheet]'));
+		const matchingLinkElems = allLinkElems.filter(x => x.href === url);
+
+		// If we can't find a matching link element, that probably means it's a CSS file imported via @import
+		// from some other CSS file. We can't know which other file imports it, so refresh them all.
+		const linkElemsToUpdate = matchingLinkElems.length > 0 || !url.endsWith('.css')
+			? matchingLinkElems
+			: allLinkElems;
+
+		linkElemsToUpdate.forEach(tag => tag.href += '');
 	}
 ";
 
@@ -89,7 +107,12 @@ namespace Microsoft.AspNetCore.Components.WebView
 			}
 
 			// SWA convention for RCLs
-			if (!string.Equals(assemblyName, Assembly.GetEntryAssembly()!.GetName().Name, StringComparison.Ordinal))
+			// Note that on Android, entryAssembly will be null, so we have no way to know if the file comes from an RCL or not.
+			// As a temporary stage, Android will treat all content as if it is *not* from an RCL, which unfortunately means we
+			// won't be able to hot-reload CSS from an RCL on Android.
+			var entryAssembly = Assembly.GetEntryAssembly();
+			if (entryAssembly is not null
+				&& !string.Equals(assemblyName, entryAssembly.GetName().Name, StringComparison.Ordinal))
 			{
 				relativePath = $"_content/{assemblyName}/{relativePath}";
 			}
