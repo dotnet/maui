@@ -41,7 +41,6 @@ namespace Microsoft.Maui.DeviceTests
 					scopedContext.AddWeakSpecific(MauiProgram.CurrentWindow);
 					var mauiContext = scopedContext.MakeScoped(true);
 					navigationRootManager = mauiContext.GetNavigationRootManager();
-					navigationRootManager.UseCustomAppTitleBar = false;
 
 					MauiContext
 						.Services

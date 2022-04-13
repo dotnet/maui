@@ -62,4 +62,6 @@
     <Compile Include="Properties\MapsKey.cs" Condition="Exists('Properties\MapsKey.cs')" />
   </ItemGroup>
 
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
 </Project>

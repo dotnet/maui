@@ -29,6 +29,6 @@
     <MauiSplashScreen Include="Resources\AppIcons\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
   </ItemGroup>
 
-  <Import Project="../../../Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

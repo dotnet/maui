@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
-using Windows.Storage;
 using Windows.Storage.Streams;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 
@@ -17,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// An implementation of <see cref="WebViewManager"/> that uses the Edge WebView2 browser control
 	/// to render web content in WinUI applications.
 	/// </summary>
-	public class WinUIWebViewManager : WebView2WebViewManager
+	internal class WinUIWebViewManager : WebView2WebViewManager
 	{
 		private readonly WebView2Control _webview;
 		private readonly string _hostPageRelativePath;
@@ -36,7 +35,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 		}
 
-#pragma warning disable RS0022
 		/// <summary>
 		/// Initializes a new instance of <see cref="WinUIWebViewManager"/>
 		/// </summary>
@@ -63,7 +61,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_hostPageRelativePath = hostPageRelativePath;
 			_contentRootDir = contentRootDir;
 		}
-#pragma warning restore RS0022
 
 		/// <inheritdoc />
 		protected override async Task HandleWebResourceRequest(CoreWebView2WebResourceRequestedEventArgs eventArgs)

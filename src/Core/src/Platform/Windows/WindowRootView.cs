@@ -7,28 +7,35 @@ using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Platform
 {
-
 	public partial class WindowRootView : ContentControl
 	{
+		public static readonly DependencyProperty AppTitleBarTemplateProperty
+			= DependencyProperty.Register(nameof(AppTitleBarTemplate), typeof(object), typeof(WindowRootView),
+				new PropertyMetadata(null, OnAppTitleBarTemplateChanged));
 
-		public event TypedEventHandler<NavigationView, NavigationViewBackRequestedEventArgs>? BackRequested;
-		bool _hasTitleBarImage = false;
+		double _appTitleBarHeight;
+		internal event EventHandler? OnAppTitleBarChanged;
 		internal event EventHandler? OnApplyTemplateFinished;
 		internal event EventHandler? ContentChanged;
 		string? _windowTitle;
 		MauiToolbar? _toolbar;
 		MenuBar? _menuBar;
+		FrameworkElement? _appTitleBar;
+		bool _hasTitleBarImage = false;
+		public event TypedEventHandler<NavigationView, NavigationViewBackRequestedEventArgs>? BackRequested;
 
 		public WindowRootView()
 		{
 		}
 
-		public StackPanel? RootStackPanel { get; private set; }
-		public Image? AppFontIcon { get; private set; }
-		public TextBlock? AppTitle { get; private set; }
-		public RootNavigationView? NavigationViewControl { get; private set; }
-		public FrameworkElement? AppTitleBar { get; private set; }
+		internal ContentControl? AppTitleBarContentControl { get; private set; }
+		internal FrameworkElement? AppTitleBarContainer { get; private set; }
 
+		Image? AppFontIcon { get; set; }
+		internal TextBlock? AppTitle { get; private set; }
+
+		public RootNavigationView? NavigationViewControl { get; private set; }
+		
 		internal MauiToolbar? Toolbar
 		{
 			get => _toolbar;
@@ -55,22 +62,149 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public DataTemplate? AppTitleBarTemplate
+		{
+			get => (DataTemplate?)GetValue(AppTitleBarTemplateProperty);
+			set => SetValue(AppTitleBarTemplateProperty, value);
+		}
+
+		internal FrameworkElement? AppTitleBar
+		{
+			get
+			{
+				if (_appTitleBar != null)
+					return _appTitleBar;
+
+				if (AppTitleBarContentControl == null)
+					return null;
+
+				var cp = AppTitleBarContentControl.GetFirstDescendant<ContentPresenter>();
+
+				if (cp == null)
+					return null;
+
+				_appTitleBar = cp.GetFirstDescendant<FrameworkElement>();
+
+				if (_appTitleBar != null)
+				{
+					OnAppTitleBarChanged?.Invoke(this, EventArgs.Empty);
+				}
+				else
+				{
+					_appTitleBar = cp;
+					OnAppTitleBarChanged?.Invoke(this, EventArgs.Empty);
+				}
+
+				return _appTitleBar;
+			}
+		}
+
+		internal void UpdateAppTitleBar(Graphics.Rect captionButtonRect, bool useCustomAppTitleBar)
+		{
+			if (AppTitleBarContentControl != null)
+			{
+				AppTitleBarContentControl.MinHeight = captionButtonRect.Height;
+
+				if (AppTitleBarContentControl.ActualHeight <= 0)
+					_appTitleBarHeight = captionButtonRect.Height;
+				else
+					_appTitleBarHeight = AppTitleBarContentControl.ActualHeight;
+
+				if (useCustomAppTitleBar)
+				{
+					AppTitleBarContentControl.Visibility = UI.Xaml.Visibility.Visible;
+				}
+				else
+				{
+					AppTitleBarContentControl.Visibility = UI.Xaml.Visibility.Collapsed;
+				}
+			}
+			else
+			{
+				_appTitleBarHeight = captionButtonRect.Height;
+			}
+
+			NavigationViewControl?.UpdateAppTitleBar(_appTitleBarHeight, useCustomAppTitleBar);
+		}
+
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
 
-			AppTitleBar = (FrameworkElement)GetTemplateChild("AppTitleBar");
-			AppFontIcon = (Image)GetTemplateChild("AppFontIcon");
-			AppTitle = (TextBlock)GetTemplateChild("AppTitle");
-			RootStackPanel = (StackPanel)GetTemplateChild("RootStackPanel");
+			AppTitleBarContainer = (FrameworkElement)GetTemplateChild("AppTitleBarContainer");
+			AppTitleBarContentControl = (ContentControl?)GetTemplateChild("AppTitleBarContentControl") ??
+				AppTitleBarContainer.GetDescendantByName<ContentControl>("AppTitleBarContentControl");
+
+			if (AppTitleBarContentControl != null)
+			{
+				LoadAppTitleBarContainer();
+			}
+			else
+			{
+				AppTitleBarContainer.Loaded += OnAppTitleBarContainerLoaded;
+			}
 
 			OnApplyTemplateFinished?.Invoke(this, EventArgs.Empty);
 
 			UpdateAppTitleBarMargins();
-
-			AppFontIcon.ImageOpened += OnImageOpened;
-			AppFontIcon.ImageFailed += OnImageFailed;
 			SetWindowTitle(_windowTitle);
+
+			void OnAppTitleBarContainerLoaded(object sender, RoutedEventArgs e)
+			{
+				AppTitleBarContainer.Loaded -= OnAppTitleBarContainerLoaded;
+
+				AppTitleBarContentControl =
+					AppTitleBarContainer.GetDescendantByName<ContentControl>("AppTitleBarContentControl");
+
+				LoadAppTitleBarContainer();
+			}
+		}
+
+		void LoadAppTitleBarContainer()
+		{
+			if (AppTitleBarContentControl == null)
+				return;
+
+			if (AppTitleBar == null)
+				AppTitleBarContentControl.Loaded += OnAppTitleBarContentControlLoaded;
+			else
+				LoadAppTitleBarControls();
+
+			AppTitleBarContentControl.SizeChanged += (_, __) =>
+			{
+				if (_appTitleBarHeight != AppTitleBarContentControl.ActualHeight)
+				{
+					_appTitleBarHeight = AppTitleBarContentControl.ActualHeight;
+					NavigationViewControl?.UpdateAppTitleBar(_appTitleBarHeight);
+				}
+			};
+
+			void OnAppTitleBarContentControlLoaded(object sender, RoutedEventArgs e)
+			{
+				LoadAppTitleBarControls();
+				AppTitleBarContentControl.Loaded -= OnAppTitleBarContentControlLoaded;
+			}
+		}
+
+		void LoadAppTitleBarControls()
+		{
+			if (AppTitleBar == null)
+				return;
+
+			if (AppFontIcon != null)
+				return;
+
+			AppFontIcon = (Image?)AppTitleBar?.FindName("AppFontIcon");
+			AppTitle = (TextBlock?)AppTitleBar?.FindName("AppTitle");
+
+			if (AppFontIcon != null)
+			{
+				AppFontIcon.ImageOpened += OnImageOpened;
+				AppFontIcon.ImageFailed += OnImageFailed;
+			}
+
+			SetWindowTitle(_windowTitle);
+			UpdateAppTitleBarMargins();
 		}
 
 
@@ -89,9 +223,11 @@ namespace Microsoft.Maui.Platform
 				NavigationViewControl.DisplayModeChanged += OnNavigationViewControlDisplayModeChanged;
 				NavigationViewControl.BackRequested += OnNavigationViewBackRequested;
 				NavigationViewControl.Toolbar = Toolbar;
+				NavigationViewControl.OnApplyTemplateFinished += OnNavigationViewControlOnApplyTemplateFinished;
 				var backButtonToken = NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, AppBarNavigationIconsChanged);
 				var paneToggleToken = NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, AppBarNavigationIconsChanged);
-
+				var backButtonWidthToken = NavigationViewControl.RegisterPropertyChangedCallback(MauiNavigationView.NavigationBackButtonWidthProperty, AppBarNavigationIconsChanged);
+				
 				_contentChanged = new ActionDisposable(() =>
 				{
 					mnv.DisplayModeChanged -= OnNavigationViewControlDisplayModeChanged;
@@ -99,8 +235,26 @@ namespace Microsoft.Maui.Platform
 					mnv.Toolbar = null;
 					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, backButtonToken);
 					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, paneToggleToken);
+					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.NavigationBackButtonWidthProperty, backButtonWidthToken);
 					NavigationViewControl = null;
 				});
+				
+
+				if (_appTitleBarHeight > 0)
+				{
+					NavigationViewControl.UpdateAppTitleBar(_appTitleBarHeight);
+				}
+			}
+			
+			ContentChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		void OnNavigationViewControlOnApplyTemplateFinished(object? sender, EventArgs e)
+		{
+			if (NavigationViewControl != null)
+			{
+				NavigationViewControl.OnApplyTemplateFinished -= OnNavigationViewControlOnApplyTemplateFinished;
+				NavigationViewControl.ButtonHolderGrid!.SizeChanged += OnButtonHolderGridSizeChanged;
 			}
 
 			ContentChanged?.Invoke(this, EventArgs.Empty);
@@ -140,46 +294,17 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateAppTitleBarMargins()
 		{
-			if (NavigationViewControl == null)
+			if (NavigationViewControl?.ButtonHolderGrid == null)
+			{
+				return;
+			}
+
+			if (AppTitleBarContentControl == null || AppTitleBarContainer == null)
 				return;
 
-			if (AppTitleBar == null)
-				return;
-
-			//const int topIndent = 16;
-			const int expandedIndent = 48;
-			int minimalIndent = 0;
-
-			// TODO: Once we implement Left pane navigation we'll probably need to adjust these calculations a bit
-			if (!NavigationViewControl.IsBackButtonVisible.Equals(NavigationViewBackButtonVisible.Collapsed))
-			{
-				minimalIndent += 48;
-			}
-
-			if (NavigationViewControl.IsPaneToggleButtonVisible)
-			{
-				minimalIndent += 48;
-			}
-
-			WThickness currMargin = AppTitleBar.Margin;
-
-			// Set the TitleBar margin dependent on NavigationView display mode
-			if (NavigationViewControl.PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
-			{
-				AppTitleBar.Margin = new WThickness(minimalIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
-			}
-			else if (NavigationViewControl.PaneDisplayMode == NavigationViewPaneDisplayMode.Left)
-			{
-				AppTitleBar.Margin = new WThickness(minimalIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
-			}
-			else if (NavigationViewControl.DisplayMode == NavigationViewDisplayMode.Minimal)
-			{
-				AppTitleBar.Margin = new WThickness(minimalIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
-			}
-			else
-			{
-				AppTitleBar.Margin = new WThickness(expandedIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
-			}
+			WThickness currMargin = AppTitleBarContainer.Margin;
+			var leftIndent = NavigationViewControl.ButtonHolderGrid.ActualWidth;
+			AppTitleBarContainer.Margin = new WThickness(leftIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
 
 			// If the AppIcon loads correctly then we set a margin for the text from the image
 			if (_hasTitleBarImage)
@@ -201,6 +326,16 @@ namespace Microsoft.Maui.Platform
 				if (AppFontIcon != null)
 					AppFontIcon.Visibility = UI.Xaml.Visibility.Collapsed;
 			}
+		}
+
+		void OnButtonHolderGridSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			UpdateAppTitleBarMargins();
+		}
+
+		static void OnAppTitleBarTemplateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			((WindowRootView)d)._appTitleBar = null;
 		}
 	}
 }

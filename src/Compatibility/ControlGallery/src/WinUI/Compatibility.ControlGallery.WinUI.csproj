@@ -101,4 +101,6 @@
     <Content Include="xamarinstore.jpg" />
   </ItemGroup>
 
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
 </Project>
