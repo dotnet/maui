@@ -59,6 +59,25 @@ namespace Microsoft.Maui.Platform
 		[DllImport("user32.dll")]
 		public static extern uint GetDpiForWindow(IntPtr hWnd);
 
+
+		[DllImport("User32", CharSet = CharSet.Unicode, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+
+		[DllImport("dwmapi.dll")]
+		static extern int DwmGetWindowAttribute(IntPtr hwnd, DwmWindowAttribute dwAttribute, out RECT pvAttribute, int cbAttribute);
+
+		public static Maui.Graphics.Rect GetCaptionButtonsBound(IntPtr hWnd)
+		{
+			DwmGetWindowAttribute(hWnd, DwmWindowAttribute.DWMWA_CAPTION_BUTTON_BOUNDS, out RECT value, Marshal.SizeOf(typeof(RECT)));
+			var density = GetDpiForWindow(hWnd) / 96f;
+			return new Graphics.Rect(
+				value.Left / density, 
+				value.Top / density, 
+				value.Right / density, 
+				value.Bottom / density);
+		}
+
 		public enum WindowLongFlags : int
 		{
 			GWL_EXSTYLE = -20,
@@ -106,6 +125,35 @@ namespace Microsoft.Maui.Platform
 		{
 			WS_EX_RTLREADING = 0x00002000,
 			WS_EX_LAYOUTRTL = 0x00400000
+		}
+
+		public enum DwmWindowAttribute
+		{
+			DWMWA_NCRENDERING_ENABLED = 1,
+			DWMWA_NCRENDERING_POLICY,
+			DWMWA_TRANSITIONS_FORCEDISABLED,
+			DWMWA_ALLOW_NCPAINT,
+			DWMWA_CAPTION_BUTTON_BOUNDS,
+			DWMWA_NONCLIENT_RTL_LAYOUT,
+			DWMWA_FORCE_ICONIC_REPRESENTATION,
+			DWMWA_FLIP3D_POLICY,
+			DWMWA_EXTENDED_FRAME_BOUNDS,
+			DWMWA_HAS_ICONIC_BITMAP,
+			DWMWA_DISALLOW_PEEK,
+			DWMWA_EXCLUDED_FROM_PEEK,
+			DWMWA_CLOAK,
+			DWMWA_CLOAKED,
+			DWMWA_FREEZE_REPRESENTATION,
+			DWMWA_LAST
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct RECT
+		{
+			public int Left;
+			public int Top;
+			public int Right;
+			public int Bottom;
 		}
 	}
 }

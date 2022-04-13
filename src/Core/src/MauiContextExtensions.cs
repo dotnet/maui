@@ -47,7 +47,7 @@ namespace Microsoft.Maui
 		{
 			scope = mauiContext.Services.CreateScope();
 
-#if __ANDROID__
+#if ANDROID
 			var scopedContext = new MauiContext(scope.ServiceProvider, platformWindow);
 #else
 			var scopedContext = new MauiContext(scope.ServiceProvider);
@@ -55,8 +55,11 @@ namespace Microsoft.Maui
 
 			scopedContext.AddWeakSpecific(platformWindow);
 
-#if WINDOWS || __ANDROID__
+#if ANDROID
 			scopedContext.AddSpecific(new NavigationRootManager(scopedContext));
+#endif
+#if WINDOWS
+			scopedContext.AddSpecific(new NavigationRootManager(platformWindow));
 #endif
 
 			return scopedContext;

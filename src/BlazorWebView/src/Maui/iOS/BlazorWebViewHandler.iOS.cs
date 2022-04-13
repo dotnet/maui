@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			var config = new WKWebViewConfiguration();
 
-			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
+			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
 			{
 				Configuration = config
 			});
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				AutosizesSubviews = true
 			};
 
-			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
+			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
 			{
 				WebView = webview
 			});
