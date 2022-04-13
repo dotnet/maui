@@ -33,8 +33,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_rootView.AppTitleBar != null)
 			{
-				var platformWindow = _mauiContext.GetPlatformWindow();
-				platformWindow.ExtendsContentIntoTitleBar = true;
+				_platformWindow.ExtendsContentIntoTitleBar = true;
 				UpdateAppTitleBar(true);
 			}
 		}
@@ -64,8 +63,6 @@ namespace Microsoft.Maui.Platform
 				// It might have code in the handler that retrieves this class.
 				_rootView.Content = null;
 			}
-
-			var platformView = view.ToPlatform(_mauiContext);
 
 			NavigationView rootNavigationView;
 			if (platformView is NavigationView nv)
@@ -133,7 +130,7 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetMenuBar(MenuBar? menuBar)
 		{
-			_rootView.MenuBar = menuBar?.ToPlatform(_mauiContext) as MenuBar;
+			_rootView.MenuBar = menuBar;
 		}
 
 		internal void SetToolbar(FrameworkElement? toolBar)

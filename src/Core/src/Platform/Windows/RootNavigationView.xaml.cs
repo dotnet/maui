@@ -14,8 +14,6 @@ namespace Microsoft.Maui.Platform
 	[Microsoft.UI.Xaml.Data.Bindable]
 	public partial class RootNavigationView : MauiNavigationView
 	{
-		double _paneHeaderContentHeight;
-		MauiToolbar? _toolbar;
 		double AppBarTitleHeight => _useCustomAppTitleBar ? _appBarTitleHeight : 0;
 		double _appBarTitleHeight;
 		bool _useCustomAppTitleBar;
@@ -29,20 +27,21 @@ namespace Microsoft.Maui.Platform
 			RegisterPropertyChangedCallback(HeaderProperty, HeaderPropertyChanged);
 			RegisterPropertyChangedCallback(PaneFooterProperty, HeaderPropertyChanged);
 			RegisterPropertyChangedCallback(PaneDisplayModeProperty, PaneDisplayModeChanged);
+
 			this.PaneOpened += (_, __) => UpdatePaneContentGridMargin();
 			this.DisplayModeChanged += (_, __) => UpdateNavigationAndPaneButtonHolderGridStyles();
 		}
 
-		internal MauiToolbar? Toolbar
+		internal new MauiToolbar? Toolbar
 		{
-			get => _toolbar;
+			get => base.Toolbar as MauiToolbar;
 			set
 			{
-				if (_toolbar == value)
+				if (base.Toolbar == value)
 					return;
 
-				_toolbar = value;
-				UpdateTopNavAreaMargin();
+				base.Toolbar = value;
+				UpdateToolbarPlacement();
 			}
 		}
 
@@ -54,7 +53,7 @@ namespace Microsoft.Maui.Platform
 
 		void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp)
 		{
-			UpdateTopNavAreaMargin();
+			UpdateToolbarPlacement();
 			UpdatePaneContentGridMargin();
 		}
 
@@ -62,13 +61,21 @@ namespace Microsoft.Maui.Platform
 		private protected override void ToolbarChanged()
 		{
 			if (Toolbar is MauiToolbar mauiToolbar)
-				HeaderControl = mauiToolbar;
+			{
+				Toolbar = mauiToolbar;
+				UpdateToolbarPlacement();
+			}
 			else
+			{
+				// By default MauiNavigationView always sets 
+				// NavigationView.Header to the Toolbar
+				// This lets us pivot based on the type of pane display mode				
 				base.ToolbarChanged();
+			}
 
 		}
 
-		void UpdateTopNavAreaMargin()
+		void UpdateToolbarPlacement()
 		{
 			if (TopNavArea != null)
 			{
@@ -159,9 +166,9 @@ namespace Microsoft.Maui.Platform
 				IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
 
 			IsBackEnabled = (IsBackButtonVisible == NavigationViewBackButtonVisible.Visible) &&
-				(_toolbar?.IsBackEnabled ?? true);
+				(Toolbar?.IsBackEnabled ?? true);
 
-			UpdateTopNavAreaMargin();
+			UpdateToolbarPlacement();
 		}
 
 
@@ -205,7 +212,7 @@ namespace Microsoft.Maui.Platform
 				UpdateNavigationAndPaneButtonHolderGridStyles();
 			};
 
-			UpdateTopNavAreaMargin();
+			UpdateToolbarPlacement();
 			UpdateContentGridMargin();
 		}
 
@@ -275,7 +282,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			UpdatePaneContentGridMargin();
-			UpdateTopNavAreaMargin();
+			UpdateToolbarPlacement();
 			UpdateContentGridMargin();
 		}
 

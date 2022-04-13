@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 		internal TextBlock? AppTitle { get; private set; }
 
 		public RootNavigationView? NavigationViewControl { get; private set; }
-		
+
 		internal MauiToolbar? Toolbar
 		{
 			get => _toolbar;
@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Platform
 				var backButtonToken = NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, AppBarNavigationIconsChanged);
 				var paneToggleToken = NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, AppBarNavigationIconsChanged);
 				var backButtonWidthToken = NavigationViewControl.RegisterPropertyChangedCallback(MauiNavigationView.NavigationBackButtonWidthProperty, AppBarNavigationIconsChanged);
-				
+
 				_contentChanged = new ActionDisposable(() =>
 				{
 					mnv.DisplayModeChanged -= OnNavigationViewControlDisplayModeChanged;
@@ -235,17 +235,17 @@ namespace Microsoft.Maui.Platform
 					mnv.Toolbar = null;
 					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, backButtonToken);
 					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, paneToggleToken);
-					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.NavigationBackButtonWidthProperty, backButtonWidthToken);
+					NavigationViewControl.UnregisterPropertyChangedCallback(MauiNavigationView.NavigationBackButtonWidthProperty, backButtonWidthToken);
 					NavigationViewControl = null;
 				});
-				
+
 
 				if (_appTitleBarHeight > 0)
 				{
 					NavigationViewControl.UpdateAppTitleBar(_appTitleBarHeight);
 				}
 			}
-			
+
 			ContentChanged?.Invoke(this, EventArgs.Empty);
 		}
 
