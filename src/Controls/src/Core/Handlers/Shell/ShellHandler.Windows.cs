@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapFlyout(ShellHandler handler, IFlyoutView flyoutView)
 		{
-			handler.PlatformView.ReplacePaneMenuItemsWithCustomContent(flyoutView.Flyout);
+			handler.PlatformView.FlyoutCustomContent = flyoutView.Flyout?.ToPlatform(handler.MauiContext);
 		}
 
 		public static void MapIsPresented(ShellHandler handler, IFlyoutView flyoutView)
@@ -110,8 +110,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapFlyoutHeader(ShellHandler handler, Shell view)
 		{
-			if (handler.PlatformView.PaneCustomContent == null)
-				handler.PlatformView.PaneCustomContent = new ShellHeaderView(view);
+			if (handler.PlatformView.PaneHeader == null)
+				handler.PlatformView.PaneHeader = new ShellHeaderView(view);
 		}
 
 		public static void MapItems(ShellHandler handler, Shell view)

@@ -22,12 +22,13 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task BackButtonEnabledAndDisabled()
 		{
 			SetupBuilder();
-			var shell = await CreateShellAsync((shell) => {
+			var shell = await CreateShellAsync((shell) =>
+			{
 				shell.Items.Add(new ContentPage());
 			});
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
-			{				
+			{
 				var rootNavView = (handler.PlatformView);
 				Assert.False(rootNavView.IsBackEnabled);
 				await shell.Navigation.PushAsync(new ContentPage());
@@ -45,7 +46,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task BasicShellHasPaneDisplayModeDisabled()
 		{
 			SetupBuilder();
-			var shell = await CreateShellAsync((shell) => {
+			var shell = await CreateShellAsync((shell) =>
+			{
 				shell.Items.Add(new ContentPage());
 			});
 
@@ -69,7 +71,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task ShellWithOnlyFlyoutItems()
 		{
 			SetupBuilder();
-			var shell = await CreateShellAsync((shell) => {
+			var shell = await CreateShellAsync((shell) =>
+			{
 				var shellItem1 = new FlyoutItem();
 				shellItem1.Items.Add(new ContentPage());
 
@@ -101,7 +104,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task ShellWithOnlyTopTabs()
 		{
 			SetupBuilder();
-			var shell = await CreateShellAsync((shell) => {
+			var shell = await CreateShellAsync((shell) =>
+			{
 				var shellItem = new TabBar();
 				var shellSection1 = new ShellSection();
 				shellSection1.Items.Add(new ContentPage());
@@ -137,11 +141,12 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 			var label = new StackLayout()
-			{ 
+			{
 				HeightRequest = 10
 			};
 
-			var shell = await InvokeOnMainThreadAsync(() => { 
+			var shell = await InvokeOnMainThreadAsync(() =>
+			{
 				return new Shell()
 				{
 					FlyoutHeader = label,
@@ -157,7 +162,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var rootManager = handler.MauiContext.GetNavigationRootManager();
 				var position = label.GetLocationRelativeTo(rootManager.AppTitleBar);
-				var distance = rootManager.AppTitleBar.Height - position.Value.Y;
+				var distance = rootManager.AppTitleBar.ActualHeight - position.Value.Y;
 				Assert.True(Math.Abs(distance) < 1);
 				return Task.CompletedTask;
 			});
