@@ -12,8 +12,7 @@
       "description": ".NET MAUI SDK for Mobile",
       "extends": [ 
         "maui-android",
-        "maui-ios",
-        "maui-tizen"
+        "maui-ios"
       ]
     },
     "maui-desktop": {

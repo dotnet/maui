@@ -15,6 +15,7 @@
     <_MauiTargetPlatformIsTizen Condition="'$(_MauiTargetPlatformIdentifier)' == 'tizen'">True</_MauiTargetPlatformIsTizen>
 
     <IncludeWindowsTargetFrameworks Condition="($([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full') or ('$(Packing)' == 'true')">true</IncludeWindowsTargetFrameworks>
+    <IncludeTizenTargetFrameworks Condition="'$(CI)' == 'true'">true</IncludeTizenTargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -40,9 +41,10 @@
 
   <PropertyGroup>
     <!-- the real TFMs -->
-    <MauiPlatforms>net$(_MauiDotNetVersion)-ios;net$(_MauiDotNetVersion)-maccatalyst;net$(_MauiDotNetVersion)-android;net$(_MauiDotNetVersion)-tizen</MauiPlatforms>
+    <MauiPlatforms>net$(_MauiDotNetVersion)-ios;net$(_MauiDotNetVersion)-maccatalyst;net$(_MauiDotNetVersion)-android</MauiPlatforms>
     <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">net$(_MauiDotNetVersion)-windows$(WindowsTargetFrameworkVersion);net$(_MauiDotNetVersion)-windows$(Windows2TargetFrameworkVersion)</WindowsMauiPlatforms>
     <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(MauiPlatforms);net$(_MauiDotNetVersion)-tizen</MauiPlatforms>
 
     <!-- Work around the IDE not properly handling the NU1703 warning -->
     <MauiPlatformsNoMacCat>net$(_MauiDotNetVersion)-ios;net$(_MauiDotNetVersion)-android</MauiPlatformsNoMacCat>
