@@ -108,12 +108,11 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Pressed();
 		}
 
-		void OnSetImageSource(ImageView? image)
+		void OnSetImageSource(MauiImageSource? image)
 		{
 			if (image == null)
 				return;
 			PlatformView.Icon.ResourceUrl = image.ResourceUrl;
-			image.Dispose();
 		}
 	}
 }

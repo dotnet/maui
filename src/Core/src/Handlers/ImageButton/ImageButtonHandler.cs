@@ -12,7 +12,7 @@ using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
 using PlatformImageView = Microsoft.UI.Xaml.Controls.Image;
 using PlatformView = Microsoft.UI.Xaml.Controls.Button;
 #elif TIZEN
-using PlatformImage = Tizen.UIExtensions.NUI.Image;
+using PlatformImage = Microsoft.Maui.Platform.MauiImageSource;
 using PlatformImageView = Tizen.UIExtensions.NUI.Image;
 using PlatformView = Microsoft.Maui.Platform.MauiImageButton;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)

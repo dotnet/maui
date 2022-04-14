@@ -1,5 +1,4 @@
 using System;
-using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -53,9 +52,12 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Clicked();
 		}
 
-		void OnSetImageSource(Image? img)
+		void OnSetImageSource(MauiImageSource? img)
 		{
-			//Empty on purpose
+			if (img == null)
+				return;
+
+			PlatformView.ResourceUrl = img.ResourceUrl;
 		}
 	}
 }

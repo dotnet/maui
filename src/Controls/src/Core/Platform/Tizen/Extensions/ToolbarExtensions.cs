@@ -10,6 +10,7 @@ using NView = Tizen.NUI.BaseComponents.View;
 using TButton = Tizen.UIExtensions.NUI.Button;
 using TColor = Tizen.UIExtensions.Common.Color;
 using TDeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
+using TImage = Tizen.UIExtensions.NUI.Image;
 using TMaterialIconButton = Tizen.UIExtensions.NUI.GraphicsView.MaterialIconButton;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -48,7 +49,13 @@ namespace Microsoft.Maui.Controls.Platform
 			source.LoadImage(toolbar.Handler.MauiContext, (result) =>
 			{
 				if (result?.Value != null)
-					platformToolbar.Icon = result.Value;
+				{
+					var image = new TImage
+					{
+						ResourceUrl = result.Value.ResourceUrl,
+					};
+					platformToolbar.Icon = image;
+				}
 			});
 		}
 
