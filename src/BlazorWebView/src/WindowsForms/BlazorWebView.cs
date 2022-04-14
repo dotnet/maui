@@ -169,6 +169,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			}
 			var hostPageFullPath = Path.GetFullPath(Path.Combine(appRootDir, HostPage!)); // HostPage is nonnull because RequiredStartupPropertiesSet is checked above
 			var contentRootDirFullPath = Path.GetDirectoryName(hostPageFullPath)!;
+			var contentRootRelativePath = Path.GetRelativePath(appRootDir, contentRootDirFullPath);
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDirFullPath, hostPageFullPath);
 
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
@@ -179,12 +180,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				ComponentsDispatcher,
 				fileProvider,
 				RootComponents.JSComponents,
+				contentRootRelativePath,
 				hostPageRelativePath,
 				(args) => UrlLoading?.Invoke(this, args),
 				(args) => BlazorWebViewInitializing?.Invoke(this, args),
 				(args) => BlazorWebViewInitialized?.Invoke(this, args));
 
-			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager, WebView2WebViewManager.AppOrigin);
+			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager, WebView2WebViewManager.AppOrigin, contentRootRelativePath);
 
 			foreach (var rootComponent in RootComponents)
 			{

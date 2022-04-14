@@ -220,6 +220,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			var hostPageFullPath = Path.GetFullPath(Path.Combine(appRootDir, HostPage));
 			var contentRootDirFullPath = Path.GetDirectoryName(hostPageFullPath)!;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDirFullPath, hostPageFullPath);
+			var contentRootDirRelativePath = Path.GetRelativePath(appRootDir, contentRootDirFullPath);
 
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
 
@@ -229,12 +230,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				ComponentsDispatcher,
 				fileProvider,
 				RootComponents.JSComponents,
+				contentRootDirRelativePath,
 				hostPageRelativePath,
 				(args) => UrlLoading?.Invoke(this, args),
 				(args) => BlazorWebViewInitializing?.Invoke(this, args),
 				(args) => BlazorWebViewInitialized?.Invoke(this, args));
 
-			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager, WebView2WebViewManager.AppOrigin);
+			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager, WebView2WebViewManager.AppOrigin, contentRootDirRelativePath);
 
 			foreach (var rootComponent in RootComponents)
 			{

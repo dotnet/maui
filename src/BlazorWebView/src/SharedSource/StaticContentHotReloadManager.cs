@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -24,100 +25,94 @@ namespace Microsoft.AspNetCore.Components.WebView
 
 	internal static class StaticContentHotReloadManager
 	{
-		private delegate void ContentUpdatedHandler(string url);
+		private delegate void ContentUpdatedHandler(string assemblyName, string relativePath);
 		private static event ContentUpdatedHandler? OnContentUpdated;
-		private static string AppOrigin = default!;
 
-		private static readonly Dictionary<string, (string? ContentType, byte[] Content)> _updatedContentByAbsoluteUrl = new(StringComparer.Ordinal);
+		private static string ApplicationAssemblyName { get; } =
+#if MAUI
+			Application.Context.PackageName;
+#else
+			Assembly.GetEntryAssembly()!.GetName().Name!;
+#endif
 
-		private static readonly string StaticContentHotReloadModuleSource = @"
-	export function notifyContentUpdated(url) {
+		private static readonly Dictionary<(string AssemblyName, string RelativePath), (string? ContentType, byte[] Content)> _updatedContent = new()
+		{
+			{ (ApplicationAssemblyName, "_framework/static-content-hot-reload.js"), ("text/javascript", Encoding.UTF8.GetBytes(@"
+	export function notifyContentUpdated(urlWithinOrigin) {
 		const allLinkElems = Array.from(document.querySelectorAll('link[rel=stylesheet]'));
-		const matchingLinkElems = allLinkElems.filter(x => x.href === url);
+		const absoluteUrl = document.location.origin + urlWithinOrigin;
+		const matchingLinkElems = allLinkElems.filter(x => x.href === absoluteUrl);
 
 		// If we can't find a matching link element, that probably means it's a CSS file imported via @import
 		// from some other CSS file. We can't know which other file imports it, so refresh them all.
-		const linkElemsToUpdate = matchingLinkElems.length > 0 || !url.endsWith('.css')
+		const linkElemsToUpdate = matchingLinkElems.length > 0 || !absoluteUrl.endsWith('.css')
 			? matchingLinkElems
 			: allLinkElems;
 
 		linkElemsToUpdate.forEach(tag => tag.href += '');
 	}
-";
+")) }
+		};
 
 		/// <summary>
 		/// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.
 		/// </summary>
 		public static void UpdateContent(string assemblyName, string relativePath, byte[] content)
 		{
-			var absoluteUrl = GetAbsoluteUrlForStaticContent(assemblyName, relativePath);
-			_updatedContentByAbsoluteUrl[absoluteUrl] = (ContentType: null, Content: content);
-			OnContentUpdated?.Invoke(absoluteUrl);
+			_updatedContent[(assemblyName, relativePath)] = (ContentType: null, Content: content);
+			OnContentUpdated?.Invoke(assemblyName, relativePath);
 		}
 
-		public static void AttachToWebViewManagerIfEnabled(WebViewManager manager, string appOrigin)
+		public static void AttachToWebViewManagerIfEnabled(WebViewManager manager, string assemblyName, string contentRoot)
 		{
 			if (MetadataUpdater.IsSupported)
 			{
-				AppOrigin = appOrigin;
-				_updatedContentByAbsoluteUrl[AppOrigin + "_framework/static-content-hot-reload.js"] =
-					(ContentType: "text/javascript", Content: Encoding.UTF8.GetBytes(StaticContentHotReloadModuleSource));
-
-				manager.AddRootComponentAsync(typeof(StaticContentUpdater), "body::after", ParameterView.Empty);
+				var parameters = new Dictionary<string, object?> { { nameof(StaticContentUpdater.ContentRoot), contentRoot } };
+				manager.AddRootComponentAsync(typeof(StaticContentUpdater), "body::after", ParameterView.FromDictionary(parameters));
 			}
 		}
 
-		public static bool TryReplaceResponseContent(string requestAbsoluteUri, ref int responseStatusCode, ref Stream responseContent, IDictionary<string, string> responseHeaders)
+		public static bool TryReplaceResponseContent(string contentRootRelativePath, string requestAbsoluteUri, ref int responseStatusCode, ref Stream responseContent, IDictionary<string, string> responseHeaders)
 		{
-			if (MetadataUpdater.IsSupported && _updatedContentByAbsoluteUrl.TryGetValue(requestAbsoluteUri, out var values))
+			if (MetadataUpdater.IsSupported)
 			{
-				responseStatusCode = 200;
-				responseContent = new MemoryStream(values.Content);
-				if (!string.IsNullOrEmpty(values.ContentType))
+				var (assemblyName, relativePath) = GetAssemblyNameAndRelativePath(requestAbsoluteUri, contentRootRelativePath);
+				if (_updatedContent.TryGetValue((assemblyName, relativePath), out var values))
 				{
-					responseHeaders["Content-Type"] = values.ContentType;
-				}
+					responseStatusCode = 200;
+					responseContent = new MemoryStream(values.Content);
+					if (!string.IsNullOrEmpty(values.ContentType))
+					{
+						responseHeaders["Content-Type"] = values.ContentType;
+					}
 
-				return true;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private readonly static Regex ContentUrlRegex = new Regex("^_content/(?<AssemblyName>[^/]+)/(?<RelativePath>.*)");
+		
+		private static (string AssemblyName, string RelativePath) GetAssemblyNameAndRelativePath(string requestAbsoluteUri, string appContentRoot)
+		{
+			var requestPath = new Uri(requestAbsoluteUri).AbsolutePath.Substring(1);
+			if (ContentUrlRegex.Match(requestPath) is { Success: true } match)
+			{
+				// For RCLs (i.e., URLs of the form _content/assembly/path), we assume the content root within the
+				// RCL to be "wwwroot" since we have no other information. If this is not the case, content within
+				// that RCL will not be hot-reloadable.
+				return (match.Groups["AssemblyName"].Value, $"wwwroot/{match.Groups["RelativePath"].Value}");
+			}
+			else if (requestPath.StartsWith("_framework/", StringComparison.Ordinal))
+			{
+				return (ApplicationAssemblyName, requestPath);
 			}
 			else
 			{
-				return false;
+				return (ApplicationAssemblyName, Path.Combine(appContentRoot, requestPath).Replace('\\', '/'));
 			}
-		}
-		
-		private static string GetAbsoluteUrlForStaticContent(string assemblyName, string relativePath)
-		{
-			// This logic might not cover every circumstance if the developer customizes the host page path
-			// or is doing something custom with static web assets. However it should cover any mainstream
-			// case with single projects and RCLs. We may have to allow for other cases in the future, or
-			// may have to receive different information from tooling.
-
-			// Since scoped CSS bundles might not have a wwwroot prefix, normalize by removing it.
-			// Whether this is really needed depends on tooling implementations that are not yet known.
-			const string wwwrootPrefix = "wwwroot/";
-			if (relativePath.StartsWith(wwwrootPrefix, StringComparison.Ordinal))
-			{
-				relativePath = relativePath.Substring(wwwrootPrefix.Length);
-			}
-
-			if (relativePath.StartsWith("/"))
-			{
-				relativePath = relativePath.Substring(1);
-			}
-
-			// SWA convention for RCLs
-			// Note that on Android, entryAssembly will be null, so we have no way to know if the file comes from an RCL or not.
-			// As a temporary stage, Android will treat all content as if it is *not* from an RCL, which unfortunately means we
-			// won't be able to hot-reload CSS from an RCL on Android.
-			var entryAssembly = Assembly.GetEntryAssembly();
-			if (entryAssembly is not null
-				&& !string.Equals(assemblyName, entryAssembly.GetName().Name, StringComparison.Ordinal))
-			{
-				relativePath = $"_content/{assemblyName}/{relativePath}";
-			}
-
-			return AppOrigin + relativePath;
 		}
 
 		// To provide a consistent way of transporting the data across all platforms,
@@ -126,9 +121,11 @@ namespace Microsoft.AspNetCore.Components.WebView
 		// by injecting this headless root component.
 		private sealed class StaticContentUpdater : IComponent, IDisposable
 		{
+			private ILogger _logger = default!;
+
 			[Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 			[Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
-			private ILogger _logger = default!;
+			[Parameter] public string ContentRoot { get; set; } = default!;
 
 			public void Attach(RenderHandle renderHandle)
 			{
@@ -141,27 +138,47 @@ namespace Microsoft.AspNetCore.Components.WebView
 				OnContentUpdated -= NotifyContentUpdated;
 			}
 
-			private void NotifyContentUpdated(string url)
+			private void NotifyContentUpdated(string assemblyName, string relativePath)
 			{
 				// It handles its own errors
-				_ = NotifyContentUpdatedAsync(url);
+				_ = NotifyContentUpdatedAsync(assemblyName, relativePath);
 			}
 
-			private async Task NotifyContentUpdatedAsync(string url)
+			private async Task NotifyContentUpdatedAsync(string assemblyName, string relativePath)
 			{
 				try
 				{
 					await using var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_framework/static-content-hot-reload.js");
-					await module.InvokeVoidAsync("notifyContentUpdated", url);
+
+					if (string.Equals(assemblyName, ApplicationAssemblyName, StringComparison.Ordinal))
+					{
+						if (relativePath.StartsWith(ContentRoot + "/", StringComparison.Ordinal))
+						{
+							var pathWithinContentRoot = relativePath.Substring(ContentRoot.Length);
+							await module.InvokeVoidAsync("notifyContentUpdated", pathWithinContentRoot);
+						}
+					}
+					else
+					{
+						if (relativePath.StartsWith("wwwroot/", StringComparison.Ordinal))
+						{
+							var pathWithinContentRoot = relativePath.Substring("wwwroot/".Length);
+							await module.InvokeVoidAsync("notifyContentUpdated", $"/_content/{assemblyName}/{pathWithinContentRoot}");
+						}
+					}
+					
 				}
 				catch (Exception ex)
 				{
-					_logger.LogError(ex, $"Failed to notify about static content update to {url}.");
+					_logger.LogError(ex, $"Failed to notify about static content update to {relativePath}.");
 				}
 			}
 
 			public Task SetParametersAsync(ParameterView parameters)
-				=> Task.CompletedTask;
+			{
+				parameters.SetParameterProperties(this);
+				return Task.CompletedTask;
+			}
 		}
 	}
 }
