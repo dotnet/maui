@@ -501,7 +501,7 @@ namespace Microsoft.Maui.Controls
 				shellSection.PropertyChanged += OnShellItemPropertyChanged;
 			else
 			{
-				var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, null, null);
+				var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
 
 				if (this.CurrentItem == null)
 				{

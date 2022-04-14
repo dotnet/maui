@@ -151,6 +151,41 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Navigation Routes Correctly After Switching Flyout Items")]
+		public async Task NavigatedFiresAfterSwitchingFlyoutItems()
+		{
+			SetupBuilder();
+
+			var shellContent1 = new ShellContent() { Content = new ContentPage() };
+			var shellContent2 = new ShellContent() { Content = new ContentPage() };
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(shellContent1);
+				shell.Items.Add(shellContent2);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				IShellController shellController = shell;
+				var currentItem = shell.CurrentItem;
+				Assert.NotNull(currentItem.Handler);
+
+				await shellController.OnFlyoutItemSelectedAsync(shellContent2);
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.GoToAsync("..");
+
+#if WINDOWS
+				Assert.NotNull(shell.Handler);
+				Assert.NotNull(shell.CurrentItem.Handler);
+				Assert.NotNull(shell.CurrentItem.CurrentItem.Handler);
+				Assert.Null(currentItem.Handler);
+				Assert.Null(currentItem.CurrentItem.Handler);
+#endif
+
+			});
+		}
+
 		[Theory]
 		[ClassData(typeof(ShellBasicNavigationTestCases))]
 		public async Task BasicShellNavigationStructurePermutations(ShellItem[] shellItems)
