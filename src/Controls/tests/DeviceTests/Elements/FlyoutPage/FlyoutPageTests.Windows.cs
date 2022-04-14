@@ -21,15 +21,16 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.FlyoutPage)]
 	public partial class FlyoutPageTests : HandlerTestBase
 	{
-		[Fact(DisplayName = "FlyoutPage Initializes with PaneFooter Set")]
-		public async Task FlyoutPageInitializesWithPaneFooterSet()
+		[Fact(DisplayName = "FlyoutPage Initializes with FlyoutCustomContent Set")]
+		public async Task FlyoutPageInitializesWithFlyoutCustomContentSet()
 		{
 			SetupBuilder();
 			var flyoutPage = CreateBasicFlyoutPage();
 
 			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
 			{
-				Assert.NotNull(handler.PlatformView.PaneFooter);
+				Assert.NotNull(handler.PlatformView.FlyoutCustomContent);
+				Assert.NotNull(handler.PlatformView.PaneCustomContent);
 				return Task.CompletedTask;
 			});
 		}

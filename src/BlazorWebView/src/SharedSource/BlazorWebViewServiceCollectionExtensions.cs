@@ -25,9 +25,9 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// <param name="services">The <see cref="IServiceCollection"/>.</param>
 		/// <returns>The <see cref="IServiceCollection"/>.</returns>
 #if WEBVIEW2_WINFORMS
-		public static IServiceCollection AddWindowsFormsBlazorWebView(this IServiceCollection services)
+		public static IWindowsFormsBlazorWebViewBuilder AddWindowsFormsBlazorWebView(this IServiceCollection services)
 #elif WEBVIEW2_WPF
-		public static IServiceCollection AddWpfBlazorWebView(this IServiceCollection services)
+		public static IWpfBlazorWebViewBuilder AddWpfBlazorWebView(this IServiceCollection services)
 #elif WEBVIEW2_MAUI
 		public static IMauiBlazorWebViewBuilder AddMauiBlazorWebView(this IServiceCollection services)
 #else
@@ -39,18 +39,13 @@ namespace Microsoft.Extensions.DependencyInjection
 #if WEBVIEW2_MAUI
 			services.TryAddSingleton<MauiBlazorMarkerService>();
 			services.ConfigureMauiHandlers(static handlers => handlers.AddHandler<IBlazorWebView, BlazorWebViewHandler>());
-#elif WEBVIEW2_WINFORMS
-			services.TryAddSingleton<WindowsFormsBlazorMarkerService>();
-#elif WEBVIEW2_WPF
-			services.TryAddSingleton<WpfBlazorMarkerService>();
-#endif
-
-#if WEBVIEW2_MAUI
 			return new MauiBlazorWebViewBuilder(services);
 #elif WEBVIEW2_WINFORMS
-			return services;
+			services.TryAddSingleton<WindowsFormsBlazorMarkerService>();
+			return new WindowsFormsBlazorWebViewBuilder(services);
 #elif WEBVIEW2_WPF
-			return services;
+			services.TryAddSingleton<WpfBlazorMarkerService>();
+			return new WpfBlazorWebViewBuilder(services);
 #endif
 		}
 

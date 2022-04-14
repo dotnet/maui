@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 				for (int i = 0; i < gradientStopCollection.Length; i++)
 				{
 					var gs = gradientStopCollection[i];
-					gradientStops[i] = new GradientStop(gs.Color, gs.Offset);
+					gradientStops.Insert(i, new GradientStop(gs.Color, gs.Offset));
 				}
 
 				if (gradientPaint is LinearGradientPaint linearGradientPaint)

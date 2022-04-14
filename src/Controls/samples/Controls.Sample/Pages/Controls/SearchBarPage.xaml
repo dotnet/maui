@@ -83,6 +83,20 @@
                     Style="{StaticResource Headline}"/>
                 <SearchBar
                     BackgroundColor="LightBlue"/>
+                <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <SearchBar 
+                    Text="Background">
+                    <SearchBar.Background>
+                        <LinearGradientBrush EndPoint="1,0">
+                            <GradientStop Color="Yellow"                              
+                                          Offset="0.1" />
+                            <GradientStop Color="Green"
+                                          Offset="1.0" />
+                        </LinearGradientBrush>
+                    </SearchBar.Background>
+                </SearchBar>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

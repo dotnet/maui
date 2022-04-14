@@ -114,6 +114,43 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Handlers not recreated when changing tabs")]
+		public async Task HandlersNotRecreatedWhenChangingTabs()
+		{
+			SetupBuilder();
+
+			var page1 = new ContentPage();
+			var page2 = new ContentPage();
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Item1",
+							Content = page1
+						},
+						new ShellContent()
+						{
+							Route = "Item2",
+							Content = page2
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				var initialHandler = page1.Handler;
+				await shell.GoToAsync("//Item2");
+				await shell.GoToAsync("//Item1");
+				Assert.Equal(initialHandler, page1.Handler);
+			});
+		}
+
 		[Theory]
 		[ClassData(typeof(ShellBasicNavigationTestCases))]
 		public async Task BasicShellNavigationStructurePermutations(ShellItem[] shellItems)

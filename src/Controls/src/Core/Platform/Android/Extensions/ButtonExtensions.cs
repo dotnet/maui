@@ -5,6 +5,7 @@ using Google.Android.Material.Button;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Handlers;
 using static Microsoft.Maui.Controls.Button;
+using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -68,6 +69,11 @@ namespace Microsoft.Maui.Controls.Platform
 				materialButton.IconPadding = 0;
 				materialButton.IconGravity = MaterialButton.IconGravityTextStart;
 			}
+		}
+
+		public static void UpdateLineBreakMode(this AButton nativeControl, Button button)
+		{
+			nativeControl.SetLineBreakMode(button.LineBreakMode);
 		}
 	}
 }
