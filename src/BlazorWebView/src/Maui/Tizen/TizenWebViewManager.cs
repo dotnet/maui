@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
 		private readonly TWebView _webview;
+		private readonly string _contentRootRelativeToAppRoot;
 
 		/// <summary>
 		/// Initializes a new instance of <see cref="TizenWebViewManager"/>
@@ -28,17 +29,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
+		/// <param name="contentRootRelativeToAppRoot">Path to the directory containing application content files.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the fileProvider.</param>
-		public TizenWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, TWebView webview, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+		public TizenWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, TWebView webview, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string contentRootRelativeToAppRoot, string hostPageRelativePath)
 			: base(provider, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
 			_blazorMauiWebViewHandler = blazorMauiWebViewHandler ?? throw new ArgumentNullException(nameof(blazorMauiWebViewHandler));
 			_webview = webview ?? throw new ArgumentNullException(nameof(webview));
+			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
 
 		}
 
-		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers) =>
-	TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
+		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
+		{
+			var defaultResult = TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
+			var hotReloadedResult = StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, uri, ref statusCode, ref content, headers);
+			return defaultResult || hotReloadedResult;
+		}
+
 
 		/// <inheritdoc />
 		protected override void NavigateCore(Uri absoluteUri)
