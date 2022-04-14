@@ -4,10 +4,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	internal class MauiBlazorWebViewBuilder : IMauiBlazorWebViewBuilder
 	{
-		/// <inheritdoc/>
 		public IServiceCollection Services { get; }
 
-		internal MauiBlazorWebViewBuilder(IServiceCollection services)
+		public MauiBlazorWebViewBuilder(IServiceCollection services)
 		{
 			Services = services;
 		}
