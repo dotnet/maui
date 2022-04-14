@@ -376,11 +376,11 @@ namespace Microsoft.Maui.Controls
 			(this as IPropertyPropagationController)?.PropagatePropertyChanged(null);
 		}
 
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null, bool requireHandlerUpdate = true)
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
-			base.OnPropertyChanged(propertyName, requireHandlerUpdate);
+			base.OnPropertyChanged(propertyName);
 
-			if (requireHandlerUpdate)
+			if (!SuppressHandlerUpdate)
 			{
 				UpdateHandler(propertyName);
 			}

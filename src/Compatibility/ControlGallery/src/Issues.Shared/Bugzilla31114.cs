@@ -325,9 +325,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			}
 
 
-			protected override void OnPropertyChanged(string propertyName = null, bool requireHandlerUpdate = true)
+			protected override void OnPropertyChanged(string propertyName = null)
 			{
-				base.OnPropertyChanged(propertyName, requireHandlerUpdate);
+				base.OnPropertyChanged(propertyName);
 				if (propertyName == "BackgroundColor")
 				{
 					var item = BindingContext as ListItem;

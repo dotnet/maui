@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Controls
 
 		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
 		bool _applying;
+		private protected bool SuppressHandlerUpdate { get; private set; }
 		object _inheritedContext;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='BindingContextProperty']/Docs" />
@@ -274,8 +275,15 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(titleView, BindingContext);
 		}
 
-		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null, bool requireHandlerUpdate = true)
+		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+		private protected void OnPropertyChanged(bool suppressHandlerUpdate, string propertyName)
+		{
+			SuppressHandlerUpdate = suppressHandlerUpdate;
+			OnPropertyChanged(propertyName);
+			SuppressHandlerUpdate = false;
+		}
 
 		protected virtual void OnPropertyChanging([CallerMemberName] string propertyName = null)
 			=> PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
@@ -523,7 +531,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// Avoid notifying the handlers before firing property.PropertyChanged
-				OnPropertyChanged(property.PropertyName, requireHandlerUpdate: false);
+				OnPropertyChanged(suppressHandlerUpdate: true, propertyName: property.PropertyName);
 				property.PropertyChanged?.Invoke(this, original, value);
 
 				// Now, notify the handlers

@@ -207,9 +207,9 @@ namespace Microsoft.Maui.Controls
 			shellItem.FlyoutIcon = (ImageSource)newValue;
 		}
 
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null, bool requireHandlerUpdate = true)
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
-			base.OnPropertyChanged(propertyName, requireHandlerUpdate);
+			base.OnPropertyChanged(propertyName);
 			if (Parent != null)
 			{
 				if (propertyName == Shell.ItemTemplateProperty.PropertyName || propertyName == nameof(Parent))

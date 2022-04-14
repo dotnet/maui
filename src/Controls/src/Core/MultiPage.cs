@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnPagesChanged(NotifyCollectionChangedEventArgs e)
 			=> PagesChanged?.Invoke(this, e);
 
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null, bool requireHandlerUpdate = true)
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			if (propertyName == ItemsSourceProperty.PropertyName)
 				_children.IsReadOnly = ItemsSource != null;
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			base.OnPropertyChanged(propertyName, requireHandlerUpdate);
+			base.OnPropertyChanged(propertyName);
 		}
 
 		protected virtual void SetupContent(T content, int index)

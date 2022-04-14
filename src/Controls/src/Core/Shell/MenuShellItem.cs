@@ -34,11 +34,15 @@ namespace Microsoft.Maui.Controls
 				Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(MenuItem));
 		}
 
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null, bool requireHandlerUpdate = true)
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
-			base.OnPropertyChanged(propertyName, requireHandlerUpdate);
+			base.OnPropertyChanged(propertyName);
 			if (propertyName == nameof(Title))
-				OnPropertyChanged(nameof(Text), false);
+			{
+				// The previous call to base.OnPropertyChanged(propertyName) has already triggered UpdateHandler("Text").
+				// Suppress the handler update to avoid a duplicate call.
+				OnPropertyChanged(suppressHandlerUpdate: true, propertyName: nameof(Text));
+			}
 		}
 
 		protected override void UpdateHandler(string propertyName)

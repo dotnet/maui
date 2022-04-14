@@ -41,11 +41,11 @@ namespace Microsoft.Maui.Controls
 			return file != null ? file.File : null;
 		}
 
-		protected override void OnPropertyChanged(string propertyName = null, bool requireHandlerUpdate = true)
+		protected override void OnPropertyChanged(string propertyName = null)
 		{
 			if (propertyName == FileProperty.PropertyName)
 				OnSourceChanged();
-			base.OnPropertyChanged(propertyName, requireHandlerUpdate);
+			base.OnPropertyChanged(propertyName);
 		}
 	}
 }
