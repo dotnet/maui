@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Switch.xml" path="Type[@FullName='Microsoft.Maui.Controls.Switch']/Docs" />
 	public partial class Switch : ISwitch
 	{
-		protected override void UpdateHandler(string propertyName)
+		private protected override void UpdateHandler(string propertyName)
 		{
 			base.UpdateHandler(propertyName);
 

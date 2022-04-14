@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		protected override void UpdateHandler(string propertyName)
+		private protected override void UpdateHandler(string propertyName)
 		{
 			base.UpdateHandler(propertyName);
 			if (propertyName == nameof(Title))

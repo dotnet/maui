@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnBackgrounding(IPersistedState state) { }
 		protected virtual void OnDisplayDensityChanged(float displayDensity) { }
 
-		protected override void UpdateHandler(string propertyName)
+		private protected override void UpdateHandler(string propertyName)
 		{
 			base.UpdateHandler(propertyName);
 

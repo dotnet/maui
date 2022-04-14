@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Line']/Docs" />
 	public partial class Line : IShape
 	{
-		protected override void UpdateHandler(string propertyName)
+		private protected override void UpdateHandler(string propertyName)
 		{
 			base.UpdateHandler(propertyName);
 

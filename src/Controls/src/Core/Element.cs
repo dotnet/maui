@@ -405,7 +405,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		protected virtual void UpdateHandler(string propertyName)
+		private protected virtual void UpdateHandler(string propertyName)
 		{
 			Handler?.UpdateValue(propertyName);
 		}

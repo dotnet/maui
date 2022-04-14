@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Polygon']/Docs" />
 	public partial class Polygon : IShape
 	{
-		protected override void UpdateHandler(string propertyName)
+		private protected override void UpdateHandler(string propertyName)
 		{
 			base.UpdateHandler(propertyName);
 
