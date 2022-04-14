@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using NUnit.Framework;
+using Microsoft.Maui.Handlers;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -22,7 +25,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	internal class MockBindable
 		: VisualElement
 	{
-		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default", BindingMode.TwoWay);
+		public static readonly BindableProperty TextProperty = 
+			BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "default", BindingMode.TwoWay, propertyChanged: HandleTextPropertyChanged);
 
 		public string Text
 		{
@@ -61,6 +65,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			get { return (Baz)GetValue(QuxProperty); }
 			set { SetValue(QuxProperty, value); }
 		}
+
+		public List<string> Log { get; } = new List<string>();
+
+		protected override void OnPropertyChanged(string propertyName = null)
+		{
+			Log.Add($"OnPropertyChanged({propertyName})-BeforeBase");
+			base.OnPropertyChanged(propertyName);
+			Log.Add($"OnPropertyChanged({propertyName})-AfterBase");
+		}
+
+		public void TriggerManualPropertyChanged(string propertyName) => base.OnPropertyChanged(propertyName);
+
+		static void HandleTextPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			MockBindable m = (MockBindable)bindable;
+			m.Log.Add($"HandleTextPropertyChanged({oldValue}, {newValue})");
+		}
+	}
+
+	class MockHandler : ViewHandler<MockBindable, object>
+	{
+		public static IPropertyMapper<MockBindable, MockHandler> Mapper = new PropertyMapper<MockBindable, MockHandler>(ElementHandler.ElementMapper)
+		{
+			[nameof(MockBindable.Text)] = MapText
+		};
+
+		public MockHandler() : base(Mapper) { }
+
+		protected override object CreatePlatformView() => new object();
+
+		private static void MapText(MockHandler handler, MockBindable element)
+		{
+			element.Log.Add("MapText");
+		}
 	}
 
 	internal class ToBarConverter : TypeConverter
@@ -74,6 +112,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class BindableObjectUnitTests : BaseTestFixture
 	{
+
+		[Test]
+		public void ChangeProperty_NotificationOrderIsCorrect()
+		{
+			var mock = new MockBindable()
+			{
+				Handler = new MockHandler()
+			};
+			var log = mock.Log;
+			
+			log.Clear();
+
+			mock.Text = "lol";
+
+			Assert.AreEqual("OnPropertyChanged(Text)-BeforeBase",log[0]);
+			Assert.AreEqual("OnPropertyChanged(Text)-AfterBase",log[1]);
+			Assert.AreEqual("HandleTextPropertyChanged(default, lol)",log[2]);
+			Assert.AreEqual("MapText", log[3]);
+		}
+
+		[Test]
+		public void CallManualPropertyChanged_TriggersHandler()
+		{
+			var mock = new MockBindable()
+			{
+				Handler = new MockHandler()
+			};
+
+			mock.TriggerManualPropertyChanged("Text");
+
+			Assert.Contains("MapText", mock.Log);
+		}
+
 		[Test]
 		public void BindingContext()
 		{

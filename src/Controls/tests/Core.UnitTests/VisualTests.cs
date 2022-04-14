@@ -626,9 +626,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			public int VisualPropertyChangedCount { get; private set; }
 
-			protected override void OnPropertyChanged([CallerMemberName] string propertyName = null, bool requireHandlerUpdate = true)
+			protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 			{
-				base.OnPropertyChanged(propertyName, requireHandlerUpdate);
+				base.OnPropertyChanged(propertyName);
 
 				if (propertyName == View.VisualProperty.PropertyName)
 					VisualPropertyChangedCount++;
