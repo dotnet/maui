@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				contentRootDir,
 				hostPageRelativePath);
 
-			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager, AppOrigin);
+			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
 			if (RootComponents != null)
 			{

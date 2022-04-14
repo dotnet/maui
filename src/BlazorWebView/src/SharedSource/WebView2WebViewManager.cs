@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <summary>
 		/// Gets the application's base URI. Defaults to <c>https://0.0.0.0/</c>
 		/// </summary>
-		protected internal static readonly string AppOrigin = $"https://{AppHostAddress}/";
+		protected static readonly string AppOrigin = $"https://{AppHostAddress}/";
 
 		private static readonly Uri AppOriginUri = new(AppOrigin);
 

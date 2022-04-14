@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				(args) => BlazorWebViewInitializing?.Invoke(this, args),
 				(args) => BlazorWebViewInitialized?.Invoke(this, args));
 
-			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager, WebView2WebViewManager.AppOrigin, contentRootRelativePath);
+			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
 			foreach (var rootComponent in RootComponents)
 			{

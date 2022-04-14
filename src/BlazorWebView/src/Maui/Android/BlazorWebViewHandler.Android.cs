@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				contentRootDir,
 				hostPageRelativePath);
 
-			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager, WebKitWebViewClient.AppOrigin);
+			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
 			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs());
 			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs

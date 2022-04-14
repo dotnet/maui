@@ -38,18 +38,9 @@ namespace Microsoft.AspNetCore.Components.WebView
 		private static readonly Dictionary<(string AssemblyName, string RelativePath), (string? ContentType, byte[] Content)> _updatedContent = new()
 		{
 			{ (ApplicationAssemblyName, "_framework/static-content-hot-reload.js"), ("text/javascript", Encoding.UTF8.GetBytes(@"
-	export function notifyContentUpdated(urlWithinOrigin) {
+	export function notifyCssUpdated() {
 		const allLinkElems = Array.from(document.querySelectorAll('link[rel=stylesheet]'));
-		const absoluteUrl = document.location.origin + urlWithinOrigin;
-		const matchingLinkElems = allLinkElems.filter(x => x.href === absoluteUrl);
-
-		// If we can't find a matching link element, that probably means it's a CSS file imported via @import
-		// from some other CSS file. We can't know which other file imports it, so refresh them all.
-		const linkElemsToUpdate = matchingLinkElems.length > 0 || !absoluteUrl.endsWith('.css')
-			? matchingLinkElems
-			: allLinkElems;
-
-		linkElemsToUpdate.forEach(tag => tag.href += '');
+		allLinkElems.forEach(elem => elem.href += '');
 	}
 ")) }
 		};
@@ -63,12 +54,11 @@ namespace Microsoft.AspNetCore.Components.WebView
 			OnContentUpdated?.Invoke(assemblyName, relativePath);
 		}
 
-		public static void AttachToWebViewManagerIfEnabled(WebViewManager manager, string assemblyName, string contentRoot)
+		public static void AttachToWebViewManagerIfEnabled(WebViewManager manager)
 		{
 			if (MetadataUpdater.IsSupported)
 			{
-				var parameters = new Dictionary<string, object?> { { nameof(StaticContentUpdater.ContentRoot), contentRoot } };
-				manager.AddRootComponentAsync(typeof(StaticContentUpdater), "body::after", ParameterView.FromDictionary(parameters));
+				manager.AddRootComponentAsync(typeof(StaticContentUpdater), "body::after", ParameterView.Empty);
 			}
 		}
 
@@ -125,7 +115,6 @@ namespace Microsoft.AspNetCore.Components.WebView
 
 			[Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 			[Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
-			[Parameter] public string ContentRoot { get; set; } = default!;
 
 			public void Attach(RenderHandle renderHandle)
 			{
@@ -150,23 +139,16 @@ namespace Microsoft.AspNetCore.Components.WebView
 				{
 					await using var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_framework/static-content-hot-reload.js");
 
-					if (string.Equals(assemblyName, ApplicationAssemblyName, StringComparison.Ordinal))
+					// In the future we might want to hot-reload other content types such as images, but currently the tooling is
+					// only expected to notify about CSS files. If it notifies us about something else, we'd need different JS logic.
+					if (string.Equals(".css", Path.GetExtension(relativePath), StringComparison.Ordinal))
 					{
-						if (relativePath.StartsWith(ContentRoot + "/", StringComparison.Ordinal))
-						{
-							var pathWithinContentRoot = relativePath.Substring(ContentRoot.Length);
-							await module.InvokeVoidAsync("notifyContentUpdated", pathWithinContentRoot);
-						}
+						// We could try to supply the URL of the modified file, so the JS-side logic could only update the affected
+						// stylesheet. This would reduce flicker. However, this involves hardcoding further details about URL conventions
+						// (e.g., _content/AssemblyName/Path) and accounting for configurable content roots. To reduce the chances of
+						// CSS hot reload being broken by customizations, we'll have the JS-side code refresh all stylesheets.
+						await module.InvokeVoidAsync("notifyCssUpdated");
 					}
-					else
-					{
-						if (relativePath.StartsWith("wwwroot/", StringComparison.Ordinal))
-						{
-							var pathWithinContentRoot = relativePath.Substring("wwwroot/".Length);
-							await module.InvokeVoidAsync("notifyContentUpdated", $"/_content/{assemblyName}/{pathWithinContentRoot}");
-						}
-					}
-					
 				}
 				catch (Exception ex)
 				{
@@ -175,10 +157,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 			}
 
 			public Task SetParametersAsync(ParameterView parameters)
-			{
-				parameters.SetParameterProperties(this);
-				return Task.CompletedTask;
-			}
+				=> Task.CompletedTask;
 		}
 	}
 }
