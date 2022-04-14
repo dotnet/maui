@@ -13,19 +13,11 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-#pragma warning disable RS0016 // Add public types and members to the declared API
-	public static class TemporaryStaticContent
-	{
-		public static void UpdateContent(string assemblyName, string relativePath, byte[] contents)
-			=> StaticContentHotReloadManager.UpdateContent(assemblyName, relativePath, contents);
-	}
-#pragma warning restore RS0016 // Add public types and members to the declared API
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
-
 	internal static class StaticContentHotReloadManager
 	{
 		private delegate void ContentUpdatedHandler(string assemblyName, string relativePath);
+
+		private readonly static Regex ContentUrlRegex = new Regex("^_content/(?<AssemblyName>[^/]+)/(?<RelativePath>.*)");
 		private static event ContentUpdatedHandler? OnContentUpdated;
 
 		private static string ApplicationAssemblyName { get; } =
@@ -58,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 		{
 			if (MetadataUpdater.IsSupported)
 			{
-				manager.AddRootComponentAsync(typeof(StaticContentUpdater), "body::after", ParameterView.Empty);
+				manager.AddRootComponentAsync(typeof(StaticContentChangeNotifier), "body::after", ParameterView.Empty);
 			}
 		}
 
@@ -82,8 +74,6 @@ namespace Microsoft.AspNetCore.Components.WebView
 
 			return false;
 		}
-
-		private readonly static Regex ContentUrlRegex = new Regex("^_content/(?<AssemblyName>[^/]+)/(?<RelativePath>.*)");
 		
 		private static (string AssemblyName, string RelativePath) GetAssemblyNameAndRelativePath(string requestAbsoluteUri, string appContentRoot)
 		{
@@ -109,7 +99,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 		// we can use the existing IJSRuntime. In turn we can get an instance of this
 		// that's always attached to the currently-loaded page (if it's a Blazor page)
 		// by injecting this headless root component.
-		private sealed class StaticContentUpdater : IComponent, IDisposable
+		private sealed class StaticContentChangeNotifier : IComponent, IDisposable
 		{
 			private ILogger _logger = default!;
 
@@ -118,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
 			public void Attach(RenderHandle renderHandle)
 			{
-				_logger = LoggerFactory.CreateLogger<StaticContentUpdater>();
+				_logger = LoggerFactory.CreateLogger<StaticContentChangeNotifier>();
 				OnContentUpdated += NotifyContentUpdated;
 			}
 

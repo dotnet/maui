@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_hostPageRelativePath = hostPagePathWithinFileProvider;
 			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
 		}
-		
+
 		/// <inheritdoc />
 		protected override async Task HandleWebResourceRequest(CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
