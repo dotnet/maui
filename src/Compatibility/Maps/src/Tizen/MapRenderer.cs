@@ -4,14 +4,19 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Controls.Platform;
 using Tizen.Location;
 using Tizen.Maps;
-using Microsoft.Maui.Controls.Platform.Tizen;
+using Pin = Microsoft.Maui.Controls.Maps.Pin;
 using TPin = Tizen.Maps.Pin;
 
 namespace Microsoft.Maui.Controls.Compatibility.Maps.Tizen
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class MapRenderer : ViewRenderer<Map, MapView>
+#pragma warning disable CS0618 // Type or member is obsolete
 	{
 		const string MoveMessageName = "MapMoveToRegion";
 		const int BaseZoomLevel = 2;

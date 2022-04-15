@@ -5,20 +5,28 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Handlers;
 
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Material")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Material")]
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public static class Platform
 	{
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer),
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
-				var ve = bindable as VisualElement;
-				if (ve != null && newvalue == null)
-					ve.IsPlatformEnabled = false;
+				var view = bindable as VisualElement;
+				if (view != null)
+					view.IsPlatformEnabled = newvalue != null;
+
+				if (bindable is IView mauiView)
+				{
+					if (mauiView.Handler == null && newvalue is IVisualElementRenderer ver)
+						mauiView.Handler = new RendererToHandlerShim(ver);
+				}
 			});
 
 		public static IVisualElementRenderer GetRenderer(BindableObject bindable)
@@ -43,14 +51,58 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		internal static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
-			IVisualElementRenderer renderer = Forms.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
+			IVisualElementRenderer renderer = null;
+
+			if (renderer == null)
+			{
+				IViewHandler handler = null;
+
+				//TODO: Handle this with AppBuilderHost
+				try
+				{
+					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
+					handler.SetMauiContext(Forms.MauiContext);
+				}
+				catch
+				{
+					// TODO define better catch response or define if this is needed?
+				}
+
+				if (handler == null)
+				{
+					renderer = Forms.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
+				}
+				// This means the only thing registered is the RendererToHandlerShim
+				// Which is only used when you are running a .NET MAUI app
+				// This indicates that the user hasn't registered a specific handler for this given type
+				else if (handler is RendererToHandlerShim shim)
+				{
+					renderer = shim.VisualElementRenderer;
+
+					if (renderer == null)
+					{
+						renderer = Forms.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
+					}
+				}
+				else if (handler is IVisualElementRenderer ver)
+					renderer = ver;
+				else if (handler is IPlatformViewHandler vh)
+				{
+					if (element.Parent is IView view && view.Handler is IPlatformViewHandler nvh)
+					{
+						vh.SetParent(nvh);
+					}
+					renderer = new HandlerToRendererShim(vh);
+					element.Handler = handler;
+				}
+			}
 			renderer.SetElement(element);
 			return renderer;
 		}
 
 		internal static ITizenPlatform CreatePlatform(EvasObject parent)
 		{
-			if (Forms.PlatformType == PlatformType.Lightweight || Forms.Flags.Contains(Flags.LightweightPlatformExperimental))
+			if (Forms.PlatformType == PlatformType.Lightweight)
 			{
 				return new LightweightPlatform(parent);
 			}
@@ -63,10 +115,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			widthConstraint = widthConstraint <= -1 ? double.PositiveInfinity : widthConstraint;
 			heightConstraint = heightConstraint <= -1 ? double.PositiveInfinity : heightConstraint;
 
-			double width = !double.IsPositiveInfinity(widthConstraint) ? widthConstraint : Int32.MaxValue;
-			double height = !double.IsPositiveInfinity(heightConstraint) ? heightConstraint : Int32.MaxValue;
+			var renderView = GetRenderer(view);
+			if (renderView == null || renderView.NativeView == null)
+			{
+				return (view is IView iView) ? new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint)) : new SizeRequest(Graphics.Size.Zero);
+			}
 
-			return Platform.GetRenderer(view).GetDesiredSize(width, height);
+			return renderView.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 	}
 
@@ -87,6 +142,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		public EvasObject RootNativeView { get; private set; }
 	}
 
+	[Obsolete]
 	public class DefaultPlatform : BindableObject, ITizenPlatform, INavigation
 	{
 		NavigationModel _navModel = new NavigationModel();
@@ -179,11 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			((Application)Page.RealParent).NavigationProxy.Inner = this;
 
-			Device.StartTimer(TimeSpan.Zero, () =>
-			{
-				CurrentPageController?.SendAppearing();
-				return false;
-			});
+			Application.Current.Dispatcher.DispatchDelayed(TimeSpan.Zero, () => CurrentPageController?.SendAppearing());
 		}
 
 		public bool SendBackButtonPressed()
@@ -281,7 +333,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		async Task INavigation.PushModalAsync(Page modal, bool animated)
 		{
 			var previousPage = CurrentPageController;
-			Device.BeginInvokeOnMainThread(() => previousPage?.SendDisappearing());
+			Application.Current.Dispatcher.Dispatch(() => previousPage?.SendDisappearing());
 
 			_navModel.PushModal(modal);
 

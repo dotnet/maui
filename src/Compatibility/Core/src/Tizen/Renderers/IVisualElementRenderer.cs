@@ -1,5 +1,6 @@
 using System;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using ERect = ElmSharp.Rect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
@@ -26,6 +27,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			get;
 		}
+
+		event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
 		/// <summary>
 		/// Sets the VisualElement associated with this renderer.

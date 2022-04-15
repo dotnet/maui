@@ -151,4 +151,6 @@
 
   <Import Project="..\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems" Label="Shared" />
 
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
 </Project>

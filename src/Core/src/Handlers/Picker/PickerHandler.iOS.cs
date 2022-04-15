@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.Text = VirtualView.GetItem(selectedIndex);
 
 			// Also clears the undo stack (undo/redo possible on iPads)
-			PlatformView.UndoManager.RemoveAllActions();
+			PlatformView.UndoManager?.RemoveAllActions();
 		}
 
 		void OnRowsCollectionChanged(object? sender, EventArgs e)

@@ -31,7 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BlazorWebView\samples\MauiRazorClassLibrarySample\MauiRazorClassLibrarySample.csproj" />
-    <ProjectReference Include="..\..\Foldable\src\Controls.Foldable.csproj" />
+    <!-- <ProjectReference Include="..\..\Foldable\src\Controls.Foldable.csproj" /> -->
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
@@ -55,6 +55,6 @@
 
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
-  <Import Project="../../../Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

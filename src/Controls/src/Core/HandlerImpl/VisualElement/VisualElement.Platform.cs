@@ -8,6 +8,8 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+#elif TIZEN
+using PlatformView = ElmSharp.EvasObject;
 #endif
 
 namespace Microsoft.Maui.Controls

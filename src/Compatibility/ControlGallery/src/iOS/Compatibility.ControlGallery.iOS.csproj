@@ -52,4 +52,6 @@
     <ImageAsset Include="Assets.xcassets\**" Visible="False" />
   </ItemGroup>
 
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
 </Project>

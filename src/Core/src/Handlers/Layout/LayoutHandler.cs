@@ -5,6 +5,8 @@ using PlatformView = Microsoft.Maui.Platform.LayoutView;
 using PlatformView = Microsoft.Maui.Platform.LayoutViewGroup;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.LayoutPanel;
+#elif TIZEN
+using PlatformView = Microsoft.Maui.Platform.LayoutCanvas;
 #elif NETSTANDARD
 using PlatformView = System.Object;
 #endif
@@ -48,6 +50,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(ILayoutHandler handler, ILayout layout)
 		{
+#if TIZEN
+			handler.UpdateValue(nameof(handler.ContainerView));
+			handler.ToPlatform()?.UpdateBackground(layout);
+#endif
 			((PlatformView?)handler.PlatformView)?.UpdateBackground(layout);
 		}
 

@@ -20,14 +20,12 @@ namespace Microsoft.Maui.Media
 				await tcsUtterances.Task;
 
 			tcsUtterances = new TaskCompletionSource<bool>();
-			if (cancelToken != null)
+
+			cancelToken.Register(() =>
 			{
-				cancelToken.Register(() =>
-				{
-					tts?.Stop();
-					tcsUtterances?.TrySetResult(true);
-				});
-			}
+				tts?.Stop();
+				tcsUtterances?.TrySetResult(true);
+			});
 
 			var language = "en_US";
 			var voiceType = Voice.Auto;

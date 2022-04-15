@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			var config = new WKWebViewConfiguration();
 
-			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
+			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
 			{
 				Configuration = config
 			});
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				AutosizesSubviews = true
 			};
 
-			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
+			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
 			{
 				WebView = webview
 			});
@@ -134,7 +134,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
 				fileProvider,
 				VirtualView.JSComponents,
+				contentRootDir,
 				hostPageRelativePath);
+
+			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
 			if (RootComponents != null)
 			{

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Microsoft.Maui.Devices;
 using ElmSharp;
 using EBox = ElmSharp.Box;
 using EButton = ElmSharp.Button;
@@ -8,6 +9,7 @@ using EImage = ElmSharp.Image;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class ShellNavBar : EBox, IFlyoutBehaviorObserver, IDisposable
 	{
 		EImage _menuIcon = null;
@@ -22,9 +24,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		FlyoutBehavior _flyoutBehavior = FlyoutBehavior.Flyout;
 
-		EColor _backgroudColor = ShellRenderer.DefaultBackgroundColor.ToPlatform();
-		EColor _foregroudColor = ShellRenderer.DefaultForegroundColor.ToPlatform();
-		EColor _titleColor = ShellRenderer.DefaultTitleColor.ToPlatform();
+		EColor _backgroudColor = ShellRenderer.DefaultBackgroundColor.ToNative();
+		EColor _foregroudColor = ShellRenderer.DefaultForegroundColor.ToNative();
+		EColor _titleColor = ShellRenderer.DefaultTitleColor.ToNative();
 
 		// The source of icon resources is https://materialdesignicons.com/
 		const string _menuIconRes = ThemeConstants.Shell.Resources.MenuIcon;
