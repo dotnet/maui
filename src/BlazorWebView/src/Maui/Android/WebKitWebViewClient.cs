@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using Android.Content;
 using Android.Runtime;
 using Android.Webkit;
 using Java.Net;
 using AWebView = Android.Webkit.WebView;
-using Android.Util;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -164,11 +162,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						// Start Blazor
 						view.EvaluateJavascript(@"
 							Blazor.start();
-
-							if (typeof(window.BlazorStarted) == 'undefined')
-							{
-								window.BlazorStarted = true;
-							}
+							window.BlazorStarted = true;
 						", new JavaScriptValueCallback(_ =>
 						{
 							// Done; no more action required
