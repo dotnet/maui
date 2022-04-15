@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		";
 
 		/// <inheritdoc />
+		[SupportedOSPlatform("ios11.0")]
 		protected override WKWebView CreatePlatformView()
 		{
 			var config = new WKWebViewConfiguration();
@@ -64,8 +65,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				new NSString(BlazorInitScript), WKUserScriptInjectionTime.AtDocumentEnd, true));
 
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
-			if (OperatingSystem.IsIOSVersionAtLeast(11))
-				config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
+			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
 			var webview = new WKWebView(RectangleF.Empty, config)
 			{
