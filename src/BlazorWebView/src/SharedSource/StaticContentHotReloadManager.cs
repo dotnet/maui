@@ -20,9 +20,11 @@ namespace Microsoft.AspNetCore.Components.WebView
 		private readonly static Regex ContentUrlRegex = new Regex("^_content/(?<AssemblyName>[^/]+)/(?<RelativePath>.*)");
 		private static event ContentUpdatedHandler? OnContentUpdated;
 
-		private static string? ApplicationAssemblyName { get; } = Assembly.GetEntryAssembly()?.GetName().Name;
+		// If the current platform can't tell us the application entry assembly name, we can use a placeholder name
+		private static string ApplicationAssemblyName { get; } = Assembly.GetEntryAssembly()?.GetName().Name
+			?? "__application_assembly__";
 
-		private static readonly Dictionary<(string? AssemblyName, string RelativePath), (string? ContentType, byte[] Content)> _updatedContent = new()
+		private static readonly Dictionary<(string AssemblyName, string RelativePath), (string? ContentType, byte[] Content)> _updatedContent = new()
 		{
 			{ (ApplicationAssemblyName, "_framework/static-content-hot-reload.js"), ("text/javascript", Encoding.UTF8.GetBytes(@"
 	export function notifyCssUpdated() {
@@ -35,21 +37,17 @@ namespace Microsoft.AspNetCore.Components.WebView
 		/// <summary>
 		/// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.
 		/// </summary>
-		public static void UpdateContent(string assemblyName, string relativePath, byte[] content)
+		public static void UpdateContent(string assemblyName, bool isApplicationProject, string relativePath, byte[] contents)
 		{
-			_updatedContent[(assemblyName, relativePath)] = (ContentType: null, Content: content);
-
-			// On some platforms (Android), the information about the application assembly name is lost
-			// at compile-time. As a workaround, we treat the app assembly name as null, and treat all
-			// hot reloaded files as being in both an RCL and the app assembly. This works fine if the
-			// names don't clash, but means that RCL files can override an app file if the name does clash.
-			// TODO: Either have the tooling tell us whether this is the main application project, or
-			//       have MAUI somehow retain the information about application assembly name to runtime.
-			if (ApplicationAssemblyName is null)
+			if (isApplicationProject)
 			{
-				_updatedContent[(null, relativePath)] = (ContentType: null, Content: content);
+				// Some platforms don't know the name of the application entry assembly (e.g., Android) so in
+				// those cases we have a placeholder name for it. The tooling does know the real name, but we
+				// need to use our placeholder so the lookups work later.
+				assemblyName = ApplicationAssemblyName;
 			}
 
+			_updatedContent[(assemblyName, relativePath)] = (ContentType: null, Content: contents);
 			OnContentUpdated?.Invoke(assemblyName, relativePath);
 		}
 
@@ -82,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 			return false;
 		}
 		
-		private static (string? AssemblyName, string RelativePath) GetAssemblyNameAndRelativePath(string requestAbsoluteUri, string appContentRoot)
+		private static (string AssemblyName, string RelativePath) GetAssemblyNameAndRelativePath(string requestAbsoluteUri, string appContentRoot)
 		{
 			var requestPath = new Uri(requestAbsoluteUri).AbsolutePath.Substring(1);
 			if (ContentUrlRegex.Match(requestPath) is { Success: true } match)
