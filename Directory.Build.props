@@ -87,7 +87,7 @@
     <PackageVersion>$(DotNetVersionBand)-dev</PackageVersion>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts</PackageOutputPath>
   </PropertyGroup>
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="all" />
   </ItemGroup>
   <!-- This target is replaced by GitInfo when restored. Allows Versions.targets to rely on it before restore. -->
