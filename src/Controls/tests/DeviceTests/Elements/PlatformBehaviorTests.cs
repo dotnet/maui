@@ -21,7 +21,7 @@ using PlatformView = System.Object;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Behavior)]
-#if ANDROID
+#if ANDROID || IOS
 	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 #endif
 	public partial class PlatformBehaviorTests : HandlerTestBase

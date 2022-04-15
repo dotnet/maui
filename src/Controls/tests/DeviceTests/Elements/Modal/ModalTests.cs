@@ -17,7 +17,7 @@ using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedR
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Modal)]
-#if ANDROID
+#if ANDROID || IOS
 	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 #endif
 	public partial class ModalTests : HandlerTestBase
