@@ -10,11 +10,11 @@ namespace Microsoft.Maui.Handlers
 	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, View>
 	{
 		View? _flyoutView;
-		View? _detailView;
 		const uint DefaultScrimColor = 0x99000000;
 		View? _navigationRoot;
 		LinearLayoutCompat? _sideBySideView;
 		DrawerLayout DrawerLayout => (DrawerLayout)PlatformView;
+		ScopedFragment? _detailViewFragment;
 
 		protected override View CreatePlatformView()
 		{
@@ -49,22 +49,32 @@ namespace Microsoft.Maui.Handlers
 		void UpdateDetailsFragmentView()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			var newDetailsView = VirtualView.Detail?.ToPlatform(MauiContext);
 
-			if (_detailView == newDetailsView)
+			if (_detailViewFragment != null && _detailViewFragment?.DetailView == VirtualView.Detail)
 				return;
 
-			if (newDetailsView != null)
-				newDetailsView.RemoveFromParent();
+			if (VirtualView.Detail?.Handler is IPlatformViewHandler pvh)
+				pvh.DisconnectHandler();
 
-			_detailView = newDetailsView;
-
-			if (_detailView != null)
+			if(VirtualView.Detail == null)
 			{
+				if (_detailViewFragment != null)
+				{
+					MauiContext
+						.GetFragmentManager()
+						.BeginTransaction()
+						.Remove(_detailViewFragment)
+						.SetReorderingAllowed(true)
+						.Commit();
+				}
+			}
+			else
+			{
+				_detailViewFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
 				MauiContext
 					.GetFragmentManager()
 					.BeginTransaction()
-					.Replace(Resource.Id.navigationlayout_content, new ViewFragment(_detailView))
+					.Replace(Resource.Id.navigationlayout_content, _detailViewFragment)
 					.SetReorderingAllowed(true)
 					.Commit();
 			}
@@ -223,8 +233,7 @@ namespace Microsoft.Maui.Handlers
 		void UpdateFlyoutBehavior()
 		{
 			var behavior = VirtualView.FlyoutBehavior;
-			var details = _detailView;
-			if (details == null)
+			if (_detailViewFragment?.DetailView?.Handler?.PlatformView == null)
 				return;
 
 			switch (behavior)
