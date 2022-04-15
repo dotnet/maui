@@ -1,4 +1,3 @@
-#nullable enable
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -11,38 +10,7 @@ namespace Microsoft.Maui.Handlers
 		PointerEventHandler? _pointerPressedHandler;
 		PointerEventHandler? _pointerReleasedHandler;
 
-		protected override Button CreatePlatformView() =>
-			new Button
-			{
-				AllowFocusOnInteraction = false,
-				VerticalAlignment = VerticalAlignment.Stretch,
-				HorizontalAlignment = HorizontalAlignment.Stretch,
-				Content = new StackPanel
-				{
-					HorizontalAlignment = HorizontalAlignment.Center,
-					VerticalAlignment = VerticalAlignment.Center,
-					Orientation = Orientation.Horizontal,
-					Margin = WinUIHelpers.CreateThickness(0),
-					Children =
-					{
-						new Image
-						{
-							VerticalAlignment = VerticalAlignment.Center,
-							HorizontalAlignment = HorizontalAlignment.Center,
-							Stretch = Stretch.Uniform,
-							Margin = WinUIHelpers.CreateThickness(0),
-							Visibility = UI.Xaml.Visibility.Collapsed,
-						},
-						new TextBlock
-						{
-							VerticalAlignment = VerticalAlignment.Center,
-							HorizontalAlignment = HorizontalAlignment.Center,
-							Margin = WinUIHelpers.CreateThickness(0),
-							Visibility = UI.Xaml.Visibility.Collapsed,
-						}
-					}
-				}
-			};
+		protected override Button CreatePlatformView() => new MauiButton();
 
 		protected override void ConnectHandler(Button platformView)
 		{
