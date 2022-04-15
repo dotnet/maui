@@ -3,6 +3,7 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
+	[Obsolete]
 	public static class PageExtensions
 	{
 		public static EvasObject CreateEvasObject(this Page page, EvasObject parent, bool hasAlpha = false)
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public static class PageExtensions
 	{
 		public static EvasObject CreateEvasObject(this ContentPage page, EvasObject parent, bool hasAlpha = false)

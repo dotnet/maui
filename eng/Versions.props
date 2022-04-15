@@ -15,6 +15,7 @@
     <MicrosoftMacCatalystSdkPackageVersion>15.4.200-rc.2.159</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>12.3.200-rc.2.159</MicrosoftmacOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>15.4.200-rc.2.159</MicrosofttvOSSdkPackageVersion>
+    <SamsungTizenSdkPackageVersion>7.0.100-preview.13.30</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion>6.0.4</MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
@@ -49,6 +50,7 @@
     <MicrosoftDotNetXHarnessTestRunnersCommonVersion>1.0.0-prerelease.22211.4</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
     <MicrosoftDotNetXHarnessTestRunnersXunitVersion>1.0.0-prerelease.22211.4</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
     <MicrosoftDotNetXHarnessCLIVersion>1.0.0-prerelease.22211.4</MicrosoftDotNetXHarnessCLIVersion>
+    <TizenUIExtensionsVersion>0.6.0-pre1</TizenUIExtensionsVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Match the first three version numbers and append 00 -->
@@ -60,5 +62,6 @@
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
+    <DotNetTizenManifestVersionBand>$(DotNetVersionBand)</DotNetTizenManifestVersionBand>
   </PropertyGroup>
 </Project>

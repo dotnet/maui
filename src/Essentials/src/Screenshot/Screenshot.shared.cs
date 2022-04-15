@@ -106,6 +106,14 @@ namespace Microsoft.Maui.Media
 		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UI.Xaml.UIElement element) =>
 			screenshot.AsPlatform().CaptureAsync(element);
 
+#elif TIZEN
+
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, ElmSharp.Window window) =>
+			screenshot.AsPlatform().CaptureAsync(window);
+
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, ElmSharp.EvasObject view) =>
+			screenshot.AsPlatform().CaptureAsync(view);
+
 #endif
 	}
 

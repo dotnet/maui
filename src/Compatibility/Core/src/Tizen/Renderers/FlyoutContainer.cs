@@ -2,6 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Renderers
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class FlyoutContainer : ElmSharp.Box, IDisposable
 	{
 		readonly FlyoutPage _parent;
@@ -51,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Renderers
 
 				if (_hasAppearedToParent)
 				{
-					Device.BeginInvokeOnMainThread(() =>
+					Application.Current.Dispatcher.Dispatch(() =>
 					{
 						if (!_disposed && _hasAppearedToParent)
 							PageController?.SendAppearing();

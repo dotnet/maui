@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.System;
 
 namespace Microsoft.Maui.Devices

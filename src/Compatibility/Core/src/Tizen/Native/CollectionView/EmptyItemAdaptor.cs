@@ -2,10 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using ElmSharp;
 using ESize = ElmSharp.Size;
-using XLabel = Microsoft.Maui.Controls.Compatibility.Label;
+using XLabel = Microsoft.Maui.Controls.Label;
+using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {
+	[System.Obsolete]
 	public class EmptyItemAdaptor : ItemTemplateAdaptor, IEmptyAdaptor
 	{
 		static DataTemplate s_defaultEmptyTemplate = new DataTemplate(typeof(EmptyView));
@@ -56,7 +58,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 			var header = CreateHeaderView();
 			var footer = CreateFooterView();
-			var layout = new StackLayout();
+			var layout = new XStackLayout();
 
 			if (header != null)
 			{
@@ -79,20 +81,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			native.Unrealize();
 		}
 
-		class EmptyView : StackLayout
+		class EmptyView : XStackLayout
 		{
 			public EmptyView()
 			{
-				HorizontalOptions = LayoutOptions.FillAndExpand;
-				VerticalOptions = LayoutOptions.FillAndExpand;
+				HorizontalOptions = LayoutOptions.Fill;
+				VerticalOptions = LayoutOptions.Fill;
 				Children.Add(
 					new XLabel
 					{
 						Text = "No items found",
-						VerticalOptions = LayoutOptions.CenterAndExpand,
-						HorizontalOptions = LayoutOptions.CenterAndExpand,
-						HorizontalTextAlignment = Microsoft.Maui.Controls.Compatibility.TextAlignment.Center,
-						VerticalTextAlignment = Microsoft.Maui.Controls.Compatibility.TextAlignment.Center,
+						VerticalOptions = LayoutOptions.Center,
+						HorizontalOptions = LayoutOptions.Center,
+						HorizontalTextAlignment = Maui.TextAlignment.Center,
+						VerticalTextAlignment = Maui.TextAlignment.Center,
 					}
 				);
 			}

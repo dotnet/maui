@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Storage;
 using Tizen.Applications;
 
 namespace Microsoft.Maui.Media

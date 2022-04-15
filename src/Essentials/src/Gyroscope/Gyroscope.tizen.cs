@@ -1,12 +1,13 @@
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Sensor;
 using TizenGyroscope = Tizen.Sensor.Gyroscope;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	class GyroscopeImplementation : IGyroscope
+	partial class GyroscopeImplementation : IGyroscope
 	{
 		static TizenGyroscope DefaultSensor =>
-			(TizenGyroscope)Platform.GetDefaultSensor(SensorType.Gyroscope);
+			(TizenGyroscope)PlatformUtils.GetDefaultSensor(SensorType.Gyroscope);
 
 		bool PlatformIsSupported =>
 			TizenGyroscope.IsSupported;

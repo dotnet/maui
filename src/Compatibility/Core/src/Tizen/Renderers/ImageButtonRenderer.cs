@@ -1,10 +1,12 @@
 using System;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using EButton = ElmSharp.Button;
 using ERect = ElmSharp.Rect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ImageButtonRenderer : ViewRenderer<ImageButton, Box>
 	{
 		public ImageButtonRenderer()
@@ -64,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected override void UpdateBackgroundColor(bool initialize)
 		{
-			_round.Color = Element.BackgroundColor.ToPlatform();
+			_round.Color = Element.BackgroundColor.ToNative();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -138,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				if (!IsDisposed && success)
 				{
-					(Element as IVisualElementController)?.NativeSizeChanged();
+					(Element as IVisualElementController)?.PlatformSizeChanged();
 					UpdateAfterLoading();
 				}
 			}
@@ -184,7 +186,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateBorderColor()
 		{
-			_border.Color = Element.BorderColor.ToPlatform();
+			_border.Color = Element.BorderColor.ToNative();
 		}
 
 		void UpdateAspect()

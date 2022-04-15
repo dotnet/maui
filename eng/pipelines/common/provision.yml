@@ -107,6 +107,14 @@ steps:
       displayName: 'Setup MSBuild Paths'
       condition: eq(variables['provisioningVS'], 'true')
 
+    - pwsh: |
+        [xml] $fileXml = Get-Content "eng\Versions.props"
+        $DotNetVersionBand = $fileXml.SelectSingleNode("Project/PropertyGroup/DotNetVersionBand").InnerText
+        echo "Installing .NET $DotNetVersion"
+        Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+        .\workload-install.ps1 -t $DotNetVersion
+      displayName: 'Install Tizen'
+
   # Prepare Both
   - pwsh: ./build.ps1 --target provision
     displayName: 'Cake Provision'

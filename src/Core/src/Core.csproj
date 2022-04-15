@@ -18,6 +18,9 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xamarin.Android.Glide" />
   </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith('tizen'))">
+    <PackageReference Include="Microsoft.Maui.Graphics.Skia" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
