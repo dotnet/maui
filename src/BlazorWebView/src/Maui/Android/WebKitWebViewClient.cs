@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			// Confirm Blazor hasn't already initialized
 			view.EvaluateJavascript(@"
-				(function() { return typeof(window.BlazorStarted); })();
+				(function() { return typeof(window.__BlazorStarted); })();
 			", new JavaScriptValueCallback(blazorStarted =>
 			{
 				if (blazorStarted?.ToString() != "\"undefined\"")
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						// Start Blazor
 						view.EvaluateJavascript(@"
 							Blazor.start();
-							window.BlazorStarted = true;
+							window.__BlazorStarted = true;
 						", new JavaScriptValueCallback(_ =>
 						{
 							// Done; no more action required
