@@ -83,8 +83,8 @@ namespace Microsoft.Maui.Controls
 				windowElement.Parent = null;
 				OnChildRemoved(windowElement, oldIndex);
 
-				if (_singleWindowMainPage != null)
-					window.Page = null;
+				window.Page = null;
+					
 			}
 
 			_windows.Remove(window);
