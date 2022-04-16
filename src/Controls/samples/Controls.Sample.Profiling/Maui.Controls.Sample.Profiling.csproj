@@ -36,6 +36,6 @@
     <MauiFont Include="Resources\Fonts\*" />
   </ItemGroup>
 
-  <Import Project="../../../Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

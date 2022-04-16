@@ -60,6 +60,12 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (TargetFramework.Contains("-maccatalyst", StringComparison.Ordinal))
 #endif
 				target = nameof(OnPlatformExtension.MacCatalyst);
+#if NETSTANDARD2_0
+			if (TargetFramework.Contains("-tizen"))
+#else
+			if (TargetFramework.Contains("-tizen", StringComparison.Ordinal))
+#endif
+				target = nameof(OnPlatformExtension.Tizen);
 
 			if (target is null)
 				return;

@@ -33,5 +33,9 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'tizen'" >
+    <PackageReference Include="Tizen.UIExtensions.ElmSharp" />
+    <PackageReference Include="Microsoft.Maui.Graphics.Skia" />
+  </ItemGroup>
 
 </Project>

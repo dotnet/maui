@@ -39,7 +39,6 @@ namespace Microsoft.Maui.DeviceTests
 					scopedContext.AddWeakSpecific(MauiProgram.CurrentWindow);
 					var mauiContext = scopedContext.MakeScoped(true);
 					navigationRootManager = mauiContext.GetNavigationRootManager();
-					navigationRootManager.UseCustomAppTitleBar = false;
 
 					MauiContext
 						.Services
@@ -76,6 +75,15 @@ namespace Microsoft.Maui.DeviceTests
 						await testingRootPanel.OnLoadedAsync();
 						await Task.Delay(10);
 					}
+
+					// reset the appbar title to our test runner
+					MauiProgram
+						.CurrentWindow
+						.GetWindow()
+						.Handler
+						.MauiContext
+						.GetNavigationRootManager()
+						.UpdateAppTitleBar(true);
 				}
 			});
 		}

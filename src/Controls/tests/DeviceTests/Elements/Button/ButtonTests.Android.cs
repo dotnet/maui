@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System.Threading.Tasks;
+using Android.Text;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
@@ -14,12 +15,15 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonTests
 	{
-		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>
+		AppCompatButton GetPlatformButton(ButtonHandler buttonHandler) =>
 			(AppCompatButton)buttonHandler.PlatformView;
 
-		Task<string?> GetNativeText(ButtonHandler buttonHandler)
+		Task<string?> GetPlatformText(ButtonHandler buttonHandler)
 		{
-			return InvokeOnMainThreadAsync(() => GetNativeButton(buttonHandler).Text);
+			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).Text);
 		}
+
+		TextUtils.TruncateAt? GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
+			GetPlatformButton(buttonHandler).Ellipsize;
 	}
 }

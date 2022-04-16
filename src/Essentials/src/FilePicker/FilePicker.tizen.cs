@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 using Tizen;
 using Tizen.Applications;
 
@@ -24,7 +26,7 @@ namespace Microsoft.Maui.Storage
 			appControl.LaunchMode = AppControlLaunchMode.Single;
 
 			var fileType = options?.FileTypes?.Value?.FirstOrDefault();
-			appControl.Mime = fileType ?? FileSystem.MimeTypes.All;
+			appControl.Mime = fileType ?? FileMimeTypes.All;
 
 			var fileResults = new List<FileResult>();
 
@@ -51,31 +53,31 @@ namespace Microsoft.Maui.Storage
 		static FilePickerFileType PlatformImageFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.Tizen, new[] { FileSystem.MimeTypes.ImageAll } },
+				{ DevicePlatform.Tizen, new[] { FileMimeTypes.ImageAll } },
 			});
 
 		static FilePickerFileType PlatformPngFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.Tizen, new[] { FileSystem.MimeTypes.ImagePng } }
+				{ DevicePlatform.Tizen, new[] { FileMimeTypes.ImagePng } }
 			});
 
 		static FilePickerFileType PlatformJpegFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.Tizen, new[] { FileSystem.MimeTypes.ImageJpg } }
+				{ DevicePlatform.Tizen, new[] { FileMimeTypes.ImageJpg } }
 			});
 
 		static FilePickerFileType PlatformVideoFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.Tizen, new[] { FileSystem.MimeTypes.VideoAll } }
+				{ DevicePlatform.Tizen, new[] { FileMimeTypes.VideoAll } }
 			});
 
 		static FilePickerFileType PlatformPdfFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.Tizen, new[] { FileSystem.MimeTypes.Pdf } }
+				{ DevicePlatform.Tizen, new[] { FileMimeTypes.Pdf } }
 			});
 	}
 }
