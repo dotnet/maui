@@ -1738,7 +1738,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view0, 110, 0, 100, 100);
 		}
 
-
 		[Fact]
 		[Category(GridStarSizing), Category(GridAutoSizing)]
 		public void AutoStarColumnSpansDoNotAffectAutoColumnSize()
@@ -1808,7 +1807,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Since row 0 has no height, we expect view1 to start at 10,0 
 			AssertArranged(view1, 10, 0, 190, 200);
 		}
-		
+
+		[Fact]
 		[Category(GridAbsoluteSizing)]
 		public void AbsoluteColumnsConstrainMeasureWidth()
 		{
