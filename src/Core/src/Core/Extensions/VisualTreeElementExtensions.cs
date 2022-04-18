@@ -53,7 +53,7 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Gets list of a Visual Tree Elements children based off of a rectangle defined by it's coordinates.
+		/// Gets list of a Visual Tree Elements children based off of a rectangle defined by its coordinates which are specified in platform units, not pixels.
 		/// </summary>
 		/// <param name="visualElement"><see cref="IVisualTreeElement"/> to scan.</param>
 		/// <param name="x1">The X coordinate of the top left point.</param>
