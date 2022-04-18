@@ -111,7 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected AView GetTitleView(IElementHandler handler)
 		{
 			var toolbar = GetPlatformToolbar(handler);
-			var container = toolbar.GetFirstChildOfType<Controls.Toolbar.Container>();
+			var container = toolbar?.GetFirstChildOfType<Controls.Toolbar.Container>();
 
 			if (container != null && container.ChildCount > 0)
 				return container.GetChildAt(0);

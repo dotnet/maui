@@ -122,6 +122,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var page1 = new ContentPage();
 			var page2 = new ContentPage();
+			var page3 = new ContentPage();
 
 			var titleView1 = new VerticalStackLayout();
 			var titleView2 = new Label();
@@ -150,7 +151,7 @@ namespace Microsoft.Maui.DeviceTests
 						new ShellContent()
 						{
 							Route = "Item3",
-							Content = new ContentPage()
+							Content = page3
 						},
 					}
 				});
@@ -158,6 +159,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
+				await OnLoadedAsync(page1);
 				// GotoAsync which switching tabs/flyout items currently
 				// doesn't resolve after navigated has finished which is why we have the
 				// delays
@@ -165,15 +167,19 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(titleView1.ToPlatform(), GetTitleView(handler));
 				await shell.GoToAsync("//Item2");
 				await Task.Delay(200);
+				await OnLoadedAsync(page2);
 				Assert.Equal(titleView2.ToPlatform(), GetTitleView(handler));
 				await shell.GoToAsync("//Item1");
 				await Task.Delay(200);
+				await OnLoadedAsync(page1);
 				Assert.Equal(titleView1.ToPlatform(), GetTitleView(handler));
 				await shell.GoToAsync("//Item2");
 				await Task.Delay(200);
+				await OnLoadedAsync(page2);
 				Assert.Equal(titleView2.ToPlatform(), GetTitleView(handler));
 				await shell.GoToAsync("//Item3");
 				await Task.Delay(200);
+				await OnLoadedAsync(page3);
 				Assert.Equal(shellTitleView.ToPlatform(), GetTitleView(handler));
 			});
 		}
