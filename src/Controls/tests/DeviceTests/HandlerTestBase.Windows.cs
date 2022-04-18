@@ -166,5 +166,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			return true;
 		}
+    
+		protected object GetTitleView(IElementHandler handler)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			return toolbar.TitleView;
+		}
 	}
 }

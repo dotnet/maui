@@ -38,6 +38,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
+		public async Task TitleAndTitleViewAreMutuallyExclusive()
+		{
+			var window = new Window();
+			IToolbarElement toolbarElement = window;
+			var contentPage = new ContentPage() { Title = "Test Title" };
+			var navigationPage = new NavigationPage(contentPage);
+			window.Page = navigationPage;
+
+			var titleView = new VerticalStackLayout();
+			var toolbar = (Toolbar)toolbarElement.Toolbar;
+			Assert.AreEqual("Test Title", toolbar.Title);
+			NavigationPage.SetTitleView(contentPage, titleView);
+			Assert.IsEmpty(toolbar.Title);
+			Assert.AreEqual(titleView, toolbar.TitleView);
+			NavigationPage.SetTitleView(contentPage, null);
+			Assert.AreEqual("Test Title", toolbar.Title);
+		}
+
+		[Test]
 		public async Task InsertPageBeforeRootPageShowsBackButton()
 		{
 			var window = new Window();

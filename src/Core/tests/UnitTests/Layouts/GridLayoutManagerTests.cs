@@ -1738,5 +1738,54 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view1, 0, 0, 100, 100);
 			AssertArranged(view0, 110, 0, 100, 100);
 		}
+
+
+		[Fact]
+		[Category(GridStarSizing), Category(GridAutoSizing)]
+		public void AutoStarColumnSpansDoNotAffectAutoColumnSize()
+		{
+			var grid = CreateGridLayout(rows: "Auto, *", columns: "Auto, *");
+
+			var view0 = CreateTestView(new Size(10, 10));
+
+			var view1 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view1);
+
+			SetLocation(grid, view0, col: 1);
+			SetLocation(grid, view1, row:1, colSpan: 2);
+
+			MeasureAndArrange(grid, 200, 200);
+
+			// We expect that column 0 has no width, so view0 will be arranged at 0,0
+			AssertArranged(view0, 0, 0, 200, 10);
+
+			// Since column 0 has no width, we expect view1 to start at 0,10 
+			AssertArranged(view1, 0, 10, 200, 190);
+		}
+
+		[Fact]
+		[Category(GridStarSizing), Category(GridAutoSizing)]
+		public void AutoStarRowSpansDoNotAffectAutoRowSize()
+		{
+			var grid = CreateGridLayout(rows: "Auto, *", columns: "Auto, *");
+
+			var view0 = CreateTestView(new Size(10, 10));
+
+			var view1 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view1);
+
+			SetLocation(grid, view0, row: 1);
+			SetLocation(grid, view1, col: 1, rowSpan: 2);
+
+			MeasureAndArrange(grid, 200, 200);
+
+			// We expect that row 0 has no height, so view0 will be arranged at 0,0
+			AssertArranged(view0, 0, 0, 10, 200);
+
+			// Since row 0 has no height, we expect view1 to start at 10,0 
+			AssertArranged(view1, 10, 0, 190, 200);
+		}
 	}
 }

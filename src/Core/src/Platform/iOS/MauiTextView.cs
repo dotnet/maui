@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
@@ -9,7 +10,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiTextView : UITextView
 	{
 		readonly UILabel _placeholderLabel;
-
+		
 		public MauiTextView()
 		{
 			_placeholderLabel = InitPlaceholderLabel();
@@ -54,6 +55,8 @@ namespace Microsoft.Maui.Platform
 			set => _placeholderLabel.TextColor = value;
 		}
 
+		public TextAlignment VerticalTextAlignment { get; set; }
+
 		public override string? Text
 		{
 			get => base.Text;
@@ -86,6 +89,12 @@ namespace Microsoft.Maui.Platform
 					TextSetOrChanged?.Invoke(this, EventArgs.Empty);
 				}
 			}
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+			ShouldCenterVertically();
 		}
 
 		UILabel InitPlaceholderLabel()
@@ -132,6 +141,19 @@ namespace Microsoft.Maui.Platform
 		{
 			HidePlaceholderIfTextIsPresent(Text);
 			TextSetOrChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		void ShouldCenterVertically()
+		{
+			var fittingSize = new CGSize(Bounds.Width, NFloat.MaxValue);
+			var sizeThatFits = SizeThatFits(fittingSize);
+			var availableSpace = (Bounds.Height - sizeThatFits.Height * ZoomScale);
+			ContentOffset = VerticalTextAlignment switch
+			{
+				Maui.TextAlignment.Center => new CGPoint(0, -Math.Max(1, availableSpace / 2)),
+				Maui.TextAlignment.End => new CGPoint(0, -Math.Max(1, availableSpace)),
+				_ => new CGPoint(0, 0),
+			};
 		}
 	}
 }

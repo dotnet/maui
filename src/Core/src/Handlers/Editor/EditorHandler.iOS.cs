@@ -86,10 +86,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateHorizontalTextAlignment(editor);
 
-		[MissingMapper]
-		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor)
-		{
-		}
+		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateVerticalTextAlignment(editor);
 
 		public static void MapCursorPosition(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateCursorPosition(editor);

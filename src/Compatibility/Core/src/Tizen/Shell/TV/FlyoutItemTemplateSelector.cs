@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.TV
 {
@@ -138,25 +139,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.TV
 		{
 			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 			{
-				if (value is Color c && c == Color.Transparent)
+				if (value is Color c && c == KnownColor.Transparent)
 				{
-					return Color.White;
+					return Color.FromRgb(255, 255, 255);
 				}
 				else
 				{
-					return Color.Black;
+					return Color.FromRgb(0, 0, 0);
 				}
 			}
 
 			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			{
-				if (value is Color c && c == Color.White)
+				if (value is Color c && c.Equals(Color.FromRgb(255, 255, 255)))
 				{
-					return Color.Transparent;
+					return KnownColor.Transparent;
 				}
 				else
 				{
-					return Color.Black;
+					return Color.FromRgb(0, 0, 0);
 				}
 			}
 		}

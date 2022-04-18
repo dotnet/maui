@@ -4,7 +4,9 @@ using PlatformView = WebKit.WKWebView;
 using PlatformView = Android.Webkit.WebView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.WebView2;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformView = Microsoft.Maui.Platform.MauiWebView;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 

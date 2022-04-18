@@ -427,6 +427,12 @@ namespace Microsoft.Maui.Layouts
 					{
 						autoCount += 1;
 					}
+					else if (definitions[n].IsStar)
+					{
+						// Ah, part of this span is a Star; that means it doesn't count
+						// for sizing the Auto parts of the span at all. We can just cut out now.
+						return;
+					}
 				}
 
 				double distribution = required / autoCount;

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <summary>
 		/// This field is part of MAUI infrastructure and is not intended for use by application code.
 		/// </summary>
-		public static readonly PropertyMapper<IBlazorWebView, BlazorWebViewHandler> BlazorWebViewMapper = new(ViewMapper)
+		public static PropertyMapper<IBlazorWebView, BlazorWebViewHandler> BlazorWebViewMapper = new(ViewMapper)
 		{
 			[nameof(IBlazorWebView.HostPage)] = MapHostPage,
 			[nameof(IBlazorWebView.RootComponents)] = MapRootComponents,

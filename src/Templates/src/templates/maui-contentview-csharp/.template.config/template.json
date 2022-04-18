@@ -1,7 +1,7 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI", "Xaml", "Code" ],
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI", "Tizen", "Xaml", "Code" ],
     "identity": "Microsoft.Maui.CSharpContentView",
     "name": ".NET MAUI ContentView (C#) (Preview)",
     "shortName": "maui-view-csharp",

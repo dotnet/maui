@@ -4,7 +4,9 @@ using PlatformView = Microsoft.Maui.Platform.MauiLabel;
 using PlatformView = AndroidX.AppCompat.Widget.AppCompatTextView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.TextBlock;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformView = Tizen.UIExtensions.ElmSharp.Label;
+#elif NETSTANDARD || (NET6_0 && !IOS && !TIZEN)
 using PlatformView = System.Object;
 #endif
 
