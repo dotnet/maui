@@ -1,9 +1,14 @@
 <Project>
 
   <!-- Remove platform-based @(Using) unless $(MauiEnablePlatformUsings) flag is set -->
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(MauiEnablePlatformUsings)' != 'true' and ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') ">
+  <ItemGroup Condition=" '$(MauiEnablePlatformUsings)' != 'true' and ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') ">
     <Using Remove="@(Using->HasMetadata('Platform'))" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <!-- TODO: workaround https://github.com/xamarin/xamarin-android/issues/6809#issuecomment-1061115254 -->
+    <MSBuildWarningsAsMessages Condition=" '$(TargetPlatformIdentifier)' == 'Android' ">$(MSBuildWarningsAsMessages);XA4218</MSBuildWarningsAsMessages>
+  </PropertyGroup
 
   <Import Project="WinUI.targets" Condition=" '$(TargetPlatformIdentifier)' == 'windows' " />
 
