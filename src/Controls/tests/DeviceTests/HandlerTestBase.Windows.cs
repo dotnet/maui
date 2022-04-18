@@ -145,5 +145,11 @@ namespace Microsoft.Maui.DeviceTests
 			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
 			return windowHeader;
 		}
+
+		protected object GetTitleView(IElementHandler handler)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			return toolbar.TitleView;
+		}
 	}
 }

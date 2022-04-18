@@ -114,6 +114,70 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+
+		[Fact(DisplayName = "TitleView Causes a Crash When Switching Tabs")]
+		public async Task TitleViewCausesACrashWhenSwitchingTabs()
+		{
+			SetupBuilder();
+
+			var page1 = new ContentPage();
+			var page2 = new ContentPage();
+
+			var titleView1 = new VerticalStackLayout();
+			var titleView2 = new Label();
+			var shellTitleView = new Editor();
+
+			Shell.SetTitleView(page1, titleView1);
+			Shell.SetTitleView(page2, titleView2);
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				Shell.SetTitleView(shell, shellTitleView);
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Item1",
+							Content = page1
+						},
+						new ShellContent()
+						{
+							Route = "Item2",
+							Content = page2
+						},
+						new ShellContent()
+						{
+							Route = "Item3",
+							Content = new ContentPage()
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				// GotoAsync which switching tabs/flyout items currently
+				// doesn't resolve after navigated has finished which is why we have the
+				// delays
+				// https://github.com/dotnet/maui/issues/6193
+				Assert.Equal(titleView1.ToPlatform(), GetTitleView(handler));
+				await shell.GoToAsync("//Item2");
+				await Task.Delay(200);
+				Assert.Equal(titleView2.ToPlatform(), GetTitleView(handler));
+				await shell.GoToAsync("//Item1");
+				await Task.Delay(200);
+				Assert.Equal(titleView1.ToPlatform(), GetTitleView(handler));
+				await shell.GoToAsync("//Item2");
+				await Task.Delay(200);
+				Assert.Equal(titleView2.ToPlatform(), GetTitleView(handler));
+				await shell.GoToAsync("//Item3");
+				await Task.Delay(200);
+				Assert.Equal(shellTitleView.ToPlatform(), GetTitleView(handler));
+			});
+		}
+
 		[Fact(DisplayName = "Handlers not recreated when changing tabs")]
 		public async Task HandlersNotRecreatedWhenChangingTabs()
 		{
