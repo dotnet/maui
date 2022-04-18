@@ -1,0 +1,10 @@
+<Project>
+
+  <!-- Remove platform-based @(Using) unless $(MauiEnablePlatformUsings) flag is set -->
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(MauiEnablePlatformUsings)' != 'true' and ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') ">
+    <Using Remove="@(Using->HasMetadata('Platform'))" />
+  </ItemGroup>
+
+  <Import Project="WinUI.targets" Condition=" '$(TargetPlatformIdentifier)' == 'windows' " />
+
+</Project>
