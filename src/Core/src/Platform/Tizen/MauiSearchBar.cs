@@ -44,6 +44,12 @@ namespace Microsoft.Maui.Platform
 
 		public event EventHandler? SearchButtonPressed;
 
+		protected override void OnEnabled(bool enabled)
+		{
+			base.OnEnabled(enabled);
+			_entry.IsEnabled = enabled;
+		}
+
 		TSize IMeasurable.Measure(double availableWidth, double availableHeight)
 		{
 			if (!string.IsNullOrEmpty(Entry.Text) || !string.IsNullOrEmpty(Entry.Placeholder))
