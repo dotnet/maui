@@ -5,6 +5,7 @@ using System.Linq;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
+using Android.Views.Animations;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
@@ -12,6 +13,7 @@ using AndroidX.Fragment.App;
 using AndroidX.ViewPager.Widget;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.Tabs;
+using AndroidAnimation = Android.Views.Animations.Animation;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -19,6 +21,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellSectionRenderer : Fragment, IShellSectionRenderer//, ViewPager.IOnPageChangeListener
 		, AView.IOnClickListener, IShellObservableFragment, IAppearanceObserver, TabLayoutMediator.ITabConfigurationStrategy
+		, AndroidAnimation.IAnimationListener
 	{
 		#region ITabConfigurationStrategy
 
@@ -61,6 +64,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		}
 
 		#endregion IOnClickListener
+
+		#region IAnimationListener
+
+		bool _isAnimating;
+		void AndroidAnimation.IAnimationListener.OnAnimationEnd(AndroidAnimation animation)
+		{
+			View?.SetLayerType(LayerType.None, null);
+			OnAnimationFinished(EventArgs.Empty);
+			_isAnimating = false;
+		}
+
+		public override void OnResume()
+		{
+			base.OnResume();
+			if (!_isAnimating)
+			{
+				OnAnimationFinished(EventArgs.Empty);
+			}
+		}
+
+		void AndroidAnimation.IAnimationListener.OnAnimationRepeat(AndroidAnimation animation)
+		{
+		}
+
+		void AndroidAnimation.IAnimationListener.OnAnimationStart(AndroidAnimation animation)
+		{
+		}
+
+		#endregion IAnimationListener
 
 		readonly IShellContext _shellContext;
 		AView _rootView;
@@ -221,6 +253,37 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnAnimationFinished(EventArgs e)
 		{
 			AnimationFinished?.Invoke(this, e);
+			_isAnimating = false;
+		}
+
+		public override AndroidAnimation OnCreateAnimation(int transit, bool enter, int nextAnim)
+		{
+			var result = base.OnCreateAnimation(transit, enter, nextAnim);
+			_isAnimating = true;
+
+			if (result == null && nextAnim != 0)
+			{
+				result = AnimationUtils.LoadAnimation(Context, nextAnim);
+			}
+
+			if (result == null)
+			{
+				OnAnimationFinished(EventArgs.Empty);
+				return result;
+			}
+
+			// This is very strange what we are about to do. For whatever reason if you take this animation
+			// and wrap it into an animation set it will have a 1 frame glitch at the start where the
+			// fragment shows at the final position. That sucks. So instead we reach into the returned
+			// set and hook up to the first item. This means any animation we use depends on the first item
+			// finishing at the end of the animation.
+
+			if (result is AnimationSet set)
+			{
+				set.Animations[0].SetAnimationListener(this);
+			}
+
+			return result;
 		}
 
 		protected virtual void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

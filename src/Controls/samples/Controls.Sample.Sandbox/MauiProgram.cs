@@ -25,6 +25,7 @@ namespace Maui.Controls.Sample
 						Text = "Hello Sandbox!",
 						HorizontalOptions = LayoutOptions.Center,
 						VerticalOptions = LayoutOptions.Center,
+						Margin = new Thickness(300),
 					}
 				});
 	}

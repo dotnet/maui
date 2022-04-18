@@ -25,8 +25,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void AndroidAnimation.IAnimationListener.OnAnimationEnd(AndroidAnimation animation)
 		{
 			View?.SetLayerType(LayerType.None, null);
-			AnimationFinished?.Invoke(this, EventArgs.Empty);
-			_isAnimating = false;
+			OnAnimationFinished(EventArgs.Empty);
 		}
 
 		public override void OnResume()
@@ -34,7 +33,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.OnResume();
 			if (!_isAnimating)
 			{
-				AnimationFinished?.Invoke(this, EventArgs.Empty);
+				OnAnimationFinished(EventArgs.Empty);
 			}
 		}
 
@@ -88,6 +87,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public Fragment Fragment => this;
 
+		protected virtual void OnAnimationFinished(EventArgs e)
+		{
+			AnimationFinished?.Invoke(this, e);
+			_isAnimating = false;
+		}
+
 		public override AndroidAnimation OnCreateAnimation(int transit, bool enter, int nextAnim)
 		{
 			var result = base.OnCreateAnimation(transit, enter, nextAnim);
@@ -100,7 +105,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (result == null)
 			{
-				AnimationFinished?.Invoke(this, EventArgs.Empty);
+				OnAnimationFinished(EventArgs.Empty);
 				return result;
 			}
 

@@ -261,7 +261,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else
 			{
-				result.TrySetResult(true);
+				var observable = trackFragment ?? target.Fragment as IShellObservableFragment;
+				if (observable != null)
+				{
+					//result.TrySetResult(true);
+					void callback(object s, EventArgs e)
+					{
+						observable.AnimationFinished -= callback;
+						result.TrySetResult(true);
+						GetNavigationTarget().SetBackground(null);
+					}
+					observable.AnimationFinished += callback;
+				}
+				else
+				{
+					result.TrySetResult(true);
+				}
 			}
 
 			if (initialUpdate)

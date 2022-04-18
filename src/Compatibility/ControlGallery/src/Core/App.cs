@@ -112,23 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		public Page CreateDefaultMainPage()
 		{
-			var layout = new StackLayout { BackgroundColor = Colors.Red };
-			layout.Children.Add(new Label { Text = "This is master Page" });
-			var master = new ContentPage { Title = "Flyout", Content = layout, BackgroundColor = Colors.SkyBlue, IconImageSource = "menuIcon" };
-			master.On<iOS>().SetUseSafeArea(true);
-			var mdp = new FlyoutPage
-			{
-				AutomationId = DefaultMainPageId,
-				Flyout = master,
-				Detail = CoreGallery.GetMainPage()
-			};
-			master.IconImageSource.AutomationId = "btnMDPAutomationID";
-			mdp.SetAutomationPropertiesName("Main page");
-			mdp.SetAutomationPropertiesHelpText("Main page help text");
-			mdp.Flyout.IconImageSource.SetAutomationPropertiesHelpText("This as MDP icon");
-			mdp.Flyout.IconImageSource.SetAutomationPropertiesName("MDPICON");
-			return mdp;
-			//return new XamStore.StoreShell();
+			return new XamStore.StoreShell();
 		}
 
 		protected override void OnAppLinkRequestReceived(Uri uri)
