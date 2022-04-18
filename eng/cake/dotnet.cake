@@ -118,6 +118,7 @@ Task("dotnet-templates")
             { "mauicorelib:mauilib", dir => {
                 CleanDirectories(dir.Combine("Platforms").FullPath);
                 ReplaceTextInFiles($"{dir}/*.csproj", "UseMaui", "UseMauiCore");
+                ReplaceTextInFiles($"{dir}/*.csproj", "SingleProject", "EnablePreviewMsixTooling");
             } },
         };
 
