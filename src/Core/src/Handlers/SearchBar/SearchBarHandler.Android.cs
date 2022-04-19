@@ -112,7 +112,6 @@ namespace Microsoft.Maui.Handlers
 		void OnQueryTextSubmit(object? sender, QueryTextSubmitEventArgs e)
 		{
 			VirtualView.SearchButtonPressed();
-			PlatformView?.ClearFocus();
 			e.Handled = true;
 		}
 
