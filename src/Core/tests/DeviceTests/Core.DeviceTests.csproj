@@ -6,7 +6,6 @@
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Core.DeviceTests</AssemblyName>
-    <NoWarn>$(NoWarn),CA1416</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
