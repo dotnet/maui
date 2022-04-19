@@ -32,12 +32,6 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 			new LineItem() { ItemName = "Item 3" },
 			new LineItem() { ItemName = "Item 4" },
 		};
-
-		public void SelChangedLol(object sender, SelectionChangedEventArgs args)
-		{
-			var collectionView = (CollectionView)sender;
-			System.Diagnostics.Debug.Print($"SEL: {collectionView.SelectedItem}");
-		}
 	}
 
 	public class LineItem

@@ -9,7 +9,7 @@
                 VerticalOptions="FillAndExpand"
                 SelectionMode="Single"
                 ItemSizingStrategy="MeasureFirstItem"
-                EmptyView="No items defined" SelectionChanged="SelChangedLol">
+                EmptyView="No items defined">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid ColumnDefinitions="*,Auto" BackgroundColor="White">
@@ -40,7 +40,7 @@
                 VerticalOptions="FillAndExpand"
                 SelectionMode="Multiple"
                 ItemSizingStrategy="MeasureFirstItem"
-                EmptyView="No items defined" SelectionChanged="SelChangedLol">
+                EmptyView="No items defined">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid ColumnDefinitions="*,Auto" BackgroundColor="White">
