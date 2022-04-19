@@ -72,7 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 		string TextForHandler(LabelHandler handler)
 		{
 #if __IOS__
-				return handler.PlatformView.AttributedText?.Value;
+			return handler.PlatformView.AttributedText?.Value;
 #elif __ANDROID__
 				return handler.PlatformView.TextFormatted.ToString();
 #elif WINDOWS
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory(DisplayName = "Negative MaxLines value with wrap is correct")]
 #if __IOS__
 		[InlineData(0)]
-#else 
+#else
 		[InlineData(int.MaxValue)]
 #endif
 		public async Task NegativeMaxValueWithWrapIsCorrect(int expectedLines)

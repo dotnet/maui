@@ -3,10 +3,10 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {

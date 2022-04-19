@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Layouts
 		{
 			var padding = Stack.Padding;
 			double top = padding.Top + bounds.Top;
-			
+
 			var height = bounds.Height - padding.VerticalThickness;
 			double stackWidth;
 
@@ -66,8 +66,8 @@ namespace Microsoft.Maui.Layouts
 					continue;
 				}
 
-				xPosition += leftToRight 
-					? ArrangeChildFromLeftEdge(child, height, top, xPosition) 
+				xPosition += leftToRight
+					? ArrangeChildFromLeftEdge(child, height, top, xPosition)
 					: ArrangeChildFromRightEdge(child, height, top, xPosition);
 
 				if (n < Stack.Count - 1)
