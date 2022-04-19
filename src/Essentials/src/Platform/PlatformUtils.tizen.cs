@@ -22,22 +22,6 @@ namespace Microsoft.Maui.ApplicationModel
 		static TizenOrientationSensor orientationSensor = null;
 		static MapService mapService = null;
 
-		public static void Init(ElmSharp.Window window)
-		{
-			MainWindow = window;
-		}
-
-		internal static ElmSharp.Window MainWindow { get; private set; }
-
-		internal static Package CurrentPackage
-		{
-			get
-			{
-				var packageId = Application.Current.ApplicationInfo.PackageId;
-				return PackageManager.GetPackage(packageId);
-			}
-		}
-
 		internal static string GetSystemInfo(string item) => GetSystemInfo<string>(item);
 
 		internal static T GetSystemInfo<T>(string item)
@@ -59,29 +43,29 @@ namespace Microsoft.Maui.ApplicationModel
 			switch (type)
 			{
 				case SensorType.Accelerometer:
-					if (Platform.accelerometer == null)
-						Platform.accelerometer = new TizenAccelerometer();
-					return Platform.accelerometer;
+					if (PlatformUtils.accelerometer == null)
+						PlatformUtils.accelerometer = new TizenAccelerometer();
+					return PlatformUtils.accelerometer;
 				case SensorType.Barometer:
-					if (Platform.barometer == null)
-						Platform.barometer = new TizenBarometer();
-					return Platform.barometer;
+					if (PlatformUtils.barometer == null)
+						PlatformUtils.barometer = new TizenBarometer();
+					return PlatformUtils.barometer;
 				case SensorType.Compass:
-					if (Platform.compass == null)
-						Platform.compass = new TizenCompass();
-					return Platform.compass;
+					if (PlatformUtils.compass == null)
+						PlatformUtils.compass = new TizenCompass();
+					return PlatformUtils.compass;
 				case SensorType.Gyroscope:
-					if (Platform.gyroscope == null)
-						Platform.gyroscope = new TizenGyroscope();
-					return Platform.gyroscope;
+					if (PlatformUtils.gyroscope == null)
+						PlatformUtils.gyroscope = new TizenGyroscope();
+					return PlatformUtils.gyroscope;
 				case SensorType.Magnetometer:
-					if (Platform.magnetometer == null)
-						Platform.magnetometer = new TizenMagnetometer();
-					return Platform.magnetometer;
+					if (PlatformUtils.magnetometer == null)
+						PlatformUtils.magnetometer = new TizenMagnetometer();
+					return PlatformUtils.magnetometer;
 				case SensorType.OrientationSensor:
-					if (Platform.orientationSensor == null)
-						Platform.orientationSensor = new TizenOrientationSensor();
-					return Platform.orientationSensor;
+					if (PlatformUtils.orientationSensor == null)
+						PlatformUtils.orientationSensor = new TizenOrientationSensor();
+					return PlatformUtils.orientationSensor;
 				default:
 					return null;
 			}
@@ -96,8 +80,6 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 			return mapService;
 		}
-
-		public static string MapServiceToken { get; set; }
 	}
 
 	enum SensorType

@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls
 			var desiredWidth = ResolveConstraints(widthConstraint, width, contentSize.Width + margin.HorizontalThickness);
 			var desiredHeight = ResolveConstraints(heightConstraint, height, contentSize.Height + margin.VerticalThickness);
 
-			DesiredSize = new Size(desiredWidth, desiredHeight);
+			DesiredSize = new Size(desiredWidth + margin.HorizontalThickness, desiredHeight + margin.VerticalThickness);
 
 			return DesiredSize;
 		}

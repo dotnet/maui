@@ -54,6 +54,9 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void Reset()
 		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				return;
+
 			menus.Clear();
 		}
 	}

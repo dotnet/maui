@@ -5,7 +5,9 @@ using PlatformView = Microsoft.Maui.Platform.MauiSearchBar;
 using PlatformView = AndroidX.AppCompat.Widget.SearchView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.AutoSuggestBox;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformView = Tizen.UIExtensions.ElmSharp.SearchBar;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 

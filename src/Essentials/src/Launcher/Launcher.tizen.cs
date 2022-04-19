@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Storage;
 using Tizen.Applications;
 
 namespace Microsoft.Maui.ApplicationModel
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.ApplicationModel
 			var appControl = new AppControl
 			{
 				Operation = AppControlOperations.View,
-				Mime = FileSystem.MimeTypes.All,
+				Mime = FileMimeTypes.All,
 				Uri = "file://" + request.File.FullPath,
 			};
 

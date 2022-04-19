@@ -198,6 +198,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_drawerLayout.RemoveDrawerListener(_drawerToggle);
 				_drawerToggle?.Dispose();
 
+				_toolbar?.Handler?.DisconnectHandler();
+				_toolbar = null;
 				_platformToolbar.RemoveAllViews();
 			}
 

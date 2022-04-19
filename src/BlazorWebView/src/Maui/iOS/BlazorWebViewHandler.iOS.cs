@@ -136,7 +136,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
 				fileProvider,
 				VirtualView.JSComponents,
+				contentRootDir,
 				hostPageRelativePath);
+
+			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
 			if (RootComponents != null)
 			{

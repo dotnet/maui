@@ -1,8 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using ERect = ElmSharp.Rect;
+using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -12,6 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		Closed
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SwipeViewRenderer : LayoutRenderer
 	{
 		static readonly double SwipeItemWidth = Forms.ConvertToScaledDP(100);
@@ -81,7 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (SwipeDirection == 0)
 			{
-				var direction = SwipeDirectionHelper.GetSwipeDirection(new Point(moment.X1, moment.Y1), new Point(moment.X2, moment.Y2));
+				var direction = SwipeDirectionHelper.GetSwipeDirection(new Graphics.Point(moment.X1, moment.Y1), new Graphics.Point(moment.X2, moment.Y2));
 
 				if (HasRightItems && direction == SwipeDirection.Left)
 				{
@@ -243,7 +246,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		void UpdateItems()
 		{
 			CurrentItems = GetSwipedItems();
-			var itemsLayout = new StackLayout
+			var itemsLayout = new XStackLayout
 			{
 				Spacing = 0,
 				Orientation = IsHorizontalSwipe ? StackOrientation.Horizontal : StackOrientation.Vertical,
@@ -271,7 +274,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				tap.CommandParameter = item.CommandParameter;
 				tap.Tapped += (s, e) =>
 				{
-					if (item is SwipeItem swipeItem)
+					if (item is ISwipeItem swipeItem)
 						swipeItem.OnInvoked();
 
 					if (item is SwipeItemView customSwipeItem)
@@ -279,7 +282,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 					if (CurrentItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
 					{
-						Device.BeginInvokeOnMainThread(() =>
+						Application.Current.Dispatcher.Dispatch(() =>
 						{
 							_ = SwipeCloseAsync();
 						});
@@ -290,12 +293,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				if (IsHorizontalSwipe)
 				{
 					itemView.HorizontalOptions = LayoutOptions.Start;
-					itemView.VerticalOptions = LayoutOptions.FillAndExpand;
+					itemView.VerticalOptions = LayoutOptions.Fill;
 				}
 				else
 				{
 					itemView.VerticalOptions = LayoutOptions.Start;
-					itemView.HorizontalOptions = LayoutOptions.FillAndExpand;
+					itemView.HorizontalOptions = LayoutOptions.Fill;
 				}
 				itemsLayout.Children.Add(itemView);
 			}
@@ -344,10 +347,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		static View CreateItemView(SwipeItemView item)
 		{
-			return new StackLayout
+			return new XStackLayout
 			{
-				VerticalOptions = LayoutOptions.FillAndExpand,
-				HorizontalOptions = LayoutOptions.FillAndExpand,
+				VerticalOptions = LayoutOptions.Fill,
+				HorizontalOptions = LayoutOptions.Fill,
 				Children =
 				{
 					item.Content
@@ -365,34 +368,38 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				Text = item.Text,
 				HorizontalTextAlignment = TextAlignment.Center,
+#pragma warning disable CS0612 // Type or member is obsolete
 				FontSize = Device.GetNamedSize(NamedSize.Default, typeof(Label)),
+#pragma warning disable CS0612 // Type or member is obsolete
 			};
 
 			if (horizontal)
 			{
-				image.VerticalOptions = LayoutOptions.FillAndExpand;
+				image.VerticalOptions = LayoutOptions.Fill;
 				image.HorizontalOptions = LayoutOptions.Start;
 
-				label.VerticalOptions = LayoutOptions.CenterAndExpand;
-				label.HorizontalOptions = LayoutOptions.CenterAndExpand;
+				label.VerticalOptions = LayoutOptions.Center;
+				label.HorizontalOptions = LayoutOptions.Center;
 				label.VerticalTextAlignment = TextAlignment.Center;
+#pragma warning disable CS0612 // Type or member is obsolete
 				label.FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label));
+#pragma warning disable CS0612 // Type or member is obsolete
 			}
 			else
 			{
-				image.VerticalOptions = LayoutOptions.FillAndExpand;
-				image.HorizontalOptions = LayoutOptions.FillAndExpand;
+				image.VerticalOptions = LayoutOptions.Fill;
+				image.HorizontalOptions = LayoutOptions.Fill;
 
-				label.VerticalOptions = LayoutOptions.EndAndExpand;
-				label.HorizontalOptions = LayoutOptions.CenterAndExpand;
+				label.VerticalOptions = LayoutOptions.End;
+				label.HorizontalOptions = LayoutOptions.Center;
 				label.VerticalTextAlignment = TextAlignment.End;
 			}
 
-			var layout = new StackLayout
+			var layout = new XStackLayout
 			{
 				Padding = 5,
 				BackgroundColor = item.BackgroundColor,
-				VerticalOptions = LayoutOptions.FillAndExpand,
+				VerticalOptions = LayoutOptions.Fill,
 				Orientation = horizontal ? StackOrientation.Horizontal : StackOrientation.Vertical,
 				Children =
 				{

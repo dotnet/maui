@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest package="com.microsoft.maui.Controls.Sample.Tizen" version="1.0.0" api-version="4" xmlns="http://tizen.org/ns/packages">
+  <profile name="common" />
+  <ui-application appid="com.microsoft.maui.Controls.Sample.Tizen" exec="Maui.Controls.Sample.Tizen.dll" multiple="false" nodisplay="false" taskmanage="true" type="dotnet" splash-screen-display="true" launch_mode="single">
+    <label>MauiSample</label>
+    <icon>appicon.xhigh.png</icon>
+    <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true" />
+    <splash-screens>
+      <splash-screen src="splash/dotnet_bot.ldpi.png" type="img" dpi="ldpi" orientation="portrait" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
+      <splash-screen src="splash/dotnet_bot.ldpi.png" type="img" dpi="ldpi" orientation="landscape" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
+      <splash-screen src="splash/dotnet_bot.mdpi.png" type="img" dpi="mdpi" orientation="portrait" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
+      <splash-screen src="splash/dotnet_bot.mdpi.png" type="img" dpi="mdpi" orientation="landscape" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
+      <splash-screen src="splash/dotnet_bot.hdpi.png" type="img" dpi="hdpi" orientation="portrait" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
+      <splash-screen src="splash/dotnet_bot.hdpi.png" type="img" dpi="hdpi" orientation="landscape" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
+      <splash-screen src="splash/dotnet_bot.xhdpi.png" type="img" dpi="xhdpi" orientation="portrait" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
+      <splash-screen src="splash/dotnet_bot.xhdpi.png" type="img" dpi="xhdpi" orientation="landscape" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
+      <splash-screen src="splash/dotnet_bot.xxhdpi.png" type="img" dpi="xxhdpi" orientation="portrait" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
+      <splash-screen src="splash/dotnet_bot.xxhdpi.png" type="img" dpi="xxhdpi" orientation="landscape" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
+    </splash-screens>
+  </ui-application>
+  <shortcut-list />
+  <privileges>
+    <privilege>http://tizen.org/privilege/internet</privilege>
+  </privileges>
+  <dependencies />
+  <provides-appdefined-privileges />
+</manifest>

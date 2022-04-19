@@ -44,6 +44,9 @@ namespace Microsoft.Maui.Platform
 			IMauiContext mauiContext,
 			IUIMenuBuilder? uIMenuBuilder)
 		{
+			if (String.IsNullOrWhiteSpace(title))
+				throw new ArgumentNullException(nameof(title), $"{menuElements} requires title text.");
+
 			uIMenuBuilder = uIMenuBuilder ??
 				MauiUIApplicationDelegate.Current.MenuBuilder!;
 

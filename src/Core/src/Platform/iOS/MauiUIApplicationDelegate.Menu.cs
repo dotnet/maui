@@ -18,6 +18,9 @@ namespace Microsoft.Maui
 			if (OperatingSystem.IsIOSVersionAtLeast(13))
 				base.BuildMenu(builder);
 
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				return;
+
 			MenuBuilder = builder;
 
 			var window = Window ?? this.GetWindow() ??

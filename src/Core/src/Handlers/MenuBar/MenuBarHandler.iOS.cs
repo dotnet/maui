@@ -24,6 +24,9 @@ namespace Microsoft.Maui.Handlers
 
 		void BuildNewMenu()
 		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				return;
+
 			UIMenu? lastFoundMenu = null;
 #pragma warning disable CA1416 // TODO: 'IUIMenuBuilder' is only supported on: 'ios' 13.0 and later
 			foreach (var item in VirtualView)

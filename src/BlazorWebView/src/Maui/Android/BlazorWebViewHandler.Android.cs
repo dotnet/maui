@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				// To allow overriding UrlLoadingStrategy.OpenInWebView and open links in browser with a _blank target
 				blazorAndroidWebView.Settings.SetSupportMultipleWindows(true);
+
 				blazorAndroidWebView.Settings.JavaScriptEnabled = true;
 				blazorAndroidWebView.Settings.DomStorageEnabled = true;
 			}
@@ -97,7 +98,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
 				fileProvider,
 				VirtualView.JSComponents,
+				contentRootDir,
 				hostPageRelativePath);
+
+			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
 			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs());
 			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs

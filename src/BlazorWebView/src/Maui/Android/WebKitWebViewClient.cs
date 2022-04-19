@@ -100,8 +100,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			base.OnPageFinished(view, url);
 
-			// TODO: How do we know this runs only once?
-			if (view != null && AppOriginUri.IsBaseOfPage(url))
+			if (view != null && url != null && AppOriginUri.IsBaseOfPage(url))
 			{
 				// Startup scripts must run in OnPageFinished. If scripts are run earlier they will have no lasting
 				// effect because once the page content loads all the document state gets reset.
@@ -112,14 +111,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		[SupportedOSPlatform("android23.0")]
 		private void RunBlazorStartupScripts(AWebView view)
 		{
-			// TODO: we need to protect against double initialization because the
-			// OnPageFinished event refires after the app is brought back from the 
-			// foreground and the webview is brought back into view, without it actually
-			// getting reloaded.
-
-
-			// Set up JS ports
+			// Confirm Blazor hasn't already initialized
 			view.EvaluateJavascript(@"
+				(function() { return typeof(window.__BlazorStarted); })();
+			", new JavaScriptValueCallback(blazorStarted =>
+			{
+				if (blazorStarted?.ToString() != "\"undefined\"")
+				{
+					// Blazor has already started, we can just abort startup process
+					return;
+				}
+
+				// Set up JS ports
+				view.EvaluateJavascript(@"
 
 		const channel = new MessageChannel();
 		var nativeJsPortOne = channel.port1;
@@ -155,19 +159,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		window.external.receiveMessage = function (callback) {
 			window.external.__callback = callback;
 		}
+				", new JavaScriptValueCallback(_ =>
+					{
+						// Set up Server ports
+						_webViewHandler?.WebviewManager?.SetUpMessageChannel();
 
-		", new JavaScriptValueCallback(() =>
-			{
-				// Set up Server ports
-				_webViewHandler?.WebviewManager?.SetUpMessageChannel();
-
-				// Start Blazor
-				view.EvaluateJavascript(@"
-					Blazor.start();
-				", new JavaScriptValueCallback(() =>
-				{
-					// Done; no more action required
-				}));
+						// Start Blazor
+						view.EvaluateJavascript(@"
+							Blazor.start();
+							window.__BlazorStarted = true;
+						", new JavaScriptValueCallback(_ =>
+						{
+							// Done; no more action required
+						}));
+					}));
 			}));
 		}
 
@@ -182,16 +187,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private class JavaScriptValueCallback : Java.Lang.Object, IValueCallback
 		{
-			private readonly Action _callback;
+			private readonly Action<Java.Lang.Object?> _callback;
 
-			public JavaScriptValueCallback(Action callback!!)
+			public JavaScriptValueCallback(Action<Java.Lang.Object?> callback!!)
 			{
 				_callback = callback;
 			}
 
 			public void OnReceiveValue(Java.Lang.Object? value)
 			{
-				_callback();
+				_callback(value);
 			}
 		}
 	}
