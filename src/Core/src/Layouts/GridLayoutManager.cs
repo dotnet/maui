@@ -320,11 +320,11 @@ namespace Microsoft.Maui.Layouts
 						continue;
 					}
 
-					var availableWidth = AvailableWidth(cell);
-					var availableHeight = AvailableHeight(cell);
-
 					if (cell.IsColumnSpanAuto || cell.IsRowSpanAuto || cell.MeasureStarAsAuto)
 					{
+						var availableWidth = cell.IsColumnSpanAuto ? double.PositiveInfinity : AvailableWidth(cell);
+						var availableHeight = cell.IsRowSpanAuto ? double.PositiveInfinity : AvailableHeight(cell);
+
 						var measure = _childrenToLayOut[cell.ViewIndex].Measure(availableWidth, availableHeight);
 
 						if (cell.IsColumnSpanAuto)
