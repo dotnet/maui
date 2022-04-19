@@ -1,8 +1,7 @@
 version: 2
-updates: 
-  # Enable version updates for nuget 
-  — package-ecosystem: "nuget"
-  # Look for NuGet dependency info from the `root` directory
-  directory: "/src" 
-  # Check the nuget registry for updates every day (weekdays) schedule: 
-  interval: "daily"
+updates:
+- package-ecosystem: nuget
+  directory: "/src/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 25
