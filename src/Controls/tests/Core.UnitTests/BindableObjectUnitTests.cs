@@ -113,6 +113,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			[nameof(MockBindable.Baz)] = MapBaz,
 		};
 
+		public Action<MockBindable> MapBarUserCode { get; set; }
+
 		public MockHandler() : base(Mapper) { }
 
 		protected override object CreatePlatformView() => new object();
@@ -125,6 +127,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		private static void MapBar(MockHandler handler, MockBindable element)
 		{
 			element.Log.Add("MapBar");
+			handler.MapBarUserCode?.Invoke(element);
 		}
 
 		private static void MapBaz(MockHandler handler, MockBindable element)
@@ -276,6 +279,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"OnPropertyChanged(Text)-AfterBase",
 				"HandleTextPropertyChanged(lol, default)",
 				"MapText");
+		}
+
+		[Test]
+		public void UpdatePropertyFromHandler_PropertyChangesAreIndependent()
+		{
+			var mock = new MockBindable()
+			{
+				Handler = new MockHandler()
+				{
+					MapBarUserCode = HandleBarUpdate
+				}
+			};
+			mock.Log.Clear();
+
+			mock.Bar = new Bar();
+
+			mock.VerifyLog(
+				"OnPropertyChanged(Bar)-BeforeBase",
+				"OnPropertyChanged(Bar)-AfterBase",
+				"HandleBarPropertyChanged",
+				"MapBar",
+
+				"OnPropertyChanged(Text)-BeforeBase",
+				"OnPropertyChanged(Text)-AfterBase",
+				"HandleTextPropertyChanged(default, lol)",
+				"MapText");
+
+			static void HandleBarUpdate(MockBindable m)
+			{
+				if (m.Bar != null)
+					m.Text = "lol";
+			}
 		}
 
 		[Test]

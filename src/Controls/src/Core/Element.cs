@@ -422,11 +422,17 @@ namespace Microsoft.Maui.Controls
 			if (DelayHandlerUpdate)
 				return;
 
-			foreach (string propertyName in _delayedHandlerUpdateProperties)
+			// The handler update may contain nested property changes that trigger further handler updates.
+			// To avoid modification of _delayedHandlerUpdateProperties in nested calls of RunDelayedHandlerUpdates(),
+			// we work on a copy.
+			// This means that the handler's nested property changes are managed as independent calls.
+			string[] handlersToUpdate = _delayedHandlerUpdateProperties.ToArray();
+			_delayedHandlerUpdateProperties.Clear();
+
+			foreach (string propertyName in handlersToUpdate)
 			{
 				UpdateHandler(propertyName);
 			}
-			_delayedHandlerUpdateProperties.Clear();
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Descendants']/Docs" />
