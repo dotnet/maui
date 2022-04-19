@@ -30,7 +30,12 @@ namespace Microsoft.Maui.Controls
 
 		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
 		bool _applying;
-		private protected bool DelayHandlerUpdate { get; private set; }
+
+		int _propertyChangeCallDepth;
+
+		// Handler update is delayed until we are back to the rootmost property setter
+		private protected bool DelayHandlerUpdate => _propertyChangeCallDepth > 0;
+
 		object _inheritedContext;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='BindingContextProperty']/Docs" />
@@ -103,9 +108,8 @@ namespace Microsoft.Maui.Controls
 
 			if (!same)
 			{
-				DelayHandlerUpdate = true;
-				OnPropertyChanged(property.PropertyName);
-				DelayHandlerUpdate = false;
+				TrackedOnPropertyChanged(property.PropertyName);
+
 				property.PropertyChanged?.Invoke(this, original, newValue);
 				if (this is Element element)
 					element.RunDelayedHandlerUpdates();
@@ -277,6 +281,13 @@ namespace Microsoft.Maui.Controls
 
 			if (Shell.GetTitleView(this) is View titleView)
 				SetInheritedBindingContext(titleView, BindingContext);
+		}
+
+		void TrackedOnPropertyChanged(string propertyName)
+		{
+			_propertyChangeCallDepth++;
+			OnPropertyChanged(propertyName);
+			_propertyChangeCallDepth--;
 		}
 
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -528,9 +539,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// Avoid notifying the handlers before firing property.PropertyChanged
-				DelayHandlerUpdate = true;
-				OnPropertyChanged(property.PropertyName);
-				DelayHandlerUpdate = false;
+				TrackedOnPropertyChanged(property.PropertyName);
 
 				property.PropertyChanged?.Invoke(this, original, value);
 

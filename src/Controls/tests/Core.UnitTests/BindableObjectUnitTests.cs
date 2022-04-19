@@ -252,10 +252,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"OnPropertyChanged(Baz)-AfterBase",
 				"HandleBazPropertyChanged",
 
-				"HandleTextPropertyChanged(default, default)",
+				"HandleTextPropertyChanged(default, lol)",
+				"MapText",
 				"MapBar",
-				"MapBaz",
-				"MapText");
+				"MapBaz");
 		}
 
 		[Test]

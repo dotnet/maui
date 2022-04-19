@@ -382,13 +382,13 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 
-			if (!DelayHandlerUpdate)
+			if (DelayHandlerUpdate)
 			{
-				UpdateHandler(propertyName);
+				_delayedHandlerUpdateProperties.Add(propertyName);
 			}
 			else
 			{
-				_delayedHandlerUpdateProperties.Add(propertyName);
+				UpdateHandler(propertyName);
 			}
 
 			var childrenNotDrawnByThisElement = ChildrenNotDrawnByThisElement;
@@ -418,6 +418,10 @@ namespace Microsoft.Maui.Controls
 
 		internal void RunDelayedHandlerUpdates()
 		{
+			// Do not do anything if we are still in a nested property setter
+			if (DelayHandlerUpdate)
+				return;
+
 			foreach (string propertyName in _delayedHandlerUpdateProperties)
 			{
 				UpdateHandler(propertyName);
