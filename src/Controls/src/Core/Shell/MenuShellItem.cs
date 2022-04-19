@@ -38,9 +38,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 			if (propertyName == nameof(Title))
-			{
-				OnPropertyChanged(propertyName: nameof(Text));
-			}
+				OnPropertyChanged(nameof(Text));
 		}
 
 		public MenuItem MenuItem { get; }
