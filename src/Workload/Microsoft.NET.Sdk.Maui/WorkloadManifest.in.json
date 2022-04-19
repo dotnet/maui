@@ -12,7 +12,8 @@
       "description": ".NET MAUI SDK for Mobile",
       "extends": [ 
         "maui-android",
-        "maui-ios"
+        "maui-ios",
+        "maui-tizen"
       ]
     },
     "maui-desktop": {
@@ -109,8 +110,7 @@
     "maui-tizen": {
       "description": ".NET MAUI SDK for Tizen",
       "extends": [
-        "maui-blazor",
-        "tizen"
+        "maui-blazor"
       ],
       "packs": [
           "Microsoft.Maui.Core.Ref.tizen",
