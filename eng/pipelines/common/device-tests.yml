@@ -63,7 +63,7 @@ stages:
                 pool:
                   name: ${{ parameters.iosVmPool }}
                   vmImage: ${{ parameters.iosVmImage }}
-                  ${{ if eq(parameters.iosVmPool, 'Azure Pipelines') }}:
+                  ${{ if ne(parameters.iosVmPool, 'Azure Pipelines') }}:
                     demands:
                       - macOS.Name -equals Monterey
                       - macOS.Architecture -equals x64
