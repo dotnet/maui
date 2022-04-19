@@ -187,7 +187,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			if (getBoundsByFlattening)
 			{
-				var boundsByFlattening = path.GetBoundsByFlattening();
+				// TODO: not using this.GetPath().Bounds.Size;
+				//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
+				var boundsByFlattening = path.GetBoundsByFlattening(1);
 
 				HeightRequest = boundsByFlattening.Height;
 				WidthRequest = boundsByFlattening.Width;
@@ -195,7 +197,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 #if !NETSTANDARD
 
-			RectF pathBounds = path.Bounds;
+			// TODO: not using this.GetPath().Bounds.Size;
+			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
+			RectF pathBounds = path.GetBoundsByFlattening(1);
 
 			viewBounds.X += StrokeThickness / 2;
 			viewBounds.Y += StrokeThickness / 2;
@@ -271,10 +275,33 @@ namespace Microsoft.Maui.Controls.Shapes
 				return result;
 			}
 
-			var boundsByFlattening = this.GetPath().Bounds.Size;
+			switch (Aspect)
+			{
+				case Stretch.None:
+					// TODO: not using this.GetPath().Bounds.Size;
+					//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
+					SizeF boundsByFlattening = this.GetPath().GetBoundsByFlattening(1).Size;
+					result.Height = boundsByFlattening.Height + StrokeThickness;
+					result.Width = boundsByFlattening.Width + StrokeThickness;
+					break;
 
-			result.Height = boundsByFlattening.Height + StrokeThickness;
-			result.Width = boundsByFlattening.Width + StrokeThickness;
+				case Stretch.Fill:
+					result.Height = heightConstraint - StrokeThickness;
+					result.Width = widthConstraint - StrokeThickness;
+					break;
+
+				case Stretch.Uniform:
+					double minConstraint = Math.Min(widthConstraint, heightConstraint);
+					result.Height = minConstraint - StrokeThickness;
+					result.Width = minConstraint - StrokeThickness;
+					break;
+
+				case Stretch.UniformToFill:
+					double maxConstraint = Math.Max(widthConstraint, heightConstraint);
+					result.Height = maxConstraint - StrokeThickness;
+					result.Width = maxConstraint - StrokeThickness;
+					break;
+			}
 
 			HeightRequest = result.Height;
 			WidthRequest = result.Width;

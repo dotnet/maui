@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ShapesDemos.Views.LineDemoPage"
+             Title="Line demos">
+    <ScrollView>
+        <StackLayout Margin="20">
+            <Label Text="Line" />
+            <Line X1="40"
+                  Y1="0"
+                  X2="0"
+                  Y2="120"
+                  HeightRequest="100"
+                  Stroke="Red" />
+            <Label Text="Line with stroke" />
+            <Line X1="40"
+                  Y1="0"
+                  X2="0"
+                  Y2="120"
+                  Stroke="DarkBlue"
+                  StrokeThickness="14" />
+            <Label Text="Dashed line" />
+            <Line X1="40"
+                  Y1="0"
+                  X2="0"
+                  Y2="120"
+                  Stroke="DarkBlue"
+                  StrokeThickness="14"
+                  StrokeDashArray="1,1"
+                  StrokeDashOffset="6" />
+            <Label Text="LineCap: Flat" />
+            <Line X1="0"
+                  Y1="20"
+                  X2="300"
+                  Y2="20"
+                  StrokeLineCap="Flat"
+                  Stroke="Red"
+                  StrokeThickness="12" />
+            <Label Text="LineCap: Square" />
+            <Line X1="0"
+                  Y1="20"
+                  X2="300"
+                  Y2="20"
+                  StrokeLineCap="Square"
+                  Stroke="Red"
+                  StrokeThickness="12" />
+            <Label Text="LineCap: Round" />
+            <Line X1="0"
+                  Y1="20"
+                  X2="300"
+                  Y2="20"
+                  StrokeLineCap="Round"
+                  Stroke="Red"
+                  StrokeThickness="12" />
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

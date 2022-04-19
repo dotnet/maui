@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ShapesDemos.Views.HelloDemoPage"
+             Title="Hello demo">
+    <Grid HorizontalOptions="Center"
+          VerticalOptions="Center">
+        <Path Stroke="Red"
+              StrokeThickness="12"
+              StrokeLineJoin="Round"
+              Data="M 0 0 L 0 100 M 0 50 L 50 50 M 50 0 L 50 100
+                    M 125 0 C 60 -10, 60 60, 125 50, 60 40, 60 110, 125 100
+                    M 150 0 L 150 100, 200 100
+                    M 225 0 L 225 100, 275 100
+                    M 300 50 A 25 50 0 1 0 300 49.9" />
+
+        <!-- Identical to above, but with a more verbose syntax -->
+        <!--<Path Stroke="Red"
+              StrokeThickness="12"
+              StrokeLineJoin="Round">
+            <Path.Data>
+                <PathGeometry>
+                    <PathFigure StartPoint="0,0">
+                        <LineSegment Point="0,100" />
+                    </PathFigure>
+                    <PathFigure StartPoint="0,50">
+                        <LineSegment Point="50,50" />
+                    </PathFigure>
+                    <PathFigure StartPoint="50,0">
+                        <LineSegment Point="50,100" />
+                    </PathFigure>
+
+                    <PathFigure StartPoint="125, 0">
+                        <BezierSegment Point1="60, -10"
+                                       Point2="60, 60"
+                                       Point3="125, 50" />
+                        <BezierSegment Point1="60, 40"
+                                       Point2="60, 110"
+                                       Point3="125, 100" />
+                    </PathFigure>
+
+                    <PathFigure StartPoint="150, 0">
+                        <LineSegment Point="150, 100" />
+                        <LineSegment Point="200, 100" />
+                    </PathFigure>
+
+                    <PathFigure StartPoint="225, 0">
+                        <LineSegment Point="225, 100" />
+                        <LineSegment Point="275, 100" />
+                    </PathFigure>
+
+                    <PathFigure StartPoint="300, 50">
+                        <ArcSegment Size="25, 50"
+                                    Point="300, 49.9"
+                                    IsLargeArc="True" />
+                    </PathFigure>
+                </PathGeometry>
+            </Path.Data>
+        </Path>-->
+
+    </Grid>
+</ContentPage>
