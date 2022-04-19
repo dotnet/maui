@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		private readonly WebView2Control _webview;
 		private readonly Task _webviewReadyTask;
+		private readonly string _contentRootRelativeToAppRoot;
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment? _coreWebView2Environment;
@@ -79,7 +80,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
-		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
+		/// <param name="contentRootRelativeToAppRoot">Path to the app's content root relative to the application root directory.</param>
+		/// <param name="hostPagePathWithinFileProvider">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="urlLoading">Callback invoked when a url is about to load.</param>
 		/// <param name="blazorWebViewInitializing">Callback invoked before the webview is initialized.</param>
 		/// <param name="blazorWebViewInitialized">Callback invoked after the webview is initialized.</param>
@@ -89,11 +91,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			Dispatcher dispatcher,
 			IFileProvider fileProvider,
 			JSComponentConfigurationStore jsComponents,
-			string hostPageRelativePath,
+			string contentRootRelativeToAppRoot,
+			string hostPagePathWithinFileProvider,
 			Action<UrlLoadingEventArgs> urlLoading,
 			Action<BlazorWebViewInitializingEventArgs> blazorWebViewInitializing,
 			Action<BlazorWebViewInitializedEventArgs> blazorWebViewInitialized)
-			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
+			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPagePathWithinFileProvider)
 
 		{
 #if WEBVIEW2_WINFORMS
@@ -117,6 +120,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			_blazorWebViewInitializing = blazorWebViewInitializing;
 			_blazorWebViewInitialized = blazorWebViewInitialized;
 			_developerTools = services.GetRequiredService<BlazorWebViewDeveloperTools>();
+			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
@@ -135,7 +139,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
-		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
+		/// <param name="contentRootRelativeToAppRoot">Path to the app's content root relative to the application root directory.</param>
+		/// <param name="hostPagePathWithinFileProvider">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="blazorWebViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
 		internal WebView2WebViewManager(
 			WebView2Control webview!!,
@@ -143,10 +148,11 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			Dispatcher dispatcher,
 			IFileProvider fileProvider,
 			JSComponentConfigurationStore jsComponents,
-			string hostPageRelativePath,
+			string contentRootRelativeToAppRoot,
+			string hostPagePathWithinFileProvider,
 			BlazorWebViewHandler blazorWebViewHandler
 		)
-			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPagePathWithinFileProvider)
 		{
 			if (services.GetService<MauiBlazorMarkerService>() is null)
 			{
@@ -157,6 +163,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			_webview = webview;
 			_blazorWebViewHandler = blazorWebViewHandler;
+			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
@@ -271,8 +278,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 			{
-				var headerString = GetHeaderString(headers);
+				StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, requestUri, ref statusCode, ref content, headers);
 
+				var headerString = GetHeaderString(headers);
 				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(content, statusCode, statusMessage, headerString);
 			}
 #elif WEBVIEW2_MAUI

@@ -12,8 +12,12 @@
     <_MauiTargetPlatformIsmacOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'macos'">True</_MauiTargetPlatformIsmacOS>
     <_MauiTargetPlatformIstvOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'tvos'">True</_MauiTargetPlatformIstvOS>
     <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
+    <_MauiTargetPlatformIsTizen Condition="'$(_MauiTargetPlatformIdentifier)' == 'tizen'">True</_MauiTargetPlatformIsTizen>
 
     <IncludeWindowsTargetFrameworks Condition="($([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full') or ('$(Packing)' == 'true')">true</IncludeWindowsTargetFrameworks>
+    <IncludeTizenTargetFrameworks Condition="'$(CI)' == 'true' or '$(TF_BUILD)' == 'true' or
+             Exists('$(DOTNET_ROOT)\sdk-manifests\$(DotNetVersionBand)\samsung.net.sdk.tizen\WorkloadManifest.json') or
+             Exists('$(ProgramFiles)\dotnet\sdk-manifests\$(DotNetVersionBand)\samsung.net.sdk.tizen\WorkloadManifest.json')">true</IncludeTizenTargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -34,6 +38,7 @@
     <AndroidTargetFrameworkVersion>30.0</AndroidTargetFrameworkVersion>
     <WindowsTargetFrameworkVersion>10.0.19041</WindowsTargetFrameworkVersion>
     <Windows2TargetFrameworkVersion>10.0.20348</Windows2TargetFrameworkVersion>
+    <TizenTargetFrameworkVersion>6.5</TizenTargetFrameworkVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -41,6 +46,7 @@
     <MauiPlatforms>net$(_MauiDotNetVersion)-ios;net$(_MauiDotNetVersion)-maccatalyst;net$(_MauiDotNetVersion)-android</MauiPlatforms>
     <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">net$(_MauiDotNetVersion)-windows$(WindowsTargetFrameworkVersion);net$(_MauiDotNetVersion)-windows$(Windows2TargetFrameworkVersion)</WindowsMauiPlatforms>
     <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(MauiPlatforms);net$(_MauiDotNetVersion)-tizen</MauiPlatforms>
 
     <!-- Work around the IDE not properly handling the NU1703 warning -->
     <MauiPlatformsNoMacCat>net$(_MauiDotNetVersion)-ios;net$(_MauiDotNetVersion)-android</MauiPlatformsNoMacCat>

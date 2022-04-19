@@ -1,8 +1,11 @@
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.Label;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Label;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 
 	public class LabelRenderer : ViewRenderer<Label, Native.Label>
 	{
@@ -52,8 +55,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				nativeSpan.FontAttributes = span.FontAttributes;
 				nativeSpan.FontFamily = span.FontFamily;
 				nativeSpan.FontSize = span.FontSize;
-				nativeSpan.ForegroundColor = span.TextColor.ToPlatform();
-				nativeSpan.BackgroundColor = span.BackgroundColor.ToPlatform();
+				nativeSpan.ForegroundColor = span.TextColor.ToPlatformEFL();
+				nativeSpan.BackgroundColor = span.BackgroundColor.ToPlatformEFL();
 				nativeSpan.Underline = (textDecorations & TextDecorations.Underline) != 0;
 				nativeSpan.Strikethrough = (textDecorations & TextDecorations.Strikethrough) != 0;
 				nativeSpan.LineHeight = span.LineHeight;
@@ -78,6 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				Control.FormattedText = ConvertFormattedText(Element.FormattedText);
 		}
 
+		[PortHandler]
 		void UpdateText()
 		{
 			Control.Text = Element.Text ?? "";
@@ -85,17 +89,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateTextColor()
 		{
-			Control.TextColor = Element.TextColor.ToPlatform();
+			Control.TextColor = Element.TextColor.ToPlatformEFL();
 		}
 
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
+			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
 		}
 
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalTextAlignment = Element.VerticalTextAlignment.ToPlatform();
+			Control.VerticalTextAlignment = Element.VerticalTextAlignment.ToNative();
 		}
 
 		void UpdateFontProperties()
@@ -104,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			Control.FontSize = Element.FontSize;
 			Control.FontAttributes = Element.FontAttributes;
-			Control.FontFamily = Element.FontFamily.ToNativeFontFamily();
+			Control.FontFamily = Element.FontFamily.ToNativeFontFamily(Element.RequireFontManager());
 
 			Control.BatchCommit();
 		}

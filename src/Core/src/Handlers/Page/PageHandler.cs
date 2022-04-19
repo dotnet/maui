@@ -5,6 +5,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static new IPropertyMapper<IContentView, IPageHandler> Mapper = new PropertyMapper<IContentView, IPageHandler>(ContentViewHandler.Mapper)
 		{
+#if TIZEN
+			[nameof(IContentView.Background)] = MapBackground,
+#endif
 			[nameof(ITitledElement.Title)] = MapTitle
 		};
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using ObjCRuntime;
 using UIKit;
 
@@ -22,6 +22,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMenuBar(IWindowHandler handler, IWindow view)
 		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				return;
+
 			if (MauiUIApplicationDelegate.Current != null &&
 				view is IMenuBarElement mb)
 			{

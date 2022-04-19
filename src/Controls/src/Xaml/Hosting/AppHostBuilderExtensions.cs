@@ -21,6 +21,8 @@ using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 #elif IOS || MACCATALYST
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+#elif TIZEN
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 #endif
 
 namespace Microsoft.Maui.Controls.Hosting
@@ -113,9 +115,13 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
 
-#if ANDROID || IOS || MACCATALYST
+#if ANDROID || IOS || MACCATALYST || TIZEN
 			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
+#if ANDROID || IOS || MACCATALYST
 			handlersCollection.AddHandler<Shell, ShellRenderer>();
+#else
+			handlersCollection.AddHandler<Shell, ShellHandler>();
+#endif
 #endif
 #if WINDOWS || ANDROID
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
@@ -135,7 +141,7 @@ namespace Microsoft.Maui.Controls.Hosting
 
 		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 		{
-#if WINDOWS || ANDROID || IOS || MACCATALYST
+#if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
 			// initialize compatibility DependencyService
 			DependencyService.SetToInitialized();
 			DependencyService.Register<Xaml.ResourcesLoader>();

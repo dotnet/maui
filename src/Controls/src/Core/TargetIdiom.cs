@@ -3,7 +3,7 @@ using System;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TargetIdiom.xml" path="Type[@FullName='Microsoft.Maui.Controls.TargetIdiom']/Docs" />
-	[Obsolete("Use Essentials.DeviceIdiom instead.")]
+	[Obsolete("Use Microsoft.Maui.Devices.DeviceIdiom instead.")]
 	public enum TargetIdiom
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/TargetIdiom.xml" path="//Member[@MemberName='Unsupported']/Docs" />

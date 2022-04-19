@@ -1,0 +1,481 @@
+<!-- Workarounds for WinUI -->
+<Project>
+
+  <!--
+    BEGIN: Workaround for https://dev.azure.com/microsoft/OS/_workitems/edit/38897015
+  -->
+
+  <PropertyGroup>
+    <PriInitialPath Condition="'$(PriInitialPath)'==''">$(TargetName)</PriInitialPath>
+  </PropertyGroup>
+
+  <Target Name="_GenerateProjectPriConfigurationFiles"
+          Inputs="$(MSBuildAllProjects);@(_PriFile);$(AppxPriConfigXmlDefaultSnippetPath);@(PriOutputs)"
+          Outputs="$(_PriConfigXmlPath);$(_UnfilteredLayoutResfilesPath);$(_FilteredLayoutResfilesPath);$(_ExcludedLayoutResfilesPath);$(_ResourcesResfilesPath);$(_PriResfilesPath)"
+          DependsOnTargets="_GetDefaultResourceLanguage;_CopyOutOfDateSourceItemsToOutputDirectory">
+    <ItemGroup>
+      <_LayoutFileSource Include="@(PriOutputs)" Condition="'%(PriOutputs.OutputGroup)' == 'ContentFilesProjectOutputGroup' and '%(PriOutputs.ProjectName)' == '$(ProjectName)'" />
+      <_LayoutFileSource Include="@(PriOutputs)" Condition="'%(PriOutputs.OutputGroup)' == 'CustomOutputGroupForPackaging' and '%(PriOutputs.ProjectName)' == '$(ProjectName)'" />
+      <_LayoutFile Include="@(_LayoutFileSource)" Exclude="@(_AppxLayoutAssetPackageFiles)" />
+      <_EmbedFile Include="@(PriOutputs)" Condition="'%(PriOutputs.OutputGroup)' == 'EmbedOutputGroupForPackaging' and '%(PriOutputs.ProjectName)' == '$(ProjectName)'"/>
+      <_EmbedFileCopy Include="@(_EmbedFile->'$(IntermediateOutputPath)$(AppxSubfolderWithFilesToBeEmbedded)\%(TargetPath)')" />
+
+      <!-- If we have the .xbf we don't need the .xaml file-->
+      <_LayoutFileXbfXaml Include="$([System.IO.Path]::ChangeExtension('%(_EmbedFile.Identity)','.xaml'))" Condition="'%(Extension)' == '.xbf'" />
+      <_LayoutFile Remove="@(_LayoutFileXbfXaml)" />
+    </ItemGroup>
+
+    <WinAppSdkGeneratePriConfigurationFiles
+          UnfilteredLayoutResfilesPath="$(_UnfilteredLayoutResfilesPath)"
+          FilteredLayoutResfilesPath="$(_FilteredLayoutResfilesPath)"
+          ExcludedLayoutResfilesPath="$(_ExcludedLayoutResfilesPath)"
+          ResourcesResfilesPath="$(_ResourcesResfilesPath)"
+          PriResfilesPath="$(_PriResfilesPath)"
+          EmbedFileResfilePath="$(_EmbedFileResfilePath)"
+          LayoutFiles="@(_LayoutFile)"
+          PRIResourceFiles="@(PRIResource)"
+          PriFiles="@(_PriFile)"
+          EmbedFiles="@(_EmbedFile)"
+          IntermediateExtension="$(AppxIntermediateExtension)"
+          UnprocessedResourceFiles_OtherLanguages="@(_UnprocessedReswFiles_OtherLanguages)"
+          VsTelemetrySession="$(VsTelemetrySession)">
+      <Output TaskParameter="AdditionalResourceResFiles" ItemName="_AdditionalResourceResFiles" />
+    </WinAppSdkGeneratePriConfigurationFiles>
+
+    <WinAppSdkCreatePriConfigXmlForFullIndex
+        PriConfigXmlPath="$(_PriConfigXmlPath)"
+        LayoutResfilesPath="$(_FilteredLayoutResfilesPath)"
+        ResourcesResfilesPath="$(_ResourcesResfilesPath)"
+        PriResfilesPath="$(_PriResfilesPath)"
+        EmbedFileResfilePath="$(_EmbedFileResfilePath)"
+        PriInitialPath="$(AppxPriInitialPath)"
+        DefaultResourceLanguage="$(DefaultResourceLanguage)"
+        DefaultResourceQualifiers="$(AppxDefaultResourceQualifiers)"
+        IntermediateExtension="$(AppxIntermediateExtension)"
+        PriConfigXmlDefaultSnippetPath="$(AppxPriConfigXmlDefaultSnippetPath)"
+        TargetPlatformIdentifier="$(TargetPlatformIdentifier)"
+        TargetPlatformVersion="$(TargetPlatformResourceVersion)"
+        AdditionalResourceResFiles="@(_AdditionalResourceResFiles)"
+        VsTelemetrySession="$(VsTelemetrySession)" />
+
+    <MakeDir Directories="$(IntermediateOutputPath)$(AppxSubfolderWithFilesToBeEmbedded)" />
+
+    <Copy SourceFiles="@(_EmbedFile)" DestinationFiles="@(_EmbedFileCopy)" SkipUnchangedFiles='true' />
+
+    <Message Text="$(MSBuildProjectName) -> $(_PriConfigXmlPath)" />
+    <Message Text="$(MSBuildProjectName) -> $(_UnfilteredLayoutResfilesPath)" />
+    <Message Text="$(MSBuildProjectName) -> $(_FilteredLayoutResfilesPath)" />
+    <Message Text="$(MSBuildProjectName) -> $(_ExcludedLayoutResfilesPath)" />
+    <Message Text="$(MSBuildProjectName) -> $(_ResourcesResfilesPath)" />
+    <Message Text="$(MSBuildProjectName) -> $(_PriResfilesPath)" />
+    <Message Text="$(MSBuildProjectName) -> $(_AdditionalResourceResFiles)" />
+    <Message Condition="'$(_SupportEmbedFileResources)' == 'true'" Text="$(MSBuildProjectName) -> $(_EmbedFileResfilePath)" />
+  </Target>
+
+  <Target Name="GetPackagingOutputs" Returns="@(PackagingOutputs)" DependsOnTargets="$(GetPackagingOutputsDependsOn)">
+    <PropertyGroup>
+      <!--
+        For .NET applications, we always need to include publish items output group, because this includes the exe. We ignore libraries since publish
+        is an application verb and library projects are built for AnyCPU, so including publish output groups will include native assets for every platform
+        instead of just the one being built for.
+      -->
+      <IncludePublishItemsOutputGroup Condition="'$(IncludePublishItemsOutputGroup)'=='' and '$(UsingMicrosoftNETSdk)'=='true' and '$(OutputType)'=='WinExe' ">true</IncludePublishItemsOutputGroup>
+      <IncludeBuiltProjectOutputGroup Condition="'$(IncludeBuiltProjectOutputGroup)' == ''">true</IncludeBuiltProjectOutputGroup>
+      <IncludeCopyLocalFilesOutputGroup Condition="'$(IncludeCopyLocalFilesOutputGroup)' == ''">true</IncludeCopyLocalFilesOutputGroup>
+      <IncludeContentFilesProjectOutputGroup Condition="'$(IncludeContentFilesProjectOutputGroup)' == ''">true</IncludeContentFilesProjectOutputGroup>
+
+      <IncludeDebugSymbolsProjectOutputGroup Condition="'$(IncludeDebugSymbolsProjectOutputGroup)' == ''">true</IncludeDebugSymbolsProjectOutputGroup>
+      <IncludeDocumentationProjectOutputGroup Condition="'$(IncludeDocumentationProjectOutputGroup)' == ''">false</IncludeDocumentationProjectOutputGroup>
+      <IncludeSatelliteDllsProjectOutputGroup Condition="'$(IncludeSatelliteDllsProjectOutputGroup)' == ''">false</IncludeSatelliteDllsProjectOutputGroup>
+      <IncludeSourceFilesProjectOutputGroup Condition="'$(IncludeSourceFilesProjectOutputGroup)' == ''">false</IncludeSourceFilesProjectOutputGroup>
+      <IncludeSGenFilesOutputGroup Condition="'$(IncludeSGenFilesOutputGroup)' == ''">false</IncludeSGenFilesOutputGroup>
+      <IncludeOptionalProjectsOutputGroup Condition="'$(IncludeOptionalProjectsOutputGroup)' == ''">true</IncludeOptionalProjectsOutputGroup>
+      <IncludeGetCopyToOutputDirectoryItemsOutputGroup Condition="'$(IncludeGetCopyToOutputDirectoryItemsOutputGroup)' == ''">true</IncludeGetCopyToOutputDirectoryItemsOutputGroup>
+      <IncludeComFilesOutputGroup Condition="'$(IncludeComFilesOutputGroup)' == ''">false</IncludeComFilesOutputGroup>
+      <IncludeCustomOutputGroupForPackaging Condition="'$(IncludeCustomOutputGroupForPackaging)' == ''">false</IncludeCustomOutputGroupForPackaging>
+      <IncludeCopyWinmdArtifactsOutputGroup Condition="'$(IncludeCopyWinmdArtifactsOutputGroup)' == ''">true</IncludeCopyWinmdArtifactsOutputGroup>
+      <IncludeSDKRedistOutputGroup Condition="'$(IncludeSDKRedistOutputGroup)' == ''">true</IncludeSDKRedistOutputGroup>
+      <IncludeGetResolvedSDKReferences Condition="'$(IncludeGetResolvedSDKReferences)' == ''">true</IncludeGetResolvedSDKReferences>
+    </PropertyGroup>
+
+    <CallTarget Targets="BuiltProjectOutputGroup" Condition="'$(IncludeBuiltProjectOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_BuiltProjectOutputGroupOutput"/>
+    </CallTarget>
+
+    <ItemGroup Condition="'$(PublishReadyToRun)'!='true'">
+      <_PackagingOutputsUnexpanded Include="%(_BuiltProjectOutputGroupOutput.FinalOutputPath)">
+        <TargetPath>%(_BuiltProjectOutputGroupOutput.TargetPath)</TargetPath>
+        <OutputGroup>BuiltProjectOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+    </ItemGroup>
+
+    <!-- Ignore .dll files when PublishReadyToRun is set to true, otherwise we will get payload duplicate errors -->
+    <ItemGroup Condition="'$(PublishReadyToRun)'=='true'">
+      <_PackagingOutputsUnexpanded Include="%(_BuiltProjectOutputGroupOutput.FinalOutputPath)" Condition="'%(Extension)'!='.dll'">
+        <TargetPath>%(_BuiltProjectOutputGroupOutput.TargetPath)</TargetPath>
+        <OutputGroup>BuiltProjectOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+    </ItemGroup>
+
+    <CallTarget Targets="__GetPublishItems" Condition="'$(IncludePublishItemsOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_PublishItemsOutputGroupOutput" />
+    </CallTarget>
+
+    <ItemGroup>
+      <_PackagingOutputsUnexpanded Include="@(_PublishItemsOutputGroupOutput)">
+        <OutputGroup>PublishItemsOutputGroupOutput</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+    </ItemGroup>
+
+    <CallTarget Targets="DebugSymbolsProjectOutputGroup" Condition="'$(IncludeDebugSymbolsProjectOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_DebugSymbolsProjectOutputGroupOutput"/>
+    </CallTarget>
+
+    <ItemGroup>
+      <_PackagingOutputsUnexpanded Include="%(_DebugSymbolsProjectOutputGroupOutput.FinalOutputPath)">
+        <OutputGroup>DebugSymbolsProjectOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+    </ItemGroup>
+
+    <CallTarget Targets="DocumentationProjectOutputGroup" Condition="'$(IncludeDocumentationProjectOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_DocumentationProjectOutputGroupOutput"/>
+    </CallTarget>
+
+    <ItemGroup>
+      <_PackagingOutputsUnexpanded Include="@(_DocumentationProjectOutputGroupOutput)">
+        <OutputGroup>DocumentationProjectOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+    </ItemGroup>
+
+    <CallTarget Targets="SatelliteDllsProjectOutputGroup" Condition="'$(IncludeSatelliteDllsProjectOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_SatelliteDllsProjectOutputGroupOutput"/>
+    </CallTarget>
+
+    <ItemGroup>
+      <_PackagingOutputsUnexpanded Include="@(_SatelliteDllsProjectOutputGroupOutput)">
+        <OutputGroup>SatelliteDllsProjectOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+    </ItemGroup>
+
+    <CallTarget Targets="SourceFilesProjectOutputGroup" Condition="'$(IncludeSourceFilesProjectOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_SourceFilesProjectOutputGroupOutput"/>
+    </CallTarget>
+
+    <ItemGroup>
+      <_PackagingOutputsUnexpanded Include="@(_SourceFilesProjectOutputGroupOutput)">
+        <OutputGroup>SourceFilesProjectOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+    </ItemGroup>
+
+    <CallTarget Targets="SGenFilesOutputGroup" Condition="'$(IncludeSGenFilesOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_SGenFilesOutputGroupOutput"/>
+    </CallTarget>
+
+    <ItemGroup>
+      <_PackagingOutputsUnexpanded Include="@(_SGenFilesOutputGroupOutput)">
+        <OutputGroup>SGenFilesOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+    </ItemGroup>
+
+    <CallTarget Targets="CopyLocalFilesOutputGroup" Condition="'$(IncludeCopyLocalFilesOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_CopyLocalFilesOutputGroupOutput"/>
+    </CallTarget>
+
+    <ItemGroup Condition="'$(PublishReadyToRun)' != 'true'">
+      <_PackagingOutputsUnexpanded Include="@(_CopyLocalFilesOutputGroupOutput)" Condition="'%(Extension)'!='.pri'">
+        <OutputGroup>CopyLocalFilesOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+    </ItemGroup>
+
+    <!-- Ignore .dll files when PublishReadyToRun is set to true, otherwise we will get payload duplicate errors -->
+    <ItemGroup Condition="'$(PublishReadyToRun)' == 'true'">
+      <_PackagingOutputsUnexpanded Include="@(_CopyLocalFilesOutputGroupOutput)" Condition="'%(Extension)'!='.pri' and '%(Extension)'!='.dll'">
+        <OutputGroup>CopyLocalFilesOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+    </ItemGroup>
+
+    <!-- Include transitive items from ProjectReferences.  See _GetCopyToOutputDirectoryItemsFromTransitiveProjectReferences. -->
+    <CallTarget Targets="GetCopyToOutputDirectoryItemsOutputGroup" Condition="'$(IncludeGetCopyToOutputDirectoryItemsOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_GetCopyToOutputDirectoryItemsOutputGroupOutput"/>
+    </CallTarget>
+
+    <ItemGroup Condition="'$(IncludeGetCopyToOutputDirectoryItemsOutputGroup)' == 'true'">
+      <!-- If both XBF and XAML files are present, add only the XBF file to the package. --> 
+      <_RedundantXaml Include="@(_GetCopyToOutputDirectoryItemsOutputGroupOutput->'%(RootDir)%(Directory)%(Filename).xaml')"
+                              Condition="'%(Extension)'=='.xbf'" />
+      <_GetCopyToOutputDirectoryItemsOutputGroupOutput Remove="@(_RedundantXaml)" />
+
+      <_PackagingOutputsUnexpanded Include="@(_GetCopyToOutputDirectoryItemsOutputGroupOutput)">
+        <OutputGroup>GetCopyToOutputDirectoryItemsOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+    </ItemGroup>
+
+    <CallTarget Targets="ComFilesOutputGroup" Condition="'$(IncludeComFilesOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_ComFilesOutputGroupOutput"/>
+    </CallTarget>
+
+    <ItemGroup>
+      <_PackagingOutputsUnexpanded Include="@(_ComFilesOutputGroupOutput)">
+        <OutputGroup>ComFilesOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+    </ItemGroup>
+
+    <CallTarget Targets="CopyWinmdArtifactsOutputGroup" Condition="'$(IncludeCopyWinmdArtifactsOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_CopyWinmdArtifactsOutputGroupOutput"/>
+    </CallTarget>
+
+    <ItemGroup>
+      <_PackagingOutputsUnexpanded Include="@(_CopyWinmdArtifactsOutputGroupOutput)">
+        <OutputGroup>CopyWinmdArtifactsOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+    </ItemGroup>
+
+    <CallTarget Targets="SDKRedistOutputGroup" Condition="'$(IncludeSDKRedistOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_SDKRedistOutputGroupOutput"/>
+    </CallTarget>
+
+    <ItemGroup Condition="'$(AppxExcludeXbfFromSdkPayloadWhenXamlIsPresent)' == 'true'">
+      <!-- If extension SDK contains both XAML and XBF files, do not package XBF files from SDK -->
+      <_SDKRedistRedundantXBF Include="@(_SDKRedistOutputGroupOutput->'%(RootDir)%(Directory)%(Filename).xbf')"
+                              Condition="'%(Extension)'=='.xaml'" />
+      <_SDKRedistOutputGroupOutput Remove="@(_SDKRedistRedundantXBF)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_PackagingOutputsUnexpanded Include="@(_SDKRedistOutputGroupOutput)">
+        <OutputGroup>SDKRedistOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PackagingOutputsUnexpanded>
+      <_PackagingOutputsUnexpanded Remove="@(RemoveSdkFilesFromAppxPackage)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(DisableEmbeddedXbf)' != 'true'">
+      <_PackagingOutputsUnexpanded Include="@(_CustomOutputGroupForPackagingOutput)" Condition="'%(_CustomOutputGroupForPackagingOutput.ReferenceSourceTarget)' == 'ExpandSDKReference'">
+        <OutputGroup>SDKRedistOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+        <TargetPath Condition="'$(AppxPackage)' != 'true' and '$(AppxPriInitialPath)' != ''">$(AppxPriInitialPath)\%(_CustomOutputGroupForPackagingOutput.TargetPath)</TargetPath>
+      </_PackagingOutputsUnexpanded>
+      <_CustomOutputGroupForPackagingOutput Remove="@(_CustomOutputGroupForPackagingOutput)" Condition="'%(_CustomOutputGroupForPackagingOutput.ReferenceSourceTarget)' == 'ExpandSDKReference'"/>
+    </ItemGroup>
+
+    <WinAppSdkExpandPayloadDirectories Inputs="@(_PackagingOutputsUnexpanded)" VsTelemetrySession="$(VsTelemetrySession)">
+      <Output TaskParameter="Expanded" ItemName="_PackagingOutputsExpanded" />
+    </WinAppSdkExpandPayloadDirectories>
+
+    <CallTarget Targets="GetResolvedSDKReferences" Condition="'$(IncludeGetResolvedSDKReferences)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_GetResolvedSDKReferencesOutputWithoutMetadata"/>
+    </CallTarget>
+
+    <ItemGroup>
+      <_GetResolvedSDKReferencesOutput Include="@(_GetResolvedSDKReferencesOutputWithoutMetadata)">
+        <OutputGroup>GetResolvedSDKReferences</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_GetResolvedSDKReferencesOutput>
+    </ItemGroup>
+
+    <CallTarget Targets="_GetProjectArchitecture">
+      <Output TaskParameter="TargetOutputs" ItemName="_ProjectArchitecture" />
+    </CallTarget>
+
+    <ItemGroup>
+      <_ProjectArchitectureItem Include="@(_ProjectArchitecture)">
+        <OutputGroup>_GetProjectArchitecture</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_ProjectArchitectureItem>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_ContinueOnError Condition="'$(BuildingProject)' == 'true'">false</_ContinueOnError>
+      <_ContinueOnError Condition="'$(BuildingProject)' != 'true'">true</_ContinueOnError>
+    </PropertyGroup>
+
+    <MSBuild
+      Projects="@(ProjectReferenceWithConfiguration)"
+      Targets="GetPackagingOutputs"
+      BuildInParallel="$(BuildInParallel)"
+      Properties="%(ProjectReferenceWithConfiguration.SetConfiguration); %(ProjectReferenceWithConfiguration.SetPlatform)"
+      Condition="'@(ProjectReferenceWithConfiguration)' != ''
+                 and '%(ProjectReferenceWithConfiguration.BuildReference)' == 'true'
+                 and '%(ProjectReferenceWithConfiguration.ReferenceOutputAssembly)' == 'true'"
+      ContinueOnError="$(_ContinueOnError)">
+      <Output TaskParameter="TargetOutputs" ItemName="_PackagingOutputsFromOtherProjects"/>
+    </MSBuild>
+
+    <ItemGroup>
+      <_PackagingOutputsOutsideLayout Include="@(ProjectPriFile)" />
+      <_PackagingOutputsOutsideLayout Include="@(_PackagingOutputsExpanded)" />
+      <_PackagingOutputsOutsideLayout Include="@(PriOutputs)" />
+      <_PackagingOutputsOutsideLayout Include="@(_GetResolvedSDKReferencesOutput)" />
+      <!-- Exclude any PRIOutputs that come from other projects so we avoid duplicates -->
+      <_PackagingOutputsOutsideLayout Include="@(_PackagingOutputsFromOtherProjects)" Exclude="@(PriOutputs)"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PathsToExcludeFromLayoutOutputGroup Include="@(_PackagingOutputsOutsideLayout->'%(TargetPath)')" />
+      <PathsToExcludeFromLayoutOutputGroup Include="$(AppxManifestTargetPath)" />
+      <PathsToExcludeFromLayoutOutputGroup Include="$(DeploymentRecipeTargetPath)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <DirsToExcludeFromLayoutOutputGroup Include="$(WinMetadataDir)" />
+      <DirsToExcludeFromLayoutOutputGroup Include="$(EntryPointDir)" />
+    </ItemGroup>
+
+    <WinAppSdkExpandPayloadDirectories Condition="'$(IncludeLayoutFilesInPackage)' == 'true'" Inputs="$(LayoutDir)" TargetDirsToExclude="@(DirsToExcludeFromLayoutOutputGroup)" TargetFilesToExclude="@(PathsToExcludeFromLayoutOutputGroup)" VsTelemetrySession="$(VsTelemetrySession)">
+      <Output TaskParameter="Expanded" ItemName="_PackagingOutputsFromLayout" />
+    </WinAppSdkExpandPayloadDirectories>
+
+    <ItemGroup>
+      <PackagingOutputs Include="@(_PackagingOutputsFromLayout)">
+        <ProjectName>$(ProjectName)</ProjectName>
+        <OutputGroup>LayoutOutputGroup</OutputGroup>
+      </PackagingOutputs>
+      <PackagingOutputs Include="@(_PackagingOutputsOutsideLayout)" />
+      <PackagingOutputs Include="@(_ProjectArchitectureItem)" />
+    </ItemGroup>
+
+    <!-- Remove all .xaml files from the payload that correlate with a .xbf file -->
+    <ItemGroup>
+      <_PackagingOutputsXbfXaml Include="$([System.IO.Path]::ChangeExtension('%(PackagingOutputs.Identity)','.xaml'))" Condition="'%(Extension)' == '.xbf'" />
+      <PackagingOutputs Remove="@(_PackagingOutputsXbfXaml)" />
+    </ItemGroup>
+
+  </Target>
+
+<Target Name="GetPriOutputs"
+          Condition="'$(AppxGeneratePriEnabled)'=='true'"
+          Returns="@(PriOutputs);@(ProjectPriFile)"
+          DependsOnTargets="$(GetPriOutputsDependsOn)">
+    <PropertyGroup>
+      <IncludePriFilesOutputGroup Condition="'$(IncludePriFilesOutputGroup)' == ''">true</IncludePriFilesOutputGroup>
+      <IncludeProjectPriFile Condition="'$(IncludeProjectPriFile)' == ''">true</IncludeProjectPriFile>
+      <IncludeCopyLocalFilesOutputGroup Condition="'$(IncludeCopyLocalFilesOutputGroup)' == ''">true</IncludeCopyLocalFilesOutputGroup>
+      <IncludeContentFilesProjectOutputGroup Condition="'$(IncludeContentFilesProjectOutputGroup)' == ''">true</IncludeContentFilesProjectOutputGroup>
+      <IncludeCustomOutputGroupForPackaging Condition="'$(IncludeCustomOutputGroupForPackaging)' == ''">false</IncludeCustomOutputGroupForPackaging>
+    </PropertyGroup>
+    <CallTarget Targets="PriFilesOutputGroup" Condition="'$(IncludePriFilesOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_PriFilesOutputGroupOutput"/>
+    </CallTarget>
+
+    <CallTarget Targets="CopyLocalFilesOutputGroup" Condition="'$(IncludeCopyLocalFilesOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_CopyLocalFilesOutputGroupOutput"/>
+    </CallTarget>
+
+    <ItemGroup>
+      <_PriOutputsUnexpanded Include="@(_CopyLocalFilesOutputGroupOutput)" Condition="'%(Extension)'=='.pri'">
+        <OutputGroup>CopyLocalFilesOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PriOutputsUnexpanded>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_PriOutputsUnexpanded Include="@(_PriFilesOutputGroupOutput)">
+        <OutputGroup>PriFilesOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </_PriOutputsUnexpanded>
+    </ItemGroup>
+
+    <CallTarget Targets="ContentFilesProjectOutputGroup" Condition="'$(IncludeContentFilesProjectOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_ContentFilesProjectOutputGroupOutput"/>
+    </CallTarget>
+
+    <ItemGroup>
+      <_PriOutputsUnexpanded Include="@(_ContentFilesProjectOutputGroupOutput)">
+        <OutputGroup>ContentFilesProjectOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+        <TargetPath Condition="'$(AppxPackage)' != 'true' and '$(AppxPriInitialPath)' != ''">$(AppxPriInitialPath)\%(_ContentFilesProjectOutputGroupOutput.TargetPath)</TargetPath>
+      </_PriOutputsUnexpanded>
+    </ItemGroup>
+
+    <CallTarget Targets="CustomOutputGroupForPackaging" Condition="'$(IncludeCustomOutputGroupForPackaging)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_CustomOutputGroupForPackagingOutput"/>
+    </CallTarget>
+
+    <ItemGroup>
+      <_PriOutputsUnexpanded Include="@(_CustomOutputGroupForPackagingOutput)" Condition="'%(Extension)' != '.xbf'">
+        <OutputGroup>CustomOutputGroupForPackaging</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+        <TargetPath Condition="'$(AppxPackage)' != 'true' and '$(AppxPriInitialPath)' != ''">$(AppxPriInitialPath)\%(_CustomOutputGroupForPackagingOutput.TargetPath)</TargetPath>
+      </_PriOutputsUnexpanded>
+      <_PriOutputsUnexpanded Include="@(_CustomOutputGroupForPackagingOutput)" Condition="'%(Extension)' == '.xbf' AND '$(_SupportXbfAsEmbedFileResources)' != 'true'">
+        <OutputGroup>CustomOutputGroupForPackaging</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+        <TargetPath Condition="'$(AppxPackage)' != 'true' and '$(AppxPriInitialPath)' != ''">$(AppxPriInitialPath)\%(_CustomOutputGroupForPackagingOutput.TargetPath)</TargetPath>
+      </_PriOutputsUnexpanded>
+      <_PriOutputsUnexpanded Include="@(_CustomOutputGroupForPackagingOutput)" Condition="'%(Extension)' == '.xbf' AND '$(_SupportXbfAsEmbedFileResources)' == 'true'">
+        <OutputGroup>EmbedOutputGroupForPackaging</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+        <TargetPath Condition="'$(AppxPackage)' != 'true' and '$(AppxPriInitialPath)' != ''">$(AppxPriInitialPath)\%(_CustomOutputGroupForPackagingOutput.TargetPath)</TargetPath>
+      </_PriOutputsUnexpanded>
+    </ItemGroup>
+
+    <WinAppSdkExpandPayloadDirectories Inputs="@(_PriOutputsUnexpanded)" VsTelemetrySession="$(VsTelemetrySession)">
+      <Output TaskParameter="Expanded" ItemName="_PriOutputsExpanded" />
+    </WinAppSdkExpandPayloadDirectories>
+
+    <ItemGroup>
+      <ProjectPriFile Include="$(ProjectPriFullPath)" Condition="'$(IncludeProjectPriFile)' == 'true'">
+        <OutputGroup>ProjectPriFile</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+        <TargetPath>$(ProjectPriFileName)</TargetPath>
+      </ProjectPriFile>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(BuildAppxUploadPackageForUap)' == 'true'">
+      <ProjectPriUploadFile Include="$(ProjectPriUploadFullPath)" Condition="'$(IncludeProjectPriFile)' == 'true'">
+        <OutputGroup>ProjectPriUploadFile</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+        <TargetPath>$(ProjectPriFileName)</TargetPath>
+      </ProjectPriUploadFile>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_ContinueOnError Condition="'$(BuildingProject)' == 'true'">false</_ContinueOnError>
+      <_ContinueOnError Condition="'$(BuildingProject)' != 'true'">true</_ContinueOnError>
+    </PropertyGroup>
+
+    <MSBuild
+      Projects="@(ProjectReferenceWithConfiguration)"
+      Targets="GetPriOutputs"
+      SkipNonexistentTargets="true"
+      BuildInParallel="$(BuildInParallel)"
+      Properties="%(ProjectReferenceWithConfiguration.SetConfiguration); %(ProjectReferenceWithConfiguration.SetPlatform)"
+      Condition="'@(ProjectReferenceWithConfiguration)' != ''
+                 and '%(ProjectReferenceWithConfiguration.BuildReference)' == 'true'
+                 and '%(ProjectReferenceWithConfiguration.ReferenceOutputAssembly)' == 'true'"
+      ContinueOnError="$(_ContinueOnError)">
+      <Output TaskParameter="TargetOutputs" ItemName="_PriOutputsFromOtherProjects"/>
+    </MSBuild>
+
+    <ItemGroup>
+      <PriOutputs Include="@(_PriOutputsExpanded)" />
+      <PriOutputs Include="@(_PriOutputsFromOtherProjects)" />
+    </ItemGroup>
+
+    <!-- Remove all .xaml files that correlate with a .xbf file -->
+    <ItemGroup>
+      <_PriOutputsXbfXaml Include="$([System.IO.Path]::ChangeExtension('%(PriOutputs.Identity)','.xaml'))" Condition="'%(Extension)' == '.xbf'" />
+      <PriOutputs Remove="@(_PriOutputsXbfXaml)" />
+    </ItemGroup>
+
+    <Message Text="$(ProjectName) : %(PriOutputs.ProjectName).%(PriOutputs.OutputGroup) : %(PriOutputs.Identity) -> %(PriOutputs.TargetPath)" />
+  </Target>
+
+  <!--
+    END: Workaround for https://dev.azure.com/microsoft/OS/_workitems/edit/38897015
+  -->
+
+</Project>

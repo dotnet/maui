@@ -1,3 +1,4 @@
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Sensor;
 using TizenMagnetometer = Tizen.Sensor.Magnetometer;
 
@@ -6,7 +7,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	partial class MagnetometerImplementation : IMagnetometer
 	{
 		static TizenMagnetometer DefaultSensor =>
-			(TizenMagnetometer)Platform.GetDefaultSensor(SensorType.Magnetometer);
+			(TizenMagnetometer)PlatformUtils.GetDefaultSensor(SensorType.Magnetometer);
 
 		bool PlatformIsSupported =>
 			TizenMagnetometer.IsSupported;

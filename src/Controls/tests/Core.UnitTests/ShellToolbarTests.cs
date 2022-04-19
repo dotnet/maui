@@ -188,5 +188,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.AreEqual(page.BindingContext, backButtonBehavior.BindingContext);
 		}
+
+		[Test]
+		public async Task TitleAndTitleViewAreMutuallyExclusive()
+		{
+			var contentPage = new ContentPage() { Title = "Test Title" };
+			var titleView = new VerticalStackLayout();
+
+			TestShell testShell = new TestShell(contentPage);
+			var window = new Window()
+			{
+				Page = testShell
+			};
+
+			var toolbar = testShell.Toolbar;
+			Assert.AreEqual("Test Title", toolbar.Title);
+			Shell.SetTitleView(contentPage, titleView);
+			Assert.IsEmpty(toolbar.Title);
+			Assert.AreEqual(titleView, toolbar.TitleView);
+			Shell.SetTitleView(contentPage, null);
+			Assert.AreEqual("Test Title", toolbar.Title);
+		}
 	}
 }

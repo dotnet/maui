@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
 #elif IOS
 		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
 #endif
-		public static IServiceCollection AddMauiBlazorWebView(this IServiceCollection services)
+		public static IMauiBlazorWebViewBuilder AddMauiBlazorWebView(this IServiceCollection services)
 #else
 #error Must define WEBVIEW2_WINFORMS, WEBVIEW2_WPF, WEBVIEW2_MAUI
 #endif
@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.DependencyInjection
 #if WEBVIEW2_MAUI
 			services.TryAddSingleton<MauiBlazorMarkerService>();
 			services.ConfigureMauiHandlers(static handlers => handlers.AddHandler<IBlazorWebView, BlazorWebViewHandler>());
-			return services;
+			return new MauiBlazorWebViewBuilder(services);
 #elif WEBVIEW2_WINFORMS
 			services.TryAddSingleton<WindowsFormsBlazorMarkerService>();
 			return new WindowsFormsBlazorWebViewBuilder(services);
