@@ -1530,7 +1530,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(100, 200, 210, 200)]
 		[InlineData(200, 100, 210, 200)]
 		[InlineData(100, 100, 210, 100)]
-		[InlineData(100, 100, 50, 50)]
+		[InlineData(100, 100, 100, 100)]
 		public void AutoCellsSizeToLargestView(double view0Size, double view1Size, double constraintSize, double expectedSize)
 		{
 			var grid = CreateGridLayout(rows: "Auto", columns: "Auto");
@@ -1557,8 +1557,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var expectedRectangle = new Rect(0, 0, expectedSize, expectedSize);
 
-			// When the constraint is bigger than both views, we expect the Auto row/col to take on the size
-			// of the largest of the two views; otherwise, the constraint should determine the size
+			// We expect the Auto row/col to take on the size of the largest of the two views
 			AssertArranged(view0, expectedRectangle);
 			AssertArranged(view1, expectedRectangle);
 		}
@@ -1828,6 +1827,42 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// And only at that width
 			view0.DidNotReceive().Measure(Arg.Is<double>((h) => h != 50), Arg.Any<double>());
+		}
+
+		[Fact("Children of Auto rows should be measured using an infinite height")]
+		[Category(GridAutoSizing)]
+		public void AutoRowsMeasureChildrenAtInfinity()
+		{
+			var grid = CreateGridLayout(rows: "Auto");
+
+			var viewSize = new Size(10, 10);
+
+			var view0 = CreateTestView(viewSize);
+
+			SubstituteChildren(grid, view0);
+
+			MeasureAndArrange(grid, 500, 500);
+
+			// Verify that the view is getting measured at the appropriate height (infinity)
+			view0.Received().Measure(Arg.Is<double>(500), Arg.Is(double.PositiveInfinity));
+		}
+
+		[Fact("Children of Auto columns should be measured using an infinite width")]
+		[Category(GridAutoSizing)]
+		public void AutoColumnsMeasureChildrenAtInfinity()
+		{
+			var grid = CreateGridLayout(columns: "Auto");
+
+			var viewSize = new Size(10, 10);
+
+			var view0 = CreateTestView(viewSize);
+
+			SubstituteChildren(grid, view0);
+			
+			MeasureAndArrange(grid, 500, 500);
+
+			// Verify that the view is getting measured at the appropriate width (infinity)
+			view0.Received().Measure(Arg.Is(double.PositiveInfinity), Arg.Is<double>(500));
 		}
 	}
 }
