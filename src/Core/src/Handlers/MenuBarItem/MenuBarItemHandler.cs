@@ -30,12 +30,16 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IMenuBarItemHandler.Clear)] = MapClear,
 			[nameof(IMenuBarItemHandler.Insert)] = MapInsert,
 		};
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		public MenuBarItemHandler() : this(Mapper, CommandMapper)
 		{
 
 		}
-#pragma warning disable CA1416 // TODO: 'UIMenu' is only supported on: 'ios' 13.0 and later, needs better handling
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		public MenuBarItemHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null) : base(mapper, commandMapper)
 		{
 
@@ -69,17 +73,22 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.Clear();
 		}
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		IMenuBarItem IMenuBarItemHandler.VirtualView => VirtualView;
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		PlatformView IMenuBarItemHandler.PlatformView => PlatformView;
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		private protected override void OnDisconnectHandler(object platformView)
 		{
 			base.OnDisconnectHandler(platformView);
 			foreach (var item in VirtualView)
 				item?.Handler?.DisconnectHandler();
 		}
-#pragma warning restore CA1416
 	}
 }

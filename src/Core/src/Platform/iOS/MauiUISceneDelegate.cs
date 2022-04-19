@@ -1,5 +1,4 @@
-﻿using System;
-using Foundation;
+﻿using Foundation;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -13,11 +12,12 @@ namespace Microsoft.Maui
 		public virtual UIWindow? Window { get; set; }
 
 		[Export("scene:willConnectToSession:options:")]
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		public virtual void WillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
 		{
 			MauiUIApplicationDelegate.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneWillConnect>(del => del(scene, session, connectionOptions));
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13) && session.Configuration.Name == MauiUIApplicationDelegate.MauiSceneConfigurationKey && MauiUIApplicationDelegate.Current?.Application != null)
+			if (session.Configuration.Name == MauiUIApplicationDelegate.MauiSceneConfigurationKey && MauiUIApplicationDelegate.Current?.Application != null)
 			{
 				this.CreatePlatformWindow(MauiUIApplicationDelegate.Current.Application, scene, session, connectionOptions);
 			}

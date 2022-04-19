@@ -31,13 +31,17 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IMenuFlyoutSubItemHandler.Insert)] = MapInsert,
 		};
 
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		public MenuFlyoutSubItemHandler() : this(Mapper, CommandMapper)
 		{
 
 		}
 
-#pragma warning disable CA1416 // TODO: 'UIMenu' is only supported on: 'ios' 13.0 and later
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		public MenuFlyoutSubItemHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null) : base(mapper, commandMapper)
 		{
 
@@ -71,17 +75,22 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.Clear();
 		}
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		IMenuFlyoutSubItem IMenuFlyoutSubItemHandler.VirtualView => VirtualView;
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		PlatformView IMenuFlyoutSubItemHandler.PlatformView => PlatformView;
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		private protected override void OnDisconnectHandler(object platformView)
 		{
 			base.OnDisconnectHandler(platformView);
 			foreach (var item in VirtualView)
 				item?.Handler?.DisconnectHandler();
 		}
-#pragma warning restore CA1416
 	}
 }

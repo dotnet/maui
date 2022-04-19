@@ -8,6 +8,7 @@ using ObjCRuntime;
 
 namespace Microsoft.Maui.Handlers
 {
+	[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 	public partial class MenuBarHandler : ElementHandler<IMenuBar, IUIMenuBuilder>, IMenuBarHandler
 	{
 		protected override IUIMenuBuilder CreatePlatformElement()
@@ -25,7 +26,6 @@ namespace Microsoft.Maui.Handlers
 		void BuildNewMenu()
 		{
 			UIMenu? lastFoundMenu = null;
-#pragma warning disable CA1416 // TODO: 'IUIMenuBuilder' is only supported on: 'ios' 13.0 and later
 			foreach (var item in VirtualView)
 			{
 				var handler = item.ToHandler(MauiContext!);
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 
 				var identifierConstant = menuItem.Identifier.GetConstant();
 				if (identifierConstant != null)
-				{
+				{	
 					catalystMenu = PlatformView.GetMenu(identifierConstant);
 				}
 
@@ -58,7 +58,6 @@ namespace Microsoft.Maui.Handlers
 
 				lastFoundMenu = menuItem;
 			}
-#pragma warning restore CA1416
 		}
 
 		public void Add(IMenuBarItem view)
@@ -83,10 +82,9 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void Rebuild()
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(13))
-				UIMenuSystem
-					.MainSystem
-					.SetNeedsRebuild();
+			UIMenuSystem
+				.MainSystem
+				.SetNeedsRebuild();
 		}
 	}
 }

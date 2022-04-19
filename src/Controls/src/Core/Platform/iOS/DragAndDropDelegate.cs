@@ -12,6 +12,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
+	[SupportedOSPlatform("ios11.0")]
 	class DragAndDropDelegate : NSObject, IUIDragInteractionDelegate, IUIDropInteractionDelegate
 	{
 		IPlatformViewHandler _viewHandler;
@@ -23,7 +24,6 @@ namespace Microsoft.Maui.Controls.Platform
 #region UIDragInteractionDelegate
 		[Export("dragInteraction:session:willEndWithOperation:")]
 		[Preserve(Conditional = true)]
-		[SupportedOSPlatform("ios11.0")]
 		public void SessionWillEnd(UIDragInteraction interaction, IUIDragSession session, UIDropOperation operation)
 		{
 			if ((operation == UIDropOperation.Cancel || operation == UIDropOperation.Forbidden) &&
@@ -35,7 +35,6 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		[Preserve(Conditional = true)]
-		[SupportedOSPlatform("ios11.0")]
 		public UIDragItem[] GetItemsForBeginningSession(UIDragInteraction interaction, IUIDragSession session)
 		{
 			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler);
@@ -44,7 +43,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		[Export("dropInteraction:canHandleSession:")]
 		[Preserve(Conditional = true)]
-		[SupportedOSPlatform("ios11.0")]
 		public bool CanHandleSession(UIDropInteraction interaction, IUIDropSession session)
 		{
 			if (session.LocalDragSession == null)
@@ -61,7 +59,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		[Export("dropInteraction:sessionDidExit:")]
 		[Preserve(Conditional = true)]
-		[SupportedOSPlatform("ios11.0")]
 		public void SessionDidExit(UIDropInteraction interaction, IUIDropSession session)
 		{
 			DataPackage package = null;
@@ -79,7 +76,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		[Export("dropInteraction:sessionDidUpdate:")]
 		[Preserve(Conditional = true)]
-		[SupportedOSPlatform("ios11.0")]
 		public UIDropProposal SessionDidUpdate(UIDropInteraction interaction, IUIDropSession session)
 		{
 			UIDropOperation operation = UIDropOperation.Cancel;
@@ -105,7 +101,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		[Export("dropInteraction:performDrop:")]
 		[Preserve(Conditional = true)]
-		[SupportedOSPlatform("ios11.0")]
 		public void PerformDrop(UIDropInteraction interaction, IUIDropSession session)
 		{
 			if (session.LocalDragSession == null)
@@ -137,7 +132,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		[SupportedOSPlatform("ios11.0")]
 		public UIDragItem[] HandleDragStarting(View element, IPlatformViewHandler handler)
 		{
 			UIDragItem[] returnValue = null;

@@ -8,11 +8,11 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
+	[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 	public partial class MenuFlyoutSubItemHandler
 	{
 		protected override UIMenu CreatePlatformElement()
 		{
-#pragma warning disable CA1416 // TODO: 'UIMenu' is only supported on: 'ios' 13.0 and later
 			var menuBar = VirtualView.FindParentOfType<IMenuBar>();
 
 			IUIMenuBuilder? uIMenuBuilder = null;
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 					VirtualView.Source,
 					MauiContext!,
 					uIMenuBuilder);
-#pragma warning restore CA1416
+
 			return menu;
 		}
 

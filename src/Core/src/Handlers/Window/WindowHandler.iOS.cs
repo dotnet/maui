@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (MauiUIApplicationDelegate.Current.MenuBuilder == null)
 				{
-					if (OperatingSystem.IsIOSVersionAtLeast(13))
+					if (OperatingSystem.IsIOSVersionAtLeast(13)) // TODO: UIMenuSystem is only supported from iOS 13.0 and later
 						UIMenuSystem
 							.MainSystem
 							.SetNeedsRebuild();

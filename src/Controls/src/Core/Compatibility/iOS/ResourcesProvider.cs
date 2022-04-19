@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 {
 	[Obsolete]
 	[Preserve(AllMembers = true)]
+	[UnsupportedOSPlatform("ios14.0")]
 	internal class ResourcesProvider : ISystemResourcesProvider
 	{
 		ResourceDictionary _dictionary;
@@ -34,14 +35,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 
 #if __MOBILE__
-		[UnsupportedOSPlatform("ios14.0")]
 		Style GenerateListItemDetailTextStyle()
 		{
 			var font = new UITableViewCell(UITableViewCellStyle.Subtitle, "Foobar").DetailTextLabel.Font;
 			return GenerateStyle(font);
 		}
 
-		[UnsupportedOSPlatform("ios14.0")]
 		Style GenerateListItemTextStyle()
 		{
 			var font = new UITableViewCell(UITableViewCellStyle.Subtitle, "Foobar").TextLabel.Font;
@@ -67,7 +66,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			_dictionary[Device.Styles.BodyStyleKey] = GenerateStyle(UIFont.PreferredBody);
 			_dictionary[Device.Styles.CaptionStyleKey] = GenerateStyle(UIFont.PreferredCaption1);
 
-			System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14), "TODO: Unsupported on iOS from version 14.0");
 			_dictionary[Device.Styles.ListItemTextStyleKey] = GenerateListItemTextStyle();
 			_dictionary[Device.Styles.ListItemDetailTextStyleKey] = GenerateListItemDetailTextStyle();
 		}

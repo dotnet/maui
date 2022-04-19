@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Platform
 			throw new InvalidOperationException("MenuItems on Catalyst currently only support Font and File Images");
 		}
 
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		public static void SendClicked(this UICommand uICommand)
 		{
 			MenuFlyoutItemHandler.Execute(uICommand);
@@ -88,15 +89,14 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
+				System.Diagnostics.Debug.Assert(OperatingSystem.IsIOSVersionAtLeast(15), "TOOO: UIMenuOptions.SingleSelection is only supported on: 'ios' 15.0 and later");
 				// This means we are creating our own new menu/submenu
 				platformMenu =
 					UIMenu.Create(title, uiImage, UIMenuIdentifier.None,
-#pragma warning disable CA1416 // TOOO: UIMenuOptions.SingleSelection is only supported on: 'ios' 15.0 and later
 						UIMenuOptions.SingleSelection, platformMenuElements);
-#pragma warning restore
 			}
 
-			return platformMenu; // TODO: Seems not expected to return null, need to handle OS versions below 13 
+			return platformMenu;
 		}
 	}
 }

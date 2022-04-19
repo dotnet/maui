@@ -95,6 +95,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 		}
 
+		[SupportedOSPlatform("android23.0")]
 		private class BlazorWebMessageCallback : WebMessagePort.WebMessageCallback
 		{
 			private readonly Action<string?> _onMessageReceived;
@@ -104,7 +105,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				_onMessageReceived = onMessageReceived ?? throw new ArgumentNullException(nameof(onMessageReceived));
 			}
 
-			[SupportedOSPlatform("android23.0")]
 			public override void OnMessage(WebMessagePort? port, WebMessage? message)
 			{
 				if (message is null)

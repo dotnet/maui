@@ -8,6 +8,7 @@ using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	[SupportedOSPlatform("android23.0")]
 	internal class WebKitWebViewClient : WebViewClient
 	{
 		// Using an IP address means that WebView doesn't wait for any DNS resolution,
@@ -95,7 +96,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return base.ShouldInterceptRequest(view, request);
 		}
 
-		[SupportedOSPlatform("android23.0")]
 		public override void OnPageFinished(AWebView? view, string? url)
 		{
 			base.OnPageFinished(view, url);
@@ -109,7 +109,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 		}
 
-		[SupportedOSPlatform("android23.0")]
 		private void RunBlazorStartupScripts(AWebView view)
 		{
 			// TODO: we need to protect against double initialization because the

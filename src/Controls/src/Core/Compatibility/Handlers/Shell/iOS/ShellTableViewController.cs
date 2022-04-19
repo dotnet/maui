@@ -83,11 +83,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShellFlyoutContentManager.ViewDidLoad();
 		}
 
+		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
 		public override void ViewSafeAreaInsetsDidChange()
 		{
 			ShellFlyoutContentManager.SetHeaderContentInset();
-			if (OperatingSystem.IsIOSVersionAtLeast(11))
-				base.ViewSafeAreaInsetsDidChange();
+			base.ViewSafeAreaInsetsDidChange();
 		}
 
 		protected override void Dispose(bool disposing)

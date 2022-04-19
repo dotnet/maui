@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-#pragma warning disable CA1416 // TODO: 'IMenuElement' is only supported on: 'ios' 13.0 and later
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		public MenuFlyoutItemHandler() : base(Mapper, CommandMapper)
 		{
 
@@ -41,10 +43,13 @@ namespace Microsoft.Maui.Handlers
 			throw new NotImplementedException();
 		}
 #endif
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		IMenuFlyoutItem IMenuFlyoutItemHandler.VirtualView => VirtualView;
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		PlatformView IMenuFlyoutItemHandler.PlatformView => PlatformView;
-#pragma warning restore CA1416
 	}
 }

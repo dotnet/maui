@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.Logging;
@@ -12,6 +11,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ApplicationExtensions
 	{
+		[SupportedOSPlatform("ios13.0")]
 		public static void RequestNewWindow(this IUIApplicationDelegate platformApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext || args is null)
@@ -20,12 +20,11 @@ namespace Microsoft.Maui.Platform
 			var state = args?.State;
 			var userActivity = state.ToUserActivity(MauiUIApplicationDelegate.MauiSceneConfigurationKey);
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13))
-				UIApplication.SharedApplication.RequestSceneSessionActivation(
-					null,
-					userActivity,
-					null,
-					err => application.Handler?.MauiContext?.CreateLogger<IApplication>()?.LogError(new NSErrorException(err), err.Description));
+			UIApplication.SharedApplication.RequestSceneSessionActivation(
+				null,
+				userActivity,
+				null,
+				err => application.Handler?.MauiContext?.CreateLogger<IApplication>()?.LogError(new NSErrorException(err), err.Description));
 		}
 
 		public static void CreatePlatformWindow(this IUIApplicationDelegate platformApplication, IApplication application, UIApplication uiApplication, NSDictionary launchOptions)

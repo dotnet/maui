@@ -35,7 +35,6 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-#pragma warning disable CA1416 // TODO: 'IUIMenuBuilder' is only supported on: 'ios' 13.0 and later, needs better handling
 		public MenuBarHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null) : base(mapper, commandMapper)
 		{
 
@@ -80,6 +79,5 @@ namespace Microsoft.Maui.Handlers
 			foreach (var item in VirtualView)
 				item?.Handler?.DisconnectHandler();
 		}
-#pragma warning restore CA1416
 	}
 }

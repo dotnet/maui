@@ -7,12 +7,13 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
+	[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 	public partial class MenuBarItemHandler : ElementHandler<IMenuBarItem, UIMenu>, IMenuBarItemHandler
 	{
 		protected override UIMenu CreatePlatformElement()
 		{
 			IUIMenuBuilder? uIMenuBuilder = null;
-#pragma warning disable CA1416 // TODO: 'UIMenu' is only supported on: 'ios' 13.0 and later, needs better handling
+
 			if (VirtualView.Parent?.Handler?.PlatformView is IUIMenuBuilder builder)
 			{
 				uIMenuBuilder = builder;
@@ -25,7 +26,6 @@ namespace Microsoft.Maui.Handlers
 						null,
 						MauiContext!,
 						uIMenuBuilder);
-#pragma warning restore
 		}
 
 		public void Add(IMenuElement view)

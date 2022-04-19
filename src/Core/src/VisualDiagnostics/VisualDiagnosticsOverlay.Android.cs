@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Runtime.Versioning;
 using Android.App;
 using Android.Views;
 using Microsoft.Maui.Graphics;
@@ -14,24 +14,24 @@ namespace Microsoft.Maui
 	{
 		readonly Dictionary<IScrollView, View> _scrollViews = new();
 
+		[SupportedOSPlatform("android23.0")]
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
 			var nativeScroll = scrollBar.ToPlatform();
 			if (nativeScroll != null)
 			{
-				if (OperatingSystem.IsAndroidVersionAtLeast(23))
-					nativeScroll.ScrollChange += OnScrollChange;
-
+				nativeScroll.ScrollChange += OnScrollChange;
 				_scrollViews.Add(scrollBar, nativeScroll);
 			}
 		}
 
 		/// <inheritdoc/>
+		[SupportedOSPlatform("android23.0")]
 		public void RemoveScrollableElementHandler()
 		{
 			foreach (var scrollBar in _scrollViews.Values)
 			{
-				if (!scrollBar.IsDisposed() && OperatingSystem.IsAndroidVersionAtLeast(23))
+				if (!scrollBar.IsDisposed())
 					scrollBar.ScrollChange -= OnScrollChange;
 			}
 
