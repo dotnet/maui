@@ -991,8 +991,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public ParentingViewController(NavigationRenderer navigation)
 			{
-				if (!OperatingSystem.IsIOSVersionAtLeast(11))
-					AutomaticallyAdjustsScrollViewInsets = false;
+#pragma warning disable CA1416 // TODO: 'UIViewController.AutomaticallyAdjustsScrollViewInsets' is unsupported on: 'ios' 11.0 and later
+				AutomaticallyAdjustsScrollViewInsets = false;
+#pragma warning restore
 
 				_navigation = new WeakReference<NavigationRenderer>(navigation);
 			}
