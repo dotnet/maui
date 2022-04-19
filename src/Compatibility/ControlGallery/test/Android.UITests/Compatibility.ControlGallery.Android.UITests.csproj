@@ -7,7 +7,7 @@
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <DefineConstants>$(DefineConstants);__ANDROID__;UITEST;__SHELL__</DefineConstants>
-    <NoWarn>1701;1702;0618;0612</NoWarn>
+    <NoWarn>1701;1702;0618;0612;CA1307;CA1309</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
