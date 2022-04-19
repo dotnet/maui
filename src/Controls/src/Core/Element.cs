@@ -36,6 +36,8 @@ namespace Microsoft.Maui.Controls
 
 		string _styleId;
 
+		readonly List<string> _delayedHandlerUpdateProperties = new List<string>();
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='AutomationId']/Docs" />
 		public string AutomationId
 		{
@@ -380,9 +382,13 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 
-			if (!SuppressHandlerUpdate)
+			if (!DelayHandlerUpdate)
 			{
 				UpdateHandler(propertyName);
+			}
+			else
+			{
+				_delayedHandlerUpdateProperties.Add(propertyName);
 			}
 
 			var childrenNotDrawnByThisElement = ChildrenNotDrawnByThisElement;
@@ -410,7 +416,14 @@ namespace Microsoft.Maui.Controls
 			Handler?.UpdateValue(propertyName);
 		}
 
-		internal void DoUpdateHandler(string propertyName) => UpdateHandler(propertyName);
+		internal void RunDelayedHandlerUpdates()
+		{
+			foreach (string propertyName in _delayedHandlerUpdateProperties)
+			{
+				UpdateHandler(propertyName);
+			}
+			_delayedHandlerUpdateProperties.Clear();
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Descendants']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]

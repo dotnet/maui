@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 using NUnit.Framework;
 using Microsoft.Maui.Handlers;
 using System.Linq;
+using Microsoft.Maui.Controls.Core.UnitTests.StyleSheets;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -14,12 +15,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[System.ComponentModel.TypeConverter(typeof(ToBarConverter))]
 	internal class Bar
 	{
-
 	}
 
 	internal class Baz
 	{
-
 	}
 
 	internal class MockBindable
@@ -39,7 +38,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public int TargetInt { get; set; }
 
 		public static readonly BindableProperty BarProperty =
-			BindableProperty.Create(nameof(MockBindable.Bar), typeof(Bar), typeof(MockBindable), default(Bar));
+			BindableProperty.Create(nameof(MockBindable.Bar), typeof(Bar), typeof(MockBindable), default(Bar), propertyChanged: HandleBarPropertyChanged);
 
 		public Bar Bar
 		{
@@ -48,7 +47,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		public static readonly BindableProperty BazProperty =
-			BindableProperty.Create(nameof(MockBindable.Baz), typeof(Baz), typeof(MockBindable), default(Baz));
+			BindableProperty.Create(nameof(MockBindable.Baz), typeof(Baz), typeof(MockBindable), default(Baz), propertyChanged: HandleBazPropertyChanged);
 
 		[System.ComponentModel.TypeConverter(typeof(ToBazConverter))]
 		public Baz Baz
@@ -82,13 +81,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			MockBindable m = (MockBindable)bindable;
 			m.Log.Add($"HandleTextPropertyChanged({oldValue}, {newValue})");
 		}
+
+		static void HandleBarPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			MockBindable m = (MockBindable)bindable;
+			m.Log.Add($"HandleBarPropertyChanged");
+		}
+
+		static void HandleBazPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			MockBindable m = (MockBindable)bindable;
+			m.Log.Add($"HandleBazPropertyChanged");
+		}
+
+		public void VerifyLog(params string[] expectedContent)
+		{
+			Assert.AreEqual(expectedContent.Length, Log.Count);
+			for (int i = 0; i < expectedContent.Length; i++)
+			{
+				Assert.AreEqual(expectedContent[i], Log[i]);
+			}
+		}
 	}
 
 	class MockHandler : ViewHandler<MockBindable, object>
 	{
 		public static IPropertyMapper<MockBindable, MockHandler> Mapper = new PropertyMapper<MockBindable, MockHandler>(ElementHandler.ElementMapper)
 		{
-			[nameof(MockBindable.Text)] = MapText
+			[nameof(MockBindable.Text)] = MapText,
+			[nameof(MockBindable.Bar)] = MapBar,
+			[nameof(MockBindable.Baz)] = MapBaz,
 		};
 
 		public MockHandler() : base(Mapper) { }
@@ -98,6 +120,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		private static void MapText(MockHandler handler, MockBindable element)
 		{
 			element.Log.Add("MapText");
+		}
+
+		private static void MapBar(MockHandler handler, MockBindable element)
+		{
+			element.Log.Add("MapBar");
+		}
+
+		private static void MapBaz(MockHandler handler, MockBindable element)
+		{
+			element.Log.Add("MapBaz");
 		}
 	}
 
@@ -120,16 +152,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Handler = new MockHandler()
 			};
-			var log = mock.Log;
-			
-			log.Clear();
+			mock.Log.Clear();
 
 			mock.Text = "lol";
 
-			Assert.AreEqual("OnPropertyChanged(Text)-BeforeBase",log[0]);
-			Assert.AreEqual("OnPropertyChanged(Text)-AfterBase",log[1]);
-			Assert.AreEqual("HandleTextPropertyChanged(default, lol)",log[2]);
-			Assert.AreEqual("MapText", log[3]);
+			mock.VerifyLog(
+				"OnPropertyChanged(Text)-BeforeBase",
+				"OnPropertyChanged(Text)-AfterBase",
+				"HandleTextPropertyChanged(default, lol)",
+				"MapText");
 		}
 
 		[Test]
@@ -143,6 +174,108 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			mock.TriggerManualPropertyChanged("Text");
 
 			Assert.Contains("MapText", mock.Log);
+		}
+
+		class MockBindable_NestedOnPropertyChangedCall : MockBindable
+		{
+			protected override void OnPropertyChanged(string propertyName = null)
+			{
+				base.OnPropertyChanged(propertyName);
+
+				if (propertyName == nameof(Bar))
+				{
+					OnPropertyChanged(nameof(Text));
+				}
+			}
+		}
+
+		[Test]
+		public void NestedOnPropertyChangedCall_NotificationOrderIsCorrect()
+		{
+			var mock = new MockBindable_NestedOnPropertyChangedCall()
+			{
+				Handler = new MockHandler()
+			};
+			
+			mock.Log.Clear();
+
+			// Changing Bar should trigger OnPropertyChanged("Text")
+			mock.Bar = new Bar();
+
+			mock.VerifyLog(
+				"OnPropertyChanged(Bar)-BeforeBase",
+				"OnPropertyChanged(Bar)-AfterBase",
+				"OnPropertyChanged(Text)-BeforeBase",
+				"OnPropertyChanged(Text)-AfterBase",
+				// HandleTextPropertyChanged is not being trigged by calling OnPropertyChanged()
+				"HandleBarPropertyChanged",
+				"MapBar",
+				"MapText");
+		}
+
+		class MockBindable_NestedManualPropertyChange : MockBindable
+		{
+			protected override void OnPropertyChanged(string propertyName = null)
+			{
+				base.OnPropertyChanged(propertyName);
+
+				if (propertyName == nameof(Text))
+				{
+					Bar = new Bar();
+					Baz = new Baz();
+				}
+			}
+		}
+
+		[Test]
+		public void NestedManualPropertyChange_NotificationOrderIsCorrect()
+		{
+			var mock = new MockBindable_NestedManualPropertyChange()
+			{
+				Handler = new MockHandler()
+			};
+			
+			mock.Log.Clear();
+
+			// Changing Bar should trigger OnPropertyChanged("Text")
+			mock.Text = "lol";
+
+			mock.VerifyLog(
+				"OnPropertyChanged(Text)-BeforeBase",
+				"OnPropertyChanged(Text)-AfterBase",
+				
+				"OnPropertyChanged(Bar)-BeforeBase",
+				"OnPropertyChanged(Bar)-AfterBase",
+				"HandleBarPropertyChanged",
+
+				"OnPropertyChanged(Baz)-BeforeBase",
+				"OnPropertyChanged(Baz)-AfterBase",
+				"HandleBazPropertyChanged",
+
+				"HandleTextPropertyChanged(default, default)",
+				"MapBar",
+				"MapBaz",
+				"MapText");
+		}
+
+		[Test]
+		public void ClearValue_NotificationOrderIsCorrect()
+		{
+			var mock = new MockBindable()
+			{
+				Handler = new MockHandler()
+			};
+			mock.Text = "lol";
+			
+			mock.Log.Clear();
+
+			mock.ClearValue(MockBindable.TextProperty);
+
+			mock.VerifyLog(
+				"OnPropertyChanged(Text)-BeforeBase",
+				"OnPropertyChanged(Text)-AfterBase",
+				"HandleTextPropertyChanged(lol, default)",
+				"MapText");
 		}
 
 		[Test]
@@ -505,6 +638,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(changingdelegatefired);
 			Assert.True(changeddelegatefired);
 		}
+
 
 		[Test]
 		public void ClearValueDoesNotTriggersINPCOnSameValues()

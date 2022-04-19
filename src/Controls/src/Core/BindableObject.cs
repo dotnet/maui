@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 
 		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
 		bool _applying;
-		private protected bool SuppressHandlerUpdate { get; private set; }
+		private protected bool DelayHandlerUpdate { get; private set; }
 		object _inheritedContext;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='BindingContextProperty']/Docs" />
@@ -103,8 +103,12 @@ namespace Microsoft.Maui.Controls
 
 			if (!same)
 			{
+				DelayHandlerUpdate = true;
 				OnPropertyChanged(property.PropertyName);
+				DelayHandlerUpdate = false;
 				property.PropertyChanged?.Invoke(this, original, newValue);
+				if (this is Element element)
+					element.RunDelayedHandlerUpdates();
 			}
 		}
 
@@ -277,13 +281,6 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-		private protected void OnPropertyChanged(bool suppressHandlerUpdate, string propertyName)
-		{
-			SuppressHandlerUpdate = suppressHandlerUpdate;
-			OnPropertyChanged(propertyName);
-			SuppressHandlerUpdate = false;
-		}
 
 		protected virtual void OnPropertyChanging([CallerMemberName] string propertyName = null)
 			=> PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
@@ -531,12 +528,15 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// Avoid notifying the handlers before firing property.PropertyChanged
-				OnPropertyChanged(suppressHandlerUpdate: true, propertyName: property.PropertyName);
+				DelayHandlerUpdate = true;
+				OnPropertyChanged(property.PropertyName);
+				DelayHandlerUpdate = false;
+
 				property.PropertyChanged?.Invoke(this, original, value);
 
 				// Now, notify the handlers
 				if (this is Element element)
-					element.DoUpdateHandler(property.PropertyName);
+					element.RunDelayedHandlerUpdates();
 			}
 		}
 

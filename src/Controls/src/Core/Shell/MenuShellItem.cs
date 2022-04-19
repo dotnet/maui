@@ -39,17 +39,8 @@ namespace Microsoft.Maui.Controls
 			base.OnPropertyChanged(propertyName);
 			if (propertyName == nameof(Title))
 			{
-				// The previous call to base.OnPropertyChanged(propertyName) has already triggered UpdateHandler("Text").
-				// Suppress the handler update to avoid a duplicate call.
-				OnPropertyChanged(suppressHandlerUpdate: true, propertyName: nameof(Text));
+				OnPropertyChanged(propertyName: nameof(Text));
 			}
-		}
-
-		private protected override void UpdateHandler(string propertyName)
-		{
-			base.UpdateHandler(propertyName);
-			if (propertyName == nameof(Title))
-				UpdateHandler(nameof(Text));
 		}
 
 		public MenuItem MenuItem { get; }
