@@ -6,7 +6,9 @@ using PlatformView = UIKit.UIImage;
 using PlatformView = Android.Graphics.Drawables.Drawable;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Media.ImageSource;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformView = Tizen.UIExtensions.ElmSharp.Image;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 

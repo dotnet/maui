@@ -3,11 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-
-#if NETSTANDARD1_0
-using System.Linq;
-#endif
-
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 
@@ -141,7 +136,7 @@ namespace Microsoft.Maui.Controls
 					(sender as Page).ParentSet -= OnPresentedPageParentSet;
 				}
 			}
-			else
+			else if (IsVisibleContent && page.IsVisible)
 			{
 				page.SendAppearing();
 			}
@@ -295,7 +290,6 @@ namespace Microsoft.Maui.Controls
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
 			var type = content.GetType();
-
 			var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
 			if (queryPropertyAttributes.Length == 0)
 				return;

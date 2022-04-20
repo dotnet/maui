@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					return;
 
 				// Collection element, implicit content, or implicit collection element.
-				if (   xpe == null
+				if (xpe == null
 					&& typeof(IEnumerable).IsAssignableFrom(Context.Types[parentElement])
 					&& Context.Types[parentElement].GetRuntimeMethods().Any(mi => mi.Name == "Add" && mi.GetParameters().Length == 1))
 				{
@@ -324,14 +324,11 @@ namespace Microsoft.Maui.Controls.Xaml
 		static BindableProperty GetBindableProperty(Type elementType, string localName, IXmlLineInfo lineInfo,
 			bool throwOnError = false)
 		{
-#if NETSTANDARD1_0
-			var bindableFieldInfo = elementType.GetFields().FirstOrDefault(fi => fi.Name == localName + "Property");
-#else
 			// F# does not support public fields, so allow internal (Assembly) as well as public
 			const BindingFlags supportedFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
 			var bindableFieldInfo = elementType.GetFields(supportedFlags)
 												.FirstOrDefault(fi => (fi.IsAssembly || fi.IsPublic) && fi.Name == localName + "Property");
-#endif
+
 			Exception exception = null;
 			if (exception == null && bindableFieldInfo == null)
 			{
@@ -680,17 +677,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			value = null;
 			var elementType = element.GetType();
 			PropertyInfo propertyInfo = null;
-#if NETSTANDARD1_0
-			try {
-				propertyInfo = elementType.GetRuntimeProperty(localName);
-			} catch (AmbiguousMatchException) {
-				// Get most derived instance of property
-				foreach (var property in elementType.GetRuntimeProperties().Where(prop => prop.Name == localName)) {
-					if (propertyInfo == null || propertyInfo.DeclaringType.IsAssignableFrom(property.DeclaringType))
-						propertyInfo = property;
-				}
-			}
-#else
+
 			while (elementType != null && propertyInfo == null)
 			{
 				try
@@ -703,7 +690,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 				elementType = elementType.BaseType;
 			}
-#endif
+
 			MethodInfo getter;
 			targetProperty = propertyInfo;
 			if (propertyInfo == null || !propertyInfo.CanRead || (getter = propertyInfo.GetMethod) == null)

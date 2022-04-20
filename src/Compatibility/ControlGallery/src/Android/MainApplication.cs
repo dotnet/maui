@@ -3,7 +3,6 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
-using Microsoft.Maui.Controls.DualScreen;
 using Microsoft.Maui.Hosting;
 using Plugin.CurrentActivity;
 

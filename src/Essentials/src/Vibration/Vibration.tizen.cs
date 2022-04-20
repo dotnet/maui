@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.System;
 
 namespace Microsoft.Maui.Devices

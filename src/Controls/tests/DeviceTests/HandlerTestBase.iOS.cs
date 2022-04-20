@@ -78,5 +78,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			throw new NotImplementedException();
 		}
+
+		protected object GetTitleView(IElementHandler handler)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

@@ -37,10 +37,10 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false, false, false)]
 		public async Task CascadeInputTransparentAppliesOnInsert(bool inputTransparent, bool cascadeInputTransparent, bool expected)
 		{
-			var control = new StackLayout() 
-			{ 
-				InputTransparent = inputTransparent, 
-				CascadeInputTransparent = cascadeInputTransparent 
+			var control = new StackLayout()
+			{
+				InputTransparent = inputTransparent,
+				CascadeInputTransparent = cascadeInputTransparent
 			};
 
 			_ = await CreateHandlerAsync<LayoutHandler>(control);

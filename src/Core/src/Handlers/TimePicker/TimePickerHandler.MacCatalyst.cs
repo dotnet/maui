@@ -14,9 +14,9 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(UIDatePicker platformView)
 		{
 			base.ConnectHandler(platformView);
-      
+
 			if (platformView != null)
-			{	
+			{
 				platformView.EditingDidBegin += OnStarted;
 				platformView.EditingDidEnd += OnEnded;
 				platformView.ValueChanged += OnValueChanged;
@@ -33,8 +33,8 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidBegin -= OnStarted;
 				platformView.EditingDidEnd -= OnEnded;
 				platformView.ValueChanged -= OnValueChanged;
-			 	platformView.RemoveFromSuperview();
-			 	platformView.Dispose();
+				platformView.RemoveFromSuperview();
+				platformView.Dispose();
 			}
 		}
 

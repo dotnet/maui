@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			platformView.ImportantForAccessibility = ImportantForAccessibility.Auto;
 
-			if (PlatformVersion.IsAtLeast(26))
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 				platformView.SetFocusable(ViewFocusability.FocusableAuto);
 
 			if (platformView is ViewGroup vg)
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			platformView.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
 
-			if (PlatformVersion.IsAtLeast(26))
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 				platformView.SetFocusable(ViewFocusability.NotFocusable);
 
 			// Without setting this the keyboard will still navigate to components behind the modal page

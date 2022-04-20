@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		public static UITextAlignment AdjustForFlowDirection(this UITextAlignment textAlignment, IView view) 
+		public static UITextAlignment AdjustForFlowDirection(this UITextAlignment textAlignment, IView view)
 		{
 			if (textAlignment == UITextAlignment.Center)
 			{

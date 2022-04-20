@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Microsoft.Maui.Devices;
-using Microsoft.Maui.Storage;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Storage;
 using Xunit;
 using ABitmap = Android.Graphics.Bitmap;
 using AColor = Android.Graphics.Color;

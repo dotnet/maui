@@ -59,7 +59,8 @@ namespace Microsoft.Maui.Platform
 			pressedContained = true;
 		}
 
-		public override void TouchesMoved(NSSet touches, UIEvent? evt) {
+		public override void TouchesMoved(NSSet touches, UIEvent? evt)
+		{
 			var viewPoints = this.GetPointsInView(evt);
 			pressedContained = rect.ContainsAny(viewPoints);
 			graphicsView?.DragInteraction(viewPoints);

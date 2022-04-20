@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
@@ -11,25 +12,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// <param name="c">The Microsoft.Maui.Controls.Compatibility.Color instance which will be converted to a ElmSharp.Color</param>
 		public static EColor ToNative(this Color c)
 		{
-			if (c.IsDefault)
+			if (c == null)
 			{
 				// Trying to convert the default color, this may result in black color.
 				return EColor.Default;
 			}
 			else
 			{
-				return new EColor((int)(255.0 * c.R), (int)(255.0 * c.G), (int)(255.0 * c.B), (int)(255.0 * c.A));
+				return new EColor((int)(255.0 * c.Red), (int)(255.0 * c.Green), (int)(255.0 * c.Blue), (int)(255.0 * c.Alpha));
 			}
 		}
 
 		public static Color WithAlpha(this Color color, double alpha)
 		{
-			return new Color(color.R, color.G, color.B, (int)(255 * alpha));
+			return new Color(color.Red, color.Green, color.Blue, (int)(255 * alpha));
 		}
 
 		public static Color WithPremultiplied(this Color color, double alpha)
 		{
-			return new Color((int)(color.R * alpha), (int)(color.G * alpha), (int)(color.B * alpha), color.A);
+			return new Color((int)(color.Red * alpha), (int)(color.Green * alpha), (int)(color.Blue * alpha), color.Alpha);
 		}
 
 		/// <summary>

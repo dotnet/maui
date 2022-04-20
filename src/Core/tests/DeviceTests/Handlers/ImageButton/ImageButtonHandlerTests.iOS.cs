@@ -40,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
-		UIButton GetPlatformImageButton(ImageButtonHandler imageButtonHandler) =>	 
+		UIButton GetPlatformImageButton(ImageButtonHandler imageButtonHandler) =>
 			imageButtonHandler.PlatformView;
 
 		UIColor GetNativeStrokeColor(ImageButtonHandler imageButtonHandler)

@@ -106,6 +106,14 @@ namespace Microsoft.Maui.Controls
 				newPage.SendAppearing();
 		}
 
+		void UpdateToolbar()
+		{
+			// Update the Container level Toolbar with my Toolbar information
+			if (FindMyToolbar() is NavigationPageToolbar ct)
+			{
+				ct.ApplyNavigationPage(this, HasAppeared);
+			}
+		}
 
 		internal IToolbar FindMyToolbar()
 		{
@@ -277,7 +285,7 @@ namespace Microsoft.Maui.Controls
 					p.Toolbar = null;
 			}
 
-			if (InternalChildren.Count > 0)
+			if (Navigation is MauiNavigationImpl && InternalChildren.Count > 0)
 			{
 				var navStack = Navigation.NavigationStack;
 				var visiblePage = Navigation.NavigationStack[NavigationStack.Count - 1];
@@ -330,13 +338,28 @@ namespace Microsoft.Maui.Controls
 				if (Owner.InternalChildren.Contains(page))
 					throw new ArgumentException("Cannot insert page which is already in the navigation stack");
 
-				int index = Owner.InternalChildren.IndexOf(before);
-				Owner.InternalChildren.Insert(index, page);
 
-				if (index == 0)
-					Owner.RootPage = page;
+				Owner.SendHandlerUpdateAsync(false,
+					() =>
+					{
+						int index = Owner.InternalChildren.IndexOf(before);
+						Owner.InternalChildren.Insert(index, page);
 
-				Owner.SendHandlerUpdate(false);
+						if (index == 0)
+							Owner.RootPage = page;
+					},
+					() =>
+					{
+					},
+					() =>
+					{
+						// If no other pending operations happen
+						// Then update the toolbar to match
+						// the current navigation stack
+						if (Owner._waitingCount == 0)
+							Owner.UpdateToolbar();
+
+					}).FireAndForget();
 			}
 
 			protected async override Task<Page> OnPopAsync(bool animated)
@@ -448,13 +471,26 @@ namespace Microsoft.Maui.Controls
 				if (!Owner.InternalChildren.Contains(page))
 					throw new ArgumentException("Page to remove must be contained on this Navigation Page");
 
-				Owner.RemoveFromInnerChildren(page);
+				Owner.SendHandlerUpdateAsync(false,
+					() =>
+					{
+						Owner.RemoveFromInnerChildren(page);
 
-				if (Owner.RootPage == page)
-					Owner.RootPage = (Page)Owner.InternalChildren.First();
+						if (Owner.RootPage == page)
+							Owner.RootPage = (Page)Owner.InternalChildren[0];
+					},
+					() =>
+					{
+					},
+					() =>
+					{
+						// If no other pending operations happen
+						// Then update the toolbar to match
+						// the current navigation stack
+						if (Owner._waitingCount == 0)
+							Owner.UpdateToolbar();
 
-
-				Owner.SendHandlerUpdate(false);
+					}).FireAndForget();
 			}
 		}
 	}

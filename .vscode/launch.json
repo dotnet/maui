@@ -5,10 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug",
+            "name": "Debug with Comet",
             "type": "comet",
             "request": "launch",
             "preLaunchTask": "comet: Build"
-        }
+        },
+        {
+            "name": "Debug with Xamarin",
+            "type": "mono",
+            "request": "attach",
+            "address": "localhost",
+            "port": 10000,  
+            "preLaunchTask": "Run Sample"
+        },
     ]
 }

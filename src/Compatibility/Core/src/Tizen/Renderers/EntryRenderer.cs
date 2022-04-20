@@ -1,11 +1,14 @@
 using System;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using EEntry = ElmSharp.Entry;
-using IEntry = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IEntry;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.Entry;
+using NIEntry = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IEntry;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Entry;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EntryRenderer : ViewRenderer<Entry, EEntry>
 	{
 		SmartEvent _selectionCleared;
@@ -49,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				_selectionCleared = new SmartEvent(entry, entry.RealHandle, ThemeConstants.Entry.Signals.SelectionCleared);
 				_selectionCleared.On += OnSelectionCleared;
 
-				if (entry is IEntry ie)
+				if (entry is NIEntry ie)
 				{
 					ie.TextChanged += OnTextChanged;
 					ie.EntryLayoutFocused += OnFocused;
@@ -59,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				SetNativeControl(entry);
 
 				// An initial CursorPosition is set after layouting to avoid timing issue when the EditField entry is initialized.
-				Device.BeginInvokeOnMainThread(() =>
+				Application.Current.Dispatcher.Dispatch(() =>
 				{
 					UpdateSelectionLength(false);
 				});
@@ -85,7 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					Control.Activated -= OnCompleted;
 					Control.CursorChanged -= OnCursorChanged;
 
-					if (Control is IEntry ie)
+					if (Control is NIEntry ie)
 					{
 						ie.TextChanged -= OnTextChanged;
 						ie.EntryLayoutFocused -= OnFocused;
@@ -119,14 +122,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnCompleted(object sender, EventArgs e)
 		{
-			if (Element.ReturnType == ReturnType.Next)
-			{
-				FocusSearch(true)?.SetFocus(true);
-			}
-			else
-			{
-				Control.SetFocus(false);
-			}
+			Control.SetFocus(false);
 			((IEntryController)Element).SendCompleted();
 		}
 
@@ -146,15 +142,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void UpdateTextColor()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
-				ie.TextColor = Element.TextColor.ToPlatform();
+				ie.TextColor = Element.TextColor.ToPlatformEFL();
 			}
 		}
 
 		void UpdateFontSize()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontSize = Element.FontSize;
 			}
@@ -162,15 +158,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFontFamily()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
-				ie.FontFamily = Element.FontFamily.ToNativeFontFamily();
+				ie.FontFamily = Element.FontFamily.ToNativeFontFamily(Element.RequireFontManager());
 			}
 		}
 
 		void UpdateFontAttributes()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontAttributes = Element.FontAttributes;
 			}
@@ -178,9 +174,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateHorizontalTextAlignment()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
-				ie.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
+				ie.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
 			}
 		}
 
@@ -195,7 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && Element.Keyboard == Keyboard.Default)
 				return;
 
-			(Control as IEntry)?.UpdateKeyboard(Element.Keyboard, Element.IsSpellCheckEnabled, Element.IsTextPredictionEnabled);
+			(Control as NIEntry)?.UpdateKeyboard(Element.Keyboard, Element.IsSpellCheckEnabled, Element.IsTextPredictionEnabled);
 		}
 
 		void UpdateIsSpellCheckEnabled()
@@ -205,7 +201,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdatePlaceholder()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.Placeholder = Element.Placeholder;
 			}
@@ -213,15 +209,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdatePlaceholderColor()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
-				ie.PlaceholderColor = Element.PlaceholderColor.ToPlatform();
+				ie.PlaceholderColor = Element.PlaceholderColor.ToPlatformEFL();
 			}
 		}
 
 		void UpdateFontWeight()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontWeight = Specific.GetFontWeight(Element);
 			}
