@@ -14,13 +14,14 @@ public static class MauiProgram
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 			});
-
+#pragma warning disable CA1416 // 'BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView(IServiceCollection)' is only supported on: 'android' 23.0 and later.
 		builder.Services.AddMauiBlazorWebView();
-//-:cnd:noEmit
+#pragma warning restore CA1416
+		//-:cnd:noEmit
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
-//+:cnd:noEmit
+		//+:cnd:noEmit
 
 		builder.Services.AddSingleton<WeatherForecastService>();
 
