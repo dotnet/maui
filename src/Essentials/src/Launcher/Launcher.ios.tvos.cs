@@ -20,7 +20,7 @@ namespace Microsoft.Maui.ApplicationModel
 		Task<bool> PlatformOpenAsync(NSUrl nativeUrl) =>
 			UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions());
 
-		internal Task<bool> PlatformTryOpenAsync(Uri uri)
+		Task<bool> PlatformTryOpenAsync(Uri uri)
 		{
 			var nativeUrl = WebUtils.GetNativeUrl(uri);
 
