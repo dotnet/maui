@@ -11,7 +11,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
     <PackageReference Include="Microsoft.Build.Framework" Version="16.7.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.7.0" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.127" />
+    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.256" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
     <PackageReference Include="coverlet.collector" Version="3.1.2" />
