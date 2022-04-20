@@ -65,6 +65,7 @@ stages:
                   vmImage: ${{ parameters.iosVmImage }}
                   ${{ if ne(parameters.iosVmPool, 'Azure Pipelines') }}:
                     demands:
+                      - macOS.FlavourWithAU -equals ${{ parameters.iosVmPool }}
                       - macOS.Name -equals Monterey
                       - macOS.Architecture -equals x64
                       - Agent.HasDevices -equals False
