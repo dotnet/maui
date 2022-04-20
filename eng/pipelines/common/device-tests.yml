@@ -59,7 +59,7 @@ stages:
               - job: ios_device_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
                 workspace:
                   clean: all
-                displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
+                displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }}) [${{ parameters.iosVmPool }}]
                 pool:
                   name: ${{ parameters.iosVmPool }}
                   vmImage: ${{ parameters.iosVmImage }}
