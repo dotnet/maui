@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class PathHandler 
+	public partial class PathHandler
 	{
 		public static void MapShape(IShapeViewHandler handler, Path path)
 		{

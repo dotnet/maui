@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Android.Content;
+using Android.Graphics.Drawables;
 using Android.OS;
 using AndroidX.AppCompat.App;
+using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Platform;
 using ALayoutInflater = Android.Views.LayoutInflater;
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;
 using ImportantForAccessibility = Android.Views.ImportantForAccessibility;
-using Google.Android.Material.AppBar;
-using AndroidX.CoordinatorLayout.Widget;
-using Android.Graphics.Drawables;
 using Xunit;
-using AndroidX.AppCompat.Graphics.Drawable;
-using Android.Content;
 
 namespace Microsoft.Maui.DeviceTests
 {

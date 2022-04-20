@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_uiSearchBar.UpdateFlowDirection(shell);
 			_numericAccessoryView.UpdateFlowDirection(shell);
-			
+
 			var uiTextField = _uiSearchBar.FindDescendantView<UITextField>();
 			UpdateSearchBarHorizontalTextAlignment(uiTextField, shell);
 		}
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			textField.TextAlignment = _searchHandler.HorizontalTextAlignment.ToPlatformHorizontal();
-			if(view != null)
+			if (view != null)
 			{
 				textField.TextAlignment = textField.TextAlignment.AdjustForFlowDirection(view);
 			}

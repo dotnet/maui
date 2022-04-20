@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 		readonly Android.Graphics.Rect _viewBounds;
 
 		APath _currentPath;
-		SizeF _lastPathSize; 
+		SizeF _lastPathSize;
 		bool _invalidateClip;
 
 		Bitmap _shadowBitmap;

@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Platform
 			if (!platformLabel.Bounds.IsEmpty)
 				platformLabel.InvalidateMeasure(label);
 		}
-		
+
 		public static void UpdatePadding(this MauiLabel platformLabel, ILabel label)
 		{
 			platformLabel.TextInsets = new UIEdgeInsets(
