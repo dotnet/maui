@@ -58,8 +58,8 @@ parameters:
     type: object
     default:
       pool:
-        name: '$(androidTestsVmPool)'
-        vmImage: '$(androidTestsVmImage)'
+        name: 'Azure Pipelines'
+        vmImage: 'internal-macos12'
         demands:
           - macOS.Name -equals Monterey
           - macOS.Architecture -equals x64
@@ -69,8 +69,8 @@ parameters:
     type: object
     default:
       pool:
-        name: '$(iosTestsVmPool)'
-        vmImage: '$(iosTestsVmImage)'
+        name: 'Azure Pipelines'
+        vmImage: 'internal-macos12'
         demands:
           - macOS.Name -equals Monterey
           - macOS.Architecture -equals x64
