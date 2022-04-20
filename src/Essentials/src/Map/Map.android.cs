@@ -14,33 +14,33 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
-            var uri = GetMapsUri(latitude, longitude, options);
+			var uri = GetMapsUri(latitude, longitude, options);
 
-            return OpenUri(uri);
-        }
+			return OpenUri(uri);
+		}
 
-        public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
-        {
-            var uri = GetMapsUri(placemark, options);
+		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
+		{
+			var uri = GetMapsUri(placemark, options);
 
-            return OpenUri(uri);
-        }
+			return OpenUri(uri);
+		}
 
-        public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
-        {
-            var uri = GetMapsUri(latitude, longitude, options);
+		public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
+		{
+			var uri = GetMapsUri(latitude, longitude, options);
 
-            return TryOpenUri(uri);
-        }
+			return TryOpenUri(uri);
+		}
 
-        public Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
-        {
-            var uri = GetMapsUri(placemark, options);
+		public Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
+		{
+			var uri = GetMapsUri(placemark, options);
 
-            return TryOpenUri(uri);
-        }
+			return TryOpenUri(uri);
+		}
 
-        internal string GetMapsUri(double latitude, double longitude, MapLaunchOptions options)
+		internal string GetMapsUri(double latitude, double longitude, MapLaunchOptions options)
 		{
 			if (options == null)
 				throw new ArgumentNullException(nameof(options));
@@ -88,49 +88,38 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		internal string GetMode(NavigationMode mode)
-        {
-            switch (mode)
-            {
-                case NavigationMode.Bicycling: return "&mode=b";
-                case NavigationMode.Driving: return "&mode=d";
-                case NavigationMode.Walking: return "&mode=w";
-            }
-            return string.Empty;
-        }
+		{
+			switch (mode)
+			{
+				case NavigationMode.Bicycling: return "&mode=b";
+				case NavigationMode.Driving: return "&mode=d";
+				case NavigationMode.Walking: return "&mode=w";
+			}
+			return string.Empty;
+		}
 
-        internal Task OpenUri(string uri)
-        {
-            var intent = ResolveMapIntent(uri);
+		internal Task OpenUri(string uri)
+		{
+			var intent = ResolveMapIntent(uri);
 
-            Platform.AppContext.StartActivity(intent);
+			Platform.AppContext.StartActivity(intent);
 
-            return Task.CompletedTask;
-        }
+			return Task.CompletedTask;
+		}
 
 		internal Task<bool> TryOpenUri(string uri)
-        {
-            var intent = ResolveMapIntent(uri);
+		{
+			var intent = ResolveMapIntent(uri);
 
-            var canStart = CanStartIntent(intent);
+			var canStart = PlatformUtils.IsIntentSupported(intent);
 
-            if (canStart)
-                Platform.AppContext.StartActivity(intent);
+			if (canStart)
+				Platform.AppContext.StartActivity(intent);
 
-            return Task.FromResult(canStart);
-        }
+			return Task.FromResult(canStart);
+		}
 
-        internal bool CanStartIntent(Intent intent)
-        {
-            if (Platform.AppContext == null)
-                return false;
-
-            var manager = Platform.AppContext.PackageManager;
-            var supportedResolvedInfos = manager.QueryIntentActivities(intent, PackageInfoFlags.MatchDefaultOnly);
-
-            return supportedResolvedInfos.Any();
-        }
-
-        Intent ResolveMapIntent(string uri)
+		Intent ResolveMapIntent(string uri)
 		{
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri));
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;

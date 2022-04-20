@@ -10,32 +10,32 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
-            var uri = GetMapsUri(latitude, longitude, options);
+			var uri = GetMapsUri(latitude, longitude, options);
 
-            return LaunchUri(uri);
-        }
+			return LaunchUri(uri);
+		}
 
-        public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
-        {
-            var uri = GetMapsUri(placemark, options);
+		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
+		{
+			var uri = GetMapsUri(placemark, options);
 
-            return LaunchUri(uri);
-        }
+			return LaunchUri(uri);
+		}
 
-        public async Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
-        {
-            var uri = GetMapsUri(latitude, longitude, options);
+		public async Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
+		{
+			var uri = GetMapsUri(latitude, longitude, options);
 
-            return await TryLaunchUri(uri);
-        }
+			return await TryLaunchUri(uri);
+		}
 
-        public async Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
-        {
-            var uri = GetMapsUri(placemark, options);
+		public async Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
+		{
+			var uri = GetMapsUri(placemark, options);
 
-            return await TryLaunchUri(uri);
-        }
-        
+			return await TryLaunchUri(uri);
+		}
+		
 		Uri GetMapsUri(double latitude, double longitude, MapLaunchOptions options)
 		{
 			if (options == null)
@@ -56,28 +56,28 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 
 			return new Uri(uri);
-        }
+		}
 
-        Uri GetMapsUri(Placemark placemark, MapLaunchOptions options)
-        {
+		Uri GetMapsUri(Placemark placemark, MapLaunchOptions options)
+		{
 			if (placemark == null)
 				throw new ArgumentNullException(nameof(placemark));
 
 			if (options == null)
 				throw new ArgumentNullException(nameof(options));
 
-            var uri = string.Empty;
+			var uri = string.Empty;
 
-            if (options.NavigationMode == NavigationMode.None)
-            {
-                uri = $"bingmaps:?where={placemark.GetEscapedAddress()}";
-            }
-            else
-            {
-                uri = $"bingmaps:?rtp=~adr.{placemark.GetEscapedAddress()}{GetMode(options.NavigationMode)}";
-            }
+			if (options.NavigationMode == NavigationMode.None)
+			{
+				uri = $"bingmaps:?where={placemark.GetEscapedAddress()}";
+			}
+			else
+			{
+				uri = $"bingmaps:?rtp=~adr.{placemark.GetEscapedAddress()}{GetMode(options.NavigationMode)}";
+			}
 
-            return new Uri(uri);
+			return new Uri(uri);
 		}
 
 		string GetMode(NavigationMode mode)
@@ -98,21 +98,21 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var canLaunch = await CanLaunchUri(uri);
 
-            if (canLaunch)
-            {
-                await LaunchUri(uri);
-            }
+			if (canLaunch)
+			{
+				await LaunchUri(uri);
+			}
 
-            return canLaunch;
+			return canLaunch;
 		}
 
 		Task LaunchUri(Uri mapsUri) =>
 			global::Windows.System.Launcher.LaunchUriAsync(mapsUri).AsTask();
 
 		async Task<bool> CanLaunchUri(Uri uri)
-        {
-            var supported = await global::Windows.System.Launcher.QueryUriSupportAsync(uri, LaunchQuerySupportType.Uri);
-            return supported == LaunchQuerySupportStatus.Available;
-        }
+		{
+			var supported = await global::Windows.System.Launcher.QueryUriSupportAsync(uri, LaunchQuerySupportType.Uri);
+			return supported == LaunchQuerySupportStatus.Available;
+		}
 	}
 }

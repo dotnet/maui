@@ -13,7 +13,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options);
 
-        Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options);
+		Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options);
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Map']/Docs" />
@@ -44,43 +44,22 @@ namespace Microsoft.Maui.ApplicationModel
 			Current.OpenAsync(placemark, options);
 
 		public static Task<bool> TryOpenAsync(Location location) =>
-            TryOpenAsync(location, new MapLaunchOptions());
+			Current.TryOpenAsync(location);
 
-        public static Task<bool> TryOpenAsync(Location location, MapLaunchOptions options)
-        {
-            if (location == null)
-                throw new ArgumentNullException(nameof(location));
+		public static Task<bool> TryOpenAsync(Location location, MapLaunchOptions options) =>
+			Current.TryOpenAsync(location, options);
 
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
+		public static Task<bool> TryOpenAsync(double latitude, double longitude) =>
+			Current.TryOpenAsync(latitude, longitude);
 
-            return TryOpenAsync(location.Latitude, location.Longitude, options);
-        }
+		public static Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options) =>
+			Current.TryOpenAsync(latitude, longitude, options);
 
-        public static Task<bool> TryOpenAsync(double latitude, double longitude) =>
-            TryOpenAsync(latitude, longitude, new MapLaunchOptions());
+		public static Task<bool> TryOpenAsync(Placemark placemark) =>
+			Current.TryOpenAsync(placemark);
 
-        public static Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
-        {
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
-
-            return TryOpenAsync(latitude, longitude, options);
-        }
-
-        public static Task<bool> TryOpenAsync(Placemark placemark) =>
-            TryOpenAsync(placemark, new MapLaunchOptions());
-
-        public static Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
-        {
-            if (placemark == null)
-                throw new ArgumentNullException(nameof(placemark));
-
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
-
-            return TryOpenAsync(placemark, options);
-        }
+		public static Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options) =>
+			Current.TryOpenAsync(placemark, options);
 
 		static IMap Current => ApplicationModel.Map.Default;
 
@@ -109,10 +88,30 @@ namespace Microsoft.Maui.ApplicationModel
 			return map.OpenAsync(location.Latitude, location.Longitude, options);
 		}
 
+		public static Task<bool> TryOpenAsync(this IMap map, Location location) =>
+			map.TryOpenAsync(location, new MapLaunchOptions());
+
+		public static Task<bool> TryOpenAsync(this IMap map, Location location, MapLaunchOptions options)
+		{
+			if (location == null)
+				throw new ArgumentNullException(nameof(location));
+
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
+			return map.TryOpenAsync(location.Latitude, location.Longitude, options);
+		}
+
 		public static Task OpenAsync(this IMap map, double latitude, double longitude) =>
 			map.OpenAsync(latitude, longitude, new MapLaunchOptions());
 
 		public static Task OpenAsync(this IMap map, Placemark placemark) =>
 			map.OpenAsync(placemark, new MapLaunchOptions());
+
+		public static Task<bool> TryOpenAsync(this IMap map, double latitude, double longitude) =>
+			map.TryOpenAsync(latitude, longitude, new MapLaunchOptions());
+
+		public static Task<bool> TryOpenAsync(this IMap map, Placemark placemark) =>
+			map.TryOpenAsync(placemark, new MapLaunchOptions());
 	}
 }

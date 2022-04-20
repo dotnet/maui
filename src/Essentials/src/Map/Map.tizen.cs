@@ -18,38 +18,38 @@ namespace Microsoft.Maui.ApplicationModel
 
 			var appControl = GetAppControlData(latitude, longitude);
 
-            return Launch(appControl);
-        }
+			return Launch(appControl);
+		}
 
-        public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
-        {
-            Permissions.EnsureDeclared<Permissions.LaunchApp>();
+		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
+		{
+			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
-            var appControl = GetAppControlData(placemark);
+			var appControl = GetAppControlData(placemark);
 
-            return Launch(appControl);
-        }
+			return Launch(appControl);
+		}
 
-        public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
-        {
-            Permissions.EnsureDeclared<Permissions.LaunchApp>();
+		public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
+		{
+			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
-            var appControl = GetAppControlData(latitude, longitude);
+			var appControl = GetAppControlData(latitude, longitude);
 
-            return TryLaunch(appControl);
-        }
+			return TryLaunch(appControl);
+		}
 
-        public Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
-        {
-            Permissions.EnsureDeclared<Permissions.LaunchApp>();
+		public Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
+		{
+			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
-            var appControl = GetAppControlData(placemark);
+			var appControl = GetAppControlData(placemark);
 
-            return TryLaunch(appControl);
-        }
+			return TryLaunch(appControl);
+		}
 
-        internal static AppControl GetAppControlData(double latitude, double longitude)
-        {
+		internal static AppControl GetAppControlData(double latitude, double longitude)
+		{
 			var appControl = new AppControl
 			{
 				Operation = AppControlOperations.View,
@@ -77,25 +77,25 @@ namespace Microsoft.Maui.ApplicationModel
 
 			appControl.Uri += $"0,0?q={placemark.GetEscapedAddress()}";
 			return appControl;
-        }
+		}
 
-        internal static Task Launch(AppControl appControl)
-        {
+		internal static Task Launch(AppControl appControl)
+		{
 			AppControl.SendLaunchRequest(appControl);
 
 			return Task.CompletedTask;
 		}
 
 		internal static Task<bool> TryLaunch(AppControl appControl)
-        {
-            var canLaunch = AppControl.GetMatchedApplicationIds(appControl).Any();
+		{
+			var canLaunch = AppControl.GetMatchedApplicationIds(appControl).Any();
 
-            if (canLaunch)
-            {
-                Launch(appControl);
-            }
+			if (canLaunch)
+			{
+				Launch(appControl);
+			}
 
-            return Task.FromResult(canLaunch);
-        }
+			return Task.FromResult(canLaunch);
+		}
 	}
 }

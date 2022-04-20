@@ -13,9 +13,9 @@ namespace Microsoft.Maui.ApplicationModel
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
-            => throw ExceptionUtils.NotSupportedOrImplementedException;
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		public Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
-            => throw ExceptionUtils.NotSupportedOrImplementedException;
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

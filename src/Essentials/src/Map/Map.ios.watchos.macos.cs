@@ -14,10 +14,10 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
-            return TryOpenAsync(latitude, longitude, options);
-        }
+			return TryOpenAsync(latitude, longitude, options);
+		}
 
-        public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
 			if (options == null)
 				throw new ArgumentNullException(nameof(options));
@@ -33,10 +33,10 @@ namespace Microsoft.Maui.ApplicationModel
 		public async Task OpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
 			await TryOpenAsync(placemark, options);
-        }
+		}
 
-        public async Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
-        {
+		public async Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
+		{
 			if (placemark == null)
 				throw new ArgumentNullException(nameof(placemark));
 
