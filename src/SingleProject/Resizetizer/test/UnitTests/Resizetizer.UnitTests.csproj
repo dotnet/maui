@@ -14,7 +14,7 @@
     <PackageReference Include="SkiaSharp" Version="2.88.0-preview.127" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
-    <PackageReference Include="coverlet.collector" Version="1.3.0" />
+    <PackageReference Include="coverlet.collector" Version="3.1.2" />
     <PackageReference Include="Svg.Skia" Version="0.4.1" />
     <PackageReference Include="Svg2VectorDrawable.Net" Version="0.1.0" />
   </ItemGroup>
