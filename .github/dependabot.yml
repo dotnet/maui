@@ -7,7 +7,8 @@ updates:
   open-pull-requests-limit: 25
   ignore:
     - dependency-name: "MicrosoftMauiGraphicsVersion"
-    - dependency-name: "Microsoft.Maui.Graphics.*"
+    - dependency-name: "Microsoft.Maui.Graphics*"
+    - dependency-name: "Microsoft.DotNet.XHarness*"
   labels:
       - "nuget"
       - "dependencies"
