@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Microsoft.Maui.Graphics;
 using System.Windows.Input;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {

@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static readonly BindableProperty BasisProperty =
 			BindableProperty.CreateAttached("Basis", typeof(FlexBasis), typeof(FlexLayout), FlexBasis.Auto,
 											propertyChanged: OnBasisPropertyChanged);
-		
+
 		public FlexLayout() =>
 			Hosting.CompatibilityCheck.CheckForCompatibility();
 

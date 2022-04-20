@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Foldable
 {

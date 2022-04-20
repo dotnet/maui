@@ -93,9 +93,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				var headerString = GetHeaderString(headers);
 				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(ms, statusCode, statusMessage, headerString);
 			}
-			else if (new Uri(requestUri) is Uri uri && new Uri(AppOrigin).IsBaseOf(uri))
+			else if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{
-				var relativePath = new Uri(AppOrigin).MakeRelativeUri(uri).ToString();
+				var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString();
 
 				// If the path does not end in a file extension (or is empty), it's most likely referring to a page,
 				// in which case we should allow falling back on the host page.

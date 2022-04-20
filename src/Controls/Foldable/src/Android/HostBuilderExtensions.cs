@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Android.App;
+using AndroidX.Window.Layout;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
-using Microsoft.Maui.Graphics;
-using AndroidX.Window.Layout;
 using static Microsoft.Maui.Foldable.FoldableService;
-using Android.App;
 
 namespace Microsoft.Maui.Foldable
 {

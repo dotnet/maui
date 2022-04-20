@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsNotNull(polyline);
 			Assert.NotZero(polyline.Points.Count);
 		}
-				
+
 		[TestCase("ellipse")]
 		[TestCase("Ellipse")]
 		public void TestEllipseConstructor(string value)

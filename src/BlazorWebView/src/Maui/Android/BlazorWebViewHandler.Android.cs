@@ -6,8 +6,8 @@ using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using static Android.Views.ViewGroup;
-using Path = System.IO.Path;
 using AWebView = Android.Webkit.WebView;
+using Path = System.IO.Path;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {

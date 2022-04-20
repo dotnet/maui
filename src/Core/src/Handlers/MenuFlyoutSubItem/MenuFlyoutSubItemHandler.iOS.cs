@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using Foundation;
-using ObjCRuntime;
 using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers

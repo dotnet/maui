@@ -170,13 +170,13 @@ namespace Microsoft.Maui.Resizetizer
 						nodesToRemove.Add(splashScreenNode);
 					}
 				}
-				foreach(XmlNode node in nodesToRemove)
+				foreach (XmlNode node in nodesToRemove)
 				{
 					splashScreensNode.RemoveChild(node);
 				}
 			}
 
-			foreach(var image in splashDpiMap)
+			foreach (var image in splashDpiMap)
 			{
 				var splashScreenNode = doc.CreateElement("splash-screen", namespaceURI);
 				splashScreenNode.SetAttribute("src", image.Value);
