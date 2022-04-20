@@ -1,7 +1,7 @@
 version: 2
 updates:
 - package-ecosystem: nuget
-  directory: "/src/"
+  directory: "/"
   schedule:
     interval: daily
   open-pull-requests-limit: 25

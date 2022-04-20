@@ -1730,7 +1730,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			grid.FlowDirection.Returns(FlowDirection.RightToLeft);
 
 			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
-			
+
 			// Because the Grid is RTL, we expect the view in column 1 to be on the left,
 			// and the view in column 0 to be on the right
 			AssertArranged(view1, 0, 0, 100, 100);
@@ -1750,7 +1750,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0, col: 1);
-			SetLocation(grid, view1, row:1, colSpan: 2);
+			SetLocation(grid, view1, row: 1, colSpan: 2);
 
 			MeasureAndArrange(grid, 200, 200);
 
@@ -1760,7 +1760,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Since column 0 has no width, we expect view1 to start at 0,10 
 			AssertArranged(view1, 0, 10, 200, 190);
 		}
-		
+
 		[Fact]
 		[Category(GridAbsoluteSizing)]
 		public void AbsoluteRowsConstrainMeasureHeight()
@@ -1858,7 +1858,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(viewSize);
 
 			SubstituteChildren(grid, view0);
-			
+
 			MeasureAndArrange(grid, 500, 500);
 
 			// Verify that the view is getting measured at the appropriate width (infinity)

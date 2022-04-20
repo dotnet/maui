@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
 
 			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done,
-				(o, a) => FinishSelectItem(_pickerView,platformPicker)
+				(o, a) => FinishSelectItem(_pickerView, platformPicker)
 			);
 
 			toolbar.SetItems(new[] { spacer, doneButton }, false);
@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView != null)
 				VirtualView.IsFocused = true;
 		}
-		
+
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
 			if (_pickerView == null)

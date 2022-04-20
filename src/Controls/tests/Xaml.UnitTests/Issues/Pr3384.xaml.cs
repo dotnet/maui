@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 

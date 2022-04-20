@@ -70,7 +70,7 @@ namespace Microsoft.Maui
 					throw;
 				}
 			}
-			
+
 			return Task.FromResult<IImageSourceServiceResult<Drawable>?>(null);
 		}
 	}

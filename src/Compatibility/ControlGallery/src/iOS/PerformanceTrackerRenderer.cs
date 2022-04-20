@@ -589,7 +589,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			base.Dispose(disposing);
 		}
 	}
-	
+
 	[System.Obsolete]
 	public class PerformanceTrackingImage : ImageRenderer, IDrawnObservable
 	{

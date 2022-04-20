@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
 			return false;
 		}
-		
+
 		private static (string AssemblyName, string RelativePath) GetAssemblyNameAndRelativePath(string requestAbsoluteUri, string appContentRoot)
 		{
 			var requestPath = new Uri(requestAbsoluteUri).AbsolutePath.Substring(1);

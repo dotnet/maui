@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Foldable
 				return;
 			}
 
-			if(_info != null)
+			if (_info != null)
 				_info.PropertyChanged -= OnDualScreenInfoPropertyChanged;
 
 			_visualElement = visualElement;
