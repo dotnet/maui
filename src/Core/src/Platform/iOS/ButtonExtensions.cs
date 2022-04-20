@@ -78,6 +78,6 @@ namespace Microsoft.Maui.Platform
 #pragma warning restore CA1416
 		}
 
-		
+
 	}
 }

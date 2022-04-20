@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var platformView = content.ToPlatform(_mauiContext);
 			AddView(platformView);
 		}
-		
+
 		#region IPlatformViewHandler
 		bool IViewHandler.HasContainer { get => false; set { } }
 

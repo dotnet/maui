@@ -33,8 +33,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="contentRootRelativeToAppRoot">Path to the directory containing application content files.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the fileProvider.</param>
+
 		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler!!, WKWebView webview!!, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string contentRootRelativeToAppRoot, string hostPageRelativePath)
-			: base(provider, dispatcher, new Uri(BlazorWebViewHandler.AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+			: base(provider, dispatcher, BlazorWebViewHandler.AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 		{
 			if (provider.GetService<MauiBlazorMarkerService>() is null)
 			{

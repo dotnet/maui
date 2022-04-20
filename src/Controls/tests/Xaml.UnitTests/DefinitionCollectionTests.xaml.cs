@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
-using Mono.Cecil.Cil;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -50,21 +50,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void DefinitionCollectionsReplacedAtCompilation()
 			{
 				MockCompiler.Compile(typeof(DefinitionCollectionTests), out var methodDef);
-				Assert.That(!methodDef.Body.Instructions.Any(instr=>InstructionIsDefColConvCtor(methodDef, instr)), "This Xaml still generates [Row|Col]DefinitionCollectionTypeConverter ctor");
+				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsDefColConvCtor(methodDef, instr)), "This Xaml still generates [Row|Col]DefinitionCollectionTypeConverter ctor");
 			}
 
 			bool InstructionIsDefColConvCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)
- 			{
- 				if (instruction.OpCode != OpCodes.Newobj)
- 					return false;
- 				if (!(instruction.Operand is MethodReference methodRef))
- 					return false;
- 				if (Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter))))
- 					return true;
- 				if (Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter))))
- 					return true;
- 				return false;
- 			}
+			{
+				if (instruction.OpCode != OpCodes.Newobj)
+					return false;
+				if (!(instruction.Operand is MethodReference methodRef))
+					return false;
+				if (Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter))))
+					return true;
+				if (Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter))))
+					return true;
+				return false;
+			}
 		}
 	}
 }

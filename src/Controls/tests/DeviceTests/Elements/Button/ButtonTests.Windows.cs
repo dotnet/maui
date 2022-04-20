@@ -18,6 +18,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		TextTrimming GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
-			(GetPlatformButton(buttonHandler).Content as TextBlock)!.TextTrimming;
+			(GetPlatformButton(buttonHandler).Content as FrameworkElement)!.GetFirstDescendant<TextBlock>()!.TextTrimming;
 	}
 }

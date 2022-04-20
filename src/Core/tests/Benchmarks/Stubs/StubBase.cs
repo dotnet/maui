@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		IElement IElement.Parent => Parent;
 
 		public bool IsEnabled { get; set; } = true;
-		
+
 		public bool IsFocused { get; set; }
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public bool Focus() => false;
 
-		public void Unfocus() 
+		public void Unfocus()
 		{
 		}
 

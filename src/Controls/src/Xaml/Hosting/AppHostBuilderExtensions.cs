@@ -1,15 +1,14 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Hosting;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 
 
 #if ANDROID

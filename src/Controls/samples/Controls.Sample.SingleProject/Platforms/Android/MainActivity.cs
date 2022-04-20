@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Droid
 		| ConfigChanges.UiMode
 		| ConfigChanges.SmallestScreenSize
 		| ConfigChanges.KeyboardHidden
-    | ConfigChanges.Density
+	| ConfigChanges.Density
 		)]
 	[IntentFilter(
 		new[] { Microsoft.Maui.ApplicationModel.Platform.Intent.ActionAppAction },
