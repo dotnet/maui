@@ -77,31 +77,31 @@ namespace Microsoft.Maui.Essentials.DeviceTests
             return tcs.Task;
         }
 #elif __IOS__
-        public static Task OnMainThread(Action action)
-        {
-            var obj = new Foundation.NSObject();
-            obj.InvokeOnMainThread(action);
-            return Task.FromResult(true);
-        }
+		public static Task OnMainThread(Action action)
+		{
+			var obj = new Foundation.NSObject();
+			obj.InvokeOnMainThread(action);
+			return Task.FromResult(true);
+		}
 
-        public static Task OnMainThread(Func<Task> action)
-        {
-            var tcs = new TaskCompletionSource<bool>();
-            var obj = new Foundation.NSObject();
-            obj.InvokeOnMainThread(async () =>
-            {
-                try
-                {
-                    await action();
-                    tcs.SetResult(true);
-                }
-                catch (Exception ex)
-                {
-                    tcs.SetException(ex);
-                }
-            });
-            return tcs.Task;
-        }
+		public static Task OnMainThread(Func<Task> action)
+		{
+			var tcs = new TaskCompletionSource<bool>();
+			var obj = new Foundation.NSObject();
+			obj.InvokeOnMainThread(async () =>
+			{
+				try
+				{
+					await action();
+					tcs.SetResult(true);
+				}
+				catch (Exception ex)
+				{
+					tcs.SetException(ex);
+				}
+			});
+			return tcs.Task;
+		}
 #endif
 	}
 }

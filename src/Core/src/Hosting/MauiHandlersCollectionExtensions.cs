@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Hosting
 	public static partial class MauiHandlersCollectionExtensions
 	{
 		public static IMauiHandlersCollection AddHandler(
-			this IMauiHandlersCollection handlersCollection, 
+			this IMauiHandlersCollection handlersCollection,
 			Type viewType,
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType)
 		{

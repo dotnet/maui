@@ -1,7 +1,7 @@
-﻿using Android.Widget;
-using Microsoft.Maui.Controls.Internals;
-using System;
+﻿using System;
 using Android.Text;
+using Android.Widget;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
 {

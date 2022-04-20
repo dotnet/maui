@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class PolylineHandler 
+	public partial class PolylineHandler
 	{
 		protected override void ConnectHandler(MauiShapeView nativeView)
 		{
