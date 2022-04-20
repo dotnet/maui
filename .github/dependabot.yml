@@ -5,3 +5,10 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 25
+  ignore:
+    - dependency-name: "MicrosoftMauiGraphicsVersion"
+    - dependency-name: "Microsoft.Maui.Graphics.*"
+  labels:
+      - "nuget"
+      - "dependencies"
+      - "area/upstream"
