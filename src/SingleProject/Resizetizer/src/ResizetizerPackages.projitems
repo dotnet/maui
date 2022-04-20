@@ -14,7 +14,7 @@
     <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="$(_SkiaSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="$(_SkiaSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="SkiaSharp.HarfBuzz" Version="$(_SkiaSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Svg.Skia" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Svg.Skia" Version="0.5.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Custom" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Picture" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Memory" Version="4.5.4" GeneratePathProperty="true" PrivateAssets="all" />
