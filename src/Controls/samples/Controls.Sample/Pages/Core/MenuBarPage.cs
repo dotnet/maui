@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Pages
 			MenuBarItem barItem =
 				MenuBarItems.FirstOrDefault(x => x.Text == "Added Menu");
 
-			if(barItem == null)
+			if (barItem == null)
 			{
 				barItem = new MenuBarItem()
 				{

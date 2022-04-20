@@ -188,7 +188,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 			var result2 = await service.LoadDrawableAsync(imageSource, imageView);
-			
+
 			// dispose proxy
 			result2.Dispose();
 
@@ -265,7 +265,7 @@ namespace Microsoft.Maui.DeviceTests
 			public Task<bool> DidLoadFromCache
 				=> tcsResult.Task;
 
-			TaskCompletionSource<bool> tcsResult = new ();
+			TaskCompletionSource<bool> tcsResult = new();
 
 			public override void OnLoadFailed(Drawable errorDrawable)
 			{

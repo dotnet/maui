@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_handler == null)
 				return;
-        
+
 			if (_handler != null)
 				_handler.PlatformView.UpdateCanGoBackForward(_handler.VirtualView);
 

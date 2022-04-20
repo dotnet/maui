@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 		internal WebNavigationEvent _lastBackForwardEvent;
 		WKUIDelegate? _delegate;
-		
+
 		protected override WKWebView CreatePlatformView()
 		{
 			var nativeWebView = new MauiWKWebView(RectangleF.Empty, this)

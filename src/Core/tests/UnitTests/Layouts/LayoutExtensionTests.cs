@@ -238,7 +238,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void WidthOverridesFill() 
+		public void WidthOverridesFill()
 		{
 			var widthConstraint = 300;
 			var heightConstraint = 300;
@@ -259,7 +259,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void WidthOverridesFillFromCenter() 
+		public void WidthOverridesFillFromCenter()
 		{
 			var widthConstraint = 300;
 			var heightConstraint = 300;

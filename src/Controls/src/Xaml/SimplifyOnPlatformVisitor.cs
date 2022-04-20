@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (target is null)
 				return;
 
-			if (   node.Properties.TryGetValue(new XmlName("", target), out INode targetNode)
+			if (node.Properties.TryGetValue(new XmlName("", target), out INode targetNode)
 				|| node.Properties.TryGetValue(new XmlName("", nameof(OnPlatformExtension.Default)), out targetNode))
 			{
 				if (!ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))

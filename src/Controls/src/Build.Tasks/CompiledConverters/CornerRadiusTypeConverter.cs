@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.XamlC
 							return GenerateIL(module, l);
 						break;
 					case 4:
-						if (	   double.TryParse(cornerradius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out tl)
+						if (double.TryParse(cornerradius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out tl)
 							&& double.TryParse(cornerradius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out tr)
 							&& double.TryParse(cornerradius[2], NumberStyles.Number, CultureInfo.InvariantCulture, out bl)
 							&& double.TryParse(cornerradius[3], NumberStyles.Number, CultureInfo.InvariantCulture, out br))

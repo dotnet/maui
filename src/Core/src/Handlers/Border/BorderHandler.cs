@@ -1,4 +1,4 @@
-﻿	#nullable enable
+﻿#nullable enable
 #if __IOS__ || MACCATALYST
 using PlatformView = Microsoft.Maui.Platform.ContentView;
 #elif __ANDROID__
