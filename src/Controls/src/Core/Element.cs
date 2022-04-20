@@ -402,9 +402,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Descendants']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public IEnumerable<Element> Descendants()
+		internal IEnumerable<Element> Descendants() =>
+			Descendants<Element>();
+
+		IEnumerable<Element> IElementController.Descendants() =>
+			Descendants<Element>();
+
+		internal IEnumerable<TElement> Descendants<TElement>()
+			where TElement : Element
 		{
 			var queue = new Queue<Element>(16);
 			queue.Enqueue(this);
@@ -415,7 +420,10 @@ namespace Microsoft.Maui.Controls
 				for (var i = 0; i < children.Count; i++)
 				{
 					Element child = children[i];
-					yield return child;
+					if (child is not TElement childT)
+						continue;
+
+					yield return childT;
 					queue.Enqueue(child);
 				}
 			}
