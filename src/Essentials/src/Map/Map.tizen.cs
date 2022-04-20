@@ -11,45 +11,35 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
-			if (options == null)
-				throw new ArgumentNullException(nameof(options));
-
-			Permissions.EnsureDeclared<Permissions.LaunchApp>();
-
-			var appControl = GetAppControlData(latitude, longitude);
-
+			var appControl = GetAppControlData(latitude, longitude, options);
 			return Launch(appControl);
 		}
 
 		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
-			Permissions.EnsureDeclared<Permissions.LaunchApp>();
-
-			var appControl = GetAppControlData(placemark);
-
+			var appControl = GetAppControlData(placemark, options);
 			return Launch(appControl);
 		}
 
 		public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
-			Permissions.EnsureDeclared<Permissions.LaunchApp>();
-
-			var appControl = GetAppControlData(latitude, longitude);
-
+			var appControl = GetAppControlData(latitude, longitude, options);
 			return TryLaunch(appControl);
 		}
 
 		public Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
-			Permissions.EnsureDeclared<Permissions.LaunchApp>();
-
-			var appControl = GetAppControlData(placemark);
-
+			var appControl = GetAppControlData(placemark, options);
 			return TryLaunch(appControl);
 		}
 
-		internal static AppControl GetAppControlData(double latitude, double longitude)
+		internal static AppControl GetAppControlData(double latitude, double longitude, MapLaunchOptions options)
 		{
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
+			Permissions.EnsureDeclared<Permissions.LaunchApp>();
+
 			var appControl = new AppControl
 			{
 				Operation = AppControlOperations.View,
@@ -61,13 +51,15 @@ namespace Microsoft.Maui.ApplicationModel
 			return appControl;
 		}
 
-		internal static AppControl GetAppControlData(Placemark placemark)
+		internal static AppControl GetAppControlData(Placemark placemark, MapLaunchOptions options)
 		{
 			if (placemark == null)
 				throw new ArgumentNullException(nameof(placemark));
 
 			if (options == null)
 				throw new ArgumentNullException(nameof(options));
+
+			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
 			var appControl = new AppControl
 			{
