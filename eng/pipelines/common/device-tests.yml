@@ -1,6 +1,6 @@
 parameters:
-  androidPool: ''
-  iosPool: ''
+  androidPool: { }
+  iosPool: { }
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'

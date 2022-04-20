@@ -57,25 +57,23 @@ parameters:
   - name: androidPool
     type: object
     default:
-      pool:
-        name: 'Azure Pipelines'
-        vmImage: 'internal-macos12'
-        demands:
-          - macOS.Name -equals Monterey
-          - macOS.Architecture -equals x64
-          - Agent.HasDevices -equals False
-          - Agent.IsPaired -equals False
+      name: 'Azure Pipelines'
+      vmImage: 'internal-macos12'
+      demands:
+        - macOS.Name -equals Monterey
+        - macOS.Architecture -equals x64
+        - Agent.HasDevices -equals False
+        - Agent.IsPaired -equals False
   - name: iosPool
     type: object
     default:
-      pool:
-        name: 'Azure Pipelines'
-        vmImage: 'internal-macos12'
-        demands:
-          - macOS.Name -equals Monterey
-          - macOS.Architecture -equals x64
-          - Agent.HasDevices -equals False
-          - Agent.IsPaired -equals False
+      name: 'Azure Pipelines'
+      vmImage: 'internal-macos12'
+      demands:
+        - macOS.Name -equals Monterey
+        - macOS.Architecture -equals x64
+        - Agent.HasDevices -equals False
+        - Agent.IsPaired -equals False
 
 resources:
   repositories:
