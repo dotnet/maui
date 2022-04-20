@@ -175,25 +175,12 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
-			bool getBoundsByFlattening = false;
-
 			if (HeightRequest < 0 && WidthRequest < 0)
 			{
-				getBoundsByFlattening = true;
 				Frame = viewBounds;
 			}
 
 			var path = GetPath();
-
-			if (getBoundsByFlattening)
-			{
-				// TODO: not using this.GetPath().Bounds.Size;
-				//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
-				var boundsByFlattening = path.GetBoundsByFlattening(1);
-
-				HeightRequest = boundsByFlattening.Height;
-				WidthRequest = boundsByFlattening.Width;
-			}
 
 #if !NETSTANDARD
 
@@ -275,37 +262,57 @@ namespace Microsoft.Maui.Controls.Shapes
 				return result;
 			}
 
+			// TODO: not using this.GetPath().Bounds.Size;
+			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
+			SizeF boundsByFlattening = this.GetPath().GetBoundsByFlattening(1).Size;
+			result.Height = boundsByFlattening.Height + StrokeThickness;
+			result.Width = boundsByFlattening.Width + StrokeThickness;
+
+			double scaleX = widthConstraint / result.Width;
+			double scaleY = heightConstraint / result.Height;
+			scaleX = double.IsNaN(scaleX) ? 0 : scaleX;
+			scaleY = double.IsNaN(scaleY) ? 0 : scaleY;
+
 			switch (Aspect)
 			{
 				case Stretch.None:
-					// TODO: not using this.GetPath().Bounds.Size;
-					//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
-					SizeF boundsByFlattening = this.GetPath().GetBoundsByFlattening(1).Size;
-					result.Height = boundsByFlattening.Height + StrokeThickness;
-					result.Width = boundsByFlattening.Width + StrokeThickness;
 					break;
 
 				case Stretch.Fill:
-					result.Height = heightConstraint - StrokeThickness;
-					result.Width = widthConstraint - StrokeThickness;
+					if (!double.IsInfinity(heightConstraint))
+					{
+						result.Height = heightConstraint - StrokeThickness;
+					}
+
+					if (!double.IsInfinity(widthConstraint))
+					{
+						result.Width = widthConstraint - StrokeThickness;
+					}
 					break;
 
 				case Stretch.Uniform:
-					double minConstraint = Math.Min(widthConstraint, heightConstraint);
-					result.Height = minConstraint - StrokeThickness;
-					result.Width = minConstraint - StrokeThickness;
+					double minScale = Math.Min(scaleX, scaleY);
+					if (!double.IsInfinity(minScale))
+					{
+						result.Height *= minScale;
+						result.Width *= minScale;
+					}
 					break;
 
 				case Stretch.UniformToFill:
-					double maxConstraint = Math.Max(widthConstraint, heightConstraint);
-					result.Height = maxConstraint - StrokeThickness;
-					result.Width = maxConstraint - StrokeThickness;
+					scaleX = double.IsInfinity(scaleX) ? 0 : scaleX;
+					scaleY = double.IsInfinity(scaleY) ? 0 : scaleY;
+					double maxScale = Math.Max(scaleX, scaleY);
+
+					if (maxScale != 0)
+					{
+						result.Height *= maxScale;
+						result.Width *= maxScale;
+					}
 					break;
 			}
 
-			HeightRequest = result.Height;
-			WidthRequest = result.Width;
-
+			DesiredSize = result;
 			return result;
 		}
 	}
