@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
@@ -158,6 +159,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					else
 						invokeOnMainThread(action);
 				};
+		}
+
+		[Test]
+		public void ScaledScreenSizeAssumesZeroBeforeWindowExists() 
+		{
+			var screenSize = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+			Assert.That(screenSize.Width, Is.Zero);
+			Assert.That(screenSize.Height, Is.Zero);
 		}
 	}
 }
