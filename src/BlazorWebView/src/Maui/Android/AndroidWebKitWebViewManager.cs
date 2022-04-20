@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var defaultResult = TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
 			var hotReloadedResult = StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, uri, ref statusCode, ref content, headers);
 			return defaultResult || hotReloadedResult;
-		}	
+		}
 
 		[SupportedOSPlatform("android23.0")]
 		internal void SetUpMessageChannel()

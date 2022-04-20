@@ -1,6 +1,6 @@
 using System;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (_weakTarget == null || !_weakTarget.TryGetTarget(out var target))
 				return;
-			
+
 			if (dispatch)
 				target.Dispatcher.DispatchIfRequired(Set);
 			else
