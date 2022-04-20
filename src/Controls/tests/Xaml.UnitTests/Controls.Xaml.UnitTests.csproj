@@ -22,7 +22,7 @@
     <PackageReference Include="JetBrains.DotMemoryUnit" Version="3.1.20200127.214830" />
     <PackageReference Include="NUnit" Version="3.13.2" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
-    <PackageReference Include="Mono.Cecil" Version="0.11.3" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.4" />
     <PackageReference Include="System.CodeDom" Version="6.0.0" />
     <PackageReference Include="Microsoft.Build" Version="16.9.0" />
     <PackageReference Include="Microsoft.Build.Framework" Version="16.9.0" />
