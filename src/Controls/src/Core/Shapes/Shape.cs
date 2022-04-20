@@ -265,8 +265,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			// TODO: not using this.GetPath().Bounds.Size;
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
 			SizeF boundsByFlattening = this.GetPath().GetBoundsByFlattening(1).Size;
-			result.Height = boundsByFlattening.Height + StrokeThickness;
-			result.Width = boundsByFlattening.Width + StrokeThickness;
+			result.Height = boundsByFlattening.Height;
+			result.Width = boundsByFlattening.Width;
+
+			widthConstraint -= StrokeThickness;
+			heightConstraint -= StrokeThickness;
 
 			double scaleX = widthConstraint / result.Width;
 			double scaleY = heightConstraint / result.Height;
@@ -281,12 +284,12 @@ namespace Microsoft.Maui.Controls.Shapes
 				case Stretch.Fill:
 					if (!double.IsInfinity(heightConstraint))
 					{
-						result.Height = heightConstraint - StrokeThickness;
+						result.Height = heightConstraint;
 					}
 
 					if (!double.IsInfinity(widthConstraint))
 					{
-						result.Width = widthConstraint - StrokeThickness;
+						result.Width = widthConstraint;
 					}
 					break;
 
@@ -311,6 +314,9 @@ namespace Microsoft.Maui.Controls.Shapes
 					}
 					break;
 			}
+
+			result.Height += StrokeThickness;
+			result.Width += StrokeThickness;
 
 			DesiredSize = result;
 			return result;
