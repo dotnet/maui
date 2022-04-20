@@ -42,7 +42,7 @@
     <!-- must be kept in sync with the binding library version to it here: -->
     <_XamarinAndroidGlideVersion>4.12.0.2</_XamarinAndroidGlideVersion>
     <_XamarinAndroidXSecurityVersion>1.1.0-alpha03</_XamarinAndroidXSecurityVersion>
-    <_XamarinGoogleCryptoTinkAndroidVersion>1.6.1.2</_XamarinGoogleCryptoTinkAndroidVersion>
+    <_XamarinGoogleCryptoTinkAndroidVersion>1.6.1.6</_XamarinGoogleCryptoTinkAndroidVersion>
     <_SkiaSharpVersion>2.88.0-preview.256</_SkiaSharpVersion>
     <_HarfBuzzSharpVersion>2.8.2-preview.256</_HarfBuzzSharpVersion>
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.35941bbf6818bce667625a4dfcc34cc54eb6788c.256</_SkiaSharpNativeAssetsVersion>
