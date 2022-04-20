@@ -59,11 +59,11 @@ stages:
               - job: ios_device_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
                 workspace:
                   clean: all
-                displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }}) [${{ parameters.iosVmPool }}]
+                displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }}) [${{ variables.iosTestsVmPool }}]
                 pool:
                   name: ${{ parameters.iosVmPool }}
                   vmImage: ${{ parameters.iosVmImage }}
-                  ${{ if ne(parameters.iosVmPool, 'Azure Pipelines') }}:
+                  ${{ if ne(variables.iosTestsVmPool, 'Azure Pipelines') }}:
                     demands:
                       - macOS.FlavourWithAU -equals ${{ parameters.iosVmPool }}
                       - macOS.Name -equals Monterey
