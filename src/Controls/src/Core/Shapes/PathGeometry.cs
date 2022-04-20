@@ -1,5 +1,6 @@
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Devices;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
@@ -89,14 +90,25 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void AddArc(PathF path, ArcSegment arcSegment, double density)
 		{
-			path.AddArc(
-				(float)(density * arcSegment.Point.X),
-				(float)(density * arcSegment.Point.Y),
-				(float)(density * arcSegment.Point.X + density * arcSegment.Size.Width),
-				(float)(density * arcSegment.Point.Y + density * arcSegment.Size.Height),
-				(float)(density * arcSegment.RotationAngle),
-				(float)(density * arcSegment.RotationAngle),
-				arcSegment.SweepDirection == SweepDirection.Clockwise);
+			List<Point> points = new List<Point>();
+
+			GeometryHelper.FlattenArc(
+				points,
+				path.LastPoint,
+				arcSegment.Point,
+				arcSegment.Size.Width,
+				arcSegment.Size.Height,
+				arcSegment.RotationAngle,
+				arcSegment.IsLargeArc,
+				arcSegment.SweepDirection == SweepDirection.CounterClockwise,
+				1);
+
+			for (int i = 0; i < points.Count; i++)
+			{
+				path.LineTo(
+					(float)points[i].X, 
+					(float)points[i].Y);
+			}
 		}
 
 		void AddLine(PathF path, LineSegment lineSegment, double density)
