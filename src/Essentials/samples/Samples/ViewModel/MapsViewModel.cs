@@ -97,11 +97,16 @@ namespace Samples.ViewModel
 
 		async void OpenLocation()
 		{
-			await Map.OpenAsync(double.Parse(Latitude), double.Parse(Longitude), new MapLaunchOptions
+			var canOpen = await Map.TryOpenAsync(double.Parse(Latitude), double.Parse(Longitude), new MapLaunchOptions
 			{
 				Name = Name,
 				NavigationMode = (NavigationMode)NavigationMode
 			});
+
+			if (!canOpen)
+            {
+                await DisplayAlertAsync("Unable to open map, possibly due to the fact that there is no default maps app installed.");
+            }
 		}
 
 		async void OpenPlacemark()
@@ -114,11 +119,17 @@ namespace Samples.ViewModel
 				Thoroughfare = Thoroughfare,
 				PostalCode = ZipCode
 			};
-			await Map.OpenAsync(placemark, new MapLaunchOptions
+			
+			var canOpen = await Map.TryOpenAsync(placemark, new MapLaunchOptions
 			{
 				Name = Name,
 				NavigationMode = (NavigationMode)NavigationMode
 			});
+
+			if (!canOpen)
+            {
+                await DisplayAlertAsync("Unable to open map, possibly due to the fact that there is no default maps app installed.");
+            }
 		}
 	}
 }
