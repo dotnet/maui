@@ -27,12 +27,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public async Task Saves_And_Loads(string key, string data)
 		{
 #if __IOS__
-            // Try the new platform specific api
-            await SecureStorage.SetAsync(key, data, Security.SecAccessible.AfterFirstUnlock);
+			// Try the new platform specific api
+			await SecureStorage.SetAsync(key, data, Security.SecAccessible.AfterFirstUnlock);
 
-            var b = await SecureStorage.GetAsync(key);
+			var b = await SecureStorage.GetAsync(key);
 
-            Assert.Equal(data, b);
+			Assert.Equal(data, b);
 #endif
 			await SecureStorage.SetAsync(key, data);
 

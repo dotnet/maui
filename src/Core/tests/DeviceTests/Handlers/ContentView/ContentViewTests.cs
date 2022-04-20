@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			var contentViewHandler = await CreateHandlerAsync(cv);
 
 			var measure = await InvokeOnMainThreadAsync(() => cv.Measure(double.PositiveInfinity, double.PositiveInfinity));
-			
+
 			Assert.Equal(cv.Width, measure.Width, 0);
 			Assert.Equal(cv.Height, measure.Height, 0);
 		}

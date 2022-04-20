@@ -1,12 +1,10 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
-using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -33,19 +31,28 @@ namespace Microsoft.Maui.Controls.Platform
 				heights.Add(textBlock.FindDefaultLineHeight(run));
 				textBlock.Inlines.Add(run);
 				int length = run.Text.Length;
+
 				if (background != null || textColor != null)
 				{
 					TextHighlighter textHighlighter = new TextHighlighter { Ranges = { new TextRange(currentTextIndex, length) } };
+
 					if (background != null)
 					{
 						textHighlighter.Background = background.ToPlatform();
 					}
+					else
+					{
+						textHighlighter.Background = Colors.Transparent.ToPlatform();
+					}
+
 					if (textColor != null)
 					{
 						textHighlighter.Foreground = textColor.ToPlatform();
 					}
+
 					textBlock.TextHighlighters.Add(textHighlighter);
 				}
+
 				currentTextIndex += length;
 			}
 		}

@@ -328,11 +328,11 @@ namespace Microsoft.Maui.Controls
 						var uri = ConvertToStandardFormat(shell, CreateUri(route));
 						if (uri.Equals(request))
 						{
-							#if NETSTANDARD2_0
+#if NETSTANDARD2_0
 							var replaced = originalRequest.OriginalString.Replace("//", "");
-							#else
+#else
 							var replaced = originalRequest.OriginalString.Replace("//", "", StringComparison.Ordinal);
-							#endif
+#endif
 							throw new Exception($"Global routes currently cannot be the only page on the stack, so absolute routing to global routes is not supported. For now, just navigate to: {replaced}");
 						}
 					}

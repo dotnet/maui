@@ -6,8 +6,8 @@ using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using static Android.Views.ViewGroup;
-using Path = System.IO.Path;
 using AWebView = Android.Webkit.WebView;
+using Path = System.IO.Path;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				// To allow overriding UrlLoadingStrategy.OpenInWebView and open links in browser with a _blank target
 				blazorAndroidWebView.Settings.SetSupportMultipleWindows(true);
+
 				blazorAndroidWebView.Settings.JavaScriptEnabled = true;
 				blazorAndroidWebView.Settings.DomStorageEnabled = true;
 			}

@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_ = window.RootViewController.PresentViewControllerAsync(alert, true);
 				});
-				
+
 			}
 		}
 	}
