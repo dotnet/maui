@@ -6,10 +6,11 @@
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn),CA1416</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
+    <NoWarn>$(NoWarn);CS8305</NoWarn>
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
