@@ -11,4 +11,4 @@ updates:
   labels:
       - "nuget"
       - "dependencies"
-      - "area/infrastructure 🏗️"
+      - "area/upstream"
