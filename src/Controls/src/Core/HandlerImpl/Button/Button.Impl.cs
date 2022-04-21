@@ -56,5 +56,11 @@ namespace Microsoft.Maui.Controls
 		Color IButtonStroke.StrokeColor => (Color)GetValue(BorderColorProperty);
 
 		int IButtonStroke.CornerRadius => (int)GetValue(CornerRadiusProperty);
+
+		Color ITextStyle.TextColor
+		{
+			get => TextColor ??
+				DefaultStyles.GetTextColor(this)?.Value as Color;
+		}
 	}
 }

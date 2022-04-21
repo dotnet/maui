@@ -280,21 +280,22 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		internal static Color GetPrimaryColor(this Context context)
+		{
+			var result = context?.GetThemeAttrColor(global::Android.Resource.Attribute.ColorPrimary);
+			if (result != null)
+				return Color.FromUint((uint)result.Value);
+
+			return Color.FromArgb("#2c3e50");
+		}
+
 		internal static Color GetAccentColor(this Context context)
 		{
-			Color? rc = null;
-			using (var value = new TypedValue())
-			{
-				if (context.Theme != null)
-				{
-					if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true)) // Android 5.0+
-					{
-						rc = Color.FromUint((uint)value.Data);
-					}
-				}
-			}
+			var result = context?.GetThemeAttrColor(global::Android.Resource.Attribute.ColorAccent);
+			if (result != null)
+				return Color.FromUint((uint)result.Value);
 
-			return rc ?? Color.FromArgb("#ff33b5e5");
+			return Color.FromArgb("#ff33b5e5");
 		}
 
 		public static int GetActionBarHeight(this Context context)

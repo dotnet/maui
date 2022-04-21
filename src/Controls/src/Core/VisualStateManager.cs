@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty VisualStateGroupsProperty =
 			BindableProperty.CreateAttached("VisualStateGroups", typeof(VisualStateGroupList), typeof(VisualElement),
 				defaultValue: null, propertyChanged: VisualStateGroupsPropertyChanged,
-				defaultValueCreator: bindable => new VisualStateGroupList(true) { VisualElement = (VisualElement)bindable });
+				defaultValueCreator: bindable =>
+						DefaultStyles.GetVisualStateManager(bindable) ??
+						new VisualStateGroupList(true) { VisualElement = (VisualElement)bindable });
 
 		static void VisualStateGroupsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
