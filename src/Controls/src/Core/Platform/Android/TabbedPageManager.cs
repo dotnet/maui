@@ -222,7 +222,8 @@ namespace Microsoft.Maui.Controls.Handlers
 				_tabLayoutFragment = new ViewFragment(BottomNavigationView);
 
 				var layoutContent = rootManager.RootView.FindViewById(Resource.Id.navigationlayout_content);
-				if (layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
+				
+				if (layoutContent != null && layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
 				{
 					cl.BottomMargin = _context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height);
 				}
@@ -235,7 +236,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				_tabLayoutFragment = new ViewFragment(TabLayout);
 				var layoutContent = rootManager.RootView.FindViewById(Resource.Id.navigationlayout_content);
-				if (layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
+				
+				if (layoutContent != null && layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
 				{
 					cl.BottomMargin = 0;
 				}
