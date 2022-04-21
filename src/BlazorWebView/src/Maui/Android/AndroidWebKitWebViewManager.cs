@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// An implementation of <see cref="WebViewManager"/> that uses the Android WebKit WebView browser control
 	/// to render web content.
 	/// </summary>
+	[SupportedOSPlatform("android23.0")]
 	internal class AndroidWebKitWebViewManager : WebViewManager
 	{
 		// Using an IP address means that WebView doesn't wait for any DNS resolution,
@@ -59,7 +60,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		/// <inheritdoc />
-		[SupportedOSPlatform("android23.0")]
 		protected override void SendMessage(string message)
 		{
 			_webview.PostWebMessage(new WebMessage(message), AndroidAppOriginUri);
@@ -72,7 +72,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return defaultResult || hotReloadedResult;
 		}
 
-		[SupportedOSPlatform("android23.0")]
 		internal void SetUpMessageChannel()
 		{
 			_nativeToJSPorts = _webview.CreateWebMessageChannel();
@@ -89,7 +88,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webview.PostWebMessage(new WebMessage("capturePort", destPort), AndroidAppOriginUri);
 		}
 
-		[SupportedOSPlatform("android23.0")]
 		protected override async ValueTask DisposeAsyncCore()
 		{
 			await base.DisposeAsyncCore();
@@ -103,7 +101,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 		}
 
-		[SupportedOSPlatform("android23.0")]
 		private class BlazorWebMessageCallback : WebMessagePort.WebMessageCallback
 		{
 			private readonly Action<string?> _onMessageReceived;
