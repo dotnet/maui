@@ -51,6 +51,7 @@
     <MicrosoftDotNetXHarnessTestRunnersXunitVersion>1.0.0-prerelease.22219.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
     <MicrosoftDotNetXHarnessCLIVersion>1.0.0-prerelease.22219.1</MicrosoftDotNetXHarnessCLIVersion>
     <TizenUIExtensionsVersion>0.6.0-pre1</TizenUIExtensionsVersion>
+    <SvgSkiaPackageVersion>0.4.1</SvgSkiaPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Match the first three version numbers and append 00 -->

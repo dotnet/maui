@@ -113,5 +113,17 @@
         Update="Tizen.UIExtensions.ElmSharp"
         Version="$(TizenUIExtensionsVersion)"
     />
+    <PackageReference
+        Update="Svg.Skia"
+        Version="$(SvgSkiaPackageVersion)"
+    />
+    <PackageReference
+        Update="Svg.Custom"
+        Version="$(SvgSkiaPackageVersion)"
+    />
+    <PackageReference
+        Update="Svg.Picture"
+        Version="$(SvgSkiaPackageVersion)"
+    />
   </ItemGroup>
 </Project>
