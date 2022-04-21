@@ -103,13 +103,14 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#00FF00")]
 		[InlineData("#000000")]
 		public async Task InvalidSourceFailsToLoad(string colorHex)
-		{
+		{ 
 			var color = Color.FromArgb(colorHex);
 
 			var image = new TStub
 			{
 				Background = new SolidPaintStub(color),
 				Source = new FileImageSourceStub("bad path"),
+				Width = 50, Height = 50
 			};
 
 			var order = new List<string>();
@@ -140,7 +141,14 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await handler.PlatformView.AssertContainsColor(color);
+				if (handler is IImageButtonHandler ibh)
+				{
+					await ibh.PlatformView.AssertContainsColor(color);
+				}
+				else
+				{
+					await handler.PlatformView.AssertContainsColor(color);
+				}
 			});
 
 			Assert.Equal(new List<string> { "LoadingStarted", "LoadingFailed" }, order);
