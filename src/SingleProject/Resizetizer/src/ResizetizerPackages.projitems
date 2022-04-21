@@ -19,7 +19,7 @@
     <PackageReference Include="Svg.Picture" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Memory" Version="4.5.4" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Buffers" Version="4.5.1" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.IO.UnmanagedMemoryStream" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" GeneratePathProperty="true" PrivateAssets="all" />
