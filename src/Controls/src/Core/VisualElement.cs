@@ -224,6 +224,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create("IsVisible", typeof(bool), typeof(VisualElement), true,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Visibility']/Docs" />
+		public static readonly BindableProperty VisibilityProperty = BindableProperty.Create("Visibility", typeof(Visibility), typeof(VisualElement), Microsoft.Maui.Visibility.Visible);
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='OpacityProperty']/Docs" />
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create("Opacity", typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
 
@@ -491,6 +494,14 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
 			set { SetValue(IsVisibleProperty, value); }
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Visibility']/Docs" />
+		[System.ComponentModel.TypeConverter(typeof(UWPVisibilityConverter))]
+		public Microsoft.Maui.Visibility Visibility
+		{
+			get { return ((bool)GetValue(IsVisibleProperty)) ? Visibility.Visible : Visibility.Collapsed; }
+			set { SetValue(IsVisibleProperty, (value == Visibility.Visible)); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='MinimumHeightRequest']/Docs" />
@@ -1236,6 +1247,37 @@ namespace Microsoft.Maui.Controls
 				if (value is not bool visibility)
 					throw new NotSupportedException();
 				return visibility.ToString();
+			}
+		}
+		public class UWPVisibilityConverter : TypeConverter
+		{
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+				=> sourceType == typeof(string);
+
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+				=> true;
+
+			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+			{
+				var strValue = value?.ToString()?.Trim();
+
+				if (!string.IsNullOrEmpty(strValue))
+				{
+					if (strValue.Equals("visible", StringComparison.OrdinalIgnoreCase))
+						return true;
+					if (strValue.Equals("collapsed", StringComparison.OrdinalIgnoreCase))
+						return false;
+				}
+				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}.", strValue, typeof(bool)));
+			}
+
+			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+			{
+				if (value is not bool visibility)
+					throw new NotSupportedException();
+				if (visibility)
+					return "Visible";
+				return "Collapsed";
 			}
 		}
 	}
