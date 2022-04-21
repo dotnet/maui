@@ -24,18 +24,26 @@ namespace Microsoft.Maui.Controls
 
 		class LightTheme
 		{
-			public static Color TextColor = new Color(1.0f, 1.0f, 1.0f);
+			public static Color ButtonTextColor => Colors.Black;
+			public static Color TextColor => Colors.Black;
 #if ANDROID
 			public static Color ButtonBackgroundColor = new Color(44, 62, 80);
 #else
-			public static Color ButtonBackgroundColor => Colors.Black;
+			public static Color ButtonBackgroundColor => Colors.White;
 #endif
 		}
 
 		class DarkTheme
 		{
-			public static Color TextColor = Colors.Black;
-			public static Color ButtonBackgroundColor => Colors.White;
+#if ANDROID
+			public static Color ButtonBackgroundColor = new Color(44, 62, 80);
+			public static Color TextColor => Colors.White;
+			public static Color ButtonTextColor => Colors.Black;
+#else
+			public static Color ButtonBackgroundColor => Colors.Black;
+			public static Color ButtonTextColor => Colors.White;
+			public static Color TextColor => Colors.White;
+#endif
 		}
 
 		public static Setter GetTextColor(BindableObject view)
@@ -59,7 +67,11 @@ namespace Microsoft.Maui.Controls
 				{
 					var textColorSetting = new Setter();
 					textColorSetting.Property = TextElement.TextColorProperty;
-					textColorSetting.Value = GetThemeChoice(LightTheme.TextColor, DarkTheme.TextColor);
+
+					if (view is Button)
+						textColorSetting.Value = GetThemeChoice(LightTheme.ButtonTextColor, DarkTheme.ButtonTextColor);
+					else
+						textColorSetting.Value = GetThemeChoice(LightTheme.TextColor, DarkTheme.TextColor);
 
 					styleToUse = new Style(typeof(Button))
 					{
@@ -142,7 +154,6 @@ namespace Microsoft.Maui.Controls
 				var disabledBackgroundColor = new Setter()
 				{
 					Property = Button.BackgroundColorProperty,
-					// Update this once AppThemeBindings are fixed
 					Value = GetThemeChoice(LightTheme.ButtonBackgroundColor, DarkTheme.ButtonBackgroundColor).WithAlpha(0.12f)
 				};
 
@@ -154,7 +165,6 @@ namespace Microsoft.Maui.Controls
 				var disabledTextColor = new Setter()
 				{
 					Property = TextElement.TextColorProperty,
-					// Update this once AppThemeBindings are fixed
 					Value = new Color(0f, 0f, 0f).WithAlpha(0.38f)
 				};
 				disabledSetters.Setters.Add(disabledTextColor);
