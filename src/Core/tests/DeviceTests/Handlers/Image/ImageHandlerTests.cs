@@ -123,22 +123,28 @@ namespace Microsoft.Maui.DeviceTests
 				exception = ex;
 			};
 
+			var handler = await CreateHandlerAsync(image);
+
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				var handler = (IPlatformViewHandler)CreateHandler(image);
-
-				await image.Wait(timeout: 5000);
+				await handler.PlatformView.AttachAndRun(async () => 
+				{
+					await image.Wait();
+				});
+			});
 
 #if __ANDROID__
-				handler.PlatformView.SetMinimumHeight(1);
-				handler.PlatformView.SetMinimumWidth(1);
+			handler.PlatformView.SetMinimumHeight(1);
+			handler.PlatformView.SetMinimumWidth(1);
 #endif
 
+			await InvokeOnMainThreadAsync(async () =>
+			{
 				await handler.PlatformView.AssertContainsColor(color);
-
-				Assert.Equal(new List<string> { "LoadingStarted", "LoadingFailed" }, order);
-				Assert.NotNull(exception);
 			});
+
+			Assert.Equal(new List<string> { "LoadingStarted", "LoadingFailed" }, order);
+			Assert.NotNull(exception);
 		}
 
 		[Fact]
