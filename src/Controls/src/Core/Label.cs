@@ -91,9 +91,13 @@ namespace Microsoft.Maui.Controls
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='TextWrappingProperty']/Docs" />
+		public static readonly BindableProperty TextWrappingProperty = BindableProperty.Create(nameof(TextWrapping), typeof(TextWrapping), typeof(Label), TextWrapping.WrapWholeWords);
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='LineBreakModeProperty']/Docs" />
 		public static readonly BindableProperty LineBreakModeProperty = BindableProperty.Create(nameof(LineBreakMode), typeof(LineBreakMode), typeof(Label), LineBreakMode.WordWrap,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
+
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='LineHeightProperty']/Docs" />
 		public static readonly BindableProperty LineHeightProperty = LineHeightElement.LineHeightProperty;
@@ -148,6 +152,34 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (LineBreakMode)GetValue(LineBreakModeProperty); }
 			set { SetValue(LineBreakModeProperty, value); }
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='TextWrapping']/Docs" />
+		public TextWrapping TextWrapping
+		{
+			get
+			{
+				var lineBreak = (LineBreakMode)GetValue(LineBreakModeProperty);
+				return lineBreak switch
+				{
+					LineBreakMode.NoWrap => TextWrapping.NoWrap,
+					LineBreakMode.WordWrap => TextWrapping.WrapWholeWords,
+					LineBreakMode.CharacterWrap => TextWrapping.Wrap,
+					_ => TextWrapping.Wrap  // all other options (HeadTruncation, MiddleTruncation, TailTruncation)
+				};
+
+			}
+			set
+			{
+				SetValue(LineBreakModeProperty, value switch
+				{
+					TextWrapping.NoWrap => LineBreakMode.NoWrap,
+					TextWrapping.Wrap => LineBreakMode.CharacterWrap,
+					TextWrapping.WrapWholeWords => LineBreakMode.WordWrap,
+					_ => LineBreakMode.CharacterWrap // impossible, as UWP defines only three possibilities
+				}
+			  );
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='Text']/Docs" />
