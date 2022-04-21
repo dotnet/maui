@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Graphics;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls
 {
@@ -184,10 +185,42 @@ namespace Microsoft.Maui.Controls
 
 		internal static IAnimationManager GetAnimationManager(this IAnimatable animatable)
 		{
-			if (animatable is Element e && e.FindMauiContext() is IMauiContext mauiContext)
-				return mauiContext.GetAnimationManager();
+			if (animatable is Element element)
+			{
+				if (element.FindMauiContext() is IMauiContext viewMauiContext)
+					return viewMauiContext.GetAnimationManager();
+				else if (Application.Current?.FindMauiContext() is IMauiContext applicationMauiContext)
+					return applicationMauiContext.GetAnimationManager();
+				else
+				{
+					var animationManager = CreateAnimationManager();
+
+					if (animationManager != null)
+						return animationManager;
+				}
+			}
 
 			throw new ArgumentException($"Unable to find {nameof(IAnimationManager)} for '{animatable.GetType().FullName}'.", nameof(animatable));
+		}
+
+		internal static IAnimationManager? CreateAnimationManager()
+		{
+			IAnimationManager? animationManager = null;
+
+			try
+			{
+#if __ANDROID__
+				animationManager = new AnimationManager(new PlatformTicker(new Microsoft.Maui.Platform.EnergySaverListenerManager()));
+#else
+				animationManager = new AnimationManager(new PlatformTicker());
+#endif
+			}
+			catch(Exception exc)
+			{
+				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning(exc, "Failed to create AnimationManager");
+			}
+
+			return animationManager;
 		}
 
 		internal static IMauiContext RequireMauiContext(this Element element, bool fallbackToAppMauiContext = false)
