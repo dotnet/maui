@@ -15,7 +15,7 @@
 		<PackageReference Include="Mono.Cecil" Version="0.11.4" />
 		<PackageReference Include="Microsoft.Build" Version="15.9.20" />
 		<PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" />
-		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.1.0" />
 		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" />
 	</ItemGroup>
 
