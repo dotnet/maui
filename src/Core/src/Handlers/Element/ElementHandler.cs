@@ -12,9 +12,9 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		protected IPropertyMapper _mapper;
-		protected CommandMapper? _commandMapper;
-		protected readonly IPropertyMapper _defaultMapper;
+		readonly IPropertyMapper _defaultMapper;
+		readonly CommandMapper? _commandMapper;
+		IPropertyMapper _mapper;
 
 		protected ElementHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 		{
