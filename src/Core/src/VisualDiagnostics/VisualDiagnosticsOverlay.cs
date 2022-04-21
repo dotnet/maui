@@ -53,7 +53,7 @@ namespace Microsoft.Maui
 				{
 #pragma warning disable CA1416 // TODO: This is supported on android 23.0 and above, not sure if we want to add condition or attribute
 					AddScrollableElementHandler(scrollBar);
-#pragma warning restore CA1416 // adding [SupportedOSPlatform("android23.0")] cause more warnings
+#pragma warning restore CA1416 // adding [SupportedOSPlatform("android23.0")] would cause warnings to the caller
 				}
 			}
 		}

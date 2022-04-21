@@ -69,12 +69,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				tvc.TextLabel.TextColor = textCell.TextColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
 			else if (args.PropertyName == TextCell.DetailColorProperty.PropertyName)
 				tvc.DetailTextLabel.TextColor = textCell.DetailColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
-
 			else if (args.PropertyName == Cell.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled(tvc, textCell);
 			else if (args.PropertyName == TextCell.AutomationIdProperty.PropertyName)
 				UpdateAutomationId(tvc, textCell);
 #pragma warning restore CA1416
+
 			HandlePropertyChanged(tvc, args);
 		}
 		void UpdateAutomationId(CellTableViewCell tvc, TextCell cell)
