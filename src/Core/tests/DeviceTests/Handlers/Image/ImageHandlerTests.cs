@@ -135,10 +135,10 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 				await handler.PlatformView.AssertContainsColor(color);
-			});
 
-			Assert.Equal(new List<string> { "LoadingStarted", "LoadingFailed" }, order);
-			Assert.NotNull(exception);
+				Assert.Equal(new List<string> { "LoadingStarted", "LoadingFailed" }, order);
+				Assert.NotNull(exception);
+			});
 		}
 
 		[Fact]
