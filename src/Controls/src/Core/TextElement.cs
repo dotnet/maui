@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls
 	static class TextElement
 	{
 		public static readonly BindableProperty TextColorProperty =
-			BindableProperty.Create(nameof(ITextElement.TextColor), typeof(Color), typeof(ITextElement), defaultValue: null, defaultValueCreator: DefaultTextColorValueCreator,
+			BindableProperty.Create(nameof(ITextElement.TextColor), typeof(Color), typeof(ITextElement), defaultValue: null, /*defaultValueCreator: DefaultTextColorValueCreator,*/
 									propertyChanged: OnTextColorPropertyChanged);
 
 		public static readonly BindableProperty CharacterSpacingProperty =

@@ -53,6 +53,10 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
 
 			_lastAppTheme = PlatformAppTheme;
+
+			// This is for cases that don't call InitializeComponent()
+			if (Resources.MergedDictionaries.Count == 0)
+				Resources.MergedDictionaries.Add(DefaultStyles.CreateDefaultResourceDictionary());
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Quit']/Docs" />
@@ -145,6 +149,7 @@ namespace Microsoft.Maui.Controls
 					return _resources;
 
 				_resources = new ResourceDictionary();
+				_resources.MergedDictionaries.Add(DefaultStyles.CreateDefaultResourceDictionary());
 				((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
 				return _resources;
 			}
@@ -152,6 +157,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_resources == value)
 					return;
+
 				OnPropertyChanging();
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged -= OnResourcesChanged;
@@ -160,6 +166,10 @@ namespace Microsoft.Maui.Controls
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
 				OnPropertyChanged();
+
+				// This is for cases that do call InitializeComponent()
+				if (_resources != null && _resources.MergedDictionaries.Count == 0)
+					_resources.MergedDictionaries.Add(DefaultStyles.CreateDefaultResourceDictionary());
 			}
 		}
 

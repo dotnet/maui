@@ -11,8 +11,8 @@ namespace Microsoft.Maui.Controls
 	// that we can add as the base for the DefaultDictionary
 	internal static class DefaultStyles
 	{
-		static Style ButtonDefaultStyle { get; set; }
-		static Dictionary<Type, Style> TextElementDefaultStyle { get; } = new Dictionary<Type, Style>();
+		static Dictionary<Type, Style> DefaultStylesCache { get; } = new Dictionary<Type, Style>();
+
 
 		static T GetThemeChoice<T>(T light, T dark)
 		{
@@ -46,110 +46,117 @@ namespace Microsoft.Maui.Controls
 #endif
 		}
 
-		public static Setter GetTextColor(BindableObject view)
+
+		static Setter GetSetterFor(Type viewType, BindableProperty bindableProperty, out Style style)
 		{
-#if ANDROID || IOS
-			Style styleToUse = null;
-
-			if (view is ITextElement)
+			if (DefaultStylesCache.TryGetValue(viewType, out Style existing))
 			{
-				// trigger VSM creation
-				if (view is VisualElement ve)
-					_ = VisualStateManager.GetVisualStateGroups(ve);
-
-				var viewType = view.GetType();
-
-				if (TextElementDefaultStyle.TryGetValue(viewType, out Style existing))
+				style = existing;
+				foreach (var setter in style.Setters)
 				{
-					styleToUse = existing;
+					if (setter.Property == bindableProperty)
+						return setter;
 				}
-				else
+			}
+			else
+			{
+				style = new Style(viewType);
+				DefaultStylesCache[viewType] = style;
+			}
+
+			return null;
+		}
+
+		public static Setter GetTextColor(BindableObject view) =>
+			GetTextColor(view.GetType());
+
+		public static Setter GetTextColor(Type viewType)
+		{
+			Setter setterToUse = null;
+
+#if ANDROID || IOS
+
+			if (viewType.IsAssignableTo(typeof(ITextElement)))
+			{
+				//// trigger VSM creation
+				//if (view is VisualElement ve)
+				//	_ = VisualStateManager.GetVisualStateGroups(ve);
+
+				setterToUse = GetSetterFor(viewType, TextElement.TextColorProperty, out Style style);
+				if (setterToUse == null)
 				{
 					var textColorSetting = new Setter();
 					textColorSetting.Property = TextElement.TextColorProperty;
 
-					if (view is Button)
+					if (viewType.IsAssignableFrom(typeof(Button)))
 						textColorSetting.Value = GetThemeChoice(LightTheme.ButtonTextColor, DarkTheme.ButtonTextColor);
 					else
 						textColorSetting.Value = GetThemeChoice(LightTheme.TextColor, DarkTheme.TextColor);
 
-					styleToUse = new Style(typeof(Button))
-					{
-						Setters =
-						{
-							textColorSetting
-						}
-					};
-
-					TextElementDefaultStyle[viewType] = styleToUse;
+					setterToUse = textColorSetting;
+					style.Setters.Add(setterToUse);
 				}
 			}
 
-			if (styleToUse?.Setters?.Count > 0)
-			{
-				foreach (var setter in styleToUse.Setters)
-					if (setter.Property == TextElement.TextColorProperty)
-						return setter;
-			}
-
-			return null;
-#else
-			return null;
 #endif
+			return setterToUse;
 		}
 
+		public static Setter GetBackgroundColor(BindableObject view) =>
+			GetBackgroundColor(view.GetType());
 
-		public static Setter GetBackgroundColor(BindableObject view)
+		public static Setter GetBackgroundColor(Type viewType)
 		{
-#if ANDROID || IOS
-			Style styleToUse = null;
+			Setter setterToUse = null;
 
-			if (view is Button button)
+#if ANDROID || IOS
+
+			if (viewType.IsAssignableFrom(typeof(Button)))
 			{
 				// trigger VSM creation
-				_ = VisualStateManager.GetVisualStateGroups(button);
-				if (ButtonDefaultStyle == null)
+				//_ = VisualStateManager.GetVisualStateGroups(button);
+				setterToUse = GetSetterFor(viewType, VisualElement.BackgroundColorProperty, out Style style);
+				if (setterToUse == null)
 				{
 					var backgroundColorSetter = new Setter();
 					backgroundColorSetter.Property = VisualElement.BackgroundColorProperty;
 					backgroundColorSetter.Value = GetThemeChoice(LightTheme.ButtonBackgroundColor, DarkTheme.ButtonBackgroundColor);
 
-					ButtonDefaultStyle = new Style(typeof(Button))
-					{
-						Setters =
-							{
-								backgroundColorSetter
-							}
-					};
-
+					setterToUse = backgroundColorSetter;
+					style.Setters.Add(setterToUse);
 				}
-
-				styleToUse = ButtonDefaultStyle;
 			}
 
-			if (styleToUse?.Setters?.Count > 0)
-			{
-				foreach (var setter in styleToUse.Setters)
-					if (setter.Property == VisualElement.BackgroundColorProperty)
-						return setter;
-			}
-
-			return null;
-#else
-			return null;
 #endif
+			return setterToUse;
 		}
 
 		internal static VisualStateGroupList GetVisualStateManager(BindableObject bindable)
 		{
+			return GetVisualStateManager(bindable.GetType(), bindable);
+		}
+
+		internal static VisualStateGroupList GetVisualStateManager(Type viewType, BindableObject bindable = null)
+		{
 #if IOS || ANDROID
+
+			// This means we are retrieving this for a style not a specific bindable
+			if (bindable == null)
+			{
+				var existing = GetSetterFor(viewType, VisualStateManager.VisualStateGroupsProperty, out Style style);
+				if (existing != null)
+				{
+					return (VisualStateGroupList)existing.Value;
+				}
+			}
+
 			var visualStateGroup = new VisualStateGroup() { Name = "CommonStates" };
 			var disabledSetters = new VisualState()
 			{
 				Name = "Disabled"
 			};
 
-			if (bindable is Button button)
+			if (viewType.IsAssignableFrom(typeof(Button)))
 			{
 				var disabledBackgroundColor = new Setter()
 				{
@@ -160,7 +167,7 @@ namespace Microsoft.Maui.Controls
 				disabledSetters.Setters.Add(disabledBackgroundColor);
 			}
 
-			if (bindable is ITextElement)
+			if (viewType.IsAssignableFrom(typeof(ITextElement)))
 			{
 				var disabledTextColor = new Setter()
 				{
@@ -180,10 +187,66 @@ namespace Microsoft.Maui.Controls
 				});
 
 				visualStateGroup.States.Add(disabledSetters);
-
-				return new VisualStateGroupList() { visualStateGroup };
+				if (bindable == null)
+				{
+					var returnValue = new VisualStateGroupList() { visualStateGroup };
+					_ = GetSetterFor(viewType, VisualStateManager.VisualStateGroupsProperty, out Style style);
+					style.Setters.Add(new Setter() { Property = VisualStateManager.VisualStateGroupsProperty, Value = returnValue });
+					return returnValue;
+				}
+				else
+				{
+					var returnValue = new VisualStateGroupList(true) { VisualElement = (VisualElement)bindable };
+					returnValue.Add(visualStateGroup);
+					return returnValue;
+				}
 			}
 #endif
+			return null;
+		}
+
+
+		class DefaultResourceDictionary : ResourceDictionary { }
+
+		public static ResourceDictionary CreateDefaultResourceDictionary()
+		{
+			Type[] controls = new[]
+			{
+				typeof(Button)
+			};
+
+			var returnValue = new DefaultResourceDictionary();
+
+			foreach (var control in controls)
+			{
+				var style = CreateStyle(control);
+				if (style != null)
+					returnValue.Add(style);
+			}
+
+			return returnValue;
+		}
+
+		public static Style CreateStyle(Type controlType)
+		{
+			var text = GetTextColor(controlType);
+			var background = GetBackgroundColor(controlType);
+			var vsm = GetVisualStateManager(controlType);
+
+			var style = new Style(controlType);
+
+			if (text != null)
+				style.Setters.Add(text);
+
+			if (background != null)
+				style.Setters.Add(background);
+
+			if (vsm != null)
+				style.Setters.Add(new Setter() { Property = VisualStateManager.VisualStateGroupsProperty, Value = vsm });
+
+			if (style.Setters.Count > 0)
+				return style;
+
 			return null;
 		}
 	}
