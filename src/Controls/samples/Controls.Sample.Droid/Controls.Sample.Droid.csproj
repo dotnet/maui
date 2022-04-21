@@ -134,11 +134,6 @@
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\rootlayout.axml">
-      <Link>Resources\layout\rootlayout.axml</Link>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
     <AndroidResource Include="..\..\..\Core\src\Platform\Android\Resources\Layout\fragment_backstack.axml">
       <Link>Resources\layout\fragment_backstack.axml</Link>
     </AndroidResource>

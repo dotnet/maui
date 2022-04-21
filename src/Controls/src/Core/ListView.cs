@@ -8,7 +8,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -606,7 +606,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnCommandCanExecuteChanged(object sender, EventArgs eventArgs)
 		{
-			RefreshAllowed = RefreshCommand.CanExecute(null);
+			RefreshAllowed = RefreshCommand != null && RefreshCommand.CanExecute(null);
 		}
 
 		static void OnFooterChanged(BindableObject bindable, object oldValue, object newValue)

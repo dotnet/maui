@@ -204,8 +204,16 @@ namespace Microsoft.Maui.Controls.Platform
 					return LayoutDirection.Ltr;
 				else if (flowDirection == FlowDirection.RightToLeft)
 					return LayoutDirection.Rtl;
-
-				// TODO: Check EffectiveFlowDirection
+				else
+				{
+					if (sender is IVisualElementController visualElementController)
+					{
+						if (visualElementController.EffectiveFlowDirection.IsRightToLeft())
+							return LayoutDirection.Rtl;
+						else if (visualElementController.EffectiveFlowDirection.IsLeftToRight())
+							return LayoutDirection.Ltr;
+					}
+				}
 
 				return LayoutDirection.Ltr;
 			}
@@ -216,8 +224,16 @@ namespace Microsoft.Maui.Controls.Platform
 					return TextDirection.Ltr;
 				else if (flowDirection == FlowDirection.RightToLeft)
 					return TextDirection.Rtl;
-
-				// TODO: Check EffectiveFlowDirection
+				else
+				{
+					if (sender is IVisualElementController visualElementController)
+					{
+						if (visualElementController.EffectiveFlowDirection.IsRightToLeft())
+							return TextDirection.Rtl;
+						else if (visualElementController.EffectiveFlowDirection.IsLeftToRight())
+							return TextDirection.Ltr;
+					}
+				}
 
 				return TextDirection.Ltr;
 			}
@@ -297,7 +313,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool PageIsInThisContext(IView page)
 			{
-				var platformView = page.ToPlatform(MauiContext);
+				var platformView = page.ToPlatform();
 
 				if (platformView.Context == null)
 				{

@@ -127,7 +127,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = (IPlatformViewHandler)CreateHandler(image);
 
-				await image.Wait();
+				await image.Wait(timeout: 5000);
 
 #if __ANDROID__
 				handler.PlatformView.SetMinimumHeight(1);
@@ -137,9 +137,7 @@ namespace Microsoft.Maui.DeviceTests
 				await handler.PlatformView.AssertContainsColor(color);
 			});
 
-			await Task.Delay(1000);
-
-			Assert.Equal(new[] { "LoadingStarted", "LoadingFailed" }, order);
+			Assert.Equal(new List<string> { "LoadingStarted", "LoadingFailed" }, order);
 			Assert.NotNull(exception);
 		}
 

@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return base.OnTouchEvent(e);
 		}
 
-
+		[PortHandler]
 		void UpdatePadding()
 		{
 			SetPadding(

@@ -70,5 +70,30 @@ namespace Microsoft.Maui.DeviceTests
 			var platformText = await GetPlatformText(handler);
 			Assert.Equal(expected, platformText);
 		}
+
+#if WINDOWS
+		// Only Windows needs the IsReadOnly workaround for MaxLength==0 to prevent text from being entered
+		[Fact]
+		public async Task MaxLengthIsReadOnlyValueTest()
+		{
+			Editor editor = new Editor();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<EditorHandler>(editor);
+				var platformControl = GetPlatformControl(handler);
+
+				editor.MaxLength = 0;
+				Assert.True(platformControl.IsReadOnly);
+				editor.IsReadOnly = false;
+				Assert.True(platformControl.IsReadOnly);
+
+				editor.MaxLength = 10;
+				Assert.False(platformControl.IsReadOnly);
+				editor.IsReadOnly = true;
+				Assert.True(platformControl.IsReadOnly);
+			});
+		}
+#endif
 	}
 }

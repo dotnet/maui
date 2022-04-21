@@ -196,21 +196,16 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		//public static TextUtils.TruncateAt ToPlatform(this LineBreakMode mode) =>
-		//	mode switch
-		//	{
-		//		LineBreakMode.NoWrap => null,
-		//		LineBreakMode.WordWrap => null,
-		//		LineBreakMode.CharacterWrap => null,
-		//		LineBreakMode.HeadTruncation => TextUtils.TruncateAt.Start,
-		//		LineBreakMode.TailTruncation => TextUtils.TruncateAt.End,
-		//		LineBreakMode.MiddleTruncation => TextUtils.TruncateAt.Middle,
-		//		_ => throw new ArgumentOutOfRangeException(nameof(mode))
-		//	};
-
-		//public static FontWeight GetFontWeight(this Typeface typeface) =>
-		//	PlatformVersion.IsAtLeast(28)
-		//		? (FontWeight)typeface.Weight
-		//		: typeface.IsBold ? FontWeight.Bold : FontWeight.Regular;
+		public static TextTrimming ToPlatform(this LineBreakMode mode) =>
+			mode switch
+			{
+				LineBreakMode.NoWrap => TextTrimming.Clip,
+				LineBreakMode.WordWrap => TextTrimming.None,
+				LineBreakMode.CharacterWrap => TextTrimming.WordEllipsis,
+				LineBreakMode.HeadTruncation => TextTrimming.WordEllipsis,
+				LineBreakMode.TailTruncation => TextTrimming.CharacterEllipsis,
+				LineBreakMode.MiddleTruncation => TextTrimming.WordEllipsis,
+				_ => throw new ArgumentOutOfRangeException(nameof(mode))
+			};
 	}
 }

@@ -5,6 +5,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
+#if IOS && !MACCATALYST
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
 		UIDatePicker? _picker;
@@ -117,7 +118,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateTextColor(datePicker);
 		}
-    
+
 		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateFlowDirection(datePicker);
@@ -152,4 +153,5 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Date = _picker.Date.ToDateTime().Date;
 		}
 	}
+#endif
 }

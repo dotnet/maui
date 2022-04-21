@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				if (bp != null)
 					return bp.GetDefaultValue(valueProvider.TargetObject as BindableObject);
-				if (propertyType.GetTypeInfo().IsValueType)
+				if (propertyType.IsValueType)
 					return Activator.CreateInstance(propertyType);
 				return null;
 			}

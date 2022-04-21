@@ -47,9 +47,9 @@ namespace Microsoft.Maui.DeviceTests
 				Color = expectedColor,
 			};
 
-			using var drawable = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
+			using var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
 
 			var bitmap = bitmapDrawable.Bitmap;
 
@@ -77,9 +77,9 @@ namespace Microsoft.Maui.DeviceTests
 				Color = Colors.Red,
 			};
 
-			using var drawable = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
+			using var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
 
 			var bitmap = bitmapDrawable.Bitmap;
 

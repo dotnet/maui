@@ -171,8 +171,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValueCore(IsFocusedPropertyKey, value);
 		}
 
-		Maui.FlowDirection IView.FlowDirection
-			=> ((IFlowDirectionController)this).EffectiveFlowDirection.ToFlowDirection();
+		FlowDirection IView.FlowDirection => FlowDirection;
 
 		Primitives.LayoutAlignment IView.HorizontalLayoutAlignment => default;
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => default;
@@ -208,6 +207,12 @@ namespace Microsoft.Maui.Controls
 
 				// Access once up front to avoid multiple GetValue calls
 				var value = WidthRequest;
+
+				if (value == -1)
+				{
+					return Primitives.Dimension.Unset;
+				}
+				
 				ValidatePositive(value, nameof(IView.Width));
 				return value;
 			}
@@ -224,6 +229,12 @@ namespace Microsoft.Maui.Controls
 
 				// Access once up front to avoid multiple GetValue calls
 				var value = HeightRequest;
+
+				if (value == -1)
+				{
+					return Primitives.Dimension.Unset;
+				}
+				
 				ValidatePositive(value, nameof(IView.Height));
 				return value;
 			}

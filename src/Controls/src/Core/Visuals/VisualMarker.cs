@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 		public static IVisual MatchParent { get; } = new MatchParentVisual();
 		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="//Member[@MemberName='Default']/Docs" />
 		public static IVisual Default { get; } = new DefaultVisual();
-		
+
 		// /// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="//Member[@MemberName='Material']/Docs" />
 		internal static IVisual Material { get; } = new MaterialVisual();
 

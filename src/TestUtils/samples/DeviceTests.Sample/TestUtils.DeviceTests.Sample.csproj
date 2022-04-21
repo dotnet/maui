@@ -1,9 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.props" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.props" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" />
-
   <PropertyGroup>
     <TargetFrameworks>$(MauiPlatformsNoMacCat)</TargetFrameworks>
     <OutputType>Exe</OutputType>
@@ -33,9 +29,6 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
   </ItemGroup>
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.targets" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.targets" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.targets" />
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

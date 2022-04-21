@@ -5,6 +5,8 @@ using PlatformView = Microsoft.Maui.Platform.LayoutView;
 using PlatformView = Microsoft.Maui.Platform.LayoutViewGroup;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.LayoutPanel;
+#elif TIZEN
+using PlatformView = Microsoft.Maui.Platform.LayoutCanvas;
 #elif NETSTANDARD
 using PlatformView = System.Object;
 #endif
@@ -17,9 +19,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(ILayout.Background)] = MapBackground,
 			[nameof(ILayout.ClipsToBounds)] = MapClipsToBounds,
-#if WINDOWS
-			[nameof(ILayout.FlowDirection)] = MapFlowDirection,
-#endif
 #if ANDROID || WINDOWS
 			[nameof(IView.InputTransparent)] = MapInputTransparent,
 #endif
@@ -51,6 +50,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(ILayoutHandler handler, ILayout layout)
 		{
+#if TIZEN
+			handler.UpdateValue(nameof(handler.ContainerView));
+			handler.ToPlatform()?.UpdateBackground(layout);
+#endif
 			((PlatformView?)handler.PlatformView)?.UpdateBackground(layout);
 		}
 
@@ -102,6 +105,22 @@ namespace Microsoft.Maui.Handlers
 			{
 				handler.UpdateZIndex(view);
 			}
+		}
+
+		/// <summary>
+		/// Converts a FlowDirection to the appropriate FlowDirection for cross-platform layout 
+		/// </summary>
+		/// <param name="flowDirection"></param>
+		/// <returns>The FlowDirection to assume for cross-platform layout</returns>
+		internal static FlowDirection GetLayoutFlowDirection(FlowDirection flowDirection)
+		{
+#if WINDOWS
+			// The native LayoutPanel in Windows will automagically flip our layout coordinates if it's in RTL mode.
+			// So for cross-platform layout purposes, we just always treat things as being LTR and let the Panel sort out the rest.
+			return FlowDirection.LeftToRight;
+#else
+			return flowDirection;
+#endif
 		}
 	}
 }

@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(ClipPage), "Clip",
 				"Defines the outline of the contents of an element."),
-		
+
 			new SectionModel(typeof(ContentPageGallery), "ContentPage",
 				"Demonstrates using a Content Page."),
 
@@ -41,7 +41,7 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(FlyoutPageGallery), "FlyoutPage",
 				"Demonstrates using a Flyout Page."),
-				
+
 			new SectionModel(typeof(FocusPage), "Focus Management",
 				"Focus and onfocus views, detect when a view gains focus and more."),
 
@@ -53,7 +53,7 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(InputTransparentPage), "InputTransparent",
 				"Manage whether a view participates in the user interaction cycle."),
-	
+
 			new SectionModel(typeof(MenuBarPage), "MenuBar",
 				"Allows you to push and pop Modal Pages."),
 

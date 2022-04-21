@@ -12,7 +12,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -501,7 +501,7 @@ namespace Microsoft.Maui.Controls
 				shellSection.PropertyChanged += OnShellItemPropertyChanged;
 			else
 			{
-				var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, null, null);
+				var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
 
 				if (this.CurrentItem == null)
 				{

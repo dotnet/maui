@@ -10,5 +10,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool CanNavigateBack { get; set; }
 
 		Color TintColor { get; set; }
+
+		void SetToolbar(IToolbar toolbar);
 	}
 }

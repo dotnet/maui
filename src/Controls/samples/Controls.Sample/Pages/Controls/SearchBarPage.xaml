@@ -55,13 +55,12 @@
                 <SearchBar 
                     HorizontalTextAlignment="End"
                     Placeholder="end of the line"
-                    Text="end of the line"
-                />
+                    Text="end of the line"/>
                 <Label
                     Text="VerticalTextAlignment"
                     Style="{StaticResource Headline}" />
                 <SearchBar 
-                    VerticalTextAlignment="Start"
+                    VerticalTextAlignment="End"
                     Text="at the bottom"
                     HeightRequest="100"/>
                 <Label
@@ -74,6 +73,30 @@
                     Style="{StaticResource Headline}"/>
                 <SearchBar
                     IsTextPredictionEnabled="False"/>
+                <Label
+                    Text="TextChanged"
+                    Style="{StaticResource Headline}"/>
+                <SearchBar
+                    TextChanged="OnSearchBarTextChanged"/>
+                <Label
+                    Text="Background color"
+                    Style="{StaticResource Headline}"/>
+                <SearchBar
+                    BackgroundColor="LightBlue"/>
+                <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <SearchBar 
+                    Text="Background">
+                    <SearchBar.Background>
+                        <LinearGradientBrush EndPoint="1,0">
+                            <GradientStop Color="Yellow"                              
+                                          Offset="0.1" />
+                            <GradientStop Color="Green"
+                                          Offset="1.0" />
+                        </LinearGradientBrush>
+                    </SearchBar.Background>
+                </SearchBar>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

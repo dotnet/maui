@@ -2,10 +2,12 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ColumnDefinitionCollectionTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter']/Docs" />
+	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.ColumnDefinitionCollectionTypeConverter")]
 	public class ColumnDefinitionCollectionTypeConverter : TypeConverter
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ColumnDefinitionCollectionTypeConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
@@ -24,11 +26,11 @@ namespace Microsoft.Maui.Controls
 			if (strValue != null)
 			{
 				var lengths = strValue.Split(',');
-				var coldefs = new ColumnDefinitionCollection();
 				var converter = new GridLengthTypeConverter();
-				foreach (var length in lengths)
-					coldefs.Add(new ColumnDefinition { Width = (GridLength)converter.ConvertFromInvariantString(length) });
-				return coldefs;
+				var definitions = new ColumnDefinition[lengths.Length];
+				for (var i = 0; i < lengths.Length; i++)
+					definitions[i] = new ColumnDefinition { Width = (GridLength)converter.ConvertFromInvariantString(lengths[i]) };
+				return new ColumnDefinitionCollection(definitions);
 			}
 
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(ColumnDefinitionCollection)));

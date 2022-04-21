@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !IOS
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -42,6 +43,56 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
+		public async Task BackButtonVisibilityChangesWithPushPop()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				Assert.False(IsBackButtonVisible(handler));
+				await shell.Navigation.PushAsync(new ContentPage());
+				Assert.True(IsBackButtonVisible(handler));
+				await shell.Navigation.PopAsync();
+				Assert.False(IsBackButtonVisible(handler));
+			});
+		}
+
+		[Fact(DisplayName = "Set Has Back Button")]
+		public async Task SetHasBackButton()
+		{
+			SetupBuilder();
+
+			var shell = await InvokeOnMainThreadAsync<Shell>(() =>
+			{
+				return new Shell()
+				{
+					Items = { new ContentPage() }
+				};
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				Assert.False(IsBackButtonVisible(shell.Handler));
+				await shell.Navigation.PushAsync(new ContentPage());
+				Assert.True(IsBackButtonVisible(shell.Handler));
+
+				BackButtonBehavior behavior = new BackButtonBehavior()
+				{
+					IsVisible = false
+				};
+
+				Shell.SetBackButtonBehavior(shell.CurrentPage, behavior);
+				Assert.False(IsBackButtonVisible(shell.Handler));
+				behavior.IsVisible = true;
+				NavigationPage.SetHasBackButton(shell.CurrentPage, true);
+			});
+		}
+
 		[Fact(DisplayName = "Empty Shell")]
 		public async Task DetailsViewUpdates()
 		{
@@ -51,10 +102,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				return new Shell()
 				{
-					Items =
-						{
-							new ContentPage()
-						}
+					Items = { new ContentPage() }
 				};
 			});
 
@@ -63,6 +111,151 @@ namespace Microsoft.Maui.DeviceTests
 				// TODO MAUI Fix this 
 				await Task.Delay(100);
 				Assert.NotNull(shell.Handler);
+			});
+		}
+
+
+		[Fact(DisplayName = "TitleView Causes a Crash When Switching Tabs")]
+		public async Task TitleViewCausesACrashWhenSwitchingTabs()
+		{
+			SetupBuilder();
+
+			var page1 = new ContentPage();
+			var page2 = new ContentPage();
+			var page3 = new ContentPage();
+
+			var titleView1 = new VerticalStackLayout();
+			var titleView2 = new Label();
+			var shellTitleView = new Editor();
+
+			Shell.SetTitleView(page1, titleView1);
+			Shell.SetTitleView(page2, titleView2);
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				Shell.SetTitleView(shell, shellTitleView);
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Item1",
+							Content = page1
+						},
+						new ShellContent()
+						{
+							Route = "Item2",
+							Content = page2
+						},
+						new ShellContent()
+						{
+							Route = "Item3",
+							Content = page3
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(page1);
+				// GotoAsync which switching tabs/flyout items currently
+				// doesn't resolve after navigated has finished which is why we have the
+				// delays
+				// https://github.com/dotnet/maui/issues/6193
+				Assert.Equal(titleView1.ToPlatform(), GetTitleView(handler));
+				await shell.GoToAsync("//Item2");
+				await Task.Delay(200);
+				await OnLoadedAsync(page2);
+				Assert.Equal(titleView2.ToPlatform(), GetTitleView(handler));
+				await shell.GoToAsync("//Item1");
+				await Task.Delay(200);
+				await OnLoadedAsync(page1);
+				Assert.Equal(titleView1.ToPlatform(), GetTitleView(handler));
+				await shell.GoToAsync("//Item2");
+				await Task.Delay(200);
+				await OnLoadedAsync(page2);
+				Assert.Equal(titleView2.ToPlatform(), GetTitleView(handler));
+				await shell.GoToAsync("//Item3");
+				await Task.Delay(200);
+				await OnLoadedAsync(page3);
+				Assert.Equal(shellTitleView.ToPlatform(), GetTitleView(handler));
+			});
+		}
+
+		[Fact(DisplayName = "Handlers not recreated when changing tabs")]
+		public async Task HandlersNotRecreatedWhenChangingTabs()
+		{
+			SetupBuilder();
+
+			var page1 = new ContentPage();
+			var page2 = new ContentPage();
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Item1",
+							Content = page1
+						},
+						new ShellContent()
+						{
+							Route = "Item2",
+							Content = page2
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				var initialHandler = page1.Handler;
+				await shell.GoToAsync("//Item2");
+				await shell.GoToAsync("//Item1");
+				Assert.Equal(initialHandler, page1.Handler);
+			});
+		}
+
+		[Fact(DisplayName = "Navigation Routes Correctly After Switching Flyout Items")]
+		public async Task NavigatedFiresAfterSwitchingFlyoutItems()
+		{
+			SetupBuilder();
+
+			var shellContent1 = new ShellContent() { Content = new ContentPage() };
+			var shellContent2 = new ShellContent() { Content = new ContentPage() };
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(shellContent1);
+				shell.Items.Add(shellContent2);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				IShellController shellController = shell;
+				var currentItem = shell.CurrentItem;
+				// For now on iOS/Android we're just making sure nothing crashes
+#if WINDOWS
+				Assert.NotNull(currentItem.Handler);
+#endif
+
+				await shellController.OnFlyoutItemSelectedAsync(shellContent2);
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.GoToAsync("..");
+
+#if WINDOWS
+				Assert.NotNull(shell.Handler);
+				Assert.NotNull(shell.CurrentItem.Handler);
+				Assert.NotNull(shell.CurrentItem.CurrentItem.Handler);
+				Assert.Null(currentItem.Handler);
+				Assert.Null(currentItem.CurrentItem.Handler);
+#endif
+
 			});
 		}
 
@@ -98,3 +291,4 @@ namespace Microsoft.Maui.DeviceTests
 			});
 	}
 }
+#endif

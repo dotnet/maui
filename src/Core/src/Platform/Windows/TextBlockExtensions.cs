@@ -37,18 +37,6 @@ namespace Microsoft.Maui.Platform
 			platformControl.CharacterSpacing = label.CharacterSpacing.ToEm();
 		}
 
-		public static void UpdateMaxLines(this TextBlock platformControl, ILabel label)
-		{
-			if (label.MaxLines >= 0)
-			{
-				platformControl.MaxLines = label.MaxLines;
-			}
-			else
-			{
-				platformControl.MaxLines = 0;
-			}
-		}
-
 		public static void UpdateTextDecorations(this TextBlock platformControl, ILabel label)
 		{
 			var elementTextDecorations = label.TextDecorations;
@@ -132,46 +120,6 @@ namespace Microsoft.Maui.Platform
 				platformControl.Text = global::Windows.Data.Html.HtmlUtilities.ConvertToText(label.Text);
 			}
 		}
-
-		public static void UpdateLineBreakMode(this TextBlock platformControl, ILabel label)
-		{
-			var lineBreakMode = label.LineBreakMode;
-
-			switch (lineBreakMode)
-			{
-				case LineBreakMode.NoWrap:
-					platformControl.TextTrimming = TextTrimming.Clip;
-					platformControl.TextWrapping = TextWrapping.NoWrap;
-					break;
-				case LineBreakMode.WordWrap:
-					platformControl.TextTrimming = TextTrimming.None;
-					platformControl.TextWrapping = TextWrapping.Wrap;
-					break;
-				case LineBreakMode.CharacterWrap:
-					platformControl.TextTrimming = TextTrimming.WordEllipsis;
-					platformControl.TextWrapping = TextWrapping.Wrap;
-					break;
-				case LineBreakMode.HeadTruncation:
-					// TODO: This truncates at the end.
-					platformControl.TextTrimming = TextTrimming.WordEllipsis;
-					platformControl.DetermineTruncatedTextWrapping();
-					break;
-				case LineBreakMode.TailTruncation:
-					platformControl.TextTrimming = TextTrimming.CharacterEllipsis;
-					platformControl.DetermineTruncatedTextWrapping();
-					break;
-				case LineBreakMode.MiddleTruncation:
-					// TODO: This truncates at the end.
-					platformControl.TextTrimming = TextTrimming.WordEllipsis;
-					platformControl.DetermineTruncatedTextWrapping();
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-		}
-
-		internal static void DetermineTruncatedTextWrapping(this TextBlock textBlock) =>
-			textBlock.TextWrapping = textBlock.MaxLines > 1 ? TextWrapping.Wrap : TextWrapping.NoWrap;
 
 		internal static void UpdateTextPlainText(this TextBlock platformControl, IText label)
 		{

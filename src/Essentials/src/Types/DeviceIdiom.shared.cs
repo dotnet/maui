@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceIdiom.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceIdiom']/Docs" />
 	public readonly struct DeviceIdiom : IEquatable<DeviceIdiom>
@@ -54,9 +54,9 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceIdiom.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
 		public override int GetHashCode() =>
 			deviceIdiom == null ? 0 : deviceIdiom.GetHashCode(
-					#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0
 					StringComparison.Ordinal
-					#endif
+#endif
 				);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceIdiom.xml" path="//Member[@MemberName='ToString']/Docs" />

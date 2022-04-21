@@ -1,28 +1,29 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 using TizenBattery = Tizen.System.Battery;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class BatteryImplementation : IBattery
+	partial class BatteryImplementation : IBattery
 	{
 		void OnChanged(object sender, object e)
 			=> MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
-		public void StartBatteryListeners()
+		void StartBatteryListeners()
 		{
 			TizenBattery.PercentChanged += OnChanged;
 			TizenBattery.ChargingStateChanged += OnChanged;
 			TizenBattery.LevelChanged += OnChanged;
 		}
 
-		public void StopBatteryListeners()
+		void StopBatteryListeners()
 		{
 			TizenBattery.PercentChanged -= OnChanged;
 			TizenBattery.ChargingStateChanged -= OnChanged;
 			TizenBattery.LevelChanged -= OnChanged;
 		}
 
-		public double PlatformChargeLevel
+		public double ChargeLevel
 		{
 			get
 			{
@@ -50,10 +51,10 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		public void StartEnergySaverListeners()
+		void StartEnergySaverListeners()
 			=> throw new FeatureNotSupportedException("This API is not currently supported on Tizen.");
 
-		public void StopEnergySaverListeners()
+		void StopEnergySaverListeners()
 			=> throw new FeatureNotSupportedException("This API is not currently supported on Tizen.");
 
 		public EnergySaverStatus EnergySaverStatus

@@ -1,7 +1,7 @@
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/AppInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppInfo']/Docs" />
-	public class AppInfoImplementation : IAppInfo
+	class AppInfoImplementation : IAppInfo
 	{
 		public string PackageName => throw ExceptionUtils.NotSupportedOrImplementedException;
 
@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public AppPackagingModel PackagingModel => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public LayoutDirection RequestedLayoutDirection => throw ExceptionUtils.NotSupportedOrImplementedException;
+		// Returning the Unknown value for LayoutDirection so that unit tests can work
+		public LayoutDirection RequestedLayoutDirection => LayoutDirection.Unknown;
 	}
 }

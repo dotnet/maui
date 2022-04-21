@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
@@ -14,17 +15,28 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			_cache = cache;
 		}
 
-		public Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
-			if (imageSource is ICustomImageSourceStub counted)
-				return GetDrawableAsync(counted, context, cancellationToken);
+			if (imageSource is not ICustomImageSourceStub imageSourceStub)
+				return Task.FromResult<IImageSourceServiceResult>(new ImageSourceServiceLoadResult());
 
-			return Task.FromResult<IImageSourceServiceResult<Drawable>>(null);
+			var color = imageSourceStub.Color;
+
+			var drawable = _cache.Get(color);
+
+			imageView.SetImageDrawable(drawable);
+
+			var result = new ImageSourceServiceLoadResult(() => _cache.Return(color));
+
+			return Task.FromResult<IImageSourceServiceResult>(result);
 		}
 
-		public Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(ICustomImageSourceStub imageSource, Context context, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
-			var color = imageSource.Color;
+			if (imageSource is not ICustomImageSourceStub imageSourceStub)
+				return Task.FromResult<IImageSourceServiceResult<Drawable>>(null);
+
+			var color = imageSourceStub.Color;
 
 			var drawable = _cache.Get(color);
 

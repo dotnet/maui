@@ -9,7 +9,7 @@
     <GitInfoReportImportance>high</GitInfoReportImportance>
   </PropertyGroup>
 
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
 
   <ItemGroup>
     <Compile Remove="Internals\Legacy\**" />
@@ -29,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
-    <AndroidResource Include="Compatibility\Android\Resources\Layout\rootlayout.axml" />
     <AndroidResource Include="Compatibility\Android\Resources\Layout\flyoutcontent.axml" />
     <AndroidResource Include="Compatibility\Android\Resources\Layout\shellcontent.axml" />
   </ItemGroup>

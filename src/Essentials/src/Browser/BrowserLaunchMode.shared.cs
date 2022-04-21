@@ -1,4 +1,5 @@
-namespace Microsoft.Maui.Essentials
+#nullable enable
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchMode.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BrowserLaunchMode']/Docs" />
 	public enum BrowserLaunchMode

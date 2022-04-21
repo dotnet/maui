@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.Net.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
@@ -6,14 +6,19 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <WarningsNotAsErrors>BI1234</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
+    <GenerateReferenceAssemblySource>true</GenerateReferenceAssemblySource>
+    <!--<GenAPIAdditionalParameters>- -api-only</GenAPIAdditionalParameters>-->
     <IsTrimmable>true</IsTrimmable>
+    <GenerateReferenceAssemblySource>true</GenerateReferenceAssemblySource>
+    <GenAPIAdditionalParameters>--api-only --writer CSDecl</GenAPIAdditionalParameters>
   </PropertyGroup>
-  <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <!-- remove other AndroidX packages from the MultiTargeting -->
     <PackageReference Remove="*" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.GenAPI" Version="6.0.0-*" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Maui.Graphics" />
     <None Include="..\..\..\LICENSE" PackagePath="" Pack="true" />
     <None Include="..\..\..\Assets\xamarin.essentials_128x128.png" PackagePath="icon.png" Pack="true" />
@@ -56,11 +61,10 @@
     <Compile Include="**\*.watchos.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Include="**\*.watchos.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup> -->
-  <!-- <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'tizen' ">
-    <PackageReference Include="Tizen.NET" Version="4.0.0" PrivateAssets="All" />
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'tizen' ">
     <Compile Include="**\*.tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Include="**\*.tizen.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-  </ItemGroup> -->
+  </ItemGroup>
   <!-- <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'macos' ">
     <Compile Include="**\*.macos.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Include="**\*.macos.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />

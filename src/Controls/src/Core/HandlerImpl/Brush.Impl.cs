@@ -1,5 +1,5 @@
 ﻿using Microsoft.Maui.Graphics;
-using GraphicsGradientStop = Microsoft.Maui.Graphics.GradientStop;
+using GraphicsGradientStop = Microsoft.Maui.Graphics.PaintGradientStop;
 
 namespace Microsoft.Maui.Controls
 {
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 				for (int i = 0; i < gradientStopCollection.Length; i++)
 				{
 					var gs = gradientStopCollection[i];
-					gradientStops[i] = new GradientStop(gs.Color, gs.Offset);
+					gradientStops.Insert(i, new GradientStop(gs.Color, gs.Offset));
 				}
 
 				if (gradientPaint is LinearGradientPaint linearGradientPaint)

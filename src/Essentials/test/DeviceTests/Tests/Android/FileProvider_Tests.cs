@@ -1,12 +1,14 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Storage;
 using Xunit;
 using AndroidEnvironment = Android.OS.Environment;
 
 namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
+	using Platform = Microsoft.Maui.ApplicationModel.Platform;
+
 	public class Android_FileProvider_Tests
 	{
 		[Fact]
@@ -20,7 +22,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			Assert.False(FileProvider.IsFileInPublicLocation(file));
 
 			// Actually get a safe shareable file uri
-			var shareableUri = Platform.GetShareableFileUri(new ReadOnlyFile(file));
+			var shareableUri = FileSystemUtils.GetShareableFileUri(new ReadOnlyFile(file));
 
 			// Launch an intent to let tye user pick where to open this content
 			var intent = new Android.Content.Intent(Android.Content.Intent.ActionSend);
@@ -238,7 +240,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				FileProvider.TemporaryLocation = location;
 
 				// get the uri
-				return Platform.GetShareableFileUri(new ReadOnlyFile(file));
+				return FileSystemUtils.GetShareableFileUri(new ReadOnlyFile(file));
 			}
 			finally
 			{

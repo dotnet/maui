@@ -3,10 +3,12 @@ using System.Diagnostics;
 using ElmSharp;
 using SkiaSharp;
 using SkiaSharp.Views.Tizen;
-using Microsoft.Maui.Controls.Compatibility.Shapes;
+using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class CanvasViewRenderer<TView, TNativeView> : ViewRenderer<TView, Native.Canvas>, IBackgroundCanvas, IClipperCanvas, ICanvasRenderer
 		where TView : View
 		where TNativeView : EvasObject

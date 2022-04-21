@@ -8,8 +8,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core", "src\Contro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility", "src\Compatibility\Core\src\Compatibility.csproj", "{00A11C2F-969F-4964-8557-91ADF4B1523D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup", "src\Compatibility\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj", "{EB956381-F3E6-437C-9069-36B8BF5C6E2F}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{459BF674-83CB-46F6-881F-A2D2117DBF4D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{E1082E26-D700-4127-9329-66D673FD2D55}"
@@ -194,30 +192,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.DeviceTests", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.Sandbox", "src\Controls\samples\Controls.Sample.Sandbox\Maui.Controls.Sample.Sandbox.csproj", "{532ACF23-381B-4F54-AEA9-25B5485F9148}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Foldable", "src\Controls\Foldable\src\Controls.Foldable.csproj", "{71FFE8BF-EBE4-4078-8484-86C6EA685D14}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A9C514B9-1EE2-4A12-8E8A-CE16D87545C3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiBlazorWebView.DeviceTests", "src\BlazorWebView\tests\MauiDeviceTests\MauiBlazorWebView.DeviceTests.csproj", "{5FEA7500-0ACE-4C26-9A7B-2EB3958CBBC6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedSource", "SharedSource", "{4F2926C8-43AB-4328-A735-D9EAD699F81D}"
 	ProjectSection(SolutionItems) = preProject
-		src\BlazorWebView\src\SharedSource\ExternalLinkNavigationEventArgs.cs = src\BlazorWebView\src\SharedSource\ExternalLinkNavigationEventArgs.cs
-		src\BlazorWebView\src\SharedSource\ExternalLinkNavigationPolicy.cs = src\BlazorWebView\src\SharedSource\ExternalLinkNavigationPolicy.cs
 		src\BlazorWebView\src\SharedSource\QueryStringHelper.cs = src\BlazorWebView\src\SharedSource\QueryStringHelper.cs
+		src\BlazorWebView\src\SharedSource\UrlLoadingStrategy.cs = src\BlazorWebView\src\SharedSource\UrlLoadingStrategy.cs
 		src\BlazorWebView\src\SharedSource\WebView2WebViewManager.cs = src\BlazorWebView\src\SharedSource\WebView2WebViewManager.cs
+		src\BlazorWebView\src\SharedSource\UrlLoadingEventArgs.cs = src\BlazorWebView\src\SharedSource\UrlLoadingEventArgs.cs
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.Droid", "src\Core\tests\Benchmarks.Droid\Benchmarks.Droid.csproj", "{5B56A734-D53C-4635-A53E-F889FCFCDD66}"
+EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{772e2531-2270-429a-9afb-4aa0104aef27}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{a34ebe01-25bf-4e69-a2dc-2288dc625541}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{a34ebe01-25bf-4e69-a2dc-2288dc625541}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{ae2513cb-4e5e-4e5c-8237-88954d4c9433}*SharedItemsImports = 13
-		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{e175485b-3c8c-47d7-8dd5-f7fed627eb25}*SharedItemsImports = 13
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{eadd8100-b3ae-4a31-92c4-267a64a1c6eb}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{eadd8100-b3ae-4a31-92c4-267a64a1c6eb}*SharedItemsImports = 5
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -235,10 +226,6 @@ Global
 		{00A11C2F-969F-4964-8557-91ADF4B1523D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00A11C2F-969F-4964-8557-91ADF4B1523D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00A11C2F-969F-4964-8557-91ADF4B1523D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EB956381-F3E6-437C-9069-36B8BF5C6E2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EB956381-F3E6-437C-9069-36B8BF5C6E2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EB956381-F3E6-437C-9069-36B8BF5C6E2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EB956381-F3E6-437C-9069-36B8BF5C6E2F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B8DC1324-977C-46F1-B697-9064ADE6099A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B8DC1324-977C-46F1-B697-9064ADE6099A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8DC1324-977C-46F1-B697-9064ADE6099A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -503,12 +490,22 @@ Global
 		{532ACF23-381B-4F54-AEA9-25B5485F9148}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{532ACF23-381B-4F54-AEA9-25B5485F9148}.Release|Any CPU.Build.0 = Release|Any CPU
 		{532ACF23-381B-4F54-AEA9-25B5485F9148}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{71FFE8BF-EBE4-4078-8484-86C6EA685D14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71FFE8BF-EBE4-4078-8484-86C6EA685D14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71FFE8BF-EBE4-4078-8484-86C6EA685D14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71FFE8BF-EBE4-4078-8484-86C6EA685D14}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5FEA7500-0ACE-4C26-9A7B-2EB3958CBBC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5FEA7500-0ACE-4C26-9A7B-2EB3958CBBC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FEA7500-0ACE-4C26-9A7B-2EB3958CBBC6}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{5FEA7500-0ACE-4C26-9A7B-2EB3958CBBC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FEA7500-0ACE-4C26-9A7B-2EB3958CBBC6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5FEA7500-0ACE-4C26-9A7B-2EB3958CBBC6}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{5B56A734-D53C-4635-A53E-F889FCFCDD66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B56A734-D53C-4635-A53E-F889FCFCDD66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B56A734-D53C-4635-A53E-F889FCFCDD66}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{5B56A734-D53C-4635-A53E-F889FCFCDD66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B56A734-D53C-4635-A53E-F889FCFCDD66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B56A734-D53C-4635-A53E-F889FCFCDD66}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -517,7 +514,6 @@ Global
 		{95BA42B5-B00E-4986-B9B5-517140378452} = {E8AD265B-3C67-4640-AC58-A522F9FB3361}
 		{AF64451F-E2BD-41C2-B083-F60C26AE2A9F} = {50C758FE-4E10-409A-94F5-A75480960864}
 		{00A11C2F-969F-4964-8557-91ADF4B1523D} = {446EB407-57EB-441D-9ADB-1A006CBF672A}
-		{EB956381-F3E6-437C-9069-36B8BF5C6E2F} = {446EB407-57EB-441D-9ADB-1A006CBF672A}
 		{E1082E26-D700-4127-9329-66D673FD2D55} = {459BF674-83CB-46F6-881F-A2D2117DBF4D}
 		{B8DC1324-977C-46F1-B697-9064ADE6099A} = {E1082E26-D700-4127-9329-66D673FD2D55}
 		{CB495F62-CFE6-4975-AED8-F26B6C5D0113} = {E1082E26-D700-4127-9329-66D673FD2D55}
@@ -601,11 +597,24 @@ Global
 		{F28E8899-98D2-4915-8D48-D101D4837AB9} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{C8B3C3B3-1CDA-41A2-BF20-A7FE33D6BB36} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{532ACF23-381B-4F54-AEA9-25B5485F9148} = {E1082E26-D700-4127-9329-66D673FD2D55}
+		{71FFE8BF-EBE4-4078-8484-86C6EA685D14} = {50C758FE-4E10-409A-94F5-A75480960864}
 		{A9C514B9-1EE2-4A12-8E8A-CE16D87545C3} = {1614D1A4-5C3D-4D5B-8C89-426E37A564EF}
 		{5FEA7500-0ACE-4C26-9A7B-2EB3958CBBC6} = {A9C514B9-1EE2-4A12-8E8A-CE16D87545C3}
 		{4F2926C8-43AB-4328-A735-D9EAD699F81D} = {ED7F28E0-D0AF-417D-983D-3D874EEE8554}
+		{5B56A734-D53C-4635-A53E-F889FCFCDD66} = {C564DDD6-DE79-45CD-88EA-3F690481572A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 5
+		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 5
+		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{772e2531-2270-429a-9afb-4aa0104aef27}*SharedItemsImports = 5
+		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{a34ebe01-25bf-4e69-a2dc-2288dc625541}*SharedItemsImports = 5
+		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{a34ebe01-25bf-4e69-a2dc-2288dc625541}*SharedItemsImports = 5
+		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{ae2513cb-4e5e-4e5c-8237-88954d4c9433}*SharedItemsImports = 13
+		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{e175485b-3c8c-47d7-8dd5-f7fed627eb25}*SharedItemsImports = 13
+		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{eadd8100-b3ae-4a31-92c4-267a64a1c6eb}*SharedItemsImports = 5
+		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{eadd8100-b3ae-4a31-92c4-267a64a1c6eb}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

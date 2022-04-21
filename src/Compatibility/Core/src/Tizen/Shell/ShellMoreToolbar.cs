@@ -5,6 +5,7 @@ using EImage = ElmSharp.Image;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class ShellMoreToolbar : GenList
 	{
 		GenItemClass _defaultClass = null;
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			SetWeight(1, 1);
 			Homogeneous = true;
 			SelectionMode = GenItemSelectionMode.Always;
-			BackgroundColor = ShellRenderer.DefaultBackgroundColor.ToPlatform();
+			BackgroundColor = ShellRenderer.DefaultBackgroundColor.ToNative();
 			_defaultClass = new GenItemClass(ThemeConstants.GenItemClass.Styles.Full)
 			{
 				GetContentHandler = GetContent,

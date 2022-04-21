@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = handler.VirtualView.Flyout.ToPlatform(handler.MauiContext);
 
-			handler.PlatformView.ReplacePaneMenuItemsWithCustomContent(handler.VirtualView.Flyout);
+			handler.PlatformView.FlyoutCustomContent = handler.VirtualView.Flyout?.ToPlatform(handler.MauiContext);
 		}
 
 		public static void MapDetail(IFlyoutViewHandler handler, IFlyoutView flyoutView)

@@ -5,7 +5,9 @@ using PlatformView = Microsoft.Maui.Platform.MauiSearchBar;
 using PlatformView = AndroidX.AppCompat.Widget.SearchView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.AutoSuggestBox;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformView = Tizen.UIExtensions.ElmSharp.SearchBar;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 
@@ -15,8 +17,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ISearchBar, ISearchBarHandler> Mapper = new PropertyMapper<ISearchBar, ISearchBarHandler>(ViewHandler.ViewMapper)
 		{
-#if __ANDROID__
+#if __ANDROID__ || __WINDOWS__
 			[nameof(ISearchBar.Background)] = MapBackground,
+#elif __IOS__
 			[nameof(ISearchBar.IsEnabled)] = MapIsEnabled,
 #endif
 			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing,

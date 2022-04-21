@@ -2,7 +2,7 @@
 using System.Reflection;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 #if UITEST
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				else
 				{
 					string selectedItem = picker.Items[picker.SelectedIndex];
-					FieldInfo colorField = typeof(Color).GetTypeInfo().GetDeclaredField(selectedItem);
+					FieldInfo colorField = typeof(Color).GetField(selectedItem);
 					boxView.Color = (Color)colorField.GetValue(null);
 				}
 			};

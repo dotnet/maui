@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				if (cacheItem.Count == 1)
 					_cache.Remove(color);
 				else
-					_cache[color] = (cacheItem.Drawable, cacheItem.Count + 1);
+					_cache[color] = (cacheItem.Drawable, cacheItem.Count - 1);
 			}
 		}
 	}

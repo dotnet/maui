@@ -10,6 +10,8 @@ namespace Maui.Controls.Sample.Pages
 		public SliderPage()
 		{
 			InitializeComponent();
+
+			UpdateInfo();
 		}
 
 		void OnValueChanged(object sender, ValueChangedEventArgs args)
@@ -29,6 +31,28 @@ namespace Maui.Controls.Sample.Pages
 				ImageSlider.ThumbImageSource = _imageSource;
 				_imageSource = null;
 			}
+		}
+
+		void OnDynamicValueChanged(object sender, ValueChangedEventArgs args)
+		{
+			UpdateInfo();
+		}
+
+		void OnUpdateMinimumButtonClicked(object sender, System.EventArgs e)
+		{
+			DynamicSlider.Minimum = 4;
+			UpdateInfo();
+		}
+
+		void OnUpdateMaximumButtonClicked(object sender, System.EventArgs e)
+		{
+			DynamicSlider.Maximum = 8;
+			UpdateInfo();
+		}
+
+		void UpdateInfo()
+		{
+			DynamicInfoLabel.Text = $"Minimum: {DynamicSlider.Minimum}, Maximum: {DynamicSlider.Maximum}, Value: {DynamicSlider.Value}";
 		}
 	}
 }

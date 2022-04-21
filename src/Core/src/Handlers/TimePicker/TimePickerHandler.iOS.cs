@@ -3,6 +3,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
+#if IOS && !MACCATALYST
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
 		protected override MauiTimePicker CreatePlatformView()
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidBegin += OnStarted;
 				platformView.EditingDidEnd += OnEnded;
 				platformView.ValueChanged += OnValueChanged;
-				platformView.DateSelected += OnDateSelected;	
+				platformView.DateSelected += OnDateSelected;
 				platformView.UpdateTime(VirtualView.Time);
 			}
 		}
@@ -109,4 +110,5 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Time = new TimeSpan(datetime.Hour, datetime.Minute, 0);
 		}
 	}
+#endif
 }

@@ -1,11 +1,13 @@
 using System;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using AndroidX.Browser.CustomTabs;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Authentication
 {
-	public partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
+	partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{
 		TaskCompletionSource<WebAuthenticatorResult> tcsResponse = null;
 		Uri currentRedirectUri = null;
@@ -47,7 +49,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		{
 			var url = webAuthenticatorOptions?.Url;
 			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
-			var packageName = Platform.AppContext.PackageName;
+			var packageName = Application.Context.PackageName;
 
 			// Create an intent to see if the app developer wired up the callback activity correctly
 			var intent = new Intent(Intent.ActionView);
@@ -57,7 +59,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			intent.SetData(global::Android.Net.Uri.Parse(callbackUrl.OriginalString));
 
 			// Try to find the activity for the callback intent
-			if (!Platform.IsIntentSupported(intent, packageName))
+			if (!PlatformUtils.IsIntentSupported(intent, packageName))
 				throw new InvalidOperationException($"You must subclass the `{nameof(WebAuthenticatorCallbackActivity)}` and create an IntentFilter for it which matches your `{nameof(callbackUrl)}`.");
 
 			// Cancel any previous task that's still pending
@@ -67,7 +69,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
 			currentRedirectUri = callbackUrl;
 
-			var parentActivity = Platform.GetCurrentActivity(true);
+			var parentActivity = ActivityStateManager.Default.GetCurrentActivity(true);
 
 			var customTabsActivityManager = CustomTabsActivityManager.From(parentActivity);
 			try
@@ -86,7 +88,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				{
 					// Fall back to opening the system browser if necessary
 					var browserIntent = new Intent(Intent.ActionView, global::Android.Net.Uri.Parse(url.OriginalString));
-					Platform.CurrentActivity.StartActivity(browserIntent);
+					ActivityStateManager.Default.GetCurrentActivity().StartActivity(browserIntent);
 				}
 
 				return await tcsResponse.Task;
