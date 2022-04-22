@@ -25,9 +25,7 @@ namespace Microsoft.Maui.Handlers
 			};
 
 		public static CommandMapper<IContentView, IContentViewHandler> CommandMapper =
-			new(ViewCommandMapper)
-			{
-			};
+			new(ViewCommandMapper);
 
 		public ContentViewHandler() : base(Mapper, CommandMapper)
 		{

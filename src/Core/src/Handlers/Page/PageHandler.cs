@@ -13,9 +13,7 @@ namespace Microsoft.Maui.Handlers
 			};
 
 		public static new CommandMapper<IContentView, IPageHandler> CommandMapper =
-			new(ContentViewHandler.CommandMapper)
-			{
-			};
+			new(ContentViewHandler.CommandMapper);
 
 		public PageHandler() : base(Mapper, CommandMapper)
 		{
