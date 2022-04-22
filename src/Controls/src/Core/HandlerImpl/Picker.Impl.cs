@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Picker.xml" path="Type[@FullName='Microsoft.Maui.Controls.Picker']/Docs" />
 	public partial class Picker : IPicker
 	{
-		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
+		Font ITextStyle.Font => this.ToFont();
 
 		IList<string> IPicker.Items => Items;
 

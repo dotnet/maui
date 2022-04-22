@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="Type[@FullName='Microsoft.Maui.Controls.Style']/Docs" />
-	[ContentProperty("Setters")]
+	[ContentProperty(nameof(Setters))]
 	public sealed class Style : IStyle
 	{
 		internal const string StyleClassPrefix = "Microsoft.Maui.Controls.StyleClass.";
@@ -181,11 +181,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool ValidateBasedOn(Style value)
-		{
-			if (value == null)
-				return true;
-			return value.TargetType.IsAssignableFrom(TargetType);
-		}
+			=> value is null || value.TargetType.IsAssignableFrom(TargetType);
 
 		void CleanUpWeakReferences()
 		{
