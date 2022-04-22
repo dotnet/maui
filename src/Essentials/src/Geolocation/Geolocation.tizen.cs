@@ -1,5 +1,7 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Location;
 
 namespace Microsoft.Maui.Devices.Sensors
@@ -17,8 +19,8 @@ namespace Microsoft.Maui.Devices.Sensors
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
 			Locator service = null;
-			var gps = Platform.GetFeatureInfo<bool>("location.gps");
-			var wps = Platform.GetFeatureInfo<bool>("location.wps");
+			var gps = PlatformUtils.GetFeatureInfo<bool>("location.gps");
+			var wps = PlatformUtils.GetFeatureInfo<bool>("location.wps");
 			if (gps)
 			{
 				if (wps)

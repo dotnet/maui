@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Foldable;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Foldable
 {

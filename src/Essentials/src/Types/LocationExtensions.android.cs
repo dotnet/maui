@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Devices.Sensors
 				Altitude = location.HasAltitude ? location.Altitude : default(double?),
 				Timestamp = location.GetTimestamp().ToUniversalTime(),
 				Accuracy = location.HasAccuracy ? location.Accuracy : default(float?),
-				VerticalAccuracy = 
+				VerticalAccuracy =
 					OperatingSystem.IsAndroidVersionAtLeast(26) && location.HasVerticalAccuracy
 						? location.VerticalAccuracyMeters
 						: null,

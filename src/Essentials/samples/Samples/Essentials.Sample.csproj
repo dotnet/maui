@@ -15,6 +15,10 @@
     <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(UseMaui)' != 'true' and $(TargetFramework.Contains('-tizen'))">
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" ExcludeAssets="runtime" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />

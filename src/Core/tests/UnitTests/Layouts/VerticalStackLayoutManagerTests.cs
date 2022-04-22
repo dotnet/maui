@@ -336,5 +336,30 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(arrangedWidth, actual.Width);
 			Assert.Equal(arrangedHeight, actual.Height);
 		}
+
+		public static IEnumerable<object[]> ChildMeasureAccountsForPaddingTestCases()
+		{
+			var measureSpace = new Size(100, 100);
+			var viewSize = new Size(50, 50);
+
+			yield return new object[] { viewSize, new Thickness(0), measureSpace, new Size(100, double.PositiveInfinity) };
+			yield return new object[] { viewSize, new Thickness(10), measureSpace, new Size(80, double.PositiveInfinity) };
+			yield return new object[] { viewSize, new Thickness(0, 10, 0, 10), measureSpace, new Size(100, double.PositiveInfinity) };
+			yield return new object[] { viewSize, new Thickness(7, 0, 14, 0), measureSpace, new Size(79, double.PositiveInfinity) };
+		}
+
+		[Theory]
+		[MemberData(nameof(ChildMeasureAccountsForPaddingTestCases))]
+		public void ChildMeasureAccountsForPadding(Size viewSize, Thickness padding, Size measureConstraints, Size expectedMeasureConstraint)
+		{
+			var view = LayoutTestHelpers.CreateTestView(new Size(viewSize.Width, viewSize.Height));
+			var stack = CreateTestLayout(new List<IView>() { view });
+			stack.Padding.Returns(padding);
+
+			var manager = new VerticalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(measureConstraints.Width, measureConstraints.Height);
+
+			view.Received().Measure(Arg.Is(expectedMeasureConstraint.Width), Arg.Is(expectedMeasureConstraint.Height));
+		}
 	}
 }

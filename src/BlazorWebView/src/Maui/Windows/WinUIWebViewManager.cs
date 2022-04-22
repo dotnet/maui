@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	{
 		private readonly WebView2Control _webview;
 		private readonly string _hostPageRelativePath;
-		private readonly string _contentRootDir;
+		private readonly string _contentRootRelativeToAppRoot;
 		private static readonly bool _isPackagedApp;
 
 		static WinUIWebViewManager()
@@ -43,8 +43,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="jsComponents">The <see cref="JSComponentConfigurationStore"/>.</param>
-		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-		/// <param name="contentRootDir">Path to the directory containing application content files.</param>
+		/// <param name="contentRootRelativeToAppRoot">Path to the directory containing application content files.</param>
+		/// <param name="hostPagePathWithinFileProvider">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="webViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
 		public WinUIWebViewManager(
 			WebView2Control webview,
@@ -52,14 +52,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			Dispatcher dispatcher,
 			IFileProvider fileProvider,
 			JSComponentConfigurationStore jsComponents,
-			string hostPageRelativePath,
-			string contentRootDir,
+			string contentRootRelativeToAppRoot,
+			string hostPagePathWithinFileProvider,
 			BlazorWebViewHandler webViewHandler)
-			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath, webViewHandler)
+			: base(webview, services, dispatcher, fileProvider, jsComponents, contentRootRelativeToAppRoot, hostPagePathWithinFileProvider, webViewHandler)
 		{
 			_webview = webview;
-			_hostPageRelativePath = hostPageRelativePath;
-			_contentRootDir = contentRootDir;
+			_hostPageRelativePath = hostPagePathWithinFileProvider;
+			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
 		}
 
 		/// <inheritdoc />
@@ -93,9 +93,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				var headerString = GetHeaderString(headers);
 				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(ms, statusCode, statusMessage, headerString);
 			}
-			else if (new Uri(requestUri) is Uri uri && new Uri(AppOrigin).IsBaseOf(uri))
+			else if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{
-				var relativePath = new Uri(AppOrigin).MakeRelativeUri(uri).ToString();
+				var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString();
 
 				// If the path does not end in a file extension (or is empty), it's most likely referring to a page,
 				// in which case we should allow falling back on the host page.
@@ -103,12 +103,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				{
 					relativePath = _hostPageRelativePath;
 				}
-				relativePath = Path.Combine(_contentRootDir, relativePath.Replace('/', '\\'));
+				relativePath = Path.Combine(_contentRootRelativeToAppRoot, relativePath.Replace('/', '\\'));
 				statusCode = 200;
 				statusMessage = "OK";
 				var contentType = StaticContentProvider.GetResponseContentTypeOrDefault(relativePath);
 				headers = StaticContentProvider.GetResponseHeaders(contentType);
-				var headerString = GetHeaderString(headers);
 				IRandomAccessStream? stream = null;
 				if (_isPackagedApp)
 				{
@@ -133,8 +132,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						await stream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
 					}
 				}
+				
+				var hotReloadedContent = Stream.Null;
+				if (StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, requestUri, ref statusCode, ref hotReloadedContent, headers))
+				{
+					stream = new InMemoryRandomAccessStream();
+					var memStream = new MemoryStream();
+					hotReloadedContent.CopyTo(memStream);
+					await stream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
+				}
+
 				if (stream != null)
 				{
+					var headerString = GetHeaderString(headers);
 					eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
 						stream,
 						statusCode,

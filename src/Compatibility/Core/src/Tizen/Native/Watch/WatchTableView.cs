@@ -3,6 +3,7 @@ using ElmSharp.Wearable;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch
 {
+	[System.Obsolete]
 	public class WatchTableView : WatchListView, ITableView
 	{
 		static readonly SectionCellRenderer _sectionCellRenderer = new SectionCellRenderer();
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch
 			return base.GetCellRenderer(cell, isGroup);
 		}
 
-		void AddSectionTitle(string title, Color textColor)
+		void AddSectionTitle(string title, Graphics.Color textColor)
 		{
 			Cell cell = new SectionCell()
 			{

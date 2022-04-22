@@ -1,9 +1,11 @@
 using System;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class CheckBoxRenderer : ViewRenderer<CheckBox, Check>
 	{
 		public CheckBoxRenderer()
@@ -46,16 +48,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateOnColor(bool initialize)
 		{
-			if (initialize && Element.Color.IsDefault)
+			if (initialize && Element.Color.IsDefault())
 				return;
 
-			if (Element.Color.IsDefault)
+			if (Element.Color.IsDefault())
 			{
 				Control.DeleteOnColors();
 			}
 			else
 			{
-				Control.SetOnColors(Element.Color.ToPlatform());
+				Control.SetOnColors(Element.Color.ToNative());
 			}
 		}
 	}

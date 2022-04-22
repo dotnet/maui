@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Platform
 			string format = datePicker.Format ?? string.Empty;
 
 			// Can't use VirtualView.Format because it won't display the correct format if the region and language are set differently
-			if (picker != null && string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase))	
+			if (picker != null && string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase))
 			{
 				NSDateFormatter dateFormatter = new NSDateFormatter
 				{

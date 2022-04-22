@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Handlers;
-using NUnit.Framework;
 using NSubstitute;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var command = Arg.Is(nameof(ILayoutHandler.Add));
 			var args = Arg.Is<LayoutHandlerUpdate>(lhu => lhu.Index == 0 && lhu.View == child0);
 
-			handler.Received().Invoke(command, args); 
+			handler.Received().Invoke(command, args);
 		}
 
 		[TestCase(typeof(VerticalStackLayout))]
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		public void AddRespectsCascadeInputTransparent()
 		{
 			var layout = new VerticalStackLayout()
-			{ 
+			{
 				InputTransparent = true,
 				CascadeInputTransparent = true
 			};

@@ -72,7 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 		string TextForHandler(LabelHandler handler)
 		{
 #if __IOS__
-				return handler.PlatformView.AttributedText?.Value;
+			return handler.PlatformView.AttributedText?.Value;
 #elif __ANDROID__
 				return handler.PlatformView.TextFormatted.ToString();
 #elif WINDOWS
@@ -99,6 +99,7 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 		}
 
+#if !WINDOWS
 		[Fact(DisplayName = "Single LineBreakMode changes MaxLines")]
 		public async Task SingleLineBreakModeChangesMaxLines()
 		{
@@ -125,7 +126,42 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 		}
 
-		[Fact(DisplayName = "LineBreakMode does not affect to MaxLines")]
+		[Theory(DisplayName = "Unsetting single LineBreakMode resets MaxLines")]
+		[InlineData(LineBreakMode.HeadTruncation)]
+		[InlineData(LineBreakMode.NoWrap)]
+		public async Task UnsettingSingleLineBreakModeResetsMaxLines(LineBreakMode newMode)
+		{
+			var label = new Label()
+			{
+				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+				MaxLines = 3,
+				LineBreakMode = LineBreakMode.WordWrap,
+			};
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var platformLabel = GetPlatformLabel(handler);
+
+			await InvokeOnMainThreadAsync((System.Action)(() =>
+			{
+				Assert.Equal(3, GetPlatformMaxLines(handler));
+				Assert.Equal(LineBreakMode.WordWrap.ToPlatform(), GetPlatformLineBreakMode(handler));
+
+				label.LineBreakMode = newMode;
+				platformLabel.UpdateLineBreakMode(label);
+
+				Assert.Equal(1, GetPlatformMaxLines(handler));
+				Assert.Equal(newMode.ToPlatform(), GetPlatformLineBreakMode(handler));
+
+				label.LineBreakMode = LineBreakMode.WordWrap;
+				platformLabel.UpdateLineBreakMode(label);
+
+				Assert.Equal(3, GetPlatformMaxLines(handler));
+				Assert.Equal(LineBreakMode.WordWrap.ToPlatform(), GetPlatformLineBreakMode(handler));
+			}));
+		}
+#endif
+
+		[Fact(DisplayName = "LineBreakMode does not affect MaxLines")]
 		public async Task LineBreakModeDoesNotAffectMaxLines()
 		{
 			var label = new Label()
@@ -169,44 +205,10 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 		}
 
-		[Theory(DisplayName = "Unsetting single LineBreakMode resets MaxLines")]
-		[InlineData(LineBreakMode.HeadTruncation)]
-		[InlineData(LineBreakMode.NoWrap)]
-		public async Task UnsettingSingleLineBreakModeResetsMaxLines(LineBreakMode newMode)
-		{
-			var label = new Label()
-			{
-				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-				MaxLines = 3,
-				LineBreakMode = LineBreakMode.WordWrap,
-			};
-
-			var handler = await CreateHandlerAsync<LabelHandler>(label);
-			var platformLabel = GetPlatformLabel(handler);
-
-			await InvokeOnMainThreadAsync((System.Action)(() =>
-			{
-				Assert.Equal(3, GetPlatformMaxLines(handler));
-				Assert.Equal(LineBreakMode.WordWrap.ToPlatform(), GetPlatformLineBreakMode(handler));
-
-				label.LineBreakMode = newMode;
-				platformLabel.UpdateLineBreakMode(label);
-
-				Assert.Equal(1, GetPlatformMaxLines(handler));
-				Assert.Equal(newMode.ToPlatform(), GetPlatformLineBreakMode(handler));
-
-				label.LineBreakMode = LineBreakMode.WordWrap;
-				platformLabel.UpdateLineBreakMode(label);
-
-				Assert.Equal(3, GetPlatformMaxLines(handler));
-				Assert.Equal(LineBreakMode.WordWrap.ToPlatform(), GetPlatformLineBreakMode(handler));
-			}));
-		}
-
 		[Theory(DisplayName = "Negative MaxLines value with wrap is correct")]
-#if __IOS__
+#if __IOS__ || WINDOWS
 		[InlineData(0)]
-#else 
+#else
 		[InlineData(int.MaxValue)]
 #endif
 		public async Task NegativeMaxValueWithWrapIsCorrect(int expectedLines)

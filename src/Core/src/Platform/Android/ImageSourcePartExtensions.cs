@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform
 				return null;
 
 			var destinationImageView = destinationContext as Android.Widget.ImageView;
-				
+
 			if (destinationImageView is null && setImage is null)
 				return null;
 
