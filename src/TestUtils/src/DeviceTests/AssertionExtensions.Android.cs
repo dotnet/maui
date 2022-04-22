@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Text;
@@ -14,6 +15,28 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+		public static Task<bool> WaitForLayout(AView view, int timeout = 1000)
+		{
+			var tcs = new TaskCompletionSource<bool>();
+
+			view.LayoutChange += OnLayout;
+
+			var cts = new CancellationTokenSource();
+			cts.Token.Register(() => OnLayout(view));
+			cts.CancelAfter(timeout);
+
+			return tcs.Task;
+
+			void OnLayout(object? sender = null, AView.LayoutChangeEventArgs? e = null)
+			{
+				var view = (AView)sender!;
+
+				view.LayoutChange -= OnLayout;
+
+				tcs.TrySetResult(e != null);
+			}
+		}
+
 		public static string CreateColorAtPointError(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{
 			return CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
@@ -95,7 +118,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			static async Task<T> Run(AView view, Func<T> action)
 			{
-				await Wait(() => view.Width > 0 && view.Height > 0);
+				await Task.WhenAll(
+					WaitForLayout(view),
+					Wait(() => view.Width > 0 && view.Height > 0));
 
 				var result = action();
 				return result;
