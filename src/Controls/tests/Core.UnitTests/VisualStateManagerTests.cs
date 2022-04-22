@@ -1,8 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -367,6 +369,53 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			stateGroups.Remove(stateGroups[0]);
 
 			stateGroups.Add(new VisualStateGroup { Name = name });
+		}
+
+		[SetUp]
+		public void Setup()
+		{
+			AppInfo.SetCurrent(new MockAppInfo() { RequestedTheme = AppTheme.Light });
+			Application.Current = new Application();
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			Application.Current = null;
+		}
+
+		[Test]
+		//https://github.com/dotnet/maui/issues/6251
+		public void AppThemeBindingInVSM()
+		{
+
+			var label = new Label() { BackgroundColor = Colors.Red };
+			var list = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					States =
+					{
+						new VisualState { Name = NormalStateName},
+						new VisualState
+						{
+							Name = DisabledStateName,
+							Setters =
+							{
+								new Setter { Property = View.BackgroundColorProperty, Value = new AppThemeBinding{ Light=Colors.Purple, Dark=Colors.Purple, Default=Colors.Purple } },
+							}
+						}
+					}
+				}
+			};
+
+			VisualStateManager.SetVisualStateGroups(label, list);
+
+			Assert.That(label.BackgroundColor, Is.EqualTo(Colors.Red));
+			VisualStateManager.GoToState(label, DisabledStateName);
+			Assert.That(label.BackgroundColor, Is.EqualTo(Colors.Purple));
+			VisualStateManager.GoToState(label, NormalStateName);
+			Assert.That(label.BackgroundColor, Is.EqualTo(Colors.Red));
 		}
 
 		[Test]

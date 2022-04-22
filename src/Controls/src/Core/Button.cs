@@ -287,9 +287,6 @@ namespace Microsoft.Maui.Controls
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			HandleFontChanged();
 
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
-			HandleFontChanged();
-
 		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) =>
 			HandleFontChanged();
 
