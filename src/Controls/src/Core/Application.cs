@@ -149,7 +149,6 @@ namespace Microsoft.Maui.Controls
 					return _resources;
 
 				_resources = new ResourceDictionary();
-				_resources.MergedDictionaries.Add(DefaultStyles.CreateDefaultResourceDictionary());
 				((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
 				return _resources;
 			}
@@ -168,6 +167,7 @@ namespace Microsoft.Maui.Controls
 				OnPropertyChanged();
 
 				// This is for cases that do call InitializeComponent()
+				// Because the Dictionary added in the ctor will get wiped out by the XAML parser
 				if (_resources != null && _resources.MergedDictionaries.Count == 0)
 					_resources.MergedDictionaries.Add(DefaultStyles.CreateDefaultResourceDictionary());
 			}
