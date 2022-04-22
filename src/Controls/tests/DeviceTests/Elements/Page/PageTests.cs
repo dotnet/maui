@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var color = Color.Parse(colorStr);
 
-			var page = new ContentPage { IsPlatformEnabled = true };
+			var page = new ContentPage();
 			page.Background = color;
 
 			await CreateHandlerAndAddToWindow<PageHandler>(page, async (handler) =>
