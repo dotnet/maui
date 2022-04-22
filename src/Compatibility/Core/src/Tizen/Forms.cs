@@ -7,12 +7,14 @@ using System.Reflection;
 using ElmSharp;
 using ElmSharp.Wearable;
 using Tizen.Applications;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
-using Microsoft.Maui.Controls.Compatibility.Shapes;
-using DeviceOrientation = Microsoft.Maui.Controls.Compatibility.Internals.DeviceOrientation;
+using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Devices;
 using ELayout = ElmSharp.Layout;
 using TSystemInfo = Tizen.System.Information;
+using Size = Microsoft.Maui.Graphics.Size;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -29,11 +31,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 		Lightweight,
 	}
 
+	[Obsolete]
 	public class InitializationOptions
 	{
 		public CoreApplication Context { get; set; }
 		public bool UseDeviceIndependentPixel { get; set; }
-		public bool UseSkiaSharp { get; set; }
+		public bool UseSkiaSharp { get; set; } = true;
 		public HandlerAttribute[] Handlers { get; set; }
 		public Dictionary<Type, Func<IRegisterable>> CustomHandlers { get; set; } // for static registers
 		public Assembly[] Assemblies { get; set; }
@@ -50,6 +53,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			public string Name;
 			public ExportEffectAttribute[] Effects;
+		}
+		public InitializationOptions()
+		{
 		}
 
 		public InitializationOptions(CoreApplication application)
@@ -80,7 +86,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 	}
 
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
 	public static class Forms
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 	{
 		static Lazy<string> s_profile = new Lazy<string>(() =>
 		{
@@ -137,92 +147,41 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return ThemeManager.GetBaseScale(s_deviceType.Value);
 		});
 
-		class TizenDeviceInfo : DeviceInfo
+		static Lazy<double> s_scalingFactor = new Lazy<double>(() =>
 		{
-			readonly Size pixelScreenSize;
+			int width = 0;
+			int height = 0;
 
-			readonly Size scaledScreenSize;
+			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.width", out width);
+			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.height", out height);
 
-			readonly double scalingFactor;
-
-			readonly string profile;
-
-			public override Size PixelScreenSize
+			var scalingFactor = 1.0;  // scaling is disabled, we're using pixels as Xamarin's geometry units
+			if (DisplayResolutionUnit.UseVP && DisplayResolutionUnit.ViewportWidth > 0)
 			{
-				get
-				{
-					return this.pixelScreenSize;
-				}
+				scalingFactor = width / DisplayResolutionUnit.ViewportWidth;
 			}
-
-			public override Size ScaledScreenSize
+			else
 			{
-				get
+				if (DisplayResolutionUnit.UseDP)
 				{
-					return this.scaledScreenSize;
+					scalingFactor = s_dpi.Value / 160.0;
 				}
-			}
 
-			public Size PhysicalScreenSize { get; }
-
-			public override double ScalingFactor
-			{
-				get
+				if (DisplayResolutionUnit.UseDeviceScale)
 				{
-					return this.scalingFactor;
-				}
-			}
-
-			public string Profile
-			{
-				get
-				{
-					return this.profile;
-				}
-			}
-
-			public TizenDeviceInfo()
-			{
-				int width = 0;
-				int height = 0;
-
-				TSystemInfo.TryGetValue("http://tizen.org/feature/screen.width", out width);
-				TSystemInfo.TryGetValue("http://tizen.org/feature/screen.height", out height);
-
-				var physicalScale = s_dpi.Value / 160.0;
-				PhysicalScreenSize = new Size(width / physicalScale, height / physicalScale);
-
-				scalingFactor = 1.0;  // scaling is disabled, we're using pixels as Xamarin's geometry units
-				if (DisplayResolutionUnit.UseVP && DisplayResolutionUnit.ViewportWidth > 0)
-				{
-					scalingFactor = width / DisplayResolutionUnit.ViewportWidth;
-				}
-				else
-				{
-					if (DisplayResolutionUnit.UseDP)
+					var portraitSize = Math.Min(PhysicalScreenSize.Width, PhysicalScreenSize.Height);
+					if (portraitSize > 2000)
 					{
-						scalingFactor = s_dpi.Value / 160.0;
+						scalingFactor *= 4;
 					}
-
-					if (DisplayResolutionUnit.UseDeviceScale)
+					else if (portraitSize > 1000)
 					{
-						var portraitSize = Math.Min(PhysicalScreenSize.Width, PhysicalScreenSize.Height);
-						if (portraitSize > 2000)
-						{
-							scalingFactor *= 4;
-						}
-						else if (portraitSize > 1000)
-						{
-							scalingFactor *= 2.5;
-						}
+						scalingFactor *= 2.5;
 					}
 				}
-
-				pixelScreenSize = new Size(width, height);
-				scaledScreenSize = new Size(width / scalingFactor, height / scalingFactor);
-				profile = s_profile.Value;
 			}
-		}
+			return scalingFactor;
+		});
 
 		static StaticRegistrarStrategy s_staticRegistrarStrategy = StaticRegistrarStrategy.None;
 
@@ -231,6 +190,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool s_useMessagingCenter = true;
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
+
+		public static IMauiContext MauiContext
+		{
+			get;
+			internal set;
+		}
 
 		public static CoreApplication Context
 		{
@@ -262,8 +227,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			private set;
 		}
 
-		public static DeviceOrientation NaturalOrientation { get; } = GetDeviceOrientation();
-
 		public static StaticRegistrarStrategy StaticRegistrarStrategy => s_staticRegistrarStrategy;
 
 		public static PlatformType PlatformType => s_platformType;
@@ -274,33 +237,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static bool UseFastLayout { get; private set; }
 
-		public static DisplayResolutionUnit DisplayResolutionUnit { get; private set; }
+		public static DisplayResolutionUnit DisplayResolutionUnit { get; private set; } = DisplayResolutionUnit.Pixel();
 
 		public static int ScreenDPI => s_dpi.Value;
 
-		public static Size PhysicalScreenSize => (Device.info as TizenDeviceInfo).PhysicalScreenSize;
+		public static Size PhysicalScreenSize => DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
 
 		internal static TizenTitleBarVisibility TitleBarVisibility
 		{
 			get;
 			private set;
-		}
-
-		static DeviceOrientation GetDeviceOrientation()
-		{
-			int width = 0;
-			int height = 0;
-			TSystemInfo.TryGetValue<int>("http://tizen.org/feature/screen.width", out width);
-			TSystemInfo.TryGetValue<int>("http://tizen.org/feature/screen.height", out height);
-
-			if (height >= width)
-			{
-				return DeviceOrientation.Portrait;
-			}
-			else
-			{
-				return DeviceOrientation.Landscape;
-			}
 		}
 
 		internal static void SendViewInitialized(this VisualElement self, EvasObject nativeView)
@@ -315,6 +261,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 				});
 			}
 		}
+
+		public static bool IsInitializedRenderers { get; private set; }
 
 		public static void SetTitleBarVisibility(TizenTitleBarVisibility visibility)
 		{
@@ -384,41 +332,32 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		public static void Init(CoreApplication application)
-		{
-			Init(application, false);
-		}
+		[Obsolete]
+		public static void Init(IActivationState activationState) => Init(activationState.Context);
 
-		public static void Init(CoreApplication application, bool useDeviceIndependentPixel)
-		{
-			DisplayResolutionUnit = DisplayResolutionUnit.FromInit(useDeviceIndependentPixel);
-			SetupInit(application);
-		}
+		[Obsolete]
+		public static void Init(IActivationState activationState, InitializationOptions options) => Init(activationState.Context, options);
 
-		public static void Init(CoreApplication application, DisplayResolutionUnit unit)
+		[Obsolete]
+		public static void Init(IMauiContext context, InitializationOptions options = null)
 		{
-			DisplayResolutionUnit = unit ?? DisplayResolutionUnit.Pixel();
-			SetupInit(application);
-		}
-
-		public static void Init(InitializationOptions options)
-		{
-			if (options == null)
+			if (options != null && options.DisplayResolutionUnit != null)
 			{
-				throw new ArgumentException("Must be set options", nameof(options));
+				DisplayResolutionUnit = options.DisplayResolutionUnit;
 			}
-
-			DisplayResolutionUnit = options.DisplayResolutionUnit ?? DisplayResolutionUnit.FromInit(options.UseDeviceIndependentPixel);
-			SetupInit(options.Context, options);
+			SetupInit(context, options);
 		}
 
-		static void SetupInit(CoreApplication application, InitializationOptions options = null)
+		[Obsolete]
+		static void SetupInit(IMauiContext context, InitializationOptions options = null)
 		{
-			Context = application;
+			MauiContext = context;
+			Context = options?.Context ?? MauiApplication.Current;
+			NativeParent = context.GetNativeParent();
+			Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 
 			if (!IsInitialized)
 			{
-				Internals.Log.Listeners.Add(new XamarinLogListener());
 				if (System.Threading.SynchronizationContext.Current == null)
 				{
 					TizenSynchronizationContext.Initialize();
@@ -429,73 +368,51 @@ namespace Microsoft.Maui.Controls.Compatibility
 				Utility.AppendGlobalFontPath(@"/usr/share/fonts");
 			}
 
-			Device.PlatformServices = new TizenPlatformServices();
-			if (Device.info != null)
+			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
+
+			if (options?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
+				RegisterCompatRenderers(options);
+
+			if (options != null)
 			{
-				((TizenDeviceInfo)Device.info).Dispose();
-				Device.info = null;
+				s_platformType = options.PlatformType;
+				s_useMessagingCenter = options.UseMessagingCenter;
+				UseSkiaSharp = options.UseSkiaSharp;
+				UseFastLayout = options.UseFastLayout;
 			}
 
-			Device.Info = new Forms.TizenDeviceInfo();
+			Application.AccentColor = GetAccentColor();
+			ExpressionSearch.Default = new TizenExpressionSearch();
 
-			if (!Forms.IsInitialized)
+			if (Context is WatchApplication)
+				s_platformType = PlatformType.Lightweight;
+
+			IsInitialized = true;
+		}
+
+		[Obsolete]
+		internal static void RegisterCompatRenderers(InitializationOptions maybeOptions = null)
+		{
+			if (!IsInitializedRenderers)
 			{
-				if (options != null)
+				IsInitializedRenderers = true;
+				if (maybeOptions != null)
 				{
-					s_platformType = options.PlatformType;
-					s_useMessagingCenter = options.UseMessagingCenter;
-					UseSkiaSharp = options.UseSkiaSharp;
-					UseFastLayout = options.UseFastLayout;
+					var options = maybeOptions;
+					var handlers = options.Handlers;
+					var flags = options.Flags;
+					var effectScopes = options.EffectScopes;
+
+					//TODO: ExportCell?
+					//TODO: ExportFont
 
 					// renderers
-					if (options.Handlers != null)
+					if (handlers != null)
 					{
-						Registrar.RegisterRenderers(options.Handlers);
-					}
-					else
-					{
-						// static registrar
-						if (options.StaticRegistarStrategy != StaticRegistrarStrategy.None)
-						{
-							s_staticRegistrarStrategy = options.StaticRegistarStrategy;
-							StaticRegistrar.RegisterHandlers(options.CustomHandlers);
-
-							if (options.StaticRegistarStrategy == StaticRegistrarStrategy.All)
-							{
-								Registrar.RegisterAll(new Type[]
-								{
-										typeof(ExportRendererAttribute),
-										typeof(ExportImageSourceHandlerAttribute),
-										typeof(ExportCellAttribute),
-										typeof(ExportHandlerAttribute),
-										typeof(ExportFontAttribute)
-								});
-
-								if (UseSkiaSharp)
-									RegisterSkiaSharpRenderers();
-							}
-						}
-						else
-						{
-							Registrar.RegisterAll(new Type[]
-							{
-								typeof(ExportRendererAttribute),
-								typeof(ExportImageSourceHandlerAttribute),
-								typeof(ExportCellAttribute),
-								typeof(ExportHandlerAttribute),
-								typeof(ExportFontAttribute)
-							});
-
-							if (UseSkiaSharp)
-								RegisterSkiaSharpRenderers();
-
-							if (UseFastLayout)
-								Registrar.Registered.Register(typeof(Layout), typeof(FastLayoutRenderer));
-						}
+						Registrar.RegisterRenderers(handlers);
 					}
 
 					// effects
-					var effectScopes = options.EffectScopes;
 					if (effectScopes != null)
 					{
 						for (var i = 0; i < effectScopes.Length; i++)
@@ -506,28 +423,19 @@ namespace Microsoft.Maui.Controls.Compatibility
 					}
 
 					// css
-					Registrar.RegisterStylesheets(options.Flags);
+					Registrar.RegisterStylesheets(flags);
 				}
 				else
 				{
-					Registrar.RegisterAll(new Type[]
-					{
+					// Only need to do this once
+					Registrar.RegisterAll(new[] {
 						typeof(ExportRendererAttribute),
-						typeof(ExportImageSourceHandlerAttribute),
 						typeof(ExportCellAttribute),
-						typeof(ExportHandlerAttribute),
+						typeof(ExportImageSourceHandlerAttribute),
 						typeof(ExportFontAttribute)
 					});
 				}
 			}
-
-			Color.SetAccent(GetAccentColor(profile));
-			ExpressionSearch.Default = new TizenExpressionSearch();
-
-			if (application is WatchApplication)
-				s_platformType = PlatformType.Lightweight;
-
-			IsInitialized = true;
 		}
 
 		static void RegisterSkiaSharpRenderers()
@@ -545,26 +453,23 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Registrar.Registered.Register(typeof(Shapes.Rectangle), typeof(Platform.Tizen.SkiaSharp.RectangleRenderer));
 		}
 
-		static Color GetAccentColor(string profile)
+		static Color GetAccentColor()
 		{
 			// On Windows Phone, this is the complementary color chosen by the user.
 			// Good Windows Phone applications use this as part of their styling to provide a native look and feel.
 			// On iOS and Android this instance is set to a contrasting color that is visible on the default
 			// background but is not the same as the default text color.
 
-			switch (profile)
-			{
-				case "mobile":
-					// [Tizen_3.0]Basic_Interaction_GUI_[REF].xlsx Theme 001 (Default) 1st HSB: 188 70 80
-					return Color.FromRgba(61, 185, 204, 255);
-				case "tv":
-					return Color.FromRgba(15, 15, 15, 230);
-				case "wearable":
-					// Theme A (Default) 1st HSB: 207 75 16
-					return Color.FromRgba(10, 27, 41, 255);
-				default:
-					return Color.Black;
-			}
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+				// [Tizen_3.0]Basic_Interaction_GUI_[REF].xlsx Theme 001 (Default) 1st HSB: 188 70 80
+				return Color.FromRgba(61, 185, 204, 255);
+			else if (DeviceInfo.Idiom == DeviceIdiom.TV)
+				return Color.FromRgba(15, 15, 15, 230);
+			else if (DeviceInfo.Idiom == DeviceIdiom.Watch)
+				// Theme A (Default) 1st HSB: 207 75 16
+				return Color.FromRgba(10, 27, 41, 255);
+			else
+				return Color.FromRgb(0, 0, 0);
 		}
 
 		/// <summary>
@@ -591,7 +496,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <returns></returns>
 		public static int ConvertToScaledPixel(double dp)
 		{
-			return (int)Math.Round(dp * Device.Info.ScalingFactor);
+			return (int)Math.Round(dp * s_scalingFactor.Value);
 		}
 
 		/// <summary>
@@ -604,7 +509,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <returns></returns>
 		public static double ConvertToScaledDP(int pixel)
 		{
-			return pixel / Device.Info.ScalingFactor;
+			if (pixel == int.MaxValue)
+				return double.PositiveInfinity;
+			return pixel / s_scalingFactor.Value;
 		}
 
 		/// <summary>
@@ -617,7 +524,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <returns></returns>
 		public static double ConvertToScaledDP(double pixel)
 		{
-			return pixel / Device.Info.ScalingFactor;
+			if (pixel == double.PositiveInfinity)
+				return double.PositiveInfinity;
+			return pixel / s_scalingFactor.Value;
 		}
 
 		/// <summary>
@@ -660,7 +569,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			Elementary.Initialize();
 			Elementary.ThemeOverlay();
-			var window = new PreloadedWindow();
+			var window = new Microsoft.Maui.Controls.Compatibility.Platform.Tizen.PreloadedWindow();
 			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.width", out int width);
 			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.height", out int height);
 		}

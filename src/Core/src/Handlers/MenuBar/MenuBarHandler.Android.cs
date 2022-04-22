@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Maui.Platform;
 using Android.Views;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {

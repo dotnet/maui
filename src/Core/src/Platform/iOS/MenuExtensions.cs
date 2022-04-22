@@ -1,9 +1,9 @@
 ﻿using System;
-using UIKit;
-using Foundation;
-using ObjCRuntime;
 using System.Collections.Generic;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
+using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
@@ -43,6 +43,9 @@ namespace Microsoft.Maui.Platform
 			IMauiContext mauiContext,
 			IUIMenuBuilder? uIMenuBuilder)
 		{
+			if (String.IsNullOrWhiteSpace(title))
+				throw new ArgumentNullException(nameof(title), $"{menuElements} requires title text.");
+
 			uIMenuBuilder = uIMenuBuilder ??
 				MauiUIApplicationDelegate.Current.MenuBuilder!;
 

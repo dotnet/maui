@@ -1,13 +1,13 @@
 ﻿namespace Microsoft.Maui.Controls
 {
-	public partial class Editor 
+	public partial class Editor
 	{
-		public static IPropertyMapper<IEditor, EditorHandler> ControlsEditorMapper = 
+		public static IPropertyMapper<IEditor, EditorHandler> ControlsEditorMapper =
 			new PropertyMapper<Editor, EditorHandler>(EditorHandler.Mapper)
-		{
-			[nameof(Text)] = MapText,
-			[nameof(TextTransform)] = MapText,
-		};
+			{
+				[nameof(Text)] = MapText,
+				[nameof(TextTransform)] = MapText,
+			};
 
 		internal static new void RemapForControls()
 		{

@@ -299,7 +299,6 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view != null)
 				PlatformInterop.RemoveFromParent(view);
-				PlatformInterop.RemoveFromParent(view);
 		}
 
 		internal static Rect GetPlatformViewBounds(this IView view)

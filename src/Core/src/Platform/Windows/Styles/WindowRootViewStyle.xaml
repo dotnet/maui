@@ -2,15 +2,55 @@
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:maui="using:Microsoft.Maui.Platform">
+
+    <maui:DefaultOrUserDataTemplateSelector 
+        UserTemplateName="MauiAppTitleBarTemplate" 
+        DefaultTemplateName="MauiAppTitleBarTemplateDefault"
+        x:Key="MauiAppTitleBarTemplateSelector"/>
+
+    <maui:DefaultOrUserDataTemplateSelector 
+        UserTemplateName="MauiAppTitleBarContainerTemplate" 
+        DefaultTemplateName="MauiAppTitleBarContainerTemplateDefault"
+        x:Key="MauiAppTitleBarContainerTemplateSelector"/>
+
+    <DataTemplate x:Key="MauiAppTitleBarTemplateDefault">
+        <Border
+            Canvas.ZIndex="1" 
+            VerticalAlignment="Stretch"
+            Margin="0,0,0,0">
+            <StackPanel Orientation="Horizontal" Margin="12, 0, 0, 0" x:Name="RootStackPanel">
+                <Image 
+                    x:Name="AppFontIcon"
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center"
+                    Source="Square44x44Logo.png" 
+                    Width="16" 
+                    Height="16"/>
+                <TextBlock 
+                    x:Name="AppTitle"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource CaptionTextBlockStyle}" />
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <DataTemplate x:Key="MauiAppTitleBarContainerTemplateDefault">
+        <ContentControl 
+            IsTabStop="False"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
+            ContentTemplateSelector="{StaticResource MauiAppTitleBarTemplateSelector}"
+            x:Name="AppTitleBarContentControl">
+        </ContentControl>
+    </DataTemplate>
+
     <Style TargetType="maui:WindowRootView">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="maui:WindowRootView">
-                    <Page Margin="0" Padding="0">
+                    <Page Margin="0" Padding="0" x:Name="RootPage">
                         <Page.Resources>
-                            <!--This top margin is the height of the custom TitleBar-->
-                            <Thickness x:Key="NavigationViewContentMargin">0,48,0,0</Thickness>
-                            
+
                             <!-- 
                             This is the margin around the NavigationView.Header. By default WinUI will set a 
                             margin on the left when the backbutton appears, but our backbutton is in the
@@ -28,25 +68,16 @@
 
                         </Page.Resources>
                         <Grid x:Name="RootGrid" RowSpacing="0" ColumnSpacing="0" Margin="0" Padding="0">
-                            <Border x:Name="AppTitleBar"
-                                VerticalAlignment="Top"
-                                Height="48"
-                                Canvas.ZIndex="1" 
-                                Margin="0,0,0,0">
-                                <StackPanel Orientation="Horizontal" Margin="12, 0, 0, 0" x:Name="RootStackPanel">                                    
-                                    <Image 
-                                        x:Name="AppFontIcon"
-                                        HorizontalAlignment="Left" 
-                                        VerticalAlignment="Center"
-                                        Source="Square44x44Logo.png" 
-                                        Width="16" 
-                                        Height="16"/>
-                                    <TextBlock 
-                                        x:Name="AppTitle"
-                                        VerticalAlignment="Center"
-                                        Style="{StaticResource CaptionTextBlockStyle}" />
-                                </StackPanel>
-                            </Border>
+                            <ContentControl x:Name="AppTitleBarContainer"
+                                            IsTabStop="False"
+                                            VerticalAlignment="Top"
+                                            VerticalContentAlignment="Stretch"
+                                            HorizontalContentAlignment="Stretch"
+                                            Canvas.ZIndex="1" 
+                                            Margin="0,0,0,0"
+                                            ContentTemplateSelector="{StaticResource MauiAppTitleBarContainerTemplateSelector}"
+                                            >
+                            </ContentControl>
                             <ContentPresenter Canvas.ZIndex="0"></ContentPresenter>
                         </Grid>
                     </Page>

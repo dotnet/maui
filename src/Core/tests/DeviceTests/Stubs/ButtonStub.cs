@@ -21,8 +21,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Thickness Padding { get; set; }
 
-		public LineBreakMode LineBreakMode { get; set; }
-
 		public IImageSource ImageSource { get; set; }
 
 		Aspect IImage.Aspect => Aspect.Fill;

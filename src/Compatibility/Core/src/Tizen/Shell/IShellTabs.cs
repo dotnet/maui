@@ -2,6 +2,7 @@ using System;
 using ElmSharp;
 using EColor = ElmSharp.Color;
 using EToolbarItem = ElmSharp.ToolbarItem;
+using EToolbarItemEventArgs = ElmSharp.ToolbarItemEventArgs;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		EToolbarItem SelectedItem { get; }
 
-		event EventHandler<ToolbarItemEventArgs> Selected;
+		event EventHandler<EToolbarItemEventArgs> Selected;
 
 		EToolbarItem Append(string label, string icon);
 		EToolbarItem Append(string label);

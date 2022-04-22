@@ -1,9 +1,9 @@
-using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Shapes;
+using Microsoft.Maui.Controls.Platform;
 using ELayout = ElmSharp.Layout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete]
 	public sealed class DefaultRenderer : VisualElementRenderer<VisualElement>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<VisualElement> e)
@@ -17,18 +17,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EllipseRenderer : ShapeRenderer { }
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class LineRenderer : ShapeRenderer { }
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PathRenderer : ShapeRenderer { }
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PolygonRenderer : ShapeRenderer { }
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PolylineRenderer : ShapeRenderer { }
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class RectangleRenderer : ShapeRenderer { }
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ShapeRenderer : VisualElementRenderer<VisualElement>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<VisualElement> e)

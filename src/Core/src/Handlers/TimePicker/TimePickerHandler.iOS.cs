@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidBegin += OnStarted;
 				platformView.EditingDidEnd += OnEnded;
 				platformView.ValueChanged += OnValueChanged;
-				platformView.DateSelected += OnDateSelected;	
+				platformView.DateSelected += OnDateSelected;
 				platformView.UpdateTime(VirtualView.Time);
 			}
 		}

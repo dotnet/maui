@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Controls
 					p.Toolbar = null;
 			}
 
-			if (InternalChildren.Count > 0)
+			if (Navigation is MauiNavigationImpl && InternalChildren.Count > 0)
 			{
 				var navStack = Navigation.NavigationStack;
 				var visiblePage = Navigation.NavigationStack[NavigationStack.Count - 1];

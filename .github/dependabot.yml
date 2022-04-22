@@ -1,0 +1,16 @@
+version: 2
+updates:
+- package-ecosystem: nuget
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 25
+  ignore:
+    - dependency-name: "MicrosoftMauiGraphicsVersion"         # maestro
+    - dependency-name: "Microsoft.Maui.Graphics*"             # maestro
+    - dependency-name: "Microsoft.DotNet.XHarness*"           # maestro
+    - dependency-name: "Newtonsoft.Json"                      # needs to be done manually to match VS
+  labels:
+      - "nuget"
+      - "dependencies"
+      - "area/upstream"

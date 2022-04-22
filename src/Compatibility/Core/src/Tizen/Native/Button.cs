@@ -3,7 +3,7 @@ using ElmSharp;
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
 using ESize = ElmSharp.Size;
-using TSButtonStyle = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.ButtonStyle;
+using TSButtonStyle = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ButtonStyle;
 
 #if __MATERIAL__
 using Tizen.NET.MaterialComponents;

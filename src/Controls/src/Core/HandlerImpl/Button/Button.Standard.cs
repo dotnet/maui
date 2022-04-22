@@ -5,5 +5,7 @@
 	{
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='MapText']/Docs" />
 		public static void MapText(ButtonHandler handler, Button button) { }
+
+		public static void MapLineBreakMode(ButtonHandler handler, Button button) { }
 	}
 }

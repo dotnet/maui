@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public DataTemplate(
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type) 
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 			: base(type)
 		{
 			_id = Interlocked.Increment(ref idCounter);
