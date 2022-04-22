@@ -8,6 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Page)]
+	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 	public partial class PageTests : HandlerTestBase
 	{
 		[Theory("Page Background Initializes Correctly With Background Prooperty")]
