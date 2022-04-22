@@ -7,6 +7,8 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+#elif TIZEN
+using PlatformView = ElmSharp.EvasObject;
 #elif NETSTANDARD
 using PlatformView = System.Object;
 #endif
@@ -236,7 +238,7 @@ namespace Microsoft.Maui.Handlers
 
 			UpdateHasContainer(handler, shadow != null);
 
- 			((PlatformView?)handler.ContainerView)?.UpdateShadow(view);
+			((PlatformView?)handler.ContainerView)?.UpdateShadow(view);
 		}
 
 		static partial void MappingSemantics(IViewHandler handler, IView view);
@@ -302,7 +304,7 @@ namespace Microsoft.Maui.Handlers
 				((PlatformView?)handler.PlatformView)?.Focus(request);
 			}
 		}
-		
+
 		public static void MapInputTransparent(IViewHandler handler, IView view)
 		{
 #if ANDROID
@@ -324,7 +326,7 @@ namespace Microsoft.Maui.Handlers
 			((PlatformView?)handler.PlatformView)?.Unfocus(view);
 		}
 
-		static void UpdateHasContainer(IViewHandler handler, bool definitelyNeedsContainer) 
+		static void UpdateHasContainer(IViewHandler handler, bool definitelyNeedsContainer)
 		{
 			if (definitelyNeedsContainer)
 			{

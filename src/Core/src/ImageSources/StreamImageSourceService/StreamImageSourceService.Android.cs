@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 				try
 				{
 					stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
-					
+
 					var callback = new ImageLoaderCallback();
 
 					PlatformInterop.LoadImageFromStream(imageView, stream, callback);

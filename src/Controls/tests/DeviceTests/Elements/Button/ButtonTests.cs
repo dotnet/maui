@@ -13,7 +13,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task InitialTextTransformApplied(string text, TextTransform transform, string expected)
 		{
 			var control = new Button() { Text = text, TextTransform = transform };
-			var platformText = await GetNativeText(await CreateHandlerAsync<ButtonHandler>(control));
+			var platformText = await GetPlatformText(await CreateHandlerAsync<ButtonHandler>(control));
 			Assert.Equal(expected, platformText);
 		}
 
@@ -24,8 +24,28 @@ namespace Microsoft.Maui.DeviceTests
 			var control = new Button() { Text = text };
 			var handler = await CreateHandlerAsync<ButtonHandler>(control);
 			await InvokeOnMainThreadAsync(() => control.TextTransform = transform);
-			var platformText = await GetNativeText(handler);
+			var platformText = await GetPlatformText(handler);
 			Assert.Equal(expected, platformText);
+		}
+
+		[Fact(DisplayName = "LineBreakMode Initializes Correctly")]
+		public async Task LineBreakModeInitializesCorrectly()
+		{
+			var xplatLineBreakMode = LineBreakMode.TailTruncation;
+
+			var button = new Button()
+			{
+				LineBreakMode = xplatLineBreakMode
+			};
+
+			var expectedValue = xplatLineBreakMode.ToPlatform();
+
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.Equal(expectedValue, GetPlatformLineBreakMode(handler));
+			});
 		}
 	}
 }

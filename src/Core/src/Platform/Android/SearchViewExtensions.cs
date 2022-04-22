@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Platform
 			{
 				searchView.ClearFocus();
 			}
-		
+
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
 			if (editText == null)

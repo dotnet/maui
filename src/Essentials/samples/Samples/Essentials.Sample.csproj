@@ -15,6 +15,10 @@
     <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(UseMaui)' != 'true' and $(TargetFramework.Contains('-tizen'))">
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" ExcludeAssets="runtime" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
@@ -29,6 +33,6 @@
     <MauiSplashScreen Include="Resources\AppIcons\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
   </ItemGroup>
 
-  <Import Project="../../../Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

@@ -1,4 +1,4 @@
-using CurrentPlatform = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.Tizen;
+using CurrentPlatform = Microsoft.Maui.Controls.PlatformConfiguration.Tizen;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

@@ -1,10 +1,10 @@
 using System;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -238,9 +238,6 @@ namespace Microsoft.Maui.Controls
 			HandleFontChanged();
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
-			HandleFontChanged();
-
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
 			HandleFontChanged();
 
 		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) =>

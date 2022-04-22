@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Devices;
-using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 
 #pragma warning disable CS0612 // Type or member is obsolete

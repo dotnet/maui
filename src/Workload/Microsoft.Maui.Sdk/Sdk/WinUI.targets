@@ -1,5 +1,6 @@
 <!-- Workarounds for WinUI -->
 <Project>
+
   <Target Name="_AddMauiPriFiles" AfterTargets="ResolveAssemblyReferences">
     <ItemGroup>
       <_ReferenceRelatedPaths
@@ -8,4 +9,7 @@
       />
     </ItemGroup>
   </Target>
+
+  <Import Project="WinUI.NetCore.targets" Condition=" '$(EnablePriGenTooling)'!='true' " />
+
 </Project>

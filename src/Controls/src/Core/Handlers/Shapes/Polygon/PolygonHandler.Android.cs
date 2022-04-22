@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			handler.PlatformView?.UpdateShape(polygon);
 		}
 
-		public static void MapPoints(IShapeViewHandler handler, Polygon polygon) 
+		public static void MapPoints(IShapeViewHandler handler, Polygon polygon)
 		{
 			handler.PlatformView?.InvalidateShape(polygon);
 		}

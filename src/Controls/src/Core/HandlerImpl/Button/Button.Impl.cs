@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 			_wasImageLoading = isLoading;
 		}
 
-		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
+		Font ITextStyle.Font => this.ToFont();
 
 		Aspect IImage.Aspect => Aspect.Fill;
 

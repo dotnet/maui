@@ -133,9 +133,6 @@ namespace Microsoft.Maui.Controls
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
 			HandleFontChanged();
 
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
-			HandleFontChanged();
-
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			this.GetDefaultFontSize();
 

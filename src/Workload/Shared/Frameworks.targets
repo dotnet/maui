@@ -43,12 +43,19 @@
         Tfm="net$(_MauiDotNetVersion)-windows$(WindowsTargetFrameworkVersion)"
         Profile="Windows"
     />
+    <_TargetPlatform
+        Condition=" '$(MauiPlatformName)' == 'tizen' "
+        Include="net$(_MauiDotNetVersion)-tizen$(TizenTargetFrameworkVersion)"
+        FullTfm="%(Identity)"
+        Tfm="net$(_MauiDotNetVersion)-tizen"
+        Profile="Tizen"
+    />
   </ItemGroup>
 
   <Import Condition=" '$(MauiPlatformName)' != '' " Project="FrameworkList.targets" />
 
   <ItemGroup>
-    <_Platforms Include="any;android;maccatalyst;ios" />
+    <_Platforms Include="any;android;maccatalyst;ios;tizen" />
     <_Platforms Include="win" Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'" />
   </ItemGroup>
 

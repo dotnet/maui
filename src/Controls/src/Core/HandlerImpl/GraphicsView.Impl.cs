@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 
 		void IGraphicsView.CancelInteraction() => CancelInteraction?.Invoke(this, EventArgs.Empty);
 
-		void IGraphicsView.DragInteraction(PointF[] points) => DragInteraction?.Invoke(this, new TouchEventArgs(points,true));
+		void IGraphicsView.DragInteraction(PointF[] points) => DragInteraction?.Invoke(this, new TouchEventArgs(points, true));
 
 		void IGraphicsView.EndHoverInteraction() => EndHoverInteraction?.Invoke(this, EventArgs.Empty);
 

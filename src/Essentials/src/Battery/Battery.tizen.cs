@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 using TizenBattery = Tizen.System.Battery;
 
 namespace Microsoft.Maui.Devices

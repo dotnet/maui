@@ -1,6 +1,6 @@
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 

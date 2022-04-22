@@ -207,10 +207,5 @@ namespace Microsoft.Maui.DeviceTests
 				LineBreakMode.MiddleTruncation => TextTrimming.WordEllipsis,
 				_ => throw new ArgumentOutOfRangeException(nameof(mode))
 			};
-
-		//public static FontWeight GetFontWeight(this Typeface typeface) =>
-		//	PlatformVersion.IsAtLeast(28)
-		//		? (FontWeight)typeface.Weight
-		//		: typeface.IsBold ? FontWeight.Bold : FontWeight.Regular;
 	}
 }
