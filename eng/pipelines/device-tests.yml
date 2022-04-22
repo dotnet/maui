@@ -54,6 +54,16 @@ parameters:
   - name: BuildEverything
     type: boolean
     default: false
+  - name: androidPool
+    type: object
+    default:
+      name: 'Azure Pipelines'
+      vmImage: 'internal-macos12'
+  - name: iosPool
+    type: object
+    default:
+      name: 'Azure Pipelines'
+      vmImage: 'internal-macos12'
 
 resources:
   repositories:
@@ -67,6 +77,8 @@ stages:
 
   - template: common/device-tests.yml
     parameters:
+      androidPool: ${{ parameters.androidPool }}
+      iosPool: ${{ parameters.iosPool }}
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]
         # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
