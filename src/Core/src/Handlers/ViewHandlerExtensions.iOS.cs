@@ -4,7 +4,7 @@ using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui
 {
-	public static partial class ViewHandlerExtensions
+	internal static partial class ViewHandlerExtensions
 	{
 		internal static Size GetDesiredSizeFromHandler(this IViewHandler viewHandler, double widthConstraint, double heightConstraint)
 		{

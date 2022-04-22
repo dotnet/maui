@@ -190,11 +190,7 @@ namespace Microsoft.Maui.Controls
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				if (_child?.PlatformView == null)
-					return;
-
-				var destination = Context!.ToCrossPlatformRectInReferenceFrame(l, t, r, b);
-				_child?.VirtualView?.Arrange(destination);
+				_child?.LayoutVirtualView(l, t, r, b);
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -205,17 +201,8 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 
-				var width = widthMeasureSpec.GetSize();
-				var height = heightMeasureSpec.GetSize();
-
-				if (width * height == 0)
-				{
-					SetMeasuredDimension(0, 0);
-					return;
-				}
-
-				_child?.VirtualView?.Measure(widthMeasureSpec.ToDouble(Context!), heightMeasureSpec.ToDouble(Context!));
-				SetMeasuredDimension(width, height);
+				var size = _child.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec);
+				SetMeasuredDimension((int)size.Width, (int)size.Height);
 			}
 		}
 	}
