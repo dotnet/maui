@@ -115,15 +115,15 @@
     />
     <PackageReference
         Update="Svg.Skia"
-        Version="$(SvgSkiaPackageVersion)"
+        Version="$(SvgSkiaVersion)"
     />
     <PackageReference
         Update="Svg.Custom"
-        Version="$(SvgSkiaPackageVersion)"
+        Version="$(SvgSkiaVersion)"
     />
     <PackageReference
         Update="Svg.Picture"
-        Version="$(SvgSkiaPackageVersion)"
+        Version="$(SvgSkiaVersion)"
     />
   </ItemGroup>
 </Project>
