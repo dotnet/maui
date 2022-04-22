@@ -50,7 +50,7 @@ namespace Maui.Controls.Sample.Pages
 
 			parentAnimation.Commit(this, "CustomAnimation", 16, 4000, null, (v, c) => SetIsEnabledButtonState(true, false));
 		}
-		
+
 		void OnCancelAnimationButtonClicked(object sender, EventArgs e)
 		{
 			Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(DotNetBotImage);

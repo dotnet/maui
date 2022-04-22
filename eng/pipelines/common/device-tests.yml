@@ -1,8 +1,6 @@
 parameters:
-  androidVmPool: '$(androidTestsVmPool)'
-  androidVmImage: '$(androidTestsVmImage)'
-  iosVmPool: '$(iosTestsVmPool)'
-  iosVmImage: '$(iosTestsVmImage)'
+  androidPool: { }
+  iosPool: { }
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
@@ -26,14 +24,7 @@ stages:
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
-                pool:
-                  name: ${{ parameters.androidVmPool }}
-                  vmImage: ${{ parameters.androidVmImage }}
-                  demands:
-                    - macOS.Name -equals Monterey
-                    - macOS.Architecture -equals x64
-                    - Agent.HasDevices -equals False
-                    - Agent.IsPaired -equals False
+                pool: ${{ parameters.androidPool }}
                 variables:
                   ${{ if ge(api, 24) }}:
                     ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
@@ -60,14 +51,7 @@ stages:
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
-                pool:
-                  name: ${{ parameters.iosVmPool }}
-                  vmImage: ${{ parameters.iosVmImage }}
-                  demands:
-                    - macOS.Name -equals Monterey
-                    - macOS.Architecture -equals x64
-                    - Agent.HasDevices -equals False
-                    - Agent.IsPaired -equals False
+                pool: ${{ parameters.iosPool }}
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                 steps:

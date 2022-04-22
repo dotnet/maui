@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Platform
 			if (_activity == null)
 				_activity = ApplicationModel.Platform.CurrentActivity;
 
-			if(_activity == null)
+			if (_activity == null)
 				_handler?.MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning($"Failed to set the activity of the WebChromeClient, can't show pickers on the Webview");
 		}
 	}

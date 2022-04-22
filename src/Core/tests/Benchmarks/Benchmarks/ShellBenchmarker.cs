@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			shell.Items.Add(one);
 			shell.Items.Add(two);
 		}
-		
+
 		[Benchmark]
 		public async Task GoTo()
 		{
