@@ -60,6 +60,12 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal UI.Xaml.Thickness TitleViewMargin
+		{
+			get => titleView.Margin;
+			set => titleView.Margin = value;
+		}
+
 		internal object? TitleView
 		{
 			get => titleView.Content;

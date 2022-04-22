@@ -49,12 +49,19 @@ namespace Microsoft.Maui.Media
 			}
 
 			// Render the status bar with the correct frame size
-			TryHideStatusClockView(UIApplication.SharedApplication);
-			var statusbarWindow = GetStatusBarWindow(UIApplication.SharedApplication);
-			if (statusbarWindow != null/* && metrics.StatusBar != null*/)
+			try
 			{
-				statusbarWindow.Frame = window.Frame;
-				statusbarWindow.Layer.RenderInContext(ctx);
+				TryHideStatusClockView(UIApplication.SharedApplication);
+				var statusbarWindow = GetStatusBarWindow(UIApplication.SharedApplication);
+				if (statusbarWindow != null/* && metrics.StatusBar != null*/)
+				{
+					statusbarWindow.Frame = window.Frame;
+					statusbarWindow.Layer.RenderInContext(ctx);
+				}
+			}
+			catch
+			{
+				// FIXME: test/handle this case
 			}
 
 			var image = UIGraphics.GetImageFromCurrentImageContext();

@@ -35,6 +35,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 							new FilterSelection(), Navigation),
 						GalleryBuilder.NavButton("Selection Synchronization", () =>
 							new SelectionSynchronization(), Navigation),
+						GalleryBuilder.NavButton("Visual states", () =>
+							new VisualStatesGallery(), Navigation),
 					}
 				}
 			};

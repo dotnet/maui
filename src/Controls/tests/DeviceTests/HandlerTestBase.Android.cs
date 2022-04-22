@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Android.Graphics.Drawables;
 using Android.OS;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Platform;
 using ALayoutInflater = Android.Views.LayoutInflater;
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;
 using ImportantForAccessibility = Android.Views.ImportantForAccessibility;
-using Google.Android.Material.AppBar;
-using AndroidX.CoordinatorLayout.Widget;
-using Android.Graphics.Drawables;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -106,6 +106,17 @@ namespace Microsoft.Maui.DeviceTests
 					fragmentManager.ExecutePendingTransactions();
 				}
 			});
+		}
+
+		protected AView GetTitleView(IElementHandler handler)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			var container = toolbar?.GetFirstChildOfType<Controls.Toolbar.Container>();
+
+			if (container != null && container.ChildCount > 0)
+				return container.GetChildAt(0);
+
+			return null;
 		}
 
 		protected MaterialToolbar GetPlatformToolbar(IElementHandler handler)

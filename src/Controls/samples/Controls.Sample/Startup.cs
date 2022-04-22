@@ -62,25 +62,25 @@ namespace Maui.Controls.Sample
 				*/
 			}
 
-//			appBuilder
-//				.ConfigureMauiHandlers(handlers =>
-//				{
-//#pragma warning disable CS0618 // Type or member is obsolete
-//#if __ANDROID__
-//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
-//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer));
-//#elif __IOS__
-//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
-//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
-//#elif WINDOWS
-//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
-//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
-// #elif TIZEN
-// 					handlers.AddCompatibilityRenderer(typeof(CustomButton),
-// 						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Tizen.ButtonRenderer));
-// #endif
-//#pragma warning restore CS0618 // Type or member is obsolete
-//				});
+			//			appBuilder
+			//				.ConfigureMauiHandlers(handlers =>
+			//				{
+			//#pragma warning disable CS0618 // Type or member is obsolete
+			//#if __ANDROID__
+			//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+			//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer));
+			//#elif __IOS__
+			//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+			//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
+			//#elif WINDOWS
+			//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+			//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
+			// #elif TIZEN
+			// 					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+			// 						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Tizen.ButtonRenderer));
+			// #endif
+			//#pragma warning restore CS0618 // Type or member is obsolete
+			//				});
 
 			// Use a "third party" library that brings in a massive amount of controls
 			appBuilder.UseBordelessEntry();

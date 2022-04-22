@@ -252,7 +252,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			{
 				UpdateTextColor();
 			}
-			else if (e.PropertyName == FontElement.FontProperty.PropertyName)
+			else if (   e.PropertyName == FontElement.FontAttributesProperty.PropertyName
+					 || e.PropertyName == FontElement.FontAutoScalingEnabledProperty.PropertyName
+					 || e.PropertyName == FontElement.FontFamilyProperty.PropertyName
+					 || e.PropertyName == FontElement.FontSizeProperty.PropertyName)
 			{
 				UpdateFont();
 			}
