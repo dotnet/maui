@@ -21,10 +21,13 @@
       </Item>
       <Item ItemId=";description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, and WinUI using Blazor]]></Val>
+          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, Tizen and WinUI using Blazor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[iOS, Android, Mac .NET MAUI ve WinUI için Blazor kullanarak yeni bir uygulama oluşturmaya yönelik proje]]></Val>
+            <Val><![CDATA[iOS, Android, Mac Catalyst, Tizen ve WinUI için Blazor kullanarak bir .NET MAUI uygulaması oluşturmaya yönelik proje]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, and WinUI using Blazor]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
