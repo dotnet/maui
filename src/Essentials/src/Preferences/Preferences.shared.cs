@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Storage
 			Clear(null);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Get'][7]/Docs" />
+#if !NETSTANDARD
 		[return: NotNullIfNotNull("defaultValue")]
+#endif
 		public static string? Get(string key, string? defaultValue) =>
 			Get(key, defaultValue, null);
 
@@ -98,7 +100,9 @@ namespace Microsoft.Maui.Storage
 			Current.Clear(sharedName);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Get'][14]/Docs" />
+#if !NETSTANDARD
 		[return: NotNullIfNotNull("defaultValue")]
+#endif
 		public static string? Get(string key, string? defaultValue, string? sharedName) =>
 			Current.Get<string?>(key, defaultValue, sharedName);
 
