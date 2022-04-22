@@ -106,8 +106,6 @@ namespace Microsoft.Maui.Platform
 			// It causes the content to not be flush up against the title bar
 			PaneContentGrid.Margin = new WThickness(-1, 0, -1, 0);
 			UpdateMenuItemsContainerHeight();
-
-
 		}
 
 

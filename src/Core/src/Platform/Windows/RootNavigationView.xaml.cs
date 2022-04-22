@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Platform
 			RegisterPropertyChangedCallback(HeaderProperty, HeaderPropertyChanged);
 			RegisterPropertyChangedCallback(PaneFooterProperty, HeaderPropertyChanged);
 			RegisterPropertyChangedCallback(PaneDisplayModeProperty, PaneDisplayModeChanged);
+
 			this.PaneOpened += (_, __) => UpdatePaneContentGridMargin();
 			this.DisplayModeChanged += (_, __) => UpdateNavigationAndPaneButtonHolderGridStyles();
 		}
@@ -42,6 +43,12 @@ namespace Microsoft.Maui.Platform
 					return;
 
 				_headerControl = value;
+				if (value != null)
+				{
+					value.NavigationViewBackButton = NavigationViewBackButton;
+					value.TogglePaneButton = TogglePaneButton;
+				}
+
 				UpdateTopNavAreaMargin();
 			}
 		}
@@ -207,6 +214,12 @@ namespace Microsoft.Maui.Platform
 
 			UpdateTopNavAreaMargin();
 			UpdateContentGridMargin();
+
+			if (HeaderControl != null)
+			{
+				HeaderControl.NavigationViewBackButton = NavigationViewBackButton;
+				HeaderControl.TogglePaneButton = TogglePaneButton;
+			}
 		}
 
 		// Change this to use binding
