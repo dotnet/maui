@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView.Detail?.Handler is IPlatformViewHandler pvh)
 				pvh.DisconnectHandler();
 
-			if(VirtualView.Detail == null)
+			if (VirtualView.Detail == null)
 			{
 				if (_detailViewFragment != null)
 				{

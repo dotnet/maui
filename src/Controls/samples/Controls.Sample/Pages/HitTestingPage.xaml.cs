@@ -83,7 +83,7 @@ namespace Maui.Controls.Sample.Pages
 #endif
 		}
 
-		
+
 
 		private void ContentPage_Unloaded(object sender, EventArgs e)
 		{
@@ -169,6 +169,6 @@ namespace Maui.Controls.Sample.Pages
 			double maxX = Math.Max(_firstPosX, _currentMousePosX);
 			double maxY = Math.Max(_firstPosY, _currentMousePosY);
 			return Rect.FromLTRB(minX, minY, maxX, maxY);
-		}	
+		}
 	}
 }

@@ -402,5 +402,30 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
 			stack[1].Received().Arrange(Arg.Is(expectedRectangle1));
 		}
+
+		public static IEnumerable<object[]> ChildMeasureAccountsForPaddingTestCases()
+		{
+			var measureSpace = new Size(100, 100);
+			var viewSize = new Size(50, 50);
+
+			yield return new object[] { viewSize, new Thickness(0), measureSpace, new Size(double.PositiveInfinity, 100) };
+			yield return new object[] { viewSize, new Thickness(10), measureSpace, new Size(double.PositiveInfinity, 80) };
+			yield return new object[] { viewSize, new Thickness(10, 0, 10, 0), measureSpace, new Size(double.PositiveInfinity, 100) };
+			yield return new object[] { viewSize, new Thickness(0, 7, 0, 14), measureSpace, new Size(double.PositiveInfinity, 79) };
+		}
+
+		[Theory]
+		[MemberData(nameof(ChildMeasureAccountsForPaddingTestCases))]
+		public void ChildMeasureAccountsForPadding(Size viewSize, Thickness padding, Size measureConstraints, Size expectedMeasureConstraint)
+		{
+			var view = LayoutTestHelpers.CreateTestView(new Size(viewSize.Width, viewSize.Height));
+			var stack = CreateTestLayout(new List<IView>() { view });
+			stack.Padding.Returns(padding);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(measureConstraints.Width, measureConstraints.Height);
+
+			view.Received().Measure(Arg.Is(expectedMeasureConstraint.Width), Arg.Is(expectedMeasureConstraint.Height));
+		}
 	}
 }

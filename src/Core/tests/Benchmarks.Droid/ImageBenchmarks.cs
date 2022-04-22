@@ -61,7 +61,8 @@ public class ImageBenchmark
 	{
 		var callback = new Callback();
 
-		handler!.Post(() => {
+		handler!.Post(() =>
+		{
 			Microsoft.Maui.PlatformInterop.LoadImageFromFile(
 				context!,
 				imageFilename,

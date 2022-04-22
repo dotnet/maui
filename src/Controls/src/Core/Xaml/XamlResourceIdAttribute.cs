@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Xaml/XamlResourceIdAttribute.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public XamlResourceIdAttribute(
-			string resourceId, 
+			string resourceId,
 			string path,
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 		{

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Media
 		Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
 			Task.FromResult(AVSpeechSynthesisVoice.GetSpeechVoices()
 				.Select(v => new Locale(v.Language, null, v.Name, v.Identifier)));
-		
+
 		async Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken)
 		{
 			using var speechUtterance = GetSpeechUtterance(text, options);

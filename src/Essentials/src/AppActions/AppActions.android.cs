@@ -57,7 +57,7 @@ namespace Microsoft.Maui.ApplicationModel
 			if (intent?.Action == IntentAction && !intent.GetBooleanExtra(extraAppActionHandled, false))
 			{
 				// prevent launch intent getting handled on activity resume
-                intent.PutExtra(extraAppActionHandled, true);
+				intent.PutExtra(extraAppActionHandled, true);
 
 				var appAction = intent.ToAppAction();
 
