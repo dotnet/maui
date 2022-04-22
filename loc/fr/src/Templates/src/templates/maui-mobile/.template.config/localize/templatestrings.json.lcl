@@ -21,10 +21,13 @@
       </Item>
       <Item ItemId=";description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, and WinUI]]></Val>
+          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, Tizen, and WinUI]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Projet de création d’une application .NET MAUI pour iOS, Android, Mac Migrate et WinUI]]></Val>
+            <Val><![CDATA[Projet de création d’une application .NET MAUI pour iOS, Android, Mac Migrate, Tizen et WinUI]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, and WinUI]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
