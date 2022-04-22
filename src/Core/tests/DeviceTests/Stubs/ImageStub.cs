@@ -43,17 +43,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 	public static class ImageStubExtensions
 	{
-		static readonly Random rnd = new Random();
-
-		public static async Task Wait(this IImageStub image, int timeout = 1000)
-		{
-			while ((timeout -= 100) > 0)
-			{
-				if (image.IsLoading)
-					await Task.Delay(rnd.Next(100, 200));
-				else
-					break;
-			}
-		}
+		public static Task Wait(this IImageStub image, int timeout = 1000) =>
+			AssertionExtensions.Wait(() => !image.IsLoading, timeout);
 	}
 }
