@@ -157,8 +157,8 @@ namespace Microsoft.Maui.Controls.Internals
 			if (_handlers.TryGetValue(viewType, out Dictionary<Type, (Type target, short priority)> visualRenderers))
 				if (visualRenderers.TryGetValue(visualType, out (Type target, short priority) specificTypeRenderer))
 					return specificTypeRenderer.target;
-				//else if (visualType == _materialVisualType)
-				//	VisualMarker.MaterialCheck();
+			//else if (visualType == _materialVisualType)
+			//	VisualMarker.MaterialCheck();
 
 			if (visualType != _defaultVisualType && visualRenderers != null)
 				if (visualRenderers.TryGetValue(_defaultVisualType, out (Type target, short priority) specificTypeRenderer))

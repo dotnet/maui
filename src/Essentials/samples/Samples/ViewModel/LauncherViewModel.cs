@@ -2,10 +2,10 @@ using System;
 using System.IO;
 using System.Windows.Input;
 using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Samples.Helpers;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
+using Samples.Helpers;
 
 namespace Samples.ViewModel
 {

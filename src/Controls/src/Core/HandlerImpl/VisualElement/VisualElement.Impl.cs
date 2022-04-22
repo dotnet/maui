@@ -207,6 +207,12 @@ namespace Microsoft.Maui.Controls
 
 				// Access once up front to avoid multiple GetValue calls
 				var value = WidthRequest;
+
+				if (value == -1)
+				{
+					return Primitives.Dimension.Unset;
+				}
+				
 				ValidatePositive(value, nameof(IView.Width));
 				return value;
 			}
@@ -223,6 +229,12 @@ namespace Microsoft.Maui.Controls
 
 				// Access once up front to avoid multiple GetValue calls
 				var value = HeightRequest;
+
+				if (value == -1)
+				{
+					return Primitives.Dimension.Unset;
+				}
+				
 				ValidatePositive(value, nameof(IView.Height));
 				return value;
 			}

@@ -177,7 +177,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, col: 1);
 
 			// Assuming no constraints on space
-			MeasureAndArrange(grid, double.PositiveInfinity, double.NegativeInfinity);
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
 			// Column width is 100, viewSize is less than that, so it should be able to layout out at full size
 			AssertArranged(view0, 0, 0, 100, 10);
@@ -207,7 +207,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view3, row: 1, col: 1);
 
 			// Assuming no constraints on space
-			MeasureAndArrange(grid, double.PositiveInfinity, double.NegativeInfinity);
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
 			// Verify that the views are getting measured at all, and that they're being measured at 
 			// the appropriate sizes
@@ -245,7 +245,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, col: 1);
 
 			// Assuming no constraints on space
-			MeasureAndArrange(grid, double.PositiveInfinity, double.NegativeInfinity);
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
 			// Column width is 100, viewSize is less, so it should be able to layout at full size
 			AssertArranged(view0, 0, 0, 100, viewSize.Height);
@@ -271,7 +271,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, row: 1);
 
 			// Assuming no constraints on space
-			MeasureAndArrange(grid, double.PositiveInfinity, double.NegativeInfinity);
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
 			// Row height is 100, so full view should fit
 			AssertArranged(view0, 0, 0, viewSize.Width, 100);
@@ -1530,7 +1530,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(100, 200, 210, 200)]
 		[InlineData(200, 100, 210, 200)]
 		[InlineData(100, 100, 210, 100)]
-		[InlineData(100, 100, 50, 50)]
+		[InlineData(100, 100, 100, 100)]
 		public void AutoCellsSizeToLargestView(double view0Size, double view1Size, double constraintSize, double expectedSize)
 		{
 			var grid = CreateGridLayout(rows: "Auto", columns: "Auto");
@@ -1557,8 +1557,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var expectedRectangle = new Rect(0, 0, expectedSize, expectedSize);
 
-			// When the constraint is bigger than both views, we expect the Auto row/col to take on the size
-			// of the largest of the two views; otherwise, the constraint should determine the size
+			// We expect the Auto row/col to take on the size of the largest of the two views
 			AssertArranged(view0, expectedRectangle);
 			AssertArranged(view1, expectedRectangle);
 		}
@@ -1718,7 +1717,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view1, new Rect(0, 220, 100, 100));
 		}
 
-
 		[Fact(DisplayName = "Grids with RTL FlowDirection should order columns from the right")]
 		public void RtlShouldReverseColumnOrder()
 		{
@@ -1732,13 +1730,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			grid.FlowDirection.Returns(FlowDirection.RightToLeft);
 
 			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
-			
+
 			// Because the Grid is RTL, we expect the view in column 1 to be on the left,
 			// and the view in column 0 to be on the right
 			AssertArranged(view1, 0, 0, 100, 100);
 			AssertArranged(view0, 110, 0, 100, 100);
 		}
-
 
 		[Fact]
 		[Category(GridStarSizing), Category(GridAutoSizing)]
@@ -1753,7 +1750,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0, col: 1);
-			SetLocation(grid, view1, row:1, colSpan: 2);
+			SetLocation(grid, view1, row: 1, colSpan: 2);
 
 			MeasureAndArrange(grid, 200, 200);
 
@@ -1762,6 +1759,28 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Since column 0 has no width, we expect view1 to start at 0,10 
 			AssertArranged(view1, 0, 10, 200, 190);
+		}
+
+		[Fact]
+		[Category(GridAbsoluteSizing)]
+		public void AbsoluteRowsConstrainMeasureHeight()
+		{
+			var grid = CreateGridLayout(rows: "50");
+
+			var viewSize = new Size(10, 10);
+
+			var view0 = CreateTestView(viewSize);
+
+			SubstituteChildren(grid, view0);
+
+			// Assuming no constraints on space
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			// Verify that the view is getting measured at the appropriate height (50)
+			view0.Received().Measure(Arg.Any<double>(), Arg.Is<double>(50));
+
+			// And only at that height
+			view0.DidNotReceive().Measure(Arg.Any<double>(), Arg.Is<double>((h) => h != 50));
 		}
 
 		[Fact]
@@ -1786,6 +1805,64 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Since row 0 has no height, we expect view1 to start at 10,0 
 			AssertArranged(view1, 10, 0, 190, 200);
+		}
+
+		[Fact]
+		[Category(GridAbsoluteSizing)]
+		public void AbsoluteColumnsConstrainMeasureWidth()
+		{
+			var grid = CreateGridLayout(columns: "50");
+
+			var viewSize = new Size(10, 10);
+
+			var view0 = CreateTestView(viewSize);
+
+			SubstituteChildren(grid, view0);
+
+			// Assuming no constraints on space
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			// Verify that the view is getting measured at the appropriate width (50)
+			view0.Received().Measure(Arg.Is<double>(50), Arg.Any<double>());
+
+			// And only at that width
+			view0.DidNotReceive().Measure(Arg.Is<double>((h) => h != 50), Arg.Any<double>());
+		}
+
+		[Fact("Children of Auto rows should be measured using an infinite height")]
+		[Category(GridAutoSizing)]
+		public void AutoRowsMeasureChildrenAtInfinity()
+		{
+			var grid = CreateGridLayout(rows: "Auto");
+
+			var viewSize = new Size(10, 10);
+
+			var view0 = CreateTestView(viewSize);
+
+			SubstituteChildren(grid, view0);
+
+			MeasureAndArrange(grid, 500, 500);
+
+			// Verify that the view is getting measured at the appropriate height (infinity)
+			view0.Received().Measure(Arg.Is<double>(500), Arg.Is(double.PositiveInfinity));
+		}
+
+		[Fact("Children of Auto columns should be measured using an infinite width")]
+		[Category(GridAutoSizing)]
+		public void AutoColumnsMeasureChildrenAtInfinity()
+		{
+			var grid = CreateGridLayout(columns: "Auto");
+
+			var viewSize = new Size(10, 10);
+
+			var view0 = CreateTestView(viewSize);
+
+			SubstituteChildren(grid, view0);
+
+			MeasureAndArrange(grid, 500, 500);
+
+			// Verify that the view is getting measured at the appropriate width (infinity)
+			view0.Received().Measure(Arg.Is(double.PositiveInfinity), Arg.Is<double>(500));
 		}
 	}
 }

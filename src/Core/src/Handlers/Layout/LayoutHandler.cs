@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		/// <param name="flowDirection"></param>
 		/// <returns>The FlowDirection to assume for cross-platform layout</returns>
-		internal static FlowDirection GetLayoutFlowDirection(FlowDirection flowDirection) 
+		internal static FlowDirection GetLayoutFlowDirection(FlowDirection flowDirection)
 		{
 #if WINDOWS
 			// The native LayoutPanel in Windows will automagically flip our layout coordinates if it's in RTL mode.

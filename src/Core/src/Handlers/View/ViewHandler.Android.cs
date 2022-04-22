@@ -158,8 +158,8 @@ namespace Microsoft.Maui.Handlers
 			var platformView = handler.PlatformView as View;
 
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			
-			var appbarLayout = 
+
+			var appbarLayout =
 				platformView?.FindViewById<ViewGroup>(Resource.Id.navigationlayout_appbar) ??
 				rootManager?.RootView?.FindViewById<ViewGroup>(Resource.Id.navigationlayout_appbar);
 
@@ -183,11 +183,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			get
 			{
-				return VirtualView?.Clip != null || VirtualView?.Shadow != null 
+				return VirtualView?.Clip != null || VirtualView?.Shadow != null
 					|| (VirtualView as IBorder)?.Border != null || VirtualView?.InputTransparent == true;
 			}
 		}
-		
+
 		void OnPlatformViewFocusChange(object? sender, PlatformView.FocusChangeEventArgs e)
 		{
 			if (VirtualView != null)

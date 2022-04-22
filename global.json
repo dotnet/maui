@@ -3,7 +3,7 @@
     "dotnet": "6.0.100"
   },
   "msbuild-sdks": {
-    "MSBuild.Sdk.Extras": "3.0.23",
-    "Microsoft.Build.NoTargets": "2.0.1"
+    "MSBuild.Sdk.Extras": "3.0.44",
+    "Microsoft.Build.NoTargets": "3.3.0"
   }
 }

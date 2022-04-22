@@ -417,7 +417,7 @@ namespace Microsoft.Maui.Platform
 			view.Arrange(platformFrame.ToRectangle());
 			return size;
 		}
-		
+
 		public static void UpdateInputTransparent(this UIView platformView, IViewHandler handler, IView view)
 		{
 			if (view is ITextInput textInput)
@@ -429,7 +429,7 @@ namespace Microsoft.Maui.Platform
 			platformView.UserInteractionEnabled = !view.InputTransparent;
 		}
 
-		public static void UpdateInputTransparent(this UIView platformView, bool isReadOnly, bool inputTransparent) 
+		public static void UpdateInputTransparent(this UIView platformView, bool isReadOnly, bool inputTransparent)
 		{
 			platformView.UserInteractionEnabled = !(isReadOnly || inputTransparent);
 		}

@@ -32,10 +32,10 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.OnEditingStarted += OnEditingStarted;
 			platformView.OnEditingStopped += OnEditingEnded;
-				
+
 			if (_editor != null)
 				_editor.EditingChanged += OnEditingChanged;
-			
+
 			base.ConnectHandler(platformView);
 		}
 

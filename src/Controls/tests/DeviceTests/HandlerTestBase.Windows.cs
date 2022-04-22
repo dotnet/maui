@@ -116,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = element.Handler;
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			var position = element.GetLocationRelativeTo(rootManager.AppTitleBar);
-			var distance = rootManager.AppTitleBar.Height - position.Value.Y;
+			var distance = rootManager.AppTitleBar.ActualHeight - position.Value.Y;
 			return distance;
 		}
 
@@ -144,6 +144,12 @@ namespace Microsoft.Maui.DeviceTests
 			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
 			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
 			return windowHeader;
+		}
+
+		protected object GetTitleView(IElementHandler handler)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			return toolbar.TitleView;
 		}
 	}
 }
