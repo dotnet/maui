@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Graphics
 			// Set StrokeDashOffset	
 			var strokeDashOffset = ShapeView.StrokeDashOffset;
 			canvas.StrokeDashOffset = strokeDashOffset;
-			
+
 			// Set StrokeMiterLimit
 			var strokeMiterLimit = ShapeView.StrokeMiterLimit;
 			canvas.MiterLimit = strokeMiterLimit;

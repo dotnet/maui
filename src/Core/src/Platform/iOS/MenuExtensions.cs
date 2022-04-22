@@ -1,9 +1,9 @@
 ﻿using System;
-using UIKit;
-using Foundation;
-using ObjCRuntime;
 using System.Collections.Generic;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
+using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Platform
 {

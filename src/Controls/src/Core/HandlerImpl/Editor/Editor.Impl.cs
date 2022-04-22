@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 		double _previousHeightConstraint;
 		Rect _previousBounds;
 
-		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
+		Font ITextStyle.Font => this.ToFont();
 
 		void IEditor.Completed()
 		{

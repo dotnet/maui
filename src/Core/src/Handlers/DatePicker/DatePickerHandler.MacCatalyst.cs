@@ -8,8 +8,9 @@ namespace Microsoft.Maui.Handlers
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, UIDatePicker>
 	{
 		protected override UIDatePicker CreatePlatformView()
-		{	
-			return new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };;
+		{
+			return new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
+			;
 		}
 
 		protected override void ConnectHandler(UIDatePicker platformView)
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 			base.DisconnectHandler(platformView);
 		}
-		
+
 		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateFormat(datePicker);
@@ -67,12 +68,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-	
+
 		}
-    
+
 		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
 		{
-		
+
 		}
 
 		void OnValueChanged(object? sender, EventArgs? e)

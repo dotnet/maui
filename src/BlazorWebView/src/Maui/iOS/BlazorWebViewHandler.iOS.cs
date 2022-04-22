@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				{
 					throw new ArgumentNullException(nameof(message));
 				}
-				_messageReceivedAction(new Uri(AppOrigin), ((NSString)message.Body).ToString());
+				_messageReceivedAction(AppOriginUri, ((NSString)message.Body).ToString());
 			}
 		}
 
