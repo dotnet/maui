@@ -263,11 +263,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					width = (int)size.Width;
 				}
 
-				if (_viewHandler.VirtualView != null)
-				{
-					_viewHandler.VirtualView.Frame = new Rect(0, 0, Context.FromPixels(width), Context.FromPixels(height));
-				}
-
 				SetMeasuredDimension(width, height);
 
 				Performance.Stop(reference);

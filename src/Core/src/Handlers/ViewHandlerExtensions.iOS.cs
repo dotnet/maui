@@ -1,11 +1,54 @@
 ﻿using Microsoft.Maui.Graphics;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
+using CoreGraphics;
 
 namespace Microsoft.Maui
 {
 	internal static partial class ViewHandlerExtensions
 	{
+		internal static void LayoutVirtualView(
+			this IPlatformViewHandler viewHandler,
+			CGRect? bounds)
+		{
+			var virtualView = viewHandler.VirtualView;
+			var platformView = viewHandler.PlatformView;
+
+			if (virtualView == null || platformView == null)
+			{
+				return;
+			}
+
+			bounds = bounds ?? platformView.Bounds;
+			if (virtualView is ISafeAreaView sav && !sav.IgnoreSafeArea && System.OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				bounds = platformView.SafeAreaInsets.InsetRect(bounds.Value);
+			}
+
+			var rect = bounds.Value.ToRectangle();
+			virtualView.Measure(rect.Width, rect.Height);
+			virtualView.Arrange(rect);
+		}
+
+		internal static CGSize? MeasureVirtualView(
+			this IPlatformViewHandler viewHandler,
+			CGSize size)
+		{
+			var virtualView = viewHandler.VirtualView;
+			var platformView = viewHandler.PlatformView;
+
+			if (virtualView == null || platformView == null)
+			{
+				return null;
+			}
+
+			var width = size.Width;
+			var height = size.Height;
+
+			var crossPlatformSize = virtualView.Measure(width, height);
+			return crossPlatformSize.ToCGSize();
+		}
+
 		internal static Size GetDesiredSizeFromHandler(this IViewHandler viewHandler, double widthConstraint, double heightConstraint)
 		{
 			var virtualView = viewHandler.VirtualView;
