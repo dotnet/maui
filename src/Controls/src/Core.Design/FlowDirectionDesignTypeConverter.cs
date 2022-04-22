@@ -17,10 +17,7 @@ namespace Microsoft.Maui.Controls.Design
 			{
 				"MatchParent",
 				"LeftToRight",	
-				"RightToLeft",
-				"inherit",
-				"ltr",
-				"rtl"
+				"RightToLeft"
 			};
 	}
 }
