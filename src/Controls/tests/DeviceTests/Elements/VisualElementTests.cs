@@ -1,5 +1,8 @@
+using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
@@ -161,6 +164,32 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, loaded);
 				Assert.Equal(1, unloaded);
 			});
+		}
+
+		[Theory]
+		[InlineData(typeof(Label), typeof(LabelHandler))]
+		[InlineData(typeof(Button), typeof(ButtonHandler))]
+		[InlineData(typeof(ContentPage), typeof(PageHandler))]
+		[InlineData(typeof(Page), typeof(PageHandler))]
+		[InlineData(typeof(View), typeof(DefaultViewHandler))]
+		[InlineData(typeof(VisualElement), typeof(DefaultViewHandler))]
+		[InlineData(typeof(MyTestCustomVisualElement), typeof(DefaultViewHandler))]
+		public void AllVisualElementsGetAHandler(Type viewType, Type handlerType)
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.UseMauiApp(svc => (IApplication)null)
+				.Build();
+
+			var handlers = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var specificHandler = handlers.GetHandler(viewType);
+
+			Assert.NotNull(specificHandler);
+			Assert.Equal(handlerType, specificHandler.GetType());
+		}
+
+		class MyTestCustomVisualElement : VisualElement
+		{
 		}
 	}
 }

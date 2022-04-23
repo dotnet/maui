@@ -75,7 +75,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public void Dispose()
 		{
-			((IDisposable)_mauiApp).Dispose();
+			((IDisposable)_mauiApp)?.Dispose();
 
 			_mauiApp = null;
 			_mauiContext = null;

@@ -48,6 +48,7 @@ namespace Microsoft.Maui.Controls.Hosting
 
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
 		{
+			handlersCollection.AddHandler<VisualElement, DefaultViewHandler>();
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 			handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 			handlersCollection.AddHandler<Application, ApplicationHandler>();
