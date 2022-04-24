@@ -46,8 +46,6 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			MauiContext = context;
 
-			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
-
 			SetLayoutCallback(OnLayout);
 
 			_menuButton = new TButton(NativeParent);
@@ -78,10 +76,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected IMauiContext? MauiContext { get; private set; }
 
-		protected EvasObject? NativeParent
-		{
-			get => MauiContext?.GetNativeParent();
-		}
+		protected EvasObject NativeParent => MauiContext?.GetNativeParent() ?? throw new InvalidOperationException($"NativeParent cannot be null here");
 
 		public IShellController ShellController => Shell.Current;
 
@@ -219,8 +214,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async void UpdateMenuIcon()
 		{
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
-
 			ImageSource? source = null;
 			if (HasBackButton)
 			{

@@ -69,10 +69,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected IMauiContext MauiContext { get; private set; }
 
-		protected EvasObject? NativeParent
-		{
-			get => MauiContext.GetNativeParent();
-		}
+		protected EvasObject NativeParent => MauiContext.GetNativeParent();
 
 		public EvasObject NativeView
 		{
@@ -217,8 +214,6 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_tabs != null)
 				return;
-
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
 
 			_tabs = new Tabs(NativeParent);
 			_tabs.Show();
@@ -448,8 +443,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		EToolbarItem? AppendTabsItem(string text, ImageSource iconSource)
 		{
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
-
 			var item = _tabs?.Append(text);
 			if (item != null)
 			{
