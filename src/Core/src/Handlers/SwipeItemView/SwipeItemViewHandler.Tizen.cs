@@ -26,6 +26,16 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+			if (disposing)
+			{
+				_contentHandler?.Dispose();
+				_contentHandler = null;
+			}
+		}
+
 		void UpdateContent()
 		{
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
@@ -55,12 +65,11 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVisibility(ISwipeItemViewHandler handler, ISwipeItemView view)
 		{
-			//TODO : need to update
-			//var swipeView = handler.PlatformView.GetParentOfType<EvasObject>();
-			//if (swipeView != null)
-			//	swipeView.UpdateIsVisibleSwipeItem(view);
+			handler.PlatformView.UpdateVisibility(view);
 
-			//handler.PlatformView.UpdateVisibility(view.Visibility);
+			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
+			if (swipeView != null)
+				swipeView.UpdateIsVisibleSwipeItem(view);
 		}
 	}
 }
