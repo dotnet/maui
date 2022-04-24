@@ -53,26 +53,21 @@ namespace Microsoft.Maui.Hosting
 			public void Initialize(IServiceProvider services)
 			{
 #if WINDOWS
-				var dispatcher = 
-					services.GetService<IDispatcher>() ??
-					MauiWinUIApplication.Current.Services.GetRequiredService<IDispatcher>();
+				if (UI.Xaml.Application.Current?.Resources is not UI.Xaml.ResourceDictionary resources)
+					return;
 
-				if (!dispatcher.IsDispatchRequired)
-					SetupResources();
+				if (resources.DispatcherQueue.HasThreadAccess)
+					SetupResources(resources);
 				else
-					dispatcher.Dispatch(SetupResources);
+					resources.DispatcherQueue.TryEnqueue(() => SetupResources(resources));
 
-				void SetupResources()
+				static void SetupResources(UI.Xaml.ResourceDictionary resources)
 				{
-					var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
-					if (UI.Xaml.Application.Current?.Resources != null && dictionaries != null)
-					{
-						// WinUI
-						UI.Xaml.Application.Current.Resources.AddLibraryResources<UI.Xaml.Controls.XamlControlsResources>();
+					// WinUI
+					resources.AddLibraryResources<UI.Xaml.Controls.XamlControlsResources>();
 
-						// Microsoft.Maui
-						UI.Xaml.Application.Current.Resources.AddLibraryResources("MicrosoftMauiCoreIncluded", "ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
-					}
+					// Microsoft.Maui
+					resources.AddLibraryResources("MicrosoftMauiCoreIncluded", "ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
 				}
 #endif
 			}
