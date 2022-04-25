@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Text;
@@ -14,6 +15,28 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+		public static Task<bool> WaitForLayout(AView view, int timeout = 1000)
+		{
+			var tcs = new TaskCompletionSource<bool>();
+
+			view.LayoutChange += OnLayout;
+
+			var cts = new CancellationTokenSource();
+			cts.Token.Register(() => OnLayout(view));
+			cts.CancelAfter(timeout);
+
+			return tcs.Task;
+
+			void OnLayout(object? sender = null, AView.LayoutChangeEventArgs? e = null)
+			{
+				var view = (AView)sender!;
+
+				view.LayoutChange -= OnLayout;
+
+				tcs.TrySetResult(e != null);
+			}
+		}
+
 		public static string CreateColorAtPointError(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{
 			return CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
@@ -60,33 +83,47 @@ namespace Microsoft.Maui.DeviceTests
 			if (view.Parent is WrapperView wrapper)
 				view = wrapper;
 
-			var context = view.Context!;
-			var layout = new FrameLayout(context)
+			if (view.Parent == null)
 			{
-				LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
-			};
-			view.LayoutParameters = new FrameLayout.LayoutParams(view.Width, view.Height)
+				var context = view.Context!;
+				var layout = new FrameLayout(context)
+				{
+					LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
+				};
+				view.LayoutParameters = new FrameLayout.LayoutParams(view.Width, view.Height)
+				{
+					Gravity = GravityFlags.Center
+				};
+
+				var act = context.GetActivity()!;
+				var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content)!;
+
+				layout.AddView(view);
+				rootView.AddView(layout);
+
+				try
+				{
+					return await Run(view, action);
+				}
+				finally
+				{
+					rootView.RemoveView(layout);
+					layout.RemoveView(view);
+				}
+			}
+			else
 			{
-				Gravity = GravityFlags.Center
-			};
+				return await Run(view, action);
+			}
 
-			var act = context.GetActivity()!;
-			var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content)!;
-
-			layout.AddView(view);
-			rootView.AddView(layout);
-
-			await Task.Delay(100);
-
-			try
+			static async Task<T> Run(AView view, Func<T> action)
 			{
+				await Task.WhenAll(
+					WaitForLayout(view),
+					Wait(() => view.Width > 0 && view.Height > 0));
+
 				var result = action();
 				return result;
-			}
-			finally
-			{
-				rootView.RemoveView(layout);
-				layout.RemoveView(view);
 			}
 		}
 
