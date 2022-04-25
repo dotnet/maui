@@ -21,9 +21,9 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(switchStub, () => switchStub.IsOn, GetNativeIsOn, switchStub.IsOn);
 		}
 
-		[Theory(DisplayName = "Track Color Initializes Correctly", Skip = "There seems to be an issue, so disable for now: https://github.com/dotnet/maui/issues/1275")]
+		[Theory(DisplayName = "Track Color Initializes Correctly")]
 		[InlineData(true)]
-		[InlineData(false)]
+		//[InlineData(false)] // Track color is not always visible when off
 		public async Task TrackColorInitializesCorrectly(bool isToggled)
 		{
 			var switchStub = new SwitchStub()
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync(switchStub);
 		}
 
-		[Fact(DisplayName = "Track Color Updates Correctly")]
+		[Fact(DisplayName = "Thumb Color Updates Correctly")]
 		public async Task ThumbColorUpdatesCorrectly()
 		{
 			var switchStub = new SwitchStub()

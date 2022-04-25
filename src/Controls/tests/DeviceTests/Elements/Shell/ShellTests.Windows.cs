@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -18,6 +11,12 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests : HandlerTestBase
 	{
+		protected Task CheckFlyoutState(ShellHandler handler, bool desiredState)
+		{
+			Assert.Equal(desiredState, handler.PlatformView.IsPaneOpen);
+			return Task.CompletedTask;
+		}
+
 		[Fact(DisplayName = "Back Button Enabled/Disabled")]
 		public async Task BackButtonEnabledAndDisabled()
 		{

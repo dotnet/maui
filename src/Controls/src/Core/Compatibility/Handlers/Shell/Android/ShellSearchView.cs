@@ -28,8 +28,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public SearchHandler SearchHandler { get; set; }
 
-		public bool ShowKeyboardOnAttached { get; set; }
-
 		AView IShellSearchView.View
 		{
 			get
@@ -114,8 +112,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// Fire Completed and dismiss keyboard for hardware / physical keyboards
 			if (actionId == ImeAction.Done || (actionId == ImeAction.ImeNull && e.KeyCode == Keycode.Enter && e.Action == KeyEventActions.Up))
 			{
-				_textBlock.ClearFocus();
-				v.HideKeyboard();
 				SearchConfirmed?.Invoke(this, EventArgs.Empty);
 				Controller.QueryConfirmed();
 			}
@@ -249,9 +245,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnAttachedToWindow();
 
-			if (!ShowKeyboardOnAttached)
-				return;
-
 			Alpha = 0;
 			Animate().Alpha(1).SetDuration(200).SetListener(null);
 
@@ -260,9 +253,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_disposed)
 				return;
-
-			_textBlock.RequestFocus();
-			Context.ShowKeyboard(_textBlock);
 		}
 
 		protected virtual void OnClearButtonClicked(object sender, EventArgs e)
@@ -352,7 +342,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var item = Controller.ListProxy[index];
 
 			_textBlock.Text = "";
-			_textBlock.HideKeyboard();
 			SearchConfirmed?.Invoke(this, EventArgs.Empty);
 			Controller.ItemSelected(item);
 		}
