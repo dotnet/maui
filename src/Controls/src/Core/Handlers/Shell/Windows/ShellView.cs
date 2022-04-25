@@ -31,8 +31,16 @@ namespace Microsoft.Maui.Controls.Platform
 			IsPaneOpen = false;
 			MenuItemTemplateSelector = CreateShellFlyoutTemplateSelector();
 			MenuItemsSource = FlyoutItems;
+			this.Loaded += OnLoaded;
 		}
 
+		void OnLoaded(object sender, RoutedEventArgs e)
+		{
+			// We can't reliably set IsPaneOpen to true until the control has loaded
+			// If we set it earlier than this then WinUI will transition it back to false
+			if (IsPaneOpen != Element.FlyoutIsPresented)
+				IsPaneOpen = Element.FlyoutIsPresented;
+		}
 
 		private protected override void UpdateFlyoutCustomContent()
 		{

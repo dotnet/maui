@@ -27,29 +27,18 @@ public class MauiCustomTarget extends CustomTarget<Drawable>
     public void onLoadFailed(@Nullable Drawable errorDrawable) {
         super.onLoadFailed(errorDrawable);
 
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                requestManager.clear(MauiCustomTarget.this);
-            }
-        });
+        new Handler(Looper.getMainLooper())
+            .post(() -> requestManager.clear(MauiCustomTarget.this));
 
         callback.onComplete(false, errorDrawable, null);
     }
 
     @Override
     public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-        callback.onComplete(true, resource, new Runnable() {
-            @Override
-            public void run() {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        requestManager.clear(MauiCustomTarget.this);
-                    }
-                });
-            }
-        });
+        callback.onComplete(true,
+            resource,
+            () -> new Handler(Looper.getMainLooper())
+                .post(() -> requestManager.clear(MauiCustomTarget.this)));
     }
 
     @Override
