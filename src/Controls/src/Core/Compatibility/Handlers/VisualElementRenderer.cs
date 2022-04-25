@@ -43,9 +43,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		TElement? _virtualView;
 		IMauiContext? _mauiContext;
-		protected IPropertyMapper _mapper;
-		protected CommandMapper? _commandMapper;
-		protected readonly IPropertyMapper _defaultMapper;
+		internal IPropertyMapper _mapper;
+		internal readonly CommandMapper? _commandMapper;
+		internal readonly IPropertyMapper _defaultMapper;
 		protected IMauiContext MauiContext => _mauiContext ?? throw new InvalidOperationException("MauiContext not set");
 		public TElement? Element => _virtualView;
 		protected bool AutoPackage { get; set; } = true;

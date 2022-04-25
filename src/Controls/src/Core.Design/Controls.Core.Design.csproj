@@ -18,6 +18,7 @@
 		<Compile Include="ItemsLayoutDesignTypeConverter.cs" />
 		<Compile Include="KeyboardDesignTypeConverter.cs" />
 		<Compile Include="EasingDesignTypeConverter.cs" />
+		<Compile Include="FlowDirectionDesignTypeConverter.cs" />
 		<Compile Include="KnownValuesDesignTypeConverter.cs" />
 		<Compile Include="LayoutOptionsDesignTypeConverter.cs" />
 		<Compile Include="LinearItemsLayoutDesignTypeConverter.cs" />
