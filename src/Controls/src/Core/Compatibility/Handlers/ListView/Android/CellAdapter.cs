@@ -198,15 +198,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				IMenuItem item = menu.Add(AMenu.None, i, AMenu.None, action.Text);
 
-
-				action.IconImageSource.LoadImage(action.Handler.MauiContext, (iconDrawable) =>
+				action.IconImageSource?.LoadImage(_actionModeContext.FindMauiContext(), (iconDrawable) =>
 				{
 					if (iconDrawable?.Value != null && !this.IsDisposed() && !_actionModeNeedsUpdates)
 					{
 						item.SetIcon(iconDrawable.Value);
-						item.SetTitleOrContentDescription(action);
 					}
 				});
+
+				item.SetTitleOrContentDescription(action);
 
 				action.PropertyChanged += changed;
 				action.PropertyChanging += changing;
@@ -252,11 +252,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				ActionModeContext = cell;
 
-				var appCompatActivity = view.Context as AppCompatActivity;
-				if (appCompatActivity == null)
-					_actionMode = view.Context.GetActivity().StartActionMode(this);
+				var activity = view.Context.GetActivity();
+				if (activity is not AppCompatActivity appCompat)
+					_actionMode = activity.StartActionMode(this);
 				else
-					_supportActionMode = appCompatActivity.StartSupportActionMode(this);
+					_supportActionMode = appCompat.StartSupportActionMode(this);
 			}
 
 			ContextView = view;

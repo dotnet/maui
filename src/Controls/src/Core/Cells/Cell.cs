@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
 
 		ObservableCollection<MenuItem> _contextActions;
+		List<MenuItem> _currentContextActions;
 		readonly Lazy<ElementConfiguration> _elementConfiguration;
 
 		double _height = -1;
@@ -249,7 +250,21 @@ namespace Microsoft.Maui.Controls
 		void OnContextActionsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			for (var i = 0; i < _contextActions.Count; i++)
+			{
 				SetInheritedBindingContext(_contextActions[i], BindingContext);
+				_contextActions[i].Parent = this;
+				_currentContextActions?.Remove(_contextActions[i]);
+			}
+
+			if (_currentContextActions != null)
+			{
+				foreach (MenuItem item in _currentContextActions)
+				{
+					item.Parent = null;
+				}
+			}
+
+			_currentContextActions = new List<MenuItem>(_contextActions);
 
 			OnPropertyChanged("HasContextActions");
 		}
