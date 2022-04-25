@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.Diagnostics;
 using Foundation;
 using UIKit;
 
@@ -32,10 +31,10 @@ namespace Microsoft.Maui.Devices
 				rate: rate);
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios13.0")]
 		protected override void StartScreenMetricsListeners()
 		{
 			var notificationCenter = NSNotificationCenter.DefaultCenter;
-			Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(13));
 			var notification = UIApplication.DidChangeStatusBarOrientationNotification;
 			observer = notificationCenter.AddObserver(notification, OnMainDisplayInfoChanged);
 		}

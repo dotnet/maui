@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
+		[UnsupportedOSPlatform("ios14.0")]
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
 			var entryCell = (EntryCell)item;
@@ -43,7 +44,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
 			UpdateBackground(tvc, entryCell);
-			System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14), "TODO: Unsupported on iOS from version 14.0");
 			UpdateLabel(tvc, entryCell);
 			UpdateText(tvc, entryCell);
 			UpdateKeyboard(tvc, entryCell);
@@ -55,12 +55,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return tvc;
 		}
 
+		[UnsupportedOSPlatform("ios14.0")]
 		static void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var entryCell = (EntryCell)sender;
 			var realCell = (EntryCellTableViewCell)GetRealCell(entryCell);
 
-			System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14), "TODO: Unsupported on iOS from version 14.0");
 			if (e.PropertyName == EntryCell.LabelProperty.PropertyName)
 				UpdateLabel(realCell, entryCell);
 			else if (e.PropertyName == EntryCell.TextProperty.PropertyName)

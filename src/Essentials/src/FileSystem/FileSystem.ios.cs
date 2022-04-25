@@ -211,11 +211,11 @@ namespace Microsoft.Maui.Storage
 			FileName = originalFilename;
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios13.0")]
 		internal override Task<Stream> PlatformOpenReadAsync()
 		{
 			var tcsStream = new TaskCompletionSource<Stream>();
 
-			System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(13));
 			PHImageManager.DefaultManager.RequestImageData(phAsset, null, new PHImageDataHandler((data, str, orientation, dict) =>
 				tcsStream.TrySetResult(data.AsStream())));
 
