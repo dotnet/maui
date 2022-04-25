@@ -43,7 +43,10 @@ namespace Microsoft.Maui.Platform
 		{
 			var selectedIndex = picker.SelectedIndex;
 
-			platformPicker.Text = selectedIndex == -1 ? "" : picker.GetItem(selectedIndex);
+			// Revert to placeholder/title if nothing selected
+			platformPicker.Text = selectedIndex == -1
+				? (picker.Title ?? string.Empty)
+				: picker.GetItem(selectedIndex);
 
 			var pickerView = platformPicker.UIPickerView;
 			pickerView?.ReloadAllComponents();
