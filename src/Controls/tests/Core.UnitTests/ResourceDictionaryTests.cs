@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			elt.Parent = parent;
 
-			((IElement)elt).AddResourcesChangedListener((sender, e) =>
+			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) =>
 			{
 				Assert.AreEqual(1, e.Values.Count());
 				var kvp = e.Values.First();
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			elt.Parent = parent;
 
-			((IElement)elt).AddResourcesChangedListener((sender, e) => Assert.Fail());
+			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) => Assert.Fail());
 			parent.Resources["bar"] = "BAZ";
 			Assert.Pass();
 		}
@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			((IElement)elt).AddResourcesChangedListener((sender, e) =>
+			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) =>
 			{
 				Assert.AreEqual(2, e.Values.Count());
 				Assert.AreEqual("FOO", e.Values.First(kvp => kvp.Key == "foo").Value);
@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			elt.Parent = parent;
 
-			((IElement)elt).AddResourcesChangedListener((sender, e) =>
+			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) =>
 			{
 				Assert.AreEqual(3, e.Values.Count());
 				Assert.Pass();
@@ -264,7 +264,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			((IElement)elt).AddResourcesChangedListener((sender, e) =>
+			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) =>
 			{
 				Assert.AreEqual(2, e.Values.Count());
 				Assert.Pass();
