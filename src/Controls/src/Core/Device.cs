@@ -3,10 +3,10 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
@@ -20,35 +20,35 @@ namespace Microsoft.Maui.Controls
 		public static Assembly DefaultRendererAssembly { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='iOS']/Docs" />
-		[Obsolete("Use Essentials.DevicePlatform.iOS instead.")]
+		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.iOS instead.")]
 		public const string iOS = "iOS";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Android']/Docs" />
-		[Obsolete("Use Essentials.DevicePlatform.Android instead.")]
+		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.Android instead.")]
 		public const string Android = "Android";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='UWP']/Docs" />
-		[Obsolete("Use Essentials.DevicePlatform.WinUI instead.")]
+		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.WinUI instead.")]
 		public const string UWP = "WinUI";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='macOS']/Docs" />
-		[Obsolete("Use Essentials.DevicePlatform.macOS instead.")]
+		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.macOS instead.")]
 		internal const string macOS = "macOS";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GTK']/Docs" />
-		[Obsolete("Use Essentials.DevicePlatform.GTK instead.")]
+		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.GTK instead.")]
 		internal const string GTK = "GTK";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Tizen']/Docs" />
-		[Obsolete("Use Essentials.DevicePlatform.Tizen instead.")]
+		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.Tizen instead.")]
 		public const string Tizen = "Tizen";
-		[Obsolete("Use Essentials.DevicePlatform.WinUI instead.")]
+		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.WinUI instead.")]
 		public const string WinUI = "WinUI";
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='WPF']/Docs" />
-		[Obsolete("Use Essentials.DevicePlatform.WPF instead.")]
+		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.WPF instead.")]
 		internal const string WPF = "WPF";
-		[Obsolete("Use Essentials.DevicePlatform.MacCatalyst instead.")]
+		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.MacCatalyst instead.")]
 		public const string MacCatalyst = "MacCatalyst";
-		[Obsolete("Use Essentials.DevicePlatform.tvOS instead.")]
+		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.tvOS instead.")]
 		public const string tvOS = "tvOS";
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Idiom']/Docs" />
-		[Obsolete("Use Essentials.DeviceInfo.Idiom instead.")]
+		[Obsolete("Use Microsoft.Maui.Devices.DeviceInfo.Idiom instead.")]
 		public static TargetIdiom Idiom
 		{
 			get
@@ -69,11 +69,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='RuntimePlatform']/Docs" />
-		[Obsolete("Use Essentials.DeviceInfo.Platform instead.")]
+		[Obsolete("Use Microsoft.Maui.Devices.DeviceInfo.Platform instead.")]
 		public static string RuntimePlatform => DeviceInfo.Platform.ToString();
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='FlowDirection']/Docs" />
-		[Obsolete("Use Essentials.AppInfo.RequestedLayoutDirection instead.")]
+		[Obsolete("Use Microsoft.Maui.ApplicationModel.AppInfo.RequestedLayoutDirection instead.")]
 		public static FlowDirection FlowDirection =>
 			AppInfo.RequestedLayoutDirection == LayoutDirection.RightToLeft
 				? FlowDirection.RightToLeft

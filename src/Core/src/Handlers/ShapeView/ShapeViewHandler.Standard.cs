@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapAspect(IShapeViewHandler handler, IShapeView shapeView) { }
 		public static void MapFill(IShapeViewHandler handler, IShapeView shapeView) { }
 		public static void MapStroke(IShapeViewHandler handler, IShapeView shapeView) { }
-		public static void MapStrokeThickness(IShapeViewHandler handler, IShapeView shapeView) { }		
+		public static void MapStrokeThickness(IShapeViewHandler handler, IShapeView shapeView) { }
 		public static void MapStrokeDashPattern(IShapeViewHandler handler, IShapeView shapeView) { }
 		public static void MapStrokeDashOffset(IShapeViewHandler handler, IShapeView shapeView) { }
 		public static void MapStrokeLineCap(IShapeViewHandler handler, IShapeView shapeView) { }

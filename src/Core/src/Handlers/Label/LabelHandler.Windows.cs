@@ -9,7 +9,30 @@ namespace Microsoft.Maui.Handlers
 
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||
+			(VirtualView != null && VirtualView.VerticalTextAlignment != TextAlignment.Start) ||
 			base.NeedsContainer;
+
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+
+			// VerticalAlignment only works when the child's Height is Auto
+			PlatformView.Height = double.NaN;
+
+			MapHeight(this, VirtualView);
+		}
+
+		protected override void RemoveContainer()
+		{
+			base.RemoveContainer();
+
+			MapHeight(this, VirtualView);
+		}
+
+		public static void MapHeight(ILabelHandler handler, ILabel view) =>
+			// VerticalAlignment only works when the container's Height is set and the child's Height is Auto. The child's Height
+			// is set to Auto when the container is introduced
+			handler.ToPlatform().UpdateHeight(view);
 
 		public static void MapBackground(ILabelHandler handler, ILabel label)
 		{
@@ -44,17 +67,15 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(ILabelHandler handler, ILabel label) =>
 			handler.PlatformView?.UpdateHorizontalTextAlignment(label);
 
-		public static void MapVerticalTextAlignment(ILabelHandler handler, ILabel label) =>
-			handler.PlatformView?.UpdateVerticalTextAlignment(label);
+		public static void MapVerticalTextAlignment(ILabelHandler handler, ILabel label)
+		{
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
-		public static void MapLineBreakMode(ILabelHandler handler, ILabel label) =>
-			handler.PlatformView?.UpdateLineBreakMode(label);
+			handler.PlatformView?.UpdateVerticalTextAlignment(label);
+		}
 
 		public static void MapTextDecorations(ILabelHandler handler, ILabel label) =>
 			handler.PlatformView?.UpdateTextDecorations(label);
-
-		public static void MapMaxLines(ILabelHandler handler, ILabel label) =>
-			handler.PlatformView?.UpdateMaxLines(label);
 
 		public static void MapPadding(ILabelHandler handler, ILabel label) =>
 			handler.PlatformView?.UpdatePadding(label);

@@ -4,7 +4,9 @@ using PlatformView = UIKit.UINavigationBar;
 using PlatformView = Google.Android.Material.AppBar.MaterialToolbar;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.MauiToolbar;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformView =ElmSharp.Toolbar;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 

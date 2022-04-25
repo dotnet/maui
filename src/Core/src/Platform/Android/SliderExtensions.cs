@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider)  =>
+		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider) =>
 			seekBar.Thumb?.SetColorFilter(slider.ThumbColor, FilterMode.SrcIn);
 
 		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider)
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Platform
 			if (thumbImageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
-				var result = await service.GetDrawableAsync(context, thumbImageSource);
+				var result = await service.GetDrawableAsync(thumbImageSource, context);
 
 				var thumbDrawable = result?.Value;
 

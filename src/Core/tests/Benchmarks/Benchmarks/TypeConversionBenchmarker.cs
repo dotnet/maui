@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		public void GlobalSetup()
 		{
 			_xamlServiceProvider = new XamlServiceProvider();
-		
+
 			_setter = new Setter();
 			_setter.Property = Shell.BackgroundColorProperty;
 		}

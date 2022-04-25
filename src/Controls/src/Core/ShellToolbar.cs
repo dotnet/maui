@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Microsoft.Maui.Graphics;
 using System.Windows.Input;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -13,9 +13,14 @@ namespace Microsoft.Maui.Controls
 		Page _currentPage;
 		BackButtonBehavior _backButtonBehavior;
 		ToolbarTracker _toolbarTracker = new ToolbarTracker();
+		bool _drawerToggleVisible;
+
+		public override bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
 
 		public ShellToolbar(Shell shell) : base(shell)
 		{
+			_drawerToggleVisible = true;
+			BackButtonVisible = false;
 			_shell = shell;
 			shell.Navigated += (_, __) => ApplyChanges();
 			shell.PropertyChanged += (_, p) =>
@@ -39,7 +44,7 @@ namespace Microsoft.Maui.Controls
 			_toolbarTracker.CollectionChanged += (_, __) => ToolbarItems = _toolbarTracker.ToolbarItems;
 		}
 
-		void ApplyChanges()
+		internal void ApplyChanges()
 		{
 			var currentPage = _shell.CurrentPage;
 
@@ -76,6 +81,7 @@ namespace Microsoft.Maui.Controls
 				backButtonVisible = _backButtonBehavior.IsVisible;
 			}
 
+			_drawerToggleVisible = stack.Count <= 1;
 			BackButtonVisible = backButtonVisible && stack.Count > 1;
 			BackButtonEnabled = _backButtonBehavior?.IsEnabled ?? true;
 
@@ -87,10 +93,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			UpdateTitle();
-
-			TitleView = _shell.GetEffectiveValue<VisualElement>(
-				Shell.TitleViewProperty,
-				Shell.GetTitleView(_shell));
 
 			if (_currentPage != null &&
 				_currentPage.IsSet(Shell.NavBarIsVisibleProperty))
@@ -143,7 +145,7 @@ namespace Microsoft.Maui.Controls
 
 			void OnBackButtonCanExecuteChanged(object sender, EventArgs e)
 			{
-				BackButtonEnabled = 
+				BackButtonEnabled =
 					_backButtonCommand.CanExecute(_backButtonBehavior.CommandParameter);
 			}
 		}
@@ -163,8 +165,17 @@ namespace Microsoft.Maui.Controls
 
 		internal void UpdateTitle()
 		{
-			Page currentPage = _shell.GetCurrentShellPage() as Page;
+			TitleView = _shell.GetEffectiveValue<VisualElement>(
+				Shell.TitleViewProperty,
+				Shell.GetTitleView(_shell));
 
+			if (TitleView != null)
+			{
+				Title = String.Empty;
+				return;
+			}
+
+			Page currentPage = _shell.GetCurrentShellPage() as Page;
 			if (currentPage?.IsSet(Page.TitleProperty) == true)
 			{
 				Title = currentPage.Title ?? String.Empty;

@@ -1,8 +1,10 @@
 using SkiaSharp;
-using Path = Microsoft.Maui.Controls.Compatibility.Shapes.Path;
+using Microsoft.Maui.Controls.Platform;
+using Path = Microsoft.Maui.Controls.Shapes.Path;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PathRenderer : ShapeRenderer<Path, PathView>
 	{
 		public PathRenderer() : base()

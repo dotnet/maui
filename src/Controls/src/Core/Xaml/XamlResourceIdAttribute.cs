@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Xaml/XamlResourceIdAttribute.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public XamlResourceIdAttribute(
-			string resourceId, 
+			string resourceId,
 			string path,
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 		{
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		internal static string GetResourceIdForType(Type type)
 		{
-			var assembly = type.GetTypeInfo().Assembly;
+			var assembly = type.Assembly;
 			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
 			{
 				if (xria.Type == type)
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		internal static string GetPathForType(Type type)
 		{
-			var assembly = type.GetTypeInfo().Assembly;
+			var assembly = type.Assembly;
 			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
 			{
 				if (xria.Type == type)

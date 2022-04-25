@@ -12,7 +12,8 @@
       "description": ".NET MAUI SDK for Mobile",
       "extends": [ 
         "maui-android",
-        "maui-ios"
+        "maui-ios",
+        "maui-tizen"
       ]
     },
     "maui-desktop": {
@@ -103,9 +104,21 @@
           "Microsoft.Maui.Controls.Runtime.win",
           "Microsoft.Maui.Essentials.Ref.win",
           "Microsoft.Maui.Essentials.Runtime.win",
-          "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop",
-          "Microsoft.WindowsAppSDK",
-          "Microsoft.Windows.SDK.BuildTools"
+          "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
+      ]
+    },
+    "maui-tizen": {
+      "description": ".NET MAUI SDK for Tizen",
+      "extends": [
+        "maui-blazor"
+      ],
+      "packs": [
+          "Microsoft.Maui.Core.Ref.tizen",
+          "Microsoft.Maui.Core.Runtime.tizen",
+          "Microsoft.Maui.Controls.Ref.tizen",
+          "Microsoft.Maui.Controls.Runtime.tizen",
+          "Microsoft.Maui.Essentials.Ref.tizen",
+          "Microsoft.Maui.Essentials.Runtime.tizen"
       ]
     }
   },
@@ -134,6 +147,10 @@
       "kind": "framework",
       "version": "@VERSION@"
     },
+    "Microsoft.Maui.Core.Ref.tizen": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
     "Microsoft.Maui.Core.Runtime.any": {
       "kind": "framework",
       "version": "@VERSION@"
@@ -151,6 +168,10 @@
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Core.Runtime.win": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Runtime.tizen": {
       "kind": "framework",
       "version": "@VERSION@"
     },
@@ -174,6 +195,10 @@
       "kind": "framework",
       "version": "@VERSION@"
     },
+    "Microsoft.Maui.Controls.Ref.tizen": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
     "Microsoft.Maui.Controls.Runtime.any": {
       "kind": "framework",
       "version": "@VERSION@"
@@ -191,6 +216,10 @@
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Controls.Runtime.win": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Runtime.tizen": {
       "kind": "framework",
       "version": "@VERSION@"
     },
@@ -218,6 +247,10 @@
       "kind": "framework",
       "version": "@VERSION@"
     },
+    "Microsoft.Maui.Essentials.Ref.tizen": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
     "Microsoft.Maui.Essentials.Runtime.any": {
       "kind": "framework",
       "version": "@VERSION@"
@@ -238,6 +271,10 @@
       "kind": "framework",
       "version": "@VERSION@"
     },
+    "Microsoft.Maui.Essentials.Runtime.tizen": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
     "Microsoft.Maui.Extensions": {
       "kind": "library",
       "version": "@VERSION@"
@@ -249,14 +286,6 @@
     "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop": {
       "kind": "library",
       "version": "@MAUI_GRAPHICS_VERSION@"
-    },
-    "Microsoft.WindowsAppSDK": {
-      "kind": "library",
-      "version": "@WASDK_VERSION@"
-    },
-    "Microsoft.Windows.SDK.BuildTools": {
-      "kind": "library",
-      "version": "@WASDK_BUILD_TOOLS_VERSION@"
     },
     "Microsoft.Maui.Sdk": {
       "kind": "sdk",

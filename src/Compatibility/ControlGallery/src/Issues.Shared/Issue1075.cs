@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				else
 				{
 					string selectedItem = picker.Items[picker.SelectedIndex];
-					FieldInfo colorField = typeof(Color).GetTypeInfo().GetDeclaredField(selectedItem);
+					FieldInfo colorField = typeof(Color).GetField(selectedItem);
 					boxView.Color = (Color)colorField.GetValue(null);
 				}
 			};

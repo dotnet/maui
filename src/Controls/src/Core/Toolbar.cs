@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Maui.Graphics;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Controls
 		bool _backButtonVisible;
 		bool _backButtonEnabled = true;
 		bool _drawerToggleVisible;
+		Maui.IElement _parent;
+		IElementHandler _handler;
 
 		public Toolbar(Maui.IElement parent)
 		{
@@ -39,14 +41,24 @@ namespace Microsoft.Maui.Controls
 		public virtual string Title { get => _title; set => SetProperty(ref _title, value); }
 		public virtual VisualElement TitleView { get => _titleView; set => SetProperty(ref _titleView, value); }
 		public bool DynamicOverflowEnabled { get => _dynamicOverflowEnabled; set => SetProperty(ref _dynamicOverflowEnabled, value); }
-		public bool BackButtonVisible { get => _backButtonVisible; set => SetProperty(ref _backButtonVisible, value); }
+		public virtual bool BackButtonVisible { get => _backButtonVisible; set => SetProperty(ref _backButtonVisible, value); }
 		public bool BackButtonEnabled { get => _backButtonEnabled; set => SetProperty(ref _backButtonEnabled, value); }
 		public virtual bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
 		public bool IsVisible { get => _isVisible; set => SetProperty(ref _isVisible, value); }
-		public IElementHandler Handler { get; set; }
+		public IElementHandler Handler
+		{
+			get => _handler;
+			set
+			{
+				if (_handler == value)
+					return;
 
-		Maui.IElement _parent;
+				OnHandlerChanging(_handler, value);
+				_handler = value;
+			}
+		}
 
+		partial void OnHandlerChanging(IElementHandler oldHandler, IElementHandler newHandler);
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		public Maui.IElement Parent => _parent;

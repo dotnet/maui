@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var currentRootView = GetCurrentRootView() as ViewGroup;
 
-			if(_window?.PlatformActivity?.GetWindow() == _window)
+			if (_window?.PlatformActivity?.GetWindow() == _window)
 			{
 				currentRootView = _window?.PlatformActivity?.Window?.DecorView as ViewGroup;
 			}
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			platformView.ImportantForAccessibility = ImportantForAccessibility.Auto;
 
-			if (PlatformVersion.IsAtLeast(26))
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 				platformView.SetFocusable(ViewFocusability.FocusableAuto);
 
 			if (platformView is ViewGroup vg)
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			platformView.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
 
-			if (PlatformVersion.IsAtLeast(26))
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 				platformView.SetFocusable(ViewFocusability.NotFocusable);
 
 			// Without setting this the keyboard will still navigate to components behind the modal page
@@ -227,6 +227,12 @@ namespace Microsoft.Maui.Controls.Platform
 					.Commit();
 			}
 
+			public override bool OnTouchEvent(MotionEvent? e)
+			{
+				// Don't let touch events pass through to the view being covered up
+				return true;
+			}
+
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 			{
 				if (Context == null || NavigationRootManager?.RootView == null)
@@ -240,23 +246,24 @@ namespace Microsoft.Maui.Controls.Platform
 				if (widthMeasureSpec.GetMode() == MeasureSpecMode.AtMost)
 					widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(widthMeasureSpec.GetSize());
 
-				if (heightMeasureSpec.GetMode() == MeasureSpecMode.AtMost)
-					heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(heightMeasureSpec.GetSize());
+				var measureHeight = heightMeasureSpec.GetSize() - Context.GetNavigationBarHeight();
+				heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(measureHeight);
 
 				rootView.Measure(widthMeasureSpec, heightMeasureSpec);
 				SetMeasuredDimension(rootView.MeasuredWidth, rootView.MeasuredHeight);
 			}
-
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
 				if (Context == null || NavigationRootManager?.RootView == null)
 					return;
 
+				var statusBarHeight = Context.GetStatusBarHeight();
 				NavigationRootManager
-					.RootView.Layout(l, t, r, b);
+					.RootView
+					.Layout(l, t + statusBarHeight, r, b);
 
-				_backgroundView.Layout(0, 0, r - l, b - t);
+				_backgroundView.Layout(0, statusBarHeight, r - l, b - t);
 			}
 
 			void OnModalPagePropertyChanged(object? sender, PropertyChangedEventArgs e)

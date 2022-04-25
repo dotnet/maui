@@ -43,7 +43,7 @@ namespace Microsoft.Maui
 			return Task.FromResult<IImageSourceServiceResult?>(null);
 		}
 
-		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(Context context, IImageSource imageSource, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
 			var fileImageSource = (IFileImageSource)imageSource;
 			if (!fileImageSource.IsEmpty)
@@ -70,7 +70,7 @@ namespace Microsoft.Maui
 					throw;
 				}
 			}
-			
+
 			return Task.FromResult<IImageSourceServiceResult<Drawable>?>(null);
 		}
 	}

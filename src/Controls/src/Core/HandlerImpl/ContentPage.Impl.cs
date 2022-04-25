@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	public partial class ContentPage : IContentView, HotReload.IHotReloadableView
 	{
 		object IContentView.Content => Content;
-		IView IContentView.PresentedContent => Content;
+		IView IContentView.PresentedContent => ((this as IControlTemplated).TemplateRoot as IView) ?? Content;
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{

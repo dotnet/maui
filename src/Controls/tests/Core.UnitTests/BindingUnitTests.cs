@@ -1864,21 +1864,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 #if !WINDOWS_PHONE
-		[TestCase("en-US"), TestCase("pt-PT")]
-		public void ConvertIsCultureInvariant(string culture)
+		[TestCase("en-US", "0.5", 0.5, 0.9, "0.9")]
+		[TestCase("pt-PT", "0,5", 0.5, 0.9, "0,9")]
+		public void ConvertIsCultureAware(string culture, string sliderSetStringValue, double sliderExpectedDoubleValue, double sliderSetDoubleValue, string sliderExpectedStringValue)
 		{
 			System.Threading.Thread.CurrentThread.CurrentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
 
 			var slider = new Slider();
-			var vm = new MockViewModel { Text = "0.5" };
+			var vm = new MockViewModel { Text = sliderSetStringValue };
 			slider.BindingContext = vm;
 			slider.SetBinding(Slider.ValueProperty, "Text", BindingMode.TwoWay);
 
-			Assert.That(slider.Value, Is.EqualTo(0.5));
+			Assert.That(slider.Value, Is.EqualTo(sliderExpectedDoubleValue));
 
-			slider.Value = 0.9;
+			slider.Value = sliderSetDoubleValue;
 
-			Assert.That(vm.Text, Is.EqualTo("0.9"));
+			Assert.That(vm.Text, Is.EqualTo(sliderExpectedStringValue));
 		}
 #endif
 

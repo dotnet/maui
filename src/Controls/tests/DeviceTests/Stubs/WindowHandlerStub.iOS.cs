@@ -25,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 				.Content
 				.ToPlatform()
 				.RemoveFromSuperview();
-				
+
 			base.DisconnectHandler(platformView);
 		}
 
