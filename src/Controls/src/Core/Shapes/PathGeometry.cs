@@ -1,3 +1,4 @@
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			double density = 1.0d;
 #if ANDROID
-			density = Essentials.DeviceDisplay.MainDisplayInfo.Density;
+			density = DeviceDisplay.MainDisplayInfo.Density;
 #endif
 
 			foreach (var figure in Figures)
@@ -101,7 +102,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		void AddLine(PathF path, LineSegment lineSegment, double density)
 		{
 			path.LineTo(
-				(float)(density * lineSegment.Point.X), 
+				(float)(density * lineSegment.Point.X),
 				(float)(density * lineSegment.Point.Y));
 		}
 
@@ -109,13 +110,13 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			foreach (var p in polyLineSegment.Points)
 				path.LineTo(
-					(float)(density * p.X), 
+					(float)(density * p.X),
 					(float)(density * p.Y));
 		}
 
 		void AddBezier(PathF path, BezierSegment bezierSegment, double density)
 		{
-			path.CurveTo(	
+			path.CurveTo(
 				(float)(density * bezierSegment.Point1.X), (float)(density * bezierSegment.Point1.Y),
 				(float)(density * bezierSegment.Point2.X), (float)(density * bezierSegment.Point2.Y),
 				(float)(density * bezierSegment.Point3.X), (float)(density * bezierSegment.Point3.Y));

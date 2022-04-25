@@ -9,10 +9,9 @@
             <Button x:Name="RenderButton" Text="Render This Button As Image" Clicked="RenderButton_Clicked" />
             <Button Text="Render Window As Image" Clicked="RenderWindow_Clicked" />
             <HorizontalStackLayout Spacing="5" RadioButtonGroup.GroupName="Image Type" HorizontalOptions="Center"
-                      RadioButtonGroup.SelectedValue="{Binding Selection}">
+                                   RadioButtonGroup.SelectedValue="{Binding Selection}">
                 <RadioButton Content="JPEG" Value="JPEG"/>
                 <RadioButton Content="PNG" Value="PNG"/>
-                <RadioButton Content="BMP" Value="BMP"/>
             </HorizontalStackLayout>
         </VerticalStackLayout>
         <Image x:Name="TestImage" Grid.Row="1"/>

@@ -1,10 +1,11 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using Microsoft.Maui.Storage;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public interface IVersionTracking
 	{
@@ -20,13 +21,13 @@ namespace Microsoft.Maui.Essentials
 
 		string CurrentBuild { get; }
 
-		string PreviousVersion { get; }
+		string? PreviousVersion { get; }
 
-		string PreviousBuild { get; }
+		string? PreviousBuild { get; }
 
-		string FirstInstalledVersion { get; }
+		string? FirstInstalledVersion { get; }
 
-		string FirstInstalledBuild { get; }
+		string? FirstInstalledBuild { get; }
 
 		IReadOnlyList<string> VersionHistory { get; }
 
@@ -38,97 +39,117 @@ namespace Microsoft.Maui.Essentials
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="Type[@FullName='Microsoft.Maui.Essentials.VersionTracking']/Docs" />
-	public static class VersionTracking
+	public static partial class VersionTracking
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='Track']/Docs" />
-		[Preserve]
 		public static void Track()
-			=> Current.Track();
+			=> Default.Track();
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchEver']/Docs" />
 		public static bool IsFirstLaunchEver
-			=> Current.IsFirstLaunchEver;
+			=> Default.IsFirstLaunchEver;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForCurrentVersion']/Docs" />
 		public static bool IsFirstLaunchForCurrentVersion
-			=> Current.IsFirstLaunchForCurrentVersion;
+			=> Default.IsFirstLaunchForCurrentVersion;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForCurrentBuild']/Docs" />
 		public static bool IsFirstLaunchForCurrentBuild
-			=> Current.IsFirstLaunchForCurrentBuild;
+			=> Default.IsFirstLaunchForCurrentBuild;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='CurrentVersion']/Docs" />
 		public static string CurrentVersion
-			=> Current.CurrentVersion;
+			=> Default.CurrentVersion;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='CurrentBuild']/Docs" />
 		public static string CurrentBuild
-			=> Current.CurrentBuild;
+			=> Default.CurrentBuild;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='PreviousVersion']/Docs" />
-		public static string PreviousVersion
-			=> Current.PreviousVersion;
+		public static string? PreviousVersion
+			=> Default.PreviousVersion;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='PreviousBuild']/Docs" />
-		public static string PreviousBuild
-			=> Current.PreviousBuild;
+		public static string? PreviousBuild
+			=> Default.PreviousBuild;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='FirstInstalledVersion']/Docs" />
-		public static string FirstInstalledVersion
-			=> Current.FirstInstalledVersion;
+		public static string? FirstInstalledVersion
+			=> Default.FirstInstalledVersion;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='FirstInstalledBuild']/Docs" />
-		public static string FirstInstalledBuild =>
-			Current.FirstInstalledBuild;
+		public static string? FirstInstalledBuild
+			=> Default.FirstInstalledBuild;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='VersionHistory']/Docs" />
 		public static IEnumerable<string> VersionHistory
-			=> Current.VersionHistory;
+			=> Default.VersionHistory;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='BuildHistory']/Docs" />
 		public static IEnumerable<string> BuildHistory
-			=> Current.BuildHistory;
+			=> Default.BuildHistory;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForVersion']/Docs" />
 		public static bool IsFirstLaunchForVersion(string version)
-			=> Current.IsFirstLaunchForVersion(version);
+			=> Default.IsFirstLaunchForVersion(version);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForBuild']/Docs" />
 		public static bool IsFirstLaunchForBuild(string build)
-			=> Current.IsFirstLaunchForBuild(build);
+			=> Default.IsFirstLaunchForBuild(build);
 
-		//internal static string GetStatus()
-		//	=> Current.GetStatus();
+		static IVersionTracking? defaultImplementation;
 
-#nullable enable
-		static IVersionTracking? currentImplementation;
+		public static IVersionTracking Default =>
+			defaultImplementation ??= new VersionTrackingImplementation(Preferences.Default, AppInfo.Current);
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IVersionTracking Current =>
-			currentImplementation ??= new Implementations.VersionTrackingImplementation();
+		internal static void SetDefault(IVersionTracking? implementation) =>
+			defaultImplementation = implementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IVersionTracking? implementation) =>
-			currentImplementation = implementation;
-#nullable disable
+		internal static void InitVersionTracking() =>
+			(Default as VersionTrackingImplementation)?.InitVersionTracking();
 	}
-}
 
-namespace Microsoft.Maui.Essentials.Implementations
-{
-	public class VersionTrackingImplementation : IVersionTracking
+	class VersionTrackingImplementation : IVersionTracking
 	{
-		const string versionTrailKey = "VersionTracking.Trail";
 		const string versionsKey = "VersionTracking.Versions";
 		const string buildsKey = "VersionTracking.Builds";
 
-		readonly string sharedName = Preferences.GetPrivatePreferencesSharedName("versiontracking");
+		static readonly string sharedName = Preferences.GetPrivatePreferencesSharedName("versiontracking");
 
-		readonly Dictionary<string, List<string>> versionTrail;
+		readonly IPreferences preferences;
+		readonly IAppInfo appInfo;
 
-		public VersionTrackingImplementation()
+		Dictionary<string, List<string>> versionTrail = null!;
+
+		string LastInstalledVersion => versionTrail[versionsKey]?.LastOrDefault() ?? string.Empty;
+
+		string LastInstalledBuild => versionTrail[buildsKey]?.LastOrDefault() ?? string.Empty;
+
+		public VersionTrackingImplementation(IPreferences preferences, IAppInfo appInfo)
 		{
-			IsFirstLaunchEver = !Preferences.ContainsKey(versionsKey, sharedName) || !Preferences.ContainsKey(buildsKey, sharedName);
+			this.preferences = preferences;
+			this.appInfo = appInfo;
+
+			Track();
+		}
+
+		public void Track()
+		{
+			if (versionTrail != null)
+				return;
+
+			InitVersionTracking();
+		}
+
+		/// <summary>
+		/// Initialize VersionTracking module, load data and track current version
+		/// </summary>
+		/// <remarks>
+		/// For internal use. Usually only called once in production code, but multiple times in unit tests
+		/// </remarks>
+		internal void InitVersionTracking()
+		{
+			IsFirstLaunchEver = !preferences.ContainsKey(versionsKey, sharedName) || !preferences.ContainsKey(buildsKey, sharedName);
 			if (IsFirstLaunchEver)
 			{
 				versionTrail = new Dictionary<string, List<string>>
@@ -146,15 +167,19 @@ namespace Microsoft.Maui.Essentials.Implementations
 				};
 			}
 
-			IsFirstLaunchForCurrentVersion = !versionTrail[versionsKey].Contains(CurrentVersion);
+			IsFirstLaunchForCurrentVersion = !versionTrail[versionsKey].Contains(CurrentVersion) || CurrentVersion != LastInstalledVersion;
 			if (IsFirstLaunchForCurrentVersion)
 			{
+				// Avoid duplicates and move current version to end of list if already present
+				versionTrail[versionsKey].RemoveAll(v => v == CurrentVersion);
 				versionTrail[versionsKey].Add(CurrentVersion);
 			}
 
-			IsFirstLaunchForCurrentBuild = !versionTrail[buildsKey].Contains(CurrentBuild);
+			IsFirstLaunchForCurrentBuild = !versionTrail[buildsKey].Contains(CurrentBuild) || CurrentBuild != LastInstalledBuild;
 			if (IsFirstLaunchForCurrentBuild)
 			{
+				// Avoid duplicates and move current build to end of list if already present
+				versionTrail[buildsKey].RemoveAll(b => b == CurrentBuild);
 				versionTrail[buildsKey].Add(CurrentBuild);
 			}
 
@@ -165,28 +190,23 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 		}
 
-		[Preserve]
-		public void Track()
-		{
-		}
-
 		public bool IsFirstLaunchEver { get; private set; }
 
 		public bool IsFirstLaunchForCurrentVersion { get; private set; }
 
 		public bool IsFirstLaunchForCurrentBuild { get; private set; }
 
-		public string CurrentVersion => AppInfo.VersionString;
+		public string CurrentVersion => appInfo.VersionString;
 
-		public string CurrentBuild => AppInfo.BuildString;
+		public string CurrentBuild => appInfo.BuildString;
 
-		public string PreviousVersion => GetPrevious(versionsKey);
+		public string? PreviousVersion => GetPrevious(versionsKey);
 
-		public string PreviousBuild => GetPrevious(buildsKey);
+		public string? PreviousBuild => GetPrevious(buildsKey);
 
-		public string FirstInstalledVersion => versionTrail[versionsKey].FirstOrDefault();
+		public string? FirstInstalledVersion => versionTrail[versionsKey].FirstOrDefault();
 
-		public string FirstInstalledBuild => versionTrail[buildsKey].FirstOrDefault();
+		public string? FirstInstalledBuild => versionTrail[buildsKey].FirstOrDefault();
 
 		public IReadOnlyList<string> VersionHistory => versionTrail[versionsKey].ToArray();
 
@@ -198,7 +218,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public bool IsFirstLaunchForBuild(string build)
 			=> CurrentBuild == build && IsFirstLaunchForCurrentBuild;
 
-		string GetStatus()
+		public string GetStatus()
 		{
 			var sb = new StringBuilder();
 			sb.AppendLine();
@@ -220,12 +240,12 @@ namespace Microsoft.Maui.Essentials.Implementations
 		}
 
 		string[] ReadHistory(string key)
-			=> Preferences.Get(key, null, sharedName)?.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
+			=> preferences.Get<string?>(key, null, sharedName)?.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
 
 		void WriteHistory(string key, IEnumerable<string> history)
-			=> Preferences.Set(key, string.Join("|", history), sharedName);
+			=> preferences.Set(key, string.Join("|", history), sharedName);
 
-		string GetPrevious(string key)
+		string? GetPrevious(string key)
 		{
 			var trail = versionTrail[key];
 			return (trail.Count >= 2) ? trail[trail.Count - 2] : null;

@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						// an additional ConditionalFocusLayout
 						// We're basically faking re-use to the GetView call
 						AView currentParent = null;
-						if(cell.Handler?.PlatformView is AView aView)
+						if (cell.Handler?.PlatformView is AView aView)
 							currentParent = aView.Parent as AView;
 
 						AView listItem = _adapter.GetView(i, currentParent, Control);
@@ -441,13 +441,26 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 					_refresh.Refreshing = isRefreshing;
+
+				// Allow to disable SwipeToRefresh layout AFTER refresh is done
+				UpdateIsSwipeToRefreshEnabled();
 			}
 		}
 
 		void UpdateIsSwipeToRefreshEnabled()
 		{
 			if (_refresh != null)
-				_refresh.Enabled = Element.IsPullToRefreshEnabled && (Element as IListViewController).RefreshAllowed;
+			{
+				var isEnabled = Element.IsPullToRefreshEnabled && (Element as IListViewController).RefreshAllowed;
+				_refresh.Post(() =>
+				{
+					// NOTE: only disable while NOT refreshing, otherwise Command bindings CanExecute behavior will effectively
+					// cancel refresh animation. If not possible right now we will be called by UpdateIsRefreshing().
+					// For details see https://github.com/xamarin/Xamarin.Forms/issues/8384
+					if (isEnabled || !_refresh.Refreshing)
+						_refresh.Enabled = isEnabled;
+				});
+			}
 		}
 
 		void UpdateFastScrollEnabled()

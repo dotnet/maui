@@ -3,7 +3,7 @@
     "appliesTo": "UseMaui",
     "defaultItemExtension": "xaml",
     "itemHierarchyPaths": [ ".NET MAUI" ],
-    "icon": "ide/MauiContentViewXamlFile.ico",
+    "icon": "ide/MauiResourceDictionaryXamlFile.ico",
     "unsupportedHosts": [
         {
             "id": "vs",

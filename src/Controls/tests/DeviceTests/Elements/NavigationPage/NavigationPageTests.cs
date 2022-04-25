@@ -36,11 +36,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				Assert.False(IsBackButtonVisible(handler.MauiContext));
+				Assert.False(IsBackButtonVisible(handler));
 				await navPage.PushAsync(new ContentPage());
-				Assert.True(IsBackButtonVisible(handler.MauiContext));
+				Assert.True(IsBackButtonVisible(handler));
 				await navPage.PopAsync();
-				Assert.False(IsBackButtonVisible(handler.MauiContext));
+				Assert.False(IsBackButtonVisible(handler));
 			});
 		}
 
@@ -54,9 +54,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await navPage.PushAsync(new ContentPage());
 				NavigationPage.SetHasBackButton(navPage.CurrentPage, false);
-				Assert.False(IsBackButtonVisible(handler.MauiContext));
+				Assert.False(IsBackButtonVisible(handler));
 				NavigationPage.SetHasBackButton(navPage.CurrentPage, true);
-				Assert.True(IsBackButtonVisible(handler.MauiContext));
+				Assert.True(IsBackButtonVisible(handler));
 			});
 		}
 
@@ -126,6 +126,67 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				string title = GetToolbarTitle(handler);
 				Assert.Equal("Page Title", title);
+			});
+		}
+
+		[Fact(DisplayName = "Insert Page Before Root Page and then PopToRoot")]
+		public async Task InsertPageBeforeRootPageAndThenPopToRoot()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				Title = "Page Title"
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				navPage.Navigation.InsertPageBefore(new ContentPage(), navPage.RootPage);
+				await navPage.PopToRootAsync(false);
+			});
+
+			// Just verifying that nothing crashes
+		}
+
+		[Fact(DisplayName = "Insert Page Before RootPage ShowsBackButton")]
+		public async Task InsertPageBeforeRootPageShowsBackButton()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				Title = "Page Title"
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				navPage.Navigation.InsertPageBefore(new ContentPage(), navPage.RootPage);
+
+				// InsertPageBefore is actually async in the background so we have to insert a pause
+				// here to allow android to settle before testing
+				await Task.Delay(100);
+
+				Assert.True(IsBackButtonVisible(navPage.Handler));
+			});
+		}
+
+		[Fact(DisplayName = "Remove Root Page Hides Back Button")]
+		public async Task RemoveRootPageHidesBackButton()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				Title = "Page Title"
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await navPage.Navigation.PushAsync(new ContentPage());
+				navPage.Navigation.RemovePage(navPage.RootPage);
+
+				// RemovePage is actually async in the background so we have to insert a pause
+				// here to allow android to settle before testing
+				await Task.Delay(100);
+
+				Assert.False(IsBackButtonVisible(navPage.Handler));
 			});
 		}
 	}

@@ -3,6 +3,7 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ViewCellRenderer : CellRenderer
 	{
 		readonly Dictionary<EvasObject, ViewCell> _cacheCandidate = new Dictionary<EvasObject, ViewCell>();
@@ -98,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				if (element is Button || element is Switch)
 				{
-					var nativeView = Platform.GetRenderer(element).NativeView ?? null;
+					var nativeView = Platform.GetRenderer(element)?.NativeView ?? null;
 					if (nativeView != null)
 					{
 						nativeView.PropagateEvents = false;

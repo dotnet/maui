@@ -1,8 +1,10 @@
+using Microsoft.Maui.Controls.Platform;
 using EColor = ElmSharp.Color;
 using EProgressBar = ElmSharp.ProgressBar;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, EProgressBar>
 	{
 		static readonly EColor s_defaultColor = ThemeConstants.ProgressBar.ColorClass.Default;
@@ -28,10 +30,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateColor(bool initialize)
 		{
-			if (initialize && Element.Color.IsDefault)
+			if (initialize && Element.Color.IsDefault())
 				return;
 
-			Control.Color = (Element.Color == Color.Default) ? s_defaultColor : Element.Color.ToPlatform();
+			Control.Color = (Element.Color.IsDefault()) ? s_defaultColor : Element.Color.ToNative();
 		}
 
 		void UpdateIsRunning()

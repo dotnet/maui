@@ -111,25 +111,41 @@ Task("dotnet-templates")
             { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
         };
 
-        var frameworks = new [] {
-            "net6.0-android",
-            "net6.0-ios",
-            "net6.0-maccatalyst",
+        var templates = new Dictionary<string, Action<DirectoryPath>> {
+            { "maui:maui", null },
+            { "mauiblazor:maui-blazor", null },
+            { "mauilib:mauilib", null },
+            { "mauicorelib:mauilib", dir => {
+                CleanDirectories(dir.Combine("Platforms").FullPath);
+                ReplaceTextInFiles($"{dir}/*.csproj", "UseMaui", "UseMauiCore");
+                ReplaceTextInFiles($"{dir}/*.csproj", "SingleProject", "EnablePreviewMsixTooling");
+            } },
         };
 
-        foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
+        foreach (var template in templates)
         {
-            var name = template.Replace("-", "_").Replace(" ", "_");
-            StartProcess(dn, $"new {template} -o \"{templatesTest}{name}\"");
-
-            // Design-time build without restore
-            foreach (var framework in frameworks)
+            foreach (var forceDotNetBuild in new [] { true, false })
             {
-                RunMSBuildWithDotNet($"{templatesTest}{name}", designTime, target: "Compile", restore: false, warningsAsError: true, targetFramework: framework);
-            }
+                // macOS does not support msbuild
+                if (!IsRunningOnWindows() && !forceDotNetBuild)
+                    continue;
 
-            // Build
-            RunMSBuildWithDotNet($"{templatesTest}{name}", properties, warningsAsError: true);
+                var type = forceDotNetBuild ? "DotNet" : "MSBuild";
+                var projectName = template.Key.Split(":")[0];
+                var templateName = template.Key.Split(":")[1];
+
+                projectName = $"{templatesTest}/{projectName}_{type}";
+
+                // Create
+                StartProcess(dn, $"new {templateName} -o \"{projectName}\"");
+
+                // Modify
+                if (template.Value != null)
+                    template.Value(projectName);
+
+                // Build
+                RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
+            }
         }
 
         try
@@ -177,8 +193,7 @@ Task("dotnet-test")
             throw new Exception("Some tests failed. Check the logs or test results.");
     });
 
-Task("dotnet-pack")
-    .Description("Build and create .NET 6 NuGet packages")
+Task("dotnet-pack-maui")
     .Does(() =>
     {
         DotNetCoreTool("pwsh", new DotNetCoreToolSettings
@@ -186,7 +201,11 @@ Task("dotnet-pack")
             DiagnosticOutput = true,
             ArgumentCustomization = args => args.Append($"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\"")
         });
+    });
 
+Task("dotnet-pack-additional")
+    .Does(() =>
+    {
         // Download some additional symbols that need to be archived along with the maui symbols:
         //  - _NativeAssets.windows
         //     - libSkiaSharp.pdb
@@ -196,7 +215,7 @@ Task("dotnet-pack")
         NuGetInstall("_NativeAssets.windows", new NuGetInstallSettings
         {
             Version = nativeAssetsVersion,
-            ExcludeVersion  = true,
+            ExcludeVersion = true,
             OutputDirectory = assetsDir,
             Source = new[] { "https://aka.ms/skiasharp-eap/index.json" },
         });
@@ -204,6 +223,40 @@ Task("dotnet-pack")
             DeleteFile(nupkg);
         Zip(assetsDir, $"{assetsDir}.zip");
     });
+
+Task("dotnet-pack-library-packs")
+    .Does(() =>
+    {
+        var tempDir = $"./artifacts/library-packs-temp";
+
+        var destDir = $"./artifacts/library-packs";
+        EnsureDirectoryExists(destDir);
+        CleanDirectories(destDir);
+
+        void Download(string id, string version, params string[] sources)
+        {
+            version = XmlPeek("./eng/Versions.props", "/Project/PropertyGroup/" + version);
+
+            NuGetInstall(id, new NuGetInstallSettings
+            {
+                Version = version,
+                ExcludeVersion = false,
+                OutputDirectory = tempDir,
+                Source = sources,
+            });
+
+            CopyFiles($"{tempDir}/**/" + id + "." + version + ".nupkg", destDir, false);
+            CleanDirectories(tempDir);
+        }
+
+        Download("Microsoft.Maui.Graphics", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json");
+        Download("Microsoft.Maui.Graphics.Win2D.WinUI.Desktop", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json", "https://api.nuget.org/v3/index.json");
+    });
+
+Task("dotnet-pack")
+    .IsDependentOn("dotnet-pack-maui")
+    .IsDependentOn("dotnet-pack-additional")
+    .IsDependentOn("dotnet-pack-library-packs");
 
 Task("dotnet-build-test")
     .IsDependentOn("dotnet")
@@ -313,11 +366,6 @@ Task("VS-NET6")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        // VS has trouble building all the references correctly so this makes sure everything is built
-        // and we're ready to go right when VS launches
-        
-        RunMSBuildWithDotNet("./src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup.csproj");
-        RunMSBuildWithDotNet("./src/Compatibility/Core/src/Compatibility.csproj");
         StartVisualStudioForDotNet6();
     });
 
@@ -457,18 +505,22 @@ void RunMSBuildWithDotNet(
     string target = "Build",
     bool warningsAsError = false,
     bool restore = true,
-    string targetFramework = null)
+    string targetFramework = null,
+    bool forceDotNetBuild = false)
 {
+    var useDotNetBuild = forceDotNetBuild || !IsRunningOnWindows() || target == "Run";
+
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
+    var type = useDotNetBuild ? "dotnet" : "msbuild";
     var binlog = string.IsNullOrEmpty(targetFramework) ?
-        $"\"{logDirectory}/{name}-{configuration}-{target}.binlog\"" :
-        $"\"{logDirectory}/{name}-{configuration}-{target}-{targetFramework}.binlog\"";
+        $"\"{logDirectory}/{name}-{configuration}-{target}-{type}.binlog\"" :
+        $"\"{logDirectory}/{name}-{configuration}-{target}-{targetFramework}-{type}.binlog\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
     // If we're not on Windows, use ./bin/dotnet/dotnet
-    if (!IsRunningOnWindows() || target == "Run")
+    if (useDotNetBuild)
     {
         var msbuildSettings = new DotNetCoreMSBuildSettings()
             .SetConfiguration(configuration)

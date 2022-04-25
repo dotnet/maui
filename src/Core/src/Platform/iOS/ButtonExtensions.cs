@@ -75,5 +75,7 @@ namespace Microsoft.Maui.Platform
 				(float)bottom,
 				(float)padding.Right);
 		}
+
+
 	}
 }

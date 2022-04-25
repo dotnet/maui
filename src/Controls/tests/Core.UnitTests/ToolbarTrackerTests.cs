@@ -202,35 +202,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(tracker.ToolbarItems.Any());
 		}
-		
+
 		[Test]
 		public async Task NavigationToolBar()
-        {
-            var toolbarItem1 = new ToolbarItem("Foo", "Foo.png", () => { });
-            var toolbarItem2 = new ToolbarItem("Foo", "Foo.png", () => { });
-			
-            var page = new NavigationPage
-            {
-                ToolbarItems = {
-                    toolbarItem1
-                }
-            };
+		{
+			var toolbarItem1 = new ToolbarItem("Foo", "Foo.png", () => { });
+			var toolbarItem2 = new ToolbarItem("Foo", "Foo.png", () => { });
 
-            var window = new Window()
-            {
-                Page = page
-            };
+			var page = new NavigationPage
+			{
+				ToolbarItems = {
+					toolbarItem1
+				}
+			};
 
-            var firstPage = new ContentPage
-            {
-                ToolbarItems = { toolbarItem2 }
-            };
+			var window = new Window()
+			{
+				Page = page
+			};
 
-            await page.Navigation.PushAsync(firstPage);
+			var firstPage = new ContentPage
+			{
+				ToolbarItems = { toolbarItem2 }
+			};
 
-            var toolbar = window.Toolbar;
-            Assert.True(toolbar.ToolbarItems.Contains(toolbarItem1));
-            Assert.True(toolbar.ToolbarItems.Contains(toolbarItem2));
-        }
+			await page.Navigation.PushAsync(firstPage);
+
+			var toolbar = window.Toolbar;
+			Assert.True(toolbar.ToolbarItems.Contains(toolbarItem1));
+			Assert.True(toolbar.ToolbarItems.Contains(toolbarItem2));
+		}
 	}
 }

@@ -189,14 +189,6 @@ public class PlatformInterop {
     }
 
     @NonNull
-    public static MaterialToolbar createShellToolbar(Context context, AppBarLayout appbar, int actionBarHeight, int popupTheme)
-    {
-        MaterialToolbar toolbar = createToolbar(context, actionBarHeight, popupTheme);
-        appbar.addView(toolbar);
-        return toolbar;
-    }
-
-    @NonNull
     public static TabLayout createShellTabLayout(Context context, AppBarLayout appbar, int actionBarHeight)
     {
         TabLayout layout = new TabLayout(context);
@@ -256,13 +248,15 @@ public class PlatformInterop {
 
         if (!cachingEnabled)
         {
-            builder = builder
+            builder
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .skipMemoryCache(true);
+                .skipMemoryCache(true)
+                .into(target);
         }
-
-        builder
-            .into(target);
+        else {
+            builder
+                .into(target);
+        }
     }
 
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback)
@@ -319,12 +313,13 @@ public class PlatformInterop {
 
         if (!cachingEnabled)
         {
-            builder = builder
+            builder
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .skipMemoryCache(true);
+                .skipMemoryCache(true)
+            .into(target);
+        } else {
+            builder.into(target);
         }
-
-        builder.into(target);
     }
 
 

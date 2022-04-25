@@ -2,8 +2,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -17,6 +17,12 @@ namespace Microsoft.Maui.DeviceTests
 		MauiApp _mauiApp;
 		IMauiContext _mauiContext;
 
+		// In order to run any page level tests android needs to add itself to the decor view inside a new fragment
+		// that way all the lifecycle events related to being attached to the window will fire
+		// adding/removing that many fragments in parallel to the decor view was causing the tests to be unreliable
+		// That being said...
+		// There's definitely a chance that the code written to manage this process could be improved		
+		public const string RunInNewWindowCollection = "Serialize test because it has to add itself to the main window";
 		public void EnsureHandlerCreated(Action<MauiAppBuilder> additionalCreationActions = null)
 		{
 			if (_isCreated)
@@ -34,21 +40,21 @@ namespace Microsoft.Maui.DeviceTests
 					lifecycle
 						.AddiOS(iOS => iOS
 							.OpenUrl((app, url, options) =>
-								Microsoft.Maui.Essentials.Platform.OpenUrl(app, url, options))
+								ApplicationModel.Platform.OpenUrl(app, url, options))
 							.ContinueUserActivity((application, userActivity, completionHandler) =>
-								Microsoft.Maui.Essentials.Platform.ContinueUserActivity(application, userActivity, completionHandler))
+								ApplicationModel.Platform.ContinueUserActivity(application, userActivity, completionHandler))
 							.PerformActionForShortcutItem((application, shortcutItem, completionHandler) =>
-								Microsoft.Maui.Essentials.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler)));
+								ApplicationModel.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler)));
 #elif WINDOWS
 					lifecycle
 						.AddWindows(windows =>
 						{
 							windows
 								.OnLaunched((app, e) =>
-									Microsoft.Maui.Essentials.Platform.OnLaunched(e));
+									ApplicationModel.Platform.OnLaunched(e));
 							windows
 								.OnActivated((window, e) =>
-									Microsoft.Maui.Essentials.Platform.OnActivated(window, e));
+									ApplicationModel.Platform.OnActivated(window, e));
 						});
 #endif
 				})

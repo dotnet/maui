@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Media;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		static bool CanExecuteTest()
 		{
 #if __IOS__
-			return PlatformVersion.IsAtLeast(13);
+			return OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13);
 #else
 			return true;
 #endif

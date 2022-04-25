@@ -405,7 +405,8 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			if (newValue is IToolbarElement toolbarElement &&
-				toolbarElement.Toolbar is Toolbar tb)
+				toolbarElement.Toolbar is Toolbar tb &&
+				newValue is not Shell)
 			{
 				window.Toolbar = tb;
 			}

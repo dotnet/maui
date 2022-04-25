@@ -4,7 +4,9 @@ using PlatformView = UIKit.UIButton;
 using PlatformView = Google.Android.Material.Button.MaterialButton;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.Button;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformView = Tizen.UIExtensions.ElmSharp.Button;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 
@@ -16,9 +18,9 @@ namespace Microsoft.Maui.Handlers
 		public ImageSourcePartLoader ImageSourceLoader =>
 			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => (VirtualView as IImageButton), OnSetImageSource);
 
-		public static IPropertyMapper<IImageButton, IButtonHandler> ImageButtonMapper = new PropertyMapper<IImageButton, IButtonHandler>()
+		public static IPropertyMapper<IImage, IButtonHandler> ImageButtonMapper = new PropertyMapper<IImage, IButtonHandler>()
 		{
-			[nameof(IImageButton.Source)] = MapImageSource
+			[nameof(IImage.Source)] = MapImageSource
 		};
 
 		public static IPropertyMapper<ITextButton, IButtonHandler> TextButtonMapper = new PropertyMapper<ITextButton, IButtonHandler>()

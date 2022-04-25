@@ -3,8 +3,6 @@
   <ItemGroup>
     <_FrameworkListFile Condition=" !$(MSBuildProjectName.Contains('.Runtime')) " Include="$(IntermediateOutputPath)FrameworkList.xml" />
     <_FrameworkListFile Condition=" !$(MSBuildProjectName.Contains('.Ref')) " Include="$(IntermediateOutputPath)RuntimeList.xml" />
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Packaging"  Version="6.0.0-beta.21169.1" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="6.0.0-beta.21169.1" PrivateAssets="all" />
   </ItemGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Build.Tasks.SharedFramework.Sdk" Version="6.0.0-beta.21065.3" />
@@ -43,7 +41,8 @@
       <!-- Look for WinUI .pri files a directory above ref/*.dll files -->
       <Content
           Include="@(_AssemblyFiles->'%(RootDir)%(Directory)../%(FileName).pri')"
-          TargetPath=""
+          TargetPath="%(PackagePath)\%(FileName).pri"
+          Link=""
           Condition="Exists('%(RootDir)%(Directory)../%(FileName).pri')"
       />
     </ItemGroup>

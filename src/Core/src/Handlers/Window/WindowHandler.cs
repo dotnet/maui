@@ -6,6 +6,8 @@ using PlatformView = UIKit.UIWindow;
 using PlatformView = Android.App.Activity;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Window;
+#elif TIZEN
+using PlatformView = ElmSharp.Window;
 #endif
 
 namespace Microsoft.Maui.Handlers

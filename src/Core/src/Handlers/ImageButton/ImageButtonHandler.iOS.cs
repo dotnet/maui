@@ -57,6 +57,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCornerRadius(buttonStroke);
 		}
 
+		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton)
+		{
+			(handler.PlatformView as UIButton)?.UpdatePadding(imageButton);
+		}
+
 		void OnButtonTouchUpInside(object? sender, EventArgs e)
 		{
 			VirtualView?.Released();

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
 using Samples.Model;
 
 namespace Samples.ViewModel

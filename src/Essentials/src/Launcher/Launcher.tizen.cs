@@ -1,10 +1,11 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Storage;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public partial class LauncherImplementation
+	partial class LauncherImplementation
 	{
 		Task<bool> PlatformCanOpenAsync(Uri uri)
 			=> Task.FromResult(uri.IsWellFormedOriginalString());
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			var appControl = new AppControl
 			{
 				Operation = AppControlOperations.View,
-				Mime = FileSystem.MimeTypes.All,
+				Mime = FileMimeTypes.All,
 				Uri = "file://" + request.File.FullPath,
 			};
 

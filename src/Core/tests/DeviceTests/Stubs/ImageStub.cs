@@ -22,29 +22,28 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public void UpdateIsLoading(bool isLoading) =>
 			IsLoading = isLoading;
 
-		void IImageSourcePartEvents.LoadingCompleted(bool successful) =>
+		void IImageSourcePartEvents.LoadingCompleted(bool successful)
+		{
+			IsLoading = false;
 			LoadingCompleted?.Invoke(successful);
+		}
 
-		void IImageSourcePartEvents.LoadingFailed(Exception exception) =>
+		void IImageSourcePartEvents.LoadingFailed(Exception exception)
+		{
+			IsLoading = false;
 			LoadingFailed?.Invoke(exception);
+		}
 
-		void IImageSourcePartEvents.LoadingStarted() =>
+		void IImageSourcePartEvents.LoadingStarted()
+		{
+			IsLoading = true;
 			LoadingStarted?.Invoke();
+		}
 	}
 
 	public static class ImageStubExtensions
 	{
-		static readonly Random rnd = new Random();
-
-		public static async Task Wait(this IImageStub image, int timeout = 1000)
-		{
-			while ((timeout -= 100) > 0)
-			{
-				if (image.IsLoading)
-					await Task.Delay(rnd.Next(100, 200));
-				else
-					break;
-			}
-		}
+		public static Task Wait(this IImageStub image, int timeout = 1000) =>
+			AssertionExtensions.Wait(() => !image.IsLoading, timeout);
 	}
 }

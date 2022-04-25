@@ -96,29 +96,6 @@ namespace Microsoft.Maui.DeviceTests
 			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
-		[Fact(DisplayName = "Validate MaxLines setting TextDecorations")]
-		public async Task ValidateMaxLinesSettingTextDecorations()
-		{
-			int xplatMaxLines = 2;
-
-			var labelHandler = new LabelStub()
-			{
-				MaxLines = xplatMaxLines,
-				LineBreakMode = LineBreakMode.TailTruncation
-			};
-
-			var values = await GetValueAsync(labelHandler, (handler) =>
-			{
-				return new
-				{
-					ViewValue = labelHandler.MaxLines,
-					PlatformViewValue = GetNativeMaxLines(handler)
-				};
-			});
-
-			Assert.Equal(xplatMaxLines, values.ViewValue);
-		}
-
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 
@@ -134,9 +111,6 @@ namespace Microsoft.Maui.DeviceTests
 			return (textView.Gravity, textView.TextAlignment);
 		}
 
-		int GetNativeMaxLines(LabelHandler labelHandler) =>
-			GetPlatformLabel(labelHandler).MaxLines;
-
 		(double left, double top, double right, double bottom) GetNativePadding(Android.Views.View view)
 		{
 			return (view.PaddingLeft, view.PaddingTop, view.PaddingRight, view.PaddingBottom);
@@ -144,9 +118,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetNativeCharacterSpacing(LabelHandler labelHandler) =>
 			Math.Round(GetPlatformLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, EmCoefficientPrecision);
-
-		TextUtils.TruncateAt GetNativeLineBreakMode(LabelHandler labelHandler) =>
-			GetPlatformLabel(labelHandler).Ellipsize;
 
 		PaintFlags GetNativeTextDecorations(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).PaintFlags;

@@ -40,6 +40,10 @@ namespace Microsoft.Maui.Controls
 			ShellNavigationParameters shellNavigationParameters,
 			ShellNavigationRequest navigationRequest)
 		{
+			// check for any pending navigations that need to complete
+			if (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
+				await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
+
 			if (shellNavigationParameters.PagePushing != null && navigationRequest == null)
 				Routing.RegisterImplicitPageRoute(shellNavigationParameters.PagePushing);
 
@@ -49,6 +53,7 @@ namespace Microsoft.Maui.Controls
 			ShellNavigatingEventArgs deferredArgs = shellNavigationParameters.DeferredArgs;
 
 			navigationRequest ??= ShellUriHandler.GetNavigationRequest(_shell, state.FullLocation, enableRelativeShellRoutes, shellNavigationParameters: shellNavigationParameters);
+
 			bool isRelativePopping = ShellUriHandler.IsTargetRelativePop(shellNavigationParameters);
 			var parameters = shellNavigationParameters.Parameters ?? new ShellRouteParameters();
 
@@ -89,6 +94,10 @@ namespace Microsoft.Maui.Controls
 
 			ShellContent shellContent = navigationRequest.Request.Content;
 			bool modalStackPreBuilt = false;
+
+			// check for any pending navigations that need to complete
+			if (currentShellSection?.PendingNavigationTask != null)
+				await (currentShellSection?.PendingNavigationTask ?? Task.CompletedTask);
 
 			// If we're replacing the whole stack and there are global routes then build the navigation stack before setting the shell section visible
 			if (navigationRequest.Request.GlobalRoutes.Count > 0 &&
@@ -132,6 +141,11 @@ namespace Microsoft.Maui.Controls
 					navigatedToNewShellElement = true;
 				}
 
+				// Setting the current item isn't an async operation but it triggers an async
+				// navigation path. So this waits until that's finished before returning from GotoAsync
+				if (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
+					await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
+
 				if (!modalStackPreBuilt && currentShellSection?.Navigation.ModalStack.Count > 0)
 				{
 					// - navigating to new shell element so just pop everything
@@ -160,7 +174,7 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (navigationRequest.Request.GlobalRoutes.Count == 0 &&
 					navigationRequest.StackRequest == ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt &&
-					currentShellSection?.Navigation?.NavigationStack?.Count > 1)
+					nextActiveSection?.Navigation?.NavigationStack?.Count > 1)
 				{
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
 					await _shell.Dispatcher.DispatchAsync(() =>
@@ -173,6 +187,11 @@ namespace Microsoft.Maui.Controls
 			{
 				await _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, animate, isRelativePopping);
 			}
+
+			// Setting the current item isn't an async operation but it triggers an async
+			// navigation path. So this waits until that's finished before returning from GotoAsync
+			if (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
+				await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
 
 			(_shell as IShellController).UpdateCurrentState(source);
 			_accumulateNavigatedEvents = false;

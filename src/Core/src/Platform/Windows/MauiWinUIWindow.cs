@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Runtime.InteropServices;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Essentials;
 using WinRT;
 
 namespace Microsoft.Maui
@@ -14,6 +13,11 @@ namespace Microsoft.Maui
 			Activated += OnActivated;
 			Closed += OnClosed;
 			VisibilityChanged += OnVisibilityChanged;
+
+			// We set this to true by default so later on if it's
+			// set to false we know the user toggled this to false 
+			// and then we can react accordingly
+			ExtendsContentIntoTitleBar = true;
 
 			SubClassingWin32();
 		}

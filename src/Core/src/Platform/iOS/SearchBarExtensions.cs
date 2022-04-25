@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 		{
 			uiSearchBar.UserInteractionEnabled = searchBar.IsEnabled;
 		}
-		
+
 		public static void UpdateText(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			uiSearchBar.Text = searchBar.Text;
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Platform
 			if (textField == null)
 				return;
 
-			textField.VerticalAlignment = searchBar.VerticalTextAlignment.ToPlatform();
+			textField.VerticalAlignment = searchBar.VerticalTextAlignment.ToPlatformVertical();
 		}
 
 		public static void UpdateMaxLength(this UISearchBar uiSearchBar, ISearchBar searchBar)

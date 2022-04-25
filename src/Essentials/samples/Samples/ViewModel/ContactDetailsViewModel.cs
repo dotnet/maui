@@ -1,4 +1,4 @@
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel.Communication;
 
 namespace Samples.ViewModel
 {

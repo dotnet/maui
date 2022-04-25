@@ -17,14 +17,14 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiRefreshView platformView)
 		{
 			platformView.RefreshControl.ValueChanged += OnRefresh;
-      
+
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(MauiRefreshView platformView)
 		{
 			platformView.RefreshControl.ValueChanged -= OnRefresh;
-      
+
 			base.DisconnectHandler(platformView);
 		}
 

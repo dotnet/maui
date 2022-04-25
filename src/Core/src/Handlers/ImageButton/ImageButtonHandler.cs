@@ -11,7 +11,11 @@ using System;
 using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
 using PlatformImageView = Microsoft.UI.Xaml.Controls.Image;
 using PlatformView = Microsoft.UI.Xaml.Controls.Button;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformImage = Tizen.UIExtensions.ElmSharp.Image;
+using PlatformImageView = Tizen.UIExtensions.ElmSharp.Image;
+using PlatformView = Microsoft.Maui.Platform.MauiImageButton;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformImage = System.Object;
 using PlatformImageView = System.Object;
 using PlatformView = System.Object;
@@ -28,6 +32,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IButtonStroke.StrokeThickness)] = MapStrokeThickness,
 			[nameof(IButtonStroke.StrokeColor)] = MapStrokeColor,
 			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius,
+			[nameof(IImageButton.Padding)] = MapPadding,
 #if WINDOWS
 			[nameof(IImageButton.Background)] = MapBackground,
 #endif
@@ -54,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 		IImage IImageHandler.VirtualView => VirtualView;
 
 		PlatformImageView IImageHandler.PlatformView =>
-#if __IOS__
+#if __IOS__ || TIZEN
 			PlatformView.ImageView;
 #elif WINDOWS
 			PlatformView.GetContent<PlatformImageView>() ?? throw new InvalidOperationException("ImageButton did not contain an Image element.");

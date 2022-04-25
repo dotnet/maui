@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Windows.Devices.Haptics;
 using Windows.Foundation.Metadata;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public partial class HapticFeedbackImplementation : IHapticFeedback
+	partial class HapticFeedbackImplementation : IHapticFeedback
 	{
 		const string vibrationDeviceApiType = "Windows.Devices.Haptics.VibrationDevice";
 

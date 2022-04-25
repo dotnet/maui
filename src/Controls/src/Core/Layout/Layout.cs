@@ -309,7 +309,7 @@ namespace Microsoft.Maui.Controls
 			[nameof(IView.InputTransparent)] = MapInputTransparent,
 		};
 
-		void UpdateDescendantInputTransparent() 
+		void UpdateDescendantInputTransparent()
 		{
 			if (!InputTransparent || !CascadeInputTransparent)
 			{

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Email;
 using Windows.Foundation.Metadata;
@@ -10,14 +9,14 @@ using Windows.Storage.Streams;
 using PlatformEmailAttachment = Windows.ApplicationModel.Email.EmailAttachment;
 using PlatformEmailMessage = Windows.ApplicationModel.Email.EmailMessage;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public partial class EmailImplementation : IEmail
+	partial class EmailImplementation : IEmail
 	{
 		public bool IsComposeSupported
 			=> ApiInformation.IsTypePresent("Windows.ApplicationModel.Email.EmailManager");
 
-		public async Task ComposeAsync(EmailMessage message)
+		async Task PlatformComposeAsync(EmailMessage message)
 		{
 			if (message != null && message.BodyFormat != EmailBodyFormat.PlainText)
 				throw new FeatureNotSupportedException("UWP can only compose plain text email messages.");
@@ -53,20 +52,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 			await EmailManager.ShowComposeNewEmailAsync(platformEmailMessage);
 		}
 
-		internal static string NormalizePath(string path)
+		static string NormalizePath(string path)
 			=> path.Replace('/', Path.DirectorySeparatorChar);
-
-		public Task ComposeAsync(string subject, string body, params string[] to)
-			=> ComposeAsync(
-				new EmailMessage()
-				{
-					Subject = subject,
-					Body = body,
-					To = to.ToList()
-				});
-
-		public Task ComposeAsync()
-			=> ComposeAsync(null);
 
 		void Sync(List<string> recipients, IList<EmailRecipient> nativeRecipients)
 		{

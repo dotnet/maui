@@ -5,6 +5,7 @@ using Bumptech.Glide;
 using Bumptech.Glide.Request.Target;
 using Bumptech.Glide.Request.Transition;
 using Java.Lang;
+using Microsoft.Maui.Storage;
 using AImageView = Android.Widget.ImageView;
 
 namespace Benchmarks.Droid;
@@ -32,7 +33,7 @@ public class ImageBenchmark
 		handler = new Handler(Looper.MainLooper!);
 
 		var imageName = "dotnet_bot.png";
-		var cacheDir = Microsoft.Maui.Essentials.FileSystem.CacheDirectory;
+		var cacheDir = FileSystem.CacheDirectory;
 		imageFilename = Path.Combine(cacheDir, imageName);
 
 		using (var s = context!.Assets!.Open(imageName))
@@ -60,7 +61,8 @@ public class ImageBenchmark
 	{
 		var callback = new Callback();
 
-		handler!.Post(() => {
+		handler!.Post(() =>
+		{
 			Microsoft.Maui.PlatformInterop.LoadImageFromFile(
 				context!,
 				imageFilename,

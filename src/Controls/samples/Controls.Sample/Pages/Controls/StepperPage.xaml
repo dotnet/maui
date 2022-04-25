@@ -17,10 +17,23 @@
             <Stepper
                 IsEnabled="False"/>
             <Label
-                Text="Background"
+                Text="BackgroundColor"
                 Style="{StaticResource Headline}"/>
             <Stepper
-                Background="Red"/>
+                BackgroundColor="Red"/>
+            <Label
+                Text="Background"
+                Style="{StaticResource Headline}" />
+            <Stepper>
+                <Stepper.Background>
+                    <LinearGradientBrush EndPoint="1,0">
+                        <GradientStop Color="Yellow"   
+                                      Offset="0.1" />
+                        <GradientStop Color="Green"
+                                      Offset="1.0" />
+                    </LinearGradientBrush>
+                </Stepper.Background>
+            </Stepper>
             <Label
                 Text="Minimum (25) and Maximum (25)"
                 Style="{StaticResource Headline}"/>

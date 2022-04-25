@@ -1,22 +1,19 @@
 using System;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public partial class PhoneDialerImplementation : IPhoneDialer
+	partial class PhoneDialerImplementation : IPhoneDialer
 	{
-		const string noNetworkProviderCode = "65535";
-
 		public bool IsSupported => UIApplication.SharedApplication.CanOpenUrl(CreateNsUrl(new string('0', 10)));
 
-		public async void Open(string number)
+		public void Open(string number)
 		{
 			ValidateOpen(number);
 
 			var nsUrl = CreateNsUrl(number);
-			await Launcher.OpenAsync(nsUrl);
+			Launcher.Default.OpenAsync(nsUrl);
 		}
 
 		static NSUrl CreateNsUrl(string number) => new NSUrl(new Uri($"tel:{number}").AbsoluteUri);
