@@ -208,12 +208,13 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 				_ = _window.ToHandler(ScopedMauiContext);
-
+        
 				var rootView = ScopedMauiContext.GetNavigationRootManager().RootView;
-				rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(500, 500);
+				var decorView = RequireActivity().Window.DecorView;
+				rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
 
 				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
-				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(500, 500);
+				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
 				FakeActivityRootView.AddView(rootView);
 
 				return FakeActivityRootView;

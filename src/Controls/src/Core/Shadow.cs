@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(float), typeof(Shadow), 1f);
 
-		public static readonly BindableProperty BrushProperty = BindableProperty.Create(nameof(Brush), typeof(Brush), typeof(Shadow), null);
+		public static readonly BindableProperty BrushProperty = BindableProperty.Create(nameof(Brush), typeof(Brush), typeof(Shadow), Brush.Black);
 
 		public static readonly BindableProperty OffsetProperty = BindableProperty.Create(nameof(Offset), typeof(Point), typeof(Shadow), null);
 

@@ -14,12 +14,10 @@ import com.microsoft.maui.ImageLoaderCallback;
 public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> {
     private final ImageLoaderCallback callback;
     private final RequestManager requestManager;
-    private final ImageView imageView;
 
     public MauiCustomViewTarget(@NonNull ImageView view, ImageLoaderCallback callback, RequestManager requestManager) {
         super(view);
 
-        this.imageView = view;
         this.callback = callback;
         this.requestManager = requestManager;
     }
@@ -31,32 +29,23 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
 
     @Override
     public void onLoadFailed(@Nullable Drawable errorDrawable) {
-        callback.onComplete(false, errorDrawable, new Runnable() {
-            @Override
-            public void run() {
-                view.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        requestManager.clear(MauiCustomViewTarget.this);
-                    }
-                });
-            }
-        });
+        callback.onComplete(false,
+            errorDrawable,
+            () -> view.post(
+                () -> requestManager.clear(MauiCustomViewTarget.this)
+            )
+        );
     }
 
     @Override
     public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-        this.imageView.setImageDrawable(resource);
-        callback.onComplete(true, resource, new Runnable() {
-            @Override
-            public void run() {
-                view.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        requestManager.clear(MauiCustomViewTarget.this);
-                    }
-                });
-            }
-        });
+
+        this.view.setImageDrawable(resource);
+        callback.onComplete(true,
+            resource,
+            () -> view.post(
+                () -> requestManager.clear(MauiCustomViewTarget.this)
+            )
+        );
     }
 }

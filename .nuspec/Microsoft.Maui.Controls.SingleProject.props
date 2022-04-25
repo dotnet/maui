@@ -8,6 +8,7 @@
     <WinUISDKReferences Condition=" '$(WinUISDKReferences)' == '' and '$(EnableMsixTooling)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') ">false</WinUISDKReferences>
     <GenerateLibraryLayout Condition=" '$(GenerateLibraryLayout)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' != 'Exe' and '$(OutputType)' != 'WinExe' ">true</GenerateLibraryLayout>
     <WindowsAppSdkBootstrapInitialize Condition=" '$(WindowsAppSdkBootstrapInitialize)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' != 'Exe' and '$(OutputType)' != 'WinExe' ">false</WindowsAppSdkBootstrapInitialize>
+    <PublishAppXPackage Condition=" '$(PublishAppXPackage)' == '' and '$(EnableMsixTooling)' == 'true' and '$(WindowsPackageType)' == 'MSIX' ">true</PublishAppXPackage>
     <_SingleProjectRIDRequired Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">true</_SingleProjectRIDRequired>
     <_SingleProjectRIDSpecified Condition="'$(RuntimeIdentifier)' != '' or '$(RuntimeIdentifiers)' != ''">true</_SingleProjectRIDSpecified>
   </PropertyGroup>
