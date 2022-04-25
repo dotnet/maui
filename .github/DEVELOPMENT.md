@@ -64,6 +64,7 @@ dotnet workload install maui `
 ```
 
 MacOS:
+
 ```bash
 dotnet workload install maui \
   --from-rollback-file https://aka.ms/dotnet/maui/main.json \
