@@ -15,19 +15,11 @@ namespace Microsoft.Maui.Handlers
 			_pickerView = new UIPickerView();
 
 			var platformPicker = new MauiPicker(_pickerView) { BorderStyle = UITextBorderStyle.RoundedRect };
-
-			var width = UIScreen.MainScreen.Bounds.Width;
-			var toolbar = new UIToolbar(new RectangleF(0, 0, width, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
-			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
-
-			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done,
-				(o, a) => FinishSelectItem(_pickerView, platformPicker)
-			);
-
-			toolbar.SetItems(new[] { spacer, doneButton }, false);
-
 			platformPicker.InputView = _pickerView;
-			platformPicker.InputAccessoryView = toolbar;
+			platformPicker.InputAccessoryView = new MauiDoneAccessoryView(() =>
+			{
+				FinishSelectItem(_pickerView, platformPicker);
+			});
 
 			platformPicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 			platformPicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;

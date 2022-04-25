@@ -1,7 +1,7 @@
 ﻿using System;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -9,30 +9,20 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler : ViewHandler<IEditor, MauiTextView>
 	{
-		static readonly int BaseHeight = 30;
-
 		protected override MauiTextView CreatePlatformView()
 		{
-			var nativeEditor = new MauiTextView();
+			var platformEditor = new MauiTextView();
 
 			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 			{
-				// iPhone does not have a dismiss keyboard button
-				var keyboardWidth = UIScreen.MainScreen.Bounds.Width;
-				var accessoryView = new UIToolbar(new CGRect(0, 0, keyboardWidth, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
-
-				var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
-				var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
+				platformEditor.InputAccessoryView = new MauiDoneAccessoryView(() =>
 				{
-					nativeEditor.ResignFirstResponder();
+					platformEditor.ResignFirstResponder();
 					VirtualView?.Completed();
 				});
-
-				accessoryView.SetItems(new[] { spacer, doneButton }, false);
-				nativeEditor.InputAccessoryView = accessoryView;
 			}
 
-			return nativeEditor;
+			return platformEditor;
 		}
 
 		protected override void ConnectHandler(MauiTextView platformView)

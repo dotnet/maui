@@ -22,20 +22,13 @@ namespace Microsoft.Maui.Platform
 				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}
 
-			var width = UIScreen.MainScreen.Bounds.Width;
-			var toolbar = new UIToolbar(new RectangleF(0, 0, width, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
-			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
+			InputView = _picker;
 
-			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
+			InputAccessoryView = new MauiDoneAccessoryView(() =>
 			{
 				DateSelected?.Invoke(this, EventArgs.Empty);
 				_dateSelected?.Invoke();
 			});
-
-			toolbar.SetItems(new[] { spacer, doneButton }, false);
-
-			InputView = _picker;
-			InputAccessoryView = toolbar;
 
 			InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 			InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
