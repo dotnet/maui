@@ -158,6 +158,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void LayoutSubviews()
 			{
 				base.LayoutSubviews();
+
 #pragma warning disable CA1416 // TODO:  'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and late
 				// simple algorithm to generally line up entries
 				var start = (nfloat)Math.Round(Math.Max(Frame.Width * 0.3, TextLabel.Frame.Right + 10));

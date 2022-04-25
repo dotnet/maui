@@ -109,6 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Url = new NSUrl(deepLinkUri.AppLinkUri.ToString())
 			};
 #pragma warning restore CA1416
+
 			if (deepLinkUri.Thumbnail != null)
 			{
 				using (var uiimage = await deepLinkUri.Thumbnail.GetNativeImageAsync())

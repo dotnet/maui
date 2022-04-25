@@ -277,10 +277,9 @@ namespace Microsoft.Maui.Platform
 					_borderPaint.StrokeWidth = _strokeThickness;
 
 					if (_borderColor != null)
-					{ 
-						if (OperatingSystem.IsAndroidVersionAtLeast(29))
-							_borderPaint.Color = _borderColor.Value;
-					}
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
+						_borderPaint.Color = _borderColor.Value;
+#pragma warning restore CA1416
 					else
 					{
 						if (_stroke != null)
@@ -408,10 +407,9 @@ namespace Microsoft.Maui.Platform
 			if (platformPaint != null)
 			{
 				if (_backgroundColor != null)
-				{
-					if (OperatingSystem.IsAndroidVersionAtLeast(29))
-						platformPaint.Color = _backgroundColor.Value;
-				}
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
+					platformPaint.Color = _backgroundColor.Value;
+#pragma warning restore CA1416
 				else
 				{
 					if (_background != null)

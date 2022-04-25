@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		async void SetImage(ImageCell cell, CellTableViewCell target)
 		{
 			var source = cell.ImageSource;
+
 #pragma warning disable CA1416 // TODO: 'UITableViewCell.ImageView' is unsupported on: 'ios' 14.0 and later
 			target.ImageView.Image = null;
 

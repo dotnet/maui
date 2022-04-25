@@ -268,6 +268,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Forms.MauiContext?.CreateLogger<ButtonLayoutManager>()?.LogWarning(ex, "Error loading image");
 			}
 		}
+
 #pragma warning disable CA1416 // TOD0: UIButton.ContentEdgeInsets, UIButton.ImageEdgeInsets is unsupported on: 'ios' 15.0 and later
 		[PortHandler]
 		void UpdatePadding()

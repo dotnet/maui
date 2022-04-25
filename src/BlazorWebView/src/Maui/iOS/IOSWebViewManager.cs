@@ -172,6 +172,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				if (cancelAction != null)
 					AddCancelAction(controller, () => cancelAction(controller));
+
 #pragma warning disable CA1416 // TODO:  'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later
 				GetTopViewController(UIApplication.SharedApplication.Windows.FirstOrDefault(m => m.IsKeyWindow)?.RootViewController)?
 					.PresentViewController(controller, true, null);

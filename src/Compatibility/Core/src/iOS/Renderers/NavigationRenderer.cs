@@ -1000,6 +1000,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #pragma warning disable CA1416 // TODO: 'UIViewController.AutomaticallyAdjustsScrollViewInsets' is unsupported on: 'ios' 11.0 and later
 				AutomaticallyAdjustsScrollViewInsets = false;
 #pragma warning restore CA1416
+
 				_navigation = new WeakReference<NavigationRenderer>(navigation);
 			}
 

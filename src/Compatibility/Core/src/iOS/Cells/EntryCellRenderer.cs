@@ -163,6 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				TextField.VerticalAlignment = UIControlContentVerticalAlignment.Center;
 			}
 #pragma warning restore CA1416
+
 			public event EventHandler TextFieldTextChanged;
 
 			static bool OnShouldReturn(UITextField view)

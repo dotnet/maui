@@ -49,6 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 			tvc.TextLabel.Text = boolCell.Text;
 #pragma warning restore CA1416
+
 			uiSwitch.On = boolCell.On;
 
 			WireUpForceUpdateSizeRequested(item, tvc, tv);

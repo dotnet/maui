@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 #pragma warning disable CA1416 // TODO: should we propogate SupportedOSPlatform("ios13.0") here
 			[nameof(IApplication.OpenWindow)] = MapOpenWindow,
 			[nameof(IApplication.CloseWindow)] = MapCloseWindow,
-#pragma warning restore
+#pragma warning restore CA1416
 		};
 
 		ILogger<ApplicationHandler>? _logger;

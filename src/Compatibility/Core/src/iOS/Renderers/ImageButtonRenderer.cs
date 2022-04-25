@@ -98,6 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var uiElement = button ?? Control;
 			if (uiElement == null)
 				return;
+
 #pragma warning disable CA1416 // TOOO:  UIButton.ContentEdgeInsets' is unsupported on: 'ios' 15.0 and later
 			uiElement.ContentEdgeInsets = new UIEdgeInsets(
 				(float)(Element.Padding.Top),

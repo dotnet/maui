@@ -722,6 +722,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Runtime.Versioning.UnsupportedOSPlatform("ios14.0")]
 	public class ExtendedEntryCellRenderer : Handlers.Compatibility.EntryCellRenderer
 	{
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)

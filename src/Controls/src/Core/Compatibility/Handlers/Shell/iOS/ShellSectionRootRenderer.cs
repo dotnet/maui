@@ -111,13 +111,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewWillAppear(animated);
 		}
 
+		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
 		public override void ViewSafeAreaInsetsDidChange()
 		{
 			if (_isDisposed)
 				return;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(11))
-				base.ViewSafeAreaInsetsDidChange();
+			base.ViewSafeAreaInsetsDidChange();
 
 			LayoutHeader();
 		}

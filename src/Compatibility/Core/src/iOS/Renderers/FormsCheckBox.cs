@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			AdjustsImageWhenHighlighted = false;
 		}
 #pragma warning restore CA1416
+
 		void OnTouchUpInside(object sender, EventArgs e)
 		{
 			IsChecked = !IsChecked;

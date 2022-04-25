@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Versioning;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
+#if ANDROID
+	[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
+#endif
 	public partial class VisualDiagnosticsOverlay : WindowOverlay, IVisualDiagnosticsOverlay
 	{
 		bool _enableElementSelector;
@@ -51,9 +53,7 @@ namespace Microsoft.Maui
 			{
 				if (!ScrollViews.Contains(scrollBar))
 				{
-#pragma warning disable CA1416 // TODO: This is supported on android 23.0 and above, not sure if we want to add condition or attribute
 					AddScrollableElementHandler(scrollBar);
-#pragma warning restore CA1416 // adding [SupportedOSPlatform("android23.0")] would cause warnings to the caller
 				}
 			}
 		}
@@ -99,7 +99,6 @@ namespace Microsoft.Maui
 			return result;
 		}
 
-#pragma warning disable CA1416 // TODO: RemoveScrollableElementHandler() is supported on android 23.0 and above, not sure if we want to add condition or attribute
 		/// <inheritdoc/>
 		public bool RemoveAdorner(IAdorner adorner)
 		{
@@ -120,7 +119,6 @@ namespace Microsoft.Maui
 			RemoveScrollableElementHandler();
 			base.RemoveWindowElements();
 		}
-#pragma warning restore CA1416
 
 		/// <inheritdoc/>
 		public bool RemoveAdorners(IVisualTreeElement visualElement)
@@ -181,9 +179,7 @@ namespace Microsoft.Maui
 
 		public override bool Deinitialize()
 		{
-#pragma warning disable CA1416 // TODO: RemoveScrollableElementHandler() is supported on android 23.0 and above, not sure if we want to add condition or attribute
 			RemoveScrollableElementHandler();
-#pragma warning restore CA1416
 
 			Tapped -= VisualDiagnosticsOverlayOnTapped;
 

@@ -385,22 +385,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				base.Draw(canvas);
 
 				// Step 1: Clip out the top shadow that was drawn as it wont look right when lined up
-				var paint = new Paint();
-
-				if (OperatingSystem.IsAndroidVersionAtLeast(29))
-					paint.Color = AColor.Black;
-
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
+				var paint = new Paint
+				{
+					Color = AColor.Black
+				};
 				paint.SetXfermode(new PorterDuffXfermode(PorterDuff.Mode.Clear));
 
 				canvas.DrawRect(0, -100, canvas.Width, 0, paint);
 
 				// Step 2: Draw separator line
 
-				paint = new Paint();
-
-				if (OperatingSystem.IsAndroidVersionAtLeast(29))
-					paint.Color = AColor.LightGray;
-
+				paint = new Paint
+				{
+					Color = AColor.LightGray
+				};
+#pragma warning restore CA1416
 				canvas.DrawLine(0, 0, canvas.Width, 0, paint);
 			}
 		}

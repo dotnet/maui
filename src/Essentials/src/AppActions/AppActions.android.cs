@@ -27,6 +27,7 @@ namespace Microsoft.Maui.ApplicationModel
 #if __ANDROID_25__
 			if (Application.Context.GetSystemService(Context.ShortcutService) is not ShortcutManager manager)
 				throw new FeatureNotSupportedException();
+
 #pragma warning disable CA1416 // Known false positive with lambda
 			return Task.FromResult(manager.DynamicShortcuts.Select(s => s.ToAppAction()));
 #pragma warning restore CA1416
@@ -43,6 +44,7 @@ namespace Microsoft.Maui.ApplicationModel
 #if __ANDROID_25__
 			if (Application.Context.GetSystemService(Context.ShortcutService) is not ShortcutManager manager)
 				throw new FeatureNotSupportedException();
+
 #pragma warning disable CA1416 // Known false positive with lambda
 			using var list = new JavaList<ShortcutInfo>(actions.Select(a => a.ToShortcutInfo()));
 #pragma warning disable CA1416

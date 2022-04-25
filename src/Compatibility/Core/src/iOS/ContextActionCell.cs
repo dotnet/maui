@@ -389,6 +389,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #pragma warning disable CA1416 // TODO: 'UIButton.TitleEdgeInsets.set' is unsupported on: 'ios' 15.0 and later
 			button.TitleEdgeInsets = new UIEdgeInsets(0, 15, 0, 15);
 #pragma warning restore CA1416
+
 			button.Enabled = item.IsEnabled;
 
 			return button;
