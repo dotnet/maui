@@ -7,15 +7,22 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiTimePicker : NoCaretField
 	{
-		readonly Action _dateSelected;
 		readonly UIDatePicker _picker;
 
+#if !MACCATALYST
+		readonly Action _dateSelected;
 		public MauiTimePicker(Action dateSelected)
+#else
+		public MauiTimePicker()
+#endif
 		{
 			BorderStyle = UITextBorderStyle.RoundedRect;
 
 			_picker = new UIDatePicker { Mode = UIDatePickerMode.Time, TimeZone = new NSTimeZone("UTC") };
+
+#if !MACCATALYST
 			_dateSelected = dateSelected;
+#endif
 
 			if (PlatformVersion.IsAtLeast(14))
 			{
@@ -24,14 +31,17 @@ namespace Microsoft.Maui.Platform
 
 			InputView = _picker;
 
+#if !MACCATALYST
 			InputAccessoryView = new MauiDoneAccessoryView(() =>
 			{
 				DateSelected?.Invoke(this, EventArgs.Empty);
 				_dateSelected?.Invoke();
 			});
 
-			InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 			InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+#endif
+
+			InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 
 			InputAssistantItem.LeadingBarButtonGroups = null;
 			InputAssistantItem.TrailingBarButtonGroups = null;
@@ -43,8 +53,9 @@ namespace Microsoft.Maui.Platform
 
 		public NSDate Date => Picker.Date;
 
+#if !MACCATALYST
 		public event EventHandler? DateSelected;
-
+#endif
 		public void UpdateTime(TimeSpan time)
 		{
 			_picker.Date = new DateTime(1, 1, 1, time.Hours, time.Minutes, time.Seconds).ToNSDate();

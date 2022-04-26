@@ -13,14 +13,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			var platformEditor = new MauiTextView();
 
-			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+#if !MACCATALYST
+			platformEditor.InputAccessoryView = new MauiDoneAccessoryView(() =>
 			{
-				platformEditor.InputAccessoryView = new MauiDoneAccessoryView(() =>
-				{
-					platformEditor.ResignFirstResponder();
-					VirtualView?.Completed();
-				});
-			}
+				platformEditor.ResignFirstResponder();
+				VirtualView?.Completed();
+			});
+#endif
 
 			return platformEditor;
 		}

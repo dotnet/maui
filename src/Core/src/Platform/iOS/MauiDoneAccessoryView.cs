@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if IOS && !MACCATALYST
+using System;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Devices;
@@ -20,3 +21,4 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 }
+#endif
