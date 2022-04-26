@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls
 		Page _currentPage;
 		BackButtonBehavior _backButtonBehavior;
 		ToolbarTracker _toolbarTracker = new ToolbarTracker();
+		MenuBarTracker _menuBarTracker = new MenuBarTracker();
 		bool _drawerToggleVisible;
 
 		public override bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
@@ -42,6 +43,7 @@ namespace Microsoft.Maui.Controls
 
 			ApplyChanges();
 			_toolbarTracker.CollectionChanged += (_, __) => ToolbarItems = _toolbarTracker.ToolbarItems;
+			_menuBarTracker.CollectionChanged += (_, __) => MenuBarItems = _menuBarTracker.ToolbarItems;
 		}
 
 		internal void ApplyChanges()
@@ -67,12 +69,15 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			_toolbarTracker.Target = _shell;
+			_menuBarTracker.Target = _shell;
 
 			Page previousPage = null;
 			if (stack.Count > 1)
 				previousPage = stack[stack.Count - 1];
 
 			ToolbarItems = _toolbarTracker.ToolbarItems;
+			MenuBarItems = _menuBarTracker.ToolbarItems;
+
 			UpdateBackbuttonBehavior();
 			bool backButtonVisible = true;
 
@@ -104,7 +109,8 @@ namespace Microsoft.Maui.Controls
 				IsVisible = (BackButtonVisible ||
 					!String.IsNullOrEmpty(Title) ||
 					TitleView != null ||
-					_toolbarTracker.ToolbarItems.Count > 0);
+					_toolbarTracker.ToolbarItems.Count > 0 ||
+					_menuBarTracker.ToolbarItems.Count > 0);
 			}
 
 			if (currentPage != null)
