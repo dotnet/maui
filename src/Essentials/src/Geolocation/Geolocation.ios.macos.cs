@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Devices.Sensors
             {
                 if (request.RequestFullAccuracy && manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy)
                 {
-                    await manager.RequestTemporaryFullAccuracyAuthorizationAsync("XamarinEssentialsFullAccuracyUsageDescription");
+                    await manager.RequestTemporaryFullAccuracyAuthorizationAsync("TemporaryFullAccuracyUsageDescription");
                 }
 
                 reducedAccuracy = manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy;
