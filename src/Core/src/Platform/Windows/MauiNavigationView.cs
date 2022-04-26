@@ -104,10 +104,8 @@ namespace Microsoft.Maui.Platform
 
 			// WinUI has this set to -1,3,-1,3 but I'm not really sure why
 			// It causes the content to not be flush up against the title bar
-			PaneContentGrid.Margin = new WThickness(-1, 0, -1, 0);
+			PaneContentGrid.Margin = new WThickness(0, 0, 0, 0);
 			UpdateMenuItemsContainerHeight();
-
-
 		}
 
 

@@ -164,7 +164,6 @@ namespace Microsoft.Maui.Platform
 			UpdateTopNavAreaMargin();
 		}
 
-
 		private protected override void OnApplyTemplateCore()
 		{
 			// We currently use the "PaneFooter" property to set custom content on the flyout
@@ -295,6 +294,16 @@ namespace Microsoft.Maui.Platform
 				PaneContentGrid.RowDefinitions[1].Height = new WGridLength(height);
 				ContentPaneTopPadding.Height = 0;
 			}
+			// this ensures that when we are showing the entire left pane that it will fill the width of the container
+			switch (PaneDisplayMode)
+			{
+				case NavigationViewPaneDisplayMode.Left:
+					PaneContentGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
+					break;
+				default:
+					PaneContentGrid.HorizontalAlignment = HorizontalAlignment.Left;
+					break;
+			}
 		}
 
 		void OnPaneContentGridSizeChanged(object sender, SizeChangedEventArgs e)
@@ -336,11 +345,19 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal Maui.IView? FlyoutView
+		{
+			get => _flyoutPanel.FlyoutView;
+			set => _flyoutPanel.FlyoutView = value;
+		}
+
 		// We use a container because if we just assign our Flyout to the PaneFooter on the NavigationView 
 		// The measure call passes in PositiveInfinity for the measurements which causes the layout system
 		// to crash. So we use this Panel to facilitate more constrained measuring values
 		class FlyoutPanel : Panel
 		{
+			public Maui.IView? FlyoutView { get; set; }
+
 			public FlyoutPanel()
 			{
 			}
@@ -358,7 +375,11 @@ namespace Microsoft.Maui.Platform
 				if (ContentWidth == 0)
 					return new Size(0, 0);
 
-				FlyoutContent.Measure(new Size(ContentWidth, availableSize.Height));
+				if (FlyoutView != null)
+					FlyoutView.Measure(ContentWidth, availableSize.Height);
+				else
+					FlyoutContent.Measure(new Size(ContentWidth, availableSize.Height));
+
 				return FlyoutContent.DesiredSize;
 			}
 
@@ -373,7 +394,11 @@ namespace Microsoft.Maui.Platform
 					return finalSize;
 				}
 
-				FlyoutContent.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+				if (FlyoutView != null)
+					FlyoutView.Arrange(new Graphics.Rect(0, 0, finalSize.Width, finalSize.Height));
+				else
+					FlyoutContent.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+
 				return new Size(FlyoutContent.ActualWidth, FlyoutContent.ActualHeight);
 			}
 		}
