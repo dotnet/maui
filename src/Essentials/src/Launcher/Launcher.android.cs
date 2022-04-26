@@ -15,13 +15,7 @@ namespace Microsoft.Maui.ApplicationModel
 		Task<bool> PlatformCanOpenAsync(Uri uri)
 		{
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri.OriginalString));
-
-			if (Application.Context == null)
-				return Task.FromResult(false);
-
-			var manager = Application.Context.PackageManager;
-			var supportedResolvedInfos = manager.QueryIntentActivities(intent, PackageInfoFlags.MatchDefaultOnly);
-			return Task.FromResult(supportedResolvedInfos.Any());
+			return Task.FromResult(PlatformUtils.IsIntentSupported(intent));
 		}
 
 		Task<bool> PlatformOpenAsync(Uri uri)

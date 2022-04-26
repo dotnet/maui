@@ -167,7 +167,10 @@ public class PlatformInterop {
         AppBarLayout.LayoutParams layoutParams = new AppBarLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, actionBarHeight);
         layoutParams.setScrollFlags(0);
         toolbar.setLayoutParams(layoutParams);
-        toolbar.setPopupTheme(popupTheme);
+
+        if (popupTheme > 0)
+            toolbar.setPopupTheme(popupTheme);
+        
         return toolbar;
     }
 
@@ -248,13 +251,15 @@ public class PlatformInterop {
 
         if (!cachingEnabled)
         {
-            builder = builder
+            builder
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .skipMemoryCache(true);
+                .skipMemoryCache(true)
+                .into(target);
         }
-
-        builder
-            .into(target);
+        else {
+            builder
+                .into(target);
+        }
     }
 
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback)
@@ -311,12 +316,13 @@ public class PlatformInterop {
 
         if (!cachingEnabled)
         {
-            builder = builder
+            builder
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .skipMemoryCache(true);
+                .skipMemoryCache(true)
+            .into(target);
+        } else {
+            builder.into(target);
         }
-
-        builder.into(target);
     }
 
 

@@ -1,9 +1,11 @@
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class BoxViewRenderer : ViewRenderer<BoxView, RoundRectangle>
 	{
 		public BoxViewRenderer()
@@ -33,10 +35,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected override void UpdateBackgroundColor(bool initialize)
 		{
-			if (initialize && Element.BackgroundColor.IsDefault)
+			if (initialize && Element.BackgroundColor.IsDefault())
 				return;
 
-			if (Element.Color.IsDefault)
+			if (Element.Color.IsDefault())
 			{
 				UpdateColor();
 			}
@@ -71,9 +73,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateColor()
 		{
-			if (Element.Color.IsDefault)
+			if (Element.Color.IsDefault())
 			{
-				if (Element.BackgroundColor.IsDefault)
+				if (Element.BackgroundColor.IsDefault())
 				{
 					// Set to default color. (Transparent)
 					Control.Color = EColor.Transparent;
@@ -81,13 +83,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				else
 				{
 					// Use BackgroundColor only if color is default and background color is not default.
-					Control.Color = Element.BackgroundColor.MultiplyAlpha(Element.Opacity).ToPlatform();
+					Control.Color = Element.BackgroundColor.MultiplyAlpha((float)Element.Opacity).ToNative();
 				}
 			}
 			else
 			{
 				// Color has higer priority than BackgroundColor.
-				Control.Color = Element.Color.MultiplyAlpha(Element.Opacity).ToPlatform();
+				Control.Color = Element.Color.MultiplyAlpha((float)Element.Opacity).ToNative();
 			}
 		}
 	}

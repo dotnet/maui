@@ -4,6 +4,7 @@ using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete]
 	public class SearchResultList : GenList
 	{
 		GenItemClass _defaultClass = null;

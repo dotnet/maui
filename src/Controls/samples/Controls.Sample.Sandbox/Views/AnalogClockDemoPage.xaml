@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ShapesDemos.Views.AnalogClockDemoPage"
+             Title="Analog clock demo">
+    <ContentPage.Resources>
+
+        <Style TargetType="Path">
+            <Setter Property="Stroke"
+                    Value="Black" />
+            <Setter Property="StrokeThickness"
+                    Value="2" />
+            <Setter Property="StrokeLineCap"
+                    Value="Round" />
+            <Setter Property="StrokeLineJoin"
+                    Value="Round" />
+        </Style>
+
+    </ContentPage.Resources>
+
+    <Grid x:Name="grid"
+          WidthRequest="200"
+          HeightRequest="200"
+          TranslationX="100"
+          TranslationY="100"
+          HorizontalOptions="Center"
+          VerticalOptions="Center">
+        <!-- Small tick marks -->
+        <Path StrokeThickness="3"
+              StrokeDashArray="0.1 3.04159">
+            <Path.Data>
+                <EllipseGeometry RadiusX="90"
+                                 RadiusY="90" />
+            </Path.Data>
+        </Path>
+
+        <!-- Long tick marks -->
+        <Path StrokeThickness="6"
+              StrokeDashArray="0.1 7.754">
+            <Path.Data>
+                <EllipseGeometry RadiusX="90"
+                                 RadiusY="90" />
+            </Path.Data>
+        </Path>
+
+        <!-- Hour hand pointing straight up -->
+        <Path>
+            <Path.Data>
+                <PathGeometry Figures="M 0 -60 C 0 -30, 20 -30, 5 -20 L 5 0
+                                       C 5 7.5, -5 7.5, -5 0 L -5 -20
+                                       C -20 -30, 0 -30, 0 -60" />
+            </Path.Data>
+            <Path.RenderTransform>
+                <RotateTransform Angle="{Binding HourHandAngle}" />
+            </Path.RenderTransform>
+        </Path>
+
+        <!-- Minute hand pointing straight up -->
+        <Path>
+            <Path.Data>
+                <PathGeometry Figures="M 0 -80 C 0 -75, 0 -70, 2.5 -60 L 2.5 0
+                                       C 2.5 5, -2.5 5, -2.5 0 L -2.55 -60
+                                       C 0 -70, 0 -75, 0 -80" />
+            </Path.Data>
+            <Path.RenderTransform>
+                <RotateTransform Angle="{Binding MinuteHandAngle}" />
+            </Path.RenderTransform>
+        </Path>
+
+        <!-- Second hand pointing straight up -->
+        <Path>
+            <Path.Data>
+                <PathGeometry Figures="M 0 10 L 0 -80" />
+            </Path.Data>
+            <Path.RenderTransform>
+                <RotateTransform Angle="{Binding SecondHandAngle}" />
+            </Path.RenderTransform>
+        </Path>
+    </Grid>
+</ContentPage>

@@ -165,10 +165,6 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue)
-		{
-		}
-
 		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)
 		{
 		}

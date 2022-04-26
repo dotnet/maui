@@ -17,17 +17,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// Gets or sets the CSS selector string that specifies where in the document the component should be placed.
 		/// This must be unique among the root components within the <see cref="BlazorWebView"/>.
 		/// </summary>
-		public string Selector { get; set; }
+		public string Selector { get; set; } = default!;
 
 		/// <summary>
 		/// Gets or sets the type of the root component. This type must implement <see cref="IComponent"/>.
 		/// </summary>
-		public Type ComponentType { get; set; }
+		public Type ComponentType { get; set; } = default!;
 
 		/// <summary>
 		/// Gets or sets an optional dictionary of parameters to pass to the root component.
 		/// </summary>
-		public IDictionary<string, object> Parameters { get; set; }
+		public IDictionary<string, object?>? Parameters { get; set; }
 
 		internal Task AddToWebViewManagerAsync(WebViewManager webViewManager)
 		{

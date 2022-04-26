@@ -68,7 +68,14 @@ namespace Microsoft.Maui.Resizetizer
 				info.BaseSize = Utils.ParseSizeString(image.GetMetadata("BaseSize"));
 
 				if (bool.TryParse(image.GetMetadata("Resize"), out var rz))
+				{
 					info.Resize = rz;
+				}
+				else if (info.BaseSize == null && !info.IsVector)
+				{
+					// By default do not resize non-vector images
+					info.Resize = false;
+				}
 
 				info.TintColor = Utils.ParseColorString(image.GetMetadata("TintColor"));
 				info.Color = Utils.ParseColorString(image.GetMetadata("Color"));

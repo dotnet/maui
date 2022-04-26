@@ -38,16 +38,6 @@ namespace Microsoft.Maui.Controls.Xaml
 {
 	static class TypeConversionExtensions
 	{
-		internal static Dictionary<Type, Type> KnownConverters = new Dictionary<Type, Type>
-		{
-			{ typeof(Font), typeof(FontTypeConverter) }
-		};
-
-		static Dictionary<Type, Func<TypeConverter>> KnownConverterFactories = new()
-		{
-			{ typeof(Font), () => new FontTypeConverter() }
-		};
-
 		// caches both Type and MemberInfo keys to their corresponding TypeConverter
 		static readonly ConcurrentDictionary<MemberInfo, TypeConverter> s_converterCache = new();
 
@@ -92,9 +82,6 @@ namespace Microsoft.Maui.Controls.Xaml
 						return converter;
 					}
 				}
-
-				if (KnownConverterFactories.TryGetValue(toType, out var converterFactory))
-					return converterFactory();
 
 				if (!s_converterCache.TryGetValue(toType, out converter))
 				{

@@ -1,3 +1,5 @@
+using Microsoft.Maui.Graphics;
+using Rect = Microsoft.Maui.Graphics.Rect;
 using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
 
@@ -8,12 +10,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	/// </summary>
 	public static class DensityIndependentPixelExtensions
 	{
-		public static Rectangle ToDP(this ERect rect)
+		public static Rect ToDP(this ERect rect)
 		{
-			return new Rectangle(Forms.ConvertToScaledDP(rect.X), Forms.ConvertToScaledDP(rect.Y), Forms.ConvertToScaledDP(rect.Width), Forms.ConvertToScaledDP(rect.Height));
+			return new Rect(Forms.ConvertToScaledDP(rect.X), Forms.ConvertToScaledDP(rect.Y), Forms.ConvertToScaledDP(rect.Width), Forms.ConvertToScaledDP(rect.Height));
 		}
 
-		public static ERect ToPixel(this Rectangle rect)
+		public static ERect ToPixel(this Rect rect)
 		{
 			return new ERect(Forms.ConvertToScaledPixel(rect.X), Forms.ConvertToScaledPixel(rect.Y), Forms.ConvertToScaledPixel(rect.Width), Forms.ConvertToScaledPixel(rect.Height));
 		}

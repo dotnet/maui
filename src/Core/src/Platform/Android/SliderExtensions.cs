@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider)  =>
+		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider) =>
 			seekBar.Thumb?.SetColorFilter(slider.ThumbColor, FilterMode.SrcIn);
 
 		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider)

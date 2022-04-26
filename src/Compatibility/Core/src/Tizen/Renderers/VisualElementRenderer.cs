@@ -4,19 +4,25 @@ using System.ComponentModel;
 using System.Linq;
 using ElmSharp;
 using ElmSharp.Accessible;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Tizen.UIExtensions.ElmSharp;
+using Size = Microsoft.Maui.Graphics.Size;
+using Rect = Microsoft.Maui.Graphics.Rect;
+using Point = Microsoft.Maui.Graphics.Point;
 using EFocusDirection = ElmSharp.FocusDirection;
 using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.VisualElement;
-using XFocusDirection = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.FocusDirection;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.VisualElement;
+using XFocusDirection = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.FocusDirection;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	/// <summary>
 	/// Base class for rendering of a Xamarin element.
 	/// </summary>
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer instead")]
 	public abstract class VisualElementRenderer<TElement> : IVisualElementRenderer, IEffectControlProvider where TElement : VisualElement
 	{
 		readonly List<EventHandler<VisualElementChangedEventArgs>> _elementChangedHandlers = new List<EventHandler<VisualElementChangedEventArgs>>();
@@ -70,8 +76,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			RegisterPropertyHandler(VisualElement.RotationYProperty, UpdateTransformation);
 			RegisterPropertyHandler(VisualElement.TranslationXProperty, UpdateTransformation);
 			RegisterPropertyHandler(VisualElement.TranslationYProperty, UpdateTransformation);
-			RegisterPropertyHandler(VisualElement.TabIndexProperty, UpdateTabIndex);
-			RegisterPropertyHandler(VisualElement.IsTabStopProperty, UpdateIsTabStop);
 
 			RegisterPropertyHandler(AutomationProperties.NameProperty, SetAccessibilityName);
 			RegisterPropertyHandler(AutomationProperties.HelpTextProperty, SetAccessibilityDescription);
@@ -89,7 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			Dispose(false);
 		}
 
-		event EventHandler<VisualElementChangedEventArgs> ElementChanged
+		event EventHandler<VisualElementChangedEventArgs> IVisualElementRenderer.ElementChanged
 		{
 			add
 			{
@@ -119,6 +123,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 
 		public EvasObject NativeView { get; private set; }
+
+		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
 
 		protected bool IsDisposed => _flags.HasFlag(VisualElementRendererFlags.Disposed);
 
@@ -295,7 +301,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					}
 
 					// Reset Element geometry, to re-calculate when Renderer was re-attached
-					Element.Layout(new Rectangle(0, 0, -1, -1));
+					Element.Layout(new Rect(0, 0, -1, -1));
 
 					Element = default(TElement);
 				}
@@ -337,6 +343,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					controller.EffectControlProvider = null;
 				}
 			}
+
+			var args = new VisualElementChangedEventArgs(e.OldElement, e.NewElement);
+			for (var i = 0; i < _elementChangedHandlers.Count; i++)
+				_elementChangedHandlers[i](this, args);
+
+			ElementChanged?.Invoke(this, e);
 
 			if (null != e.NewElement)
 			{
@@ -496,29 +508,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 		}
 
-		protected Widget FocusSearch(bool forwardDirection)
-		{
-			VisualElement element = Element as VisualElement;
-			int maxAttempts = 0;
-			var tabIndexes = element?.GetTabIndexesOnParentPage(out maxAttempts);
-			if (tabIndexes == null)
-				return null;
-
-			int tabIndex = Element.TabIndex;
-			int attempt = 0;
-
-			do
-			{
-				element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex) as VisualElement;
-				var renderer = Platform.GetRenderer(element);
-				if (renderer?.NativeView is Widget widget && widget.IsFocusAllowed)
-				{
-					return widget;
-				}
-			} while (!(element.IsFocused || ++attempt >= maxAttempts));
-			return null;
-		}
-
 		internal virtual void SendVisualElementInitialized(VisualElement element, EvasObject nativeView)
 		{
 			element.SendViewInitialized(nativeView);
@@ -526,7 +515,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateNativeGeometry()
 		{
-			var updatedGeometry = new Rectangle(ComputeAbsolutePoint(Element), new Size(Element.Width, Element.Height)).ToPixel();
+			var updatedGeometry = new Rect(ComputeAbsolutePoint(Element), new Size(Element.Width, Element.Height)).ToEFLPixel();
 
 			if (NativeView.Geometry != updatedGeometry)
 			{
@@ -644,12 +633,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void UpdateBackgroundColor(bool initialize)
 		{
-			if (initialize && Element.BackgroundColor.IsDefault)
+			if (initialize && Element.BackgroundColor.IsDefault())
 				return;
 
 			if (NativeView is Widget)
 			{
-				(NativeView as Widget).BackgroundColor = Element.BackgroundColor.ToPlatform();
+				(NativeView as Widget).BackgroundColor = Element.BackgroundColor.ToPlatformEFL();
 			}
 			else
 			{
@@ -702,15 +691,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		static double ComputeAbsoluteX(VisualElement e)
 		{
 			var parentX = 0.0;
-			if (e.RealParent is VisualElement ve)
+			if (e.RealParent is VisualElement parent)
 			{
 				if (CompressedLayout.GetIsHeadless(e.RealParent))
 				{
-					parentX = ComputeAbsoluteX(ve);
+					parentX = ComputeAbsoluteX(parent);
 				}
 				else
 				{
-					parentX = Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().X);
+					if (parent.Handler is IPlatformViewHandler nativeHandler)
+					{
+
+						parentX = nativeHandler.GetPlatformContentGeometry().X.ToScaledDP();
+					}
+					else
+					{
+						parentX = Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().X);
+					}
 				}
 			}
 			return e.X + parentX;
@@ -719,15 +716,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		static double ComputeAbsoluteY(VisualElement e)
 		{
 			var parentY = 0.0;
-			if (e.RealParent is VisualElement ve)
+			if (e.RealParent is VisualElement parent)
 			{
 				if (CompressedLayout.GetIsHeadless(e.RealParent))
 				{
-					parentY = ComputeAbsoluteY(ve);
+					parentY = ComputeAbsoluteY(parent);
 				}
 				else
 				{
-					parentY = Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().Y);
+					if (parent.Handler is IPlatformViewHandler nativeHandler)
+					{
+						parentY = nativeHandler.GetPlatformContentGeometry().Y.ToScaledDP();
+					}
+					else
+					{
+						parentY = Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().Y);
+					}
 				}
 			}
 			return e.Y + parentY;
@@ -787,7 +791,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void AddHeadlessChild(VisualElement element, IContainable<EvasObject> parent)
 		{
-			foreach (var child in element.LogicalChildren)
+			foreach (var child in (element as IVisualTreeElement).GetVisualChildren())
 			{
 				if (child is VisualElement visualChild)
 				{
@@ -875,8 +879,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// <param name="effect">The effect to register.</param>
 		void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.SetContainer(Element.Parent == null ? null : Platform.GetRenderer(Element.Parent)?.NativeView);
-			effect.SetControl(NativeView);
+			effect.Container = Element.Parent == null ? null : Platform.GetRenderer(Element.Parent)?.NativeView;
+			effect.Control = NativeView;
 		}
 
 		void OnMoved(object sender, EventArgs e)
@@ -1181,32 +1185,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				{
 					_movedCallbackEnabled = false;
 					NativeView.Moved -= OnMoved;
-				}
-			}
-		}
-
-		void UpdateTabIndex()
-		{
-			if (!Forms.Flags.Contains(Flags.DisableTabIndex))
-			{
-				if (Element is View && NativeView is Widget widget && widget.IsFocusAllowed)
-				{
-					_customFocusManager.Value.TabIndex = Element.TabIndex;
-				}
-			}
-		}
-
-		void UpdateIsTabStop(bool init)
-		{
-			if (init && Element.IsTabStop)
-			{
-				return;
-			}
-			if (!Forms.Flags.Contains(Flags.DisableTabIndex))
-			{
-				if (Element is View && NativeView is Widget widget && widget.IsFocusAllowed)
-				{
-					_customFocusManager.Value.IsTabStop = Element.IsTabStop;
 				}
 			}
 		}

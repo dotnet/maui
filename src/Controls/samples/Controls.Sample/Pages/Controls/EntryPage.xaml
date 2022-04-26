@@ -95,11 +95,25 @@
                 <Entry 
                     Completed="OnEntryCompleted"/>
                 <Label
+                    Text="BackgroundColor"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="BackgroundColor"
+                    BackgroundColor="Orange"/>
+                <Label
                     Text="Background"
                     Style="{StaticResource Headline}" />
                 <Entry 
-                    Text="Text"
-                    Background="Orange"/>
+                    Text="Background">
+                    <Entry.Background>
+                        <LinearGradientBrush EndPoint="1,0">
+                            <GradientStop Color="Yellow"
+                                          Offset="0.1" />
+                            <GradientStop Color="Green"
+                                          Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Entry.Background>
+                </Entry>
                 <Label
                     Text="Keyboard Numeric"
                     Style="{StaticResource Headline}" />

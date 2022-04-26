@@ -5,7 +5,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	public delegate ESize? MeasureDelegate(NativeViewWrapperRenderer renderer, int availableWidth, int availableHeight);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class NativeViewWrapper : View
+#pragma warning disable CS0618 // Type or member is obsolete
 	{
 		public NativeViewWrapper(EvasObject obj, MeasureDelegate measureDelegate = null)
 		{

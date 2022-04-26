@@ -1,5 +1,6 @@
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Security.SecureRepository;
 
 namespace Microsoft.Maui.Storage

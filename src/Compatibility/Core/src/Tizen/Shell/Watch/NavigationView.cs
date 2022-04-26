@@ -10,6 +10,7 @@ using ELayout = ElmSharp.Layout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Watch
 {
+	[Obsolete]
 	public class NavigationView : ELayout
 	{
 		readonly int _defaultIconSize = ThemeConstants.Shell.Resources.Watch.DefaultNavigationViewIconSize;

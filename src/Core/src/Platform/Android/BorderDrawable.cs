@@ -267,11 +267,11 @@ namespace Microsoft.Maui.Platform
 			if (_disposed)
 				return;
 
+			if (Paint != null)
+				SetBackground(Paint);
+
 			if (HasBorder())
 			{
-				if (Paint != null)
-					SetBackground(Paint);
-
 				if (_borderPaint != null)
 				{
 					_borderPaint.StrokeWidth = _strokeThickness;
@@ -284,44 +284,40 @@ namespace Microsoft.Maui.Platform
 							SetPaint(_borderPaint, _stroke);
 					}
 				}
+			}
 
-				if (_invalidatePath)
-				{
-					_invalidatePath = false;
+			if (_invalidatePath)
+			{
+				_invalidatePath = false;
 
-					var path = GetPath(_width, _height, _cornerRadius, _strokeThickness);
-					var clipPath = path?.AsAndroidPath();
+				var path = GetPath(_width, _height, _cornerRadius, _strokeThickness);
+				var clipPath = path?.AsAndroidPath();
 
-					if (clipPath == null)
-						return;
-
-					if (_clipPath != null)
-					{
-						_clipPath.Reset();
-						_clipPath.Set(clipPath);
-					}
-				}
-
-				if (canvas == null)
+				if (clipPath == null)
 					return;
 
-				var saveCount = canvas.SaveLayer(0, 0, _width, _height, null);
+				if (_clipPath != null)
+				{
+					_clipPath.Reset();
+					_clipPath.Set(clipPath);
+				}
+			}
 
-				if (_clipPath != null && Paint != null)
-					canvas.DrawPath(_clipPath, Paint);
+			if (canvas == null)
+				return;
 
+			var saveCount = canvas.SaveLayer(0, 0, _width, _height, null);
+
+			if (_clipPath != null && Paint != null)
+				canvas.DrawPath(_clipPath, Paint);
+
+			if (HasBorder())
+			{
 				if (_clipPath != null && _borderPaint != null)
 					canvas.DrawPath(_clipPath, _borderPaint);
-
-				canvas.RestoreToCount(saveCount);
 			}
-			else
-			{
-				if (paint != null)
-					SetBackground(paint);
 
-				base.OnDraw(shape, canvas, paint);
-			}
+			canvas.RestoreToCount(saveCount);
 		}
 
 		protected override void Dispose(bool disposing)

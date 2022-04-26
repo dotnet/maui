@@ -134,11 +134,6 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
 		{
-			if (!searchBar.IsEnabled)
-			{
-				searchView.ClearFocus();
-			}
-		
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
 			if (editText == null)

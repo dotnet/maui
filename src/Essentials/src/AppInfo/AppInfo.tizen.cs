@@ -3,7 +3,7 @@ using Tizen.Applications;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	class AppInfoImplementation
+	class AppInfoImplementation : IAppInfo
 	{
 		public string PackageName
 			=> Application.Current.ApplicationInfo.PackageId;
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.ApplicationModel
 		public string BuildString
 			=> Version.Build.ToString(CultureInfo.InvariantCulture);
 
-		public void PlatformShowSettingsUI()
+		public void ShowSettingsUI()
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 			AppControl.SendLaunchRequest(new AppControl() { Operation = AppControlOperations.Setting });
@@ -29,5 +29,8 @@ namespace Microsoft.Maui.ApplicationModel
 			=> AppTheme.Unspecified;
 
 		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
+
+		public LayoutDirection RequestedLayoutDirection
+			=> LayoutDirection.LeftToRight;
 	}
 }

@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample.Pages
 				_imageSource = null;
 			}
 		}
-		
+
 		void OnDynamicValueChanged(object sender, ValueChangedEventArgs args)
 		{
 			UpdateInfo();
@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample.Pages
 			DynamicSlider.Minimum = 4;
 			UpdateInfo();
 		}
-		
+
 		void OnUpdateMaximumButtonClicked(object sender, System.EventArgs e)
 		{
 			DynamicSlider.Maximum = 8;

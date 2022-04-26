@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
@@ -12,7 +11,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 
@@ -77,8 +75,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		#endregion
 
 		private const string WebViewTemplateChildName = "WebView";
-		private WebView2Control _webview;
-		private WebView2WebViewManager _webviewManager;
+		private WebView2Control? _webview;
+		private WebView2WebViewManager? _webviewManager;
 		private bool _isDisposed;
 
 		/// <summary>
@@ -105,7 +103,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// is controlled by the <see cref="BlazorWebView"/> that is hosting it.
 		/// </remarks>
 		[Browsable(false)]
-		public WebView2Control WebView => _webview;
+		public WebView2Control WebView => _webview!;
 
 		/// <summary>
 		/// Path to the host page within the application's static files. For example, <code>wwwroot\index.html</code>.
@@ -213,28 +211,32 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
 			if (!string.IsNullOrEmpty(entryAssemblyLocation))
 			{
-				appRootDir = Path.GetDirectoryName(entryAssemblyLocation);
+				appRootDir = Path.GetDirectoryName(entryAssemblyLocation)!;
 			}
 			else
 			{
 				appRootDir = Environment.CurrentDirectory;
 			}
 			var hostPageFullPath = Path.GetFullPath(Path.Combine(appRootDir, HostPage));
-			var contentRootDirFullPath = Path.GetDirectoryName(hostPageFullPath);
+			var contentRootDirFullPath = Path.GetDirectoryName(hostPageFullPath)!;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDirFullPath, hostPageFullPath);
+			var contentRootDirRelativePath = Path.GetRelativePath(appRootDir, contentRootDirFullPath);
 
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
 
 			_webviewManager = new WebView2WebViewManager(
-				_webview,
+				_webview!,
 				Services,
 				ComponentsDispatcher,
 				fileProvider,
 				RootComponents.JSComponents,
+				contentRootDirRelativePath,
 				hostPageRelativePath,
 				(args) => UrlLoading?.Invoke(this, args),
 				(args) => BlazorWebViewInitializing?.Invoke(this, args),
 				(args) => BlazorWebViewInitialized?.Invoke(this, args));
+
+			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
 			foreach (var rootComponent in RootComponents)
 			{
@@ -246,7 +248,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 		private WpfDispatcher ComponentsDispatcher { get; }
 
-		private void HandleRootComponentsCollectionChanged(object sender, NotifyCollectionChangedEventArgs eventArgs)
+		private void HandleRootComponentsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs eventArgs)
 		{
 			CheckDisposed();
 
@@ -256,8 +258,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				// Dispatch because this is going to be async, and we want to catch any errors
 				_ = ComponentsDispatcher.InvokeAsync(async () =>
 				{
-					var newItems = eventArgs.NewItems.Cast<RootComponent>();
-					var oldItems = eventArgs.OldItems.Cast<RootComponent>();
+					var newItems = (eventArgs.NewItems ?? Array.Empty<RootComponent>()).Cast<RootComponent>();
+					var oldItems = (eventArgs.OldItems ?? Array.Empty<RootComponent>()).Cast<RootComponent>();
 
 					foreach (var item in newItems.Except(oldItems))
 					{

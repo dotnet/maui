@@ -1,7 +1,10 @@
 using System;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ShellRenderer : VisualElementRenderer<Shell>, IFlyoutController
 	{
 		INavigationDrawer _drawer;
@@ -119,7 +122,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFlyoutBackgroundColor()
 		{
-			_navigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToPlatform();
+			_navigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToPlatformEFL();
 		}
 
 		void UpdateFlyoutBackgroundImageAspect()
@@ -135,7 +138,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		protected virtual void UpdateFlyoutIsPresented()
 		{
 			// It is workaround of Panel.IsOpen bug, Panel.IsOpen property is not working when layouting was triggered
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.Dispatch(() =>
 			{
 				_drawer.IsOpen = Element.FlyoutIsPresented;
 			});

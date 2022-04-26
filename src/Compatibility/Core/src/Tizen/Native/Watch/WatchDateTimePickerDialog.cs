@@ -3,7 +3,7 @@ using ElmSharp;
 using ElmSharp.Wearable;
 using EButton = ElmSharp.Button;
 using ELayout = ElmSharp.Layout;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.Application;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch
 {

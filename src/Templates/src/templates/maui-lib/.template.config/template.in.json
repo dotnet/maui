@@ -1,7 +1,7 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows" ],
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen" ],
     "identity": "Microsoft.Maui.MauiLib",
     "groupIdentity": "Microsoft.Maui.Library",
     "name": ".NET MAUI Class Library (Preview)",

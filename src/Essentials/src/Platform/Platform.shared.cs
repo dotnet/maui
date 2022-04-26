@@ -85,6 +85,23 @@ namespace Microsoft.Maui.ApplicationModel
 		public static void OnWindowMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam) =>
 			WindowStateManager.Default.OnWindowMessage(hWnd, msg, wParam, lParam);
 
+#elif TIZEN
+		public static Tizen.Applications.Package CurrentPackage
+		{
+			get
+			{
+				var packageId = Tizen.Applications.Application.Current.ApplicationInfo.PackageId;
+				return Tizen.Applications.PackageManager.GetPackage(packageId);
+			}
+		}
+
+		public static string? MapServiceToken
+		{
+			get => Geocoding.Default.GetMapServiceToken();
+			set => Geocoding.Default.SetMapServiceToken(value);
+		}
+
 #endif
+
 	}
 }
