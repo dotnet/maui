@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls
 
 			ApplyChanges();
 			_toolbarTracker.CollectionChanged += (_, __) => ToolbarItems = _toolbarTracker.ToolbarItems;
-			_menuBarTracker.CollectionChanged += (_, __) => MenuBarItems = _menuBarTracker.ToolbarItems;
+			_menuBarTracker.CollectionChanged += (_, __) => ApplyChanges();
 		}
 
 		internal void ApplyChanges()
@@ -76,7 +76,6 @@ namespace Microsoft.Maui.Controls
 				previousPage = stack[stack.Count - 1];
 
 			ToolbarItems = _toolbarTracker.ToolbarItems;
-			MenuBarItems = _menuBarTracker.ToolbarItems;
 
 			UpdateBackbuttonBehavior();
 			bool backButtonVisible = true;
