@@ -18,7 +18,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 
 			#region IView stuff
-			
+
 			public string AutomationId { get; }
 			public FlowDirection FlowDirection { get; }
 			public LayoutAlignment HorizontalLayoutAlignment { get; }

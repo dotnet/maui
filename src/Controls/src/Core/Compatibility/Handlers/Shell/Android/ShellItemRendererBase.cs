@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			TaskCompletionSource<bool> result = new TaskCompletionSource<bool>();
 			bool isForCurrentTab = shellSection == ShellSection;
-
+			bool initialUpdate = _fragmentMap.Count == 0;
 			if (!_fragmentMap.ContainsKey(ShellSection))
 			{
 				_fragmentMap[ShellSection] = GetOrCreateFragmentForTab(ShellSection);
@@ -264,8 +264,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				result.TrySetResult(true);
 			}
 
-			t.CommitAllowingStateLossEx();
+			if (initialUpdate)
+			{
+				t.SetReorderingAllowedEx(true);
+			}
 
+			t.CommitAllowingStateLossEx();
 			_currentFragment = target;
 
 
@@ -373,15 +377,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void RemoveAllButCurrent(Fragment skip)
 		{
-			var trans = ChildFragmentManager.BeginTransactionEx();
+			FragmentTransaction trans = null;
 			foreach (var kvp in _fragmentMap)
 			{
 				var f = kvp.Value.Fragment;
 				if (kvp.Value == _currentFragment || kvp.Value.Fragment == skip || !f.IsAdded)
 					continue;
+
+				trans ??= ChildFragmentManager.BeginTransactionEx();
 				trans.Remove(f);
 			};
-			trans.CommitAllowingStateLossEx();
+
+			trans?.CommitAllowingStateLossEx();
 		}
 
 		void RemoveAllPushedPages(ShellSection shellSection, bool keepCurrent)

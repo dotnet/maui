@@ -6,6 +6,7 @@ using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.TV
 {
+	[Obsolete]
 	public class TVNavigationDrawer : EBox, INavigationDrawer, IAnimatable, IFlyoutBehaviorObserver
 	{
 		EBox _drawerBox;

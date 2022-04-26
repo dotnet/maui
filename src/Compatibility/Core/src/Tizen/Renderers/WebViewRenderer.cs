@@ -1,13 +1,15 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using TChromium = Tizen.WebView.Chromium;
 using TWebView = Tizen.WebView.WebView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class WebViewRenderer : ViewRenderer<WebView, WebViewContainer>, IWebViewDelegate
 	{
 		bool _isUpdating;
@@ -44,11 +46,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				if (Element != null)
 				{
-					Element.EvalRequested -= OnEvalRequested;
-					Element.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
-					Element.GoBackRequested -= OnGoBackRequested;
-					Element.GoForwardRequested -= OnGoForwardRequested;
-					Element.ReloadRequested -= OnReloadRequested;
+					((IWebViewController)Element).EvalRequested -= OnEvalRequested;
+					((IWebViewController)Element).EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
+					((IWebViewController)Element).GoBackRequested -= OnGoBackRequested;
+					((IWebViewController)Element).GoForwardRequested -= OnGoForwardRequested;
+					((IWebViewController)Element).ReloadRequested -= OnReloadRequested;
 				}
 			}
 			base.Dispose(disposing);
@@ -68,19 +70,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			if (e.OldElement != null)
 			{
-				e.OldElement.EvalRequested -= OnEvalRequested;
-				e.OldElement.GoBackRequested -= OnGoBackRequested;
-				e.OldElement.GoForwardRequested -= OnGoForwardRequested;
-				e.OldElement.ReloadRequested -= OnReloadRequested;
+				((IWebViewController)e.OldElement).EvalRequested -= OnEvalRequested;
+				((IWebViewController)e.OldElement).GoBackRequested -= OnGoBackRequested;
+				((IWebViewController)e.OldElement).GoForwardRequested -= OnGoForwardRequested;
+				((IWebViewController)e.OldElement).ReloadRequested -= OnReloadRequested;
 			}
 
 			if (e.NewElement != null)
 			{
-				e.NewElement.EvalRequested += OnEvalRequested;
-				e.NewElement.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
-				e.NewElement.GoForwardRequested += OnGoForwardRequested;
-				e.NewElement.GoBackRequested += OnGoBackRequested;
-				e.NewElement.ReloadRequested += OnReloadRequested;
+				((IWebViewController)e.NewElement).EvalRequested += OnEvalRequested;
+				((IWebViewController)e.NewElement).EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
+				((IWebViewController)e.NewElement).GoForwardRequested += OnGoForwardRequested;
+				((IWebViewController)e.NewElement).GoBackRequested += OnGoBackRequested;
+				((IWebViewController)e.NewElement).ReloadRequested += OnReloadRequested;
 				Load();
 			}
 			base.OnElementChanged(e);
@@ -107,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (!string.IsNullOrEmpty(url))
 			{
 				var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = url }, url);
-				Element.SendNavigating(args);
+				ElementController.SendNavigating(args);
 
 				if (args.Cancel)
 				{
@@ -180,15 +182,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		void SendNavigated(UrlWebViewSource source, WebNavigationEvent evnt, WebNavigationResult result)
 		{
 			_isUpdating = true;
-			((IElementController)Element).SetValueFromRenderer(WebView.SourceProperty, source);
+			ElementController.SetValueFromRenderer(WebView.SourceProperty, source);
 			_isUpdating = false;
 
-			Element.SendNavigated(new WebNavigatedEventArgs(evnt, source, source.Url, result));
+			ElementController.SendNavigated(new WebNavigatedEventArgs(evnt, source, source.Url, result));
 
 			UpdateCanGoBackForward();
 			_eventState = WebNavigationEvent.NewPage;
 		}
 
+		[PortHandler]
 		void UpdateCanGoBackForward()
 		{
 			ElementController.CanGoBack = NativeWebView.CanGoBack();

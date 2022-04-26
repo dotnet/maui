@@ -1,5 +1,6 @@
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Watch
 {
+	[System.Obsolete]
 	public class ShellRendererFactory
 	{
 		static ShellRendererFactory _instance;

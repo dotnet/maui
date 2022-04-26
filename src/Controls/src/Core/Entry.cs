@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 		public new static readonly BindableProperty PlaceholderColorProperty = InputView.PlaceholderColorProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='IsPasswordProperty']/Docs" />
-		public static readonly BindableProperty IsPasswordProperty = BindableProperty.Create("IsPassword", typeof(bool), typeof(Entry), default(bool));
+		public static readonly BindableProperty IsPasswordProperty = BindableProperty.Create(nameof(IsPassword), typeof(bool), typeof(Entry), default(bool));
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='TextProperty']/Docs" />
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
@@ -187,9 +187,6 @@ namespace Microsoft.Maui.Controls
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
 			HandleFontChanged();
 
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
-			 HandleFontChanged();
-
 		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) =>
 			HandleFontChanged();
 
@@ -220,7 +217,6 @@ namespace Microsoft.Maui.Controls
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
-
 
 		void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)
 		{

@@ -11,71 +11,80 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class ToolbarExtensions
 	{
-		public static void UpdateIsVisible(this MauiToolbar nativeToolbar, Toolbar toolbar)
+		public static void UpdateIsVisible(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			nativeToolbar.Visibility = (toolbar.IsVisible) ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
+			platformToolbar.Visibility = (toolbar.IsVisible) ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
 		}
 
-		public static void UpdateTitleIcon(this MauiToolbar nativeToolbar, Toolbar toolbar)
+		public static void UpdateTitleIcon(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
 			_ = toolbar?.Handler?.MauiContext ?? throw new ArgumentNullException(nameof(toolbar.Handler.MauiContext));
 			toolbar.TitleIcon.LoadImage(toolbar.Handler.MauiContext, (result) =>
 			{
 				if (result != null)
 				{
-					nativeToolbar.TitleIconImageSource = result.Value;
+					platformToolbar.TitleIconImageSource = result.Value;
 					toolbar.Handler.UpdateValue(nameof(Toolbar.IconColor));
 				}
 				else
-					nativeToolbar.TitleIconImageSource = null;
+					platformToolbar.TitleIconImageSource = null;
 			});
 		}
 
-		public static void UpdateBackButton(this MauiToolbar nativeToolbar, Toolbar toolbar)
+		public static void UpdateBackButton(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			nativeToolbar.IsBackEnabled =
+			platformToolbar.IsBackEnabled =
 				toolbar.BackButtonEnabled && toolbar.BackButtonVisible;
 
-			nativeToolbar
+			platformToolbar
 				.IsBackButtonVisible = (toolbar.BackButtonVisible) ? NavigationViewBackButtonVisible.Visible : NavigationViewBackButtonVisible.Collapsed;
 
 			toolbar.Handler?.UpdateValue(nameof(Toolbar.BarBackground));
 		}
 
-		public static void UpdateBarBackground(this MauiToolbar nativeToolbar, Toolbar toolbar)
+		public static void UpdateBarBackground(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			nativeToolbar.Background = toolbar.BarBackground?.ToBrush();
+			platformToolbar.Background = toolbar.BarBackground?.ToBrush();
 		}
 
-		public static void UpdateTitleView(this MauiToolbar nativeToolbar, Toolbar toolbar)
+		public static void UpdateTitleView(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
 			_ = toolbar.Handler?.MauiContext ?? throw new ArgumentNullException(nameof(toolbar.Handler.MauiContext));
 
-			nativeToolbar.TitleView = toolbar.TitleView?.ToPlatform(toolbar.Handler.MauiContext);
+			platformToolbar.TitleView = toolbar.TitleView?.ToPlatform(toolbar.Handler.MauiContext);
+
+			if (toolbar.TitleView is IView view)
+			{
+				platformToolbar.TitleViewMargin = view.Margin.ToPlatform();
+			}
+			else
+			{
+				platformToolbar.TitleViewMargin = new UI.Xaml.Thickness(0);
+			}
 		}
 
-		public static void UpdateIconColor(this MauiToolbar nativeToolbar, Toolbar toolbar)
+		public static void UpdateIconColor(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
 			// This property wasn't wired up in Controls
 		}
 
-		public static void UpdateTitle(this MauiToolbar nativeToolbar, Toolbar toolbar)
+		public static void UpdateTitle(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			nativeToolbar.Title = toolbar.Title;
+			platformToolbar.Title = toolbar.Title;
 		}
 
-		public static void UpdateBarTextColor(this MauiToolbar nativeToolbar, Toolbar toolbar)
+		public static void UpdateBarTextColor(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
 			if (toolbar.BarTextColor != null)
-				nativeToolbar.TitleColor = toolbar.BarTextColor.ToPlatform();
+				platformToolbar.TitleColor = toolbar.BarTextColor.ToPlatform();
 		}
 
-		public static void UpdateToolbarDynamicOverflowEnabled(this MauiToolbar nativeToolbar, Toolbar toolbar)
+		public static void UpdateToolbarDynamicOverflowEnabled(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			if (nativeToolbar.CommandBar == null)
+			if (platformToolbar.CommandBar == null)
 				return;
 
-			nativeToolbar.CommandBar.IsDynamicOverflowEnabled = toolbar.DynamicOverflowEnabled;
+			platformToolbar.CommandBar.IsDynamicOverflowEnabled = toolbar.DynamicOverflowEnabled;
 		}
 	}
 }

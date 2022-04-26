@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 	{
 		public abstract class ExecuteForApp : MSBuildTaskTestFixture<ResizetizeImages>
 		{
+			protected static readonly Dictionary<string, string> ResizeMetadata = new() { ["Resize"] = "true" };
+
 			public ExecuteForApp(string type)
 				: base(Path.Combine(Path.GetTempPath(), "ResizetizeImagesTests", type, Path.GetRandomFileName()))
 			{
@@ -147,7 +149,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -179,8 +181,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
-					new TaskItem("images/camera_color.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
+					new TaskItem("images/camera_color.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -199,7 +201,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -223,8 +225,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
-					new TaskItem("images/camera_color.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
+					new TaskItem("images/camera_color.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -657,7 +659,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -673,8 +675,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
-					new TaskItem("images/camera_color.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
+					new TaskItem("images/camera_color.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -693,7 +695,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -717,8 +719,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
-					new TaskItem("images/camera_color.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
+					new TaskItem("images/camera_color.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -937,7 +939,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -953,8 +955,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
-					new TaskItem("images/camera_color.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
+					new TaskItem("images/camera_color.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -973,7 +975,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -997,8 +999,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
-					new TaskItem("images/camera_color.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
+					new TaskItem("images/camera_color.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -1177,6 +1179,35 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				AssertFileSize($"{bg}WideTile.scale-100.png", 310, 150);
 				AssertFileSize($"{bg}WideTile.scale-200.png", 620, 300);
+			}
+		}
+
+		public class ExecuteForAny : ExecuteForApp
+		{
+			public ExecuteForAny() : base("Any") { }
+
+			[Theory]
+			[InlineData("image.svg", "100,100", true)]
+			[InlineData("image.png", "100,100", true)]
+			[InlineData("image.jpg", "100,100", true)]
+			[InlineData("image.svg", "100;100", true)]
+			[InlineData("image.png", "100;100", true)]
+			[InlineData("image.jpg", "100;100", true)]
+			[InlineData("image.svg", null, true)]
+			[InlineData("image.png", null, false)]
+			[InlineData("image.jpg", null, false)]
+			public void ShouldResize(string filename, string baseSize, bool resize)
+			{
+				Directory.CreateDirectory(DestinationDirectory);
+				var path = Path.Combine(DestinationDirectory, filename);
+				File.WriteAllText(path, contents: "");
+				var item = new TaskItem(path);
+				if (!string.IsNullOrEmpty(baseSize))
+				{
+					item.SetMetadata("BaseSize", baseSize);
+				}
+				var size = ResizeImageInfo.Parse(item);
+				Assert.Equal(resize, size.Resize);
 			}
 		}
 	}
