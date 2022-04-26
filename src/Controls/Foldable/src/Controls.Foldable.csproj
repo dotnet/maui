@@ -4,7 +4,7 @@
     <AssemblyName>Microsoft.Maui.Controls.Foldable</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.Foldable</RootNamespace>
     <WarningsNotAsErrors>BI1234</WarningsNotAsErrors>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
@@ -15,8 +15,13 @@
     <PackageReference Include="Microsoft.Maui.Graphics" />
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
-    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj">
+      <!-- prevent NuGet reference to nonexistant Controls package? -->
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj">
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
