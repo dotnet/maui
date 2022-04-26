@@ -293,7 +293,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			SyncNativeCookies(url);
 		}
-		
+
 		[PortHandler]
 		void SyncNativeCookies(string url)
 		{

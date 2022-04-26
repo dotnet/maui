@@ -83,8 +83,6 @@ namespace Microsoft.Maui.Controls
 			Frame = this.ComputeFrame(bounds);
 			Handler?.PlatformArrange(Frame);
 
-			(this as IContentView).CrossPlatformArrange(new Rect(Point.Zero, Frame.Size));
-
 			return Frame.Size;
 		}
 

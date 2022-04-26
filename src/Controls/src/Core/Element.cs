@@ -623,9 +623,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		void OnResourceChanged(BindableProperty property, object value)
-		{
-			SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings);
-		}
+			=> SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings);
 
 		public event EventHandler<ParentChangingEventArgs> ParentChanging;
 		public event EventHandler ParentChanged;

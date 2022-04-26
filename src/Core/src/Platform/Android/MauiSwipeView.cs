@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using SDebug = System.Diagnostics.Debug;
 using System.Linq;
 using Android.Content;
 using Android.Views;
@@ -15,6 +14,7 @@ using ARect = Android.Graphics.Rect;
 using ATextAlignment = Android.Views.TextAlignment;
 using AView = Android.Views.View;
 using AWebView = Android.Webkit.WebView;
+using SDebug = System.Diagnostics.Debug;
 
 namespace Microsoft.Maui.Platform
 {

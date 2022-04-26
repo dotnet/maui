@@ -38,16 +38,6 @@ namespace Microsoft.Maui.Controls.Xaml
 {
 	static class TypeConversionExtensions
 	{
-		internal static Dictionary<Type, Type> KnownConverters = new Dictionary<Type, Type>
-		{
-			{ typeof(Font), typeof(FontTypeConverter) }
-		};
-
-		static Dictionary<Type, Func<TypeConverter>> KnownConverterFactories = new()
-		{
-			{ typeof(Font), () => new FontTypeConverter() }
-		};
-
 		// caches both Type and MemberInfo keys to their corresponding TypeConverter
 		static readonly ConcurrentDictionary<MemberInfo, TypeConverter> s_converterCache = new();
 
@@ -92,9 +82,6 @@ namespace Microsoft.Maui.Controls.Xaml
 						return converter;
 					}
 				}
-
-				if (KnownConverterFactories.TryGetValue(toType, out var converterFactory))
-					return converterFactory();
 
 				if (!s_converterCache.TryGetValue(toType, out converter))
 				{
@@ -200,13 +187,13 @@ namespace Microsoft.Maui.Controls.Xaml
 				var ignoreCase = (serviceProvider?.GetService(typeof(IConverterOptions)) as IConverterOptions)?.IgnoreCase ?? false;
 
 				//If the type is nullable, as the value is not null, it's safe to assume we want the built-in conversion
-				if (toType.GetTypeInfo().IsGenericType && toType.GetGenericTypeDefinition() == typeof(Nullable<>))
+				if (toType.IsGenericType && toType.GetGenericTypeDefinition() == typeof(Nullable<>))
 					toType = Nullable.GetUnderlyingType(toType);
 
 				//Obvious Built-in conversions
 				try
 				{
-					if (toType.GetTypeInfo().IsEnum)
+					if (toType.IsEnum)
 						return Enum.Parse(toType, str, ignoreCase);
 					if (toType == typeof(SByte))
 						return SByte.Parse(str, CultureInfo.InvariantCulture);

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 
 			if (mauiDrawable == null && borderShape == null)
 				return;
-			
+
 			mauiDrawable?.SetBorderBrush(border.Stroke);
 			mauiDrawable?.SetBorderWidth(border.StrokeThickness);
 			platformView.UpdateStrokeDashPattern(border);
@@ -149,6 +149,9 @@ namespace Microsoft.Maui.Platform
 				mauiDrawable.SetBackground(new SolidPaint(Colors.Transparent));
 
 			mauiDrawable.SetBorderShape(border.Shape);
+
+			if (platformView is ContentViewGroup contentViewGroup)
+				contentViewGroup.Clip = border;
 		}
 	}
 }

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		class Tests
 		{
 			[Test]
-			public void SourceInfoIsRelative([Values(false)]bool useCompiledXaml)
+			public void SourceInfoIsRelative([Values(false)] bool useCompiledXaml)
 			{
 				var page = new Maui2418(useCompiledXaml);
 				Assert.That(page, Is.Not.Null);

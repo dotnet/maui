@@ -27,6 +27,8 @@ namespace Maui.Controls.Sample.Controls
 		{
 #if __ANDROID__
 			return new SkiaGraphicsView(Context);
+#elif TIZEN
+			return new SkiaGraphicsView(NativeParent);
 #else
 			return new SkiaGraphicsView();
 #endif

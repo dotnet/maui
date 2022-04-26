@@ -111,25 +111,41 @@ Task("dotnet-templates")
             { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
         };
 
-        var frameworks = new [] {
-            "net6.0-android",
-            "net6.0-ios",
-            "net6.0-maccatalyst",
+        var templates = new Dictionary<string, Action<DirectoryPath>> {
+            { "maui:maui", null },
+            { "mauiblazor:maui-blazor", null },
+            { "mauilib:mauilib", null },
+            { "mauicorelib:mauilib", dir => {
+                CleanDirectories(dir.Combine("Platforms").FullPath);
+                ReplaceTextInFiles($"{dir}/*.csproj", "UseMaui", "UseMauiCore");
+                ReplaceTextInFiles($"{dir}/*.csproj", "SingleProject", "EnablePreviewMsixTooling");
+            } },
         };
 
-        foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
+        foreach (var template in templates)
         {
-            var name = template.Replace("-", "_").Replace(" ", "_");
-            StartProcess(dn, $"new {template} -o \"{templatesTest}{name}\"");
-
-            // Design-time build without restore
-            foreach (var framework in frameworks)
+            foreach (var forceDotNetBuild in new [] { true, false })
             {
-                RunMSBuildWithDotNet($"{templatesTest}{name}", designTime, target: "Compile", restore: false, warningsAsError: true, targetFramework: framework);
-            }
+                // macOS does not support msbuild
+                if (!IsRunningOnWindows() && !forceDotNetBuild)
+                    continue;
 
-            // Build
-            RunMSBuildWithDotNet($"{templatesTest}{name}", properties, warningsAsError: true);
+                var type = forceDotNetBuild ? "DotNet" : "MSBuild";
+                var projectName = template.Key.Split(":")[0];
+                var templateName = template.Key.Split(":")[1];
+
+                projectName = $"{templatesTest}/{projectName}_{type}";
+
+                // Create
+                StartProcess(dn, $"new {templateName} -o \"{projectName}\"");
+
+                // Modify
+                if (template.Value != null)
+                    template.Value(projectName);
+
+                // Build
+                RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
+            }
         }
 
         try
@@ -235,8 +251,6 @@ Task("dotnet-pack-library-packs")
 
         Download("Microsoft.Maui.Graphics", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json");
         Download("Microsoft.Maui.Graphics.Win2D.WinUI.Desktop", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json", "https://api.nuget.org/v3/index.json");
-        Download("Microsoft.WindowsAppSDK", "MicrosoftWindowsAppSDKPackageVersion", "https://api.nuget.org/v3/index.json");
-        Download("Microsoft.Windows.SDK.BuildTools", "MicrosoftWindowsSDKBuildToolsPackageVersion", "https://api.nuget.org/v3/index.json");
     });
 
 Task("dotnet-pack")
@@ -491,18 +505,22 @@ void RunMSBuildWithDotNet(
     string target = "Build",
     bool warningsAsError = false,
     bool restore = true,
-    string targetFramework = null)
+    string targetFramework = null,
+    bool forceDotNetBuild = false)
 {
+    var useDotNetBuild = forceDotNetBuild || !IsRunningOnWindows() || target == "Run";
+
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
+    var type = useDotNetBuild ? "dotnet" : "msbuild";
     var binlog = string.IsNullOrEmpty(targetFramework) ?
-        $"\"{logDirectory}/{name}-{configuration}-{target}.binlog\"" :
-        $"\"{logDirectory}/{name}-{configuration}-{target}-{targetFramework}.binlog\"";
+        $"\"{logDirectory}/{name}-{configuration}-{target}-{type}.binlog\"" :
+        $"\"{logDirectory}/{name}-{configuration}-{target}-{targetFramework}-{type}.binlog\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
     // If we're not on Windows, use ./bin/dotnet/dotnet
-    if (!IsRunningOnWindows() || target == "Run")
+    if (useDotNetBuild)
     {
         var msbuildSettings = new DotNetCoreMSBuildSettings()
             .SetConfiguration(configuration)

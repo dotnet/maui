@@ -100,8 +100,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			}
 		}
 
-		int ItemWidthConstraint => IsHorizontal ? _allocatedSize.Width * 100 : _allocatedSize.Width;
-		int ItemHeightConstraint => IsHorizontal ? _allocatedSize.Height : _allocatedSize.Height * 100;
+		// It is a rule, if you want to fit with a content natural size, constraint should be infinity
+		int ItemWidthConstraint => IsHorizontal ? int.MaxValue : _allocatedSize.Width;
+		int ItemHeightConstraint => IsHorizontal ? _allocatedSize.Height : int.MaxValue;
 
 		int FooterSize => IsHorizontal ? _footerSize.Width : _footerSize.Height;
 		int HeaderSize => IsHorizontal ? _headerSize.Width : _headerSize.Height;

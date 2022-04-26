@@ -5,7 +5,9 @@ using PlatformView = Microsoft.Maui.Platform.MauiPageControl;
 using PlatformView = Microsoft.Maui.Platform.MauiPageControl;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.MauiPageControl;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformView = Tizen.UIExtensions.ElmSharp.IndicatorView;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 

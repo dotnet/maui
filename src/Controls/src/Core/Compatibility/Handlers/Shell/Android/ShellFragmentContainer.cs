@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	internal class ShellFragmentContainer : Fragment
 	{
 		Page _page;
-		readonly IMauiContext _mauiContext;
+		IMauiContext _mauiContext;
 
 		public ShellContent ShellContentTab { get; private set; }
 
@@ -23,9 +23,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_page = ((IShellContentController)ShellContentTab).GetOrCreateContent();
 
-			var pageMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
+			IMauiContext mauiContext = null;
 
-			return new ShellPageContainer(RequireContext(), (IPlatformViewHandler)_page.ToHandler(pageMauiContext), true)
+			// If the page has already been created with a handler then we just let it retain the same
+			// Handler and MauiContext
+			// But we want to update the inflater and ChildFragmentManager to match
+			// the handlers new home			
+			if (_page?.Handler?.MauiContext is MauiContext scopedMauiContext)
+			{
+				scopedMauiContext.AddWeakSpecific(ChildFragmentManager);
+				scopedMauiContext.AddWeakSpecific(inflater);
+				mauiContext = scopedMauiContext;
+			}
+
+			mauiContext ??= _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
+
+			return new ShellPageContainer(RequireContext(), (IPlatformViewHandler)_page.ToHandler(mauiContext), true)
 			{
 				LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
 			};

@@ -33,10 +33,10 @@ namespace Microsoft.Maui.Controls.Hosting
 		internal static void ResetCompatibilityCheck() =>
 			_compatibilityEnabled = false;
 
-		internal static void UseCompatibility() => 
+		internal static void UseCompatibility() =>
 			_compatibilityEnabled = true;
 	}
-	
+
 	public static partial class AppHostBuilderExtensions
 	{
 		public static MauiAppBuilder ConfigureEffects(this MauiAppBuilder builder, Action<IEffectsBuilder> configureDelegate)
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		}
 
 		public IEffectsBuilder Add(
-			Type TEffect, 
+			Type TEffect,
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type TPlatformEffect)
 		{
 			RegisteredEffects.Add(TEffect, () =>

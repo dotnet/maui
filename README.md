@@ -20,6 +20,7 @@
 
 ## Current News
 
+* April 12, 2022 - [.NET MAUI Release Candidate - Ready for Cross-Platform App Development](https://devblogs.microsoft.com/dotnet/dotnet-maui-rc-1/)
 * March 16, 2022 - [Announcing .NET MAUI Preview 14](https://devblogs.microsoft.com/dotnet/dotnet-maui-preview-14/)
 * February 15, 2022 - [Announcing .NET MAUI Preview 13](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-13/)
 * January 19, 2022 - [Announcing .NET MAUI Preview 12](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-12/)

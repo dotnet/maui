@@ -7,10 +7,12 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	[MemoryDiagnoser]
 	public class ShellBenchmarker
 	{
-		[Benchmark]
-		public async Task GoTo()
+		Shell shell;
+
+		[GlobalSetup]
+		public void Setup()
 		{
-			var shell = new Shell();
+			shell = new Shell();
 
 			var one = new ShellItem { Route = "one" };
 			var two = new ShellItem { Route = "two" };
@@ -22,7 +24,11 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 			shell.Items.Add(one);
 			shell.Items.Add(two);
+		}
 
+		[Benchmark]
+		public async Task GoTo()
+		{
 			await shell.GoToAsync(new ShellNavigationState("//two/tabtwo/content"));
 		}
 	}

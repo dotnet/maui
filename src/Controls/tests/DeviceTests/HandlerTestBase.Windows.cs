@@ -39,7 +39,6 @@ namespace Microsoft.Maui.DeviceTests
 					scopedContext.AddWeakSpecific(MauiProgram.CurrentWindow);
 					var mauiContext = scopedContext.MakeScoped(true);
 					navigationRootManager = mauiContext.GetNavigationRootManager();
-					navigationRootManager.UseCustomAppTitleBar = false;
 
 					MauiContext
 						.Services
@@ -76,6 +75,15 @@ namespace Microsoft.Maui.DeviceTests
 						await testingRootPanel.OnLoadedAsync();
 						await Task.Delay(10);
 					}
+
+					// reset the appbar title to our test runner
+					MauiProgram
+						.CurrentWindow
+						.GetWindow()
+						.Handler
+						.MauiContext
+						.GetNavigationRootManager()
+						.UpdateAppTitleBar(true);
 				}
 			});
 		}
@@ -108,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = element.Handler;
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			var position = element.GetLocationRelativeTo(rootManager.AppTitleBar);
-			var distance = rootManager.AppTitleBar.Height - position.Value.Y;
+			var distance = rootManager.AppTitleBar.ActualHeight - position.Value.Y;
 			return distance;
 		}
 
@@ -120,6 +128,28 @@ namespace Microsoft.Maui.DeviceTests
 		protected MauiNavigationView GetMauiNavigationView(IMauiContext mauiContext)
 		{
 			return GetMauiNavigationView(mauiContext.GetNavigationRootManager());
+		}
+
+		protected bool IsBackButtonVisible(IElementHandler handler) =>
+			IsBackButtonVisible(handler.MauiContext);
+
+		bool IsBackButtonVisible(IMauiContext mauiContext)
+		{
+			var navView = GetMauiNavigationView(mauiContext);
+			return navView.IsBackButtonVisible == UI.Xaml.Controls.NavigationViewBackButtonVisible.Visible;
+		}
+
+		protected MauiToolbar GetPlatformToolbar(IElementHandler handler)
+		{
+			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
+			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
+			return windowHeader;
+		}
+
+		protected object GetTitleView(IElementHandler handler)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			return toolbar.TitleView;
 		}
 	}
 }

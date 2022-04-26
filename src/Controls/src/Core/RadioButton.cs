@@ -1,10 +1,10 @@
 using System;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -35,8 +35,6 @@ namespace Microsoft.Maui.Controls
 		static ControlTemplate s_defaultTemplate;
 
 		readonly Lazy<PlatformConfigurationRegistry<RadioButton>> _platformConfigurationRegistry;
-
-		static bool? s_rendererAvailable;
 
 		public event EventHandler<CheckedChangedEventArgs> CheckedChanged;
 
@@ -242,9 +240,6 @@ namespace Microsoft.Maui.Controls
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			HandleFontChanged();
 
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
-			HandleFontChanged();
-
 		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) =>
 			HandleFontChanged();
 
@@ -299,22 +294,6 @@ namespace Microsoft.Maui.Controls
 			return base.OnMeasure(widthConstraint, heightConstraint);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='ResolveControlTemplate']/Docs" />
-		public override ControlTemplate ResolveControlTemplate()
-		{
-			var template = base.ResolveControlTemplate();
-
-			if (template == null)
-			{
-				if (!RendererAvailable)
-				{
-					ControlTemplate = DefaultTemplate;
-				}
-			}
-
-			return ControlTemplate;
-		}
-
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
@@ -351,19 +330,6 @@ namespace Microsoft.Maui.Controls
 			{
 				_tapGestureRecognizer.Tapped -= SelectRadioButton;
 				GestureRecognizers.Remove(_tapGestureRecognizer);
-			}
-		}
-
-		static bool RendererAvailable
-		{
-			get
-			{
-				if (!s_rendererAvailable.HasValue)
-				{
-					s_rendererAvailable = Internals.Registrar.Registered.GetHandlerType(typeof(RadioButton)) != null;
-				}
-
-				return s_rendererAvailable.Value;
 			}
 		}
 
@@ -438,7 +404,7 @@ namespace Microsoft.Maui.Controls
 				{
 					MessagingCenter.Subscribe<RadioButton, RadioButtonGroupSelectionChanged>(this,
 						RadioButtonGroup.GroupSelectionChangedMessage, HandleRadioButtonGroupSelectionChanged);
-					MessagingCenter.Subscribe<Maui.ILayout, RadioButtonGroupValueChanged>(this,
+					MessagingCenter.Subscribe<Element, RadioButtonGroupValueChanged>(this,
 						RadioButtonGroup.GroupValueChangedMessage, HandleRadioButtonGroupValueChanged);
 				}
 
@@ -450,7 +416,7 @@ namespace Microsoft.Maui.Controls
 				if (!string.IsNullOrEmpty(oldGroupName))
 				{
 					MessagingCenter.Unsubscribe<RadioButton, RadioButtonGroupSelectionChanged>(this, RadioButtonGroup.GroupSelectionChangedMessage);
-					MessagingCenter.Unsubscribe<Maui.ILayout, RadioButtonGroupValueChanged>(this, RadioButtonGroup.GroupValueChangedMessage);
+					MessagingCenter.Unsubscribe<Element, RadioButtonGroupValueChanged>(this, RadioButtonGroup.GroupValueChangedMessage);
 				}
 			}
 		}
@@ -470,9 +436,9 @@ namespace Microsoft.Maui.Controls
 			IsChecked = false;
 		}
 
-		void HandleRadioButtonGroupValueChanged(Maui.ILayout layout, RadioButtonGroupValueChanged args)
+		void HandleRadioButtonGroupValueChanged(Element layout, RadioButtonGroupValueChanged args)
 		{
-			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || Value != args.Value || !MatchesScope(args))
+			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || !object.Equals(Value, args.Value) || !MatchesScope(args))
 			{
 				return;
 			}
