@@ -6,12 +6,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
-		protected override Button CreatePlatformView()
-		{
-			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
-
-			return new Button(NativeParent);
-		}
+		protected override Button CreatePlatformView() => new Button(NativeParent);
 
 		protected override void ConnectHandler(Button platformView)
 		{

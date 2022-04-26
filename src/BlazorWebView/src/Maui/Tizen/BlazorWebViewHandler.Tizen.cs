@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			TChromium.Initialize();
 			MauiApplication.Current.Terminated += (s, e) => TChromium.Shutdown();
 
-			return new WebViewContainer(NativeParent!);
+			return new WebViewContainer(NativeParent);
 		}
 
 		/// <inheritdoc />

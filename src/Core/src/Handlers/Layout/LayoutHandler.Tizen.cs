@@ -17,11 +17,6 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Canvas");
 			}
 
-			if (NativeParent == null)
-			{
-				throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
-			}
-
 			var view = new LayoutCanvas(NativeParent, VirtualView)
 			{
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
