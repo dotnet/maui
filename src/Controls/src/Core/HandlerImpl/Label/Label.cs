@@ -20,8 +20,10 @@ namespace Microsoft.Maui.Controls
 			[nameof(CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(LineHeight)] = MapLineHeight,
 			[nameof(ILabel.Font)] = MapFont,
-			[nameof(TextColor)] = MapTextColor
+			[nameof(TextColor)] = MapTextColor,
 #endif
+			[nameof(Label.LineBreakMode)] = MapLineBreakMode,
+			[nameof(Label.MaxLines)] = MapMaxLines,
 		};
 
 		internal static new void RemapForControls()

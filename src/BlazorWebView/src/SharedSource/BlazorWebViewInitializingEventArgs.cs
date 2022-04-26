@@ -12,6 +12,8 @@ using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 using AWebView = Android.Webkit.WebView;
 #elif IOS || MACCATALYST
 using WebKit;
+#elif TIZEN
+using TWebView = Tizen.WebView.WebView;
 #endif
 
 namespace Microsoft.AspNetCore.Components.WebView

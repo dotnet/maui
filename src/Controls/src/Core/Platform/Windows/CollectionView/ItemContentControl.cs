@@ -117,13 +117,13 @@ namespace Microsoft.Maui.Controls.Platform
 		public static readonly DependencyProperty ItemSpacingProperty = DependencyProperty.Register(
 			nameof(ItemSpacing), typeof(Thickness), typeof(ItemContentControl),
 			new PropertyMetadata(default(Thickness)));
-		
+
 		public Thickness ItemSpacing
 		{
 			get => (Thickness)GetValue(ItemSpacingProperty);
 			set => SetValue(ItemSpacingProperty, value);
 		}
-				
+
 		protected override void OnContentChanged(object oldContent, object newContent)
 		{
 			base.OnContentChanged(oldContent, newContent);
@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls.Platform
 			itemsView?.AddLogicalChild(_visualElement);
 		}
 
-		void SetNativeStateConsistent(VisualElement visualElement) 
+		void SetNativeStateConsistent(VisualElement visualElement)
 		{
 			visualElement.IsPlatformStateConsistent = true;
 
@@ -227,6 +227,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var frameworkElement = Content as FrameworkElement;
 
 			var formsElement = _renderer.VirtualView as VisualElement;
+
 			if (ItemHeight != default || ItemWidth != default)
 			{
 				formsElement.Layout(new Rect(0, 0, ItemWidth, ItemHeight));
@@ -235,7 +236,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 				frameworkElement.Margin = WinUIHelpers.CreateThickness(ItemSpacing.Left, ItemSpacing.Top, ItemSpacing.Right, ItemSpacing.Bottom);
 
-				frameworkElement.Measure(wsize);
+				if (CanMeasureContent(frameworkElement))
+					frameworkElement.Measure(wsize);
 
 				return base.MeasureOverride(wsize);
 			}
@@ -251,7 +253,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var wsize = new WSize(width, height);
 
-				frameworkElement.Measure(wsize);
+				if (CanMeasureContent(frameworkElement))
+					frameworkElement.Measure(wsize);
 
 				return base.MeasureOverride(wsize);
 			}
@@ -265,6 +268,15 @@ namespace Microsoft.Maui.Controls.Platform
 		double ClampInfinity(double value)
 		{
 			return double.IsInfinity(value) ? 0 : value;
+		}
+
+		bool CanMeasureContent(FrameworkElement frameworkElement)
+		{
+			// Measure the SwipeControl before has loaded causes a crash on the first layout pass
+			if (frameworkElement is SwipeControl swipeControl && !swipeControl.IsLoaded)
+				return false;
+
+			return true;
 		}
 	}
 }

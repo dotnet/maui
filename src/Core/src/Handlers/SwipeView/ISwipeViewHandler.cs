@@ -4,7 +4,9 @@ using PlatformView = Microsoft.Maui.Platform.MauiSwipeView;
 using PlatformView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.SwipeControl;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformView = ElmSharp.EvasObject;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 

@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 		IMauiContext _applicationContext = null!;
 
 		protected MauiUIApplicationDelegate() : base()
-		{	
+		{
 			Current = this;
 			IPlatformApplication.Current = this;
 		}

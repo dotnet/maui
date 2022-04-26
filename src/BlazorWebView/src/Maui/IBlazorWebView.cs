@@ -26,22 +26,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		JSComponentConfigurationStore JSComponents { get; }
 
 		/// <summary>
-		/// Allows customizing how links are opened.
-		/// By default, opens internal links in the webview and external links in an external app.
-		/// </summary>
-		event EventHandler<UrlLoadingEventArgs>? UrlLoading;
-
-		/// <summary>
-		/// Raised before the web view is initialized. On some platforms this enables customizing the web view configuration.
-		/// </summary>
-		event EventHandler<BlazorWebViewInitializingEventArgs>? BlazorWebViewInitializing;
-
-		/// <summary>
-		/// Raised after the web view is initialized but before any component has been rendered. The event arguments provide the instance of the platform-specific web view control.
-		/// </summary>
-		event EventHandler<BlazorWebViewInitializedEventArgs>? BlazorWebViewInitialized;
-
-		/// <summary>
 		/// Creates a file provider for static assets used in the <see cref="BlazorWebView"/>. The default implementation
 		/// serves files from a platform-specific location. Override this method to return a custom <see cref="IFileProvider"/> to serve assets such
 		/// as <c>wwwroot/index.html</c>. Call the base method and combine its return value with a <see cref="CompositeFileProvider"/>
@@ -49,6 +33,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </summary>
 		/// <param name="contentRootDir">The base directory to use for all requested assets, such as <c>wwwroot</c>.</param>
 		/// <returns>Returns a <see cref="IFileProvider"/> for static assets.</returns>
-		public IFileProvider CreateFileProvider(string contentRootDir);
+		IFileProvider CreateFileProvider(string contentRootDir);
+
+		/// <summary>
+		/// Notifies the control that the UrlLoading event should be raised with the specified <paramref name="args"/>.
+		/// </summary>
+		/// <param name="args">The arguments for the event.</param>
+		void UrlLoading(UrlLoadingEventArgs args);
+
+		/// <summary>
+		/// Notifies the control that the BlazorWebViewInitializing event should be raised with the specified <paramref name="args"/>.
+		/// </summary>
+		/// <param name="args">The arguments for the event.</param>
+		void BlazorWebViewInitializing(BlazorWebViewInitializingEventArgs args);
+
+		/// <summary>
+		/// Notifies the control that the BlazorWebViewInitialized event should be raised with the specified <paramref name="args"/>.
+		/// </summary>
+		/// <param name="args">The arguments for the event.</param>
+		void BlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args);
 	}
 }

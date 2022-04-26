@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Microsoft.Maui.Graphics;
 using System.Windows.Input;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -94,10 +94,6 @@ namespace Microsoft.Maui.Controls
 
 			UpdateTitle();
 
-			TitleView = _shell.GetEffectiveValue<VisualElement>(
-				Shell.TitleViewProperty,
-				Shell.GetTitleView(_shell));
-
 			if (_currentPage != null &&
 				_currentPage.IsSet(Shell.NavBarIsVisibleProperty))
 			{
@@ -169,8 +165,17 @@ namespace Microsoft.Maui.Controls
 
 		internal void UpdateTitle()
 		{
-			Page currentPage = _shell.GetCurrentShellPage() as Page;
+			TitleView = _shell.GetEffectiveValue<VisualElement>(
+				Shell.TitleViewProperty,
+				Shell.GetTitleView(_shell));
 
+			if (TitleView != null)
+			{
+				Title = String.Empty;
+				return;
+			}
+
+			Page currentPage = _shell.GetCurrentShellPage() as Page;
 			if (currentPage?.IsSet(Page.TitleProperty) == true)
 			{
 				Title = currentPage.Title ?? String.Empty;

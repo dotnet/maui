@@ -1,10 +1,12 @@
 using System;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using ESize = ElmSharp.Size;
 using TSpan = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Span;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class RadioButtonRenderer : ViewRenderer<RadioButton, Radio>
 	{
 		readonly TSpan _span = new TSpan();
@@ -41,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			base.Dispose(disposing);
 		}
 
-		protected override Size MinimumSize()
+		protected override Graphics.Size MinimumSize()
 		{
 			return Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
 		}
@@ -78,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateTextColor(bool isInitialized)
 		{
-			_span.ForegroundColor = Element.TextColor.ToPlatform();
+			_span.ForegroundColor = Element.TextColor.ToNative();
 			if (!isInitialized)
 				ApplyTextAndStyle();
 		}

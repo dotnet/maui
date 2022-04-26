@@ -12,7 +12,5 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void LoadView();
 
 		event EventHandler SearchConfirmed;
-
-		bool ShowKeyboardOnAttached { get; set; }
 	}
 }

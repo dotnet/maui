@@ -1,9 +1,9 @@
-using Android.Views;
-using AndroidX.RecyclerView.Widget;
-using Microsoft.Maui.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Android.Views;
+using AndroidX.RecyclerView.Widget;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers.Items

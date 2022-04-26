@@ -1,11 +1,13 @@
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using EColor = ElmSharp.Color;
 using ESize = ElmSharp.Size;
 using ESlider = ElmSharp.Slider;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SliderRenderer : ViewRenderer<Slider, ESlider>
 	{
 		EColor _defaultMinColor;
@@ -117,18 +119,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void UpdateMinimumTrackColor()
 		{
-			var color = Element.MinimumTrackColor.IsDefault ? _defaultMinColor : Element.MinimumTrackColor.ToPlatform();
+			var color = Element.MinimumTrackColor.IsDefault() ? _defaultMinColor : Element.MinimumTrackColor.ToNative();
 			Control.SetBarColor(color);
 		}
 
 		protected virtual void UpdateMaximumTrackColor()
 		{
-			Control.SetBackgroundColor(Element.MaximumTrackColor.IsDefault ? _defaultMaxColor : Element.MaximumTrackColor.ToPlatform());
+			Control.SetBackgroundColor(Element.MaximumTrackColor.IsDefault() ? _defaultMaxColor : Element.MaximumTrackColor.ToNative());
 		}
 
 		protected virtual void UpdateThumbColor()
 		{
-			var color = Element.ThumbColor.IsDefault ? _defaultThumbColor : Element.ThumbColor.ToPlatform();
+			var color = Element.ThumbColor.IsDefault() ? _defaultThumbColor : Element.ThumbColor.ToNative();
 			Control.SetHandlerColor(color);
 		}
 

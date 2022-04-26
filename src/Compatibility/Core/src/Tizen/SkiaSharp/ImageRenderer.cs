@@ -1,8 +1,10 @@
+using Microsoft.Maui.Controls.Platform;
 using ESize = ElmSharp.Size;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.Image;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Image;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ImageRenderer : CanvasViewRenderer<Image, Native.Image>
 	{
 		public ImageRenderer()
@@ -42,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 				bool success = await RealControl.LoadFromImageSourceAsync(source);
 				if (!IsDisposed && success)
 				{
-					((IVisualElementController)Element).NativeSizeChanged();
+					((IVisualElementController)Element).PlatformSizeChanged();
 					UpdateAfterLoading(initialize);
 				}
 			}
@@ -61,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 				bool success = RealControl.LoadFromFile(Specific.GetFile(Element));
 				if (!IsDisposed && success)
 				{
-					((IVisualElementController)Element).NativeSizeChanged();
+					((IVisualElementController)Element).PlatformSizeChanged();
 					UpdateAfterLoading(initialize);
 				}
 			}
@@ -101,10 +103,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 
 		void UpdateBlendColor(bool initialize)
 		{
-			if (initialize && Specific.GetBlendColor(Element).IsDefault)
+			if (initialize && Specific.GetBlendColor(Element) == null)
 				return;
 
-			RealControl.Color = Specific.GetBlendColor(Element).ToPlatform();
+			RealControl.Color = Specific.GetBlendColor(Element).ToPlatformEFL();
 		}
 	}
 }

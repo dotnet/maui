@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 
 			if (mauiDrawable == null && borderShape == null)
 				return;
-			
+
 			mauiDrawable?.SetBorderBrush(border.Stroke);
 			mauiDrawable?.SetBorderWidth(border.StrokeThickness);
 			platformView.UpdateStrokeDashPattern(border);

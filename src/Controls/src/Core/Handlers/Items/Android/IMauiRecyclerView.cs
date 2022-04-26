@@ -28,6 +28,6 @@
 
 		public IItemsLayout ItemsLayout { get; }
 
-    public void UpdateCanReorderItems();
+		public void UpdateCanReorderItems();
 	}
 }

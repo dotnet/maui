@@ -3,13 +3,14 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {
+	[Obsolete]
 	public class TitleViewPage : Native.Box
 	{
 		Native.Page _page = null;
 		View _titleView = null;
 		bool _hasNavigationBar = true;
 
-		public TitleViewPage(EvasObject parent, Microsoft.Maui.Controls.Compatibility.Page page, View titleView) : base(parent)
+		public TitleViewPage(EvasObject parent, Microsoft.Maui.Controls.Page page, View titleView) : base(parent)
 		{
 			_page = Platform.GetOrCreateRenderer(page).NativeView as Native.Page;
 			_titleView = titleView;

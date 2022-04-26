@@ -7,12 +7,15 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonTests
 	{
-		UIButton GetNativeButton(ButtonHandler buttonHandler) =>
+		UIButton GetPlatformButton(ButtonHandler buttonHandler) =>
 			(UIButton)buttonHandler.PlatformView;
 
-		Task<string> GetNativeText(ButtonHandler buttonHandler)
+		Task<string> GetPlatformText(ButtonHandler buttonHandler)
 		{
-			return InvokeOnMainThreadAsync(() => GetNativeButton(buttonHandler).CurrentTitle);
+			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).CurrentTitle);
 		}
+
+		UILineBreakMode GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
+			GetPlatformButton(buttonHandler).TitleLabel.LineBreakMode;
 	}
 }

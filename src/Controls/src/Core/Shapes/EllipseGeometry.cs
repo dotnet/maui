@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			var radiusX = (float)(density * RadiusX);
 			var radiusY = (float)(density * RadiusY);
-				
+
 			path.AppendEllipse(centerX - radiusX, centerY - radiusY, radiusX * 2f, radiusY * 2f);
 		}
 	}

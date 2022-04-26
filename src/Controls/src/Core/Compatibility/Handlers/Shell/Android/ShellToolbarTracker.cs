@@ -198,6 +198,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_drawerLayout.RemoveDrawerListener(_drawerToggle);
 				_drawerToggle?.Dispose();
 
+				_toolbar?.Handler?.DisconnectHandler();
+				_toolbar = null;
 				_platformToolbar.RemoveAllViews();
 			}
 
@@ -625,13 +627,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (_searchView.View.Parent != null)
 						_searchView.View.RemoveFromParent();
 
-					_searchView.ShowKeyboardOnAttached = true;
 					item.SetActionView(_searchView.View);
 					item.Dispose();
 				}
 				else if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Expanded)
 				{
-					_searchView.ShowKeyboardOnAttached = false;
 					if (_searchView.View.Parent != _platformToolbar)
 						_platformToolbar.AddView(_searchView.View);
 				}

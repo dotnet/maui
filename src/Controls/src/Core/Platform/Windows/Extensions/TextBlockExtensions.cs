@@ -10,6 +10,11 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class TextBlockExtensions
 	{
+		public static void UpdateLineBreakMode(this TextBlock textBlock, Label label)
+		{
+			textBlock.UpdateLineBreakMode(label.LineBreakMode);
+		}
+
 		public static void UpdateLineBreakMode(this TextBlock textBlock, LineBreakMode lineBreakMode)
 		{
 			if (textBlock == null)
@@ -79,6 +84,18 @@ namespace Microsoft.Maui.Controls.Platform
 			control.Inlines.Remove(inline);
 
 			return height;
+		}
+
+		public static void UpdateMaxLines(this TextBlock platformControl, Label label)
+		{
+			if (label.MaxLines >= 0)
+			{
+				platformControl.MaxLines = label.MaxLines;
+			}
+			else
+			{
+				platformControl.MaxLines = 0;
+			}
 		}
 	}
 

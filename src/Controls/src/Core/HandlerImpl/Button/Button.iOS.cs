@@ -25,5 +25,10 @@ namespace Microsoft.Maui.Controls
 		{
 			handler.PlatformView?.UpdateText(button);
 		}
+
+		public static void MapLineBreakMode(IButtonHandler handler, Button button)
+		{
+			handler.PlatformView?.UpdateLineBreakMode(button);
+		}
 	}
 }

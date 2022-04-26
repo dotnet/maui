@@ -1,3 +1,4 @@
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Applications;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
@@ -5,7 +6,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 	partial class PhoneDialerImplementation : IPhoneDialer
 	{
 		public bool IsSupported
-			=> Platform.GetFeatureInfo<bool>("contact");
+			=> PlatformUtils.GetFeatureInfo<bool>("contact");
 
 		public void Open(string number)
 		{

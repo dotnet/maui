@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Layouts
 			return size;
 		}
 
-		public static bool ShouldArrangeLeftToRight(this IView view) 
+		public static bool ShouldArrangeLeftToRight(this IView view)
 		{
 			var viewFlowDirection = view.GetEffectiveFlowDirection();
 
@@ -208,6 +208,6 @@ namespace Microsoft.Maui.Layouts
 			var layoutFlowDirection = LayoutHandler.GetLayoutFlowDirection(viewFlowDirection);
 
 			return layoutFlowDirection == FlowDirection.LeftToRight;
-		} 
+		}
 	}
 }

@@ -21,7 +21,7 @@
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='MapBackgroundColor']/Docs" />
-		public static void MapBackgroundColor(IViewHandler handler, View view)
+		public static void MapBackgroundColor(IViewHandler handler, IView view)
 		{
 			handler.UpdateValue(nameof(Background));
 		}

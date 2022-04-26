@@ -197,5 +197,19 @@ namespace Microsoft.Maui.Controls.Platform
 			// we may need to update the content layout
 			platformButton.UpdateContentLayout(button);
 		}
+
+		public static void UpdateLineBreakMode(this UIButton nativeButton, Button button)
+		{
+			nativeButton.TitleLabel.LineBreakMode = button.LineBreakMode switch
+			{
+				LineBreakMode.NoWrap => UILineBreakMode.Clip,
+				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
+				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
+				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
+				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+				_ => throw new ArgumentOutOfRangeException()
+			};
+		}
 	}
 }

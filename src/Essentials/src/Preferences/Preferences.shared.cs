@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Storage
 		T Get<T>(string key, T defaultValue, string? sharedName = null);
 	}
 
-/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Preferences']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Preferences']/Docs" />
 	public static class Preferences
 	{
 		// overloads
