@@ -4,6 +4,7 @@ using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -20,6 +21,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			return UIColor.FromPatternImage(image);
 		}
+
+		[Obsolete("Use the Color.ToPlatform extension method instead")]
+		public static UIColor ToUIColor(this Color color)
+		{
+			return color.ToPlatform();
+		}
+
+		[Obsolete("Use the Color.ToPlatform extension method instead")]
+		public static UIColor ToUIColor(this Color color, Color defaultColor)
+			=> color?.ToPlatform() ?? defaultColor?.ToUIColor();
+
+		[Obsolete("Use the Color.ToPlatform extension method instead")]
+		public static UIColor ToUIColor(this Color color, UIColor defaultColor)
+			=> color?.ToPlatform() ?? defaultColor;
 	}
 
 	public static class PointExtensions
