@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Graphics;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls
 {
