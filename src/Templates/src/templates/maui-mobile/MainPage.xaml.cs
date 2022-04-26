@@ -14,7 +14,7 @@ public partial class MainPage : ContentPage
 		count++;
 		CounterBtn.Text = $"Clicked {count} times";
 
-		SemanticScreenReader.Announce(CounterLabel.Text);
+		SemanticScreenReader.Announce(CounterBtn.Text);
 	}
 }
 
