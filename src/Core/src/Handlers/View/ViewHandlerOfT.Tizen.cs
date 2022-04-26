@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 
 		public IPlatformViewHandler? Parent { get; private set; }
 
-		public EvasObject? NativeParent => MauiContext?.GetNativeParent();
+		public EvasObject NativeParent => MauiContext?.GetNativeParent() ?? throw new InvalidOperationException($"NativeParent cannot be null here");
 
 		~ViewHandler()
 		{
@@ -42,9 +42,6 @@ namespace Microsoft.Maui.Handlers
 
 		public override void PlatformArrange(Rect frame)
 		{
-			if (NativeParent == null)
-				return;
-
 			var platformView = this.ToPlatform();
 
 			if (platformView == null)
@@ -63,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var platformView = base.PlatformView;
 
-			if (platformView == null || VirtualView == null || NativeParent == null)
+			if (platformView == null || VirtualView == null)
 			{
 				return VirtualView == null || double.IsNaN(VirtualView.Width) || double.IsNaN(VirtualView.Height) ? Size.Zero : new Size(VirtualView.Width, VirtualView.Height);
 			}
@@ -151,7 +148,7 @@ namespace Microsoft.Maui.Handlers
 			var parent = Parent?.PlatformView as IContainable<EvasObject>;
 			parent?.Children.Remove(PlatformView!);
 
-			ContainerView ??= new WrapperView(NativeParent!);
+			ContainerView ??= new WrapperView(NativeParent);
 			ContainerView.Show();
 			ContainerView.Content = PlatformView;
 
