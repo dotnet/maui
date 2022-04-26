@@ -52,7 +52,9 @@ dotnet workload install maui `
 
 2. Next run the following workload command:
 
-```
+Windows:
+
+```bat
 dotnet workload install maui `
   --from-rollback-file https://aka.ms/dotnet/maui/main.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-bd261ea4/nuget/v3/index.json `
@@ -61,8 +63,19 @@ dotnet workload install maui `
   --source https://api.nuget.org/v3/index.json
 ```
 
-#### Preview 14 branch
+MacOS:
 
+```bash
+dotnet workload install maui \
+  --from-rollback-file https://aka.ms/dotnet/maui/main.json \
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-bd261ea4/nuget/v3/index.json \
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-52e9452f-3/nuget/v3/index.json \
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json \
+  --source https://api.nuget.org/v3/index.json
+```
+
+
+#### Preview 14 branch
 
 Windows:
 
@@ -77,7 +90,6 @@ MacOS:
 curl -O -L https://aka.ms/dotnet/maui/maui-install.ps1
 sudo pwsh -File ./maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
 ```
-
 
 > NOTE: the branch (`-b 'release/6.0.2xx-preview14'`) and version (`-v 6.0.200-preview`) parameters. The "preview 14" branch currently requires the 6.0.200 SDK band since the manifests are all in that SDK band - this will change in the future
 

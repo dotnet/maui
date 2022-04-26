@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Handlers
 		protected override BorderView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
 
 			var view = new BorderView(NativeParent, VirtualView)
 			{
