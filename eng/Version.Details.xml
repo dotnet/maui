@@ -75,17 +75,17 @@
       <Uri>https://github.com/dotnet/Microsoft.Maui.Graphics</Uri>
       <Sha>f48344c8329af0657c917068ca20a9741bd0766b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="1.0.0-prerelease.22225.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="1.0.0-prerelease.22226.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>98379b8f3518505f39fc58117e958cb95cf3f10e</Sha>
+      <Sha>ac63991509124095b9e116852aa9394b1a307426</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.22225.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.22226.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>98379b8f3518505f39fc58117e958cb95cf3f10e</Sha>
+      <Sha>ac63991509124095b9e116852aa9394b1a307426</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="1.0.0-prerelease.22225.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="1.0.0-prerelease.22226.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>98379b8f3518505f39fc58117e958cb95cf3f10e</Sha>
+      <Sha>ac63991509124095b9e116852aa9394b1a307426</Sha>
     </Dependency>
   </ProductDependencies>
 </Dependencies>
