@@ -73,11 +73,6 @@ namespace Microsoft.Maui.Platform
 				(int)padding.Bottom);
 		}
 
-		public static void UpdateLineBreakMode(this Button nativeControl, ILineBreakMode button)
-		{
-			nativeControl.SetLineBreakMode(button);
-		}
-
 		internal static void UpdateBorderDrawable(this MaterialButton platformView, IButton button)
 		{
 			var background = button.Background;
