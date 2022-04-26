@@ -1,9 +1,18 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
 	public partial class RoundRectangle : IShape
 	{
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == CornerRadiusProperty.PropertyName)
+				Handler?.UpdateValue(nameof(IShapeView.Shape));
+		}
+
 		public override PathF GetPath()
 		{
 			var path = new PathF();

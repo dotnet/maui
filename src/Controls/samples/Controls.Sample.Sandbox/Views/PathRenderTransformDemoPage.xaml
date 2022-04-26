@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ShapesDemos.Views.PathRenderTransformDemoPage"
+             Title="Path render transform demos">
+    <ContentPage.Resources>
+
+        <Style x:Key="HeaderStyle"
+               TargetType="Label">
+            <Setter Property="FontSize"
+                    Value="14" />
+            <Setter Property="Margin"
+                    Value="6,12,0,0" />
+        </Style>
+
+        <Style x:Key="ValueStyle"
+               TargetType="Label">
+            <Setter Property="FontSize"
+                    Value="10" />
+            <Setter Property="Margin"
+                    Value="12,0" />
+        </Style>
+
+        <Style TargetType="Slider">
+            <Setter Property="ThumbColor"
+                    Value="Black" />
+            <Setter Property="MinimumTrackColor"
+                    Value="LightGray" />
+            <Setter Property="MaximumTrackColor"
+                    Value="Gray" />
+        </Style>
+
+    </ContentPage.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid BackgroundColor="#E5E5E5"
+              HeightRequest="200"
+              WidthRequest="200"
+              HorizontalOptions="Center">
+            <Path Stroke="Black"                  
+                  Aspect="Uniform"
+                  HorizontalOptions="Center"
+                  HeightRequest="100"
+                  WidthRequest="100"
+                  Data="M13.908992,16.207977L32.000049,16.207977 32.000049,31.999985 13.908992,30.109983z M0,16.207977L11.904009,16.207977 11.904009,29.900984 0,28.657984z M11.904036,2.0979624L11.904036,14.202982 2.7656555E-05,14.202982 2.7656555E-05,3.3409645z M32.000058,0L32.000058,14.203001 13.909059,14.203001 13.909059,1.8890382z">
+                <Path.RenderTransform>
+                    <TransformGroup>
+                        <RotateTransform Angle="{Binding Source={x:Reference rotation}, Path=Value}"
+                                         CenterX="{Binding Source={x:Reference centerX}, Path=Value}"
+                                         CenterY="{Binding Source={x:Reference centerY}, Path=Value}" />
+                        <ScaleTransform ScaleX="{Binding Source={x:Reference scaleX}, Path=Value}"
+                                        ScaleY="{Binding Source={x:Reference scaleY}, Path=Value}"
+                                        CenterX="{Binding Source={x:Reference centerX}, Path=Value}"
+                                        CenterY="{Binding Source={x:Reference centerY}, Path=Value}" />
+                        <SkewTransform AngleX="{Binding Source={x:Reference skewX}, Path=Value}"
+                                       AngleY="{Binding Source={x:Reference skewY}, Path=Value}"
+                                       CenterX="{Binding Source={x:Reference centerX}, Path=Value}"
+                                       CenterY="{Binding Source={x:Reference centerY}, Path=Value}" />
+                        <TranslateTransform X="{Binding Source={x:Reference translateX}, Path=Value}"
+                                            Y="{Binding Source={x:Reference translateY}, Path=Value}" />
+                    </TransformGroup>
+                </Path.RenderTransform>
+            </Path>
+        </Grid>
+        <ScrollView Grid.Row="1">
+            <StackLayout>
+                <Label Text="RotateTransform"
+                       Style="{StaticResource HeaderStyle}" />
+                <Label Text="{Binding Source={x:Reference rotation}, Path=Value, StringFormat='Rotation: {0:F0}'}"
+                       Style="{StaticResource ValueStyle}" />
+                <Slider x:Name="rotation"
+                        Minimum="0"
+                        Maximum="360" />
+                <Label Text="{Binding Source={x:Reference centerX}, Path=Value, StringFormat='CenterX: {0:F0}'}"
+                       Style="{StaticResource ValueStyle}" />
+                <Slider x:Name="centerX"
+                        Minimum="0"
+                        Maximum="360" />
+                <Label Text="{Binding Source={x:Reference centerY}, Path=Value, StringFormat='CenterY: {0:F0}'}"
+                       Style="{StaticResource ValueStyle}" />
+                <Slider x:Name="centerY"
+                        Minimum="0"
+                        Maximum="360" />
+
+                <Label Text="ScaleTransform"
+                       Style="{StaticResource HeaderStyle}" />
+                <Label Text="{Binding Source={x:Reference scaleX}, Path=Value, StringFormat='ScaleX: {0:F2}'}"
+                       Style="{StaticResource ValueStyle}" />
+                <Slider x:Name="scaleX"
+                        Minimum="0.5"
+                        Maximum="2"
+                        Value="1" />
+                <Label Text="{Binding Source={x:Reference scaleY}, Path=Value, StringFormat='ScaleY: {0:F2}'}"
+                       Style="{StaticResource ValueStyle}" />
+                <Slider x:Name="scaleY"
+                        Minimum="0.5"
+                        Maximum="2"
+                        Value="1" />
+
+                <Label Text="SkewTransform"
+                       Style="{StaticResource HeaderStyle}" />
+                <Label Text="{Binding Source={x:Reference skewX}, Path=Value, StringFormat='SkewX: {0:F0}'}"
+                       Style="{StaticResource ValueStyle}" />
+                <Slider x:Name="skewX"
+                        Minimum="0"
+                        Maximum="100" />
+                <Label Text="{Binding Source={x:Reference skewY}, Path=Value, StringFormat='SkewY: {0:F0}'}"
+                       Style="{StaticResource ValueStyle}" />
+                <Slider x:Name="skewY"
+                        Minimum="0"
+                        Maximum="100" />
+
+                <Label Text="TranslateTransform"
+                       Style="{StaticResource HeaderStyle}" />
+                <Label Text="{Binding Source={x:Reference translateX}, Path=Value, StringFormat='X: {0:F0}'}"
+                       Style="{StaticResource ValueStyle}" />
+                <Slider x:Name="translateX"
+                        Minimum="0"
+                        Maximum="200" />
+                <Label Text="{Binding Source={x:Reference translateY}, Path=Value, StringFormat='Y: {0:F0}'}"
+                       Style="{StaticResource ValueStyle}" />
+                <Slider x:Name="translateY"
+                        Minimum="0"
+                        Maximum="200" />
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+
+</ContentPage>

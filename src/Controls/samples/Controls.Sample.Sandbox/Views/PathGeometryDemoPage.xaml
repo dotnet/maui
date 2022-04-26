@@ -1,0 +1,343 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ShapesDemos.Views.PathGeometryDemoPage"
+             Title="Path geometry demos">
+    <ScrollView>
+        <StackLayout Margin="20">
+            <Label Text="EllipseGeometry" />
+            <Path Fill="Blue"
+                  Stroke="Red">
+                <Path.Data>
+                    <EllipseGeometry Center="50,50"
+                                 RadiusX="50"
+                                 RadiusY="50" />
+                </Path.Data>
+            </Path>
+            <Label Text="LineGeometry" />
+            <Path Stroke="Black">
+                <Path.Data>
+                    <LineGeometry StartPoint="10,20"
+                              EndPoint="100,130" />
+                </Path.Data>
+            </Path>
+            <Label Text="RectangleGeometry" />
+            <Path Fill="Blue"
+                  Stroke="Red">
+                <Path.Data>
+                    <RectangleGeometry Rect="10,10,150,100" />
+                </Path.Data>
+            </Path>
+            <Label Text="RoundRectangleGeometry" />
+            <Path Fill="Blue"
+                  Stroke="Red">
+                <Path.Data>
+                    <RoundRectangleGeometry CornerRadius="5"
+                                            Rect="10,10,150,100" />
+                </Path.Data>
+            </Path>
+            <Label Text="PathGeometry with an ArcSegment" />
+            <Path Stroke="Black">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathGeometry.Figures>
+                            <PathFigureCollection>
+                                <PathFigure StartPoint="10,10">
+                                    <PathFigure.Segments>
+                                        <PathSegmentCollection>
+                                            <ArcSegment Size="100,50"
+                                                        RotationAngle="45"
+                                                        IsLargeArc="True"
+                                                        SweepDirection="CounterClockwise"
+                                                        Point="200,100" />
+                                        </PathSegmentCollection>
+                                    </PathFigure.Segments>
+                                </PathFigure>
+                            </PathFigureCollection>
+                        </PathGeometry.Figures>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+            <Label Text="PathGeometry with a BezierSegment" />
+            <Path Stroke="Black">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathGeometry.Figures>
+                            <PathFigureCollection>
+                                <PathFigure StartPoint="10,10">
+                                    <PathFigure.Segments>
+                                        <PathSegmentCollection>
+                                            <BezierSegment Point1="100,0"
+                                                           Point2="200,200"
+                                                           Point3="300,10" />
+                                        </PathSegmentCollection>
+                                    </PathFigure.Segments>
+                                </PathFigure>
+                            </PathFigureCollection>
+                        </PathGeometry.Figures>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+            <Label Text="PathGeometry with LineSegments" />
+            <Path Stroke="Black"
+                  Aspect="Uniform"
+                  HorizontalOptions="Start">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathGeometry.Figures>
+                            <PathFigureCollection>
+                                <PathFigure IsClosed="True"
+                                            StartPoint="10,100">
+                                    <PathFigure.Segments>
+                                        <PathSegmentCollection>
+                                            <LineSegment Point="100,100" />
+                                            <LineSegment Point="100,50" />
+                                        </PathSegmentCollection>
+                                    </PathFigure.Segments>
+                                </PathFigure>
+                            </PathFigureCollection>
+                        </PathGeometry.Figures>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+            <Label Text="PathGeometry with LineSegments" />
+            <Path Stroke="Maroon"
+                  StrokeThickness="3"
+                  Fill="Aqua"
+                  Aspect="Uniform"
+                  HorizontalOptions="Start">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathFigure StartPoint="144,72">
+                            <LineSegment Point="200,246" />
+                            <LineSegment Point="53,138" />
+                            <LineSegment Point="235,138" />
+                            <LineSegment Point="88,246" />
+                            <LineSegment Point="144,72" />
+                        </PathFigure>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+            <Label Text="PathGeometry with a PolyBezierSegment" />
+            <Path Stroke="Black">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathGeometry.Figures>
+                            <PathFigureCollection>
+                                <PathFigure StartPoint="10,10">
+                                    <PathFigure.Segments>
+                                        <PathSegmentCollection>
+                                            <PolyBezierSegment Points="0,0 100,0 150,100 150,0 200,0 300,10" />
+                                        </PathSegmentCollection>
+                                    </PathFigure.Segments>
+                                </PathFigure>
+                            </PathFigureCollection>
+                        </PathGeometry.Figures>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+            <Label Text="PathGeometry with a PolyLineSegment" />
+            <Path Stroke="Black">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathGeometry.Figures>
+                            <PathFigure StartPoint="10,10">
+                                <PathFigure.Segments>
+                                    <PolyLineSegment Points="50,10 50,50" />
+                                </PathFigure.Segments>
+                            </PathFigure>
+                        </PathGeometry.Figures>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+            <Label Text="PathGeometry with a PolyQuadraticBezierSegment" />
+            <Path Stroke="Black">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathGeometry.Figures>
+                            <PathFigureCollection>
+                                <PathFigure StartPoint="10,10">
+                                    <PathFigure.Segments>
+                                        <PathSegmentCollection>
+                                            <PolyQuadraticBezierSegment Points="100,100 150,50 0,100 15,200" />
+                                        </PathSegmentCollection>
+                                    </PathFigure.Segments>
+                                </PathFigure>
+                            </PathFigureCollection>
+                        </PathGeometry.Figures>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+            <Label Text="PathGeometry with a QuadraticBezierSegment" />
+            <Path Stroke="Black">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathGeometry.Figures>
+                            <PathFigureCollection>
+                                <PathFigure StartPoint="10,10">
+                                    <PathFigure.Segments>
+                                        <PathSegmentCollection>
+                                            <QuadraticBezierSegment Point1="200,200"
+                                                                    Point2="300,10" />
+                                        </PathSegmentCollection>
+                                    </PathFigure.Segments>
+                                </PathFigure>
+                            </PathFigureCollection>
+                        </PathGeometry.Figures>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+            <Label Text="Multiple PathFigures" />
+            <Path Stroke="Red"
+                  StrokeThickness="12"
+                  StrokeLineJoin="Round"
+                  TranslationY="20">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathFigure StartPoint="0,0">
+                            <LineSegment Point="0,100" />
+                        </PathFigure>
+                        <PathFigure StartPoint="0,50">
+                            <LineSegment Point="50,50" />
+                        </PathFigure>
+                        <PathFigure StartPoint="50,0">
+                            <LineSegment Point="50,100" />
+                        </PathFigure>
+
+                        <PathFigure StartPoint="125, 0">
+                            <BezierSegment Point1="60, -10"
+                                           Point2="60, 60"
+                                           Point3="125, 50" />
+                            <BezierSegment Point1="60, 40"
+                                           Point2="60, 110"
+                                           Point3="125, 100" />
+                        </PathFigure>
+
+                        <PathFigure StartPoint="150, 0">
+                            <LineSegment Point="150, 100" />
+                            <LineSegment Point="200, 100" />
+                        </PathFigure>
+
+                        <PathFigure StartPoint="225, 0">
+                            <LineSegment Point="225, 100" />
+                            <LineSegment Point="275, 100" />
+                        </PathFigure>
+
+                        <PathFigure StartPoint="300, 50">
+                            <ArcSegment Size="25, 50"
+                                        Point="300, 49.9"
+                                        IsLargeArc="True" />
+                        </PathFigure>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+            <Label Text="GeometryGroup" />
+            <Path Stroke="Black"
+                  Fill="#CCCCFF"
+                  Aspect="Uniform"
+                  HorizontalOptions="Start">
+                <Path.Data>
+                    <!-- FillRule doesn't need to be set, because EvenOdd is the default. -->
+                    <GeometryGroup>
+                        <EllipseGeometry RadiusX="50"
+                                         RadiusY="50"
+                                         Center="75,75" />
+                        <EllipseGeometry RadiusX="70"
+                                         RadiusY="70"
+                                         Center="75,75" />
+                        <EllipseGeometry RadiusX="100"
+                                         RadiusY="100"
+                                         Center="75,75" />
+                        <EllipseGeometry RadiusX="120"
+                                         RadiusY="120"
+                                         Center="75,75" />
+                    </GeometryGroup>
+                </Path.Data>
+            </Path>
+            <Label Text="GeometryGroup" />
+            <Path Stroke="Black"                  
+                  Fill="#CCCCFF"
+                  TranslationY="-30"
+                  HorizontalOptions="Start">
+                <Path.Data>
+                    <GeometryGroup FillRule="Nonzero">
+                        <PathGeometry>
+                            <PathGeometry.Figures>
+
+                                <!-- Inner ring -->
+                                <PathFigure StartPoint="120,120">
+                                    <PathFigure.Segments>
+                                        <PathSegmentCollection>
+                                            <ArcSegment Size="50,50"
+                                                        IsLargeArc="True"
+                                                        SweepDirection="CounterClockwise"
+                                                        Point="140,120" />
+                                        </PathSegmentCollection>
+                                    </PathFigure.Segments>
+                                </PathFigure>
+
+                                <!-- Second ring -->
+                                <PathFigure StartPoint="120,100">
+                                    <PathFigure.Segments>
+                                        <PathSegmentCollection>
+                                            <ArcSegment Size="70,70"
+                                                        IsLargeArc="True"
+                                                        SweepDirection="CounterClockwise"
+                                                        Point="140,100" />
+                                        </PathSegmentCollection>
+                                    </PathFigure.Segments>
+                                </PathFigure>
+
+                                <!-- Third ring  -->
+                                <PathFigure StartPoint="120,70">
+                                    <PathFigure.Segments>
+                                        <PathSegmentCollection>
+                                            <ArcSegment Size="100,100"
+                                                        IsLargeArc="True"
+                                                        SweepDirection="CounterClockwise"
+                                                        Point="140,70" />
+                                        </PathSegmentCollection>
+                                    </PathFigure.Segments>
+                                </PathFigure>
+
+                                <!-- Outer ring -->
+                                <PathFigure StartPoint="120,300">
+                                    <PathFigure.Segments>
+                                        <ArcSegment Size="130,130"
+                                                    IsLargeArc="True"
+                                                    SweepDirection="Clockwise"
+                                                    Point="140,300" />
+                                    </PathFigure.Segments>
+                                </PathFigure>
+                            </PathGeometry.Figures>
+                        </PathGeometry>
+                    </GeometryGroup>
+                </Path.Data>
+            </Path>
+            <Label Text="GeometryGroup" />
+            <Path Stroke="Green"
+                  StrokeThickness="2"
+                  Fill="Orange"
+                  Aspect="Uniform"
+                  HorizontalOptions="Start">
+                <Path.Data>
+                    <!-- FillRule doesn't need to be set, because EvenOdd is the default. -->
+                    <GeometryGroup>
+                        <EllipseGeometry RadiusX="100"
+                                         RadiusY="100"
+                                         Center="150,150" />
+                        <EllipseGeometry RadiusX="100"
+                                         RadiusY="100"
+                                         Center="250,150" />
+                        <EllipseGeometry RadiusX="100"
+                                         RadiusY="100"
+                                         Center="150,250" />
+                        <EllipseGeometry RadiusX="100"
+                                         RadiusY="100"
+                                         Center="250,250" />
+                    </GeometryGroup>
+                </Path.Data>
+            </Path>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

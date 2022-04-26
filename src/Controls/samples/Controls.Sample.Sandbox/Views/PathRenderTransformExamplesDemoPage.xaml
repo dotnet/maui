@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ShapesDemos.Views.PathRenderTransformExamplesDemoPage"
+             Title="Path render transform examples">
+    <ScrollView>
+        <StackLayout Margin="20">
+            <Label Text="Path with RotateTransform" />
+            <Path Stroke="Black"
+                  Aspect="Uniform"
+                  HorizontalOptions="Center"
+                  HeightRequest="100"
+                  WidthRequest="100"
+                  Data="M13.908992,16.207977L32.000049,16.207977 32.000049,31.999985 13.908992,30.109983z M0,16.207977L11.904009,16.207977 11.904009,29.900984 0,28.657984z M11.904036,2.0979624L11.904036,14.202982 2.7656555E-05,14.202982 2.7656555E-05,3.3409645z M32.000058,0L32.000058,14.203001 13.909059,14.203001 13.909059,1.8890382z">
+                <Path.RenderTransform>
+                    <RotateTransform CenterX="0"
+                                     CenterY="0"
+                                     Angle="45" />
+                </Path.RenderTransform>
+            </Path>
+            <Label Text="Path with ScaleTransform"
+                   Margin="0,50,0,0"/>
+            <Path Stroke="Black"
+                  Aspect="Uniform"
+                  HorizontalOptions="Center"
+                  HeightRequest="100"
+                  WidthRequest="100"
+                  Data="M13.908992,16.207977L32.000049,16.207977 32.000049,31.999985 13.908992,30.109983z M0,16.207977L11.904009,16.207977 11.904009,29.900984 0,28.657984z M11.904036,2.0979624L11.904036,14.202982 2.7656555E-05,14.202982 2.7656555E-05,3.3409645z M32.000058,0L32.000058,14.203001 13.909059,14.203001 13.909059,1.8890382z">
+                <Path.RenderTransform>
+                    <ScaleTransform CenterX="0"
+                                    CenterY="0"
+                                    ScaleX="1.5"
+                                    ScaleY="1.5" />
+                </Path.RenderTransform>
+            </Path>
+            <Label Text="Path with SkewTransform"
+                   Margin="0,50,0,0" />
+            <Path Stroke="Black"
+                  Aspect="Uniform"
+                  HorizontalOptions="Center"
+                  HeightRequest="100"
+                  WidthRequest="100"
+                  Data="M13.908992,16.207977L32.000049,16.207977 32.000049,31.999985 13.908992,30.109983z M0,16.207977L11.904009,16.207977 11.904009,29.900984 0,28.657984z M11.904036,2.0979624L11.904036,14.202982 2.7656555E-05,14.202982 2.7656555E-05,3.3409645z M32.000058,0L32.000058,14.203001 13.909059,14.203001 13.909059,1.8890382z">
+                <Path.RenderTransform>
+                    <SkewTransform CenterX="0"
+                                   CenterY="0"
+                                   AngleX="45"
+                                   AngleY="0" />
+                </Path.RenderTransform>
+            </Path>
+            <Label Text="Path with TranslateTransform" />
+            <Path Stroke="Black"
+                  Aspect="Uniform"
+                  HorizontalOptions="Center"
+                  HeightRequest="100"
+                  WidthRequest="100"
+                  Data="M13.908992,16.207977L32.000049,16.207977 32.000049,31.999985 13.908992,30.109983z M0,16.207977L11.904009,16.207977 11.904009,29.900984 0,28.657984z M11.904036,2.0979624L11.904036,14.202982 2.7656555E-05,14.202982 2.7656555E-05,3.3409645z M32.000058,0L32.000058,14.203001 13.909059,14.203001 13.909059,1.8890382z">
+                <Path.RenderTransform>
+                    <TranslateTransform X="50"
+                                        Y="50" />
+                </Path.RenderTransform>
+            </Path>
+            <Label Text="Path with TransformGroup" />
+            <Path Stroke="Black"
+                  Aspect="Uniform"
+                  HorizontalOptions="Center"
+                  HeightRequest="100"
+                  WidthRequest="100"
+                  Data="M13.908992,16.207977L32.000049,16.207977 32.000049,31.999985 13.908992,30.109983z M0,16.207977L11.904009,16.207977 11.904009,29.900984 0,28.657984z M11.904036,2.0979624L11.904036,14.202982 2.7656555E-05,14.202982 2.7656555E-05,3.3409645z M32.000058,0L32.000058,14.203001 13.909059,14.203001 13.909059,1.8890382z">
+                <Path.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform ScaleX="1.5"
+                                        ScaleY="1.5" />
+                        <RotateTransform Angle="45" />
+                    </TransformGroup>
+                </Path.RenderTransform>
+            </Path>
+            <Label Text="Path with CompositeTransform"
+                   Margin="0,110,0,0"/>
+            <Path Stroke="Black"
+                  Aspect="Uniform"
+                  HorizontalOptions="Center"
+                  HeightRequest="100"
+                  WidthRequest="100"
+                  Data="M13.908992,16.207977L32.000049,16.207977 32.000049,31.999985 13.908992,30.109983z M0,16.207977L11.904009,16.207977 11.904009,29.900984 0,28.657984z M11.904036,2.0979624L11.904036,14.202982 2.7656555E-05,14.202982 2.7656555E-05,3.3409645z M32.000058,0L32.000058,14.203001 13.909059,14.203001 13.909059,1.8890382z">
+                <Path.RenderTransform>
+                    <CompositeTransform ScaleX="1.5"
+                                        ScaleY="1.5"
+                                        Rotation="45"
+                                        TranslateX="50"
+                                        TranslateY="50" />
+                </Path.RenderTransform>
+            </Path>
+            <Label Text="Path with MatrixTransform"
+                   Margin="0,110,0,0"/>
+            <Path Stroke="Black"
+                  Aspect="Uniform"
+                  HorizontalOptions="Center"
+                  HeightRequest="100"
+                  WidthRequest="100"
+                  Data="M13.908992,16.207977L32.000049,16.207977 32.000049,31.999985 13.908992,30.109983z M0,16.207977L11.904009,16.207977 11.904009,29.900984 0,28.657984z M11.904036,2.0979624L11.904036,14.202982 2.7656555E-05,14.202982 2.7656555E-05,3.3409645z M32.000058,0L32.000058,14.203001 13.909059,14.203001 13.909059,1.8890382z">
+                <Path.RenderTransform>
+                    <MatrixTransform>
+                        <MatrixTransform.Matrix>
+                            <!-- M11 stretches, M12 skews -->
+                            <Matrix OffsetX="10"
+                                    OffsetY="100"
+                                    M11="1.5"
+                                    M12="1" />
+                        </MatrixTransform.Matrix>
+                    </MatrixTransform>
+                </Path.RenderTransform>
+            </Path>
+            <Label Text="Path with MatrixTransform via converter"
+                   Margin="0,110,0,0"/>
+            <!-- Perform a MatrixTransform with the Matrix specified as a string
+                 value to the RenderTransform property. -->
+            <Path Stroke="Black"                  
+                  Aspect="Uniform"
+                  HorizontalOptions="Center"
+                  HeightRequest="100"
+                  WidthRequest="100"
+                  RenderTransform="1.5,1,0,1,10,100"
+                  Data="M13.908992,16.207977L32.000049,16.207977 32.000049,31.999985 13.908992,30.109983z M0,16.207977L11.904009,16.207977 11.904009,29.900984 0,28.657984z M11.904036,2.0979624L11.904036,14.202982 2.7656555E-05,14.202982 2.7656555E-05,3.3409645z M32.000058,0L32.000058,14.203001 13.909059,14.203001 13.909059,1.8890382z" />
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

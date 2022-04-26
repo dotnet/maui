@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
@@ -8,16 +7,11 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.Content;
-using AndroidX.Core.View;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Media;
 using Microsoft.Maui.Primitives;
 using AColor = Android.Graphics.Color;
 using ALayoutDirection = Android.Views.LayoutDirection;
-using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
 using GL = Android.Opengl;
 
@@ -186,6 +180,7 @@ namespace Microsoft.Maui.Platform
 					platformView.Background = null;
 					mauiDrawable.Dispose();
 				}
+
 				if (paint is SolidPaint solidPaint)
 				{
 					if (solidPaint.Color is Color backgroundColor)
@@ -309,6 +304,7 @@ namespace Microsoft.Maui.Platform
 		internal static Rect GetPlatformViewBounds(this IView view)
 		{
 			var platformView = view?.ToPlatform();
+			
 			if (platformView?.Context == null)
 			{
 				return new Rect();
