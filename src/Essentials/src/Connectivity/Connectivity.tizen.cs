@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Network.Connection;
 
 namespace Microsoft.Maui.Networking
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Networking
 						break;
 				}
 			}
-			Connectivity.OnConnectivityChanged();
+			OnConnectivityChanged();
 		}
 
 		public NetworkAccess NetworkAccess

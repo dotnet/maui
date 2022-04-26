@@ -1,8 +1,9 @@
 ﻿using System.Collections;
-using Xamarin.Forms.Platform.Tizen.Native;
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.TV
 {
+	[System.Obsolete]
 	public class FlyoutItemTemplateAdaptor : ItemTemplateAdaptor
 	{
 		public FlyoutItemTemplateAdaptor(Element itemsView, IEnumerable items, DataTemplate template, bool hasHeader)

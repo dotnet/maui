@@ -1,12 +1,13 @@
 using System.Collections.Specialized;
 using System.Linq;
 
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
-
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.ItemsView;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ItemsView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class ItemsViewRenderer<TItemsView, TNative> : ViewRenderer<TItemsView, TNative>
 		where TItemsView : ItemsView
 		where TNative : Native.CollectionView
@@ -86,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void OnLayoutPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == nameof(Microsoft.Maui.Controls.Compatibility.ItemsLayout.SnapPointsType))
+			if (e.PropertyName == nameof(Microsoft.Maui.Controls.ItemsLayout.SnapPointsType))
 			{
 				Control.SnapPointsType = (sender as ItemsLayout)?.SnapPointsType ?? SnapPointsType.None;
 			}

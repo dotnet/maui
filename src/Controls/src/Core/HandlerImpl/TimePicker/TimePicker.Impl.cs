@@ -2,6 +2,6 @@
 {
 	public partial class TimePicker : ITimePicker
 	{
-		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
+		Font ITextStyle.Font => this.ToFont();
 	}
 }

@@ -44,9 +44,23 @@ namespace Microsoft.Maui.Controls.Handlers
 		ShellSection? _shellSection;
 		public override void SetVirtualView(Maui.IElement view)
 		{
-			if(_shellSection != null)
+			if (_shellSection != null)
 			{
 				((IShellSectionController)_shellSection).NavigationRequested -= OnNavigationRequested;
+			}
+
+			// If we've already connected to the navigation manager
+			// then we need to make sure to disconnect and connect up to 
+			// the new incoming virtual view
+			if (_navigationManager?.NavigationView != null &&
+				_navigationManager.NavigationView != view)
+			{
+				_navigationManager.Disconnect(_navigationManager.NavigationView, PlatformView);
+
+				if (view is IStackNavigation stackNavigation)
+				{
+					_navigationManager.Connect(stackNavigation, PlatformView);
+				}
 			}
 
 			base.SetVirtualView(view);

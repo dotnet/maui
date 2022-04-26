@@ -1,6 +1,6 @@
-﻿using UIKit;
-using Microsoft.Maui.Controls.Internals;
+﻿using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {

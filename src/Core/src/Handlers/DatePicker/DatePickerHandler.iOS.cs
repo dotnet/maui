@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateTextColor(datePicker);
 		}
-    
+
 		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateFlowDirection(datePicker);

@@ -1,4 +1,5 @@
 using System;
+using TDisplayResolutionUnit = Tizen.UIExtensions.Common.DisplayResolutionUnit;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -49,5 +50,35 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public bool UseVP { get; private set; }
 
 		public double ViewportWidth { get; private set; } = -1;
+	}
+
+	public static class DisplayResolutionUnitConverter
+	{
+		public static DisplayResolutionUnit ToCompatibility(this TDisplayResolutionUnit unit, double width = 0) => unit switch
+		{
+			TDisplayResolutionUnit.DP => DisplayResolutionUnit.DP(),
+			TDisplayResolutionUnit.DeviceScaledDP => DisplayResolutionUnit.DP(true),
+			TDisplayResolutionUnit.Pixel => DisplayResolutionUnit.Pixel(),
+			TDisplayResolutionUnit.DeviceScaledPixel => DisplayResolutionUnit.Pixel(true),
+			TDisplayResolutionUnit.VP => DisplayResolutionUnit.VP(width),
+			_ => DisplayResolutionUnit.DP(),
+		};
+
+		public static TDisplayResolutionUnit ToDeviceInfo(this DisplayResolutionUnit unit)
+		{
+			if (unit.UseDP)
+			{
+				return unit.UseDeviceScale ? TDisplayResolutionUnit.DeviceScaledDP : TDisplayResolutionUnit.DP;
+			}
+			else if (unit.UseVP)
+			{
+				Tizen.UIExtensions.Common.DeviceInfo.ViewPortWidth = unit.ViewportWidth;
+				return TDisplayResolutionUnit.VP;
+			}
+			else
+			{
+				return unit.UseDeviceScale ? TDisplayResolutionUnit.DeviceScaledPixel : TDisplayResolutionUnit.Pixel;
+			}
+		}
 	}
 }

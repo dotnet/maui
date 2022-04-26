@@ -1,11 +1,13 @@
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using EColor = ElmSharp.Color;
 using EProgressBar = ElmSharp.ProgressBar;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.ProgressBar;
-using SpecificVE = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.VisualElement;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ProgressBar;
+using SpecificVE = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.VisualElement;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, EProgressBar>
 	{
 		static readonly EColor s_defaultColor = ThemeConstants.ProgressBar.ColorClass.Default;
@@ -70,10 +72,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void UpdateProgressColor(bool initialize)
 		{
-			if (initialize && Element.ProgressColor.IsDefault)
+			if (initialize && Element.ProgressColor.IsDefault())
 				return;
 
-			Control.Color = Element.ProgressColor == Color.Default ? s_defaultColor : Element.ProgressColor.ToPlatform();
+			Control.Color = Element.ProgressColor.IsDefault() ? s_defaultColor : Element.ProgressColor.ToPlatformEFL();
 		}
 
 		void UpdateProgress()

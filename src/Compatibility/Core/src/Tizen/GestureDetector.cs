@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Devices;
 using ElmSharp;
 using EGestureType = ElmSharp.GestureLayer.GestureType;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	internal class GestureDetector
 	{
 		readonly IDictionary<EGestureType, List<GestureHandler>> _handlerCache;

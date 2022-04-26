@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Picker : IPicker
 	{
-		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
+		Font ITextStyle.Font => this.ToFont();
 
 		IList<string> IPicker.Items => Items;
 

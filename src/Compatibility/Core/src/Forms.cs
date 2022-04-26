@@ -1,4 +1,4 @@
-﻿#if !(__ANDROID__ || __IOS__ || WINDOWS)
+﻿#if !(__ANDROID__ || __IOS__ || WINDOWS || TIZEN)
 using System;
 using System.Collections.Generic;
 using System.Text;

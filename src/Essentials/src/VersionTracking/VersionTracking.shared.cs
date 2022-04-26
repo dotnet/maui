@@ -123,7 +123,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		string LastInstalledVersion => versionTrail[versionsKey]?.LastOrDefault() ?? string.Empty;
 
-        string LastInstalledBuild => versionTrail[buildsKey]?.LastOrDefault() ?? string.Empty;
+		string LastInstalledBuild => versionTrail[buildsKey]?.LastOrDefault() ?? string.Empty;
 
 		public VersionTrackingImplementation(IPreferences preferences, IAppInfo appInfo)
 		{
@@ -142,12 +142,12 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		/// <summary>
-        /// Initialize VersionTracking module, load data and track current version
-        /// </summary>
-        /// <remarks>
-        /// For internal use. Usually only called once in production code, but multiple times in unit tests
-        /// </remarks>
-        internal void InitVersionTracking()
+		/// Initialize VersionTracking module, load data and track current version
+		/// </summary>
+		/// <remarks>
+		/// For internal use. Usually only called once in production code, but multiple times in unit tests
+		/// </remarks>
+		internal void InitVersionTracking()
 		{
 			IsFirstLaunchEver = !preferences.ContainsKey(versionsKey, sharedName) || !preferences.ContainsKey(buildsKey, sharedName);
 			if (IsFirstLaunchEver)
@@ -171,7 +171,7 @@ namespace Microsoft.Maui.ApplicationModel
 			if (IsFirstLaunchForCurrentVersion)
 			{
 				// Avoid duplicates and move current version to end of list if already present
-                versionTrail[versionsKey].RemoveAll(v => v == CurrentVersion);
+				versionTrail[versionsKey].RemoveAll(v => v == CurrentVersion);
 				versionTrail[versionsKey].Add(CurrentVersion);
 			}
 
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.ApplicationModel
 			if (IsFirstLaunchForCurrentBuild)
 			{
 				// Avoid duplicates and move current build to end of list if already present
-                versionTrail[buildsKey].RemoveAll(b => b == CurrentBuild);
+				versionTrail[buildsKey].RemoveAll(b => b == CurrentBuild);
 				versionTrail[buildsKey].Add(CurrentBuild);
 			}
 

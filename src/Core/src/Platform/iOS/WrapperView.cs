@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		void DisposeClip()
-		{			
+		{
 			MaskLayer = null;
 		}
 
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		void DisposeShadow()
-		{	
+		{
 			ShadowLayer = null;
 		}
 
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Platform
 
 			if (BorderView == null)
 			{
-				AddSubview(BorderView = new UIView(Bounds) { UserInteractionEnabled = false});
+				AddSubview(BorderView = new UIView(Bounds) { UserInteractionEnabled = false });
 			}
 
 			BorderView.UpdateMauiCALayer(Border);

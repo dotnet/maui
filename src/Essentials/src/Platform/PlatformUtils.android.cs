@@ -1,6 +1,7 @@
 using System;
 using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.OS;
 
 namespace Microsoft.Maui.ApplicationModel
@@ -35,11 +36,21 @@ namespace Microsoft.Maui.ApplicationModel
 			return false;
 		}
 
-		internal static bool IsIntentSupported(Intent intent) =>
-			intent.ResolveActivity(Application.Context.PackageManager) != null;
+		internal static bool IsIntentSupported(Intent intent)
+		{
+			if (Application.Context is not Context ctx || ctx.PackageManager is not PackageManager pm)
+				return false;
 
-		internal static bool IsIntentSupported(Intent intent, string expectedPackageName) =>
-			intent.ResolveActivity(Application.Context.PackageManager) is ComponentName c && c.PackageName == expectedPackageName;
+			return intent.ResolveActivity(pm) is not null;
+		}
+
+		internal static bool IsIntentSupported(Intent intent, string expectedPackageName)
+		{
+			if (Application.Context is not Context ctx || ctx.PackageManager is not PackageManager pm)
+				return false;
+
+			return intent.ResolveActivity(pm) is ComponentName c && c.PackageName == expectedPackageName;
+		}
 
 		internal static Java.Util.Locale GetLocale()
 		{

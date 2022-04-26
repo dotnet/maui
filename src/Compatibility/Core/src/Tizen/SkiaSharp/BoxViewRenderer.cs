@@ -1,8 +1,10 @@
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class BoxViewRenderer : CanvasViewRenderer<BoxView, RoundRectangle>
 	{
 		public BoxViewRenderer()
@@ -23,10 +25,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 
 		protected override void UpdateBackgroundColor(bool initialize)
 		{
-			if (initialize && Element.BackgroundColor.IsDefault)
+			if (initialize && Element.BackgroundColor.IsDefault())
 				return;
 
-			if (Element.Color.IsDefault)
+			if (Element.Color.IsDefault())
 			{
 				UpdateColor();
 			}
@@ -62,9 +64,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 
 		void UpdateColor()
 		{
-			if (Element.Color.IsDefault)
+			if (Element.Color.IsDefault())
 			{
-				if (Element.BackgroundColor.IsDefault)
+				if (Element.BackgroundColor.IsDefault())
 				{
 					// Set to default color. (Transparent)
 					RealControl.Color = EColor.Transparent;
@@ -72,13 +74,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 				else
 				{
 					// Use BackgroundColor only if color is default and background color is not default.
-					RealControl.Color = Element.BackgroundColor.MultiplyAlpha(Element.Opacity).ToPlatform();
+					RealControl.Color = Element.BackgroundColor.MultiplyAlpha((float)Element.Opacity).ToNative();
 				}
 			}
 			else
 			{
 				// Color has higer priority than BackgroundColor.
-				RealControl.Color = Element.Color.MultiplyAlpha(Element.Opacity).ToPlatform();
+				RealControl.Color = Element.Color.MultiplyAlpha((float)Element.Opacity).ToNative();
 			}
 		}
 	}

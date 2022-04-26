@@ -7,23 +7,18 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	class CustomFocusManager : IDisposable
 	{
-		static bool s_reorderTriggered;
-		static readonly ObservableCollection<CustomFocusManager> s_tabIndexList = new ObservableCollection<CustomFocusManager>();
-
 		VisualElement _nextUp;
 		VisualElement _nextDown;
 		VisualElement _nextLeft;
 		VisualElement _nextRight;
 		VisualElement _nextForward;
 		VisualElement _nextBackward;
-		int _tabIndex = -1;
-		bool _isTabStop = true;
 
 		static CustomFocusManager()
 		{
-			s_tabIndexList.CollectionChanged += TabIndexCollectionChanged;
 		}
 
 		public CustomFocusManager(VisualElement element, Widget nativeView)
@@ -39,52 +34,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		VisualElement Element { get; }
 		Widget NativeView { get; }
-
-		public int TabIndex
-		{
-			get
-			{
-				return _tabIndex;
-			}
-			set
-			{
-				if (IsTabStop)
-				{
-					if (_tabIndex > -1)
-					{
-						s_tabIndexList.Remove(this);
-					}
-					if (value > -1)
-					{
-						s_tabIndexList.Add(this);
-					}
-				}
-				_tabIndex = value;
-			}
-		}
-
-		public bool IsTabStop
-		{
-			get
-			{
-				return _isTabStop;
-			}
-			set
-			{
-				if (TabIndex > -1)
-				{
-					if (_isTabStop)
-					{
-						s_tabIndexList.Remove(this);
-					}
-					if (value)
-					{
-						s_tabIndexList.Add(this);
-					}
-				}
-				_isTabStop = value;
-			}
-		}
 
 		public VisualElement NextUp
 		{
@@ -152,23 +101,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			GC.SuppressFinalize(this);
 		}
 
-		public static void StartReorderTabIndex()
-		{
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() =>
-				{
-					StartReorderTabIndex();
-				});
-				return;
-			}
-			if (!s_reorderTriggered)
-			{
-				s_reorderTriggered = true;
-				Device.BeginInvokeOnMainThread(ReorderTabIndex);
-			}
-		}
-
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -197,10 +129,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				{
 					NextBackward.PropertyChanged -= OnNextViewPropertyChanged;
 				}
-			}
-			if (s_tabIndexList.Contains(this))
-			{
-				s_tabIndexList.Remove(this);
 			}
 		}
 
@@ -251,36 +179,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return FocusDirection.Next;
 		}
 
-		static void ReorderTabIndex()
-		{
-			s_reorderTriggered = false;
-			var list = s_tabIndexList.Where((t) => t.IsTabStop && ElementIsVisible(t)).OrderBy(x => x.Element.TabIndex);
-			CustomFocusManager first = null;
-			CustomFocusManager last = null;
-			foreach (var item in list)
-			{
-				if (first == null)
-					first = item;
-
-				if (last != null)
-				{
-					item.NextBackward = last.Element;
-					last.NextForward = item.Element;
-				}
-				last = item;
-			}
-			if (first != null && last != null)
-			{
-				first.NextBackward = last.Element;
-				last.NextForward = first.Element;
-			}
-		}
-
-		static void TabIndexCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			StartReorderTabIndex();
-		}
-
 		static bool PageIsVisible(Page page)
 		{
 			if (page == null)
@@ -305,9 +203,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				return false;
 			}
-#pragma warning disable CS0618 // Type or member is obsolete
-			if (parentPage is MasterDetailPage mdPage && mdPage.Master == parent && !mdPage.IsPresented)
-#pragma warning restore CS0618 // Type or member is obsolete
+			if (parentPage is FlyoutPage flyoutPage && flyoutPage.Flyout == parent && !flyoutPage.IsPresented)
 			{
 				return false;
 			}

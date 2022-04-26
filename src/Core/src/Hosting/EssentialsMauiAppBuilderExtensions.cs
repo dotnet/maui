@@ -74,6 +74,8 @@ namespace Microsoft.Maui.Hosting
 					{
 						ApplicationModel.Platform.OnLaunched(args);
 					}));
+#elif TIZEN
+
 #endif
 			});
 
@@ -134,12 +136,14 @@ namespace Microsoft.Maui.Hosting
 				ApplicationModel.Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
 #endif
 
+#if !TIZEN
 				AppActions.OnAppAction += HandleOnAppAction;
 
 				if (_essentialsBuilder.AppActions is not null)
 				{
 					SetAppActions(services, _essentialsBuilder.AppActions);
 				}
+#endif
 
 				if (_essentialsBuilder.TrackVersions)
 					VersionTracking.Track();

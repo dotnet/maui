@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 			platformPicker.TextColor = picker.TextColor?.ToPlatform();
 
 		public static void UpdateSelectedIndex(this MauiPicker platformPicker, IPicker picker) =>
-			platformPicker.SetSelectedIndex(picker, picker.SelectedIndex);
+			platformPicker.UpdatePicker(picker, picker.SelectedIndex);
 
 		internal static void SetTitleColor(this MauiPicker platformPicker, IPicker picker)
 		{
@@ -38,11 +38,14 @@ namespace Microsoft.Maui.Platform
 			platformPicker.AttributedPlaceholder = nsAttributedString;
 		}
 
-		internal static void UpdatePicker(this MauiPicker platformPicker, IPicker picker)
+		internal static void UpdatePicker(this MauiPicker platformPicker, IPicker picker, int? newSelectedIndex = null)
 		{
-			var selectedIndex = picker.SelectedIndex;
+			var selectedIndex = newSelectedIndex ?? picker.SelectedIndex;
 
-			platformPicker.Text = selectedIndex == -1 ? string.Empty : picker.GetItem(selectedIndex);
+			// Revert to placeholder/title if nothing selected
+			platformPicker.Text = selectedIndex == -1
+				? (picker.Title ?? string.Empty)
+				: picker.GetItem(selectedIndex);
 
 			var pickerView = platformPicker.UIPickerView;
 			pickerView?.ReloadAllComponents();
@@ -50,14 +53,7 @@ namespace Microsoft.Maui.Platform
 			if (picker.GetCount() == 0)
 				return;
 
-			platformPicker.SetSelectedIndex(picker, selectedIndex);
-		}
-
-		internal static void SetSelectedIndex(this MauiPicker platformPicker, IPicker picker, int selectedIndex = 0)
-		{
 			picker.SelectedIndex = selectedIndex;
-
-			var pickerView = platformPicker.UIPickerView;
 
 			if (pickerView?.Model is PickerSource source)
 			{

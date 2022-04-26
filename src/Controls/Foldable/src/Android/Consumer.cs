@@ -1,8 +1,8 @@
 ﻿using System;
-using Microsoft.Maui.Graphics;
+using Android.App;
 using Android.Runtime;
 using AndroidX.Window.Layout;
-using Android.App;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Foldable
