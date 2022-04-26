@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Platform
 			SizeChanged += ContentPanelSizeChanged;
 		}
 
-		private void ContentPanelSizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
+		void ContentPanelSizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
 		{
 			if (_borderPath == null)
 				return;
@@ -105,6 +105,7 @@ namespace Microsoft.Maui.Platform
 
 			_borderPath.UpdateBorderShape(_borderShape, ActualWidth, ActualHeight);
 			UpdateContent();
+			UpdateClip(_borderShape);
 		}
 
 		void AddContent(FrameworkElement? content)
