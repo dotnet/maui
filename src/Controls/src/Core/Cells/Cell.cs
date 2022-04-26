@@ -315,7 +315,10 @@ namespace Microsoft.Maui.Controls
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren()
 		{
 			var children = new List<Maui.IVisualTreeElement>(LogicalChildrenInternal);
-			children.AddRange(_contextActions);
+
+			if (_contextActions != null)
+				children.AddRange(_contextActions);
+
 			return children;
 		}
 
