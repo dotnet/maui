@@ -35,14 +35,14 @@
     <!-- Other packages -->
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
-    <MicrosoftMauiGraphicsVersion>6.0.300-rc.2.1310</MicrosoftMauiGraphicsVersion>
+    <MicrosoftMauiGraphicsVersion>6.0.300-rc.3.1315</MicrosoftMauiGraphicsVersion>
     <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
     <_MicrosoftWebWebView2Version>1.0.1020.30</_MicrosoftWebWebView2Version>
     <!-- GLIDE - the android maven artifact in /src/Core/AndroidNative/maui/build.gradle -->
     <!-- must be kept in sync with the binding library version to it here: -->
     <_XamarinAndroidGlideVersion>4.12.0.2</_XamarinAndroidGlideVersion>
     <_XamarinAndroidXSecurityVersion>1.1.0-alpha03</_XamarinAndroidXSecurityVersion>
-    <_XamarinGoogleCryptoTinkAndroidVersion>1.6.1.2</_XamarinGoogleCryptoTinkAndroidVersion>
+    <_XamarinGoogleCryptoTinkAndroidVersion>1.6.1.6</_XamarinGoogleCryptoTinkAndroidVersion>
     <_SkiaSharpVersion>2.88.0-preview.256</_SkiaSharpVersion>
     <_HarfBuzzSharpVersion>2.8.2-preview.256</_HarfBuzzSharpVersion>
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.35941bbf6818bce667625a4dfcc34cc54eb6788c.256</_SkiaSharpNativeAssetsVersion>
@@ -51,6 +51,7 @@
     <MicrosoftDotNetXHarnessTestRunnersXunitVersion>1.0.0-prerelease.22219.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
     <MicrosoftDotNetXHarnessCLIVersion>1.0.0-prerelease.22219.1</MicrosoftDotNetXHarnessCLIVersion>
     <TizenUIExtensionsVersion>0.6.0-pre1</TizenUIExtensionsVersion>
+    <SvgSkiaVersion>0.4.1</SvgSkiaVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Match the first three version numbers and append 00 -->

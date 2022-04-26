@@ -14,8 +14,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override TEntry CreatePlatformView()
 		{
-			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
-
 			var entry = new EditfieldEntry(NativeParent)
 			{
 				IsSingleLine = true,
@@ -29,8 +27,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(TEntry platformView)
 		{
-			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
-
 			platformView.TextBlockFocused += OnTextBlockFocused;
 			platformView.EntryLayoutFocused += OnFocused;
 			platformView.EntryLayoutUnfocused += OnUnfocused;

@@ -99,11 +99,6 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						aca.SetSupportActionBar(null);
 					}
-
-					// Ideally this wouldn't be needed but I haven't found the right platform
-					// component I can key into for knowing when the world can move on
-					await Task.Delay(1000);
-					fragmentManager.ExecutePendingTransactions();
 				}
 			});
 		}
@@ -190,8 +185,8 @@ namespace Microsoft.Maui.DeviceTests
 				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 				_ = _window.ToHandler(ScopedMauiContext);
 				var rootView = ScopedMauiContext.GetNavigationRootManager().RootView;
-
-				rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(500, 500);
+				var decorView = RequireActivity().Window.DecorView;
+				rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
 				return rootView;
 			}
 
