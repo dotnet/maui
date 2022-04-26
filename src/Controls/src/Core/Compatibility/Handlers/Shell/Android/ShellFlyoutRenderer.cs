@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		int _flyoutWidthDefault;
 		double _flyoutWidth = -1;
 		double _flyoutHeight;
-
+		bool _flyoutFirstDrawPassFinished;
 		int _currentLockMode;
 		bool _disposed;
 		Brush _scrimBrush;
@@ -165,6 +165,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return result;
 		}
 
+
 		protected override bool DrawChild(Canvas canvas, AView child, long drawingTime)
 		{
 			bool returnValue = base.DrawChild(canvas, child, drawingTime);
@@ -179,6 +180,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				_scrimPaint.Alpha = _scrimOpacity;
 				canvas.DrawRect(0, 0, Width, Height, _scrimPaint);
+			}
+
+			if (!_flyoutFirstDrawPassFinished && _flyoutContent != null)
+			{
+				if (child == _flyoutContent?.AndroidView)
+					_flyoutFirstDrawPassFinished = true;
+
+				if (this.IsDrawerOpen(_flyoutContent.AndroidView) != _shellContext.Shell.FlyoutIsPresented)
+				{
+					UpdateDrawerState();
+				}
 			}
 
 			return returnValue;
@@ -220,6 +232,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			((IShellController)context.Shell).AddFlyoutBehaviorObserver(this);
 
+
 			if (Shell.FlyoutIsPresented && _flyoutContent != null)
 			{
 				OpenDrawer(_flyoutContent.AndroidView, false);
@@ -248,16 +261,30 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (e.PropertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
 			{
-				var presented = Shell.FlyoutIsPresented;
-				if (presented)
+				if (!_flyoutFirstDrawPassFinished)
 				{
-					if (!IsDrawerOpen(_flyoutContent.AndroidView))
-						OpenDrawer(_flyoutContent.AndroidView, true);
+					// if the first draw pass hasn't happened yet
+					// then calling close/open drawer really confuses 
+					// drawer layout
+					return;
 				}
-				else
-				{
-					CloseDrawers();
-				}
+
+				UpdateDrawerState();
+			}
+		}
+
+		void UpdateDrawerState()
+		{
+
+			var presented = Shell.FlyoutIsPresented;
+			if (presented)
+			{
+				if (!IsDrawerOpen(_flyoutContent.AndroidView))
+					OpenDrawer(_flyoutContent.AndroidView, true);
+			}
+			else
+			{
+				CloseDrawers();
 			}
 		}
 

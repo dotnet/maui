@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (backgroundImage != null)
 			{
-				element.SetValue(_backgroundProperty, new ImageBrush { ImageSource = backgroundImage });
+				element.SetValue(_backgroundProperty, new UI.Xaml.Media.ImageBrush { ImageSource = backgroundImage });
 			}
 			else
 			{
