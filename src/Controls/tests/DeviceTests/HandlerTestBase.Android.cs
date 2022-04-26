@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Android.Graphics.Drawables;
 using Android.OS;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Platform;
 using ALayoutInflater = Android.Views.LayoutInflater;
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;
 using ImportantForAccessibility = Android.Views.ImportantForAccessibility;
-using Google.Android.Material.AppBar;
-using AndroidX.CoordinatorLayout.Widget;
-using Android.Graphics.Drawables;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -99,13 +99,19 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						aca.SetSupportActionBar(null);
 					}
-
-					// Ideally this wouldn't be needed but I haven't found the right platform
-					// component I can key into for knowing when the world can move on
-					await Task.Delay(1000);
-					fragmentManager.ExecutePendingTransactions();
 				}
 			});
+		}
+
+		protected AView GetTitleView(IElementHandler handler)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			var container = toolbar?.GetFirstChildOfType<Controls.Toolbar.Container>();
+
+			if (container != null && container.ChildCount > 0)
+				return container.GetChildAt(0);
+
+			return null;
 		}
 
 		protected MaterialToolbar GetPlatformToolbar(IElementHandler handler)
@@ -179,8 +185,8 @@ namespace Microsoft.Maui.DeviceTests
 				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 				_ = _window.ToHandler(ScopedMauiContext);
 				var rootView = ScopedMauiContext.GetNavigationRootManager().RootView;
-
-				rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(500, 500);
+				var decorView = RequireActivity().Window.DecorView;
+				rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
 				return rootView;
 			}
 

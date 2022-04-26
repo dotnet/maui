@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_ = newPage.Toolbar.ToPlatform(modalContext);
 
 					var windowManager = modalContext.GetNavigationRootManager();
-					windowManager.Connect(newPage);
+					windowManager.Connect(newPage.ToPlatform(modalContext));
 					Container.Children.Add(windowManager.RootView);
 
 					previousPage

@@ -1,8 +1,10 @@
 using SkiaSharp;
 using SkiaSharp.Views.Tizen;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class FrameRenderer : LayoutRenderer
 	{
 		static float s_borderWidth = 1.0f;
@@ -32,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 
 		protected override void UpdateBackgroundColor(bool initialize)
 		{
-			if (initialize && Element.BackgroundColor.IsDefault)
+			if (initialize && Element.BackgroundColor.IsDefault())
 				return;
 			else
 				BackgroundCanvas.Invalidate();
@@ -50,8 +52,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 			var canvas = e.Surface.Canvas;
 			var bound = e.Info.Rect;
 			canvas.Clear();
-			var bgColor = Element.BackgroundColor == Color.Default ? s_defaultColor : SKColor.Parse(Element.BackgroundColor.ToHex());
-			var borderColor = Element.BorderColor == Color.Default ? s_defaultColor : SKColor.Parse(Element.BorderColor.ToHex());
+			var bgColor = Element.BackgroundColor.IsDefault() ? s_defaultColor : SKColor.Parse(Element.BackgroundColor.ToHex());
+			var borderColor = Element.BorderColor.IsDefault() ? s_defaultColor : SKColor.Parse(Element.BorderColor.ToHex());
 			var roundRect = CreateRoundRect(bound);
 
 			using (var paint = new SKPaint

@@ -91,6 +91,12 @@ namespace Microsoft.Maui.Resizetizer
 				}
 			});
 
+			if (PlatformType == "tizen")
+			{
+				var tizenResourceXmlGenerator = new TizenResourceXmlGenerator(IntermediateOutputPath, Logger);
+				tizenResourceXmlGenerator.Generate();
+			}
+
 			var copiedResources = new List<TaskItem>();
 
 			foreach (var img in resizedImages)
@@ -146,6 +152,11 @@ namespace Microsoft.Maui.Resizetizer
 
 				foreach (var assetGenerated in assetsGenerated)
 					resizedImages.Add(assetGenerated);
+			}
+			else if (PlatformType == "tizen")
+			{
+				var updator = new TizenIconManifestUpdater(appIconName, appIconDpis, this);
+				updator.Update();
 			}
 
 			LogDebugMessage($"Generating App Icon Bitmaps for DPIs");

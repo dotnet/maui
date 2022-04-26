@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -73,6 +74,8 @@ namespace Microsoft.Maui.Platform
 					ScrollRangeToVisible(new NSRange(0, 0));		
 			}
 		}
+    
+		public TextAlignment VerticalTextAlignment { get; set; }
 
 		public override string? Text
 		{
@@ -111,6 +114,12 @@ namespace Microsoft.Maui.Platform
 		public void UpdateShouldChangeScrollPosition(bool textChanges)
 		{
 			_textChanges = textChanges;
+    }
+    
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+			ShouldCenterVertically();
 		}
 
 		UILabel InitPlaceholderLabel()
@@ -157,6 +166,19 @@ namespace Microsoft.Maui.Platform
 		{
 			HidePlaceholderIfTextIsPresent(Text);
 			TextSetOrChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		void ShouldCenterVertically()
+		{
+			var fittingSize = new CGSize(Bounds.Width, NFloat.MaxValue);
+			var sizeThatFits = SizeThatFits(fittingSize);
+			var availableSpace = (Bounds.Height - sizeThatFits.Height * ZoomScale);
+			ContentOffset = VerticalTextAlignment switch
+			{
+				Maui.TextAlignment.Center => new CGPoint(0, -Math.Max(1, availableSpace / 2)),
+				Maui.TextAlignment.End => new CGPoint(0, -Math.Max(1, availableSpace)),
+				_ => new CGPoint(0, 0),
+			};
 		}
 	}
 }

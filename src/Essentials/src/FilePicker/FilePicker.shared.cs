@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Storage
 		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePicker.xml" path="//Member[@MemberName='PickMultipleAsync']/Docs" />
 		public static Task<IEnumerable<FileResult>> PickMultipleAsync(PickOptions? options = null) =>
 			Default.PickMultipleAsync(options);
-	
+
 		static IFilePicker? defaultImplementation;
 
 		public static IFilePicker Default =>

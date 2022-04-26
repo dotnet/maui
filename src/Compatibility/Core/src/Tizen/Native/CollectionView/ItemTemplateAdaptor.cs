@@ -4,10 +4,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using ElmSharp;
 using ESize = ElmSharp.Size;
-using XLabel = Microsoft.Maui.Controls.Compatibility.Label;
+using XLabel = Microsoft.Maui.Controls.Label;
+using XColor = Microsoft.Maui.Graphics.Color;
+using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {
+	[Obsolete]
 	public class ItemDefaultTemplateAdaptor : ItemTemplateAdaptor
 	{
 		class ToTextConverter : IValueConverter
@@ -26,13 +29,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			{
 				var label = new XLabel
 				{
-					TextColor = Color.Black,
+					TextColor = XColor.FromRgb(0,0,0),
 				};
 				label.SetBinding(XLabel.TextProperty, new Binding(".", converter: new ToTextConverter()));
 
-				return new StackLayout
+				return new XStackLayout
 				{
-					BackgroundColor = Color.White,
+					BackgroundColor = XColor.FromRgb(255, 255, 255),
 					Padding = 30,
 					Children =
 					{
@@ -43,6 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		}
 	}
 
+	[Obsolete]
 	public class ItemTemplateAdaptor : ItemAdaptor
 	{
 		Dictionary<EvasObject, View> _nativeFormsTable = new Dictionary<EvasObject, View>();
@@ -182,7 +186,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		{
 			if (_dataBindedViewTable.TryGetValue(this[index], out View createdView) && createdView != null)
 			{
-				return createdView.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request.ToPixel();
+				return createdView.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request.ToEFLPixel();
 			}
 
 			View view = null;
@@ -200,18 +204,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 				if (Count > index)
 					view.BindingContext = this[index];
 				var request = view.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request;
-				return request.ToPixel();
+				return request.ToEFLPixel();
 			}
 		}
 
 		public override ESize MeasureHeader(int widthConstraint, int heightConstraint)
 		{
-			return _headerCache?.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint)).Request.ToPixel() ?? new ESize(0, 0);
+			return _headerCache?.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint)).Request.ToEFLPixel() ?? new ESize(0, 0);
 		}
 
 		public override ESize MeasureFooter(int widthConstraint, int heightConstraint)
 		{
-			return _footerCache?.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint)).Request.ToPixel() ?? new ESize(0, 0);
+			return _footerCache?.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint)).Request.ToEFLPixel() ?? new ESize(0, 0);
 		}
 
 		public override void UpdateViewState(EvasObject view, ViewHolderState state)

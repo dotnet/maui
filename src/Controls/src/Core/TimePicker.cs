@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='TimeProperty']/Docs" />
-		public static readonly BindableProperty TimeProperty = BindableProperty.Create(nameof(Time), typeof(TimeSpan), typeof(TimePicker), new TimeSpan(0), BindingMode.TwoWay, (bindable, value) =>
+		public static readonly BindableProperty TimeProperty = BindableProperty.Create(nameof(Time), typeof(TimeSpan), typeof(TimePicker), new TimeSpan(0), BindingMode.TwoWay,
+			validateValue: (bindable, value) =>
 		{
 			var time = (TimeSpan)value;
 			return time.TotalHours < 24 && time.TotalMilliseconds >= 0;
@@ -114,9 +115,6 @@ namespace Microsoft.Maui.Controls
 			HandleFontChanged();
 
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
-			HandleFontChanged();
-
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
 			HandleFontChanged();
 
 		double IFontElement.FontSizeDefaultValueCreator() =>

@@ -248,13 +248,15 @@ public class PlatformInterop {
 
         if (!cachingEnabled)
         {
-            builder = builder
+            builder
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .skipMemoryCache(true);
+                .skipMemoryCache(true)
+                .into(target);
         }
-
-        builder
-            .into(target);
+        else {
+            builder
+                .into(target);
+        }
     }
 
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback)
@@ -311,12 +313,13 @@ public class PlatformInterop {
 
         if (!cachingEnabled)
         {
-            builder = builder
+            builder
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .skipMemoryCache(true);
+                .skipMemoryCache(true)
+            .into(target);
+        } else {
+            builder.into(target);
         }
-
-        builder.into(target);
     }
 
 
