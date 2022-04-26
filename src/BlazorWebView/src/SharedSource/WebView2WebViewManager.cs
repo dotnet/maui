@@ -207,16 +207,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			}
 			catch (FileNotFoundException)
 			{
-				// This type of exception is thrown when the WebView2 Runtime is not installed.
-				return false;
-			}
-			finally
-			{
 				// This method needs to be invoked even if the WebView2 Runtime is not installed,
 				// since it is reponsible for creating the warning label and WebView2 Runtime
 				// download link.
 				await _webview.EnsureCoreWebView2Async();
+				return false;
 			}
+
+			await _webview.EnsureCoreWebView2Async();
 
 			var developerTools = _blazorWebViewHandler.DeveloperTools;
 #elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
