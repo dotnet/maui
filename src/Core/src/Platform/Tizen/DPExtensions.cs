@@ -4,8 +4,6 @@ using TRect = Tizen.UIExtensions.Common.Rect;
 using TSize = Tizen.UIExtensions.Common.Size;
 using TPoint = Tizen.UIExtensions.Common.Point;
 using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
-using Point = Microsoft.Maui.Graphics.Point;
-using EPoint = ElmSharp.Point;
 
 namespace Microsoft.Maui.Platform
 {
@@ -58,11 +56,6 @@ namespace Microsoft.Maui.Platform
 			return pixel / (float)DeviceInfo.ScalingFactor;
 		}
 
-		public static float ToScaledDP(this float pixel)
-		{
-			return pixel / (float)DeviceInfo.ScalingFactor;
-		}
-
 		public static double ToScaledDP(this double pixel)
 		{
 			return pixel / DeviceInfo.ScalingFactor;
@@ -105,16 +98,6 @@ namespace Microsoft.Maui.Platform
 		public static double ConvertToDPFont(int pt)
 		{
 			return ConvertToScaledDP(pt * DeviceInfo.DPI / 72.0);
-		}
-
-		public static Point ToPoint(this EPoint point)
-		{
-			return new Point(DPExtensions.ConvertToScaledDP(point.X), DPExtensions.ConvertToScaledDP(point.Y));
-		}
-
-		public static PointF ToPointF(this EPoint point)
-		{
-			return new PointF((float)DPExtensions.ConvertToScaledDP(point.X), (float)DPExtensions.ConvertToScaledDP(point.Y));
 		}
 	}
 }

@@ -3,6 +3,7 @@ using TSize = Tizen.UIExtensions.Common.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete]
 	public class ListViewAdaptor : ItemTemplateAdaptor
 	{
 		new ListView Element { get; set; }

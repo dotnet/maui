@@ -6,6 +6,7 @@ using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class FrameRenderer : LayoutRenderer
 	{
 		static float s_borderWidth = 1.0f;

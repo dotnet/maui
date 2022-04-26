@@ -156,55 +156,5 @@ namespace Microsoft.Maui.Handlers
 		{
 			OnPlatformViewDeleted();
 		}
-
-		protected virtual void OnNativeViewDeleted()
-		{
-		}
-
-		protected virtual void OnFocused()
-		{
-		}
-
-		protected virtual void OnUnfocused()
-		{
-		}
-
-		protected void OnFocused(object? sender, EventArgs e)
-		{
-			OnFocused();
-		}
-
-		protected void OnUnfocused(object? sender, EventArgs e)
-		{
-			OnUnfocused();
-		}
-
-		partial void ConnectingHandler(PlatformView? platformView)
-		{
-			if (platformView == null)
-				return;
-
-
-			platformView.Deleted += OnPlatformViewDeleted;
-
-			if (platformView is Widget widget)
-			{
-				widget.Focused += OnFocused;
-				widget.Unfocused += OnUnfocused;
-			}
-		}
-
-		partial void DisconnectingHandler(PlatformView platformView)
-		{
-			if (platformView == null)
-				return;
-
-			platformView.Deleted -= OnPlatformViewDeleted;
-		}
-
-		void OnPlatformViewDeleted(object? sender, EventArgs e)
-		{
-			OnPlatformViewDeleted();
-		}
 	}
 }

@@ -37,6 +37,9 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
 
+		[MissingMapper]
+		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton) { }
+
 		void OnReleased(object? sender, EventArgs e)
 		{
 			VirtualView?.Released();

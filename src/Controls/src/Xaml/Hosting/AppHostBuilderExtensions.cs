@@ -133,6 +133,11 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
 			handlersCollection.AddHandler<TabbedPage, TabbedViewHandler>();
 #endif
+#if TIZEN
+			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
+			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
+#endif
+
 
 #if WINDOWS
 			handlersCollection.AddHandler<ShellItem, ShellItemHandler>();

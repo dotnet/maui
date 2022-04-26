@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		public IList<object> SelectedItems { get; set; }
 	}
 
-	[Obsolete]
+	[System.Obsolete]
 	public class ItemTemplateAdaptor : ItemAdaptor
 	{
 		Dictionary<NView, View> _nativeFormsTable = new Dictionary<NView, View>();
@@ -334,6 +334,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 	}
 
+	[System.Obsolete]
 	public class ItemDefaultTemplateAdaptor : ItemTemplateAdaptor
 	{
 		class ToTextConverter : IValueConverter
@@ -369,6 +370,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 	}
 
+	[System.Obsolete]
 	public class CarouselViewItemTemplateAdaptor : ItemTemplateAdaptor
 	{
 		public CarouselViewItemTemplateAdaptor(ItemsView itemsView) : base(itemsView) { }
@@ -384,6 +386,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 	}
 
+	[System.Obsolete]
 	public class CarouselViewItemDefaultTemplateAdaptor : ItemDefaultTemplateAdaptor
 	{
 		public CarouselViewItemDefaultTemplateAdaptor(ItemsView itemsView) : base(itemsView) { }

@@ -75,6 +75,7 @@ namespace Microsoft.Maui.Handlers
 					_mapper = map;
 				}
 			}
+
 			_mapper.UpdateProperties(this, VirtualView);
 		}
 

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Devices
 	partial class BatteryImplementation : IBattery
 	{
 		void OnChanged(object sender, object e)
-			=> MainThread.BeginInvokeOnMainThread(Battery.OnBatteryInfoChanged);
+			=> MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
 		void StartBatteryListeners()
 		{

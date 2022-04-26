@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 using Tizen.UIExtensions.NUI;
+using Tizen.UIExtensions.Common;
 
 namespace Microsoft.Maui
 {
-	public static class WindowExtensions
+	public static partial class WindowExtensions
 	{
 		static Dictionary<Window, NavigationStack> s_modalStacks = new Dictionary<Window, NavigationStack>();
 		static Dictionary<Window, Func<bool>> s_windowBackButtonPressedHandler = new Dictionary<Window, Func<bool>>();
@@ -75,6 +76,11 @@ namespace Microsoft.Maui
 		public static void SetBackButtonPressedHandler(this Window platformWindow, Func<bool> handler)
 		{
 			s_windowBackButtonPressedHandler[platformWindow] = handler;
+		}
+
+		public static float GetDisplayDensity(this Window platformWindow)
+		{
+			return (float)DeviceInfo.ScalingFactor;
 		}
 
 		static void OnRotate(Window platformWindow)

@@ -69,8 +69,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	public class RefreshViewRenderer : DefaultRenderer { }
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ImageButtonRenderer : DefaultRenderer { }
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
+#pragma warning disable CS0612 // Type or member is obsolete
 	public class NativeViewWrapperRenderer : DefaultRenderer { }
+#pragma warning restore CS0612 // Type or member is obsolete
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ShellRenderer : DefaultRenderer { }
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]

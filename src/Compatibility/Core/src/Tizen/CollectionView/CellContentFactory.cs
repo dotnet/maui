@@ -67,7 +67,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				VerticalOptions = LayoutOptions.Fill,
 				FontAttributes = FontAttributes.Bold,
 				Margin = new Thickness(10, 0),
+#pragma warning disable CS0612 // Type or member is obsolete
 				FontSize = Device.GetNamedSize(NamedSize.Small, typeof(Label))
+#pragma warning restore CS0612 // Type or member is obsolete
 			};
 
 			text.SetBinding(Label.TextProperty, new Binding("Text", source: sectionCell));
@@ -91,12 +93,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var text = new Label();
 			text.SetBinding(Label.TextProperty, new Binding("Text", source: textcell));
 			text.SetBinding(Label.TextColorProperty, new Binding("TextColor", source: textcell));
+#pragma warning disable CS0612 // Type or member is obsolete
 			text.FontSize = Device.GetNamedSize(NamedSize.Default, typeof(Label));
+#pragma warning restore CS0612 // Type or member is obsolete
 
 			var detail = new Label();
 			detail.SetBinding(Label.TextProperty, new Binding("Detail", source: textcell));
 			detail.SetBinding(Label.TextColorProperty, new Binding("DetailColor", source: textcell));
+#pragma warning disable CS0612 // Type or member is obsolete
 			detail.FontSize = Device.GetNamedSize(NamedSize.Default, typeof(Label)) / 2;
+#pragma warning restore CS0612 // Type or member is obsolete
 			detail.Margin = new Thickness(10, 0, 0, 0);
 
 			var layout = new Controls.StackLayout
@@ -155,7 +161,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var label = new Label();
 			label.SetBinding(Label.TextProperty, new Binding("Label", source: entryCell));
 			label.SetBinding(Label.TextColorProperty, new Binding("LabelColor", source: entryCell));
+#pragma warning disable CS0612 // Type or member is obsolete
 			label.FontSize = Device.GetNamedSize(NamedSize.Default, typeof(Label)) / 2;
+#pragma warning restore CS0612 // Type or member is obsolete
 			label.Margin = new Thickness(20, 0, 0, 0);
 			var layout = new Controls.StackLayout
 			{

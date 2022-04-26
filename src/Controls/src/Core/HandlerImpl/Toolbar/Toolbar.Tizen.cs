@@ -55,8 +55,10 @@ namespace Microsoft.Maui.Controls
 			arg1.PlatformView.UpdateIsVisible(arg2);
 		}
 
-		[MissingMapper]
-		public static void MapBarBackground(ToolbarHandler arg1, Toolbar arg2) { }
+		public static void MapBarBackground(ToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.PlatformView.UpdateBarBackgroundColor(arg2);
+		}
 
 		[MissingMapper]
 		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2) { }

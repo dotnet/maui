@@ -112,19 +112,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			interceptor.Ignore();
 		}
 
-		public void PostMessageFromJS(JavaScriptMessage message)
-		{
-			if (message is null)
-			{
-				throw new ArgumentNullException(nameof(message));
-			}
-
-			if (message.Name.Equals("BlazorHandler", StringComparison.Ordinal))
-			{
-				_webviewManager!.MessageReceivedInternal(new Uri(NativeWebView.Url), message.GetBodyAsString());
-			}
-		}
-
 		private void StartWebViewCoreIfPossible()
 		{
 			if (!RequiredStartupPropertiesSet ||
@@ -141,11 +128,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// unclear there's any other use case. We can add more options later if so.
 			var contentRootDir = System.IO.Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = System.IO.Path.GetRelativePath(contentRootDir, HostPage!);
-
-			var customFileProvider = VirtualView.CreateFileProvider(contentRootDir);
-
-			var resContentRootDir = Path.Combine(TApplication.Current.DirectoryInfo.Resource, contentRootDir);
-			var mauiAssetFileProvider = new PhysicalFileProvider(resContentRootDir);
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 

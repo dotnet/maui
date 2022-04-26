@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
 		private readonly NWebView _webview;
+		private readonly string _contentRootRelativeToAppRoot;
 
 		/// <summary>
 		/// Initializes a new instance of <see cref="TizenWebViewManager"/>

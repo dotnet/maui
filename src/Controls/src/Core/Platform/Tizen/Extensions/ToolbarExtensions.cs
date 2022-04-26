@@ -75,11 +75,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBarBackgroundColor(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			var backgroundColor = toolbar.BarBackgroundColor;
+			var barBackground = toolbar.BarBackground;
 
-			if (backgroundColor.IsNotDefault())
+			// TODO. to support brush
+			if (barBackground is SolidColorBrush solidColor)
 			{
-				platformToolbar.BackgroundColor = backgroundColor.ToPlatform().ToNative();
+				platformToolbar.BackgroundColor = solidColor.Color.ToPlatform().ToNative();
 			}
 			else
 			{

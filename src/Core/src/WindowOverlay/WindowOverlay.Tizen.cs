@@ -86,6 +86,7 @@ namespace Microsoft.Maui
 
 		public PassthroughView(WindowOverlay overlay)
 		{
+			GrabTouchAfterLeave = true;
 			this.overlay = overlay;
 			TouchEvent += (s, e) => false;
 		}
@@ -108,14 +109,6 @@ namespace Microsoft.Maui
 
 			OnTouch?.Invoke(this, point);
 			return disableTouchEvent;
-		}
-
-		partial void OnDisableUITouchEventPassthroughSet()
-		{
-			if (_graphicsView != null)
-			{
-				_graphicsView.RepeatEvents = !DisableUITouchEventPassthrough;
-			}
 		}
 	}
 }

@@ -19,11 +19,11 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(Button nativeView)
+		protected override void DisconnectHandler(Button platformView)
 		{
-			nativeView.TouchEvent -= OnTouch;
-			nativeView.Clicked -= OnButtonClicked;
-			base.DisconnectHandler(nativeView);
+			platformView.TouchEvent -= OnTouch;
+			platformView.Clicked -= OnButtonClicked;
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)
@@ -40,18 +40,6 @@ namespace Microsoft.Maui.Handlers
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
 		public static Task MapImageSourceAsync(IButtonHandler handler, IImage image)
-		{
-			if (image.Source == null)
-			{
-				return Task.CompletedTask;
-			}
-			return handler.ImageSourceLoader.UpdateImageSourceAsync();
-		}
-
-		public static void MapImageSource(IButtonHandler handler, IImageButton image) =>
-			MapImageSourceAsync(handler, image).FireAndForget(handler);
-
-		public static Task MapImageSourceAsync(IButtonHandler handler, IImageButton image)
 		{
 			if (image.Source == null)
 			{
@@ -77,6 +65,9 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke) { }
+
+		[MissingMapper]
+		public static void MapLineBreakMode(IButtonHandler handler, IButton button) { }
 
 		bool OnTouch(object source, View.TouchEventArgs e)
 		{

@@ -1,10 +1,8 @@
-using NUISkiaGraphicsView = Tizen.UIExtensions.NUI.GraphicsView.SkiaGraphicsView;
-
 namespace Microsoft.Maui.Handlers
 {
-	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, NUISkiaGraphicsView>
+	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, PlatformTouchGraphicsView>
 	{
-		protected override NUISkiaGraphicsView CreatePlatformView() => new NUISkiaGraphicsView();
+		protected override PlatformTouchGraphicsView CreatePlatformView() => new PlatformTouchGraphicsView();
 
 		public static void MapDrawable(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
