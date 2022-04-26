@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ShapesDemos.Views.PolylineDemoPage"
+             Title="Polyline demos">
+    <ScrollView>
+        <StackLayout Margin="20">
+            <Label Text="Polyline" />
+            <Polyline Points="0,0 10,30, 15,0 18,60 23,30 35,30 40,0 43,60 48,30 100,30"
+                      Stroke="Red" />
+            <Label Text="Polyline with dashed stroke" />
+            <Polyline Points="0,0 10,30, 15,0 18,60 23,30 35,30 40,0 43,60 48,30 100,30"
+                      Stroke="Red"
+                      StrokeThickness="2"
+                      StrokeDashArray="1,1"
+                      StrokeDashOffset="6" />
+            <Label Text="EvenOdd polyline" />
+            <!-- FillRule doesn't need to be set, because EvenOdd is the default. -->
+            <Polyline Points="0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192, 150 200 144 48"
+                     Fill="Blue"
+                     Stroke="Red"
+                     StrokeThickness="3" />
+            <Label Text="NonZero polyline" />
+            <Polyline Points="0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192, 150 200 144 48"
+                     Fill="Black"
+                     FillRule="Nonzero"
+                     Stroke="Yellow"
+                     StrokeThickness="3" />
+            <Label Text="LineJoin: Miter" />
+            <!-- StrokeLineJoin doesn't need to be set, because Miter is the default. -->
+            <Polyline Points="20 20,250 50,20 120"
+                      Stroke="DarkBlue"
+                      StrokeThickness="20" />
+            <Label Text="LineJoin: Bevel" />
+            <Polyline Points="20 20,250 50,20 120"
+                      Stroke="DarkBlue"
+                      StrokeThickness="20"
+                      StrokeLineJoin="Bevel" />
+            <Label Text="LineJoin: Round" />
+            <Polyline Points="20 20,250 50,20 120"
+                      Stroke="DarkBlue"
+                      StrokeThickness="20"
+                      StrokeLineJoin="Round" />
+        </StackLayout>
+    </ScrollView>
+</ContentPage>
