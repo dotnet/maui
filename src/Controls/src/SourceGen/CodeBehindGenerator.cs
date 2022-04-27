@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			var itemName = projItem.ManifestResourceName ?? projItem.RelativePath;
 			if (itemName == null)
 				return;
-			var uid = Crc64.ComputeHashString(itemName);
+			var uid = Crc64.ComputeHashString($"{compilation.AssemblyName}.{itemName}");
 
 			if (!TryParseXaml(text, uid, compilation, xmlnsDefinitionCache, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields, out var parseException))
 			{
