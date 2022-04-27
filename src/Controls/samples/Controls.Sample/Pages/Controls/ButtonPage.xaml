@@ -11,11 +11,14 @@
                 <Label
                     Text="Default"
                     Style="{StaticResource Headline}"/>
-                <Button Text="Button"/>
+                <Button
+                    Text="Button"/>
                 <Label
                     Text="Disabled"
                     Style="{StaticResource Headline}"/>
-                <Button Text="Button"/>
+                <Button
+                    Text="Button"
+                    IsEnabled="false"/>
                 <Label
                     Text="Clicked"
                     Style="{StaticResource Headline}"/>

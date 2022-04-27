@@ -16,7 +16,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
     <PackageReference Include="coverlet.collector" Version="3.1.2" />
     <PackageReference Include="Svg.Skia" />
-    <PackageReference Include="Svg2VectorDrawable.Net" Version="0.1.0" />
+    <PackageReference Include="Svg2VectorDrawable.Net" Version="0.3.0" />
   </ItemGroup>
 
   <ItemGroup>

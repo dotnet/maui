@@ -141,17 +141,12 @@ dotnet build src\DotNet\DotNet.csproj
 dotnet cake --target=VS-DOGFOOD
 ```
 
-To build & run .NET 6 sample apps, you will also need to use `.\bin\dotnet\dotnet` or just `dotnet` if you've installed the workloads globally:
-```dotnetcli
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.Droid\Maui.Controls.Sample.Droid.csproj -t:Run
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.iOS\Maui.Controls.Sample.iOS.csproj -t:Run
-```
-
-Try out a "single project", you will need the `-f` switch to choose the platform:
+To build & run .NET 6 sample apps, you will also need to use `.\bin\dotnet\dotnet` or just `dotnet` if you've
+installed the workloads globally: as well as need the `-f` switch to choose the platform:
 
 ```dotnetcli
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-android
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-ios
+.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample\Maui.Controls.Sample.csproj -t:Run -f net6.0-android
+.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample\Maui.Controls.Sample.csproj -t:Run -f net6.0-ios
 ```
 
 #### MacOS
@@ -169,9 +164,9 @@ dotnet build Microsoft.Maui-mac.slnf
 Try out a "single project", you will need the `-f` switch to choose the platform:
 
 ```bash
-dotnet build src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-ios
-dotnet build src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-maccatalyst
-dotnet build src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-android
+dotnet build src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj -t:Run -f net6.0-ios
+dotnet build src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj -t:Run -f net6.0-maccatalyst
+dotnet build src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj -t:Run -f net6.0-android
 ```
 
 ### Blazor Desktop
