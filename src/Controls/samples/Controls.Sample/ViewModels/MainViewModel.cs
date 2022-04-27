@@ -60,9 +60,6 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(OthersPage), "Others Concepts",
 				"Other options like Graphics."),
-
-			new SectionModel(typeof(HitTestingPage), "Hit Testing",
-				"Demonstrates VisualTreeElementExtensions hit testing methods"),
 		};
 	}
 }
