@@ -1,7 +1,7 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI", "Tizen", "Blazor" ],
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen", "Blazor" ],
     "identity": "Microsoft.Maui.BlazorApp",
     "groupIdentity": "Microsoft.Maui.BlazorApp",
     "name": ".NET MAUI Blazor App (Preview)",

@@ -1,15 +1,26 @@
-﻿using Microsoft.Maui.Graphics;
-
-namespace Microsoft.Maui.DeviceTests.Stubs
+﻿namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class RectangleStub : StubBase, IShape
+	public class RectangleStub : ShapeViewStub, IShapeView
 	{
 		public RectangleStub()
 		{
 
 		}
 
-		public RectangleStub(double radiusX, double radiusY) : this()
+		public RectangleStub(double radiusX, double radiusY)
+		{
+			Shape = new RectangleShapeStub(radiusX, radiusY);
+		}
+	}
+
+	public class RectangleShapeStub : StubBase, IShape
+	{
+		public RectangleShapeStub()
+		{
+
+		}
+
+		public RectangleShapeStub(double radiusX, double radiusY) : this()
 		{
 			RadiusX = radiusX;
 			RadiusY = radiusY;

@@ -10,7 +10,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs" />
-	public abstract partial class Element : BindableObject, IElement, INameScope, IElementController, IVisualTreeElement
+	public abstract partial class Element : BindableObject, IElementDefinition, INameScope, IElementController, IVisualTreeElement
 	{
 		internal static readonly ReadOnlyCollection<Element> EmptyChildren = new ReadOnlyCollection<Element>(Array.Empty<Element>());
 
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls
 
 		Dictionary<BindableProperty, string> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, string>());
 
-		void IElement.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
+		void IElementDefinition.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
 			_changeHandlers = _changeHandlers ?? new List<Action<object, ResourcesChangedEventArgs>>(2);
 			_changeHandlers.Add(onchanged);
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls
 
 				if (RealParent != null)
 				{
-					((IElement)RealParent).RemoveResourcesChangedListener(OnParentResourcesChanged);
+					((IElementDefinition)RealParent).RemoveResourcesChangedListener(OnParentResourcesChanged);
 
 					if (value != null && (RealParent is Layout || RealParent is IControlTemplated))
 						Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {RealParent}. Remove {this} from {RealParent} before adding to {value}.");
@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Controls
 				if (RealParent != null)
 				{
 					OnParentResourcesChanged(RealParent.GetMergedResources());
-					((IElement)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
+					((IElementDefinition)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
 				}
 
 				object context = value != null ? value.BindingContext : null;
@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls
 
 		internal bool IsTemplateRoot { get; set; }
 
-		void IElement.RemoveResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
+		void IElementDefinition.RemoveResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
 			if (_changeHandlers == null)
 				return;
@@ -402,9 +402,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Descendants']/Docs" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public IEnumerable<Element> Descendants()
+		internal IEnumerable<Element> Descendants() =>
+			Descendants<Element>();
+
+		IEnumerable<Element> IElementController.Descendants() =>
+			Descendants<Element>();
+
+		internal IEnumerable<TElement> Descendants<TElement>()
+			where TElement : Element
 		{
 			var queue = new Queue<Element>(16);
 			queue.Enqueue(this);
@@ -415,7 +420,10 @@ namespace Microsoft.Maui.Controls
 				for (var i = 0; i < children.Count; i++)
 				{
 					Element child = children[i];
-					yield return child;
+					if (child is not TElement childT)
+						continue;
+
+					yield return childT;
 					queue.Enqueue(child);
 				}
 			}
@@ -623,9 +631,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		void OnResourceChanged(BindableProperty property, object value)
-		{
-			SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings);
-		}
+			=> SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings);
 
 		public event EventHandler<ParentChangingEventArgs> ParentChanging;
 		public event EventHandler ParentChanged;

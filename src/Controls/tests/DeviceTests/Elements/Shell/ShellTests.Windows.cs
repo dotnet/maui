@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -18,6 +11,12 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests : HandlerTestBase
 	{
+		protected Task CheckFlyoutState(ShellHandler handler, bool desiredState)
+		{
+			Assert.Equal(desiredState, handler.PlatformView.IsPaneOpen);
+			return Task.CompletedTask;
+		}
+
 		[Fact(DisplayName = "Back Button Enabled/Disabled")]
 		public async Task BackButtonEnabledAndDisabled()
 		{
@@ -135,9 +134,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
-		[Fact(DisplayName = "Flyout Locked Offset")]
-		public async Task FlyoutLockedOffset()
+		[Fact(DisplayName = "Flyout Locked Offset from AppTitleBar")]
+		public async Task FlyoutLockedOffsetFromAppTitleBar()
 		{
 			SetupBuilder();
 			var label = new StackLayout()
@@ -162,6 +160,75 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var rootManager = handler.MauiContext.GetNavigationRootManager();
 				var position = label.GetLocationRelativeTo(rootManager.AppTitleBar);
+				var distance = rootManager.AppTitleBar.ActualHeight - position.Value.Y;
+				Assert.True(Math.Abs(distance) < 1);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "Flyout Locked Offsets Correctly from Content")]
+		public async Task FlyoutLockedOffsetsCorrectlyFromContent()
+		{
+			SetupBuilder();
+			var flyoutContent = new VerticalStackLayout()
+			{
+				HorizontalOptions = LayoutOptions.Fill
+			};
+
+			var contentPage = new ContentPage()
+			{
+				Content = new VerticalStackLayout()
+			};
+
+			var shell = await InvokeOnMainThreadAsync(() =>
+			{
+				return new Shell()
+				{
+					FlyoutContent = flyoutContent,
+					CurrentItem = contentPage,
+					FlyoutBehavior = FlyoutBehavior.Locked
+				};
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			{
+				var position = contentPage.GetLocationRelativeTo(flyoutContent);
+
+				var distance = position.Value.X - flyoutContent.Width;
+				Assert.True(Math.Abs(distance) < 1);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "Content Offsets Correctly From App Title Bar")]
+		public async Task ContentOffsetsCorrectlyFromAppTitleBar()
+		{
+			SetupBuilder();
+			var flyoutContent = new VerticalStackLayout()
+			{
+				HorizontalOptions = LayoutOptions.Fill
+			};
+
+			var contentPage = new ContentPage()
+			{
+				Content = new VerticalStackLayout()
+			};
+
+			var shell = await InvokeOnMainThreadAsync(() =>
+			{
+				return new Shell()
+				{
+					FlyoutContent = flyoutContent,
+					CurrentItem = contentPage,
+					FlyoutBehavior = FlyoutBehavior.Locked
+				};
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			{
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+
+				var position = contentPage.GetLocationRelativeTo(rootManager.AppTitleBar);
 				var distance = rootManager.AppTitleBar.ActualHeight - position.Value.Y;
 				Assert.True(Math.Abs(distance) < 1);
 				return Task.CompletedTask;

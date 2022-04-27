@@ -1,9 +1,7 @@
 ﻿#nullable enable
-using Microsoft.Maui.Graphics;
-
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class PolylineStub : StubBase, IShape
+	public class PolylineStub : ShapeViewStub, IShapeView
 	{
 		public PolylineStub()
 		{
@@ -11,6 +9,19 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public PolylineStub(PointCollectionStub? points)
+		{
+			Shape = new PolylineShapeStub(points);
+		}
+	}
+
+	public class PolylineShapeStub : StubBase, IShape
+	{
+		public PolylineShapeStub()
+		{
+
+		}
+
+		public PolylineShapeStub(PointCollectionStub? points)
 		{
 			Points = points;
 		}

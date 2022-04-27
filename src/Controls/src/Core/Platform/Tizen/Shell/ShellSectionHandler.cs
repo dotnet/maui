@@ -66,10 +66,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected IMauiContext MauiContext { get; private set; }
 
-		protected EvasObject? NativeParent
-		{
-			get => MauiContext.GetNativeParent();
-		}
+		protected EvasObject NativeParent => MauiContext.GetNativeParent();
 
 		protected virtual bool TabBarIsVisible
 		{
@@ -203,8 +200,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void InitializeTabs()
 		{
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
-
 			if (_tabs != null)
 			{
 				return;

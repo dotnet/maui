@@ -45,6 +45,9 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = handler.VirtualView.Flyout.ToPlatform(handler.MauiContext);
 
+			if (handler.PlatformView is RootNavigationView rnv)
+				rnv.FlyoutView = handler.VirtualView.Flyout;
+
 			handler.PlatformView.FlyoutCustomContent = handler.VirtualView.Flyout?.ToPlatform(handler.MauiContext);
 		}
 

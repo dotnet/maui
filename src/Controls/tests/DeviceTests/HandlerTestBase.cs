@@ -100,8 +100,9 @@ namespace Microsoft.Maui.DeviceTests
 			where THandler : IElementHandler
 		{
 			var handler = Activator.CreateInstance<THandler>();
-			handler.SetMauiContext(mauiContext);
 
+			handler.SetMauiContext(mauiContext);
+			
 			handler.SetVirtualView(element);
 			element.Handler = handler;
 

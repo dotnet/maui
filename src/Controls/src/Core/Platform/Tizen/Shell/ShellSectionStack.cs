@@ -41,10 +41,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected IMauiContext? MauiContext { get; private set; }
 
-		protected EvasObject? NativeParent
-		{
-			get => MauiContext?.GetNativeParent();
-		}
+		protected EvasObject NativeParent => MauiContext?.GetNativeParent() ?? throw new InvalidOperationException($"NativeParent cannot be null here");
 
 		public virtual bool NavBarIsVisible
 		{
