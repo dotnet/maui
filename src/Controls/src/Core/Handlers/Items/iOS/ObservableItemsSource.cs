@@ -136,18 +136,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					Move(args);
 					break;
 				case NotifyCollectionChangedAction.Reset:
-					Reload();
+					Reload(true);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 		}
 
-		void Reload()
+		void Reload(bool isDoingReset = false)
 		{
 			var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
 
-			Count = ItemsCount();
+			//there could be cases where the Reset event doesn't fire before we start adding items if done from a different thread
+			if (isDoingReset)
+				Count = 0;
+			else
+				Count = ItemsCount();
 
 			OnCollectionViewUpdating(args);
 
