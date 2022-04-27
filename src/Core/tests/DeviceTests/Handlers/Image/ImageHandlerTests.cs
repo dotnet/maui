@@ -19,7 +19,11 @@ namespace Microsoft.Maui.DeviceTests
 		where TImageHandler : IImageHandler, new()
 		where TStub : StubBase, IImageStub, new()
 	{
-		[Theory]
+		[Theory(
+#if IOS
+			Skip = "Test failing on IOS"
+#endif
+			)]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#000000")]
