@@ -494,14 +494,16 @@ namespace Microsoft.Maui.Controls
 		ShellNavigationState IShellController.GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, bool includeStack)
 			=> ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, includeStack ? shellSection.Stack.ToList() : null, includeStack ? shellSection.Navigation.ModalStack.ToList() : null);
 
-		void IShellController.OnFlyoutItemSelected(Element element)
-		{
-			(this as IShellController)
-				.OnFlyoutItemSelectedAsync(element)
-				.FireAndForget();
-		}
+		void OnFlyoutItemSelected(Element element, bool platformInitiated) =>
+			OnFlyoutItemSelectedAsync(element, platformInitiated).FireAndForget();
 
-		Task IShellController.OnFlyoutItemSelectedAsync(Element element)
+		void IShellController.OnFlyoutItemSelected(Element element) =>
+			OnFlyoutItemSelected(element, true);
+
+		Task IShellController.OnFlyoutItemSelectedAsync(Element element) =>
+			OnFlyoutItemSelectedAsync(element, true);
+
+		Task OnFlyoutItemSelectedAsync(Element element, bool platformInitiated)
 		{
 			ShellItem shellItem = null;
 			ShellSection shellSection = null;
@@ -535,7 +537,7 @@ namespace Microsoft.Maui.Controls
 			shellSection = shellSection ?? shellItem.CurrentItem;
 			shellContent = shellContent ?? shellSection?.CurrentItem;
 
-			if (FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
 				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
 
 			if (shellSection == null)
@@ -594,9 +596,9 @@ namespace Microsoft.Maui.Controls
 			{
 				(sender as BindableObject).PropertyChanged -= OnShellItemPropertyChanged;
 				if (sender is ShellItem item)
-					((IShellController)this).OnFlyoutItemSelected(item);
+					OnFlyoutItemSelected(item, false);
 				else if (sender is ShellSection section)
-					((IShellController)this).OnFlyoutItemSelected(section.Parent);
+					OnFlyoutItemSelected(section.Parent, false);
 			}
 		}
 
@@ -845,16 +847,19 @@ namespace Microsoft.Maui.Controls
 		void Initialize()
 		{
 			if (CurrentItem != null)
-				SetCurrentItem();
+				SetCurrentItem()
+					.FireAndForget();
 
 			((ShellElementCollection)Items).VisibleItemsChangedInternal += (s, e) =>
 			{
-				SetCurrentItem();
+				SetCurrentItem()
+					.FireAndForget();
+
 				SendStructureChanged();
 				SendFlyoutItemsChanged();
 			};
 
-			async void SetCurrentItem()
+			async Task SetCurrentItem()
 			{
 				var shellItems = ShellController.GetItems();
 
@@ -915,7 +920,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (shellItem != null)
-					ShellController.OnFlyoutItemSelected(shellItem);
+					await OnFlyoutItemSelectedAsync(shellItem, false).ConfigureAwait(false);
 			}
 		}
 

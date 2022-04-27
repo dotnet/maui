@@ -84,6 +84,15 @@ namespace Microsoft.Maui.Controls
 			if (result == null)
 				throw new InvalidOperationException($"No Content found for {nameof(ShellContent)}, Title:{Title}, Route {Route}");
 
+			if (result is TabbedPage)
+				throw new NotSupportedException($"Shell is currently not compatible with TabbedPage. Please use TabBar, Tab or switch to using NavigationPage for your {Application.Current}.MainPage");
+
+			if (result is FlyoutPage)
+				throw new NotSupportedException("Shell is currently not compatible with FlyoutPage.");
+
+			if (result is NavigationPage)
+				throw new NotSupportedException("Shell is currently not compatible with NavigationPage. Shell has Navigation built in and doesn't require a NavigationPage.");
+
 			if (GetValue(QueryAttributesProperty) is ShellRouteParameters delayedQueryParams)
 				result.SetValue(QueryAttributesProperty, delayedQueryParams);
 

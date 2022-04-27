@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 {
 	// Don't add IElementConfiguration<Cell> because it kills performance on UWP structures that use Cells
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Cell']/Docs" />
-	public abstract class Cell : Element, ICellController, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController
+	public abstract class Cell : Element, ICellController, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IVisualTreeElement
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='DefaultCellHeight']/Docs" />
 		public const int DefaultCellHeight = 40;
@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
 
 		ObservableCollection<MenuItem> _contextActions;
+		List<MenuItem> _currentContextActions;
 		readonly Lazy<ElementConfiguration> _elementConfiguration;
 
 		double _height = -1;
@@ -249,7 +250,21 @@ namespace Microsoft.Maui.Controls
 		void OnContextActionsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			for (var i = 0; i < _contextActions.Count; i++)
+			{
 				SetInheritedBindingContext(_contextActions[i], BindingContext);
+				_contextActions[i].Parent = this;
+				_currentContextActions?.Remove(_contextActions[i]);
+			}
+
+			if (_currentContextActions != null)
+			{
+				foreach (MenuItem item in _currentContextActions)
+				{
+					item.Parent = null;
+				}
+			}
+
+			_currentContextActions = new List<MenuItem>(_contextActions);
 
 			OnPropertyChanged("HasContextActions");
 		}
@@ -295,6 +310,17 @@ namespace Microsoft.Maui.Controls
 		internal UIKit.UITableView TableView { get; set; }
 
 #endif
+
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren()
+		{
+			var children = new List<Maui.IVisualTreeElement>(LogicalChildrenInternal);
+
+			if (_contextActions != null)
+				children.AddRange(_contextActions);
+
+			return children;
+		}
 
 		#region Nested IElementConfiguration<Cell> Implementation
 		// This creates a nested class to keep track of IElementConfiguration<Cell> because adding 

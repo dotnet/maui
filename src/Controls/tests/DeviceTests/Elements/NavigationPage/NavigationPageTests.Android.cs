@@ -57,25 +57,6 @@ namespace Microsoft.Maui.DeviceTests
 					.LayoutParameters?.Height > 0;
 		}
 
-		public bool ToolbarItemsMatch(
-			IElementHandler handler,
-			params ToolbarItem[] toolbarItems)
-		{
-			var toolbar = GetPlatformToolbar(handler);
-			var menu = toolbar.Menu;
-
-			Assert.Equal(toolbarItems.Length, menu.Size());
-
-			for (var i = 0; i < toolbarItems.Length; i++)
-			{
-				ToolbarItem toolbarItem = toolbarItems[i];
-				var primaryCommand = menu.GetItem(i);
-				Assert.Equal(toolbarItem.Text, $"{primaryCommand.TitleFormatted}");
-			}
-
-			return true;
-		}
-
 		string GetToolbarTitle(IElementHandler handler) =>
 			GetPlatformToolbar(handler).Title;
 	}

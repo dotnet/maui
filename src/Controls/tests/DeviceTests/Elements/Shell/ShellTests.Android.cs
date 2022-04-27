@@ -14,6 +14,44 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 	public partial class ShellTests
 	{
+		protected async Task CheckFlyoutState(ShellRenderer handler, bool desiredState)
+		{
+			var drawerLayout = (handler as IShellContext).CurrentDrawerLayout;
+			var flyout = drawerLayout.GetChildAt(1);
+
+			if (drawerLayout.IsDrawerOpen(flyout) == desiredState)
+			{
+				Assert.Equal(desiredState, drawerLayout.IsDrawerOpen(flyout));
+				return;
+			}
+
+			var taskCompletionSource = new TaskCompletionSource<bool>();
+			flyout.LayoutChange += OnLayoutChanged;
+
+			try
+			{
+				await taskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(2));
+			}
+			catch (TimeoutException)
+			{
+
+			}
+
+			flyout.LayoutChange -= OnLayoutChanged;
+			Assert.Equal(desiredState, drawerLayout.IsDrawerOpen(flyout));
+
+			return;
+
+			void OnLayoutChanged(object sender, Android.Views.View.LayoutChangeEventArgs e)
+			{
+				if (drawerLayout.IsDrawerOpen(flyout) == desiredState)
+				{
+					taskCompletionSource.SetResult(true);
+					flyout.LayoutChange -= OnLayoutChanged;
+				}
+			}
+		}
+
 		[Fact(DisplayName = "Shell with Flyout Disabled Doesn't Render Flyout")]
 		public async Task ShellWithFlyoutDisabledDoesntRenderFlyout()
 		{

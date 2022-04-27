@@ -5,11 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, IndicatorView>
 	{
-		protected override IndicatorView CreatePlatformView()
-		{
-			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
-			return new IndicatorView(NativeParent);
-		}
+		protected override IndicatorView CreatePlatformView() => new IndicatorView(NativeParent);
 
 		protected override void ConnectHandler(IndicatorView platformView)
 		{
