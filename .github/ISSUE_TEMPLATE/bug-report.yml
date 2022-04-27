@@ -34,11 +34,11 @@ body:
       label: Version with bug
       description: In what version do you see this issue?
       options:
-        - Preview 12
         - Preview 13
         - Preview 14
-        - Release Candidate 1 (current)
-        - Release Candidate 2
+        - Release Candidate 1
+        - Release Candidate 2 (current)
+        - Release Candidate 3
         - Unknown/Other (please specify)
     validations:
       required: true
@@ -51,8 +51,9 @@ body:
         - Preview 12
         - Preview 13
         - Preview 14
-        - Release Candidate 1 (current)
-        - Release Candidate 2
+        - Release Candidate 1
+        - Release Candidate 2 (current)
+        - Release Candidate 3
         - Unknown/Other
     validations:
       required: true

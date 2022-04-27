@@ -9,8 +9,8 @@ namespace Microsoft.Maui.Platform
 	{
 		Window _platformWindow;
 		WindowRootView _rootView;
-		MauiToolbar? _toolbar;
-		MenuBar? _menuBar;
+		bool _firstConnect;
+		bool _disconnected;
 
 		public NavigationRootManager(Window platformWindow)
 		{
@@ -29,16 +29,14 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal FrameworkElement? AppTitleBar => _rootView.AppTitleBar;
-
-		internal FrameworkElement? AppTitleBarContentControl => _rootView.AppTitleBarContentControl;
-		internal MauiToolbar? ToolBar => _toolbar ?? _rootView?.NavigationViewControl?.Toolbar as MauiToolbar;
+		internal MauiToolbar? Toolbar => _rootView.Toolbar;
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
 		{
-			if (_rootView.NavigationViewControl != null &&
-				_rootView.NavigationViewControl.Toolbar != _toolbar)
+			if (_rootView.AppTitleBar != null)
 			{
-				_rootView.NavigationViewControl.Toolbar = _toolbar;
+				_platformWindow.ExtendsContentIntoTitleBar = true;
+				UpdateAppTitleBar(true);
 			}
 		}
 
@@ -57,7 +55,18 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Connect(UIElement platformView)
 		{
-			bool firstConnect = _rootView.Content == null;
+			bool firstConnect = _firstConnect;
+
+			if (!firstConnect)
+			{
+				// We need to make sure to clear out the root view content 
+				// before creating the new view.
+				// Otherwise the new view might try to act on the old content.
+				// It might have code in the handler that retrieves this class.
+				_rootView.Content = null;
+			}
+
+			_firstConnect = false;
 
 			NavigationView rootNavigationView;
 			if (platformView is NavigationView nv)
@@ -80,21 +89,27 @@ namespace Microsoft.Maui.Platform
 				_rootView.Content = rootNavigationView;
 			}
 
-			if (firstConnect)
+			if (_disconnected)
 			{
 				_platformWindow.Activated += OnWindowActivated;
+			}
 
+			if (firstConnect)
+			{
 				if (_rootView.AppTitleBarContentControl != null && _platformWindow.ExtendsContentIntoTitleBar)
 					UpdateAppTitleBar(true);
 
 				SetWindowTitle(_platformWindow.GetWindow()?.Title);
 			}
+
+			_disconnected = false;
 		}
 
 		public virtual void Disconnect()
 		{
 			_platformWindow.Activated -= OnWindowActivated;
 			_rootView.Content = null;
+			_disconnected = true;
 		}
 
 		internal void UpdateAppTitleBar(bool isActive)
@@ -125,26 +140,12 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetMenuBar(MenuBar? menuBar)
 		{
-			_menuBar = menuBar;
-
-			if (_toolbar == null)
-				return;
-
-			if (menuBar != null)
-				_toolbar.SetMenuBar(menuBar);
-			else
-				_toolbar.SetMenuBar(null);
+			_rootView.MenuBar = menuBar;
 		}
 
 		internal void SetToolbar(FrameworkElement? toolBar)
 		{
-			_toolbar = toolBar as MauiToolbar;
-			SetMenuBar(_menuBar);
-
-			if (_rootView.NavigationViewControl != null)
-			{
-				_rootView.NavigationViewControl.Toolbar = _toolbar;
-			}
+			_rootView.Toolbar = toolBar as MauiToolbar;
 		}
 
 		void OnWindowActivated(object sender, WindowActivatedEventArgs e)

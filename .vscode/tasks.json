@@ -42,10 +42,10 @@
             // in vscode.
             "id": "project",
             "type": "pickString",
-            "default": "src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj",
+            "default": "src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj",
             "description": "Pick the Project you want to build.",
             "options": [
-                "src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj",
+                "src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj",
             ]
         },
         {

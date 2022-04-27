@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			var windowManager = handler.MauiContext.GetNavigationRootManager();
+			windowManager.Disconnect();
 			windowManager.Connect(handler.VirtualView.Content.ToPlatform(handler.MauiContext));
 			var rootPanel = handler.PlatformView.Content as Panel;
 
