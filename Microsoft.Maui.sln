@@ -199,9 +199,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedSource", "SharedSource", "{4F2926C8-43AB-4328-A735-D9EAD699F81D}"
 	ProjectSection(SolutionItems) = preProject
 		src\BlazorWebView\src\SharedSource\QueryStringHelper.cs = src\BlazorWebView\src\SharedSource\QueryStringHelper.cs
+		src\BlazorWebView\src\SharedSource\UrlLoadingEventArgs.cs = src\BlazorWebView\src\SharedSource\UrlLoadingEventArgs.cs
 		src\BlazorWebView\src\SharedSource\UrlLoadingStrategy.cs = src\BlazorWebView\src\SharedSource\UrlLoadingStrategy.cs
 		src\BlazorWebView\src\SharedSource\WebView2WebViewManager.cs = src\BlazorWebView\src\SharedSource\WebView2WebViewManager.cs
-		src\BlazorWebView\src\SharedSource\UrlLoadingEventArgs.cs = src\BlazorWebView\src\SharedSource\UrlLoadingEventArgs.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.Droid", "src\Core\tests\Benchmarks.Droid\Benchmarks.Droid.csproj", "{5B56A734-D53C-4635-A53E-F889FCFCDD66}"
@@ -226,8 +226,10 @@ Global
 		{00A11C2F-969F-4964-8557-91ADF4B1523D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B8DC1324-977C-46F1-B697-9064ADE6099A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B8DC1324-977C-46F1-B697-9064ADE6099A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8DC1324-977C-46F1-B697-9064ADE6099A}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{B8DC1324-977C-46F1-B697-9064ADE6099A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8DC1324-977C-46F1-B697-9064ADE6099A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8DC1324-977C-46F1-B697-9064ADE6099A}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{75C380E0-CE53-4C01-B89F-CF685331DE18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{75C380E0-CE53-4C01-B89F-CF685331DE18}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75C380E0-CE53-4C01-B89F-CF685331DE18}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -419,6 +421,7 @@ Global
 		{C7131F14-274F-4B55-ACA9-E81731AD012F}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{C7131F14-274F-4B55-ACA9-E81731AD012F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7131F14-274F-4B55-ACA9-E81731AD012F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7131F14-274F-4B55-ACA9-E81731AD012F}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{A34EBE01-25BF-4E69-A2DC-2288DC625541}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A34EBE01-25BF-4E69-A2DC-2288DC625541}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A34EBE01-25BF-4E69-A2DC-2288DC625541}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -432,6 +435,7 @@ Global
 		{C677BF3D-B234-491D-BA48-D9742DB564F8}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{C677BF3D-B234-491D-BA48-D9742DB564F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C677BF3D-B234-491D-BA48-D9742DB564F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C677BF3D-B234-491D-BA48-D9742DB564F8}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{F7DB0CB3-D244-403A-8C3B-B1ED5E5838EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F7DB0CB3-D244-403A-8C3B-B1ED5E5838EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7DB0CB3-D244-403A-8C3B-B1ED5E5838EC}.Release|Any CPU.ActiveCfg = Release|Any CPU

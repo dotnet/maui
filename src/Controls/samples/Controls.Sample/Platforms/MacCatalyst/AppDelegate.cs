@@ -8,9 +8,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Controls;
 #endif
 
-using Maui.Controls.Sample;
-
-namespace Sample.MacCatalyst
+namespace Maui.Controls.Sample.Platform
 {
 	[Register("AppDelegate")]
 	public class AppDelegate : MauiUIApplicationDelegate
