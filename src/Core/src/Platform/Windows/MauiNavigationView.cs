@@ -38,10 +38,35 @@ namespace Microsoft.Maui.Platform
 		internal RowDefinition? PaneContentGridToggleButtonRow { get; private set; }
 		internal RowDefinition? PaneHeaderContentBorderRow { get; private set; }
 
+		// The NavigationView occasionally likes to switch back to "LeftMinimal"
+		// So we use this to switch it back whenver that happens.
+		internal NavigationViewPaneDisplayMode? PinPaneDisplayModeTo
+		{
+			get => _pinPaneDisplayModeTo;
+			set
+			{
+				_pinPaneDisplayModeTo = value;
+				UpdateToPinnedDisplayMode();
+
+			}
+		}
+
 		public MauiNavigationView()
 		{
 			this.RegisterPropertyChangedCallback(MenuItemsSourceProperty, (_, __) => UpdateMenuItemsContainerHeight());
 			this.RegisterPropertyChangedCallback(MenuItemsProperty, (_, __) => UpdateMenuItemsContainerHeight());
+			RegisterPropertyChangedCallback(PaneDisplayModeProperty, PaneDisplayModeChanged);
+		}
+
+		void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp) =>
+			UpdateToPinnedDisplayMode();
+
+		void UpdateToPinnedDisplayMode()
+		{
+			if (PinPaneDisplayModeTo != null && PinPaneDisplayModeTo.Value != this.PaneDisplayMode)
+			{
+				PaneDisplayMode = PinPaneDisplayModeTo.Value;
+			}
 		}
 
 		protected override void OnApplyTemplate()
@@ -101,13 +126,10 @@ namespace Microsoft.Maui.Platform
 			PaneHeaderContentBorderRow.RegisterPropertyChangedCallback(RowDefinition.MinHeightProperty, (_, __) =>
 				PaneHeaderContentBorderRow.MinHeight = 0);
 
-
 			// WinUI has this set to -1,3,-1,3 but I'm not really sure why
 			// It causes the content to not be flush up against the title bar
 			PaneContentGrid.Margin = new WThickness(-1, 0, -1, 0);
 			UpdateMenuItemsContainerHeight();
-
-
 		}
 
 
@@ -325,6 +347,7 @@ namespace Microsoft.Maui.Platform
 		public static readonly DependencyProperty PaneToggleButtonWidthProperty
 			= DependencyProperty.Register(nameof(PaneToggleButtonWidth), typeof(double), typeof(MauiNavigationView),
 				new PropertyMetadata(DefaultPaneToggleButtonWidth, OnPaneToggleButtonSizeChanged));
+		private NavigationViewPaneDisplayMode? _pinPaneDisplayModeTo;
 
 		public double PaneToggleButtonWidth
 		{
