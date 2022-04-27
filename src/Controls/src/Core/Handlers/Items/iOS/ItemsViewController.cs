@@ -132,8 +132,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.ViewDidLoad();
 
-			ItemsSource = CreateItemsViewSource();
-
 			if (!PlatformVersion.IsAtLeast(11))
 				AutomaticallyAdjustsScrollViewInsets = false;
 			else
@@ -231,6 +229,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override nint NumberOfSections(UICollectionView collectionView)
 		{
+			if(ItemsSource == null)
+				return 0;
+
 			CheckForEmptySource();
 			return ItemsSource.GroupCount;
 		}
@@ -339,7 +340,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		UICollectionViewCell GetPrototype()
 		{
-			if (ItemsSource.ItemCount == 0)
+			if (ItemsSource == null || ItemsSource.ItemCount == 0)
 			{
 				return null;
 			}
