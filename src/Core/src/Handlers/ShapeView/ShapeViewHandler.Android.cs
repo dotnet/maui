@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Handlers
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui.Handlers
 {
 	public partial class ShapeViewHandler : ViewHandler<IShapeView, MauiShapeView>
 	{
