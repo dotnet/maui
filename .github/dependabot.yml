@@ -10,6 +10,8 @@ updates:
     - dependency-name: "Microsoft.Maui.Graphics*"             # maestro
     - dependency-name: "Microsoft.DotNet.XHarness*"           # maestro
     - dependency-name: "Newtonsoft.Json"                      # needs to be done manually to match VS
+    - dependency-name: "Microsoft.Build*"                     # these packages neet to be kept on old version that supports netstandard2.0
+    
   labels:
       - "nuget"
       - "dependencies"
