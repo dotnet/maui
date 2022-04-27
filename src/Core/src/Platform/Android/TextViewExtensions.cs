@@ -1,8 +1,6 @@
 using System;
-using Android.Content.Res;
 using Android.Graphics;
 using Android.Text;
-using Android.Util;
 using Android.Widget;
 using static Android.Widget.TextView;
 using ALayoutDirection = Android.Views.LayoutDirection;
