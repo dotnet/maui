@@ -139,11 +139,11 @@ namespace Microsoft.Maui.Platform
 		}
 
 		#region Toolbar
-		public static readonly DependencyProperty ToolbarProperty
+		internal static readonly DependencyProperty ToolbarProperty
 			= DependencyProperty.Register(nameof(Toolbar), typeof(UIElement), typeof(MauiNavigationView),
 				new PropertyMetadata(null, (d, _) => ((RootNavigationView)d).ToolbarChanged()));
 
-		public UIElement? Toolbar
+		internal UIElement? Toolbar
 		{
 			get => (UIElement?)GetValue(ToolbarProperty);
 			set => SetValue(ToolbarProperty, value);
@@ -183,11 +183,11 @@ namespace Microsoft.Maui.Platform
 		#endregion
 
 		#region NavigationViewButtonHolderGridMargin
-		public static readonly DependencyProperty NavigationViewButtonHolderGridMarginProperty
+		internal static readonly DependencyProperty NavigationViewButtonHolderGridMarginProperty
 			= DependencyProperty.Register(nameof(NavigationViewButtonHolderGridMargin), typeof(WThickness), typeof(MauiNavigationView),
 				new PropertyMetadata((WThickness)Application.Current.Resources["NavigationViewButtonHolderGridMargin"], NavigationViewButtonHolderGridMarginChanged));
 
-		public WThickness NavigationViewButtonHolderGridMargin
+		internal WThickness NavigationViewButtonHolderGridMargin
 		{
 			get => (WThickness)GetValue(NavigationViewButtonHolderGridMarginProperty);
 			set => SetValue(NavigationViewButtonHolderGridMarginProperty, value);
@@ -206,11 +206,11 @@ namespace Microsoft.Maui.Platform
 		#endregion
 
 		#region NavigationViewContentMargin
-		public static readonly DependencyProperty NavigationViewContentMarginProperty
+		internal static readonly DependencyProperty NavigationViewContentMarginProperty
 			= DependencyProperty.Register(nameof(NavigationViewContentMargin), typeof(WThickness), typeof(MauiNavigationView),
 				new PropertyMetadata(new WThickness(), OnNavigationViewContentMarginChanged));
 
-		public WThickness NavigationViewContentMargin
+		internal WThickness NavigationViewContentMargin
 		{
 			get => (WThickness)GetValue(NavigationViewContentMarginProperty);
 			set => SetValue(NavigationViewContentMarginProperty, value);
@@ -232,21 +232,21 @@ namespace Microsoft.Maui.Platform
 		internal static double DefaultNavigationBackButtonHeight => (double)Application.Current.Resources["NavigationBackButtonHeight"];
 		internal static double DefaultNavigationBackButtonWidth => (double)Application.Current.Resources["NavigationBackButtonWidth"];
 
-		public static readonly DependencyProperty NavigationBackButtonHeightProperty
+		internal static readonly DependencyProperty NavigationBackButtonHeightProperty
 			= DependencyProperty.Register(nameof(NavigationBackButtonHeight), typeof(double), typeof(MauiNavigationView),
 				new PropertyMetadata(DefaultNavigationBackButtonHeight, OnNavigationBackButtonSizeChanged));
 
-		public double NavigationBackButtonHeight
+		internal double NavigationBackButtonHeight
 		{
 			get => (double)GetValue(NavigationBackButtonHeightProperty);
 			set => SetValue(NavigationBackButtonHeightProperty, value);
 		}
 
-		public static readonly DependencyProperty NavigationBackButtonWidthProperty
+		internal static readonly DependencyProperty NavigationBackButtonWidthProperty
 			= DependencyProperty.Register(nameof(NavigationBackButtonWidth), typeof(double), typeof(MauiNavigationView),
 				new PropertyMetadata(DefaultNavigationBackButtonWidth, OnNavigationBackButtonSizeChanged));
 
-		public double NavigationBackButtonWidth
+		internal double NavigationBackButtonWidth
 		{
 			get => (double)GetValue(NavigationBackButtonWidthProperty);
 			set => SetValue(NavigationBackButtonWidthProperty, value);
@@ -278,11 +278,11 @@ namespace Microsoft.Maui.Platform
 		#endregion
 
 		#region Flyout Custom Content
-		public static readonly DependencyProperty FlyoutCustomContentProperty
+		internal static readonly DependencyProperty FlyoutCustomContentProperty
 			= DependencyProperty.Register(nameof(FlyoutCustomContent), typeof(UIElement), typeof(MauiNavigationView),
 				new PropertyMetadata(null, (d, _) => ((RootNavigationView)d).UpdateFlyoutCustomContent()));
 
-		public UIElement? FlyoutCustomContent
+		internal UIElement? FlyoutCustomContent
 		{
 			get => (UIElement?)GetValue(FlyoutCustomContentProperty);
 			set => SetValue(FlyoutCustomContentProperty, value);
@@ -302,31 +302,31 @@ namespace Microsoft.Maui.Platform
 
 		internal static WThickness DefaultPaneToggleButtonPadding => (WThickness)Application.Current.Resources["NavigationViewItemButtonMargin"];
 
-		public static readonly DependencyProperty PaneToggleButtonPaddingProperty
+		internal static readonly DependencyProperty PaneToggleButtonPaddingProperty
 			= DependencyProperty.Register(nameof(PaneToggleButtonPadding), typeof(WThickness), typeof(MauiNavigationView),
 				new PropertyMetadata(DefaultPaneToggleButtonPadding, OnPaneToggleButtonSizeChanged));
 
-		public WThickness PaneToggleButtonPadding
+		internal WThickness PaneToggleButtonPadding
 		{
 			get => (WThickness)GetValue(PaneToggleButtonPaddingProperty);
 			set => SetValue(PaneToggleButtonPaddingProperty, value);
 		}
 
-		public static readonly DependencyProperty PaneToggleButtonHeightProperty
+		internal static readonly DependencyProperty PaneToggleButtonHeightProperty
 			= DependencyProperty.Register(nameof(PaneToggleButtonHeight), typeof(double), typeof(MauiNavigationView),
 				new PropertyMetadata(DefaultPaneToggleButtonHeight, OnPaneToggleButtonSizeChanged));
 
-		public double PaneToggleButtonHeight
+		internal double PaneToggleButtonHeight
 		{
 			get => (double)GetValue(PaneToggleButtonHeightProperty);
 			set => SetValue(PaneToggleButtonHeightProperty, value);
 		}
 
-		public static readonly DependencyProperty PaneToggleButtonWidthProperty
+		internal static readonly DependencyProperty PaneToggleButtonWidthProperty
 			= DependencyProperty.Register(nameof(PaneToggleButtonWidth), typeof(double), typeof(MauiNavigationView),
 				new PropertyMetadata(DefaultPaneToggleButtonWidth, OnPaneToggleButtonSizeChanged));
 
-		public double PaneToggleButtonWidth
+		internal double PaneToggleButtonWidth
 		{
 			get => (double)GetValue(PaneToggleButtonWidthProperty);
 			set => SetValue(PaneToggleButtonWidthProperty, value);

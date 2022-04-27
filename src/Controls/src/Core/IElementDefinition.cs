@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	internal interface IElement
+	internal interface IElementDefinition
 	{
 		Element Parent { get; set; }
 

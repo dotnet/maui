@@ -1,15 +1,26 @@
-﻿using Microsoft.Maui.Graphics;
-
-namespace Microsoft.Maui.DeviceTests.Stubs
+﻿namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class RoundRectangleStub : StubBase, IShape
+	public class RoundRectangleStub : ShapeViewStub, IShapeView
 	{
 		public RoundRectangleStub()
 		{
 
 		}
 
-		public RoundRectangleStub(CornerRadius cornerRadius) : this()
+		public RoundRectangleStub(CornerRadius cornerRadius)
+		{
+			Shape = new RoundRectangleShapeStub(cornerRadius);
+		}
+	}
+
+	public class RoundRectangleShapeStub : StubBase, IShape
+	{
+		public RoundRectangleShapeStub()
+		{
+
+		}
+
+		public RoundRectangleShapeStub(CornerRadius cornerRadius) : this()
 		{
 			CornerRadius = cornerRadius;
 		}
