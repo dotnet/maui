@@ -4,6 +4,11 @@
              xmlns:local="clr-namespace:MauiApp._1"
              x:Class="MauiApp._1.App">
     <Application.Resources>
-        <ResourceDictionary Source="Resources/Styles.xaml" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

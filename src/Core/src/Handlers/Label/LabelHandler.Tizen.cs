@@ -7,8 +7,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override Label CreatePlatformView()
 		{
-			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
-
 			var label = new Label(NativeParent)
 			{
 				// Fix me : it is workaround code, LineBreakMode is not working when Label was measured but we set LineBreakMode as WordWrap at initialize time, it works

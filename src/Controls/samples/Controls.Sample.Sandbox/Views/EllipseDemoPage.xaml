@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ShapesDemos.Views.EllipseDemoPage"
+             Title="Ellipse demos">
+    <ScrollView>
+        <StackLayout Margin="20">
+            <Label Text="Filled ellipse" />
+            <Ellipse Fill="Red"
+                     WidthRequest="150"
+                     HeightRequest="50"
+                     HorizontalOptions="Start" />
+            <Label Text="Circle" />
+            <Ellipse Stroke="Red"
+                     StrokeThickness="4"
+                     WidthRequest="150"
+                     HeightRequest="150"
+                     HorizontalOptions="Start" />
+            <Label Text="Ellipse with stroke" />
+            <Ellipse Stroke="Red"
+                     StrokeThickness="4"
+                     WidthRequest="150"
+                     HeightRequest="50"
+                     HorizontalOptions="Start" />
+            <Label Text="Filled ellipse with stroke" />
+            <Ellipse Fill="DarkBlue"
+                     Stroke="Red"
+                     StrokeThickness="4"
+                     WidthRequest="150"
+                     HeightRequest="50"
+                     HorizontalOptions="Start" />
+            <Label Text="Filled ellipse with dashed stroke" />
+            <Ellipse Fill="DarkBlue"
+                     Stroke="Red"
+                     StrokeThickness="4"
+                     StrokeDashArray="1,1"
+                     StrokeDashOffset="6"
+                     WidthRequest="150"
+                     HeightRequest="50"
+                     HorizontalOptions="Start" />
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

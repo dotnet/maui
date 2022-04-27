@@ -1,0 +1,81 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:views="clr-namespace:ShapesDemos.Views"
+             x:Class="ShapesDemos.MainPage"
+			 Title="Shapes demos">
+	<TableView Intent="Menu">
+		<TableRoot>
+			<TableSection Title="Basic Shapes">
+				<TextCell Text="Rectangle demos"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:RectangleDemoPage}" />
+				<TextCell Text="Ellipse demos"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:EllipseDemoPage}" />
+				<TextCell Text="Line demos"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:LineDemoPage}" />
+				<TextCell Text="Polygon demos"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:PolygonDemoPage}" />
+				<TextCell Text="Polyline demos"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:PolylineDemoPage}" />
+				<TextCell Text="Brushes demos"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:BrushesDemoPage}" />
+				<TextCell Text="Clipping demos"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:ClipDemoPage}" />
+				<TextCell Text="Path demos"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:PathDemoPage}" />
+				<TextCell Text="Path geometry demos"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:PathGeometryDemoPage}" />
+				<TextCell Text="Path aspect demos"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:PathAspectDemoPage}" />
+				<TextCell Text="Path render transform demos"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:PathRenderTransformDemoPage}" />
+				<TextCell Text="Path render transform examples"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:PathRenderTransformExamplesDemoPage}" />
+			</TableSection>
+
+			<TableSection Title="More Advanced Shapes">
+				<TextCell Text="Analog clock demo"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:AnalogClockDemoPage}" />
+				<TextCell Text="Baby elephant demo"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:BabyElephantDemoPage}" />
+				<TextCell Text="Cat demo"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:CatDemoPage}" />
+				<TextCell Text="Clip art man demo"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:ClipArtManDemoPage}" />
+				<TextCell Text="Flower demo"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:FlowerDemoPage}" />
+				<TextCell Text="Hello demo"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:HelloDemoPage}" />
+				<TextCell Text="Monkey face demo"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:MonkeyFaceDemoPage}" />
+				<TextCell Text="Spiral demo"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:SpiralDemoPage}" />
+				<TextCell Text="Moving spiral demo"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:SpiralRunnerDemoPage}" />
+				<TextCell Text="Inverted Xamagon demo"
+                          Command="{Binding NavigateCommand}"
+                          CommandParameter="{x:Type views:InvertedXamagonDemoPage}" />
+			</TableSection>
+		</TableRoot>
+	</TableView>
+</ContentPage>
