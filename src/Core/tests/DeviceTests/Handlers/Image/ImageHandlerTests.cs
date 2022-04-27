@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#000000")]
-		public async Task MakeSureEverythingWorks(string colorHex)
+		public async Task UpdatingSourceUpdatesImageCorrectly(string colorHex)
 		{
 			// create files
 			var expectedColor = Color.FromArgb(colorHex);
@@ -43,14 +43,14 @@ namespace Microsoft.Maui.DeviceTests
 					handler.UpdateValue(nameof(IImage.Source));
 					await image.Wait();
 
-					await platformView.AssertColorAtCenter(Colors.Blue.ToPlatform());
+					await platformView.AssertContainsColor(Colors.Blue.ToPlatform());
 
 					// the second one does not
 					image.Source = new FileImageSourceStub(secondPath);
 					handler.UpdateValue(nameof(IImage.Source));
 					await image.Wait();
 
-					await platformView.AssertColorAtCenter(expectedColor.ToPlatform());
+					await platformView.AssertContainsColor(expectedColor.ToPlatform());
 				});
 			});
 		}
