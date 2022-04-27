@@ -113,16 +113,16 @@ namespace Microsoft.Maui.Handlers
 			{
 				using (var builder = new AlertDialog.Builder(Context))
 				{
-					var title = VirtualView.Title ?? string.Empty;
 					if (VirtualView.TitleColor == null)
 					{
-						builder.SetTitle(title);
+						builder.SetTitle(VirtualView.Title ?? string.Empty);
 					}
 					else
 					{
-						var spanTitle = new SpannableString(title);
-						var length = OperatingSystem.IsAndroidVersionAtLeast(29) ? spanTitle.Length() : title.Length;
-						spanTitle.SetSpan(new ForegroundColorSpan(VirtualView.TitleColor.ToPlatform()), 0, length, SpanTypes.ExclusiveExclusive);
+						var title = new SpannableString(VirtualView.Title ?? string.Empty);
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
+						title.SetSpan(new ForegroundColorSpan(VirtualView.TitleColor.ToPlatform()), 0, title.Length(), SpanTypes.ExclusiveExclusive);
+#pragma warning restore CA1416
 						builder.SetTitle(title);
 					}
 

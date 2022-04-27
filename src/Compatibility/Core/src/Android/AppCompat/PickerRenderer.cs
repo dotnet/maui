@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					else
 					{
 						var title = new SpannableString(model.Title ?? "");
-#pragma warning disable CA1416 // TODO:  SpannableString.Length()' is only supported on: 'android' 29.0 and later.
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 						title.SetSpan(new ForegroundColorSpan(model.TitleColor.ToAndroid()), 0, title.Length(), SpanTypes.ExclusiveExclusive);
 #pragma warning restore CA1416
 

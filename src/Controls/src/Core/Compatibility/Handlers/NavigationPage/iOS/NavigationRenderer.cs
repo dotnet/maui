@@ -205,7 +205,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateHideNavigationBarSeparator();
 			UpdateUseLargeTitles();
 
-			if (OperatingSystem.IsIOSVersionAtLeast(11) && PlatformVersion.Supports(PlatformApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			// If there is already stuff on the stack we need to push it

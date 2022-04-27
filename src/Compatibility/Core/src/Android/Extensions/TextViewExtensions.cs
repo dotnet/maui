@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			int count = 0;
 			IList<int> totalLineHeights = new List<int>();
 
-#pragma warning disable CA1416 // TODO:  SpannableString.Length()' is only supported on: 'android' 29.0 and later
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 			for (int i = 0; i < spannableString.Length(); i = next)
 			{
 				var type = Java.Lang.Class.FromType(typeof(Java.Lang.Object));

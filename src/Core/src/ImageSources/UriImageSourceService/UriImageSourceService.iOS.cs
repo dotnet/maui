@@ -78,7 +78,7 @@ namespace Microsoft.Maui
 
 			Directory.CreateDirectory(directory);
 
-#pragma warning disable CA1416 // TODO: 'NSData.Save(string, bool)' is unsupported on: 'ios' 13.0 and later
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			var result = imageData.Save(path, true);
 #pragma warning restore CA1416
 

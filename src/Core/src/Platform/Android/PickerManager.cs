@@ -60,10 +60,10 @@ namespace Microsoft.Maui.Platform
 			if (titleColor == null)
 				return new Java.Lang.String(title);
 
-			title = title ?? string.Empty;
-			var spannableTitle = new SpannableString(title);
-			var length = OperatingSystem.IsAndroidVersionAtLeast(29) ? spannableTitle.Length() : title.Length;
-			spannableTitle.SetSpan(new ForegroundColorSpan(titleColor.ToPlatform()), 0, length, SpanTypes.ExclusiveExclusive);
+			var spannableTitle = new SpannableString(title ?? string.Empty);
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
+			spannableTitle.SetSpan(new ForegroundColorSpan(titleColor.ToPlatform()), 0, spannableTitle.Length(), SpanTypes.ExclusiveExclusive);
+#pragma warning restore CA1416
 			return spannableTitle;
 		}
 	}
