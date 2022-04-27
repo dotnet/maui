@@ -67,10 +67,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected TCollectionView? ItemsView => _itemsView;
 
-		protected EvasObject? NativeParent
-		{
-			get => MauiContext.GetNativeParent();
-		}
+		protected EvasObject NativeParent => MauiContext.GetNativeParent();
 
 		~TVShellSectionHandler()
 		{
@@ -102,8 +99,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual TCollectionView CreateItemsView()
 		{
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
-
 			return new TCollectionView(NativeParent)
 			{
 				AlignmentX = -1,
@@ -144,7 +139,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			if (_navigationView == null && NativeParent != null)
+			if (_navigationView == null)
 			{
 				_navigationView = new TVNavigationView(NativeParent);
 				_navigationView.SetAlignment(-1, -1);
@@ -256,8 +251,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		int GetDrawerWidth()
 		{
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
-
 			int width = 0;
 			if (ItemsView is ITCollectionViewController controller)
 				width = controller.GetItemSize((NativeParent.Geometry.Width / 2), NativeParent.Geometry.Height).Width;

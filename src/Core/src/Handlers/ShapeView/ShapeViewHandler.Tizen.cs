@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiShapeView CreatePlatformView()
 		{
-			return new MauiShapeView(NativeParent!)
+			return new MauiShapeView(NativeParent)
 			{
 				MinimumWidth = MinimumSize.ToScaledPixel(),
 				MinimumHeight = MinimumSize.ToScaledPixel()

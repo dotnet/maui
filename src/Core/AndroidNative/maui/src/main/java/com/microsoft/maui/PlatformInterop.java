@@ -167,7 +167,10 @@ public class PlatformInterop {
         AppBarLayout.LayoutParams layoutParams = new AppBarLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, actionBarHeight);
         layoutParams.setScrollFlags(0);
         toolbar.setLayoutParams(layoutParams);
-        toolbar.setPopupTheme(popupTheme);
+
+        if (popupTheme > 0)
+            toolbar.setPopupTheme(popupTheme);
+        
         return toolbar;
     }
 

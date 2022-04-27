@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Platform
 
 		async Task CreateShadowAsync()
 		{
-			if (Child == null || Shadow == null)
+			if (Child == null || Shadow == null || Shadow.Paint == null)
 				return;
 
 			double width = Child.ActualWidth;
@@ -231,10 +231,10 @@ namespace Microsoft.Maui.Platform
 
 		static void SetShadowProperties(DropShadow dropShadow, IShadow? mauiShadow)
 		{
-			float blurRadius = 1;
-			float opacity = 0;
-			var shadowColor = Graphics.Colors.Transparent;
-			var offset = new Graphics.Point(1, 1);
+			float blurRadius = 10f;
+			float opacity = 1f;
+			Graphics.Color? shadowColor = Colors.Black;
+			Graphics.Point offset = Graphics.Point.Zero;
 
 			if (mauiShadow != null)
 			{
@@ -246,8 +246,10 @@ namespace Microsoft.Maui.Platform
 
 			dropShadow.BlurRadius = blurRadius;
 			dropShadow.Opacity = opacity;
+
 			if (shadowColor != null)
 				dropShadow.Color = shadowColor.ToWindowsColor();
+
 			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
 		}
 	}
