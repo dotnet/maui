@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public IMauiContext? MauiContext { get; private set; }
 
-		protected EvasObject? NativeParent { get; private set; }
+		protected EvasObject NativeParent { get; private set; }
 
 		protected Shell? Element { get; private set; }
 
@@ -94,22 +94,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual INavigationDrawer CreateNavigationDrawer()
 		{
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
-
 			return new NavigationDrawer(NativeParent);
 		}
 
 		protected virtual ITNavigationView CreateNavigationView()
 		{
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
-
 			return new TNavigationView(NativeParent);
 		}
 
 		protected virtual TCollectionView CreateItemsView()
 		{
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
-
 			return new TCollectionView(NativeParent)
 			{
 				AlignmentX = -1,
@@ -347,7 +341,6 @@ namespace Microsoft.Maui.Controls.Platform
 		async void UpdateFlyoutBackgroundImage()
 		{
 			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			if (Element.FlyoutBackgroundImage != null)

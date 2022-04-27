@@ -18,8 +18,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override TEntry CreatePlatformView()
 		{
-			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
-
 			return new EditfieldEntry(NativeParent)
 			   {
 				   IsSingleLine = true,
@@ -127,7 +125,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnTextBlockFocused(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || PlatformView == null || NativeParent == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
 			// For EFL Entry, the event will occur even if it is currently disabled.

@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ShapesDemos.Views.FlowerDemoPage"
+             Title="Flower demo">
+    <ContentPage.Resources>
+        <Style x:Key="petal"
+               TargetType="Path">
+            <Setter Property="Stroke" Value="Black" />
+            <Setter Property="Fill" Value="Red" />
+            <Setter Property="Data" Value="M 0 0 C 12.5 12.5, 47.5 12.5, 60 0
+                                           C 47.5 -12.5, 12.5 -12.5, 0 0 Z" />
+            <Setter Property="AnchorX" Value="0" />
+            <Setter Property="AnchorY" Value="0" />
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid Margin="40,100,0,0"
+          TranslationX="400"
+          TranslationY="500"
+          Scale="2">
+        <Path Stroke="Green"
+              StrokeThickness="5"
+              Data="M -100 100 C -100 50, -50 -50, 0 0" />
+
+        <Path Style="{StaticResource petal}" />
+
+        <Path Style="{StaticResource petal}"
+              Rotation="45" />
+
+        <Path Style="{StaticResource petal}"
+              Rotation="90" />
+
+        <Path Style="{StaticResource petal}"
+              Rotation="135" />
+
+        <Path Style="{StaticResource petal}"
+              Rotation="180" />
+
+        <Path Style="{StaticResource petal}"
+              Rotation="225" />
+
+        <Path Style="{StaticResource petal}"
+              Rotation="270" />
+
+        <Path Style="{StaticResource petal}"
+              Rotation="315" />
+
+        <Path Fill="Yellow"
+              Stroke="Black">
+            <Path.Data>
+                <EllipseGeometry Center="0, 0"
+                                 RadiusX="15"
+                                 RadiusY="15" />
+            </Path.Data>
+        </Path>
+    </Grid>
+</ContentPage>

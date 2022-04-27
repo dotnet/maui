@@ -18,12 +18,13 @@
 		<Compile Include="ItemsLayoutDesignTypeConverter.cs" />
 		<Compile Include="KeyboardDesignTypeConverter.cs" />
 		<Compile Include="EasingDesignTypeConverter.cs" />
+		<Compile Include="FlowDirectionDesignTypeConverter.cs" />
 		<Compile Include="KnownValuesDesignTypeConverter.cs" />
 		<Compile Include="LayoutOptionsDesignTypeConverter.cs" />
 		<Compile Include="LinearItemsLayoutDesignTypeConverter.cs" />
 		<Compile Include="FontSizeDesignTypeConverter.cs" />
 		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility">
-			<Version>16.9.31025.104</Version>
+			<Version>17.1.32210.191</Version>
 		</PackageReference>
 	</ItemGroup>
 
