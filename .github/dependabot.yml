@@ -11,7 +11,9 @@ updates:
     - dependency-name: "Microsoft.DotNet.XHarness*"           # maestro
     - dependency-name: "Newtonsoft.Json"                      # needs to be done manually to match VS
     - dependency-name: "Microsoft.Build*"                     # these packages neet to be kept on old version that supports netstandard2.0
-    
+    - dependency-name: "Microsoft.TemplateEngine.Tasks"
+      update-types: ["version-update:semver-patch"]
+      
   labels:
       - "nuget"
       - "dependencies"
