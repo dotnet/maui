@@ -1,0 +1,19 @@
+﻿<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:windows="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;assembly=Microsoft.Maui.Controls"
+             xmlns:local="clr-namespace:ShapesDemos"
+             x:Class="ShapesDemos.App"
+             windows:Application.ImageDirectory="Assets">
+    <Application.Resources>
+
+        <Style TargetType="StackLayout">
+            <Setter Property="Spacing" Value="6" />
+        </Style>
+
+        <Style TargetType="Grid">
+            <Setter Property="ColumnSpacing" Value="6" />
+            <Setter Property="RowSpacing" Value="6" />
+        </Style>
+
+    </Application.Resources>
+</Application>

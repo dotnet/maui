@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ShapesDemos.Views.RectangleDemoPage"
+             Title="Rectangle demos">
+    <ScrollView>
+        <StackLayout Margin="20">
+            <Label Text="Filled rectangle" />
+            <Rectangle Fill="Red"
+                       WidthRequest="150"
+                       HeightRequest="50"
+                       HorizontalOptions="Start" />
+            <Label Text="Square" />
+            <Rectangle Stroke="Red"
+                       StrokeThickness="4"
+                       WidthRequest="150"
+                       HeightRequest="150"
+                       HorizontalOptions="Start" />
+            <Label Text="Rectangle with stroke" />
+            <Rectangle Stroke="Red"
+                       StrokeThickness="4"
+                       WidthRequest="150"
+                       HeightRequest="50"
+                       HorizontalOptions="Start" />
+            <Label Text="Filled rectangle with stroke" />
+            <Rectangle Fill="DarkBlue"
+                       Stroke="Red"
+                       StrokeThickness="4"
+                       WidthRequest="150"
+                       HeightRequest="50"
+                       HorizontalOptions="Start" />
+            <Label Text="Filled rectangle with dashed stroke" />
+            <Rectangle Fill="DarkBlue"
+                       Stroke="Red"
+                       StrokeThickness="4"
+                       StrokeDashArray="1,1"
+                       StrokeDashOffset="6"
+                       WidthRequest="150"
+                       HeightRequest="50"
+                       HorizontalOptions="Start" />
+            <Label Text="Rectangle with rounded corners" />
+            <Rectangle Fill="Blue"
+                       Stroke="Black"
+                       StrokeThickness="3"
+                       RadiusX="50"
+                       RadiusY="10"
+                       WidthRequest="200"
+                       HeightRequest="100"
+                       HorizontalOptions="Start" />
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ShapesDemos.Views.BrushesDemoPage"
+             Title="Brushes demos">
+    <ContentPage.Resources>
+
+        <LinearGradientBrush x:Key="LinearGradientBrushFill"
+                             StartPoint="0,0"
+                             EndPoint="1,1">
+            <LinearGradientBrush.GradientStops>
+                <GradientStop Color="DarkBlue"
+                              Offset="0.1" />
+                <GradientStop Color="Red"
+                              Offset="0.6" />
+                <GradientStop Color="LightPink"
+                              Offset="1.0" />                                                            
+            </LinearGradientBrush.GradientStops>
+        </LinearGradientBrush>
+
+        <RadialGradientBrush x:Key="RadialGradientBrushFill"
+                             Center="0.5,0.5"
+                             Radius="0.75">
+            <RadialGradientBrush.GradientStops>
+                <GradientStop Color="DarkBlue"
+                              Offset="0.1" />
+                <GradientStop Color="Red"
+                              Offset="0.6" />
+                <GradientStop Color="LightPink"
+                              Offset="1.0" />                   
+            </RadialGradientBrush.GradientStops>
+        </RadialGradientBrush>
+
+        <LinearGradientBrush x:Key="LinearGradientBrushStroke"
+                             StartPoint="0,0"
+                             EndPoint="1,1">
+            <LinearGradientBrush.GradientStops>
+                <GradientStop Color="DarkOrange"
+                              Offset="0.1" />
+                <GradientStop Color="Orange"
+                              Offset="0.6" />
+                <GradientStop Color="Red"
+                              Offset="1.0" />                                                            
+            </LinearGradientBrush.GradientStops>                             
+        </LinearGradientBrush>
+
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <StackLayout Margin="20">
+            <Label Text="Ellipse with a LinearGradientBrush" />
+            <Ellipse Stroke="{StaticResource LinearGradientBrushStroke}"
+                     Fill="{StaticResource LinearGradientBrushFill}"
+                     StrokeThickness="10"
+                     HeightRequest="50"
+                     WidthRequest="150"
+                     HorizontalOptions="Start" />
+            <Label Text="Ellipse with a RadialGradientBrush" />
+            <Ellipse Stroke="{StaticResource LinearGradientBrushStroke}"
+                     Fill="{StaticResource RadialGradientBrushFill}"
+                     StrokeThickness="10"
+                     HeightRequest="50"
+                     WidthRequest="150"
+                     HorizontalOptions="Start" />
+            <Label Text="Rectangle with a LinearGradientBrush" />
+            <Rectangle Stroke="{StaticResource LinearGradientBrushStroke}"
+                       Fill="{StaticResource LinearGradientBrushFill}"
+                       StrokeThickness="10"
+                       RadiusX="10"
+                       RadiusY="10"
+                       HeightRequest="50"
+                       WidthRequest="150"
+                       HorizontalOptions="Start" />
+            <Label Text="Line with a LinearGradientBrush" />
+            <Line Stroke="{StaticResource LinearGradientBrushStroke}"
+                  StrokeThickness="5"
+                  X1="40"
+                  Y1="0"
+                  X2="0"
+                  Y2="120" />
+            <Label Text="Polyline with a LinearGradientBrush" />
+            <Polyline Points="0,0 10,30, 15,0 18,60 23,30 35,30 40,0 43,60 48,30 100,30"
+                      Stroke="{StaticResource LinearGradientBrushStroke}"
+                      StrokeThickness="5"
+                      Margin="0,30,0,0" />
+            <Label Text="Polygon with a RadialGradientBrush" />
+            <Polygon Points="40,10 70,80 10,50"
+                     Stroke="{StaticResource LinearGradientBrushStroke}"
+                     Fill="{StaticResource RadialGradientBrushFill}"
+                     StrokeThickness="10" />
+            <Label Text="Path with RadialGradientBrush" />
+            <Path Data="M13.908992,16.207977L32.000049,16.207977 32.000049,31.999985 13.908992,30.109983z M0,16.207977L11.904009,16.207977 11.904009,29.900984 0,28.657984z M11.904036,2.0979624L11.904036,14.202982 2.7656555E-05,14.202982 2.7656555E-05,3.3409645z M32.000058,0L32.000058,14.203001 13.909059,14.203001 13.909059,1.8890382z"
+                  Stroke="{StaticResource LinearGradientBrushStroke}"
+                  Fill="{StaticResource LinearGradientBrushFill}"
+                  Aspect="Uniform"
+                  HorizontalOptions="Start"
+                  HeightRequest="100"
+                  WidthRequest="100" />
+        </StackLayout>
+    </ScrollView>
+</ContentPage>
