@@ -1,16 +1,12 @@
+using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 
-namespace Maui.Controls.Sample.Tizen
+namespace Maui.Controls.Sample.Platform
 {
 	class Program : MauiApplication
 	{
 		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
-
-		protected override void OnCreate()
-		{
-			base.OnCreate();
-		}
 
 		static void Main(string[] args)
 		{

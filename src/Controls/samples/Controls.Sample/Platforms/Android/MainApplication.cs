@@ -5,7 +5,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Hosting;
 
-namespace Maui.Controls.Sample.Droid
+namespace Maui.Controls.Sample.Platform
 {
 	[Application]
 	public class MainApplication : MauiApplication

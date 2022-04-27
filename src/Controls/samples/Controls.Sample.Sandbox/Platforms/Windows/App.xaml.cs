@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 
-namespace Maui.Controls.Sample.WinUI
+namespace Maui.Controls.Sample.Platform
 {
 	public partial class App : MauiWinUIApplication
 	{

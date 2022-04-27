@@ -1,7 +1,7 @@
 using ObjCRuntime;
 using UIKit;
 
-namespace Maui.Controls.Sample.MacCatalyst
+namespace Maui.Controls.Sample.Platform
 {
 	public class Application
 	{
