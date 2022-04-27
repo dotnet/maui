@@ -13,7 +13,6 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.NavigationPage)]
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 	public partial class NavigationPageTests : HandlerTestBase
 	{
 		// We only want to fire BackButtonVisible Toolbar events if the user
