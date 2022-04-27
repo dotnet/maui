@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
@@ -75,10 +76,24 @@ namespace Microsoft.Maui.DeviceTests
 			view.AttachAndRun(() =>
 			{
 				action();
+				return Task.FromResult(true);
+			});
+
+		public static Task<T> AttachAndRun<T>(this AView view, Func<T> action) =>
+			view.AttachAndRun(() =>
+			{
+				var result = action();
+				return Task.FromResult(result);
+			});
+
+		public static Task AttachAndRun(this AView view, Func<Task> action) =>
+			view.AttachAndRun(async () =>
+			{
+				await action();
 				return true;
 			});
 
-		public static async Task<T> AttachAndRun<T>(this AView view, Func<T> action)
+		public static async Task<T> AttachAndRun<T>(this AView view, Func<Task<T>> action)
 		{
 			if (view.Parent is WrapperView wrapper)
 				view = wrapper;
@@ -116,14 +131,13 @@ namespace Microsoft.Maui.DeviceTests
 				return await Run(view, action);
 			}
 
-			static async Task<T> Run(AView view, Func<T> action)
+			static async Task<T> Run(AView view, Func<Task<T>> action)
 			{
 				await Task.WhenAll(
 					WaitForLayout(view),
 					Wait(() => view.Width > 0 && view.Height > 0));
 
-				var result = action();
-				return result;
+				return await action();
 			}
 		}
 
@@ -149,6 +163,15 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedColor, actualColor);
 
 			return bitmap;
+		}
+
+		public static Bitmap AssertColorAtCenter(this Drawable drawable, AColor expectedColor)
+		{
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable);
+			var bitmap = bitmapDrawable.Bitmap;
+			Assert.NotNull(bitmap);
+
+			return bitmap!.AssertColorAtCenter(expectedColor);
 		}
 
 		public static Bitmap AssertColorAtCenter(this Bitmap bitmap, AColor expectedColor)

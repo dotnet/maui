@@ -19,6 +19,42 @@ namespace Microsoft.Maui.DeviceTests
 		where TImageHandler : IImageHandler, new()
 		where TStub : StubBase, IImageStub, new()
 	{
+		[Theory]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#000000")]
+		public async Task MakeSureEverythingWorks(string colorHex)
+		{
+			// create files
+			var expectedColor = Color.FromArgb(colorHex);
+			var firstPath = BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Blue);
+			var secondPath = BaseImageSourceServiceTests.CreateBitmapFile(100, 100, expectedColor);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var image = new TStub { Width = 100, Height = 100 };
+				var handler = CreateHandler(image);
+				var platformView = GetPlatformImageView(handler);
+
+				await platformView.AttachAndRun(async () =>
+				{
+					// the first one works
+					image.Source = new FileImageSourceStub(firstPath);
+					handler.UpdateValue(nameof(IImage.Source));
+					await image.Wait();
+
+					await platformView.AssertColorAtCenter(Colors.Blue.ToPlatform());
+
+					// the second one does not
+					image.Source = new FileImageSourceStub(secondPath);
+					handler.UpdateValue(nameof(IImage.Source));
+					await image.Wait();
+
+					await platformView.AssertColorAtCenter(expectedColor.ToPlatform());
+				});
+			});
+		}
+
 		[Theory(
 #if _ANDROID__
 			Skip = "Test failing on ANDROID"
