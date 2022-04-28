@@ -204,8 +204,6 @@ namespace Microsoft.Maui.Platform
 
 			// This is the height taken up by the backbutton/pane toggle button
 			// we use this to offset the height of our flyout content
-			//	((FrameworkElement)GetTemplateChild("PaneHeaderContentBorder")).SizeChanged += OnPaneHeaderContentBorderSizeChanged;
-
 			PaneContentGrid.RowDefinitions[1]
 				.RegisterPropertyChangedCallback(RowDefinition.HeightProperty, PaneContentTopPaddingChanged);
 
@@ -222,10 +220,10 @@ namespace Microsoft.Maui.Platform
 			UpdateToolbarPlacement();
 			UpdateContentGridMargin();
 
-			if (HeaderControl != null)
+			if (Toolbar != null)
 			{
-				HeaderControl.NavigationViewBackButton = NavigationViewBackButton;
-				HeaderControl.TogglePaneButton = TogglePaneButton;
+				Toolbar.NavigationViewBackButton = NavigationViewBackButton;
+				Toolbar.TogglePaneButton = TogglePaneButton;
 			}
 		}
 
