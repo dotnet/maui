@@ -20,10 +20,19 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			flyoutBehavior.ItemsSource = Enum.GetNames(typeof(FlyoutBehavior));
 			flyoutBehavior.SelectedIndexChanged += OnFlyoutBehaviorSelectedIndexChanged;
 
+			flyoutHeaderBehavior.ItemsSource = Enum.GetNames(typeof(FlyoutHeaderBehavior));
+			flyoutHeaderBehavior.SelectedIndexChanged += OnFlyoutHeaderBehaviorSelectedIndexChanged;
+
 			if (AppShell != null)
+			{
 				flyoutBehavior.SelectedIndex = (int)AppShell.FlyoutBehavior;
+				flyoutHeaderBehavior.SelectedIndex = (int)AppShell.FlyoutHeaderBehavior;
+			}
 			else
+			{
 				flyoutBehavior.SelectedIndex = 1;
+				flyoutHeaderBehavior.SelectedIndex = 0;
+			}
 
 			AppShell.FlyoutBackdrop = SolidColorBrush.Pink;
 		}
@@ -39,6 +48,11 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 				await Navigation.PopAsync();
 		}
 
+		void OnFlyoutHeaderBehaviorSelectedIndexChanged(object sender, EventArgs e)
+		{
+			AppShell.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
+		}
+
 		void OnFlyoutBehaviorSelectedIndexChanged(object sender, EventArgs e)
 		{
 			AppShell.FlyoutBehavior = (FlyoutBehavior)flyoutBehavior.SelectedIndex;
@@ -47,6 +61,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 		protected override void OnAppearing()
 		{
 			AppShell.FlyoutBehavior = (FlyoutBehavior)flyoutBehavior.SelectedIndex;
+			AppShell.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
 		}
 
 		void OnToggleFlyoutBackgroundColor(object sender, EventArgs e)
