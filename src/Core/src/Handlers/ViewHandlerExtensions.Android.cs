@@ -9,6 +9,9 @@ namespace Microsoft.Maui
 {
 	internal static partial class ViewHandlerExtensions
 	{
+		// TODO: Possibly reconcile this code with LayoutViewGroup.OnLayout
+		// If you make changes here please review if those changes should also
+		// apply to LayoutViewGroup.OnLayout
 		internal static void LayoutVirtualView(
 			this IPlatformViewHandler viewHandler,
 			int l, int t, int r, int b)
@@ -26,6 +29,9 @@ namespace Microsoft.Maui
 			virtualView.Arrange(destination);
 		}
 
+		// TODO: Possibly reconcile this code with LayoutViewGroup.OnMeasure
+		// If you make changes here please review if those changes should also
+		// apply to LayoutViewGroup.OnMeasure
 		internal static Size MeasureVirtualView(
 			this IPlatformViewHandler viewHandler,
 			int platformWidthConstraint,

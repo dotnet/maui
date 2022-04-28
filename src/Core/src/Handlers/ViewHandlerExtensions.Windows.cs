@@ -6,6 +6,10 @@ namespace Microsoft.Maui
 {
 	internal static partial class ViewHandlerExtensions
 	{
+
+		// TODO: Possibly reconcile this code with LayoutPanel.ArrangeOverride
+		// If you make changes here please review if those changes should also
+		// apply to LayoutPanel.ArrangeOverride
 		internal static WSize? LayoutVirtualView(
 			this IPlatformViewHandler viewHandler,
 			WSize availableSize)
@@ -22,6 +26,9 @@ namespace Microsoft.Maui
 			return availableSize;
 		}
 
+		// TODO: Possibly reconcile this code with LayoutPanel.MeasureOverride
+		// If you make changes here please review if those changes should also
+		// apply to LayoutPanel.MeasureOverride
 		internal static WSize? MeasureVirtualView(
 			this IPlatformViewHandler viewHandler,
 			WSize availableSize)

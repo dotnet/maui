@@ -7,6 +7,9 @@ namespace Microsoft.Maui
 {
 	internal static partial class ViewHandlerExtensions
 	{
+		// TODO: Possibly reconcile this code with LayoutView.LayoutSubviews
+		// If you make changes here please review if those changes should also
+		// apply to LayoutView.LayoutSubviews
 		internal static void LayoutVirtualView(
 			this IPlatformViewHandler viewHandler,
 			CGRect? bounds)
@@ -30,6 +33,9 @@ namespace Microsoft.Maui
 			virtualView.Arrange(rect);
 		}
 
+		// TODO: Possibly reconcile this code with LayoutView.SizeThatFits
+		// If you make changes here please review if those changes should also
+		// apply to LayoutView.SizeThatFits
 		internal static CGSize? MeasureVirtualView(
 			this IPlatformViewHandler viewHandler,
 			CGSize size)
