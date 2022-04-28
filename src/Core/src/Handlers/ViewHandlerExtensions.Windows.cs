@@ -1,10 +1,58 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
+using WSize = global::Windows.Foundation.Size;
 
 namespace Microsoft.Maui
 {
-	public static partial class ViewHandlerExtensions
+	internal static partial class ViewHandlerExtensions
 	{
+
+		// TODO: Possibly reconcile this code with LayoutPanel.ArrangeOverride
+		// If you make changes here please review if those changes should also
+		// apply to LayoutPanel.ArrangeOverride
+		internal static WSize? LayoutVirtualView(
+			this IPlatformViewHandler viewHandler,
+			WSize availableSize)
+		{
+			var virtualView = viewHandler.VirtualView;
+			var platformView = viewHandler.PlatformView;
+
+			if (virtualView == null || platformView == null)
+			{
+				return null;
+			}
+
+			virtualView.Arrange(new Rect(0, 0, availableSize.Width, availableSize.Height));
+			return availableSize;
+		}
+
+		// TODO: Possibly reconcile this code with LayoutPanel.MeasureOverride
+		// If you make changes here please review if those changes should also
+		// apply to LayoutPanel.MeasureOverride
+		internal static WSize? MeasureVirtualView(
+			this IPlatformViewHandler viewHandler,
+			WSize availableSize)
+		{
+
+			var virtualView = viewHandler.VirtualView;
+			var platformView = viewHandler.PlatformView;
+
+			if (virtualView == null || platformView == null)
+			{
+				return null;
+			}
+
+			var width = availableSize.Width;
+			var height = availableSize.Height;
+
+			var crossPlatformSize = virtualView.Measure(width, height);
+
+			width = crossPlatformSize.Width;
+			height = crossPlatformSize.Height;
+
+			return new WSize(width, height);
+		}
+
 		internal static Size GetDesiredSizeFromHandler(this IViewHandler viewHandler, double widthConstraint, double heightConstraint)
 		{
 			var platformView = viewHandler.ToPlatform();
