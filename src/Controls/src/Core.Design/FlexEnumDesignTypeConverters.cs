@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Design
 {
-	public class FlexJustifyTypeConverter : KnownValuesDesignTypeConverter
+	public class FlexJustifyDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
 		protected override bool ExclusiveToKnownValues => true;
 
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Design
 			};
 	}
 
-	public class FlexDirectionTypeConverter : KnownValuesDesignTypeConverter
+	public class FlexDirectionDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
 		protected override bool ExclusiveToKnownValues => true;
 
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Design
 		};
 	}
 
-	public class FlexAlignContentTypeConverter : KnownValuesDesignTypeConverter
+	public class FlexAlignContentDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
 		protected override bool ExclusiveToKnownValues => true;
 
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Design
 	}
 
 
-	public class FlexAlignItemsTypeConverter : KnownValuesDesignTypeConverter
+	public class FlexAlignItemsDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
 		protected override bool ExclusiveToKnownValues => true;
 
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Design
 	}
 
 
-	public class FlexAlignSelfTypeConverter : KnownValuesDesignTypeConverter
+	public class FlexAlignSelfDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
 		protected override bool ExclusiveToKnownValues => true;
 
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Design
 	}
 
 
-	public class FlexWrapTypeConverter : KnownValuesDesignTypeConverter
+	public class FlexWrapDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
 		protected override bool ExclusiveToKnownValues => true;
 
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Design
 	}
 
 
-	public class FlexBasisTypeConverter : KnownValuesDesignTypeConverter
+	public class FlexBasisDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
 		protected override string[] KnownValues
 			=> new[] {
