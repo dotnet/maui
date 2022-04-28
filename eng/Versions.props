@@ -15,7 +15,7 @@
     <MicrosoftMacCatalystSdkPackageVersion>15.4.300-rc.3.83</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>12.3.300-rc.3.83</MicrosoftmacOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>15.4.300-rc.3.83</MicrosofttvOSSdkPackageVersion>
-    <SamsungTizenSdkPackageVersion>7.0.100-preview.13.30</SamsungTizenSdkPackageVersion>
+    <SamsungTizenSdkPackageVersion>7.0.300-preview.13.30</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion>6.0.4</MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
@@ -51,7 +51,7 @@
     <MicrosoftDotNetXHarnessTestRunnersCommonVersion>1.0.0-prerelease.22226.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
     <MicrosoftDotNetXHarnessTestRunnersXunitVersion>1.0.0-prerelease.22226.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
     <MicrosoftDotNetXHarnessCLIVersion>1.0.0-prerelease.22226.1</MicrosoftDotNetXHarnessCLIVersion>
-    <TizenUIExtensionsVersion>0.6.0-pre1</TizenUIExtensionsVersion>
+    <TizenUIExtensionsVersion>0.8.0-pre1</TizenUIExtensionsVersion>
     <SvgSkiaVersion>0.4.1</SvgSkiaVersion>
   </PropertyGroup>
   <PropertyGroup>
