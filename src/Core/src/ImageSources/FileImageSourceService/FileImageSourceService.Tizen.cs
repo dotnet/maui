@@ -77,7 +77,7 @@ namespace Microsoft.Maui
 				{
 					if (File.Exists(file))
 					{
-						return resPath;
+						return file;
 					}
 				}
 			}
