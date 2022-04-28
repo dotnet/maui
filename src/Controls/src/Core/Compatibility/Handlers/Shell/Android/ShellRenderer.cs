@@ -368,8 +368,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				using (var paint = new Paint())
 				{
-
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					paint.Color = Color;
+#pragma warning restore CA1416
 
 					canvas.DrawRect(new ARect(0, 0, bounds.Right, TopSize), paint);
 

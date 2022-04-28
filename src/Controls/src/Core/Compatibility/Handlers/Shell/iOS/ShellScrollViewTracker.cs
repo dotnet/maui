@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!_isInShell)
 				return;
 
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				var newBounds = _scrollView.AdjustedContentInset.InsetRect(_scrollView.Bounds).ToRectangle();
 				newBounds.X = 0;
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_lastInset = inset;
 			_tabThickness = tabThickness;
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				if (ShellSectionController.GetItems().Count > 1 && _isInItems)
 				{

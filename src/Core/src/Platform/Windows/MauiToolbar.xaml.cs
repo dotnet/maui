@@ -2,7 +2,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
-using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 
 namespace Microsoft.Maui.Platform
@@ -11,13 +10,17 @@ namespace Microsoft.Maui.Platform
 	{
 		public static readonly DependencyProperty IsBackButtonVisibleProperty
 			= DependencyProperty.Register(nameof(IsBackButtonVisible), typeof(NavigationViewBackButtonVisible), typeof(MauiToolbar),
-				new PropertyMetadata(NavigationViewBackButtonVisible.Collapsed, OnIsBackButtonVisiblePropertyChanged));
+				new PropertyMetadata(NavigationViewBackButtonVisible.Collapsed));
 
 		public static readonly DependencyProperty IsBackEnabledProperty
 			= DependencyProperty.Register(nameof(IsBackEnabled), typeof(bool), typeof(MauiToolbar),
 				new PropertyMetadata(true));
 
 		MenuBar? _menuBar;
+		private Button? _navigationViewBackButton;
+		private Button? _togglePaneButton;
+		private Graphics.Color? _iconColor;
+
 		public MauiToolbar()
 		{
 			InitializeComponent();
@@ -112,9 +115,65 @@ namespace Microsoft.Maui.Platform
 			get => (bool)GetValue(IsBackEnabledProperty);
 			set => SetValue(IsBackEnabledProperty, value);
 		}
-
-		static void OnIsBackButtonVisiblePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		internal Button? NavigationViewBackButton
 		{
+			get => _navigationViewBackButton;
+			set
+			{
+				_navigationViewBackButton = value;
+				UpdateIconColor();
+			}
+		}
+
+		internal Button? TogglePaneButton
+		{
+			get => _togglePaneButton;
+			set
+			{
+				_togglePaneButton = value;
+				UpdateIconColor();
+			}
+		}
+
+		internal Graphics.Color? IconColor
+		{
+			get => _iconColor;
+			set
+			{
+				_iconColor = value;
+				UpdateIconColor();
+			}
+		}
+
+		void UpdateIconColor()
+		{
+			if (IconColor != null)
+			{
+				TogglePaneButton?.SetApplicationResource("NavigationViewButtonForegroundPointerOver", IconColor.ToPlatform());
+				TogglePaneButton?.SetApplicationResource("NavigationViewButtonForegroundDisabled", IconColor.ToPlatform());
+				TogglePaneButton?.SetApplicationResource("NavigationViewButtonForegroundPressed", IconColor.ToPlatform());
+
+				NavigationViewBackButton?.SetApplicationResource("NavigationViewButtonForegroundPointerOver", IconColor.ToPlatform());
+				NavigationViewBackButton?.SetApplicationResource("NavigationViewButtonForegroundDisabled", IconColor.ToPlatform());
+				NavigationViewBackButton?.SetApplicationResource("NavigationViewButtonForegroundPressed", IconColor.ToPlatform());
+
+				NavigationViewBackButton?.UpdateForegroundColor(IconColor);
+				TogglePaneButton?.UpdateForegroundColor(IconColor);
+
+			}
+			else
+			{
+				TogglePaneButton?.SetApplicationResource("NavigationViewButtonForegroundPointerOver", null);
+				TogglePaneButton?.SetApplicationResource("NavigationViewButtonForegroundDisabled", null);
+				TogglePaneButton?.SetApplicationResource("NavigationViewButtonForegroundPressed", null);
+
+				NavigationViewBackButton?.SetApplicationResource("NavigationViewButtonForegroundPointerOver", null);
+				NavigationViewBackButton?.SetApplicationResource("NavigationViewButtonForegroundDisabled", null);
+				NavigationViewBackButton?.SetApplicationResource("NavigationViewButtonForegroundPressed", null);
+
+				NavigationViewBackButton?.ClearValue(Button.ForegroundProperty);
+				TogglePaneButton?.ClearValue(Button.ForegroundProperty);
+			}
 		}
 
 		internal void SetMenuBar(MenuBar? menuBar)

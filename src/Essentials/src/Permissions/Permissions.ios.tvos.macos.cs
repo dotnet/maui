@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Photos;
 
@@ -8,6 +9,9 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
+		//[SupportedOSPlatform("tvos14.0")] TODO: Not sure if we need to add the supports for tvOS or macOS
+		//[SupportedOSPlatform("macos11.0")] this is causing warning within #if def below
+		[SupportedOSPlatform("ios14.0")] // The enum PHAccessLevel has these attributes
 		public partial class Photos : BasePlatformPermission
 		{
 			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
@@ -45,6 +49,9 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 		}
 
+		[SupportedOSPlatform("tvos14.0")]
+		[SupportedOSPlatform("macos11.0")]
+		[SupportedOSPlatform("ios14.0")] // The enum PHAccessLevel has these attributes
 		public partial class PhotosAddOnly : BasePlatformPermission
 		{
 			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
@@ -85,12 +92,17 @@ namespace Microsoft.Maui.ApplicationModel
 			=> status switch
 			{
 				PHAuthorizationStatus.Authorized => PermissionStatus.Granted,
+#pragma warning disable CA1416 // 'PHAuthorizationStatus.Limited' is only supported on 'ios' 14.0 and later. 
 				PHAuthorizationStatus.Limited => PermissionStatus.Limited,
+#pragma warning restore CA1416
 				PHAuthorizationStatus.Denied => PermissionStatus.Denied,
 				PHAuthorizationStatus.Restricted => PermissionStatus.Restricted,
 				_ => PermissionStatus.Unknown,
 			};
 
+		[SupportedOSPlatformGuard("iOS14.0")]
+		[SupportedOSPlatformGuard("macOS11.0")]
+		[SupportedOSPlatformGuard("tvOS14.0")]
 		static bool CheckOSVersionForPhotos()
 		{
 			return OperatingSystem.IsIOSVersionAtLeast(14, 0) ||

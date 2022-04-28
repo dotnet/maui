@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Versioning;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 #if __IOS__ || MACCATALYST
@@ -24,8 +25,10 @@ namespace Microsoft.Maui.Handlers
 		public static CommandMapper<IApplication, ApplicationHandler> CommandMapper = new(ElementCommandMapper)
 		{
 			[TerminateCommandKey] = MapTerminate,
+#pragma warning disable CA1416 // TODO: should we propogate SupportedOSPlatform("ios13.0") here
 			[nameof(IApplication.OpenWindow)] = MapOpenWindow,
 			[nameof(IApplication.CloseWindow)] = MapCloseWindow,
+#pragma warning restore CA1416
 		};
 
 		ILogger<ApplicationHandler>? _logger;

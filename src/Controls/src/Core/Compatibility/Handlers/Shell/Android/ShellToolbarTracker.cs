@@ -739,7 +739,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					var paint = new Paint { AntiAlias = true };
 					paint.TextSize = _defaultSize;
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					paint.Color = pressed ? _pressedBackgroundColor.ToPlatform() : TintColor.ToPlatform();
+#pragma warning restore CA1416
 					paint.SetStyle(Paint.Style.Fill);
 					var y = (Bounds.Height() + paint.TextSize) / 2;
 					canvas.DrawText(Text, 0, y, paint);
