@@ -112,7 +112,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			CollectionView.BeginInvokeOnMainThread(() => CollectionChanged(args));
+			if (ApplicationModel.MainThread.IsMainThread)
+			{
+				ApplicationModel.MainThread.BeginInvokeOnMainThread(() => CollectionChanged(args));
+			}
+			else
+			{
+				CollectionChanged(args);
+			}
 		}
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
@@ -136,22 +143,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					Move(args);
 					break;
 				case NotifyCollectionChangedAction.Reset:
-					Reload(true);
+					Reload();
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 		}
 
-		void Reload(bool isDoingReset = false)
+		void Reload()
 		{
 			var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
 
-			//there could be cases where the Reset event doesn't fire before we start adding items if done from a different thread
-			if (isDoingReset)
-				Count = 0;
-			else
-				Count = ItemsCount();
+			Count = ItemsCount();
 
 			OnCollectionViewUpdating(args);
 
