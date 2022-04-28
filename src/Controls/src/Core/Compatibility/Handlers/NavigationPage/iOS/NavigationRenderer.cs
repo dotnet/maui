@@ -83,6 +83,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		//TODO: this was deprecated in iOS8.0 and is not called in 9.0+
 		[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
+		[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
 		public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
 		{
 			base.DidRotate(fromInterfaceOrientation);
@@ -467,7 +468,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_defaultNavBarShadowImage == null)
 				_defaultNavBarShadowImage = NavigationBar.ShadowImage;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 			{
 				if (shouldHide)
 				{
@@ -490,7 +491,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					NavigationBar.ShadowImage = _defaultNavBarShadowImage;
 			}
 
-			if (!OperatingSystem.IsIOSVersionAtLeast(11))
+			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 			{
 				// For iOS 10 and lower, you need to set the background image.
 				// If you set this for iOS11, you'll remove the background color.
@@ -629,7 +630,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var barBackgroundColor = NavPage.BarBackgroundColor;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
 
@@ -729,7 +730,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor?.GetLuminosity() <= 0.5)
 			{
 				// Use dark text color for status bar
-				if (OperatingSystem.IsIOSVersionAtLeast(13))
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
 					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.DarkContent;
 				}
@@ -1024,6 +1025,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public event EventHandler Appearing;
 
 			[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
+			[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
 			public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
 			{
 				base.DidRotate(fromInterfaceOrientation);
@@ -1187,7 +1189,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			internal void SetupDefaultNavigationBarAppearance()
 			{
-				if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)))
 					return;
 
 				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
@@ -1491,6 +1493,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			[System.Runtime.Versioning.UnsupportedOSPlatform("ios6.0")]
+			[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
 			public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
 			{
 				if (Child?.Handler is IPlatformViewHandler ivh)

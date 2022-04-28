@@ -141,6 +141,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		[SupportedOSPlatform("ios11.0")]
+		[SupportedOSPlatform("tvos11.0")]
 		public override void ViewSafeAreaInsetsDidChange()
 		{
 			_safeAreasSet = true;

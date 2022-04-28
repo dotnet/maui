@@ -99,6 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		//TODO: this was deprecated in iOS8.0 and is not called in 9.0+
 		[UnsupportedOSPlatform("ios8.0")]
+		[UnsupportedOSPlatform("tvos")]
 		public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
 		{
 			base.DidRotate(fromInterfaceOrientation);
@@ -1029,6 +1030,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			public event EventHandler Appearing;
 
 			[UnsupportedOSPlatform("ios8.0")]
+			[UnsupportedOSPlatform("tvos")]
 			public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
 			{
 				base.DidRotate(fromInterfaceOrientation);

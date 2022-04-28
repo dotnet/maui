@@ -13,6 +13,7 @@ namespace Microsoft.Maui
 
 		[Export("scene:willConnectToSession:options:")]
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")]
 		public virtual void WillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
 		{
 			MauiUIApplicationDelegate.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneWillConnect>(del => del(scene, session, connectionOptions));

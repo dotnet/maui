@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 		public MauiPageControl()
 		{
 			ValueChanged += MauiPageControlValueChanged;
-			if (OperatingSystem.IsIOSVersionAtLeast(14))
+			if (OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14))
 			{
 				AllowsContinuousInteraction = false;
 				BackgroundStyle = UIPageControlBackgroundStyle.Minimal;
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Platform
 				{
 					if (view is UIImageView imageview)
 					{
-						if (OperatingSystem.IsIOSVersionAtLeast(13))
+						if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 							imageview.Image = UIImage.GetSystemImage("squareshape.fill");
 						var frame = imageview.Frame;
 						//the square shape is not the same size as the circle so we might need to correct the frame

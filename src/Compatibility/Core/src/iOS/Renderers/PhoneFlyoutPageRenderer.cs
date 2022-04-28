@@ -158,6 +158,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
+		[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
 			if (!FlyoutPageController.ShouldShowSplitMode && _presented)
