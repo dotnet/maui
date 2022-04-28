@@ -12,7 +12,7 @@
 		<Compile Include="Properties\AssemblyInfo.cs" />
 		<Compile Include="RegisterMetadata.cs" />
     <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility">
-      <Version>16.9.31025.104</Version>
+      <Version>17.1.32210.191</Version>
     </PackageReference>
 	</ItemGroup>
 </Project>

@@ -76,13 +76,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewDidLoad();
 
 			TableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				TableView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 
 			TableView.Source = _source;
 			ShellFlyoutContentManager.ViewDidLoad();
 		}
 
+		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
 		public override void ViewSafeAreaInsetsDidChange()
 		{
 			ShellFlyoutContentManager.SetHeaderContentInset();

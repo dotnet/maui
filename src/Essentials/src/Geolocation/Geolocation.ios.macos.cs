@@ -48,7 +48,9 @@ namespace Microsoft.Maui.Devices.Sensors
 
 #if __IOS__
 			// we're only listening for a single update
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			manager.PausesLocationUpdatesAutomatically = false;
+#pragma warning restore CA1416
 #endif
 
 			manager.StartUpdatingLocation();

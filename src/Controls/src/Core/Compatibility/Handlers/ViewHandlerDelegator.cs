@@ -18,9 +18,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		where TElement : Element, IView
 #endif
 	{
-		protected readonly IPropertyMapper _defaultMapper;
-		protected IPropertyMapper _mapper;
-		protected CommandMapper _commandMapper;
+		internal readonly IPropertyMapper _defaultMapper;
+		internal IPropertyMapper _mapper;
+		internal readonly CommandMapper _commandMapper;
 		IPlatformViewHandler _viewHandler;
 		TElement? _element;
 		public TElement? Element => _element;

@@ -13,9 +13,6 @@ namespace Microsoft.Maui.Platform
 {
 	public class LayoutViewGroup : ViewGroup
 	{
-		Point _downPosition;
-		DateTime _downTime;
-
 		readonly ARect _clipRect = new();
 
 		public bool InputTransparent { get; set; }
@@ -41,53 +38,6 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public bool ClipsToBounds { get; set; }
-
-		public override bool DispatchTouchEvent(MotionEvent? e)
-		{
-			if (e?.Action == MotionEventActions.Down)
-			{
-				_downTime = DateTime.UtcNow;
-				_downPosition = new Point(e.RawX, e.RawY);
-			}
-
-			if (e?.Action != MotionEventActions.Up)
-				return base.DispatchTouchEvent(e);
-
-			View? currentView = Context?.GetActivity()?.CurrentFocus;
-			bool result = base.DispatchTouchEvent(e);
-
-			do
-			{
-				if (currentView is not EditText)
-					break;
-
-				View? newCurrentView = Context?.GetActivity()?.CurrentFocus;
-
-				if (currentView != newCurrentView)
-					break;
-
-				double distance = _downPosition.Distance(new Point(e.RawX, e.RawY));
-
-				if (distance > Context.ToPixels(20) || DateTime.UtcNow - _downTime > TimeSpan.FromMilliseconds(200))
-					break;
-
-				var location = new int[2];
-				currentView.GetLocationOnScreen(location);
-
-				float x = e.RawX + currentView.Left - location[0];
-				float y = e.RawY + currentView.Top - location[1];
-
-				var rect = new Rectangle(currentView.Left, currentView.Top, currentView.Width, currentView.Height);
-
-				if (rect.Contains(x, y))
-					break;
-
-				Context?.HideKeyboard(currentView);
-				Context?.GetActivity()?.Window?.DecorView.ClearFocus();
-			} while (false);
-
-			return result;
-		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{

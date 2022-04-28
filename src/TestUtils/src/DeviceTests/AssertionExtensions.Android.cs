@@ -1,7 +1,9 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
@@ -14,6 +16,28 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+		public static Task<bool> WaitForLayout(AView view, int timeout = 1000)
+		{
+			var tcs = new TaskCompletionSource<bool>();
+
+			view.LayoutChange += OnLayout;
+
+			var cts = new CancellationTokenSource();
+			cts.Token.Register(() => OnLayout(view));
+			cts.CancelAfter(timeout);
+
+			return tcs.Task;
+
+			void OnLayout(object? sender = null, AView.LayoutChangeEventArgs? e = null)
+			{
+				var view = (AView)sender!;
+
+				view.LayoutChange -= OnLayout;
+
+				tcs.TrySetResult(e != null);
+			}
+		}
+
 		public static string CreateColorAtPointError(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{
 			return CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
@@ -52,41 +76,68 @@ namespace Microsoft.Maui.DeviceTests
 			view.AttachAndRun(() =>
 			{
 				action();
+				return Task.FromResult(true);
+			});
+
+		public static Task<T> AttachAndRun<T>(this AView view, Func<T> action) =>
+			view.AttachAndRun(() =>
+			{
+				var result = action();
+				return Task.FromResult(result);
+			});
+
+		public static Task AttachAndRun(this AView view, Func<Task> action) =>
+			view.AttachAndRun(async () =>
+			{
+				await action();
 				return true;
 			});
 
-		public static async Task<T> AttachAndRun<T>(this AView view, Func<T> action)
+		public static async Task<T> AttachAndRun<T>(this AView view, Func<Task<T>> action)
 		{
 			if (view.Parent is WrapperView wrapper)
 				view = wrapper;
 
-			var context = view.Context!;
-			var layout = new FrameLayout(context)
+			if (view.Parent == null)
 			{
-				LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
-			};
-			view.LayoutParameters = new FrameLayout.LayoutParams(view.Width, view.Height)
-			{
-				Gravity = GravityFlags.Center
-			};
+				var context = view.Context!;
+				var layout = new FrameLayout(context)
+				{
+					LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
+				};
+				view.LayoutParameters = new FrameLayout.LayoutParams(view.Width, view.Height)
+				{
+					Gravity = GravityFlags.Center
+				};
 
-			var act = context.GetActivity()!;
-			var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content)!;
+				var act = context.GetActivity()!;
+				var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content)!;
 
-			layout.AddView(view);
-			rootView.AddView(layout);
+				layout.AddView(view);
+				rootView.AddView(layout);
 
-			await Task.Delay(100);
-
-			try
-			{
-				var result = action();
-				return result;
+				try
+				{
+					return await Run(view, action);
+				}
+				finally
+				{
+					rootView.RemoveView(layout);
+					layout.RemoveView(view);
+				}
 			}
-			finally
+			else
 			{
-				rootView.RemoveView(layout);
-				layout.RemoveView(view);
+				return await Run(view, action);
+			}
+
+			static async Task<T> Run(AView view, Func<Task<T>> action)
+			{
+				await Task.WhenAll(
+					WaitForLayout(view),
+					Wait(() => view.Width > 0 && view.Height > 0));
+
+				return await action();
 			}
 		}
 
@@ -112,6 +163,15 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedColor, actualColor);
 
 			return bitmap;
+		}
+
+		public static Bitmap AssertColorAtCenter(this Drawable drawable, AColor expectedColor)
+		{
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable);
+			var bitmap = bitmapDrawable.Bitmap;
+			Assert.NotNull(bitmap);
+
+			return bitmap!.AssertColorAtCenter(expectedColor);
 		}
 
 		public static Bitmap AssertColorAtCenter(this Bitmap bitmap, AColor expectedColor)

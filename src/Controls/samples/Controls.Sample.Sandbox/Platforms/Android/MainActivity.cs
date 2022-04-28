@@ -2,7 +2,7 @@ using Android.App;
 using Android.Content.PM;
 using Microsoft.Maui;
 
-namespace Maui.Controls.Sample.Droid
+namespace Maui.Controls.Sample.Platform
 {
 	[Activity(
 		Theme = "@style/Maui.SplashTheme",

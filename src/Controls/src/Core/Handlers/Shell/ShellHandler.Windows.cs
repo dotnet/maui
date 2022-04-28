@@ -84,12 +84,19 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapFlyout(ShellHandler handler, IFlyoutView flyoutView)
 		{
+			if (handler.PlatformView is RootNavigationView rnv)
+				rnv.FlyoutView = flyoutView.Flyout;
+
 			handler.PlatformView.FlyoutCustomContent = flyoutView.Flyout?.ToPlatform(handler.MauiContext);
+			
 		}
 
 		public static void MapIsPresented(ShellHandler handler, IFlyoutView flyoutView)
 		{
-			handler.PlatformView.IsPaneOpen = flyoutView.IsPresented;
+			// WinUI Will close the pane inside of the apply template code
+			// so we wait until the control is loaded before applying IsPresented
+			if (handler.PlatformView.IsLoaded)
+				handler.PlatformView.IsPaneOpen = flyoutView.IsPresented;
 		}
 
 		public static void MapFlyoutWidth(ShellHandler handler, IFlyoutView flyoutView)

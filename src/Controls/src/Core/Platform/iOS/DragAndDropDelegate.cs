@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text;
 
 using Foundation;
@@ -11,6 +12,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
+	[SupportedOSPlatform("ios11.0")]
 	class DragAndDropDelegate : NSObject, IUIDragInteractionDelegate, IUIDropInteractionDelegate
 	{
 		IPlatformViewHandler _viewHandler;
