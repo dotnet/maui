@@ -103,8 +103,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 
-				var request = view.Handler.GetDesiredSizeFromHandler(availableSize.Width, availableSize.Height);
-				view.Frame = new Rect(0, 0, request.Width, request.Height);
+				var request = view.Measure(availableSize.Width, availableSize.Height);
 				Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
 				return request.ToPlatform();
 			}
@@ -116,7 +115,17 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (this.ActualWidth > 0 && _content is IView view)
 			{
-				view.Handler.PlatformArrangeHandler(new Rect(0, 0, finalSize.Width, finalSize.Height));
+				// Measure gets called a bunch with the entire width of the navigationview
+				// So I have checks in there to not measure when it's like that but
+				// occasionally it reaches arrange without a proper measure.
+				// Especially on the first load.
+				if (view.Frame.Width != finalSize.Width)
+				{
+					view.Measure(finalSize.Width, finalSize.Height);
+					Clip = new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) };
+				}
+
+				view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
 				return finalSize;
 			}
 
