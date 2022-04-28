@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Platform
 			_picker = new UIDatePicker { Mode = UIDatePickerMode.Time, TimeZone = new NSTimeZone("UTC") };
 			_dateSelected = dateSelected;
 
-			if (PlatformVersion.IsAtLeast(14))
+			if (OperatingSystem.IsIOSVersionAtLeast(14))
 			{
 				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}

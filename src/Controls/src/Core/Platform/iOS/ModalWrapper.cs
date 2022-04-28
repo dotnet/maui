@@ -106,11 +106,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
 		{
+#pragma warning disable CA1416 // TODO: [UnsupportedOSPlatform("ios6.0")]
 			if ((ChildViewControllers != null) && (ChildViewControllers.Length > 0))
 			{
 				return ChildViewControllers[0].ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
 			}
 			return base.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+#pragma warning restore CA1416
 		}
 
 		public override bool ShouldAutomaticallyForwardRotationMethods => true;
@@ -152,7 +154,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
-			if (PlatformVersion.Supports(PlatformApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 

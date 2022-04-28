@@ -1,11 +1,9 @@
-using System;
-using Windows.Foundation;
 using Microsoft.UI.Xaml;
 using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellHeaderView : Microsoft.UI.Xaml.Controls.ContentControl
+	public class ShellHeaderView : UI.Xaml.Controls.ContentControl
 	{
 		Shell _shell;
 

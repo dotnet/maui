@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Shapes;
+using WSize = Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Platform
 {
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Platform
 		readonly Canvas _shadowCanvas;
 		SpriteVisual? _shadowVisual;
 		DropShadow? _dropShadow;
+		WSize _shadowHostSize;
 		Path? _borderPath;
 
 		FrameworkElement? _child;
@@ -133,13 +135,14 @@ namespace Microsoft.Maui.Platform
 
 		async void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			UpdateClip();
-			UpdateBorder();
+			_shadowHostSize = e.NewSize;
 
-			if (HasShadow)
-				UpdateShadowSize();
-			else
-				await CreateShadowAsync();
+			UpdateClip();
+
+			UpdateBorder();
+		
+			DisposeShadow();
+			await CreateShadowAsync();
 		}
 
 		void DisposeShadow()
@@ -167,8 +170,8 @@ namespace Microsoft.Maui.Platform
 			if (Child == null || Shadow == null || Shadow.Paint == null)
 				return;
 
-			double width = Child.ActualWidth;
-			double height = Child.ActualHeight;
+			double width = _shadowHostSize.Width;
+			double height = _shadowHostSize.Height;
 
 			if (height <= 0 && width <= 0)
 				return;
@@ -221,8 +224,8 @@ namespace Microsoft.Maui.Platform
 			{
 				if (Child is FrameworkElement child)
 				{
-					float width = (float)child.ActualWidth;
-					float height = (float)child.ActualHeight;
+					float width = (float)_shadowHostSize.Width;
+					float height = (float)_shadowHostSize.Height;
 
 					_shadowVisual.Size = new Vector2(width, height);
 				}

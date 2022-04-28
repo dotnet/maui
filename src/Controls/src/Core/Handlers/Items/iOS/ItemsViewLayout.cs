@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			Initialize(scrollDirection);
 
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				// `ContentInset` is actually the default value, but I'm leaving this here as a note to
 				// future maintainers; it's likely that someone will want a Platform Specific to change this behavior
@@ -559,7 +559,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
 			}
 
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				UpdateConstraints(CollectionView.AdjustedContentInset.InsetRect(newBounds).Size);
 			}
