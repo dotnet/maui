@@ -238,8 +238,8 @@ stages:
                   downloadPath: $(System.DefaultWorkingDirectory)/artifacts
               - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
                 displayName: Move the downloaded artifacts
-              - pwsh: Move-Item -Path artifacts\nuget\Microsoft.Maui.Controls.Foldable*.nupkg -Destination bin\dotnet\library-packs -Force
-                displayName: Move the Foldable artifact so the sample build will find it
+              - pwsh: Copy-Item -Path artifacts\*.nupkg -Destination "bin\dotnet\library-packs" -Filter *Foldable* -Force
+                displayName: Copy the Foldable-DualScreen artifact so the sample build will find it
               - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
                 retryCountOnTaskFailure: 3
