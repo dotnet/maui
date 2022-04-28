@@ -31,9 +31,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
     public void onLoadFailed(@Nullable Drawable errorDrawable) {
         callback.onComplete(false,
             errorDrawable,
-            () -> view.post(
-                () -> requestManager.clear(MauiCustomViewTarget.this)
-            )
+            () -> { } // TODO: explicitly release image
         );
     }
 
@@ -43,9 +41,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
         this.view.setImageDrawable(resource);
         callback.onComplete(true,
             resource,
-            () -> view.post(
-                () -> requestManager.clear(MauiCustomViewTarget.this)
-            )
+            () -> { } // TODO: explicitly release image
         );
     }
 }
