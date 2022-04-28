@@ -229,9 +229,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override nint NumberOfSections(UICollectionView collectionView)
 		{
-			if(ItemsSource == null)
-				return 0;
-
 			CheckForEmptySource();
 			return ItemsSource.GroupCount;
 		}
