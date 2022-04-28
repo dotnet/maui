@@ -436,7 +436,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					Control.Layer.RemoveAllAnimations();
 					//iOS11 hack
-					if (PlatformVersion.IsAtLeast(11))
+					if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 						this.BeginInvokeOnMainThread(() =>
 						{
 							if (Control != null /*&& !_disposed*/)
@@ -860,7 +860,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var estimatedRowHeight = GetEstimatedRowHeight(tableView);
 				//if we are providing 0 we are disabling EstimatedRowHeight,
 				//this works fine on newer versions, but iOS10 it will cause a crash so we leave the default value
-				if (estimatedRowHeight > 0 || (estimatedRowHeight == 0 && PlatformVersion.IsAtLeast(11)))
+				if (estimatedRowHeight > 0 || (estimatedRowHeight == 0 && (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))))
 					tableView.EstimatedRowHeight = estimatedRowHeight;
 			}
 

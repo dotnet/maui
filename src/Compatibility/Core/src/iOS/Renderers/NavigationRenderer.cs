@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateHideNavigationBarSeparator();
 			UpdateUseLargeTitles();
 
-			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			// If there is already stuff on the stack we need to push it

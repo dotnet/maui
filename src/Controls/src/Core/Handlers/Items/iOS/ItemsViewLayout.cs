@@ -372,7 +372,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (preferredAttributes.RepresentedElementKind != UICollectionElementKindSectionKey.Header
 				&& preferredAttributes.RepresentedElementKind != UICollectionElementKindSectionKey.Footer)
 			{
-				if (PlatformVersion.IsAtLeast(12))
+				if (OperatingSystem.IsIOSVersionAtLeast(12) || OperatingSystem.IsTvOSVersionAtLeast(12))
 				{
 					return base.GetInvalidationContext(preferredAttributes, originalAttributes);
 				}

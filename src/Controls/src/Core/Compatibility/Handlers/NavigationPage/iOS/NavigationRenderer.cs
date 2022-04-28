@@ -1305,7 +1305,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				// on iOS 10 if the user hasn't set the back button text
 				// we set it to an empty string so it's consistent with iOS 11
-				if (!PlatformVersion.IsAtLeast(11) && !isBackButtonTextSet)
+				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)) && !isBackButtonTextSet)
 					backButtonText = "";
 
 				// First page and we have a flyout detail to contend with
@@ -1391,7 +1391,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (!_navigation.TryGetTarget(out n))
 					return;
 
-				if (!PlatformVersion.IsAtLeast(11) || n._parentFlyoutPage != null)
+				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)) || n._parentFlyoutPage != null)
 					UpdateTitleArea(Child);
 			}
 
@@ -1614,7 +1614,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public override void LayoutSubviews()
 			{
-				if (!PlatformVersion.IsAtLeast(11))
+				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 				{
 					for (int i = 0; i < this.Subviews.Length; i++)
 					{
@@ -1654,7 +1654,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public Container(View view, UINavigationBar bar) : base(bar.Bounds)
 			{
-				if (PlatformVersion.IsAtLeast(11))
+				if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 				{
 					TranslatesAutoresizingMaskIntoConstraints = false;
 				}
@@ -1701,7 +1701,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					if (Superview != null)
 					{
-						if (!PlatformVersion.IsAtLeast(11))
+						if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 						{
 							value.Y = Superview.Bounds.Y;
 

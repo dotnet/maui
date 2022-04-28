@@ -50,7 +50,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool? s_isiOS13OrNewer;
 		static bool? s_isiOS14OrNewer;
 		static bool? s_isiOS15OrNewer;
-		static bool? s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden;
 
 		[SupportedOSPlatformGuard("ios11.0")]
 		//[SupportedOSPlatformGuard("tvos11.0")] TODO: the block guarded by this property calling API unsupported on TvOS or version not supported
@@ -118,16 +117,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			IsInitializedRenderers = true;
 		}
 
-		[SupportedOSPlatformGuard("ios11.0")] // TODO: it is not explicitly guard iOS version 11.0, but always used before calling something supported from version 11.0
-		internal static bool RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden
-		{
-			get
-			{
-				if (!s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden.HasValue)
-					s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden = new UIViewController().RespondsToSelector(new ObjCRuntime.Selector("setNeedsUpdateOfHomeIndicatorAutoHidden"));
-				return s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden.Value;
-			}
-		}
 #else
 
 		static bool? s_isMojaveOrNewer;

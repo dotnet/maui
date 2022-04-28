@@ -475,7 +475,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			bool isRtl;
 
-			if (PlatformVersion.IsAtLeast(10))
+			if (OperatingSystem.IsIOSVersionAtLeast(10) || OperatingSystem.IsTvOSVersionAtLeast(10))
 				isRtl = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
 			else
 				isRtl = CollectionView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;
