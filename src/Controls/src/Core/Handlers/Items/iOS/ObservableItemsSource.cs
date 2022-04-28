@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (ApplicationModel.MainThread.IsMainThread)
+			if (!ApplicationModel.MainThread.IsMainThread)
 			{
 				ApplicationModel.MainThread.BeginInvokeOnMainThread(() => CollectionChanged(args));
 			}
