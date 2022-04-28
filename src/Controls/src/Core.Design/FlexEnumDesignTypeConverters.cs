@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Design
 			var strValue = value?.ToString().Trim();
 
 			if (strValue is null)
-				retrun false;
+				return false;
 
 			if (strValue.EndsWith("%", StringComparison.OrdinalIgnoreCase) && float.TryParse(strValue.Substring(0, strValue.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
 				return true;
