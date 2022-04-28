@@ -117,6 +117,7 @@ namespace Microsoft.Maui.Controls.Platform
 			int count = 0;
 			IList<int> totalLineHeights = new List<int>();
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 			for (int i = 0; i < spannableString.Length(); i = next)
 			{
 				var type = Java.Lang.Class.FromType(typeof(Java.Lang.Object));
@@ -177,6 +178,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				((ISpatialElement)span).Region = Region.FromLines(lineHeights, labelWidth, startX, endX, yaxis).Inflate(10);
 			}
+#pragma warning restore CA1416 // 'SpannableString.Length()' is only supported on: 'android' 29.0 and later
 		}
 
 		class FontSpan : MetricAffectingSpan
