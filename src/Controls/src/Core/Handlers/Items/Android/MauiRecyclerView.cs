@@ -23,12 +23,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected TItemsView ItemsView;
 		public IItemsLayout ItemsLayout { get; private set; }
 
-		Func<IItemsLayout> GetItemsLayout;
+		readonly Func<IItemsLayout> _getItemsLayout;
 		protected Func<TAdapter> CreateAdapter;
 
 		SnapManager _snapManager;
 		ScrollHelper _scrollHelper;
-		RecyclerView.OnScrollListener _recyclerViewScrollListener;
+		protected RecyclerView.OnScrollListener RecyclerViewScrollListener;
 
 		EmptyViewAdapter _emptyViewAdapter;
 		readonly DataChangeObserver _emptyCollectionObserver;
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(context)
 		{
-			GetItemsLayout = getItemsLayout ?? throw new ArgumentNullException(nameof(getItemsLayout));
+			_getItemsLayout = getItemsLayout ?? throw new ArgumentNullException(nameof(getItemsLayout));
 			CreateAdapter = getAdapter ?? throw new ArgumentNullException(nameof(getAdapter));
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
@@ -114,8 +114,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			ItemsView = newElement;
-
-			UpdateItemsSource();
 
 			UpdateLayoutManager();
 
@@ -229,6 +227,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ItemsViewAdapter = CreateAdapter();
 
+			(RecyclerViewScrollListener as RecyclerViewScrollListener<TItemsView, TItemsViewSource>)?.UpdateAdapter(ItemsViewAdapter);
+
 			if (GetAdapter() != _emptyViewAdapter)
 			{
 				_emptyCollectionObserver.Stop(oldItemViewAdapter);
@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsLayout != null)
 				ItemsLayout.PropertyChanged -= LayoutPropertyChanged;
 
-			ItemsLayout = GetItemsLayout();
+			ItemsLayout = _getItemsLayout();
 
 			// Keep track of the ItemsLayout's property changes
 			if (ItemsLayout != null)
@@ -582,18 +582,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			RemoveScrollListener();
 
-			_recyclerViewScrollListener = CreateScrollListener();
-			AddOnScrollListener(_recyclerViewScrollListener);
+			RecyclerViewScrollListener = CreateScrollListener();
+			AddOnScrollListener(RecyclerViewScrollListener);
 		}
 
 		void RemoveScrollListener()
 		{
-			if (_recyclerViewScrollListener == null)
+			if (RecyclerViewScrollListener == null)
 				return;
 
-			_recyclerViewScrollListener.Dispose();
+			RecyclerViewScrollListener.Dispose();
 			ClearOnScrollListeners();
-			_recyclerViewScrollListener = null;
+			RecyclerViewScrollListener = null;
 		}
 	}
 }
