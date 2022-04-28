@@ -338,6 +338,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		protected override void OnParentSet()
+		{
+			base.OnParentSet();
+			if (this.IsVisibleItem && CurrentItem != null)
+				((IShellController)Parent)?.AppearanceChanged(CurrentItem, false);
+		}
+
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Items.ToList();
 	}
 }
