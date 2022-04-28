@@ -24,14 +24,12 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static CommandMapper<ShellItem, ShellItemHandler> CommandMapper =
 				new CommandMapper<ShellItem, ShellItemHandler>(ElementCommandMapper);
 
-
 		ShellSectionHandler? _shellSectionHandler;
 		ObservableCollection<NavigationViewItemViewModel> _mainLevelTabs;
 		ShellItem? _shellItem;
 		SearchHandler? _currentSearchHandler;
 		MauiNavigationView? _mauiNavigationView;
 		MauiNavigationView ShellItemNavigationView => _mauiNavigationView!;
-
 
 		public ShellItemHandler() : base(Mapper, CommandMapper)
 		{
@@ -54,7 +52,16 @@ namespace Microsoft.Maui.Controls.Handlers
 			platformView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
 			platformView.SetApplicationResource("NavigationViewHeaderMargin", null);
 
+			_mauiNavigationView.Loaded += OnNavigationViewLoaded;
 			return platformView;
+		}
+
+		void OnNavigationViewLoaded(object sender, RoutedEventArgs e)
+		{
+			if (_mauiNavigationView != null)
+				_mauiNavigationView.Loaded -= OnNavigationViewLoaded;
+
+			MapMenuItems();
 		}
 
 		protected override void ConnectHandler(FrameworkElement platformView)
@@ -67,6 +74,12 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			base.DisconnectHandler(platformView);
 			ShellItemNavigationView.SelectionChanged -= OnNavigationTabChanged;
+
+			if (_mauiNavigationView != null)
+				_mauiNavigationView.Loaded -= OnNavigationViewLoaded;
+
+			if (_currentShellSection != null)
+				_currentShellSection.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
 		}
 
 		public override void SetVirtualView(Maui.IElement view)
@@ -84,7 +97,9 @@ namespace Microsoft.Maui.Controls.Handlers
 					controller.AddAppearanceObserver(this, _shellItem);
 			}
 			else
+			{
 				base.SetVirtualView(view);
+			}
 		}
 
 		private void OnNavigationTabChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -106,19 +121,22 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void MapMenuItems()
 		{
-			List<BaseShellItem> items;
+			// NavigationView makes a lot of changes to properties before it's been loaded
+			// So we like to just wait until it's loaded to project our changes over it
+			if (!ShellItemNavigationView.IsLoaded)
+				return;
 
 			IShellItemController shellItemController = VirtualView;
-			if (Routing.IsImplicit(VirtualView))
+			var items = new List<BaseShellItem>();
+
+			foreach (var item in shellItemController.GetItems())
 			{
-				items = new List<BaseShellItem>(((IShellSectionController)VirtualView.CurrentItem).GetItems());
-			}
-			else
-			{
-				items = new List<BaseShellItem>(shellItemController.GetItems());
+				if (Routing.IsImplicit(item))
+					items.Add(item.CurrentItem);
+				else
+					items.Add(item);
 			}
 
-			bool hasTabs = shellItemController.ShowTabs;
 			object? selectedItem = null;
 
 			_mainLevelTabs.SyncItems(items, (navItem, baseShellItem) =>
@@ -159,8 +177,6 @@ namespace Microsoft.Maui.Controls.Handlers
 								selectedItem = shellContentNavItem;
 							}
 						});
-
-					hasTabs = hasTabs || shellSectionItems.Count > 1;
 				}
 
 				void SetValues(BaseShellItem bsi, NavigationViewItemViewModel vm)
@@ -188,13 +204,13 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (ShellItemNavigationView.SelectedItem != selectedItem)
 				ShellItemNavigationView.SelectedItem = selectedItem;
 
-			if (!hasTabs)
+			if (!shellItemController.ShowTabs)
 			{
-				ShellItemNavigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+				ShellItemNavigationView.PinPaneDisplayModeTo = NavigationViewPaneDisplayMode.LeftMinimal;
 			}
 			else
 			{
-				ShellItemNavigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+				ShellItemNavigationView.PinPaneDisplayModeTo = NavigationViewPaneDisplayMode.Top;
 			}
 		}
 
@@ -274,6 +290,75 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
+		ShellSection? _currentShellSection;
+		void UpdateCurrentItem()
+		{
+			if (_currentShellSection == VirtualView.CurrentItem)
+				return;
+
+			if (_currentShellSection != null)
+			{
+				_currentShellSection.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
+			}
+
+			_currentShellSection = VirtualView.CurrentItem;
+
+			if (VirtualView.CurrentItem != null)
+			{
+				_shellSectionHandler ??= (ShellSectionHandler)VirtualView.CurrentItem.ToHandler(MauiContext!);
+
+				if (PlatformView != (FrameworkElement)ShellItemNavigationView.Content)
+					ShellItemNavigationView.Content = _shellSectionHandler.PlatformView;
+
+				if (_shellSectionHandler.VirtualView != VirtualView.CurrentItem)
+					_shellSectionHandler.SetVirtualView(VirtualView.CurrentItem);
+			}
+
+			MapMenuItems();
+
+			if (_currentShellSection != null)
+			{
+				_currentShellSection.PropertyChanged += OnCurrentShellSectionPropertyChanged;
+			}
+		}
+
+		void OnCurrentShellSectionPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (_mainLevelTabs == null)
+				return;
+
+			var currentItem = VirtualView.CurrentItem.CurrentItem;
+			NavigationViewItemViewModel? navigationViewItemViewModel = null;
+
+			foreach (var item in _mainLevelTabs)
+			{
+				if (item.Data == currentItem)
+				{
+					navigationViewItemViewModel = item;
+					break;
+				}
+
+				if (item.MenuItemsSource != null)
+				{
+					foreach (var subItem in item.MenuItemsSource)
+					{
+						if (subItem.Data == currentItem)
+						{
+							navigationViewItemViewModel = subItem;
+							break;
+						}
+
+					}
+				}
+
+				if (navigationViewItemViewModel != null)
+					break;
+			}
+
+			if (navigationViewItemViewModel != null && ShellItemNavigationView.SelectedItem != navigationViewItemViewModel)
+				ShellItemNavigationView.SelectedItem = navigationViewItemViewModel;
+		}
+
 		public static void MapSearchHandler(ShellItemHandler handler, ShellItem item)
 		{
 		}
@@ -296,18 +381,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapCurrentItem(ShellItemHandler handler, ShellItem item)
 		{
-			if (item.CurrentItem != null)
-			{
-				handler._shellSectionHandler ??= (ShellSectionHandler)item.CurrentItem.ToHandler(handler.MauiContext!);
-
-				if (handler._shellSectionHandler.PlatformView != (FrameworkElement)handler.ShellItemNavigationView.Content)
-					handler.ShellItemNavigationView.Content = handler._shellSectionHandler.PlatformView;
-
-				if (handler._shellSectionHandler.VirtualView != item.CurrentItem)
-					handler._shellSectionHandler.SetVirtualView(item.CurrentItem);
-			}
-
-			handler.MapMenuItems();
+			handler.UpdateCurrentItem();
 		}
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
