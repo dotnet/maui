@@ -52,9 +52,7 @@ namespace Microsoft.Maui
 				return res;
 			}
 
-#pragma warning disable CS8605
 			foreach (AppFW.ResourceManager.Category category in Enum.GetValues(typeof(AppFW.ResourceManager.Category)))
-#pragma warning restore CS8605
 			{
 				foreach (var file in new[] { res, res + ".jpg", res + ".png", res + ".gif" })
 				{
