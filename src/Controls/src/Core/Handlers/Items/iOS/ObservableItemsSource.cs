@@ -299,10 +299,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnCollectionViewUpdated(NotifyCollectionChangedEventArgs args)
 		{
-			CollectionView.BeginInvokeOnMainThread(() =>
+			if (!ApplicationModel.MainThread.IsMainThread)
+			{
+				ApplicationModel.MainThread.BeginInvokeOnMainThread(() => CollectionViewUpdated?.Invoke(this, args));
+			}
+			else
 			{
 				CollectionViewUpdated?.Invoke(this, args);
-			});
+			}
 		}
 	}
 }
