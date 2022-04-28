@@ -65,6 +65,7 @@ namespace Microsoft.Maui
 		}
 
 		[Export("application:configurationForConnectingSceneSession:options:")]
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.1")]
 		public virtual UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
 			=> new(MauiUIApplicationDelegate.MauiSceneConfigurationKey, connectingSceneSession.Role);
 
