@@ -26,6 +26,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			Content = CreateHandler(view, itemsView);
 			var platformView = Content.ContainerView ?? Content.PlatformView;
+			//make sure we don't belong to a previous Holder
+			platformView.RemoveFromParent();
 			AddView(platformView);
 
 			//TODO: RUI IS THIS THE BEST WAY TO CAST? 
