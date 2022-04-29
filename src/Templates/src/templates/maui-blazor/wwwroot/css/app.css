@@ -63,14 +63,22 @@ a, .btn-link {
     content: "An error has occurred."
 }
 
+.status-bar-safe-area {
+    display: none;
+}
+
 @supports (-webkit-touch-callout: none) {
-    .flex-column, .navbar-brand {
-        padding-left: env(safe-area-inset-left);
+    .status-bar-safe-area {
+        display: flex;
+        position: sticky;
+        top: 0;
+        height: env(safe-area-inset-top);
+        background-color: #f7f7f7;
+        width: 100%;
+        z-index: 1;
     }
 
-    .top-row {
-        padding-top: env(safe-area-inset-top);
-        padding-right: env(safe-area-inset-right);
-        height: 3.5em + env(safe-area-inset-top) !important;
-    }
+	.flex-column, .navbar-brand {
+		padding-left: env(safe-area-inset-left);
+	}
 }
