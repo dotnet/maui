@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var result = style.ToPlatformModalPresentationStyle();
 
-				if (!PlatformVersion.IsAtLeast(13) && result == UIKit.UIModalPresentationStyle.Automatic)
+				if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)) && result == UIKit.UIModalPresentationStyle.Automatic)
 				{
 					result = UIKit.UIModalPresentationStyle.FullScreen;
 				}
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			modal.ViewController.DidMoveToParentViewController(this);
 
-			if (PlatformVersion.IsAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				PresentationController.Delegate = this;
 
 			((Page)modal.VirtualView).PropertyChanged += OnModalPagePropertyChanged;
