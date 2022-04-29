@@ -141,6 +141,16 @@ namespace Microsoft.Maui.DeviceTests
 			return navView.IsBackButtonVisible == UI.Xaml.Controls.NavigationViewBackButtonVisible.Visible;
 		}
 
+		public bool IsNavigationBarVisible(IElementHandler handler) =>
+			IsNavigationBarVisible(handler.MauiContext);
+
+		public bool IsNavigationBarVisible(IMauiContext mauiContext)
+		{
+			var navView = GetMauiNavigationView(mauiContext);
+			var header = navView?.Header as WFrameworkElement;
+			return header?.Visibility == UI.Xaml.Visibility.Visible;
+		}
+
 		protected MauiToolbar GetPlatformToolbar(IElementHandler handler)
 		{
 			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
