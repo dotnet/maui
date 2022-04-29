@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 			get
 			{
 				Debug.Assert(_rootPath != null || _getRootPath != null, $"The ctor should have set either {nameof(_rootPath)} or {nameof(_getRootPath)}.");
-				
+
 				return _rootPath ??= _getRootPath!();
 			}
 		}

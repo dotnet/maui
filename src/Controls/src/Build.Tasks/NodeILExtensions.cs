@@ -31,16 +31,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				}
 			}
 
-			if (typeConverter == null)
-				foreach (var (t, tc) in TypeConversionExtensions.KnownConverters)
-				{
-					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef))
-					{
-						typeConverter = context.Module.ImportReference(tc);
-						break;
-					}
-				}
-
 			return node.CanConvertValue(context, targetTypeRef, typeConverter);
 		}
 
@@ -124,16 +114,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				}
 			}
 
-			if (typeConverter == null)
-				foreach (var (t, tc) in TypeConversionExtensions.KnownConverters)
-				{
-					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef))
-					{
-						typeConverter = context.Module.ImportReference(tc);
-						break;
-					}
-				}
-
 			return node.PushConvertedValue(context, targetTypeRef, typeConverter, pushServiceProvider, boxValueTypes,
 				unboxValueTypes);
 		}
@@ -174,6 +154,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				{
 					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "ThicknessTypeConverter")), typeof(ThicknessTypeConverter) },
 					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "CornerRadiusTypeConverter")), typeof(CornerRadiusTypeConverter) },
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "EasingTypeConverter")), typeof(EasingTypeConverter) },
 					{ module.ImportReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics.Converters", "ColorTypeConverter")), typeof(ColorTypeConverter) }
 				};
 			}

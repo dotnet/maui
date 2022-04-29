@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public void CopyTo(TRestrict[] array, int index) => CopyTo ((Array)array, index);
+		public void CopyTo(TRestrict[] array, int index) => CopyTo((Array)array, index);
 
 		public int Count
 		{

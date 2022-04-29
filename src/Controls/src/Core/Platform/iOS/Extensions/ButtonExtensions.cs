@@ -179,6 +179,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			platformButton.UpdatePadding(button);
 
+#pragma warning disable CA1416 // TODO: [UnsupportedOSPlatform("ios15.0")]
 			if (platformButton.ImageEdgeInsets != imageInsets ||
 				platformButton.TitleEdgeInsets != titleInsets)
 			{
@@ -186,6 +187,7 @@ namespace Microsoft.Maui.Controls.Platform
 				platformButton.TitleEdgeInsets = titleInsets;
 				platformButton.Superview?.SetNeedsLayout();
 			}
+#pragma warning restore CA1416
 		}
 
 		public static void UpdateText(this UIButton platformButton, Button button)
@@ -196,6 +198,20 @@ namespace Microsoft.Maui.Controls.Platform
 			// Content layout depends on whether or not the text is empty; changing the text means
 			// we may need to update the content layout
 			platformButton.UpdateContentLayout(button);
+		}
+
+		public static void UpdateLineBreakMode(this UIButton nativeButton, Button button)
+		{
+			nativeButton.TitleLabel.LineBreakMode = button.LineBreakMode switch
+			{
+				LineBreakMode.NoWrap => UILineBreakMode.Clip,
+				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
+				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
+				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
+				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+				_ => throw new ArgumentOutOfRangeException()
+			};
 		}
 	}
 }

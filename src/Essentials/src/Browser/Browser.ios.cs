@@ -16,6 +16,7 @@ namespace Microsoft.Maui.ApplicationModel
 			switch (options.LaunchMode)
 			{
 				case BrowserLaunchMode.SystemPreferred:
+					System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(11));
 					await LaunchSafariViewController(uri, options);
 					break;
 				case BrowserLaunchMode.External:
@@ -25,6 +26,7 @@ namespace Microsoft.Maui.ApplicationModel
 			return true;
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios11.0")]
 		private static async Task LaunchSafariViewController(Uri uri, BrowserLaunchOptions options)
 		{
 			var nativeUrl = new NSUrl(uri.AbsoluteUri);

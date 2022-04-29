@@ -17,7 +17,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			var windowManager = handler.MauiContext.GetNavigationRootManager();
-			windowManager.Connect(handler.VirtualView.Content);
+			windowManager.Disconnect();
+			windowManager.Connect(handler.VirtualView.Content.ToPlatform(handler.MauiContext));
 			var rootPanel = handler.PlatformView.Content as WPanel;
 
 			if (rootPanel == null)

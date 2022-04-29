@@ -6,7 +6,9 @@ using PlatformView = UIKit.UIImageView;
 using PlatformView = Android.Widget.ImageView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.Image;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformView = Tizen.UIExtensions.ElmSharp.Image;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 
@@ -16,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IImage, IImageHandler> Mapper = new PropertyMapper<IImage, IImageHandler>(ViewHandler.ViewMapper)
 		{
-#if __ANDROID__ || WINDOWS
+#if __ANDROID__ || WINDOWS || TIZEN
 			[nameof(IImage.Background)] = MapBackground,
 #endif
 			[nameof(IImage.Aspect)] = MapAspect,

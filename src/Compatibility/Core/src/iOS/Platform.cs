@@ -187,7 +187,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// While the above IsiOS13OrNewer will always be false if __XCODE11__ is true
 				// the UIModalPresentationStyle.Automatic is the only Xcode 11 API
 				// for readability I decided to only take this part out
+#pragma warning disable CA1416 // TODO: 'UIModalPresentationStyle.Automatic' is only supported on: 'ios' 13.0 and later
 				if (presentationStyle == UIKit.UIModalPresentationStyle.Automatic)
+#pragma warning restore CA1416
 					shouldFire = false;
 
 				if (presentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
@@ -323,8 +325,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					safeAreaInsets = new UIEdgeInsets(UIApplication.SharedApplication.StatusBarFrame.Size.Height, 0, 0, 0);
 				else if (UIApplication.SharedApplication.GetKeyWindow() != null)
 					safeAreaInsets = UIApplication.SharedApplication.GetKeyWindow().SafeAreaInsets;
+#pragma warning disable CA1416 // TODO: UIApplication.Windows is unsupported on: 'ios' 15.0 and later
 				else if (UIApplication.SharedApplication.Windows.Length > 0)
 					safeAreaInsets = UIApplication.SharedApplication.Windows[0].SafeAreaInsets;
+#pragma warning restore CA1416
 				else
 					safeAreaInsets = UIEdgeInsets.Zero;
 
@@ -661,7 +665,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (!PageIsChildOfPlatform(sender))
 					return;
 				busyCount = Math.Max(0, enabled ? busyCount + 1 : busyCount - 1);
+#pragma warning disable CA1416 // TODO: 'UIApplication.NetworkActivityIndicatorVisible' is unsupported on: 'ios' 13.0 and later
 				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = busyCount > 0;
+#pragma warning restore CA1416
 			});
 
 			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments arguments) =>

@@ -39,6 +39,9 @@ namespace Maui.Controls.Sample
 			var appBuilder = MauiApp.CreateBuilder();
 
 			appBuilder.UseMauiApp<XamlApp>();
+#if TIZEN
+			appBuilder.UseMauiCompatibility();
+#endif
 			var services = appBuilder.Services;
 
 			if (UseMauiGraphicsSkia)
@@ -59,22 +62,25 @@ namespace Maui.Controls.Sample
 				*/
 			}
 
-//			appBuilder
-//				.ConfigureMauiHandlers(handlers =>
-//				{
-//#pragma warning disable CS0618 // Type or member is obsolete
-//#if __ANDROID__
-//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
-//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer));
-//#elif __IOS__
-//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
-//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
-//#elif WINDOWS
-//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
-//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
-//#endif
-//#pragma warning restore CS0618 // Type or member is obsolete
-//				});
+			//			appBuilder
+			//				.ConfigureMauiHandlers(handlers =>
+			//				{
+			//#pragma warning disable CS0618 // Type or member is obsolete
+			//#if __ANDROID__
+			//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+			//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer));
+			//#elif __IOS__
+			//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+			//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
+			//#elif WINDOWS
+			//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+			//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
+			// #elif TIZEN
+			// 					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+			// 						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Tizen.ButtonRenderer));
+			// #endif
+			//#pragma warning restore CS0618 // Type or member is obsolete
+			//				});
 
 			// Use a "third party" library that brings in a massive amount of controls
 			appBuilder.UseBordelessEntry();
@@ -222,12 +228,25 @@ namespace Maui.Controls.Sample
 #elif WINDOWS
 					// Log everything in this one
 					events.AddWindows(windows => windows
-						.OnPlatformMessage((a, b) => 
-							LogEvent(nameof(WindowsLifecycle.OnPlatformMessage)))
+						// .OnPlatformMessage((a, b) => 
+						//	LogEvent(nameof(WindowsLifecycle.OnPlatformMessage)))
 						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
 						.OnVisibilityChanged((a, b) => LogEvent(nameof(WindowsLifecycle.OnVisibilityChanged))));
+#elif TIZEN
+					events.AddTizen(tizen => tizen
+						.OnAppControlReceived((a, b) => LogEvent(nameof(TizenLifecycle.OnAppControlReceived)))
+						.OnCreate((a) => LogEvent(nameof(TizenLifecycle.OnCreate)))
+						.OnDeviceOrientationChanged((a, b) => LogEvent(nameof(TizenLifecycle.OnDeviceOrientationChanged)))
+						.OnLocaleChanged((a, b) => LogEvent(nameof(TizenLifecycle.OnLocaleChanged)))
+						.OnLowBattery((a, b) => LogEvent(nameof(TizenLifecycle.OnLowBattery)))
+						.OnLowMemory((a, b) => LogEvent(nameof(TizenLifecycle.OnLowMemory)))
+						.OnPause((a) => LogEvent(nameof(TizenLifecycle.OnPause)))
+						.OnPreCreate((a) => LogEvent(nameof(TizenLifecycle.OnPreCreate)))
+						.OnRegionFormatChanged((a, b) => LogEvent(nameof(TizenLifecycle.OnRegionFormatChanged)))
+						.OnResume((a) => LogEvent(nameof(TizenLifecycle.OnResume)))
+						.OnTerminate((a) => LogEvent(nameof(TizenLifecycle.OnTerminate))));
 #endif
 
 					static bool LogEvent(string eventName, string type = null)
@@ -237,10 +256,13 @@ namespace Maui.Controls.Sample
 					}
 				});
 
+			//appBuilder
+			//	.UseFoldable();
+
 			// If someone wanted to completely turn off the CascadeInputTransparent behavior in their application, this next line would be an easy way to do it
 			// Microsoft.Maui.Controls.Layout.ControlsLayoutMapper.ModifyMapping(nameof(Microsoft.Maui.Controls.Layout.CascadeInputTransparent), (_, _, _) => { });
 
-			return appBuilder.UseFoldable().Build();
+			return appBuilder.Build();
 		}
 	}
 }

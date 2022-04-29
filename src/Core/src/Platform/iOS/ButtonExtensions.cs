@@ -69,25 +69,15 @@ namespace Microsoft.Maui.Platform
 			if (bottom == 0.0)
 				bottom = AlmostZero;
 
+#pragma warning disable CA1416 // TODO: 'UIButton.ContentEdgeInsets' is unsupported on: 'ios' 15.0 and later.
 			platformButton.ContentEdgeInsets = new UIEdgeInsets(
 				(float)top,
 				(float)padding.Left,
 				(float)bottom,
 				(float)padding.Right);
+#pragma warning restore CA1416
 		}
 
-		public static void UpdateLineBreakMode(this UIButton nativeButton, ILineBreakMode button)
-		{
-			nativeButton.TitleLabel.LineBreakMode = button.LineBreakMode switch
-			{
-				LineBreakMode.NoWrap => UILineBreakMode.Clip,
-				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
-				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
-				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
-				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
-				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
-				_ => throw new ArgumentOutOfRangeException()
-			};
-		}
+
 	}
 }

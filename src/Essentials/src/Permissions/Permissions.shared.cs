@@ -34,13 +34,13 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		internal static async Task EnsureGrantedOrRestrictedAsync<TPermission>()
-            where TPermission : BasePermission, new()
-        {
-            var status = await RequestAsync<TPermission>();
+			where TPermission : BasePermission, new()
+		{
+			var status = await RequestAsync<TPermission>();
 
-            if (status != PermissionStatus.Granted && status != PermissionStatus.Restricted)
-                throw new PermissionException($"{typeof(TPermission).Name} permission was not granted or restricted: {status}");
-        }
+			if (status != PermissionStatus.Granted && status != PermissionStatus.Restricted)
+				throw new PermissionException($"{typeof(TPermission).Name} permission was not granted or restricted: {status}");
+		}
 
 		public abstract partial class BasePermission
 		{

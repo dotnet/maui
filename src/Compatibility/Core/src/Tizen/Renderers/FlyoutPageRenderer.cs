@@ -1,8 +1,10 @@
 using System;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Renderers;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class FlyoutPageRenderer : VisualElementRenderer<FlyoutPage>
 	{
 		Native.FlyoutPage _flyoutPage;
@@ -140,9 +142,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateIsPresented()
 		{
-			// To update TabIndex order
-			CustomFocusManager.StartReorderTabIndex();
-
 			_flyoutPage.IsPresented = Element.IsPresented;
 		}
 

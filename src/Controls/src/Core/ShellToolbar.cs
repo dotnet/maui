@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Microsoft.Maui.Graphics;
 using System.Windows.Input;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -13,6 +13,9 @@ namespace Microsoft.Maui.Controls
 		Page _currentPage;
 		BackButtonBehavior _backButtonBehavior;
 		ToolbarTracker _toolbarTracker = new ToolbarTracker();
+#if WINDOWS
+		MenuBarTracker _menuBarTracker = new MenuBarTracker();
+#endif
 		bool _drawerToggleVisible;
 
 		public override bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
@@ -42,6 +45,9 @@ namespace Microsoft.Maui.Controls
 
 			ApplyChanges();
 			_toolbarTracker.CollectionChanged += (_, __) => ToolbarItems = _toolbarTracker.ToolbarItems;
+#if WINDOWS
+			_menuBarTracker.CollectionChanged += (_, __) => ApplyChanges();
+#endif
 		}
 
 		internal void ApplyChanges()
@@ -67,12 +73,16 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			_toolbarTracker.Target = _shell;
+#if WINDOWS
+			_menuBarTracker.Target = _shell;
+#endif
 
 			Page previousPage = null;
 			if (stack.Count > 1)
 				previousPage = stack[stack.Count - 1];
 
 			ToolbarItems = _toolbarTracker.ToolbarItems;
+
 			UpdateBackbuttonBehavior();
 			bool backButtonVisible = true;
 
@@ -94,10 +104,6 @@ namespace Microsoft.Maui.Controls
 
 			UpdateTitle();
 
-			TitleView = _shell.GetEffectiveValue<VisualElement>(
-				Shell.TitleViewProperty,
-				Shell.GetTitleView(_shell));
-
 			if (_currentPage != null &&
 				_currentPage.IsSet(Shell.NavBarIsVisibleProperty))
 			{
@@ -105,10 +111,18 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
+#if WINDOWS
+				IsVisible = (BackButtonVisible ||
+					!String.IsNullOrEmpty(Title) ||
+					TitleView != null ||
+					_toolbarTracker.ToolbarItems.Count > 0 ||
+					_menuBarTracker.ToolbarItems.Count > 0);
+#else
 				IsVisible = (BackButtonVisible ||
 					!String.IsNullOrEmpty(Title) ||
 					TitleView != null ||
 					_toolbarTracker.ToolbarItems.Count > 0);
+#endif
 			}
 
 			if (currentPage != null)
@@ -169,8 +183,17 @@ namespace Microsoft.Maui.Controls
 
 		internal void UpdateTitle()
 		{
-			Page currentPage = _shell.GetCurrentShellPage() as Page;
+			TitleView = _shell.GetEffectiveValue<VisualElement>(
+				Shell.TitleViewProperty,
+				Shell.GetTitleView(_shell));
 
+			if (TitleView != null)
+			{
+				Title = String.Empty;
+				return;
+			}
+
+			Page currentPage = _shell.GetCurrentShellPage() as Page;
 			if (currentPage?.IsSet(Page.TitleProperty) == true)
 			{
 				Title = currentPage.Title ?? String.Empty;

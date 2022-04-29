@@ -2,13 +2,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
+using Android.Content.Res;
 using Android.Views;
+using AndroidX.Window.Layout;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using AView = Android.Views.View;
 using Microsoft.Maui.Platform;
-using AndroidX.Window.Layout;
-using Android.Content.Res;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Foldable
 {

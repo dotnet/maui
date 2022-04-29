@@ -53,7 +53,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (brush is SolidColorBrush solidColorBrush)
 			{
 				var backgroundColor = solidColorBrush.Color;
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 				paint.Color = backgroundColor.ToPlatform();
+#pragma warning restore CA1416
 			}
 
 			if (brush is LinearGradientBrush linearGradientBrush)
@@ -175,7 +177,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static bool UseGradients(this GradientDrawable gradientDrawable)
 		{
-			if (!PlatformVersion.IsAtLeast(24))
+			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
 				return false;
 
 			var colors = gradientDrawable.GetColors();

@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class DrawableExtensions
 	{
+		[System.Runtime.Versioning.SupportedOSPlatform("android29.0")]
 		public static BlendMode? GetFilterMode(FilterMode mode)
 		{
 			switch (mode)
@@ -73,7 +74,7 @@ namespace Microsoft.Maui.Platform
 			if (drawable == null)
 				return;
 
-			if (PlatformVersion.Supports(PlatformApis.BlendModeColorFilter))
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
 			{
 				BlendMode? filterMode29 = GetFilterMode(mode);
 

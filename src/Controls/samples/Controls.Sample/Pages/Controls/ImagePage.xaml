@@ -24,8 +24,7 @@
                 <Label
                     Text="Font Image Source"
                     Style="{StaticResource Headline}"/>
-                <Image
-                    
+                <Image   
                     Background="Green">
                     <Image.Source>
                         <FontImageSource

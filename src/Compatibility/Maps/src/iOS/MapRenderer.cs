@@ -48,9 +48,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 		// For the time being, we don't want ViewRenderer handling disposal of the MKMapView
 		// if we're on iOS 9 or 10; during Dispose we'll be putting the MKMapView in a pool instead
-//#if MOBILE
-//		protected override bool ManageNativeControlLifetime => false;
-//#endif
+		//#if MOBILE
+		//		protected override bool ManageNativeControlLifetime => false;
+		//#endif
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -233,7 +233,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			mapPin = mapView.DequeueReusableAnnotation(defaultPinId);
 			if (mapPin == null)
 			{
+#pragma warning disable CA1416 // TODO: MKPinAnnotationView type has [UnsupportedOSPlatform("macos12.0")], [UnsupportedOSPlatform("ios15.0")], [UnsupportedOSPlatform("tvos15.0")]
 				mapPin = new MKPinAnnotationView(annotation, defaultPinId);
+#pragma warning restore CA1416
 				mapPin.CanShowCallout = true;
 			}
 
@@ -469,7 +471,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			if (((Map)Element).IsShowingUser)
 			{
 				_locationManager = new CLLocationManager();
+#pragma warning disable CA1416 // TODO: 'CLLocationManager.RequestWhenInUseAuthorization()' has [SupportedOSPlatform("macos11.0")]
 				_locationManager.RequestWhenInUseAuthorization();
+#pragma warning restore CA1416
 			}
 #endif
 			((MKMapView)Control).ShowsUserLocation = ((Map)Element).IsShowingUser;

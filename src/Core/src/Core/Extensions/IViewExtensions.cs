@@ -2,7 +2,7 @@
 {
 	public static class IViewExtensions
 	{
-		public static FlowDirection GetEffectiveFlowDirection(this IView view) 
+		public static FlowDirection GetEffectiveFlowDirection(this IView view)
 		{
 			if (view.FlowDirection != FlowDirection.MatchParent)
 			{

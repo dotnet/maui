@@ -85,7 +85,9 @@ namespace Microsoft.Maui.Authentication
 
 				using (was)
 				{
+#pragma warning disable CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
 					was.Start();
+#pragma warning restore CA1416
 					return await tcsResponse.Task;
 				}
 			}
@@ -139,7 +141,9 @@ namespace Microsoft.Maui.Authentication
 				{
 					foreach (var cookie in cookies)
 					{
+#pragma warning disable CA1416 // Known false positive with lambda, here we can also assert the version
 						WKWebsiteDataStore.DefaultDataStore.HttpCookieStore.DeleteCookie(cookie, null);
+#pragma warning restore CA1416
 					}
 				});
 			}
@@ -174,7 +178,7 @@ namespace Microsoft.Maui.Authentication
 		static bool VerifyHasUrlSchemeOrDoesntRequire(string scheme)
 		{
 			// iOS11+ uses sfAuthenticationSession which handles its own url routing
-			if (OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsTvOSVersionAtLeast (11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsTvOSVersionAtLeast(11, 0))
 				return true;
 
 			return AppInfoImplementation.VerifyHasUrlScheme(scheme);

@@ -1,8 +1,10 @@
 using System;
+using Microsoft.Maui.Controls.Platform;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SearchBarRenderer : ViewRenderer<SearchBar, Native.SearchBar>
 	{
 
@@ -64,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			base.OnElementChanged(e);
 		}
 
-		protected override Size MinimumSize()
+		protected override Graphics.Size MinimumSize()
 		{
 			return Control.Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
 		}
@@ -75,10 +77,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void CancelButtonColorPropertyHandler(bool initialize)
 		{
-			if (initialize && Element.CancelButtonColor.IsDefault)
+			if (initialize && Element.CancelButtonColor.IsDefault())
 				return;
 
-			Control.SetClearButtonColor(Element.CancelButtonColor.ToPlatform());
+			Control.SetClearButtonColor(Element.CancelButtonColor.ToNative());
 		}
 
 		/// <summary>
@@ -97,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void FontFamilyPropertyHandler()
 		{
-			Control.FontFamily = Element.FontFamily.ToNativeFontFamily();
+			Control.FontFamily = Element.FontFamily.ToNativeFontFamily(Element.RequireFontManager());
 		}
 
 		/// <summary>
@@ -116,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void HorizontalTextAlignmentPropertyHandler()
 		{
-			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
+			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
 		}
 
 		/// <summary>
@@ -126,10 +128,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void PlaceholderColorPropertyHandler(bool initialize)
 		{
-			if (initialize && Element.TextColor.IsDefault)
+			if (initialize && Element.TextColor.IsDefault())
 				return;
 
-			Control.PlaceholderColor = Element.PlaceholderColor.ToPlatform();
+			Control.PlaceholderColor = Element.PlaceholderColor.ToNative();
 		}
 
 		/// <summary>
@@ -168,10 +170,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void TextColorPropertyHandler(bool initialize)
 		{
-			if (initialize && Element.TextColor.IsDefault)
+			if (initialize && Element.TextColor.IsDefault())
 				return;
 
-			Control.TextColor = Element.TextColor.ToPlatform();
+			Control.TextColor = Element.TextColor.ToNative();
 		}
 
 		/// <summary>

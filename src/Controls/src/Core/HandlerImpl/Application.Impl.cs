@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
@@ -65,7 +65,8 @@ namespace Microsoft.Maui.Controls
 
 		internal void RemoveWindow(Window window)
 		{
-			if (_singleWindowMainPage != null)
+			// Do not attempt to close the "MainPage" window
+			if (_singleWindowMainPage != null && window.Page == _singleWindowMainPage)
 				return;
 
 			// Window was closed, stop tracking it
@@ -81,9 +82,6 @@ namespace Microsoft.Maui.Controls
 				InternalChildren.Remove(windowElement);
 				windowElement.Parent = null;
 				OnChildRemoved(windowElement, oldIndex);
-
-				if (_singleWindowMainPage != null)
-					window.Page = null;
 			}
 
 			_windows.Remove(window);

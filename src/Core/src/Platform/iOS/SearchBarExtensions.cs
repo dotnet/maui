@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 		{
 			uiSearchBar.UserInteractionEnabled = searchBar.IsEnabled;
 		}
-		
+
 		public static void UpdateText(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			uiSearchBar.Text = searchBar.Text;

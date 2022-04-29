@@ -20,6 +20,26 @@
                     TextColor="Red"
                     Text="TextColor"/>
                 <Label
+                    Text="BackgroundColor"
+                    Style="{StaticResource Headline}"/>
+                <Label
+                    BackgroundColor="Blue"
+                    Text="Button"/>
+                <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <Label 
+                    Text="Background">
+                    <Label.Background>
+                        <LinearGradientBrush EndPoint="1,0">
+                            <GradientStop Color="Yellow"  
+                                          Offset="0.1" />
+                            <GradientStop Color="Green"
+                                          Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Label.Background>
+                </Label>
+                <Label
                     Text="Html text"
                     Style="{StaticResource Headline}"/>
                 <Label

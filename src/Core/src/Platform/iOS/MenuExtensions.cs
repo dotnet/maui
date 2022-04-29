@@ -1,9 +1,9 @@
 ﻿using System;
-using UIKit;
-using Foundation;
-using ObjCRuntime;
 using System.Collections.Generic;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
+using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Platform
 			throw new InvalidOperationException("MenuItems on Catalyst currently only support Font and File Images");
 		}
 
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		public static void SendClicked(this UICommand uICommand)
 		{
 			MenuFlyoutItemHandler.Execute(uICommand);
@@ -36,6 +37,7 @@ namespace Microsoft.Maui.Platform
 			return (NSString)uIMenu.PerformSelector(new Selector("identifier"));
 		}
 
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		internal static UIMenu ToPlatformMenu(
 			this IList<IMenuElement> menuElements,
 			string title,
@@ -43,6 +45,9 @@ namespace Microsoft.Maui.Platform
 			IMauiContext mauiContext,
 			IUIMenuBuilder? uIMenuBuilder)
 		{
+			if (String.IsNullOrWhiteSpace(title))
+				throw new ArgumentNullException(nameof(title), $"{menuElements} requires title text.");
+
 			uIMenuBuilder = uIMenuBuilder ??
 				MauiUIApplicationDelegate.Current.MenuBuilder!;
 
@@ -87,6 +92,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
+				System.Diagnostics.Debug.Assert(OperatingSystem.IsIOSVersionAtLeast(15), "TOOO: UIMenuOptions.SingleSelection is only supported on: 'ios' 15.0 and later");
 				// This means we are creating our own new menu/submenu
 				platformMenu =
 					UIMenu.Create(title, uiImage, UIMenuIdentifier.None,

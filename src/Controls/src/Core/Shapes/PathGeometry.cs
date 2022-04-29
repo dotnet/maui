@@ -1,5 +1,6 @@
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Devices;
+using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
@@ -89,20 +90,31 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void AddArc(PathF path, ArcSegment arcSegment, double density)
 		{
-			path.AddArc(
-				(float)(density * arcSegment.Point.X),
-				(float)(density * arcSegment.Point.Y),
-				(float)(density * arcSegment.Point.X + density * arcSegment.Size.Width),
-				(float)(density * arcSegment.Point.Y + density * arcSegment.Size.Height),
-				(float)(density * arcSegment.RotationAngle),
-				(float)(density * arcSegment.RotationAngle),
-				arcSegment.SweepDirection == SweepDirection.Clockwise);
+			List<Point> points = new List<Point>();
+
+			GeometryHelper.FlattenArc(
+				points,
+				path.LastPoint,
+				arcSegment.Point,
+				arcSegment.Size.Width,
+				arcSegment.Size.Height,
+				arcSegment.RotationAngle,
+				arcSegment.IsLargeArc,
+				arcSegment.SweepDirection == SweepDirection.CounterClockwise,
+				1);
+
+			for (int i = 0; i < points.Count; i++)
+			{
+				path.LineTo(
+					(float)points[i].X, 
+					(float)points[i].Y);
+			}
 		}
 
 		void AddLine(PathF path, LineSegment lineSegment, double density)
 		{
 			path.LineTo(
-				(float)(density * lineSegment.Point.X), 
+				(float)(density * lineSegment.Point.X),
 				(float)(density * lineSegment.Point.Y));
 		}
 
@@ -110,13 +122,13 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			foreach (var p in polyLineSegment.Points)
 				path.LineTo(
-					(float)(density * p.X), 
+					(float)(density * p.X),
 					(float)(density * p.Y));
 		}
 
 		void AddBezier(PathF path, BezierSegment bezierSegment, double density)
 		{
-			path.CurveTo(	
+			path.CurveTo(
 				(float)(density * bezierSegment.Point1.X), (float)(density * bezierSegment.Point1.Y),
 				(float)(density * bezierSegment.Point2.X), (float)(density * bezierSegment.Point2.Y),
 				(float)(density * bezierSegment.Point3.X), (float)(density * bezierSegment.Point3.Y));

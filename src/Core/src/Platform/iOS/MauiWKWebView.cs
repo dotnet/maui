@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Platform
 		public override void MovedToWindow()
 		{
 			base.MovedToWindow();
-			
+
 			if (!string.IsNullOrWhiteSpace(_pendingUrl))
 			{
 				var closure = _pendingUrl;

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AWebView CreatePlatformView()
 		{
-			var platformView =  new MauiWebView(this, Context!)
+			var platformView = new MauiWebView(this, Context!)
 			{
 				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent)
 			};
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(AWebView platformView)
 		{
 			platformView.StopLoading();
-			
+
 			_webViewClient?.Dispose();
 			_webChromeClient?.Dispose();
 
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			ProcessSourceWhenReady(handler, webView);
 		}
-	
+
 		public static void MapWebViewClient(IWebViewHandler handler, IWebView webView)
 		{
 			if (handler is WebViewHandler platformHandler)
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler.PlatformView.CanGoBack() && handler is WebViewHandler w)
 				w.CurrentNavigationEvent = WebNavigationEvent.Back;
-						
+
 			handler.PlatformView.UpdateGoBack(webView);
 		}
 
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler is WebViewHandler w)
 				w.CurrentNavigationEvent = WebNavigationEvent.Refresh;
-			
+
 			handler.PlatformView.UpdateReload(webView);
 
 			string? url = handler.PlatformView.Url?.ToString();
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Handlers
 
 			var cookies = myCookieJar.GetCookies(uri);
 			var retrieveCurrentWebCookies = GetCookiesFromPlatformStore(url);
-			
+
 			if (retrieveCurrentWebCookies == null)
 				return;
 
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var retrieveCurrentWebCookies = GetCookiesFromPlatformStore(url);
-			
+
 			if (retrieveCurrentWebCookies == null)
 				return;
 
@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			CookieContainer existingCookies = new CookieContainer();
 			var cookieManager = CookieManager.Instance;
-			
+
 			if (cookieManager == null)
 				return null;
 

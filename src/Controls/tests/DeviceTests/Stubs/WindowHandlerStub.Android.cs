@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Android.OS;
-using Android.Views;
-using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
-using AndroidX.Fragment.App;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using static Microsoft.Maui.DeviceTests.HandlerTestBase;
 using AActivity = Android.App.Activity;
-using AView = Android.Views.View;
-using AViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -23,10 +17,21 @@ namespace Microsoft.Maui.DeviceTests
 		void UpdateContent()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-
+			
 			var rootManager = MauiContext.GetNavigationRootManager();
+
+			var previousRootView = rootManager.RootView;
 			rootManager.Connect(VirtualView.Content);
+
+			// This is used for cases where we are testing swapping out the page set on window
+			if (previousRootView?.Parent is FakeActivityRootView farw)
+			{
+				previousRootView.RemoveFromParent();
+				rootManager.RootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(500, 500);
+				farw.AddView(rootManager.RootView);
+			}
 		}
+
 		public static void MapContent(WindowHandlerStub handler, IWindow window)
 		{
 			handler.UpdateContent();
@@ -38,8 +43,6 @@ namespace Microsoft.Maui.DeviceTests
 			var windowManager = MauiContext.GetNavigationRootManager();
 			windowManager.Disconnect();
 		}
-
-
 
 		public WindowHandlerStub()
 			: base(WindowMapper)

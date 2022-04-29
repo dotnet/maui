@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 		internal WebNavigationEvent _lastBackForwardEvent;
 		WKUIDelegate? _delegate;
-		
+
 		protected override WKWebView CreatePlatformView()
 		{
 			var nativeWebView = new MauiWKWebView(RectangleF.Empty, this)
@@ -351,7 +351,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			NSHttpCookie[]? _initialCookiesLoaded = null;
 
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				_initialCookiesLoaded = await PlatformView.Configuration.WebsiteDataStore.HttpCookieStore.GetAllCookiesAsync();
 			}
@@ -385,7 +385,7 @@ namespace Microsoft.Maui.Handlers
 
 		async Task SetCookie(List<Cookie> cookies)
 		{
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				foreach (var cookie in cookies)
 					await PlatformView.Configuration.WebsiteDataStore.HttpCookieStore.SetCookieAsync(new NSHttpCookie(cookie));
@@ -405,7 +405,7 @@ namespace Microsoft.Maui.Handlers
 
 		async Task DeleteCookies(List<NSHttpCookie> cookies)
 		{
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				foreach (var cookie in cookies)
 					await PlatformView.Configuration.WebsiteDataStore.HttpCookieStore.DeleteCookieAsync(cookie);

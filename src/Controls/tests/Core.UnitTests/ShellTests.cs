@@ -1455,6 +1455,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual("Shell Title", (window as IWindow).Title);
 		}
 
+		[Test]
+		public void FlyoutIsPresentedRemainsTrueAfterShellIsInitialized()
+		{
+			TestShell testShell = new TestShell()
+			{
+				FlyoutIsPresented = true
+			};
+
+			testShell.Items.Add(CreateShellItem<FlyoutItem>());
+
+			Assert.IsTrue(testShell.FlyoutIsPresented);
+		}
+
 		public void ShellToolbarNotVisibleWithBasicContentPage()
 		{
 			TestShell testShell = new TestShell(new ContentPage());

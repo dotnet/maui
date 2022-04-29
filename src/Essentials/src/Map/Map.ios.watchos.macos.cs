@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Contacts;
@@ -13,6 +14,11 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
+			return TryOpenAsync(latitude, longitude, options);
+		}
+
+		public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
+		{
 			if (options == null)
 				throw new ArgumentNullException(nameof(options));
 
@@ -24,7 +30,14 @@ namespace Microsoft.Maui.ApplicationModel
 			return OpenPlacemark(placemark, options);
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios11.0")]
 		public async Task OpenAsync(Placemark placemark, MapLaunchOptions options)
+		{
+			await TryOpenAsync(placemark, options);
+		}
+
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios11.0")]
+		public async Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
 			if (placemark == null)
 				throw new ArgumentNullException(nameof(placemark));
@@ -57,7 +70,7 @@ namespace Microsoft.Maui.ApplicationModel
 			var resolvedPlacemarks = await GetPlacemarksAsync(address);
 			if (resolvedPlacemarks?.Length > 0)
 			{
-				await OpenPlacemark(new MKPlacemark(resolvedPlacemarks[0].Location.Coordinate, address), options);
+				return await OpenPlacemark(new MKPlacemark(resolvedPlacemarks[0].Location.Coordinate, address), options);
 			}
 			else
 			{
@@ -66,13 +79,14 @@ namespace Microsoft.Maui.ApplicationModel
 				var uri = $"http://maps.apple.com/?q={placemark.GetEscapedAddress()}";
 				var nsurl = NSUrl.FromString(uri);
 
-				await Launcher.Default.OpenAsync(nsurl);
+				return await Launcher.Default.TryOpenAsync(nsurl);
 #else
-				await OpenPlacemark(new MKPlacemark(default, address), options);
+				return await OpenPlacemark(new MKPlacemark(default, address), options);
 #endif
 			}
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios11.0")]
 		static async Task<CLPlacemark[]> GetPlacemarksAsync(NSDictionary address)
 		{
 			using var geocoder = new CLGeocoder();

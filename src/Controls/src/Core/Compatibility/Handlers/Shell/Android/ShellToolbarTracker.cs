@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_flyoutBehavior == behavior)
 				return;
+
 			_flyoutBehavior = behavior;
 
 			if (Page != null)
@@ -80,8 +81,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_platformToolbar.SetNavigationOnClickListener(this);
 			((IShellController)ShellContext.Shell).AddFlyoutBehaviorObserver(this);
 			ShellContext.Shell.Toolbar.PropertyChanged += OnToolbarPropertyChanged;
+			ShellContext.Shell.Navigated += OnShellNavigated;
 		}
-
 
 		void IShellToolbarTracker.SetToolbar(IToolbar toolbar)
 		{
@@ -183,6 +184,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				((IShellController)ShellContext.Shell)?.RemoveFlyoutBehaviorObserver(this);
 				ShellContext.Shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
+				ShellContext.Shell.Navigated -= OnShellNavigated;
 				UpdateTitleView(ShellContext.AndroidContext, _platformToolbar, null);
 
 				if (_searchView != null)
@@ -196,6 +198,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_drawerLayout.RemoveDrawerListener(_drawerToggle);
 				_drawerToggle?.Dispose();
 
+				_toolbar?.Handler?.DisconnectHandler();
+				_toolbar = null;
 				_platformToolbar.RemoveAllViews();
 			}
 
@@ -263,6 +267,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					shellToolbar.ApplyChanges();
 				}
+			}
+		}
+
+		void OnShellNavigated(object sender, ShellNavigatedEventArgs e)
+		{
+			if (_disposed || Page == null)
+				return;
+
+			if (ShellContext?.Shell?.Toolbar is ShellToolbar shellToolbar &&
+					Page == ShellContext?.Shell?.CurrentPage)
+			{
+				UpdateLeftBarButtonItem();
 			}
 		}
 
@@ -611,13 +627,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (_searchView.View.Parent != null)
 						_searchView.View.RemoveFromParent();
 
-					_searchView.ShowKeyboardOnAttached = true;
 					item.SetActionView(_searchView.View);
 					item.Dispose();
 				}
 				else if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Expanded)
 				{
-					_searchView.ShowKeyboardOnAttached = false;
 					if (_searchView.View.Parent != _platformToolbar)
 						_platformToolbar.AddView(_searchView.View);
 				}
@@ -725,7 +739,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					var paint = new Paint { AntiAlias = true };
 					paint.TextSize = _defaultSize;
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					paint.Color = pressed ? _pressedBackgroundColor.ToPlatform() : TintColor.ToPlatform();
+#pragma warning restore CA1416
 					paint.SetStyle(Paint.Style.Fill);
 					var y = (Bounds.Height() + paint.TextSize) / 2;
 					canvas.DrawText(Text, 0, y, paint);

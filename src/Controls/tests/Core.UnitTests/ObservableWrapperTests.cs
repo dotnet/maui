@@ -438,7 +438,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			wrapper.Add(child2);
 
 			// Do things that might cast
-			foreach (var item in wrapper) { }
+			foreach (var item in wrapper)
+			{ }
 			var target = new Button[4];
 			wrapper.CopyTo(target, 2);
 			Assert.AreEqual(target[2], child1);

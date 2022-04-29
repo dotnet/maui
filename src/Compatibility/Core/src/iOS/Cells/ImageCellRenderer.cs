@@ -43,6 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var source = cell.ImageSource;
 
+#pragma warning disable CA1416 // TODO: 'UITableViewCell.ImageView' is unsupported on: 'ios' 14.0 and later
 			target.ImageView.Image = null;
 
 			var uiimage = await source.GetNativeImageAsync().ConfigureAwait(false);
@@ -61,6 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					}
 				});
 			}
+#pragma warning restore CA1416
 		}
 	}
 }
