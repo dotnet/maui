@@ -34,25 +34,31 @@ namespace Microsoft.Maui.Controls
 			//
 			// Here I've just picked the current blackish color we are using in MAUI
 			public static Color AccentColor = new Color(52, 152, 219);
-			public static Color ActivityIndicatorColor => AccentColor;
 			public static Color CheckBoxColor => AccentColor;
-			public static Color SliderThumbColor => AccentColor;
 			public static Color ProgressBarProgressColor => AccentColor;
-			public static Color SwitchThumbColor => AccentColor;
 
 			public static Color PlaceholderElementPlaceholderColor = TextColor.WithAlpha(0.50f);
 			public static Color SearchBarCancelButtonColor => ButtonBackgroundColor;
-			public static Color SliderMinimumTrackColor => Colors.Black;
-			public static Color SliderMaximumTrackColor = SliderThumbColor.WithAlpha(0.50f);
 
 #if ANDROID
 			public static Color ButtonBackgroundColor = new Color(44, 62, 80);
 			public static Color ButtonTextColor => Colors.White;
 			public static Color SwitchOnColor => null;
+			public static Color ActivityIndicatorColor => AccentColor;
+			public static Color SliderMaximumTrackColor = SliderThumbColor.WithAlpha(0.50f);
+			public static Color SliderMinimumTrackColor => Colors.Black;
+			public static Color SwitchThumbColor => AccentColor;
+			public static Color SliderThumbColor => AccentColor;
 #else
+			public static Color SwitchThumbColor => null;// new Color(0.2039216f, 0.5960785f, 0.8588235f, 1);
+
+			public static Color SliderThumbColor => null;
 			public static Color ButtonBackgroundColor => Colors.White;
-			public static Color ButtonTextColor => Colors.Black;
-			public static Color SwitchOnColor => AccentColor;
+			public static Color ButtonTextColor => new(0, 122, 255);
+			public static Color SwitchOnColor = new (120, 120, 128, 40);
+			public static Color ActivityIndicatorColor = new Color(0, 0, 0, 114);
+			public static Color SliderMinimumTrackColor => null;
+			public static Color SliderMaximumTrackColor => null;// new Color(0f, 0f, 0f);
 #endif
 		}
 
