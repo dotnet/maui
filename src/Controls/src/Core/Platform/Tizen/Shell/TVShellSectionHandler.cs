@@ -42,10 +42,10 @@ namespace Microsoft.Maui.Controls.Platform
 				collection.CollectionChanged += OnShellSectionCollectionChanged;
 			}
 
-			_mainLayout = new EBox(NativeParent);
+			_mainLayout = new EBox(PlatformParent);
 			_mainLayout.SetLayoutCallback(OnLayout);
 
-			_contentArea = new EBox(NativeParent);
+			_contentArea = new EBox(PlatformParent);
 			_contentArea.Show();
 			_mainLayout.PackEnd(_contentArea);
 
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected TCollectionView? ItemsView => _itemsView;
 
-		protected EvasObject NativeParent => MauiContext.GetNativeParent();
+		protected EvasObject PlatformParent => MauiContext.GetPlatformParent();
 
 		~TVShellSectionHandler()
 		{
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual TCollectionView CreateItemsView()
 		{
-			return new TCollectionView(NativeParent)
+			return new TCollectionView(PlatformParent)
 			{
 				AlignmentX = -1,
 				AlignmentY = -1,
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_navigationView == null)
 			{
-				_navigationView = new TVNavigationView(NativeParent);
+				_navigationView = new TVNavigationView(PlatformParent);
 				_navigationView.SetAlignment(-1, -1);
 				_navigationView.SetWeight(1, 1);
 				_navigationView.Show();
@@ -209,10 +209,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (!_contentCache.ContainsKey(content))
 			{
-				var native = CreateShellContent(content);
-				native.SetAlignment(-1, -1);
-				native.SetWeight(1, 1);
-				_contentCache[content] = native;
+				var platformView = CreateShellContent(content);
+				platformView.SetAlignment(-1, -1);
+				platformView.SetWeight(1, 1);
+				_contentCache[content] = platformView;
 			}
 			_currentContent = _contentCache[content];
 			_currentContent.Show();
@@ -253,7 +253,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			int width = 0;
 			if (ItemsView is ITCollectionViewController controller)
-				width = controller.GetItemSize((NativeParent.Geometry.Width / 2), NativeParent.Geometry.Height).Width;
+				width = controller.GetItemSize((PlatformParent.Geometry.Width / 2), PlatformParent.Geometry.Height).Width;
 
 			return width;
 		}
