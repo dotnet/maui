@@ -71,38 +71,38 @@
   <!-- Add metadata indicating that the platform-specific files are not part of every build configuration. -->
   <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
     <Compile Update="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)">
-      <LimitedConfigurationFile>true</LimitedConfigurationFile>
+      <ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
     </Compile>
   </ItemGroup>
 
   <!-- Add metadata for the files that are actually part of the current build configuration. -->
   <ItemGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">
     <Compile Update="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)">
-      <IncludeInThisConfiguration>true</IncludeInThisConfiguration>
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'ios' ">
     <Compile Update="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)">
-      <IncludeInThisConfiguration>true</IncludeInThisConfiguration>
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'maccatalyst' ">
     <Compile Update="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)">
-      <IncludeInThisConfiguration>true</IncludeInThisConfiguration>
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
     <Compile Update="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)">
-      <IncludeInThisConfiguration>true</IncludeInThisConfiguration>
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'tizen' ">
     <Compile Update="$(TizenProjectFolder)**/*$(DefaultLanguageSourceExtension)">
-      <IncludeInThisConfiguration>true</IncludeInThisConfiguration>
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
   </ItemGroup>
 
@@ -119,7 +119,7 @@
     <ItemGroup>
       <!-- Remove everything that isn't part of this platform -->
       <Compile
-          Condition=" '%(Compile.LimitedConfigurationFile)' == 'true' and '%(Compile.IncludeInThisConfiguration)' != 'true' "
+          Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' "
           Remove="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
 
       <!-- Remove all Windows (WinUI) XAML Files from the Windows folder -->
