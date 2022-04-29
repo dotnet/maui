@@ -125,12 +125,9 @@ namespace Microsoft.Maui
 		
 		bool CanUpdateProperty(IElementHandler viewHandler)
 		{
+#if ANDROID	
 			var platformView = viewHandler?.PlatformView;
 
-			if (platformView == null)
-				return false;
-
-#if ANDROID
 			if(platformView is PlatformView androidView && androidView.IsDisposed())
 				return false;
 #endif
