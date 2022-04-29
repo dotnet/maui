@@ -353,7 +353,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			MauiContext = context;
 			Context = options?.Context ?? MauiApplication.Current;
-			NativeParent = context.GetNativeParent();
+			NativeParent = context.GetPlatformParent();
 			Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 
 			if (!IsInitialized)
