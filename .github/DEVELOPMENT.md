@@ -39,7 +39,7 @@ Install the .NET MAUI workload using the versions from a particular branch:
 
 ```
 dotnet workload install maui `
-  --from-rollback-file https://aka.ms/dotnet/maui/6.0.300/rc.1.json `
+  --from-rollback-file https://aka.ms/dotnet/maui/6.0.300/rc.2.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-323bf2dd/nuget/v3/index.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-572aeedc/nuget/v3/index.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json `
