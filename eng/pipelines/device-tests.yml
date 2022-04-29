@@ -54,28 +54,16 @@ parameters:
   - name: BuildEverything
     type: boolean
     default: false
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - name: androidPool
-      type: object
-      default:
-        name: 'Azure Pipelines'
-        vmImage: 'internal-macos12'
-    - name: iosPool
-      type: object
-      default:
-        name: 'Azure Pipelines'
-        vmImage: 'internal-macos12'
-  - ${{ else }}:
-    - name: androidPool
-      type: object
-      default:
-        name: 'MAUI'
-        vmImage: 'MAUI'
-    - name: iosPool
-      type: object
-      default:
-        name: 'MAUI'
-        vmImage: 'MAUI'
+  - name: androidPool
+    type: object
+    default:
+      name: 'Azure Pipelines'
+      vmImage: 'internal-macos12'
+  - name: iosPool
+    type: object
+    default:
+      name: 'Azure Pipelines'
+      vmImage: 'internal-macos12'
 
 resources:
   repositories:
