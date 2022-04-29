@@ -31,7 +31,7 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 
 Install the .NET MAUI workload using the versions from a particular branch:  
 
-#### RC 1 branch
+#### RC 2 branch
 
 1. First, install .NET SDK 6.0.300
 
