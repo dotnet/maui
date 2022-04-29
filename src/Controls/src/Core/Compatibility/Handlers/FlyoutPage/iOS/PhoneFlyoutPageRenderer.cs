@@ -149,6 +149,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
+		[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
 			if (!FlyoutPageController.ShouldShowSplitMode && _presented)
@@ -275,9 +277,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var view = _detailController.View;
 				view.Frame = target;
 				detailView.Layer.Opacity = (float)opacity;
+#pragma warning disable CA1416 // TODO:  'UIView.SetAnimationCurve(UIViewAnimationCurve)' is unsupported on: 'ios' 13.0 and later
 				UIView.SetAnimationCurve(UIViewAnimationCurve.EaseOut);
 				UIView.SetAnimationDuration(250);
 				UIView.CommitAnimations();
+#pragma warning restore CA1416
 			}
 			else
 			{
@@ -358,7 +362,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_detailController.AddChildViewController(detailRenderer.ViewController);
 
 			SetNeedsStatusBarAppearanceUpdate();
-			if (PlatformVersion.Supports(PlatformApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			if (detailRenderer.ViewController.View.Superview != null)

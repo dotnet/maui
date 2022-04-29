@@ -20,6 +20,7 @@ using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRendere
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
+	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 	public partial class ShellTests : HandlerTestBase
 	{
 		void SetupBuilder()
@@ -34,6 +35,10 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Toolbar, ToolbarHandler>();
+					handlers.AddHandler<MenuBar, MenuBarHandler>();
+					handlers.AddHandler<MenuBarItem, MenuBarItemHandler>();
+					handlers.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
+					handlers.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
 #if WINDOWS
 					handlers.AddHandler<ShellItem, ShellItemHandler>();
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();
@@ -42,6 +47,26 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+
+
+		[Fact(DisplayName = "Flyout Starts as Open correctly")]
+		public async Task FlyoutIsPresented()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() } };
+				shell.FlyoutIsPresented = true;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await CheckFlyoutState(handler, true);
+				shell.FlyoutIsPresented = false;
+				await CheckFlyoutState(handler, false);
+			});
+		}
+
 
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
 		public async Task BackButtonVisibilityChangesWithPushPop()

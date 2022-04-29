@@ -1,17 +1,21 @@
-﻿using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Win2D;
+﻿using Microsoft.Maui.Graphics.Win2D;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ShapeViewHandler : ViewHandler<IShapeView, W2DGraphicsView>
 	{
 		protected override W2DGraphicsView CreatePlatformView()
-		{
-			return new W2DGraphicsView();
-		}
+			=> new W2DGraphicsView();
+
+		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
+			base.NeedsContainer;
 
 		public static void MapBackground(IShapeViewHandler handler, IShapeView shapeView)
 		{
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.ToPlatform().UpdateBackground(shapeView);
+
 			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 

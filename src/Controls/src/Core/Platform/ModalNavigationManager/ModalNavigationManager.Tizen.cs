@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		partial void OnPageAttachedHandler()
 		{
-			MauiContext.GetNativeWindow().SetBackButtonPressedHandler(OnBackButtonPressed);
+			MauiContext.GetPlatformWindow().SetBackButtonPressedHandler(OnBackButtonPressed);
 		}
 
 		public  Task<Page> PopModalAsync(bool animated)

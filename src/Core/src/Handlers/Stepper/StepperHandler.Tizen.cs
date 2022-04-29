@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class StepperHandler : ViewHandler<IStepper, Spinner>
 	{
-		protected override Spinner CreatePlatformView() => new Spinner(NativeParent) { IsEditable = false };
+		protected override Spinner CreatePlatformView() => new Spinner(PlatformParent) { IsEditable = false };
 
 		protected override void ConnectHandler(Spinner platformView)
 		{

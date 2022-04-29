@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public ShellView(EvasObject parent) : base(parent)
 		{
-			NativeParent = parent;
+			PlatformParent = parent;
 			_navigationDrawer = CreateNavigationDrawer();
 			_navigationView = CreateNavigationView();
 			_navigationView.LayoutUpdated += OnNavigationViewLayoutUpdated;
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public IMauiContext? MauiContext { get; private set; }
 
-		protected EvasObject? NativeParent { get; private set; }
+		protected EvasObject PlatformParent { get; private set; }
 
 		protected Shell? Element { get; private set; }
 
@@ -94,23 +94,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual INavigationDrawer CreateNavigationDrawer()
 		{
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
-
-			return new NavigationDrawer(NativeParent);
+			return new NavigationDrawer(PlatformParent);
 		}
 
 		protected virtual ITNavigationView CreateNavigationView()
 		{
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
-
-			return new TNavigationView(NativeParent);
+			return new TNavigationView(PlatformParent);
 		}
 
 		protected virtual TCollectionView CreateItemsView()
 		{
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
-
-			return new TCollectionView(NativeParent)
+			return new TCollectionView(PlatformParent)
 			{
 				AlignmentX = -1,
 				AlignmentY = -1,
@@ -329,7 +323,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (Element.CurrentItem != null)
 			{
 				_currentShellItem = CreateShellItemView(Element.CurrentItem);
-				_navigationDrawer.Main = _currentShellItem.NativeView;
+				_navigationDrawer.Main = _currentShellItem.PlatformView;
 			}
 			else
 			{
@@ -347,12 +341,11 @@ namespace Microsoft.Maui.Controls.Platform
 		async void UpdateFlyoutBackgroundImage()
 		{
 			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			if (Element.FlyoutBackgroundImage != null)
 			{
-				var image = new TImage(NativeParent);
+				var image = new TImage(PlatformParent);
 				var imageSource = Element.FlyoutBackgroundImage;
 				var provider = MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
 				var service = provider.GetRequiredImageSourceService(imageSource);

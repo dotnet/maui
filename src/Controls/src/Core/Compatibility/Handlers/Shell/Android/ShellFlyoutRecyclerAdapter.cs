@@ -109,13 +109,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			elementHolder.Element = item.Element;
 		}
 
-		class LinearLayoutWithFocus : LinearLayout, ITabStop
+		class ShellLinearLayout : LinearLayout
 		{
-			public LinearLayoutWithFocus(global::Android.Content.Context context) : base(context)
+			public ShellLinearLayout(global::Android.Content.Context context) : base(context)
 			{
 			}
 
-			AView ITabStop.TabStop => this;
 			internal View Content { get; set; }
 		}
 
@@ -125,7 +124,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var content = (View)template.CreateContent();
 
-			var linearLayout = new LinearLayoutWithFocus(parent.Context)
+			var linearLayout = new ShellLinearLayout(parent.Context)
 			{
 				Orientation = Orientation.Vertical,
 				LayoutParameters = new RecyclerView.LayoutParams(LP.MatchParent, LP.WrapContent),

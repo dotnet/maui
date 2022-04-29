@@ -240,7 +240,9 @@ namespace Microsoft.Maui.Platform
 					if (Shadow.Paint is SolidPaint solidPaint)
 					{
 						solidColor = solidPaint.ToColor();
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 						_shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToPlatform();
+#pragma warning restore CA1416
 					}
 
 					// Apply the shadow radius 
@@ -283,7 +285,9 @@ namespace Microsoft.Maui.Platform
 
 			// Reset alpha to draw child with full alpha
 			if (solidColor != null)
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 				_shadowPaint.Color = solidColor.ToPlatform();
+#pragma warning restore CA1416
 
 			// Draw shadow bitmap
 			if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)

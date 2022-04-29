@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Versioning;
 using Android.Content;
 using Android.Runtime;
 using Android.Webkit;
@@ -7,6 +8,7 @@ using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	[SupportedOSPlatform("android23.0")]
 	internal class WebKitWebViewClient : WebViewClient
 	{
 		// Using an IP address means that WebView doesn't wait for any DNS resolution,
@@ -31,7 +33,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		public override bool ShouldOverrideUrlLoading(AWebView? view, IWebResourceRequest? request)
+#pragma warning disable CA1416 // TODO: base.ShouldOverrideUrlLoading(,) is supported from Android 24.0
 			=> ShouldOverrideUrlLoadingCore(request) || base.ShouldOverrideUrlLoading(view, request);
+#pragma warning restore CA1416
 
 		private bool ShouldOverrideUrlLoadingCore(IWebResourceRequest? request)
 		{

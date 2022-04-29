@@ -20,6 +20,46 @@ namespace Microsoft.Maui.DeviceTests
 		where TStub : StubBase, IImageStub, new()
 	{
 		[Theory(
+#if IOS
+			Skip = "Test failing on IOS"
+#endif
+			)]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#000000")]
+		public async Task UpdatingSourceUpdatesImageCorrectly(string colorHex)
+		{
+			// create files
+			var expectedColor = Color.FromArgb(colorHex);
+			var firstPath = BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Blue);
+			var secondPath = BaseImageSourceServiceTests.CreateBitmapFile(100, 100, expectedColor);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var image = new TStub { Width = 100, Height = 100 };
+				var handler = CreateHandler(image);
+				var platformView = GetPlatformImageView(handler);
+
+				await platformView.AttachAndRun(async () =>
+				{
+					// the first one works
+					image.Source = new FileImageSourceStub(firstPath);
+					handler.UpdateValue(nameof(IImage.Source));
+					await image.Wait();
+
+					await platformView.AssertContainsColor(Colors.Blue.ToPlatform());
+
+					// the second one does not
+					image.Source = new FileImageSourceStub(secondPath);
+					handler.UpdateValue(nameof(IImage.Source));
+					await image.Wait();
+
+					await platformView.AssertContainsColor(expectedColor.ToPlatform());
+				});
+			});
+		}
+
+		[Theory(
 #if _ANDROID__
 			Skip = "Test failing on ANDROID"
 #endif
@@ -98,7 +138,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(image, () => image.Aspect, (h) => GetNativeAspect(h), aspect);
 		}
 
-		[Theory]
+		[Theory(Skip = "See: https://github.com/dotnet/maui/issues/6415")]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#000000")]

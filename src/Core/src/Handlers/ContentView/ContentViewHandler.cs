@@ -15,17 +15,17 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ContentViewHandler : IContentViewHandler
 	{
-		public static IPropertyMapper<IContentView, IContentViewHandler> Mapper = new PropertyMapper<IContentView, IContentViewHandler>(ViewMapper)
-		{
-			[nameof(IContentView.Content)] = MapContent,
+		public static IPropertyMapper<IContentView, IContentViewHandler> Mapper =
+			new PropertyMapper<IContentView, IContentViewHandler>(ViewMapper)
+			{
+				[nameof(IContentView.Content)] = MapContent,
 #if TIZEN
-			[nameof(IContentView.Background)] = MapBackground,
+				[nameof(IContentView.Background)] = MapBackground,
 #endif
-		};
+			};
 
-		public static CommandMapper<IPicker, IContentViewHandler> CommandMapper = new(ViewCommandMapper)
-		{
-		};
+		public static CommandMapper<IContentView, IContentViewHandler> CommandMapper =
+			new(ViewCommandMapper);
 
 		public ContentViewHandler() : base(Mapper, CommandMapper)
 		{
