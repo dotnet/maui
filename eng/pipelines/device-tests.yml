@@ -62,13 +62,11 @@ parameters:
       demands:
         - macOS.Name -equals Monterey
         - macOS.Architecture -equals x64
-        - Agent.HasDevices -equals False
-        - Agent.IsPaired -equals False
   - name: iosPool
     type: object
     default:
-      name: 'Azure Pipelines'
-      vmImage: 'internal-macos12'
+      name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
 
 resources:
   repositories:
