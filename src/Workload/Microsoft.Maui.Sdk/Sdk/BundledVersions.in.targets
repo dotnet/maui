@@ -60,6 +60,12 @@
   </ItemGroup>
 
   <!-- These implicit <PackageReference/> pull dependencies from NuGet transitively -->
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' ">
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" IsImplicitlyDefined="true" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" IsImplicitlyDefined="true" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" IsImplicitlyDefined="true" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" IsImplicitlyDefined="true" />
+  </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' ">
     <PackageReference Include="Microsoft.Maui.Dependencies" Version="$(MauiVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
