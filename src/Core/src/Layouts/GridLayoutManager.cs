@@ -505,7 +505,7 @@ namespace Microsoft.Maui.Layouts
 						if (cellCheck(cell)) // Check whether this cell should count toward the type of star value were measuring
 						{
 							// Update the star width if the view in this cell is bigger
-							starSize = Math.Max(starSize, dimension(_grid[cell.ViewIndex].DesiredSize));
+							starSize = Math.Max(starSize, dimension(_childrenToLayOut[cell.ViewIndex].DesiredSize));
 						}
 					}
 				}
