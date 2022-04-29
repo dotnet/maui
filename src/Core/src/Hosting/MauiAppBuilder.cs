@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -53,16 +52,19 @@ namespace Microsoft.Maui.Hosting
 			public void Initialize(IServiceProvider services)
 			{
 #if WINDOWS
-				if (UI.Xaml.Application.Current?.Resources is not UI.Xaml.ResourceDictionary resources)
-					return;
-
-				if (resources.DispatcherQueue.HasThreadAccess)
-					SetupResources(resources);
+				// WORKAROUND: use the MAUI dispatcher instead of the OS dispatcher to
+				// avoid crashing: https://github.com/microsoft/WindowsAppSDK/issues/2451
+				var dispatcher = services.GetRequiredService<IDispatcher>();
+				if (dispatcher.IsDispatchRequired)
+					dispatcher.Dispatch(() => SetupResources());
 				else
-					resources.DispatcherQueue.TryEnqueue(() => SetupResources(resources));
+					SetupResources();
 
-				static void SetupResources(UI.Xaml.ResourceDictionary resources)
+				static void SetupResources()
 				{
+					if (UI.Xaml.Application.Current?.Resources is not UI.Xaml.ResourceDictionary resources)
+						return;
+
 					// WinUI
 					resources.AddLibraryResources<UI.Xaml.Controls.XamlControlsResources>();
 
