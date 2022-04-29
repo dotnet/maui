@@ -1864,5 +1864,43 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Verify that the view is getting measured at the appropriate width (infinity)
 			view0.Received().Measure(Arg.Is(double.PositiveInfinity), Arg.Is<double>(500));
 		}
+
+		[Fact("Star Row Height is correct when the first child is Collapsed")]
+		[Category(GridStarSizing)]
+		public void StarRowHeightCorrectWhenFirstChildCollapsed()
+		{
+			var grid = CreateGridLayout(rows: "*");
+
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(10, 10));
+
+			// Since this is collapsed, it should not count toward the star row height
+			view0.Visibility.Returns(Visibility.Collapsed); 
+
+			SubstituteChildren(grid, view0, view1);
+
+			var measuredSize = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(10, measuredSize.Height);
+		}
+
+		[Fact("Star Column Width is correct when the first child is Collapsed")]
+		[Category(GridStarSizing)]
+		public void StarCoumnWidthCorrectWhenFirstChildCollapsed()
+		{
+			var grid = CreateGridLayout(columns: "*");
+
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(10, 10));
+
+			// Since this is collapsed, it should not count toward the star column width
+			view0.Visibility.Returns(Visibility.Collapsed);
+
+			SubstituteChildren(grid, view0, view1);
+
+			var measuredSize = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(10, measuredSize.Width);
+		}
 	}
 }
