@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Media
 			true;
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")]
 		public Task<IScreenshotResult> CaptureAsync()
 		{
 			var scenes = UIApplication.SharedApplication.ConnectedScenes;

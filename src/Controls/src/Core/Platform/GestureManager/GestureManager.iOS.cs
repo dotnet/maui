@@ -447,7 +447,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_platformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
 				_addedFlags |= UIAccessibilityTrait.Button;
-				if (OperatingSystem.IsIOSVersionAtLeast(13))
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
 					_defaultAccessibilityRespondsToUserInteraction = _platformView.AccessibilityRespondsToUserInteraction;
 					_platformView.AccessibilityRespondsToUserInteraction = true;
@@ -554,7 +554,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_platformView.AccessibilityTraits &= ~_addedFlags;
 
-				if (OperatingSystem.IsIOSVersionAtLeast(13))
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
 					if (_defaultAccessibilityRespondsToUserInteraction != null)
 						_platformView.AccessibilityRespondsToUserInteraction = _defaultAccessibilityRespondsToUserInteraction.Value;

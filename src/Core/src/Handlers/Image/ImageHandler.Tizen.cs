@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, Image>
 	{
-		protected override Image CreatePlatformView() => new Image(NativeParent);
+		protected override Image CreatePlatformView() => new Image(PlatformParent);
 
 		protected override void DisconnectHandler(Image platformView)
 		{

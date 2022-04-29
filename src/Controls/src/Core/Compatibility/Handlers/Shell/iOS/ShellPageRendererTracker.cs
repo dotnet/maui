@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			NavigationItem = ViewController.NavigationItem;
 
-			if (!OperatingSystem.IsIOSVersionAtLeast(11))
+			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 			{
 				ViewController.AutomaticallyAdjustsScrollViewInsets = false;
 			}
@@ -417,7 +417,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				MatchHeight = true;
 
-				if (OperatingSystem.IsIOSVersionAtLeast(11))
+				if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 				{
 					TranslatesAutoresizingMaskIntoConstraints = false;
 				}
@@ -433,7 +433,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				get => base.Frame;
 				set
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(11) && Superview != null)
+					if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)) && Superview != null)
 					{
 						value.Y = Superview.Bounds.Y;
 						value.Height = Superview.Bounds.Height;
@@ -447,7 +447,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (newSuper != null)
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(11))
+					if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 						Frame = new CGRect(Frame.X, newSuper.Bounds.Y, Frame.Width, newSuper.Bounds.Height);
 
 					Height = newSuper.Bounds.Height;

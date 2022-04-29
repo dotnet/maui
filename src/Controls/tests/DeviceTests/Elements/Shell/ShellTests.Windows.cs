@@ -391,5 +391,51 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(flyoutItem3ShellContent, navigationView.SelectedItem);
 			});
 		}
+
+		[Fact(DisplayName = "Shell Toolbar With Only MenuBarItems Is Visible")]
+		public async Task ShellToolbarWithOnlyMenuBarItemsIsVisible()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				var contentPage = new ContentPage();
+				var menuFlyoutItem = new MenuFlyoutItem { Text = "Test" };
+				var menuBarItem = new MenuBarItem { Text = "File" };
+				menuBarItem.Add(menuFlyoutItem);
+				contentPage.MenuBarItems.Add(menuBarItem);
+
+				shell.Items.Add(contentPage);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			{
+				Assert.True(IsNavigationBarVisible(handler));
+
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "Shell Toolbar With Only ToolbarItems Is Visible")]
+		public async Task ShellToolbarWithOnlyToolbarItemsIsVisible()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				var contentPage = new ContentPage();
+				var toolbarItem = new ToolbarItem { Text = "Test" };
+				contentPage.ToolbarItems.Add(toolbarItem);
+
+				shell.Items.Add(contentPage);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			{
+				Assert.True(IsNavigationBarVisible(handler));
+
+				return Task.CompletedTask;
+			});
+		}
 	}
 }

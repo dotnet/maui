@@ -141,6 +141,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		[SupportedOSPlatform("ios11.0")]
+		[SupportedOSPlatform("tvos11.0")]
 		public override void ViewSafeAreaInsetsDidChange()
 		{
 			_safeAreasSet = true;
@@ -159,7 +160,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			_appeared = true;
 			UpdateStatusBarPrefersHidden();
-			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			if (Element.Parent is CarouselPage)
@@ -503,7 +504,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateHomeIndicatorAutoHidden()
 		{
-			if (Element == null || !Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
+			if (Element == null || !OperatingSystem.IsIOSVersionAtLeast(11))
 				return;
 
 			SetNeedsUpdateOfHomeIndicatorAutoHidden();

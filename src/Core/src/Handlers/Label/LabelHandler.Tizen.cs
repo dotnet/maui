@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override Label CreatePlatformView()
 		{
-			var label = new Label(NativeParent)
+			var label = new Label(PlatformParent)
 			{
 				// Fix me : it is workaround code, LineBreakMode is not working when Label was measured but we set LineBreakMode as WordWrap at initialize time, it works
 				LineBreakMode = Tizen.UIExtensions.Common.LineBreakMode.WordWrap

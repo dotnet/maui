@@ -9,7 +9,7 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
-		//[SupportedOSPlatform("tvos14.0")] TODO: Not sure if we need to add the supports for tvOS or macOS
+		[SupportedOSPlatform("tvos14.0")]
 		//[SupportedOSPlatform("macos11.0")] this is causing warning within #if def below
 		[SupportedOSPlatform("ios14.0")] // The enum PHAccessLevel has these attributes
 		public partial class Photos : BasePlatformPermission

@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Platform
 		GenItemClass _defaultClass = null;
 		IReadOnlyList<object> _itemsSource;
 
-		public ShellSearchResultList(IMauiContext context) : base(context?.GetNativeParent())
+		public ShellSearchResultList(IMauiContext context) : base(context?.GetPlatformParent())
 		{
 			MauiContext = context;
 
@@ -49,9 +49,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected IMauiContext MauiContext { get; private set; }
 
-		protected EvasObject NativeParent
+		protected EvasObject PlatformParent
 		{
-			get => MauiContext.GetNativeParent();
+			get => MauiContext.GetPlatformParent();
 		}
 
 		public void UpdateLayout()
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (FirstItem != null && Height == 0)
 			{
 				var view = FirstItem.Data as View;
-				var native = view.ToPlatform(MauiContext);
+				var platformView = view.ToPlatform(MauiContext);
 				var measured = view.Measure(DPExtensions.ConvertToScaledDP(Geometry.Width), double.PositiveInfinity);
 				Height = DPExtensions.ConvertToScaledPixel(measured.Request.Height);
 			}
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Platform
 		EvasObject GetContent(object data, string part)
 		{
 			var view = data as View;
-			var native = view.ToPlatform(MauiContext);
+			var platformView = view.ToPlatform(MauiContext);
 
 			if (Height == 0)
 			{
@@ -84,8 +84,8 @@ namespace Microsoft.Maui.Controls.Platform
 				Height = DPExtensions.ConvertToScaledPixel(measured.Request.Height);
 			}
 
-			native.MinimumHeight = Height;
-			return native;
+			platformView.MinimumHeight = Height;
+			return platformView;
 		}
 
 		void Append(object data)

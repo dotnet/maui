@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 	[Obsolete]
 	[Preserve(AllMembers = true)]
 	[UnsupportedOSPlatform("ios14.0")]
+	[UnsupportedOSPlatform("tvos14.0")]
 	internal class ResourcesProvider : ISystemResourcesProvider
 	{
 		ResourceDictionary _dictionary;
