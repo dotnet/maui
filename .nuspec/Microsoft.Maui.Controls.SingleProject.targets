@@ -68,40 +68,36 @@
     <TizenSharedPrefix>$(TizenProjectFolder)shared</TizenSharedPrefix>
   </PropertyGroup>
 
-  <!-- Add metadata indicating that the platform-specific files are not part of every build configuration. -->
   <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
+    <!-- Add metadata indicating that the platform-specific files are not part of every build configuration. -->
     <Compile Update="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)">
       <ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
     </Compile>
-  </ItemGroup>
 
-  <!-- Add metadata for the files that are actually part of the current build configuration. -->
-  <ItemGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">
-    <Compile Update="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+    <!-- Add metadata for the files that are actually part of the current build configuration. -->
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'android' "
+        Update="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)">
       <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'ios' ">
-    <Compile Update="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'ios' "
+        Update="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)">
       <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'maccatalyst' ">
-    <Compile Update="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' "
+        Update="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)">
       <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
-    <Compile Update="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'windows' "
+        Update="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)">
       <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'tizen' ">
-    <Compile Update="$(TizenProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'tizen' "
+        Update="$(TizenProjectFolder)**/*$(DefaultLanguageSourceExtension)">
       <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
   </ItemGroup>
