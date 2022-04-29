@@ -26,7 +26,6 @@ namespace Microsoft.Maui.Controls
 		{
 			public static Color TextColor => Colors.Black;
 			public static Color PickerTitleColor => Colors.White;
-
 			public static Color BackgroundColor = Colors.White;
 
 			// These all match the accent color set in android
@@ -107,6 +106,26 @@ namespace Microsoft.Maui.Controls
 			{
 				style = new Style(viewType);
 				DefaultStylesCache[viewType] = style;
+			}
+
+			return null;
+		}
+
+		public static AppThemeBinding GetAppThemeBinding(
+			Type viewType,
+			BindableProperty bindableProperty,
+			float withAlpha = 1f)
+		{
+			var dark = (GetColor(viewType, bindableProperty, AppTheme.Dark)?.Value as Color)?.WithAlpha(withAlpha);
+			var light = (GetColor(viewType, bindableProperty, AppTheme.Light)?.Value as Color)?.WithAlpha(withAlpha);
+
+			if (dark != null && light != null)
+			{
+				return new AppThemeBinding()
+				{
+					Dark = dark,
+					Light = light
+				};
 			}
 
 			return null;
@@ -225,6 +244,7 @@ namespace Microsoft.Maui.Controls
 
 		internal static VisualStateGroupList GetVisualStateManager(Type viewType, BindableObject bindable = null)
 		{
+
 #if IOS || ANDROID
 
 			// This means we are retrieving this for a style not a specific bindable
@@ -243,24 +263,26 @@ namespace Microsoft.Maui.Controls
 				Name = "Disabled"
 			};
 
-			if (viewType.IsAssignableFrom(typeof(Button)))
-			{
-				var disabledBackgroundColor = new Setter()
-				{
-					Property = Button.BackgroundColorProperty,
-					Value = GetThemeChoice(LightTheme.ButtonBackgroundColor, DarkTheme.ButtonBackgroundColor).WithAlpha(0.12f)
-				};
 
-				disabledSetters.Setters.Add(disabledBackgroundColor);
+			var disabledBackgroundThemeBinding = GetAppThemeBinding(viewType, VisualElement.BackgroundColorProperty, 0.12f);
+
+			if (disabledBackgroundThemeBinding != null)
+			{
+				disabledSetters.Setters.Add(new Setter()
+				{
+					Property = VisualElement.BackgroundColorProperty,
+					Value = disabledBackgroundThemeBinding
+				});
 			}
 
-			if (viewType.IsAssignableFrom(typeof(ITextElement)))
+			if (viewType.IsAssignableTo(typeof(ITextElement)))
 			{
 				var disabledTextColor = new Setter()
 				{
 					Property = TextElement.TextColorProperty,
 					Value = new Color(0f, 0f, 0f).WithAlpha(0.38f)
 				};
+
 				disabledSetters.Setters.Add(disabledTextColor);
 			}
 

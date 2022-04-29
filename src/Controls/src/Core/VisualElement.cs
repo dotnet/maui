@@ -228,8 +228,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create("Opacity", typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='BackgroundColorProperty']/Docs" />
-		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), defaultValue: null/*, 
-			defaultValueCreator: DefaultBackgroundColorValueCreator*/);
+		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), defaultValue: null);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='BackgroundProperty']/Docs" />
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
@@ -243,9 +242,6 @@ namespace Microsoft.Maui.Controls
 				if (newvalue != null)
 					(bindable as VisualElement)?.NotifyBackgroundChanges();
 			});
-
-		static object DefaultBackgroundColorValueCreator(BindableObject bindable) =>
-			DefaultStyles.GetColor(bindable, VisualElement.BackgroundColorProperty)?.Value;
 
 		void NotifyBackgroundChanges()
 		{
