@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Platform
 				textBlock.CharacterSpacing = characterSpacing;
 		}
 
-		public static void UpdateImageSource(this Button platformButton, WImageSource? nativeImageSource)
+		public static void UpdateImageSource(this Button platformButton, IButton button, WImageSource? nativeImageSource)
 		{
 			if (platformButton.GetContent<WImage>() is WImage nativeImage)
 			{
@@ -171,9 +171,13 @@ namespace Microsoft.Maui.Platform
 							{
 								// do the actual resize
 								var imageSourceSize = actualImageSource.GetImageSourceSize(platformButton);
-								nativeImage.Width = imageSourceSize.Width;
-								nativeImage.Height = imageSourceSize.Height;
+
+								nativeImage.Width = button.Width > 0 ? platformButton.ActualWidth : imageSourceSize.Width;
+								nativeImage.Height = button.Height > 0 ? platformButton.ActualHeight : imageSourceSize.Height;
 							}
+
+							if (platformButton.Parent is FrameworkElement frameworkElement)
+								frameworkElement.InvalidateMeasure();
 						};
 					}
 				}
