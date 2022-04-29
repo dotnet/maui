@@ -1,7 +1,13 @@
 ﻿#nullable enable
 using System;
+using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.UI.Composition;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 
 namespace Microsoft.Maui.Platform
@@ -10,8 +16,20 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly Path? _borderPath;
 		IShape? _borderShape;
+		FrameworkElement? _content;
 
 		internal Path? BorderPath => _borderPath;
+
+		internal FrameworkElement? Content
+		{
+			get => _content;
+			set
+			{
+				_content = value;
+				AddContent(_content);
+			}
+		}
+
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Graphics.Rect, Size>? CrossPlatformArrange { get; set; }
 
@@ -52,12 +70,14 @@ namespace Microsoft.Maui.Platform
 			SizeChanged += ContentPanelSizeChanged;
 		}
 
-		private void ContentPanelSizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
+		void ContentPanelSizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
 		{
 			if (_borderPath == null)
 				return;
 
 			_borderPath.UpdatePath(_borderShape, ActualWidth, ActualHeight);
+			UpdateContent();
+			UpdateClip(_borderShape);
 		}
 
 		internal void EnsureBorderPath()
@@ -84,6 +104,58 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			_borderPath.UpdateBorderShape(_borderShape, ActualWidth, ActualHeight);
+			UpdateContent();
+			UpdateClip(_borderShape);
+		}
+
+		void AddContent(FrameworkElement? content)
+		{
+			if (content == null)
+				return;
+
+			if (!Children.Contains(_content))
+				Children.Add(_content);
+		}
+
+		void UpdateContent()
+		{
+			if (Content == null || _borderPath == null)
+				return;
+
+			var strokeThickness = _borderPath.StrokeThickness;
+
+			Content.RenderTransform = new TranslateTransform() { X = -strokeThickness, Y = -strokeThickness };
+		}
+
+		void UpdateClip(IShape? borderShape)
+		{
+			if (Content == null)
+				return;
+
+			var clipGeometry = borderShape;
+
+			if (clipGeometry == null)
+				return;
+
+			double width = Content.ActualWidth;
+			double height = Content.ActualHeight;
+
+			if (height <= 0 && width <= 0)
+				return;
+
+			var visual = ElementCompositionPreview.GetElementVisual(Content);
+			var compositor = visual.Compositor;
+
+			var pathSize = new Graphics.Rect(0, 0, width, height);
+			var clipPath = clipGeometry.PathForBounds(pathSize);
+			var device = CanvasDevice.GetSharedDevice();
+			var geometry = clipPath.AsPath(device);
+
+			var path = new CompositionPath(geometry);
+			var pathGeometry = compositor.CreatePathGeometry(path);
+			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
+
+			visual.Clip = geometricClip;
 		}
 	}
 }

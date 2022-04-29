@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class TabbedViewExtensions
 	{
+		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		internal static void UpdateiOS15TabBarAppearance(
 			this UITabBar tabBar,
 			ref UITabBarAppearance _tabBarAppearance,

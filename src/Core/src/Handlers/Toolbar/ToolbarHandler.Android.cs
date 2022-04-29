@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 		protected override MaterialToolbar CreatePlatformElement()
 		{
 			var context = MauiContext?.Context ?? throw new InvalidOperationException("Context cannot be null");
-			return Microsoft.Maui.PlatformInterop.CreateToolbar(context, context.GetActionBarHeight(), Resource.Style.ThemeOverlay_AppCompat_Light);
+			return Microsoft.Maui.PlatformInterop.CreateToolbar(context, context.GetActionBarHeight(), -1);
 		}
 
 		private protected override void OnDisconnectHandler(object platformView)

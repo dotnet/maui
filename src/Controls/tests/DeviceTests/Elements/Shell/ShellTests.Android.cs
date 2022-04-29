@@ -11,7 +11,6 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 	public partial class ShellTests
 	{
 		protected async Task CheckFlyoutState(ShellRenderer handler, bool desiredState)

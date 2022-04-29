@@ -5,6 +5,7 @@
 // ResourceManager
 // Common Essentials methods
 // GridLayoutManager
+// Label & FontAttributes
 // Microsoft.Maui.Graphics.Color
 // System.Threading.Tasks.Task
 // System.Net.Http.HttpClient
@@ -28,6 +29,8 @@ static class CommonMethods
         InitializeCommonEssentials();
 
         _ = new Microsoft.Maui.Layouts.GridLayoutManager(new Grid()).Measure(100, 100);
+
+        _ = new Label { FontAttributes = FontAttributes.Bold, Text = "Test" };
 
         Color c = Color.Parse("MistyRose");
         c = Color.Parse("#663399");

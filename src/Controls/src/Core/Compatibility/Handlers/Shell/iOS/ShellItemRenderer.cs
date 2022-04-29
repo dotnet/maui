@@ -322,6 +322,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var renderer = RendererForViewController(ViewControllers[i]);
 				var cell = moreNavigationCells[i - 4];
 
+#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 				if (!renderer.ShellSection.IsEnabled)
 				{
 					cell.UserInteractionEnabled = false;
@@ -336,6 +337,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					cell.UserInteractionEnabled = true;
 					cell.TextLabel.TextColor = _defaultMoreTextLabelTextColor;
 				}
+#pragma warning restore CA1416
 			}
 
 			UITableViewCell[] GetMoreNavigationCells()

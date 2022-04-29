@@ -32,12 +32,16 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IMenuBarItemHandler.Clear)] = MapClear,
 			[nameof(IMenuBarItemHandler.Insert)] = MapInsert,
 		};
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		public MenuBarItemHandler() : this(Mapper, CommandMapper)
 		{
 
 		}
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		public MenuBarItemHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null) : base(mapper, commandMapper)
 		{
 
@@ -71,11 +75,17 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.Clear();
 		}
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		IMenuBarItem IMenuBarItemHandler.VirtualView => VirtualView;
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		PlatformView IMenuBarItemHandler.PlatformView => PlatformView;
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		private protected override void OnDisconnectHandler(object platformView)
 		{
 			base.OnDisconnectHandler(platformView);

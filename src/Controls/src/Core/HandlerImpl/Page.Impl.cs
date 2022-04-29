@@ -25,9 +25,6 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				_toolbar = value;
-				if (this is NavigationPage np && value is NavigationPageToolbar ct)
-					ct.ApplyNavigationPage(np, HasAppeared);
-
 				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
 			}
 		}

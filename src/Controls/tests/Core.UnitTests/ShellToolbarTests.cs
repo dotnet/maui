@@ -209,5 +209,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Shell.SetTitleView(contentPage, null);
 			Assert.AreEqual("Test Title", toolbar.Title);
 		}
+
+		[Test]
+		public void ContentPageColorsPropagateToShellToolbar()
+		{
+			var contentPage = new ContentPage() { Title = "Test Title" };
+			Shell.SetBackgroundColor(contentPage, Colors.Green);
+			Shell.SetTitleColor(contentPage, Colors.Pink);
+			Shell.SetForegroundColor(contentPage, Colors.Orange);
+
+			TestShell testShell = new TestShell(contentPage);
+			_ = new Window() { Page = testShell };
+			var toolbar = testShell.Toolbar;
+
+			Assert.AreEqual(Colors.Green, (toolbar.BarBackground as SolidColorBrush).Color);
+			Assert.AreEqual(Colors.Orange, toolbar.IconColor);
+			Assert.AreEqual(Colors.Pink, toolbar.BarTextColor);
+		}
 	}
 }

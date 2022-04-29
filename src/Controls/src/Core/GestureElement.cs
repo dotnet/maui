@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			{
 				void AddItems()
 				{
-					foreach (IElement item in args.NewItems.OfType<IElement>())
+					foreach (IElementDefinition item in args.NewItems.OfType<IElementDefinition>())
 					{
 						ValidateGesture(item as IGestureRecognizer);
 						item.Parent = this;
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls
 
 				void RemoveItems()
 				{
-					foreach (IElement item in args.OldItems.OfType<IElement>())
+					foreach (IElementDefinition item in args.OldItems.OfType<IElementDefinition>())
 						item.Parent = null;
 				}
 
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls
 						RemoveItems();
 						break;
 					case NotifyCollectionChangedAction.Reset:
-						foreach (IElement item in _gestureRecognizers.OfType<IElement>())
+						foreach (IElementDefinition item in _gestureRecognizers.OfType<IElementDefinition>())
 							item.Parent = this;
 						break;
 				}

@@ -149,7 +149,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			InitializeStatusBar();
 				
-			if(!PlatformVersion.IsDesktop)
+			// https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.window.current?view=winui-3.0
+			// The currently activated window for UWP apps. Null for Desktop apps.
+			if (Microsoft.UI.Xaml.Window.Current != null)
 				SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
 
 			// TODO WINUI: This event is only available on UWP

@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override Naviframe CreatePlatformView()
 		{
-			return new Naviframe(NativeParent)
+			return new Naviframe(PlatformParent)
 			{
 				PreserveContentOnPop = true,
 				DefaultBackButtonEnabled = false,
@@ -301,7 +301,7 @@ namespace Microsoft.Maui.Handlers
 
 		//TButton CreateNavigationButton(string text)
 		//{
-		//	var button = new TButton(NativeParent)
+		//	var button = new TButton(PlatformParent)
 		//	{
 		//		Text = text
 		//	};

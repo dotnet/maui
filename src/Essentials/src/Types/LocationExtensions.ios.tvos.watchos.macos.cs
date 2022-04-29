@@ -34,8 +34,10 @@ namespace Microsoft.Maui.Devices.Sensors
 				VerticalAccuracy = location.VerticalAccuracy,
 				Timestamp = location.Timestamp.ToDateTime(),
 #if __IOS__ || __WATCHOS__
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 				Course = location.Course < 0 ? default(double?) : location.Course,
 				Speed = location.Speed < 0 ? default(double?) : location.Speed,
+#pragma warning restore CA1416
 #endif
 				IsFromMockProvider = DeviceInfo.DeviceType == DeviceType.Virtual,
 				AltitudeReferenceSystem = AltitudeReferenceSystem.Geoid

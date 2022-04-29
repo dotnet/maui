@@ -59,6 +59,7 @@ namespace Microsoft.Maui.Authentication
 		}
 	}
 
+	[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 	class AuthManager : NSObject, IASAuthorizationControllerDelegate, IASAuthorizationControllerPresentationContextProviding
 	{
 		public Task<ASAuthorizationAppleIdCredential> GetCredentialsAsync()

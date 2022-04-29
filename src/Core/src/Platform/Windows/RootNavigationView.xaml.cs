@@ -14,8 +14,6 @@ namespace Microsoft.Maui.Platform
 	[Microsoft.UI.Xaml.Data.Bindable]
 	public partial class RootNavigationView : MauiNavigationView
 	{
-		//double _paneHeaderContentHeight;
-		MauiToolbar? _headerControl;
 		double AppBarTitleHeight => _useCustomAppTitleBar ? _appBarTitleHeight : 0;
 		double _appBarTitleHeight;
 		bool _useCustomAppTitleBar;
@@ -29,20 +27,28 @@ namespace Microsoft.Maui.Platform
 			RegisterPropertyChangedCallback(HeaderProperty, HeaderPropertyChanged);
 			RegisterPropertyChangedCallback(PaneFooterProperty, HeaderPropertyChanged);
 			RegisterPropertyChangedCallback(PaneDisplayModeProperty, PaneDisplayModeChanged);
+
 			this.PaneOpened += (_, __) => UpdatePaneContentGridMargin();
 			this.DisplayModeChanged += (_, __) => UpdateNavigationAndPaneButtonHolderGridStyles();
 		}
 
-		internal MauiToolbar? HeaderControl
+		internal new MauiToolbar? Toolbar
 		{
-			get => _headerControl;
+			get => base.Toolbar as MauiToolbar;
 			set
 			{
-				if (_headerControl == value)
+				if (base.Toolbar == value)
 					return;
 
-				_headerControl = value;
-				UpdateTopNavAreaMargin();
+				base.Toolbar = value;
+        
+				if (value != null)
+				{
+					value.NavigationViewBackButton = NavigationViewBackButton;
+					value.TogglePaneButton = TogglePaneButton;
+				}
+
+				UpdateToolbarPlacement();
 			}
 		}
 
@@ -54,7 +60,7 @@ namespace Microsoft.Maui.Platform
 
 		void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp)
 		{
-			UpdateTopNavAreaMargin();
+			UpdateToolbarPlacement();
 			UpdatePaneContentGridMargin();
 		}
 
@@ -62,13 +68,21 @@ namespace Microsoft.Maui.Platform
 		private protected override void ToolbarChanged()
 		{
 			if (Toolbar is MauiToolbar mauiToolbar)
-				HeaderControl = mauiToolbar;
+			{
+				Toolbar = mauiToolbar;
+				UpdateToolbarPlacement();
+			}
 			else
+			{
+				// By default MauiNavigationView always sets 
+				// NavigationView.Header to the Toolbar
+				// This lets us pivot based on the type of pane display mode				
 				base.ToolbarChanged();
+			}
 
 		}
 
-		void UpdateTopNavAreaMargin()
+		void UpdateToolbarPlacement()
 		{
 			if (TopNavArea != null)
 			{
@@ -78,15 +92,15 @@ namespace Microsoft.Maui.Platform
 					// So this offsets the TopNavArea by the size of the AppTitleBar
 					TopNavArea.Margin = new UI.Xaml.Thickness(0, AppBarTitleHeight, 0, 0);
 					Header = null;
-					PaneFooter = HeaderControl;
+					PaneFooter = Toolbar;
 
-					if (HeaderControl != null)
+					if (Toolbar != null)
 					{
-						HeaderControl.ContentGridMargin = new UI.Xaml.Thickness(0, 0, 4, 0);
-						HeaderControl.TextBlockBorderVerticalAlignment = VerticalAlignment.Center;
+						Toolbar.ContentGridMargin = new UI.Xaml.Thickness(0, 0, 4, 0);
+						Toolbar.TextBlockBorderVerticalAlignment = VerticalAlignment.Center;
 					}
 				}
-				else if (PaneFooter == HeaderControl || Header == null)
+				else if (PaneFooter == Toolbar || Header == null)
 				{
 					TopNavArea.Margin = new UI.Xaml.Thickness(0, 0, 0, 0);
 
@@ -95,15 +109,15 @@ namespace Microsoft.Maui.Platform
 					// moving to a ContentPage
 					// If the RootView is a FlyoutPage then the Header will be part of the FlyoutPage
 					// And the PaneFooter will be the Flyout Content
-					if (PaneFooter == HeaderControl)
+					if (PaneFooter == Toolbar)
 						PaneFooter = null;
 
-					Header = HeaderControl;
+					Header = Toolbar;
 
-					if (HeaderControl != null)
+					if (Toolbar != null)
 					{
-						HeaderControl.ContentGridMargin = new UI.Xaml.Thickness(0, 0, 0, 0);
-						HeaderControl.TextBlockBorderVerticalAlignment = VerticalAlignment.Top;
+						Toolbar.ContentGridMargin = new UI.Xaml.Thickness(0, 0, 0, 0);
+						Toolbar.TextBlockBorderVerticalAlignment = VerticalAlignment.Top;
 					}
 				}
 			}
@@ -115,14 +129,14 @@ namespace Microsoft.Maui.Platform
 		void UpdateHeaderPropertyBinding()
 		{
 			Binding isBackButtonVisible = new Binding();
-			isBackButtonVisible.Source = HeaderControl;
+			isBackButtonVisible.Source = Toolbar;
 			isBackButtonVisible.Path = new PropertyPath("IsBackButtonVisible");
 			isBackButtonVisible.Mode = BindingMode.OneWay;
 			isBackButtonVisible.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 			BindingOperations.SetBinding(this, IsBackButtonVisibleProperty, isBackButtonVisible);
 
 			Binding isBackEnabled = new Binding();
-			isBackEnabled.Source = HeaderControl;
+			isBackEnabled.Source = Toolbar;
 			isBackEnabled.Path = new PropertyPath("IsBackEnabled");
 			isBackEnabled.Mode = BindingMode.OneWay;
 			isBackEnabled.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
@@ -133,14 +147,14 @@ namespace Microsoft.Maui.Platform
 			if (HeaderContent != null)
 			{
 				Binding visibilityBinding = new Binding();
-				visibilityBinding.Source = HeaderControl;
+				visibilityBinding.Source = Toolbar;
 				visibilityBinding.Path = new PropertyPath("Visibility");
 				visibilityBinding.Mode = BindingMode.OneWay;
 				visibilityBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 				BindingOperations.SetBinding(HeaderContent, ContentControl.VisibilityProperty, visibilityBinding);
 
 				Binding backgroundBinding = new Binding();
-				backgroundBinding.Source = HeaderControl;
+				backgroundBinding.Source = Toolbar;
 				backgroundBinding.Path = new PropertyPath("Background");
 				backgroundBinding.Mode = BindingMode.OneWay;
 				backgroundBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
@@ -159,11 +173,10 @@ namespace Microsoft.Maui.Platform
 				IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
 
 			IsBackEnabled = (IsBackButtonVisible == NavigationViewBackButtonVisible.Visible) &&
-				(_headerControl?.IsBackEnabled ?? true);
+				(Toolbar?.IsBackEnabled ?? true);
 
-			UpdateTopNavAreaMargin();
+			UpdateToolbarPlacement();
 		}
-
 
 		private protected override void OnApplyTemplateCore()
 		{
@@ -183,15 +196,13 @@ namespace Microsoft.Maui.Platform
 			if (GetTemplateChild("ContentLeftPadding") is Grid g)
 				g.Visibility = UI.Xaml.Visibility.Collapsed;
 
-			if (HeaderControl != null)
+			if (Toolbar != null)
 				UpdateHeaderPropertyBinding();
 
 			PaneContentGrid!.SizeChanged += OnPaneContentGridSizeChanged;
 
 			// This is the height taken up by the backbutton/pane toggle button
 			// we use this to offset the height of our flyout content
-			//	((FrameworkElement)GetTemplateChild("PaneHeaderContentBorder")).SizeChanged += OnPaneHeaderContentBorderSizeChanged;
-
 			PaneContentGrid.RowDefinitions[1]
 				.RegisterPropertyChangedCallback(RowDefinition.HeightProperty, PaneContentTopPaddingChanged);
 
@@ -205,8 +216,14 @@ namespace Microsoft.Maui.Platform
 				UpdateNavigationAndPaneButtonHolderGridStyles();
 			};
 
-			UpdateTopNavAreaMargin();
+			UpdateToolbarPlacement();
 			UpdateContentGridMargin();
+
+			if (Toolbar != null)
+			{
+				Toolbar.NavigationViewBackButton = NavigationViewBackButton;
+				Toolbar.TogglePaneButton = TogglePaneButton;
+			}
 		}
 
 		// Change this to use binding
@@ -275,7 +292,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			UpdatePaneContentGridMargin();
-			UpdateTopNavAreaMargin();
+			UpdateToolbarPlacement();
 			UpdateContentGridMargin();
 		}
 
@@ -294,6 +311,16 @@ namespace Microsoft.Maui.Platform
 			{
 				PaneContentGrid.RowDefinitions[1].Height = new WGridLength(height);
 				ContentPaneTopPadding.Height = 0;
+			}
+			// this ensures that when we are showing the entire left pane that it will fill the width of the container
+			switch (PaneDisplayMode)
+			{
+				case NavigationViewPaneDisplayMode.Left:
+					PaneContentGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
+					break;
+				default:
+					PaneContentGrid.HorizontalAlignment = HorizontalAlignment.Left;
+					break;
 			}
 		}
 
@@ -336,11 +363,19 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal Maui.IView? FlyoutView
+		{
+			get => _flyoutPanel.FlyoutView;
+			set => _flyoutPanel.FlyoutView = value;
+		}
+
 		// We use a container because if we just assign our Flyout to the PaneFooter on the NavigationView 
 		// The measure call passes in PositiveInfinity for the measurements which causes the layout system
 		// to crash. So we use this Panel to facilitate more constrained measuring values
 		class FlyoutPanel : Panel
 		{
+			public Maui.IView? FlyoutView { get; set; }
+
 			public FlyoutPanel()
 			{
 			}
@@ -358,7 +393,11 @@ namespace Microsoft.Maui.Platform
 				if (ContentWidth == 0)
 					return new Size(0, 0);
 
-				FlyoutContent.Measure(new Size(ContentWidth, availableSize.Height));
+				if (FlyoutView != null)
+					FlyoutView.Measure(ContentWidth, availableSize.Height);
+				else
+					FlyoutContent.Measure(new Size(ContentWidth, availableSize.Height));
+
 				return FlyoutContent.DesiredSize;
 			}
 
@@ -373,7 +412,11 @@ namespace Microsoft.Maui.Platform
 					return finalSize;
 				}
 
-				FlyoutContent.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+				if (FlyoutView != null)
+					FlyoutView.Arrange(new Graphics.Rect(0, 0, finalSize.Width, finalSize.Height));
+				else
+					FlyoutContent.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+
 				return new Size(FlyoutContent.ActualWidth, FlyoutContent.ActualHeight);
 			}
 		}
