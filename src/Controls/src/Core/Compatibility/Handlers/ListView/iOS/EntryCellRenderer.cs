@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 		[UnsupportedOSPlatform("ios14.0")]
+		[UnsupportedOSPlatform("tvos14.0")]
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
 			var entryCell = (EntryCell)item;
@@ -56,6 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 		[UnsupportedOSPlatform("ios14.0")]
+		[UnsupportedOSPlatform("tvos14.0")]
 		static void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var entryCell = (EntryCell)sender;
@@ -101,6 +103,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 		[UnsupportedOSPlatform("ios14.0")]
+		[UnsupportedOSPlatform("tvos14.0")]
 		static void UpdateIsEnabled(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			cell.UserInteractionEnabled = entryCell.IsEnabled;
@@ -115,12 +118,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 		[UnsupportedOSPlatform("ios14.0")]
+		[UnsupportedOSPlatform("tvos14.0")]
 		static void UpdateLabel(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			cell.TextLabel.Text = entryCell.Label;
 		}
 
 		[UnsupportedOSPlatform("ios14.0")]
+		[UnsupportedOSPlatform("tvos14.0")]
 		static void UpdateLabelColor(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			cell.TextLabel.TextColor = entryCell.LabelColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();

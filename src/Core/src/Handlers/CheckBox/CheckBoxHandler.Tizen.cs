@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class CheckBoxHandler : ViewHandler<ICheckBox, Check>
 	{
-		protected override Check CreatePlatformView() => new Check(NativeParent);
+		protected override Check CreatePlatformView() => new Check(PlatformParent);
 
 		protected override void ConnectHandler(Check platformView)
 		{

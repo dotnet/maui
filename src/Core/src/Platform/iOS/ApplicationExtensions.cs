@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Platform
 	public static class ApplicationExtensions
 	{
 		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("tvos13.0")]
 		public static void RequestNewWindow(this IUIApplicationDelegate platformApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext || args is null)
@@ -45,6 +46,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("tvos13.0")]
 		public static void CreatePlatformWindow(this IUIWindowSceneDelegate sceneDelegate, IApplication application, UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
 		{
 			// Find any userinfo/dictionaries we might pass into the activation state
