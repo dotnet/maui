@@ -59,8 +59,11 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!Brush.IsNullOrEmpty(Background))
 					return Background;
-				if (BackgroundColor.IsNotDefault())
-					return new SolidColorBrush(BackgroundColor);
+
+				var color = BackgroundColor ?? (DefaultStyles.GetColor(this, BackgroundColorProperty).Value as Color);
+
+				if (color.IsNotDefault())
+					return new SolidColorBrush(color);
 
 				return null;
 			}
@@ -212,7 +215,7 @@ namespace Microsoft.Maui.Controls
 				{
 					return Primitives.Dimension.Unset;
 				}
-				
+
 				ValidatePositive(value, nameof(IView.Width));
 				return value;
 			}
@@ -234,7 +237,7 @@ namespace Microsoft.Maui.Controls
 				{
 					return Primitives.Dimension.Unset;
 				}
-				
+
 				ValidatePositive(value, nameof(IView.Height));
 				return value;
 			}

@@ -245,7 +245,7 @@ namespace Microsoft.Maui.Controls
 			});
 
 		static object DefaultBackgroundColorValueCreator(BindableObject bindable) =>
-			DefaultStyles.GetBackgroundColor(bindable)?.Value;
+			DefaultStyles.GetColor(bindable, VisualElement.BackgroundColorProperty)?.Value;
 
 		void NotifyBackgroundChanges()
 		{

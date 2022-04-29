@@ -12,6 +12,18 @@ namespace Microsoft.Maui.Controls
 
 		Font ITextStyle.Font => this.ToFont();
 
+		Color ITextStyle.TextColor
+		{
+			get => TextColor ??
+				DefaultStyles.GetColor(this, TextColorProperty)?.Value as Color;
+		}
+
+		Color IPlaceholder.PlaceholderColor
+		{
+			get => TextColor ??
+				DefaultStyles.GetColor(this, PlaceholderColorProperty)?.Value as Color;
+		}
+
 		void IEditor.Completed()
 		{
 			(this as IEditorController).SendCompleted();

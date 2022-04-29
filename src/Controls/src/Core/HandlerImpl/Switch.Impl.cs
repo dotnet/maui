@@ -22,11 +22,17 @@ namespace Microsoft.Maui.Controls
 				return OnColor;
 #else
 				if (IsToggled)
-					return OnColor;
+					return OnColor ?? DefaultStyles.GetColor(this, OnColorProperty)?.Value as Color;
 
 				return null;
 #endif
 			}
+		}
+
+		Color ISwitch.ThumbColor
+		{
+			get => ThumbColor ??
+				DefaultStyles.GetColor(this, ThumbColorProperty)?.Value as Color;
 		}
 
 		bool ISwitch.IsOn

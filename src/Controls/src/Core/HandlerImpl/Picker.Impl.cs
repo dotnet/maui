@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -7,12 +8,24 @@ namespace Microsoft.Maui.Controls
 	{
 		Font ITextStyle.Font => this.ToFont();
 
+		Color ITextStyle.TextColor
+		{
+			get => TextColor ??
+				DefaultStyles.GetColor(this, TextColorProperty)?.Value as Color;
+		}
+
+		Color IPicker.TitleColor
+		{
+			get => TitleColor ??
+				DefaultStyles.GetColor(this, TitleColorProperty)?.Value as Color;
+		}
+
 		IList<string> IPicker.Items => Items;
 
 		int IItemDelegate<string>.GetCount() => Items?.Count ?? ItemsSource?.Count ?? 0;
 
 		string IItemDelegate<string>.GetItem(int index)
-		{
+		{			
 			if (index < 0)
 				return "";
 			if (index < Items?.Count)

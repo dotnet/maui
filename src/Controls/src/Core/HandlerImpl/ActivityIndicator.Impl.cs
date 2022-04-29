@@ -1,8 +1,14 @@
-﻿namespace Microsoft.Maui.Controls
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ActivityIndicator.xml" path="Type[@FullName='Microsoft.Maui.Controls.ActivityIndicator']/Docs" />
 	public partial class ActivityIndicator : IActivityIndicator
 	{
-
+		Color IActivityIndicator.Color
+		{
+			get => Color ??
+				DefaultStyles.GetColor(this, ColorProperty)?.Value as Color;
+		}
 	}
 }

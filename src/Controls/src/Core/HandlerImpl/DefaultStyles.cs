@@ -14,9 +14,9 @@ namespace Microsoft.Maui.Controls
 		static Dictionary<Type, Style> DefaultStylesCache { get; } = new Dictionary<Type, Style>();
 
 
-		static T GetThemeChoice<T>(T light, T dark)
+		static T GetThemeChoice<T>(T light, T dark, AppTheme? appTheme = null)
 		{
-			if (Application.Current?.RequestedTheme == AppTheme.Dark)
+			if ((appTheme ?? Application.Current?.RequestedTheme) == AppTheme.Dark)
 				return dark;
 
 			return light;
@@ -24,25 +24,70 @@ namespace Microsoft.Maui.Controls
 
 		class LightTheme
 		{
-			public static Color ButtonTextColor => Colors.Black;
 			public static Color TextColor => Colors.Black;
+			public static Color PickerTitleColor => Colors.White;
+
+			public static Color BackgroundColor = Colors.White;
+
+			// These all match the accent color set in android
+			// in forms it was fuschia because that was the default in 
+			// android studio 6 years ago when we switched to appcompat
+			//
+			// Here I've just picked the current blackish color we are using in MAUI
+			public static Color AccentColor = new Color(52, 152, 219);
+			public static Color ActivityIndicatorColor => AccentColor;
+			public static Color CheckBoxColor => AccentColor;
+			public static Color SliderThumbColor => AccentColor;
+			public static Color ProgressBarProgressColor => AccentColor;
+			public static Color SwitchThumbColor => AccentColor;
+
+			public static Color PlaceholderElementPlaceholderColor = TextColor.WithAlpha(0.50f);
+			public static Color SearchBarCancelButtonColor => ButtonBackgroundColor;
+			public static Color SliderMinimumTrackColor => Colors.Black;
+			public static Color SliderMaximumTrackColor = SliderThumbColor.WithAlpha(0.50f);
+
 #if ANDROID
 			public static Color ButtonBackgroundColor = new Color(44, 62, 80);
+			public static Color ButtonTextColor => Colors.White;
+			public static Color SwitchOnColor => null;
 #else
 			public static Color ButtonBackgroundColor => Colors.White;
+			public static Color ButtonTextColor => Colors.Black;
+			public static Color SwitchOnColor => AccentColor;
 #endif
 		}
 
 		class DarkTheme
 		{
+			public static Color BackgroundColor = Colors.Black;
+
+			// These all match the accent color set in android
+			// in forms it was fuschia because that was the default in 
+			// android studio 6 years ago when we switched to appcompat
+			//
+			// Here I've just picked the current blackish color we are using in MAUI
+			public static Color AccentColor = new Color(52, 152, 219);
+			public static Color ActivityIndicatorColor => AccentColor;
+			public static Color CheckBoxColor => AccentColor;
+			public static Color SliderThumbColor => AccentColor;
+			public static Color ProgressBarProgressColor => AccentColor;
+
+			public static Color PlaceholderElementPlaceholderColor = TextColor.WithAlpha(0.38f);
+			public static Color PickerTitleColor => TextColor;
+			public static Color TextColor => Colors.White;
+			public static Color SwitchThumbColor => AccentColor;
+
+			public static Color SearchBarCancelButtonColor => ButtonBackgroundColor;
+			public static Color SliderMinimumTrackColor => SliderThumbColor;
+			public static Color SliderMaximumTrackColor = SliderThumbColor.WithAlpha(0.50f);
 #if ANDROID
 			public static Color ButtonBackgroundColor = new Color(44, 62, 80);
-			public static Color TextColor => Colors.White;
 			public static Color ButtonTextColor => Colors.Black;
+			public static Color SwitchOnColor => null;
 #else
 			public static Color ButtonBackgroundColor => Colors.Black;
 			public static Color ButtonTextColor => Colors.White;
-			public static Color TextColor => Colors.White;
+			public static Color SwitchOnColor => AccentColor;
 #endif
 		}
 
@@ -67,67 +112,109 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
-		public static Setter GetTextColor(BindableObject view) =>
-			GetTextColor(view.GetType());
+		public static Setter GetColor(BindableObject view, BindableProperty bindableProperty, AppTheme? appTheme = null) =>
+			GetColor(view.GetType(), bindableProperty);
 
-		public static Setter GetTextColor(Type viewType)
+		public static Setter GetColor(Type viewType, BindableProperty bindableProperty, AppTheme? appTheme = null)
 		{
-			Setter setterToUse = null;
+			Setter setterToUse = GetSetterFor(viewType, bindableProperty, out Style _);
+			if (setterToUse != null)
+				return setterToUse;
 
 #if ANDROID || IOS
 
-			if (viewType.IsAssignableTo(typeof(ITextElement)))
+			if (bindableProperty == TextElement.TextColorProperty)
 			{
-				//// trigger VSM creation
-				//if (view is VisualElement ve)
-				//	_ = VisualStateManager.GetVisualStateGroups(ve);
-
-				setterToUse = GetSetterFor(viewType, TextElement.TextColorProperty, out Style style);
-				if (setterToUse == null)
+				if (viewType.IsAssignableTo(typeof(ITextElement)))
 				{
 					var textColorSetting = new Setter();
 					textColorSetting.Property = TextElement.TextColorProperty;
 
 					if (viewType.IsAssignableFrom(typeof(Button)))
-						textColorSetting.Value = GetThemeChoice(LightTheme.ButtonTextColor, DarkTheme.ButtonTextColor);
+						textColorSetting.Value = GetThemeChoice(LightTheme.ButtonTextColor, DarkTheme.ButtonTextColor, appTheme);
 					else
-						textColorSetting.Value = GetThemeChoice(LightTheme.TextColor, DarkTheme.TextColor);
+						textColorSetting.Value = GetThemeChoice(LightTheme.TextColor, DarkTheme.TextColor, appTheme);
 
 					setterToUse = textColorSetting;
-					style.Setters.Add(setterToUse);
 				}
 			}
-
-#endif
-			return setterToUse;
-		}
-
-		public static Setter GetBackgroundColor(BindableObject view) =>
-			GetBackgroundColor(view.GetType());
-
-		public static Setter GetBackgroundColor(Type viewType)
-		{
-			Setter setterToUse = null;
-
-#if ANDROID || IOS
-
-			if (viewType.IsAssignableFrom(typeof(Button)))
+			else if (bindableProperty == VisualElement.BackgroundColorProperty)
 			{
-				// trigger VSM creation
-				//_ = VisualStateManager.GetVisualStateGroups(button);
-				setterToUse = GetSetterFor(viewType, VisualElement.BackgroundColorProperty, out Style style);
-				if (setterToUse == null)
+				var backgroundColorSetter = new Setter();
+				backgroundColorSetter.Property = VisualElement.BackgroundColorProperty;
+				if (viewType.IsAssignableFrom(typeof(Button)))
 				{
-					var backgroundColorSetter = new Setter();
-					backgroundColorSetter.Property = VisualElement.BackgroundColorProperty;
-					backgroundColorSetter.Value = GetThemeChoice(LightTheme.ButtonBackgroundColor, DarkTheme.ButtonBackgroundColor);
-
-					setterToUse = backgroundColorSetter;
-					style.Setters.Add(setterToUse);
+					backgroundColorSetter.Value = GetThemeChoice(LightTheme.ButtonBackgroundColor, DarkTheme.ButtonBackgroundColor, appTheme);
 				}
+				else
+				{
+					backgroundColorSetter.Value = GetThemeChoice(LightTheme.BackgroundColor, DarkTheme.BackgroundColor, appTheme);
+
+				}
+
+				setterToUse = backgroundColorSetter;
+			}
+			else if (bindableProperty == ActivityIndicator.ColorProperty)
+			{
+				setterToUse = new Setter();
+				setterToUse.Value = GetThemeChoice(LightTheme.ActivityIndicatorColor, DarkTheme.ActivityIndicatorColor, appTheme);
+			}
+			else if (bindableProperty == CheckBox.ColorProperty)
+			{
+				setterToUse = new Setter();
+				setterToUse.Value = GetThemeChoice(LightTheme.CheckBoxColor, DarkTheme.CheckBoxColor, appTheme);
+			}
+			else if (bindableProperty == PlaceholderElement.PlaceholderColorProperty)
+			{
+				setterToUse = new Setter();
+				setterToUse.Value = GetThemeChoice(LightTheme.PlaceholderElementPlaceholderColor, DarkTheme.PlaceholderElementPlaceholderColor, appTheme);
+			}
+			else if (bindableProperty == Picker.TitleColorProperty)
+			{
+				setterToUse = new Setter();
+				setterToUse.Value = GetThemeChoice(LightTheme.PickerTitleColor, DarkTheme.PickerTitleColor, appTheme);
+			}
+			else if (bindableProperty == ProgressBar.ProgressColorProperty)
+			{
+				setterToUse = new Setter();
+				setterToUse.Value = GetThemeChoice(LightTheme.ProgressBarProgressColor, DarkTheme.ProgressBarProgressColor, appTheme);
+			}
+			else if (bindableProperty == SearchBar.CancelButtonColorProperty)
+			{
+				setterToUse = new Setter();
+				setterToUse.Value = GetThemeChoice(LightTheme.SearchBarCancelButtonColor, DarkTheme.SearchBarCancelButtonColor, appTheme);
+			}
+			else if (bindableProperty == Slider.ThumbColorProperty)
+			{
+				setterToUse = new Setter();
+				setterToUse.Value = GetThemeChoice(LightTheme.SliderThumbColor, DarkTheme.SliderThumbColor, appTheme);
+			}
+			else if (bindableProperty == Slider.MinimumTrackColorProperty)
+			{
+				setterToUse = new Setter();
+				setterToUse.Value = GetThemeChoice(LightTheme.SliderMinimumTrackColor, DarkTheme.SliderMinimumTrackColor, appTheme);
+			}
+			else if (bindableProperty == Slider.MaximumTrackColorProperty)
+			{
+				setterToUse = new Setter();
+				setterToUse.Value = GetThemeChoice(LightTheme.SliderMaximumTrackColor, DarkTheme.SliderMaximumTrackColor, appTheme);
+			}
+			else if (bindableProperty == Switch.ThumbColorProperty)
+			{
+				setterToUse = new Setter();
+				setterToUse.Value = GetThemeChoice(LightTheme.SwitchThumbColor, DarkTheme.SwitchThumbColor, appTheme);
+			}
+			else if (bindableProperty == Switch.OnColorProperty)
+			{
+				setterToUse = new Setter();
+				setterToUse.Value = GetThemeChoice(LightTheme.SwitchOnColor, DarkTheme.SwitchOnColor, appTheme);
 			}
 
 #endif
+
+			if (setterToUse?.Value == null)
+				return null;
+
 			return setterToUse;
 		}
 
@@ -212,7 +299,22 @@ namespace Microsoft.Maui.Controls
 		{
 			Type[] controls = new[]
 			{
-				typeof(Button)
+				typeof(ActivityIndicator),
+				typeof(Button),
+				typeof(CheckBox),
+				typeof(DatePicker),
+				typeof(Editor),
+				typeof(Entry),
+				typeof(ImageButton),
+				typeof(Label),
+				typeof(Picker),
+				typeof(ProgressBar),
+				typeof(RadioButton),
+				typeof(SearchBar),
+				typeof(Slider),
+				typeof(Stepper),
+				typeof(Switch),
+				typeof(TimePicker),
 			};
 
 			var returnValue = new DefaultResourceDictionary();
@@ -229,8 +331,8 @@ namespace Microsoft.Maui.Controls
 
 		public static Style CreateStyle(Type controlType)
 		{
-			var text = GetTextColor(controlType);
-			var background = GetBackgroundColor(controlType);
+			var text = GetColor(controlType, TextElement.TextColorProperty);
+			var background = GetColor(controlType, VisualElement.BackgroundColorProperty);
 			var vsm = GetVisualStateManager(controlType);
 
 			var style = new Style(controlType);

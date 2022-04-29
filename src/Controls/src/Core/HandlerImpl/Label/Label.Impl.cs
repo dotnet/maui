@@ -8,9 +8,9 @@ namespace Microsoft.Maui.Controls
 		Color ITextStyle.TextColor
 		{
 			get => TextColor ??
-				DefaultStyles.GetTextColor(this)?.Value as Color;
+				DefaultStyles.GetColor(this, TextColorProperty)?.Value as Color;
 		}
-		
+
 		Font ITextStyle.Font => this.ToFont();
 	}
 }
