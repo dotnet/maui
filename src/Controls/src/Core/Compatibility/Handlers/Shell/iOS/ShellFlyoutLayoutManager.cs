@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				else if (ContentView is IPlatformViewHandler ver && ver.PlatformView is UIScrollView uIScroll)
 					ScrollView = uIScroll;
 
-				if (ScrollView != null && PlatformVersion.IsAtLeast(11))
+				if (ScrollView != null && (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 					ScrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 
 				LayoutParallax();

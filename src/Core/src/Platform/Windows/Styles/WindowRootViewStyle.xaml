@@ -66,6 +66,20 @@
                             <!-- This removes a one pixel spacing between the AppBarTitle and the NavigationViews top edge -->
                             <Thickness x:Key="TopNavigationViewTopNavGridMargin">4,0,0,0</Thickness>
 
+                            <!-- these remove a one pixel spacing between the AppBarTitle and the main content
+                                It also removes a one pixel margin to the left of the content
+                            
+                                TopNavigationViewContentGridBorderThickness applies for PaneModeDisplay=Top
+                            -->
+                            <Thickness x:Key="NavigationViewContentGridBorderThickness">0,0,0,0</Thickness>
+                            <Thickness x:Key="TopNavigationViewContentGridBorderThickness">0,0,0,0</Thickness>
+
+                            <!-- This removes a corner radius that gets applied to the content on the NavigationView when
+                                you are in left pane mode -->
+                            <CornerRadius  x:Key="NavigationViewContentGridCornerRadius">0,0,0,0</CornerRadius>
+                            
+                            <!-- Remove all the padding around the Flyout Items. This way the user can just control the margins. -->
+                            <Thickness x:Key="NavigationViewItemContentPresenterMargin">0,0,0,0</Thickness>
                         </Page.Resources>
                         <Grid x:Name="RootGrid" RowSpacing="0" ColumnSpacing="0" Margin="0" Padding="0">
                             <ContentControl x:Name="AppTitleBarContainer"

@@ -17,12 +17,7 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Canvas");
 			}
 
-			if (NativeParent == null)
-			{
-				throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
-			}
-
-			var view = new LayoutCanvas(NativeParent, VirtualView)
+			var view = new LayoutCanvas(PlatformParent, VirtualView)
 			{
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
@@ -146,8 +141,8 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			var nativeChildView = child.ToPlatform(MauiContext!);
-			var currentIndex = PlatformView.Children.IndexOf(nativeChildView);
+			var platformChildView = child.ToPlatform(MauiContext!);
+			var currentIndex = PlatformView.Children.IndexOf(platformChildView);
 
 			if (currentIndex == -1)
 			{
