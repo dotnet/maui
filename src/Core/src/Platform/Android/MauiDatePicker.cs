@@ -4,13 +4,13 @@ using Android.Runtime;
 using Android.Text;
 using Android.Util;
 using Android.Views;
-using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Graphics.Drawable;
 using static Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiDatePicker : EditText, IOnClickListener
+	public class MauiDatePicker : AppCompatEditText, IOnClickListener
 	{
 		public MauiDatePicker(Context? context) : base(context)
 		{

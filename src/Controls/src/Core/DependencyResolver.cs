@@ -39,13 +39,13 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		internal static object ResolveOrCreate(
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type type) 
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type type)
 				=> ResolveOrCreate(type, null, null);
 
 		internal static object ResolveOrCreate(
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type type, 
-			object source, 
-			Type visualType, 
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type type,
+			object source,
+			Type visualType,
 			params object[] args)
 		{
 			visualType = visualType ?? _defaultVisualType;

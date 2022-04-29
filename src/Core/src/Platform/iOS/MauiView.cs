@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Platform
 				return bounds;
 			}
 
+			System.Diagnostics.Debug.Assert(System.OperatingSystem.IsIOSVersionAtLeast(11));
 			return SafeAreaInsets.InsetRect(bounds);
 		}
 	}

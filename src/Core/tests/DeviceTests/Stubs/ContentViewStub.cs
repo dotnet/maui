@@ -8,7 +8,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class ContentViewStub : StubBase, IContentView 
+	public class ContentViewStub : StubBase, IContentView
 	{
 		ILayoutManager? _layoutManager;
 

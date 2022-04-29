@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
@@ -7,6 +8,9 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+#if ANDROID
+	[SupportedOSPlatform("android23.0")]
+#endif
 	public partial class BlazorWebViewHandler
 	{
 		/// <summary>

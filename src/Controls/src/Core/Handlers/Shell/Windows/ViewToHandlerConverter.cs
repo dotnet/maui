@@ -3,7 +3,8 @@ using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WRect = Windows.Foundation.Rect; 
+using WRect = Windows.Foundation.Rect;
+using WSize = global::Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -73,11 +74,10 @@ namespace Microsoft.Maui.Controls.Platform
 				InvalidateMeasure();
 			}
 
-			protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+			protected override WSize ArrangeOverride(WSize finalSize)
 			{
 				_view.IsInPlatformLayout = true;
-				_view.Frame = new Rect(0, 0, finalSize.Width, finalSize.Height);
-				FrameworkElement?.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
+				(_view.Handler as IPlatformViewHandler)?.LayoutVirtualView(finalSize);				
 
 				if (_view.Width <= 0 || _view.Height <= 0)
 				{
@@ -95,21 +95,19 @@ namespace Microsoft.Maui.Controls.Platform
 				return finalSize;
 			}
 
-			protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+			protected override WSize MeasureOverride(WSize availableSize)
 			{
-				FrameworkElement.Measure(availableSize);
-
-				var request = FrameworkElement.DesiredSize;
+				var request = (_view.Handler as IPlatformViewHandler)?.MeasureVirtualView(availableSize) ?? WSize.Empty;
 
 				if (request.Height < 0)
 				{
 					request.Height = availableSize.Height;
 				}
 
-				global::Windows.Foundation.Size result;
+				WSize result;
 				if (_view.HorizontalOptions.Alignment == LayoutAlignment.Fill && !double.IsInfinity(availableSize.Width) && availableSize.Width != 0)
 				{
-					result = new global::Windows.Foundation.Size(availableSize.Width, request.Height);
+					result = new WSize(availableSize.Width, request.Height);
 				}
 				else
 				{

@@ -12,9 +12,8 @@ namespace Microsoft.Maui.Handlers
 		protected override ContentCanvas CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
 
-			var view = new ContentCanvas(NativeParent, VirtualView)
+			var view = new ContentCanvas(PlatformParent, VirtualView)
 			{
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange

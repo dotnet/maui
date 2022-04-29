@@ -153,7 +153,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task NeedsContainerWhenInputTransparent() 
+		public async Task NeedsContainerWhenInputTransparent()
 		{
 			var view = new TStub()
 			{

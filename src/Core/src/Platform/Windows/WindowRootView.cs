@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
@@ -17,6 +18,8 @@ namespace Microsoft.Maui.Platform
 		internal event EventHandler? OnApplyTemplateFinished;
 		internal event EventHandler? ContentChanged;
 		string? _windowTitle;
+		MauiToolbar? _toolbar;
+		MenuBar? _menuBar;
 		FrameworkElement? _appTitleBar;
 		bool _hasTitleBarImage = false;
 		public event TypedEventHandler<NavigationView, NavigationViewBackRequestedEventArgs>? BackRequested;
@@ -32,6 +35,32 @@ namespace Microsoft.Maui.Platform
 		internal TextBlock? AppTitle { get; private set; }
 
 		public RootNavigationView? NavigationViewControl { get; private set; }
+
+		internal MauiToolbar? Toolbar
+		{
+			get => _toolbar;
+			set
+			{
+				if (_toolbar != null)
+					_toolbar.SetMenuBar(null);
+
+				_toolbar = value;
+				if (NavigationViewControl != null)
+					NavigationViewControl.Toolbar = Toolbar;
+
+				_toolbar?.SetMenuBar(MenuBar);
+			}
+		}
+
+		internal MenuBar? MenuBar
+		{
+			get => _menuBar;
+			set
+			{
+				_menuBar = value;
+				Toolbar?.SetMenuBar(value);
+			}
+		}
 
 		public DataTemplate? AppTitleBarTemplate
 		{
@@ -178,28 +207,46 @@ namespace Microsoft.Maui.Platform
 			UpdateAppTitleBarMargins();
 		}
 
+
+		ActionDisposable? _contentChanged;
+
 		protected override void OnContentChanged(object oldContent, object newContent)
 		{
+			_contentChanged?.Dispose();
+			_contentChanged = null;
+
 			base.OnContentChanged(oldContent, newContent);
+
 			if (newContent is RootNavigationView mnv)
 			{
 				NavigationViewControl = mnv;
 				NavigationViewControl.DisplayModeChanged += OnNavigationViewControlDisplayModeChanged;
 				NavigationViewControl.BackRequested += OnNavigationViewBackRequested;
+				NavigationViewControl.Toolbar = Toolbar;
 				NavigationViewControl.OnApplyTemplateFinished += OnNavigationViewControlOnApplyTemplateFinished;
-				NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, AppBarNavigationIconsChanged);
-				NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, AppBarNavigationIconsChanged);
-				NavigationViewControl.RegisterPropertyChangedCallback(MauiNavigationView.NavigationBackButtonWidthProperty, AppBarNavigationIconsChanged);
+				var backButtonToken = NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, AppBarNavigationIconsChanged);
+				var paneToggleToken = NavigationViewControl.RegisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, AppBarNavigationIconsChanged);
+				var backButtonWidthToken = NavigationViewControl.RegisterPropertyChangedCallback(MauiNavigationView.NavigationBackButtonWidthProperty, AppBarNavigationIconsChanged);
 
-				ContentChanged?.Invoke(this, EventArgs.Empty);
+				_contentChanged = new ActionDisposable(() =>
+				{
+					mnv.DisplayModeChanged -= OnNavigationViewControlDisplayModeChanged;
+					mnv.BackRequested -= OnNavigationViewBackRequested;
+					mnv.Toolbar = null;
+					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.IsBackButtonVisibleProperty, backButtonToken);
+					NavigationViewControl.UnregisterPropertyChangedCallback(NavigationView.IsPaneToggleButtonVisibleProperty, paneToggleToken);
+					NavigationViewControl.UnregisterPropertyChangedCallback(MauiNavigationView.NavigationBackButtonWidthProperty, backButtonWidthToken);
+					NavigationViewControl = null;
+				});
+
 
 				if (_appTitleBarHeight > 0)
 				{
 					NavigationViewControl.UpdateAppTitleBar(_appTitleBarHeight);
 				}
-
-				var thing = NavigationViewControl.ButtonHolderGrid;
 			}
+
+			ContentChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		void OnNavigationViewControlOnApplyTemplateFinished(object? sender, EventArgs e)
@@ -209,6 +256,8 @@ namespace Microsoft.Maui.Platform
 				NavigationViewControl.OnApplyTemplateFinished -= OnNavigationViewControlOnApplyTemplateFinished;
 				NavigationViewControl.ButtonHolderGrid!.SizeChanged += OnButtonHolderGridSizeChanged;
 			}
+
+			ContentChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		void OnNavigationViewBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args) =>

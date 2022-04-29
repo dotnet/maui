@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiTextView : UITextView
 	{
 		readonly UILabel _placeholderLabel;
-		
+
 		public MauiTextView()
 		{
 			_placeholderLabel = InitPlaceholderLabel();

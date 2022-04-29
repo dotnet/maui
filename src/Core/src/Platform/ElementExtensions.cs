@@ -93,10 +93,21 @@ namespace Microsoft.Maui.Platform
 
 			handler.SetMauiContext(context);
 
-			view.Handler = handler;
+			try
+			{
+				view.Handler = handler;
 
-			if (handler.VirtualView != view)
-				handler.SetVirtualView(view);
+				if (handler.VirtualView != view)
+					handler.SetVirtualView(view);
+			}
+			catch (ToPlatformException)
+			{
+				throw;
+			}
+			catch (Exception exc)
+			{
+				throw new ToPlatformException($"{handler} found for {view} is incompatible", exc);
+			}
 
 			return handler;
 		}
@@ -106,13 +117,8 @@ namespace Microsoft.Maui.Platform
 			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
 				return replaceableView.ReplacedView.ToPlatform();
 
-			if (view.Handler == null)
-			{
-				var mauiContext = view.Parent?.Handler?.MauiContext ??
-					throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
 
-				return view.ToPlatform(mauiContext);
-			}
+			_ = view.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
 
 			if (view.Handler is IViewHandler viewHandler)
 			{

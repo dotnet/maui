@@ -42,21 +42,19 @@ namespace Microsoft.Maui.Controls.Platform
 		private bool disposedValue;
 		bool _isTV = DeviceInfo.Idiom == DeviceIdiom.TV;
 
-		public ShellNavBar(IMauiContext context) : base(context?.GetNativeParent())
+		public ShellNavBar(IMauiContext context) : base(context?.GetPlatformParent())
 		{
 			MauiContext = context;
 
-			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
-
 			SetLayoutCallback(OnLayout);
 
-			_menuButton = new TButton(NativeParent);
+			_menuButton = new TButton(PlatformParent);
 			_menuButton.Clicked += OnMenuClicked;
 
-			_menuIcon = new TImage(NativeParent);
+			_menuIcon = new TImage(PlatformParent);
 			UpdateMenuIcon();
 
-			_title = new TLabel(NativeParent)
+			_title = new TLabel(PlatformParent)
 			{
 				FontSize = this.GetDefaultTitleFontSize(),
 				VerticalTextAlignment = (global::Tizen.UIExtensions.Common.TextAlignment)TextAlignment.Center,
@@ -78,10 +76,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected IMauiContext? MauiContext { get; private set; }
 
-		protected EvasObject? NativeParent
-		{
-			get => MauiContext?.GetNativeParent();
-		}
+		protected EvasObject PlatformParent => MauiContext?.GetPlatformParent() ?? throw new InvalidOperationException($"PlatformParent cannot be null here");
 
 		public IShellController ShellController => Shell.Current;
 
@@ -219,8 +214,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async void UpdateMenuIcon()
 		{
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
-
 			ImageSource? source = null;
 			if (HasBackButton)
 			{
@@ -246,7 +239,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_isTV)
 				{
 					_menuButton.Style = TThemeConstants.Button.Styles.Circle;
-					_menuIcon = new TImage(NativeParent);
+					_menuIcon = new TImage(PlatformParent);
 				}
 				source = Shell.Current.FlyoutIcon;
 			}

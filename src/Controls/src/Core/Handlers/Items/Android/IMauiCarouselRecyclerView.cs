@@ -5,7 +5,7 @@
 		void UpdateFromCurrentItem();
 
 		void UpdateFromPosition();
-		
+
 		bool IsSwipeEnabled { get; set; }
 	}
 }

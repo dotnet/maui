@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
@@ -61,7 +62,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
 			// Make sure the control adheres to changes in UI theme
-			if (PlatformVersion.IsAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				SetupLayer();
 		}
 

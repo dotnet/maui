@@ -844,14 +844,6 @@ Task("VSMAC")
                 GetMSBuildSettings()
                     .WithRestore());
 
-        MSBuild("src/Controls/samples/Controls.Sample.Droid/Controls.Sample.Droid.csproj",
-                GetMSBuildSettings()
-                    .WithRestore());
-        
-
-        MSBuild("src/Controls/samples/Controls.Sample.iOS/Controls.Sample.iOS.csproj",
-            new MSBuildSettings().WithRestore());
-
         MSBuild("src/Essentials/src/Essentials.csproj",
                 GetMSBuildSettings()
                     .WithRestore());

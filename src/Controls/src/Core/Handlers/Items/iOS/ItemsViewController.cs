@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ItemsSource = CreateItemsViewSource();
 
-			if (!PlatformVersion.IsAtLeast(11))
+			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 				AutomaticallyAdjustsScrollViewInsets = false;
 			else
 			{
@@ -475,7 +475,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			bool isRtl;
 
-			if (PlatformVersion.IsAtLeast(10))
+			if (OperatingSystem.IsIOSVersionAtLeast(10) || OperatingSystem.IsTvOSVersionAtLeast(10))
 				isRtl = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
 			else
 				isRtl = CollectionView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;

@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -190,6 +191,16 @@ namespace Microsoft.Maui.Controls
 		public Thickness PaddingDefaultValueCreator()
 		{
 			return Thickness.Zero;
+		}
+
+		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == HeightProperty.PropertyName ||
+				propertyName == WidthProperty.PropertyName ||
+				propertyName == StrokeShapeProperty.PropertyName)
+				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
 		}
 	}
 }

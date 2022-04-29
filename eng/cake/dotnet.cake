@@ -111,13 +111,18 @@ Task("dotnet-templates")
             { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
         };
 
-        var frameworks = new [] {
-            "net6.0-android",
-            "net6.0-ios",
-            "net6.0-maccatalyst",
+        var templates = new Dictionary<string, Action<DirectoryPath>> {
+            { "maui:maui", null },
+            { "mauiblazor:maui-blazor", null },
+            { "mauilib:mauilib", null },
+            { "mauicorelib:mauilib", dir => {
+                CleanDirectories(dir.Combine("Platforms").FullPath);
+                ReplaceTextInFiles($"{dir}/*.csproj", "UseMaui", "UseMauiCore");
+                ReplaceTextInFiles($"{dir}/*.csproj", "SingleProject", "EnablePreviewMsixTooling");
+            } },
         };
 
-        foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
+        foreach (var template in templates)
         {
             foreach (var forceDotNetBuild in new [] { true, false })
             {
@@ -126,9 +131,17 @@ Task("dotnet-templates")
                     continue;
 
                 var type = forceDotNetBuild ? "DotNet" : "MSBuild";
-                var name = template.Replace("-", "_").Replace(" ", "_");
-                var projectName = $"{templatesTest}{name}_{type}";
-                StartProcess(dn, $"new {template} -o \"{projectName}\"");
+                var projectName = template.Key.Split(":")[0];
+                var templateName = template.Key.Split(":")[1];
+
+                projectName = $"{templatesTest}/{projectName}_{type}";
+
+                // Create
+                StartProcess(dn, $"new {templateName} -o \"{projectName}\"");
+
+                // Modify
+                if (template.Value != null)
+                    template.Value(projectName);
 
                 // Build
                 RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
@@ -379,34 +392,6 @@ Task("VS-ANDROID")
         RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj");
         StartVisualStudioForDotNet6("./Microsoft.Maui.Droid.sln");
     });
-
-Task("SAMPLE-ANDROID")
-    .Description("Provisions .NET 6 and launches Android Sample.")
-    .IsDependentOn("dotnet")
-    .IsDependentOn("dotnet-buildtasks")
-    .Does(() =>
-    {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid.csproj", target: "Run");
-    });
-
-Task("SAMPLE-IOS")
-    .Description("Provisions .NET 6 and launches launches iOS Sample.")
-    .IsDependentOn("dotnet")
-    .IsDependentOn("dotnet-buildtasks")
-    .Does(() =>
-    {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS.csproj", target: "Run");
-    });
-
-Task("SAMPLE-MAC")
-    .Description("Provisions .NET 6 and launches Mac Catalyst Sample.")
-    .IsDependentOn("dotnet")
-    .IsDependentOn("dotnet-buildtasks")
-    .Does(() =>
-    {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst.csproj",  target: "Run");
-    });
-
 
 string FindMSBuild()
 {

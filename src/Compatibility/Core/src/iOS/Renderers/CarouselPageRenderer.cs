@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -150,6 +151,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Carousel.PagesChanged += OnPagesChanged;
 		}
 
+		[UnsupportedOSPlatform("tvos")]
+		[UnsupportedOSPlatform("ios6.0")]
 		public override void ViewDidUnload()
 		{
 			base.ViewDidUnload();

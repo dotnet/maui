@@ -2,8 +2,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -17,6 +17,12 @@ namespace Microsoft.Maui.DeviceTests
 		MauiApp _mauiApp;
 		IMauiContext _mauiContext;
 
+		// In order to run any page level tests android needs to add itself to the decor view inside a new fragment
+		// that way all the lifecycle events related to being attached to the window will fire
+		// adding/removing that many fragments in parallel to the decor view was causing the tests to be unreliable
+		// That being said...
+		// There's definitely a chance that the code written to manage this process could be improved		
+		public const string RunInNewWindowCollection = "Serialize test because it has to add itself to the main window";
 		public void EnsureHandlerCreated(Action<MauiAppBuilder> additionalCreationActions = null)
 		{
 			if (_isCreated)
@@ -94,8 +100,9 @@ namespace Microsoft.Maui.DeviceTests
 			where THandler : IElementHandler
 		{
 			var handler = Activator.CreateInstance<THandler>();
-			handler.SetMauiContext(mauiContext);
 
+			handler.SetMauiContext(mauiContext);
+			
 			handler.SetVirtualView(element);
 			element.Handler = handler;
 
