@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
