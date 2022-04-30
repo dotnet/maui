@@ -50,15 +50,14 @@ namespace Microsoft.Maui.Controls
 			public static Color SwitchThumbColor => AccentColor;
 			public static Color SliderThumbColor => AccentColor;
 #else
-			public static Color SwitchThumbColor => null;// new Color(0.2039216f, 0.5960785f, 0.8588235f, 1);
-
+			public static Color SwitchThumbColor => null;
 			public static Color SliderThumbColor => null;
 			public static Color ButtonBackgroundColor => Colors.White;
 			public static Color ButtonTextColor => new(0, 122, 255);
-			public static Color SwitchOnColor = new (120, 120, 128, 40);
+			public static Color SwitchOnColor => null;
 			public static Color ActivityIndicatorColor = new Color(0, 0, 0, 114);
 			public static Color SliderMinimumTrackColor => null;
-			public static Color SliderMaximumTrackColor => null;// new Color(0f, 0f, 0f);
+			public static Color SliderMaximumTrackColor => null;
 #endif
 		}
 
@@ -72,27 +71,32 @@ namespace Microsoft.Maui.Controls
 			//
 			// Here I've just picked the current blackish color we are using in MAUI
 			public static Color AccentColor = new Color(52, 152, 219);
-			public static Color ActivityIndicatorColor => AccentColor;
 			public static Color CheckBoxColor => AccentColor;
-			public static Color SliderThumbColor => AccentColor;
 			public static Color ProgressBarProgressColor => AccentColor;
 
 			public static Color PlaceholderElementPlaceholderColor = TextColor.WithAlpha(0.38f);
 			public static Color PickerTitleColor => TextColor;
 			public static Color TextColor => Colors.White;
-			public static Color SwitchThumbColor => AccentColor;
 
 			public static Color SearchBarCancelButtonColor => ButtonBackgroundColor;
-			public static Color SliderMinimumTrackColor => SliderThumbColor;
-			public static Color SliderMaximumTrackColor = SliderThumbColor.WithAlpha(0.50f);
 #if ANDROID
 			public static Color ButtonBackgroundColor = new Color(44, 62, 80);
 			public static Color ButtonTextColor => Colors.Black;
 			public static Color SwitchOnColor => null;
+			public static Color SliderMinimumTrackColor => SliderThumbColor;
+			public static Color SliderMaximumTrackColor = SliderThumbColor.WithAlpha(0.50f);
+			public static Color ActivityIndicatorColor => AccentColor;
+			public static Color SwitchThumbColor => AccentColor;
+			public static Color SliderThumbColor => AccentColor;
 #else
 			public static Color ButtonBackgroundColor => Colors.Black;
-			public static Color ButtonTextColor => Colors.White;
-			public static Color SwitchOnColor => AccentColor;
+			public static Color ButtonTextColor => new(0, 122, 255);
+			public static Color SwitchThumbColor => null;
+			public static Color SliderThumbColor => null;
+			public static Color SwitchOnColor => null;
+			public static Color ActivityIndicatorColor = new Color(0, 0, 0, 114);
+			public static Color SliderMinimumTrackColor => null;
+			public static Color SliderMaximumTrackColor => null;
 #endif
 		}
 
@@ -270,9 +274,10 @@ namespace Microsoft.Maui.Controls
 			};
 
 
+#if ANDROID
 			var disabledBackgroundThemeBinding = GetAppThemeBinding(viewType, VisualElement.BackgroundColorProperty, 0.12f);
 
-			if (disabledBackgroundThemeBinding != null)
+			if (disabledBackgroundThemeBinding != null && viewType.IsAssignableTo(typeof(Button)))
 			{
 				disabledSetters.Setters.Add(new Setter()
 				{
@@ -281,6 +286,7 @@ namespace Microsoft.Maui.Controls
 				});
 			}
 
+			
 			if (viewType.IsAssignableTo(typeof(ITextElement)))
 			{
 				var disabledTextColor = new Setter()
@@ -291,6 +297,20 @@ namespace Microsoft.Maui.Controls
 
 				disabledSetters.Setters.Add(disabledTextColor);
 			}
+#endif
+
+#if IOS
+			if (viewType.IsAssignableTo(typeof(Button)))
+			{
+				var disabledTextColor = new Setter()
+				{
+					Property = TextElement.TextColorProperty,
+					Value = new AppThemeBinding() { Dark = new Color(130, 130, 130).WithAlpha(89), Light = new Color(89, 130, 130).WithAlpha(89) }
+				};
+
+				disabledSetters.Setters.Add(disabledTextColor);
+			}
+#endif
 
 			if (disabledSetters.Setters.Count > 0)
 			{

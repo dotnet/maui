@@ -24,6 +24,10 @@ namespace Microsoft.Maui.Platform
 
 			if (view.TrackColor != null)
 				uIView.BackgroundColor = uiSwitch.OnTintColor;
+			else if (uiSwitch.On)
+				uIView.BackgroundColor = null;
+			else
+				uIView.BackgroundColor = new Graphics.Color(120, 120, 128, 40).ToPlatform();
 		}
 
 		public static void UpdateThumbColor(this UISwitch uiSwitch, ISwitch view)
@@ -35,7 +39,7 @@ namespace Microsoft.Maui.Platform
 			if (thumbColor != null)
 				uiSwitch.ThumbTintColor = thumbColor?.ToPlatform();
 			else
-				uiSwitch.ThumbTintColor = null;
+				uiSwitch.ThumbTintColor = thumbColor?.ToPlatform();
 		}
 
 		internal static UIView GetTrackSubview(this UISwitch uISwitch)
