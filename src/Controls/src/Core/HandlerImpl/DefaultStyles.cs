@@ -231,7 +231,11 @@ namespace Microsoft.Maui.Controls
 			else if (bindableProperty == Switch.ThumbColorProperty)
 			{
 				setterToUse = new Setter();
+
+#if IOS
 				setterToUse.Value = GetThemeChoice(LightTheme.SwitchThumbColor, DarkTheme.SwitchThumbColor, appTheme);
+#endif
+
 			}
 			else if (bindableProperty == Switch.OnColorProperty)
 			{
@@ -254,8 +258,11 @@ namespace Microsoft.Maui.Controls
 
 		internal static VisualStateGroupList GetVisualStateManager(Type viewType, BindableObject bindable = null)
 		{
-
 #if IOS || ANDROID
+
+			VisualStateGroupList visualStateGroupList = null;
+			var visualStateGroup = new VisualStateGroup() { Name = "CommonStates" };
+
 
 			// This means we are retrieving this for a style not a specific bindable
 			if (bindable == null)
@@ -267,7 +274,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			var visualStateGroup = new VisualStateGroup() { Name = "CommonStates" };
+			List<VisualState> statesToAdd = new List<VisualState>();
 			var disabledSetters = new VisualState()
 			{
 				Name = "Disabled"
@@ -286,7 +293,7 @@ namespace Microsoft.Maui.Controls
 				});
 			}
 
-			
+
 			if (viewType.IsAssignableTo(typeof(ITextElement)))
 			{
 				var disabledTextColor = new Setter()
@@ -314,7 +321,6 @@ namespace Microsoft.Maui.Controls
 
 			if (disabledSetters.Setters.Count > 0)
 			{
-				var visualStateGroupList = new VisualStateGroupList();
 
 				visualStateGroup.States.Add(new VisualState()
 				{
@@ -322,22 +328,58 @@ namespace Microsoft.Maui.Controls
 				});
 
 				visualStateGroup.States.Add(disabledSetters);
+				visualStateGroupList ??= CreateVisualStateGroupList();
+			}
+#if ANDROID
+			if (viewType.IsAssignableTo(typeof(Switch)))
+			{
+				visualStateGroupList ??= CreateVisualStateGroupList();
+
+				visualStateGroup.States.Add(new VisualState()
+				{
+					Name = "On",
+					Setters =
+					{
+						new Setter()
+						{
+							Property = Switch.ThumbColorProperty,
+							Value = new AppThemeBinding()
+							{
+								Light = LightTheme.SwitchThumbColor,
+								Dark = DarkTheme.SwitchThumbColor
+							}
+						}
+					}
+				});
+
+				visualStateGroup.States.Add(new VisualState()
+				{
+					Name = "Off"
+				});
+			}
+#endif
+
+			return visualStateGroupList;
+
+			VisualStateGroupList CreateVisualStateGroupList()
+			{
 				if (bindable == null)
 				{
-					var returnValue = new VisualStateGroupList() { visualStateGroup };
+					visualStateGroupList = new VisualStateGroupList() { visualStateGroup };
 					_ = GetSetterFor(viewType, VisualStateManager.VisualStateGroupsProperty, out Style style);
-					style.Setters.Add(new Setter() { Property = VisualStateManager.VisualStateGroupsProperty, Value = returnValue });
-					return returnValue;
+					style.Setters.Add(new Setter() { Property = VisualStateManager.VisualStateGroupsProperty, Value = visualStateGroupList });
 				}
 				else
 				{
-					var returnValue = new VisualStateGroupList(true) { VisualElement = (VisualElement)bindable };
-					returnValue.Add(visualStateGroup);
-					return returnValue;
+					visualStateGroupList = new VisualStateGroupList(true) { VisualElement = (VisualElement)bindable };
+					visualStateGroupList.Add(visualStateGroup);
 				}
+
+				return visualStateGroupList;
 			}
-#endif
+#else
 			return null;
+#endif
 		}
 
 
