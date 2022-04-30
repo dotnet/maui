@@ -1,6 +1,9 @@
 #nullable enable
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Platform
 {
@@ -33,6 +36,12 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateBackground(this Panel platformControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			platformControl.UpdateProperty(Panel.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
 
+		public static async Task UpdateBackgroundImageSourceAsync(this Panel platformView, IViewBackgroundImagePart viewBackgroundImagePart, IImageSourceServiceProvider? provider)	
+			=> await platformView.UpdateBackgroundImageAsync(viewBackgroundImagePart, provider);
+
+		public static async Task UpdateBackgroundImageSourceAsync(this Control platformView, IViewBackgroundImagePart viewBackgroundImagePart, IImageSourceServiceProvider? provider)
+			=> await platformView.UpdateBackgroundImageAsync(viewBackgroundImagePart, provider);
+
 		public static void UpdateForegroundColor(this Control platformControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			platformControl.Foreground = color?.ToPlatform() ?? defaultBrush ?? platformControl.Foreground;
 
@@ -51,5 +60,37 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this Control nativeControl, ITextStyle text) =>
 			nativeControl.CharacterSpacing = text.CharacterSpacing.ToEm();
+		
+		internal static async Task UpdateBackgroundImageAsync(this FrameworkElement platformView, IViewBackgroundImagePart viewBackgroundImagePart, IImageSourceServiceProvider? provider)
+		{
+			if (platformView == null || provider == null)
+				return;
+
+			var backgroundImageSource = viewBackgroundImagePart.Source;
+
+			if (backgroundImageSource == null)
+			{
+				if (platformView is Panel panel)
+					panel.Background = null;
+
+				if (platformView is Control control)
+					control.Background = null;
+				return;
+			}
+
+			if (provider != null && backgroundImageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(backgroundImageSource);
+				var nativeBackgroundImageSource = await service.GetImageSourceAsync(backgroundImageSource);
+				
+				var background = new ImageBrush { ImageSource = nativeBackgroundImageSource?.Value };
+			
+				if (platformView is Panel panel)
+					panel.Background = background;
+
+				if (platformView is Control control)
+					control.Background = background;
+			}
+		}
 	}
 }

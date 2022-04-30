@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
 				[nameof(IView.InputTransparent)] = MapInputTransparent,
+				[nameof(IViewBackgroundImagePart.Source)] = MapBackgroundImageSource
 			};
 
 		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()

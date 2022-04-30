@@ -264,6 +264,26 @@ namespace Microsoft.Maui.Platform
 			platformView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
 		}
 
+		public static async Task UpdateBackgroundImageSourceAsync(this UIView platformView, IViewBackgroundImagePart viewBackgroundImagePart, IImageSourceServiceProvider? provider)
+		{
+			if (provider == null)
+				return;
+
+			var backgroundImageSource = viewBackgroundImagePart.Source;
+
+			if (backgroundImageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(backgroundImageSource);
+				var result = await service.GetImageAsync(backgroundImageSource);
+				var backgroundImage = result?.Value;
+
+				if (backgroundImage == null)
+					return;
+
+				platformView.BackgroundColor = UIColor.FromPatternImage(backgroundImage);
+			}
+		}
+
 		public static int IndexOfSubview(this UIView platformView, UIView subview)
 		{
 			if (platformView.Subviews.Length == 0)
