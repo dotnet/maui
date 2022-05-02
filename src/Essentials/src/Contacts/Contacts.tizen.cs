@@ -9,13 +9,13 @@ using TizenEmail = Tizen.Pims.Contacts.ContactsViews.Email;
 using TizenName = Tizen.Pims.Contacts.ContactsViews.Name;
 using TizenNumber = Tizen.Pims.Contacts.ContactsViews.Number;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public static partial class Contacts
+	class ContactsImplementation:IContacts
 	{
 		static ContactsManager manager = new ContactsManager();
 
-		static async Task<Contact> PlatformPickContactAsync()
+		public async Task<Contact> PickContactAsync()
 		{
 			Permissions.EnsureDeclared<Permissions.ContactsRead>();
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Essentials
 			return await tcs.Task;
 		}
 
-		static Task<IEnumerable<Contact>> PlatformGetAllAsync(CancellationToken cancellationToken)
+		public Task<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			var contactsList = manager.Database.GetAll(TizenContact.Uri, 0, 0);
 

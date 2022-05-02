@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls
 			return ((ICollection<KeyValuePair<string, object>>)_innerDictionary).Remove(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][4]/Docs" />
 		public void Add(string key, object value)
 		{
 			if (ContainsKey(key))
@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Controls
 			remove { ValuesChanged -= value; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][2]/Docs" />
 		public void Add(Style style)
 		{
 			if (string.IsNullOrEmpty(style.Class))
@@ -301,13 +301,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][1]/Docs" />
 		public void Add(ResourceDictionary mergedResourceDictionary)
 		{
 			MergedDictionaries.Add(mergedResourceDictionary);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][3]/Docs" />
 		public void Add(StyleSheets.StyleSheet styleSheet)
 		{
 			StyleSheets = StyleSheets ?? new List<StyleSheets.StyleSheet>(2);
@@ -361,9 +361,9 @@ namespace Microsoft.Maui.Controls
 
 				var lineInfo = (serviceProvider.GetService(typeof(Xaml.IXmlLineInfoProvider)) as Xaml.IXmlLineInfoProvider)?.XmlLineInfo;
 				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
-				var assembly = rootObjectType.GetTypeInfo().Assembly;
+				var assembly = rootObjectType.Assembly;
 
-				if (value.Contains(";assembly="))
+				if (value.IndexOf(";assembly=", StringComparison.Ordinal) != -1)
 				{
 					var parts = value.Split(new[] { ";assembly=" }, StringSplitOptions.RemoveEmptyEntries);
 					value = parts[0];

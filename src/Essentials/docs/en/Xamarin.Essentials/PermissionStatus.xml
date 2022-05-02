@@ -65,6 +65,23 @@
         <summary>The user has granted permission.</summary>
       </Docs>
     </Member>
+    <Member MemberName="Limited">
+      <MemberSignature Language="C#" Value="Limited" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.PermissionStatus Limited = int32(5)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.PermissionStatus.Limited" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.PermissionStatus</ReturnType>
+      </ReturnValue>
+      <MemberValue>5</MemberValue>
+      <Docs>
+        <summary>The user has limited permission.</summary>
+      </Docs>
+    </Member>
     <Member MemberName="Restricted">
       <MemberSignature Language="C#" Value="Restricted" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.PermissionStatus Restricted = int32(4)" />

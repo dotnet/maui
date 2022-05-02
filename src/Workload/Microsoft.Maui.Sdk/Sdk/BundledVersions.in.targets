@@ -14,7 +14,7 @@
 
   <!-- Framework references -->
   <ItemGroup>
-    <_MauiRuntimeIdentifiers Include="android;ios;maccatalyst;win" />
+    <_MauiRuntimeIdentifiers Include="android;ios;maccatalyst;win;tizen" />
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
         Include="Microsoft.Maui.Core"
@@ -68,6 +68,9 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" IsImplicitlyDefined="true" />
+  </ItemGroup>
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(TargetPlatformIdentifier)' == 'windows') ">
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="@MicrosoftWindowsSDKBuildToolsPackageVersion@" IsImplicitlyDefined="true" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

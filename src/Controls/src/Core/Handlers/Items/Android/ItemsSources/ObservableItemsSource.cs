@@ -4,15 +4,17 @@ using System.Collections.Specialized;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	internal class ObservableItemsSource : IItemsViewSource
+	internal class ObservableItemsSource : IItemsViewSource, IObservableItemsViewSource
 	{
 		readonly IEnumerable _itemsSource;
+		readonly BindableObject _container;
 		readonly ICollectionChangedNotifier _notifier;
 		bool _disposed;
 
-		public ObservableItemsSource(IEnumerable itemSource, ICollectionChangedNotifier notifier)
+		public ObservableItemsSource(IEnumerable itemSource, BindableObject container, ICollectionChangedNotifier notifier)
 		{
 			_itemsSource = itemSource as IList ?? itemSource as IEnumerable;
+			_container = container;
 			_notifier = notifier;
 
 			((INotifyCollectionChanged)itemSource).CollectionChanged += CollectionChanged;
@@ -25,6 +27,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public bool HasHeader { get; set; }
 		public bool HasFooter { get; set; }
+
+		public bool ObserveChanges { get; set; } = true;
 
 		public void Dispose()
 		{
@@ -89,15 +93,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			if (Device.IsInvokeRequired)
+			if (!ObserveChanges)
 			{
-				Device.BeginInvokeOnMainThread(() => CollectionChanged(args));
-			}
-			else
-			{
-				CollectionChanged(args);
+				return;
 			}
 
+			_container.Dispatcher.DispatchIfRequired(() => CollectionChanged(args));
 		}
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)

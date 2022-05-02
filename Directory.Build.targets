@@ -3,6 +3,7 @@
   <Import Condition="'$(SampleProject)' == 'true' or '$(CI)' != 'true' " Project="eng\Versions.dev.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true'" Project="eng\Git.Build.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true' " Project="eng\Versions.targets" />
+  <Import Condition="'$(SampleProject)' != 'true' and '$(IsTestProject)' != 'true'" Project="eng\BannedApis.targets" />
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\Microsoft.Extensions.targets" />
 
@@ -32,6 +33,10 @@
     <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>21.0</TargetPlatformMinVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsTizen)' == 'True'">
+    <SupportedOSPlatformVersion>6.5</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>6.5</TargetPlatformMinVersion>
+  </PropertyGroup>
 
   <!-- 
     NOTE: The Contains('-windows10') is a bit of a hack 
@@ -59,7 +64,7 @@
 
   <!-- Until we get a new enough dotnet -->
   <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
-    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.18362.18" TargetingPackVersion="10.0.18362.18" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.18362.22" TargetingPackVersion="10.0.18362.22" />
   </ItemGroup>
 
 </Project>

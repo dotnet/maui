@@ -11,68 +11,92 @@
     <views:BasePage.Content>
         <ScrollView>
             <VerticalStackLayout
-            Margin="12">
+                Margin="12">
                 <Label
-                Text="Default"
-                Style="{StaticResource Headline}"/>
+                    Text="Default"
+                    Style="{StaticResource Headline}"/>
                 <SearchBar/>
                 <Label
-                Text="Disabled"
-                Style="{StaticResource Headline}"/>
+                    Text="Disabled"
+                    Style="{StaticResource Headline}"/>
                 <SearchBar
-                IsEnabled="False"/>
+                    IsEnabled="False"/>
                 <Label
-                Text="TextColor"
-                Style="{StaticResource Headline}"/>
+                    Text="TextColor"
+                    Style="{StaticResource Headline}"/>
                 <SearchBar
-                TextColor="Green"/>
+                    TextColor="Green"/>
                 <Label
-                Text="With Placeholder"
-                Style="{StaticResource Headline}" />
+                    Text="With Placeholder"
+                    Style="{StaticResource Headline}" />
                 <SearchBar 
-                Placeholder="Placeholder"/>
+                    Placeholder="Placeholder"/>
                 <Label
-                Text="Using PlaceholderColor"
-                Style="{StaticResource Headline}" />
+                    Text="Using PlaceholderColor"
+                    Style="{StaticResource Headline}" />
                 <SearchBar 
-                PlaceholderColor="Pink"
-                Placeholder="Placeholder"/>
+                    PlaceholderColor="Pink"
+                    Placeholder="Placeholder"/>
                 <Label
-                Text="Fonts"
-                Style="{StaticResource Headline}"/>
+                    Text="Fonts"
+                    Style="{StaticResource Headline}"/>
                 <SearchBar
-                FontSize="24"
-                FontAttributes="Italic"/>
+                    FontSize="24"
+                    FontAttributes="Italic"/>
                 <Label
-                Text="SearchCommand"
-                Style="{StaticResource Headline}"/>
+                    Text="SearchCommand"
+                    Style="{StaticResource Headline}"/>
                 <SearchBar
-                SearchCommand="{Binding SearchCommand}"
-                SearchCommandParameter="SearchCommandParameter"/>
+                    SearchCommand="{Binding SearchCommand}"
+                    SearchCommandParameter="SearchCommandParameter"/>
                 <Label
-                Text="HorizontalTextAlignment"
-                Style="{StaticResource Headline}" />
+                    Text="HorizontalTextAlignment"
+                    Style="{StaticResource Headline}" />
                 <SearchBar 
-                HorizontalTextAlignment="End"
-                Text="end of the line"
-                />
+                    HorizontalTextAlignment="End"
+                    Placeholder="end of the line"
+                    Text="end of the line"/>
                 <Label
-                Text="VerticalTextAlignment"
-                Style="{StaticResource Headline}" />
+                    Text="VerticalTextAlignment"
+                    Style="{StaticResource Headline}" />
                 <SearchBar 
-                VerticalTextAlignment="Start"
-                Text="at the bottom"
-                HeightRequest="100"/>
+                    VerticalTextAlignment="End"
+                    Text="at the bottom"
+                    HeightRequest="100"/>
                 <Label
-                Text="IsTextPredictionEnabled=True"
-                Style="{StaticResource Headline}"/>
+                    Text="IsTextPredictionEnabled=True"
+                    Style="{StaticResource Headline}"/>
                 <SearchBar
-                IsTextPredictionEnabled="True"/>
+                    IsTextPredictionEnabled="True"/>
                 <Label
-                Text="IsTextPredictionEnabled=False"
-                Style="{StaticResource Headline}"/>
+                    Text="IsTextPredictionEnabled=False"
+                    Style="{StaticResource Headline}"/>
                 <SearchBar
-                IsTextPredictionEnabled="False"/>
+                    IsTextPredictionEnabled="False"/>
+                <Label
+                    Text="TextChanged"
+                    Style="{StaticResource Headline}"/>
+                <SearchBar
+                    TextChanged="OnSearchBarTextChanged"/>
+                <Label
+                    Text="Background color"
+                    Style="{StaticResource Headline}"/>
+                <SearchBar
+                    BackgroundColor="LightBlue"/>
+                <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <SearchBar 
+                    Text="Background">
+                    <SearchBar.Background>
+                        <LinearGradientBrush EndPoint="1,0">
+                            <GradientStop Color="Yellow"                              
+                                          Offset="0.1" />
+                            <GradientStop Color="Green"
+                                          Offset="1.0" />
+                        </LinearGradientBrush>
+                    </SearchBar.Background>
+                </SearchBar>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

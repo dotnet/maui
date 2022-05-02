@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using CoreLocation;
 using Foundation;
+using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
@@ -108,7 +109,9 @@ namespace Microsoft.Maui.Essentials
 
 				EnsureMainThread();
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 				return await RequestLocationAsync(true, lm => lm.RequestWhenInUseAuthorization());
+#pragma warning restore CA1416
 			}
 
 			internal static PermissionStatus GetLocationStatus(bool whenInUse)
@@ -116,6 +119,7 @@ namespace Microsoft.Maui.Essentials
 				if (!CLLocationManager.LocationServicesEnabled)
 					return PermissionStatus.Disabled;
 
+				System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
 				var status = CLLocationManager.Status;
 
 				return status switch
@@ -186,9 +190,9 @@ namespace Microsoft.Maui.Essentials
 						}
 
 						del.AuthorizationStatusChanged -= LocationAuthCallback;
-						tcs.TrySetResult(GetLocationStatus(whenInUse));
 						locationManager?.Dispose();
 						locationManager = null;
+						tcs.TrySetResult(GetLocationStatus(whenInUse));
 					}
 					catch (Exception ex)
 					{
@@ -239,6 +243,10 @@ namespace Microsoft.Maui.Essentials
 		}
 
 		public partial class Photos : BasePlatformPermission
+		{
+		}
+
+		public partial class PhotosAddOnly : BasePlatformPermission
 		{
 		}
 

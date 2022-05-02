@@ -366,7 +366,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59172.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)FlagTestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5886.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6260.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5766.cs" />
@@ -760,7 +759,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue1665.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1707.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1864.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Issue2104.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1908.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1672.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2394.cs" />
@@ -801,7 +799,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue3367.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3398.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3558.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Issue3541.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3840.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4561.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3913.cs" />
@@ -1262,7 +1259,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34912.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla32615.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla27350.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla28709.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla33578.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39378.xaml.cs">
       <DependentUpon>Bugzilla39378.xaml</DependentUpon>
@@ -1295,7 +1291,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla52700.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39407.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ButtonFastRendererTest.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DesktopSupportTestPage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla58779.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla51825.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla31688.cs" />

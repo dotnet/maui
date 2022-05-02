@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml.Automation.Peers;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
+using WNavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WWindow = Microsoft.UI.Xaml.Window;
 using Microsoft.Maui.Hosting;
@@ -13,17 +14,21 @@ using Microsoft.Maui.Platform;
 using System.Threading.Tasks;
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
+using WPoint = Windows.Foundation.Point;
+using WAppBarButton = Microsoft.UI.Xaml.Controls.AppBarButton;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase
 	{
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			((AccessibilityView)((DependencyObject)viewHandler.NativeView).GetValue(NativeAutomationProperties.AccessibilityViewProperty)) 
+			((AccessibilityView)((DependencyObject)viewHandler.PlatformView).GetValue(NativeAutomationProperties.AccessibilityViewProperty))
 			== AccessibilityView.Content;
 
-
-		Task RunWindowTest(IWindow window, Func<WindowHandler, Task> action)
+		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)
+			where THandler : class, IElementHandler
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
@@ -35,14 +40,27 @@ namespace Microsoft.Maui.DeviceTests
 					var scopedContext = new MauiContext(MauiContext.Services);
 					scopedContext.AddWeakSpecific(MauiProgram.CurrentWindow);
 					var mauiContext = scopedContext.MakeScoped(true);
-
-					// This will swap out the root windows panel with the panel we are going to be testing with
-					newWindowHandler = window.ToHandler(mauiContext);
-					var content = (WPanel)MauiProgram.CurrentWindow.Content;
 					navigationRootManager = mauiContext.GetNavigationRootManager();
-					await content.LoadedAsync();
+
+					MauiContext
+						.Services
+						.GetRequiredService<WWindow>()
+						.SetWindowHandler(window, mauiContext);
+
+					newWindowHandler = window.Handler;
+					var content = window.Content.Handler.ToPlatform();
+					await content.OnLoadedAsync();
 					await Task.Delay(10);
-					await action((WindowHandler)newWindowHandler);
+
+					if (typeof(THandler).IsAssignableFrom(newWindowHandler.GetType()))
+						await action((THandler)newWindowHandler);
+					else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
+						await action((THandler)window.Content.Handler);
+					else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
+						await action((THandler)cp.Content.Handler);
+					else
+						throw new Exception($"I can't work with {typeof(THandler)}");
+
 				}
 				finally
 				{
@@ -53,17 +71,56 @@ namespace Microsoft.Maui.DeviceTests
 						newWindowHandler.DisconnectHandler();
 
 					// Set the root window panel back to the testing panel
-					if (testingRootPanel != null)
+					if (testingRootPanel != null && MauiProgram.CurrentWindow.Content != testingRootPanel)
 					{
 						MauiProgram.CurrentWindow.Content = testingRootPanel;
-						await testingRootPanel.LoadedAsync();
+						await testingRootPanel.OnLoadedAsync();
 						await Task.Delay(10);
 					}
+
+					// reset the appbar title to our test runner
+					MauiProgram
+						.CurrentWindow
+						.GetWindow()
+						.Handler
+						.MauiContext
+						.GetNavigationRootManager()
+						.UpdateAppTitleBar(true);
 				}
 			});
 		}
 
+		protected IEnumerable<WNavigationViewItem> GetNavigationViewItems(MauiNavigationView navigationView)
+		{
+			if (navigationView.MenuItems?.Count > 0)
+			{
+				foreach (var menuItem in navigationView.MenuItems)
+				{
+					if (menuItem is WNavigationViewItem item)
+						yield return item;
+				}
+			}
+			else if (navigationView.MenuItemsSource != null && navigationView.TopNavMenuItemsHost != null)
+			{
+				var itemCount = navigationView.TopNavMenuItemsHost.ItemsSourceView.Count;
+				for (int i = 0; i < itemCount; i++)
+				{
+					UI.Xaml.UIElement uIElement = navigationView.TopNavMenuItemsHost.TryGetElement(i);
 
+					if (uIElement is WNavigationViewItem item)
+						yield return item;
+				}
+			}
+		}
+
+		protected double DistanceYFromTheBottomOfTheAppTitleBar(IElement element)
+		{
+			var handler = element.Handler;
+			var rootManager = handler.MauiContext.GetNavigationRootManager();
+			var position = element.GetLocationRelativeTo(rootManager.AppTitleBar);
+			var distance = rootManager.AppTitleBar.ActualHeight - position.Value.Y;
+			return distance;
+		}
 
 		MauiNavigationView GetMauiNavigationView(NavigationRootManager navigationRootManager)
 		{
@@ -72,52 +129,58 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected MauiNavigationView GetMauiNavigationView(IMauiContext mauiContext)
 		{
-			return GetMauiNavigationView(mauiContext.GetNavigationRootManager());			
+			return GetMauiNavigationView(mauiContext.GetNavigationRootManager());
 		}
 
-		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
-			where THandler : class, IElementHandler
+		protected bool IsBackButtonVisible(IElementHandler handler) =>
+			IsBackButtonVisible(handler.MauiContext);
+
+		bool IsBackButtonVisible(IMauiContext mauiContext)
 		{
-			return InvokeOnMainThreadAsync(async () =>
+			var navView = GetMauiNavigationView(mauiContext);
+			return navView.IsBackButtonVisible == UI.Xaml.Controls.NavigationViewBackButtonVisible.Visible;
+		}
+
+		public bool IsNavigationBarVisible(IElementHandler handler) =>
+			IsNavigationBarVisible(handler.MauiContext);
+
+		public bool IsNavigationBarVisible(IMauiContext mauiContext)
+		{
+			var navView = GetMauiNavigationView(mauiContext);
+			var header = navView?.Header as WFrameworkElement;
+			return header?.Visibility == UI.Xaml.Visibility.Visible;
+		}
+
+		protected MauiToolbar GetPlatformToolbar(IElementHandler handler)
+		{
+			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
+			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
+			return windowHeader;
+		}
+
+		public bool ToolbarItemsMatch(
+			IElementHandler handler,
+			params ToolbarItem[] toolbarItems)
+		{
+			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
+			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
+			Assert.NotNull(windowHeader?.CommandBar?.PrimaryCommands);
+
+			Assert.Equal(toolbarItems.Length, windowHeader.CommandBar.PrimaryCommands.Count);
+			for (var i = 0; i < toolbarItems.Length; i++)
 			{
-				if (view is IWindow window)
-				{
-					await RunWindowTest(window, (handler) => action(handler as THandler));
-					return;
-				}
+				ToolbarItem toolbarItem = toolbarItems[i];
+				var primaryCommand = ((WAppBarButton)windowHeader.CommandBar.PrimaryCommands[i]);
+				Assert.Equal(toolbarItem, primaryCommand.DataContext);
+			}
 
-				WFrameworkElement frameworkElement = null;
-				var content = (WPanel)MauiContext.Services.GetService<WWindow>().Content;
-				THandler handler = null;
-				NavigationRootManager navigationRootManager = null;
-				try
-				{
-					var mauiContext = MauiContext.MakeScoped(true);
-					navigationRootManager = mauiContext
-						.GetNavigationRootManager();
-
-					navigationRootManager.Connect((IView)view);
-
-					handler = (THandler)view.Handler;
-					frameworkElement = (WFrameworkElement)handler.NativeView;
-					content.Children.Add(navigationRootManager.RootView);
-					await frameworkElement.LoadedAsync();
-					await Task.Delay(10);
-					await action(handler);
-				}
-				finally
-				{
-					handler?.DisconnectHandler();
-					navigationRootManager?.Disconnect();
-
-					if (frameworkElement != null)
-					{
-						content.Children.Remove(navigationRootManager.RootView);
-						await frameworkElement.UnloadedAsync();
-						await Task.Delay(10);
-					}
-				}
-			});
+			return true;
+		}
+    
+		protected object GetTitleView(IElementHandler handler)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			return toolbar.TitleView;
 		}
 	}
 }

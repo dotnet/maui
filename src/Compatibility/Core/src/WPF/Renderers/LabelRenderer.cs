@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			if (label == null)
 				return;
 
-			Control.TextAlignment = label.HorizontalTextAlignment.ToNativeTextAlignment();
+			Control.TextAlignment = label.HorizontalTextAlignment.ToPlatformTextAlignment();
 		}
 
 		void UpdateVerticalTextAlign()
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			if (label == null)
 				return;
 
-			Control.VerticalAlignment = label.VerticalTextAlignment.ToNativeVerticalAlignment();
+			Control.VerticalAlignment = label.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
 		void UpdateColor()

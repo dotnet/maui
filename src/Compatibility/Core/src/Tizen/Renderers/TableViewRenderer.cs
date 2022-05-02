@@ -1,9 +1,12 @@
 using System;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class TableViewRenderer : ViewRenderer<TableView, Native.ListView>
 	{
 		internal static BindableProperty PresentationProperty = BindableProperty.Create("Presentation", typeof(View), typeof(TableSectionBase), null, BindingMode.OneWay, null, null, null, null, null as BindableProperty.CreateDefaultValueDelegate);
@@ -38,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual Native.ListView CreateNativeControl(EvasObject parent)
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				return new Native.Watch.WatchTableView(parent, Forms.CircleSurface);
 			}

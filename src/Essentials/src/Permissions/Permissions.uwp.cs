@@ -11,18 +11,18 @@ using Windows.ApplicationModel.Contacts;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Geolocation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
 		public static bool IsCapabilityDeclared(string capabilityName)
 		{
-			var docPath = Path.Combine(Package.Current.InstalledLocation.Path, Platform.AppManifestFilename);
+			var docPath = Path.Combine(Package.Current.InstalledLocation.Path, PlatformUtils.AppManifestFilename);
 			var doc = XDocument.Load(docPath, LoadOptions.None);
 			var reader = doc.CreateReader();
 			var namespaceManager = new XmlNamespaceManager(reader.NameTable);
-			namespaceManager.AddNamespace("x", Platform.AppManifestXmlns);
-			namespaceManager.AddNamespace("uap", Platform.AppManifestUapXmlns);
+			namespaceManager.AddNamespace("x", PlatformUtils.AppManifestXmlns);
+			namespaceManager.AddNamespace("uap", PlatformUtils.AppManifestUapXmlns);
 
 			// If the manifest doesn't contain a capability we need, throw
 			return (doc.Root.XPathSelectElements($"//x:DeviceCapability[@Name='{capabilityName}']", namespaceManager)?.Any() ?? false) ||

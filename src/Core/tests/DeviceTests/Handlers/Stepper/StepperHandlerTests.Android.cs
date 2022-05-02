@@ -9,14 +9,14 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class StepperHandlerTests
 	{
 		LinearLayout GetNativeStepper(StepperHandler stepperHandler) =>
-			stepperHandler.NativeView;
+			stepperHandler.PlatformView;
 
-		double GetNativeValue(StepperHandler stepperHandler)
+		double GetPlatformValue(StepperHandler stepperHandler)
 		{
-			var nativeView = GetNativeStepper(stepperHandler);
-			var nativeButton = nativeView.GetChildAt(0);
+			var platformView = GetNativeStepper(stepperHandler);
+			var platformButton = platformView.GetChildAt(0);
 
-			if (nativeButton?.Tag is StepperHandlerHolder handlerHolder)
+			if (platformButton?.Tag is StepperHandlerHolder handlerHolder)
 				return handlerHolder.StepperHandler.VirtualView.Value;
 
 			return 0;
@@ -24,10 +24,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetNativeMaximum(StepperHandler stepperHandler)
 		{
-			var nativeView = GetNativeStepper(stepperHandler);
-			var nativeButton = nativeView.GetChildAt(0);
+			var platformView = GetNativeStepper(stepperHandler);
+			var platformButton = platformView.GetChildAt(0);
 
-			if (nativeButton?.Tag is StepperHandlerHolder handlerHolder)
+			if (platformButton?.Tag is StepperHandlerHolder handlerHolder)
 				return handlerHolder.StepperHandler.VirtualView.Maximum;
 
 			return 0;
@@ -35,10 +35,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetNativeMinimum(StepperHandler stepperHandler)
 		{
-			var nativeView = GetNativeStepper(stepperHandler);
-			var nativeButton = nativeView.GetChildAt(0);
+			var platformView = GetNativeStepper(stepperHandler);
+			var platformButton = platformView.GetChildAt(0);
 
-			if (nativeButton?.Tag is StepperHandlerHolder handlerHolder)
+			if (platformButton?.Tag is StepperHandlerHolder handlerHolder)
 				return handlerHolder.StepperHandler.VirtualView.Minimum;
 
 			return 0;
@@ -48,9 +48,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var nativeStepper = GetNativeStepper(CreateHandler(stepper));
+				var platformStepper = GetNativeStepper(CreateHandler(stepper));
 				action?.Invoke();
-				nativeStepper.AssertContainsColor(color);
+				platformStepper.AssertContainsColor(color);
 			});
 		}
 	}

@@ -1,20 +1,19 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class AppActions
+	partial class AppActionsImplementation : IAppActions, IPlatformAppActions
 	{
-		internal const string Type = "XE_APP_ACTION_TYPE";
+		public const string ShortcutType = "XE_APP_ACTION_TYPE";
 
-		internal static bool PlatformIsSupported
-			=> Platform.HasOSVersion(9, 0);
+		public bool IsSupported => true;
 
-		static Task<IEnumerable<AppAction>> PlatformGetAsync()
+		public Task<IEnumerable<AppAction>> GetAsync()
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
@@ -22,7 +21,7 @@ namespace Microsoft.Maui.Essentials
 			return Task.FromResult(UIApplication.SharedApplication.ShortcutItems.Select(s => s.ToAppAction()));
 		}
 
-		static Task PlatformSetAsync(IEnumerable<AppAction> actions)
+		public Task SetAsync(IEnumerable<AppAction> actions)
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
@@ -32,6 +31,21 @@ namespace Microsoft.Maui.Essentials
 			return Task.CompletedTask;
 		}
 
+		public event EventHandler<AppActionEventArgs> AppActionActivated;
+
+		public void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
+		{
+			if (shortcutItem.Type == ShortcutType)
+			{
+				var appAction = shortcutItem.ToAppAction();
+
+				AppActionActivated?.Invoke(null, new AppActionEventArgs(appAction));
+			}
+		}
+	}
+
+	static partial class AppActionsExtensions
+	{
 		internal static AppAction ToAppAction(this UIApplicationShortcutItem shortcutItem)
 		{
 			string id = null;
@@ -45,7 +59,7 @@ namespace Microsoft.Maui.Essentials
 			return new AppAction(id, shortcutItem.LocalizedTitle, shortcutItem.LocalizedSubtitle, icon);
 		}
 
-		static UIApplicationShortcutItem ToShortcutItem(this AppAction action)
+		internal static UIApplicationShortcutItem ToShortcutItem(this AppAction action)
 		{
 			var keys = new List<NSString>();
 			var values = new List<NSObject>();
@@ -62,7 +76,7 @@ namespace Microsoft.Maui.Essentials
 			}
 
 			return new UIApplicationShortcutItem(
-				AppActions.Type,
+				AppActionsImplementation.ShortcutType,
 				action.Title,
 				action.Subtitle,
 				action.Icon != null ? UIApplicationShortcutIcon.FromTemplateImageName(action.Icon) : null,

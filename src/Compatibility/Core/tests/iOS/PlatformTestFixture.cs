@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using ObjCRuntime;
@@ -62,12 +63,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 		protected IVisualElementRenderer GetRenderer(VisualElement element)
 		{
+#pragma warning disable CS0612 // Type or member is obsolete
 			return Platform.CreateRenderer(element);
+#pragma warning restore CS0612 // Type or member is obsolete
 		}
 
 		protected async Task<IVisualElementRenderer> GetRendererAsync(VisualElement element)
 		{
-			return await Device.InvokeOnMainThreadAsync<IVisualElementRenderer>(() => Platform.CreateRenderer(element));
+#pragma warning disable CS0612 // Type or member is obsolete
+			return await element.Dispatcher.DispatchAsync(() => Platform.CreateRenderer(element));
+#pragma warning restore CS0612 // Type or member is obsolete
 		}
 
 		protected UIView GetNativeControl(VisualElement visualElement)
@@ -80,13 +85,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UILabel GetNativeControl(Label label)
 		{
 			var renderer = GetRenderer(label);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as LabelRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
 		protected async Task<TProperty> GetControlProperty<TProperty>(Label label, Func<UILabel, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await label.Dispatcher.DispatchAsync(() =>
 			{
 				using (var uiLabel = GetNativeControl(label))
 				{
@@ -97,7 +106,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 		protected async Task<TProperty> GetControlProperty<TProperty>(VisualElement view, Func<UIView, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await view.Dispatcher.DispatchAsync(() =>
 			{
 				using (var renderer = GetNativeControl(view))
 				{
@@ -109,13 +118,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UITextField GetNativeControl(Entry entry)
 		{
 			var renderer = GetRenderer(entry);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as EntryRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
 		protected async Task<TProperty> GetControlProperty<TProperty>(Entry entry, Func<UITextField, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await entry.Dispatcher.DispatchAsync(() =>
 			{
 				using (var uiTextField = GetNativeControl(entry))
 				{
@@ -127,13 +140,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UITextView GetNativeControl(Editor editor)
 		{
 			var renderer = GetRenderer(editor);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as EditorRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
 		protected async Task<TProperty> GetControlProperty<TProperty>(Editor editor, Func<UITextView, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await editor.Dispatcher.DispatchAsync(() =>
 			{
 				using (var uiTextView = GetNativeControl(editor))
 				{
@@ -145,13 +162,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UIButton GetNativeControl(Button button)
 		{
 			var renderer = GetRenderer(button);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as ButtonRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
 		protected async Task<TProperty> GetControlProperty<TProperty>(Button button, Func<UIButton, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await button.Dispatcher.DispatchAsync(() =>
 			{
 				using (var uiButton = GetNativeControl(button))
 				{
@@ -163,13 +184,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UIButton GetNativeControl(ImageButton button)
 		{
 			var renderer = GetRenderer(button);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as ImageButtonRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
 		protected async Task<TProperty> GetControlProperty<TProperty>(ImageButton button, Func<UIButton, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await button.Dispatcher.DispatchAsync(() =>
 			{
 				using (var uiButton = GetNativeControl(button))
 				{
@@ -181,20 +206,28 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UITextField GetNativeControl(DatePicker datePicker)
 		{
 			var renderer = GetRenderer(datePicker);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as DatePickerRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
 		protected UIDatePicker GetPickerControl(DatePicker datePicker)
 		{
 			var renderer = GetRenderer(datePicker);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as DatePickerRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Picker;
 		}
 
 		protected async Task<TProperty> GetControlProperty<TProperty>(DatePicker datePicker, Func<UITextField, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await datePicker.Dispatcher.DispatchAsync(() =>
 			{
 				using (var uiTextField = GetNativeControl(datePicker))
 				{
@@ -205,7 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 		protected async Task<TProperty> GetControlProperty<TProperty>(DatePicker datePicker, Func<UIDatePicker, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await datePicker.Dispatcher.DispatchAsync(() =>
 			{
 				using (var uiDatePicker = GetPickerControl(datePicker))
 				{
@@ -217,20 +250,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		protected UITextField GetNativeControl(TimePicker timePicker)
 		{
 			var renderer = GetRenderer(timePicker);
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as TimePickerRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
 			return viewRenderer.Control;
 		}
 
 		protected UIDatePicker GetPickerControl(TimePicker timePicker)
 		{
 			var renderer = GetRenderer(timePicker);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewRenderer = renderer.NativeView as TimePickerRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			return viewRenderer.Picker;
 		}
 
 		protected async Task<TProperty> GetControlProperty<TProperty>(TimePicker timePicker, Func<UITextField, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await timePicker.Dispatcher.DispatchAsync(() =>
 			{
 				using (var uiTextField = GetNativeControl(timePicker))
 				{
@@ -241,7 +280,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 		protected async Task<TProperty> GetControlProperty<TProperty>(TimePicker timePicker, Func<UIDatePicker, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await timePicker.Dispatcher.DispatchAsync(() =>
 			{
 				using (var uiDatePicker = GetPickerControl(timePicker))
 				{
@@ -267,7 +306,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		async Task<TProperty> GetRendererProperty<TProperty>(View view,
 			Func<IVisualElementRenderer, TProperty> getProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await view.Dispatcher.DispatchAsync(() =>
 			{
 				using (var renderer = GetRenderer(view))
 				{
@@ -279,7 +318,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		async Task<TProperty> GetRendererPropertyWithLayout<TProperty>(View view,
 			Func<IVisualElementRenderer, TProperty> getRendererProperty)
 		{
-			return await Device.InvokeOnMainThreadAsync(() =>
+			return await view.Dispatcher.DispatchAsync(() =>
 			{
 
 				var page = new ContentPage() { Content = view };
@@ -287,7 +326,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				{
 					using (var renderer = GetRenderer(view))
 					{
-						page.Layout(new Rectangle(0, 0, 200, 200));
+						page.Layout(new Rect(0, 0, 200, 200));
 						return getRendererProperty(renderer);
 					}
 				}

@@ -21,14 +21,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected TAdapter ItemsViewAdapter;
 
 		protected TItemsView ItemsView;
-		protected IItemsLayout ItemsLayout { get; private set; }
+		public IItemsLayout ItemsLayout { get; private set; }
 
 		Func<IItemsLayout> GetItemsLayout;
-		Func<TAdapter> CreateAdapter;
+		protected Func<TAdapter> CreateAdapter;
 
 		SnapManager _snapManager;
 		ScrollHelper _scrollHelper;
-		RecyclerViewScrollListener<TItemsView, TItemsViewSource> _recyclerViewScrollListener;
+		RecyclerView.OnScrollListener _recyclerViewScrollListener;
 
 		EmptyViewAdapter _emptyViewAdapter;
 		readonly DataChangeObserver _emptyCollectionObserver;
@@ -38,6 +38,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		ScrollBarVisibility _defaultVerticalScrollVisibility = ScrollBarVisibility.Default;
 
 		ItemDecoration _itemDecoration;
+
+		ItemTouchHelper _itemTouchHelper;
+		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
 
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(context)
 		{
@@ -51,7 +54,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			HorizontalScrollBarEnabled = false;
 		}
 
-		public void TearDownOldElement(TItemsView oldElement)
+		public virtual void TearDownOldElement(TItemsView oldElement)
 		{
 			// Stop listening for layout property changes
 			if (ItemsLayout != null)
@@ -87,9 +90,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				RemoveItemDecoration(_itemDecoration);
 			}
+
+			if (_itemTouchHelper != null)
+			{
+				_itemTouchHelper.AttachToRecyclerView(null);
+				_itemTouchHelper.Dispose();
+				_itemTouchHelper = null;
+			}
+
+			if (_itemTouchHelperCallback != null)
+			{
+				_itemTouchHelperCallback.Dispose();
+				_itemTouchHelperCallback = null;
+			}
 		}
 
-		public void SetUpNewElement(TItemsView newElement)
+		public virtual void SetUpNewElement(TItemsView newElement)
 		{
 			if (newElement == null)
 			{
@@ -98,6 +114,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			ItemsView = newElement;
+
+			UpdateItemsSource();
+
+			UpdateLayoutManager();
 
 			UpdateBackgroundColor();
 			UpdateBackground();
@@ -221,7 +241,42 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			UpdateEmptyView();
 
+			_itemTouchHelperCallback?.SetAdapter(ItemsViewAdapter as IItemTouchHelperAdapter);
+
 			oldItemViewAdapter?.Dispose();
+		}
+
+		public virtual void UpdateCanReorderItems()
+		{
+			var canReorderItems = (ItemsView as ReorderableItemsView)?.CanReorderItems == true;
+
+			if (canReorderItems)
+			{
+				if (_itemTouchHelperCallback == null)
+				{
+					_itemTouchHelperCallback = new SimpleItemTouchHelperCallback();
+				}
+				if (_itemTouchHelper == null)
+				{
+					_itemTouchHelper = new ItemTouchHelper(_itemTouchHelperCallback);
+					_itemTouchHelper.AttachToRecyclerView(this);
+				}
+				_itemTouchHelperCallback.SetAdapter(ItemsViewAdapter as IItemTouchHelperAdapter);
+			}
+			else
+			{
+				if (_itemTouchHelper != null)
+				{
+					_itemTouchHelper.AttachToRecyclerView(null);
+					_itemTouchHelper.Dispose();
+					_itemTouchHelper = null;
+				}
+				if (_itemTouchHelperCallback != null)
+				{
+					_itemTouchHelperCallback.Dispose();
+					_itemTouchHelperCallback = null;
+				}
+			}
 		}
 
 		public virtual void UpdateLayoutManager()
@@ -241,9 +296,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateItemSpacing();
 		}
 
+		protected virtual RecyclerViewScrollListener<TItemsView, TItemsViewSource> CreateScrollListener() => new(ItemsView, ItemsViewAdapter);
 
-		protected virtual RecyclerViewScrollListener<TItemsView, TItemsViewSource> CreateScrollListener()
-			=> new(ItemsView, ItemsViewAdapter);
 
 		protected virtual void UpdateSnapBehavior()
 		{
@@ -270,7 +324,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (backgroundColor == null)
 				return;
 
-			SetBackgroundColor(backgroundColor.ToNative());
+			SetBackgroundColor(backgroundColor.ToPlatform());
 		}
 
 		protected virtual void UpdateBackground(Brush brush = null)
@@ -324,7 +378,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		protected virtual void ScrollTo(ScrollToRequestEventArgs args)
+		public virtual void ScrollTo(ScrollToRequestEventArgs args)
 		{
 			if (ItemsView == null)
 				return;
@@ -385,11 +439,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_itemDecoration = CreateSpacingDecoration(ItemsLayout);
 			AddItemDecoration(_itemDecoration);
+
+			if (_itemDecoration is SpacingItemDecoration spacingDecoration)
+			{
+				// SpacingItemDecoration applies spacing to all items & all 4 sides of the items.
+				// We need to adjust the padding on the RecyclerView so this spacing isn't visible around the outer edge of our control.
+				// Horizontal & vertical spacing should only exist between items. 
+				var horizontalPadding = -spacingDecoration.HorizontalOffset;
+				var verticalPadding = -spacingDecoration.VerticalOffset;
+				SetPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+			}
 		}
 
 		protected virtual ItemDecoration CreateSpacingDecoration(IItemsLayout itemsLayout)
 		{
-			return new SpacingItemDecoration(itemsLayout);
+			return new SpacingItemDecoration(Context, itemsLayout);
 		}
 
 		protected virtual void ReconcileFlowDirectionAndLayout()

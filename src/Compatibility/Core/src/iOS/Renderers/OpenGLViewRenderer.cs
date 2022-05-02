@@ -1,6 +1,7 @@
 #if !(MACCATALYST || MACOS)
 using System;
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using CoreAnimation;
 using Foundation;
 using GLKit;
@@ -10,6 +11,9 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete]
+	[UnsupportedOSPlatform("ios12.0")]
+	[UnsupportedOSPlatform("tvos12.0")]
 	internal class OpenGLViewRenderer : ViewRenderer<OpenGLView, GLKView>
 	{
 		CADisplayLink _displayLink;
@@ -94,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_displayLink = null;
 				}
 			});
-			_displayLink.AddToRunLoop(NSRunLoop.Current, NSRunLoop.NSRunLoopCommonModes);
+			_displayLink.AddToRunLoop(NSRunLoop.Current, NSRunLoopMode.Common);
 		}
 
 		class Delegate : GLKViewDelegate, IGLKViewDelegate

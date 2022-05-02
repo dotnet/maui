@@ -12,6 +12,28 @@
                 Style="{StaticResource Headline}"/>
             <DatePicker/>
             <Label
+                Text="BackgroundColor"
+                Style="{StaticResource Headline}"/>
+            <DatePicker
+                BackgroundColor="Blue" />
+            <Label
+                Text="Background"
+                Style="{StaticResource Headline}" />
+            <DatePicker>
+                <DatePicker.Background>
+                    <LinearGradientBrush EndPoint="1,0">
+                        <GradientStop Color="Yellow"   
+                                      Offset="0.1" />
+                        <GradientStop Color="Green"
+                                      Offset="1.0" />
+                    </LinearGradientBrush>
+                </DatePicker.Background>
+            </DatePicker>
+            <Label
+                Text="Default with date"
+                Style="{StaticResource Headline}"/>
+            <DatePicker Date="06/21/2018"/>
+            <Label
                 Text="Disabled"
                 Style="{StaticResource Headline}"/>
             <DatePicker
@@ -20,6 +42,11 @@
                 Text="TextColor"
                 Style="{StaticResource Headline}"/>
             <DatePicker TextColor="Red"/>
+            <Label      
+                Text="Format"
+                Style="{StaticResource Headline}"/>
+            <DatePicker
+                Format="yyyy/MM/dd" />    
         </VerticalStackLayout>
     </views:BasePage.Content>               
 </views:BasePage>

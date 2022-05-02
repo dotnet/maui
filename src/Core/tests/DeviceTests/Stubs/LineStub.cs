@@ -1,8 +1,6 @@
-﻿using Microsoft.Maui.Graphics;
-
-namespace Microsoft.Maui.DeviceTests.Stubs
+﻿namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class LineStub : StubBase, IShape
+	public class LineStub : ShapeViewStub, IShapeView
 	{
 		public LineStub()
 		{
@@ -10,6 +8,19 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public LineStub(double x1, double y1, double x2, double y2)
+		{
+			Shape = new LineShapeStub(x1, y1, x2, y2);
+		}
+	}
+
+	public class LineShapeStub : StubBase, IShape
+	{
+		public LineShapeStub()
+		{
+
+		}
+
+		public LineShapeStub(double x1, double y1, double x2, double y2)
 		{
 			X1 = x1;
 			Y1 = y1;
@@ -25,7 +36,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public double Y2 { get; set; }
 
-		public PathF PathForBounds(Rectangle rect)
+		public PathF PathForBounds(Rect rect)
 		{
 			var path = new PathF();
 

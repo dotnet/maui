@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 			if (scrollBar == null)
 				return;
 
-			var nativeScroll = scrollBar.ToNative();
+			var nativeScroll = scrollBar.ToPlatform();
 
 			if (nativeScroll != null && nativeScroll is ScrollViewer viewer)
 			{
@@ -43,8 +43,7 @@ namespace Microsoft.Maui
 		{
 			base.HandleUIChange();
 
-			if (WindowElements.Count > 0)
-				RemoveAdorners();
+			Invalidate();
 		}
 
 		void OnViewChanging(object? sender, ScrollViewerViewChangingEventArgs e)

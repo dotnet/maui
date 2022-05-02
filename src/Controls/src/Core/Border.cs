@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -141,16 +142,16 @@ namespace Microsoft.Maui.Controls
 
 		IView? IContentView.PresentedContent => Content;
 
-		public Size CrossPlatformArrange(Graphics.Rectangle bounds)
+		public Size CrossPlatformArrange(Graphics.Rect bounds)
 		{
-			bounds = bounds.Inset(StrokeThickness / 2);
+			bounds = bounds.Inset(StrokeThickness);
 			this.ArrangeContent(bounds);
 			return bounds.Size;
 		}
 
 		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			var inset = Padding + (StrokeThickness / 2);
+			var inset = Padding + StrokeThickness;
 			return this.MeasureContent(inset, widthConstraint, heightConstraint);
 		}
 
@@ -159,9 +160,19 @@ namespace Microsoft.Maui.Controls
 			if (bindable is Border border)
 			{
 				if (oldValue is Element oldElement)
-					border.InternalChildren.Remove(oldElement);
+				{
+					int index = border.InternalChildren.IndexOf(oldElement);
+					if (border.InternalChildren.Remove(oldElement))
+					{
+						border.OnChildRemoved(oldElement, index);
+					}
+				}
+
 				if (newValue is Element newElement)
+				{
 					border.InternalChildren.Add(newElement);
+					border.OnChildAdded(newElement);
+				}
 			}
 
 			((IBorderView)bindable).InvalidateMeasure();
@@ -180,6 +191,16 @@ namespace Microsoft.Maui.Controls
 		public Thickness PaddingDefaultValueCreator()
 		{
 			return Thickness.Zero;
+		}
+
+		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == HeightProperty.PropertyName ||
+				propertyName == WidthProperty.PropertyName ||
+				propertyName == StrokeShapeProperty.PropertyName)
+				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
 		}
 	}
 }

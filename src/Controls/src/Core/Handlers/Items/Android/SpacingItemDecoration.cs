@@ -1,4 +1,5 @@
 ﻿using System;
+using Android.Content;
 using AndroidX.RecyclerView.Widget;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
@@ -7,109 +8,63 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class SpacingItemDecoration : RecyclerView.ItemDecoration
 	{
-		readonly ItemsLayoutOrientation _orientation;
-		readonly double _verticalSpacing;
-		int _adjustedVerticalSpacing = -1;
-		readonly double _horizontalSpacing;
-		int _adjustedHorizontalSpacing = -1;
-		readonly int _spanCount;
+		public int HorizontalOffset { get; }
 
-		public SpacingItemDecoration(IItemsLayout itemsLayout)
+		public int VerticalOffset { get; }
+
+		public SpacingItemDecoration(Context context, IItemsLayout itemsLayout)
 		{
+			// The original "SpacingItemDecoration" applied spacing based on an item's current span index.
+			// It did not apply any spacing to items currently at span index 0 which can create an issue for us with grid layouts.
+			// If one of those items at span index 0 were to move to another column, it would result in misaligned items.
+			// It's better to just apply equal spacing to all items so we can avoid that issue (even the ones at span index 0).
+			// The reason they didn't do this originally, I suspect, is that they didn't want spacing around the edge of the RecyclerView.
+			// That however can be corrected by adjusting the padding on the RecyclerView which we are now doing.
+
 			if (itemsLayout == null)
 			{
 				throw new ArgumentNullException(nameof(itemsLayout));
 			}
 
+			double horizontalOffset;
+			double verticalOffset;
+
 			switch (itemsLayout)
 			{
 				case GridItemsLayout gridItemsLayout:
-					_orientation = gridItemsLayout.Orientation;
-					_horizontalSpacing = gridItemsLayout.HorizontalItemSpacing;
-					_verticalSpacing = gridItemsLayout.VerticalItemSpacing;
-					_spanCount = gridItemsLayout.Span;
+					horizontalOffset = gridItemsLayout.HorizontalItemSpacing / 2.0;
+					verticalOffset = gridItemsLayout.VerticalItemSpacing / 2.0;
 					break;
 				case LinearItemsLayout listItemsLayout:
-					_orientation = listItemsLayout.Orientation;
-					if (_orientation == ItemsLayoutOrientation.Horizontal)
-						_horizontalSpacing = listItemsLayout.ItemSpacing;
+					if (listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+					{
+						horizontalOffset = listItemsLayout.ItemSpacing / 2.0;
+						verticalOffset = 0;
+					}
 					else
-						_verticalSpacing = listItemsLayout.ItemSpacing;
-					_spanCount = 1;
+					{
+						horizontalOffset = 0;
+						verticalOffset = listItemsLayout.ItemSpacing / 2.0;
+					}
+					break;
+				default:
+					horizontalOffset = 0;
+					verticalOffset = 0;
 					break;
 			}
+
+			HorizontalOffset = (int)context.ToPixels(horizontalOffset);
+			VerticalOffset = (int)context.ToPixels(verticalOffset);
 		}
 
 		public override void GetItemOffsets(ARect outRect, AView view, RecyclerView parent, RecyclerView.State state)
 		{
 			base.GetItemOffsets(outRect, view, parent, state);
 
-			if (_adjustedVerticalSpacing == -1)
-			{
-				_adjustedVerticalSpacing = (int)parent.Context.ToPixels(_verticalSpacing);
-			}
-
-			if (_adjustedHorizontalSpacing == -1)
-			{
-				_adjustedHorizontalSpacing = (int)parent.Context.ToPixels(_horizontalSpacing);
-			}
-
-			var itemViewType = parent.GetChildViewHolder(view).ItemViewType;
-
-			if (itemViewType == ItemViewType.Header)
-			{
-				if (_orientation == ItemsLayoutOrientation.Vertical)
-				{
-					outRect.Bottom = _adjustedVerticalSpacing;
-				}
-				else
-				{
-					outRect.Right = _adjustedHorizontalSpacing;
-				}
-
-				return;
-			}
-
-			if (itemViewType == ItemViewType.Footer)
-			{
-				return;
-			}
-
-			var spanIndex = 0;
-
-			if (view.LayoutParameters is GridLayoutManager.LayoutParams gridLayoutParameters)
-			{
-				spanIndex = gridLayoutParameters.SpanIndex;
-			}
-
-			var spanGroupIndex = GetSpanGroupIndex(view, parent);
-
-			if (_orientation == ItemsLayoutOrientation.Vertical)
-			{
-				outRect.Left = spanIndex == 0 ? 0 : _adjustedHorizontalSpacing;
-				outRect.Top = spanGroupIndex == 0 ? 0 : _adjustedVerticalSpacing;
-			}
-
-			if (_orientation == ItemsLayoutOrientation.Horizontal)
-			{
-				outRect.Top = spanIndex == 0 ? 0 : _adjustedVerticalSpacing;
-				outRect.Left = spanGroupIndex == 0 ? 0 : _adjustedHorizontalSpacing;
-			}
-		}
-
-		int GetSpanGroupIndex(AView view, RecyclerView parent)
-		{
-			var position = parent.GetChildAdapterPosition(view);
-
-			if (_spanCount > 1)
-			{
-				if (parent.GetLayoutManager() is GridLayoutManager gridLayoutManager)
-				{
-					return gridLayoutManager.GetSpanSizeLookup().GetSpanGroupIndex(position, _spanCount);
-				}
-			}
-
-			return position;
+			outRect.Left = HorizontalOffset;
+			outRect.Right = HorizontalOffset;
+			outRect.Bottom = VerticalOffset;
+			outRect.Top = VerticalOffset;
 		}
 	}
 }

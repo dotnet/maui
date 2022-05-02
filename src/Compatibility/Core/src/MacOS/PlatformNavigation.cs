@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		Task<Page> INavigation.PopAsync(bool animated)
 		{
-			throw new InvalidOperationException("PopAsync is not supported globally on MacOS, please use a NavigationPage.");
+			throw new InvalidOperationException("PopAsync is not supported globally on macOS, please use a NavigationPage.");
 		}
 
 		Task INavigation.PopToRootAsync()
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		Task INavigation.PopToRootAsync(bool animated)
 		{
-			throw new InvalidOperationException("PopToRootAsync is not supported globally on MacOS, please use a NavigationPage.");
+			throw new InvalidOperationException("PopToRootAsync is not supported globally on macOS, please use a NavigationPage.");
 		}
 
 		Task INavigation.PushAsync(Page root)
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		Task INavigation.PushAsync(Page root, bool animated)
 		{
-			throw new InvalidOperationException("PushAsync is not supported globally on MacOS, please use a NavigationPage.");
+			throw new InvalidOperationException("PushAsync is not supported globally on macOS, please use a NavigationPage.");
 		}
 
 		Task INavigation.PushModalAsync(Page modal)

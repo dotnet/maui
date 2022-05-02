@@ -24,20 +24,22 @@ namespace Microsoft.Maui.Handlers
 		ProcessBackClick? _processBackClick;
 		ProcessBackClick BackNavigationClick => _processBackClick ??= new ProcessBackClick(this);
 
-		protected override MaterialToolbar CreateNativeElement()
+		protected override MaterialToolbar CreatePlatformElement()
 		{
-			LayoutInflater? li = MauiContext?.GetLayoutInflater();
-			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
+			var context = MauiContext?.Context ?? throw new InvalidOperationException("Context cannot be null");
+			return Microsoft.Maui.PlatformInterop.CreateToolbar(context, context.GetActionBarHeight(), -1);
+		}
 
-			var view = li.Inflate(Microsoft.Maui.Resource.Layout.maui_toolbar, null)?.JavaCast<MaterialToolbar>();
-			_ = view ?? throw new InvalidOperationException($"Resource.Layout.maui_toolbar view not found");
+		private protected override void OnDisconnectHandler(object platformView)
+		{
+			base.OnDisconnectHandler(platformView);
+			if (platformView is MaterialToolbar mt)
+				mt.RemoveFromParent();
+		}
 
-			view.LayoutParameters = new AppBarLayout.LayoutParams(LP.MatchParent, MauiContext?.Context?.GetActionBarHeight() ?? LP.WrapContent)
-			{
-				ScrollFlags = 0
-			};
-
-			return view;
+		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)
+		{
+			arg1.PlatformView.UpdateTitle(arg2);
 		}
 
 		DrawerLayout? _drawerLayout;
@@ -48,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_drawerLayout == drawerLayout)
 			{
-				NativeView.SetNavigationOnClickListener(BackNavigationClick);
+				PlatformView.SetNavigationOnClickListener(BackNavigationClick);
 				return;
 			}
 
@@ -60,7 +62,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_navController == navController && _stackNavigationManager == stackNavigationManager)
 			{
-				NativeView.SetNavigationOnClickListener(BackNavigationClick);
+				PlatformView.SetNavigationOnClickListener(BackNavigationClick);
 				return;
 			}
 
@@ -75,8 +77,8 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var appbarConfigBuilder =
-					   new AppBarConfiguration
-						   .Builder(_stackNavigationManager.NavGraph);
+					new AppBarConfiguration
+						.Builder(_stackNavigationManager.NavGraph);
 
 			if (_drawerLayout != null)
 				appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(_drawerLayout);
@@ -85,11 +87,11 @@ namespace Microsoft.Maui.Handlers
 				appbarConfigBuilder.Build();
 
 			NavigationUI
-				.SetupWithNavController(NativeView, _navController, appbarConfig);
+				.SetupWithNavController(PlatformView, _navController, appbarConfig);
 
 			// the call to SetupWithNavController resets the Navigation Icon
 			UpdateValue(nameof(IToolbar.BackButtonVisible));
-			NativeView.SetNavigationOnClickListener(BackNavigationClick);
+			PlatformView.SetNavigationOnClickListener(BackNavigationClick);
 		}
 
 		void BackClick()

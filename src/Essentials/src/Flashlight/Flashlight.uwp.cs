@@ -2,18 +2,19 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Lights;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
-	public static partial class Flashlight
+	class FlashlightImplementation : IFlashlight
 	{
 		static readonly object locker = new object();
-		static bool hasLoadedLamp;
-		static Lamp lamp;
+		bool hasLoadedLamp;
+		Lamp lamp;
 
-		static async Task FindLampAsync()
+		async Task FindLampAsync()
 		{
 			// fail fast
 			if (hasLoadedLamp)
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.Essentials
 			Monitor.Exit(locker);
 		}
 
-		static async Task PlatformTurnOnAsync()
+		public async Task TurnOnAsync()
 		{
 			await FindLampAsync();
 
@@ -64,7 +65,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static Task PlatformTurnOffAsync()
+		public Task TurnOffAsync()
 		{
 			lock (locker)
 			{

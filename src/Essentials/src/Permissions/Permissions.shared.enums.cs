@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/PermissionStatus.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PermissionStatus']/Docs" />
 	public enum PermissionStatus
@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Essentials
 		Granted = 3,
 
 		// Restricted (only iOS)
-		/// <include file="../../docs/Microsoft.Maui.Essentials/PermissionStatus.xml" path="//Member[@MemberName='Restricted']/Docs" />
-		Restricted = 4
+		Restricted = 4,
+
+		// Limited (only iOS)
+		Limited = 5
 	}
 }

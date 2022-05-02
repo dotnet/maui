@@ -1,18 +1,19 @@
 using System.Collections.Generic;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Network.Connection;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Networking
 {
-	public static partial class Connectivity
+	partial class ConnectivityImplementation : IConnectivity
 	{
-		static IList<ConnectionProfile> profiles = new List<ConnectionProfile>();
+		IList<ConnectionProfile> profiles = new List<ConnectionProfile>();
 
-		internal static void OnChanged(object sender, object e)
+		void OnChanged(object sender, object e)
 		{
 			GetProfileListAsync();
 		}
 
-		internal static async void GetProfileListAsync()
+		async void GetProfileListAsync()
 		{
 			var list = await ConnectionProfileManager.GetProfileListAsync(ProfileListType.Connected);
 			profiles.Clear();
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Essentials
 			OnConnectivityChanged();
 		}
 
-		static NetworkAccess PlatformNetworkAccess
+		public NetworkAccess NetworkAccess
 		{
 			get
 			{
@@ -58,7 +59,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static IEnumerable<ConnectionProfile> PlatformConnectionProfiles
+		public IEnumerable<ConnectionProfile> ConnectionProfiles
 		{
 			get
 			{
@@ -66,14 +67,14 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static void StartListeners()
+		void StartListeners()
 		{
 			Permissions.EnsureDeclared<Permissions.NetworkState>();
 			ConnectionManager.ConnectionTypeChanged += OnChanged;
 			GetProfileListAsync();
 		}
 
-		static void StopListeners()
+		void StopListeners()
 		{
 			ConnectionManager.ConnectionTypeChanged -= OnChanged;
 		}

@@ -2,9 +2,9 @@ using System;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ElementHandler<TVirtualView, TNativeView> : ElementHandler, IElementHandler
+	public abstract partial class ElementHandler<TVirtualView, TPlatformView> : ElementHandler, IElementHandler
 		where TVirtualView : class, IElement
-		where TNativeView : class
+		where TPlatformView : class
 	{
 		[HotReload.OnHotReload]
 		internal static void OnHotReload()
@@ -16,10 +16,10 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public new TNativeView NativeView
+		public new TPlatformView PlatformView
 		{
-			get => (TNativeView?)base.NativeView ?? throw new InvalidOperationException($"NativeView cannot be null here");
-			private set => base.NativeView = value;
+			get => (TPlatformView?)base.PlatformView ?? throw new InvalidOperationException($"PlatformView cannot be null here");
+			private set => base.PlatformView = value;
 		}
 
 		public new TVirtualView VirtualView
@@ -30,25 +30,25 @@ namespace Microsoft.Maui.Handlers
 
 		IElement? IElementHandler.VirtualView => base.VirtualView;
 
-		object? IElementHandler.NativeView => base.NativeView;
+		object? IElementHandler.PlatformView => base.PlatformView;
 
-		protected abstract TNativeView CreateNativeElement();
+		protected abstract TPlatformView CreatePlatformElement();
 
-		protected virtual void ConnectHandler(TNativeView nativeView)
+		protected virtual void ConnectHandler(TPlatformView platformView)
 		{
 		}
 
-		protected virtual void DisconnectHandler(TNativeView nativeView)
+		protected virtual void DisconnectHandler(TPlatformView platformView)
 		{
 		}
 
-		private protected override object OnCreateNativeElement() =>
-			CreateNativeElement();
+		private protected override object OnCreatePlatformElement() =>
+			CreatePlatformElement();
 
-		private protected override void OnConnectHandler(object nativeView) =>
-			ConnectHandler((TNativeView)nativeView);
+		private protected override void OnConnectHandler(object platformView) =>
+			ConnectHandler((TPlatformView)platformView);
 
-		private protected override void OnDisconnectHandler(object nativeView) =>
-			DisconnectHandler((TNativeView)nativeView);
+		private protected override void OnDisconnectHandler(object platformView) =>
+			DisconnectHandler((TPlatformView)platformView);
 	}
 }

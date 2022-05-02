@@ -1,5 +1,14 @@
 <!-- Workarounds for WinUI -->
 <Project>
+
+  <!--
+    NOTE: workaround https://github.com/NuGet/Home/issues/6461
+    We should also follow Android, iOS, etc. workloads.
+  -->
+  <PropertyGroup>
+    <Version Condition=" '$(ApplicationDisplayVersion)' != '' ">$(ApplicationDisplayVersion)</Version>
+  </PropertyGroup>
+
   <Target Name="_AddMauiPriFiles" AfterTargets="ResolveAssemblyReferences">
     <ItemGroup>
       <_ReferenceRelatedPaths
@@ -8,4 +17,7 @@
       />
     </ItemGroup>
   </Target>
+
+  <Import Project="WinUI.NetCore.targets" Condition=" '$(EnablePriGenTooling)'!='true' " />
+
 </Project>

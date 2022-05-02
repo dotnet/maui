@@ -1,11 +1,12 @@
+#nullable enable
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Browser
+	partial class BrowserImplementation : IBrowser
 	{
-		static Task<bool> PlatformOpenAsync(Uri uri, BrowserLaunchOptions options) =>
+		public Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options) =>
 			global::Windows.System.Launcher.LaunchUriAsync(uri).AsTask();
 	}
 }

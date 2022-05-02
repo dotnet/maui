@@ -9,18 +9,43 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ButtonTests : HandlerTestBase
 	{
 		[Theory]
-		[InlineData("Hello There", TextTransform.None, "Hello There")]
-		[InlineData("Hello There", TextTransform.Uppercase, "HELLO THERE")]
-		[InlineData("Hello There", TextTransform.Lowercase, "hello there")]
-		public async Task TextTransformApplied(string text, TextTransform transform, string expected)
+		[ClassData(typeof(TextTransformCases))]
+		public async Task InitialTextTransformApplied(string text, TextTransform transform, string expected)
 		{
 			var control = new Button() { Text = text, TextTransform = transform };
+			var platformText = await GetPlatformText(await CreateHandlerAsync<ButtonHandler>(control));
+			Assert.Equal(expected, platformText);
+		}
 
+		[Theory]
+		[ClassData(typeof(TextTransformCases))]
+		public async Task TextTransformUpdated(string text, TextTransform transform, string expected)
+		{
+			var control = new Button() { Text = text };
 			var handler = await CreateHandlerAsync<ButtonHandler>(control);
+			await InvokeOnMainThreadAsync(() => control.TextTransform = transform);
+			var platformText = await GetPlatformText(handler);
+			Assert.Equal(expected, platformText);
+		}
 
-			var nativeText = await GetNativeText(handler);
+		[Fact(DisplayName = "LineBreakMode Initializes Correctly")]
+		public async Task LineBreakModeInitializesCorrectly()
+		{
+			var xplatLineBreakMode = LineBreakMode.TailTruncation;
 
-			Assert.Equal(expected, nativeText);
+			var button = new Button()
+			{
+				LineBreakMode = xplatLineBreakMode
+			};
+
+			var expectedValue = xplatLineBreakMode.ToPlatform();
+
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.Equal(expectedValue, GetPlatformLineBreakMode(handler));
+			});
 		}
 	}
 }

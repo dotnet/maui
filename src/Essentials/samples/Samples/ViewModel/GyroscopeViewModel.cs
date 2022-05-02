@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Input;
 using Microsoft.Maui;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace Samples.ViewModel
 {

@@ -12,24 +12,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		ItemsViewLayout _layout;
 
-		protected override void DisconnectHandler(UIView nativeView)
+		protected override void DisconnectHandler(UIView platformView)
 		{
 			ItemsView.ScrollToRequested -= ScrollToRequested;
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
-		protected override void ConnectHandler(UIView nativeView)
+		protected override void ConnectHandler(UIView platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 			Controller.CollectionView.BackgroundColor = UIColor.Clear;
 			ItemsView.ScrollToRequested += ScrollToRequested;
 		}
 
-		private protected override UIView OnCreateNativeView()
+		private protected override UIView OnCreatePlatformView()
 		{
 			UpdateLayout();
 			Controller = CreateController(ItemsView, _layout);
-			return base.OnCreateNativeView();
+			return base.OnCreatePlatformView();
 		}
 
 		protected TItemsView ItemsView => VirtualView;
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected abstract ItemsViewController<TItemsView> CreateController(TItemsView newElement, ItemsViewLayout layout);
 
-		protected override UIView CreateNativeView() => Controller?.View;
+		protected override UIView CreatePlatformView() => Controller?.View;
 
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{

@@ -3,8 +3,10 @@ using Android.Content;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using Android.Widget;
+using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
+using Rectangle = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Platform
@@ -12,6 +14,8 @@ namespace Microsoft.Maui.Platform
 	public class LayoutViewGroup : ViewGroup
 	{
 		readonly ARect _clipRect = new();
+
+		public bool InputTransparent { get; set; }
 
 		public LayoutViewGroup(Context context) : base(context)
 		{
@@ -35,6 +39,9 @@ namespace Microsoft.Maui.Platform
 
 		public bool ClipsToBounds { get; set; }
 
+		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
+		// If you make changes here please review if those changes should also
+		// apply to ViewHandlerExtensions.MeasureVirtualView
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			if (Context == null)
@@ -51,14 +58,29 @@ namespace Microsoft.Maui.Platform
 			var deviceIndependentWidth = widthMeasureSpec.ToDouble(Context);
 			var deviceIndependentHeight = heightMeasureSpec.ToDouble(Context);
 
-			var size = CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
+			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
 
-			var nativeWidth = Context.ToPixels(size.Width);
-			var nativeHeight = Context.ToPixels(size.Height);
+			var measure = CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
 
-			SetMeasuredDimension((int)nativeWidth, (int)nativeHeight);
+			// If the measure spec was exact, we should return the explicit size value, even if the content
+			// measure came out to a different size
+			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
+			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
+
+			var platformWidth = Context.ToPixels(width);
+			var platformHeight = Context.ToPixels(height);
+
+			// Minimum values win over everything
+			platformWidth = Math.Max(MinimumWidth, platformWidth);
+			platformHeight = Math.Max(MinimumHeight, platformHeight);
+
+			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
 		}
 
+		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
+		// If you make changes here please review if those changes should also
+		// apply to ViewHandlerExtensions.MeasureVirtualView
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			if (CrossPlatformArrange == null || Context == null)
@@ -66,13 +88,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			var deviceIndependentLeft = Context.FromPixels(l);
-			var deviceIndependentTop = Context.FromPixels(t);
-			var deviceIndependentRight = Context.FromPixels(r);
-			var deviceIndependentBottom = Context.FromPixels(b);
-
-			var destination = Rectangle.FromLTRB(0, 0,
-				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
+			var destination = Context!.ToCrossPlatformRectInReferenceFrame(l, t, r, b);
 
 			CrossPlatformArrange(destination);
 
@@ -86,6 +102,16 @@ namespace Microsoft.Maui.Platform
 			{
 				ClipBounds = null;
 			}
+		}
+
+		public override bool OnTouchEvent(MotionEvent? e)
+		{
+			if (InputTransparent)
+			{
+				return false;
+			}
+
+			return base.OnTouchEvent(e);
 		}
 
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }

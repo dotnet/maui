@@ -2,17 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Devices;
 using EBox = ElmSharp.Box;
 using ELayout = ElmSharp.Layout;
 using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
+using Index = ElmSharp.Index;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	/// <summary>
 	/// Renderer of a CarouselPage widget.
 	/// </summary>
-	public class CarouselPageRenderer : VisualElementRenderer<CarouselPage>
+	internal class CarouselPageRenderer : VisualElementRenderer<CarouselPage>
 	{
 		const int ItemMaxCount = 20;
 		const int OddMiddleItem = 10;
@@ -137,7 +141,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			_scroller.Geometry = _outterLayout.Geometry;
 			var newGeometry = _outterLayout.Geometry;
-			if (Device.Idiom != TargetIdiom.Watch)
+			if (DeviceInfo.Idiom != DeviceIdiom.Watch)
 				newGeometry.Y += (int)(newGeometry.Height * 0.9);
 			newGeometry.Height = (int)(newGeometry.Height * 0.1);
 			_index.Geometry = newGeometry;
@@ -171,8 +175,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnCurrentPageChanged(object sender, EventArgs e)
 		{
-			CustomFocusManager.StartReorderTabIndex();
-
 			Element.UpdateFocusTreePolicy();
 
 			if (IsChangedByScroll())
@@ -268,7 +270,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			for (int i = 0; i < indexCount; i++)
 			{
 				var item = _index.Append(i.ToString());
-				if (Device.Idiom == TargetIdiom.Watch)
+				if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 					item.SetIndexItemStyle(indexCount, i, EvenMiddleItem, OddMiddleItem);
 				_items.Add(item);
 			}

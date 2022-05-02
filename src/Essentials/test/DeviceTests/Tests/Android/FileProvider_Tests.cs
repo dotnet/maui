@@ -1,12 +1,14 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Storage;
 using Xunit;
 using AndroidEnvironment = Android.OS.Environment;
 
 namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
+	using Platform = Microsoft.Maui.ApplicationModel.Platform;
+
 	public class Android_FileProvider_Tests
 	{
 		[Fact]
@@ -20,7 +22,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			Assert.False(FileProvider.IsFileInPublicLocation(file));
 
 			// Actually get a safe shareable file uri
-			var shareableUri = Platform.GetShareableFileUri(new ReadOnlyFile(file));
+			var shareableUri = FileSystemUtils.GetShareableFileUri(new ReadOnlyFile(file));
 
 			// Launch an intent to let tye user pick where to open this content
 			var intent = new Android.Content.Intent(Android.Content.Intent.ActionSend);
@@ -75,7 +77,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 				// Make sure the underlying file exists
 				var realPath = Path.Combine(shareableUri.PathSegments.ToArray())
-					.Replace(expectedCache, expectedCacheDir);
+					.Replace(expectedCache, expectedCacheDir, StringComparison.Ordinal);
 				Assert.True(File.Exists(realPath));
 			}
 			finally
@@ -133,7 +135,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 			// Make sure the underlying file exists
 			var realPath = Path.Combine(shareableUri.PathSegments.ToArray())
-				.Replace("external_cache", Platform.AppContext.ExternalCacheDir.AbsolutePath);
+				.Replace("external_cache", Platform.AppContext.ExternalCacheDir.AbsolutePath, StringComparison.Ordinal);
 			Assert.True(File.Exists(realPath));
 		}
 
@@ -212,7 +214,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 #pragma warning restore CS0618 // Type or member is obsolete
 
 				// replace the real root with the providers "root"
-				var segements = Path.Combine(root.Replace(externalRoot, "external_files"), Path.GetFileName(file));
+				var segements = Path.Combine(root.Replace(externalRoot, "external_files", StringComparison.Ordinal), Path.GetFileName(file));
 
 				Assert.Equal(segements.Split(Path.DirectorySeparatorChar), shareableUri.PathSegments);
 			}
@@ -238,7 +240,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				FileProvider.TemporaryLocation = location;
 
 				// get the uri
-				return Platform.GetShareableFileUri(new ReadOnlyFile(file));
+				return FileSystemUtils.GetShareableFileUri(new ReadOnlyFile(file));
 			}
 			finally
 			{

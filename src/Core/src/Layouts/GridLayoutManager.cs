@@ -26,9 +26,11 @@ namespace Microsoft.Maui.Layouts
 			return new Size(measuredWidth, measuredHeight);
 		}
 
-		public override Size ArrangeChildren(Rectangle bounds)
+		public override Size ArrangeChildren(Rect bounds)
 		{
 			var structure = _gridStructure ?? new GridStructure(Grid, bounds.Width, bounds.Height);
+
+			var reverseColumns = Grid.ColumnDefinitions.Count > 1 && !Grid.ShouldArrangeLeftToRight();
 
 			foreach (var view in Grid)
 			{
@@ -38,6 +40,12 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				var cell = structure.GetCellBoundsFor(view, bounds.Left, bounds.Top);
+
+				if (reverseColumns)
+				{
+					var adjustedXPosition = bounds.Right - cell.Left - cell.Width;
+					cell.Left = adjustedXPosition;
+				}
 
 				view.Arrange(cell);
 			}
@@ -199,7 +207,7 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			public Rectangle GetCellBoundsFor(IView view, double xOffset, double yOffset)
+			public Rect GetCellBoundsFor(IView view, double xOffset, double yOffset)
 			{
 				var firstColumn = _grid.GetColumn(view).Clamp(0, _columns.Length - 1);
 				var columnSpan = _grid.GetColumnSpan(view).Clamp(1, _columns.Length - firstColumn);
@@ -229,7 +237,7 @@ namespace Microsoft.Maui.Layouts
 				width += (columnSpan - 1) * _columnSpacing;
 				height += (rowSpan - 1) * _rowSpacing;
 
-				return new Rectangle(left + xOffset, top + yOffset, width, height);
+				return new Rect(left + xOffset, top + yOffset, width, height);
 			}
 
 			public double GridHeight()
@@ -312,11 +320,11 @@ namespace Microsoft.Maui.Layouts
 						continue;
 					}
 
-					var availableWidth = AvailableWidth(cell);
-					var availableHeight = AvailableHeight(cell);
-
 					if (cell.IsColumnSpanAuto || cell.IsRowSpanAuto || cell.MeasureStarAsAuto)
 					{
+						var availableWidth = cell.IsColumnSpanAuto ? double.PositiveInfinity : AvailableWidth(cell);
+						var availableHeight = cell.IsRowSpanAuto ? double.PositiveInfinity : AvailableHeight(cell);
+
 						var measure = _childrenToLayOut[cell.ViewIndex].Measure(availableWidth, availableHeight);
 
 						if (cell.IsColumnSpanAuto)
@@ -419,6 +427,12 @@ namespace Microsoft.Maui.Layouts
 					{
 						autoCount += 1;
 					}
+					else if (definitions[n].IsStar)
+					{
+						// Ah, part of this span is a Star; that means it doesn't count
+						// for sizing the Auto parts of the span at all. We can just cut out now.
+						return;
+					}
 				}
 
 				double distribution = required / autoCount;
@@ -491,7 +505,7 @@ namespace Microsoft.Maui.Layouts
 						if (cellCheck(cell)) // Check whether this cell should count toward the type of star value were measuring
 						{
 							// Update the star width if the view in this cell is bigger
-							starSize = Math.Max(starSize, dimension(_grid[cell.ViewIndex].DesiredSize));
+							starSize = Math.Max(starSize, dimension(_childrenToLayOut[cell.ViewIndex].DesiredSize));
 						}
 					}
 				}
@@ -533,6 +547,11 @@ namespace Microsoft.Maui.Layouts
 			{
 				foreach (var cell in _cells)
 				{
+					if (!cell.NeedsFinalMeasure)
+					{
+						continue;
+					}
+
 					double width = 0;
 					double height = 0;
 
@@ -546,44 +565,87 @@ namespace Microsoft.Maui.Layouts
 						width += _columns[n].Size;
 					}
 
+					if (width == 0 || height == 0)
+					{
+						continue;
+					}
+					
 					_childrenToLayOut[cell.ViewIndex].Measure(width, height);
 				}
 			}
 
 			double AvailableWidth(Cell cell)
 			{
-				var alreadyUsed = GridWidth();
-				var available = _gridWidthConstraint - alreadyUsed;
-
 				// Because our cell may overlap columns that are already measured (and counted in GridWidth()),
 				// we'll need to add the size of those columns back into our available space
 				double cellColumnsWidth = 0;
 
+				// So we'll have to tally up the known widths of those rows. While we do that, we'll
+				// keep track of whether all the columns spanned by this cell are absolute widths
+				bool absolute = true;
+
 				for (int c = cell.Column; c < cell.Column + cell.ColumnSpan; c++)
 				{
 					cellColumnsWidth += _columns[c].Size;
+
+					if (!_columns[c].IsAbsolute)
+					{
+						absolute = false;
+					}
 				}
 
 				cellColumnsWidth += (cell.ColumnSpan - 1) * _columnSpacing;
+
+				if (absolute)
+				{
+					// If all the spanned columns were absolute, then we know the exact available width for 
+					// the view that's in this cell
+					return cellColumnsWidth;
+				}
+
+				// Since some of the columns weren't already specified, we'll need to work out what's left
+				// of the Grid's width for this cell
+
+				var alreadyUsed = GridWidth();
+				var available = _gridWidthConstraint - alreadyUsed;
 
 				return available + cellColumnsWidth;
 			}
 
 			double AvailableHeight(Cell cell)
 			{
-				var alreadyUsed = GridHeight();
-				var available = _gridHeightConstraint - alreadyUsed;
-
 				// Because our cell may overlap rows that are already measured (and counted in GridHeight()),
 				// we'll need to add the size of those rows back into our available space
 				double cellRowsHeight = 0;
 
+				// So we'll have to tally up the known heights of those rows. While we do that, we'll
+				// keep track of whether all the rows spanned by this cell are absolute heights
+				bool absolute = true;
+
 				for (int c = cell.Row; c < cell.Row + cell.RowSpan; c++)
 				{
 					cellRowsHeight += _rows[c].Size;
+
+					if (!_rows[c].IsAbsolute)
+					{
+						absolute = false;
+					}
 				}
 
 				cellRowsHeight += (cell.RowSpan - 1) * _rowSpacing;
+
+				if (absolute)
+				{
+					// If all the spanned rows were absolute, then we know the exact available height for 
+					// the view that's in this cell
+					return cellRowsHeight;
+				}
+
+				// Since some of the rows weren't already specified, we'll need to work out what's left
+				// of the Grid's height for this cell
+
+				var alreadyUsed = GridHeight();
+				var available = _gridHeightConstraint - alreadyUsed;
 
 				return available + cellRowsHeight;
 			}
@@ -656,6 +718,10 @@ namespace Microsoft.Maui.Layouts
 			public bool IsColumnSpanStar => HasFlag(ColumnGridLengthType, GridLengthType.Star);
 			public bool IsRowSpanStar => HasFlag(RowGridLengthType, GridLengthType.Star);
 
+			// If any part of the Cell's spans are Absolute or Star, then the Cell will need a measure at the final size. 
+			// If the cell is entirely Auto, then it doesn't need another measure call. 
+			public bool NeedsFinalMeasure => ((ColumnGridLengthType | RowGridLengthType) ^ GridLengthType.Auto) > 0;
+
 			bool HasFlag(GridLengthType a, GridLengthType b)
 			{
 				// Avoiding Enum.HasFlag here for performance reasons; we don't need the type check
@@ -702,6 +768,7 @@ namespace Microsoft.Maui.Layouts
 
 			public abstract bool IsAuto { get; }
 			public abstract bool IsStar { get; }
+			public abstract bool IsAbsolute { get; }
 
 			public abstract GridLength GridLength { get; }
 		}
@@ -712,6 +779,7 @@ namespace Microsoft.Maui.Layouts
 
 			public override bool IsAuto => ColumnDefinition.Width.IsAuto;
 			public override bool IsStar => ColumnDefinition.Width.IsStar;
+			public override bool IsAbsolute => ColumnDefinition.Width.IsAbsolute;
 			public override GridLength GridLength => ColumnDefinition.Width;
 
 			public Column(IGridColumnDefinition columnDefinition)
@@ -730,6 +798,7 @@ namespace Microsoft.Maui.Layouts
 
 			public override bool IsAuto => RowDefinition.Height.IsAuto;
 			public override bool IsStar => RowDefinition.Height.IsStar;
+			public override bool IsAbsolute => RowDefinition.Height.IsAbsolute;
 			public override GridLength GridLength => RowDefinition.Height;
 
 			public Row(IGridRowDefinition rowDefinition)

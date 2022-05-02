@@ -1,32 +1,37 @@
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Sensor;
 using TizenGyroscope = Tizen.Sensor.Gyroscope;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Gyroscope
+	partial class GyroscopeImplementation : IGyroscope
 	{
-		internal static TizenGyroscope DefaultSensor =>
-			(TizenGyroscope)Platform.GetDefaultSensor(SensorType.Gyroscope);
+		static TizenGyroscope DefaultSensor =>
+			(TizenGyroscope)PlatformUtils.GetDefaultSensor(SensorType.Gyroscope);
 
-		internal static bool IsSupported =>
+		bool PlatformIsSupported =>
 			TizenGyroscope.IsSupported;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		TizenGyroscope sensor;
+
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			DefaultSensor.Interval = sensorSpeed.ToPlatform();
-			DefaultSensor.DataUpdated += DataUpdated;
-			DefaultSensor.Start();
+			sensor = DefaultSensor;
+			sensor.Interval = sensorSpeed.ToPlatform();
+			sensor.DataUpdated += DataUpdated;
+			sensor.Start();
 		}
 
-		internal static void PlatformStop()
+		void PlatformStop()
 		{
-			DefaultSensor.DataUpdated -= DataUpdated;
-			DefaultSensor.Stop();
+			sensor.DataUpdated -= DataUpdated;
+			sensor.Stop();
+			sensor = null;
 		}
 
-		static void DataUpdated(object sender, GyroscopeDataUpdatedEventArgs e)
+		void DataUpdated(object sender, GyroscopeDataUpdatedEventArgs e)
 		{
-			OnChanged(new GyroscopeData(e.X, e.Y, e.Z));
+			RaiseReadingChanged(new GyroscopeData(e.X, e.Y, e.Z));
 		}
 	}
 }

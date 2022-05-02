@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.Maui.Controls.Compatibility.Internals;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
-using Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific;
-using Microsoft.Maui.Controls.Compatibility.Shapes;
-using Microsoft.Maui.Controls.Compatibility.Xaml.Internals;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Controls.Xaml.Internals;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class StaticRegistrar<TRegistrable> where TRegistrable : class
 	{
 		readonly Dictionary<Type, Func<TRegistrable>> _handlers = new Dictionary<Type, Func<TRegistrable>>();
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				if (_handlers.TryGetValue(viewType, out handler))
 					return true;
 
-				viewType = viewType.GetTypeInfo().BaseType;
+				viewType = viewType.BaseType;
 			}
 			handler = null;
 			return false;
@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 	}
 
+	[Obsolete]
 	public static class StaticRegistrar
 	{
 		public static StaticRegistrar<IRegisterable> Registered { get; internal set; }
@@ -82,9 +83,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			Registered.Register(typeof(CarouselPage), () => new CarouselPageRenderer());
 			Registered.Register(typeof(Page), () => new PageRenderer());
 			Registered.Register(typeof(NavigationPage), () => new NavigationPageRenderer());
-#pragma warning disable CS0618 // Type or member is obsolete
-			Registered.Register(typeof(MasterDetailPage), () => new MasterDetailPageRenderer());
-#pragma warning restore CS0618 // Type or member is obsolete
 			Registered.Register(typeof(FlyoutPage), () => new FlyoutPageRenderer());
 			Registered.Register(typeof(TabbedPage), () => new TabbedPageRenderer());
 			Registered.Register(typeof(Label), () => new LabelRenderer());
@@ -116,11 +114,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			Registered.Register(typeof(IndicatorView), () => new IndicatorViewRenderer());
 			Registered.Register(typeof(RadioButton), () => new RadioButtonRenderer());
 
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				Registered.Register(typeof(Shell), () => new Watch.ShellRenderer());
 			}
-			else if (Device.Idiom == TargetIdiom.TV)
+			else if (DeviceInfo.Idiom == DeviceIdiom.TV)
 			{
 				Registered.Register(typeof(Shell), () => new TV.TVShellRenderer());
 			}
@@ -142,11 +140,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			Registered.Register(typeof(ViewCell), () => new ViewCellRenderer());
 
 			//Font Loaders
-			Registered.Register(typeof(EmbeddedFont), () => new EmbeddedFontLoader());
+			Registered.Register(typeof(EmbeddedFont), () => new CompatibilityEmbeddedFontLoader());
 
 			//Dependencies
+#pragma warning disable CS0612 // Type or member is obsolete
 			DependencyService.Register<ISystemResourcesProvider, ResourcesProvider>();
-			DependencyService.Register<IDeserializer, Deserializer>();
+#pragma warning disable CS0612 // Type or member is obsolete
 			DependencyService.Register<INativeBindingService, NativeBindingService>();
 			DependencyService.Register<INativeValueConverterService, NativeValueConverterService>();
 

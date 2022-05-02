@@ -19,10 +19,10 @@ namespace Microsoft.Maui
 		/// <include file="../../docs/Microsoft.Maui/FontFile.xml" path="//Member[@MemberName='PostScriptName']/Docs" />
 		public string? PostScriptName { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui/FontFile.xml" path="//Member[@MemberName='FileNameWithExtension'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/FontFile.xml" path="//Member[@MemberName='FileNameWithExtension'][2]/Docs" />
 		public string FileNameWithExtension(string? extension) => $"{FileName}{extension}";
 
-		/// <include file="../../docs/Microsoft.Maui/FontFile.xml" path="//Member[@MemberName='FileNameWithExtension'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/FontFile.xml" path="//Member[@MemberName='FileNameWithExtension'][1]/Docs" />
 		public string FileNameWithExtension() => FileNameWithExtension(Extension);
 
 		/// <include file="../../docs/Microsoft.Maui/FontFile.xml" path="//Member[@MemberName='GetPostScriptNameWithSpaces']/Docs" />
@@ -33,9 +33,15 @@ namespace Microsoft.Maui
 		{
 			_ = input ?? throw new ArgumentNullException(nameof(input));
 
-			var hashIndex = input.IndexOf("#", global::System.StringComparison.Ordinal);
+			var hashIndex = input.IndexOf("#", StringComparison.Ordinal);
 			//UWP names require Spaces. Sometimes people may use those, "CuteFont-Regular#Cute Font" should be "CuteFont-Regular#CuteFont"
-			var postScriptName = hashIndex > 0 ? input.Substring(hashIndex + 1).Replace(" ", "") : input;
+			var postScriptName = hashIndex > 0 ? input.Substring(hashIndex + 1)
+#if NETSTANDARD2_0
+				.Replace(" ", "")
+#else
+				.Replace(" ", "", StringComparison.Ordinal)
+#endif
+				: input;
 			//Get the fontFamily name;
 			var fontFamilyName = hashIndex > 0 ? input.Substring(0, hashIndex) : input;
 
@@ -62,7 +68,7 @@ namespace Microsoft.Maui
 		{
 			_ = fontFamily ?? throw new ArgumentNullException(nameof(fontFamily));
 
-			if (fontFamily.Contains(" "))
+			if (fontFamily.IndexOf(" ", StringComparison.Ordinal) != -1)
 			{
 				yield return fontFamily;
 				//We are done, they have spaces, they have it handled.

@@ -378,5 +378,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var testPage = shell.CurrentPage as ShellTestPage;
 			Assert.AreEqual(urlTest, testPage.SomeQueryParameter);
 		}
+
+		[Test]
+		public void InitialNavigationDoesntSetQueryAttributesProperty()
+		{
+			var content = CreateShellContent();
+			_ = new TestShell(content);
+			Assert.IsFalse(content.IsSet(ShellContent.QueryAttributesProperty));
+		}
 	}
 }

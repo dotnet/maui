@@ -9,7 +9,8 @@
     <Description>Build WPF applications with Blazor and WebView2.</Description>
     <DefineConstants>$(DefineConstants);WEBVIEW2_WPF</DefineConstants>
     <UseWPF>true</UseWPF>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\SharedSource\**\*.cs" Link="SharedSource\%(Filename)%(Extension)"/>
+    <Compile Include="..\SharedSource\**\*.cs" Link="SharedSource\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -165,12 +165,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 				Intent = TableIntent.Settings;
 
-				var assembly = typeof(TestCases).GetTypeInfo().Assembly;
+				var assembly = typeof(TestCases).Assembly;
 
 				_issues =
-					(from typeInfo in assembly.DefinedTypes.Select(o => o.AsType().GetTypeInfo())
-					 where typeInfo.GetCustomAttribute<IssueAttribute>() != null
-					 let attribute = typeInfo.GetCustomAttribute<IssueAttribute>()
+					(from type in assembly.GetTypes()
+					 let attribute = type.GetCustomAttribute<IssueAttribute>()
+					 where attribute != null
 					 select new IssueModel
 					 {
 						 IssueTracker = attribute.IssueTracker,
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 						 IssueTestNumber = attribute.IssueTestNumber,
 						 Name = attribute.DisplayName,
 						 Description = attribute.Description,
-						 Action = ActivatePageAndNavigate(attribute, typeInfo.AsType())
+						 Action = ActivatePageAndNavigate(attribute, type)
 					 }).ToList();
 
 				VerifyNoDuplicates();
@@ -363,7 +363,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				default:
 					page.Title = "Test Cases";
 					break;
-				case Device.UWP:
+				case Device.WinUI:
 					page.Title = "Tests";
 					break;
 			}

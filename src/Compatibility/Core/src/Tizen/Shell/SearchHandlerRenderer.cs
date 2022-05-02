@@ -6,6 +6,7 @@ using NSearchBar = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.S
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SearchHandlerRenderer : IDisposable
 	{
 		bool disposedValue;
@@ -152,7 +153,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			var data = (e.Item.Data as View).BindingContext;
 			SearchHandlerController.ItemSelected(data);
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.Dispatch(() =>
 			{
 				DeinitializeSearchResultList();
 			});
@@ -269,14 +270,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				{
 					_searchResultList.Hide();
 				}
-				Device.BeginInvokeOnMainThread(() =>
-				{
-					Device.StartTimer(TimeSpan.FromMilliseconds(100), () =>
-					{
-						DeinitializeSearchResultList();
-						return false;
-					});
-				});
+				Application.Current.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () => DeinitializeSearchResultList());
 			}
 		}
 

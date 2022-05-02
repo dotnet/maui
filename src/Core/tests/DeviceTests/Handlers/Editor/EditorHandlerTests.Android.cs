@@ -56,12 +56,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = editor.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
+			Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
 		}
 
 		[Fact(DisplayName = "Horizontal TextAlignment Initializes Correctly")]
@@ -80,13 +80,13 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = editorStub.HorizontalTextAlignment,
-					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+					PlatformViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
 
-			(var gravity, var textAlignment) = values.NativeViewValue;
+			(var gravity, var textAlignment) = values.PlatformViewValue;
 
 			// Device Tests runner has RTL support enabled, so we expect TextAlignment values
 			// (If it didn't, we'd have to fall back to gravity)
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		static AppCompatEditText GetNativeEditor(EditorHandler editorHandler) =>
-			(AppCompatEditText)editorHandler.NativeView;
+			(AppCompatEditText)editorHandler.PlatformView;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;

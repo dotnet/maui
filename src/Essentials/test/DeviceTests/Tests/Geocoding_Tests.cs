@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices.Sensors;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public Geocoding_Tests()
 		{
 #if WINDOWS_UWP || WINDOWS
-			Platform.MapServiceToken = "RJHqIE53Onrqons5CNOx~FrDr3XhjDTyEXEjng-CRoA~Aj69MhNManYUKxo6QcwZ0wmXBtyva0zwuHB04rFYAPf7qqGJ5cHb03RCDw1jIW8l";
+			ApplicationModel.Platform.MapServiceToken = "RJHqIE53Onrqons5CNOx~FrDr3XhjDTyEXEjng-CRoA~Aj69MhNManYUKxo6QcwZ0wmXBtyva0zwuHB04rFYAPf7qqGJ5cHb03RCDw1jIW8l";
 #endif
 		}
 
@@ -64,6 +64,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		static bool IsEmulatorFailure(Exception ex) =>
-			ex.Message.ToLower().Contains("grpc") || ex.Message.ToLower().Contains("service not available");
+			ex.Message.Contains("grpc", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("service not available", StringComparison.OrdinalIgnoreCase);
 	}
 }

@@ -7,6 +7,9 @@ namespace Microsoft.Maui.Platform
 {
 	public class LayoutView : MauiView
 	{
+		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
+		// If you make changes here please review if those changes should also
+		// apply to ViewHandlerExtensions.MeasureVirtualView
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (CrossPlatformMeasure == null)
@@ -22,6 +25,9 @@ namespace Microsoft.Maui.Platform
 			return crossPlatformSize.ToCGSize();
 		}
 
+		// TODO: Possibly reconcile this code with ViewHandlerExtensions.LayoutVirtualView
+		// If you make changes here please review if those changes should also
+		// apply to ViewHandlerExtensions.LayoutVirtualView
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
@@ -45,6 +51,6 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
+		internal Func<Rect, Size>? CrossPlatformArrange { get; set; }
 	}
 }

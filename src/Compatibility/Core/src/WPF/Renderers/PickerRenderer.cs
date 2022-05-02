@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
+			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
 		void OnControlSelectionChanged(object sender, WSelectionChangedEventArgs e)

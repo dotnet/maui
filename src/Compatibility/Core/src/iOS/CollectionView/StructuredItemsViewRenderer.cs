@@ -2,6 +2,7 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class StructuredItemsViewRenderer<TItemsView, TViewController> : ItemsViewRenderer<TItemsView, TViewController>
 		where TItemsView : StructuredItemsView
 		where TViewController : StructuredItemsViewController<TItemsView>

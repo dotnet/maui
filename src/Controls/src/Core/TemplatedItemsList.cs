@@ -3,16 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Cadenza.Collections;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Internals
 {
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public sealed class TemplatedItemsList<TView, TItem> : BindableObject, ITemplatedItemsList<TItem>, IList, IDisposable
+	public sealed class TemplatedItemsList<TView, [DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers)] TItem> : BindableObject, ITemplatedItemsList<TItem>, IList, IDisposable
 												where TView : BindableObject, IItemsView<TItem>
 												where TItem : BindableObject
 	{
@@ -1202,7 +1204,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 			//Hack: the cell could still be visible on iOS because the cells are reloaded after this unhook 
 			//this causes some visual updates caused by a null datacontext and default values like IsVisible
-			if (Device.RuntimePlatform == Device.iOS && CachingStrategy == ListViewCachingStrategy.RetainElement)
+			if (DeviceInfo.Platform == DevicePlatform.iOS && CachingStrategy == ListViewCachingStrategy.RetainElement)
 				await Task.Delay(100);
 			item.BindingContext = null;
 		}

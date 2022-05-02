@@ -20,6 +20,46 @@ namespace Microsoft.Maui.DeviceTests
 		where TStub : StubBase, IImageStub, new()
 	{
 		[Theory(
+#if IOS
+			Skip = "Test failing on IOS"
+#endif
+			)]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#000000")]
+		public async Task UpdatingSourceUpdatesImageCorrectly(string colorHex)
+		{
+			// create files
+			var expectedColor = Color.FromArgb(colorHex);
+			var firstPath = BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Blue);
+			var secondPath = BaseImageSourceServiceTests.CreateBitmapFile(100, 100, expectedColor);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var image = new TStub { Width = 100, Height = 100 };
+				var handler = CreateHandler(image);
+				var platformView = GetPlatformImageView(handler);
+
+				await platformView.AttachAndRun(async () =>
+				{
+					// the first one works
+					image.Source = new FileImageSourceStub(firstPath);
+					handler.UpdateValue(nameof(IImage.Source));
+					await image.Wait();
+
+					await platformView.AssertContainsColor(Colors.Blue.ToPlatform());
+
+					// the second one does not
+					image.Source = new FileImageSourceStub(secondPath);
+					handler.UpdateValue(nameof(IImage.Source));
+					await image.Wait();
+
+					await platformView.AssertContainsColor(expectedColor.ToPlatform());
+				});
+			});
+		}
+
+		[Theory(
 #if _ANDROID__
 			Skip = "Test failing on ANDROID"
 #endif
@@ -49,7 +89,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var expectedColor = Color.FromArgb(colorHex);
 
-				await handler.TypedNativeView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor);
 			});
 
 			Assert.Equal(new[] { "LoadingStarted", "LoadingCompleted(True)" }, order);
@@ -76,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await GetNativeImageView(handler).AttachAndRun(() =>
+				await GetPlatformImageView(handler).AttachAndRun(() =>
 				{
 					Assert.Equal(isAnimating, GetNativeIsAnimationPlaying(handler));
 				});
@@ -98,7 +138,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(image, () => image.Aspect, (h) => GetNativeAspect(h), aspect);
 		}
 
-		[Theory]
+		[Theory(Skip = "See: https://github.com/dotnet/maui/issues/6415")]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#000000")]
@@ -125,21 +165,19 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				var handler = (INativeViewHandler)CreateHandler(image);
+				var handler = (IPlatformViewHandler)CreateHandler(image);
 
-				await image.Wait();
+				await image.Wait(timeout: 5000);
 
 #if __ANDROID__
-				handler.NativeView.SetMinimumHeight(1);
-				handler.NativeView.SetMinimumWidth(1);
+				handler.PlatformView.SetMinimumHeight(1);
+				handler.PlatformView.SetMinimumWidth(1);
 #endif
 
-				await handler.NativeView.AssertContainsColor(color);
+				await handler.PlatformView.AssertContainsColor(color);
 			});
 
-			await Task.Delay(1000);
-
-			Assert.Equal(new[] { "LoadingStarted", "LoadingFailed" }, order);
+			Assert.Equal(new List<string> { "LoadingStarted", "LoadingFailed" }, order);
 			Assert.NotNull(exception);
 		}
 
@@ -195,7 +233,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(new[] { "Before Starting", "Starting", "DoWork", "Finishing", "After Finishing" }, order.ToArray());
 
 				// make sure it did actually work
-				await handler.NativeView.AssertContainsColor(Colors.Blue);
+				await handler.PlatformView.AssertContainsColor(Colors.Blue);
 
 				return handler.ImageEvents;
 			});
@@ -252,7 +290,7 @@ namespace Microsoft.Maui.DeviceTests
 				await image.Wait();
 
 				// make sure it did actually work
-				await handler.NativeView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
 
 				return handler.ImageEvents;
 			});
@@ -272,8 +310,8 @@ namespace Microsoft.Maui.DeviceTests
 			handler.SetVirtualView(view);
 			view.Handler = handler;
 
-			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
-			handler.NativeArrange(view.Frame);
+			view.Arrange(new Rect(0, 0, view.Width, view.Height));
+			handler.PlatformArrange(view.Frame);
 
 			return handler;
 		}

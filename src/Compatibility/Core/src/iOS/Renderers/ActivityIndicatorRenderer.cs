@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, UIActivityIndicatorView>
 	{
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
@@ -76,7 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler]
 		void UpdateColor()
 		{
-			Control.Color = Element.Color == null ? null : Element.Color.ToUIColor();
+			Control.Color = Element.Color == null ? null : Element.Color.ToPlatform();
 		}
 
 		[PortHandler]

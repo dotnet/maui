@@ -5,6 +5,7 @@ using EImage = ElmSharp.Image;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class ShellMoreToolbar : GenList
 	{
 		GenItemClass _defaultClass = null;

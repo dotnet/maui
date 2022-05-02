@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SliderExtensions
 	{
-		public const double NativeMaxValue = int.MaxValue;
+		public const double PlatformMaxValue = int.MaxValue;
 
 		public static void UpdateMinimum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
@@ -20,56 +20,31 @@ namespace Microsoft.Maui.Platform
 			var max = slider.Maximum;
 			var value = slider.Value;
 
-			seekBar.Progress = (int)((value - min) / (max - min) * NativeMaxValue);
+			seekBar.Progress = (int)((value - min) / (max - min) * PlatformMaxValue);
 		}
 
-		public static void UpdateMinimumTrackColor(this SeekBar seekBar, ISlider slider) =>
-			UpdateMinimumTrackColor(seekBar, slider, null, null);
-
-		public static void UpdateMinimumTrackColor(this SeekBar seekBar, ISlider slider, ColorStateList? defaultProgressTintList, PorterDuff.Mode? defaultProgressTintMode)
+		public static void UpdateMinimumTrackColor(this SeekBar seekBar, ISlider slider)
 		{
-			if (slider.MinimumTrackColor == null)
+			if (slider.MinimumTrackColor != null)
 			{
-				if (defaultProgressTintList != null)
-					seekBar.ProgressTintList = defaultProgressTintList;
-
-				if (defaultProgressTintMode != null)
-					seekBar.ProgressTintMode = defaultProgressTintMode;
-			}
-			else
-			{
-				seekBar.ProgressTintList = ColorStateList.ValueOf(slider.MinimumTrackColor.ToNative());
+				seekBar.ProgressTintList = ColorStateList.ValueOf(slider.MinimumTrackColor.ToPlatform());
 				seekBar.ProgressTintMode = PorterDuff.Mode.SrcIn;
 			}
 		}
 
-		public static void UpdateMaximumTrackColor(this SeekBar seekBar, ISlider slider) =>
-			UpdateMaximumTrackColor(seekBar, slider, null, null);
-
-		public static void UpdateMaximumTrackColor(this SeekBar seekBar, ISlider slider, ColorStateList? defaultProgressBackgroundTintList, PorterDuff.Mode? defaultProgressBackgroundTintMode)
+		public static void UpdateMaximumTrackColor(this SeekBar seekBar, ISlider slider)
 		{
-			if (slider.MaximumTrackColor == null)
+			if (slider.MaximumTrackColor != null)
 			{
-				if (defaultProgressBackgroundTintList != null)
-					seekBar.ProgressBackgroundTintList = defaultProgressBackgroundTintList;
-
-				if (defaultProgressBackgroundTintMode != null)
-					seekBar.ProgressBackgroundTintMode = defaultProgressBackgroundTintMode;
-			}
-			else
-			{
-				seekBar.ProgressBackgroundTintList = ColorStateList.ValueOf(slider.MaximumTrackColor.ToNative());
+				seekBar.ProgressBackgroundTintList = ColorStateList.ValueOf(slider.MaximumTrackColor.ToPlatform());
 				seekBar.ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
 			}
 		}
 
 		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider) =>
-			UpdateThumbColor(seekBar, slider);
+			seekBar.Thumb?.SetColorFilter(slider.ThumbColor, FilterMode.SrcIn);
 
-		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider, ColorFilter? defaultThumbColorFilter) =>
-			seekBar.Thumb?.SetColorFilter(slider.ThumbColor, FilterMode.SrcIn, defaultThumbColorFilter);
-
-		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider, Drawable? defaultThumb)
+		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var context = seekBar.Context;
 
@@ -82,10 +57,11 @@ namespace Microsoft.Maui.Platform
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var result = await service.GetDrawableAsync(thumbImageSource, context);
-				Drawable? thumbDrawable = result?.Value;
 
-				if (seekBar.IsAlive())
-					seekBar.SetThumb(thumbDrawable ?? defaultThumb);
+				var thumbDrawable = result?.Value;
+
+				if (seekBar.IsAlive() && thumbDrawable != null)
+					seekBar.SetThumb(thumbDrawable);
 			}
 		}
 	}

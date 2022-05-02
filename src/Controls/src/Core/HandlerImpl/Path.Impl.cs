@@ -10,9 +10,11 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			base.OnPropertyChanged(propertyName);
 
-			if (propertyName == DataProperty.PropertyName ||
-				propertyName == RenderTransformProperty.PropertyName)
+			if (propertyName == DataProperty.PropertyName)
+			{
+				HeightRequest = this.WidthRequest = double.NaN;
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
+			}
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='GetPath']/Docs" />

@@ -6,18 +6,6 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class VisualElementExtensions
 	{
-		public static IViewHandler? GetOrCreateHandler(this IView self, IMauiContext mauiContext)
-		{
-			if (self == null)
-				throw new ArgumentNullException("self");
-
-			if (self.Handler != null)
-				return self.Handler;
-
-			self.ToNative(mauiContext);
-			return self.Handler;
-		}
-
 		internal static void Cleanup(this Element self)
 		{
 			if (self == null)

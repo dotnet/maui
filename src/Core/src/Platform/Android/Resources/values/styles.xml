@@ -6,6 +6,8 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:actionMenuTextColor">@color/colorActionMenuTextColor</item>
+        <item name="appBarLayoutStyle">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+        <item name="bottomNavigationViewStyle">@style/Widget.Design.BottomNavigationView</item>
         <item name="materialButtonStyle">@style/MauiMaterialButton</item>
         <item name="android:textAllCaps">false</item>
     </style>
@@ -13,8 +15,15 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionModeOverlay">true</item>
+        <item name="android:actionModeBackground">?attr/colorPrimary</item>
+        <item name="android:actionModeStyle">@style/ActionMode</item>
     </style>
 
+    <style name="ActionMode">
+      <item name="android:background">?attr/colorPrimary</item>
+      <item name="android:height">?attr/actionBarSize</item>
+    </style>
+  
     <!-- Splash theme -->
     <style name="Maui.SplashTheme" parent="Maui.MainTheme.NoActionBar">
         <item name="maui_splash">true</item>
@@ -28,7 +37,7 @@
     <style name="AppTheme" parent="Maui.MainTheme" />
     <style name="AppTheme.NoActionBar" parent="Maui.MainTheme.NoActionBar" />
 
-    <style name="MauiMaterialButton" parent="Widget.MaterialComponents.Button">
+    <style name="MauiMaterialButton" parent="Widget.MaterialComponents.Button.UnelevatedButton">
       <!-- remove all the min sizes as MAUI manages it -->
       <item name="android:minWidth">0dp</item>
       <item name="android:minHeight">0dp</item>

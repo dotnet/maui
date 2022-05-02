@@ -1,28 +1,24 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
 using Android.Webkit;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Primitives;
+using Microsoft.Maui;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using static Android.Views.ViewGroup;
+using AWebView = Android.Webkit.WebView;
 using Path = System.IO.Path;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
-	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, BlazorAndroidWebView>
+	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, AWebView>
 	{
 		private WebViewClient? _webViewClient;
 		private WebChromeClient? _webChromeClient;
 		private AndroidWebKitWebViewManager? _webviewManager;
 		internal AndroidWebKitWebViewManager? WebviewManager => _webviewManager;
 
-		protected override BlazorAndroidWebView CreateNativeView()
+		protected override AWebView CreatePlatformView()
 		{
 			var blazorAndroidWebView = new BlazorAndroidWebView(Context!)
 			{
@@ -31,26 +27,29 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #pragma warning restore 618
 			};
 
-			BlazorAndroidWebView.SetWebContentsDebuggingEnabled(enabled: true);
+			BlazorAndroidWebView.SetWebContentsDebuggingEnabled(enabled: DeveloperTools.Enabled);
 
 			if (blazorAndroidWebView.Settings != null)
 			{
+				// To allow overriding UrlLoadingStrategy.OpenInWebView and open links in browser with a _blank target
+				blazorAndroidWebView.Settings.SetSupportMultipleWindows(true);
+
 				blazorAndroidWebView.Settings.JavaScriptEnabled = true;
 				blazorAndroidWebView.Settings.DomStorageEnabled = true;
 			}
 
-			_webViewClient = GetWebViewClient();
+			_webViewClient = new WebKitWebViewClient(this);
 			blazorAndroidWebView.SetWebViewClient(_webViewClient);
 
-			_webChromeClient = GetWebChromeClient();
+			_webChromeClient = new BlazorWebChromeClient();
 			blazorAndroidWebView.SetWebChromeClient(_webChromeClient);
 
 			return blazorAndroidWebView;
 		}
 
-		protected override void DisconnectHandler(BlazorAndroidWebView nativeView)
+		protected override void DisconnectHandler(AWebView platformView)
 		{
-			nativeView.StopLoading();
+			platformView.StopLoading();
 
 			if (_webviewManager != null)
 			{
@@ -81,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				return;
 			}
-			if (NativeView == null)
+			if (PlatformView == null)
 			{
 				throw new InvalidOperationException($"Can't start {nameof(BlazorWebView)} without native web view instance.");
 			}
@@ -93,7 +92,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
-			_webviewManager = new AndroidWebKitWebViewManager(this, NativeView, Services!, ComponentsDispatcher, fileProvider, VirtualView.JSComponents, hostPageRelativePath);
+			_webviewManager = new AndroidWebKitWebViewManager(
+				PlatformView,
+				Services!,
+				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
+				fileProvider,
+				VirtualView.JSComponents,
+				contentRootDir,
+				hostPageRelativePath);
+
+			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
+
+			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs());
+			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
+			{
+				WebView = PlatformView,
+			});
 
 			if (RootComponents != null)
 			{
@@ -111,11 +125,5 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			return new AndroidMauiAssetFileProvider(Context.Assets, contentRootDir);
 		}
-
-		protected virtual WebViewClient GetWebViewClient() =>
-			new WebKitWebViewClient(this);
-
-		protected virtual WebChromeClient GetWebChromeClient() =>
-			new WebChromeClient();
 	}
 }

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			DeviceDisplay.SetCurrent(new TestDeviceDisplay());
+			DeviceDisplay.SetCurrent(new MockDeviceDisplay());
 		}
 
 		[Test]

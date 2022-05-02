@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -7,20 +8,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class DataTemplateSelectorTests : BaseTestFixture
 	{
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
 		class TemplateOne : DataTemplate
 		{
 			public TemplateOne() : base(typeof(ViewCell))
@@ -94,18 +81,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class DataTemplateRecycleTests : BaseTestFixture
 	{
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
+			DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
 		}
 
 		class TestDataTemplateSelector : DataTemplateSelector
@@ -138,8 +118,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var listView = new ListView(ListViewCachingStrategy.RecycleElementAndDataTemplate);
 			listView.ItemsSource = new object[] { "foo", "bar", 0 };
 
-			Assert.That(listView.CachingStrategy ==
-				ListViewCachingStrategy.RecycleElementAndDataTemplate);
+			Assert.AreEqual(ListViewCachingStrategy.RecycleElementAndDataTemplate, listView.CachingStrategy);
 
 			var selector = new TestDataTemplateSelector();
 			listView.ItemTemplate = selector;

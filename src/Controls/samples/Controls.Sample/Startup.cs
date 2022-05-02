@@ -10,11 +10,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Foldable;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.Hosting;
 
 #if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Components.WebView.Maui;
@@ -28,7 +31,7 @@ namespace Maui.Controls.Sample
 	{
 		static bool UseMauiGraphicsSkia = false;
 
-		enum PageType { Main, Blazor, Shell, Template, FlyoutPage }
+		enum PageType { Main, Blazor, Shell, Template, FlyoutPage, TabbedPage }
 		readonly static PageType _pageType = PageType.Main;
 
 		public static MauiApp CreateMauiApp()
@@ -36,6 +39,9 @@ namespace Maui.Controls.Sample
 			var appBuilder = MauiApp.CreateBuilder();
 
 			appBuilder.UseMauiApp<XamlApp>();
+#if TIZEN
+			appBuilder.UseMauiCompatibility();
+#endif
 			var services = appBuilder.Services;
 
 			if (UseMauiGraphicsSkia)
@@ -56,20 +62,25 @@ namespace Maui.Controls.Sample
 				*/
 			}
 
-			appBuilder
-				.ConfigureMauiHandlers(handlers =>
-				{
-#if __ANDROID__
-					handlers.AddCompatibilityRenderer(typeof(CustomButton),
-						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer));
-#elif __IOS__
-					handlers.AddCompatibilityRenderer(typeof(CustomButton),
-						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
-#elif WINDOWS
-					handlers.AddCompatibilityRenderer(typeof(CustomButton),
-						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
-#endif
-				});
+			//			appBuilder
+			//				.ConfigureMauiHandlers(handlers =>
+			//				{
+			//#pragma warning disable CS0618 // Type or member is obsolete
+			//#if __ANDROID__
+			//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+			//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer));
+			//#elif __IOS__
+			//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+			//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
+			//#elif WINDOWS
+			//					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+			//						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
+			// #elif TIZEN
+			// 					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+			// 						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Tizen.ButtonRenderer));
+			// #endif
+			//#pragma warning restore CS0618 // Type or member is obsolete
+			//				});
 
 			// Use a "third party" library that brings in a massive amount of controls
 			appBuilder.UseBordelessEntry();
@@ -88,9 +99,10 @@ namespace Maui.Controls.Sample
 					});
 
 #if NET6_0_OR_GREATER
-			appBuilder
-				.RegisterBlazorMauiWebView();
-			services.AddBlazorWebView();
+			services.AddMauiBlazorWebView();
+#if DEBUG
+			services.AddBlazorWebViewDeveloperTools();
+#endif
 #endif
 
 			services.AddLogging(logging =>
@@ -117,6 +129,7 @@ namespace Maui.Controls.Sample
 					PageType.Shell => typeof(AppShell),
 					PageType.Main => typeof(CustomNavigationPage),
 					PageType.FlyoutPage => typeof(CustomFlyoutPage),
+					PageType.TabbedPage => typeof(Pages.TabbedPageGallery),
 					PageType.Blazor =>
 #if NET6_0_OR_GREATER
 						typeof(BlazorPage),
@@ -143,7 +156,6 @@ namespace Maui.Controls.Sample
 				.ConfigureEssentials(essentials =>
 				{
 					essentials
-						.UseVersionTracking()
 						.UseMapServiceToken("YOUR-KEY-HERE")
 						.AddAppAction("test_action", "Test App Action")
 						.AddAppAction("second_action", "Second App Action")
@@ -151,6 +163,10 @@ namespace Maui.Controls.Sample
 						{
 							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
 						});
+
+					// TODO: Unpackaged apps need to know the package ID and local data locations
+					if (AppInfo.PackagingModel == AppPackagingModel.Packaged)
+						essentials.UseVersionTracking();
 				})
 				.ConfigureLifecycleEvents(events =>
 				{
@@ -212,11 +228,25 @@ namespace Maui.Controls.Sample
 #elif WINDOWS
 					// Log everything in this one
 					events.AddWindows(windows => windows
-						//.OnNativeMessage((a, b) => LogEvent(nameof(WindowsLifecycle.OnNativeMessage)))
+						// .OnPlatformMessage((a, b) => 
+						//	LogEvent(nameof(WindowsLifecycle.OnPlatformMessage)))
 						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
 						.OnVisibilityChanged((a, b) => LogEvent(nameof(WindowsLifecycle.OnVisibilityChanged))));
+#elif TIZEN
+					events.AddTizen(tizen => tizen
+						.OnAppControlReceived((a, b) => LogEvent(nameof(TizenLifecycle.OnAppControlReceived)))
+						.OnCreate((a) => LogEvent(nameof(TizenLifecycle.OnCreate)))
+						.OnDeviceOrientationChanged((a, b) => LogEvent(nameof(TizenLifecycle.OnDeviceOrientationChanged)))
+						.OnLocaleChanged((a, b) => LogEvent(nameof(TizenLifecycle.OnLocaleChanged)))
+						.OnLowBattery((a, b) => LogEvent(nameof(TizenLifecycle.OnLowBattery)))
+						.OnLowMemory((a, b) => LogEvent(nameof(TizenLifecycle.OnLowMemory)))
+						.OnPause((a) => LogEvent(nameof(TizenLifecycle.OnPause)))
+						.OnPreCreate((a) => LogEvent(nameof(TizenLifecycle.OnPreCreate)))
+						.OnRegionFormatChanged((a, b) => LogEvent(nameof(TizenLifecycle.OnRegionFormatChanged)))
+						.OnResume((a) => LogEvent(nameof(TizenLifecycle.OnResume)))
+						.OnTerminate((a) => LogEvent(nameof(TizenLifecycle.OnTerminate))));
 #endif
 
 					static bool LogEvent(string eventName, string type = null)
@@ -225,6 +255,12 @@ namespace Maui.Controls.Sample
 						return true;
 					}
 				});
+
+			//appBuilder
+			//	.UseFoldable();
+
+			// If someone wanted to completely turn off the CascadeInputTransparent behavior in their application, this next line would be an easy way to do it
+			// Microsoft.Maui.Controls.Layout.ControlsLayoutMapper.ModifyMapping(nameof(Microsoft.Maui.Controls.Layout.CascadeInputTransparent), (_, _, _) => { });
 
 			return appBuilder.Build();
 		}

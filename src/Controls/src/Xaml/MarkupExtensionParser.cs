@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				//implicit property
 				var t = markupExtension.GetType();
-				prop = ApplyPropertiesVisitor.GetContentPropertyName(t.GetTypeInfo());
+				prop = ApplyPropertiesVisitor.GetContentPropertyName(t);
 				if (prop == null)
 					return;
 				try

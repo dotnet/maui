@@ -1,4 +1,6 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -7,7 +9,7 @@ namespace Microsoft.Maui.Controls
 		WeakReference<BindableObject> _weakTarget;
 		BindableProperty _targetProperty;
 
-		public AppThemeBinding() => Application.Current.RequestedThemeChanged += (o, e) => Device.BeginInvokeOnMainThread(() => ApplyCore());
+		public AppThemeBinding() => Application.Current.RequestedThemeChanged += (o, e) => ApplyCore(true);
 
 		internal override BindingBase Clone() => new AppThemeBinding
 		{
@@ -39,12 +41,17 @@ namespace Microsoft.Maui.Controls
 			_targetProperty = null;
 		}
 
-		void ApplyCore()
+		void ApplyCore(bool dispatch = false)
 		{
 			if (_weakTarget == null || !_weakTarget.TryGetTarget(out var target))
 				return;
 
-			target?.SetValueCore(_targetProperty, GetValue());
+			if (dispatch)
+				target.Dispatcher.DispatchIfRequired(Set);
+			else
+				Set();
+
+			void Set() => target.SetValueCore(_targetProperty, GetValue());
 		}
 
 		object _light;
@@ -75,15 +82,10 @@ namespace Microsoft.Maui.Controls
 		public object Default { get; set; }
 
 		object GetValue()
-		{
-			switch (Application.Current.RequestedTheme)
-			{
-				default:
-				case OSAppTheme.Light:
-					return _isLightSet ? Light : Default;
-				case OSAppTheme.Dark:
-					return _isDarkSet ? Dark : Default;
-			}
-		}
+			=> Application.Current.RequestedTheme switch
+				{
+					AppTheme.Dark => _isDarkSet ? Dark : Default,
+					_ => _isLightSet ? Light : Default,
+				};
 	}
 }

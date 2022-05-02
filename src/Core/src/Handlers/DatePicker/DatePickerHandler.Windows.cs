@@ -6,62 +6,54 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, CalendarDatePicker>
 	{
-		WBrush? _defaultForeground;
+		protected override CalendarDatePicker CreatePlatformView() => new CalendarDatePicker();
 
-		protected override CalendarDatePicker CreateNativeView() => new CalendarDatePicker();
-
-		protected override void ConnectHandler(CalendarDatePicker nativeView)
+		protected override void ConnectHandler(CalendarDatePicker platformView)
 		{
-			nativeView.DateChanged += DateChanged;
+			platformView.DateChanged += DateChanged;
 		}
 
-		protected override void DisconnectHandler(CalendarDatePicker nativeView)
+		protected override void DisconnectHandler(CalendarDatePicker platformView)
 		{
-			nativeView.DateChanged -= DateChanged;
+			platformView.DateChanged -= DateChanged;
 		}
 
-		void SetupDefaults(CalendarDatePicker nativeView)
+		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			_defaultForeground = nativeView.Foreground;
-
-			
+			handler.PlatformView?.UpdateDate(datePicker);
 		}
 
-		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateDate(datePicker);
+			handler.PlatformView?.UpdateDate(datePicker);
 		}
 
-		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateDate(datePicker);
+			handler.PlatformView?.UpdateMinimumDate(datePicker);
 		}
 
-		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMinimumDate(datePicker);
+			handler.PlatformView?.UpdateMaximumDate(datePicker);
 		}
 
-		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMaximumDate(datePicker);
+			handler.PlatformView?.UpdateCharacterSpacing(datePicker);
 		}
 
-		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
-		{
-			handler.NativeView?.UpdateCharacterSpacing(datePicker);
-		}
-
-		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(datePicker, fontManager);
+			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultForeground);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
 		private void DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)

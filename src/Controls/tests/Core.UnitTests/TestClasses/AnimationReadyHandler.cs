@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return view;
 		}
 
-		protected override object CreateNativeView() => new();
+		protected override object CreatePlatformView() => new();
 
 		public IAnimationManager AnimationManager => ((AnimationReadyMauiContext)MauiContext).AnimationManager;
 

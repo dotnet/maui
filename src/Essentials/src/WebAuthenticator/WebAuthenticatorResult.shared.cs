@@ -2,18 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Authentication
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.WebAuthenticatorResult']/Docs" />
 	public class WebAuthenticatorResult
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public WebAuthenticatorResult()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public WebAuthenticatorResult(Uri uri)
 		{
 			foreach (var kvp in WebUtils.ParseQueryString(uri.ToString()))
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public WebAuthenticatorResult(IDictionary<string, string> properties)
 		{
 			foreach (var kvp in properties)

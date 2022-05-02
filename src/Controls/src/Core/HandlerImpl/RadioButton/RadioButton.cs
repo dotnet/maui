@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 			RadioButtonHandler.Mapper = ControlsRadioButtonMapper;
 
 #if ANDROID
-			RadioButtonHandler.NativeViewFactory = CreatePlatformView;
+			RadioButtonHandler.PlatformViewFactory = CreatePlatformView;
 #endif
 		}
 	}

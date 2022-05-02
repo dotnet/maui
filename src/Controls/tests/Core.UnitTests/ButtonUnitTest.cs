@@ -7,20 +7,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class ButtonUnitTest
 		: CommandSourceTests<Button>
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void MeasureInvalidatedOnTextChange()
 		{
@@ -141,33 +127,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			source.File = "foo.png";
 			Assert.NotNull(source.File);
 			Assert.True(fired);
-		}
-
-		[Test]
-		public void AssignToFontStructUpdatesFontFamily(
-			[Values(NamedSize.Default, NamedSize.Large, NamedSize.Medium, NamedSize.Small, NamedSize.Micro)] NamedSize size,
-			[Values(FontAttributes.None, FontAttributes.Bold, FontAttributes.Italic, FontAttributes.Bold | FontAttributes.Italic)] FontAttributes attributes)
-		{
-			var button = new Button();
-			double startSize = button.FontSize;
-			var startAttributes = button.FontAttributes;
-
-			bool firedSizeChanged = false;
-			bool firedAttributesChanged = false;
-			button.PropertyChanged += (sender, args) =>
-			{
-				if (args.PropertyName == Label.FontSizeProperty.PropertyName)
-					firedSizeChanged = true;
-				if (args.PropertyName == Label.FontAttributesProperty.PropertyName)
-					firedAttributesChanged = true;
-			};
-
-			button.SetValue(FontElement.FontProperty, Font.OfSize("Testing123", Device.GetNamedSize(size, typeof(Label), true)).WithAttributes(attributes));
-
-			Assert.AreEqual(Device.GetNamedSize(size, typeof(Label), true), button.FontSize);
-			Assert.AreEqual(attributes, button.FontAttributes);
-			Assert.AreEqual(startSize != button.FontSize, firedSizeChanged);
-			Assert.AreEqual(startAttributes != button.FontAttributes, firedAttributesChanged);
 		}
 
 		[Test]

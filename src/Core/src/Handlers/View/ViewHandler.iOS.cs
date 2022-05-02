@@ -1,4 +1,4 @@
-﻿using NativeView = UIKit.UIView;
+﻿using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 		static partial void MappingFrame(IViewHandler handler, IView view)
 		{
 			UpdateTransformation(handler, view);
-			handler.GetWrappedNativeView()?.UpdateBackgroundLayerFrame();
+			handler.ToPlatform().UpdateBackgroundLayerFrame();
 		}
 
 		public static void MapTranslationX(IViewHandler handler, IView view)
@@ -60,9 +60,31 @@ namespace Microsoft.Maui.Handlers
 			UpdateTransformation(handler, view);
 		}
 
+		public static void MapBackgroundImageSource(IViewHandler handler, IView view)
+		{
+			if (view is not IViewBackgroundImagePart viewBackgroundImagePart)
+				return;
+
+			if (handler.PlatformView is not PlatformView platformView)
+				return;
+
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			platformView.UpdateBackgroundImageSourceAsync(viewBackgroundImagePart, provider)
+				.FireAndForget(handler);
+		}
+
 		internal static void UpdateTransformation(IViewHandler handler, IView view)
 		{
-			handler.GetWrappedNativeView()?.UpdateTransformation(view);
+			handler.ToPlatform().UpdateTransformation(view);
+		}
+
+		public virtual bool NeedsContainer
+		{
+			get
+			{
+				return VirtualView?.Clip != null || VirtualView?.Shadow != null || (VirtualView as IBorder)?.Border != null;
+			}
 		}
 	}
 }

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	{
 		internal static bool UpdateFlowDirection(this UIView view, IVisualElementController controller)
 		{
-			if (controller == null || view == null || !Forms.IsiOS9OrNewer)
+			if (controller == null || view == null)
 				return false;
 
 			if (controller is IView v)

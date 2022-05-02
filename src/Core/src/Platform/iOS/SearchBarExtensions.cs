@@ -1,11 +1,15 @@
 ﻿using Foundation;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class SearchBarExtensions
 	{
+		public static void UpdateIsEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			uiSearchBar.UserInteractionEnabled = searchBar.IsEnabled;
+		}
+
 		public static void UpdateText(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			uiSearchBar.Text = searchBar.Text;
@@ -24,7 +28,7 @@ namespace Microsoft.Maui.Platform
 
 			textField.AttributedPlaceholder = foregroundColor == null
 				? new NSAttributedString(placeholder)
-				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToNative());
+				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToPlatform());
 
 			textField.AttributedPlaceholder.WithCharacterSpacing(searchBar.CharacterSpacing);
 		}
@@ -56,7 +60,7 @@ namespace Microsoft.Maui.Platform
 			if (textField == null)
 				return;
 
-			textField.VerticalAlignment = searchBar.VerticalTextAlignment.ToNative();
+			textField.VerticalAlignment = searchBar.VerticalTextAlignment.ToPlatformVertical();
 		}
 
 		public static void UpdateMaxLength(this UISearchBar uiSearchBar, ISearchBar searchBar)
@@ -72,8 +76,12 @@ namespace Microsoft.Maui.Platform
 				uiSearchBar.Text = currentControlText.Substring(0, maxLength);
 		}
 
-		public static void UpdateCancelButton(this UISearchBar uiSearchBar, ISearchBar searchBar,
-			UIColor? cancelButtonTextColorDefaultNormal, UIColor? cancelButtonTextColorDefaultHighlighted, UIColor? cancelButtonTextColorDefaultDisabled)
+		public static void UpdateIsReadOnly(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			uiSearchBar.UserInteractionEnabled = !(searchBar.IsReadOnly || searchBar.InputTransparent);
+		}
+
+		public static void UpdateCancelButton(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			uiSearchBar.ShowsCancelButton = !string.IsNullOrEmpty(uiSearchBar.Text);
 
@@ -84,17 +92,11 @@ namespace Microsoft.Maui.Platform
 			if (cancelButton == null)
 				return;
 
-			if (searchBar.CancelButtonColor == null)
+			if (searchBar.CancelButtonColor != null)
 			{
-				cancelButton.SetTitleColor(cancelButtonTextColorDefaultNormal, UIControlState.Normal);
-				cancelButton.SetTitleColor(cancelButtonTextColorDefaultHighlighted, UIControlState.Highlighted);
-				cancelButton.SetTitleColor(cancelButtonTextColorDefaultDisabled, UIControlState.Disabled);
-			}
-			else
-			{
-				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToNative(), UIControlState.Normal);
-				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToNative(), UIControlState.Highlighted);
-				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToNative(), UIControlState.Disabled);
+				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToPlatform(), UIControlState.Normal);
+				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToPlatform(), UIControlState.Highlighted);
+				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToPlatform(), UIControlState.Disabled);
 			}
 		}
 

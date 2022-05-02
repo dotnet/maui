@@ -117,13 +117,13 @@ namespace Microsoft.Maui.Controls.Platform
 		public static readonly DependencyProperty ItemSpacingProperty = DependencyProperty.Register(
 			nameof(ItemSpacing), typeof(Thickness), typeof(ItemContentControl),
 			new PropertyMetadata(default(Thickness)));
-		
+
 		public Thickness ItemSpacing
 		{
 			get => (Thickness)GetValue(ItemSpacingProperty);
 			set => SetValue(ItemSpacingProperty, value);
 		}
-				
+
 		protected override void OnContentChanged(object oldContent, object newContent)
 		{
 			base.OnContentChanged(oldContent, newContent);
@@ -161,11 +161,11 @@ namespace Microsoft.Maui.Controls.Platform
 				// then we'll need to create the content from the template 
 				_visualElement = formsTemplate.CreateContent(dataContext, container) as VisualElement;
 				_visualElement.BindingContext = dataContext;
-				_renderer = _visualElement.GetOrCreateHandler(mauiContext);
+				_renderer = _visualElement.ToHandler(mauiContext);
 
-				// We need to set IsNativeStateConsistent explicitly; otherwise, it won't be set until the renderer's Loaded 
+				// We need to set IsPlatformStateConsistent explicitly; otherwise, it won't be set until the renderer's Loaded 
 				// event. If the CollectionView is in a Layout, the Layout won't measure or layout the CollectionView until
-				// every visible descendant has `IsNativeStateConsistent == true`. And the problem that Layout is trying
+				// every visible descendant has `IsPlatformStateConsistent == true`. And the problem that Layout is trying
 				// to avoid by skipping layout for controls with not-yet-loaded children does not apply to CollectionView
 				// items. If we don't set this, the CollectionView just won't get layout at all, and will be invisible until
 				// the window is resized. 
@@ -181,13 +181,13 @@ namespace Microsoft.Maui.Controls.Platform
 				_visualElement.BindingContext = dataContext;
 			}
 
-			Content = _renderer.GetWrappedNativeView();
+			Content = _renderer.ToPlatform();
 			itemsView?.AddLogicalChild(_visualElement);
 		}
 
-		void SetNativeStateConsistent(VisualElement visualElement) 
+		void SetNativeStateConsistent(VisualElement visualElement)
 		{
-			visualElement.IsNativeStateConsistent = true;
+			visualElement.IsPlatformStateConsistent = true;
 
 			foreach (var child in ((IElementController)visualElement).LogicalChildren)
 			{
@@ -227,15 +227,17 @@ namespace Microsoft.Maui.Controls.Platform
 			var frameworkElement = Content as FrameworkElement;
 
 			var formsElement = _renderer.VirtualView as VisualElement;
+
 			if (ItemHeight != default || ItemWidth != default)
 			{
-				formsElement.Layout(new Rectangle(0, 0, ItemWidth, ItemHeight));
+				formsElement.Layout(new Rect(0, 0, ItemWidth, ItemHeight));
 
 				var wsize = new WSize(ItemWidth, ItemHeight);
 
 				frameworkElement.Margin = WinUIHelpers.CreateThickness(ItemSpacing.Left, ItemSpacing.Top, ItemSpacing.Right, ItemSpacing.Bottom);
 
-				frameworkElement.Measure(wsize);
+				if (CanMeasureContent(frameworkElement))
+					frameworkElement.Measure(wsize);
 
 				return base.MeasureOverride(wsize);
 			}
@@ -247,11 +249,12 @@ namespace Microsoft.Maui.Controls.Platform
 				width = Max(width, availableSize.Width);
 				height = Max(height, availableSize.Height);
 
-				formsElement.Layout(new Rectangle(0, 0, width, height));
+				formsElement.Layout(new Rect(0, 0, width, height));
 
 				var wsize = new WSize(width, height);
 
-				frameworkElement.Measure(wsize);
+				if (CanMeasureContent(frameworkElement))
+					frameworkElement.Measure(wsize);
 
 				return base.MeasureOverride(wsize);
 			}
@@ -265,6 +268,15 @@ namespace Microsoft.Maui.Controls.Platform
 		double ClampInfinity(double value)
 		{
 			return double.IsInfinity(value) ? 0 : value;
+		}
+
+		bool CanMeasureContent(FrameworkElement frameworkElement)
+		{
+			// Measure the SwipeControl before has loaded causes a crash on the first layout pass
+			if (frameworkElement is SwipeControl swipeControl && !swipeControl.IsLoaded)
+				return false;
+
+			return true;
 		}
 	}
 }

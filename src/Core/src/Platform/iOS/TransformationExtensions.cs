@@ -9,15 +9,15 @@ namespace Microsoft.Maui.Platform
 {
 	public static class TransformationExtensions
 	{
-		public static void UpdateTransformation(this UIView nativeView, IView? view)
+		public static void UpdateTransformation(this UIView platformView, IView? view)
 		{
-			CALayer? layer = nativeView.Layer;
+			CALayer? layer = platformView.Layer;
 			CGPoint? originalAnchor = layer?.AnchorPoint;
 
-			nativeView.UpdateTransformation(view, layer, originalAnchor);
+			platformView.UpdateTransformation(view, layer, originalAnchor);
 		}
 
-		public static void UpdateTransformation(this UIView nativeView, IView? view, CALayer? layer, CGPoint? originalAnchor)
+		public static void UpdateTransformation(this UIView platformView, IView? view, CALayer? layer, CGPoint? originalAnchor)
 		{
 			if (view == null)
 				return;

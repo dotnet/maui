@@ -1,14 +1,50 @@
+using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
+using Android.Content.PM;
+using Microsoft.Maui.Devices.Sensors;
 using AndroidUri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Map
+	class MapImplementation : IMap
 	{
-		internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
+			var uri = GetMapsUri(latitude, longitude, options);
+
+			return OpenUri(uri);
+		}
+
+		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
+		{
+			var uri = GetMapsUri(placemark, options);
+
+			return OpenUri(uri);
+		}
+
+		public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
+		{
+			var uri = GetMapsUri(latitude, longitude, options);
+
+			return TryOpenUri(uri);
+		}
+
+		public Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
+		{
+			var uri = GetMapsUri(placemark, options);
+
+			return TryOpenUri(uri);
+		}
+
+		internal string GetMapsUri(double latitude, double longitude, MapLaunchOptions options)
+		{
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			var uri = string.Empty;
 			var lat = latitude.ToString(CultureInfo.InvariantCulture);
 			var lng = longitude.ToString(CultureInfo.InvariantCulture);
@@ -25,26 +61,17 @@ namespace Microsoft.Maui.Essentials
 				uri = $"google.navigation:q={lat},{lng}{GetMode(options.NavigationMode)}";
 			}
 
-			StartIntent(uri);
-			return Task.CompletedTask;
+			return uri;
 		}
 
-		internal static string GetMode(NavigationMode mode)
+		internal string GetMapsUri(Placemark placemark, MapLaunchOptions options)
 		{
-			switch (mode)
-			{
-				case NavigationMode.Bicycling:
-					return "&mode=b";
-				case NavigationMode.Driving:
-					return "&mode=d";
-				case NavigationMode.Walking:
-					return "&mode=w";
-			}
-			return string.Empty;
-		}
+			if (placemark == null)
+				throw new ArgumentNullException(nameof(placemark));
 
-		internal static Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
-		{
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			var uri = string.Empty;
 			if (options.NavigationMode == NavigationMode.None)
 			{
@@ -57,21 +84,52 @@ namespace Microsoft.Maui.Essentials
 				uri = $"google.navigation:q={placemark.GetEscapedAddress()}{GetMode(options.NavigationMode)}";
 			}
 
-			StartIntent(uri);
+			return uri;
+		}
+
+		internal string GetMode(NavigationMode mode)
+		{
+			switch (mode)
+			{
+				case NavigationMode.Bicycling: return "&mode=b";
+				case NavigationMode.Driving: return "&mode=d";
+				case NavigationMode.Walking: return "&mode=w";
+			}
+			return string.Empty;
+		}
+
+		internal Task OpenUri(string uri)
+		{
+			var intent = ResolveMapIntent(uri);
+
+			Platform.AppContext.StartActivity(intent);
+
 			return Task.CompletedTask;
 		}
 
-		static void StartIntent(string uri)
+		internal Task<bool> TryOpenUri(string uri)
+		{
+			var intent = ResolveMapIntent(uri);
+
+			var canStart = PlatformUtils.IsIntentSupported(intent);
+
+			if (canStart)
+				Platform.AppContext.StartActivity(intent);
+
+			return Task.FromResult(canStart);
+		}
+
+		Intent ResolveMapIntent(string uri)
 		{
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri));
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 #if __ANDROID_24__
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			intent.SetFlags(flags);
 
-			Platform.AppContext.StartActivity(intent);
+			return intent;
 		}
 	}
 }

@@ -1,8 +1,8 @@
 using CoreLocation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Compass
+	partial class CompassImplementation : ICompass, IPlatformCompass
 	{
 		// The angular distance is measured relative to the last delivered heading event. Align with UWP numbers
 		internal const double FastestFilter = .01;
@@ -10,14 +10,15 @@ namespace Microsoft.Maui.Essentials
 		internal const double NormalFilter = 1;
 		internal const double UIFilter = 2;
 
-		public static bool ShouldDisplayHeadingCalibration { get; set; } = false;
+		public bool ShouldDisplayHeadingCalibration { get; set; } = false;
 
-		internal static bool IsSupported =>
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
+		bool PlatformIsSupported =>
 			CLLocationManager.HeadingAvailable;
 
-		static CLLocationManager locationManager;
+		CLLocationManager locationManager;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
+		void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 		{
 			locationManager = new CLLocationManager();
 			locationManager.ShouldDisplayHeadingCalibration += LocationManagerShouldDisplayHeadingCalibration;
@@ -45,15 +46,15 @@ namespace Microsoft.Maui.Essentials
 			locationManager.StartUpdatingHeading();
 		}
 
-		static bool LocationManagerShouldDisplayHeadingCalibration(CLLocationManager manager) => ShouldDisplayHeadingCalibration;
+		bool LocationManagerShouldDisplayHeadingCalibration(CLLocationManager manager) => ShouldDisplayHeadingCalibration;
 
-		static void LocationManagerUpdatedHeading(object sender, CLHeadingUpdatedEventArgs e)
+		void LocationManagerUpdatedHeading(object sender, CLHeadingUpdatedEventArgs e)
 		{
 			var data = new CompassData(e.NewHeading.MagneticHeading);
-			OnChanged(data);
+			RaiseReadingChanged(data);
 		}
 
-		internal static void PlatformStop()
+		void PlatformStop()
 		{
 			if (locationManager == null)
 				return;
@@ -64,5 +65,6 @@ namespace Microsoft.Maui.Essentials
 			locationManager.Dispose();
 			locationManager = null;
 		}
+#pragma warning restore CA1416
 	}
 }

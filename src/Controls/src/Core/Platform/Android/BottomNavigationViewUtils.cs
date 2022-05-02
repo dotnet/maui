@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static Drawable CreateItemBackgroundDrawable()
 		{
-			var stateList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.2f).ToNative());
+			var stateList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.2f).ToPlatform());
 			var colorDrawable = new ColorDrawable(AColor.White);
 			return new RippleDrawable(stateList, colorDrawable, null);
 		}
@@ -100,10 +100,13 @@ namespace Microsoft.Maui.Controls.Platform
 			var services = context.Services;
 			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 			var imageSourceService = provider.GetRequiredImageSourceService(source);
-			var drawableResult = await imageSourceService.GetDrawableAsync(source, context.Context);
-			var drawable = drawableResult.Value;
-			menuItem.SetIcon(drawable);
-			drawable?.Dispose();
+
+			var result = await imageSourceService.GetDrawableAsync(
+				source,
+				context.Context);
+
+			if (result is not null)
+				menuItem?.SetIcon(result.Value);
 		}
 
 
@@ -165,7 +168,7 @@ namespace Microsoft.Maui.Controls.Platform
 					image.LayoutParameters = lp;
 					lp.Dispose();
 
-					image.ImageTintList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.6f).ToNative());
+					image.ImageTintList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.6f).ToPlatform());
 
 					shellContent.icon.LoadImage(mauiContext, result =>
 					{

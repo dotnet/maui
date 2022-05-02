@@ -12,15 +12,26 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageButtonHandlerTests
 	{
-		Google.Android.Material.ImageView.ShapeableImageView GetNativeImageButton(ImageButtonHandler buttonHandler) =>
-			buttonHandler.NativeView;
+		Google.Android.Material.ImageView.ShapeableImageView GetPlatformImageButton(ImageButtonHandler buttonHandler) =>
+			buttonHandler.PlatformView;
 
-		Task PerformClick(IButton button)
+		Task PerformClick(IImageButton button)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				GetNativeImageButton(CreateHandler(button)).PerformClick();
+				GetPlatformImageButton(CreateHandler(button)).PerformClick();
 			});
+		}
+
+		Thickness GetNativePadding(ImageButtonHandler imageButtonHandler)
+		{
+			var shapeableImageView = GetPlatformImageButton(imageButtonHandler);
+
+			return new Thickness(
+				shapeableImageView.ContentPaddingLeft,
+				shapeableImageView.ContentPaddingTop,
+				shapeableImageView.ContentPaddingRight,
+				shapeableImageView.ContentPaddingBottom);
 		}
 	}
 }

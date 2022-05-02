@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			_bounds = Bounds;
 
 			//when the layout changes we might need to update  the children position based in our new size,
-			//this is only needed in MacOS because of the inversion of the Y coordinate. 
+			//this is only needed in macOS because of the inversion of the Y coordinate. 
 			//Forms layout system doesn't know we need to relayout the other items ,(first ones for example)
 			//so we do it here 
 			for (int i = 0; i < Subviews.Length; i++)

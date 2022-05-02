@@ -25,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				return _manager ??= _services.GetRequiredService<IAnimationManager>();
 #if ANDROID
 			if (serviceType == typeof(Android.Content.Context))
-				return Platform.DefaultContext;
+				return MauiProgram.DefaultContext;
 
 			if (serviceType == typeof(NavigationRootManager))
 				return _windowManager ??= new NavigationRootManager(this);
@@ -34,10 +34,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				return UIKit.UIApplication.SharedApplication.GetKeyWindow();
 #elif WINDOWS
 			if (serviceType == typeof(NavigationRootManager))
-				return _windowManager ??= new NavigationRootManager(this);
+				return _windowManager ??= new NavigationRootManager(MauiProgram.DefaultWindow);
 
 			if (serviceType == typeof(UI.Xaml.Window))
-				return Platform.DefaultWindow;
+				return MauiProgram.DefaultWindow;
 #endif
 
 			return _services.GetService(serviceType);

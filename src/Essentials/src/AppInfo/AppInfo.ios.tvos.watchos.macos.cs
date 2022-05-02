@@ -9,84 +9,116 @@ using UIKit;
 using AppKit;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class AppInfo
+	class AppInfoImplementation : IAppInfo
 	{
-		static string PlatformGetPackageName() => GetBundleValue("CFBundleIdentifier");
+		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 
-		static string PlatformGetName() => GetBundleValue("CFBundleDisplayName") ?? GetBundleValue("CFBundleName");
+		public string PackageName => GetBundleValue("CFBundleIdentifier");
 
-		static string PlatformGetVersionString() => GetBundleValue("CFBundleShortVersionString");
+		public string Name => GetBundleValue("CFBundleDisplayName") ?? GetBundleValue("CFBundleName");
 
-		static string PlatformGetBuild() => GetBundleValue("CFBundleVersion");
+		public Version Version => Utils.ParseVersion(VersionString);
 
-		static string GetBundleValue(string key)
-		   => NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
+		public string VersionString => GetBundleValue("CFBundleShortVersionString");
+
+		public string BuildString => GetBundleValue("CFBundleVersion");
+
+		string GetBundleValue(string key)
+			=> NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
 
 #if __IOS__ || __TVOS__
-		static async void PlatformShowSettingsUI()
-			=> await Launcher.OpenAsync(UIApplication.OpenSettingsUrlString);
+		public async void ShowSettingsUI()
+			=> await Launcher.Default.OpenAsync(UIApplication.OpenSettingsUrlString);
 #elif __MACOS__
-        static void PlatformShowSettingsUI()
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                var prefsApp = ScriptingBridge.SBApplication.FromBundleIdentifier("com.apple.systempreferences");
-                prefsApp.SendMode = ScriptingBridge.AESendMode.NoReply;
-                prefsApp.Activate();
-            });
-        }
+		public void ShowSettingsUI()
+		{
+			MainThread.BeginInvokeOnMainThread(() =>
+			{
+				var prefsApp = ScriptingBridge.SBApplication.FromBundleIdentifier("com.apple.systempreferences");
+				prefsApp.SendMode = ScriptingBridge.AESendMode.NoReply;
+				prefsApp.Activate();
+			});
+		}
 #else
-		static void PlatformShowSettingsUI() =>
+		public void ShowSettingsUI() =>
 			throw new FeatureNotSupportedException();
 #endif
 
 #if __IOS__ || __TVOS__
-		static AppTheme PlatformRequestedTheme()
+		public AppTheme RequestedTheme
 		{
-			if (!Platform.HasOSVersion(13, 0))
-				return AppTheme.Unspecified;
-
-			var uiStyle = Platform.GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
-				UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
-
-			return uiStyle switch
+			get
 			{
-				UIUserInterfaceStyle.Light => AppTheme.Light,
-				UIUserInterfaceStyle.Dark => AppTheme.Dark,
-				_ => AppTheme.Unspecified
-			};
+				if ((OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13, 0)) || (OperatingSystem.IsTvOS() && !OperatingSystem.IsTvOSVersionAtLeast(13, 0)))
+					return AppTheme.Unspecified;
+
+				var traits =
+					MainThread.InvokeOnMainThread(() => WindowStateManager.Default.GetCurrentUIViewController()?.TraitCollection) ??
+					UITraitCollection.CurrentTraitCollection;
+
+				var uiStyle = traits.UserInterfaceStyle;
+
+				return uiStyle switch
+				{
+					UIUserInterfaceStyle.Light => AppTheme.Light,
+					UIUserInterfaceStyle.Dark => AppTheme.Dark,
+					_ => AppTheme.Unspecified
+				};
+			}
 		}
 #elif __MACOS__
-        static AppTheme PlatformRequestedTheme()
-        {
-            if (DeviceInfo.Version >= new Version(10, 14))
-            {
-                var app = NSAppearance.CurrentAppearance?.FindBestMatch(new string[]
-                {
-                    NSAppearance.NameAqua,
-                    NSAppearance.NameDarkAqua
-                });
+		public AppTheme RequestedTheme
+		{
+			get
+			{
+				if (OperatingSystem.IsMacOSVersionAtLeast(10, 14))
+				{
+					var app = NSAppearance.CurrentAppearance?.FindBestMatch(new string[]
+					{
+						NSAppearance.NameAqua,
+						NSAppearance.NameDarkAqua
+					});
 
-                if (string.IsNullOrEmpty(app))
-                    return AppTheme.Unspecified;
+					if (string.IsNullOrEmpty(app))
+						return AppTheme.Unspecified;
 
-                if (app == NSAppearance.NameDarkAqua)
-                    return AppTheme.Dark;
-            }
-            return AppTheme.Light;
-        }
+					if (app == NSAppearance.NameDarkAqua)
+						return AppTheme.Dark;
+				}
+				return AppTheme.Light;
+			}
+		}
 #else
-		static AppTheme PlatformRequestedTheme() =>
+		public AppTheme RequestedTheme =>
 			AppTheme.Unspecified;
+#endif
+
+#if __IOS__ || __TVOS__
+		public LayoutDirection RequestedLayoutDirection
+		{
+			get
+			{
+				var currentWindow = WindowStateManager.Default.GetCurrentUIWindow(false);
+				UIUserInterfaceLayoutDirection layoutDirection =
+					currentWindow?.EffectiveUserInterfaceLayoutDirection ??
+					UIApplication.SharedApplication.UserInterfaceLayoutDirection;
+
+				return (layoutDirection == UIUserInterfaceLayoutDirection.RightToLeft) ?
+					LayoutDirection.RightToLeft : LayoutDirection.LeftToRight;
+			}
+		}
+#elif __MACOS__
+		public bool IsDeviceUILayoutDirectionRightToLeft => 
+			NSApplication.SharedApplication.UserInterfaceLayoutDirection == NSApplicationLayoutDirection.RightToLeft;
 #endif
 
 		internal static bool VerifyHasUrlScheme(string scheme)
 		{
-			var cleansed = scheme.Replace("://", string.Empty);
+			var cleansed = scheme.Replace("://", string.Empty, StringComparison.Ordinal);
 			var schemes = GetCFBundleURLSchemes().ToList();
-			return schemes.Any(x => x != null && x.Equals(cleansed, StringComparison.InvariantCultureIgnoreCase));
+			return schemes.Any(x => x != null && x.Equals(cleansed, StringComparison.OrdinalIgnoreCase));
 		}
 
 		internal static IEnumerable<string> GetCFBundleURLSchemes()

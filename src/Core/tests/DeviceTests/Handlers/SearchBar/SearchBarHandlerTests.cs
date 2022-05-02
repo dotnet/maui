@@ -94,9 +94,9 @@ namespace Microsoft.Maui.DeviceTests
 				Text = text
 			};
 
-			var nativeText = await GetValueAsync(searchBar, GetNativeText);
+			var platformText = await GetValueAsync(searchBar, GetNativeText);
 
-			Assert.Equal(expectedText, nativeText);
+			Assert.Equal(expectedText, platformText);
 		}
 
 		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
@@ -119,6 +119,20 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await CreateHandlerAsync(searchBar);
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsReadOnlyInitializesCorrectly(bool isReadOnly)
+		{
+			var searchBar = new SearchBarStub()
+			{
+				IsReadOnly = isReadOnly,
+				Text = "Test"
+			};
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.IsReadOnly, GetNativeIsReadOnly, searchBar.IsReadOnly);
 		}
 
 		[Category(TestCategory.SearchBar)]

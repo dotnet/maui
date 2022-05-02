@@ -1,44 +1,40 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Microsoft.Maui.Storage;
 using AndroidUri = Android.Net.Uri;
 using Uri = System.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Launcher
+	partial class LauncherImplementation
 	{
-		static Task<bool> PlatformCanOpenAsync(Uri uri)
+		Task<bool> PlatformCanOpenAsync(Uri uri)
 		{
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri.OriginalString));
-
-			if (Platform.AppContext == null)
-				return Task.FromResult(false);
-
-			var manager = Platform.AppContext.PackageManager;
-			var supportedResolvedInfos = manager.QueryIntentActivities(intent, PackageInfoFlags.MatchDefaultOnly);
-			return Task.FromResult(supportedResolvedInfos.Any());
+			return Task.FromResult(PlatformUtils.IsIntentSupported(intent));
 		}
 
-		static Task PlatformOpenAsync(Uri uri)
+		Task<bool> PlatformOpenAsync(Uri uri)
 		{
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri.OriginalString));
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 #if __ANDROID_24__
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			intent.SetFlags(flags);
 
-			Platform.AppContext.StartActivity(intent);
-			return Task.CompletedTask;
+			Application.Context.StartActivity(intent);
+			return Task.FromResult(true);
 		}
 
-		static Task PlatformOpenAsync(OpenFileRequest request)
+		Task<bool> PlatformOpenAsync(OpenFileRequest request)
 		{
-			var contentUri = Platform.GetShareableFileUri(request.File);
+			var contentUri = FileSystemUtils.GetShareableFileUri(request.File);
 
 			var intent = new Intent(Intent.ActionView);
 			intent.SetDataAndType(contentUri, request.File.ContentType);
@@ -47,17 +43,17 @@ namespace Microsoft.Maui.Essentials
 			var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 #if __ANDROID_24__
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			chooserIntent.SetFlags(flags);
 
-			Platform.AppContext.StartActivity(chooserIntent);
+			Application.Context.StartActivity(chooserIntent);
 
-			return Task.CompletedTask;
+			return Task.FromResult(true);
 		}
 
-		static async Task<bool> PlatformTryOpenAsync(Uri uri)
+		async Task<bool> PlatformTryOpenAsync(Uri uri)
 		{
 			var canOpen = await PlatformCanOpenAsync(uri);
 

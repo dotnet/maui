@@ -6,6 +6,7 @@ using System.Diagnostics;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleries;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 {
@@ -20,13 +21,16 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 	{
 		public event EventHandler<NotifyCollectionChangedEventArgs> CollectionChanged;
 		readonly ItemsView _cv;
-		private readonly ItemsSourceType _itemsSourceType;
+		private ItemsSourceType _itemsSourceType;
 		readonly Entry _entry;
 		int _count = 0;
 
 		CarouselView carousel => _cv as CarouselView;
 
 		public int Count => _count;
+
+		public ItemsSourceType ItemsSourceType => _itemsSourceType;
+
 		public ItemsSourceGenerator(ItemsView cv, int initialItems = 1000,
 			ItemsSourceType itemsSourceType = ItemsSourceType.List)
 		{
@@ -61,13 +65,17 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 		readonly string[] _images =
 		{
 			"cover1.jpg",
-			"oasis.jpg",
-			"photo.jpg",
-			"Vegetables.jpg",
-			"Fruits.jpg",
-			"FlowerBuds.jpg",
-			"Legumes.jpg"
+			"vegetables.jpg",
+			"fruits.jpg",
+			"flowerbuds.jpg",
+			"legumes.jpg"
 		};
+
+		public void GenerateItems(ItemsSourceType itemsSourceType)
+		{
+			_itemsSourceType = itemsSourceType;
+			GenerateItems();
+		}
 
 		public void GenerateItems()
 		{
@@ -154,7 +162,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			{
 				var items = new ObservableCollection<CollectionViewGalleryTestItem>();
 				_cv.ItemsSource = items;
-				Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+				Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
 				{
 					var n = items.Count + 1;
 					items.Add(new CollectionViewGalleryTestItem(DateTime.Now.AddDays(n),

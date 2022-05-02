@@ -31,6 +31,8 @@ namespace Microsoft.Maui.Platform
 
 		internal DrawerLayout? DrawerLayout { get; private set; }
 
+		internal IToolbarElement? ToolbarElement => _toolbarElement;
+
 		public NavigationRootManager(IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
@@ -67,9 +69,19 @@ namespace Microsoft.Maui.Platform
 				_rootView = navigationLayout;
 			}
 
+			// if the incoming view is a Drawer Layout then the Drawer Layout
+			// will be the root view and internally handle all if its view management
+			// this is mainly used for FlyoutView
+			//
+			// if it's not a drawer layout then we just use our default CoordinatorLayout inside navigationlayout
+			// and place the content there
 			if (DrawerLayout == null)
 			{
 				SetContentView(containerView);
+			}
+			else
+			{
+				SetContentView(null);
 			}
 
 			RootViewChanged?.Invoke(this, EventArgs.Empty);
@@ -81,6 +93,11 @@ namespace Microsoft.Maui.Platform
 			// the AppBarLayout that's part of the RootView
 			_toolbarElement?.Toolbar?.Parent?.Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
 
+		}
+
+		public virtual void Disconnect()
+		{
+			SetContentView(null);
 		}
 
 		void SetContentView(AView? view)

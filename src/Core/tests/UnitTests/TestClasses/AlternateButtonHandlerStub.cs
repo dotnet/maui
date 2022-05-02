@@ -5,7 +5,7 @@ namespace Microsoft.Maui.UnitTests
 {
 	class AlternateButtonHandlerStub : ViewHandler<IButton, object>
 	{
-		protected override object CreateNativeView() => throw new NotImplementedException();
+		protected override object CreatePlatformView() => throw new NotImplementedException();
 		public AlternateButtonHandlerStub() : base(new PropertyMapper<IButton, AlternateButtonHandlerStub>())
 		{
 		}

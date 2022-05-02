@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls
 #endif
 			[nameof(TextTransform)] = MapText,
 			[nameof(Text)] = MapText,
+			[nameof(Button.LineBreakMode)] = MapLineBreakMode,
 		};
 
 		internal new static void RemapForControls()
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='MapContentLayout']/Docs" />
 		public static void MapContentLayout(ButtonHandler handler, Button button)
 		{
-			handler.NativeView.UpdateContentLayout(button);
+			handler.PlatformView.UpdateContentLayout(button);
 		}
 	}
 }

@@ -225,6 +225,7 @@
       <Type Name="Permissions+NetworkState" Kind="Class" />
       <Type Name="Permissions+Phone" Kind="Class" />
       <Type Name="Permissions+Photos" Kind="Class" />
+      <Type Name="Permissions+PhotosAddOnly" Kind="Class" />
       <Type Name="Permissions+Reminders" Kind="Class" />
       <Type Name="Permissions+Sensors" Kind="Class" />
       <Type Name="Permissions+Sms" Kind="Class" />

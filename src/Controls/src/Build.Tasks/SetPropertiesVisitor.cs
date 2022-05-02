@@ -1576,7 +1576,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var templateContext = new ILContext(templateIl, loadTemplate.Body, module, parentValues)
 			{
 				Root = root,
-				DefineDebug = parentContext.DefineDebug,
 				XamlFilePath = parentContext.XamlFilePath,
 			};
 			node.Accept(new CreateObjectVisitor(templateContext), null);

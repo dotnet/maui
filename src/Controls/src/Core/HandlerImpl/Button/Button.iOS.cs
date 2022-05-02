@@ -11,10 +11,10 @@ namespace Microsoft.Maui.Controls
 	{
 		private static void MapPadding(ButtonHandler handler, Button button)
 		{
-			handler.NativeView.UpdatePadding(button);
+			handler.PlatformView.UpdatePadding(button);
 		}
 
-		protected override Size ArrangeOverride(Rectangle bounds)
+		protected override Size ArrangeOverride(Rect bounds)
 		{
 			var result = base.ArrangeOverride(bounds);
 			Handler?.UpdateValue(nameof(ContentLayout));
@@ -23,7 +23,12 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapText(ButtonHandler handler, Button button)
 		{
-			handler.NativeView?.UpdateText(button);
+			handler.PlatformView?.UpdateText(button);
+		}
+
+		public static void MapLineBreakMode(IButtonHandler handler, Button button)
+		{
+			handler.PlatformView?.UpdateLineBreakMode(button);
 		}
 	}
 }

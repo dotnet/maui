@@ -3,11 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-
-#if NETSTANDARD1_0
-using System.Linq;
-#endif
-
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 
@@ -77,7 +72,7 @@ namespace Microsoft.Maui.Controls
 						var services = Parent?.FindMauiContext()?.Services;
 						if (services != null)
 						{
-							return Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(services, template.Type);
+							return services.GetService(template.Type) ?? Activator.CreateInstance(template.Type);
 						}
 						return Activator.CreateInstance(template.Type);
 					};
@@ -88,6 +83,15 @@ namespace Microsoft.Maui.Controls
 
 			if (result == null)
 				throw new InvalidOperationException($"No Content found for {nameof(ShellContent)}, Title:{Title}, Route {Route}");
+
+			if (result is TabbedPage)
+				throw new NotSupportedException($"Shell is currently not compatible with TabbedPage. Please use TabBar, Tab or switch to using NavigationPage for your {Application.Current}.MainPage");
+
+			if (result is FlyoutPage)
+				throw new NotSupportedException("Shell is currently not compatible with FlyoutPage.");
+
+			if (result is NavigationPage)
+				throw new NotSupportedException("Shell is currently not compatible with NavigationPage. Shell has Navigation built in and doesn't require a NavigationPage.");
 
 			if (GetValue(QueryAttributesProperty) is ShellRouteParameters delayedQueryParams)
 				result.SetValue(QueryAttributesProperty, delayedQueryParams);
@@ -141,7 +145,7 @@ namespace Microsoft.Maui.Controls
 					(sender as Page).ParentSet -= OnPresentedPageParentSet;
 				}
 			}
-			else
+			else if (IsVisibleContent && page.IsVisible)
 			{
 				page.SendAppearing();
 			}
@@ -264,6 +268,14 @@ namespace Microsoft.Maui.Controls
 		internal override void ApplyQueryAttributes(ShellRouteParameters query)
 		{
 			base.ApplyQueryAttributes(query);
+
+			// If the query parameters are empty and this attribute wasn't previously set
+			// That means there's no work to be done here.
+			// An empty query is only valid if we've previously propagated
+			// something to this bindable property
+			if (query.Count == 0 && !this.IsSet(QueryAttributesProperty))
+				return;
+
 			SetValue(QueryAttributesProperty, query);
 
 			if (ContentCache is BindableObject bindable)
@@ -287,14 +299,7 @@ namespace Microsoft.Maui.Controls
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
 			var type = content.GetType();
-			var typeInfo = type.GetTypeInfo();
-
-#if NETSTANDARD1_0
-			var queryPropertyAttributes = typeInfo.GetCustomAttributes(typeof(QueryPropertyAttribute), true).ToArray();
-#else
-			var queryPropertyAttributes = typeInfo.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
-#endif
-
+			var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
 			if (queryPropertyAttributes.Length == 0)
 				return;
 

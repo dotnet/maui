@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new ImageSourcePickerItem
 				{
 					Text = "Stream",
-					Getter = () => ImageSource.FromStream(() => typeof(App).GetTypeInfo().Assembly.GetManifestResourceStream("Microsoft.Maui.Controls.Compatibility.ControlGallery.coffee.png"))
+					Getter = () => ImageSource.FromStream(() => typeof(App).Assembly.GetManifestResourceStream("Microsoft.Maui.Controls.Compatibility.ControlGallery.coffee.png"))
 				},
 				new ImageSourcePickerItem
 				{
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 							case Device.iOS:
 								fontFamily = "Ionicons";
 								break;
-							case Device.UWP:
+							case Device.WinUI:
 								fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
 								break;
 							case Device.Android:

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class RadioButtonHandlerTests
 	{
 		AppCompatRadioButton GetNativeRadioButton(RadioButtonHandler radioButtonHandler) =>
-			(AppCompatRadioButton)radioButtonHandler.NativeView;
+			(AppCompatRadioButton)radioButtonHandler.PlatformView;
 
 		bool GetNativeIsChecked(RadioButtonHandler radioButtonHandler) =>
 			GetNativeRadioButton(radioButtonHandler).Checked;

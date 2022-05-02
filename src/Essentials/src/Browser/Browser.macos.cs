@@ -1,13 +1,14 @@
+#nullable enable
 using System;
 using System.Threading.Tasks;
 using AppKit;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Browser
+	partial class BrowserImplementation : IBrowser
 	{
-		static Task<bool> PlatformOpenAsync(Uri uri, BrowserLaunchOptions options) =>
+		static Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options) =>
 			Task.FromResult(NSWorkspace.SharedWorkspace.OpenUrl(new NSUrl(uri.AbsoluteUri)));
 	}
 }

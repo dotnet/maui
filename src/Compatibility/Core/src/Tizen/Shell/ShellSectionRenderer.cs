@@ -6,6 +6,7 @@ using ElmSharp;
 using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
 using EToolbarItem = ElmSharp.ToolbarItem;
+using EToolbarItemEventArgs = ElmSharp.ToolbarItemEventArgs;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -14,6 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		EvasObject NativeView { get; }
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ShellSectionRenderer : IAppearanceObserver, IShellSectionRenderer
 	{
 		EBox _mainLayout = null;
@@ -127,10 +129,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
-			var backgroundColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor ?? Color.Default;
-			var foregroundColor = appearance?.ForegroundColor ?? Color.Default;
-			ToolbarBackgroundColor = backgroundColor.IsDefault ? ShellRenderer.DefaultBackgroundColor.ToNative() : backgroundColor.ToNative();
-			ToolbarForegroundColor = foregroundColor.IsDefault ? ShellRenderer.DefaultForegroundColor.ToNative() : foregroundColor.ToNative();
+			var backgroundColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
+			var foregroundColor = appearance?.ForegroundColor;
+			ToolbarBackgroundColor = backgroundColor.IsDefault() ? ShellRenderer.DefaultBackgroundColor.ToNative() : backgroundColor.ToNative();
+			ToolbarForegroundColor = foregroundColor.IsDefault() ? ShellRenderer.DefaultForegroundColor.ToNative() : foregroundColor.ToNative();
 		}
 
 		void UpdateDisplayedPage(Page page)
@@ -296,7 +298,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			UpdateTabsItem();
 		}
 
-		void OnTabsSelected(object sender, ToolbarItemEventArgs e)
+		void OnTabsSelected(object sender, EToolbarItemEventArgs e)
 		{
 			if (_tabs.SelectedItem == null)
 			{

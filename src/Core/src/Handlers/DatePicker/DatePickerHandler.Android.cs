@@ -1,17 +1,16 @@
-﻿using Android.App;
+﻿using System;
+using Android.App;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
-		Drawable? _defaultBackground;
-		ColorStateList? _defaultTextColors;
-
 		DatePickerDialog? _dialog;
 
-		protected override MauiDatePicker CreateNativeView()
+		protected override MauiDatePicker CreatePlatformView()
 		{
 			var mauiDatePicker = new MauiDatePicker(Context)
 			{
@@ -29,20 +28,14 @@ namespace Microsoft.Maui.Handlers
 
 		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
 
-		protected override void ConnectHandler(MauiDatePicker nativeView)
+		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			SetupDefaults(nativeView);
+			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 		}
 
-		void SetupDefaults(MauiDatePicker nativeView)
-		{
-			_defaultBackground = nativeView.Background;
-			_defaultTextColors = nativeView.TextColors;
-		}
-
-		protected override void DisconnectHandler(MauiDatePicker nativeView)
+		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
 			if (_dialog != null)
 			{
@@ -51,7 +44,9 @@ namespace Microsoft.Maui.Handlers
 				_dialog = null;
 			}
 
-			base.DisconnectHandler(nativeView);
+			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+
+			base.DisconnectHandler(platformView);
 		}
 
 		protected virtual DatePickerDialog CreateDatePickerDialog(int year, int month, int day)
@@ -59,56 +54,59 @@ namespace Microsoft.Maui.Handlers
 			var dialog = new DatePickerDialog(Context!, (o, e) =>
 			{
 				if (VirtualView != null)
+				{
 					VirtualView.Date = e.Date;
-
-				// TODO: Update IsFocused Property
-
+				}
 			}, year, month, day);
 
 			return dialog;
 		}
 
 		// This is a Android-specific mapping
-		public static void MapBackground(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateBackground(datePicker, handler._defaultBackground);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateBackground(datePicker);
 		}
 
-		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateFormat(datePicker);
+			handler.PlatformView?.UpdateFormat(datePicker);
 		}
 
-		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateDate(datePicker);
+			handler.PlatformView?.UpdateDate(datePicker);
 		}
 
-		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMinimumDate(datePicker, handler._dialog);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._dialog);
 		}
 
-		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMaximumDate(datePicker, handler._dialog);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._dialog);
 		}
 
-		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(datePicker);
+			handler.PlatformView?.UpdateCharacterSpacing(datePicker);
 		}
 
-		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(datePicker, fontManager);
+			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultTextColors);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
 		void ShowPickerDialog()
@@ -128,7 +126,11 @@ namespace Microsoft.Maui.Handlers
 			if (_dialog == null)
 				_dialog = CreateDatePickerDialog(year, month, day);
 			else
-				_dialog.UpdateDate(year, month, day);
+			{
+				EventHandler? setDateLater = null;
+				setDateLater = (sender, e) => { _dialog!.UpdateDate(year, month, day); _dialog.ShowEvent -= setDateLater; };
+				_dialog.ShowEvent += setDateLater;
+			}
 
 			_dialog.Show();
 		}
@@ -136,6 +138,18 @@ namespace Microsoft.Maui.Handlers
 		void HidePickerDialog()
 		{
 			_dialog?.Hide();
+		}
+
+		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+		{
+			DatePickerDialog? currentDialog = _dialog;
+
+			if (currentDialog != null && currentDialog.IsShowing)
+			{
+				currentDialog.Dismiss();
+
+				ShowPickerDialog(currentDialog.DatePicker.Year, currentDialog.DatePicker.Month, currentDialog.DatePicker.DayOfMonth);
+			}
 		}
 	}
 }

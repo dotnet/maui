@@ -22,6 +22,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			throw new IndexOutOfRangeException("IItemsViewSource is empty");
 		}
 
+		public IItemsViewSource GroupItemsViewSource(NSIndexPath indexPath)
+		{
+			throw new IndexOutOfRangeException("IItemsViewSource is empty");
+		}
+
 		public NSIndexPath GetIndexForItem(object item)
 		{
 			throw new IndexOutOfRangeException("IItemsViewSource is empty");

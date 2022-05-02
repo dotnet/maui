@@ -623,12 +623,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual("//animals/domestic/cats/catdetails", shell.CurrentState.Location.ToString());
 		}
 
-		[TestCase(typeof(PageWithDependency), typeof(PageWithDependency))]
-		[TestCase(typeof(PageWithDependency), typeof(Dependency))]
-		public async Task GlobalRouteWithDependencyResolution(Type typeForRouteName, Type type)
+		[TestCase(typeof(PageWithDependency))]
+		[TestCase(typeof(PageWithDependencyAndMultipleConstructors))]
+		[TestCase(typeof(PageWithDependency))]
+		[TestCase(typeof(PageWithUnregisteredDependencyAndParameterlessConstructor))]
+		public async Task GlobalRouteWithDependencyResolution(Type pageType)
 		{
 			var serviceCollection = new ServiceCollection();
 			serviceCollection.AddTransient<Dependency>();
+			serviceCollection.AddTransient<PageWithDependency>();
+			serviceCollection.AddTransient<PageWithDependencyAndMultipleConstructors>();
 			IServiceProvider services = serviceCollection.BuildServiceProvider();
 			var fakeMauiContext = Substitute.For<IMauiContext>();
 			var fakeHandler = Substitute.For<IElementHandler>();
@@ -642,16 +646,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Items = { flyoutItem }
 			};
 			shell.Parent.Handler = fakeHandler;
-			var routeName = typeForRouteName.AssemblyQualifiedName;
-			Routing.RegisterRoute(routeName, type);
+			var routeName = pageType.Name;
+			Routing.RegisterRoute(routeName, pageType);
 			await shell.GoToAsync(routeName);
 
 			Assert.IsNotNull(shell.Navigation);
 			Assert.IsNotNull(shell.Navigation.NavigationStack);
 			var page = shell.Navigation.NavigationStack[1];
 			Assert.That(page, Is.Not.Null);
-			Assert.IsInstanceOf<PageWithDependency>(page);
-			Assert.That((page as PageWithDependency).TestDependency, Is.Not.Null);
+			if (pageType == typeof(PageWithDependency) || pageType == typeof(Dependency))
+			{
+				Assert.IsInstanceOf<PageWithDependency>(page);
+				Assert.That((page as PageWithDependency).TestDependency, Is.Not.Null);
+			}
+
+			if (pageType == typeof(PageWithDependencyAndMultipleConstructors))
+			{
+				Assert.IsInstanceOf<PageWithDependencyAndMultipleConstructors>(page);
+				var testPage = page as PageWithDependencyAndMultipleConstructors;
+				Assert.That(testPage.TestDependency, Is.Not.Null);
+				Assert.That(testPage.OtherTestDependency, Is.Null);
+			}
+
+			if (pageType == typeof(PageWithUnregisteredDependencyAndParameterlessConstructor))
+			{
+				Assert.IsInstanceOf<PageWithUnregisteredDependencyAndParameterlessConstructor>(page);
+			}
 		}
 
 		[Test]
@@ -891,6 +911,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsTrue(shell.CurrentPage is ShellTestPage);
 			await shell.GoToAsync($"..");
 			Assert.IsTrue(shell.CurrentPage is ContentPage);
+		}
+
+		[Test]
+		public async Task NavigatedFiresAfterSwitchingFlyoutItemsBothWithPushedPages()
+		{
+			var shellContent1 = new ShellContent() { Content = new ContentPage() };
+			var shellContent2 = new ShellContent() { Content = new ContentPage() };
+
+			var shell = new TestShell(shellContent1, shellContent2);
+			IShellController shellController = shell;
+			await shell.Navigation.PushAsync(new ContentPage());
+			await shellController.OnFlyoutItemSelectedAsync(shellContent2);
+			await shell.Navigation.PushAsync(new ContentPage());
+			await shellController.OnFlyoutItemSelectedAsync(shellContent1);
+
+			Assert.AreEqual(2, shell.Items[0].Items[0].Navigation.NavigationStack.Count);
+			Assert.AreEqual(2, shell.Items[1].Items[0].Navigation.NavigationStack.Count);
 		}
 
 		public class NavigationMonitoringTab : Tab

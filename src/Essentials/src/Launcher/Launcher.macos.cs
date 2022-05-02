@@ -4,17 +4,17 @@ using System.Threading.Tasks;
 using AppKit;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Launcher
+	partial class LauncherImplementation
 	{
-		static Task<bool> PlatformCanOpenAsync(Uri uri) =>
+		Task<bool> PlatformCanOpenAsync(Uri uri) =>
 			Task.FromResult(NSWorkspace.SharedWorkspace.UrlForApplication(WebUtils.GetNativeUrl(uri)) != null);
 
-		internal static Task PlatformOpenAsync(Uri uri) =>
+		Task<bool> PlatformOpenAsync(Uri uri) =>
 			Task.FromResult(NSWorkspace.SharedWorkspace.OpenUrl(WebUtils.GetNativeUrl(uri)));
 
-		static Task<bool> PlatformTryOpenAsync(Uri uri)
+		Task<bool> PlatformTryOpenAsync(Uri uri)
 		{
 			var nativeUrl = WebUtils.GetNativeUrl(uri);
 			var canOpen = NSWorkspace.SharedWorkspace.UrlForApplication(nativeUrl) != null;
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Essentials
 			return Task.FromResult(canOpen);
 		}
 
-		static Task PlatformOpenAsync(OpenFileRequest request) =>
+		Task<bool> PlatformOpenAsync(OpenFileRequest request) =>
 			Task.FromResult(NSWorkspace.SharedWorkspace.OpenFile(request.File.FullPath));
 	}
 }

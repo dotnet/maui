@@ -1,23 +1,22 @@
 ﻿using System;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
+#if IOS && !MACCATALYST
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
-		UIColor? _defaultTextColor;
 		UIDatePicker? _picker;
 
-		protected override MauiDatePicker CreateNativeView()
+		protected override MauiDatePicker CreatePlatformView()
 		{
-			MauiDatePicker nativeDatePicker = new MauiDatePicker();
+			MauiDatePicker platformDatePicker = new MauiDatePicker();
 
 			_picker = new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
 
-			if (NativeVersion.IsAtLeast(14))
+			if (OperatingSystem.IsIOSVersionAtLeast(13, 4))
 			{
 				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}
@@ -28,88 +27,122 @@ namespace Microsoft.Maui.Handlers
 			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
 			{
 				SetVirtualViewDate();
-				nativeDatePicker.ResignFirstResponder();
+				platformDatePicker.ResignFirstResponder();
 			});
 
 			toolbar.SetItems(new[] { spacer, doneButton }, false);
 
-			nativeDatePicker.InputView = _picker;
-			nativeDatePicker.InputAccessoryView = toolbar;
+			platformDatePicker.InputView = _picker;
+			platformDatePicker.InputAccessoryView = toolbar;
 
-			nativeDatePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-			nativeDatePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+			platformDatePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+			platformDatePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 
-			nativeDatePicker.InputAssistantItem.LeadingBarButtonGroups = null;
-			nativeDatePicker.InputAssistantItem.TrailingBarButtonGroups = null;
+			platformDatePicker.InputAssistantItem.LeadingBarButtonGroups = null;
+			platformDatePicker.InputAssistantItem.TrailingBarButtonGroups = null;
 
-			nativeDatePicker.AccessibilityTraits = UIAccessibilityTrait.Button;
+			platformDatePicker.AccessibilityTraits = UIAccessibilityTrait.Button;
 
-			return nativeDatePicker;
+			return platformDatePicker;
 		}
 
 		internal UIDatePicker? DatePickerDialog { get { return _picker; } }
 
-		protected override void ConnectHandler(MauiDatePicker nativeView)
+		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
-			if (_picker != null)
-				_picker.ValueChanged += OnValueChanged;
+			if (_picker is UIDatePicker picker)
+			{
+				picker.EditingDidBegin += OnStarted;
+				picker.EditingDidEnd += OnEnded;
+				picker.ValueChanged += OnValueChanged;
 
-			base.ConnectHandler(nativeView);
+				var date = VirtualView?.Date;
+				if (date is DateTime dt)
+				{
+					picker.Date = dt.ToNSDate();
+				}
+			}
+
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MauiDatePicker nativeView)
+		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
 			if (_picker != null)
+			{
+				_picker.EditingDidBegin -= OnStarted;
+				_picker.EditingDidEnd -= OnEnded;
 				_picker.ValueChanged -= OnValueChanged;
+			}
 
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
-		void SetupDefaults(MauiDatePicker nativeView)
+		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			_defaultTextColor = nativeView.TextColor;
+			var picker = (handler as DatePickerHandler)?._picker;
+			handler.PlatformView?.UpdateFormat(datePicker, picker);
 		}
 
-		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateFormat(datePicker);
+			var picker = (handler as DatePickerHandler)?._picker;
+			handler.PlatformView?.UpdateDate(datePicker, picker);
 		}
 
-		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateDate(datePicker);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._picker);
 		}
 
-		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMinimumDate(datePicker, handler._picker);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._picker);
 		}
 
-		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateMaximumDate(datePicker, handler._picker);
+			handler.PlatformView?.UpdateCharacterSpacing(datePicker);
 		}
 
-		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
-		{
-			handler.NativeView?.UpdateCharacterSpacing(datePicker);
-		}
-
-		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(datePicker, fontManager);
+			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
+		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultTextColor);
+			handler.PlatformView?.UpdateTextColor(datePicker);
+		}
+
+		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.PlatformView?.UpdateFlowDirection(datePicker);
+			handler.PlatformView?.UpdateTextAlignment(datePicker);
 		}
 
 		void OnValueChanged(object? sender, EventArgs? e)
 		{
 			SetVirtualViewDate();
+
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
+		}
+
+		void OnStarted(object? sender, EventArgs eventArgs)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
+		}
+
+		void OnEnded(object? sender, EventArgs eventArgs)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = false;
 		}
 
 		void SetVirtualViewDate()
@@ -120,4 +153,5 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Date = _picker.Date.ToDateTime().Date;
 		}
 	}
+#endif
 }

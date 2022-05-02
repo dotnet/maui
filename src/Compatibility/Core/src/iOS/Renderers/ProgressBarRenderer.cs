@@ -7,6 +7,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, UIProgressView>
 	{
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
@@ -55,13 +56,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Control == null)
 				return;
 
-			Control.TrackTintColor = color != null ? color.ToUIColor() : null;
+			Control.TrackTintColor = color != null ? color.ToPlatform() : null;
 		}
 
 		[PortHandler]
 		void UpdateProgressColor()
 		{
-			Control.ProgressTintColor = Element.ProgressColor == null ? null : Element.ProgressColor.ToUIColor();
+			Control.ProgressTintColor = Element.ProgressColor == null ? null : Element.ProgressColor.ToPlatform();
 		}
 
 		[PortHandler]

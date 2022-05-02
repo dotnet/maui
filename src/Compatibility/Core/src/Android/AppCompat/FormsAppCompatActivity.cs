@@ -37,7 +37,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public ActivationFlags Flags;
 	}
 
-	public class FormsAppCompatActivity : AppCompatActivity, IDeviceInfoProvider
+	[System.Obsolete]
+	class FormsAppCompatActivity : AppCompatActivity, IDeviceInfoProvider
 	{
 		public delegate bool BackButtonPressedEventHandler(object sender, EventArgs e);
 
@@ -80,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnConfigurationChanged(newConfig);
 			ConfigurationChanged?.Invoke(this, new EventArgs());
 
-			Microsoft.Maui.Controls.Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Microsoft.Maui.Controls.Application.Current.RequestedTheme));
+			((IApplication)Microsoft.Maui.Controls.Application.Current)?.ThemeChanged();
 		}
 
 		public override bool OnOptionsItemSelected(IMenuItem item)

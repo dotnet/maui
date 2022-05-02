@@ -1,7 +1,9 @@
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class StructuredItemsViewRenderer : ItemsViewRenderer<StructuredItemsView, Native.CollectionView>
 	{
 		public StructuredItemsViewRenderer()

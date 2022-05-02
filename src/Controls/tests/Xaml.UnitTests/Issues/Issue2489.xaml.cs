@@ -22,12 +22,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[SetUp]
-			public void SetUp()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
 			[TestCase(false)]
 			[TestCase(true)]
 			public void DataTriggerTargetType(bool useCompiledXaml)

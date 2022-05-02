@@ -15,20 +15,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.Tizen
 
 		protected override void UpdateMinimumTrackColor()
 		{
-			var color = Element.MinimumTrackColor.IsDefault ? MColors.Current.PrimaryColor : Element.MinimumTrackColor.ToNative();
+			var color = Element.MinimumTrackColor.IsDefault ? MColors.Current.PrimaryColor : Element.MinimumTrackColor.ToPlatform();
 			Control.SetPartColor(Parts.Slider.Bar, color);
 			Control.SetPartColor(Parts.Slider.BarPressed, color);
 		}
 
 		protected override void UpdateMaximumTrackColor()
 		{
-			var color = Element.MaximumTrackColor.IsDefault ? MColors.Current.PrimaryColor.WithAlpha(0.5) : Element.MaximumTrackColor.ToNative();
+			var color = Element.MaximumTrackColor.IsDefault ? MColors.Current.PrimaryColor.WithAlpha(0.5) : Element.MaximumTrackColor.ToPlatform();
 			Control.SetPartColor(Parts.Widget.Background, color);
 		}
 
 		protected override void UpdateThumbColor()
 		{
-			var color = Element.ThumbColor.IsDefault ? MColors.Current.PrimaryColor : Element.ThumbColor.ToNative();
+			var color = Element.ThumbColor.IsDefault ? MColors.Current.PrimaryColor : Element.ThumbColor.ToPlatform();
 			Control.SetPartColor(Parts.Slider.Handler, color);
 			Control.SetPartColor(Parts.Slider.HandlerPressed, color);
 			Control.SetPartColor(Parts.Slider.Handler2, color.WithAlpha(0.32));

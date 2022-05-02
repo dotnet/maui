@@ -12,19 +12,19 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal class ModalWrapper : UIViewController, IUIAdaptivePresentationControllerDelegate
 	{
-		INativeViewHandler _modal;
+		IPlatformViewHandler _modal;
 		bool _isDisposed;
 
-		internal ModalWrapper(INativeViewHandler modal)
+		internal ModalWrapper(IPlatformViewHandler modal)
 		{
 			_modal = modal;
 
 			var elementConfiguration = modal.VirtualView as IElementConfiguration<Page>;
 			if (elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() is PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)
 			{
-				var result = style.ToNativeModalPresentationStyle();
+				var result = style.ToPlatformModalPresentationStyle();
 
-				if (!NativeVersion.IsAtLeast(13) && result == UIKit.UIModalPresentationStyle.Automatic)
+				if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)) && result == UIKit.UIModalPresentationStyle.Automatic)
 				{
 					result = UIKit.UIModalPresentationStyle.FullScreen;
 				}
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			modal.ViewController.DidMoveToParentViewController(this);
 
-			if (NativeVersion.IsAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				PresentationController.Delegate = this;
 
 			((Page)modal.VirtualView).PropertyChanged += OnModalPagePropertyChanged;
@@ -106,11 +106,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
 		{
+#pragma warning disable CA1416 // TODO: [UnsupportedOSPlatform("ios6.0")]
 			if ((ChildViewControllers != null) && (ChildViewControllers.Length > 0))
 			{
 				return ChildViewControllers[0].ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
 			}
 			return base.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+#pragma warning restore CA1416
 		}
 
 		public override bool ShouldAutomaticallyForwardRotationMethods => true;
@@ -118,7 +120,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			_modal?.NativeArrange(new Rectangle(0, 0, View.Bounds.Width, View.Bounds.Height));
+			_modal?.PlatformArrange(new Rect(0, 0, View.Bounds.Width, View.Bounds.Height));
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -152,7 +154,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
-			if (NativeVersion.Supports(NativeApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 
@@ -175,7 +177,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (ModalPresentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
 			{
 				Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
-				View.BackgroundColor = modalBkgndColor?.ToNative() ?? Maui.Platform.ColorExtensions.BackgroundColor;
+				View.BackgroundColor = modalBkgndColor?.ToPlatform() ?? Maui.Platform.ColorExtensions.BackgroundColor;
 			}
 			else
 			{

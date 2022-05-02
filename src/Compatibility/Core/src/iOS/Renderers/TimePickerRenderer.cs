@@ -12,6 +12,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class TimePickerRenderer : TimePickerRendererBase<UITextField>
 	{
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class TimePickerRendererBase<TControl> : ViewRenderer<TimePicker, TControl>
 		where TControl : UITextField
 	{
@@ -77,6 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected abstract override TControl CreateNativeControl();
 
+		[PortHandler]
 		protected override void OnElementChanged(ElementChangedEventArgs<TimePicker> e)
 		{
 			if (e.NewElement != null)
@@ -156,16 +159,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateFlowDirection();
 		}
 
+		[PortHandler]
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
+		[PortHandler]
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
+		[PortHandler]
 		void OnValueChanged(object sender, EventArgs e)
 		{
 			if (Element.OnThisPlatform().UpdateMode() == UpdateMode.Immediately)
@@ -193,7 +199,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (textColor == null || (!Element.IsEnabled && _useLegacyColorManagement))
 				Control.TextColor = _defaultTextColor;
 			else
-				Control.TextColor = textColor.ToUIColor();
+				Control.TextColor = textColor.ToPlatform();
 
 			// HACK This forces the color to update; there's probably a more elegant way to make this happen
 			Control.Text = Control.Text;
@@ -230,13 +236,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Control.Text = DateTime.Today.Add(Element.Time).ToString(Element.Format, cultureInfos);
 			}
 
-			if (Element.Format?.Contains('H') == true)
+			if (Element.Format?.Contains('H', StringComparison.Ordinal) == true)
 			{
 				var ci = new System.Globalization.CultureInfo("de-DE");
 				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
 				_picker.Locale = locale;
 			}
-			else if (Element.Format?.Contains('h') == true)
+			else if (Element.Format?.Contains('h', StringComparison.Ordinal) == true)
 			{
 				var ci = new System.Globalization.CultureInfo("en-US");
 				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);

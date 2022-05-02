@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellSection']/Docs" />
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement
+	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement
 	{
 		#region PropertyKeys
 
@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls
 
 				if (_navStack.Count > 1)
 					return _navStack[_navStack.Count - 1];
+
 				return ((IShellContentController)CurrentItem)?.Page;
 			}
 		}
@@ -153,8 +154,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		// we want the list returned from here to remain point in time accurate
-		ReadOnlyCollection<ShellContent> IShellSectionController.GetItems()
-			=> new ReadOnlyCollection<ShellContent>(((ShellContentCollection)Items).VisibleItemsReadOnly.ToList());
+		ReadOnlyCollection<ShellContent> IShellSectionController.GetItems() => ((ShellContentCollection)Items).VisibleItemsReadOnly;
 
 		[Obsolete]
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -262,6 +262,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_displayedPage == value)
 					return;
+
 				_displayedPage = value;
 
 				foreach (var item in _displayedPageObservers)
@@ -650,6 +651,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		protected override void OnParentSet()
+		{
+			base.OnParentSet();
+
+			if (this.IsVisibleSection)
+				SendAppearanceChanged();
+		}
+
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
@@ -704,6 +713,12 @@ namespace Microsoft.Maui.Controls
 
 		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement => Items;
 
+
+		void InvokeNavigationRequest(NavigationRequestedEventArgs args)
+		{
+			_navigationRequested?.Invoke(this, args);
+		}
+
 		protected virtual void OnInsertPageBefore(Page page, Page before)
 		{
 			var index = _navStack.IndexOf(before);
@@ -733,7 +748,7 @@ namespace Microsoft.Maui.Controls
 				RequestType = NavigationRequestType.Insert
 			};
 
-			_navigationRequested?.Invoke(this, args);
+			InvokeNavigationRequest(args);
 		}
 
 		protected async virtual Task<Page> OnPopAsync(bool animated)
@@ -765,9 +780,13 @@ namespace Microsoft.Maui.Controls
 			_navStack.Remove(page);
 			PresentedPageAppearing();
 
-			_navigationRequested?.Invoke(this, args);
+			InvokeNavigationRequest(args);
 			if (args.Task != null)
 				await args.Task;
+
+			if (_handlerBasedNavigationCompletionSource?.Task != null)
+				await _handlerBasedNavigationCompletionSource.Task;
+
 			RemovePage(page);
 
 			return page;
@@ -796,12 +815,15 @@ namespace Microsoft.Maui.Controls
 				RequestType = NavigationRequestType.PopToRoot
 			};
 
-			_navigationRequested?.Invoke(this, args);
+			InvokeNavigationRequest(args);
 			var oldStack = _navStack;
 			_navStack = new List<Page> { null };
 
 			if (args.Task != null)
 				await args.Task;
+
+			if (_handlerBasedNavigationCompletionSource?.Task != null)
+				await _handlerBasedNavigationCompletionSource.Task;
 
 			for (int i = 1; i < oldStack.Count; i++)
 			{
@@ -837,11 +859,11 @@ namespace Microsoft.Maui.Controls
 			_navStack.Add(page);
 			PresentedPageAppearing();
 			AddPage(page);
-			_navigationRequested?.Invoke(this, args);
+			InvokeNavigationRequest(args);
 
-			if (args.Task == null)
-				return Task.FromResult(true);
-			return args.Task;
+			return args.Task ??
+				_handlerBasedNavigationCompletionSource?.Task ??
+				Task.CompletedTask;
 		}
 
 		internal async Task PopModalStackToPage(Page page, bool? animated)
@@ -911,7 +933,7 @@ namespace Microsoft.Maui.Controls
 			{
 				RequestType = NavigationRequestType.Remove
 			};
-			_navigationRequested?.Invoke(this, args);
+			InvokeNavigationRequest(args);
 		}
 
 		internal bool IsVisibleSection => Parent?.Parent is Shell shell && shell.CurrentItem?.CurrentItem == this;
@@ -1215,6 +1237,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => AllChildren.ToList().AsReadOnly();
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => AllChildren.ToList();
 	}
 }

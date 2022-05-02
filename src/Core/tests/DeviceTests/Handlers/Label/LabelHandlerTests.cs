@@ -248,129 +248,6 @@ namespace Microsoft.Maui.DeviceTests
 				() => label.TextDecorations = newDecorations);
 		}
 
-		[Fact(DisplayName = "LineBreakMode Initializes Correctly")]
-		public async Task LineBreakModeInitializesCorrectly()
-		{
-			var xplatLineBreakMode = LineBreakMode.TailTruncation;
-
-			var label = new LabelStub()
-			{
-				LineBreakMode = xplatLineBreakMode
-			};
-
-			var expectedValue = xplatLineBreakMode.ToNative();
-
-			var values = await GetValueAsync(label, (handler) =>
-			{
-				return new
-				{
-					ViewValue = label.LineBreakMode,
-					NativeViewValue = GetNativeLineBreakMode(handler)
-				};
-			});
-
-			Assert.Equal(xplatLineBreakMode, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
-		}
-
-		[Fact(DisplayName = "LineBreakMode does not affect to MaxLines")]
-		public async Task LineBreakModeDoesNotAffectMaxLines()
-		{
-			var label = new LabelStub()
-			{
-				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-				MaxLines = 3,
-				LineBreakMode = LineBreakMode.WordWrap,
-			};
-
-			var handler = await CreateHandlerAsync(label);
-			var nativeLabel = GetNativeLabel(handler);
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				Assert.Equal(3, GetNativeMaxLines(handler));
-				Assert.Equal(LineBreakMode.WordWrap.ToNative(), GetNativeLineBreakMode(handler));
-
-				label.LineBreakMode = LineBreakMode.CharacterWrap;
-				nativeLabel.UpdateLineBreakMode(label);
-
-				Assert.Equal(3, GetNativeMaxLines(handler));
-				Assert.Equal(LineBreakMode.CharacterWrap.ToNative(), GetNativeLineBreakMode(handler));
-			});
-		}
-
-		[Fact(DisplayName = "Single LineBreakMode changes MaxLines")]
-		public async Task SingleLineBreakModeChangesMaxLines()
-		{
-			var label = new LabelStub()
-			{
-				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-				MaxLines = 3,
-				LineBreakMode = LineBreakMode.WordWrap,
-			};
-
-			var handler = await CreateHandlerAsync(label);
-			var nativeLabel = GetNativeLabel(handler);
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				Assert.Equal(3, GetNativeMaxLines(handler));
-				Assert.Equal(LineBreakMode.WordWrap.ToNative(), GetNativeLineBreakMode(handler));
-
-				label.LineBreakMode = LineBreakMode.HeadTruncation;
-				nativeLabel.UpdateLineBreakMode(label);
-
-				Assert.Equal(1, GetNativeMaxLines(handler));
-				Assert.Equal(LineBreakMode.HeadTruncation.ToNative(), GetNativeLineBreakMode(handler));
-			});
-		}
-
-		[Theory(DisplayName = "Unsetting single LineBreakMode resets MaxLines")]
-		[InlineData(LineBreakMode.HeadTruncation)]
-		[InlineData(LineBreakMode.NoWrap)]
-		public async Task UnsettingSingleLineBreakModeResetsMaxLines(LineBreakMode newMode)
-		{
-			var label = new LabelStub()
-			{
-				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-				MaxLines = 3,
-				LineBreakMode = LineBreakMode.WordWrap,
-			};
-
-			var handler = await CreateHandlerAsync(label);
-			var nativeLabel = GetNativeLabel(handler);
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				Assert.Equal(3, GetNativeMaxLines(handler));
-				Assert.Equal(LineBreakMode.WordWrap.ToNative(), GetNativeLineBreakMode(handler));
-
-				label.LineBreakMode = newMode;
-				nativeLabel.UpdateLineBreakMode(label);
-
-				Assert.Equal(1, GetNativeMaxLines(handler));
-				Assert.Equal(newMode.ToNative(), GetNativeLineBreakMode(handler));
-
-				label.LineBreakMode = LineBreakMode.WordWrap;
-				nativeLabel.UpdateLineBreakMode(label);
-
-				Assert.Equal(3, GetNativeMaxLines(handler));
-				Assert.Equal(LineBreakMode.WordWrap.ToNative(), GetNativeLineBreakMode(handler));
-			});
-		}
-
-		[Fact(DisplayName = "MaxLines Initializes Correctly")]
-		public async Task MaxLinesInitializesCorrectly()
-		{
-			var label = new LabelStub()
-			{
-				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-				MaxLines = 2
-			};
-
-			await ValidatePropertyInitValue(label, () => label.MaxLines, GetNativeMaxLines, label.MaxLines);
-		}
-
 		[Fact]
 		[Category(TestCategory.TextFormatting)]
 		public async Task LineHeightAppliedWhenTextAdded()
@@ -432,26 +309,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedCharacterSpacing, actualCharacterSpacing);
 		}
 
-		[Theory(DisplayName = "Negative MaxLines value with wrap is correct")]
-#if __IOS__
-		[InlineData(0)]
-#elif __ANDROID__
-		[InlineData(int.MaxValue)]
-#endif
-		public async Task NegativeMaxValueWithWrapIsCorrect(int expectedLines)
-		{
-			var label = new LabelStub()
-			{
-				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-				MaxLines = -1,
-				LineBreakMode = LineBreakMode.WordWrap
-			};
-
-			var nativeValue = await GetValueAsync(label, GetNativeMaxLines);
-
-			Assert.Equal(expectedLines, nativeValue);
-		}
-
 		[Fact(DisplayName = "LineHeight Initializes Correctly")]
 		public async Task LineHeightInitializesCorrectly()
 		{
@@ -468,14 +325,14 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = labelHandler.LineHeight,
-					NativeViewValue = GetNativeLineHeight(handler)
+					PlatformViewValue = GetNativeLineHeight(handler)
 				};
 			});
 
 			float expectedValue = 1.5f;
 
 			Assert.Equal(xplatLineHeight, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 	}
 }

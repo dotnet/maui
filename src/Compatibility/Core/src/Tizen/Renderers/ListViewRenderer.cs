@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Specialized;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Devices;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	/// <summary>
 	/// Renderer class for Xamarin ListView class. This provides necessary logic translating
 	/// Xamarin API to Tizen Native API. This is a derivate of a ViewRenderer base class.
@@ -85,7 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual Native.ListView CreateNativeControl()
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				return new Native.Watch.WatchListView(Forms.NativeParent, Forms.CircleSurface);
 			}
@@ -384,17 +387,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateVerticalScrollBarVisibility()
 		{
-			Control.VerticalScrollBarVisibility = Element.VerticalScrollBarVisibility.ToNative();
+			Control.VerticalScrollBarVisibility = Element.VerticalScrollBarVisibility.ToPlatform();
 		}
 
 		void UpdateHorizontalScrollBarVisibility()
 		{
-			Control.HorizontalScrollBarVisibility = Element.HorizontalScrollBarVisibility.ToNative();
+			Control.HorizontalScrollBarVisibility = Element.HorizontalScrollBarVisibility.ToPlatform();
 		}
 
 		void UpdateSeparator()
 		{
-			Control.BottomLineColor = Element.SeparatorVisibility == SeparatorVisibility.Default ? Element.SeparatorColor.ToNative() : EColor.Transparent;
+			Control.BottomLineColor = Element.SeparatorVisibility == SeparatorVisibility.Default ? Element.SeparatorColor.ToPlatformEFL() : EColor.Transparent;
 		}
 	}
 }

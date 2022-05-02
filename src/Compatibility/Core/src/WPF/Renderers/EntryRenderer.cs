@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			if (Control == null)
 				return;
 
-			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment();
+			Control.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment();
 		}
 
 		void UpdateVerticalTextAlignment()
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			if (Control == null)
 				return;
 
-			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
+			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
 		void UpdateColor()

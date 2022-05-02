@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	internal static class TextViewExtensions
 	{
-		[PortHandler("Partially ported")]
+		[PortHandler]
 		public static void SetMaxLines(this TextView textView, Label label)
 		{
 			var maxLines = label.MaxLines;
@@ -92,6 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			int count = 0;
 			IList<int> totalLineHeights = new List<int>();
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 			for (int i = 0; i < spannableString.Length(); i = next)
 			{
 				var type = Java.Lang.Class.FromType(typeof(Java.Lang.Object));
@@ -105,6 +106,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				// find the next span
 				next = spannableString.NextSpanTransition(i, spannableString.Length(), type);
+#pragma warning restore CA1416
 
 				// get all spans in the range - Android can have overlapping spans				
 				var spans = spannableString.GetSpans(i, next, type);

@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 
 			if (content != null && mauiContext != null)
 			{
-				_contentView = content.ToNative(mauiContext);
+				_contentView = content.ToPlatform(mauiContext);
 				var layoutParams = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent);
 				AddView(_contentView, layoutParams);
 			}

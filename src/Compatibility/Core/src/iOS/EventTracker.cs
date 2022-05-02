@@ -578,6 +578,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			if (_dragAndDropDelegate != null)
 			{
+				System.Diagnostics.Debug.Assert(OperatingSystem.IsIOSVersionAtLeast(11));
 				foreach (var interaction in _renderer.NativeView.Interactions)
 				{
 					if (interaction is UIDragInteraction uIDrag && uIDrag.Delegate == _dragAndDropDelegate)
@@ -635,10 +636,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 
 #if __MOBILE__
-			if (!dragFound && uIDragInteraction != null)
+			if (!dragFound && uIDragInteraction != null && Forms.IsiOS11OrNewer)
 				_renderer.NativeView.RemoveInteraction(uIDragInteraction);
 
-			if (!dropFound && uIDropInteraction != null)
+			if (!dropFound && uIDropInteraction != null && Forms.IsiOS11OrNewer)
 				_renderer.NativeView.RemoveInteraction(uIDropInteraction);
 #endif
 

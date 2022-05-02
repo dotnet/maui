@@ -17,4 +17,5 @@
 	</ItemGroup>
 
 	<Import Project="Microsoft.Maui.Controls.SingleProject.targets" />
+
 </Project>

@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
@@ -39,11 +41,8 @@ namespace Microsoft.Maui.Controls
 			{
 				window = CreateWindow(activationState);
 
-				if (_pendingMainPage != null && window.Page != null && window.Page != _pendingMainPage)
+				if (_singleWindowMainPage != null && window.Page != null && window.Page != _singleWindowMainPage)
 					throw new InvalidOperationException($"Both {nameof(MainPage)} was set and {nameof(Application.CreateWindow)} was overridden to provide a page.");
-
-				// clear out the pending main page as this will never be used again
-				_pendingMainPage = null;
 			}
 
 			// make sure it is added to the windows list
@@ -66,6 +65,10 @@ namespace Microsoft.Maui.Controls
 
 		internal void RemoveWindow(Window window)
 		{
+			// Do not attempt to close the "MainPage" window
+			if (_singleWindowMainPage != null && window.Page == _singleWindowMainPage)
+				return;
+
 			// Window was closed, stop tracking it
 			if (window is null)
 				return;
@@ -106,18 +109,24 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='ThemeChanged']/Docs" />
-		public void ThemeChanged()
+		void IApplication.ThemeChanged()
 		{
-			Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Current.RequestedTheme));
+			if (UserAppTheme != AppTheme.Unspecified)
+				return;
+
+			TriggerThemeChangedActual();
 		}
 
 		protected virtual Window CreateWindow(IActivationState? activationState)
 		{
+			if (Windows.Count > 1)
+				throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
+
 			if (Windows.Count > 0)
 				return Windows[0];
 
-			if (_pendingMainPage != null)
-				return new Window(_pendingMainPage);
+			if (_singleWindowMainPage != null)
+				return new Window(_singleWindowMainPage);
 
 			throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
 		}

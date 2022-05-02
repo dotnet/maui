@@ -1,12 +1,18 @@
 using Android.Content;
 using Android.Views;
-using Android.Webkit;
 using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
-	public class BlazorAndroidWebView : AWebView
+	/// <summary>
+	/// A Blazor Web View implemented using <see cref="AWebView"/>.
+	/// </summary>
+	internal class BlazorAndroidWebView : AWebView
 	{
+		/// <summary>
+		/// Initializes a new instance of <see cref="BlazorAndroidWebView"/>
+		/// </summary>
+		/// <param name="context">The <see cref="Context"/>.</param>
 		public BlazorAndroidWebView(Context context) : base(context)
 		{
 		}

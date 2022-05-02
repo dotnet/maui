@@ -14,14 +14,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
-			handler.NativeView?.RequestNewWindow(application, args as OpenWindowRequest);
+			handler.PlatformView?.RequestNewWindow(application, args as OpenWindowRequest);
 		}
 
 		public static void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
 			if (args is IWindow window)
 			{
-				if (window.Handler?.NativeView is Activity activity)
+				if (window.Handler?.PlatformView is Activity activity)
 					activity.Finish();
 			}
 		}

@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class DrawableExtensions
 	{
+		[System.Runtime.Versioning.SupportedOSPlatform("android29.0")]
 		public static BlendMode? GetFilterMode(FilterMode mode)
 		{
 			switch (mode)
@@ -59,24 +60,13 @@ namespace Microsoft.Maui.Platform
 				drawable.SetColorFilter(colorFilter);
 		}
 
-
-		public static void SetColorFilter(this ADrawable drawable, Graphics.Color color, FilterMode mode, AColorFilter? defaultColorFilter)
-		{
-			if (drawable == null)
-				return;
-
-			if (color == null)
-				SetColorFilter(drawable, defaultColorFilter);
-			else
-				drawable.SetColorFilter(color.ToNative(), mode);
-		}
-
 		public static void SetColorFilter(this ADrawable drawable, Graphics.Color color, FilterMode mode)
 		{
 			if (drawable == null)
 				return;
 
-			drawable.SetColorFilter(color.ToNative(), mode);
+			if (color != null)
+				drawable.SetColorFilter(color.ToPlatform(), mode);
 		}
 
 		public static void SetColorFilter(this ADrawable drawable, AColor color, FilterMode mode)
@@ -84,7 +74,7 @@ namespace Microsoft.Maui.Platform
 			if (drawable == null)
 				return;
 
-			if (NativeVersion.Supports(NativeApis.BlendModeColorFilter))
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
 			{
 				BlendMode? filterMode29 = GetFilterMode(mode);
 

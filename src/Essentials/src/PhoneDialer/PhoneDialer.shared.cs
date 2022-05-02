@@ -1,11 +1,39 @@
+#nullable enable
 using System;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/PhoneDialer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PhoneDialer']/Docs" />
-	public static partial class PhoneDialer
+	public interface IPhoneDialer
 	{
-		internal static void ValidateOpen(string number)
+		bool IsSupported { get; }
+
+		void Open(string number);
+	}
+
+	/// <include file="../../docs/Microsoft.Maui.Essentials/PhoneDialer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PhoneDialer']/Docs" />
+	public static class PhoneDialer
+	{
+		public static bool IsSupported =>
+			Current.IsSupported;
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/PhoneDialer.xml" path="//Member[@MemberName='Open']/Docs" />
+		public static void Open(string number)
+			=> Current.Open(number);
+
+		public static IPhoneDialer Current => ApplicationModel.Communication.PhoneDialer.Default;
+
+		static IPhoneDialer? defaultImplementation;
+
+		public static IPhoneDialer Default =>
+			defaultImplementation ??= new PhoneDialerImplementation();
+
+		internal static void SetDefault(IPhoneDialer? implementation) =>
+			defaultImplementation = implementation;
+	}
+
+	partial class PhoneDialerImplementation : IPhoneDialer
+	{
+		void ValidateOpen(string number)
 		{
 			if (string.IsNullOrWhiteSpace(number))
 				throw new ArgumentNullException(nameof(number));
@@ -13,9 +41,5 @@ namespace Microsoft.Maui.Essentials
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
 		}
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/PhoneDialer.xml" path="//Member[@MemberName='Open']/Docs" />
-		public static void Open(string number)
-			=> PlatformOpen(number);
 	}
 }

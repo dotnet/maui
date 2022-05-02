@@ -1,22 +1,26 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Location;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Geolocation
+	partial class GeolocationImplementation : IGeolocation
 	{
-		static Location lastKnownLocation = new Location();
+		Location lastKnownLocation = new Location();
 
-		static Task<Location> PlatformLastKnownLocationAsync() => Task.FromResult(lastKnownLocation);
+		public Task<Location> GetLastKnownLocationAsync() => Task.FromResult(lastKnownLocation);
 
-		static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
+			_ = request ?? throw new ArgumentNullException(nameof(request));
+
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
 			Locator service = null;
-			var gps = Platform.GetFeatureInfo<bool>("location.gps");
-			var wps = Platform.GetFeatureInfo<bool>("location.wps");
+			var gps = PlatformUtils.GetFeatureInfo<bool>("location.gps");
+			var wps = PlatformUtils.GetFeatureInfo<bool>("location.wps");
 			if (gps)
 			{
 				if (wps)

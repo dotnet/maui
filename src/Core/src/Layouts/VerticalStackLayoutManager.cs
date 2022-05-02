@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Layouts
 
 			double measuredHeight = 0;
 			double measuredWidth = 0;
+			double childWidthConstraint = widthConstraint - padding.HorizontalThickness;
 
 			for (int n = 0; n < Stack.Count; n++)
 			{
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Layouts
 					continue;
 				}
 
-				var measure = child.Measure(widthConstraint, double.PositiveInfinity);
+				var measure = child.Measure(childWidthConstraint, double.PositiveInfinity);
 				measuredHeight += measure.Height;
 				measuredWidth = Math.Max(measuredWidth, measure.Width);
 			}
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Layouts
 			return new Size(finalWidth, finalHeight);
 		}
 
-		public override Size ArrangeChildren(Rectangle bounds)
+		public override Size ArrangeChildren(Rect bounds)
 		{
 			var padding = Stack.Padding;
 
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.Layouts
 					continue;
 				}
 
-				var destination = new Rectangle(left, stackHeight, width, child.DesiredSize.Height);
+				var destination = new Rect(left, stackHeight, width, child.DesiredSize.Height);
 				child.Arrange(destination);
 				stackHeight += destination.Height + Stack.Spacing;
 			}

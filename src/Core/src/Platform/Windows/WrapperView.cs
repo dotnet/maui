@@ -5,33 +5,32 @@ using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
-
 using System.Numerics;
 using System.Threading.Tasks;
-using Microsoft.UI;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml.Shapes;
+using WSize = Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : Grid, IDisposable
 	{
-
 		readonly Canvas _shadowCanvas;
 		SpriteVisual? _shadowVisual;
 		DropShadow? _dropShadow;
-
+		WSize _shadowHostSize;
+		Path? _borderPath;
 
 		FrameworkElement? _child;
 
 		public WrapperView()
 		{
-
 			_shadowCanvas = new Canvas();
+			_borderPath = new Path();
 
 			Children.Add(_shadowCanvas);
-
+			Children.Add(_borderPath);
 		}
 
 		public FrameworkElement? Child
@@ -54,15 +53,18 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal bool HasShadow => _dropShadow != null;
+
 		public void Dispose()
 		{
+			DisposeClip();
 			DisposeShadow();
+			DisposeBorder();
 		}
 
-		partial void ClipChanged()
-		{
-			UpdateClip();
-		}
+		partial void ClipChanged() => UpdateClip();
+
+		partial void BorderChanged() => UpdateBorder();
 
 		void UpdateClip()
 		{
@@ -83,7 +85,7 @@ namespace Microsoft.Maui.Platform
 			var visual = ElementCompositionPreview.GetElementVisual(Child);
 			var compositor = visual.Compositor;
 
-			var pathSize = new Graphics.Rectangle(0, 0, width, height);
+			var pathSize = new Graphics.Rect(0, 0, width, height);
 			var clipPath = clipGeometry.PathForBounds(pathSize);
 			var device = CanvasDevice.GetSharedDevice();
 			var geometry = clipPath.AsPath(device);
@@ -95,8 +97,33 @@ namespace Microsoft.Maui.Platform
 			visual.Clip = geometricClip;
 		}
 
+		void DisposeClip()
+		{
+			var visual = ElementCompositionPreview.GetElementVisual(Child);
+			visual.Clip = null;
+		}
+		
+		void DisposeBorder()
+		{
+			_borderPath = null;
+		}
 
-		internal bool HasShadow => _dropShadow != null;
+		void UpdateBorder()
+		{
+			if (Border == null)
+				return;
+
+			IShape? borderShape = Border.Shape;
+			_borderPath?.UpdateBorderShape(borderShape, ActualWidth, ActualHeight);
+
+			_borderPath?.UpdateStroke(Border.Stroke);
+			_borderPath?.UpdateStrokeThickness(Border.StrokeThickness);
+			_borderPath?.UpdateStrokeDashPattern(Border.StrokeDashPattern);
+			_borderPath?.UpdateBorderDashOffset(Border.StrokeDashOffset);
+			_borderPath?.UpdateStrokeMiterLimit(Border.StrokeMiterLimit);
+			_borderPath?.UpdateStrokeLineCap(Border.StrokeLineCap);
+			_borderPath?.UpdateStrokeLineJoin(Border.StrokeLineJoin);
+		}
 
 		async partial void ShadowChanged()
 		{
@@ -108,12 +135,14 @@ namespace Microsoft.Maui.Platform
 
 		async void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
 		{
+			_shadowHostSize = e.NewSize;
+
 			UpdateClip();
 
-			if (HasShadow)
-				UpdateShadowSize();
-			else
-				await CreateShadowAsync();
+			UpdateBorder();
+		
+			DisposeShadow();
+			await CreateShadowAsync();
 		}
 
 		void DisposeShadow()
@@ -138,11 +167,11 @@ namespace Microsoft.Maui.Platform
 
 		async Task CreateShadowAsync()
 		{
-			if (Child == null || Shadow == null)
+			if (Child == null || Shadow == null || Shadow.Paint == null)
 				return;
 
-			double width = Child.ActualWidth;
-			double height = Child.ActualHeight;
+			double width = _shadowHostSize.Width;
+			double height = _shadowHostSize.Height;
 
 			if (height <= 0 && width <= 0)
 				return;
@@ -195,8 +224,8 @@ namespace Microsoft.Maui.Platform
 			{
 				if (Child is FrameworkElement child)
 				{
-					float width = (float)child.ActualWidth;
-					float height = (float)child.ActualHeight;
+					float width = (float)_shadowHostSize.Width;
+					float height = (float)_shadowHostSize.Height;
 
 					_shadowVisual.Size = new Vector2(width, height);
 				}
@@ -205,10 +234,10 @@ namespace Microsoft.Maui.Platform
 
 		static void SetShadowProperties(DropShadow dropShadow, IShadow? mauiShadow)
 		{
-			float blurRadius = 1;
-			float opacity = 0;
-			var shadowColor = Graphics.Colors.Transparent;
-			var offset = new Graphics.Point(1, 1);
+			float blurRadius = 10f;
+			float opacity = 1f;
+			Graphics.Color? shadowColor = Colors.Black;
+			Graphics.Point offset = Graphics.Point.Zero;
 
 			if (mauiShadow != null)
 			{
@@ -220,10 +249,11 @@ namespace Microsoft.Maui.Platform
 
 			dropShadow.BlurRadius = blurRadius;
 			dropShadow.Opacity = opacity;
+
 			if (shadowColor != null)
 				dropShadow.Color = shadowColor.ToWindowsColor();
+
 			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
 		}
-
 	}
 }

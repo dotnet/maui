@@ -844,14 +844,6 @@ Task("VSMAC")
                 GetMSBuildSettings()
                     .WithRestore());
 
-        MSBuild("src/Controls/samples/Controls.Sample.Droid/Controls.Sample.Droid.csproj",
-                GetMSBuildSettings()
-                    .WithRestore());
-        
-
-        MSBuild("src/Controls/samples/Controls.Sample.iOS/Controls.Sample.iOS.csproj",
-            new MSBuildSettings().WithRestore());
-
         MSBuild("src/Essentials/src/Essentials.csproj",
                 GetMSBuildSettings()
                     .WithRestore());
@@ -1058,7 +1050,7 @@ Task ("cg-ios-deploy")
 // TASK TARGETS
 //////////////////////////////////////////////////////////////////////
 
-Task("Default").IsDependentOn("dotnet-pack");
+Task("Default").IsDependentOn("dotnet").IsDependentOn("dotnet-pack");
 
 //////////////////////////////////////////////////////////////////////
 // EXECUTION

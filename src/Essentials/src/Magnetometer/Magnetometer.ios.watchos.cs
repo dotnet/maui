@@ -1,31 +1,38 @@
+#nullable enable
 using CoreMotion;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Magnetometer
+	partial class MagnetometerImplementation : IMagnetometer
 	{
-		internal static bool IsSupported =>
-			Platform.MotionManager?.MagnetometerAvailable ?? false;
+		static CMMotionManager? motionManager;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		static CMMotionManager MotionManager =>
+			motionManager ??= new CMMotionManager();
+
+		bool PlatformIsSupported =>
+			MotionManager.MagnetometerAvailable;
+
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			var manager = Platform.MotionManager;
-			manager.MagnetometerUpdateInterval = sensorSpeed.ToPlatform();
-			manager.StartMagnetometerUpdates(Platform.GetCurrentQueue(), DataUpdated);
+			MotionManager.MagnetometerUpdateInterval = sensorSpeed.ToPlatform();
+			MotionManager.StartMagnetometerUpdates(NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), DataUpdated);
 		}
 
-		static void DataUpdated(CMMagnetometerData data, NSError error)
+		void DataUpdated(CMMagnetometerData data, NSError error)
 		{
 			if (data == null)
 				return;
-
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			var field = data.MagneticField;
 			var magnetometerData = new MagnetometerData(field.X, field.Y, field.Z);
-			OnChanged(magnetometerData);
+#pragma warning restore CA1416
+			RaiseReadingChanged(magnetometerData);
 		}
 
-		internal static void PlatformStop() =>
-			Platform.MotionManager?.StopMagnetometerUpdates();
+		void PlatformStop() =>
+			MotionManager.StopMagnetometerUpdates();
 	}
 }

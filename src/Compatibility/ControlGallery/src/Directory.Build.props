@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <SampleProject>true</SampleProject>
+    <UseMaui Condition=" '$(UseWorkload)' == 'true' ">true</UseMaui>
+  </PropertyGroup>
+  <Import Project="../../../../Directory.Build.props" />
+</Project>

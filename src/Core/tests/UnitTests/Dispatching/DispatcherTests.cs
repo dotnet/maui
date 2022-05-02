@@ -7,6 +7,8 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 {
 	// All these tests should run in a separate thread/task to avoid polluting the other tests.
 	// This is only because the dispatcher and dispatcher provider are both "static" classes.
+	// Technically these tests are useless because they cannot test shipping code as they are
+	// none of the platforms. However, they sort of do test the test dispatcher...
 	[Category(TestCategory.Core, TestCategory.Dispatching)]
 	public class DispatcherTests : IDisposable
 	{
@@ -90,6 +92,101 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 					Assert.NotEqual(outerId, innerId);
 					Assert.NotSame(dispatcher1, dispatcher2);
 				});
+			});
+
+		[Fact]
+		public Task DispatchDelayedIsNotImmediate() =>
+			DispatcherTest.Run(async () =>
+			{
+				var dispatcher = Dispatcher.GetForCurrentThread();
+
+				var tcs = new TaskCompletionSource<DateTime>();
+
+				var now = DateTime.Now;
+
+				var result = dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
+				{
+					var later = DateTime.Now;
+					tcs.SetResult(later);
+				});
+
+				Assert.True(result);
+
+				var later = await tcs.Task;
+				var duration = (later - now).TotalMilliseconds;
+
+				Assert.True(duration > 450);
+			});
+
+		[Fact]
+		public Task CreateTimerIsNotNull() =>
+			DispatcherTest.Run(() =>
+			{
+				var dispatcher = Dispatcher.GetForCurrentThread();
+
+				var timer = dispatcher.CreateTimer();
+
+				Assert.NotNull(timer);
+			});
+
+		[Fact]
+		public Task CreateTimerNonRepeatingDoesNotRepeat() =>
+			DispatcherTest.Run(async () =>
+			{
+				var dispatcher = Dispatcher.GetForCurrentThread();
+
+				var ticks = 0;
+
+				var timer = dispatcher.CreateTimer();
+
+				Assert.False(timer.IsRunning);
+
+				timer.Interval = TimeSpan.FromMilliseconds(200);
+				timer.IsRepeating = false;
+
+				timer.Tick += (_, _) =>
+				{
+					ticks++;
+				};
+
+				timer.Start();
+
+				Assert.True(timer.IsRunning);
+
+				await Task.Delay(TimeSpan.FromSeconds(1.1));
+
+				Assert.Equal(1, ticks);
+			});
+
+		[Fact]
+		public Task CreateTimerRepeatingRepeats() =>
+			DispatcherTest.Run(async () =>
+			{
+				var dispatcher = Dispatcher.GetForCurrentThread();
+
+				var ticks = 0;
+
+				var timer = dispatcher.CreateTimer();
+
+				Assert.False(timer.IsRunning);
+
+				timer.Interval = TimeSpan.FromMilliseconds(200);
+				timer.IsRepeating = true;
+
+				timer.Tick += (_, _) =>
+				{
+					ticks++;
+				};
+
+				timer.Start();
+
+				Assert.True(timer.IsRunning);
+
+				// Give it time to repeat at least once
+				await Task.Delay(TimeSpan.FromSeconds(1));
+
+				// If it's repeating, ticks will be greater than 1
+				Assert.True(ticks > 1);
 			});
 	}
 }

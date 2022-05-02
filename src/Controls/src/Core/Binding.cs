@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 		object _source;
 		string _updateSourceEventName;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public Binding()
 		{
 		}
@@ -254,12 +254,12 @@ namespace Microsoft.Maui.Controls
 
 			bool fitsElementType =
 				relativeSource.Mode == RelativeBindingSourceMode.FindAncestor &&
-				relativeSource.AncestorType.GetTypeInfo().IsAssignableFrom(element.GetType().GetTypeInfo());
+				relativeSource.AncestorType.IsAssignableFrom(element.GetType());
 
 			bool fitsBindingContextType =
 				element.BindingContext != null &&
 				relativeSource.Mode == RelativeBindingSourceMode.FindAncestorBindingContext &&
-				relativeSource.AncestorType.GetTypeInfo().IsAssignableFrom(element.BindingContext.GetType().GetTypeInfo());
+				relativeSource.AncestorType.IsAssignableFrom(element.BindingContext.GetType());
 
 			if (!fitsElementType && !fitsBindingContextType)
 				return false;

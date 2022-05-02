@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='TimeProperty']/Docs" />
-		public static readonly BindableProperty TimeProperty = BindableProperty.Create(nameof(Time), typeof(TimeSpan), typeof(TimePicker), new TimeSpan(0), BindingMode.TwoWay, (bindable, value) =>
+		public static readonly BindableProperty TimeProperty = BindableProperty.Create(nameof(Time), typeof(TimeSpan), typeof(TimePicker), new TimeSpan(0), BindingMode.TwoWay,
+			validateValue: (bindable, value) =>
 		{
 			var time = (TimeSpan)value;
 			return time.TotalHours < 24 && time.TotalMilliseconds >= 0;
@@ -34,9 +35,6 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='FontAutoScalingEnabledProperty']/Docs" />
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='TextTransformProperty']/Docs" />
-		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<TimePicker>> _platformConfigurationRegistry;
 
@@ -103,11 +101,10 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='TextTransform']/Docs" />
-		public TextTransform TextTransform
+		TextTransform ITextElement.TextTransform
 		{
-			get => (TextTransform)GetValue(TextTransformProperty);
-			set => SetValue(TextTransformProperty, value);
+			get => TextTransform.Default;
+			set { }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs" />
@@ -118,9 +115,6 @@ namespace Microsoft.Maui.Controls
 			HandleFontChanged();
 
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
-			HandleFontChanged();
-
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
 			HandleFontChanged();
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
@@ -134,6 +128,7 @@ namespace Microsoft.Maui.Controls
 
 		void HandleFontChanged()
 		{
+			Handler?.UpdateValue(nameof(ITextStyle.Font));
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 

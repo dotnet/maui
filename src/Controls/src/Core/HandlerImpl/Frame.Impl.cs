@@ -51,17 +51,17 @@ namespace Microsoft.Maui.Controls
 			var desiredWidth = ResolveConstraints(widthConstraint, width, contentSize.Width + margin.HorizontalThickness);
 			var desiredHeight = ResolveConstraints(heightConstraint, height, contentSize.Height + margin.VerticalThickness);
 
-			DesiredSize = new Size(desiredWidth, desiredHeight);
+			DesiredSize = new Size(desiredWidth + margin.HorizontalThickness, desiredHeight + margin.VerticalThickness);
 
 			return DesiredSize;
 		}
 
-		protected override Size ArrangeOverride(Rectangle bounds)
+		protected override Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
-			Handler?.NativeArrange(Frame);
+			Handler?.PlatformArrange(Frame);
 
-			(this as IContentView).CrossPlatformArrange(new Rectangle(Point.Zero, Frame.Size));
+			(this as IContentView).CrossPlatformArrange(new Rect(Point.Zero, Frame.Size));
 
 			return Frame.Size;
 		}

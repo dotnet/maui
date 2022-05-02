@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Platform
 
 			if (content != null && mauiContext != null)
 			{
-				_contentView = content.ToNative(mauiContext);
+				_contentView = content.ToPlatform(mauiContext);
 				this.AddSubview(_contentView);
 				TryInsertRefresh(_contentView);
 			}
@@ -178,7 +178,9 @@ namespace Microsoft.Maui.Platform
 			UserInteractionEnabled = true;
 		}
 
-		bool CanUseRefreshControlProperty() =>
+#pragma warning disable CA1416 // TODO: 'UINavigationBar.PrefersLargeTitles' is only supported on: 'ios' 11.0 and later
+		bool CanUseRefreshControlProperty() => 
 			this.GetNavigationController()?.NavigationBar?.PrefersLargeTitles ?? true;
+#pragma warning restore CA1416
 	}
 }

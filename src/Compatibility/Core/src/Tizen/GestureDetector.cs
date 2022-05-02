@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Devices;
 using ElmSharp;
 using EGestureType = ElmSharp.GestureLayer.GestureType;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	internal class GestureDetector
 	{
 		readonly IDictionary<EGestureType, List<GestureHandler>> _handlerCache;
@@ -67,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 			_handlerCache.Clear();
 
-			if (Device.Idiom == TargetIdiom.TV)
+			if (DeviceInfo.Idiom == DeviceIdiom.TV)
 			{
 				_renderer.NativeView.KeyDown -= OnKeyDown;
 			}
@@ -101,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			};
 			UpdateGestureLayerEnabled();
 
-			if (Device.Idiom == TargetIdiom.TV)
+			if (DeviceInfo.Idiom == DeviceIdiom.TV)
 			{
 				_renderer.NativeView.KeyDown += OnKeyDown;
 			}

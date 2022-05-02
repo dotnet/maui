@@ -5,6 +5,12 @@
     <Compile Remove="**\iOS\**\*.cs" />
     <None Include="**\iOS\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+   <ItemGroup Condition=" '$(_MauiTargetPlatformIsMacCatalyst)' != 'True' ">
+    <Compile Remove="**\**\*.MacCatalyst.cs" />
+    <None Include="**\**\*.MacCatalyst.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\MacCatalyst\**\*.cs" />
+    <None Include="**\MacCatalyst\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsmacOS)' != 'True' ">
     <Compile Remove="**\*.Mac.cs" />
     <None Include="**\*.Mac.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
@@ -29,6 +35,10 @@
     <Compile Remove="**\Standard\**\*.cs" />
     <None Include="**\Standard\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+  <ItemGroup Condition="'$(_MauiNoTargetPlatform)' == 'True'">
+    <Compile Remove="**\*.Platform.cs" />
+    <None Include="**\*.Platform.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' != 'True' ">
     <Compile Remove="**\*.Windows.cs" />
     <None Include="**\*.Windows.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
@@ -48,6 +58,12 @@
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' != 'True' ">
     <Compile Remove="**\*.uwp.cs" />
     <None Include="**\*.uwp.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsTizen)' != 'True' ">
+    <Compile Remove="**\**\*.Tizen.cs" />
+    <None Include="**\**\*.Tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\Tizen\**\*.cs" />
+    <None Include="**\Tizen\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="bin\**;obj\**" />
@@ -72,7 +88,9 @@
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
     <DefineConstants>$(DefineConstants);MONOANDROID</DefineConstants>
   </PropertyGroup>
-
+  <PropertyGroup Condition="'$(_MauiNoTargetPlatform)' != 'True'">
+    <DefineConstants>$(DefineConstants);PLATFORM</DefineConstants>
+  </PropertyGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
     <AndroidResource Include="$(MonoAndroidResourcePrefix)\*\*.xml" />
     <AndroidResource Include="$(MonoAndroidResourcePrefix)\*\*.axml" />
@@ -85,6 +103,11 @@
 
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsMacCatalyst)' == 'True' ">
     <DefineConstants>$(DefineConstants);MACCATALYST;IOS</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Tizen  -->
+  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
+    <DefineConstants>$(DefineConstants);TIZEN</DefineConstants>
   </PropertyGroup>
 
   <!-- If this becomes part of the product we will remove these but for now it's useful having them all in one place -->
@@ -107,5 +130,9 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
+    <PackageReference Include="Tizen.UIExtensions.ElmSharp" />
+    <PackageReference Include="Microsoft.Maui.Graphics.Skia" />
   </ItemGroup>
 </Project>

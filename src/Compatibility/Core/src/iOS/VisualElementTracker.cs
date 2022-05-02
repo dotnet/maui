@@ -31,9 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		// Track these by hand because the calls down into iOS are too expensive
 		bool _isInteractive;
-		Rectangle _lastBounds;
+		Rect _lastBounds;
 #if !__MOBILE__
-		Rectangle _lastParentBounds;
+		Rect _lastParentBounds;
 #endif
 		CALayer _layer;
 		CGPoint _originalAnchor;
@@ -260,11 +260,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (shouldUpdate && TrackFrame)
 				{
 #if __MOBILE__
-					var target = new RectangleF(x, y, width, height);
+					var target = new RectF(x, y, width, height);
 #else
 					var visualParent = parent as VisualElement;
 					float newY = visualParent == null ? y : Math.Max(0, (float)(visualParent.Height - y - view.Height));
-					var target = new RectangleF(x, newY, width, height);
+					var target = new RectF(x, newY, width, height);
 #endif
 
 					// must reset transform prior to setting frame...

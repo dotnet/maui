@@ -4,15 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
-using ObjCRuntime;
 using Photos;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
-	public partial class FileSystem
+	static partial class FileSystemUtils
 	{
-		internal static async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
+		public static async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
 		{
 			if (urls == null || urls.Length == 0)
 				return Array.Empty<FileResult>();
@@ -187,7 +186,7 @@ namespace Microsoft.Maui.Essentials
 		{
 			uiImage = image;
 
-			FullPath = Guid.NewGuid().ToString() + FileSystem.Extensions.Png;
+			FullPath = Guid.NewGuid().ToString() + FileExtensions.Png;
 			FileName = FullPath;
 		}
 
@@ -212,6 +211,7 @@ namespace Microsoft.Maui.Essentials
 			FileName = originalFilename;
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios13.0")]
 		internal override Task<Stream> PlatformOpenReadAsync()
 		{
 			var tcsStream = new TaskCompletionSource<Stream>();

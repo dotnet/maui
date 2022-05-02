@@ -10,36 +10,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class WindowOverlayTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void CreateAndRemoveOverlayWindow()
 		{
 			var app = new TestApp();
 			var window = app.CreateWindow() as IWindow;
-			app.LoadPage(new ContentPage());
+			(window as Window).Page = new ContentPage();
 			var windowOverlay = new WindowOverlay(window) as IWindowOverlay;
 
 			// If not processed by a window, should be false.
-			Assert.False(windowOverlay.IsNativeViewInitialized);
+			Assert.False(windowOverlay.IsPlatformViewInitialized);
 
 			// First time inserted, should be true.
 			Assert.True(window.AddOverlay(windowOverlay));
 
 			// Should now be initialized.
-			Assert.True(windowOverlay.IsNativeViewInitialized);
+			Assert.True(windowOverlay.IsPlatformViewInitialized);
 
 			Assert.True(window.Overlays.Count > 0);
 
@@ -53,13 +39,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(window.RemoveOverlay(windowOverlay));
 
 			// Window was uninitialized, should be false.
-			Assert.False(windowOverlay.IsNativeViewInitialized);
+			Assert.False(windowOverlay.IsPlatformViewInitialized);
 
 			// Second time inserted, should be true.
 			Assert.True(window.AddOverlay(windowOverlay));
 
 			// Should now be initialized again.
-			Assert.True(windowOverlay.IsNativeViewInitialized);
+			Assert.True(windowOverlay.IsPlatformViewInitialized);
 		}
 
 		[Test]
@@ -67,7 +53,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var app = new TestApp();
 			var window = app.CreateWindow() as IWindow;
-			app.LoadPage(new ContentPage());
+			(window as Window).Page = new ContentPage();
 			var windowOverlay = new WindowOverlay(window) as IWindowOverlay;
 
 			// First time inserted, should be true.
@@ -92,7 +78,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class TestWindowElement : IWindowOverlayElement
 	{
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 		}
 

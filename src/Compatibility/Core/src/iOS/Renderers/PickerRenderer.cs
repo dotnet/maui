@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			=> enableActions.Contains(action.Name);
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PickerRenderer : PickerRendererBase<UITextField>
 	{
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
@@ -44,6 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class PickerRendererBase<TControl> : ViewRenderer<Picker, TControl>
 		where TControl : UITextField
 	{
@@ -102,12 +104,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 					entry.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 					entry.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-
-					if (Forms.IsiOS9OrNewer)
-					{
-						entry.InputAssistantItem.LeadingBarButtonGroups = null;
-						entry.InputAssistantItem.TrailingBarButtonGroups = null;
-					}
+					entry.InputAssistantItem.LeadingBarButtonGroups = null;
+					entry.InputAssistantItem.TrailingBarButtonGroups = null;
 
 					_defaultTextColor = entry.TextColor;
 
@@ -160,6 +158,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateHorizontalTextAlignment();
 		}
 
+		[PortHandler]
 		void OnEditing(object sender, EventArgs eventArgs)
 		{
 			// Reset the TextField's Text so it appears as if typing with a keyboard does not work.
@@ -170,6 +169,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.UndoManager.RemoveAllActions();
 		}
 
+		[PortHandler]
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
 			var s = (PickerSource)_picker.Model;
@@ -180,11 +180,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
+		[PortHandler]
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
+		[PortHandler]
 		void RowsCollectionChanged(object sender, EventArgs e)
 		{
 			UpdatePicker();
@@ -274,7 +276,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdatePickerNativeSize(string oldText)
 		{
 			if (oldText != Control.Text)
-				((IVisualElementController)Element).NativeSizeChanged();
+				((IVisualElementController)Element).PlatformSizeChanged();
 		}
 
 		[PortHandler]
@@ -289,11 +291,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler("Partially ported, still missing FlowDirection part.")]
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			Control.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();
+			Control.VerticalAlignment = Element.VerticalTextAlignment.ToPlatformTextAlignment();
 		}
 
 		[PortHandler]
@@ -304,7 +306,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (textColor == null || (!Element.IsEnabled && _useLegacyColorManagement))
 				Control.TextColor = _defaultTextColor;
 			else
-				Control.TextColor = textColor.ToUIColor();
+				Control.TextColor = textColor.ToPlatform();
 
 			// HACK This forces the color to update; there's probably a more elegant way to make this happen
 			Control.Text = Control.Text;

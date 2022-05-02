@@ -1,14 +1,21 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Map.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Map']/Docs" />
-	public static partial class Map
+	class MapImplementation : IMap
 	{
-		internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		internal static Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
+		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

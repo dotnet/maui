@@ -1,7 +1,9 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using AndroidSpecific = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+
 namespace Maui.Controls.Sample.Pages
 {
 	public partial class TabbedPageGallery
@@ -56,9 +58,33 @@ namespace Maui.Controls.Sample.Pages
 		void OnToggleTabBar(object sender, EventArgs e)
 		{
 			if ((this.BarBackground as SolidColorBrush)?.Color == SolidColorBrush.Purple.Color)
-				this.BarBackground = SolidColorBrush.Black;
+				this.BarBackground = null;
 			else
 				this.BarBackground = SolidColorBrush.Purple;
+		}
+
+		void OnToggleTabBarTextColor(object sender, EventArgs e)
+		{
+			if (this.BarTextColor == Colors.Green)
+				this.BarTextColor = null;
+			else
+				this.BarTextColor = Colors.Green;
+		}
+
+		void OnToggleTabItemUnSelectedColor(object sender, EventArgs e)
+		{
+			if (this.UnselectedTabColor == Colors.Blue)
+				this.UnselectedTabColor = null;
+			else
+				this.UnselectedTabColor = Colors.Blue;
+		}
+
+		void OnToggleTabItemSelectedColor(object sender, EventArgs e)
+		{
+			if (this.SelectedTabColor == Colors.Pink)
+				this.SelectedTabColor = null;
+			else
+				this.SelectedTabColor = Colors.Pink;
 		}
 	}
 }

@@ -1,0 +1,7 @@
+{
+  "author": "Майкрософт",
+  "name": "Приложение .NET MAUI (предварительная версия)",
+  "description": "Проект по созданию приложения .NET MAUI для iOS, Android, Mac Catalyst, Tizen и WinUI",
+  "postActions/openInEditor/description": "Открывает MainPage.xaml в редакторе.",
+  "symbols/applicationId/description": "Переопределяет $(ApplicationId) в проекте"
+}

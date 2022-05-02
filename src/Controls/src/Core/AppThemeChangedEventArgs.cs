@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -6,10 +7,10 @@ namespace Microsoft.Maui.Controls
 	public class AppThemeChangedEventArgs : EventArgs
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/AppThemeChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
-		public AppThemeChangedEventArgs(OSAppTheme appTheme) =>
+		public AppThemeChangedEventArgs(AppTheme appTheme) =>
 			RequestedTheme = appTheme;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/AppThemeChangedEventArgs.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
-		public OSAppTheme RequestedTheme { get; }
+		public AppTheme RequestedTheme { get; }
 	}
 }

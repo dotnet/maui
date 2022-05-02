@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	internal class ObservableItemsSource : IItemsViewSource
+	internal class ObservableItemsSource : IObservableItemsViewSource
 	{
 		readonly UICollectionViewController _collectionViewController;
 		protected readonly UICollectionView CollectionView;
@@ -68,6 +68,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return null;
 		}
 
+		public IItemsViewSource GroupItemsViewSource(NSIndexPath indexPath)
+		{
+			return null;
+		}
+
 		public NSIndexPath GetIndexForItem(object item)
 		{
 			for (int n = 0; n < Count; n++)
@@ -85,6 +90,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public int ItemCount => Count;
 
+		public bool ObserveChanges { get; set; } = true;
+
 		public object this[NSIndexPath indexPath]
 		{
 			get
@@ -100,20 +107,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			if (Device.IsInvokeRequired)
+			if (!ObserveChanges)
 			{
-				Device.BeginInvokeOnMainThread(() => CollectionChanged(args));
+				return;
 			}
-			else
-			{
-				CollectionChanged(args);
-			}
+
+			CollectionView.BeginInvokeOnMainThread(() => CollectionChanged(args));
 		}
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
-			// Force UICollectionView to get the internal accounting straight 
-			CollectionView.NumberOfItemsInSection(_section);
+			// Force UICollectionView to get the internal accounting straight
+			if (!CollectionView.Hidden)
+				CollectionView.NumberOfItemsInSection(_section);
 
 			switch (args.Action)
 			{
@@ -286,7 +292,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnCollectionViewUpdated(NotifyCollectionChangedEventArgs args)
 		{
-			Device.BeginInvokeOnMainThread(() =>
+			CollectionView.BeginInvokeOnMainThread(() =>
 			{
 				CollectionViewUpdated?.Invoke(this, args);
 			});

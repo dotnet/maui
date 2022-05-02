@@ -15,6 +15,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class IndicatorViewRenderer : LinearLayout, IVisualElementRenderer, IViewRenderer, ITabStop
 	{
 		VisualElementTracker _visualElementTracker;
@@ -268,7 +269,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				RemoveViewAt(ChildCount - 1);
 			}
-			IndicatorView.NativeSizeChanged();
+			IndicatorView.PlatformSizeChanged();
 		}
 
 		void ResetIndicators()
@@ -302,7 +303,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			AddView(renderer.View);
 
 			var indicatorLayoutSizeRequest = indicatorLayout.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			indicatorLayout.Layout(new Rectangle(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
+			indicatorLayout.Layout(new Rect(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
 		}
 
 		void UpdateIndicators()
@@ -349,7 +350,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			shape.SetIntrinsicHeight((int)Context.ToPixels(indicatorSize));
 			shape.SetIntrinsicWidth((int)Context.ToPixels(indicatorSize));
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 			shape.Paint.Color = color;
+#pragma warning restore CA1416
 
 			return shape;
 		}

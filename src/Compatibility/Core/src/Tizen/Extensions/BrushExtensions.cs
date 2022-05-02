@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using SkiaSharp;
 using SkiaSharp.Views.Tizen;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -82,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public static SKColor ToSolidColor(this SolidColorBrush solidColorBrush)
 		{
-			return solidColorBrush.Color != Color.Default ? solidColorBrush.Color.ToNative().ToSKColor() : SKColor.Empty;
+			return solidColorBrush.Color.IsDefault() ? SKColor.Empty : solidColorBrush.Color.ToNative().ToSKColor();
 		}
 
 		static SKShader CreateLinearGradient(LinearGradientBrush linearGradientBrush, SKRect pathBounds)

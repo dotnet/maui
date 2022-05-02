@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			var nsTextField = cell.AccessoryView.Subviews[0] as NSTextField;
 			if (nsTextField != null)
-				nsTextField.Alignment = entryCell.HorizontalTextAlignment.ToNativeTextAlignment(viewController?.EffectiveFlowDirection ?? default(EffectiveFlowDirection));
+				nsTextField.Alignment = entryCell.HorizontalTextAlignment.ToPlatformTextAlignment(viewController?.EffectiveFlowDirection ?? default(EffectiveFlowDirection));
 		}
 
 		void UpdateIsEnabled(CellNSView cell, EntryCell entryCell)

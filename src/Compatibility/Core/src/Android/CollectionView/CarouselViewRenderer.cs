@@ -12,6 +12,7 @@ using FormsCarouselView = Microsoft.Maui.Controls.CarouselView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class CarouselViewRenderer : ItemsViewRenderer<ItemsView, ItemsViewAdapter<ItemsView, IItemsViewSource>, IItemsViewSource>
 	{
 		protected FormsCarouselView Carousel => ItemsView as FormsCarouselView;
@@ -310,7 +311,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return;
 			}
 
-			Device.BeginInvokeOnMainThread(() =>
+			Post(() =>
 			{
 
 				SetCurrentItem(carouselPosition);

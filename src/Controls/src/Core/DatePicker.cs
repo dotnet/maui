@@ -42,9 +42,6 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='FontAutoScalingEnabledProperty']/Docs" />
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='TextTransformProperty']/Docs" />
-		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
-
 		readonly Lazy<PlatformConfigurationRegistry<DatePicker>> _platformConfigurationRegistry;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='.ctor']/Docs" />
@@ -67,11 +64,10 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FormatProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='TextTransform']/Docs" />
-		public TextTransform TextTransform
+		TextTransform ITextElement.TextTransform
 		{
-			get { return (TextTransform)GetValue(TextTransformProperty); }
-			set { SetValue(TextTransformProperty, value); }
+			get => TextTransform.Default;
+			set { }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='MaximumDate']/Docs" />
@@ -137,9 +133,6 @@ namespace Microsoft.Maui.Controls
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
 			HandleFontChanged();
 
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
-			HandleFontChanged();
-
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			this.GetDefaultFontSize();
 
@@ -151,6 +144,7 @@ namespace Microsoft.Maui.Controls
 
 		void HandleFontChanged()
 		{
+			Handler?.UpdateValue(nameof(ITextStyle.Font));
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 

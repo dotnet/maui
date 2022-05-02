@@ -3,11 +3,13 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-$(DotNetPreviewVersionBand)" Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-$(DotNetPreviewVersionBand)"     Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-$(DotNetPreviewVersionBand)" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-$(DotNetPreviewVersionBand)"         Version="[$(MicrosoftiOSSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-$(DotNetPreviewVersionBand)"        Version="[$(MicrosofttvOSSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-$(DotNetPreviewVersionBand)"       Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-$(DotNetMonoManifestVersionBand)"   Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Manifest-$(DotNetEmscriptenManifestVersionBand)" Version="[$(MicrosoftNETWorkloadEmscriptenPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-$(DotNetAndroidManifestVersionBand)"    Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-$(DotNetMaciOSManifestVersionBand)" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-$(DotNetMaciOSManifestVersionBand)"         Version="[$(MicrosoftiOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-$(DotNetMaciOSManifestVersionBand)"        Version="[$(MicrosofttvOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-$(DotNetMaciOSManifestVersionBand)"       Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
+    <PackageDownload Include="Samsung.NET.Sdk.Tizen.Manifest-$(DotNetTizenManifestVersionBand)"       Version="[$(SamsungTizenSdkPackageVersion)]" />
   </ItemGroup>
 </Project>

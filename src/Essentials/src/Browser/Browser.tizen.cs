@@ -1,13 +1,14 @@
+#nullable enable
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Browser
+	partial class BrowserImplementation : IBrowser
 	{
-		static Task<bool> PlatformOpenAsync(Uri uri, BrowserLaunchOptions launchMode)
+		public Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions launchMode)
 		{
 			if (uri == null)
 				throw new ArgumentNullException(nameof(uri));

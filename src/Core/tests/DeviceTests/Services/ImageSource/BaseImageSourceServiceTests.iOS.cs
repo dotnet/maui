@@ -1,8 +1,9 @@
 using System;
 using System.IO;
 using CoreGraphics;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Storage;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
@@ -11,10 +12,10 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public abstract partial class BaseImageSourceServiceTests
 	{
-		protected string CreateBitmapFile(int width, int height, Color color, string filename = null) =>
-			CreateBitmapFile(width, height, color.ToNative(), filename);
+		public static string CreateBitmapFile(int width, int height, Color color, string filename = null) =>
+			CreateBitmapFile(width, height, color.ToPlatform(), filename);
 
-		protected string CreateBitmapFile(int width, int height, UIColor color, string filename = null)
+		public static string CreateBitmapFile(int width, int height, UIColor color, string filename = null)
 		{
 			filename ??= Guid.NewGuid().ToString("N") + ".png";
 			if (!Path.IsPathRooted(filename))
@@ -30,10 +31,10 @@ namespace Microsoft.Maui.DeviceTests
 			return filename;
 		}
 
-		protected Stream CreateBitmapStream(int width, int height, Color color) =>
-			CreateBitmapStream(width, height, color.ToNative());
+		public static Stream CreateBitmapStream(int width, int height, Color color) =>
+			CreateBitmapStream(width, height, color.ToPlatform());
 
-		protected Stream CreateBitmapStream(int width, int height, UIColor color)
+		public static Stream CreateBitmapStream(int width, int height, UIColor color)
 		{
 			using var bitmap = CreateBitmap(width, height, color);
 
@@ -48,10 +49,10 @@ namespace Microsoft.Maui.DeviceTests
 			return stream;
 		}
 
-		protected UIImage CreateBitmap(int width, int height, Color color) =>
-			CreateBitmap(width, height, color.ToNative());
+		public static UIImage CreateBitmap(int width, int height, Color color) =>
+			CreateBitmap(width, height, color.ToPlatform());
 
-		protected UIImage CreateBitmap(int width, int height, UIColor color)
+		public static UIImage CreateBitmap(int width, int height, UIColor color)
 		{
 			var rect = new CGRect(0, 0, width, height);
 

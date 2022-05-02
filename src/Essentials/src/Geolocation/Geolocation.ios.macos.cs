@@ -3,13 +3,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreLocation;
-using Foundation;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Geolocation
+	partial class GeolocationImplementation : IGeolocation
 	{
-		static async Task<Location> PlatformLastKnownLocationAsync()
+		public async Task<Location> GetLastKnownLocationAsync()
 		{
 			if (!CLLocationManager.LocationServicesEnabled)
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
@@ -22,8 +22,10 @@ namespace Microsoft.Maui.Essentials
 			return location?.ToLocation();
 		}
 
-		static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
+			_ = request ?? throw new ArgumentNullException(nameof(request));
+
 			if (!CLLocationManager.LocationServicesEnabled)
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
@@ -46,7 +48,9 @@ namespace Microsoft.Maui.Essentials
 
 #if __IOS__
 			// we're only listening for a single update
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			manager.PausesLocationUpdatesAutomatically = false;
+#pragma warning restore CA1416
 #endif
 
 			manager.StartUpdatingLocation();

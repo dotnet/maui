@@ -3,6 +3,7 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -10,6 +11,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EditorRenderer : EditorRendererBase<UITextView>
 	{
 		// Using same placeholder color as for the Entry
@@ -92,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected internal override void UpdatePlaceholderColor()
 		{
 			Color placeholderColor = Element.PlaceholderColor;
-			_placeholderLabel.TextColor = placeholderColor?.ToUIColor() ?? _defaultPlaceholderColor;
+			_placeholderLabel.TextColor = placeholderColor?.ToPlatform() ?? _defaultPlaceholderColor;
 		}
 
 		[PortHandler]
@@ -130,6 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class EditorRendererBase<TControl> : ViewRenderer<Editor, TControl>
 		where TControl : UIView
 	{
@@ -174,7 +177,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				SetNativeControl(CreateNativeControl());
 
-				if (Device.Idiom == TargetIdiom.Phone)
+				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				{
 					// iPhone does not have a dismiss keyboard button
 					var keyboardWidth = UIScreen.MainScreen.Bounds.Width;
@@ -280,7 +283,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		[PortHandler("Missing to port the code related with Focus")]
+		[PortHandler]
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
 			if (TextView.Text != Element.Text)
@@ -290,6 +293,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ElementController.SendCompleted();
 		}
 
+		[PortHandler]
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
@@ -360,7 +364,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		[PortHandler]
 		protected internal virtual void UpdateTextColor()
-			=> TextView.TextColor = Element.TextColor?.ToUIColor() ?? ColorExtensions.LabelColor;
+			=> TextView.TextColor = Element.TextColor?.ToPlatform() ?? ColorExtensions.LabelColor;
 
 		[PortHandler]
 		void UpdateMaxLength()

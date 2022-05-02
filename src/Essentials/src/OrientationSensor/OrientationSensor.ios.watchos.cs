@@ -1,30 +1,38 @@
+#nullable enable
 using System;
 using System.Numerics;
 using CoreMotion;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class OrientationSensor
+	partial class OrientationSensorImplementation : IOrientationSensor
 	{
-		internal static bool IsSupported =>
-			Platform.MotionManager?.DeviceMotionAvailable ?? false;
+		static CMMotionManager? motionManager;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		static CMMotionManager MotionManager =>
+			motionManager ??= new CMMotionManager();
+
+		bool PlatformIsSupported =>
+			MotionManager.GyroAvailable;
+
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			var manager = Platform.MotionManager;
-			manager.DeviceMotionUpdateInterval = sensorSpeed.ToPlatform();
+			MotionManager.DeviceMotionUpdateInterval = sensorSpeed.ToPlatform();
 
 			// use a fixed reference frame where X points north and Z points vertically into the sky
-			manager.StartDeviceMotionUpdates(CMAttitudeReferenceFrame.XTrueNorthZVertical, Platform.GetCurrentQueue(), DataUpdated);
+			MotionManager.StartDeviceMotionUpdates(CMAttitudeReferenceFrame.XTrueNorthZVertical, NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), DataUpdated);
 		}
 
-		static void DataUpdated(CMDeviceMotion data, NSError error)
+		void DataUpdated(CMDeviceMotion data, NSError error)
 		{
 			if (data == null)
 				return;
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			var field = data.Attitude.Quaternion;
+#pragma warning restore CA1416
 
 			// the quaternion returned by the MotionManager refers to a frame where the X axis points north ("iOS frame")
 			var q = new Quaternion((float)field.x, (float)field.y, (float)field.z, (float)field.w);
@@ -37,10 +45,10 @@ namespace Microsoft.Maui.Essentials
 			// so that the final quaternion will take us from the earth frame in .NET MAUI convention to the phone frame
 			q = Quaternion.Multiply(qz90, q);
 			var rotationData = new OrientationSensorData(q.X, q.Y, q.Z, q.W);
-			OnChanged(rotationData);
+			RaiseReadingChanged(rotationData);
 		}
 
-		internal static void PlatformStop() =>
-			Platform.MotionManager?.StopDeviceMotionUpdates();
+		void PlatformStop() =>
+			MotionManager.StopDeviceMotionUpdates();
 	}
 }

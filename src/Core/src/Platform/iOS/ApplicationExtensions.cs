@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
@@ -10,7 +11,9 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ApplicationExtensions
 	{
-		public static void RequestNewWindow(this IUIApplicationDelegate nativeApplication, IApplication application, OpenWindowRequest? args)
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("tvos13.0")]
+		public static void RequestNewWindow(this IUIApplicationDelegate platformApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext || args is null)
 				return;
@@ -25,7 +28,7 @@ namespace Microsoft.Maui.Platform
 				err => application.Handler?.MauiContext?.CreateLogger<IApplication>()?.LogError(new NSErrorException(err), err.Description));
 		}
 
-		public static void CreateNativeWindow(this IUIApplicationDelegate nativeApplication, IApplication application, UIApplication uiApplication, NSDictionary launchOptions)
+		public static void CreatePlatformWindow(this IUIApplicationDelegate platformApplication, IApplication application, UIApplication uiApplication, NSDictionary launchOptions)
 		{
 			// Find any userinfo/dictionaries we might pass into the activation state
 			var dicts = new List<NSDictionary>();
@@ -34,15 +37,17 @@ namespace Microsoft.Maui.Platform
 			if (launchOptions is not null)
 				dicts.Add(launchOptions);
 
-			var window = CreateNativeWindow(application, null, dicts.ToArray());
+			var window = CreatePlatformWindow(application, null, dicts.ToArray());
 			if (window is not null)
 			{
-				nativeApplication.SetWindow(window);
-				nativeApplication.GetWindow()?.MakeKeyAndVisible();
+				platformApplication.SetWindow(window);
+				platformApplication.GetWindow()?.MakeKeyAndVisible();
 			}
 		}
 
-		public static void CreateNativeWindow(this IUIWindowSceneDelegate sceneDelegate, IApplication application, UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("tvos13.0")]
+		public static void CreatePlatformWindow(this IUIWindowSceneDelegate sceneDelegate, IApplication application, UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
 		{
 			// Find any userinfo/dictionaries we might pass into the activation state
 			var dicts = new List<NSDictionary>();
@@ -61,7 +66,7 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			var window = CreateNativeWindow(application, scene as UIWindowScene, dicts.ToArray());
+			var window = CreatePlatformWindow(application, scene as UIWindowScene, dicts.ToArray());
 			if (window is not null)
 			{
 				sceneDelegate.SetWindow(window);
@@ -69,13 +74,15 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		static UIWindow? CreateNativeWindow(IApplication application, UIWindowScene? windowScene, NSDictionary[]? states)
+		static UIWindow? CreatePlatformWindow(IApplication application, UIWindowScene? windowScene, NSDictionary[]? states)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
 				return null;
 
 			var uiWindow = windowScene is not null
+#pragma warning disable CA1416 // UIWindow(windowScene) is only supported on: ios 13.0 and later
 				? new UIWindow(windowScene)
+#pragma warning restore CA1416
 				: new UIWindow();
 
 			var mauiContext = applicationContext.MakeWindowScope(uiWindow, out var windowScope);

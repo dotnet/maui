@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Microsoft.Maui.Devices;
 using ElmSharp;
 using EBox = ElmSharp.Box;
 using EButton = ElmSharp.Button;
@@ -8,6 +9,7 @@ using EImage = ElmSharp.Image;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class ShellNavBar : EBox, IFlyoutBehaviorObserver, IDisposable
 	{
 		EImage _menuIcon = null;
@@ -32,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		bool _hasBackButton = false;
 		private bool disposedValue;
-		bool _isTV = Device.Idiom == TargetIdiom.TV;
+		bool _isTV = DeviceInfo.Idiom == DeviceIdiom.TV;
 
 		public ShellNavBar() : base(Forms.NativeParent)
 		{
@@ -211,7 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 				else
 				{
-					var assembly = typeof(ShellNavBar).GetTypeInfo().Assembly;
+					var assembly = typeof(ShellNavBar).Assembly;
 					var assemblyName = assembly.GetName().Name;
 					source = ImageSource.FromResource(assemblyName + "." + _backIconRes, assembly);
 				}
@@ -239,7 +241,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 				else
 				{
-					var assembly = typeof(ShellNavBar).GetTypeInfo().Assembly;
+					var assembly = typeof(ShellNavBar).Assembly;
 					var assemblyName = assembly.GetName().Name;
 					source = ImageSource.FromResource(assemblyName + "." + _menuIconRes, assembly);
 				}

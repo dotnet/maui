@@ -1,64 +1,90 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Networking;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Networking
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
-	public static partial class Connectivity
+	public interface IConnectivity
 	{
-		static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChangedInternal;
+		IEnumerable<ConnectionProfile> ConnectionProfiles { get; }
+
+		NetworkAccess NetworkAccess { get; }
+
+		event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged;
+	}
+
+#nullable enable
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
+	public static class Connectivity
+	{
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='NetworkAccess']/Docs" />
+		public static NetworkAccess NetworkAccess => Current.NetworkAccess;
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='ConnectionProfiles']/Docs" />
+		public static IEnumerable<ConnectionProfile> ConnectionProfiles => Current.ConnectionProfiles.Distinct();
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='ConnectivityChanged']/Docs" />
+		public static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged
+		{
+			add => Current.ConnectivityChanged += value;
+			remove => Current.ConnectivityChanged -= value;
+		}
+
+		static IConnectivity? currentImplementation;
+
+		public static IConnectivity Current =>
+			currentImplementation ??= new ConnectivityImplementation();
+
+		internal static void SetCurrent(IConnectivity? implementation) =>
+			currentImplementation = implementation;
+	}
+#nullable disable
+
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
+	partial class ConnectivityImplementation : IConnectivity
+	{
+		event EventHandler<ConnectivityChangedEventArgs> ConnectivityChangedInternal;
 
 		// a cache so that events aren't fired unnecessarily
 		// this is mainly an issue on Android, but we can stiil do this everywhere
-		static NetworkAccess currentAccess;
-		static List<ConnectionProfile> currentProfiles;
+		NetworkAccess currentAccess;
+		List<ConnectionProfile> currentProfiles;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='NetworkAccess']/Docs" />
-		public static NetworkAccess NetworkAccess => PlatformNetworkAccess;
-
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='ConnectionProfiles']/Docs" />
-		public static IEnumerable<ConnectionProfile> ConnectionProfiles => PlatformConnectionProfiles.Distinct();
-
-		public static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged
+		public event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged
 		{
 			add
 			{
-				var wasRunning = ConnectivityChangedInternal != null;
-
-				ConnectivityChangedInternal += value;
-
-				if (!wasRunning && ConnectivityChangedInternal != null)
+				if (ConnectivityChangedInternal is null)
 				{
 					SetCurrent();
 					StartListeners();
 				}
+				ConnectivityChangedInternal += value;
 			}
-
 			remove
 			{
-				var wasRunning = ConnectivityChangedInternal != null;
-
 				ConnectivityChangedInternal -= value;
-
-				if (wasRunning && ConnectivityChangedInternal == null)
+				if (ConnectivityChangedInternal is null)
 					StopListeners();
 			}
 		}
 
-		static void SetCurrent()
+		void SetCurrent()
 		{
 			currentAccess = NetworkAccess;
 			currentProfiles = new List<ConnectionProfile>(ConnectionProfiles);
 		}
 
-		static void OnConnectivityChanged(NetworkAccess access, IEnumerable<ConnectionProfile> profiles)
+		void OnConnectivityChanged(NetworkAccess access, IEnumerable<ConnectionProfile> profiles)
 			=> OnConnectivityChanged(new ConnectivityChangedEventArgs(access, profiles));
 
-		static void OnConnectivityChanged()
+		void OnConnectivityChanged()
 			=> OnConnectivityChanged(NetworkAccess, ConnectionProfiles);
 
-		static void OnConnectivityChanged(ConnectivityChangedEventArgs e)
+		void OnConnectivityChanged(ConnectivityChangedEventArgs e)
 		{
 			if (currentAccess != e.NetworkAccess || !currentProfiles.SequenceEqual(e.ConnectionProfiles))
 			{

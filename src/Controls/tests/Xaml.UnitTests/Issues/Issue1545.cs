@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
@@ -11,17 +12,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[TestFixture]
 	public class Issue1545
 	{
+		MockDeviceInfo mockDeviceInfo;
+
 		[SetUp]
 		public void Setup()
 		{
-			Device.PlatformServices = new MockPlatformServices { RuntimePlatform = Device.iOS };
+			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo(platform: DevicePlatform.iOS));
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
-			Device.PlatformServices = null;
+			DeviceInfo.SetCurrent(null);
 			DispatcherProvider.SetCurrent(null);
 		}
 

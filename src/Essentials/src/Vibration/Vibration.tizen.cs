@@ -1,23 +1,29 @@
 using System;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.System;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
-	public static partial class Vibration
+	partial class VibrationImplementation : IVibration
 	{
-		internal static bool IsSupported
+		public bool IsSupported
 			=> Vibrator.NumberOfVibrators > 0;
 
-		static void PlatformVibrate(TimeSpan duration)
+		void PlatformVibrate()
+			=> Vibrate(TimeSpan.FromMilliseconds(500));
+
+		void PlatformVibrate(TimeSpan duration)
 		{
 			Permissions.EnsureDeclared<Permissions.Vibrate>();
+
 			Vibrator.Vibrators.FirstOrDefault()?.Vibrate((int)duration.TotalMilliseconds, 100);
 		}
 
-		static void PlatformCancel()
+		void PlatformCancel()
 		{
 			Permissions.EnsureDeclared<Permissions.Vibrate>();
+
 			Vibrator.Vibrators.FirstOrDefault()?.Stop();
 		}
 	}
