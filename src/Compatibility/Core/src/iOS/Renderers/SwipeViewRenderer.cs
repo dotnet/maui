@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void SetBackgroundColor(Color color)
 		{
 			if (Element.BackgroundColor != null)
-				BackgroundColor = Element.BackgroundColor.ToUIColor();
+				BackgroundColor = Element.BackgroundColor.ToPlatform();
 			else
 				BackgroundColor = ColorExtensions.BackgroundColor;
 		}
@@ -413,7 +413,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var emptyContentView = new UIView
 			{
-				BackgroundColor = Colors.Transparent.ToUIColor()
+				BackgroundColor = Colors.Transparent.ToPlatform()
 			};
 
 			return emptyContentView;
@@ -597,7 +597,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var swipeItem = new UIButton(UIButtonType.Custom)
 			{
 				RestorationIdentifier = formsSwipeItem.Text,
-				BackgroundColor = formsSwipeItem.BackgroundColor.ToUIColor()
+				BackgroundColor = formsSwipeItem.BackgroundColor.ToPlatform()
 			};
 
 			if (!string.IsNullOrEmpty(formsSwipeItem.Text))
@@ -609,7 +609,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			swipeItem.SetTitle(formsSwipeItem.Text, UIControlState.Normal);
 
 			var textColor = GetSwipeItemColor(formsSwipeItem.BackgroundColor);
-			swipeItem.SetTitleColor(textColor.ToUIColor(), UIControlState.Normal);
+			swipeItem.SetTitleColor(textColor.ToPlatform(), UIControlState.Normal);
 			swipeItem.UserInteractionEnabled = false;
 			swipeItem.Hidden = !formsSwipeItem.IsVisible;
 
@@ -701,7 +701,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					swipeButton.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
 					var tintColor = GetSwipeItemColor(swipeItem.BackgroundColor);
-					swipeButton.TintColor = tintColor.ToUIColor();
+					swipeButton.TintColor = tintColor.ToPlatform();
 				}
 				catch (Exception)
 				{
