@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (sectionHeaderTextColor != null)
 				{
 #pragma warning disable CA1416 // TODO:  UITableViewHeaderFooterView.TextLabel' is unsupported on: 'ios' 14.0 and later
-					header.TextLabel.TextColor = sectionHeaderTextColor.ToUIColor();
+					header.TextLabel.TextColor = sectionHeaderTextColor.ToPlatform();
 #pragma warning restore CA1416
 				}
 			}
