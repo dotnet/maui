@@ -127,7 +127,7 @@ namespace Maui.Controls.Sample
 				{
 					PageType.Template => typeof(TemplatePage),
 					PageType.Shell => typeof(AppShell),
-					PageType.Main => typeof(Pages.CollectionViewGalleries.HeaderFooterGalleries.HeaderFooterView),
+					PageType.Main => typeof(CustomNavigationPage),
 					PageType.FlyoutPage => typeof(CustomFlyoutPage),
 					PageType.TabbedPage => typeof(Pages.TabbedPageGallery),
 					PageType.Blazor =>
