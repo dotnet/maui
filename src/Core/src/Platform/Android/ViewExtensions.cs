@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
@@ -293,6 +294,29 @@ namespace Microsoft.Maui.Platform
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
 			PlatformInterop.RequestLayoutIfNeeded(platformView);
+		}
+
+		public static async Task UpdateBackgroundImageSourceAsync(this AView platformView, IViewBackgroundImagePart viewBackgroundImagePart, IImageSourceServiceProvider? provider)
+		{
+			if (provider == null)
+				return;
+
+			Context? context = platformView.Context;
+
+			if (context == null)
+				return;
+
+			IImageSource? backgroundImageSource = viewBackgroundImagePart.Source;
+
+			if (backgroundImageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(backgroundImageSource);
+				var result = await service.GetDrawableAsync(backgroundImageSource, context);
+				Drawable? backgroundImageDrawable = result?.Value;
+
+				if (platformView.IsAlive())
+					platformView.Background = backgroundImageDrawable;
+			}
 		}
 
 		public static void RemoveFromParent(this AView view)

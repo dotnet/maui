@@ -125,7 +125,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			var text = projItem.AdditionalText.GetText();
 			if (text == null)
 				return;
-			if (!TryParseXaml(text, compilation, xmlnsDefinitionCache, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields, out var parseException))
+
+			// Get a unique string for this xaml project item
+			var itemName = projItem.ManifestResourceName ?? projItem.RelativePath;
+			if (itemName == null)
+				return;
+			var uid = Crc64.ComputeHashString($"{compilation.AssemblyName}.{itemName}");
+
+			if (!TryParseXaml(text, uid, compilation, xmlnsDefinitionCache, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields, out var parseException))
 			{
 				if (parseException != null)
 					context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, parseException.Message));
@@ -210,8 +217,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 			context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
 		}
 
-		static bool TryParseXaml(SourceText text, Compilation compilation, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields, out Exception? exception)
+		static bool TryParseXaml(SourceText text, string uid, Compilation compilation, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields, out Exception? exception)
 		{
+
 			rootType = null;
 			rootClrNamespace = null;
 			generateDefaultCtor = false;
@@ -264,7 +272,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			else if (hasXamlCompilationProcessingInstruction)
 			{
 				rootClrNamespace = "__XamlGeneratedCode__";
-				rootType = $"__Type{Guid.NewGuid():N}";
+				rootType = $"__Type{uid}";
 				generateDefaultCtor = true;
 				addXamlCompilationAttribute = true;
 				hideFromIntellisense = true;
@@ -292,7 +300,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			var parts = instruction.Data.Split(' ', '=');
 			var indexOfCompile = Array.IndexOf(parts, "compile");
 			if (indexOfCompile != -1)
-				return parts[indexOfCompile + 1].Trim('"', '\'').Equals("true", StringComparison.InvariantCultureIgnoreCase);
+				return parts[indexOfCompile + 1].Trim('"', '\'').Equals("true", StringComparison.OrdinalIgnoreCase);
 			return false;
 		}
 

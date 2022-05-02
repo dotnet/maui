@@ -89,10 +89,12 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 			handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
 
+#pragma warning disable CA1416 //  'MenuBarHandler', MenuFlyoutSubItemHandler, MenuFlyoutSubItemHandler, MenuBarItemHandler is only supported on: 'ios' 13.0 and later
 			handlersCollection.AddHandler<MenuBar, MenuBarHandler>();
 			handlersCollection.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
 			handlersCollection.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
 			handlersCollection.AddHandler<MenuBarItem, MenuBarItemHandler>();
+#pragma warning restore CA1416
 
 #if WINDOWS || ANDROID || IOS || MACCATALYST
 			handlersCollection.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
@@ -146,10 +148,10 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.Register<PlatformSizeService>();
 			DependencyService.Register<PlatformInvalidate>();
 
-#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0612, CA1416 // Type or member is obsolete, 'ResourcesProvider' is unsupported on: 'iOS' 14.0 and later
 			DependencyService.Register<ResourcesProvider>();
 			DependencyService.Register<FontNamedSizeService>();
-#pragma warning restore CS0612 // Type or member is obsolete
+#pragma warning restore CS0612, CA1416 // Type or member is obsolete
 #endif
 
 			builder.ConfigureImageSourceHandlers();

@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Storage
 {
@@ -34,7 +35,10 @@ namespace Microsoft.Maui.Storage
 			Clear(null);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Get'][7]/Docs" />
-		public static string Get(string key, string defaultValue) =>
+#if !NETSTANDARD
+		[return: NotNullIfNotNull("defaultValue")]
+#endif
+		public static string? Get(string key, string? defaultValue) =>
 			Get(key, defaultValue, null);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Get'][1]/Docs" />
@@ -58,7 +62,7 @@ namespace Microsoft.Maui.Storage
 			Get(key, defaultValue, null);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Set'][7]/Docs" />
-		public static void Set(string key, string value) =>
+		public static void Set(string key, string? value) =>
 			Set(key, value, null);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Set'][1]/Docs" />
@@ -96,8 +100,11 @@ namespace Microsoft.Maui.Storage
 			Current.Clear(sharedName);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Get'][14]/Docs" />
-		public static string Get(string key, string defaultValue, string? sharedName) =>
-			Current.Get<string>(key, defaultValue, sharedName);
+#if !NETSTANDARD
+		[return: NotNullIfNotNull("defaultValue")]
+#endif
+		public static string? Get(string key, string? defaultValue, string? sharedName) =>
+			Current.Get<string?>(key, defaultValue, sharedName);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Get'][8]/Docs" />
 		public static bool Get(string key, bool defaultValue, string? sharedName) =>
@@ -120,8 +127,8 @@ namespace Microsoft.Maui.Storage
 			Current.Get<long>(key, defaultValue, sharedName);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Set'][14]/Docs" />
-		public static void Set(string key, string value, string? sharedName) =>
-			Current.Set<string>(key, value, sharedName);
+		public static void Set(string key, string? value, string? sharedName) =>
+			Current.Set<string?>(key, value, sharedName);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Set'][8]/Docs" />
 		public static void Set(string key, bool value, string? sharedName) =>

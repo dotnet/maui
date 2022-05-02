@@ -164,7 +164,21 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void SwitchShellItem(ShellItem newItem, bool animate = true)
 		{
-			SelectedItem = newItem;
+			// Implicit items aren't items that are surfaced to the user 
+			// or data structures. So, we just want to find the element
+			// the user defined on Shell
+			if (Routing.IsImplicit(newItem))
+			{
+				if (Routing.IsImplicit(newItem.CurrentItem))
+					SelectedItem = newItem.CurrentItem.CurrentItem;
+				else
+					SelectedItem = newItem.CurrentItem;
+			}
+			else
+			{
+				SelectedItem = newItem;
+			}
+
 			var handler = CreateShellItemView();
 			if (handler.VirtualView != newItem)
 				handler.SetVirtualView(newItem);

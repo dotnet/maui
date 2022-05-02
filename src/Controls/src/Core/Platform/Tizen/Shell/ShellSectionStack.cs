@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _disposed = false;
 		bool _navBarIsVisible = true;
 
-		public ShellSectionStack(ShellSection section, IMauiContext context) : base(context.GetNativeParent())
+		public ShellSectionStack(ShellSection section, IMauiContext context) : base(context.GetPlatformParent())
 		{
 			ShellSection = section;
 			MauiContext = context;
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Platform
 			SetWeight(1, 1);
 			SetLayoutCallback(OnLayout);
 
-			_viewStack = new SimpleViewStack(NativeParent);
+			_viewStack = new SimpleViewStack(PlatformParent);
 			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 			{
 				_viewStack.BackgroundColor = ElmSharp.Color.White;
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected IMauiContext? MauiContext { get; private set; }
 
-		protected EvasObject NativeParent => MauiContext?.GetNativeParent() ?? throw new InvalidOperationException($"NativeParent cannot be null here");
+		protected EvasObject PlatformParent => MauiContext?.GetPlatformParent() ?? throw new InvalidOperationException($"PlatformParent cannot be null here");
 
 		public virtual bool NavBarIsVisible
 		{
@@ -207,13 +207,13 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var nativePage = request.Page.ToPlatform(MauiContext);
-			if (nativePage == null)
+			var platformPage = request.Page.ToPlatform(MauiContext);
+			if (platformPage == null)
 			{
 				request.Task = Task.FromException<bool>(new ArgumentException("Can't found page on stack", nameof(request.Page)));
 				return;
 			}
-			_viewStack.Remove(nativePage);
+			_viewStack.Remove(platformPage);
 			request.Task = Task.FromResult(true);
 		}
 
@@ -233,12 +233,12 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var nativePage = request.Page.ToPlatform(MauiContext);
-			_viewStack.Push(nativePage);
+			var platformPage = request.Page.ToPlatform(MauiContext);
+			_viewStack.Push(platformPage);
 			request.Task = Task.FromResult(true);
 			Application.Current?.Dispatcher.Dispatch(() =>
 			{
-				(nativePage as Widget)?.SetFocus(true);
+				(platformPage as Widget)?.SetFocus(true);
 			});
 		}
 

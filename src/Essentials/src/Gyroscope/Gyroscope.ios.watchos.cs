@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			if (data == null)
 				return;
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			var field = data.RotationRate;
+#pragma warning restore CA1416
 			var gyroData = new GyroscopeData(field.x, field.y, field.z);
 			RaiseReadingChanged(gyroData);
 		}

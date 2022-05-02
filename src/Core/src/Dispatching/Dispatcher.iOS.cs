@@ -88,9 +88,9 @@ namespace Microsoft.Maui.Dispatching
 	{
 		static IDispatcher? GetForCurrentThreadImplementation()
 		{
-#pragma warning disable BI1234 // Type or member is obsolete
+#pragma warning disable BI1234, CA1416 // Type or member is obsolete, has [UnsupportedOSPlatform("ios6.0")], deprecated but still works
 			var q = DispatchQueue.CurrentQueue;
-#pragma warning restore BI1234 // Type or member is obsolete
+#pragma warning restore BI1234, CA1416 // Type or member is obsolete
 			if (q != DispatchQueue.MainQueue)
 				return null;
 

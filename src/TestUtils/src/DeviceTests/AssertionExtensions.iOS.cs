@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Platform;
-using ObjCRuntime;
 using UIKit;
 using Xunit;
 using Xunit.Sdk;
@@ -28,11 +26,32 @@ namespace Microsoft.Maui.DeviceTests
 			return $"{message}. This is what it looked like:<img>{imageAsString}</img>";
 		}
 
-		// TODO: attach this view to the UI if anything breaks
-		public static Task AttachAndRun(this UIView view, Action action)
+		public static Task AttachAndRun(this UIView view, Action action) =>
+			view.AttachAndRun(() =>
+			{
+				action();
+				return Task.FromResult(true);
+			});
+
+		public static Task<T> AttachAndRun<T>(this UIView view, Func<T> action) =>
+			view.AttachAndRun(() =>
+			{
+				var result = action();
+				return Task.FromResult(result);
+			});
+
+		public static Task AttachAndRun(this UIView view, Func<Task> action) =>
+			view.AttachAndRun(async () =>
+			{
+				await action();
+				return true;
+			});
+
+		// TODO: Actually attach this view to the UI if anything breaks.
+		public static Task<T> AttachAndRun<T>(this UIView view, Func<Task<T>> action)
 		{
-			action();
-			return Task.CompletedTask;
+			var result = action();
+			return result;
 		}
 
 		public static Task<UIImage> ToUIImage(this UIView view)

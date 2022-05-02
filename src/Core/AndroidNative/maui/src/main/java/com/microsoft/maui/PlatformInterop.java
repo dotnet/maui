@@ -1,6 +1,7 @@
 package com.microsoft.maui;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -16,6 +17,7 @@ import android.widget.LinearLayout;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.TintTypedArray;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
@@ -36,6 +38,7 @@ import com.microsoft.maui.glide.font.FontModel;
 
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 
 public class PlatformInterop {
     public static void requestLayoutIfNeeded(View view)
@@ -350,5 +353,14 @@ public class PlatformInterop {
             .load(fontModel)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
             .into(target);
+    }
+
+    public static final ColorStateList getColorStateListForToolbarStyleableAttribute(Context context, int resId, int index) {
+        TintTypedArray styledAttributes =  TintTypedArray.obtainStyledAttributes (context, null, R.styleable.Toolbar, resId, 0);
+        try {
+            return styledAttributes.getColorStateList (index);
+        } finally {
+            styledAttributes.recycle ();
+        }
     }
 }

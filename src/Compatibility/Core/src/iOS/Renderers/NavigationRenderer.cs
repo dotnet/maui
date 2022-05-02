@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
@@ -97,6 +98,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		//TODO: this was deprecated in iOS8.0 and is not called in 9.0+
+		[UnsupportedOSPlatform("ios8.0")]
+		[UnsupportedOSPlatform("tvos")]
 		public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
 		{
 			base.DidRotate(fromInterfaceOrientation);
@@ -237,7 +240,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateHideNavigationBarSeparator();
 			UpdateUseLargeTitles();
 
-			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			// If there is already stuff on the stack we need to push it
@@ -658,7 +661,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateBackgroundColor()
 		{
 			var color = Element.BackgroundColor == null ? Maui.Platform.ColorExtensions.BackgroundColor.ToColor() : Element.BackgroundColor;
-			View.BackgroundColor = color.ToUIColor();
+			View.BackgroundColor = color.ToPlatform();
 		}
 
 		void UpdateBarBackground()
@@ -679,7 +682,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					parentingViewController?.SetupDefaultNavigationBarAppearance();
 				}
 				else
-					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToUIColor();
+					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
 
 				var barBackgroundBrush = NavPage.BarBackground;
 				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
@@ -694,7 +697,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// Set navigation bar background color
 				NavigationBar.BarTintColor = barBackgroundColor == null
 					? UINavigationBar.Appearance.BarTintColor
-					: barBackgroundColor.ToUIColor();
+					: barBackgroundColor.ToPlatform();
 
 				var barBackgroundBrush = NavPage.BarBackground;
 				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
@@ -710,7 +713,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var globalTitleTextAttributes = UINavigationBar.Appearance.TitleTextAttributes;
 			var titleTextAttributes = new UIStringAttributes
 			{
-				ForegroundColor = barTextColor == null ? globalTitleTextAttributes?.ForegroundColor : barTextColor.ToUIColor(),
+				ForegroundColor = barTextColor == null ? globalTitleTextAttributes?.ForegroundColor : barTextColor.ToPlatform(),
 				Font = globalTitleTextAttributes?.Font
 			};
 
@@ -722,7 +725,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				largeTitleTextAttributes = new UIStringAttributes
 				{
-					ForegroundColor = barTextColor == null ? globalLargeTitleTextAttributes?.ForegroundColor : barTextColor.ToUIColor(),
+					ForegroundColor = barTextColor == null ? globalLargeTitleTextAttributes?.ForegroundColor : barTextColor.ToPlatform(),
 					Font = globalLargeTitleTextAttributes?.Font
 				};
 			}
@@ -753,7 +756,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			NavigationBar.TintColor = iconColor == null || NavPage.OnThisPlatform().GetStatusBarTextColorMode() == StatusBarTextColorMode.DoNotAdjust
 				? UINavigationBar.Appearance.TintColor
-				: iconColor.ToUIColor();
+				: iconColor.ToPlatform();
 		}
 
 		void SetStatusBarStyle()
@@ -761,6 +764,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var barTextColor = NavPage.BarTextColor;
 			var statusBarColorMode = NavPage.OnThisPlatform().GetStatusBarTextColorMode();
 
+#pragma warning disable CA1416 // TODO: UIApplication.StatusBarStyle has [UnsupportedOSPlatform("ios9.0")]
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor?.GetLuminosity() <= 0.5)
 			{
 				// Use dark text color for status bar
@@ -778,6 +782,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// Use light text color for status bar
 				UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.LightContent;
 			}
+#pragma warning restore CA1416
 		}
 
 		void UpdateToolBarVisible()
@@ -993,7 +998,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			public ParentingViewController(NavigationRenderer navigation)
 			{
+#pragma warning disable CA1416 // TODO: 'UIViewController.AutomaticallyAdjustsScrollViewInsets' is unsupported on: 'ios' 11.0 and later
 				AutomaticallyAdjustsScrollViewInsets = false;
+#pragma warning restore CA1416
 
 				_navigation = new WeakReference<NavigationRenderer>(navigation);
 			}
@@ -1022,6 +1029,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			public event EventHandler Appearing;
 
+			[UnsupportedOSPlatform("ios8.0")]
+			[UnsupportedOSPlatform("tvos")]
 			public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
 			{
 				base.DidRotate(fromInterfaceOrientation);
@@ -1466,9 +1475,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
 			{
 				IVisualElementRenderer childRenderer;
+#pragma warning disable CA1416 // TODO: ShouldAutorotateToInterfaceOrientation(...) has [UnsupportedOSPlatform("ios6.0")]
 				if (Child != null && (childRenderer = Platform.GetRenderer(Child)) != null)
 					return childRenderer.ViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
 				return base.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+#pragma warning restore CA1416
 			}
 
 			public override bool ShouldAutomaticallyForwardRotationMethods => true;

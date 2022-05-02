@@ -5,8 +5,14 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.Page']/Docs" />
-	public partial class Page : IView, ITitledElement, IToolbarElement
+	public partial class Page : IView, IViewBackgroundImagePart, ITitledElement, IToolbarElement
 	{
+		IImageSource IImageSourcePart.Source => BackgroundImageSource;
+		bool IImageSourcePart.IsAnimationPlaying => false;
+		void IImageSourcePart.UpdateIsLoading(bool isLoading)
+		{
+		}
+
 		Toolbar _toolbar;
 		IToolbar IToolbarElement.Toolbar
 		{
@@ -19,9 +25,6 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				_toolbar = value;
-				if (this is NavigationPage np && value is NavigationPageToolbar ct)
-					ct.ApplyNavigationPage(np, HasAppeared);
-
 				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
 			}
 		}

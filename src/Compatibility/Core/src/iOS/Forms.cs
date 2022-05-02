@@ -17,6 +17,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Animations;
 using Microsoft.Extensions.DependencyInjection;
+using System.Runtime.Versioning;
 
 #if __MOBILE__
 using ObjCRuntime;
@@ -49,8 +50,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool? s_isiOS13OrNewer;
 		static bool? s_isiOS14OrNewer;
 		static bool? s_isiOS15OrNewer;
-		static bool? s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden;
 
+		[SupportedOSPlatformGuard("ios11.0")]
+		//[SupportedOSPlatformGuard("tvos11.0")] TODO: the block guarded by this property calling API unsupported on TvOS or version not supported
 		internal static bool IsiOS11OrNewer
 		{
 			get
@@ -71,6 +73,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		[SupportedOSPlatformGuard("ios13.0")]
+		//[SupportedOSPlatformGuard("tvos13.0")] TODO: the block guarded by this property calling API unsupported on TvOS or version not supported
 		internal static bool IsiOS13OrNewer
 		{
 			get
@@ -81,6 +85,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		[SupportedOSPlatformGuard("ios14.0")]
+		//[SupportedOSPlatformGuard("tvos14.0")] TODO: the block guarded by this property calling API unsupported on TvOS
 		internal static bool IsiOS14OrNewer
 		{
 			get
@@ -91,6 +97,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		[SupportedOSPlatformGuard("ios15.0")]
+		[SupportedOSPlatformGuard("tvos15.0")]
 		internal static bool IsiOS15OrNewer
 		{
 			get
@@ -109,15 +117,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			IsInitializedRenderers = true;
 		}
 
-		internal static bool RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden
-		{
-			get
-			{
-				if (!s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden.HasValue)
-					s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden = new UIViewController().RespondsToSelector(new ObjCRuntime.Selector("setNeedsUpdateOfHomeIndicatorAutoHidden"));
-				return s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden.Value;
-			}
-		}
 #else
 
 		static bool? s_isMojaveOrNewer;

@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
@@ -36,12 +37,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			var screenshotHeight = (int)screenshot.Size.Height;
 			var screenshotWidth = (int)screenshot.Size.Width;
 
-			var expectedTopColor = Colors.Red.ToUIColor();
+			var expectedTopColor = Colors.Red.ToPlatform();
 			var resultTopColor = screenshot.ColorAtPoint(screenshotWidth / 2, 1);
 
 			Assert.IsTrue(AreColorsSimilar(expectedTopColor, resultTopColor, Tolerance));
 
-			var expectedBottomColor = Colors.Green.ToUIColor();
+			var expectedBottomColor = Colors.Green.ToPlatform();
 			var resultBottomColor = screenshot.ColorAtPoint(screenshotWidth / 2, screenshotHeight - 1);
 
 			Assert.IsTrue(AreColorsSimilar(expectedBottomColor, resultBottomColor, Tolerance));
@@ -57,12 +58,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			var screenshotHeight = (int)screenshot.Size.Height;
 			var screenshotWidth = (int)screenshot.Size.Width;
 
-			var expectedTopColor = Colors.Red.ToUIColor();
+			var expectedTopColor = Colors.Red.ToPlatform();
 			var resultTopColor = screenshot.ColorAtPoint(screenshotWidth / 2, 1);
 
 			Assert.IsTrue(AreColorsSimilar(expectedTopColor, resultTopColor, Tolerance));
 
-			var expectedBottomColor = Colors.Green.ToUIColor();
+			var expectedBottomColor = Colors.Green.ToPlatform();
 			var resultBottomColor = screenshot.ColorAtPoint(screenshotWidth / 2, screenshotHeight - 1);
 
 			Assert.IsTrue(AreColorsSimilar(expectedBottomColor, resultBottomColor, Tolerance));

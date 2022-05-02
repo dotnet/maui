@@ -164,9 +164,9 @@ namespace Microsoft.Maui.Controls.Platform
 			// We need to reset the toolbar text color to the default color when it's unset
 			if (_defaultTitleTextColor == null)
 			{
-				var a = TintTypedArray.ObtainStyledAttributes(nativeToolbar.Context?.GetThemedContext(), null, Resource.Styleable.Toolbar, Resource.Attribute.toolbarStyle, 0);
-				_defaultTitleTextColor = a.GetColorStateList(Resource.Styleable.Toolbar_titleTextColor);
-				a.Recycle();
+				var context = nativeToolbar.Context?.GetThemedContext ();
+				_defaultTitleTextColor = PlatformInterop.GetColorStateListForToolbarStyleableAttribute (context,
+					Resource.Attribute.toolbarStyle, Resource.Styleable.Toolbar_titleTextColor);
 			}
 
 			if (textColor != null)
@@ -274,7 +274,9 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					var color = item.IsEnabled ? tintColor.ToPlatform() : tintColor.MultiplyAlpha(0.302f).ToPlatform();
 					SpannableString titleTinted = new SpannableString(item.Text);
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					titleTinted.SetSpan(new ForegroundColorSpan(color), 0, titleTinted.Length(), 0);
+#pragma warning restore CA1416
 					newTitle = titleTinted;
 				}
 				else

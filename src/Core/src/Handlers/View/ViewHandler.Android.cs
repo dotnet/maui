@@ -1,7 +1,6 @@
 ﻿using System;
 using Android.Views;
 using AndroidX.Core.View;
-using AndroidX.Core.Widget;
 using PlatformView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
@@ -145,6 +144,20 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			MapToolbar(handler, te);
+		}
+
+		public static void MapBackgroundImageSource(IViewHandler handler, IView view)
+		{
+			if (view is not IViewBackgroundImagePart viewBackgroundImagePart)
+				return;
+
+			if (handler.PlatformView is not PlatformView platformView)
+				return;
+
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			platformView.UpdateBackgroundImageSourceAsync(viewBackgroundImagePart, provider)
+				.FireAndForget(handler);
 		}
 
 		internal static void MapToolbar(IElementHandler handler, IToolbarElement te)
