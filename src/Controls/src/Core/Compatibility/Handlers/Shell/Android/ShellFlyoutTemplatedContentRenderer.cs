@@ -259,15 +259,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UpdateFooterLayout();
 			UpdateContentLayout();
-			UpdateContentBottomMargin();
 		}
 
 		void UpdateFooterLayout()
 		{
-			if (_footerView != null)
-			{
-				_footerView.LayoutView(0, 0, _rootView.LayoutParameters.Width, MeasureSpecMode.Unspecified.MakeMeasureSpec(0));
-			}
+			_ = _footerView?
+					.Measure(MeasureSpecMode.Exactly
+					.MakeMeasureSpec(_rootView.LayoutParameters.Width), MeasureSpecMode.Unspecified.MakeMeasureSpec(0), null, null);
+
 		}
 
 		void UpdateContentLayout()
@@ -284,15 +283,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				var width = View.MeasuredWidth;
 
-				_contentView.LayoutView(0, 0, width, height);
-			}
-		}
+				if (_flyoutContentView?.LayoutParameters is ViewGroup.MarginLayoutParams cl)
+					cl.BottomMargin = FooterView?.MeasuredHeight ?? 0;
 
-		void UpdateContentBottomMargin()
-		{
-			if (_flyoutContentView?.LayoutParameters is CoordinatorLayout.LayoutParams cl)
-			{
-				cl.BottomMargin = (int)_shellContext.AndroidContext.ToPixels(_footerView?.View.Height ?? 0);
+				_ = _contentView.Measure(
+					MeasureSpecMode.Exactly.MakeMeasureSpec(width),
+					MeasureSpecMode.Exactly.MakeMeasureSpec(height), null, null);
 			}
 		}
 
@@ -317,7 +313,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UpdateFooterLayout();
 				UpdateContentLayout();
-				UpdateContentBottomMargin();
 			}
 		}
 
@@ -532,6 +527,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (Parent is AView view)
 					ElevationHelper.SetElevation(view, View);
+			}
+
+			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+			{
+				var width = widthMeasureSpec.GetSize();
+				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+			}
+
+			public override LP LayoutParameters
+			{
+				get => base.LayoutParameters;
+				set => base.LayoutParameters = value;
 			}
 
 
