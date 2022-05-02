@@ -249,8 +249,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = glide
             .load(androidUri);
 
-        if (!cachingEnabled)
-        {
+        if (!cachingEnabled) {
             builder
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .skipMemoryCache(true)
@@ -314,8 +313,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = glide
             .load(androidUri);
 
-        if (!cachingEnabled)
-        {
+        if (!cachingEnabled) {
             builder
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .skipMemoryCache(true)
