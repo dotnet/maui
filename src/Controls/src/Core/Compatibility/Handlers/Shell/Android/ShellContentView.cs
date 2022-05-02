@@ -92,14 +92,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return ((IPlatformViewHandler)_view.Handler).MeasureVirtualView(widthMeasureSpec, heightMeasureSpec);
 		}
 
-		public void LayoutView(int l, int t, int r, int b)
-		{
-			//if (_view.Handler is IPlatformViewHandler pvh)
-			//	pvh.LayoutVirtualView(l, t, r, b);
-			//else
-			//	PlatformView.Layout(l, t, r, b);
-		}
-
 		public virtual void OnViewSet(View view)
 		{
 			if (View != null)
