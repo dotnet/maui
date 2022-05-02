@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					return;
 
 				_tintColor = value;
-				CheckBoxTintUIColor = CheckBoxTintColor?.ToUIColor();
+				CheckBoxTintUIColor = CheckBoxTintColor?.ToPlatform();
 			}
 		}
 
