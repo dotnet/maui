@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
     <RootNamespace>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</RootNamespace>
@@ -9,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.18" TargetingPackVersion="10.0.19041.18" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.22" TargetingPackVersion="10.0.19041.22" />
     <PackageReference Include="Microsoft.WindowsAppSdk" Version="1.0.3" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.3.1" />
   </ItemGroup>
@@ -17,4 +18,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
   </ItemGroup>
+
 </Project>
