@@ -68,11 +68,11 @@ namespace Microsoft.Maui.Authentication
 				sf = null;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(12, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(12) || OperatingSystem.IsTvOSVersionAtLeast(12))
 			{
 				was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
 
-				if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
 					var ctx = new ContextProvider(WindowStateManager.Default.GetCurrentUIWindow());
 					was.PresentationContextProvider = ctx;
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Authentication
 			if (prefersEphemeralWebBrowserSession)
 				ClearCookies();
 
-			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 			{
 				sf = new SFAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
 				using (sf)
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Authentication
 			NSUrlCache.SharedCache.RemoveAllCachedResponses();
 
 #if __IOS__
-			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 			{
 				WKWebsiteDataStore.DefaultDataStore.HttpCookieStore.GetAllCookies((cookies) =>
 				{

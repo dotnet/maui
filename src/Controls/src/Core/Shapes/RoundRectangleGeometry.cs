@@ -1,5 +1,7 @@
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Devices;
 using Rect = Microsoft.Maui.Graphics.Rect;
+
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.RoundRectangleGeometry']/Docs" />
@@ -108,6 +110,25 @@ namespace Microsoft.Maui.Controls.Shapes
 			roundedRectGeometry.Children.Add(new PathGeometry(pathFigureCollection, FillRule.Nonzero));
 
 			return roundedRectGeometry;
+		}
+
+		public override void AppendPath(Graphics.PathF path)
+		{
+			double density = 1.0d;
+#if ANDROID
+			density = DeviceDisplay.MainDisplayInfo.Density;
+#endif
+			float x = (float)(density * Rect.X);
+			float y = (float)(density * Rect.Y);
+			float w = (float)(density * Rect.Width);
+			float h = (float)(density * Rect.Height);
+
+			float tl = (float)(density * CornerRadius.TopLeft);
+			float tr = (float)(density * CornerRadius.TopRight);
+			float bl = (float)(density * CornerRadius.BottomLeft);
+			float br = (float)(density * CornerRadius.BottomRight);
+
+			path.AppendRoundedRectangle(x, y, w, h, tl, tr, bl, br);
 		}
 	}
 }

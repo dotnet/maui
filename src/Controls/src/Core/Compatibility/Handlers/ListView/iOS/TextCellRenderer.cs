@@ -89,6 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 		[System.Runtime.Versioning.UnsupportedOSPlatform("ios14.0")]
+		[System.Runtime.Versioning.UnsupportedOSPlatform("tvos14.0")]
 		static void UpdateIsEnabled(CellTableViewCell cell, TextCell entryCell)
 		{
 			cell.UserInteractionEnabled = entryCell.IsEnabled;

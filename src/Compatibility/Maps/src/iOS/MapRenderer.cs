@@ -11,6 +11,7 @@ using RectangleF = CoreGraphics.CGRect;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 
 #if __MOBILE__
 using UIKit;
@@ -619,7 +620,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			return new MKPolylineRenderer(mkPolyline)
 			{
 #if __MOBILE__
-				StrokeColor = targetPolyline.StrokeColor.ToUIColor(Colors.Black),
+				StrokeColor = targetPolyline.StrokeColor.ToPlatform(Colors.Black),
 #else
 				StrokeColor = targetPolyline.StrokeColor.ToNSColor(Colors.Black),
 #endif
@@ -650,8 +651,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			return new MKPolygonRenderer(mkPolygon)
 			{
 #if __MOBILE__
-				StrokeColor = targetPolygon.StrokeColor.ToUIColor(Colors.Black),
-				FillColor = targetPolygon.FillColor.ToUIColor(),
+				StrokeColor = targetPolygon.StrokeColor.ToPlatform(Colors.Black),
+				FillColor = targetPolygon.FillColor.ToPlatform(),
 #else
 				StrokeColor = targetPolygon.StrokeColor.ToNSColor(Colors.Black),
 				FillColor = targetPolygon.FillColor.ToNSColor(),
@@ -683,8 +684,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			return new MKCircleRenderer(mkCircle)
 			{
 #if __MOBILE__
-				StrokeColor = targetCircle.StrokeColor.ToUIColor(Colors.Black),
-				FillColor = targetCircle.FillColor.ToUIColor(),
+				StrokeColor = targetCircle.StrokeColor.ToPlatform(Colors.Black),
+				FillColor = targetCircle.FillColor.ToPlatform(),
 #else
 				StrokeColor = targetCircle.StrokeColor.ToNSColor(Colors.Black),
 				FillColor = targetCircle.FillColor.ToNSColor(),

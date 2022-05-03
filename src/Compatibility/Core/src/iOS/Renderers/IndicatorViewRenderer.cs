@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			var color = Element.IndicatorColor;
-			UIPager.PageIndicatorTintColor = color?.ToUIColor() ?? _defaultPagesIndicatorTintColor;
+			UIPager.PageIndicatorTintColor = color?.ToPlatform() ?? _defaultPagesIndicatorTintColor;
 		}
 
 		void UpdateCurrentPagesIndicatorTintColor()
@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			var color = Element.SelectedIndicatorColor;
-			UIPager.CurrentPageIndicatorTintColor = color?.ToUIColor() ?? _defaultCurrentPagesIndicatorTintColor;
+			UIPager.CurrentPageIndicatorTintColor = color?.ToPlatform() ?? _defaultCurrentPagesIndicatorTintColor;
 		}
 
 		void UpdateMaximumVisible()

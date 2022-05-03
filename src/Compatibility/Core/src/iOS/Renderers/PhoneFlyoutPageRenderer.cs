@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_detailController = new ChildViewController();
 
 			_clickOffView = new UIView();
-			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToUIColor();
+			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToPlatform();
 
 			Presented = ((FlyoutPage)Element).IsPresented;
 
@@ -158,6 +158,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
+		[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
 			if (!FlyoutPageController.ShouldShowSplitMode && _presented)
@@ -349,7 +350,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						if (Element.BackgroundColor == null)
 							View.BackgroundColor = UIColor.White;
 						else
-							View.BackgroundColor = Element.BackgroundColor.ToUIColor();
+							View.BackgroundColor = Element.BackgroundColor.ToPlatform();
 					}
 				}
 			});
@@ -382,11 +383,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_detailController.AddChildViewController(detailRenderer.ViewController);
 
 			SetNeedsStatusBarAppearanceUpdate();
-			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			if (detailRenderer.ViewController.View.Superview != null)
-				detailRenderer.ViewController.View.Superview.BackgroundColor = Microsoft.Maui.Graphics.Colors.Black.ToUIColor();
+				detailRenderer.ViewController.View.Superview.BackgroundColor = Microsoft.Maui.Graphics.Colors.Black.ToPlatform();
 
 			ToggleAccessibilityElementsHidden();
 		}

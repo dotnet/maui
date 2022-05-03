@@ -46,10 +46,10 @@ namespace Microsoft.Maui.Controls.Platform
 				collection.CollectionChanged += OnShellSectionCollectionChanged;
 			}
 
-			_mainLayout = new EBox(NativeParent);
+			_mainLayout = new EBox(PlatformParent);
 			_mainLayout.SetLayoutCallback(OnLayout);
 
-			_contentArea = new EBox(NativeParent);
+			_contentArea = new EBox(PlatformParent);
 			_contentArea.Show();
 			_mainLayout.PackEnd(_contentArea);
 
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected IMauiContext MauiContext { get; private set; }
 
-		protected EvasObject NativeParent => MauiContext.GetNativeParent();
+		protected EvasObject PlatformParent => MauiContext.GetPlatformParent();
 
 		protected virtual bool TabBarIsVisible
 		{
@@ -185,9 +185,9 @@ namespace Microsoft.Maui.Controls.Platform
 					ShellSection.PropertyChanged -= OnSectionPropertyChanged;
 					DeinitializeTabs();
 
-					foreach (var native in _contentCache.Values)
+					foreach (var platformView in _contentCache.Values)
 					{
-						native.Unrealize();
+						platformView.Unrealize();
 					}
 					_contentCache.Clear();
 					_contentToTabsItem.Clear();
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				return;
 			}
-			_tabs = new Tabs(NativeParent);
+			_tabs = new Tabs(PlatformParent);
 			_tabs.Show();
 			_tabs.BackgroundColor = _backgroundColor;
 			_tabs.Scrollable = TabsType.Fixed;
@@ -340,10 +340,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (!_contentCache.ContainsKey(content))
 			{
-				var native = CreateShellContent(content);
-				native.SetAlignment(-1, -1);
-				native.SetWeight(1, 1);
-				_contentCache[content] = native;
+				var platformView = CreateShellContent(content);
+				platformView.SetAlignment(-1, -1);
+				platformView.SetWeight(1, 1);
+				_contentCache[content] = platformView;
 			}
 			_currentContent = _contentCache[content];
 			_currentContent.Show();
