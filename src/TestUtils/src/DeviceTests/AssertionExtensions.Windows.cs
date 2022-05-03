@@ -62,14 +62,16 @@ namespace Microsoft.Maui.DeviceTests
 			if (view.Parent is Border wrapper)
 				view = wrapper;
 
-			Grid grid;
-			var window = new Window
+			if (view.Parent == null)
 			{
-				Content = new Grid
+				Grid grid;
+				var window = new Window
 				{
-					HorizontalAlignment = HorizontalAlignment.Center,
-					VerticalAlignment = VerticalAlignment.Center,
-					Children =
+					Content = new Grid
+					{
+						HorizontalAlignment = HorizontalAlignment.Center,
+						VerticalAlignment = VerticalAlignment.Center,
+						Children =
 					{
 						(grid = new Grid
 						{
@@ -81,19 +83,28 @@ namespace Microsoft.Maui.DeviceTests
 							}
 						})
 					}
-				}
-			};
-			window.Activate();
+					}
+				};
+				window.Activate();
 
-			try
-			{
-				var result = await action();
-				return result;
+				try
+				{
+					return await Run(action);
+				}
+				finally
+				{
+					grid.Children.Clear();
+					window.Close();
+				}
 			}
-			finally
+			else
 			{
-				grid.Children.Clear();
-				window.Close();
+				return await Run(action);
+			}
+
+			static async Task<T> Run(Func<Task<T>> action)
+			{
+				return await action();
 			}
 		}
 
