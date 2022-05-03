@@ -529,19 +529,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					ElevationHelper.SetElevation(view, View);
 			}
 
-			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
-			{
-				var width = widthMeasureSpec.GetSize();
-				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-			}
-
-			public override LP LayoutParameters
-			{
-				get => base.LayoutParameters;
-				set => base.LayoutParameters = value;
-			}
-
-
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
 				l -= PaddingLeft + PaddingRight;
