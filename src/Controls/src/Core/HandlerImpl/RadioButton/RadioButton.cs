@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 		public static IPropertyMapper<RadioButton, RadioButtonHandler> ControlsRadioButtonMapper =
 			   new PropertyMapper<RadioButton, RadioButtonHandler>(RadioButtonHandler.Mapper)
 			   {
-#if IOS || ANDROID || WINDOWS
+#if IOS || ANDROID
 				   [nameof(IRadioButton.Content)] = MapContent
 #endif
 			   };
