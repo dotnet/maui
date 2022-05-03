@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
-		{			
+		{
 			_ = MauiContext ?? throw new ArgumentNullException(nameof(MauiContext));
 			MauiContext.UpdateMenuItemIcon(menuItem, toolBarItem, null);
 		}
