@@ -69,11 +69,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			//View.Arrange(new Rectangle(Point.Zero, size));
 			//Arrange doesn't seem to work as expected
 
-			var mauiControlsView = View as View;
-			if (mauiControlsView == null)
+			if (View?.Handler is not IPlatformViewHandler handler)
 				return;
 
-			mauiControlsView.Layout(new Rect(Point.Zero, size));
+			handler.LayoutVirtualView(l, t, r, b);
 
 			UpdateContentLayout();
 		}
@@ -104,16 +103,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				? double.PositiveInfinity
 				: Context.FromPixels(pixelHeight);
 
-			SizeRequest measure = (View as VisualElement).Measure(width, height, MeasureFlags.IncludeMargins);
+
+			var measure = View.Measure(width, height);
 
 			if (pixelWidth == 0)
 			{
-				pixelWidth = (int)Context.ToPixels(measure.Request.Width);
+				pixelWidth = (int)Context.ToPixels(measure.Width);
 			}
 
 			if (pixelHeight == 0)
 			{
-				pixelHeight = (int)Context.ToPixels(measure.Request.Height);
+				pixelHeight = (int)Context.ToPixels(measure.Height);
 			}
 
 			_reportMeasure?.Invoke(new Size(pixelWidth, pixelHeight));
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdateContentLayout()
 		{
 			VisualElement mauiControlsView = View as VisualElement;
-			AView aview = Content.ContainerView ?? Content.PlatformView;
+			AView aview = Content.ToPlatform();
 
 			if (mauiControlsView == null || aview == null)
 				return;
