@@ -1,91 +1,52 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 
 namespace Microsoft.Maui
 {
-	internal class ImageLoaderResultCallback : Java.Lang.Object, IImageLoaderCallback
+	class ImageLoaderResultCallback : ImageLoaderCallbackBase<IImageSourceServiceResult<Drawable>>
 	{
-		public ImageLoaderResultCallback(Action<Drawable?>? completeCallback = null)
-		{
-			CompleteCallback = completeCallback;
-		}
-
-		readonly TaskCompletionSource<IImageSourceServiceResult<Drawable>?> tcsResult = new();
-
-		public Task<IImageSourceServiceResult<Drawable>?> Result
-			=> tcsResult.Task;
-
-		public readonly Action<Drawable?>? CompleteCallback;
-
-		public void OnComplete(Java.Lang.Boolean? success, Drawable? drawable, Java.Lang.IRunnable? dispose)
-		{
-			try
-			{
-				var s = success?.BooleanValue() ?? false;
-
-				Action? disposeWrapper = null;
-				if (dispose != null)
-				{
-					disposeWrapper = () =>
-					{
-						dispose.Run();
-					};
-				}
-
-				if (s && drawable is not null)
-				{
-					tcsResult.SetResult(new ImageSourceServiceResult(drawable!, disposeWrapper));
-					return;
-				}
-			}
-			catch
-			{
-			}
-
-			tcsResult.SetResult(null);
-		}
+		protected override IImageSourceServiceResult<Drawable>? OnSuccess(Drawable? drawable, Action? dispose) =>
+			drawable is not null
+				? new ImageSourceServiceResult(drawable, dispose)
+				: default;
 	}
 
-	internal class ImageLoaderCallback : Java.Lang.Object, IImageLoaderCallback
+	class ImageLoaderCallback : ImageLoaderCallbackBase<IImageSourceServiceResult>
 	{
-		public ImageLoaderCallback()
-		{
-		}
+		protected override IImageSourceServiceResult? OnSuccess(Drawable? drawable, Action? dispose) =>
+			new ImageSourceServiceLoadResult(dispose);
+	}
 
-		readonly TaskCompletionSource<IImageSourceServiceResult?> tcsResult = new();
+	abstract class ImageLoaderCallbackBase<T> : Java.Lang.Object, IImageLoaderCallback
+		where T : IImageSourceServiceResult
+	{
+		readonly TaskCompletionSource<T?> _tcsResult = new();
 
-		public Task<IImageSourceServiceResult?> Result
-			=> tcsResult.Task;
+		public Task<T?> Result => _tcsResult.Task;
 
 		public void OnComplete(Java.Lang.Boolean? success, Drawable? drawable, Java.Lang.IRunnable? dispose)
 		{
 			try
 			{
-				var s = success?.BooleanValue() ?? false;
+				Action? disposeWrapper = dispose != null
+					? dispose.Run
+					: null;
 
-				Action? disposeWrapper = null;
-				if (dispose != null)
-				{
-					disposeWrapper = () =>
-					{
-						dispose.Run();
-					};
-				}
+				var result = success?.BooleanValue() == true
+					? OnSuccess(drawable, disposeWrapper)
+					: OnFailure(drawable, disposeWrapper);
 
-				if (s)
-				{
-					tcsResult.SetResult(new ImageSourceServiceLoadResult(disposeWrapper));
-					return;
-				}
+				_tcsResult.SetResult(result);
 			}
-			catch
+			catch (Exception ex)
 			{
+				_tcsResult.SetException(ex);
 			}
-
-			tcsResult.SetResult(null);
 		}
+
+		protected abstract T? OnSuccess(Drawable? drawable, Action? dispose);
+
+		protected virtual T? OnFailure(Drawable? errorDrawable, Action? dispose) => default;
 	}
 }
