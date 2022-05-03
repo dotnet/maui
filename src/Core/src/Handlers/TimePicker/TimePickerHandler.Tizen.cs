@@ -1,4 +1,5 @@
 using Tizen.NUI;
+using Tizen.UIExtensions.NUI;
 using NEntry = Tizen.UIExtensions.NUI.Entry;
 
 namespace Microsoft.Maui.Handlers
@@ -15,12 +16,14 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(NEntry platformView)
 		{
 			platformView.TouchEvent += OnTouch;
+			platformView.KeyEvent += OnKeyEvent;
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(NEntry platformView)
 		{
 			platformView.TouchEvent -= OnTouch;
+			platformView.KeyEvent -= OnKeyEvent;
 			base.DisconnectHandler(platformView);
 		}
 
@@ -60,21 +63,36 @@ namespace Microsoft.Maui.Handlers
 			return true;
 		}
 
+		bool OnKeyEvent(object source, Tizen.NUI.BaseComponents.View.KeyEventArgs e)
+		{
+			if (e.Key.IsAcceptKeyEvent())
+			{
+				OpenPopupAsync();
+				return true;
+			}
+			return false;
+		}
+
 		async void OpenPopupAsync()
 		{
 			if (VirtualView == null)
 				return;
 
-			using (var popup = new MauiTimePicker(VirtualView.Time))
+			var modalStack = MauiContext?.GetModalStack();
+			if (modalStack != null)
 			{
-				try
+				await modalStack.PushDummyPopupPage(async () =>
 				{
-					VirtualView.Time = await popup.Open();
-				}
-				catch
-				{
-					// Cancel
-				}
+					try
+					{
+						using var popup = new MauiTimePicker(VirtualView.Time);
+						VirtualView.Time = await popup.Open();
+					}
+					catch
+					{
+						// Cancel
+					}
+				});
 			}
 		}
 

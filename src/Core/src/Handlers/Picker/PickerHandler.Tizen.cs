@@ -14,12 +14,14 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(NEntry platformView)
 		{
 			platformView.TouchEvent += OnTouch;
+			platformView.KeyEvent += OnKeyEvent;
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(NEntry platformView)
 		{
 			platformView.TouchEvent -= OnTouch;
+			platformView.KeyEvent -= OnKeyEvent;
 			base.DisconnectHandler(platformView);
 		}
 
@@ -87,21 +89,37 @@ namespace Microsoft.Maui.Handlers
 			return true;
 		}
 
+		bool OnKeyEvent(object source, Tizen.NUI.BaseComponents.View.KeyEventArgs e)
+		{
+			if (e.Key.State == Tizen.NUI.Key.StateType.Up && (e.Key.KeyPressedName == "Return" || e.Key.KeyPressedName == "Enter"))
+			{
+				OpenPopupAsync();
+				return true;
+			}
+			return false;
+		}
+
+
 		async void OpenPopupAsync()
 		{
 			if (VirtualView == null)
 				return;
 
-			using (var popup = new ActionSheetPopup(VirtualView.Title, "Cancel", null, VirtualView.GetItemsAsArray()))
+			var modalStack = MauiContext?.GetModalStack();
+			if (modalStack != null)
 			{
-				try
+				await modalStack.PushDummyPopupPage(async () =>
 				{
-					VirtualView.SelectedIndex = VirtualView.GetItemsAsArray().IndexOf(await popup.Open());
-				}
-				catch
-				{
-					// Cancel
-				}
+					try
+					{
+						using var popup = new ActionSheetPopup(VirtualView.Title, "Cancel", null, VirtualView.GetItemsAsArray());
+						VirtualView.SelectedIndex = VirtualView.GetItemsAsArray().IndexOf(await popup.Open());
+					}
+					catch
+					{
+						// Cancel
+					}
+				});
 			}
 		}
 

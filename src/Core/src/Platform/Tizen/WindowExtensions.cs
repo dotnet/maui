@@ -38,12 +38,12 @@ namespace Microsoft.Maui
 
 			platformWindow.KeyEvent += (s, e) =>
 			{
-				if (e.Key.State == Key.StateType.Down && (e.Key.KeyPressedName == "XF86Back" || e.Key.KeyPressedName == "Escape"))
+				if (e.Key.IsDeclineKeyEvent())
 				{
 					if (Popup.HasOpenedPopup)
 					{
-						Popup.CloseLast();
-						return;
+						if (Popup.CloseLast())
+							return;
 					}
 					OnBackButtonPressed(platformWindow);
 				}

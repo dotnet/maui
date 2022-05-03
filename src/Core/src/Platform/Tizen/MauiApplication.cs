@@ -24,9 +24,9 @@ namespace Microsoft.Maui
 		protected override void OnPreCreate()
 		{
 			base.OnPreCreate();
+			FocusManager.Instance.EnableDefaultAlgorithm(true);
 
 			var mauiApp = CreateMauiApp();
-
 			var rootContext = new MauiContext(mauiApp.Services);
 
 			var platformWindow = CoreAppExtensions.GetDefaultWindow();

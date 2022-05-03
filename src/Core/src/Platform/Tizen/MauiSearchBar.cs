@@ -31,9 +31,11 @@ namespace Microsoft.Maui.Platform
 			_entry.KeyEvent += OnKeyEvent;
 			_searchButton = new TSkiaGraphicsView
 			{
+				Focusable = true,
 				Drawable = new SearchIcon(),
 			};
 			_searchButton.TouchEvent += OnSearchButtonTouchEvent;
+			_searchButton.KeyEvent += OnSearchButtonKeyEvent;
 
 			Children.Add(_entry);
 			Children.Add(_searchButton);
@@ -69,7 +71,7 @@ namespace Microsoft.Maui.Platform
 
 		bool OnKeyEvent(object source, KeyEventArgs e)
 		{
-			if (e.Key.State == Key.StateType.Down && e.Key.KeyPressedName == "Return")
+			if (e.Key.IsAcceptKeyEvent())
 			{
 				SearchButtonPressed?.Invoke(this, EventArgs.Empty);
 				return true;
@@ -88,6 +90,16 @@ namespace Microsoft.Maui.Platform
 
 			_lastPointState = state;
 			return state == PointStateType.Up || state == PointStateType.Down;
+		}
+
+		bool OnSearchButtonKeyEvent(object source, KeyEventArgs e)
+		{
+			if (e.Key.IsAcceptKeyEvent())
+			{
+				SearchButtonPressed?.Invoke(this, EventArgs.Empty);
+				return true;
+			}
+			return false;
 		}
 
 		void OnLayoutUpdated(object? sender, LayoutEventArgs e)

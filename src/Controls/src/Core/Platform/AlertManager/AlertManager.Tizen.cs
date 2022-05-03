@@ -16,11 +16,11 @@ namespace Microsoft.Maui.Controls.Platform
 		internal void Subscribe(Window window)
 		{
 			var nativeWindow = window?.MauiContext.GetPlatformWindow();
-
+			var modalStack = window?.MauiContext.GetModalStack();
 			if (Subscriptions.Any(s => s.Window == nativeWindow))
 				return;
 
-			Subscriptions.Add(new AlertRequestHelper(nativeWindow));
+			Subscriptions.Add(new AlertRequestHelper(nativeWindow, modalStack));
 		}
 
 		internal void Unsubscribe(Window window)
@@ -42,7 +42,9 @@ namespace Microsoft.Maui.Controls.Platform
 		int _busyCount;
 		Popup _busyPopup;
 
-		internal AlertRequestHelper(NWindow window)
+		NavigationStack _modalStack;
+
+		internal AlertRequestHelper(NWindow window, NavigationStack modalStack)
 		{
 			Window = window;
 
@@ -50,6 +52,7 @@ namespace Microsoft.Maui.Controls.Platform
 			MessagingCenter.Subscribe<Page, AlertArguments>(Window, Page.AlertSignalName, OnAlertRequest);
 			MessagingCenter.Subscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName, OnActionSheetRequest);
 			MessagingCenter.Subscribe<Page, PromptArguments>(Window, Page.PromptSignalName, OnPromptRequested);
+			_modalStack = modalStack;
 		}
 
 		public NWindow Window { get; }
@@ -73,25 +76,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (null == _busyPopup)
 			{
-				_busyPopup = new Popup
-				{
-					BackgroundColor = new Tizen.NUI.Color(0.1f, 0.1f, 0.1f, 0.5f),
-					Layout = new LinearLayout
-					{
-						HorizontalAlignment = HorizontalAlignment.Center,
-						VerticalAlignment = VerticalAlignment.Center,
-					},
-					Content = new Tizen.UIExtensions.NUI.GraphicsView.ActivityIndicator
-					{
-						// TODO. need to fix
-						SizeWidth = 100,
-						SizeHeight = 100,
-						IsRunning = true,
-					}
-				};
+				_busyPopup = new BusyPopup();
 			}
 
-			if (_busyCount > 0)
+			if (_busyCount > 0 && !_busyPopup.IsOpen)
 			{
 				_busyPopup.Open();
 			}
@@ -118,14 +106,19 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				alert = new MessagePopup(arguments.Title, arguments.Message, arguments.Cancel);
 			}
-			try
-			{
-				arguments.SetResult(await alert.Open());
-			}
-			catch (TaskCanceledException)
-			{
-				arguments.SetResult(false);
-			}
+
+			await _modalStack.PushDummyPopupPage(async () => {
+				try
+				{
+					arguments.SetResult(await alert.Open());
+				}
+				catch (TaskCanceledException)
+				{
+					arguments.SetResult(false);
+				}
+			});
+
+			alert?.Dispose();
 		}
 
 		async void OnActionSheetRequest(Page sender, ActionSheetArguments arguments)
@@ -134,15 +127,17 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!PageIsInThisWindow(sender))
 				return;
 
-			try
-			{
-				var popup = new ActionSheetPopup(arguments.Title, arguments.Cancel, destruction: arguments.Destruction, buttons: arguments.Buttons);
-				arguments.SetResult(await popup.Open());
-			}
-			catch (TaskCanceledException)
-			{
-				arguments.SetResult(arguments.Cancel);
-			}
+			await _modalStack.PushDummyPopupPage(async () => {
+				try
+				{
+					using var popup = new ActionSheetPopup(arguments.Title, arguments.Cancel, destruction: arguments.Destruction, buttons: arguments.Buttons);
+					arguments.SetResult(await popup.Open());
+				}
+				catch (TaskCanceledException)
+				{
+					arguments.SetResult(arguments.Cancel);
+				}
+			});
 		}
 
 		async void OnPromptRequested(Page sender, PromptArguments args)
@@ -151,22 +146,50 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!PageIsInThisWindow(sender))
 				return;
 
-			try
-			{
-				// placeholder should not be empty string, if not layout is broken
-				var popup = new PromptPopup(args.Title, args.Message, args.Accept, args.Cancel, args.Placeholder ?? " ", args.MaxLength, args.Keyboard.ToPlatform(), args.InitialValue);
-				args.SetResult(await popup.Open());
-			}
-			catch (TaskCanceledException)
-			{
-				args.SetResult(null);
-			}
+
+			await _modalStack.PushDummyPopupPage(async () => {
+				try
+				{
+					// placeholder should not be empty string, if not layout is broken
+					using var popup = new PromptPopup(args.Title, args.Message, args.Accept, args.Cancel, args.Placeholder ?? " ", args.MaxLength, args.Keyboard.ToPlatform(), args.InitialValue);
+					args.SetResult(await popup.Open());
+				}
+				catch (TaskCanceledException)
+				{
+					args.SetResult(null);
+				}
+			});
 		}
 
 		bool PageIsInThisWindow(IView sender)
 		{
 			var window = sender.Handler?.MauiContext?.GetPlatformWindow() ?? null;
 			return window == Window;
+		}
+
+		class BusyPopup : Popup
+		{
+			public BusyPopup()
+			{
+				BackgroundColor = new Color(0.1f, 0.1f, 0.1f, 0.5f);
+				Layout = new LinearLayout
+				{
+					HorizontalAlignment = HorizontalAlignment.Center,
+					VerticalAlignment = VerticalAlignment.Center,
+				};
+				Content = new Tizen.UIExtensions.NUI.GraphicsView.ActivityIndicator
+				{
+
+					SizeWidth = 100,
+					SizeHeight = 100,
+					IsRunning = true,
+				};
+			}
+
+			protected override bool OnBackButtonPressed()
+			{
+				return true;
+			}
 		}
 	}
 }

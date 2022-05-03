@@ -4,11 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
-		protected override MauiSearchBar CreatePlatformView() => new()
-		{
-			Focusable = true,
-			FocusableInTouch = true,
-		};
+		protected override MauiSearchBar CreatePlatformView() => new();
 
 		protected override void ConnectHandler(MauiSearchBar platformView)
 		{

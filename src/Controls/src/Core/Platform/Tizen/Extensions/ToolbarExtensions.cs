@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Tizen.NUI.BaseComponents;
 using Tizen.UIExtensions.NUI;
@@ -110,17 +111,22 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					var actions = secondaryActions.ToList();
 					var actionTexts = actions.Select(i => i.Text).ToList();
-					using (var popup = new ActionSheetPopup("", "Cancel", null, buttons: actionTexts))
+					var modalStack = toolbar?.Handler.MauiContext?.GetModalStack();
+					if (modalStack != null)
 					{
-						try
+						await modalStack.PushDummyPopupPage(async () =>
 						{
-							var select = actionTexts.IndexOf(await popup.Open());
-							actions[select].Command.Execute(actions[select].CommandParameter);
-						}
-						catch
-						{
-							// Cancel
-						}
+							try
+							{
+								using var popup = new ActionSheetPopup("", "Cancel", null, buttons: actionTexts);
+								var select = actionTexts.IndexOf(await popup.Open());
+								actions[select].Command.Execute(actions[select].CommandParameter);
+							}
+							catch
+							{
+								// Cancel
+							}
+						});
 					}
 				};
 				platformToolbar.Actions.Add(more);
