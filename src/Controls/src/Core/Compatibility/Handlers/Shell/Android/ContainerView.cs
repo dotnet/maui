@@ -52,10 +52,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
-			if (_shellContentView == null)
+			if (_shellContentView == null || View?.Handler == null)
+			{
 				return;
+			}
 
-			_shellContentView.LayoutView(l, t, r, b);
+			((IPlatformViewHandler)View.Handler).LayoutVirtualView(l, t, r, b);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -72,8 +74,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			var width = GetSize(widthMeasureSpec);
-			var height = GetSize(heightMeasureSpec);
+			var width = widthMeasureSpec.GetSize();
+			var height = heightMeasureSpec.GetSize();
 
 			var measureWidth = width > 0 ? width : MeasureSpecMode.Unspecified.MakeMeasureSpec(0);
 			var measureHeight = height > 0 ? height : MeasureSpecMode.Unspecified.MakeMeasureSpec(0);
@@ -94,21 +96,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				maxHeight = heightMeasureSpec.GetSize();
 			}
 
-			_shellContentView.Measure(measureWidth, measureHeight, null, (int?)maxHeight);
-			SetMeasuredDimension(PlatformView.MeasuredWidth, PlatformView.MeasuredHeight);
-
-		}
-
-		// TODO MAUI
-		int GetSize(int measureSpec)
-		{
-			const int modeMask = 0x3 << 30;
-			return measureSpec & ~modeMask;
-		}
-
-		int MakeMeasureSpec(MeasureSpecMode mode, int size)
-		{
-			return size + (int)mode;
+			var size = _shellContentView.Measure(measureWidth, measureHeight, null, (int?)maxHeight);
+			SetMeasuredDimension((int)size.Width, (int)size.Height);
 		}
 
 		protected virtual void OnViewSet(View view)

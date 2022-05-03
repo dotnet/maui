@@ -12,20 +12,22 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.microsoft.maui.ImageLoaderCallback;
 
-public class MauiCustomTarget extends CustomTarget<Drawable>
-{
+public class MauiCustomTarget extends CustomTarget<Drawable> {
     private final ImageLoaderCallback callback;
     private final RequestManager requestManager;
+    private boolean completed;
 
-    public MauiCustomTarget(ImageLoaderCallback callback, RequestManager requestManager)
-    {
+    public MauiCustomTarget(ImageLoaderCallback callback, RequestManager requestManager) {
+        this.completed = false;
         this.callback = callback;
         this.requestManager = requestManager;
     }
 
     @Override
     public void onLoadFailed(@Nullable Drawable errorDrawable) {
-        super.onLoadFailed(errorDrawable);
+        if (completed)
+            return;
+        this.completed = true;
 
         new Handler(Looper.getMainLooper())
             .post(() -> requestManager.clear(MauiCustomTarget.this));
@@ -35,7 +37,12 @@ public class MauiCustomTarget extends CustomTarget<Drawable>
 
     @Override
     public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-        callback.onComplete(true,
+        if (completed)
+            return;
+        this.completed = true;
+
+        callback.onComplete(
+            true,
             resource,
             () -> new Handler(Looper.getMainLooper())
                 .post(() -> requestManager.clear(MauiCustomTarget.this)));
@@ -43,7 +50,6 @@ public class MauiCustomTarget extends CustomTarget<Drawable>
 
     @Override
     public void onLoadCleared(@Nullable Drawable placeholder) {
-
     }
 }
 
