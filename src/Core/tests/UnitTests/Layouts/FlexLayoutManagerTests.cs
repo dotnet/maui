@@ -11,62 +11,62 @@ namespace Microsoft.Maui.UnitTests.Layouts
 	[Category(TestCategory.Core, TestCategory.Layout)]
 	public class FlexLayoutManagerTests
 	{
-		//[Theory]
-		//[InlineData(0, 100, 0, 0)]
-		//[InlineData(1, 100, 0, 100)]
-		//[InlineData(1, 100, 13, 100)]
-		//[InlineData(2, 100, 13, 213)]
-		//[InlineData(3, 100, 13, 326)]
-		//[InlineData(3, 100, -13, 274)]
-		//public void SpacingMeasurement(int viewCount, double viewHeight, int spacing, double expectedHeight)
-		//{
-		//	var stack = BuildStack(viewCount, 100, viewHeight);
-		//	System.Console.WriteLine(spacing);
-		//	//stack.Spacing.Returns(spacing);
+		[Theory(Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		[InlineData(0, 100, 0, 0)]
+		[InlineData(1, 100, 0, 100)]
+		[InlineData(1, 100, 13, 100)]
+		[InlineData(2, 100, 13, 213)]
+		[InlineData(3, 100, 13, 326)]
+		[InlineData(3, 100, -13, 274)]
+		public void SpacingMeasurement(int viewCount, double viewHeight, int spacing, double expectedHeight)
+		{
+			var stack = BuildStack(viewCount, 100, viewHeight);
+			System.Console.WriteLine(spacing);
+			//stack.Spacing.Returns(spacing);
 
-		//	var manager = new FlexLayoutManager(stack);
-		//	var measuredSize = manager.Measure(100, double.PositiveInfinity);
+			var manager = new FlexLayoutManager(stack);
+			var measuredSize = manager.Measure(100, double.PositiveInfinity);
 
-		//	Assert.Equal(expectedHeight, measuredSize.Height);
-		//}
+			Assert.Equal(expectedHeight, measuredSize.Height);
+		}
 
-		//[Theory("Spacing has no effect when there's only one item")]
-		//[InlineData(0), InlineData(26), InlineData(-54)]
-		//public void SpacingArrangementOneItem(int spacing)
-		//{
-		//	var stack = BuildStack(1, 100, 100);
-		//	System.Console.WriteLine(spacing);
-		//	//stack.Spacing.Returns(spacing);
+		[Theory("Spacing has no effect when there's only one item", Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		[InlineData(0), InlineData(26), InlineData(-54)]
+		public void SpacingArrangementOneItem(int spacing)
+		{
+			var stack = BuildStack(1, 100, 100);
+			System.Console.WriteLine(spacing);
+			//stack.Spacing.Returns(spacing);
 
-		//	var manager = new FlexLayoutManager(stack);
+			var manager = new FlexLayoutManager(stack);
 
-		//	var measuredSize = manager.Measure(100, double.PositiveInfinity);
-		//	manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
+			var measuredSize = manager.Measure(100, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
 
-		//	var expectedRectangle = new Rect(0, 0, 100, 100);
-		//	stack[0].Received().Arrange(Arg.Is(expectedRectangle));
-		//}
+			var expectedRectangle = new Rect(0, 0, 100, 100);
+			stack[0].Received().Arrange(Arg.Is(expectedRectangle));
+		}
 
-		//[Theory("Spacing has an effect when there's more than one item")]
-		//[InlineData(26), InlineData(-54)]
-		//public void SpacingArrangementTwoItems(int spacing)
-		//{
-		//	var stack = BuildStack(2, 100, 100);
-		//	//stack.Spacing.Returns(spacing);
+		[Theory("Spacing has an effect when there's more than one item", Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		[InlineData(26), InlineData(-54)]
+		public void SpacingArrangementTwoItems(int spacing)
+		{
+			var stack = BuildStack(2, 100, 100);
+			//stack.Spacing.Returns(spacing);
 
-		//	var manager = new FlexLayoutManager(stack);
+			var manager = new FlexLayoutManager(stack);
 
-		//	var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-		//	manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
+			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
 
-		//	AssertArranged(stack[0], 0, 0, 100, 100);
-		//	AssertArranged(stack[1], 0, 100 + spacing, 100, 100);
-		//}
+			AssertArranged(stack[0], 0, 0, 100, 100);
+			AssertArranged(stack[1], 0, 100 + spacing, 100, 100);
+		}
 
-		[Theory]
+		[Theory()]
 		[InlineData(150, 100, 100)]
 		[InlineData(150, 200, 200)]
-		//[InlineData(1250, Dimension.Unset, 1250)]
+		//[InlineData(1250, Dimension.Unset, 1250, Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
 		public void StackAppliesHeight(double viewHeight, double stackHeight, double expectedHeight)
 		{
 			var view = CreateTestView(new Size(100, viewHeight));
@@ -80,173 +80,173 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(expectedHeight, measurement.Height);
 		}
 
-		//[Fact]
-		//public void IgnoresCollapsedViews()
-		//{
-		//	var view = CreateTestView(new Size(100, 100));
-		//	var collapsedView = CreateTestView(new Size(100, 100));
-		//	collapsedView.Visibility.Returns(Visibility.Collapsed);
+		[Fact(Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		public void IgnoresCollapsedViews()
+		{
+			var view = CreateTestView(new Size(100, 100));
+			var collapsedView = CreateTestView(new Size(100, 100));
+			collapsedView.Visibility.Returns(Visibility.Collapsed);
 
-		//	var stack = CreateTestLayout(new List<IView>() { view, collapsedView });
+			var stack = CreateTestLayout(new List<IView>() { view, collapsedView });
 
-		//	var manager = new FlexLayoutManager(stack);
-		//	var measure = manager.Measure(100, double.PositiveInfinity);
-		//	manager.ArrangeChildren(new Rect(Point.Zero, measure));
+			var manager = new FlexLayoutManager(stack);
+			var measure = manager.Measure(100, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rect(Point.Zero, measure));
 
-		//	// View is visible, so we expect it to be measured and arranged
-		//	view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
-		//	view.Received().Arrange(Arg.Any<Rect>());
+			// View is visible, so we expect it to be measured and arranged
+			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			view.Received().Arrange(Arg.Any<Rect>());
 
-		//	// View is collapsed, so we expect it not to be measured or arranged
-		//	collapsedView.DidNotReceive().Measure(Arg.Any<double>(), Arg.Any<double>());
-		//	collapsedView.DidNotReceive().Arrange(Arg.Any<Rect>());
-		//}
+			// View is collapsed, so we expect it not to be measured or arranged
+			collapsedView.DidNotReceive().Measure(Arg.Any<double>(), Arg.Any<double>());
+			collapsedView.DidNotReceive().Arrange(Arg.Any<Rect>());
+		}
 
-		//[Fact]
-		//public void DoesNotIgnoreHiddenViews()
-		//{
-		//	var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
-		//	var hiddenView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
-		//	hiddenView.Visibility.Returns(Visibility.Hidden);
+		[Fact(Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		public void DoesNotIgnoreHiddenViews()
+		{
+			var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			var hiddenView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			hiddenView.Visibility.Returns(Visibility.Hidden);
 
-		//	var stack = CreateTestLayout(new List<IView>() { view, hiddenView });
+			var stack = CreateTestLayout(new List<IView>() { view, hiddenView });
 
-		//	var manager = new FlexLayoutManager(stack);
-		//	var measure = manager.Measure(100, double.PositiveInfinity);
-		//	manager.ArrangeChildren(new Rect(Point.Zero, measure));
+			var manager = new FlexLayoutManager(stack);
+			var measure = manager.Measure(100, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rect(Point.Zero, measure));
 
-		//	// View is visible, so we expect it to be measured and arranged
-		//	view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
-		//	view.Received().Arrange(Arg.Any<Rect>());
+			// View is visible, so we expect it to be measured and arranged
+			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			view.Received().Arrange(Arg.Any<Rect>());
 
-		//	// View is hidden, so we expect it to be measured and arranged (since it'll need to take up space)
-		//	hiddenView.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
-		//	hiddenView.Received().Arrange(Arg.Any<Rect>());
-		//}
+			// View is hidden, so we expect it to be measured and arranged (since it'll need to take up space)
+			hiddenView.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			hiddenView.Received().Arrange(Arg.Any<Rect>());
+		}
 
-		//[Theory]
-		//[InlineData(0, 0, 0, 0)]
-		//[InlineData(10, 10, 10, 10)]
-		//[InlineData(10, 0, 10, 0)]
-		//[InlineData(0, 10, 0, 10)]
-		//[InlineData(23, 5, 3, 15)]
-		//public void MeasureAccountsForPadding(double left, double top, double right, double bottom)
-		//{
-		//	var viewWidth = 100d;
-		//	var viewHeight = 100d;
-		//	var padding = new Thickness(left, top, right, bottom);
+		[Theory(Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(10, 0, 10, 0)]
+		[InlineData(0, 10, 0, 10)]
+		[InlineData(23, 5, 3, 15)]
+		public void MeasureAccountsForPadding(double left, double top, double right, double bottom)
+		{
+			var viewWidth = 100d;
+			var viewHeight = 100d;
+			var padding = new Thickness(left, top, right, bottom);
 
-		//	var expectedHeight = padding.VerticalThickness + viewHeight;
-		//	var expectedWidth = padding.HorizontalThickness + viewWidth;
+			var expectedHeight = padding.VerticalThickness + viewHeight;
+			var expectedWidth = padding.HorizontalThickness + viewWidth;
 
-		//	var stack = BuildPaddedStack(padding, viewWidth, viewHeight);
+			var stack = BuildPaddedStack(padding, viewWidth, viewHeight);
 
-		//	var manager = new FlexLayoutManager(stack);
-		//	var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var manager = new FlexLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-		//	Assert.Equal(expectedHeight, measuredSize.Height);
-		//	Assert.Equal(expectedWidth, measuredSize.Width);
-		//}
+			Assert.Equal(expectedHeight, measuredSize.Height);
+			Assert.Equal(expectedWidth, measuredSize.Width);
+		}
 
-		//[Theory]
-		//[InlineData(0, 0, 0, 0)]
-		//[InlineData(10, 10, 10, 10)]
-		//[InlineData(10, 0, 10, 0)]
-		//[InlineData(0, 10, 0, 10)]
-		//[InlineData(23, 5, 3, 15)]
-		//public void ArrangeAccountsForPadding(double left, double top, double right, double bottom)
-		//{
-		//	var viewWidth = 100d;
-		//	var viewHeight = 100d;
-		//	var padding = new Thickness(left, top, right, bottom);
+		[Theory(Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(10, 0, 10, 0)]
+		[InlineData(0, 10, 0, 10)]
+		[InlineData(23, 5, 3, 15)]
+		public void ArrangeAccountsForPadding(double left, double top, double right, double bottom)
+		{
+			var viewWidth = 100d;
+			var viewHeight = 100d;
+			var padding = new Thickness(left, top, right, bottom);
 
-		//	var stack = BuildPaddedStack(padding, viewWidth, viewHeight);
+			var stack = BuildPaddedStack(padding, viewWidth, viewHeight);
 
-		//	var manager = new FlexLayoutManager(stack);
-		//	var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-		//	manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
+			var manager = new FlexLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
 
-		//	AssertArranged(stack[0], padding.Left, padding.Top, viewWidth, viewHeight);
-		//}
+			AssertArranged(stack[0], padding.Left, padding.Top, viewWidth, viewHeight);
+		}
 
-		//[Fact]
-		//public void ArrangeRespectsBounds()
-		//{
-		//	var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+		[Fact(Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		public void ArrangeRespectsBounds()
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
 
-		//	var manager = new FlexLayoutManager(stack);
-		//	var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-		//	manager.ArrangeChildren(new Rect(new Point(10, 15), measuredSize));
+			var manager = new FlexLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
+			manager.ArrangeChildren(new Rect(new Point(10, 15), measuredSize));
 
-		//	var expectedRectangle0 = new Rect(10, 15, 100, 100);
+			var expectedRectangle0 = new Rect(10, 15, 100, 100);
 
-		//	stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
-		//}
+			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
+		}
 
-		//[Theory]
-		//[InlineData(50, 100, 50)]
-		//[InlineData(100, 100, 100)]
-		//[InlineData(100, 50, 50)]
-		//[InlineData(0, 50, 0)]
-		//public void MeasureRespectsMaxHeight(double maxHeight, double viewHeight, double expectedHeight)
-		//{
-		//	var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: viewHeight);
-		//	stack.MaximumHeight.Returns(maxHeight);
+		[Theory(Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		[InlineData(50, 100, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(100, 50, 50)]
+		[InlineData(0, 50, 0)]
+		public void MeasureRespectsMaxHeight(double maxHeight, double viewHeight, double expectedHeight)
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: viewHeight);
+			stack.MaximumHeight.Returns(maxHeight);
 
-		//	var layoutManager = new FlexLayoutManager(stack);
-		//	var measure = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var layoutManager = new FlexLayoutManager(stack);
+			var measure = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-		//	Assert.Equal(expectedHeight, measure.Height);
-		//}
+			Assert.Equal(expectedHeight, measure.Height);
+		}
 
-		//[Theory]
-		//[InlineData(50, 100, 50)]
-		//[InlineData(100, 100, 100)]
-		//[InlineData(100, 50, 50)]
-		//[InlineData(0, 50, 0)]
-		//public void MeasureRespectsMaxWidth(double maxWidth, double viewWidth, double expectedWidth)
-		//{
-		//	var stack = BuildStack(viewCount: 1, viewWidth: viewWidth, viewHeight: 100);
+		[Theory(Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		[InlineData(50, 100, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(100, 50, 50)]
+		[InlineData(0, 50, 0)]
+		public void MeasureRespectsMaxWidth(double maxWidth, double viewWidth, double expectedWidth)
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: viewWidth, viewHeight: 100);
 
-		//	stack.MaximumWidth.Returns(maxWidth);
+			stack.MaximumWidth.Returns(maxWidth);
 
-		//	var gridLayoutManager = new FlexLayoutManager(stack);
-		//	var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var gridLayoutManager = new FlexLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-		//	Assert.Equal(expectedWidth, measure.Width);
-		//}
+			Assert.Equal(expectedWidth, measure.Width);
+		}
 
-		//[Theory]
-		//[InlineData(50, 10, 50)]
-		//[InlineData(100, 100, 100)]
-		//[InlineData(10, 50, 50)]
-		//public void MeasureRespectsMinHeight(double minHeight, double viewHeight, double expectedHeight)
-		//{
-		//	var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: viewHeight);
+		[Theory(Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		[InlineData(50, 10, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(10, 50, 50)]
+		public void MeasureRespectsMinHeight(double minHeight, double viewHeight, double expectedHeight)
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: viewHeight);
 
-		//	stack.MinimumHeight.Returns(minHeight);
+			stack.MinimumHeight.Returns(minHeight);
 
-		//	var gridLayoutManager = new FlexLayoutManager(stack);
-		//	var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var gridLayoutManager = new FlexLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-		//	Assert.Equal(expectedHeight, measure.Height);
-		//}
+			Assert.Equal(expectedHeight, measure.Height);
+		}
 
-		//[Theory]
-		//[InlineData(50, 10, 50)]
-		//[InlineData(100, 100, 100)]
-		//[InlineData(10, 50, 50)]
-		//public void MeasureRespectsMinWidth(double minWidth, double viewWidth, double expectedWidth)
-		//{
-		//	var stack = BuildStack(viewCount: 1, viewWidth: viewWidth, viewHeight: 100);
+		[Theory(Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		[InlineData(50, 10, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(10, 50, 50)]
+		public void MeasureRespectsMinWidth(double minWidth, double viewWidth, double expectedWidth)
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: viewWidth, viewHeight: 100);
 
-		//	stack.MinimumWidth.Returns(minWidth);
+			stack.MinimumWidth.Returns(minWidth);
 
-		//	var gridLayoutManager = new FlexLayoutManager(stack);
-		//	var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var gridLayoutManager = new FlexLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-		//	Assert.Equal(expectedWidth, measure.Width);
-		//}
+			Assert.Equal(expectedWidth, measure.Width);
+		}
 
 		[Fact]
 		public void MaxWidthDominatesWidth()
@@ -343,19 +343,19 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			yield return new object[] { viewSize, new Thickness(7, 0, 14, 0), measureSpace, new Size(79, double.PositiveInfinity) };
 		}
 
-		//[Theory]
-		//[MemberData(nameof(ChildMeasureAccountsForPaddingTestCases))]
-		//public void ChildMeasureAccountsForPadding(Size viewSize, Thickness padding, Size measureConstraints, Size expectedMeasureConstraint)
-		//{
-		//	var view = CreateTestView(new Size(viewSize.Width, viewSize.Height));
-		//	var stack = CreateTestLayout(new List<IView>() { view });
-		//	stack.Padding.Returns(padding);
+		[Theory(Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		[MemberData(nameof(ChildMeasureAccountsForPaddingTestCases))]
+		public void ChildMeasureAccountsForPadding(Size viewSize, Thickness padding, Size measureConstraints, Size expectedMeasureConstraint)
+		{
+			var view = CreateTestView(new Size(viewSize.Width, viewSize.Height));
+			var stack = CreateTestLayout(new List<IView>() { view });
+			stack.Padding.Returns(padding);
 
-		//	var manager = new FlexLayoutManager(stack);
-		//	var measuredSize = manager.Measure(measureConstraints.Width, measureConstraints.Height);
+			var manager = new FlexLayoutManager(stack);
+			var measuredSize = manager.Measure(measureConstraints.Width, measureConstraints.Height);
 
-		//	view.Received().Measure(Arg.Is(expectedMeasureConstraint.Width), Arg.Is(expectedMeasureConstraint.Height));
-		//}
+			view.Received().Measure(Arg.Is(expectedMeasureConstraint.Width), Arg.Is(expectedMeasureConstraint.Height));
+		}
 
 		private static IFlexLayout CreateTestLayout()
 		{
