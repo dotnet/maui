@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls
 				{
 					button.SetBinding(AppBarButton.IconProperty, "IconImageSource", _imageSourceIconElementConverter);
 				}
-				else if (!item.IconImageSource.IsEmpty)
+				else if (!item.IconImageSource.IsNullOrEmpty())
 				{
 					var img = new WImage();
 					img.SetBinding(WImage.SourceProperty, "Value");
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls
 		{
 			arg2.UpdateMenu();
 		}
-    
+
 		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateIconColor(arg2);
