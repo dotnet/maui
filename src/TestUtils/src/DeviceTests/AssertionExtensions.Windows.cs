@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.DirectX;
@@ -19,7 +18,13 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task<string> CreateColorAtPointError(this CanvasBitmap bitmap, WColor expectedColor, int x, int y) =>
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
 
-		public static async Task<string> CreateColorError(this CanvasBitmap bitmap, string message)
+		public static async Task<string> CreateColorError(this CanvasBitmap bitmap, string message) =>
+			$"{message} This is what it looked like:<img>{await bitmap.ToBase64String()}</img>";
+
+		public static async Task<string> CreateEqualError(this CanvasBitmap bitmap, CanvasBitmap other, string message) =>
+			$"{message} This is what it looked like: <img>{await bitmap.ToBase64String()}</img> and <img>{await other.ToBase64String()}</img>";
+
+		public static async Task<string> ToBase64String(this CanvasBitmap bitmap)
 		{
 			using var ms = new InMemoryRandomAccessStream();
 			await bitmap.SaveAsync(ms, CanvasBitmapFileFormat.Png);
@@ -27,9 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 			using var ms2 = new MemoryStream();
 			await ms.AsStreamForRead().CopyToAsync(ms2);
 
-			var imageAsString = Convert.ToBase64String(ms2.ToArray());
-
-			return $"{message}. This is what it looked like:<img>{imageAsString}</img>";
+			return Convert.ToBase64String(ms2.ToArray());
 		}
 
 		public static WColor ColorAtPoint(this CanvasBitmap bitmap, int x, int y, bool includeAlpha = false)
@@ -59,24 +62,28 @@ namespace Microsoft.Maui.DeviceTests
 			if (view.Parent is Border wrapper)
 				view = wrapper;
 
-			// TODO
-
-			//var layout = new FrameLayout(view.Context)
-			//{
-			//	LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
-			//};
-			//view.LayoutParameters = new FrameLayout.LayoutParams(view.Width, view.Height)
-			//{
-			//	Gravity = GravityFlags.Center
-			//};
-
-			//var act = view.Context.GetActivity();
-			//var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content);
-
-			//layout.AddView(view);
-			//rootView.AddView(layout);
-
-			//await Task.Delay(100);
+			Grid grid;
+			var window = new Window
+			{
+				Content = new Grid
+				{
+					HorizontalAlignment = HorizontalAlignment.Center,
+					VerticalAlignment = VerticalAlignment.Center,
+					Children =
+					{
+						(grid = new Grid
+						{
+							Width = view.Width,
+							Height = view.Height,
+							Children =
+							{
+								view
+							}
+						})
+					}
+				}
+			};
+			window.Activate();
 
 			try
 			{
@@ -85,8 +92,8 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			finally
 			{
-				//rootView.RemoveView(layout);
-				//layout.RemoveView(view);
+				grid.Children.Clear();
+				window.Close();
 			}
 		}
 
@@ -194,6 +201,28 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtTopRight(expectedColor);
+		}
+
+		public static async Task AssertEqual(this CanvasBitmap bitmap, CanvasBitmap other)
+		{
+			Assert.NotNull(bitmap);
+			Assert.NotNull(other);
+
+			Assert.Equal(bitmap.SizeInPixels, other.SizeInPixels);
+
+			Assert.True(IsMatching(), await CreateEqualError(bitmap, other, $"Images did not match."));
+
+			bool IsMatching()
+			{
+				var first = bitmap.GetPixelColors();
+				var second = other.GetPixelColors();
+				for (int i = 0; i < first.Length; i++)
+				{
+					if (first[i] != second[i])
+						return false;
+				}
+				return true;
+			}
 		}
 
 		public static TextTrimming ToPlatform(this LineBreakMode mode) =>

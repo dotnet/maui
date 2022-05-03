@@ -132,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 #endif
 
-				view.Arrange(new Rect(0, 0, view.Width, view.Height));
+				view.Arrange(new Rect(Point.Zero, view.Measure(view.Width, view.Height)));
 				viewHandler.PlatformArrange(view.Frame);
 			}
 
