@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -9,6 +10,12 @@ namespace Microsoft.Maui.Controls
 	public class AbsoluteLayout : Layout, IAbsoluteLayout
 	{
 		readonly Dictionary<IView, AbsoluteLayoutInfo> _viewInfo = new();
+		readonly AbsoluteList _children;
+
+		public AbsoluteLayout()
+		{
+			this._children = new AbsoluteList(this);
+		}
 
 		protected override ILayoutManager CreateLayoutManager()
 		{
@@ -153,10 +160,123 @@ namespace Microsoft.Maui.Controls
 			base.OnUpdate(index, view, oldView);
 		}
 
+		public new IAbsoluteList<IView> Children
+		{
+			get { return _children; }
+		}
+
 		class AbsoluteLayoutInfo
 		{
 			public AbsoluteLayoutFlags LayoutFlags { get; set; }
 			public Rect LayoutBounds { get; set; }
+		}
+
+		public interface IAbsoluteList<T> : IList<IView> where T : IView
+		{
+			void Add(View view, Rect bounds, AbsoluteLayoutFlags flags = AbsoluteLayoutFlags.None);
+
+			void Add(View view, Point position);
+		}
+
+		class AbsoluteList : IAbsoluteList<IView>
+		{
+			private AbsoluteLayout _parent;
+
+			public AbsoluteList(AbsoluteLayout parent)
+			{
+				_parent = parent;
+			}
+
+			public IView this[int index]
+			{
+				get
+				{
+					return _parent[index];
+				}
+				set
+				{
+					_parent[index] = value;
+				}
+			}
+
+			public int Count
+			{
+				get
+				{
+					return _parent.Count;
+				}
+			}
+
+			public bool IsReadOnly
+			{
+				get
+				{
+					return _parent.IsReadOnly;
+				}
+			}
+
+			public void Add(IView item)
+			{
+				_parent.Add(item);
+			}
+
+			public void Add(View view, Rect bounds, AbsoluteLayoutFlags flags = AbsoluteLayoutFlags.None)
+			{
+				AbsoluteLayout.SetLayoutBounds(view, bounds);
+				_parent.SetLayoutFlags(view, flags);
+				_parent.Add(view);
+			}
+
+			public void Add(View view, Point position)
+			{
+				AbsoluteLayout.SetLayoutBounds(view, new Rect(position.X, position.Y, AutoSize, AutoSize));
+				_parent.Add(view);
+			}
+
+			public void Clear()
+			{
+				_parent.Clear();
+			}
+
+			public bool Contains(IView item)
+			{
+				return _parent.Contains(item);
+			}
+
+			public void CopyTo(IView[] array, int arrayIndex)
+			{
+				_parent.CopyTo(array, arrayIndex);
+			}
+
+			public IEnumerator<IView> GetEnumerator()
+			{
+				return _parent.GetEnumerator();
+			}
+
+			public int IndexOf(IView item)
+			{
+				return _parent.IndexOf(item);
+			}
+
+			public void Insert(int index, IView item)
+			{
+				_parent.Insert(index, item);
+			}
+
+			public bool Remove(IView item)
+			{
+				return _parent.Remove(item);
+			}
+
+			public void RemoveAt(int index)
+			{
+				_parent.RemoveAt(index);
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return _parent.GetEnumerator();
+			}
 		}
 	}
 }
