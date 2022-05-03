@@ -34,19 +34,18 @@ namespace Microsoft.Maui
 		internal void AddSpecific<TService>(TService instance)
 			where TService : class
 		{
-			_services.AddSpecific(typeof(TService), () => instance);
+			_services.AddSpecific(typeof(TService), static state => state, instance);
 		}
 
 		internal void AddWeakSpecific<TService>(TService instance)
 			where TService : class
 		{
-			var weak = new WeakReference(instance);
-			_services.AddSpecific(typeof(TService), () => weak.Target);
+			_services.AddSpecific(typeof(TService), static state => ((WeakReference)state).Target, new WeakReference(instance));
 		}
 
 		class WrappedServiceProvider : IServiceProvider
 		{
-			readonly ConcurrentDictionary<Type, Func<object?>> _scopeStatic = new();
+			readonly ConcurrentDictionary<Type, (object, Func<object, object?>)> _scopeStatic = new();
 
 			public WrappedServiceProvider(IServiceProvider serviceProvider)
 			{
@@ -57,15 +56,18 @@ namespace Microsoft.Maui
 
 			public object? GetService(Type serviceType)
 			{
-				if (_scopeStatic.TryGetValue(serviceType, out var getter))
-					return getter.Invoke();
+				if (_scopeStatic.TryGetValue(serviceType, out var scope))
+				{
+					var (state, getter) = scope;
+					return getter.Invoke(state);
+				}
 
 				return Inner.GetService(serviceType);
 			}
 
-			public void AddSpecific(Type type, Func<object?> getter)
+			public void AddSpecific(Type type, Func<object, object?> getter, object state)
 			{
-				_scopeStatic[type] = getter;
+				_scopeStatic[type] = (state, getter);
 			}
 		}
 	}
