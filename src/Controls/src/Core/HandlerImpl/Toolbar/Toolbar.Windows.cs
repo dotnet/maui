@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls
 			commandBar.PrimaryCommands.Clear();
 			commandBar.SecondaryCommands.Clear();
 
-			List<ToolbarItem> toolbarItems = new List<ToolbarItem>(ToolbarItems ?? new ToolbarItem[0]);
+			List<ToolbarItem> toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
 
 			foreach (ToolbarItem item in toolbarItems)
 			{
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls
 				{
 					button.SetBinding(AppBarButton.IconProperty, "IconImageSource", _imageSourceIconElementConverter);
 				}
-				else
+				else if (!item.IconImageSource.IsEmpty)
 				{
 					var img = new WImage();
 					img.SetBinding(WImage.SourceProperty, "Value");
@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls
 				button.SetAutomationPropertiesName(item);
 				button.SetAutomationPropertiesAccessibilityView(item);
 				button.SetAutomationPropertiesHelpText(item);
+				button.UpdateTextColor(BarTextColor);
 
 				button.SetAutomationPropertiesLabeledBy(item, null);
 
