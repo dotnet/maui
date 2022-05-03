@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
@@ -68,6 +69,32 @@ namespace Microsoft.Maui.Platform
 			else if (paint is not null)
 			{
 				platformView.UpdateBackgroundColor(paint.ToPlatform());
+			}
+		}
+
+		public static async Task UpdateBackgroundImageSourceAsync(this EvasObject platformView, IViewBackgroundImagePart viewBackgroundImagePart, IImageSourceServiceProvider? provider)
+		{
+			if (provider == null)
+				return;
+
+			if (platformView is ContentCanvas canvas)
+			{
+				IImageSource? backgroundImageSource = viewBackgroundImagePart.Source;
+				if (backgroundImageSource != null)
+				{
+					var bgImage = canvas.Children.OfType<MauiBackgroundImage>().FirstOrDefault();
+					if (bgImage == null)
+					{
+						bgImage = new MauiBackgroundImage(canvas);
+					}
+					var service = provider.GetRequiredImageSourceService(backgroundImageSource);
+					await service.GetImageAsync(backgroundImageSource, bgImage);
+				}
+				else
+				{
+					var bgImage = canvas.Children.OfType<MauiBackgroundImage>().FirstOrDefault();
+					bgImage?.Unrealize();
+				}
 			}
 		}
 

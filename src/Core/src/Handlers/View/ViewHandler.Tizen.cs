@@ -66,7 +66,19 @@ namespace Microsoft.Maui.Handlers
 			handler.ToPlatform()?.UpdateTransformation(view);
 		}
 
-		public static void MapBackgroundImageSource(IViewHandler handler, IView view) { }
+		public static void MapBackgroundImageSource(IViewHandler handler, IView view)
+		{
+			if (view is not IViewBackgroundImagePart viewBackgroundImagePart)
+				return;
+
+			if (handler.PlatformView is not PlatformView platformView)
+				return;
+
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			platformView.UpdateBackgroundImageSourceAsync(viewBackgroundImagePart, provider)
+				.FireAndForget(handler);
+		}
 
 		protected virtual void OnPlatformViewDeleted()
 		{
