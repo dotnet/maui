@@ -11,11 +11,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
 
-<<<<<<< HEAD
-			var view = new BorderView(PlatformParent, VirtualView)
-=======
 			var view = new ContentViewGroup(VirtualView)
->>>>>>> f87d0f187 (Add NUI handler)
 			{
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange

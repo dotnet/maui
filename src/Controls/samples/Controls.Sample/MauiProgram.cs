@@ -107,7 +107,7 @@ namespace Maui.Controls.Sample
 
 			services.AddLogging(logging =>
 			{
-#if WINDOWS || TIZEN
+#if WINDOWS
 				logging.AddDebug();
 #else
 				logging.AddConsole();
