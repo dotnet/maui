@@ -208,7 +208,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOpacity(IViewHandler handler, IView view)
 		{
-			((PlatformView?)handler.PlatformView)?.UpdateOpacity(view);
+			if(handler.HasContainer)
+				((PlatformView?)handler.ContainerView)?.UpdateOpacity(view);
+			else
+				((PlatformView?)handler.PlatformView)?.UpdateOpacity(view);
 		}
 
 		public static void MapAutomationId(IViewHandler handler, IView view)
