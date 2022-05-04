@@ -1,5 +1,3 @@
-using System.Data.Common;
-using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -193,7 +191,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVisibility(IViewHandler handler, IView view)
 		{
-			((PlatformView?)handler.PlatformView)?.UpdateVisibility(view);
+			if (handler.HasContainer)
+				((PlatformView?)handler.ContainerView)?.UpdateVisibility(view);
+			else
+				((PlatformView?)handler.PlatformView)?.UpdateVisibility(view);
 		}
 
 		public static void MapBackground(IViewHandler handler, IView view)
@@ -208,7 +209,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOpacity(IViewHandler handler, IView view)
 		{
-			if(handler.HasContainer)
+			if (handler.HasContainer)
 				((PlatformView?)handler.ContainerView)?.UpdateOpacity(view);
 			else
 				((PlatformView?)handler.PlatformView)?.UpdateOpacity(view);
