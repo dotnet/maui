@@ -220,6 +220,14 @@ namespace Microsoft.Maui.Resizetizer
 					}
 				}
 
+				// BackgroundColor=""
+				{
+					var xname = "BackgroundColor";
+					var attr = visual.Attribute(xname);
+					if (attr == null || string.IsNullOrEmpty(attr.Value))
+						visual.SetAttributeValue(xname, "transparent");
+				}
+
 				if (appIconInfo != null)
 				{
 					// Square150x150Logo=""
