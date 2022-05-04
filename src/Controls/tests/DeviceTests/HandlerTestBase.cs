@@ -243,5 +243,26 @@ namespace Microsoft.Maui.DeviceTests
 			OnLoaded(frameworkElement, () => taskCompletionSource.SetResult(true));
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
+
+		protected Task OnLayoutPassCompleted(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			if (frameworkElement.Frame.Height * frameworkElement.Frame.Width == 0)
+				return Task.CompletedTask;
+
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			frameworkElement.BatchCommitted += OnBatchCommitted;
+
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+			{
+				if (frameworkElement.Frame.Height * frameworkElement.Frame.Width == 0)
+					return;
+
+				frameworkElement.BatchCommitted -= OnBatchCommitted;
+				taskCompletionSource.SetResult(true);
+			}
+		}
 	}
 }
