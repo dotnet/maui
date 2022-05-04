@@ -455,5 +455,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		partial void HandlePlatformUnloadedLoaded();
+
+		internal IView? ParentView => ((this as IView)?.Parent as IView);
 	}
 }
