@@ -246,7 +246,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task OnLayoutPassCompleted(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
-			if (frameworkElement.Frame.Height * frameworkElement.Frame.Width == 0)
+			if (frameworkElement.Frame.Height * frameworkElement.Frame.Width != 0)
 				return Task.CompletedTask;
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
