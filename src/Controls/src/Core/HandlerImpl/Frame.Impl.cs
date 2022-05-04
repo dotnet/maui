@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-#if !ANDROID
+#if !ANDROID && !WINDOWS
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			Thickness padding = Padding;
