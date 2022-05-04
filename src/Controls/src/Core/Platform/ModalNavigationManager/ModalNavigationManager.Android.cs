@@ -236,10 +236,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// amount as the view it's covering. This will make it so the
 				// ModalContainer takes into account the statusbar or lack thereof
 				var rootView = GetWindowRootView();
-				var visibleContentPosition = rootView.GetLocationOnScreenPx();
-				int y = 0;
-				if (visibleContentPosition.HasValue)
-					y = (int)visibleContentPosition.Value.Y;
+				int y = (int)rootView.GetLocationOnScreenPx().Y;
 
 				if (this.LayoutParameters is ViewGroup.MarginLayoutParams mlp &&
 					mlp.TopMargin != y)

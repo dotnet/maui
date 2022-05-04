@@ -557,7 +557,7 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		internal static Point? GetLocationOnScreen(this View view)
+		internal static Point GetLocationOnScreen(this View view)
 		{
 			int[] location = new int[2];
 			view.GetLocationOnScreen(location);
@@ -572,7 +572,7 @@ namespace Microsoft.Maui.Platform
 			return (element.ToPlatform())?.GetLocationOnScreen();
 		}
 
-		internal static Point? GetLocationOnScreenPx(this View view)
+		internal static Point GetLocationOnScreenPx(this View view)
 		{
 			int[] location = new int[2];
 			view.GetLocationOnScreen(location);
