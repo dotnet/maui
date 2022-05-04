@@ -556,5 +556,35 @@ namespace Microsoft.Maui.Platform
 
 			return null;
 		}
+
+		internal static Point GetLocationOnScreen(this View view)
+		{
+			int[] location = new int[2];
+			view.GetLocationOnScreen(location);
+			return new Point(view.Context.FromPixels(location[0]), view.Context.FromPixels(location[1]));
+		}
+
+		internal static Point? GetLocationOnScreen(this IElement element)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			return (element.ToPlatform())?.GetLocationOnScreen();
+		}
+
+		internal static Point GetLocationOnScreenPx(this View view)
+		{
+			int[] location = new int[2];
+			view.GetLocationOnScreen(location);
+			return new Point(location[0], location[1]);
+		}
+
+		internal static Point? GetLocationOnScreenPx(this IElement element)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			return (element.ToPlatform())?.GetLocationOnScreenPx();
+		}
 	}
 }

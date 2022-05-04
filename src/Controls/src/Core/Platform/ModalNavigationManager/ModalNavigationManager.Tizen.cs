@@ -7,12 +7,12 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
-		ModalStack _modalStack => MauiContext.GetModalStack();
+		ModalStack _modalStack => WindowMauiContext.GetModalStack();
 		IPageController CurrentPageController => _navModel.CurrentPage;
 
 		partial void OnPageAttachedHandler()
 		{
-			MauiContext.GetPlatformWindow().SetBackButtonPressedHandler(OnBackButtonPressed);
+			WindowMauiContext.GetPlatformWindow().SetBackButtonPressedHandler(OnBackButtonPressed);
 		}
 
 		public  Task<Page> PopModalAsync(bool animated)
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Platform
 			CurrentPageController?.SendDisappearing();
 			_navModel.PushModal(modal);
 
-			var nativeView = modal.ToPlatform(MauiContext);
+			var nativeView = modal.ToPlatform(WindowMauiContext);
 
 			_modalStack.Push(nativeView);
 
