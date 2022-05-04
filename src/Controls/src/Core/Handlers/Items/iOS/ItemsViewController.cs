@@ -135,8 +135,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ItemsSource = CreateItemsViewSource();
 
 			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+			{
 				AutomaticallyAdjustsScrollViewInsets = false;
-      }
+      		}
 			else
 			{
 				// We set this property to keep iOS from trying to be helpful about insetting all the 
