@@ -132,7 +132,17 @@ namespace Microsoft.Maui.DeviceTests
 				}
 #endif
 
-				view.Arrange(new Rect(0, 0, view.Width, view.Height));
+#if WINDOWS
+				// windows cannot measure without being loaded
+				var w = view.Width;
+				var h = view.Height;
+#else
+				var size = view.Measure(view.Width, view.Height);
+				var w = size.Width;
+				var h = size.Height;
+#endif
+
+				view.Arrange(new Rect(0, 0, w, h));
 				viewHandler.PlatformArrange(view.Frame);
 			}
 

@@ -224,5 +224,46 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(expectedLines, platformValue);
 		}
+
+		[Theory]
+		[InlineData(TextAlignment.Center)]
+		[InlineData(TextAlignment.Start)]
+		[InlineData(TextAlignment.End)]
+		public async Task FormattedStringSpanTextHasCorrectLayoutWhenAligned(TextAlignment alignment)
+		{
+			var formattedLabel = new Label
+			{
+				WidthRequest = 200,
+				HeightRequest = 50,
+				HorizontalTextAlignment = alignment,
+				FormattedText = new FormattedString
+				{
+					Spans =
+					{
+						new Span { Text = "short" },
+						new Span { Text = " long second string"}
+					}
+				},
+			};
+
+			var normalLabel = new Label
+			{
+				WidthRequest = 200,
+				HeightRequest = 50,
+				HorizontalTextAlignment = alignment,
+				Text = "short long second string"
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var formattedHandler = CreateHandler<LabelHandler>(formattedLabel);
+				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap();
+
+				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
+				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
+
+				await normalBitmap.AssertEqual(formattedBitmap);
+			});
+		}
 	}
 }
