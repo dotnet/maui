@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Platform
 			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
-		public static async Task UpdateBackgroundImageSourceAsync(this AView platformView, IViewBackgroundImagePart viewBackgroundImagePart, IImageSourceServiceProvider? provider)
+		public static async Task UpdateBackgroundImageSourceAsync(this AView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
 			if (provider == null)
 				return;
@@ -306,12 +306,10 @@ namespace Microsoft.Maui.Platform
 			if (context == null)
 				return;
 
-			IImageSource? backgroundImageSource = viewBackgroundImagePart.Source;
-
-			if (backgroundImageSource != null)
+			if (imageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(backgroundImageSource);
-				var result = await service.GetDrawableAsync(backgroundImageSource, context);
+				var service = provider.GetRequiredImageSourceService(imageSource);
+				var result = await service.GetDrawableAsync(imageSource, context);
 				Drawable? backgroundImageDrawable = result?.Value;
 
 				if (platformView.IsAlive())

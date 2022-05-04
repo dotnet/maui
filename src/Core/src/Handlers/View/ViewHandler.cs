@@ -56,7 +56,6 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
 				[nameof(IView.InputTransparent)] = MapInputTransparent,
-				[nameof(IViewBackgroundImagePart.Source)] = MapBackgroundImageSource
 			};
 
 		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
@@ -198,7 +197,20 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(IViewHandler handler, IView view)
 		{
-			((PlatformView?)handler.PlatformView)?.UpdateBackground(view);
+			if (handler.PlatformView is not PlatformView platformView)
+				return;
+
+			if (view.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget(handler);
+			}
+			else
+			{
+				platformView.UpdateBackground(view);
+			}
 		}
 
 		public static void MapFlowDirection(IViewHandler handler, IView view)
