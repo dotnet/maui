@@ -20,7 +20,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(3, 100, -13, 274)]
 		public void SpacingMeasurement(int viewCount, double viewHeight, int spacing, double expectedHeight)
 		{
-			var stack = BuildStack(viewCount, 100, viewHeight);
+			var stack = BuildFlex(viewCount, 100, viewHeight);
 			System.Console.WriteLine(spacing);
 			//stack.Spacing.Returns(spacing);
 
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(0), InlineData(26), InlineData(-54)]
 		public void SpacingArrangementOneItem(int spacing)
 		{
-			var stack = BuildStack(1, 100, 100);
+			var stack = BuildFlex(1, 100, 100);
 			System.Console.WriteLine(spacing);
 			//stack.Spacing.Returns(spacing);
 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(26), InlineData(-54)]
 		public void SpacingArrangementTwoItems(int spacing)
 		{
-			var stack = BuildStack(2, 100, 100);
+			var stack = BuildFlex(2, 100, 100);
 			//stack.Spacing.Returns(spacing);
 
 			var manager = new FlexLayoutManager(stack);
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var expectedHeight = padding.VerticalThickness + viewHeight;
 			var expectedWidth = padding.HorizontalThickness + viewWidth;
 
-			var stack = BuildPaddedStack(padding, viewWidth, viewHeight);
+			var stack = BuildPaddedFlex(padding, viewWidth, viewHeight);
 
 			var manager = new FlexLayoutManager(stack);
 			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var viewHeight = 100d;
 			var padding = new Thickness(left, top, right, bottom);
 
-			var stack = BuildPaddedStack(padding, viewWidth, viewHeight);
+			var stack = BuildPaddedFlex(padding, viewWidth, viewHeight);
 
 			var manager = new FlexLayoutManager(stack);
 			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Fact(Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
 		public void ArrangeRespectsBounds()
 		{
-			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+			var stack = BuildFlex(1, 100, 100);
 
 			var manager = new FlexLayoutManager(stack);
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
@@ -183,14 +183,14 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
 		}
 
-		[Theory(Skip = "StackLayout Test needs work to convert to FlexLayout Test")]
+		[Theory]
 		[InlineData(50, 100, 50)]
 		[InlineData(100, 100, 100)]
 		[InlineData(100, 50, 50)]
 		[InlineData(0, 50, 0)]
 		public void MeasureRespectsMaxHeight(double maxHeight, double viewHeight, double expectedHeight)
 		{
-			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: viewHeight);
+			var stack = BuildFlex(1, 100, viewHeight);
 			stack.MaximumHeight.Returns(maxHeight);
 
 			var layoutManager = new FlexLayoutManager(stack);
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(0, 50, 0)]
 		public void MeasureRespectsMaxWidth(double maxWidth, double viewWidth, double expectedWidth)
 		{
-			var stack = BuildStack(viewCount: 1, viewWidth: viewWidth, viewHeight: 100);
+			var stack = BuildFlex(1, viewWidth, 100);
 
 			stack.MaximumWidth.Returns(maxWidth);
 
@@ -222,7 +222,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(10, 50, 50)]
 		public void MeasureRespectsMinHeight(double minHeight, double viewHeight, double expectedHeight)
 		{
-			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: viewHeight);
+			var stack = BuildFlex(1, 100, viewHeight);
 
 			stack.MinimumHeight.Returns(minHeight);
 
@@ -238,7 +238,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(10, 50, 50)]
 		public void MeasureRespectsMinWidth(double minWidth, double viewWidth, double expectedWidth)
 		{
-			var stack = BuildStack(viewCount: 1, viewWidth: viewWidth, viewHeight: 100);
+			var stack = BuildFlex(1, viewWidth, 100);
 
 			stack.MinimumWidth.Returns(minWidth);
 
@@ -251,7 +251,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Fact]
 		public void MaxWidthDominatesWidth()
 		{
-			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+			var stack = BuildFlex(1, 100, 100);
 
 			stack.Width.Returns(75);
 			stack.MaximumWidth.Returns(50);
@@ -266,7 +266,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Fact]
 		public void MinWidthDominatesMaxWidth()
 		{
-			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+			var stack = BuildFlex(1, 100, 100);
 
 			stack.MinimumWidth.Returns(75);
 			stack.MaximumWidth.Returns(50);
@@ -281,7 +281,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Fact]
 		public void MaxHeightDominatesHeight()
 		{
-			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+			var stack = BuildFlex(1, 100, 100);
 
 			stack.Height.Returns(75);
 			stack.MaximumHeight.Returns(50);
@@ -296,7 +296,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Fact]
 		public void MinHeightDominatesMaxHeight()
 		{
-			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+			var stack = BuildFlex(1, 100, 100);
 
 			stack.MinimumHeight.Returns(75);
 			stack.MaximumHeight.Returns(50);
@@ -311,7 +311,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Fact]
 		public void ArrangeAccountsForFill()
 		{
-			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+			var stack = BuildFlex(1, 100, 100);
 
 			stack.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
 			stack.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
@@ -366,6 +366,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			flex.MinimumWidth.Returns(Dimension.Minimum);
 			flex.MaximumHeight.Returns(Dimension.Maximum);
 			flex.MaximumWidth.Returns(Dimension.Maximum);
+			flex.GetFlexFrame(Arg.Any<IView>()).Returns(c => c.ArgAt<IView>(0).Frame);
 			return flex;
 		}
 
@@ -376,7 +377,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			return stack;
 		}
 
-		private static IFlexLayout BuildStack(int viewCount, double viewWidth, double viewHeight)
+		private static IFlexLayout BuildFlex(int viewCount, double viewWidth, double viewHeight)
 		{
 			var stack = CreateTestLayout();
 
@@ -393,9 +394,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			return stack;
 		}
 
-		private static IFlexLayout BuildPaddedStack(Thickness padding, double viewWidth, double viewHeight)
+		private static IFlexLayout BuildPaddedFlex(Thickness padding, double viewWidth, double viewHeight)
 		{
-			var stack = BuildStack(1, viewWidth, viewHeight);
+			var stack = BuildFlex(1, viewWidth, viewHeight);
 			stack.Padding.Returns(padding);
 			return stack;
 		}
