@@ -225,7 +225,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedLines, platformValue);
 		}
 
-		[Theory]
+		[Theory(
+#if IOS
+			Skip = "Not able to debug iOS right now"
+#endif
+		)]
 		[InlineData(TextAlignment.Center)]
 		[InlineData(TextAlignment.Start)]
 		[InlineData(TextAlignment.End)]
