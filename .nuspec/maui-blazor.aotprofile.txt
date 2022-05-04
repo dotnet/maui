@@ -1,4 +1,4 @@
-Methods:	
+Methods:
 	Android.App.Activity Microsoft.Maui.Handlers.ElementHandler`2<Microsoft.Maui.IWindow, Android.App.Activity>:get_PlatformView ()
 	Android.App.Activity Microsoft.Maui.Handlers.WindowHandler:CreatePlatformElement ()
 	Android.App.Activity Microsoft.Maui.Platform.ContextExtensions:GetActivity (Android.Content.Context)
