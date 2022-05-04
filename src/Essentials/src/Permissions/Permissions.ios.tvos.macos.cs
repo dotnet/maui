@@ -10,8 +10,8 @@ namespace Microsoft.Maui.ApplicationModel
 	public static partial class Permissions
 	{
 		[SupportedOSPlatform("tvos14.0")]
-		//[SupportedOSPlatform("macos11.0")] this is causing warning within #if def below
-		[SupportedOSPlatform("ios14.0")] // The enum PHAccessLevel has these attributes
+		[SupportedOSPlatform("macos11.0")]
+		[SupportedOSPlatform("ios14.0")]
 		public partial class Photos : BasePlatformPermission
 		{
 			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
@@ -36,10 +36,12 @@ namespace Microsoft.Maui.ApplicationModel
 #if __IOS__
 				else if (status == PermissionStatus.Limited)
 				{
+#pragma warning disable CA1416 // TODO: the [SupportedOSPlatform("tvos14.0")] attribute above making this call site reachable in tvOS, the #ifdef is not handled properly in analyzer
 					PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
 						PHPhotoLibrary.SharedPhotoLibrary,
 						WindowStateManager.Default.GetCurrentUIViewController());
 					return status;
+#pragma warning restore CA1416 // see Case 3 of https://github.com/dotnet/roslyn-analyzers/issues/5938 for more info
 				}
 #endif
 

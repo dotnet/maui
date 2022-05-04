@@ -70,6 +70,7 @@ namespace Microsoft.Maui.Authentication
 
 			if (OperatingSystem.IsIOSVersionAtLeast(12) || OperatingSystem.IsTvOSVersionAtLeast(12))
 			{
+#pragma warning disable CA1416 // TODO: ASWebAuthenticationSession type has [UnsupportedOSPlatform("tvos")]
 				was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
 
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
@@ -82,6 +83,7 @@ namespace Microsoft.Maui.Authentication
 				{
 					ClearCookies();
 				}
+#pragma warning restore CA1416
 
 				using (was)
 				{
@@ -97,12 +99,14 @@ namespace Microsoft.Maui.Authentication
 
 			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 			{
+#pragma warning disable CA1416 // TODO: SFAuthenticationSession has [SupportedOSPlatform("ios11.0")] [UnsupportedOSPlatform("ios12.0")]
 				sf = new SFAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
 				using (sf)
 				{
 					sf.Start();
 					return await tcsResponse.Task;
 				}
+#pragma warning restore CA1416
 			}
 
 			// This is only on iOS9+ but we only support 10+ in Essentials anyway
@@ -137,15 +141,15 @@ namespace Microsoft.Maui.Authentication
 #if __IOS__
 			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 			{
+#pragma warning disable CA1416 // WKWebsiteDataStore.HttpCookieStore has [SupportedOSPlatform("ios11.0")]
 				WKWebsiteDataStore.DefaultDataStore.HttpCookieStore.GetAllCookies((cookies) =>
 				{
 					foreach (var cookie in cookies)
 					{
-#pragma warning disable CA1416 // Known false positive with lambda, here we can also assert the version
 						WKWebsiteDataStore.DefaultDataStore.HttpCookieStore.DeleteCookie(cookie, null);
-#pragma warning restore CA1416
 					}
 				});
+#pragma warning restore CA1416 // might be wrong annotation, added to https://github.com/xamarin/xamarin-macios/issues/14619
 			}
 #endif
 		}
