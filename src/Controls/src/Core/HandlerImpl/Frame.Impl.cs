@@ -32,9 +32,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+#if !ANDROID
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			Thickness contentMargin = (Content as IView)?.Margin ?? Thickness.Zero;
 			Thickness padding = Padding;
 			Thickness margin = Margin;
 
@@ -65,5 +65,7 @@ namespace Microsoft.Maui.Controls
 
 			return Frame.Size;
 		}
+#endif
+
 	}
 }

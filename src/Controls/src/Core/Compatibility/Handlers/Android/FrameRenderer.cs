@@ -120,20 +120,26 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			if (Element != null)
+			{
+				SetContentPadding(
+					(int)Context.ToPixels(Element.Padding.Left),
+					(int)Context.ToPixels(Element.Padding.Top),
+					(int)Context.ToPixels(Element.Padding.Right),
+					(int)Context.ToPixels(Element.Padding.Bottom));
+			}
+
+			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+		}
+
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			if (Element == null)
 				return;
 
-
-			if (ChildCount > 0)
-			{
-				var platformView = GetChildAt(0);
-				if (platformView != null)
-				{
-					platformView.Layout(0, 0, r - l, b - t);
-				}
-			}
+			base.OnLayout(changed, l, t, r, b);
 
 			if (Element.IsClippedToBounds)
 			{
