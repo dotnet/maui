@@ -47,8 +47,8 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			await src.Task;
 		}
 
-		async Task PlatformRequestAsync(ShareFileRequest request) =>
-			await PlatformRequestAsync((ShareMultipleFilesRequest)request);
+		Task PlatformRequestAsync(ShareFileRequest request) =>
+			PlatformRequestAsync((ShareMultipleFilesRequest)request);
 
 		async Task PlatformRequestAsync(ShareMultipleFilesRequest request)
 		{
