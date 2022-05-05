@@ -135,11 +135,9 @@ namespace Microsoft.Maui.Platform
 		}
 
 		private void OnNativeTextChanging(TextBox sender, TextBoxTextChangingEventArgs args)
-		{
-			if (!IsPassword)
-				return;
-			
-			// As we are obfuscating the text by ourselves, we are setting the Text property directly on code many times.
+		{	
+			// As we are obfuscating the text by ourselves or by transforming the text,
+			// we are setting the Text property directly on code many times.
 			// This causes that we invoke the SelectionChanged event many times with SelectionStart = 0,
 			// setting the cursor to the beginning of the TextBox.
 			// To avoid this behavior let's save the current cursor position of the first time the Text is changing and
