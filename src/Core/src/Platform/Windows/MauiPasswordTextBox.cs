@@ -53,9 +53,11 @@ namespace Microsoft.Maui.Platform
 		bool _cachedSpellCheckSetting;
 		CancellationTokenSource? _cts;
 		bool _internalChangeFlag;
+		int _cachedCursorPosition;
 
 		public MauiPasswordTextBox()
 		{
+			TextChanging += OnNativeTextChanging;
 			TextChanged += OnNativeTextChanged;
 		}
 
@@ -132,6 +134,24 @@ namespace Microsoft.Maui.Platform
 			base.OnKeyDown(e);
 		}
 
+		private void OnNativeTextChanging(TextBox sender, TextBoxTextChangingEventArgs args)
+		{
+			if (!IsPassword)
+				return;
+
+			// As we are obfuscating the text by ourselves, we are setting the Text property directly on code many times.
+			// This causes that we invoke the SelectionChanged event many times with SelectionStart = 0,
+			// setting the cursor to the beginning of the TextBox.
+			// To avoid this behavior let's save the current cursor position of the first time the Text is changing and
+			// keep the same cursor position after each Text update.
+			var updatedPassword = DetermineTextFromPassword(Password, SelectionStart, Text);
+
+			if (Password != updatedPassword)
+				_cachedCursorPosition = SelectionStart;
+			else
+				SelectionStart = _cachedCursorPosition;
+		}
+
 		void OnNativeTextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
 		{
 			if (IsPassword)
@@ -161,11 +181,7 @@ namespace Microsoft.Maui.Platform
 			var updatedText = IsPassword ? Obfuscate(Password) : Password;
 
 			if (Text != updatedText)
-			{
-				var savedSelectionStart = SelectionStart;
 				Text = updatedText;
-				SelectionStart = savedSelectionStart;
-			}
 		}
 
 		void UpdateInputScope()
@@ -198,27 +214,15 @@ namespace Microsoft.Maui.Platform
 
 		void ImmediateObfuscation()
 		{
-			var updatedPassword = DetermineTextFromPassword(Password, SelectionStart, Text);
-			var updatedVisibleText = Obfuscate(updatedPassword);
-
-			if (Password != updatedPassword)
-				Password = updatedPassword;
-
-			if (Text != updatedVisibleText)
-			{
-				var savedSelectionStart = SelectionStart;
-				Text = updatedVisibleText;
-				SelectionStart = savedSelectionStart;
-			}
+			UpdatePasswordIfNeeded();
+			UpdateVisibleText();
 		}
 
 		void DelayObfuscation()
 		{
 			var lengthDifference = Text.Length - Password.Length;
-			var updatedPassword = DetermineTextFromPassword(Password, SelectionStart, Text);
 
-			if (Password != updatedPassword)
-				Password = updatedPassword;
+			UpdatePasswordIfNeeded();
 
 			// Cancel any pending delayed obfuscation
 			_cts?.Cancel();
@@ -244,11 +248,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (Text != updatedVisibleText)
-			{
-				var savedSelectionStart = SelectionStart;
 				Text = updatedVisibleText;
-				SelectionStart = savedSelectionStart;
-			}
 
 			void StartTimeout(CancellationToken token)
 			{
@@ -260,12 +260,18 @@ namespace Microsoft.Maui.Platform
 
 					DispatcherQueue.TryEnqueue(UI.Dispatching.DispatcherQueuePriority.Normal, () =>
 					{
-						var savedSelectionStart = SelectionStart;
-						Text = Obfuscate(Password);
-						SelectionStart = savedSelectionStart;
+						UpdateVisibleText();
 					});
 				}, token);
 			}
+		}
+
+		void UpdatePasswordIfNeeded()
+		{
+			var updatedPassword = DetermineTextFromPassword(Password, SelectionStart, Text);
+
+			if (Password != updatedPassword)
+				Password = updatedPassword;
 		}
 
 		static string Obfuscate(string text, bool leaveLastVisible = false)
