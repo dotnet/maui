@@ -18,14 +18,14 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(AppThemeBindingPage), "AppThemeBindings",
 				"Devices typically include light and dark themes, which each refer to a broad set of appearance preferences that can be set at the operating system level. Applications should respect these system themes, and respond immediately when the system theme changes."),
 
-			new SectionModel(typeof(BordersPage), "Borders",
-				"Draws a border around a View, Layout, or Control."),
-
 			new SectionModel(typeof(BrushesPage), "Brushes",
 				"A brush enables you to paint an area, such as the background of a control, using different approaches."),
 
 			new SectionModel(typeof(ClipPage), "Clip",
 				"Defines the outline of the contents of an element."),
+
+			new SectionModel(typeof(ContentPageGallery), "ContentPage",
+				"Demonstrates using a Content Page."),
 
 			new SectionModel(typeof(DevicePage), "Device",
 				"A number of properties and methods to help developers customize layout and functionality on a per-platform basis"),

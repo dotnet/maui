@@ -313,5 +313,16 @@ namespace Microsoft.Maui.Platform
 					.ToPlatform()
 					.GetLocationRelativeTo(relativeTo);
 		}
+
+		internal static WPoint? GetLocationRelativeTo(this IElement element, IElement relativeTo)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			return
+				element
+					.ToPlatform()
+					.GetLocationRelativeTo(relativeTo.ToPlatform());
+		}
 	}
 }

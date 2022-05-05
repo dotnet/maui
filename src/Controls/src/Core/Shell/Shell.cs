@@ -14,6 +14,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -387,7 +388,9 @@ namespace Microsoft.Maui.Controls
 		void IShellController.AddAppearanceObserver(IAppearanceObserver observer, Element pivot)
 		{
 			_appearanceObservers.Add((observer, pivot));
-			observer.OnAppearanceChanged(GetAppearanceForPivot(pivot));
+			var appearance = GetAppearanceForPivot(pivot);
+			UpdateToolbarAppearanceFeatures(pivot, appearance);
+			observer.OnAppearanceChanged(appearance);
 		}
 
 		void IShellController.AddFlyoutBehaviorObserver(IFlyoutBehaviorObserver observer)
@@ -400,6 +403,42 @@ namespace Microsoft.Maui.Controls
 				observer.OnFlyoutBehaviorChanged(GetEffectiveFlyoutBehavior());
 		}
 
+		void UpdateToolbarAppearanceFeatures(Element pivot, ShellAppearance appearance)
+		{
+			// Android sets these inside its renderer
+			// once we convert Android to be all handlers we can adjust
+			if (pivot is ShellContent || pivot is ShellSection || pivot is ContentPage)
+			{
+				appearance = appearance ?? GetAppearanceForPivot(pivot);
+				Toolbar.BarTextColor = appearance?.TitleColor ?? DefaultTitleColor;
+				Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				Toolbar.IconColor = appearance?.ForegroundColor ?? DefaultForegroundColor;
+			}
+		}
+
+#if ANDROID
+		static Color DefaultBackgroundColor => ResolveThemeColor(Color.FromArgb("#2c3e50"), Color.FromArgb("#1B3147"));
+		static readonly Color DefaultForegroundColor = Colors.White;
+		static readonly Color DefaultTitleColor = Colors.White;
+
+		static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
+
+		static Color ResolveThemeColor(Color light, Color dark)
+		{
+			if (IsDarkTheme)
+			{
+				return dark;
+			}
+
+			return light;
+		}
+#else
+		static Color DefaultBackgroundColor => null;
+		static readonly Color DefaultForegroundColor = null;
+		static readonly Color DefaultTitleColor = null;
+#endif
+
+
 		void IShellController.AppearanceChanged(Element source, bool appearanceSet)
 		{
 			if (!appearanceSet)
@@ -408,6 +447,8 @@ namespace Microsoft.Maui.Controls
 				// So its also quite useful for checking the FlyoutBehavior conditions
 				NotifyFlyoutBehaviorObservers();
 			}
+
+			UpdateToolbarAppearanceFeatures(source, null);
 
 			// here we wish to notify every element whose "pivot line" contains the source
 			// To do that we first need to find the leaf node in the line, and then walk up
@@ -439,7 +480,9 @@ namespace Microsoft.Maui.Controls
 				{
 					if (leaf == target)
 					{
-						observer.OnAppearanceChanged(GetAppearanceForPivot(pivot));
+						var appearance = GetAppearanceForPivot(pivot);
+						UpdateToolbarAppearanceFeatures(pivot, appearance);
+						observer.OnAppearanceChanged(appearance);
 						break;
 					}
 
@@ -1188,6 +1231,9 @@ namespace Microsoft.Maui.Controls
 
 			shell.ShellController.AppearanceChanged(shell, false);
 			shell.ShellController.UpdateCurrentState(ShellNavigationSource.ShellItemChanged);
+
+			if (shell.CurrentItem?.CurrentItem != null)
+				shell.ShellController.AppearanceChanged(shell.CurrentItem.CurrentItem, false);
 		}
 
 		static void OnCurrentItemChanging(BindableObject bindable, object oldValue, object newValue)

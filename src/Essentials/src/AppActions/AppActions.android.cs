@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.ApplicationModel
 		public const string IntentAction = "ACTION_XE_APP_ACTION";
 		const string extraAppActionHandled = "EXTRA_XE_APP_ACTION_HANDLED";
 
+		[SupportedOSPlatformGuard("android25.0")]
 		public bool IsSupported => OperatingSystem.IsAndroidVersionAtLeast(25);
 
 		public Task<IEnumerable<AppAction>> GetAsync()
@@ -26,7 +28,9 @@ namespace Microsoft.Maui.ApplicationModel
 			if (Application.Context.GetSystemService(Context.ShortcutService) is not ShortcutManager manager)
 				throw new FeatureNotSupportedException();
 
+#pragma warning disable CA1416 // Known false positive with lambda
 			return Task.FromResult(manager.DynamicShortcuts.Select(s => s.ToAppAction()));
+#pragma warning restore CA1416
 #else
 			return Task.FromResult<IEnumerable<AppAction>>(null);
 #endif
@@ -41,7 +45,9 @@ namespace Microsoft.Maui.ApplicationModel
 			if (Application.Context.GetSystemService(Context.ShortcutService) is not ShortcutManager manager)
 				throw new FeatureNotSupportedException();
 
+#pragma warning disable CA1416 // Known false positive with lambda
 			using var list = new JavaList<ShortcutInfo>(actions.Select(a => a.ToShortcutInfo()));
+#pragma warning disable CA1416
 			manager.SetDynamicShortcuts(list);
 #endif
 			return Task.CompletedTask;
@@ -69,6 +75,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 	static partial class AppActionsExtensions
 	{
+		[SupportedOSPlatform("android25.0")]
 		internal static AppAction ToAppAction(this ShortcutInfo shortcutInfo) =>
 			new AppAction(shortcutInfo.Id, shortcutInfo.ShortLabel, shortcutInfo.LongLabel);
 
@@ -84,6 +91,7 @@ namespace Microsoft.Maui.ApplicationModel
 				intent.GetStringExtra(extraAppActionSubtitle),
 				intent.GetStringExtra(extraAppActionIcon));
 
+		[SupportedOSPlatform("android25.0")]
 		internal static ShortcutInfo ToShortcutInfo(this AppAction action)
 		{
 			var context = Application.Context;

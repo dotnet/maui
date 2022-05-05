@@ -505,7 +505,7 @@ namespace Microsoft.Maui.Layouts
 						if (cellCheck(cell)) // Check whether this cell should count toward the type of star value were measuring
 						{
 							// Update the star width if the view in this cell is bigger
-							starSize = Math.Max(starSize, dimension(_grid[cell.ViewIndex].DesiredSize));
+							starSize = Math.Max(starSize, dimension(_childrenToLayOut[cell.ViewIndex].DesiredSize));
 						}
 					}
 				}
@@ -547,6 +547,11 @@ namespace Microsoft.Maui.Layouts
 			{
 				foreach (var cell in _cells)
 				{
+					if (!cell.NeedsFinalMeasure)
+					{
+						continue;
+					}
+
 					double width = 0;
 					double height = 0;
 
@@ -564,7 +569,7 @@ namespace Microsoft.Maui.Layouts
 					{
 						continue;
 					}
-
+					
 					_childrenToLayOut[cell.ViewIndex].Measure(width, height);
 				}
 			}
@@ -712,6 +717,10 @@ namespace Microsoft.Maui.Layouts
 			public bool IsRowSpanAuto => HasFlag(RowGridLengthType, GridLengthType.Auto);
 			public bool IsColumnSpanStar => HasFlag(ColumnGridLengthType, GridLengthType.Star);
 			public bool IsRowSpanStar => HasFlag(RowGridLengthType, GridLengthType.Star);
+
+			// If any part of the Cell's spans are Absolute or Star, then the Cell will need a measure at the final size. 
+			// If the cell is entirely Auto, then it doesn't need another measure call. 
+			public bool NeedsFinalMeasure => ((ColumnGridLengthType | RowGridLengthType) ^ GridLengthType.Auto) > 0;
 
 			bool HasFlag(GridLengthType a, GridLengthType b)
 			{

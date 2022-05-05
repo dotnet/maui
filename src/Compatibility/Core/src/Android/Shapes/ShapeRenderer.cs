@@ -254,7 +254,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					if (_fill is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
 						fillColor = solidColorBrush.Color.ToAndroid();
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					_drawable.Paint.Color = fillColor;
+#pragma warning restore CA1416
 				}
 
 				_drawable.Draw(canvas);
@@ -284,7 +286,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					if (_stroke is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
 						strokeColor = solidColorBrush.Color.ToAndroid();
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					_drawable.Paint.Color = strokeColor;
+#pragma warning restore CA1416
 				}
 
 				_drawable.Draw(canvas);

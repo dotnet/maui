@@ -36,18 +36,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 					placemarks = new CLPlacemark[0];
 				List<string> addresses = new List<string>();
 #if __MOBILE__ && !(MACCATALYST || MACOS || __MACCATALYST__)
-#pragma warning disable BI1234 // Type or member is obsolete
+#pragma warning disable BI1234, CA1416 // Type or member is obsolete, ABAddressFormatting.ToString(...) has [UnsupportedOSPlatform("ios9.0")]
 				addresses = placemarks.Select(p => ABAddressFormatting.ToString(p.AddressDictionary, false)).ToList();
-#pragma warning restore BI1234 // Type or member is obsolete
+#pragma warning restore BI1234, CA1416 // Type or member is obsolete
 #else
 				foreach (var item in placemarks)
 				{
 					var address = new CNMutablePostalAddress();
+#pragma warning disable CA1416 // TODO: 'CLPlacemark.AddressDictionary' is unsupported on: 'maccatalyst' 11.0 and later
 					address.Street = item.AddressDictionary["Street"] == null ? "" : item.AddressDictionary["Street"].ToString();
 					address.State = item.AddressDictionary["State"] == null ? "" : item.AddressDictionary["State"].ToString();
 					address.City = item.AddressDictionary["City"] == null ? "" : item.AddressDictionary["City"].ToString();
 					address.Country = item.AddressDictionary["Country"] == null ? "" : item.AddressDictionary["Country"].ToString();
 					address.PostalCode = item.AddressDictionary["ZIP"] == null ? "" : item.AddressDictionary["ZIP"].ToString();
+#pragma warning restore CA1416
 					addresses.Add(CNPostalAddressFormatter.GetStringFrom(address, CNPostalAddressFormatterStyle.MailingAddress));
 				}
 #endif

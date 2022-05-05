@@ -424,7 +424,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_dragAndDropDelegate != null && _platformView != null)
 			{
-				if (PlatformVersion.IsAtLeast(11))
+				if (OperatingSystem.IsIOSVersionAtLeast(11))
 				{
 					foreach (var interaction in _platformView.Interactions)
 					{
@@ -447,7 +447,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_platformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
 				_addedFlags |= UIAccessibilityTrait.Button;
-				if (PlatformVersion.IsAtLeast(13))
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
 					_defaultAccessibilityRespondsToUserInteraction = _platformView.AccessibilityRespondsToUserInteraction;
 					_platformView.AccessibilityRespondsToUserInteraction = true;
@@ -471,7 +471,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_gestureRecognizers[recognizer] = nativeRecognizer;
 				}
 
-				if (PlatformVersion.IsAtLeast(11) && recognizer is DragGestureRecognizer)
+				if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DragGestureRecognizer)
 				{
 					dragFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
@@ -483,7 +483,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 
-				if (PlatformVersion.IsAtLeast(11) && recognizer is DropGestureRecognizer)
+				if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DropGestureRecognizer)
 				{
 					dropFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
@@ -494,7 +494,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 			}
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				if (!dragFound && uIDragInteraction != null && _handler.PlatformView != null)
 					_handler.PlatformView.RemoveInteraction(uIDragInteraction);
@@ -554,7 +554,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_platformView.AccessibilityTraits &= ~_addedFlags;
 
-				if (PlatformVersion.IsAtLeast(13))
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
 					if (_defaultAccessibilityRespondsToUserInteraction != null)
 						_platformView.AccessibilityRespondsToUserInteraction = _defaultAccessibilityRespondsToUserInteraction.Value;

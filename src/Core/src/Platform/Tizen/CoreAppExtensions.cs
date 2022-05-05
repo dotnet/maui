@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 			//TODO : Need to implementation
 		}
 
-		public static void CreateNativeWindow(this CoreApplication platformApplication, IApplication application)
+		public static void CreatePlatformWindow(this CoreApplication platformApplication, IApplication application)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
 				return;

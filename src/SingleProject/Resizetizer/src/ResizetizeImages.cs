@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			LogDebugMessage($"Copying {img.Filename}");
 
-			var r = resizer.CopyFile(originalScaleDpi, InputsFile, PlatformType.ToLower().Equals("android"));
+			var r = resizer.CopyFile(originalScaleDpi, InputsFile, PlatformType.Equals("android", StringComparison.OrdinalIgnoreCase));
 			resizedImages.Add(r);
 
 			LogDebugMessage($"Copied {img.Filename}");

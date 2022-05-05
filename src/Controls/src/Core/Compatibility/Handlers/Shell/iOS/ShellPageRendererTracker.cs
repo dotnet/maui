@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CoreGraphics;
@@ -132,7 +133,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTabBarVisible()
 		{
-			bool tabBarVisible = Shell.GetTabBarIsVisible(Page);
+			var tabBarVisible =
+				(Page.FindParentOfType<ShellItem>() as IShellItemController)?.ShowTabs ?? Shell.GetTabBarIsVisible(Page);
+
 			ViewController.HidesBottomBarWhenPushed = !tabBarVisible;
 		}
 
@@ -192,7 +195,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			NavigationItem = ViewController.NavigationItem;
 
-			if (!PlatformVersion.IsAtLeast(11))
+			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 			{
 				ViewController.AutomaticallyAdjustsScrollViewInsets = false;
 			}
@@ -414,7 +417,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				MatchHeight = true;
 
-				if (PlatformVersion.IsAtLeast(11))
+				if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 				{
 					TranslatesAutoresizingMaskIntoConstraints = false;
 				}
@@ -430,7 +433,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				get => base.Frame;
 				set
 				{
-					if (!PlatformVersion.IsAtLeast(11) && Superview != null)
+					if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)) && Superview != null)
 					{
 						value.Y = Superview.Bounds.Y;
 						value.Height = Superview.Bounds.Height;
@@ -444,7 +447,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (newSuper != null)
 				{
-					if (!PlatformVersion.IsAtLeast(11))
+					if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 						Frame = new CGRect(Frame.X, newSuper.Bounds.Y, Frame.Width, newSuper.Bounds.Height);
 
 					Height = newSuper.Bounds.Height;
@@ -513,6 +516,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_searchController.SearchBar.AccessibilityIdentifier = _searchHandler.AutomationId;
 		}
 
+		[SupportedOSPlatform("ios11.0")]
 		protected virtual void RemoveSearchController(UINavigationItem navigationItem)
 		{
 			navigationItem.SearchController = null;
@@ -543,7 +547,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (searchController != null)
 				{
-					if (PlatformVersion.IsAtLeast(11))
+					if (OperatingSystem.IsIOSVersionAtLeast(11))
 						RemoveSearchController(NavigationItem);
 					else
 						NavigationItem.TitleView = null;
@@ -551,7 +555,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (visibility == SearchBoxVisibility.Collapsible || visibility == SearchBoxVisibility.Expanded)
 			{
-				if (PlatformVersion.IsAtLeast(11))
+				if (OperatingSystem.IsIOSVersionAtLeast(11))
 				{
 					NavigationItem.SearchController = _searchController;
 					NavigationItem.HidesSearchBarWhenScrolling = visibility == SearchBoxVisibility.Collapsible;
@@ -591,7 +595,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var visibility = SearchHandler.SearchBoxVisibility;
 			if (visibility != SearchBoxVisibility.Hidden)
 			{
-				if (PlatformVersion.IsAtLeast(11))
+				if (OperatingSystem.IsIOSVersionAtLeast(11))
 					NavigationItem.SearchController = _searchController;
 				else
 					NavigationItem.TitleView = _searchController.SearchBar;
@@ -609,7 +613,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			searchBar.Placeholder = SearchHandler.Placeholder;
 			UpdateSearchIsEnabled(_searchController);
 			searchBar.SearchButtonClicked += SearchButtonClicked;
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				NavigationItem.HidesSearchBarWhenScrolling = visibility == SearchBoxVisibility.Collapsible;
 
 			var icon = SearchHandler.QueryIcon;
@@ -647,7 +651,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_searchHandlerAppearanceTracker.Dispose();
 			_searchHandlerAppearanceTracker = null;
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				RemoveSearchController(NavigationItem);
 			}

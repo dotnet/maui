@@ -561,7 +561,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (args.Action != NotifyCollectionChangedAction.Add)
 				return;
-			foreach (IElement item in args.NewItems)
+			foreach (IElementDefinition item in args.NewItems)
 				item.Parent = this;
 		}
 
