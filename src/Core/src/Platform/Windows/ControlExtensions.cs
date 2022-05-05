@@ -36,11 +36,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateBackground(this Panel platformControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			platformControl.UpdateProperty(Panel.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
 
-		public static async Task UpdateBackgroundImageSourceAsync(this Panel platformView, IViewBackgroundImagePart viewBackgroundImagePart, IImageSourceServiceProvider? provider)	
-			=> await platformView.UpdateBackgroundImageAsync(viewBackgroundImagePart, provider);
+		public static async Task UpdateBackgroundImageSourceAsync(this Panel platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+			=> await platformView.UpdateBackgroundImageAsync(imageSource, provider);
 
-		public static async Task UpdateBackgroundImageSourceAsync(this Control platformView, IViewBackgroundImagePart viewBackgroundImagePart, IImageSourceServiceProvider? provider)
-			=> await platformView.UpdateBackgroundImageAsync(viewBackgroundImagePart, provider);
+		public static async Task UpdateBackgroundImageSourceAsync(this Control platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+			=> await platformView.UpdateBackgroundImageAsync(imageSource, provider);
 
 		public static void UpdateForegroundColor(this Control platformControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			platformControl.Foreground = color?.ToPlatform() ?? defaultBrush ?? platformControl.Foreground;
@@ -60,15 +60,13 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this Control nativeControl, ITextStyle text) =>
 			nativeControl.CharacterSpacing = text.CharacterSpacing.ToEm();
-		
-		internal static async Task UpdateBackgroundImageAsync(this FrameworkElement platformView, IViewBackgroundImagePart viewBackgroundImagePart, IImageSourceServiceProvider? provider)
+
+		internal static async Task UpdateBackgroundImageAsync(this FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
 			if (platformView == null || provider == null)
 				return;
 
-			var backgroundImageSource = viewBackgroundImagePart.Source;
-
-			if (backgroundImageSource == null)
+			if (imageSource == null)
 			{
 				if (platformView is Panel panel)
 					panel.Background = null;
@@ -78,13 +76,13 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (provider != null && backgroundImageSource != null)
+			if (provider != null && imageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(backgroundImageSource);
-				var nativeBackgroundImageSource = await service.GetImageSourceAsync(backgroundImageSource);
-				
+				var service = provider.GetRequiredImageSourceService(imageSource);
+				var nativeBackgroundImageSource = await service.GetImageSourceAsync(imageSource);
+
 				var background = new ImageBrush { ImageSource = nativeBackgroundImageSource?.Value };
-			
+
 				if (platformView is Panel panel)
 					panel.Background = background;
 
