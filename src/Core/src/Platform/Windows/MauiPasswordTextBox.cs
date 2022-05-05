@@ -54,6 +54,7 @@ namespace Microsoft.Maui.Platform
 		CancellationTokenSource? _cts;
 		bool _internalChangeFlag;
 		int _cachedCursorPosition;
+		int _cachedTextLength;
 
 		public MauiPasswordTextBox()
 		{
@@ -136,18 +137,25 @@ namespace Microsoft.Maui.Platform
 
 		private void OnNativeTextChanging(TextBox sender, TextBoxTextChangingEventArgs args)
 		{	
-			// As we are obfuscating the text by ourselves or by transforming the text,
+			// As we are obfuscating the text by ourselves, transforming the text, or a user could be using a custom Converter;
 			// we are setting the Text property directly on code many times.
-			// This causes that we invoke the SelectionChanged event many times with SelectionStart = 0,
-			// setting the cursor to the beginning of the TextBox.
-			// To avoid this behavior let's save the current cursor position of the first time the Text is changing and
-			// keep the same cursor position after each Text update.
+			// This causes that we invoke the SelectionChanged event many times with SelectionStart = 0, setting the cursor to
+			// the beginning of the TextBox.
+			// To avoid this behavior let's save the current cursor position of the first time the Text is updated by the user
+			// and keep the same cursor position after each Text update until a new Text update by the user happens.
 			var updatedPassword = DetermineTextFromPassword(Password, SelectionStart, Text);
 
 			if (Password != updatedPassword)
+			{
 				_cachedCursorPosition = SelectionStart;
+				_cachedTextLength = updatedPassword.Length;
+			}
 			else
+			{
+				// Recalculate the cursor position, as the Text could be modified by a user Converter
+				_cachedCursorPosition += (updatedPassword.Length - _cachedTextLength);
 				SelectionStart = _cachedCursorPosition;
+			}
 		}
 
 		void OnNativeTextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
