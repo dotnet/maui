@@ -33,17 +33,13 @@ namespace Microsoft.Maui.ApplicationModel
 				{
 					return status;
 				}
-#if __IOS__
-				else if (status == PermissionStatus.Limited)
+				else if (OperatingSystem.IsIOSVersionAtLeast(14) && status == PermissionStatus.Limited)
 				{
-#pragma warning disable CA1416 // TODO: the [SupportedOSPlatform("tvos14.0")] attribute above making this call site reachable in tvOS, the #ifdef is not handled properly in analyzer
 					PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
 						PHPhotoLibrary.SharedPhotoLibrary,
 						WindowStateManager.Default.GetCurrentUIViewController());
 					return status;
-#pragma warning restore CA1416 // see Case 3 of https://github.com/dotnet/roslyn-analyzers/issues/5938 for more info
 				}
-#endif
 
 				EnsureMainThread();
 
