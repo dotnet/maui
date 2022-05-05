@@ -130,9 +130,18 @@ namespace Microsoft.Maui.DeviceTests
 							Android.Views.ViewGroup.LayoutParams.WrapContent,
 							Android.Views.ViewGroup.LayoutParams.WrapContent);
 				}
+
+				var size = view.Measure(view.Width, view.Height);
+				var w = size.Width;
+				var h = size.Height;
+#else
+				// Windows cannot measure without the view being loaded
+				// iOS needs more love when I get an IDE again
+				var w = view.Width;
+				var h = view.Height;
 #endif
 
-				view.Arrange(new Rect(0, 0, view.Width, view.Height));
+				view.Arrange(new Rect(0, 0, w, h));
 				viewHandler.PlatformArrange(view.Frame);
 			}
 
