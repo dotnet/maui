@@ -701,7 +701,7 @@ namespace Microsoft.Maui.Controls
 
 				_isPlatformEnabled = value;
 				if (value && IsPlatformStateConsistent)
-					//InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
+					InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 
 				InvalidateStateTriggers(IsPlatformEnabled);
 
