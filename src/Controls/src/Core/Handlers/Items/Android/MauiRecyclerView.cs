@@ -227,11 +227,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var oldItemViewAdapter = ItemsViewAdapter;
 
+			_emptyCollectionObserver.Stop(oldItemViewAdapter);
+
 			ItemsViewAdapter = CreateAdapter();
 
 			if (GetAdapter() != _emptyViewAdapter)
 			{
-				_emptyCollectionObserver.Stop(oldItemViewAdapter);
 				_itemsUpdateScrollObserver.Stop(oldItemViewAdapter);
 
 				SetAdapter(null);

@@ -7,8 +7,8 @@
         <!-- NOTE: if the template ever drastically changes, compare this to the template! -->
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources/Colors.xaml" />
-                <ResourceDictionary Source="Resources/Styles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
                 <!-- Everything to create in addition to the template -->
                 <ResourceDictionary>
                   <SolidColorBrush x:Key="ProfiledAot_AppThemeBinding_Color" Color="{AppThemeBinding Default=Black}"/>

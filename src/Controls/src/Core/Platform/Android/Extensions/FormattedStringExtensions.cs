@@ -219,17 +219,6 @@ namespace Microsoft.Maui.Controls.Platform
 					value, Context?.Resources?.DisplayMetrics ?? Android.App.Application.Context.Resources!.DisplayMetrics);
 
 				paint.LetterSpacing = CharacterSpacing;
-
-				if (HorizontalTextAlignment.HasValue)
-				{
-					paint.TextAlign = HorizontalTextAlignment.Value switch
-					{
-						TextAlignment.Start => Paint.Align.Left,
-						TextAlignment.Center => Paint.Align.Center,
-						TextAlignment.End => Paint.Align.Right,
-						_ => Paint.Align.Left
-					};
-				}
 			}
 		}
 
