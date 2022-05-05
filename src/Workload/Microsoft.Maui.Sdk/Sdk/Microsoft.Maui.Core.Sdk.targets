@@ -4,6 +4,14 @@
     <UsingMicrosoftMauiCoreSdk>true</UsingMicrosoftMauiCoreSdk>
   </PropertyGroup>
 
+  <!-- Set some property defaults that MAUI requires - especially for dotnet build to work -->
+  <PropertyGroup Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
+    <EnableMsixTooling Condition=" '$(EnableMsixTooling)' == '' ">true</EnableMsixTooling>
+    <EnablePreviewMsixTooling Condition=" '$(EnablePreviewMsixTooling)' == '' ">$(EnableMsixTooling)</EnablePreviewMsixTooling>
+    <GenerateLibraryLayout Condition=" '$(GenerateLibraryLayout)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' != 'Exe' and '$(OutputType)' != 'WinExe' ">true</GenerateLibraryLayout>
+    <WinUISDKReferences Condition=" '$(WinUISDKReferences)' == '' and '$(EnableMsixTooling)' == 'true' ">false</WinUISDKReferences>
+  </PropertyGroup>
+
   <!-- Imported last -->
   <PropertyGroup>
     <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)Microsoft.Maui.Core.Sdk.After.targets</AfterMicrosoftNETSdkTargets>
