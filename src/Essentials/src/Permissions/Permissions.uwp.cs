@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Microsoft.Maui.Storage;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Contacts;
 using Windows.Devices.Enumeration;
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		public static bool IsCapabilityDeclared(string capabilityName)
 		{
-			var docPath = Path.Combine(Package.Current.InstalledLocation.Path, PlatformUtils.AppManifestFilename);
+			var docPath = FileSystemUtils.PlatformGetFullAppPackageFilePath(PlatformUtils.AppManifestFilename);
 			var doc = XDocument.Load(docPath, LoadOptions.None);
 			var reader = doc.CreateReader();
 			var namespaceManager = new XmlNamespaceManager(reader.NameTable);

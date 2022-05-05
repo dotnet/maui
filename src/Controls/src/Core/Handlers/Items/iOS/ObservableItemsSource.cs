@@ -112,7 +112,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			CollectionView.BeginInvokeOnMainThread(() => CollectionChanged(args));
+			if (!ApplicationModel.MainThread.IsMainThread)
+			{
+				ApplicationModel.MainThread.BeginInvokeOnMainThread(() => CollectionChanged(args));
+			}
+			else
+			{
+				CollectionChanged(args);
+			}
 		}
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
@@ -292,10 +299,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnCollectionViewUpdated(NotifyCollectionChangedEventArgs args)
 		{
-			CollectionView.BeginInvokeOnMainThread(() =>
+			if (!ApplicationModel.MainThread.IsMainThread)
+			{
+				ApplicationModel.MainThread.BeginInvokeOnMainThread(() => CollectionViewUpdated?.Invoke(this, args));
+			}
+			else
 			{
 				CollectionViewUpdated?.Invoke(this, args);
-			});
+			}
 		}
 	}
 }

@@ -42,11 +42,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var heightSpec = Context.CreateMeasureSpec(targetHeight, double.IsInfinity(targetHeight) ? double.NaN : targetHeight
 					, targetHeight);
 
-				pvh.PlatformView.Measure(widthSpec, heightSpec);
+				var size = pvh.MeasureVirtualView(widthSpec, heightSpec);
 
-				SetMeasuredDimension(
-					pvh.PlatformView.MeasuredWidth,
-					pvh.PlatformView.MeasuredHeight);
+				SetMeasuredDimension((int)size.Width, (int)size.Height);
 			}
 		}
 	}

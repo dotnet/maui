@@ -71,6 +71,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public static Task UpdateBackgroundImageSourceAsync(this EvasObject platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		{
+			return Task.CompletedTask;
+		}
+
 		public static void UpdateBorder(this EvasObject platformView, IView view)
 		{
 			var border = (view as IBorder)?.Border;

@@ -119,7 +119,6 @@ namespace Microsoft.Maui.ApplicationModel
 				if (!CLLocationManager.LocationServicesEnabled)
 					return PermissionStatus.Disabled;
 
-				System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(14));
 				var status = CLLocationManager.Status;
 
 				return status switch

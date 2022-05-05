@@ -37,6 +37,8 @@ namespace Microsoft.Maui.Layouts
 			double measuredHeight = 0;
 			double measuredWidth = 0;
 
+			FlexLayout.Layout(widthConstraint, heightConstraint);
+
 			foreach (var child in FlexLayout)
 			{
 				if (child.Visibility == Visibility.Collapsed)

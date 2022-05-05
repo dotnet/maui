@@ -16,7 +16,6 @@ namespace Microsoft.Maui.ApplicationModel
 			switch (options.LaunchMode)
 			{
 				case BrowserLaunchMode.SystemPreferred:
-					System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(11));
 					await LaunchSafariViewController(uri, options);
 					break;
 				case BrowserLaunchMode.External:

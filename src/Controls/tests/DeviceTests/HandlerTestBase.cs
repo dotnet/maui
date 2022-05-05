@@ -1,13 +1,16 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -23,6 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 		// That being said...
 		// There's definitely a chance that the code written to manage this process could be improved		
 		public const string RunInNewWindowCollection = "Serialize test because it has to add itself to the main window";
+
 		public void EnsureHandlerCreated(Action<MauiAppBuilder> additionalCreationActions = null)
 		{
 			if (_isCreated)
@@ -65,6 +69,9 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
 					handlers.AddHandler(typeof(Controls.ContentPage), typeof(PageHandler));
 				});
+
+			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
+			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
 
 			additionalCreationActions?.Invoke(appBuilder);
 
@@ -125,7 +132,17 @@ namespace Microsoft.Maui.DeviceTests
 				}
 #endif
 
-				view.Arrange(new Rect(0, 0, view.Width, view.Height));
+#if WINDOWS
+				// windows cannot measure without being loaded
+				var w = view.Width;
+				var h = view.Height;
+#else
+				var size = view.Measure(view.Width, view.Height);
+				var w = size.Width;
+				var h = size.Height;
+#endif
+
+				view.Arrange(new Rect(0, 0, w, h));
 				viewHandler.PlatformArrange(view.Frame);
 			}
 
