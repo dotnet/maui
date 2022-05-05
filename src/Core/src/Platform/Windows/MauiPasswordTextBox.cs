@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!IsPassword)
 				return;
-
+			
 			// As we are obfuscating the text by ourselves, we are setting the Text property directly on code many times.
 			// This causes that we invoke the SelectionChanged event many times with SelectionStart = 0,
 			// setting the cursor to the beginning of the TextBox.
@@ -215,7 +215,6 @@ namespace Microsoft.Maui.Platform
 		void ImmediateObfuscation()
 		{
 			UpdatePasswordIfNeeded();
-			UpdateVisibleText();
 		}
 
 		void DelayObfuscation()
