@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (Cell == null)
 				return;
 
-			/// 🚀 subscribe topropertychanged
+			// 🚀 subscribe topropertychanged
 			// make sure we do not subscribe twice (because this could happen in SetSource(Cell oldCell, Cell newCell))
 			Cell.PropertyChanged -= _propertyChangedHandler;
 			Cell.PropertyChanged += _propertyChangedHandler;
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			Cell.SendDisappearing();
-			/// 🚀 unsubscribe from propertychanged
+			// 🚀 unsubscribe from propertychanged
 			Cell.PropertyChanged -= _propertyChangedHandler;
 		}
 

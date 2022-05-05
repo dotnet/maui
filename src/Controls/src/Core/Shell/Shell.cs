@@ -678,13 +678,17 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public Task GoToAsync(ShellNavigationState state, IDictionary<string, object> parameters)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(parameters));
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public Task GoToAsync(ShellNavigationState state, bool animate, IDictionary<string, object> parameters)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
