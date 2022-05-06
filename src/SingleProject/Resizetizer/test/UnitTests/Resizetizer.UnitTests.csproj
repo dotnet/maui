@@ -12,7 +12,7 @@
     <PackageReference Include="Microsoft.Build.Framework" Version="16.7.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.7.0" PrivateAssets="all" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.256" />
+    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.261" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.4" />
     <PackageReference Include="coverlet.collector" Version="3.1.2" />
