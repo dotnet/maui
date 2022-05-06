@@ -10,6 +10,11 @@ namespace Maui.Controls.Sample.Pages
     {
         ICommand _returnToPlatformSpecificsPage;
 
+		public AndroidTabbedPageSwipePage()
+		{
+			InitializeComponent();
+		}
+
         public AndroidTabbedPageSwipePage(ICommand restore)
         {
             InitializeComponent();
@@ -28,7 +33,7 @@ namespace Maui.Controls.Sample.Pages
 
         void OnReturnButtonClicked(object sender, EventArgs e)
         {
-            _returnToPlatformSpecificsPage.Execute(null);
+            _returnToPlatformSpecificsPage?.Execute(null);
         }
     }
 }
