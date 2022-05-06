@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return _cell; }
 		}
 
-		public void SetAccessoryView(AView view)
+		public void SetAccessoryView(AView view, bool overrideAsAccessibilityElement=false)
 		{
 			if (AccessoryView != null)
 				RemoveView(AccessoryView);
@@ -125,6 +125,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				using (var layout = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.MatchParent))
 					AddView(view, layout);
+
+				if (overrideAsAccessibilityElement)
+					view.LabeledBy = _mainText;
 
 				AccessoryView = view;
 			}

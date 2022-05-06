@@ -46,9 +46,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			tvc.Cell = item;
 			tvc.PropertyChanged += HandlePropertyChanged;
 			tvc.AccessoryView = uiSwitch;
+			tvc.TextLabel.AccessibilityElementsHidden = true;
 #pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 			tvc.TextLabel.Text = boolCell.Text;
 #pragma warning restore CA1416
+			tvc.AccessoryView.AccessibilityLabel = boolCell.Text;
 
 			uiSwitch.On = boolCell.On;
 
@@ -73,9 +75,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateOnColor(realCell, boolCell);
 			}
 			else if (e.PropertyName == SwitchCell.TextProperty.PropertyName)
+			{
 #pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 				realCell.TextLabel.Text = boolCell.Text;
 #pragma warning restore CA1416
+				((UISwitch)realCell.AccessoryView).AccessibilityLabel = boolCell.Text;
+			}
 			else if (e.PropertyName == Cell.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled(realCell, boolCell);
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)

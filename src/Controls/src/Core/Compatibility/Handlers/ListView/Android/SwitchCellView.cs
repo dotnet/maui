@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var sw = new global::Android.Widget.Switch(context);
 			sw.SetOnCheckedChangeListener(this);
 
-			SetAccessoryView(sw);
+			SetAccessoryView(sw, true);
 
 			SetImageVisible(false);
 		}
