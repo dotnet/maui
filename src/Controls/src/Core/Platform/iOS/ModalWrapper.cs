@@ -55,9 +55,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		[Export("presentationControllerDidDismiss:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-		public async void DidDismiss(UIPresentationController presentationController)
+		public void DidDismiss(UIPresentationController _)
 		{
-			await ((Page)_modal.VirtualView).Navigation.PopModalAsync(false);
+			if (((Window)_modal.MauiContext.GetPlatformWindow().GetWindow()).Page is Shell shell)
+				shell.NavigationManager.GoToAsync("..", false, false, canCancel: false).FireAndForget();
+			else			
+				((Page)_modal.VirtualView).Navigation.PopModalAsync(false).FireAndForget();
 		}
 
 		public override void DismissViewController(bool animated, Action completionHandler)
