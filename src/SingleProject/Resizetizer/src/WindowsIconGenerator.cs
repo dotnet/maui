@@ -21,13 +21,16 @@ namespace Microsoft.Maui.Resizetizer
 
 		public ResizedImageInfo Generate()
 		{
+			string destinationFolder = IntermediateOutputPath;
+
 			string fileName = Path.GetFileNameWithoutExtension(Info.OutputName);
-			string destination = Path.ChangeExtension(Path.Combine(IntermediateOutputPath, fileName), "ico");
+			string destination = Path.Combine(destinationFolder, $"{fileName}.ico");
+			Directory.CreateDirectory(destinationFolder);
 
 			Logger.Log($"Generating ICO: {destination}");
 
 			var tools = new SkiaSharpAppIconTools(Info, Logger);
-			var dpi = new DpiPath(Path.GetFileNameWithoutExtension(fileName), 1.0m, size: new SKSize(64, 64));
+			var dpi = new DpiPath(fileName, 1.0m, size: new SKSize(64, 64));
 
 			MemoryStream memoryStream = new MemoryStream();
 			tools.Resize(dpi, destination, () => memoryStream);
