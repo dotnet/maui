@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMenuBar(IWindowHandler handler, IWindow view)
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)))
 				return;
 
 			if (MauiUIApplicationDelegate.Current != null &&

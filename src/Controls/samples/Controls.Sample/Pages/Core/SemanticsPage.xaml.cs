@@ -1,5 +1,6 @@
 ﻿using Maui.Controls.Sample.Pages.Base;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Pages
@@ -13,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
 			pushButton.Clicked += PushButton_Clicked;
 			popButton.Clicked += PopButton_Clicked;
 
-			foreach (var element in this.Descendants())
+			foreach (var element in (this as IElementController).Descendants())
 			{
 				element.AutomationId = "If you are hearing this then AutomationId is currently breaking accesssibility for this control";
 			}

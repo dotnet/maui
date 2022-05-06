@@ -14,38 +14,43 @@ import com.microsoft.maui.ImageLoaderCallback;
 public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> {
     private final ImageLoaderCallback callback;
     private final RequestManager requestManager;
+    private boolean completed;
 
     public MauiCustomViewTarget(@NonNull ImageView view, ImageLoaderCallback callback, RequestManager requestManager) {
         super(view);
 
+        this.completed = false;
         this.callback = callback;
         this.requestManager = requestManager;
     }
 
     @Override
     protected void onResourceCleared(@Nullable Drawable placeholder) {
-
     }
 
     @Override
     public void onLoadFailed(@Nullable Drawable errorDrawable) {
+        if (completed)
+            return;
+        this.completed = true;
+
         callback.onComplete(false,
             errorDrawable,
-            () -> view.post(
-                () -> requestManager.clear(MauiCustomViewTarget.this)
-            )
+            () -> { } // TODO: explicitly release image
         );
     }
 
     @Override
     public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+        if (completed)
+            return;
+        this.completed = true;
 
         this.view.setImageDrawable(resource);
-        callback.onComplete(true,
+        callback.onComplete(
+            true,
             resource,
-            () -> view.post(
-                () -> requestManager.clear(MauiCustomViewTarget.this)
-            )
+            () -> { } // TODO: explicitly release image
         );
     }
 }

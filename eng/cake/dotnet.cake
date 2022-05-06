@@ -393,34 +393,6 @@ Task("VS-ANDROID")
         StartVisualStudioForDotNet6("./Microsoft.Maui.Droid.sln");
     });
 
-Task("SAMPLE-ANDROID")
-    .Description("Provisions .NET 6 and launches Android Sample.")
-    .IsDependentOn("dotnet")
-    .IsDependentOn("dotnet-buildtasks")
-    .Does(() =>
-    {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid.csproj", target: "Run");
-    });
-
-Task("SAMPLE-IOS")
-    .Description("Provisions .NET 6 and launches launches iOS Sample.")
-    .IsDependentOn("dotnet")
-    .IsDependentOn("dotnet-buildtasks")
-    .Does(() =>
-    {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS.csproj", target: "Run");
-    });
-
-Task("SAMPLE-MAC")
-    .Description("Provisions .NET 6 and launches Mac Catalyst Sample.")
-    .IsDependentOn("dotnet")
-    .IsDependentOn("dotnet-buildtasks")
-    .Does(() =>
-    {
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst.csproj",  target: "Run");
-    });
-
-
 string FindMSBuild()
 {
     if (!string.IsNullOrWhiteSpace(MSBuildExe))

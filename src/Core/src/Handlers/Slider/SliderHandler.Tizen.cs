@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 		static EColor? DefaultMaxTrackColor;
 		static EColor? DefaultThumbColor;
 
-		protected override ESlider CreatePlatformView() => new ESlider(NativeParent);
+		protected override ESlider CreatePlatformView() => new ESlider(PlatformParent);
 
 		protected override void ConnectHandler(ESlider platformView)
 		{

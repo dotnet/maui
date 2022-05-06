@@ -91,6 +91,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return this; }
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
+		[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
 		public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
 		{
 			base.DidRotate(fromInterfaceOrientation);
@@ -326,7 +328,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!isDefaultColor)
 				_barBackgroundColorWasSet = true;
 
-			if (PlatformVersion.IsAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance();
 			else
 				TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToPlatform();
@@ -378,7 +380,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			// set TintColor for selected icon
 			// setting the unselected icon tint is not supported by iOS
-			if (PlatformVersion.IsAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance();
 			else
 				TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToPlatform();
@@ -454,7 +456,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				TabBar.TintColor = UITabBar.Appearance.TintColor;
 			}
 
-			if (PlatformVersion.IsAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance();
 			else
 			{
@@ -488,6 +490,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return source.Task;
 		}
 
+		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		void UpdateiOS15TabBarAppearance()
 		{
 			TabBar.UpdateiOS15TabBarAppearance(

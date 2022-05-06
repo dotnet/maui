@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override TEntry CreatePlatformView()
 		{
-			var entry = new EditfieldEntry(NativeParent)
+			var entry = new EditfieldEntry(PlatformParent)
 			{
 				IsSingleLine = true,
 				HorizontalTextAlignment = TTextAlignment.Center,
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 
 			_lazyDialog = new Lazy<IDateTimeDialog>(() =>
 			{
-				var dialog = new DateTimePickerDialog(NativeParent)
+				var dialog = new DateTimePickerDialog(PlatformParent)
 				{
 					Title = DialogTitle
 				};

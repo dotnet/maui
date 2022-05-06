@@ -20,6 +20,7 @@ using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRendere
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
+	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 	public partial class ShellTests : HandlerTestBase
 	{
 		void SetupBuilder()
@@ -34,6 +35,10 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Toolbar, ToolbarHandler>();
+					handlers.AddHandler<MenuBar, MenuBarHandler>();
+					handlers.AddHandler<MenuBarItem, MenuBarItemHandler>();
+					handlers.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
+					handlers.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
 #if WINDOWS
 					handlers.AddHandler<ShellItem, ShellItemHandler>();
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();
@@ -43,6 +48,27 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "FlyoutContent Renderers When FlyoutBehavior Starts As Locked")]
+		public async Task FlyoutContentRenderersWhenFlyoutBehaviorStartsAsLocked()
+		{
+			SetupBuilder();
+			var flyoutContent = new VerticalStackLayout() { Children = { new Label() { Text = "Rendered" } } };
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() } };
+				shell.FlyoutContent = flyoutContent;
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLayoutPassCompleted(flyoutContent);
+
+				Assert.NotNull(flyoutContent.Handler);
+				Assert.True(flyoutContent.Frame.Width > 0);
+				Assert.True(flyoutContent.Frame.Height > 0);
+			});
+		}
 
 		[Fact(DisplayName = "Flyout Starts as Open correctly")]
 		public async Task FlyoutIsPresented()

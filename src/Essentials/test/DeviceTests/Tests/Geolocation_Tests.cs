@@ -70,11 +70,13 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			});
 
 			var request = new GeolocationRequest(GeolocationAccuracy.Best);
+			request.RequestFullAccuracy = true;
 			var location = await Geolocation.GetLocationAsync(request);
 
 			Assert.NotNull(location);
 
 			Assert.True(location.Accuracy > 0);
+			Assert.False(location.ReducedAccuracy);
 			Assert.NotEqual(0.0, location.Latitude);
 			Assert.NotEqual(0.0, location.Longitude);
 

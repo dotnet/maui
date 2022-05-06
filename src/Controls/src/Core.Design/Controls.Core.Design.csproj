@@ -23,9 +23,8 @@
 		<Compile Include="LayoutOptionsDesignTypeConverter.cs" />
 		<Compile Include="LinearItemsLayoutDesignTypeConverter.cs" />
 		<Compile Include="FontSizeDesignTypeConverter.cs" />
-		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility">
-			<Version>17.1.32210.191</Version>
-		</PackageReference>
+		<Compile Include="FlexEnumDesignTypeConverters.cs" />
+		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.1.32210.191" />
 	</ItemGroup>
 
 	<!-- The IDE will look for a top level assembly resource called 'Microsoft.Maui.toolbox.xml' to -->

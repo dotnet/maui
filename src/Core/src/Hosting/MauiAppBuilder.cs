@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -53,26 +52,24 @@ namespace Microsoft.Maui.Hosting
 			public void Initialize(IServiceProvider services)
 			{
 #if WINDOWS
-				var dispatcher = 
-					services.GetService<IDispatcher>() ??
-					MauiWinUIApplication.Current.Services.GetRequiredService<IDispatcher>();
-
-				if (!dispatcher.IsDispatchRequired)
-					SetupResources();
+				// WORKAROUND: use the MAUI dispatcher instead of the OS dispatcher to
+				// avoid crashing: https://github.com/microsoft/WindowsAppSDK/issues/2451
+				var dispatcher = services.GetRequiredService<IDispatcher>();
+				if (dispatcher.IsDispatchRequired)
+					dispatcher.Dispatch(() => SetupResources());
 				else
-					dispatcher.Dispatch(SetupResources);
+					SetupResources();
 
-				void SetupResources()
+				static void SetupResources()
 				{
-					var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
-					if (UI.Xaml.Application.Current?.Resources != null && dictionaries != null)
-					{
-						// WinUI
-						UI.Xaml.Application.Current.Resources.AddLibraryResources<UI.Xaml.Controls.XamlControlsResources>();
+					if (UI.Xaml.Application.Current?.Resources is not UI.Xaml.ResourceDictionary resources)
+						return;
 
-						// Microsoft.Maui
-						UI.Xaml.Application.Current.Resources.AddLibraryResources("MicrosoftMauiCoreIncluded", "ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
-					}
+					// WinUI
+					resources.AddLibraryResources<UI.Xaml.Controls.XamlControlsResources>();
+
+					// Microsoft.Maui
+					resources.AddLibraryResources("MicrosoftMauiCoreIncluded", "ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
 				}
 #endif
 			}

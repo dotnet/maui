@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Android.Views;
+using AndroidX.DrawerLayout.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform.Compatibility;
@@ -11,7 +13,6 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 	public partial class ShellTests
 	{
 		protected async Task CheckFlyoutState(ShellRenderer handler, bool desiredState)
@@ -51,6 +52,39 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 		}
+
+		[Fact(DisplayName = "FlyoutItems Render When FlyoutBehavior Starts As Locked")]
+		public async Task FlyoutItemsRendererWhenFlyoutBehaviorStartsAsLocked()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() }, Title = "Flyout Item" };
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				await Task.Delay(1000);
+				IShellContext shellContext = handler;
+				DrawerLayout dl = shellContext.CurrentDrawerLayout;
+
+				var flyout = dl.GetChildAt(0);
+				RecyclerViewContainer flyoutContainer = null;
+
+				if (dl.GetChildAt(1) is ViewGroup vg1 &&
+					vg1.GetChildAt(0) is RecyclerViewContainer rvc)
+				{
+					flyoutContainer = rvc;
+				}
+
+				_ = flyoutContainer ?? throw new Exception("Unable to locate RecyclerViewContainer");
+
+				Assert.True(flyoutContainer.MeasuredWidth > 0);
+				Assert.True(flyoutContainer.MeasuredHeight > 0);
+			});
+		}
+
 
 		[Fact(DisplayName = "Shell with Flyout Disabled Doesn't Render Flyout")]
 		public async Task ShellWithFlyoutDisabledDoesntRenderFlyout()

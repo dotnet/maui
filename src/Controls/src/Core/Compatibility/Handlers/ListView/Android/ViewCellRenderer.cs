@@ -225,7 +225,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public void UpdateIsEnabled()
 			{
-				Enabled = _viewCell.IsEnabled;
+				Enabled = _parent.IsEnabled && _viewCell.IsEnabled;
 			}
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 				}
 
-				_viewHandler.PlatformView.Layout(l, t, r, b);
+				_viewHandler.LayoutVirtualView(l, t, r, b);
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -253,24 +253,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						return;
 					}
 
-					_viewHandler.PlatformView.Measure(widthMeasureSpec, heightMeasureSpec);
-					height = (int)Context.ToPixels(_viewHandler.PlatformView.MeasuredHeight);
+					var size = _viewHandler.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec);
+					height = (int)size.Height;
 				}
 				else
 				{
 					height = (int)Context.ToPixels(ParentRowHeight == -1 ? BaseCellView.DefaultMinHeight : ParentRowHeight);
-
-
-					if (_viewHandler.PlatformView != null)
-					{
-						_viewHandler.PlatformView.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
-					}
-				}
-
-				if (_viewHandler.VirtualView != null)
-				{
-					_viewHandler.VirtualView.Frame = new Rect(0, 0, Context.FromPixels(width), Context.FromPixels(height));
-
+					var size = _viewHandler.MeasureVirtualView(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
+					width = (int)size.Width;
 				}
 
 				SetMeasuredDimension(width, height);

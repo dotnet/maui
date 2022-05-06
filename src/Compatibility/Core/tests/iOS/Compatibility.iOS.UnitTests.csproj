@@ -6,6 +6,7 @@
     <AssemblyName>Microsoft.Maui.Controls.Compatibility.iOS.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn),CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override Entry CreatePlatformView()
 		{
-			return new EditfieldEntry(NativeParent)
+			return new EditfieldEntry(PlatformParent)
 			{
 				IsSingleLine = true
 			};

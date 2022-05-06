@@ -31,6 +31,9 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		public MenuFlyoutItemHandler() : base(Mapper, CommandMapper)
 		{
 
@@ -42,9 +45,13 @@ namespace Microsoft.Maui.Handlers
 			throw new NotImplementedException();
 		}
 #endif
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		IMenuFlyoutItem IMenuFlyoutItemHandler.VirtualView => VirtualView;
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		PlatformView IMenuFlyoutItemHandler.PlatformView => PlatformView;
 	}
 }

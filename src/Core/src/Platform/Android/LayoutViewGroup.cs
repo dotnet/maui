@@ -39,6 +39,9 @@ namespace Microsoft.Maui.Platform
 
 		public bool ClipsToBounds { get; set; }
 
+		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
+		// If you make changes here please review if those changes should also
+		// apply to ViewHandlerExtensions.MeasureVirtualView
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			if (Context == null)
@@ -75,6 +78,9 @@ namespace Microsoft.Maui.Platform
 			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
 		}
 
+		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
+		// If you make changes here please review if those changes should also
+		// apply to ViewHandlerExtensions.MeasureVirtualView
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			if (CrossPlatformArrange == null || Context == null)
