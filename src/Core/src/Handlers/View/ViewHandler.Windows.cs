@@ -111,12 +111,28 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPlatformViewGotFocus(object sender, RoutedEventArgs args)
 		{
-			UpdateIsFocused(true);
+			var platformView = sender as FrameworkElement;
+
+			if (platformView == null)
+				return;
+
+			bool hasFocus = platformView.FocusState != FocusState.Unfocused;
+
+			if (hasFocus)
+				UpdateIsFocused(true);
 		}
 
 		void OnPlatformViewLostFocus(object sender, RoutedEventArgs args)
 		{
-			UpdateIsFocused(false);
+			var platformView = sender as FrameworkElement;
+
+			if (platformView == null)
+				return;
+
+			bool hasFocus = platformView.FocusState != FocusState.Unfocused;
+
+			if (!hasFocus)
+				UpdateIsFocused(false);
 		}
 
 		void UpdateIsFocused(bool isFocused)

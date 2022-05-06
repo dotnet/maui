@@ -1,6 +1,8 @@
 #nullable enable
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Platform
 {
@@ -27,45 +29,50 @@ namespace Microsoft.Maui.Platform
 				platformControl.SelectionStart = platformControl.Text.Length;
 		}
 
+		static readonly string[] BackgroundColorKeys =
+		{
+			"TextControlBackground",
+			"TextControlBackgroundPointerOver",
+			"TextControlBackgroundFocused",
+			"TextControlBackgroundDisabled"
+		};
+
 		public static void UpdateBackground(this TextBox textBox, IView view)
 		{
 			var brush = view.Background?.ToPlatform();
-			if (brush is null)
+
+			if (brush == null)
 			{
-				textBox.Resources.Remove("TextControlBackground");
-				textBox.Resources.Remove("TextControlBackgroundPointerOver");
-				textBox.Resources.Remove("TextControlBackgroundFocused");
-				textBox.Resources.Remove("TextControlBackgroundDisabled");
+				textBox.Resources.RemoveKeys(BackgroundColorKeys);
+				textBox.ClearValue(Control.BackgroundProperty);
 			}
 			else
 			{
-				textBox.Resources["TextControlBackground"] = brush;
-				textBox.Resources["TextControlBackgroundPointerOver"] = brush;
-				textBox.Resources["TextControlBackgroundFocused"] = brush;
-				textBox.Resources["TextControlBackgroundDisabled"] = brush;
+				textBox.Resources.SetValueForAllKey(BackgroundColorKeys, brush);
+				textBox.Background = brush;
 			}
 		}
+		
+		static readonly string[] TextColorKeys =
+		{
+			"TextControlForeground",
+			"TextControlForegroundPointerOver",
+			"TextControlForegroundFocused",
+			"TextControlForegroundDisabled"
+		};
 
 		public static void UpdateTextColor(this TextBox textBox, ITextStyle textStyle)
 		{
 			var brush = textStyle.TextColor?.ToPlatform();
 
-			if (brush is null)
+			if (brush == null)
 			{
-				textBox.Resources.Remove("TextControlForeground");
-				textBox.Resources.Remove("TextControlForegroundPointerOver");
-				textBox.Resources.Remove("TextControlForegroundFocused");
-				textBox.Resources.Remove("TextControlForegroundDisabled");
-
-				textBox.ClearValue(TextBox.ForegroundProperty);
+				textBox.Resources.RemoveKeys(TextColorKeys);
+				textBox.ClearValue(Control.ForegroundProperty);
 			}
 			else
 			{
-				textBox.Resources["TextControlForeground"] = brush;
-				textBox.Resources["TextControlForegroundPointerOver"] = brush;
-				textBox.Resources["TextControlForegroundFocused"] = brush;
-				textBox.Resources["TextControlForegroundDisabled"] = brush;
-
+				textBox.Resources.SetValueForAllKey(TextColorKeys, brush);
 				textBox.Foreground = brush;
 			}
 		}
@@ -88,30 +95,26 @@ namespace Microsoft.Maui.Platform
 			textBox.PlaceholderText = placeholder.Placeholder ?? string.Empty;
 		}
 
+		static readonly string[] PlaceholderColorKeys =
+		{
+			"TextControlPlaceholderForeground",
+			"TextControlPlaceholderForegroundPointerOver",
+			"TextControlPlaceholderForegroundFocused",
+			"TextControlPlaceholderForegroundDisabled"
+		};
+
 		public static void UpdatePlaceholderColor(this TextBox textBox, IPlaceholder placeholder)
 		{
 			var brush = placeholder.PlaceholderColor?.ToPlatform();
 
-			if (brush is null)
+			if (brush == null)
 			{
-				// Windows.Foundation.UniversalApiContract < 5
-				textBox.Resources.Remove("TextControlPlaceholderForeground");
-				textBox.Resources.Remove("TextControlPlaceholderForegroundPointerOver");
-				textBox.Resources.Remove("TextControlPlaceholderForegroundFocused");
-				textBox.Resources.Remove("TextControlPlaceholderForegroundDisabled");
-
-				// Windows.Foundation.UniversalApiContract >= 5
+				textBox.Resources.RemoveKeys(PlaceholderColorKeys);
 				textBox.ClearValue(TextBox.PlaceholderForegroundProperty);
 			}
 			else
 			{
-				// Windows.Foundation.UniversalApiContract < 5
-				textBox.Resources["TextControlPlaceholderForeground"] = brush;
-				textBox.Resources["TextControlPlaceholderForegroundPointerOver"] = brush;
-				textBox.Resources["TextControlPlaceholderForegroundFocused"] = brush;
-				textBox.Resources["TextControlPlaceholderForegroundDisabled"] = brush;
-
-				// Windows.Foundation.UniversalApiContract >= 5
+				textBox.Resources.SetValueForAllKey(PlaceholderColorKeys, brush);
 				textBox.PlaceholderForeground = brush;
 			}
 		}
