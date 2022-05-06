@@ -219,6 +219,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateVerticalScrollBarVisibility();
 		}
 
+		/*
+		 * With Xamarin.Forms we never passed in an infinite height. The height was always constrained to something.
+		 * In MAUI if the Maui.ListView is inside a VerticalStackLayout then it basically has infinite height to occupy.
+		 * One of the quirks of the Androids platform ListView control is that if you give it infinite height
+		 * It will only measure the top cell. If you google "ListView only renders first cell" you'll find a bunch of hits
+		 * where people have put an Android.ListView inside an Android.ScrollView and the fix is to remove the Android.ScrollView
+		 * Our problem here is basically the same. So, in order to preserve behavior here from XF and make this work the same as 
+		 * Windows/iOS we measure every single cell and then return that as the height.
+		 * This will most likely cause the user to be frustrated that the ListView doesn't scroll :-) but at least now
+		 * it's consistent between platforms and for cases where it doesn't need to scroll (TableView).
+		 * */
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (double.IsInfinity(heightConstraint))
@@ -248,6 +259,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						if (cell.Handler?.PlatformView is AView aView)
 							currentParent = aView.Parent as AView;
 
+						currentParent ??= _adapter.GetConvertViewForMeasuringInfiniteHeight(i);
 						AView listItem = _adapter.GetView(i, currentParent, Control);
 						int widthSpec;
 

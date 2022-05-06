@@ -185,6 +185,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public void Update(ViewCell cell)
 			{
+				// This cell could have a handler that was used for the measure pass for the Listview height calculations
+				//cell.View.Handler.DisconnectHandler();
+
 				Performance.Start(out string reference);
 				var viewHandlerType = _viewHandler.MauiContext.Handlers.GetHandlerType(cell.View.GetType());
 				var reflectableType = _viewHandler as System.Reflection.IReflectableType;
