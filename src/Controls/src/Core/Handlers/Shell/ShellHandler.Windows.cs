@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (platformView is MauiNavigationView mauiNavigationView)
 				mauiNavigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
 
+			platformView.Loaded -= OnLoaded;
 			platformView.PaneOpened -= OnPaneOpened;
 			platformView.PaneOpening -= OnPaneOpening;
 			platformView.PaneClosing -= OnPaneClosing;
