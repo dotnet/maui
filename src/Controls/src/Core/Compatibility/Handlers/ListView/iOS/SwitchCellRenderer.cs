@@ -46,8 +46,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			tvc.Cell = item;
 			tvc.PropertyChanged += HandlePropertyChanged;
 			tvc.AccessoryView = uiSwitch;
-			tvc.TextLabel.AccessibilityElementsHidden = true;
 #pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
+			tvc.TextLabel.AccessibilityElementsHidden = true;
 			tvc.TextLabel.Text = boolCell.Text;
 #pragma warning restore CA1416
 			tvc.AccessoryView.AccessibilityLabel = boolCell.Text;

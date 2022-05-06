@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		ImageSource _imageSource;
 		Color _mainTextColor;
 		string _mainTextText;
+		bool _accessoryViewOverrideAsAccessibilityElement = false;
 
 		public BaseCellView(Context context, Cell cell) : base(context)
 		{
@@ -108,6 +109,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				_mainTextText = value;
 				_mainText.Text = value;
+				if(_accessoryViewOverrideAsAccessibilityElement)
+					AccessoryView.ContentDescription = value;
 			}
 		}
 
@@ -116,21 +119,26 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return _cell; }
 		}
 
-		public void SetAccessoryView(AView view, bool overrideAsAccessibilityElement=false)
+		public void SetAccessoryView(AView view, bool overrideAsAccessibilityElement = false)
 		{
 			if (AccessoryView != null)
 				RemoveView(AccessoryView);
+				_accessoryViewOverrideAsAccessibilityElement = false;
 
 			if (view != null)
 			{
 				using (var layout = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.MatchParent))
 					AddView(view, layout);
 
+				_accessoryViewOverrideAsAccessibilityElement = overrideAsAccessibilityElement;
 				if (overrideAsAccessibilityElement)
-					view.LabeledBy = _mainText;
-
-				AccessoryView = view;
+					_mainText.LabelFor = view.Id;
+					_mainText.ImportantForAccessibility = ImportantForAccessibility.No;
+					view.ContentDescription = _mainText.Text;
+					AccessoryView = view;
 			}
+				else
+					_mainText.ImportantForAccessibility = ImportantForAccessibility.Auto;
 		}
 
 		public void SetDefaultMainTextColor(Color defaultColor)
