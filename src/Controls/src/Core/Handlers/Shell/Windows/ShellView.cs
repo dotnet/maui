@@ -40,6 +40,8 @@ namespace Microsoft.Maui.Controls.Platform
 			// If we set it earlier than this then WinUI will transition it back to false
 			if (IsPaneOpen != Element.FlyoutIsPresented)
 				IsPaneOpen = Element.FlyoutIsPresented;
+
+			UpdateFlyoutBackdrop();
 		}
 
 		private protected override void UpdateFlyoutCustomContent()
@@ -67,6 +69,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_shellSplitView = new ShellSplitView(RootSplitView);
 			_shellSplitView.FlyoutBackdrop = _flyoutBackdrop;
+			UpdateFlyoutBackdrop();
 			TogglePaneButton?.SetAutomationPropertiesAutomationId("OK");
 
 			base.OnApplyTemplateCore();
