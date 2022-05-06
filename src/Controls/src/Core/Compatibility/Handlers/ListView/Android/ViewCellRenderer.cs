@@ -225,7 +225,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public void UpdateIsEnabled()
 			{
-				Enabled = _viewCell.IsEnabled;
+				Enabled = _parent.IsEnabled && _viewCell.IsEnabled;
 			}
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
