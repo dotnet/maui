@@ -126,7 +126,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task LoadDrawableAsyncReturnsWithSameImage()
+		public async Task LoadDrawableAsyncReturnsWithSameImageAndDoesNotHang()
 		{
 			var service = new FileImageSourceService();
 
