@@ -69,10 +69,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_shellSplitView = new ShellSplitView(RootSplitView);
 			_shellSplitView.FlyoutBackdrop = _flyoutBackdrop;
-			UpdateFlyoutBackdrop();
 			TogglePaneButton?.SetAutomationPropertiesAutomationId("OK");
 
 			base.OnApplyTemplateCore();
+			UpdateFlyoutBackdrop();
 		}
 
 		internal void UpdateFlyoutPosition()
