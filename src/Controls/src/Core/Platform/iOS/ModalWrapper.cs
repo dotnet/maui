@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -57,9 +58,25 @@ namespace Microsoft.Maui.Controls.Platform
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public void DidDismiss(UIPresentationController _)
 		{
-			if (((Window)_modal.MauiContext.GetPlatformWindow().GetWindow()).Page is Shell shell)
-				shell.NavigationManager.GoToAsync("..", false, false, canCancel: false).FireAndForget();
-			else			
+			var window = (_modal.VirtualView as Page)?.Window;
+			if (window?.Page is Shell shell)
+			{
+				// The modal page might have a NavigationPage so it's not enough to just send
+				// GotoAsync(..) we need build up what the uri will be once the last modal page is removed
+				// and then submit that to shell
+				var modalStack = new List<Page>(shell.CurrentItem.CurrentItem.Navigation.ModalStack);
+				if (modalStack.Count > 0)
+					modalStack.RemoveAt(modalStack.Count - 1);
+
+				var result = ShellNavigationManager.GetNavigationState(
+					shell.CurrentItem,
+					shell.CurrentItem.CurrentItem,
+					shell.CurrentItem.CurrentItem.CurrentItem,
+					shell.CurrentItem.CurrentItem.Stack, modalStack);
+
+				shell.NavigationManager.GoToAsync(result, false, false, canCancel: false).FireAndForget();
+			}
+			else
 				((Page)_modal.VirtualView).Navigation.PopModalAsync(false).FireAndForget();
 		}
 

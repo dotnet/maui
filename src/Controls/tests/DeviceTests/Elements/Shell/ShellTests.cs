@@ -39,6 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<MenuBarItem, MenuBarItemHandler>();
 					handlers.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
 					handlers.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
+					handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #if WINDOWS
 					handlers.AddHandler<ShellItem, ShellItemHandler>();
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();

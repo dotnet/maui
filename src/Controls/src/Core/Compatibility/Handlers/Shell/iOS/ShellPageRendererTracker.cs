@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
 		{
 			_flyoutBehavior = behavior;
-			UpdateToolbarItems().FireAndForget();
+			UpdateToolbarItems();
 		}
 
 		protected virtual void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -159,8 +159,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateTitleView();
 			UpdateTitle();
 			UpdateTabBarVisible();
-			UpdateToolbarItems()
-				.FireAndForget();
+			UpdateToolbarItems();
 		}
 
 		protected virtual void OnPageSet(Page oldPage, Page newPage)
@@ -169,6 +168,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				oldPage.Appearing -= PageAppearing;
 				oldPage.PropertyChanged -= OnPagePropertyChanged;
+				newPage.Loaded -= OnPageLoaded;
 				((INotifyCollectionChanged)oldPage.ToolbarItems).CollectionChanged -= OnToolbarItemsChanged;
 			}
 
@@ -176,6 +176,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				newPage.Appearing += PageAppearing;
 				newPage.PropertyChanged += OnPagePropertyChanged;
+
+				if (!newPage.IsLoaded)
+					newPage.Loaded += OnPageLoaded;
+
 				((INotifyCollectionChanged)newPage.ToolbarItems).CollectionChanged += OnToolbarItemsChanged;
 
 				UpdateShellToMyPage();
@@ -218,10 +222,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		protected virtual Task UpdateToolbarItems()
+		protected virtual void UpdateToolbarItems()
 		{
-			if (NavigationItem == null)
-				return Task.CompletedTask;
+			if (NavigationItem == null || !Page.IsLoaded)
+				return;
 
 			if (NavigationItem.RightBarButtonItems != null)
 			{
@@ -244,7 +248,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			NavigationItem.SetRightBarButtonItems(primaries == null ? new UIBarButtonItem[0] : primaries.ToArray(), false);
 
 			UpdateLeftToolbarItems();
-			return Task.CompletedTask;
 		}
 
 		void UpdateLeftToolbarItems()
@@ -377,12 +380,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return img;
 		}
 
-		async void OnToolbarItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
+		void OnToolbarItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			await UpdateToolbarItems().ConfigureAwait(false);
+			UpdateToolbarItems();
 		}
 
-		async void SetBackButtonBehavior(BackButtonBehavior value)
+		void SetBackButtonBehavior(BackButtonBehavior value)
 		{
 			if (BackButtonBehavior == value)
 				return;
@@ -395,7 +398,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (BackButtonBehavior != null)
 				BackButtonBehavior.PropertyChanged += OnBackButtonBehaviorPropertyChanged;
 
-			await UpdateToolbarItems().ConfigureAwait(false);
+			UpdateToolbarItems();
 		}
 
 		void OnBackButtonCommandCanExecuteChanged(object sender, EventArgs e)
@@ -691,6 +694,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			});
 		}
 
+		void OnPageLoaded(object sender, EventArgs e)
+		{
+			if (sender is Page page)
+				page.Loaded -= OnPageLoaded;
+
+			UpdateToolbarItems();
+		}
+
 		void PageAppearing(object sender, EventArgs e)
 		{
 			//UIKIt will try to override our colors when the SearchController is inside the NavigationBar
@@ -716,6 +727,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (disposing)
 			{
 				_searchHandlerAppearanceTracker?.Dispose();
+				Page.Loaded -= OnPageLoaded;
 				Page.Appearing -= PageAppearing;
 				Page.PropertyChanged -= OnPagePropertyChanged;
 				((INotifyCollectionChanged)Page.ToolbarItems).CollectionChanged -= OnToolbarItemsChanged;
