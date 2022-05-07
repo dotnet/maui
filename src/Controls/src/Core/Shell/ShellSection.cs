@@ -119,6 +119,9 @@ namespace Microsoft.Maui.Controls
 			await poppingCompleted;
 
 			RemovePage(page);
+
+			if (Parent?.Parent is IShellController shellController)
+				shellController.UpdateCurrentState(ShellNavigationSource.Pop);
 		}
 
 		async void IShellSectionController.SendPoppingToRoot(Task finishedPopping)
