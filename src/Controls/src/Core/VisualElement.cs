@@ -967,7 +967,22 @@ namespace Microsoft.Maui.Controls
 		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_measureCache.Clear();
-			(this as IView)?.InvalidateMeasure();
+
+			// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 
+			// VerticalOptionsChanged will need to call ParentView.InvalidateArrange() instead
+
+			switch (trigger)
+			{
+				case InvalidationTrigger.MarginChanged:
+				case InvalidationTrigger.HorizontalOptionsChanged:
+				case InvalidationTrigger.VerticalOptionsChanged:
+					ParentView?.InvalidateMeasure();
+					break;
+				default:
+					(this as IView)?.InvalidateMeasure();
+					break;
+			}
+
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
 		}
 

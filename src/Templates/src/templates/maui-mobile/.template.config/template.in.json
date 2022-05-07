@@ -4,7 +4,7 @@
     "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen" ],
     "identity": "Microsoft.Maui.MauiApp",
     "groupIdentity": "Microsoft.Maui.App",
-    "name": ".NET MAUI App (Preview)",
+    "name": ".NET MAUI App",
     "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen",
     "shortName": "maui",
     "tags": {

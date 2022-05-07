@@ -13,4 +13,6 @@
   -->
   <Import Project="WinUI.targets" Condition=" '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsAppSDKWinUI)' == 'true'" />
 
+  <Import Project="Microsoft.Maui.Core.targets" />
+
 </Project>

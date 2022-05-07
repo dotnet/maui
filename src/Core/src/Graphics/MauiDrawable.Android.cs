@@ -389,7 +389,7 @@ namespace Microsoft.Maui.Graphics
 
 					if (_shape != null)
 					{
-						var bounds = new Graphics.Rect(0, 0, _width, _height);
+						var bounds = new Graphics.Rect(_strokeThickness / 2, _strokeThickness / 2, _width - _strokeThickness, _height - _strokeThickness);
 						var path = _shape.PathForBounds(bounds);
 						var clipPath = path?.AsAndroidPath();
 

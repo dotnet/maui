@@ -203,6 +203,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return key;
 		}
 
+		// This is used by the `ListViewRenderer.GetDesiredSize` call to retrieve an already created ViewCellContainer
+		// This helps us fake cell reuse so we aren't creating extra views during the measure pass.
+		internal ConditionalFocusLayout GetConvertViewForMeasuringInfiniteHeight(int position)
+		{
+			if (_layoutsCreated.TryGetValue(position, out ConditionalFocusLayout foundValue))
+				return foundValue;
+
+			return null;
+		}
+
 		public override AView GetView(int position, AView convertView, ViewGroup parent)
 		{
 			Cell cell = null;

@@ -14,6 +14,8 @@ namespace Microsoft.Maui
 
 		IPlatformViewHandler? Parent { get; }
 
+		bool ForceContainer { get; set; }
+
 		ERect GetPlatformContentGeometry();
 	}
 }

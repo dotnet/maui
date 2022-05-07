@@ -1,24 +1,22 @@
 ﻿#nullable enable
 
 using System;
-using System.Reflection;
 using ElmSharp;
-using Microsoft.Maui.Devices;
-using Microsoft.Extensions.DependencyInjection;
 using Tizen.UIExtensions.ElmSharp;
+using Tizen.UIExtensions.ElmSharp.GraphicsView;
+using Microsoft.Maui.Devices;
 using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
 using TButton = Tizen.UIExtensions.ElmSharp.Button;
-using TImage = Tizen.UIExtensions.ElmSharp.Image;
+using TDPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 using TLabel = Tizen.UIExtensions.ElmSharp.Label;
 using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
-using TDPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	public class ShellNavBar : EBox, IFlyoutBehaviorObserver, IDisposable
 	{
-		TImage? _menuIcon;
+		MaterialIcon _menuIcon;
 		TButton _menuButton;
 		TLabel _title;
 		ShellSearchView? _searchView = null;
@@ -31,12 +29,8 @@ namespace Microsoft.Maui.Controls.Platform
 		FlyoutBehavior _flyoutBehavior = FlyoutBehavior.Flyout;
 
 		EColor _backgroudColor = ShellView.DefaultBackgroundColor;
-		EColor _foregroudColor = ShellView.DefaultForegroundColor;
+		EColor _foregroundColor = ShellView.DefaultForegroundColor;
 		EColor _titleColor = ShellView.DefaultTitleColor;
-
-		// The source of icon resources is https://materialdesignicons.com/
-		const string _menuIconRes = TThemeConstants.Shell.Resources.MenuIcon;
-		const string _backIconRes = TThemeConstants.Shell.Resources.BackIcon;
 
 		bool _hasBackButton = false;
 		private bool disposedValue;
@@ -50,8 +44,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_menuButton = new TButton(PlatformParent);
 			_menuButton.Clicked += OnMenuClicked;
-
-			_menuIcon = new TImage(PlatformParent);
+			_menuIcon = new MaterialIcon(PlatformParent)
+			{
+				Color = _foregroundColor.ToCommon()
+			};
 			UpdateMenuIcon();
 
 			_title = new TLabel(PlatformParent)
@@ -164,11 +160,11 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get
 			{
-				return _foregroudColor;
+				return _foregroundColor;
 			}
 			set
 			{
-				_foregroudColor = value;
+				_foregroundColor = value;
 			}
 		}
 
@@ -212,64 +208,30 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		async void UpdateMenuIcon()
+		void UpdateMenuIcon()
 		{
-			ImageSource? source = null;
 			if (HasBackButton)
 			{
 				if (_isTV)
 				{
 					_menuButton.Style = TThemeConstants.Button.Styles.Default;
-					_menuButton.Text = TThemeConstants.Shell.Resources.TV.BackIconCode;
-					_menuIcon = null;
 				}
-				else
-				{
-					var assembly = typeof(ShellNavBar).GetTypeInfo().Assembly;
-					var assemblyName = assembly.GetName().Name;
-					source = ImageSource.FromResource(assemblyName + "." + _backIconRes, assembly);
-				}
+				_menuIcon.IconType = Tizen.UIExtensions.Common.GraphicsView.MaterialIcons.ArrowBack;
 			}
 			else if (_flyoutBehavior != FlyoutBehavior.Flyout)
 			{
 				_menuButton.Hide();
-			}
-			else if (ShellController.FlyoutIcon != null)
-			{
-				if (_isTV)
-				{
-					_menuButton.Style = TThemeConstants.Button.Styles.Circle;
-					_menuIcon = new TImage(PlatformParent);
-				}
-				source = Shell.Current.FlyoutIcon;
 			}
 			else
 			{
 				if (_isTV)
 				{
 					_menuButton.Style = TThemeConstants.Button.Styles.Default;
-					_menuButton.Text = TThemeConstants.Shell.Resources.TV.MenuIconCode;
-					_menuIcon = null;
 				}
-				else
-				{
-					var assembly = typeof(ShellNavBar).GetTypeInfo().Assembly;
-					var assemblyName = assembly.GetName().Name;
-					source = ImageSource.FromResource(assemblyName + "." + _menuIconRes, assembly);
-
-				}
+				_menuIcon.IconType = Tizen.UIExtensions.Common.GraphicsView.MaterialIcons.Menu;
 			}
 
-			if (source != null && _menuIcon != null)
-			{
-				_menuIcon.Show();
-				var provider = MauiContext?.Services.GetRequiredService<IImageSourceServiceProvider>();
-				var service = provider?.GetRequiredImageSourceService(source);
-				if (service != null)
-				{
-					await service.GetImageAsync(source, _menuIcon);
-				}
-			}
+			_menuIcon?.Show();
 			_menuButton.SetIconPart(_menuIcon);
 			_menuButton.Show();
 		}
