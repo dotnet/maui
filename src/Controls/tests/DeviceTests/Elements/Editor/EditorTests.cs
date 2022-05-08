@@ -11,7 +11,6 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class EditorTests : HandlerTestBase
 	{
 
-#if !IOS
 		// iOS is broken until this point
 		// https://github.com/dotnet/maui/issues/3425
 		[Theory]
@@ -36,20 +35,20 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, (_) =>
 			{
 				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(1000, 1000)));
-				var initialHeight = editor.Height;
+				var initialHeight = editor.Height > 0 ? editor.Height : layout.Frame.Height;
 
 				editor.Text += Environment.NewLine + " Some new text" + Environment.NewLine;
 				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(1000, 1000)));
 
+				var newHeight = editor.Height > 0 ? editor.Height : layout.Frame.Height;
 				if (option == EditorAutoSizeOption.Disabled)
-					Assert.Equal(initialHeight, editor.Height);
+					Assert.Equal(initialHeight, newHeight);
 				else
-					Assert.True(initialHeight < editor.Height);
+					Assert.True(initialHeight < newHeight);
 
 				return Task.CompletedTask;
 			});
 		}
-#endif
 
 		[Theory]
 		[ClassData(typeof(TextTransformCases))]
