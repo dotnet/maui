@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Microsoft.Maui.Controls.HandlerImpl.WebView
+namespace Microsoft.Maui.Controls
 {
-	class WebView
+	public partial class WebView
 	{
 	}
 }

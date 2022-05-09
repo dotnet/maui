@@ -4,9 +4,9 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
 {
-    public partial class AddRemoveToolbarItemsContentView : ContentView
+    public partial class WindowsAddRemoveToolbarItemsPage : ContentPage
     {
-        public static readonly BindableProperty ParentPageProperty = BindableProperty.Create("ParentPage", typeof(Page), typeof(AddRemoveToolbarItemsContentView), null);
+        public static readonly BindableProperty ParentPageProperty = BindableProperty.Create("ParentPage", typeof(Page), typeof(WindowsAddRemoveToolbarItemsPage), null);
 
         public Page ParentPage
         {
@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample.Pages
 
 		readonly Action _action;
 
-        public AddRemoveToolbarItemsContentView()
+        public WindowsAddRemoveToolbarItemsPage()
         {
             InitializeComponent();
 #if WINDOWS

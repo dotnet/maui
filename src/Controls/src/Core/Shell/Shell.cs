@@ -546,10 +546,9 @@ namespace Microsoft.Maui.Controls
 				shellSection.PropertyChanged += OnShellItemPropertyChanged;
 			else
 			{
-				var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
-
 				if (this.CurrentItem == null)
 				{
+					var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
 					var requestBuilder = new RouteRequestBuilder(new List<string>()
 					{
 						shellItem.Route,
@@ -583,7 +582,10 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					return GoToAsync(state);
+					var navParameters = ShellNavigationManager.GetNavigationParameters(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
+
+					return _navigationManager
+						.GoToAsync(navParameters);
 				}
 			}
 

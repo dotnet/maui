@@ -4,9 +4,9 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 
 namespace Maui.Controls.Sample.Pages
 {
-    public partial class CollapseWidthAdjusterContentView : ContentView
+    public partial class WindowsCollapseWidthAdjusterPage : ContentPage
     {
-        public static readonly BindableProperty ParentPageProperty = BindableProperty.Create("ParentPage", typeof(Microsoft.Maui.Controls.FlyoutPage), typeof(CollapseWidthAdjusterContentView), null, propertyChanged:OnParentPagePropertyChanged);
+        public static readonly BindableProperty ParentPageProperty = BindableProperty.Create("ParentPage", typeof(Microsoft.Maui.Controls.FlyoutPage), typeof(WindowsCollapseWidthAdjusterPage), null, propertyChanged:OnParentPagePropertyChanged);
 
         public Microsoft.Maui.Controls.FlyoutPage ParentPage
         {
@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
             set { SetValue(ParentPageProperty, value); }
         }
 
-        public CollapseWidthAdjusterContentView()
+        public WindowsCollapseWidthAdjusterPage()
         {
             InitializeComponent();
         }
@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample.Pages
         { 
             if (newValue != null)
             {
-                var instance = element as CollapseWidthAdjusterContentView;
+                var instance = element as WindowsCollapseWidthAdjusterPage;
                 instance.entry.Text = instance.ParentPage.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().CollapsedPaneWidth().ToString();
             }
         }
