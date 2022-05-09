@@ -232,9 +232,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_tablayout.Visibility = (SectionController.GetItems().Count > 1) ? ViewStates.Visible : ViewStates.Gone;
 			if (_tablayout.Visibility == ViewStates.Gone)
+			{
+				SetViewPager2UserInputEnabled(false);
 				_viewPager.ImportantForAccessibility = ImportantForAccessibility.No;
+			}
 			else
+			{
+				SetViewPager2UserInputEnabled(true);
 				_viewPager.ImportantForAccessibility = ImportantForAccessibility.Auto;
+			}
+		}
+
+		protected virtual void SetViewPager2UserInputEnabled(bool value)
+		{
+			_viewPager.UserInputEnabled = value;
 		}
 
 		protected virtual void OnShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
