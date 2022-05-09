@@ -68,13 +68,13 @@ namespace Microsoft.Maui.Controls.Platform
 				if (modalStack.Count > 0)
 					modalStack.RemoveAt(modalStack.Count - 1);
 
-				var result = ShellNavigationManager.GetNavigationState(
+				var result = ShellNavigationManager.GetNavigationParameters(
 					shell.CurrentItem,
 					shell.CurrentItem.CurrentItem,
 					shell.CurrentItem.CurrentItem.CurrentItem,
 					shell.CurrentItem.CurrentItem.Stack, modalStack);
 
-				shell.NavigationManager.GoToAsync(result, false, false, canCancel: false).FireAndForget();
+				shell.NavigationManager.GoToAsync(result).FireAndForget();
 			}
 			else
 				((Page)_modal.VirtualView).Navigation.PopModalAsync(false).FireAndForget();
