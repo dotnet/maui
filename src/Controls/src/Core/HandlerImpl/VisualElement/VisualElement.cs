@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Controls
+using Microsoft.Maui.Handlers;
+
+namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs" />
 	public partial class VisualElement
