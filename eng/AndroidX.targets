@@ -22,7 +22,7 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.Navigation.Fragment"
-        Version="2.4.1.2"
+        Version="2.4.2"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Navigation.Runtime"
