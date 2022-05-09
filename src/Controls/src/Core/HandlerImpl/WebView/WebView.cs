@@ -4,12 +4,12 @@
 	{
 		public static IPropertyMapper<IWebView, WebViewHandler> ControlsWebViewMapper = new PropertyMapper<WebView, WebViewHandler>(WebViewHandler.Mapper)
 		{
-#if WINDOWS
-			[PlatformConfiguration.WindowsSpecific.WebView.IsJavaScriptAlertEnabledProperty.PropertyName] = MapIsJavaScriptAlertEnabled,
-#elif ANDROID
+#if ANDROID
 			[PlatformConfiguration.AndroidSpecific.WebView.DisplayZoomControlsProperty.PropertyName] = MapDisplayZoomControls,
 			[PlatformConfiguration.AndroidSpecific.WebView.EnableZoomControlsProperty.PropertyName] = MapEnableZoomControls,
 			[PlatformConfiguration.AndroidSpecific.WebView.MixedContentModeProperty.PropertyName] = MapMixedContentMode,
+#elif WINDOWS
+			[PlatformConfiguration.WindowsSpecific.WebView.IsJavaScriptAlertEnabledProperty.PropertyName] = MapIsJavaScriptAlertEnabled,
 #endif
 		};
 
