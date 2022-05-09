@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// Initializes a new instance of <see cref="RootComponentsCollection"/>.
 		/// </summary>
 		/// <param name="jsComponents">Configuration to enable JS component support.</param>
+		[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(JSComponentConfigurationStore))]
 		public RootComponentsCollection(JSComponentConfigurationStore jsComponents)
 		{
 			JSComponents = jsComponents;
