@@ -6,6 +6,10 @@
 		{
 #if WINDOWS
 			[PlatformConfiguration.WindowsSpecific.WebView.IsJavaScriptAlertEnabledProperty.PropertyName] = MapIsJavaScriptAlertEnabled,
+#elif ANDROID
+			[PlatformConfiguration.AndroidSpecific.WebView.DisplayZoomControlsProperty.PropertyName] = MapDisplayZoomControls,
+			[PlatformConfiguration.AndroidSpecific.WebView.EnableZoomControlsProperty.PropertyName] = MapEnableZoomControls,
+			[PlatformConfiguration.AndroidSpecific.WebView.MixedContentModeProperty.PropertyName] = MapMixedContentMode,
 #endif
 		};
 

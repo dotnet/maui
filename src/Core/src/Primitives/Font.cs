@@ -78,11 +78,15 @@ namespace Microsoft.Maui
 		}
 
 		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='OfSize'][1]/Docs" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public static Font OfSize(string? name, double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 			new(name, size, fontSlant, weight, enableScaling);
 
 		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='SystemFontOfSize'][1]/Docs" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public static Font SystemFontOfSize(double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 			new(null, size, fontSlant, weight, enableScaling);
 
 		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='SystemFontOfWeight']/Docs" />

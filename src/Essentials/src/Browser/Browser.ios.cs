@@ -16,7 +16,6 @@ namespace Microsoft.Maui.ApplicationModel
 			switch (options.LaunchMode)
 			{
 				case BrowserLaunchMode.SystemPreferred:
-					System.Diagnostics.Debug.Assert(!OperatingSystem.IsIOSVersionAtLeast(11));
 					await LaunchSafariViewController(uri, options);
 					break;
 				case BrowserLaunchMode.External:
@@ -26,11 +25,12 @@ namespace Microsoft.Maui.ApplicationModel
 			return true;
 		}
 
-		[System.Runtime.Versioning.UnsupportedOSPlatform("ios11.0")]
 		private static async Task LaunchSafariViewController(Uri uri, BrowserLaunchOptions options)
 		{
 			var nativeUrl = new NSUrl(uri.AbsoluteUri);
+#pragma warning disable CA1416 // TODO: 'SFSafariViewController(NSUrl, bool)' is unsupported on: 'ios' 11.0 and later, there is an overload SFSafariViewController(NSUrl, SFSafariViewControllerConfiguration) supported from ios 11.0+
 			var sfViewController = new SFSafariViewController(nativeUrl, false);
+#pragma warning restore CA1416 // probably need to call the overloads depending on OS version
 			var vc = WindowStateManager.Default.GetCurrentUIViewController(true)!;
 
 			if (options.PreferredToolbarColor != null)

@@ -7,6 +7,8 @@
 			{
 #if WINDOWS
 				[PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName] = MapDetectReadingOrderFromContent,
+#elif ANDROID
+				[PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName] = MapImeOptions,
 #endif
 				[nameof(Text)] = MapText,
 				[nameof(TextTransform)] = MapText,

@@ -3,8 +3,6 @@ using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -125,6 +123,38 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal("SetImageDrawable", events[2].Member);
 			var drawable = Assert.IsType<ColorDrawable>(events[2].Value);
 			drawable.Color.IsEquivalent(Colors.Red.ToPlatform());
+		}
+
+		[Fact]
+		public async Task LoadDrawableAsyncReturnsWithSameImageAndDoesNotHang()
+		{
+			var service = new FileImageSourceService();
+
+			var filename = BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Azure);
+			var imageSource = new FileImageSourceStub(filename);
+
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<TImageHandler>(image);
+
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					// get the file to load for the first time
+					var firstResult = await service.LoadDrawableAsync(imageSource, handler.PlatformView);
+
+					// now load and make sure the task completes
+					var secondResultTask = service.LoadDrawableAsync(imageSource, handler.PlatformView);
+
+					// make sure we wait, but only for 5 seconds
+					await Task.WhenAny(
+						secondResultTask,
+						Task.Delay(5_000));
+
+					Assert.Equal(TaskStatus.RanToCompletion, secondResultTask.Status);
+				});
+			});
 		}
 
 		ImageView GetPlatformImageView(IImageHandler imageHandler) =>

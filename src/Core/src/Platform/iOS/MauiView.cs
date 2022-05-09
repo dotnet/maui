@@ -24,8 +24,9 @@ namespace Microsoft.Maui.Platform
 				return bounds;
 			}
 
-			System.Diagnostics.Debug.Assert(System.OperatingSystem.IsIOSVersionAtLeast(11));
+#pragma warning disable CA1416 // TODO 'UIView.SafeAreaInsets' is only supported on: 'ios' 11.0 and later, 'maccatalyst' 11.0 and later, 'tvos' 11.0 and later.
 			return SafeAreaInsets.InsetRect(bounds);
+#pragma warning restore CA1416
 		}
 	}
 }

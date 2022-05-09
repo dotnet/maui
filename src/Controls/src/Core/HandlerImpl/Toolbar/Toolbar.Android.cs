@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls
 			if (_currentMenuItems == null)
 				return;
 
-			PlatformView.UpdateMenuItems(ToolbarItems, MauiContext, null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+			PlatformView.UpdateMenuItems(ToolbarItems, MauiContext, BarTextColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 
 		void UpdateTitleView()
