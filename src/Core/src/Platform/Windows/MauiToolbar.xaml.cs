@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Platform
 				new PropertyMetadata(true));
 
 		MenuBar? _menuBar;
+		WBrush? _menuBarForeground;
 		private Button? _navigationViewBackButton;
 		private Button? _togglePaneButton;
 		private Graphics.Color? _iconColor;
@@ -83,11 +84,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal void SetBarTextColor(WBrush brush)
+		internal void SetBarTextColor(WBrush? brush)
 		{
 			title.Foreground = brush;
 
-			menuContent.Foreground = brush;
+			_menuBarForeground = brush;
 			UpdateMenuBarForeground();
 		}
 
@@ -182,7 +183,6 @@ namespace Microsoft.Maui.Platform
 		{
 			_menuBar = menuBar;
 
-
 			menuContent.Content = _menuBar;
 			UpdateMenuBarForeground();
 
@@ -197,16 +197,25 @@ namespace Microsoft.Maui.Platform
 			if (_menuBar is null)
 				return;
 
-			WBrush menuForegroundBrush = menuContent.Foreground;
-
 			// MenuBarItems currently don't respect the Foreground property due to https://github.com/microsoft/microsoft-ui-xaml/issues/7070
 			// Work around this by setting the Button's colors in the MenuBar's ResourceDictionary
 
 			ResourceDictionary dictionary = _menuBar.Resources;
-			dictionary["ButtonForeground"] = menuForegroundBrush;
-			dictionary["ButtonForegroundPointerOver"] = menuForegroundBrush;
-			dictionary["ButtonForegroundPressed"] = menuForegroundBrush;
-			dictionary["ButtonForegroundDisabled"] = menuForegroundBrush;
+			WBrush? menuForegroundBrush = _menuBarForeground;
+			if (menuForegroundBrush is null)
+			{
+				dictionary.Remove("ButtonForeground");
+				dictionary.Remove("ButtonForegroundPointerOver");
+				dictionary.Remove("ButtonForegroundPressed");
+				dictionary.Remove("ButtonForegroundDisabled");
+			}
+			else
+			{
+				dictionary["ButtonForeground"] = menuForegroundBrush;
+				dictionary["ButtonForegroundPointerOver"] = menuForegroundBrush;
+				dictionary["ButtonForegroundPressed"] = menuForegroundBrush;
+				dictionary["ButtonForegroundDisabled"] = menuForegroundBrush;
+			}
 		}
 	}
 }

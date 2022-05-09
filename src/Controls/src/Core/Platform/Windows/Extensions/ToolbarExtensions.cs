@@ -75,9 +75,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBarTextColor(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			Color barTextColor = toolbar.BarTextColor;
-			if (barTextColor != null)
-				platformToolbar.SetBarTextColor(barTextColor.ToPlatform());
+			platformToolbar.SetBarTextColor(toolbar.BarTextColor?.ToPlatform());
 		}
 
 		public static void UpdateToolbarDynamicOverflowEnabled(this MauiToolbar platformToolbar, Toolbar toolbar)
