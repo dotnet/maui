@@ -114,11 +114,14 @@ namespace Maui.Controls.Sample.ViewModels
 #elif WINDOWS
 			return new[]
 			{
-				new SectionModel(typeof(CollapseWidthAdjusterContentView), "FlyoutPage Navigation Bar",
-					"This WinUI platform-specific is used to collapse the navigation bar on a FlyoutPage."),
+				new SectionModel(typeof(WindowsAddRemoveToolbarItemsPage), "Add / Remove Toolbar Items",
+					"This WinUI platform-specific is used to add and/or remove toolbar items."),
 
-				new SectionModel(typeof(ToolbarPlacementChangerContentView), "ToolbarPlacementChangerContentView",
-					"This WinUI platform-specific is used to change the placement of a toolbar on a Page."),
+				new SectionModel(typeof(WindowsCollapseStyleChangerPage), "Collapse Style",
+					"This WinUI platform-specific is used to change the collapse style on a FlyoutPage."),
+
+				new SectionModel(typeof(WindowsCollapseWidthAdjusterPage), "FlyoutPage Navigation Bar",
+					"This WinUI platform-specific is used to collapse the navigation bar on a FlyoutPage."),
 
 				new SectionModel(typeof(WindowsListViewPage), "ListView Selection Mode",
 					"This WinUI platform-specific controls whether items in a ListView can respond to tap gestures, and hence whether the native ListView fires the ItemClick or Tapped event."),
@@ -131,6 +134,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 				new SectionModel(typeof(WindowsSearchBarPage), "SearchBar Spell Check",
 					"This WinUI platform-specific enables a SearchBar to interact with the spell check engine."),
+
+				new SectionModel(typeof(WindowsToolbarPlacementChangerPage), "Toolbar Placement Changer",
+					"This WinUI platform-specific is used to change the placement of a toolbar on a Page."),
 
 				new SectionModel(typeof(WindowsVisualElementAccessKeysPage), "VisualElement Access Keys",
 					"This WinUI platform-specific is used to specify an access key for a VisualElement."),
