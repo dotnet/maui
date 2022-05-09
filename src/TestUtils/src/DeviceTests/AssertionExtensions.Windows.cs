@@ -62,8 +62,15 @@ namespace Microsoft.Maui.DeviceTests
 			if (view.Parent is Border wrapper)
 				view = wrapper;
 
+			TaskCompletionSource? tcs = null;
+
 			if (view.Parent == null)
 			{
+				// prepare to wait for element to be in the UI
+				tcs = new TaskCompletionSource();
+				view.Loaded += OnViewLoaded;
+
+				// attach to the UI
 				Grid grid;
 				var window = new Window
 				{
@@ -72,21 +79,25 @@ namespace Microsoft.Maui.DeviceTests
 						HorizontalAlignment = HorizontalAlignment.Center,
 						VerticalAlignment = VerticalAlignment.Center,
 						Children =
-					{
-						(grid = new Grid
 						{
-							Width = view.Width,
-							Height = view.Height,
-							Children =
+							(grid = new Grid
 							{
-								view
-							}
-						})
-					}
+								Width = view.Width,
+								Height = view.Height,
+								Children =
+								{
+									view
+								}
+							})
+						}
 					}
 				};
 				window.Activate();
 
+				// wait for element to be loaded
+				await tcs.Task;
+
+				// continue with the run
 				try
 				{
 					return await Run(action);
@@ -105,6 +116,12 @@ namespace Microsoft.Maui.DeviceTests
 			static async Task<T> Run(Func<Task<T>> action)
 			{
 				return await action();
+			}
+			
+			void OnViewLoaded(object sender, RoutedEventArgs e)
+			{
+				view.Loaded -= OnViewLoaded;
+				tcs?.SetResult();
 			}
 		}
 

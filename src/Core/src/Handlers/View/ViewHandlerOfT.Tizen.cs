@@ -34,10 +34,13 @@ namespace Microsoft.Maui.Handlers
 			Dispose(disposing: false);
 		}
 
+		public bool ForceContainer { get; set; }
+
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||
 			VirtualView?.Clip != null ||
 			VirtualView?.Shadow != null ||
+			ForceContainer ||
 			base.NeedsContainer;
 
 		public override void PlatformArrange(Rect frame)

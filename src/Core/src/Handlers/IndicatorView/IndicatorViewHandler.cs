@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class IndicatorViewHandler : IIndicatorViewHandler
 	{
-		public static PropertyMapper<IIndicatorView, IIndicatorViewHandler> Mapper = new(ViewMapper)
+		public static IPropertyMapper<IIndicatorView, IIndicatorViewHandler> Mapper = new PropertyMapper<IIndicatorView, IIndicatorViewHandler>(ViewMapper)
 		{
 			[nameof(IIndicatorView.Count)] = MapCount,
 			[nameof(IIndicatorView.Position)] = MapPosition,
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public IndicatorViewHandler(PropertyMapper mapper) : base(mapper ?? Mapper)
+		public IndicatorViewHandler(IPropertyMapper mapper) : base(mapper ?? Mapper)
 		{
 		}
 

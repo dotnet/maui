@@ -40,6 +40,8 @@ namespace Microsoft.Maui.Controls.Platform
 			// If we set it earlier than this then WinUI will transition it back to false
 			if (IsPaneOpen != Element.FlyoutIsPresented)
 				IsPaneOpen = Element.FlyoutIsPresented;
+
+			UpdateFlyoutBackdrop();
 		}
 
 		private protected override void UpdateFlyoutCustomContent()
@@ -70,6 +72,7 @@ namespace Microsoft.Maui.Controls.Platform
 			TogglePaneButton?.SetAutomationPropertiesAutomationId("OK");
 
 			base.OnApplyTemplateCore();
+			UpdateFlyoutBackdrop();
 		}
 
 		internal void UpdateFlyoutPosition()
