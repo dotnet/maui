@@ -31,7 +31,7 @@
                     windows:VisualElement.AccessKeyHorizontalOffset="20" 
                     windows:VisualElement.AccessKeyVerticalOffset="20" />
             <Button Text="Return to Platform-Specifics List" 
-                    Clicked="OnReturnButtonClicked"
+                    Clicked="OnButtonClicked"
                     windows:VisualElement.AccessKey="G"
                     windows:VisualElement.AccessKeyPlacement="Bottom" />
         </StackLayout>
@@ -42,7 +42,7 @@
             <Label Text="Press the alt key once to see the access keys, then press the alt key and an access key." 
                    FontAttributes="Bold" />
             <Button Text="Return to Platform-Specifics List" 
-                    Clicked="OnReturnButtonClicked"
+                    Clicked="OnButtonClicked"
                     windows:VisualElement.AccessKey="G"
                     windows:VisualElement.AccessKeyPlacement="Bottom" />
         </StackLayout>
@@ -53,7 +53,7 @@
             <Label Text="Press the alt key once to see the access keys, then press the alt key and an access key." 
                    FontAttributes="Bold" />
             <Button Text="Return to Platform-Specifics List" 
-                    Clicked="OnReturnButtonClicked"
+                    Clicked="OnButtonClicked"
                     windows:VisualElement.AccessKey="G"
                     windows:VisualElement.AccessKeyPlacement="Bottom" />
         </StackLayout>

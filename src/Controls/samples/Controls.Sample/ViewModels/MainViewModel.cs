@@ -59,7 +59,7 @@ namespace Maui.Controls.Sample.ViewModels
 				"User interface concepts like Animations, Colors, Fonts and more."),
 
 			new SectionModel(typeof(PlatformSpecificsPage), "Platform Specifics",
-				"Platform-specifics allow you to consume functionality that's only available on a specific platform, without implementing custom renderers or effects."),
+				"Platform-specifics allow you to consume functionality that's only available on a specific platform, without implementing custom renderers, handlers or effects."),
 
 			new SectionModel(typeof(OthersPage), "Others Concepts",
 				"Other options like Graphics."),

@@ -4,9 +4,9 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 
 namespace Maui.Controls.Sample.Pages
 {
-    public partial class CollapseStyleChangerContentView : ContentView
+    public partial class WindowsCollapseStyleChangerPage : ContentPage
     {
-        public static readonly BindableProperty ParentPageProperty = BindableProperty.Create("ParentPage", typeof(Microsoft.Maui.Controls.FlyoutPage), typeof(CollapseStyleChangerContentView), null, propertyChanged:OnParentPagePropertyChanged);
+        public static readonly BindableProperty ParentPageProperty = BindableProperty.Create("ParentPage", typeof(Microsoft.Maui.Controls.FlyoutPage), typeof(WindowsCollapseStyleChangerPage), null, propertyChanged:OnParentPagePropertyChanged);
 
         public Microsoft.Maui.Controls.FlyoutPage ParentPage
         {
@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
             set { SetValue(ParentPageProperty, value); }
         }
 
-        public CollapseStyleChangerContentView()
+        public WindowsCollapseStyleChangerPage()
         {
             InitializeComponent();
             PopulatePicker();
@@ -40,7 +40,7 @@ namespace Maui.Controls.Sample.Pages
             if (newValue != null)
             {
                 var enumType = typeof(CollapseStyle);
-                var instance = element as CollapseStyleChangerContentView;
+                var instance = element as WindowsCollapseStyleChangerPage;
                 instance.picker.SelectedIndex = Array.IndexOf(Enum.GetNames(enumType), Enum.GetName(enumType, instance.ParentPage.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetCollapseStyle()));
             }
         }

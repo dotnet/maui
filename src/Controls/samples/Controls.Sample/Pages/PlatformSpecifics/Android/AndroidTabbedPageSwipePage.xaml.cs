@@ -10,14 +10,15 @@ namespace Maui.Controls.Sample.Pages
     {
         ICommand _returnToPlatformSpecificsPage;
 
-		public AndroidTabbedPageSwipePage()
-		{
-			InitializeComponent();
-		}
+        public AndroidTabbedPageSwipePage()
+        {
+            InitializeComponent();
+        }
 
         public AndroidTabbedPageSwipePage(ICommand restore)
         {
             InitializeComponent();
+
             _returnToPlatformSpecificsPage = restore;
         }
 

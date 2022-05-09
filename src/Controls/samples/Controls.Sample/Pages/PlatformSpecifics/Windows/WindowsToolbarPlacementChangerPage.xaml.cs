@@ -4,9 +4,9 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 
 namespace Maui.Controls.Sample.Pages
 {
-    public partial class ToolbarPlacementChangerContentView : ContentView
+    public partial class WindowsToolbarPlacementChangerPage : ContentPage
     {
-        public static readonly BindableProperty ParentPageProperty = BindableProperty.Create("ParentPage", typeof(Microsoft.Maui.Controls.Page), typeof(ToolbarPlacementChangerContentView), null, propertyChanged:OnParentPagePropertyChanged);
+        public static readonly BindableProperty ParentPageProperty = BindableProperty.Create("ParentPage", typeof(Microsoft.Maui.Controls.Page), typeof(WindowsToolbarPlacementChangerPage), null, propertyChanged:OnParentPagePropertyChanged);
 
         public Microsoft.Maui.Controls.Page ParentPage
         {
@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
             set { SetValue(ParentPageProperty, value); }
         }
 
-        public ToolbarPlacementChangerContentView()
+        public WindowsToolbarPlacementChangerPage()
         {
             InitializeComponent();
             PopulatePicker();
@@ -40,7 +40,7 @@ namespace Maui.Controls.Sample.Pages
             if (newValue != null)
             {
                 var enumType = typeof(ToolbarPlacement);
-                var instance = element as ToolbarPlacementChangerContentView;
+                var instance = element as WindowsToolbarPlacementChangerPage;
                 instance.picker.SelectedIndex = Array.IndexOf(Enum.GetNames(enumType), Enum.GetName(enumType, instance.ParentPage.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetToolbarPlacement()));
             }
         }
