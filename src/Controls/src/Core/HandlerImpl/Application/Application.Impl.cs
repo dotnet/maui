@@ -8,7 +8,6 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.Application']/Docs" />
 	public partial class Application : IApplication
 	{
 		const string MauiWindowIdKey = "__MAUI_WINDOW_ID__";
@@ -22,7 +21,6 @@ namespace Microsoft.Maui.Controls
 
 		IReadOnlyList<IWindow> IApplication.Windows => _windows;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Windows']/Docs" />
 		public IReadOnlyList<Window> Windows => _windows;
 
 		IWindow IApplication.CreateWindow(IActivationState? activationState)
@@ -87,7 +85,6 @@ namespace Microsoft.Maui.Controls
 			_windows.Remove(window);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='OpenWindow']/Docs" />
 		public virtual void OpenWindow(Window window)
 		{
 			var id = Guid.NewGuid().ToString();
@@ -102,13 +99,11 @@ namespace Microsoft.Maui.Controls
 			Handler?.Invoke(nameof(IApplication.OpenWindow), new OpenWindowRequest(State: state));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='CloseWindow']/Docs" />
 		public virtual void CloseWindow(Window window)
 		{
 			Handler?.Invoke(nameof(IApplication.CloseWindow), window);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='ThemeChanged']/Docs" />
 		void IApplication.ThemeChanged()
 		{
 			if (UserAppTheme != AppTheme.Unspecified)

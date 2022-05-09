@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		void OnPlatformViewTouched(object? sender, Android.Views.View.TouchEventArgs e)
+		void OnPlatformViewTouched(object? sender, AView.TouchEventArgs e)
 		{
 			if (_disposed)
 			{
