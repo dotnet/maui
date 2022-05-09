@@ -86,7 +86,10 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetBarTextColor(WBrush? brush)
 		{
-			title.Foreground = brush;
+			if (brush != null)
+			{
+				title.Foreground = brush;
+			}
 
 			_menuBarForeground = brush;
 			UpdateMenuBarForeground();
