@@ -137,27 +137,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateSemantics(this FrameworkElement platformView, IView view)
 		{
-			var semantics = view.GetSemantics();
+			var semantics = view.Semantics;
+
+			if (view is IPicker picker && string.IsNullOrEmpty(semantics?.Description))
+				AutomationProperties.SetName(platformView, picker.Title);
+			else if (semantics != null)
+				AutomationProperties.SetName(platformView, semantics.Description);
 
 			if (semantics == null)
 				return;
 
-			AutomationProperties.SetName(platformView, semantics.Description);
 			AutomationProperties.SetHelpText(platformView, semantics.Hint);
 			AutomationProperties.SetHeadingLevel(platformView, (UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)semantics.HeadingLevel));
-		}
-
-		internal static Semantics? GetSemantics(this IView view)
-		{
-			var semantics = view.Semantics;
-
-			if (view is IPicker picker && string.IsNullOrEmpty(semantics?.Description))
-			{
-				semantics ??= new Semantics();
-				semantics.Description = picker.Title;
-			}
-
-			return semantics;
 		}
 
 		internal static void UpdateProperty(this FrameworkElement platformControl, DependencyProperty property, Color color)
