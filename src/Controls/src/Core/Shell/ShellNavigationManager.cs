@@ -461,6 +461,43 @@ namespace Microsoft.Maui.Controls
 			return lookupDict;
 		}
 
+		public static ShellNavigationParameters GetNavigationParameters(
+			ShellItem shellItem,
+			ShellSection shellSection, 
+			ShellContent shellContent, 
+			IReadOnlyList<Page> sectionStack, 
+			IReadOnlyList<Page> modalStack)
+		{
+			var state = GetNavigationState(shellItem, shellSection, shellContent, sectionStack, modalStack);
+			var navStack = shellSection.Navigation.NavigationStack;
+
+			var topNavStackPage =
+				(modalStack?.Count > 0 ? modalStack[modalStack.Count - 1] : null) ??
+				(navStack?.Count > 0 ? navStack[navStack.Count - 1] : null);
+
+			var queryParametersTarget =
+				topNavStackPage as BindableObject ??
+				(shellContent?.Content as BindableObject) ??
+				shellContent;
+
+			ShellRouteParameters routeParameters = null;
+
+			if (queryParametersTarget?.GetValue(ShellContent.QueryAttributesProperty) is
+				ShellRouteParameters shellRouteParameters)
+			{
+				routeParameters = shellRouteParameters;
+			}
+
+			return new ShellNavigationParameters()
+			{
+				TargetState = state,
+				Animated = false,
+				EnableRelativeShellRoutes = false,
+				DeferredArgs = null,
+				Parameters = routeParameters
+			};
+		}
+
 		public static ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack, IReadOnlyList<Page> modalStack)
 		{
 			List<string> routeStack = new List<string>();
