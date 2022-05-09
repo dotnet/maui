@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 
 #if NET6_0_OR_GREATER
-			bwv.RootComponents.RegisterForJavaScript<MyDynamicComponent>("my-dynamic-root-component");
+			bwv.RootComponents.RegisterForJavaScript<MyDynamicComponent>("my-dynamic-root-component", javaScriptInitializer: "myDynamicRootComponentInitializer");
 #endif
 		}
 	}
