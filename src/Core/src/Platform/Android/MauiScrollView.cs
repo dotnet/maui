@@ -202,29 +202,6 @@ namespace Microsoft.Maui.Platform
 			CrossPlatformArrange(destination);
 		}
 
-		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
-		{
-			var width = widthMeasureSpec.GetSize();
-			var height = heightMeasureSpec.GetSize();
-
-			var contentLP = _content?.LayoutParameters;
-			if (contentLP != null)
-			{
-				if (_scrollOrientation == ScrollOrientation.Vertical)
-					contentLP.Width = width;
-				else
-					contentLP.Width = ViewGroup.LayoutParams.WrapContent;
-
-
-				if (_scrollOrientation == ScrollOrientation.Horizontal)
-					contentLP.Height = height;
-				else
-					contentLP.Height = ViewGroup.LayoutParams.WrapContent;
-			}
-
-			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-		}
-
 		public void ScrollTo(int x, int y, bool instant, Action finished)
 		{
 			if (instant)
