@@ -10,17 +10,14 @@ using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Media.SpeechSynthesis;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media
 {
-	public partial class TextToSpeechImplementation : ITextToSpeech
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
-		public Task<IEnumerable<Locale>> GetLocalesAsync() =>
+		Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
 			Task.FromResult(SpeechSynthesizer.AllVoices.Select(v => new Locale(v.Language, null, v.DisplayName, v.Id)));
 
-		public Task SpeakAsync(string text, CancellationToken cancelToken)
-			=> SpeakAsync(text, default, cancelToken);
-
-		public async Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
+		async Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
 		{
 			var tcsUtterance = new TaskCompletionSource<bool>();
 

@@ -5,13 +5,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Storage;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		internal string CacheDirectory = Path.Combine(Essentials.FileSystem.CacheDirectory, "com.microsoft.maui", "MauiUriImages");
+		internal string CacheDirectory = Path.Combine(FileSystem.CacheDirectory, "com.microsoft.maui", "MauiUriImages");
 
 		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
 			GetImageAsync((IUriImageSource)imageSource, scale, cancellationToken);
@@ -77,7 +78,9 @@ namespace Microsoft.Maui
 
 			Directory.CreateDirectory(directory);
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			var result = imageData.Save(path, true);
+#pragma warning restore CA1416
 
 			if (result == false)
 				throw new InvalidOperationException($"Unable to cache image at '{path}'.");

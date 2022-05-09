@@ -8,7 +8,7 @@ using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					if (backgroundColor == null)
 						_backgroundUIView.BackgroundColor = UIColor.White;
 					else
-						_backgroundUIView.BackgroundColor = backgroundColor.ToUIColor();
+						_backgroundUIView.BackgroundColor = backgroundColor.ToPlatform();
 				}
 				else
 				{
@@ -274,6 +274,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					}
 					_tableViewController = new FormsUITableViewController(e.NewElement, _usingLargeTitles);
 					SetNativeControl(_tableViewController.TableView);
+
+					if (Forms.IsiOS15OrNewer)
+						_tableViewController.TableView.SectionHeaderTopPadding = new nfloat(0);
 
 					_backgroundUIView = _tableViewController.TableView.BackgroundView;
 
@@ -740,10 +743,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateSeparatorColor()
 		{
 			var color = Element.SeparatorColor;
-			// ...and Steve said to the unbelievers the separator shall be gray, and gray it was. The unbelievers looked on, and saw that it was good, and
-			// they went forth and documented the default color. The holy scripture still reflects this default.
-			// Defined here: https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableView_Class/#//apple_ref/occ/instp/UITableView/separatorColor
-			Control.SeparatorColor = color.ToUIColor(Maui.Platform.ColorExtensions.SeparatorColor);
+			Control.SeparatorColor = color.ToPlatform(ColorExtensions.SeparatorColor);
 		}
 
 		void UpdateSeparatorVisibility()
@@ -778,7 +778,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var color = Element.RefreshControlColor;
 
 			if (_tableViewController != null)
-				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToUIColor());
+				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToPlatform());
 		}
 
 		void UpdateVerticalScrollBarVisibility()

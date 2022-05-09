@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices.Sensors;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
@@ -69,11 +70,13 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			});
 
 			var request = new GeolocationRequest(GeolocationAccuracy.Best);
+			request.RequestFullAccuracy = true;
 			var location = await Geolocation.GetLocationAsync(request);
 
 			Assert.NotNull(location);
 
 			Assert.True(location.Accuracy > 0);
+			Assert.False(location.ReducedAccuracy);
 			Assert.NotEqual(0.0, location.Latitude);
 			Assert.NotEqual(0.0, location.Longitude);
 

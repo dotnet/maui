@@ -1,7 +1,6 @@
-using Android.Content.Res;
+using System;
 using Android.Graphics;
 using Android.Text;
-using Android.Util;
 using Android.Widget;
 using static Android.Widget.TextView;
 using ALayoutDirection = Android.Views.LayoutDirection;
@@ -20,7 +19,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var newText = label.Text ?? string.Empty;
 
-			if (PlatformVersion.IsAtLeast(24))
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				textView.SetText(Html.FromHtml(newText, FromHtmlOptions.ModeCompact), BufferType.Spannable);
 			else
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -71,26 +70,6 @@ namespace Microsoft.Maui.Platform
 			textView.UpdateVerticalAlignment(textAlignment.VerticalTextAlignment);
 		}
 
-		public static void UpdateLineBreakMode(this TextView textView, ILabel label)
-		{
-			textView.SetLineBreakMode(label);
-		}
-
-		public static void UpdateMaxLines(this TextView textView, ILabel label)
-		{
-			var maxLines = label.MaxLines;
-
-			if (maxLines == -1) // Default value
-			{
-				// MaxLines is not explicitly set, so just let it be whatever gets set by LineBreakMode
-				textView.SetLineBreakMode(label);
-				return;
-			}
-
-			textView.SetSingleLine(maxLines == 1);
-			textView.SetMaxLines(maxLines);
-		}
-
 		public static void UpdatePadding(this TextView textView, ILabel label)
 		{
 			var context = textView.Context;
@@ -124,21 +103,20 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFlowDirection(this TextView platformView, IView view)
 		{
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			switch (view.FlowDirection)
 			{
-				platformView.LayoutDirection = ALayoutDirection.Inherit;
-				platformView.TextDirection = ATextDirection.Inherit;
-			}
-			else if (view.FlowDirection == FlowDirection.RightToLeft)
-			{
-				platformView.LayoutDirection = ALayoutDirection.Rtl;
-				platformView.TextDirection = ATextDirection.Rtl;
-			}
-			else if (view.FlowDirection == FlowDirection.LeftToRight)
-			{
-				platformView.LayoutDirection = ALayoutDirection.Ltr;
-				platformView.TextDirection = ATextDirection.Ltr;
+				case FlowDirection.MatchParent:
+					platformView.LayoutDirection = ALayoutDirection.Inherit;
+					platformView.TextDirection = ATextDirection.Inherit;
+					break;
+				case FlowDirection.RightToLeft:
+					platformView.LayoutDirection = ALayoutDirection.Rtl;
+					platformView.TextDirection = ATextDirection.Rtl;
+					break;
+				case FlowDirection.LeftToRight:
+					platformView.LayoutDirection = ALayoutDirection.Ltr;
+					platformView.TextDirection = ATextDirection.Ltr;
+					break;
 			}
 		}
 
@@ -146,51 +124,6 @@ namespace Microsoft.Maui.Platform
 		{
 			if (label.LineHeight >= 0)
 				textView.SetLineSpacing(0, (float)label.LineHeight);
-		}
-
-		internal static void SetLineBreakMode(this TextView textView, ILabel label)
-		{
-			var lineBreakMode = label.LineBreakMode;
-
-			int maxLines = label.MaxLines;
-
-			if (maxLines <= 0)
-				maxLines = int.MaxValue;
-
-			bool singleLine = false;
-
-			switch (lineBreakMode)
-			{
-				case LineBreakMode.NoWrap:
-					maxLines = 1;
-					singleLine = true;
-					textView.Ellipsize = null;
-					break;
-				case LineBreakMode.WordWrap:
-					textView.Ellipsize = null;
-					break;
-				case LineBreakMode.CharacterWrap:
-					textView.Ellipsize = null;
-					break;
-				case LineBreakMode.HeadTruncation:
-					maxLines = 1;
-					singleLine = true; // Workaround for bug in older Android API versions (https://bugzilla.xamarin.com/show_bug.cgi?id=49069)
-					textView.Ellipsize = TextUtils.TruncateAt.Start;
-					break;
-				case LineBreakMode.TailTruncation:
-					maxLines = 1;
-					singleLine = true;
-					textView.Ellipsize = TextUtils.TruncateAt.End;
-					break;
-				case LineBreakMode.MiddleTruncation:
-					maxLines = 1;
-					singleLine = true; // Workaround for bug in older Android API versions (https://bugzilla.xamarin.com/show_bug.cgi?id=49069)
-					textView.Ellipsize = TextUtils.TruncateAt.Middle;
-					break;
-			}
-
-			textView.SetSingleLine(singleLine);
-			textView.SetMaxLines(maxLines);
 		}
 	}
 }

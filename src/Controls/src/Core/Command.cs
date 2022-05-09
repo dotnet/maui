@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][4]/Docs" />
 		public Command(Action<T> execute, Func<T, bool> canExecute)
 			: base(o =>
 			{
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			// Not a Nullable, if it's a value type then null is not valid
-			return !t.GetTypeInfo().IsValueType;
+			return !t.IsValueType;
 		}
 	}
 

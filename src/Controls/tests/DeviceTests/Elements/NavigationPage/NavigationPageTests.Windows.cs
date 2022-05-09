@@ -21,49 +21,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.NavigationPage)]
 	public partial class NavigationPageTests : HandlerTestBase
 	{
-		public bool IsBackButtonVisible(IElementHandler handler) =>
-			IsBackButtonVisible(handler.MauiContext);
-
-		public bool IsBackButtonVisible(IMauiContext mauiContext)
-		{
-			var navView = GetMauiNavigationView(mauiContext);
-			return navView.IsBackButtonVisible == UI.Xaml.Controls.NavigationViewBackButtonVisible.Visible;
-		}
-
-		public bool IsNavigationBarVisible(IElementHandler handler) =>
-			IsNavigationBarVisible(handler.MauiContext);
-
-		public bool IsNavigationBarVisible(IMauiContext mauiContext)
-		{
-			var navView = GetMauiNavigationView(mauiContext);
-			var header = navView?.Header as WFrameworkElement;
-			return header?.Visibility == UI.Xaml.Visibility.Visible;
-		}
-
-		public bool ToolbarItemsMatch(
-			IElementHandler handler,
-			params ToolbarItem[] toolbarItems)
-		{
-			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
-			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
-
-			Assert.Equal(toolbarItems.Length, windowHeader.CommandBar.PrimaryCommands.Count);
-			for (var i = 0; i < toolbarItems.Length; i++)
-			{
-				ToolbarItem toolbarItem = toolbarItems[i];
-				var primaryCommand = ((WAppBarButton)windowHeader.CommandBar.PrimaryCommands[i]);
-				Assert.Equal(toolbarItem, primaryCommand.DataContext);
-			}
-
-			return true;
-		}
-
-		MauiToolbar GetPlatformToolbar(IElementHandler handler)
-		{
-			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
-			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
-			return windowHeader;
-		}
 
 		string GetToolbarTitle(IElementHandler handler) =>
 			GetPlatformToolbar(handler).Title;
@@ -83,6 +40,23 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(navView.IsBackEnabled);
 				await navPage.PopAsync();
 				Assert.False(navView.IsBackEnabled);
+			});
+		}
+
+		[Fact(DisplayName = "App Title Bar Margin Sets when Back Button Visible")]
+		public async Task AppTitleBarMarginSetsWhenBackButtonVisible()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
+			{
+				var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
+				await navPage.PushAsync(new ContentPage());
+
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var rootView = rootManager.RootView as WindowRootView;
+				Assert.True(rootView.AppTitleBarContainer.Margin.Left > 20);
 			});
 		}
 	}

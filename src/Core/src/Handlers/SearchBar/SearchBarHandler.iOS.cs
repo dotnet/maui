@@ -1,5 +1,6 @@
 using System;
 using Foundation;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var searchBar = new MauiSearchBar() { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
-			if (PlatformVersion.IsAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13))
 				_editor = searchBar.SearchTextField;
 			else
 				_editor = searchBar.FindDescendantView<UITextField>();
@@ -32,6 +33,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.OnEditingStarted += OnEditingStarted;
 			platformView.OnEditingStopped += OnEditingEnded;
 
+			if (_editor != null)
+				_editor.EditingChanged += OnEditingChanged;
+
 			base.ConnectHandler(platformView);
 		}
 
@@ -45,8 +49,21 @@ namespace Microsoft.Maui.Handlers
 			platformView.OnEditingStarted -= OnEditingStarted;
 			platformView.OnEditingStopped -= OnEditingEnded;
 
+			if (_editor != null)
+				_editor.EditingChanged -= OnEditingChanged;
 
 			base.DisconnectHandler(platformView);
+		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			if (double.IsInfinity(widthConstraint) || double.IsInfinity(heightConstraint))
+			{
+				PlatformView.SizeToFit();
+				return new Size(PlatformView.Frame.Width, PlatformView.Frame.Height);
+			}
+
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		public static void MapIsEnabled(ISearchBarHandler handler, ISearchBar searchBar)
@@ -173,6 +190,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (VirtualView != null)
 				VirtualView.IsFocused = true;
+		}
+
+		void OnEditingChanged(object? sender, EventArgs e)
+		{
+			if (VirtualView == null || _editor == null)
+				return;
+
+			VirtualView.UpdateText(_editor.Text);
 		}
 	}
 }

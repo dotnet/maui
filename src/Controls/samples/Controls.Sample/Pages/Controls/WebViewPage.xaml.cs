@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -88,6 +90,16 @@ namespace Maui.Controls.Sample.Pages
 
 			var html = reader.ReadToEnd();
 			FileWebView.Source = new HtmlWebViewSource { Html = html };
+		}
+
+		void OnAllowMixedContentClicked(object sender, EventArgs e)
+		{
+			MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetMixedContentMode(MixedContentHandling.AlwaysAllow);
+		}
+
+		void OnEnableZoomControlsClicked(object sender, EventArgs e)
+		{
+			MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().EnableZoomControls(true);
 		}
 	}
 }

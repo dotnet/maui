@@ -7,10 +7,10 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
-using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
@@ -230,6 +230,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.FragmentOpen);
 
 			transaction.ReplaceEx(_frameLayout.Id, fragment);
+
+			// Don't force the commit if this is our first load 
+			if (previousView == null)
+			{
+				transaction
+					.SetReorderingAllowedEx(true);
+			}
+
 			transaction.CommitAllowingStateLossEx();
 
 			void OnDestroyed(object sender, EventArgs args)
@@ -265,22 +273,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var activity = AndroidContext.GetActivity();
 			var window = activity?.Window;
 			var decorView = window?.DecorView;
-			var resources = AndroidContext.Resources;
 
-			int statusBarHeight = 0;
-			int resourceId = resources.GetIdentifier("status_bar_height", "dimen", "android");
-			if (resourceId > 0)
-			{
-				statusBarHeight = resources.GetDimensionPixelSize(resourceId);
-			}
+			int statusBarHeight = AndroidContext.GetStatusBarHeight();
+			int navigationBarHeight = AndroidContext.GetNavigationBarHeight();
 
-			int navigationBarHeight = 0;
-			resourceId = resources.GetIdentifier("navigation_bar_height", "dimen", "android");
-			if (resourceId > 0)
-			{
-				navigationBarHeight = resources.GetDimensionPixelSize(resourceId);
-			}
-			
 			// we are using the split drawable here to avoid GPU overdraw.
 			// All it really is is a drawable that only draws under the statusbar/bottom bar to make sure
 			// we dont draw over areas we dont need to. This has very limited benefits considering its
@@ -302,8 +298,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				decorView.SetBackground(split);
 			}
 		}
-
-
 
 		bool IViewHandler.HasContainer { get => false; set { } }
 
@@ -374,8 +368,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				using (var paint = new Paint())
 				{
-
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					paint.Color = Color;
+#pragma warning restore CA1416
 
 					canvas.DrawRect(new ARect(0, 0, bounds.Right, TopSize), paint);
 

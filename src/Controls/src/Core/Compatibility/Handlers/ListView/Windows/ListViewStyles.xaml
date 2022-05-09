@@ -7,11 +7,19 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:primitiveContract7Present="using:Microsoft.UI.Xaml.Controls.Primitives?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:xf="using:Microsoft.Maui.Controls.Platform"
+    xmlns:maui="using:Microsoft.Maui.Controls.Platform"
 	xmlns:platform="using:Microsoft.Maui.Controls.Platform.Compatibility">
 
 
+    <platform:HeightConverter x:Key="HeightConverter" />
     <platform:ListViewGroupStyleSelector x:Key="ListViewGroupSelector" />
+    <platform:CaseConverter x:Key="LowerConverter" ConvertToUpper="False" />
+    <platform:CaseConverter x:Key="UpperConverter" ConvertToUpper="True" />
+    <platform:ColorConverter x:Key="ColorConverter" />
+    <platform:CollapseWhenEmptyConverter x:Key="CollapseWhenEmpty" />
+    <platform:HorizontalTextAlignmentConverter x:Key="HorizontalTextAlignmentConverter" />
+    <maui:ImageConverter x:Key="ImageConverter" />
+    <platform:KeyboardConverter x:Key="KeyboardConverter" />
 
     <DataTemplate x:Key="View">
         <ContentPresenter Content="{Binding Converter={StaticResource ViewToRenderer}}" />
@@ -138,48 +146,19 @@
             </platform:EntryCellTextBox.HeaderTemplate>
         </platform:EntryCellTextBox>
     </DataTemplate>
-    
-    <Style x:Key="FormsListViewItem" TargetType="ListViewItem">
+
+    <Style x:Key="MauiListViewItem" TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
         <Setter Property="TabNavigation" Value="Local" />
         <Setter Property="IsHoldingEnabled" Value="True" />
-        <Setter Property="Padding" Value="0" />
+        <Setter Property="Padding" Value="12, 0, 0, 0" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="MinWidth" Value="{ThemeResource ListViewItemMinWidth}" />
         <Setter Property="MinHeight" Value="0" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ListViewItem">
-                    <ListViewItemPresenter
-						CheckBrush="{ThemeResource SystemControlForegroundBaseMediumHighBrush}"
-						ContentMargin="{TemplateBinding Padding}"
-						CheckMode="Inline"
-						ContentTransitions="{TemplateBinding ContentTransitions}"
-						CheckBoxBrush="{ThemeResource SystemControlForegroundBaseMediumHighBrush}"
-						DragForeground="{ThemeResource ListViewItemDragForegroundThemeBrush}"
-						DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
-						DragBackground="{ThemeResource ListViewItemDragBackgroundThemeBrush}"
-						DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
-						FocusBorderBrush="{ThemeResource SystemControlForegroundAltHighBrush}"
-						FocusSecondaryBorderBrush="{ThemeResource SystemControlForegroundBaseHighBrush}"
-						HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-						PointerOverForeground="{ThemeResource SystemControlHighlightAltBaseHighBrush}"
-						PressedBackground="{ThemeResource SystemControlHighlightListMediumBrush}"
-						PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackgroundThemeBrush}"
-						PointerOverBackground="{ThemeResource SystemControlHighlightListLowBrush}"
-						ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}"
-						SelectedPressedBackground="{ThemeResource SystemControlHighlightListAccentHighBrush}"
-						SelectionCheckMarkVisualEnabled="True"
-						SelectedForeground="{ThemeResource SystemControlHighlightAltBaseHighBrush}"
-						SelectedPointerOverBackground="{ThemeResource SystemControlHighlightListAccentMediumBrush}"
-						SelectedBackground="{ThemeResource SystemControlHighlightListAccentLowBrush}"
-						VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
+    
 </ResourceDictionary>

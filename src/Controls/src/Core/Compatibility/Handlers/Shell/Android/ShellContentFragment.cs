@@ -134,7 +134,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_root = inflater.Inflate(Controls.Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
 
 			var shellContentMauiContext = MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
-			_toolbar = _root.FindViewById<AToolbar>(Controls.Resource.Id.shellcontent_toolbar);
+
+			Maui.IElement parentElement = (_shellContent as Maui.IElement) ?? _page;
+			var shellToolbar = new Toolbar(parentElement);
+			ShellToolbarTracker.ApplyToolbarChanges(_shellContext.Shell.Toolbar, shellToolbar);
+			_toolbar = (AToolbar)shellToolbar.ToPlatform(shellContentMauiContext);
+
+			var appBar = _root.FindViewById<AppBarLayout>(Resource.Id.shellcontent_appbar);
+			appBar.AddView(_toolbar);
 			_viewhandler = _page.ToHandler(shellContentMauiContext);
 
 			_shellPageContainer = new ShellPageContainer(Context, _viewhandler);
@@ -143,6 +150,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				vg.AddView(_shellPageContainer);
 
 			_toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
+			_toolbarTracker.SetToolbar(shellToolbar);
 			_toolbarTracker.Page = _page;
 			// this is probably not the most ideal way to do that
 			_toolbarTracker.CanNavigateBack = _shellContent == null;
@@ -173,8 +181,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (_root is ViewGroup vg)
 					vg.RemoveView(_shellPageContainer);
+
+				_shellPageContainer.Dispose();
 			}
 
+			_shellContext?.Shell?.Toolbar?.Handler?.DisconnectHandler();
 			_root?.Dispose();
 			_toolbarTracker?.Dispose();
 			_appearanceTracker?.Dispose();
@@ -186,6 +197,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_root = null;
 			_viewhandler = null;
 			_shellContent = null;
+			_shellPageContainer = null;
 		}
 
 		protected override void Dispose(bool disposing)

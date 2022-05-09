@@ -2,8 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
+using Microsoft.Maui.Storage;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -28,12 +27,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public async Task Saves_And_Loads(string key, string data)
 		{
 #if __IOS__
-            // Try the new platform specific api
-            await SecureStorage.SetAsync(key, data, Security.SecAccessible.AfterFirstUnlock);
+			// Try the new platform specific api
+			await SecureStorage.SetAsync(key, data, Security.SecAccessible.AfterFirstUnlock);
 
-            var b = await SecureStorage.GetAsync(key);
+			var b = await SecureStorage.GetAsync(key);
 
-            Assert.Equal(data, b);
+			Assert.Equal(data, b);
 #endif
 			await SecureStorage.SetAsync(key, data);
 

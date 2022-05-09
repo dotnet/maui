@@ -105,5 +105,25 @@
         Update="Microsoft.Web.WebView2"
         Version="$(_MicrosoftWebWebView2Version)"
     />
+    <PackageReference
+        Update="Microsoft.CodeAnalysis.PublicApiAnalyzers"
+        Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)"
+    />
+    <PackageReference
+        Update="Tizen.UIExtensions.ElmSharp"
+        Version="$(TizenUIExtensionsVersion)"
+    />
+    <PackageReference
+        Update="Svg.Skia"
+        Version="$(SvgSkiaVersion)"
+    />
+    <PackageReference
+        Update="Svg.Custom"
+        Version="$(SvgSkiaVersion)"
+    />
+    <PackageReference
+        Update="Svg.Picture"
+        Version="$(SvgSkiaVersion)"
+    />
   </ItemGroup>
 </Project>

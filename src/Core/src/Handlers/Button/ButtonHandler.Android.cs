@@ -69,19 +69,19 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateBackground(button);
 		}
 
-		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
+		public static void MapStrokeColor(IButtonHandler handler, IButton button)
 		{
-			handler.PlatformView?.UpdateStrokeColor(buttonStroke);
+			handler.PlatformView?.UpdateStrokeColor(button);
 		}
 
-		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke)
+		public static void MapStrokeThickness(IButtonHandler handler, IButton button)
 		{
-			handler.PlatformView?.UpdateStrokeThickness(buttonStroke);
+			handler.PlatformView?.UpdateStrokeThickness(button);
 		}
 
-		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke)
+		public static void MapCornerRadius(IButtonHandler handler, IButton button)
 		{
-			handler.PlatformView?.UpdateCornerRadius(buttonStroke);
+			handler.PlatformView?.UpdateCornerRadius(button);
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)
@@ -111,10 +111,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdatePadding(button, DefaultPadding);
 		}
 
-		public static void MapImageSource(IButtonHandler handler, IImageButton image) =>
+		public static void MapImageSource(IButtonHandler handler, IImage image) =>
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapImageSourceAsync(IButtonHandler handler, IImageButton image)
+		public static Task MapImageSourceAsync(IButtonHandler handler, IImage image)
 		{
 			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}

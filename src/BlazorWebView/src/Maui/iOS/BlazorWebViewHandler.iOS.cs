@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private IOSWebViewManager? _webviewManager;
 
 		internal const string AppOrigin = "app://" + BlazorWebView.AppHostAddress + "/";
-		private static readonly Uri AppOriginUri = new(AppOrigin);
+		internal static readonly Uri AppOriginUri = new(AppOrigin);
 		private const string BlazorInitScript = @"
 			window.__receiveMessageCallbacks = [];
 			window.__dispatchMessageCallback = function(message) {
@@ -47,9 +48,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		";
 
 		/// <inheritdoc />
+		[SupportedOSPlatform("ios11.0")]
 		protected override WKWebView CreatePlatformView()
 		{
 			var config = new WKWebViewConfiguration();
+
+			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
+			{
+				Configuration = config
+			});
 
 			config.Preferences.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("developerExtrasEnabled"));
 
@@ -60,11 +67,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
-			return new WKWebView(RectangleF.Empty, config)
+			var webview = new WKWebView(RectangleF.Empty, config)
 			{
 				BackgroundColor = UIColor.Clear,
 				AutosizesSubviews = true
 			};
+
+			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
+			{
+				WebView = webview
+			});
+
+			return webview;
 		}
 
 		private void MessageReceived(Uri uri, string message)
@@ -122,7 +136,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
 				fileProvider,
 				VirtualView.JSComponents,
+				contentRootDir,
 				hostPageRelativePath);
+
+			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
 			if (RootComponents != null)
 			{
@@ -156,7 +173,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				{
 					throw new ArgumentNullException(nameof(message));
 				}
-				_messageReceivedAction(new Uri(AppOrigin), ((NSString)message.Body).ToString());
+				_messageReceivedAction(AppOriginUri, ((NSString)message.Body).ToString());
 			}
 		}
 
@@ -170,6 +187,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 
 			[Export("webView:startURLSchemeTask:")]
+			[SupportedOSPlatform("ios11.0")]
 			public void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
 				var responseBytes = GetResponseBytes(urlSchemeTask.Request.Url.AbsoluteString, out var contentType, statusCode: out var statusCode);

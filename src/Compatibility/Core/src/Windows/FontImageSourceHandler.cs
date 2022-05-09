@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				FontFamily = GetFontSource(fontsource),
 				FontSize = (float)fontsource.Size,
-				HorizontalAlignment = CanvasHorizontalAlignment.Center,
+				HorizontalAlignment = CanvasHorizontalAlignment.Left,
 				VerticalAlignment = CanvasVerticalAlignment.Center,
 				Options = CanvasDrawTextOptions.Default
 			};
@@ -51,9 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					var iconcolor = (fontsource.Color != null ? fontsource.Color : Colors.White).ToWindowsColor();
 
 					// offset by 1 as we added a 1 inset
-					var x = (float)layout.DrawBounds.X * -1;
-
-					ds.DrawTextLayout(layout, x, 1f, iconcolor);
+					ds.DrawTextLayout(layout, 1f, 1f, iconcolor);
 				}
 
 				return Task.FromResult((UI.Xaml.Media.ImageSource)imageSource);

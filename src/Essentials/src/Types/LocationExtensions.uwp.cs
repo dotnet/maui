@@ -5,9 +5,9 @@ using Windows.Devices.Geolocation;
 using Windows.Services.Maps;
 using WindowsARS = Windows.Devices.Geolocation.AltitudeReferenceSystem;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class LocationExtensions
+	static partial class LocationExtensions
 	{
 		internal static Location ToLocation(this MapLocation mapLocation) =>
 			new Location
@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Essentials
 				Altitude = location.Coordinate.Point.Position.Altitude,
 				Accuracy = location.Coordinate.Accuracy,
 				VerticalAccuracy = location.Coordinate.AltitudeAccuracy,
+				ReducedAccuracy = false,
 				Speed = (!location.Coordinate.Speed.HasValue || double.IsNaN(location.Coordinate.Speed.Value)) ? default : location.Coordinate.Speed,
 				Course = (!location.Coordinate.Heading.HasValue || double.IsNaN(location.Coordinate.Heading.Value)) ? default : location.Coordinate.Heading,
 				IsFromMockProvider = false,
@@ -41,18 +42,19 @@ namespace Microsoft.Maui.Essentials
 			};
 
 		internal static Location ToLocation(this Geocoordinate coordinate) =>
-			 new Location
-			 {
-				 Latitude = coordinate.Point.Position.Latitude,
-				 Longitude = coordinate.Point.Position.Longitude,
-				 Timestamp = coordinate.Timestamp,
-				 Altitude = coordinate.Point.Position.Altitude,
-				 Accuracy = coordinate.Accuracy,
-				 VerticalAccuracy = coordinate.AltitudeAccuracy,
-				 Speed = (!coordinate.Speed.HasValue || double.IsNaN(coordinate.Speed.Value)) ? default : coordinate.Speed,
-				 Course = (!coordinate.Heading.HasValue || double.IsNaN(coordinate.Heading.Value)) ? default : coordinate.Heading,
-				 AltitudeReferenceSystem = coordinate.Point.AltitudeReferenceSystem.ToEssentials()
-			 };
+			new Location
+			{
+				Latitude = coordinate.Point.Position.Latitude,
+				Longitude = coordinate.Point.Position.Longitude,
+				Timestamp = coordinate.Timestamp,
+				Altitude = coordinate.Point.Position.Altitude,
+				Accuracy = coordinate.Accuracy,
+				VerticalAccuracy = coordinate.AltitudeAccuracy,
+				ReducedAccuracy = false,
+				Speed = (!coordinate.Speed.HasValue || double.IsNaN(coordinate.Speed.Value)) ? default : coordinate.Speed,
+				Course = (!coordinate.Heading.HasValue || double.IsNaN(coordinate.Heading.Value)) ? default : coordinate.Heading,
+				AltitudeReferenceSystem = coordinate.Point.AltitudeReferenceSystem.ToEssentials()
+			};
 
 		internal static AltitudeReferenceSystem ToEssentials(this WindowsARS altitudeReferenceSystem) =>
 			altitudeReferenceSystem switch

@@ -1,25 +1,25 @@
 #nullable enable
 using System;
-using System.ComponentModel;
-using Microsoft.Maui.Essentials.Implementations;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	public interface IPreferences
 	{
-		bool ContainsKey(string key, string? sharedName);
-		void Remove(string key, string? sharedName);
-		void Clear(string? sharedName);
-		void Set<T>(string key, T value, string? sharedName);
-		T Get<T>(string key, T defaultValue, string? sharedName);
+		bool ContainsKey(string key, string? sharedName = null);
+
+		void Remove(string key, string? sharedName = null);
+
+		void Clear(string? sharedName = null);
+
+		void Set<T>(string key, T value, string? sharedName = null);
+
+		T Get<T>(string key, T defaultValue, string? sharedName = null);
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Preferences']/Docs" />
 	public static class Preferences
 	{
-		internal static string GetPrivatePreferencesSharedName(string feature) =>
-			$"{AppInfo.PackageName}.microsoft.maui.essentials.{feature}";
-
 		// overloads
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='ContainsKey'][1]/Docs" />
@@ -35,7 +35,10 @@ namespace Microsoft.Maui.Essentials
 			Clear(null);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Get'][7]/Docs" />
-		public static string Get(string key, string defaultValue) =>
+#if !NETSTANDARD
+		[return: NotNullIfNotNull("defaultValue")]
+#endif
+		public static string? Get(string key, string? defaultValue) =>
 			Get(key, defaultValue, null);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Get'][1]/Docs" />
@@ -59,7 +62,7 @@ namespace Microsoft.Maui.Essentials
 			Get(key, defaultValue, null);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Set'][7]/Docs" />
-		public static void Set(string key, string value) =>
+		public static void Set(string key, string? value) =>
 			Set(key, value, null);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Set'][1]/Docs" />
@@ -97,8 +100,11 @@ namespace Microsoft.Maui.Essentials
 			Current.Clear(sharedName);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Get'][14]/Docs" />
-		public static string Get(string key, string defaultValue, string? sharedName) =>
-			Current.Get<string>(key, defaultValue, sharedName);
+#if !NETSTANDARD
+		[return: NotNullIfNotNull("defaultValue")]
+#endif
+		public static string? Get(string key, string? defaultValue, string? sharedName) =>
+			Current.Get<string?>(key, defaultValue, sharedName);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Get'][8]/Docs" />
 		public static bool Get(string key, bool defaultValue, string? sharedName) =>
@@ -121,8 +127,8 @@ namespace Microsoft.Maui.Essentials
 			Current.Get<long>(key, defaultValue, sharedName);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Set'][14]/Docs" />
-		public static void Set(string key, string value, string? sharedName) =>
-			Current.Set<string>(key, value, sharedName);
+		public static void Set(string key, string? value, string? sharedName) =>
+			Current.Set<string?>(key, value, sharedName);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Set'][8]/Docs" />
 		public static void Set(string key, bool value, string? sharedName) =>
@@ -162,14 +168,17 @@ namespace Microsoft.Maui.Essentials
 		public static void Set(string key, DateTime value, string? sharedName) =>
 			Current.Set<long>(key, value.ToBinary(), sharedName);
 
-		static IPreferences? currentImplementation;
+		static IPreferences Current => Storage.Preferences.Default;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IPreferences Current =>
-			currentImplementation ??= new PreferencesImplementation();
+		internal static string GetPrivatePreferencesSharedName(string feature) =>
+			$"{ApplicationModel.AppInfo.Current.PackageName}.microsoft.maui.essentials.{feature}";
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IPreferences? implementation) =>
-			currentImplementation = implementation;
+		static IPreferences? defaultImplementation;
+
+		public static IPreferences Default =>
+			defaultImplementation ??= new PreferencesImplementation();
+
+		internal static void SetDefault(IPreferences? implementation) =>
+			defaultImplementation = implementation;
 	}
 }

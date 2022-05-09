@@ -4,33 +4,33 @@ using CoreTelephony;
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Networking
 {
-	public partial class ConnectivityImplementation : IConnectivity
+	partial class ConnectivityImplementation : IConnectivity
 	{
 #if !(MACCATALYST || MACOS)
 		// TODO: Use NWPathMonitor on > iOS 12
-#pragma warning disable BI1234
+#pragma warning disable BI1234, CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
 		static readonly Lazy<CTCellularData> cellularData = new Lazy<CTCellularData>(() => new CTCellularData());
 
 		internal static CTCellularData CellularData => cellularData.Value;
-#pragma warning restore BI1234
+#pragma warning restore BI1234, CA1416
 #endif
 
 		static ReachabilityListener listener;
 
-		public void StartListeners()
+		void StartListeners()
 		{
 			listener = new ReachabilityListener();
-			listener.ReachabilityChanged += Connectivity.OnConnectivityChanged;
+			listener.ReachabilityChanged += OnConnectivityChanged;
 		}
 
-		public void StopListeners()
+		void StopListeners()
 		{
 			if (listener == null)
 				return;
 
-			listener.ReachabilityChanged -= Connectivity.OnConnectivityChanged;
+			listener.ReachabilityChanged -= OnConnectivityChanged;
 			listener.Dispose();
 			listener = null;
 		}
@@ -42,9 +42,9 @@ namespace Microsoft.Maui.Essentials.Implementations
 				var restricted = false;
 #if !(MACCATALYST || MACOS)
 				// TODO: Use NWPathMonitor on > iOS 12
-#pragma warning disable BI1234
+#pragma warning disable BI1234, CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
 				restricted = CellularData.RestrictedState == CTCellularDataRestrictedState.Restricted;
-#pragma warning restore BI1234
+#pragma warning restore BI1234, CA1416
 #endif
 				var internetStatus = Reachability.InternetConnectionStatus();
 				if ((internetStatus == NetworkStatus.ReachableViaCarrierDataNetwork && !restricted) || internetStatus == NetworkStatus.ReachableViaWiFiNetwork)

@@ -13,6 +13,7 @@ trigger:
     exclude:
     - .github/*
     - docs/*
+    - src/Templates/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
     - LICENSE.TXT
@@ -32,6 +33,7 @@ pr:
     exclude:
     - .github/*
     - docs/*
+    - src/Templates/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
     - LICENSE.TXT
@@ -52,6 +54,19 @@ parameters:
   - name: BuildEverything
     type: boolean
     default: false
+  - name: androidPool
+    type: object
+    default:
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Monterey
+        - macOS.Architecture -equals x64
+  - name: iosPool
+    type: object
+    default:
+      name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
 
 resources:
   repositories:
@@ -65,10 +80,17 @@ stages:
 
   - template: common/device-tests.yml
     parameters:
+      androidPool: ${{ parameters.androidPool }}
+      iosPool: ${{ parameters.iosPool }}
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]
         # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
         iosVersions: [ 'latest', '14.5', '13.7', '12.4' ]
+        provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
+        androidApiLevels: [ 30, 23 ]
+        # androidApiLevels: [ 30, 21 ] # fix the issue of getting the test results off
+        iosVersions: [ 'latest' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       projects:
         - name: essentials

@@ -203,6 +203,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return key;
 		}
 
+		// This is used by the `ListViewRenderer.GetDesiredSize` call to retrieve an already created ViewCellContainer
+		// This helps us fake cell reuse so we aren't creating extra views during the measure pass.
+		internal ConditionalFocusLayout GetConvertViewForMeasuringInfiniteHeight(int position)
+		{
+			if (_layoutsCreated.TryGetValue(position, out ConditionalFocusLayout foundValue))
+				return foundValue;
+
+			return null;
+		}
+
 		public override AView GetView(int position, AView convertView, ViewGroup parent)
 		{
 			Cell cell = null;
@@ -617,6 +627,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// we need to reset the ListView's adapter to reflect the changes on page B
 				// If there header and footer are present at the reset time of the adapter
 				// they will be DOUBLE added to the ViewGround (the ListView) causing indexes to be off by one. 
+
+				if (_realListView.IsDisposed())
+					return;
+
 				_realListView.RemoveHeaderView(HeaderView);
 				_realListView.RemoveFooterView(FooterView);
 				_realListView.Adapter = _realListView.Adapter;

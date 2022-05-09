@@ -445,6 +445,11 @@ namespace Microsoft.Maui.Controls
 				context.Attributes |= BindableContextAttributes.IsSetFromStyle;
 			// else omitted on purpose
 
+			//if we're updating a dynamic resource from style, set the default backup value
+			if (   (context.Attributes & (BindableContextAttributes.IsDynamicResource | BindableContextAttributes.IsSetFromStyle)) != 0
+				&& (attributes & SetValueFlags.ClearDynamicResource) == 0)
+				SetBackupStyleValue(property, value);
+
 			bool currentlyApplying = _applying;
 
 			if ((context.Attributes & BindableContextAttributes.IsBeingSet) != 0)
@@ -581,7 +586,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		BindablePropertyContext GetContext(BindableProperty property) => _properties.TryGetValue(property, out var result) ? result : null;
+		internal BindablePropertyContext GetContext(BindableProperty property) => _properties.TryGetValue(property, out var result) ? result : null;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		BindablePropertyContext GetOrCreateContext(BindableProperty property) => GetContext(property) ?? CreateAndAddContext(property);
@@ -638,7 +643,7 @@ namespace Microsoft.Maui.Controls
 			IsDefaultValueCreated = 1 << 5,
 		}
 
-		class BindablePropertyContext
+		internal class BindablePropertyContext
 		{
 			public BindableContextAttributes Attributes;
 			public BindingBase Binding;
@@ -662,7 +667,7 @@ namespace Microsoft.Maui.Controls
 			Default = CheckAccess
 		}
 
-		class SetValueArgs
+		internal class SetValueArgs
 		{
 			public readonly SetValueFlags Attributes;
 			public readonly BindablePropertyContext Context;

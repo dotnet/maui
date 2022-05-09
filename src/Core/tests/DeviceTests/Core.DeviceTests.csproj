@@ -6,6 +6,7 @@
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Core.DeviceTests</AssemblyName>
+    <NoWarn>$(NoWarn),CA1416</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -62,6 +63,6 @@
     <Compile Remove="**\*.Windows.cs" />
   </ItemGroup>
 
-  <Import Project="../../../Maui.InTree.props" />
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

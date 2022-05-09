@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateLineBreakMode();
 		}
 
-
+		[PortHandler]
 		void UpdateLineBreakMode()
 		{
 			_textBlock = Control.GetTextBlock(Control.Content);
@@ -118,7 +118,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				UpdateTextColor();
 			}
-			else if (e.PropertyName == FontElement.FontProperty.PropertyName)
+			else if (   e.PropertyName == FontElement.FontAttributesProperty.PropertyName
+					 || e.PropertyName == FontElement.FontAutoScalingEnabledProperty.PropertyName
+					 || e.PropertyName == FontElement.FontFamilyProperty.PropertyName
+					 || e.PropertyName == FontElement.FontSizeProperty.PropertyName)
 			{
 				UpdateFont();
 			}

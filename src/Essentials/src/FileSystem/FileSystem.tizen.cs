@@ -1,11 +1,12 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage
 {
-	public partial class FileSystemImplementation : IFileSystem
+	partial class FileSystemImplementation : IFileSystem
 	{
 		string PlatformCacheDirectory
 			=> Application.Current.DirectoryInfo.Cache;
@@ -38,10 +39,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 		static string NormalizePath(string filename) =>
 			filename.Replace('\\', Path.DirectorySeparatorChar);
 	}
-}
 
-namespace Microsoft.Maui.Essentials
-{
 	public partial class FileBase
 	{
 		string PlatformGetContentType(string extension)

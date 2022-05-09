@@ -8,6 +8,7 @@ using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
+using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Primitives.Dimension;
 using AActivity = Android.App.Activity;
 using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
@@ -26,6 +27,8 @@ namespace Microsoft.Maui.Platform
 		static float s_displayDensity = float.MinValue;
 
 		static int? _actionBarHeight;
+		static int? _statusBarHeight;
+		static int? _navigationBarHeight;
 		// TODO FromPixels/ToPixels is both not terribly descriptive and also possibly sort of inaccurate?
 		// These need better names. It's really To/From Device-Independent, but that doesn't exactly roll off the tongue.
 
@@ -168,7 +171,7 @@ namespace Microsoft.Maui.Platform
 					{
 						if (context.Resources != null)
 						{
-							if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
+							if (OperatingSystem.IsAndroidVersionAtLeast(23))
 								return context.Resources.GetColor(mTypedValue.ResourceId, context.Theme);
 							else
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -277,10 +280,65 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		internal static Color GetAccentColor(this Context context)
+		{
+			Color? rc = null;
+			using (var value = new TypedValue())
+			{
+				if (context.Theme != null)
+				{
+					if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true)) // Android 5.0+
+					{
+						rc = Color.FromUint((uint)value.Data);
+					}
+				}
+			}
+
+			return rc ?? Color.FromArgb("#ff33b5e5");
+		}
+
 		public static int GetActionBarHeight(this Context context)
 		{
 			_actionBarHeight ??= (int)context.GetThemeAttributePixels(Resource.Attribute.actionBarSize);
 			return _actionBarHeight.Value;
+		}
+
+		internal static int GetStatusBarHeight(this Context context)
+		{
+			if (_statusBarHeight != null)
+				return _statusBarHeight.Value;
+
+			var resources = context.Resources;
+
+			if (resources == null)
+				return 0;
+
+			int resourceId = resources.GetIdentifier("status_bar_height", "dimen", "android");
+			if (resourceId > 0)
+			{
+				_statusBarHeight = resources.GetDimensionPixelSize(resourceId);
+			}
+
+			return _statusBarHeight ?? 0;
+		}
+
+		internal static int GetNavigationBarHeight(this Context context)
+		{
+			if (_navigationBarHeight != null)
+				return _navigationBarHeight.Value;
+
+			var resources = context.Resources;
+
+			if (resources == null)
+				return 0;
+
+			int resourceId = resources.GetIdentifier("navigation_bar_height", "dimen", "android");
+			if (resourceId > 0)
+			{
+				_navigationBarHeight = resources.GetDimensionPixelSize(resourceId);
+			}
+
+			return _navigationBarHeight ?? 0;
 		}
 
 		internal static int CreateMeasureSpec(this Context context, double constraint, double explicitSize, double maximumSize)
@@ -313,5 +371,16 @@ namespace Microsoft.Maui.Platform
 
 		public static float GetDisplayDensity(this Context context) =>
 			context.Resources?.DisplayMetrics?.Density ?? 1.0f;
+
+		public static Rect ToCrossPlatformRectInReferenceFrame(this Context context, int left, int top, int right, int bottom)
+		{
+			var deviceIndependentLeft = context.FromPixels(left);
+			var deviceIndependentTop = context.FromPixels(top);
+			var deviceIndependentRight = context.FromPixels(right);
+			var deviceIndependentBottom = context.FromPixels(bottom);
+
+			return Rect.FromLTRB(0, 0,
+				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
+		}
 	}
 }

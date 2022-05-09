@@ -23,3 +23,9 @@ stages:
           artifactPath: signed
           propsArtifactName: nuget
           signType: Real
+          preConvertSteps:
+            - task: DownloadPipelineArtifact@2
+              displayName: Download library-packs nugets
+              inputs:
+                artifactName: library-packs
+                downloadPath: $(Build.StagingDirectory)\nugets\signed

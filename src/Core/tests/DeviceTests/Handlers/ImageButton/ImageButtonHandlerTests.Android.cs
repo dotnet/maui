@@ -15,12 +15,23 @@ namespace Microsoft.Maui.DeviceTests
 		Google.Android.Material.ImageView.ShapeableImageView GetPlatformImageButton(ImageButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView;
 
-		Task PerformClick(IButton button)
+		Task PerformClick(IImageButton button)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
 				GetPlatformImageButton(CreateHandler(button)).PerformClick();
 			});
+		}
+
+		Thickness GetNativePadding(ImageButtonHandler imageButtonHandler)
+		{
+			var shapeableImageView = GetPlatformImageButton(imageButtonHandler);
+
+			return new Thickness(
+				shapeableImageView.ContentPaddingLeft,
+				shapeableImageView.ContentPaddingTop,
+				shapeableImageView.ContentPaddingRight,
+				shapeableImageView.ContentPaddingBottom);
 		}
 	}
 }

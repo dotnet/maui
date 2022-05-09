@@ -102,6 +102,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void SetLengthFilter(this EditText editText, int maxLength)
 		{
+			if (maxLength == -1)
+				maxLength = int.MaxValue;
+
 			var currentFilters = new List<IInputFilter>(editText.GetFilters() ?? new IInputFilter[0]);
 			var changed = false;
 
@@ -115,7 +118,7 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			if (maxLength > 0)
+			if (maxLength >= 0)
 			{
 				currentFilters.Add(new InputFilterLengthFilter(maxLength));
 				changed = true;
@@ -189,7 +192,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var drawable = getClearButtonDrawable?.Invoke();
 
-				if (entry.FlowDirection == FlowDirection.RightToLeft)
+				if (entry.GetEffectiveFlowDirection() == FlowDirection.RightToLeft)
 				{
 					editText.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
 				}

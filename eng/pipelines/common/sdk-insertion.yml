@@ -13,6 +13,12 @@ jobs:
   - checkout: self
   - task: DownloadPipelineArtifact@2
     inputs:
+      artifactName: library-packs
+      downloadPath: $(Build.StagingDirectory)\nuget
+      patterns: |
+        **/Microsoft.Maui.Graphics.*.nupkg
+  - task: DownloadPipelineArtifact@2
+    inputs:
       artifactName: nuget
       downloadPath: $(Build.StagingDirectory)\nuget
       patterns: |

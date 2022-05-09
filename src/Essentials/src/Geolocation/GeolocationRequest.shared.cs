@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationAccuracy.xml" path="Type[@FullName='Microsoft.Maui.Essentials.GeolocationAccuracy']/Docs" />
 	public enum GeolocationAccuracy
@@ -69,6 +69,9 @@ namespace Microsoft.Maui.Essentials
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='DesiredAccuracy']/Docs" />
 		public GeolocationAccuracy DesiredAccuracy { get; set; }
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='RequestFullAccuracy']/Docs" />
+		public bool RequestFullAccuracy { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='ToString']/Docs" />
 		public override string ToString() =>

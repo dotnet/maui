@@ -7,12 +7,13 @@ using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public class ShareImplementation : IShare
+	partial class ShareImplementation : IShare
 	{
-		public Task RequestAsync(ShareTextRequest request)
+		async Task PlatformRequestAsync(ShareTextRequest request)
 		{
+			var src = new TaskCompletionSource<bool>();
 			var items = new List<NSObject>();
 			if (!string.IsNullOrWhiteSpace(request.Text))
 			{
@@ -24,9 +25,15 @@ namespace Microsoft.Maui.Essentials.Implementations
 				items.Add(new ShareActivityItemSource(NSUrl.FromString(request.Uri), request.Title));
 			}
 
-			var activityController = new UIActivityViewController(items.ToArray(), null);
+			var activityController = new UIActivityViewController(items.ToArray(), null)
+			{
+				CompletionWithItemsHandler = (a, b, c, d) =>
+				{
+					src.TrySetResult(true);
+				}
+			};
 
-			var vc = Platform.GetCurrentViewController();
+			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 
 			if (activityController.PopoverPresentationController != null)
 			{
@@ -36,11 +43,16 @@ namespace Microsoft.Maui.Essentials.Implementations
 					activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.AsCGRect();
 			}
 
-			return vc.PresentViewControllerAsync(activityController, true);
+			await vc.PresentViewControllerAsync(activityController, true);
+			await src.Task;
 		}
 
-		public Task RequestAsync(ShareMultipleFilesRequest request)
+		Task PlatformRequestAsync(ShareFileRequest request) =>
+			PlatformRequestAsync((ShareMultipleFilesRequest)request);
+
+		async Task PlatformRequestAsync(ShareMultipleFilesRequest request)
 		{
+			var src = new TaskCompletionSource<bool>();
 			var items = new List<NSObject>();
 
 			var hasTitel = !string.IsNullOrWhiteSpace(request.Title);
@@ -53,9 +65,15 @@ namespace Microsoft.Maui.Essentials.Implementations
 					items.Add(fileUrl); // No title specified
 			}
 
-			var activityController = new UIActivityViewController(items.ToArray(), null);
+			var activityController = new UIActivityViewController(items.ToArray(), null)
+			{
+				CompletionWithItemsHandler = (a, b, c, d) =>
+				{
+					src.TrySetResult(true);
+				}
+			};
 
-			var vc = Platform.GetCurrentViewController();
+			var vc = WindowStateManager.Default.GetCurrentUIViewController();
 
 			if (activityController.PopoverPresentationController != null)
 			{
@@ -65,7 +83,8 @@ namespace Microsoft.Maui.Essentials.Implementations
 					activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.AsCGRect();
 			}
 
-			return vc.PresentViewControllerAsync(activityController, true);
+			await vc.PresentViewControllerAsync(activityController, true);
+			await src.Task;
 		}
 	}
 

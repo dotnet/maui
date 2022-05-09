@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using Foundation;
-using ObjCRuntime;
 using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
+	[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 	public partial class MenuFlyoutSubItemHandler
 	{
 		protected override UIMenu CreatePlatformElement()

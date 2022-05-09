@@ -1,8 +1,8 @@
 using CoreLocation;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class CompassImplementation : ICompass, IPlatformCompass
+	partial class CompassImplementation : ICompass, IPlatformCompass
 	{
 		// The angular distance is measured relative to the last delivered heading event. Align with UWP numbers
 		internal const double FastestFilter = .01;
@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public bool ShouldDisplayHeadingCalibration { get; set; } = false;
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 		bool PlatformIsSupported =>
 			CLLocationManager.HeadingAvailable;
 
@@ -64,5 +65,6 @@ namespace Microsoft.Maui.Essentials.Implementations
 			locationManager.Dispose();
 			locationManager = null;
 		}
+#pragma warning restore CA1416
 	}
 }

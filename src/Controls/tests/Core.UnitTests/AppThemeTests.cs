@@ -1,5 +1,6 @@
 using System;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
@@ -182,6 +183,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			mockAppInfo.RequestedTheme = theme;
 			((IApplication)app).ThemeChanged();
+		}
+
+		[Test]
+		//https://github.com/dotnet/maui/issues/3188
+		public void ThemeBindingRemovedOnOneTimeBindablePropertyWhenPropertySet()
+		{
+			var shell = new Shell();
+			shell.SetAppThemeColor(Shell.FlyoutBackgroundProperty, Colors.White, Colors.Black);
+			shell.FlyoutBackgroundColor = Colors.Pink;
+			SetAppTheme(AppTheme.Dark);
+			Assert.AreEqual(Colors.Pink, shell.FlyoutBackgroundColor);
 		}
 	}
 }

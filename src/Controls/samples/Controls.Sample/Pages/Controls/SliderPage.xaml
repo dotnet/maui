@@ -8,7 +8,24 @@
         <VerticalStackLayout Margin="12">
             <Label Text="Default" Style="{StaticResource Headline}"/>
             <Slider/>
-            
+            <Label
+                Text="BackgroundColor"
+                Style="{StaticResource Headline}"/>
+            <Slider
+                BackgroundColor="Blue"/>
+            <Label
+                Text="Background"
+                Style="{StaticResource Headline}" />
+            <Slider>
+                <Slider.Background>
+                    <LinearGradientBrush EndPoint="1,0">
+                        <GradientStop Color="Yellow"
+                                      Offset="0.1" />
+                        <GradientStop Color="Green"
+                                      Offset="1.0" />
+                    </LinearGradientBrush>
+                </Slider.Background>
+            </Slider>
             <Label Text="Minimum (5) and Maximum (15)" Style="{StaticResource Headline}"/>
             <Slider x:Name="MinMaxSlider" Maximum="15" Minimum="5" ValueChanged="OnValueChanged"/>
             <Label FontSize="Micro" Text="{Binding Source={x:Reference MinMaxSlider}, Path=Value}"/>

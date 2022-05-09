@@ -7,12 +7,13 @@ using AVFoundation;
 using MediaPlayer;
 using Speech;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
 		internal static partial class AVPermissions
 		{
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619			
 			internal static PermissionStatus CheckPermissionsStatus(AVAuthorizationMediaType mediaType)
 			{
 				var status = AVCaptureDevice.GetAuthorizationStatus(mediaType);
@@ -38,6 +39,7 @@ namespace Microsoft.Maui.Essentials
 					return PermissionStatus.Unknown;
 				}
 			}
+#pragma warning restore CA1416
 		}
 
 		public partial class Camera : BasePlatformPermission
@@ -255,7 +257,8 @@ namespace Microsoft.Maui.Essentials
 
 				return RequestSpeechPermission();
 			}
-
+			
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			internal static PermissionStatus GetSpeechPermissionStatus()
 			{
 				var status = SFSpeechRecognizer.AuthorizationStatus;
@@ -293,6 +296,7 @@ namespace Microsoft.Maui.Essentials
 
 				return tcs.Task;
 			}
+#pragma warning restore CA1416
 		}
 	}
 }

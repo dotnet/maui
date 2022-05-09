@@ -7,16 +7,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class CollectionViewHandler
 	{
-		public CollectionViewHandler() : base(CollectionViewMapper)
+		public CollectionViewHandler() : base(Mapper)
 		{
 
 		}
-		public CollectionViewHandler(PropertyMapper mapper = null) : base(mapper ?? CollectionViewMapper)
+		public CollectionViewHandler(PropertyMapper mapper = null) : base(mapper ?? Mapper)
 		{
 
 		}
 
-		public static PropertyMapper<CollectionView, CollectionViewHandler> CollectionViewMapper = new PropertyMapper<CollectionView, CollectionViewHandler>(ViewMapper)
+		public static PropertyMapper<CollectionView, CollectionViewHandler> Mapper = new PropertyMapper<CollectionView, CollectionViewHandler>(ViewMapper)
 		{
 			[Controls.ItemsView.ItemsSourceProperty.PropertyName] = MapItemsSource,
 			[Controls.ItemsView.HorizontalScrollBarVisibilityProperty.PropertyName] = MapHorizontalScrollBarVisibility,

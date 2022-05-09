@@ -3,30 +3,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Android.App;
+using Android.Content;
 using Android.Locations;
 using Android.OS;
-using Android.Runtime;
-
+using Microsoft.Maui.ApplicationModel;
 using AndroidLocation = Android.Locations.Location;
 using LocationPower = Android.Locations.Power;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class GeolocationImplementation : IGeolocation
+	partial class GeolocationImplementation : IGeolocation
 	{
 		const long twoMinutes = 120000;
 		static readonly string[] ignoredProviders = new string[] { LocationManager.PassiveProvider, "local_database" };
 
+		static LocationManager locationManager;
+
+		static LocationManager LocationManager =>
+			locationManager ??= Application.Context.GetSystemService(Context.LocationService) as LocationManager;
+
 		public async Task<Location> GetLastKnownLocationAsync()
 		{
-			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
+			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
 
-			var lm = Platform.LocationManager;
 			AndroidLocation bestLocation = null;
 
-			foreach (var provider in lm.GetProviders(true))
+			foreach (var provider in LocationManager.GetProviders(true))
 			{
-				var location = lm.GetLastKnownLocation(provider);
+				var location = LocationManager.GetLastKnownLocation(provider);
 
 				if (location != null && IsBetterLocation(location, bestLocation))
 					bestLocation = location;
@@ -37,18 +42,18 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
-			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
+			_ = request ?? throw new ArgumentNullException(nameof(request));
 
-			var locationManager = Platform.LocationManager;
+			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
 
-			var enabledProviders = locationManager.GetProviders(true);
+			var enabledProviders = LocationManager.GetProviders(true);
 			var hasProviders = enabledProviders.Any(p => !ignoredProviders.Contains(p));
 
 			if (!hasProviders)
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
 			// get the best possible provider for the requested accuracy
-			var providerInfo = GetBestProvider(locationManager, request.DesiredAccuracy);
+			var providerInfo = GetBestProvider(LocationManager, request.DesiredAccuracy);
 
 			// if no providers exist, we can't get a location
 			// let's punt and try to get the last known location
@@ -57,18 +62,18 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			var tcs = new TaskCompletionSource<AndroidLocation>();
 
-			var allProviders = locationManager.GetProviders(false);
+			var allProviders = LocationManager.GetProviders(false);
 
 			var providers = new List<string>();
-			if (allProviders.Contains(LocationManager.GpsProvider))
-				providers.Add(LocationManager.GpsProvider);
-			if (allProviders.Contains(LocationManager.NetworkProvider))
-				providers.Add(LocationManager.NetworkProvider);
+			if (allProviders.Contains(Android.Locations.LocationManager.GpsProvider))
+				providers.Add(Android.Locations.LocationManager.GpsProvider);
+			if (allProviders.Contains(Android.Locations.LocationManager.NetworkProvider))
+				providers.Add(Android.Locations.LocationManager.NetworkProvider);
 
 			if (providers.Count == 0)
 				providers.Add(providerInfo.Provider);
 
-			var listener = new SingleLocationListener(locationManager, providerInfo.Accuracy, providers);
+			var listener = new SingleLocationListener(LocationManager, providerInfo.Accuracy, providers);
 			listener.LocationHandler = HandleLocation;
 
 			cancellationToken = Utils.TimeoutToken(cancellationToken, request.Timeout);
@@ -79,7 +84,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			var looper = Looper.MyLooper() ?? Looper.MainLooper;
 
 			foreach (var provider in providers)
-				locationManager.RequestLocationUpdates(provider, 0, 0, listener, looper);
+				LocationManager.RequestLocationUpdates(provider, 0, 0, listener, looper);
 
 			var androidLocation = await tcs.Task;
 
@@ -103,7 +108,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			void RemoveUpdates()
 			{
 				for (var i = 0; i < providers.Count; i++)
-					locationManager.RemoveUpdates(listener);
+					LocationManager.RemoveUpdates(listener);
 			}
 		}
 
@@ -257,7 +262,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				activeProviders.Add(provider);
 		}
 
-		void ILocationListener.OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
+		void ILocationListener.OnStatusChanged(string provider, Availability status, Bundle extras)
 		{
 			switch (status)
 			{

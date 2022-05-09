@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android;
+using Android.App;
 using Android.Content.PM;
 using Android.OS;
 using AndroidX.Core.App;
 using AndroidX.Core.Content;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
 		public static bool IsDeclaredInManifest(string permission)
 		{
-			var context = Platform.AppContext;
+			var context = Application.Context;
 			var packageInfo = context.PackageManager.GetPackageInfo(context.PackageName, PackageInfoFlags.Permissions);
 			var requestedPermissions = packageInfo?.RequestedPermissions;
 
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.Essentials
 		public abstract partial class BasePlatformPermission : BasePermission
 		{
 			static readonly Dictionary<string, (int requestCode, TaskCompletionSource<PermissionStatus> tcs)> requests =
-				   new Dictionary<string, (int, TaskCompletionSource<PermissionStatus>)>();
+				new Dictionary<string, (int, TaskCompletionSource<PermissionStatus>)>();
 
 			static readonly object locker = new object();
 			static int requestCode;
@@ -39,28 +40,13 @@ namespace Microsoft.Maui.Essentials
 				if (RequiredPermissions == null || RequiredPermissions.Length <= 0)
 					return Task.FromResult(PermissionStatus.Granted);
 
-				var context = Platform.AppContext;
-				var targetsMOrHigher = context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.M;
-
 				foreach (var (androidPermission, isRuntime) in RequiredPermissions)
 				{
 					var ap = androidPermission;
 					if (!IsDeclaredInManifest(ap))
 						throw new PermissionException($"You need to declare using the permission: `{androidPermission}` in your AndroidManifest.xml");
 
-					var status = PermissionStatus.Granted;
-
-					if (targetsMOrHigher)
-					{
-						if (ContextCompat.CheckSelfPermission(context, androidPermission) != Permission.Granted)
-							status = PermissionStatus.Denied;
-					}
-					else
-					{
-						if (PermissionChecker.CheckSelfPermission(context, androidPermission) != PermissionChecker.PermissionGranted)
-							status = PermissionStatus.Denied;
-					}
-
+					var status = DoCheck(ap);
 					if (status != PermissionStatus.Granted)
 						return Task.FromResult(PermissionStatus.Denied);
 				}
@@ -98,7 +84,7 @@ namespace Microsoft.Maui.Essentials
 					{
 						tcs = new TaskCompletionSource<PermissionStatus>();
 
-						requestCode = Platform.NextRequestCode();
+						requestCode = PlatformUtils.NextRequestCode();
 
 						requests.Add(permissionId, (requestCode, tcs));
 					}
@@ -110,7 +96,7 @@ namespace Microsoft.Maui.Essentials
 				if (!MainThread.IsMainThread)
 					throw new PermissionException("Permission request must be invoked on main thread.");
 
-				ActivityCompat.RequestPermissions(Platform.GetCurrentActivity(true), runtimePermissions.ToArray(), requestCode);
+				ActivityCompat.RequestPermissions(ActivityStateManager.Default.GetCurrentActivity(true), runtimePermissions.ToArray(), requestCode);
 
 				var result = await tcs.Task;
 
@@ -138,7 +124,7 @@ namespace Microsoft.Maui.Essentials
 				if (RequiredPermissions == null || RequiredPermissions.Length <= 0)
 					return false;
 
-				var activity = Platform.GetCurrentActivity(true);
+				var activity = ActivityStateManager.Default.GetCurrentActivity(true);
 				foreach (var (androidPermission, isRuntime) in RequiredPermissions)
 				{
 					if (isRuntime && ActivityCompat.ShouldShowRequestPermissionRationale(activity, androidPermission))
@@ -146,6 +132,38 @@ namespace Microsoft.Maui.Essentials
 				}
 
 				return false;
+			}
+
+			protected virtual PermissionStatus DoCheck(string androidPermission)
+			{
+				var context = Platform.AppContext;
+				var targetsMOrHigher = context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.M;
+
+				if (!IsDeclaredInManifest(androidPermission))
+					throw new PermissionException($"You need to declare using the permission: `{androidPermission}` in your AndroidManifest.xml");
+
+				var status = PermissionStatus.Granted;
+
+				if (targetsMOrHigher)
+				{
+					status = ContextCompat.CheckSelfPermission(context, androidPermission) switch
+					{
+						Permission.Granted => PermissionStatus.Granted,
+						Permission.Denied => PermissionStatus.Denied,
+						_ => PermissionStatus.Unknown
+					};
+				}
+				else
+				{
+					status = PermissionChecker.CheckSelfPermission(context, androidPermission) switch
+					{
+						PermissionChecker.PermissionGranted => PermissionStatus.Granted,
+						PermissionChecker.PermissionDenied => PermissionStatus.Denied,
+						PermissionChecker.PermissionDeniedAppOp => PermissionStatus.Denied,
+						_ => PermissionStatus.Unknown
+					};
+				}
+				return status;
 			}
 
 			internal static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
@@ -234,6 +252,17 @@ namespace Microsoft.Maui.Essentials
 					(Manifest.Permission.AccessCoarseLocation, true),
 					(Manifest.Permission.AccessFineLocation, true)
 				};
+
+			public override Task<PermissionStatus> CheckStatusAsync()
+			{
+				if (DoCheck(Manifest.Permission.AccessFineLocation) == PermissionStatus.Granted)
+					return Task.FromResult(PermissionStatus.Granted);
+
+				if (DoCheck(Manifest.Permission.AccessCoarseLocation) == PermissionStatus.Granted)
+					return Task.FromResult(PermissionStatus.Restricted);
+
+				return Task.FromResult(PermissionStatus.Denied);
+			}
 		}
 
 		public partial class LocationAlways : BasePlatformPermission
@@ -245,7 +274,7 @@ namespace Microsoft.Maui.Essentials
 					var permissions = new List<(string, bool)>();
 #if __ANDROID_29__
 					// Check if running and targeting Q
-					if (Platform.HasApiLevelQ && Platform.AppContext.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.Q)
+					if (OperatingSystem.IsAndroidVersionAtLeast(29) && Application.Context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.Q)
 						permissions.Add((Manifest.Permission.AccessBackgroundLocation, true));
 #endif
 
@@ -311,7 +340,7 @@ namespace Microsoft.Maui.Essentials
 						permissions.Add((Manifest.Permission.AddVoicemail, true));
 					if (IsDeclaredInManifest(Manifest.Permission.UseSip))
 						permissions.Add((Manifest.Permission.UseSip, true));
-					if (Platform.HasApiLevelO)
+					if (OperatingSystem.IsAndroidVersionAtLeast(26))
 					{
 						if (IsDeclaredInManifest(Manifest.Permission.AnswerPhoneCalls))
 							permissions.Add((Manifest.Permission.AnswerPhoneCalls, true));

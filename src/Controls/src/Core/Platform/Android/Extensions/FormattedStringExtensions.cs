@@ -1,5 +1,5 @@
 ﻿#nullable enable
-using System;
+using System.Collections.Generic;
 using System.Text;
 using Android.Content;
 using Android.Graphics;
@@ -7,8 +7,8 @@ using Android.Text;
 using Android.Text.Style;
 using Android.Util;
 using Android.Widget;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
+using AAplication = Android.App.Application;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -22,7 +22,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (formattedString == null)
 				return new SpannableString(string.Empty);
 
+			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
+
 			var builder = new StringBuilder();
+
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
 				Span span = formattedString.Spans[i];
@@ -50,10 +53,11 @@ namespace Microsoft.Maui.Controls.Platform
 				int end = start + text.Length;
 				c = end;
 
-				var fgcolor = span.TextColor ?? defaultColor;
-				if (fgcolor != null)
+				var textColor = span.TextColor ?? defaultColor;
+
+				if (textColor != null)
 				{
-					spannable.SetSpan(new ForegroundColorSpan(fgcolor.ToPlatform()), start, end, SpanTypes.InclusiveExclusive);
+					spannable.SetSpan(new ForegroundColorSpan(textColor.ToPlatform()), start, end, SpanTypes.InclusiveExclusive);
 				}
 
 				if (span.BackgroundColor != null)
@@ -70,7 +74,7 @@ namespace Microsoft.Maui.Controls.Platform
 					spannable.SetSpan(new LineHeightSpan(textPaint, lineHeight), start, end, SpanTypes.InclusiveExclusive);
 				}
 
-				var font = span.ToFont();
+				var font = span.ToFont(defaultFontSize);
 				if (font.IsDefault && defaultFont.HasValue)
 					font = defaultFont.Value;
 
@@ -90,6 +94,92 @@ namespace Microsoft.Maui.Controls.Platform
 
 			}
 			return spannable;
+		}
+
+		public static void RecalculateSpanPositions(this TextView textView, Label element, SpannableString spannableString, SizeRequest finalSize)
+		{
+			if (element?.FormattedText?.Spans == null || element.FormattedText.Spans.Count == 0)
+				return;
+
+			var labelWidth = finalSize.Request.Width;
+
+			if (labelWidth <= 0 || finalSize.Request.Height <= 0)
+				return;
+
+			if (spannableString == null || spannableString.IsDisposed())
+				return;
+
+			var layout = textView.Layout;
+
+			if (layout == null)
+				return;
+
+			int next = 0;
+			int count = 0;
+			IList<int> totalLineHeights = new List<int>();
+
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
+			for (int i = 0; i < spannableString.Length(); i = next)
+			{
+				var type = Java.Lang.Class.FromType(typeof(Java.Lang.Object));
+
+				var span = element.FormattedText.Spans[count];
+
+				count++;
+
+				if (string.IsNullOrEmpty(span.Text))
+					continue;
+
+				// Find the next span
+				next = spannableString.NextSpanTransition(i, spannableString.Length(), type);
+
+				// Get all spans in the range - Android can have overlapping spans				
+				var spans = spannableString.GetSpans(i, next, type);
+
+				if (spans == null)
+					continue;
+
+				var startSpan = spans[0];
+				var endSpan = spans[spans.Length - 1];
+
+				var startSpanOffset = spannableString.GetSpanStart(startSpan);
+				var endSpanOffset = spannableString.GetSpanEnd(endSpan);
+
+				var thisLine = layout.GetLineForOffset(endSpanOffset);
+				var lineStart = layout.GetLineStart(thisLine);
+				var lineEnd = layout.GetLineEnd(thisLine);
+
+				// If this is true, endSpanOffset has the value for another line that belong to the next span and not it self. 
+				// So it should be rearranged to value not pass the lineEnd.
+				if (endSpanOffset > (lineEnd - lineStart))
+					endSpanOffset = lineEnd;
+
+				var startX = layout.GetPrimaryHorizontal(startSpanOffset);
+				var endX = layout.GetPrimaryHorizontal(endSpanOffset);
+
+				var startLine = layout.GetLineForOffset(startSpanOffset);
+				var endLine = layout.GetLineForOffset(endSpanOffset);
+
+				double[] lineHeights = new double[endLine - startLine + 1];
+
+				// Calculate all the different line heights
+				for (var lineCount = startLine; lineCount <= endLine; lineCount++)
+				{
+					var lineHeight = layout.GetLineBottom(lineCount) - layout.GetLineTop(lineCount);
+					lineHeights[lineCount - startLine] = lineHeight;
+
+					if (totalLineHeights.Count <= lineCount)
+						totalLineHeights.Add(lineHeight);
+				}
+
+				var yaxis = 0.0;
+
+				for (var line = startLine; line > 0; line--)
+					yaxis += totalLineHeights[line];
+
+				((ISpatialElement)span).Region = Region.FromLines(lineHeights, labelWidth, startX, endX, yaxis).Inflate(10);
+			}
+#pragma warning restore CA1416 // 'SpannableString.Length()' is only supported on: 'android' 29.0 and later
 		}
 
 		class FontSpan : MetricAffectingSpan
@@ -127,20 +217,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 				paint.TextSize = TypedValue.ApplyDimension(
 					Font.AutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip,
-					value, Context?.Resources?.DisplayMetrics ?? Android.App.Application.Context.Resources!.DisplayMetrics);
+					value, Context?.Resources?.DisplayMetrics ?? AAplication.Context.Resources!.DisplayMetrics);
 
 				paint.LetterSpacing = CharacterSpacing;
-
-				if (HorizontalTextAlignment.HasValue)
-				{
-					paint.TextAlign = HorizontalTextAlignment.Value switch
-					{
-						TextAlignment.Start => Paint.Align.Left,
-						TextAlignment.Center => Paint.Align.Center,
-						TextAlignment.End => Paint.Align.Right,
-						_ => Paint.Align.Left
-					};
-				}
 			}
 		}
 

@@ -7,9 +7,9 @@ using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				else if (ContentView is IPlatformViewHandler ver && ver.PlatformView is UIScrollView uIScroll)
 					ScrollView = uIScroll;
 
-				if (ScrollView != null && PlatformVersion.IsAtLeast(11))
+				if (ScrollView != null && (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 					ScrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 
 				LayoutParallax();

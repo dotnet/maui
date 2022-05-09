@@ -1,15 +1,16 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public partial class EmailImplementation : IEmail
+	partial class EmailImplementation : IEmail
 	{
 		public bool IsComposeSupported
-			=> Platform.GetFeatureInfo<bool>("email");
+			=> PlatformUtils.GetFeatureInfo<bool>("email");
 
-		public Task ComposeAsync(EmailMessage message)
+		Task PlatformComposeAsync(EmailMessage message)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
@@ -19,15 +20,15 @@ namespace Microsoft.Maui.Essentials.Implementations
 				Uri = "mailto:",
 			};
 
-			if (message.Bcc.Count > 0)
+			if (message.Bcc?.Count > 0)
 				appControl.ExtraData.Add(AppControlData.Bcc, message.Bcc);
 			if (!string.IsNullOrEmpty(message.Body))
 				appControl.ExtraData.Add(AppControlData.Text, message.Body);
-			if (message.Cc.Count > 0)
+			if (message.Cc?.Count > 0)
 				appControl.ExtraData.Add(AppControlData.Cc, message.Cc);
 			if (!string.IsNullOrEmpty(message.Subject))
 				appControl.ExtraData.Add(AppControlData.Subject, message.Subject);
-			if (message.To.Count > 0)
+			if (message.To?.Count > 0)
 				appControl.ExtraData.Add(AppControlData.To, message.To);
 
 			AppControl.SendLaunchRequest(appControl);
@@ -41,7 +42,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				{
 					Subject = subject,
 					Body = body,
-					To = to.List<string>()
+					To = to.ToList()
 				});
 
 		public Task ComposeAsync()

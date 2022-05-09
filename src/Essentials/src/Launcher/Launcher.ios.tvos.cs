@@ -2,14 +2,14 @@ using System;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
-using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel
 {
-	public partial class LauncherImplementation
+	partial class LauncherImplementation
 	{
 		Task<bool> PlatformCanOpenAsync(Uri uri) =>
 			Task.FromResult(UIApplication.SharedApplication.CanOpenUrl(WebUtils.GetNativeUrl(uri)));
@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		Task<bool> PlatformOpenAsync(OpenFileRequest request)
 		{
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			documentController = new UIDocumentInteractionController()
 			{
 				Name = request.File.FileName,
@@ -58,6 +59,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			}
 
 			documentController.PresentOpenInMenu(rect, view, true);
+#pragma warning restore CA1416
 			return Task.FromResult(true);
 		}
 

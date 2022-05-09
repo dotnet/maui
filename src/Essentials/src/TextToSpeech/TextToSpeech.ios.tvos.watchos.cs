@@ -5,25 +5,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using AVFoundation;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Media
 {
-	public partial class TextToSpeechImplementation : ITextToSpeech
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
-		static readonly Lazy<AVSpeechSynthesizer> speechSynthesizer = new Lazy<AVSpeechSynthesizer>();
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
+		readonly Lazy<AVSpeechSynthesizer> speechSynthesizer = new(() => new AVSpeechSynthesizer());
 
-		public Task<IEnumerable<Locale>> GetLocalesAsync() =>
+		Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
 			Task.FromResult(AVSpeechSynthesisVoice.GetSpeechVoices()
 				.Select(v => new Locale(v.Language, null, v.Name, v.Identifier)));
 
-		public Task SpeakAsync(string text, CancellationToken cancelToken)
-			=> SpeakAsync(text, default, cancelToken);
-
-		public async Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
+		async Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken)
 		{
-			using (var speechUtterance = GetSpeechUtterance(text, options))
-			{
-				await SpeakUtterance(speechUtterance, cancelToken);
-			}
+			using var speechUtterance = GetSpeechUtterance(text, options);
+			await SpeakUtterance(speechUtterance, cancelToken);
 		}
 
 		static AVSpeechUtterance GetSpeechUtterance(string text, SpeechOptions options)
@@ -49,15 +45,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 			return speechUtterance;
 		}
 
-		internal static async Task SpeakUtterance(AVSpeechUtterance speechUtterance, CancellationToken cancelToken)
+		async Task SpeakUtterance(AVSpeechUtterance speechUtterance, CancellationToken cancelToken)
 		{
 			var tcsUtterance = new TaskCompletionSource<bool>();
 			try
 			{
-				// Ensures linker doesn't remove.
-				if (DateTime.UtcNow.Ticks < 0)
-					new AVSpeechSynthesizer();
-
 				speechSynthesizer.Value.DidFinishSpeechUtterance += OnFinishedSpeechUtterance;
 				speechSynthesizer.Value.SpeakUtterance(speechUtterance);
 				using (cancelToken.Register(TryCancel))
@@ -82,5 +74,6 @@ namespace Microsoft.Maui.Essentials.Implementations
 					tcsUtterance?.TrySetResult(true);
 			}
 		}
+#pragma warning restore CA1416
 	}
 }

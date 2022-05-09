@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 			if (platformView is MauiToolbar mauiToolbar)
 			{
 				var navRootManager = MauiContext?.GetNavigationRootManager();
-				if (navRootManager?.ToolBar == mauiToolbar)
+				if (navRootManager != null && navRootManager.Toolbar == mauiToolbar)
 					navRootManager.SetToolbar(null);
 			}
 		}

@@ -19,7 +19,7 @@ using WApp = Microsoft.UI.Xaml.Application;
 using WRect = Windows.Foundation.Rect;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.ListView;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.Platform;
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
 						HeaderTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
 						FooterTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
-						ItemContainerStyle = (Microsoft.UI.Xaml.Style)WApp.Current.Resources["FormsListViewItem"],
+						ItemContainerStyle = (Microsoft.UI.Xaml.Style)WApp.Current.Resources["MauiListViewItem"],
 						GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
 					};
 
@@ -804,7 +804,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			bool areEqual = false;
 
-			if (Element.SelectedItem != null && Element.SelectedItem.GetType().GetTypeInfo().IsValueType)
+			if (Element.SelectedItem != null && Element.SelectedItem.GetType().IsValueType)
 				areEqual = Element.SelectedItem.Equals(List.SelectedItem);
 			else
 				areEqual = Element.SelectedItem == List.SelectedItem;

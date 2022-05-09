@@ -33,17 +33,13 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this UILabel platformLabel, ILabel label)
 		{
-			platformLabel.TextAlignment = label.HorizontalTextAlignment.ToPlatform(label);
+			platformLabel.TextAlignment = label.HorizontalTextAlignment.ToPlatformHorizontal(label);
 		}
 
-		public static void UpdateLineBreakMode(this UILabel platformLabel, ILabel label)
+		public static void UpdateVerticalTextAlignment(this UILabel platformLabel, ILabel label)
 		{
-			platformLabel.SetLineBreakMode(label);
-		}
-
-		public static void UpdateMaxLines(this UILabel platformLabel, ILabel label)
-		{
-			platformLabel.SetLineBreakMode(label);
+			if (!platformLabel.Bounds.IsEmpty)
+				platformLabel.InvalidateMeasure(label);
 		}
 
 		public static void UpdatePadding(this MauiLabel platformLabel, ILabel label)
@@ -89,41 +85,6 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateTextPlainText(this UILabel platformLabel, IText label)
 		{
 			platformLabel.Text = label.Text;
-		}
-
-		internal static void SetLineBreakMode(this UILabel platformLabel, ILabel label)
-		{
-			int maxLines = label.MaxLines;
-			if (maxLines < 0)
-				maxLines = 0;
-
-			switch (label.LineBreakMode)
-			{
-				case LineBreakMode.NoWrap:
-					platformLabel.LineBreakMode = UILineBreakMode.Clip;
-					maxLines = 1;
-					break;
-				case LineBreakMode.WordWrap:
-					platformLabel.LineBreakMode = UILineBreakMode.WordWrap;
-					break;
-				case LineBreakMode.CharacterWrap:
-					platformLabel.LineBreakMode = UILineBreakMode.CharacterWrap;
-					break;
-				case LineBreakMode.HeadTruncation:
-					platformLabel.LineBreakMode = UILineBreakMode.HeadTruncation;
-					maxLines = 1;
-					break;
-				case LineBreakMode.MiddleTruncation:
-					platformLabel.LineBreakMode = UILineBreakMode.MiddleTruncation;
-					maxLines = 1;
-					break;
-				case LineBreakMode.TailTruncation:
-					platformLabel.LineBreakMode = UILineBreakMode.TailTruncation;
-					maxLines = 1;
-					break;
-			}
-
-			platformLabel.Lines = maxLines;
 		}
 	}
 }

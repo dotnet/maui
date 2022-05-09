@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualTypeConverter.xml" path="//Member[@MemberName='GetStandardValues']/Docs" />
 		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
-			=> new(new[] { 
+			=> new(new[] {
 				nameof(VisualMarker.Default), 
 				// nameof(VisualMarker.Material)
 			});

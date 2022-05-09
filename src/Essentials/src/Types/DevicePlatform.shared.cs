@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DevicePlatform']/Docs" />
 	public readonly struct DevicePlatform : IEquatable<DevicePlatform>
@@ -65,9 +65,9 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
 		public override int GetHashCode() =>
 			devicePlatform == null ? 0 : devicePlatform.GetHashCode(
-					#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0
 					StringComparison.Ordinal
-					#endif
+#endif
 				);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DevicePlatform.xml" path="//Member[@MemberName='ToString']/Docs" />

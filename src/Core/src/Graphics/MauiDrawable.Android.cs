@@ -321,6 +321,13 @@ namespace Microsoft.Maui.Graphics
 			InvalidateSelf();
 		}
 
+		public void InvalidateBorderBounds()
+		{
+			_bounds = null;
+
+			InvalidateSelf();
+		}
+
 		protected override void OnBoundsChange(ARect? bounds)
 		{
 			if (_bounds != bounds)
@@ -366,7 +373,9 @@ namespace Microsoft.Maui.Graphics
 						_borderPaint.SetPathEffect(_borderPathEffect);
 
 					if (_borderColor != null)
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 						_borderPaint.Color = _borderColor.Value;
+#pragma warning restore CA1416
 					else
 					{
 						if (_stroke != null)
@@ -380,7 +389,7 @@ namespace Microsoft.Maui.Graphics
 
 					if (_shape != null)
 					{
-						var bounds = new Graphics.Rect(0, 0, _width, _height);
+						var bounds = new Graphics.Rect(_strokeThickness / 2, _strokeThickness / 2, _width - _strokeThickness, _height - _strokeThickness);
 						var path = _shape.PathForBounds(bounds);
 						var clipPath = path?.AsAndroidPath();
 
@@ -504,7 +513,9 @@ namespace Microsoft.Maui.Graphics
 			if (platformPaint != null)
 			{
 				if (_backgroundColor != null)
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					platformPaint.Color = _backgroundColor.Value;
+#pragma warning restore CA1416
 				else
 				{
 					if (_background != null)

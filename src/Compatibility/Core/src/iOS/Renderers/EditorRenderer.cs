@@ -3,7 +3,7 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected internal override void UpdatePlaceholderColor()
 		{
 			Color placeholderColor = Element.PlaceholderColor;
-			_placeholderLabel.TextColor = placeholderColor?.ToUIColor() ?? _defaultPlaceholderColor;
+			_placeholderLabel.TextColor = placeholderColor?.ToPlatform() ?? _defaultPlaceholderColor;
 		}
 
 		[PortHandler]
@@ -364,7 +364,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		[PortHandler]
 		protected internal virtual void UpdateTextColor()
-			=> TextView.TextColor = Element.TextColor?.ToUIColor() ?? Maui.Platform.ColorExtensions.LabelColor;
+			=> TextView.TextColor = Element.TextColor?.ToPlatform() ?? ColorExtensions.LabelColor;
 
 		[PortHandler]
 		void UpdateMaxLength()

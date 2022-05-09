@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	static class WebUtils
 	{
@@ -40,6 +40,15 @@ namespace Microsoft.Maui.Essentials
 			}
 
 			return d;
+		}
+
+		internal static Uri EscapeUri(Uri uri)
+		{
+			if (uri == null)
+				throw new ArgumentNullException(nameof(uri));
+
+			var idn = new global::System.Globalization.IdnMapping();
+			return new Uri(uri.Scheme + "://" + idn.GetAscii(uri.Authority) + uri.PathAndQuery + uri.Fragment);
 		}
 
 		internal static bool CanHandleCallback(Uri expectedUrl, Uri callbackUrl)

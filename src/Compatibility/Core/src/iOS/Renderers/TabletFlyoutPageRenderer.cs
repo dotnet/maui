@@ -338,6 +338,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			switch (flyoutDetailPage.FlyoutLayoutBehavior)
 			{
+#pragma warning disable CA1416 // TODO:  UISplitViewControllerDisplayMode.AllVisible, PrimaryHidden is unsupported on: 'ios' 14.0 and late
 				case FlyoutLayoutBehavior.Split:
 					PreferredDisplayMode = UISplitViewControllerDisplayMode.AllVisible;
 					break;
@@ -350,6 +351,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				case FlyoutLayoutBehavior.SplitOnLandscape:
 					PreferredDisplayMode = (!isPortrait) ? UISplitViewControllerDisplayMode.AllVisible : UISplitViewControllerDisplayMode.PrimaryHidden;
 					break;
+#pragma warning restore CA1416
 				default:
 					PreferredDisplayMode = UISplitViewControllerDisplayMode.Automatic;
 					break;
@@ -393,7 +395,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (((FlyoutPage)Element).Detail != null)
 					return (UIViewController)Platform.GetRenderer(((FlyoutPage)Element).Detail);
 				else
+#pragma warning disable CA1416 // TODO: UIViewController.ChildViewControllerForHomeIndicatorAutoHidden' is only supported on: 'ios' 11.0 and late
 					return base.ChildViewControllerForHomeIndicatorAutoHidden;
+#pragma warning restore CA1416
 			}
 		}
 
@@ -511,7 +515,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						if (Element.BackgroundColor == null)
 							View.BackgroundColor = UIColor.White;
 						else
-							View.BackgroundColor = Element.BackgroundColor.ToUIColor();
+							View.BackgroundColor = Element.BackgroundColor.ToPlatform();
 					}
 				}
 			});

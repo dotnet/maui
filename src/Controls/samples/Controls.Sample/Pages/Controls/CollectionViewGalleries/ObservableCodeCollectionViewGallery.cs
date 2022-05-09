@@ -6,7 +6,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 	internal class ObservableCodeCollectionViewGallery : ContentPage
 	{
 		public ObservableCodeCollectionViewGallery(ItemsLayoutOrientation orientation = ItemsLayoutOrientation.Vertical,
-			bool grid = true, int initialItems = 1000, bool addItemsWithTimer = false, ItemsUpdatingScrollMode scrollMode = ItemsUpdatingScrollMode.KeepItemsInView)
+			bool grid = true, int initialItems = 1000, bool addItemsWithTimer = false, ItemsUpdatingScrollMode scrollMode = ItemsUpdatingScrollMode.KeepItemsInView, bool resetBeforeAddItemsWithTimer = false)
 		{
 			var layout = new Grid
 			{
@@ -68,7 +68,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			Content = layout;
 
 			if (addItemsWithTimer)
-				generator.GenerateEmptyObservableCollectionAndAddItemsEverySecond();
+				generator.GenerateEmptyObservableCollectionAndAddItemsEverySecond(resetBeforeAddItemsWithTimer);
 			else
 				generator.GenerateItems();
 		}

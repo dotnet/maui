@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Windows.Security.Cryptography.DataProtection;
 using Windows.Storage;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Storage
 {
-	public partial class SecureStorageImplementation : ISecureStorage
+	partial class SecureStorageImplementation : ISecureStorage
 	{
 		async Task<string> PlatformGetAsync(string key)
 		{
