@@ -583,7 +583,33 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					return GoToAsync(state);
+					var navStack = shellSection.Navigation.NavigationStack;
+					var topNavStackPage = navStack.Count > 0 ? navStack[navStack.Count -1] : null;
+
+					var queryParametersTarget =
+						topNavStackPage as BindableObject ??
+						(shellContent?.Content as BindableObject) ??
+						shellContent;
+
+					ShellRouteParameters routeParameters = null;
+
+					if (queryParametersTarget?.GetValue(ShellContent.QueryAttributesProperty) is
+						ShellRouteParameters shellRouteParameters)
+					{
+						routeParameters = shellRouteParameters;
+					}
+
+					var navParameters = new ShellNavigationParameters()
+					{
+						TargetState = state,
+						Animated = false,
+						EnableRelativeShellRoutes = false,
+						DeferredArgs = null,
+						Parameters = routeParameters
+					};
+
+					return _navigationManager
+						.GoToAsync(navParameters);
 				}
 			}
 
