@@ -546,10 +546,9 @@ namespace Microsoft.Maui.Controls
 				shellSection.PropertyChanged += OnShellItemPropertyChanged;
 			else
 			{
-				var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
-
 				if (this.CurrentItem == null)
 				{
+					var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
 					var requestBuilder = new RouteRequestBuilder(new List<string>()
 					{
 						shellItem.Route,
@@ -583,30 +582,7 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					var navStack = shellSection.Navigation.NavigationStack;
-					var topNavStackPage = navStack.Count > 0 ? navStack[navStack.Count -1] : null;
-
-					var queryParametersTarget =
-						topNavStackPage as BindableObject ??
-						(shellContent?.Content as BindableObject) ??
-						shellContent;
-
-					ShellRouteParameters routeParameters = null;
-
-					if (queryParametersTarget?.GetValue(ShellContent.QueryAttributesProperty) is
-						ShellRouteParameters shellRouteParameters)
-					{
-						routeParameters = shellRouteParameters;
-					}
-
-					var navParameters = new ShellNavigationParameters()
-					{
-						TargetState = state,
-						Animated = false,
-						EnableRelativeShellRoutes = false,
-						DeferredArgs = null,
-						Parameters = routeParameters
-					};
+					var navParameters = ShellNavigationManager.GetNavigationParameters(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
 
 					return _navigationManager
 						.GoToAsync(navParameters);
