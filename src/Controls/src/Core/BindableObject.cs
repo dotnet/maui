@@ -586,7 +586,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		BindablePropertyContext GetContext(BindableProperty property) => _properties.TryGetValue(property, out var result) ? result : null;
+		internal BindablePropertyContext GetContext(BindableProperty property) => _properties.TryGetValue(property, out var result) ? result : null;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		BindablePropertyContext GetOrCreateContext(BindableProperty property) => GetContext(property) ?? CreateAndAddContext(property);
@@ -643,7 +643,7 @@ namespace Microsoft.Maui.Controls
 			IsDefaultValueCreated = 1 << 5,
 		}
 
-		class BindablePropertyContext
+		internal class BindablePropertyContext
 		{
 			public BindableContextAttributes Attributes;
 			public BindingBase Binding;
@@ -667,7 +667,7 @@ namespace Microsoft.Maui.Controls
 			Default = CheckAccess
 		}
 
-		class SetValueArgs
+		internal class SetValueArgs
 		{
 			public readonly SetValueFlags Attributes;
 			public readonly BindablePropertyContext Context;

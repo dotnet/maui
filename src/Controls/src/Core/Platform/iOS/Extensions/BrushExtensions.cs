@@ -88,7 +88,9 @@ namespace Microsoft.Maui.Controls.Platform
 					Name = BackgroundLayer,
 					ContentsGravity = CALayer.GravityResizeAspectFill,
 					Frame = control.Bounds,
+#pragma warning disable CA1416 // TODO:  'CAGradientLayerType.Radial' is only supported on: 'ios' 12.0 and later
 					LayerType = CAGradientLayerType.Radial,
+#pragma warning restore CA1416
 					StartPoint = new CGPoint(center.X, center.Y),
 					EndPoint = GetRadialGradientBrushEndPoint(center, radius),
 					CornerRadius = (float)radius

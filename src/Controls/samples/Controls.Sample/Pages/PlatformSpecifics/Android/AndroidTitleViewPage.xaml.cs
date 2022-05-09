@@ -6,14 +6,14 @@ namespace Maui.Controls.Sample.Pages
 {
     public partial class AndroidTitleViewPage : ContentPage
     {
-        ICommand _returnToPlatformSpecificsPage;
+        readonly ICommand _returnToPlatformSpecificsPage;
 
-		public AndroidTitleViewPage()
-		{
-			InitializeComponent();
-		}
+        public AndroidTitleViewPage()
+        {
+            InitializeComponent();
+        }
 
-		public AndroidTitleViewPage(ICommand restore)
+        public AndroidTitleViewPage(ICommand restore)
         {
             InitializeComponent();
             _returnToPlatformSpecificsPage = restore;
@@ -21,8 +21,8 @@ namespace Maui.Controls.Sample.Pages
 
         void OnReturnButtonClicked(object sender, EventArgs e)
         {
-			if (_returnToPlatformSpecificsPage == null)
-				return;
+            if (_returnToPlatformSpecificsPage == null)
+                return;
 
             _returnToPlatformSpecificsPage.Execute(null);
         }

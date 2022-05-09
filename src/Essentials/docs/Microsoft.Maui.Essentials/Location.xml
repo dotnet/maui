@@ -427,5 +427,23 @@
         <remarks></remarks>
       </Docs>
     </Member>
+    <Member MemberName="ReducedAccuracy">
+      <MemberSignature Language="C#" Value="public bool ReducedAccuracy { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool ReducedAccuracy" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.Location.ReducedAccuracy" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets whether this location has a reduced accuracy reading.</summary>
+        <value>True if the accuracy is reduced, false if the accuracy is not reduced.</value>
+        <remarks>This functionality only applies to iOS. On other platforms this will always be false.</remarks>
+      </Docs>
+    </Member>
   </Members>
 </Type>

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override ScrollView CreatePlatformView()
 		{
-			var scrollView = new ScrollView(NativeParent);
+			var scrollView = new ScrollView(PlatformParent);
 			_scrollCanvas = new Box(scrollView);
 			scrollView.SetContent(_scrollCanvas);
 			return scrollView;

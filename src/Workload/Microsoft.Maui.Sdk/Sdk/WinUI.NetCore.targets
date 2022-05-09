@@ -355,7 +355,7 @@
 
   </Target>
 
-<Target Name="GetPriOutputs"
+  <Target Name="GetPriOutputs"
           Condition="'$(AppxGeneratePriEnabled)'=='true'"
           Returns="@(PriOutputs);@(ProjectPriFile)"
           DependsOnTargets="$(GetPriOutputsDependsOn)">

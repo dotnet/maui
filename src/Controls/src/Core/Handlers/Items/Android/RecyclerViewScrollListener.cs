@@ -20,8 +20,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public RecyclerViewScrollListener(TItemsView itemsView, ItemsViewAdapter<TItemsView, TItemsViewSource> itemsViewAdapter, bool getCenteredItemOnXAndY)
 		{
 			_itemsView = itemsView;
-			ItemsViewAdapter = itemsViewAdapter;
+			UpdateAdapter(itemsViewAdapter);
 			_getCenteredItemOnXAndY = getCenteredItemOnXAndY;
+		}
+
+		internal void UpdateAdapter(ItemsViewAdapter<TItemsView, TItemsViewSource> itemsViewAdapter)
+		{
+			ItemsViewAdapter = itemsViewAdapter;
 		}
 
 		public override void OnScrolled(RecyclerView recyclerView, int dx, int dy)

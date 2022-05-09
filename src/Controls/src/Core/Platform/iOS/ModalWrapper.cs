@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var result = style.ToPlatformModalPresentationStyle();
 
-				if (!PlatformVersion.IsAtLeast(13) && result == UIKit.UIModalPresentationStyle.Automatic)
+				if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)) && result == UIKit.UIModalPresentationStyle.Automatic)
 				{
 					result = UIKit.UIModalPresentationStyle.FullScreen;
 				}
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			modal.ViewController.DidMoveToParentViewController(this);
 
-			if (PlatformVersion.IsAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				PresentationController.Delegate = this;
 
 			((Page)modal.VirtualView).PropertyChanged += OnModalPagePropertyChanged;
@@ -106,11 +106,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
 		{
+#pragma warning disable CA1416 // TODO: [UnsupportedOSPlatform("ios6.0")]
 			if ((ChildViewControllers != null) && (ChildViewControllers.Length > 0))
 			{
 				return ChildViewControllers[0].ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
 			}
 			return base.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+#pragma warning restore CA1416
 		}
 
 		public override bool ShouldAutomaticallyForwardRotationMethods => true;
@@ -152,7 +154,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
-			if (PlatformVersion.Supports(PlatformApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 

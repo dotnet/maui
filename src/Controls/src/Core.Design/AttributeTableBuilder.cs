@@ -80,6 +80,13 @@ namespace Microsoft.Maui.Controls.Design
 			AddMemberAttributes("Microsoft.Maui.Controls.SearchHandler", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
 			AddMemberAttributes("Microsoft.Maui.Controls.Span", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
 
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexJustify", new TypeConverterAttribute(typeof(FlexJustifyDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexDirection", new TypeConverterAttribute(typeof(FlexDirectionDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexAlignContent", new TypeConverterAttribute(typeof(FlexAlignContentDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexAlignItems", new TypeConverterAttribute(typeof(FlexAlignItemsDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexAlignSelf", new TypeConverterAttribute(typeof(FlexAlignSelfDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexWrap", new TypeConverterAttribute(typeof(FlexWrapDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexBasis", new TypeConverterAttribute(typeof(FlexBasisDesignTypeConverter)));
 		}
 
 		private void AddTypeAttributes(string typeName, params Attribute[] attribs)

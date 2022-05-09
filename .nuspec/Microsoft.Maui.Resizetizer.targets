@@ -586,7 +586,14 @@
             </ContentWithTargetPath>
 
             <FileWrites Include="@(_ResizetizerCollectedImages)" />
+
+            <_MauiAppIconFile Include="@(_ResizetizerCollectedImages)"
+                              Condition="'%(Extension)' == '.ico'" />
         </ItemGroup>
+
+        <PropertyGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'">
+            <ApplicationIcon Condition="'$(ApplicationIcon)' == ''">%(_MauiAppIconFile.Identity)</ApplicationIcon>
+        </PropertyGroup>
 
         <!-- WPF -->
         <ItemGroup Condition="'$(_ResizetizerIsWPFApp)' == 'True'">

@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!popping)
 				{
 					var modalContext =
-						MauiContext
+						WindowMauiContext
 							.MakeScoped(registerNewNavigationRoot: true);
 
 					newPage.Toolbar ??= new Toolbar(newPage);

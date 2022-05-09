@@ -35,17 +35,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 
 				if (s_platformWindow is null)
 				{
-					IServiceProvider? services = null;
-
-#if __ANDROID__
-					services = MauiTestInstrumentation.Current?.Services ?? MauiApplication.Current.Services;
-#elif __IOS__
-					services = MauiTestApplicationDelegate.Current?.Services ?? MauiUIApplicationDelegate.Current.Services;
-#elif WINDOWS
-					services = MauiWinUIApplication.Current.Services;
-#endif
-
-					var application = services?.GetService<IApplication>();
+					var application = TestServices.Services.GetService<IApplication>();
 					s_platformWindow = application?.Windows.FirstOrDefault()?.Handler?.PlatformView as PlatformView;
 				}
 

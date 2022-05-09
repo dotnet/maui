@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override Entry CreatePlatformView()
 		{
-			return new EditfieldEntry(NativeParent, EditFieldEntryLayout.Styles.MulitLine)
+			return new EditfieldEntry(PlatformParent, EditFieldEntryLayout.Styles.MulitLine)
 			{
 				IsSingleLine = false
 			};

@@ -309,7 +309,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackgroundColor()
 		{
-			BackgroundColor = Element.BackgroundColor.ToUIColor(Colors.Transparent);
+			BackgroundColor = Element.BackgroundColor.ToPlatform(Colors.Transparent);
 		}
 
 		void UpdateBackground()

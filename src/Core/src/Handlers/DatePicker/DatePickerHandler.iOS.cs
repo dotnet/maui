@@ -16,24 +16,17 @@ namespace Microsoft.Maui.Handlers
 
 			_picker = new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
 
-			if (PlatformVersion.IsAtLeast(14))
+			if (OperatingSystem.IsIOSVersionAtLeast(13, 4))
 			{
 				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}
 
-			var width = UIScreen.MainScreen.Bounds.Width;
-			var toolbar = new UIToolbar(new RectangleF(0, 0, width, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
-			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
-			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
+			platformDatePicker.InputView = _picker;
+			platformDatePicker.InputAccessoryView = new MauiDoneAccessoryView(() =>
 			{
 				SetVirtualViewDate();
 				platformDatePicker.ResignFirstResponder();
 			});
-
-			toolbar.SetItems(new[] { spacer, doneButton }, false);
-
-			platformDatePicker.InputView = _picker;
-			platformDatePicker.InputAccessoryView = toolbar;
 
 			platformDatePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 			platformDatePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;

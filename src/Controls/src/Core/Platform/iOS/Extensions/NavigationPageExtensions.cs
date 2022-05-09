@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+﻿using System;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -10,7 +11,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (platformView.NavigationBar == null)
 				return;
 
-			platformView.NavigationBar.PrefersLargeTitles = navigationPage.OnThisPlatform().PrefersLargeTitles();
+			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11))
+				platformView.NavigationBar.PrefersLargeTitles = navigationPage.OnThisPlatform().PrefersLargeTitles();
 		}
 
 		public static void UpdateIsNavigationBarTranslucent(this UINavigationController platformView, NavigationPage navigationPage)

@@ -4,6 +4,7 @@
 		<_MauiForceXamlCForDebug>True</_MauiForceXamlCForDebug>
 	</PropertyGroup>
 
+	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Core.targets" />
 	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.targets" />
 	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.DebugXamlCTask" AssemblyFile="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll" />
 	

@@ -96,7 +96,7 @@ namespace Microsoft.Maui
 			/// <summary>
 			/// Initializes a new instance of the <see cref="PassthroughView"/> class.
 			/// </summary>
-			/// <param name="overlay">The Window Overlay.</param>
+			/// <param name="windowOverlay">The Window Overlay.</param>
 			/// <param name="frame">Base Frame.</param>
 			public PassthroughView(WindowOverlay windowOverlay, CGRect frame)
 				: base(frame)

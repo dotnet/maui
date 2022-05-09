@@ -22,12 +22,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected override INavigationDrawer CreateNavigationDrawer()
 		{
-			return new TVNavigationDrawer(NativeParent);
+			return new TVNavigationDrawer(PlatformParent);
 		}
 
 		protected override ITNavigationView CreateNavigationView()
 		{
-			return new TVNavigationView(NativeParent);
+			return new TVNavigationView(PlatformParent);
 		}
 
 		protected override ShellItemView CreateShellItemView(ShellItem item)

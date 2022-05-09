@@ -242,6 +242,14 @@ namespace Microsoft.Maui.Platform
 				panel.UpdateBackground(view.Background);
 		}
 
+		public static async Task UpdateBackgroundImageSourceAsync(this FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		{
+			if (platformView is Control control)
+				await control.UpdateBackgroundImageSourceAsync(imageSource, provider);
+			else if (platformView is Panel panel)
+				await panel.UpdateBackgroundImageSourceAsync(imageSource, provider);
+		}
+
 		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)
 		{
 			// Background and InputTransparent for Windows layouts are heavily intertwined, so setting one

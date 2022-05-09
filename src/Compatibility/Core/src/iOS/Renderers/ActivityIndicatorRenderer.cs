@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler]
 		void UpdateColor()
 		{
-			Control.Color = Element.Color == null ? null : Element.Color.ToUIColor();
+			Control.Color = Element.Color == null ? null : Element.Color.ToPlatform();
 		}
 
 		[PortHandler]

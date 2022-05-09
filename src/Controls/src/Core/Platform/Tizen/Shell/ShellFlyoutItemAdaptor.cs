@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public class ShellFlyoutItemAdaptor : ItemAdaptor
 	{
-		Dictionary<EvasObject, View> _nativeFormsTable = new Dictionary<EvasObject, View>();
+		Dictionary<EvasObject, View> _platformViewsTable = new Dictionary<EvasObject, View>();
 		Dictionary<object, View?> _dataBindedViewTable = new Dictionary<object, View?>();
 		
 		Shell _shell;
@@ -72,10 +72,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (template != null)
 			{
 				var content = (View)template.CreateContent();
-				var native = content.ToPlatform(_context);
+				var platformView = GetPlatformView(content);
 
-				_nativeFormsTable[native] = content;
-				return native;
+				_platformViewsTable[platformView] = content;
+				return platformView;
 			}
 
 			return null;
@@ -93,13 +93,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_headerCache = ((IShellController)Shell).FlyoutHeader;
 
-			if (_headerCache != null)
-			{
-				var native = _headerCache.ToPlatform(_context);
-				return native;
-			}
-
-			return null;
+			return (_headerCache != null) ? GetPlatformView(_headerCache) : null;
 		}
 
 		public override Size MeasureFooter(int widthConstraint, int heightConstraint)
@@ -109,7 +103,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override Size MeasureHeader(int widthConstraint, int heightConstraint)
 		{
-			return _headerCache?.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), DPExtensions.ConvertToScaledDP(heightConstraint)).Request.ToEFLPixel() ?? new Size(0, 0);
+			return _headerCache?.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), double.PositiveInfinity).Request.ToEFLPixel() ?? new Size(0, 0);
 		}
 
 		public override Size MeasureItem(int widthConstraint, int heightConstraint)
@@ -122,20 +116,20 @@ namespace Microsoft.Maui.Controls.Platform
 			var item = this[index];
 			if (item != null && _dataBindedViewTable.TryGetValue(item, out View? createdView) && createdView != null)
 			{
-				return createdView.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), DPExtensions.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request.ToEFLPixel();
+				return createdView.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), double.PositiveInfinity, MeasureFlags.IncludeMargins).Request.ToEFLPixel();
 			}
 
 			return new Size(0, 0);
 		}
 
-		public override void RemoveNativeView(EvasObject native)
+		public override void RemoveNativeView(EvasObject platformView)
 		{
-			native?.Unrealize();
+			platformView?.Unrealize();
 		}
 
-		public override void SetBinding(EvasObject native, int index)
+		public override void SetBinding(EvasObject platformView, int index)
 		{
-			if (_nativeFormsTable.TryGetValue(native, out View? view))
+			if (_platformViewsTable.TryGetValue(platformView, out View? view))
 			{
 				ResetBindedView(view);
 				var item = this[index];
@@ -150,9 +144,9 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public override void UnBinding(EvasObject native)
+		public override void UnBinding(EvasObject platformView)
 		{
-			if (_nativeFormsTable.TryGetValue(native, out View? view))
+			if (_platformViewsTable.TryGetValue(platformView, out View? view))
 			{
 				view.MeasureInvalidated -= OnItemMeasureInvalidated;
 				ResetBindedView(view);
@@ -180,6 +174,20 @@ namespace Microsoft.Maui.Controls.Platform
 					CollectionView?.ItemMeasureInvalidated(index);
 				}
 			}
+		}
+
+		EvasObject GetPlatformView(View view)
+		{
+			var platformView = view.ToPlatform(_context);
+
+			if (view.Handler is IPlatformViewHandler handler)
+			{
+				handler.ForceContainer = true;
+				handler.HasContainer = true;
+
+				platformView = handler.ContainerView!;
+			}
+			return platformView;
 		}
 	}
 }

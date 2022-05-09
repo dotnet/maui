@@ -40,28 +40,13 @@ namespace Microsoft.Maui.ApplicationModel
 				if (RequiredPermissions == null || RequiredPermissions.Length <= 0)
 					return Task.FromResult(PermissionStatus.Granted);
 
-				var context = Application.Context;
-				var targetsMOrHigher = context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.M;
-
 				foreach (var (androidPermission, isRuntime) in RequiredPermissions)
 				{
 					var ap = androidPermission;
 					if (!IsDeclaredInManifest(ap))
 						throw new PermissionException($"You need to declare using the permission: `{androidPermission}` in your AndroidManifest.xml");
 
-					var status = PermissionStatus.Granted;
-
-					if (targetsMOrHigher)
-					{
-						if (ContextCompat.CheckSelfPermission(context, androidPermission) != Permission.Granted)
-							status = PermissionStatus.Denied;
-					}
-					else
-					{
-						if (PermissionChecker.CheckSelfPermission(context, androidPermission) != PermissionChecker.PermissionGranted)
-							status = PermissionStatus.Denied;
-					}
-
+					var status = DoCheck(ap);
 					if (status != PermissionStatus.Granted)
 						return Task.FromResult(PermissionStatus.Denied);
 				}
@@ -147,6 +132,38 @@ namespace Microsoft.Maui.ApplicationModel
 				}
 
 				return false;
+			}
+
+			protected virtual PermissionStatus DoCheck(string androidPermission)
+			{
+				var context = Platform.AppContext;
+				var targetsMOrHigher = context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.M;
+
+				if (!IsDeclaredInManifest(androidPermission))
+					throw new PermissionException($"You need to declare using the permission: `{androidPermission}` in your AndroidManifest.xml");
+
+				var status = PermissionStatus.Granted;
+
+				if (targetsMOrHigher)
+				{
+					status = ContextCompat.CheckSelfPermission(context, androidPermission) switch
+					{
+						Permission.Granted => PermissionStatus.Granted,
+						Permission.Denied => PermissionStatus.Denied,
+						_ => PermissionStatus.Unknown
+					};
+				}
+				else
+				{
+					status = PermissionChecker.CheckSelfPermission(context, androidPermission) switch
+					{
+						PermissionChecker.PermissionGranted => PermissionStatus.Granted,
+						PermissionChecker.PermissionDenied => PermissionStatus.Denied,
+						PermissionChecker.PermissionDeniedAppOp => PermissionStatus.Denied,
+						_ => PermissionStatus.Unknown
+					};
+				}
+				return status;
 			}
 
 			internal static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
@@ -235,6 +252,17 @@ namespace Microsoft.Maui.ApplicationModel
 					(Manifest.Permission.AccessCoarseLocation, true),
 					(Manifest.Permission.AccessFineLocation, true)
 				};
+
+			public override Task<PermissionStatus> CheckStatusAsync()
+			{
+				if (DoCheck(Manifest.Permission.AccessFineLocation) == PermissionStatus.Granted)
+					return Task.FromResult(PermissionStatus.Granted);
+
+				if (DoCheck(Manifest.Permission.AccessCoarseLocation) == PermissionStatus.Granted)
+					return Task.FromResult(PermissionStatus.Restricted);
+
+				return Task.FromResult(PermissionStatus.Denied);
+			}
 		}
 
 		public partial class LocationAlways : BasePlatformPermission

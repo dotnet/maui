@@ -225,8 +225,8 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var frameworkElement = Content as FrameworkElement;
-
 			var formsElement = _renderer.VirtualView as VisualElement;
+			var margin = _renderer.VirtualView.Margin;
 
 			if (ItemHeight != default || ItemWidth != default)
 			{
@@ -234,7 +234,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var wsize = new WSize(ItemWidth, ItemHeight);
 
-				frameworkElement.Margin = WinUIHelpers.CreateThickness(ItemSpacing.Left, ItemSpacing.Top, ItemSpacing.Right, ItemSpacing.Bottom);
+				frameworkElement.Margin = 
+					WinUIHelpers.CreateThickness(
+						margin.Left + ItemSpacing.Left,
+						margin.Top + ItemSpacing.Top,
+						margin.Right + ItemSpacing.Right,
+						margin.Bottom + ItemSpacing.Bottom);
 
 				if (CanMeasureContent(frameworkElement))
 					frameworkElement.Measure(wsize);
@@ -252,6 +257,12 @@ namespace Microsoft.Maui.Controls.Platform
 				formsElement.Layout(new Rect(0, 0, width, height));
 
 				var wsize = new WSize(width, height);
+
+				frameworkElement.Margin = WinUIHelpers.CreateThickness(
+					margin.Left,
+					margin.Top,
+					margin.Right,
+					margin.Bottom);
 
 				if (CanMeasureContent(frameworkElement))
 					frameworkElement.Measure(wsize);

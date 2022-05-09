@@ -41,7 +41,7 @@
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackgroundSecondaryColor}, Dark={StaticResource DarkBackgroundSecondaryColor}}" />
         <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightBorderColor}, Dark={StaticResource DarkBorderColor}}" />
         <Setter Property="Padding" Value="12" />
-        <Setter Property="Margin" Value="12, 0, 12, 12" />
+        <Setter Property="Margin" Value="0" />
     </Style>
 
     <Style x:Key="GalleryItemTitleStyle" TargetType="Label">
