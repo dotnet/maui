@@ -5,9 +5,10 @@
     xmlns:windows="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;assembly=Microsoft.Maui.Controls"
     x:Class="Maui.Controls.Sample.Pages.WindowsReadingOrderPage"
     Title="Text Reading Order">
-    <StackLayout Margin="20">
+    <StackLayout Margin="20" Spacing="10">
         <Editor x:Name="_editor" HeightRequest="80" Text=" שכל, ניווט ומהימנה תאולוגיה היא ב, זכר או מדעי תרומה מבוקשים. של ויש טכנולוגיה סוציולוגיה, מה אנא ביולי בקלות למחיקה. על חשמל אקטואליה רבה, שדרות ערכים ננקטת שמו בה. או עוד ציור מיזמים טבלאות, ריקוד קולנוע היסטוריה שכל ב" FlowDirection="LeftToRight" windows:InputView.DetectReadingOrderFromContent="true" />
-        <Label x:Name="_label" />
+        <Label x:Name="_label" HeightRequest="80" Text=" שכל, ניווט ומהימנה תאולוגיה היא ב, זכר או מדעי תרומה מבוקשים. של ויש טכנולוגיה סוציולוגיה, מה אנא ביולי בקלות למחיקה. על חשמל אקטואליה רבה, שדרות ערכים ננקטת שמו בה. או עוד ציור מיזמים טבלאות, ריקוד קולנוע היסטוריה שכל ב" FlowDirection="LeftToRight" windows:InputView.DetectReadingOrderFromContent="true" />
+        <Label x:Name="_info" />
         <Button Text="Toggle detect from content" Clicked="OnToggleButtonClicked" />
     </StackLayout>
 </ContentPage>
