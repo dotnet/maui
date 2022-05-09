@@ -8,8 +8,6 @@
 			[PlatformConfiguration.AndroidSpecific.WebView.DisplayZoomControlsProperty.PropertyName] = MapDisplayZoomControls,
 			[PlatformConfiguration.AndroidSpecific.WebView.EnableZoomControlsProperty.PropertyName] = MapEnableZoomControls,
 			[PlatformConfiguration.AndroidSpecific.WebView.MixedContentModeProperty.PropertyName] = MapMixedContentMode,
-#elif WINDOWS
-			[PlatformConfiguration.WindowsSpecific.WebView.IsJavaScriptAlertEnabledProperty.PropertyName] = MapIsJavaScriptAlertEnabled,
 #endif
 		};
 
