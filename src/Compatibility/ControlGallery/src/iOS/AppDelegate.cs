@@ -433,7 +433,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			if (value is Graphics.Color)
-				return ((Graphics.Color)value).ToUIColor();
+				return ((Graphics.Color)value).ToPlatform();
 			return value;
 		}
 

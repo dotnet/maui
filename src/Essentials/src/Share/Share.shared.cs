@@ -180,7 +180,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public ShareMultipleFilesRequest(IEnumerable<ShareFile> files) =>
 			Files = files.ToList();
 
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ShareMultipleFilesRequest.xml" path="//Member[@MemberName='.ctor'][5]/Docs" />
 		public ShareMultipleFilesRequest(string title, IEnumerable<ShareFile> files)
 			: this(files) => Title = title;
 

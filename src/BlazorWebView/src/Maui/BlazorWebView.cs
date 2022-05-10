@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// <summary>
 	/// A <see cref="View"/> that can render Blazor content.
 	/// </summary>
-	public class BlazorWebView : View, IBlazorWebView
+	public partial class BlazorWebView : View, IBlazorWebView
 	{
 		internal const string AppHostAddress = "0.0.0.0";
 

@@ -28,10 +28,16 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (platformView is MauiNavigationView mauiNavigationView)
 				mauiNavigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 
+			platformView.Loaded += OnLoaded;
 			platformView.PaneOpened += OnPaneOpened;
 			platformView.PaneOpening += OnPaneOpening;
 			platformView.PaneClosing += OnPaneClosing;
 			platformView.ItemInvoked += OnMenuItemInvoked;
+		}
+
+		private void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			UpdateValue(nameof(Shell.FlyoutBackground));
 		}
 
 		protected override void DisconnectHandler(ShellView platformView)
@@ -41,6 +47,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (platformView is MauiNavigationView mauiNavigationView)
 				mauiNavigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
 
+			platformView.Loaded -= OnLoaded;
 			platformView.PaneOpened -= OnPaneOpened;
 			platformView.PaneOpening -= OnPaneOpening;
 			platformView.PaneClosing -= OnPaneClosing;
@@ -174,7 +181,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void UpdateFlyoutHeaderBehavior(Shell view)
 		{
-			var flyoutHeader = (ShellHeaderView)PlatformView.PaneCustomContent;
+			var flyoutHeader = (ShellHeaderView)PlatformView.PaneHeader;
 
 			if (view.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Default ||
 				view.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Fixed)
@@ -214,7 +221,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_scrollViewer == null)
 				return;
 
-			var flyoutHeader = PlatformView?.PaneCustomContent as ShellHeaderView;
+			var flyoutHeader = PlatformView?.PaneHeader as ShellHeaderView;
 
 			if (flyoutHeader == null)
 				return;

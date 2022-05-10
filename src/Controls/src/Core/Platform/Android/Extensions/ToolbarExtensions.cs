@@ -13,6 +13,7 @@ using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
+using AGraphics = Android.Graphics;
 using ATextView = global::Android.Widget.TextView;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = global::Android.Views.View;
@@ -150,7 +151,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (navIconColor != null && nativeToolbar.NavigationIcon != null)
 			{
 				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable dad)
-					dad.Color = Android.Graphics.Color.White;
+					dad.Color = AGraphics.Color.White;
 
 				nativeToolbar.NavigationIcon.SetColorFilter(navIconColor, FilterMode.SrcAtop);
 			}
@@ -164,9 +165,9 @@ namespace Microsoft.Maui.Controls.Platform
 			// We need to reset the toolbar text color to the default color when it's unset
 			if (_defaultTitleTextColor == null)
 			{
-				var a = TintTypedArray.ObtainStyledAttributes(nativeToolbar.Context?.GetThemedContext(), null, Resource.Styleable.Toolbar, Resource.Attribute.toolbarStyle, 0);
-				_defaultTitleTextColor = a.GetColorStateList(Resource.Styleable.Toolbar_titleTextColor);
-				a.Recycle();
+				var context = nativeToolbar.Context?.GetThemedContext ();
+				_defaultTitleTextColor = PlatformInterop.GetColorStateListForToolbarStyleableAttribute (context,
+					Resource.Attribute.toolbarStyle, Resource.Styleable.Toolbar_titleTextColor);
 			}
 
 			if (textColor != null)

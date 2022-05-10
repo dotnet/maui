@@ -101,8 +101,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this ButtonBase platformButton, ITextStyle button)
 		{
-			var brush = button.TextColor?.ToPlatform();
+			UpdateTextColor(platformButton, button.TextColor);
+		}
 
+		public static void UpdateTextColor(this ButtonBase platformButton, Color textColor)
+		{
+			var brush = textColor?.ToPlatform();
 			if (brush is null)
 			{
 				// Windows.Foundation.UniversalApiContract < 5

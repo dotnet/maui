@@ -145,7 +145,9 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<CloseRequestedEventArgs> CloseRequested;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='Open']/Docs" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public void Open(OpenSwipeItem openSwipeItem, bool animated = true)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			OpenRequested?.Invoke(this, new OpenRequestedEventArgs(openSwipeItem, animated));
 			((ISwipeView)this).RequestOpen(new SwipeViewOpenRequest(openSwipeItem, animated));

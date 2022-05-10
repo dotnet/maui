@@ -397,6 +397,8 @@ namespace Microsoft.Maui.Controls
 					columnDefinitions.Add(new ColumnDefinition { Width = 50 });
 				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
 					columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+				else if (DeviceInfo.Platform == DevicePlatform.Tizen)
+					columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
 				columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 				defaultGridClass.Setters.Add(new Setter { Property = Grid.ColumnDefinitionsProperty, Value = columnDefinitions });
@@ -410,6 +412,8 @@ namespace Microsoft.Maui.Controls
 					sizeRequest = 22;
 				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
 					sizeRequest = 16;
+				else if (DeviceInfo.Platform == DevicePlatform.Tizen)
+					sizeRequest = 25;
 
 				if (sizeRequest > 0)
 				{
@@ -458,6 +462,11 @@ namespace Microsoft.Maui.Controls
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontAttributesProperty, Value = FontAttributes.Bold });
 				}
 				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				{
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalOptionsProperty, Value = LayoutOptions.Start });
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Start });
+				}
+				else if (DeviceInfo.Platform == DevicePlatform.Tizen)
 				{
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalOptionsProperty, Value = LayoutOptions.Start });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Start });

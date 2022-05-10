@@ -1,6 +1,7 @@
 // This class represents common code paths we always want to AOT
 
-// string interpolation
+// string interpolation & split
+// int.Parse(), int.ToString()
 // Culture-aware string comparisons
 // ResourceManager
 // Common Essentials methods
@@ -23,6 +24,9 @@ static class CommonMethods
         var foo = "foo";
         foo.StartsWith("f");
         foo.Contains("o");
+        var split = "foo;bar".Split(';');
+        var x = int.Parse("999");
+        x.ToString();
 
         string someString = MauiTest.Resources.Strings.SomeString;
 

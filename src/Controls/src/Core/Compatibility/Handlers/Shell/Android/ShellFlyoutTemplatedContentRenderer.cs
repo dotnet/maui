@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		int _flyoutWidth;
 		protected IMauiContext MauiContext => _shellContext.Shell.Handler.MauiContext;
 		bool _initialLayoutChangeFired;
-
+		IFlyoutView FlyoutView => _shellContext?.Shell;
 		protected IShellContext ShellContext => _shellContext;
 		protected AView FooterView => _footerView?.PlatformView;
 		protected AView View => _rootView;
@@ -103,7 +103,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UpdateFlyoutFooter();
 
-			if (View is ShellFlyoutLayout sfl)
+			if (FlyoutView.FlyoutBehavior == FlyoutBehavior.Locked)
+				OnFlyoutViewLayoutChanged();
+			else if (View is ShellFlyoutLayout sfl)
 				sfl.LayoutChanging += OnFlyoutViewLayoutChanged;
 		}
 
@@ -259,15 +261,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UpdateFooterLayout();
 			UpdateContentLayout();
-			UpdateContentBottomMargin();
 		}
 
 		void UpdateFooterLayout()
 		{
-			if (_footerView != null)
-			{
-				_footerView.LayoutView(0, 0, _rootView.LayoutParameters.Width, MeasureSpecMode.Unspecified.MakeMeasureSpec(0));
-			}
+			_ = _footerView?
+					.Measure(MeasureSpecMode.Exactly
+					.MakeMeasureSpec(_rootView.LayoutParameters.Width), MeasureSpecMode.Unspecified.MakeMeasureSpec(0), null, null);
+
 		}
 
 		void UpdateContentLayout()
@@ -284,15 +285,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				var width = View.MeasuredWidth;
 
-				_contentView.LayoutView(0, 0, width, height);
-			}
-		}
+				if (_flyoutContentView?.LayoutParameters is ViewGroup.MarginLayoutParams cl)
+					cl.BottomMargin = FooterView?.MeasuredHeight ?? 0;
 
-		void UpdateContentBottomMargin()
-		{
-			if (_flyoutContentView?.LayoutParameters is CoordinatorLayout.LayoutParams cl)
-			{
-				cl.BottomMargin = (int)_shellContext.AndroidContext.ToPixels(_footerView?.View.Height ?? 0);
+				var frameSize = _contentView.Measure(
+					MeasureSpecMode.Exactly.MakeMeasureSpec(width),
+					MeasureSpecMode.Exactly.MakeMeasureSpec(height), null, null);
+
+				_contentView.View.Frame = new Graphics.Rect(Graphics.Point.Zero, frameSize);
 			}
 		}
 
@@ -301,8 +301,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// The second time this fires the non flyout part of the view
 			// is visible to the user. I haven't found a better
 			// mechanism to wire into in order to detect this
-			if (_initialLayoutChangeFired && _flyoutContentView == null)
+			if ((_initialLayoutChangeFired || FlyoutView.FlyoutBehavior == FlyoutBehavior.Locked) &&
+				_flyoutContentView == null)
+			{
 				UpdateFlyoutContent();
+			}
 
 			_initialLayoutChangeFired = true;
 
@@ -317,7 +320,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UpdateFooterLayout();
 				UpdateContentLayout();
-				UpdateContentBottomMargin();
 			}
 		}
 
@@ -533,7 +535,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (Parent is AView view)
 					ElevationHelper.SetElevation(view, View);
 			}
-
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{

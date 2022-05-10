@@ -135,7 +135,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ItemsSource = CreateItemsViewSource();
 
 			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+			{
 				AutomaticallyAdjustsScrollViewInsets = false;
+      		}
 			else
 			{
 				// We set this property to keep iOS from trying to be helpful about insetting all the 
@@ -339,7 +341,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		UICollectionViewCell GetPrototype()
 		{
-			if (ItemsSource.ItemCount == 0)
+			if (ItemsSource == null || ItemsSource.ItemCount == 0)
 			{
 				return null;
 			}

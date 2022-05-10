@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : IWebViewHandler
 	{
-		public static PropertyMapper<IWebView, IWebViewHandler> Mapper = new PropertyMapper<IWebView, IWebViewHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IWebView, IWebViewHandler> Mapper = new PropertyMapper<IWebView, IWebViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IWebView.Source)] = MapSource,
 #if __ANDROID__

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using SkiaSharp;
 
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string AppIconName { get; }
 
-		public ResizedImageInfo Resize(DpiPath dpi, string destination)
+		public ResizedImageInfo Resize(DpiPath dpi, string destination, Func<Stream> getStream = null)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -113,8 +114,16 @@ namespace Microsoft.Maui.Resizetizer
 				}
 
 				// Save (encode)
-				using var wrapper = File.Create(destination);
-				tempBitmap.Encode(wrapper, SKEncodedImageFormat.Png, 100);
+				if (getStream is not null)
+				{
+					var stream = getStream();
+					tempBitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
+				}
+				else
+				{
+					using var wrapper = File.Create(destination);
+					tempBitmap.Encode(wrapper, SKEncodedImageFormat.Png, 100);
+				}
 			}
 
 			sw.Stop();

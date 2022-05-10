@@ -13,10 +13,7 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
    - [Install the latest Public Preview of Visual Studio](https://docs.microsoft.com/en-us/dotnet/maui/get-started/installation/)
    - [macOS (x64)](https://aka.ms/dotnet/6.0.3xx/daily/dotnet-sdk-osx-x64.pkg)  
    - [macOS (arm64)](https://aka.ms/dotnet/6.0.3xx/daily/dotnet-sdk-osx-arm64.pkg)
-2. Install the released 6.0.2xx SDK as well:  
-   - https://dotnet.microsoft.com/en-us/download/dotnet/6.0
-   > This is a known issue where we can't use rollback files from one SDK band in another. https://github.com/dotnet/sdk/issues/23402
-3. Clear your nuget cache:  
+2. Clear your nuget cache:  
    ```
    dotnet nuget locals all --clear
    ```
@@ -31,7 +28,7 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 
 Install the .NET MAUI workload using the versions from a particular branch:  
 
-#### RC 1 branch
+#### RC 2 branch
 
 1. First, install .NET SDK 6.0.300
 
@@ -39,8 +36,8 @@ Install the .NET MAUI workload using the versions from a particular branch:
 
 ```
 dotnet workload install maui `
-  --from-rollback-file https://aka.ms/dotnet/maui/6.0.300/rc.1.json `
-  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-323bf2dd/nuget/v3/index.json `
+  --from-rollback-file https://aka.ms/dotnet/maui/6.0.300/rc.2.json `
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-a21b9a2d/nuget/v3/index.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-572aeedc/nuget/v3/index.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json `
   --source https://api.nuget.org/v3/index.json
@@ -57,7 +54,7 @@ Windows:
 ```bat
 dotnet workload install maui `
   --from-rollback-file https://aka.ms/dotnet/maui/main.json `
-  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-bd261ea4/nuget/v3/index.json `
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-a21b9a2d/nuget/v3/index.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-52e9452f-3/nuget/v3/index.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json `
   --source https://api.nuget.org/v3/index.json
@@ -68,7 +65,7 @@ MacOS:
 ```bash
 dotnet workload install maui \
   --from-rollback-file https://aka.ms/dotnet/maui/main.json \
-  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-bd261ea4/nuget/v3/index.json \
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-a21b9a2d/nuget/v3/index.json \
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-52e9452f-3/nuget/v3/index.json \
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json \
   --source https://api.nuget.org/v3/index.json
