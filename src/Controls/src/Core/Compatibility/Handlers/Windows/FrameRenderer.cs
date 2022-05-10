@@ -79,9 +79,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
-			var myRect = new WRect(0, 0, finalSize.Width, finalSize.Height);
-			Control.Arrange(myRect);
+			Control.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
+			if (Element is IContentView cv)
+				cv.CrossPlatformArrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+
 			return finalSize;
+		}
+
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+		{
+			var size = base.MeasureOverride(availableSize);
+
+			if (Element is IContentView cv)
+				size = cv.CrossPlatformMeasure(availableSize.Width, availableSize.Height).ToPlatform();
+
+			return size;
 		}
 
 		protected override void UpdateBackgroundColor()
