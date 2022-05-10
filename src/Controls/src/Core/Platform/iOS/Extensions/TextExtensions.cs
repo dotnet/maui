@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// Save the the cursor offset position if the text was modified by a Convertor
 			var cursorOffset = inputView?.Text?.Length - textField.Text?.Length ?? 0;
 
-			textField.Text = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
+			textField.Text = TextTransformUtilites.GetTransformedText(inputView.Text, textField.SecureTextEntry ? TextTransform.None : inputView.TextTransform);
 
 			var newCursorPosition = textField.GetPosition(selectedTextRange.Start, cursorOffset);
 			textField.SelectedTextRange = textField.GetTextRange(newCursorPosition, newCursorPosition);
