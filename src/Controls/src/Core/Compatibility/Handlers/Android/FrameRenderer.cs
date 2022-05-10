@@ -122,16 +122,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			if (Element != null)
+			if (Element?.Handler is IPlatformViewHandler pvh && 
+				Element is IContentView cv)
 			{
-				SetContentPadding(
-					(int)Context.ToPixels(Element.Padding.Left),
-					(int)Context.ToPixels(Element.Padding.Top),
-					(int)Context.ToPixels(Element.Padding.Right),
-					(int)Context.ToPixels(Element.Padding.Bottom));
+				var size = pvh.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec, cv.CrossPlatformMeasure);
+				SetMeasuredDimension((int)size.Width, (int)size.Height);
 			}
-
-			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+			else
+				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -139,7 +137,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element == null)
 				return;
 
-			base.OnLayout(changed, l, t, r, b);
+
+			if (Element.Handler is IPlatformViewHandler pvh &&
+				Element is IContentView cv)
+			{
+				pvh.LayoutVirtualView(l, t, r, b, cv.CrossPlatformArrange);
+			}
+			else
+				base.OnLayout(changed, l, t, r, b);
 
 			if (Element.IsClippedToBounds)
 			{
