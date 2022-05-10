@@ -8,16 +8,11 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.Content;
-using AndroidX.Core.View;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Media;
 using Microsoft.Maui.Primitives;
 using AColor = Android.Graphics.Color;
 using ALayoutDirection = Android.Views.LayoutDirection;
-using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
 using GL = Android.Opengl;
 
@@ -186,6 +181,7 @@ namespace Microsoft.Maui.Platform
 					platformView.Background = null;
 					mauiDrawable.Dispose();
 				}
+
 				if (paint is SolidPaint solidPaint)
 				{
 					if (solidPaint.Color is Color backgroundColor)
@@ -300,16 +296,37 @@ namespace Microsoft.Maui.Platform
 			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
+		public static async Task UpdateBackgroundImageSourceAsync(this AView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		{
+			if (provider == null)
+				return;
+
+			Context? context = platformView.Context;
+
+			if (context == null)
+				return;
+
+			if (imageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(imageSource);
+				var result = await service.GetDrawableAsync(imageSource, context);
+				Drawable? backgroundImageDrawable = result?.Value;
+
+				if (platformView.IsAlive())
+					platformView.Background = backgroundImageDrawable;
+			}
+		}
+
 		public static void RemoveFromParent(this AView view)
 		{
 			if (view != null)
-				PlatformInterop.RemoveFromParent(view);
 				PlatformInterop.RemoveFromParent(view);
 		}
 
 		internal static Rect GetPlatformViewBounds(this IView view)
 		{
 			var platformView = view?.ToPlatform();
+			
 			if (platformView?.Context == null)
 			{
 				return new Rect();
@@ -536,6 +553,36 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+
+		internal static Point GetLocationOnScreen(this View view)
+		{
+			int[] location = new int[2];
+			view.GetLocationOnScreen(location);
+			return new Point(view.Context.FromPixels(location[0]), view.Context.FromPixels(location[1]));
+		}
+
+		internal static Point? GetLocationOnScreen(this IElement element)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			return (element.ToPlatform())?.GetLocationOnScreen();
+		}
+
+		internal static Point GetLocationOnScreenPx(this View view)
+		{
+			int[] location = new int[2];
+			view.GetLocationOnScreen(location);
+			return new Point(location[0], location[1]);
+		}
+
+		internal static Point? GetLocationOnScreenPx(this IElement element)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			return (element.ToPlatform())?.GetLocationOnScreenPx();
 		}
 	}
 }

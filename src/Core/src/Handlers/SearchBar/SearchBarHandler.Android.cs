@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateIsEnabled(searchBar, handler.QueryEditor);
 		}
-	
+
 		public static void MapText(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateText(searchBar);
@@ -115,7 +115,6 @@ namespace Microsoft.Maui.Handlers
 		void OnQueryTextSubmit(object? sender, QueryTextSubmitEventArgs e)
 		{
 			VirtualView.SearchButtonPressed();
-			PlatformView?.ClearFocus();
 			e.Handled = true;
 		}
 

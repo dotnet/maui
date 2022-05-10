@@ -1,6 +1,6 @@
 To build the FormsViewGroup.jar from the command line; no need to install Android Studio or Eclipse. It works on Windows and macOS. To build a new .jar just navigate to the AndroidNative folder and run:
- - Windows PowerShell: .\gradlew createJar --rerun-tasks
- - macOS Terminal: ./gradlew createJar --rerun-tasks
+ - Windows PowerShell: .\gradlew createAar --rerun-tasks
+ - macOS Terminal: ./gradlew createAar --rerun-tasks
 
 The resulting formsviewgroup.jar will be put in Xamarin.Forms.Platform.Android.FormsViewGroup\Jars.
 

@@ -913,6 +913,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsTrue(shell.CurrentPage is ContentPage);
 		}
 
+		[Test]
+		public async Task NavigatedFiresAfterSwitchingFlyoutItemsBothWithPushedPages()
+		{
+			var shellContent1 = new ShellContent() { Content = new ContentPage() };
+			var shellContent2 = new ShellContent() { Content = new ContentPage() };
+
+			var shell = new TestShell(shellContent1, shellContent2);
+			IShellController shellController = shell;
+			await shell.Navigation.PushAsync(new ContentPage());
+			await shellController.OnFlyoutItemSelectedAsync(shellContent2);
+			await shell.Navigation.PushAsync(new ContentPage());
+			await shellController.OnFlyoutItemSelectedAsync(shellContent1);
+
+			Assert.AreEqual(2, shell.Items[0].Items[0].Navigation.NavigationStack.Count);
+			Assert.AreEqual(2, shell.Items[1].Items[0].Navigation.NavigationStack.Count);
+		}
+
 		public class NavigationMonitoringTab : Tab
 		{
 			public List<string> NavigationsFired = new List<string>();

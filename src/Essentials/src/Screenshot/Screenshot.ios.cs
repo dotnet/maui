@@ -17,10 +17,14 @@ namespace Microsoft.Maui.Media
 		public bool IsCaptureSupported =>
 			true;
 
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")]
 		public Task<IScreenshotResult> CaptureAsync()
 		{
 			var scenes = UIApplication.SharedApplication.ConnectedScenes;
+//#pragma warning disable CA1416 // Known false positive with Lambda expression
 			var currentScene = scenes.ToArray().Where(n => n.ActivationState == UISceneActivationState.ForegroundActive).FirstOrDefault();
+//#pragma warning restore CA1416
 			if (currentScene == null)
 				throw new InvalidOperationException("Unable to find current scene.");
 
@@ -49,12 +53,19 @@ namespace Microsoft.Maui.Media
 			}
 
 			// Render the status bar with the correct frame size
-			TryHideStatusClockView(UIApplication.SharedApplication);
-			var statusbarWindow = GetStatusBarWindow(UIApplication.SharedApplication);
-			if (statusbarWindow != null/* && metrics.StatusBar != null*/)
+			try
 			{
-				statusbarWindow.Frame = window.Frame;
-				statusbarWindow.Layer.RenderInContext(ctx);
+				TryHideStatusClockView(UIApplication.SharedApplication);
+				var statusbarWindow = GetStatusBarWindow(UIApplication.SharedApplication);
+				if (statusbarWindow != null/* && metrics.StatusBar != null*/)
+				{
+					statusbarWindow.Frame = window.Frame;
+					statusbarWindow.Layer.RenderInContext(ctx);
+				}
+			}
+			catch
+			{
+				// FIXME: test/handle this case
 			}
 
 			var image = UIGraphics.GetImageFromCurrentImageContext();

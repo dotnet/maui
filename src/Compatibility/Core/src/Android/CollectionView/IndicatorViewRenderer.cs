@@ -350,7 +350,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			shape.SetIntrinsicHeight((int)Context.ToPixels(indicatorSize));
 			shape.SetIntrinsicWidth((int)Context.ToPixels(indicatorSize));
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 			shape.Paint.Color = color;
+#pragma warning restore CA1416
 
 			return shape;
 		}

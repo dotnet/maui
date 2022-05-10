@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Generic;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Internals;
-using Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific;
+using Microsoft.Maui.Devices;
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
 using EProgressBar = ElmSharp.ProgressBar;
+using Color = Microsoft.Maui.Graphics.Color;
+using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class PopupManager : IDisposable
 	{
 		ITizenPlatform _platform;
@@ -23,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			MessagingCenter.Subscribe<Page, AlertArguments>(this, Page.AlertSignalName, OnAlertRequest);
 			MessagingCenter.Subscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName, OnActionSheetRequest);
 			MessagingCenter.Subscribe<Page, PromptArguments>(this, Page.PromptSignalName, OnPromptRequested);
-		}
+	}
 
 		public void Dispose()
 		{
@@ -93,7 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var alert = Native.Dialog.CreateDialog(Forms.NativeParent, (arguments.Accept != null));
 
 			alert.Title = arguments.Title;
-			var message = arguments.Message?.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace(Environment.NewLine, "<br>");
+			var message = arguments.Message?.Replace("&", "&amp;", StringComparison.Ordinal).Replace("<", "&lt;", StringComparison.Ordinal).Replace(">", "&gt;", StringComparison.Ordinal).Replace(Environment.NewLine, "<br>", StringComparison.Ordinal);
 			alert.Message = message;
 
 			var cancel = new EButton(alert) { Text = arguments.Cancel };
@@ -211,9 +215,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var entry = new Entry
 			{
 				MinimumWidthRequest = 200,
-				HorizontalOptions = LayoutOptions.FillAndExpand,
+				HorizontalOptions = LayoutOptions.Fill,
 				BackgroundColor = Color.FromRgb(250, 250, 250),
-				TextColor = Color.Black,
+				TextColor = Color.FromRgb(0, 0, 0),
 				Keyboard = args.Keyboard,
 			};
 
@@ -226,7 +230,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				entry.MaxLength = args.MaxLength;
 			}
 
-			var layout = new StackLayout
+			var layout = new XStackLayout
 			{
 				Spacing = 10,
 				Children =
@@ -234,11 +238,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					new Label
 					{
 						LineBreakMode = LineBreakMode.CharacterWrap,
-						TextColor = DeviceInfo.Idiom == DeviceIdiom.Watch ? Color.White : Color.Accent,
+						TextColor = DeviceInfo.Idiom == DeviceIdiom.Watch ? Color.FromRgb(255,255,255) : Application.AccentColor,
 						Text = args.Message,
-						HorizontalOptions = LayoutOptions.FillAndExpand,
+						HorizontalOptions = LayoutOptions.Fill,
 						HorizontalTextAlignment = TextAlignment.Center,
+#pragma warning disable CS0612 // Type or member is obsolete
 						FontSize = Device.GetNamedSize(NamedSize.Subtitle, typeof(Label)),
+#pragma warning disable CS0612 // Type or member is obsolete
 					},
 					entry,
 				}

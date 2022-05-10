@@ -22,6 +22,10 @@
     <EnableDefaultWindowsItems>false</EnableDefaultWindowsItems>
     <WindowsProjectFolder Condition=" '$(WindowsProjectFolder)' == '' ">$(PlatformsProjectFolder)Windows\</WindowsProjectFolder>
     <WindowsProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(WindowsProjectFolder)'))</WindowsProjectFolder>
+    <!-- Tizen -->
+    <EnableDefaultTizenItems>false</EnableDefaultTizenItems>
+    <TizenProjectFolder Condition=" '$(TizenProjectFolder)' == '' ">$(PlatformsProjectFolder)Tizen\</TizenProjectFolder>
+    <TizenProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(TizenProjectFolder)'))</TizenProjectFolder>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +33,7 @@
     <MauiPlatformSpecificFolder Include="$(iOSProjectFolder)" TargetPlatformIdentifier="ios" />
     <MauiPlatformSpecificFolder Include="$(MacCatalystProjectFolder)" TargetPlatformIdentifier="maccatalyst" />
     <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" />
+    <MauiPlatformSpecificFolder Include="$(TizenProjectFolder)" TargetPlatformIdentifier="tizen" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">
@@ -55,8 +60,47 @@
     <EnableDefaultPageItems>False</EnableDefaultPageItems>
     <EnableDefaultApplicationDefinition>False</EnableDefaultApplicationDefinition>
     <_SingleProjectWindowsExcludes>$(WindowsProjectFolder)/**/.*/**</_SingleProjectWindowsExcludes>
-    <WindowsPackageType Condition=" '$(WindowsPackageType)' == '' and '$(EnablePreviewMsixTooling)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') ">MSIX</WindowsPackageType>
   </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'tizen' ">
+    <TizenManifestFile Condition=" Exists('$(TizenProjectFolder)tizen-manifest.xml') ">$(TizenProjectFolder)tizen-manifest.xml</TizenManifestFile>
+    <TizenResourcePrefix>$(TizenProjectFolder)res</TizenResourcePrefix>
+    <TizenSharedPrefix>$(TizenProjectFolder)shared</TizenSharedPrefix>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
+    <!-- Add metadata indicating that the platform-specific files are not part of every build configuration. -->
+    <Compile Update="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
+    </Compile>
+
+    <!-- Add metadata for the files that are actually part of the current build configuration. -->
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'android' "
+        Update="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'ios' "
+        Update="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' "
+        Update="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'windows' "
+        Update="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'tizen' "
+        Update="$(TizenProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+  </ItemGroup>
 
   <!--
     Run before both _MauiInjectXamlCssAdditionalFiles and GenerateMSBuildEditorConfigFileShouldRun because
@@ -69,20 +113,10 @@
 
     <!-- Removals -->
     <ItemGroup>
-      <Compile Remove="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-      <!-- Explicitly include the platform code -->
+      <!-- Remove everything that isn't part of this platform -->
       <Compile
-          Condition=" '$(TargetPlatformIdentifier)' == 'android' and '$(AndroidProjectFolder)' != '' "
-          Include="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-      <Compile
-          Condition=" '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' "
-          Include="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-      <Compile
-          Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' "
-          Include="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-      <Compile
-          Condition=" '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' "
-          Include="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+          Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' "
+          Remove="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
 
       <!-- Remove all Windows (WinUI) XAML Files from the Windows folder -->
       <_MauiXamlToRemove
@@ -90,6 +124,23 @@
           Include="$(WindowsProjectFolder)**/*.xaml" />
       <EmbeddedResource Remove="@(_MauiXamlToRemove)" />
       <MauiXaml Remove="@(_MauiXamlToRemove)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+    Make sure the properties are valid before validating. Instead of an error when the user
+    toggles between modes, just handle it and remove the AppxManifest item.
+  -->
+  <Target Name="_ValidateWindowsPackageTypeBeforeTarget"
+          BeforeTargets="_ValidateWindowsPackageType"
+          DependsOnTargets="_MauiRemoveRemoveAppxManifestForUnpackaged" />
+
+  <Target Name="_MauiRemoveRemoveAppxManifestForUnpackaged"
+          Condition="'$(WindowsPackageType)' == 'None' and '@(AppxManifest)' != ''">
+
+    <ItemGroup>
+      <AppxManifest Remove="@(AppxManifest)" />
     </ItemGroup>
 
   </Target>
@@ -109,6 +160,7 @@
     <ProjectCapability Include="XamarinStaticLaunchProfiles" Condition=" '$(VisualStudioVersion)' != '' and '$(VisualStudioVersion)' &lt; '17.0' " />
     <!-- Otherwise define LaunchProfilesGroupByPlatformFilters by default -->
     <ProjectCapability Include="LaunchProfilesGroupByPlatformFilters" Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &gt;= '17.0' " />
+    <ProjectCapability Include="SingleTargetBuildForStartupProjects" Condition=" '$(EnableSingleTargetBuildForStartupProjects)' != 'false' " />
   </ItemGroup>
 
 </Project>

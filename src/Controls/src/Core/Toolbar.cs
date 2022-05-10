@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Maui.Graphics;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Controls
 		bool _backButtonVisible;
 		bool _backButtonEnabled = true;
 		bool _drawerToggleVisible;
+		Maui.IElement _parent;
+		IElementHandler _handler;
 
 		public Toolbar(Maui.IElement parent)
 		{
@@ -43,10 +45,20 @@ namespace Microsoft.Maui.Controls
 		public bool BackButtonEnabled { get => _backButtonEnabled; set => SetProperty(ref _backButtonEnabled, value); }
 		public virtual bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
 		public bool IsVisible { get => _isVisible; set => SetProperty(ref _isVisible, value); }
-		public IElementHandler Handler { get; set; }
+		public IElementHandler Handler
+		{
+			get => _handler;
+			set
+			{
+				if (_handler == value)
+					return;
 
-		Maui.IElement _parent;
+				OnHandlerChanging(_handler, value);
+				_handler = value;
+			}
+		}
 
+		partial void OnHandlerChanging(IElementHandler oldHandler, IElementHandler newHandler);
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		public Maui.IElement Parent => _parent;

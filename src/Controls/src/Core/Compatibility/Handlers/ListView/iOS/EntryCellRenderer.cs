@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -18,6 +19,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
+		[UnsupportedOSPlatform("ios14.0")]
+		[UnsupportedOSPlatform("tvos14.0")]
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
 			var entryCell = (EntryCell)item;
@@ -53,6 +56,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return tvc;
 		}
 
+		[UnsupportedOSPlatform("ios14.0")]
+		[UnsupportedOSPlatform("tvos14.0")]
 		static void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var entryCell = (EntryCell)sender;
@@ -97,6 +102,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			cell.TextField.UpdateHorizontalTextAlignment(entryCell);
 		}
 
+		[UnsupportedOSPlatform("ios14.0")]
+		[UnsupportedOSPlatform("tvos14.0")]
 		static void UpdateIsEnabled(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			cell.UserInteractionEnabled = entryCell.IsEnabled;
@@ -110,11 +117,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			cell.TextField.ApplyKeyboard(entryCell.Keyboard);
 		}
 
+		[UnsupportedOSPlatform("ios14.0")]
+		[UnsupportedOSPlatform("tvos14.0")]
 		static void UpdateLabel(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			cell.TextLabel.Text = entryCell.Label;
 		}
 
+		[UnsupportedOSPlatform("ios14.0")]
+		[UnsupportedOSPlatform("tvos14.0")]
 		static void UpdateLabelColor(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			cell.TextLabel.TextColor = entryCell.LabelColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
@@ -153,9 +164,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				base.LayoutSubviews();
 
+#pragma warning disable CA1416 // TODO:  'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and late
 				// simple algorithm to generally line up entries
 				var start = (nfloat)Math.Round(Math.Max(Frame.Width * 0.3, TextLabel.Frame.Right + 10));
 				TextField.Frame = new RectangleF(start, (Frame.Height - 30) / 2, Frame.Width - TextLabel.Frame.Left - start, 30);
+#pragma warning restore CA1416
 				// Centers TextField Content  (iOS6)
 				TextField.VerticalAlignment = UIControlContentVerticalAlignment.Center;
 			}

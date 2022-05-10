@@ -3,19 +3,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text;
-
 using Foundation;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Controls.Platform;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[SupportedOSPlatform("ios11.0")]
 	internal class DragAndDropDelegate : NSObject, IUIDragInteractionDelegate, IUIDropInteractionDelegate
 	{
-#region UIDragInteractionDelegate
+		#region UIDragInteractionDelegate
 
 
 		[Export("dragInteraction:session:willEndWithOperation:")]
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			return new UIDragItem[0];
 		}
-#endregion
+		#endregion
 
 		[Export("dropInteraction:canHandleSession:")]
 		[Preserve(Conditional = true)]

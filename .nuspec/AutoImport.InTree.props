@@ -6,6 +6,20 @@
 <!-- "Single Project" support - all <ItemGroup/>'s must check if $(EnableDefaultItems) and $(SingleProject) are true -->
 <Project>
 
+  <ItemDefinitionGroup>
+    <MauiXaml>
+      <SubType>Designer</SubType>
+    </MauiXaml>
+  </ItemDefinitionGroup>
+
+  <ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultXamlItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
+    <MauiXaml Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultCssItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
+    <MauiCss Include="**\*.css" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+  </ItemGroup>
+
   <!-- Android -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'android' and '$(MonoAndroidResourcePrefix)' != '' ">
     <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.xml" />
@@ -35,7 +49,7 @@
         IsDefaultItem="true"
     />
     <ImageAsset
-        Include="$(iOSProjectFolder)**/*.xcassets/**/*.png;$(iOSProjectFolder)**/*.xcassets/*/*.jpg;$(iOSProjectFolder)**/*.xcassets/**/*.pdf;$(iOSProjectFolder)**/*.xcassets/**/*.json"
+        Include="$(iOSProjectFolder)**/*.xcassets/**/*.*"
         Exclude="$(_SingleProjectiOSExcludes)"
         Link="%(RecursiveDir)%(FileName)%(Extension)"
         Visible="false"
@@ -70,7 +84,7 @@
         IsDefaultItem="true"
     />
     <ImageAsset
-        Include="$(MacCatalystProjectFolder)**/*.xcassets/**/*.png;$(MacCatalystProjectFolder)**/*.xcassets/*/*.jpg;$(MacCatalystProjectFolder)**/*.xcassets/**/*.pdf;$(MacCatalystProjectFolder)**/*.xcassets/**/*.json"
+        Include="$(MacCatalystProjectFolder)**/*.xcassets/**/*.*"
         Exclude="$(_SingleProjectMacCatalystExcludes)"
         Link="%(RecursiveDir)%(FileName)%(Extension)"
         Visible="false"
@@ -97,7 +111,7 @@
         Condition="Exists('$(ApplicationManifest)')" />
     <AppxManifest
         Include="$(PackageManifest)"
-        Condition="'$(WindowsPackageType)' != 'None' and Exists('$(PackageManifest)')" />
+        Condition="Exists('$(PackageManifest)')" />
     <ApplicationDefinition
         Condition="Exists('$(WindowsProjectFolder)App.xaml')"
         Include="$(WindowsProjectFolder)App.xaml">

@@ -210,7 +210,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
-		[PortHandler ("Partially ported")]
+		[PortHandler("Partially ported")]
 		void UpdateEnabled()
 		{
 			SearchBar model = Element;

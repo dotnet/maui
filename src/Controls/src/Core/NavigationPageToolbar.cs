@@ -17,47 +17,86 @@ namespace Microsoft.Maui.Controls
 		string _title;
 		VisualElement _titleView;
 		bool _drawerToggleVisible;
-
+		Page _rootPage;
+		List<NavigationPage> _navigationPagesStack = new List<NavigationPage>();
+		internal NavigationPage CurrentNavigationPage => _currentNavigationPage;
 		public override Color BarTextColor { get => GetBarTextColor(); set => SetProperty(ref _barTextColor, value); }
 		public override Color IconColor { get => GetIconColor(); set => SetProperty(ref _iconColor, value); }
 		public override string Title { get => GetTitle(); set => SetProperty(ref _title, value); }
 		public override VisualElement TitleView { get => GetTitleView(); set => SetProperty(ref _titleView, value); }
 		public override bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
 
-		public NavigationPageToolbar(Maui.IElement parent) : base(parent)
+		public NavigationPageToolbar(Maui.IElement parent, Page rootPage) : base(parent)
 		{
 			_toolbarTracker.CollectionChanged += (_, __) => ToolbarItems = _toolbarTracker.ToolbarItems;
+			_rootPage = rootPage;
+			_toolbarTracker.PageAppearing += OnPageAppearing;
+			_toolbarTracker.PagePropertyChanged += OnPagePropertyChanged;
+			_toolbarTracker.Target = _rootPage;
 		}
 
-		internal void ApplyNavigationPage(NavigationPage navigationPage, bool hasAppeared)
+		void OnPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			_hasAppeared = hasAppeared;
-			if (_currentNavigationPage == navigationPage)
+			if (_currentPage != sender)
+				return;
+
+			OnPropertyChanged(sender, e);
+		}
+
+		void OnPageAppearing(object sender, EventArgs e)
+		{
+			if (sender is not ContentPage cp)
+				return;
+
+			_currentPage = cp;
+			_currentNavigationPage = _currentPage.FindParentOfType<NavigationPage>();
+
+			foreach (var navPage in _navigationPagesStack)
 			{
-				IsVisible = hasAppeared;
-				UpdateBackButton();
+				navPage.ChildAdded -= NavigationPageChildrenChanged;
+				navPage.ChildRemoved -= NavigationPageChildrenChanged;
+			}
+
+			_navigationPagesStack.Clear();
+			if (_currentNavigationPage == null)
+			{
+				IsVisible = false;
 				return;
 			}
 
-			if (_currentNavigationPage != null)
-				_currentNavigationPage.PropertyChanged -= OnPropertyChanged;
+			_navigationPagesStack.Add(_currentNavigationPage);
 
-			_currentNavigationPage = navigationPage;
-			_currentNavigationPage.PropertyChanged += OnPropertyChanged;
-			UpdateCurrentPage();
+			// we collect all the parent navigation pages because we need to know what
+			// all the nav stacks look like for things like BackButton Visibility
+			var parentNavigationPage = _currentNavigationPage.FindParentOfType<NavigationPage>();
+			if (parentNavigationPage != null)
+				_navigationPagesStack.Insert(0, parentNavigationPage);
+
+			while (parentNavigationPage != null)
+			{
+				parentNavigationPage = parentNavigationPage.FindParentOfType<NavigationPage>();
+
+				if (parentNavigationPage != null)
+					_navigationPagesStack.Insert(0, parentNavigationPage);
+			}
+
+			foreach (var navPage in _navigationPagesStack)
+			{
+				navPage.ChildAdded += NavigationPageChildrenChanged;
+				navPage.ChildRemoved += NavigationPageChildrenChanged;
+			}
+
+			_hasAppeared = true;
+
 			ApplyChanges(_currentNavigationPage);
-		}
 
-		bool GetBackButtonVisibleCalculated()
-		{
-			if (_currentPage == null || _currentNavigationPage == null)
-				return false;
-
-			var stack = _currentNavigationPage.Navigation.NavigationStack;
-			if (stack.Count == 0)
-				return false;
-
-			return stack.Count > 1;
+			// This is to catch scenarios where the user
+			// inserts or removes the root page.
+			// Which will cause the back button visibility to change.
+			void NavigationPageChildrenChanged(object s, ElementEventArgs a)
+			{
+				ApplyChanges(_currentNavigationPage);
+			}
 		}
 
 		bool GetBackButtonVisible()
@@ -65,7 +104,7 @@ namespace Microsoft.Maui.Controls
 			if (_currentPage == null)
 				return false;
 
-			return NavigationPage.GetHasBackButton(_currentPage) && GetBackButtonVisibleCalculated();
+			return NavigationPage.GetHasBackButton(_currentPage) && GetBackButtonVisibleCalculated(false).Value;
 		}
 
 		bool _backButtonVisible;
@@ -77,18 +116,38 @@ namespace Microsoft.Maui.Controls
 			set => _backButtonVisible = value;
 		}
 
+		bool? GetBackButtonVisibleCalculated(bool? defaultValue = null)
+		{
+			if (_currentPage == null || _currentNavigationPage == null)
+				return defaultValue;
+
+			foreach (var navPage in _navigationPagesStack)
+			{
+				if (navPage.Navigation.NavigationStack.Count == 0)
+					return defaultValue;
+
+				if (navPage.Navigation.NavigationStack.Count > 1)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 		void UpdateBackButton()
 		{
 			if (_currentPage == null || _currentNavigationPage == null)
 				return;
 
-			var stack = _currentNavigationPage.Navigation.NavigationStack;
-			if (stack.Count == 0)
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
 				return;
 
 			// Set this before BackButtonVisible triggers an update to the handler
 			// This way all useful information is present
-			if (Parent is FlyoutPage && stack.Count == 1)
+			if (Parent is FlyoutPage && !anyPagesPushed.Value)
 				_drawerToggleVisible = true;
 			else
 				_drawerToggleVisible = false;
@@ -123,40 +182,21 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void UpdateCurrentPage()
-		{
-			if (_currentNavigationPage == null)
-				return;
-
-			var stack = _currentNavigationPage.Navigation.NavigationStack;
-			if (stack.Count == 0)
-				return;
-
-			if (_currentPage == _currentNavigationPage.CurrentPage)
-				return;
-
-			if (_currentPage != null)
-				_currentPage.PropertyChanged -= OnPropertyChanged;
-
-			_currentPage = _currentNavigationPage.CurrentPage;
-			_currentNavigationPage.CurrentPage.PropertyChanged += OnPropertyChanged;
-		}
-
 		void ApplyChanges(NavigationPage navigationPage)
 		{
+			if (_currentPage == null)
+				return;
+
 			var stack = navigationPage.Navigation.NavigationStack;
 			if (stack.Count == 0)
 				return;
 
-			UpdateCurrentPage();
 			var currentPage = _currentPage;
 
 			Page previousPage = null;
 			if (stack.Count > 1)
 				previousPage = stack[stack.Count - 1];
 
-			_toolbarTracker.Target = navigationPage;
-			_toolbarTracker.AdditionalTargets = navigationPage.GetParentPages();
 			ToolbarItems = _toolbarTracker.ToolbarItems;
 			IsVisible = NavigationPage.GetHasNavigationBar(currentPage) && _hasAppeared;
 
@@ -175,7 +215,7 @@ namespace Microsoft.Maui.Controls
 			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
 
 			BarBackground = navigationPage.BarBackground;
-			if (Brush.IsNullOrEmpty(navigationPage.BarBackground) &&
+			if (Brush.IsNullOrEmpty(BarBackground) &&
 				navigationPage.BarBackgroundColor != null)
 			{
 				BarBackground = new SolidColorBrush(navigationPage.BarBackgroundColor);
@@ -207,7 +247,6 @@ namespace Microsoft.Maui.Controls
 		{
 			if (sender == _currentNavigationPage && e.Is(NavigationPage.CurrentPageProperty))
 			{
-				UpdateCurrentPage();
 				ApplyChanges(_currentNavigationPage);
 			}
 			else if (e.IsOneOf(NavigationPage.HasNavigationBarProperty,
@@ -230,7 +269,8 @@ namespace Microsoft.Maui.Controls
 
 		Color GetBarTextColor() => _currentNavigationPage?.BarTextColor;
 		Color GetIconColor() => (_currentPage != null) ? NavigationPage.GetIconColor(_currentPage) : null;
-		string GetTitle() => _currentPage?.Title;
+		string GetTitle() => GetTitleView() != null ? String.Empty : _currentPage?.Title;
+
 		VisualElement GetTitleView()
 		{
 			if (_currentNavigationPage == null)

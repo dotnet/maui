@@ -1,11 +1,13 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Devices;
 using ElmSharp;
 using EBox = ElmSharp.Box;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class ShellSectionStack : EBox, IAppearanceObserver, IDisposable
 	{
 		ShellNavBar _navBar = null;
@@ -110,7 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			_shellSectionRenderer.NativeView.Show();
 			_viewStack.Push(_shellSectionRenderer.NativeView);
 
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.Dispatch(() =>
 			{
 				(_shellSectionRenderer.NativeView as Widget)?.SetFocus(true);
 			});
@@ -137,13 +139,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (_navBar == null)
 				return;
 
-			var titleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor ?? Microsoft.Maui.Controls.Compatibility.Color.Default;
-			var backgroundColor = appearance?.BackgroundColor ?? Microsoft.Maui.Controls.Compatibility.Color.Default;
-			var foregroundColor = appearance?.ForegroundColor ?? Microsoft.Maui.Controls.Compatibility.Color.Default;
+			var titleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor;
+			var backgroundColor = appearance?.BackgroundColor;
+			var foregroundColor = appearance?.ForegroundColor;
 
-			_navBar.TitleColor = titleColor.IsDefault ? ShellRenderer.DefaultTitleColor.ToPlatform() : titleColor.ToPlatform();
-			_navBar.BackgroundColor = backgroundColor.IsDefault ? ShellRenderer.DefaultBackgroundColor.ToPlatform() : backgroundColor.ToPlatform();
-			_navBar.ForegroundColor = foregroundColor.IsDefault ? ShellRenderer.DefaultForegroundColor.ToPlatform() : foregroundColor.ToPlatform();
+			_navBar.TitleColor = titleColor.IsDefault() ? ShellRenderer.DefaultTitleColor.ToPlatformEFL() : titleColor.ToPlatformEFL();
+			_navBar.BackgroundColor = backgroundColor.IsDefault() ? ShellRenderer.DefaultBackgroundColor.ToPlatformEFL() : backgroundColor.ToPlatformEFL();
+			_navBar.ForegroundColor = foregroundColor.IsDefault() ? ShellRenderer.DefaultForegroundColor.ToPlatformEFL() : foregroundColor.ToPlatformEFL();
 		}
 
 
@@ -221,7 +223,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var renderer = Platform.GetOrCreateRenderer(request.Page);
 			_viewStack.Push(renderer.NativeView);
 			request.Task = Task.FromResult(true);
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.Dispatch(() =>
 			{
 				(renderer.NativeView as Widget)?.SetFocus(true);
 			});

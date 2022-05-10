@@ -74,12 +74,6 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdatePadding(button, DefaultPadding);
 		}
 
-		public static void MapLineBreakMode(IButtonHandler handler, IButton button)
-		{
-			if (button is ILineBreakMode lineBreakMode)
-				handler.PlatformView?.UpdateLineBreakMode(lineBreakMode);
-		}
-
 		public static void MapFont(IButtonHandler handler, ITextStyle button)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();

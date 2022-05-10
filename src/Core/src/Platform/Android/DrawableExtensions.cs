@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class DrawableExtensions
 	{
+		[System.Runtime.Versioning.SupportedOSPlatform("android29.0")]
 		public static BlendMode? GetFilterMode(FilterMode mode)
 		{
 			switch (mode)

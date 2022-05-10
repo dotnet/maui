@@ -5,9 +5,9 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
-using Microsoft.Maui.ApplicationModel;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests

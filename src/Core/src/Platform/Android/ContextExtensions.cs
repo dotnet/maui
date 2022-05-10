@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Platform
 					{
 						if (context.Resources != null)
 						{
-							if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
+							if (OperatingSystem.IsAndroidVersionAtLeast(23))
 								return context.Resources.GetColor(mTypedValue.ResourceId, context.Theme);
 							else
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -372,7 +372,7 @@ namespace Microsoft.Maui.Platform
 		public static float GetDisplayDensity(this Context context) =>
 			context.Resources?.DisplayMetrics?.Density ?? 1.0f;
 
-		public static Rect ToCrossPlatformRectInReferenceFrame(this Context context, int left, int top, int right, int bottom) 
+		public static Rect ToCrossPlatformRectInReferenceFrame(this Context context, int left, int top, int right, int bottom)
 		{
 			var deviceIndependentLeft = context.FromPixels(left);
 			var deviceIndependentTop = context.FromPixels(top);

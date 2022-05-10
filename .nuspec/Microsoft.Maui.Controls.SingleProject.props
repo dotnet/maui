@@ -2,7 +2,9 @@
 
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
     <OutputType Condition="'$(OutputType)' == 'Exe'">WinExe</OutputType>
-    <EnablePreviewMsixTooling Condition="'$(EnablePreviewMsixTooling)' == '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">true</EnablePreviewMsixTooling>
+    <WindowsPackageType Condition=" '$(WindowsPackageType)' == '' and '$(EnableMsixTooling)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') ">MSIX</WindowsPackageType>
+    <WindowsAppSdkBootstrapInitialize Condition=" '$(WindowsAppSdkBootstrapInitialize)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' != 'Exe' and '$(OutputType)' != 'WinExe' ">false</WindowsAppSdkBootstrapInitialize>
+    <PublishAppXPackage Condition=" '$(PublishAppXPackage)' == '' and '$(EnableMsixTooling)' == 'true' and '$(WindowsPackageType)' == 'MSIX' ">true</PublishAppXPackage>
     <_SingleProjectRIDRequired Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">true</_SingleProjectRIDRequired>
     <_SingleProjectRIDSpecified Condition="'$(RuntimeIdentifier)' != '' or '$(RuntimeIdentifiers)' != ''">true</_SingleProjectRIDSpecified>
   </PropertyGroup>
@@ -13,5 +15,11 @@
     <RuntimeIdentifier>win10-$(_SingleProjectHostArchitecture)</RuntimeIdentifier>
     <_MauiUsingDefaultRuntimeIdentifier>true</_MauiUsingDefaultRuntimeIdentifier>
   </PropertyGroup>
+
+  <!-- Tizen -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'tizen' and '$(TizenProjectFolder)' != '' ">
+    <TizenResource Include="$(TizenResourcePrefix)\**\*" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(TizenTpkUserExcludeFiles)" />
+    <TizenSharedResource Include="$(TizenSharedPrefix)\**\*" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(TizenTpkUserExcludeFiles)" />
+  </ItemGroup>
 
 </Project>

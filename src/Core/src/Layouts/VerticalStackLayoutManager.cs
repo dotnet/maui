@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Layouts
 
 			double measuredHeight = 0;
 			double measuredWidth = 0;
+			double childWidthConstraint = widthConstraint - padding.HorizontalThickness;
 
 			for (int n = 0; n < Stack.Count; n++)
 			{
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Layouts
 					continue;
 				}
 
-				var measure = child.Measure(widthConstraint, double.PositiveInfinity);
+				var measure = child.Measure(childWidthConstraint, double.PositiveInfinity);
 				measuredHeight += measure.Height;
 				measuredWidth = Math.Max(measuredWidth, measure.Width);
 			}

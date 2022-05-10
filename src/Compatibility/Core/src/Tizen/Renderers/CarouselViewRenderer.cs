@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class CarouselViewRenderer : ItemsViewRenderer<CarouselView, Native.CarouselView>
 	{
 		List<View> _oldViews = new List<View>();
@@ -41,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				_animationStart = new SmartEvent(Control.Scroll, Control.Scroll.RealHandle, ThemeConstants.Scroller.Signals.StartScrollAnimation);
 				_animationStart.On += OnScrollStart;
 			}
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.Dispatch(() =>
 			{
 				UpdatePositionFromElement(false);
 				UpdateCurrentItemFromElement(false);

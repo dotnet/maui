@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 				for (int i = 0; i < gradientStopCollection.Length; i++)
 				{
 					var gs = gradientStopCollection[i];
-					gradientStops[i] = new GradientStop(gs.Color, gs.Offset);
+					gradientStops.Insert(i, new GradientStop(gs.Color, gs.Offset));
 				}
 
 				if (gradientPaint is LinearGradientPaint linearGradientPaint)
@@ -39,6 +39,9 @@ namespace Microsoft.Maui.Controls
 					return new RadialGradientBrush { GradientStops = gradientStops, Center = center, Radius = radius };
 				}
 			}
+
+			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+				return new ImageBrush { ImageSource = imageSource };
 
 			return null;
 		}
@@ -76,6 +79,9 @@ namespace Microsoft.Maui.Controls
 					return new RadialGradientPaint { GradientStops = gradientStops, Center = center, Radius = radius };
 				}
 			}
+
+			if (brush is ImageBrush imageBrush)
+				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
 
 			return null;
 		}

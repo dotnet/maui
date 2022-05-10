@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using ObjCRuntime;
 using UIKit;
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
 			}
 
-			if (PlatformVersion.IsAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance(controller, appearance);
 			else
 				UpdateTabBarAppearance(controller, appearance);
@@ -63,6 +64,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		#endregion
 
+		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		void UpdateiOS15TabBarAppearance(UITabBarController controller, ShellAppearance appearance)
 		{
 			IShellAppearanceElement appearanceElement = appearance;

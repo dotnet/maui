@@ -175,84 +175,76 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
-			bool getBoundsByFlattening = false;
-
 			if (HeightRequest < 0 && WidthRequest < 0)
 			{
-				getBoundsByFlattening = true;
 				Frame = viewBounds;
 			}
 
 			var path = GetPath();
 
-			if (getBoundsByFlattening)
-			{
-				var boundsByFlattening = path.GetBoundsByFlattening();
-
-				HeightRequest = boundsByFlattening.Height;
-				WidthRequest = boundsByFlattening.Width;
-			}
-
 #if !NETSTANDARD
 
-			RectF pathBounds = viewBounds;
-
-			try
-			{
-				pathBounds = path.GetBoundsByFlattening();
-			}
-			catch (Exception exc)
-			{
-				Application.Current?.FindMauiContext()?.CreateLogger<Shape>()?.LogWarning(exc,"Exception while getting shape Bounds");
-			}
-
-			var transform = Matrix3x2.Identity;
+			// TODO: not using this.GetPath().Bounds.Size;
+			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
+			RectF pathBounds = path.GetBoundsByFlattening(1);
 
 			viewBounds.X += StrokeThickness / 2;
 			viewBounds.Y += StrokeThickness / 2;
 			viewBounds.Width -= StrokeThickness;
 			viewBounds.Height -= StrokeThickness;
 
-			float calculatedWidth = (float)(viewBounds.Width / pathBounds.Width);
-			float calculatedHeight = (float)(viewBounds.Height / pathBounds.Height);
-
-			float widthScale = float.IsNaN(calculatedWidth) ? 0 : calculatedWidth;
-			float heightScale = float.IsNaN(calculatedHeight) ? 0 : calculatedHeight;
-
-			switch (Aspect)
+			Matrix3x2 transform;
+			if (Aspect == Stretch.None)
 			{
-				case Stretch.None:
-					break;
+				transform = Matrix3x2.CreateTranslation(
+					(float)(viewBounds.Left - pathBounds.Left),
+					(float)(viewBounds.Top - pathBounds.Top));
+			}
+			else
+			{
+				transform = Matrix3x2.Identity;
 
-				case Stretch.Fill:
-					transform *= Matrix3x2.CreateScale(widthScale, heightScale);
+				float calculatedWidth = (float)(viewBounds.Width / pathBounds.Width);
+				float calculatedHeight = (float)(viewBounds.Height / pathBounds.Height);
 
-					transform *= Matrix3x2.CreateTranslation(
-						(float)(viewBounds.Left - widthScale * pathBounds.Left),
-						(float)(viewBounds.Top - heightScale * pathBounds.Top));
-					break;
+				float widthScale = float.IsNaN(calculatedWidth) ? 0 : calculatedWidth;
+				float heightScale = float.IsNaN(calculatedHeight) ? 0 : calculatedHeight;
 
-				case Stretch.Uniform:
-					float minScale = Math.Min(widthScale, heightScale);
+				switch (Aspect)
+				{
+					case Stretch.None:
+						break;
 
-					transform *= Matrix3x2.CreateScale(minScale, minScale);
+					case Stretch.Fill:
+						transform *= Matrix3x2.CreateScale(widthScale, heightScale);
 
-					transform *= Matrix3x2.CreateTranslation(
-						(float)(viewBounds.Left - minScale * pathBounds.Left +
-						(viewBounds.Width - minScale * pathBounds.Width) / 2),
-						(float)(viewBounds.Top - minScale * pathBounds.Top +
-						(viewBounds.Height - minScale * pathBounds.Height) / 2));
-					break;
+						transform *= Matrix3x2.CreateTranslation(
+							(float)(viewBounds.Left - widthScale * pathBounds.Left),
+							(float)(viewBounds.Top - heightScale * pathBounds.Top));
+						break;
 
-				case Stretch.UniformToFill:
-					float maxScale = Math.Max(widthScale, heightScale);
+					case Stretch.Uniform:
+						float minScale = Math.Min(widthScale, heightScale);
 
-					transform *= Matrix3x2.CreateScale(maxScale, maxScale);
+						transform *= Matrix3x2.CreateScale(minScale, minScale);
 
-					transform *= Matrix3x2.CreateTranslation(
-						(float)(viewBounds.Left - maxScale * pathBounds.Left),
-						(float)(viewBounds.Top - maxScale * pathBounds.Top));
-					break;
+						transform *= Matrix3x2.CreateTranslation(
+							(float)(viewBounds.Left - minScale * pathBounds.Left +
+							(viewBounds.Width - minScale * pathBounds.Width) / 2),
+							(float)(viewBounds.Top - minScale * pathBounds.Top +
+							(viewBounds.Height - minScale * pathBounds.Height) / 2));
+						break;
+
+					case Stretch.UniformToFill:
+						float maxScale = Math.Max(widthScale, heightScale);
+
+						transform *= Matrix3x2.CreateScale(maxScale, maxScale);
+
+						transform *= Matrix3x2.CreateTranslation(
+							(float)(viewBounds.Left - maxScale * pathBounds.Left),
+							(float)(viewBounds.Top - maxScale * pathBounds.Top));
+						break;
+				}
 			}
 
 			if (!transform.IsIdentity)
@@ -260,6 +252,74 @@ namespace Microsoft.Maui.Controls.Shapes
 #endif
 
 			return path;
+		}
+
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		{
+			var result = base.MeasureOverride(widthConstraint, heightConstraint);
+			if (result.Width != 0 && result.Height != 0)
+			{
+				return result;
+			}
+
+			// TODO: not using this.GetPath().Bounds.Size;
+			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
+			SizeF boundsByFlattening = this.GetPath().GetBoundsByFlattening(1).Size;
+			result.Height = boundsByFlattening.Height;
+			result.Width = boundsByFlattening.Width;
+
+			widthConstraint -= StrokeThickness;
+			heightConstraint -= StrokeThickness;
+
+			double scaleX = widthConstraint / result.Width;
+			double scaleY = heightConstraint / result.Height;
+			scaleX = double.IsNaN(scaleX) ? 0 : scaleX;
+			scaleY = double.IsNaN(scaleY) ? 0 : scaleY;
+
+			switch (Aspect)
+			{
+				case Stretch.None:
+					break;
+
+				case Stretch.Fill:
+					if (!double.IsInfinity(heightConstraint))
+					{
+						result.Height = heightConstraint;
+					}
+
+					if (!double.IsInfinity(widthConstraint))
+					{
+						result.Width = widthConstraint;
+					}
+					break;
+
+				case Stretch.Uniform:
+					double minScale = Math.Min(scaleX, scaleY);
+					if (!double.IsInfinity(minScale))
+					{
+						result.Height *= minScale;
+						result.Width *= minScale;
+					}
+					break;
+
+				case Stretch.UniformToFill:
+					scaleX = double.IsInfinity(scaleX) ? 0 : scaleX;
+					scaleY = double.IsInfinity(scaleY) ? 0 : scaleY;
+					double maxScale = Math.Max(scaleX, scaleY);
+
+					if (maxScale != 0)
+					{
+						result.Height *= maxScale;
+						result.Width *= maxScale;
+					}
+					break;
+			}
+
+			result.Height += StrokeThickness;
+			result.Width += StrokeThickness;
+
+			DesiredSize = result;
+			return result;
 		}
 	}
 }

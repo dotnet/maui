@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					return;
 
 				// Collection element, implicit content, or implicit collection element.
-				if (   xpe == null
+				if (xpe == null
 					&& typeof(IEnumerable).IsAssignableFrom(Context.Types[parentElement])
 					&& Context.Types[parentElement].GetRuntimeMethods().Any(mi => mi.Name == "Add" && mi.GetParameters().Length == 1))
 				{

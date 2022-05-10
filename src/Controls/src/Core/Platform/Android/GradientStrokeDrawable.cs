@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public void SetStroke(int strokeWidth, AColor strokeColor)
 		{
 			_strokePaint.StrokeWidth = strokeWidth;
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 			_strokePaint.Color = strokeColor;
+#pragma warning restore CA1416
 			InvalidateSelf();
 		}
 
@@ -75,7 +77,9 @@ namespace Microsoft.Maui.Controls.Platform
 			base.OnDraw(shape, canvas, paint);
 
 			if (_backgroundColor != null)
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 				paint.Color = _backgroundColor.Value;
+#pragma warning restore CA1416
 
 			shape.Draw(canvas, _strokePaint);
 		}

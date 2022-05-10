@@ -379,7 +379,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IElementHandler.SetVirtualView(Maui.IElement view)
 		{
-			SetElement((VisualElement)view);		}
+			SetElement((VisualElement)view);
+		}
 
 		void IElementHandler.UpdateValue(string property)
 		{

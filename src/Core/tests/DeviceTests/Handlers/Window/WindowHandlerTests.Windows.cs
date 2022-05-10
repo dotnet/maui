@@ -102,8 +102,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				var window = MauiProgram.DefaultWindow;
-
 				FrameworkElement frameworkElement = null;
 				var content = (Panel)window.Content;
 				try
@@ -112,7 +110,7 @@ namespace Microsoft.Maui.DeviceTests
 					scopedContext.AddWeakSpecific(window);
 					var mauiContext = scopedContext.MakeScoped(true);
 					var windowManager = mauiContext.GetNavigationRootManager();
-					windowManager.Connect((IView)window.Content);
+					windowManager.Connect(window.Content.ToPlatform(mauiContext));
 					frameworkElement = windowManager.RootView;
 
 					var taskCompletionSource = new TaskCompletionSource<object>();

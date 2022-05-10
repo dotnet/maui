@@ -183,9 +183,6 @@ namespace Microsoft.Maui.Platform
 					navigationView.IsPaneOpen = false;
 					break;
 			}
-
-			if(navigationView is RootNavigationView rootNavigationView)
-				rootNavigationView.UpdateFlyoutPanelMargin();
 		}
 
 		public static void UpdateFlyoutWidth(this MauiNavigationView navigationView, IFlyoutView flyoutView)

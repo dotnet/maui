@@ -86,6 +86,24 @@
         <remarks></remarks>
       </Docs>
     </Member>
+    <Member MemberName="RequestFullAccuracy">
+      <MemberSignature Language="C#" Value="public bool RequestFullAccuracy { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool RequestFullAccuracy" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.GeolocationRequest.RequestFullAccuracy" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets whether the full accuracy should be requested or coarse location.</summary>
+        <value>True will request full accuracy, false requests only the coarse location.</value>
+        <remarks>This functionality only applies to iOS.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Timeout">
       <MemberSignature Language="C#" Value="public TimeSpan Timeout { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype System.TimeSpan Timeout" />

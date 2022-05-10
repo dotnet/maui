@@ -1,6 +1,6 @@
 using System;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (_weakTarget == null || !_weakTarget.TryGetTarget(out var target))
 				return;
-			
+
 			if (dispatch)
 				target.Dispatcher.DispatchIfRequired(Set);
 			else
@@ -82,15 +82,10 @@ namespace Microsoft.Maui.Controls
 		public object Default { get; set; }
 
 		object GetValue()
-		{
-			switch (Application.Current.RequestedTheme)
-			{
-				default:
-				case AppTheme.Light:
-					return _isLightSet ? Light : Default;
-				case AppTheme.Dark:
-					return _isDarkSet ? Dark : Default;
-			}
-		}
+			=> Application.Current.RequestedTheme switch
+				{
+					AppTheme.Dark => _isDarkSet ? Dark : Default,
+					_ => _isLightSet ? Light : Default,
+				};
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.Versioning;
 using Android.App;
 using Android.Views;
 using Microsoft.Maui.Graphics;
@@ -13,6 +14,7 @@ namespace Microsoft.Maui
 	{
 		readonly Dictionary<IScrollView, View> _scrollViews = new();
 
+		[SupportedOSPlatform("android23.0")]
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
 			var nativeScroll = scrollBar.ToPlatform();
@@ -24,6 +26,7 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
+		[SupportedOSPlatform("android23.0")]
 		public void RemoveScrollableElementHandler()
 		{
 			foreach (var scrollBar in _scrollViews.Values)

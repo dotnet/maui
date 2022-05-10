@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 using Foundation;
 using Microsoft.Maui.Platform;
-using UIKit;
 using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
+	[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 	public partial class MenuBarHandler : ElementHandler<IMenuBar, IUIMenuBuilder>, IMenuBarHandler
 	{
 		protected override IUIMenuBuilder CreatePlatformElement()
@@ -24,6 +25,9 @@ namespace Microsoft.Maui.Handlers
 
 		void BuildNewMenu()
 		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				return;
+
 			UIMenu? lastFoundMenu = null;
 			foreach (var item in VirtualView)
 			{
@@ -34,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 
 				var identifierConstant = menuItem.Identifier.GetConstant();
 				if (identifierConstant != null)
-				{	
+				{
 					catalystMenu = PlatformView.GetMenu(identifierConstant);
 				}
 
@@ -42,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 
 				if (catalystMenu == null)
 				{
-					
+
 					if (lastFoundMenu != null)
 					{
 						var fileMenuId = lastFoundMenu.GetIdentifier();

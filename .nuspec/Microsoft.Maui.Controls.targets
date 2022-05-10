@@ -11,6 +11,7 @@
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'==''">true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'=='false'"></SkipMicrosoftUIXamlCheckTargetPlatformVersion>
 		<AndroidUseDefaultAotProfile Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(AndroidUseDefaultAotProfile)' == ''">false</AndroidUseDefaultAotProfile>
+		<AndroidLinkResources Condition=" '$(AndroidLinkResources)' == '' And '$(Configuration)' == 'Release' ">True</AndroidLinkResources>
 	</PropertyGroup>
 
 	<ItemGroup>

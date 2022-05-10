@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Android.Content;
+using Android.Graphics.Drawables;
 using Android.OS;
 using AndroidX.AppCompat.App;
+using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Platform;
 using ALayoutInflater = Android.Views.LayoutInflater;
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;
 using ImportantForAccessibility = Android.Views.ImportantForAccessibility;
-using Google.Android.Material.AppBar;
-using AndroidX.CoordinatorLayout.Widget;
-using Android.Graphics.Drawables;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -99,13 +102,38 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						aca.SetSupportActionBar(null);
 					}
-
-					// Ideally this wouldn't be needed but I haven't found the right platform
-					// component I can key into for knowing when the world can move on
-					await Task.Delay(1000);
-					fragmentManager.ExecutePendingTransactions();
 				}
 			});
+		}
+
+		public bool ToolbarItemsMatch(
+			IElementHandler handler,
+			params ToolbarItem[] toolbarItems)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			var menu = toolbar.Menu;
+
+			Assert.Equal(toolbarItems.Length, menu.Size());
+
+			for (var i = 0; i < toolbarItems.Length; i++)
+			{
+				ToolbarItem toolbarItem = toolbarItems[i];
+				var primaryCommand = menu.GetItem(i);
+				Assert.Equal(toolbarItem.Text, $"{primaryCommand.TitleFormatted}");
+			}
+
+			return true;
+		}
+    
+		protected AView GetTitleView(IElementHandler handler)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			var container = toolbar?.GetFirstChildOfType<Controls.Toolbar.Container>();
+
+			if (container != null && container.ChildCount > 0)
+				return container.GetChildAt(0);
+
+			return null;
 		}
 
 		protected MaterialToolbar GetPlatformToolbar(IElementHandler handler)
@@ -147,12 +175,12 @@ namespace Microsoft.Maui.DeviceTests
 			return toolBar;
 		}
 
-		protected bool IsBackButtonVisible(IElementHandler handler) =>
-			GetPlatformToolbar(handler)?.NavigationIcon != null;
-
-		bool IsBackButtonVisible(IMauiContext mauiContext)
+		protected bool IsBackButtonVisible(IElementHandler handler)
 		{
-			return GetPlatformToolbar(mauiContext)?.NavigationIcon != null;
+			if (GetPlatformToolbar(handler)?.NavigationIcon is DrawerArrowDrawable dad)
+				return dad.Progress == 1;
+
+			return false;
 		}
 
 		class WindowTestFragment : Fragment
@@ -168,6 +196,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			public Task FinishedDestroying => _taskCompletionSource.Task;
 
+			public FakeActivityRootView FakeActivityRootView { get; set; }
+
 			public WindowTestFragment(IMauiContext mauiContext, IWindow window)
 			{
 				_mauiContext = mauiContext;
@@ -178,10 +208,16 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 				_ = _window.ToHandler(ScopedMauiContext);
+        
 				var rootView = ScopedMauiContext.GetNavigationRootManager().RootView;
+				var decorView = RequireActivity().Window.DecorView;
+				rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
 
-				rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(500, 500);
-				return rootView;
+				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
+				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
+				FakeActivityRootView.AddView(rootView);
+
+				return FakeActivityRootView;
 			}
 
 			public override void OnResume()
@@ -194,6 +230,14 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				base.OnDestroy();
 				_finishedDestroying.SetResult(true);
+			}
+		}
+
+		public class FakeActivityRootView : LinearLayoutCompat
+		{
+			public FakeActivityRootView(Context context) : base(context)
+			{
+				Id = AView.GenerateViewId();
 			}
 		}
 	}

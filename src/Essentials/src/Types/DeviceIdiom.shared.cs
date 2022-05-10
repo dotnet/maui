@@ -54,9 +54,9 @@ namespace Microsoft.Maui.Devices
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceIdiom.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
 		public override int GetHashCode() =>
 			deviceIdiom == null ? 0 : deviceIdiom.GetHashCode(
-					#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0
 					StringComparison.Ordinal
-					#endif
+#endif
 				);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceIdiom.xml" path="//Member[@MemberName='ToString']/Docs" />
