@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var selectedTextRange = textField.SelectedTextRange ?? textField.GetTextRange(startRange, startRange);
 
 			// Save the the cursor offset position if the text was modified by a Convertor
-			var cursorOffset = inputView.Text.Length - textField.Text.Length;
+			var cursorOffset = inputView?.Text?.Length - textField.Text?.Length ?? 0;
 
 			textField.Text = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
 
