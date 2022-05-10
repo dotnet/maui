@@ -156,6 +156,11 @@
                     Text="Selection"
                     CursorPosition="2"
                     SelectionLength="4"/>
+                <Label
+                    Text="Platform Specific (Search ImeOptions)"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    x:Name="PlatformSpecificEntry" />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

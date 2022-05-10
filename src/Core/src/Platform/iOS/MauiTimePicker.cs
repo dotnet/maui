@@ -7,38 +7,41 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiTimePicker : NoCaretField
 	{
-		readonly Action _dateSelected;
 		readonly UIDatePicker _picker;
 
+#if !MACCATALYST
+		readonly Action _dateSelected;
 		public MauiTimePicker(Action dateSelected)
+#else
+		public MauiTimePicker()
+#endif
 		{
 			BorderStyle = UITextBorderStyle.RoundedRect;
 
 			_picker = new UIDatePicker { Mode = UIDatePickerMode.Time, TimeZone = new NSTimeZone("UTC") };
+
+#if !MACCATALYST
 			_dateSelected = dateSelected;
+#endif
 
 			if (OperatingSystem.IsIOSVersionAtLeast(14))
 			{
 				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}
 
-			var width = UIScreen.MainScreen.Bounds.Width;
-			var toolbar = new UIToolbar(new RectangleF(0, 0, width, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
-			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
+			InputView = _picker;
 
-			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
+#if !MACCATALYST
+			InputAccessoryView = new MauiDoneAccessoryView(() =>
 			{
 				DateSelected?.Invoke(this, EventArgs.Empty);
 				_dateSelected?.Invoke();
 			});
 
-			toolbar.SetItems(new[] { spacer, doneButton }, false);
-
-			InputView = _picker;
-			InputAccessoryView = toolbar;
+			InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+#endif
 
 			InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-			InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 
 			InputAssistantItem.LeadingBarButtonGroups = null;
 			InputAssistantItem.TrailingBarButtonGroups = null;
@@ -50,8 +53,9 @@ namespace Microsoft.Maui.Platform
 
 		public NSDate Date => Picker.Date;
 
+#if !MACCATALYST
 		public event EventHandler? DateSelected;
-
+#endif
 		public void UpdateTime(TimeSpan time)
 		{
 			_picker.Date = new DateTime(1, 1, 1, time.Hours, time.Minutes, time.Seconds).ToNSDate();

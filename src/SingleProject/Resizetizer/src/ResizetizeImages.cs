@@ -153,6 +153,14 @@ namespace Microsoft.Maui.Resizetizer
 				foreach (var assetGenerated in assetsGenerated)
 					resizedImages.Add(assetGenerated);
 			}
+			else if (PlatformType == "uwp")
+			{
+				LogDebugMessage($"Windows Icon Generator");
+
+				var windowsIconGen = new WindowsIconGenerator(img, IntermediateOutputPath, this);
+
+				resizedImages.Add(windowsIconGen.Generate());
+			}
 			else if (PlatformType == "tizen")
 			{
 				var updator = new TizenIconManifestUpdater(appIconName, appIconDpis, this);

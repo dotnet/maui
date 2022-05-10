@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ShellItem _shellItem;
 		static UIColor _defaultMoreTextLabelTextColor;
 
-		IShellSectionRenderer CurrentRenderer { get; set; }
+		internal IShellSectionRenderer CurrentRenderer { get; private set; }
 
 		public ShellItemRenderer(IShellContext context)
 		{

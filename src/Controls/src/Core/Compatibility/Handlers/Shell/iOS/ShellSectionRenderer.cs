@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		[Export("navigationBar:shouldPopItem:")]
 		[Internals.Preserve(Conditional = true)]
-		public bool ShouldPopItem(UINavigationBar navigationBar, UINavigationItem item) =>
+		public bool ShouldPopItem(UINavigationBar _, UINavigationItem __) =>
 			SendPop();
 
 		internal bool SendPop()
@@ -130,27 +130,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			bool allowPop = ShouldPop();
+			
+			// Do not remove, wonky behavior on some versions of iOS if you dont dispatch
+			// Shane: ^ not sure if this is true anymore because of how
+			// we now route this through "GoToAsync"
+			CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(async () =>
+			{
+				var navItemsCount = NavigationBar.Items.Length;
 
-			if (allowPop)
-			{
-				// Do not remove, wonky behavior on some versions of iOS if you dont dispatch
-				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+				await _context.Shell.GoToAsync("..", true);
+
+				// This means the navigation was cancelled
+				if (NavigationBar.Items.Length == navItemsCount)
 				{
-					_popCompletionTask = new TaskCompletionSource<bool>();
-					SendPoppedOnCompletion(_popCompletionTask.Task);
-					PopViewController(true);
-				});
-			}
-			else
-			{
-				for (int i = 0; i < NavigationBar.Subviews.Length; i++)
-				{
-					var child = NavigationBar.Subviews[i];
-					if (child.Alpha != 1)
-						UIView.Animate(.2f, () => child.Alpha = 1);
+					for (int i = 0; i < NavigationBar.Subviews.Length; i++)
+					{
+						var child = NavigationBar.Subviews[i];
+						if (child.Alpha != 1)
+							UIView.Animate(.2f, () => child.Alpha = 1);
+					}
 				}
-			}
+			});
 
 			return false;
 		}

@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			int itemIndex = -1;
 
-			if (view is ItemContentView templatedCell)
+			if (view is ItemContentView templatedCell && ItemsViewAdapter != null)
 			{
 				var bContext = (templatedCell?.View as VisualElement)?.BindingContext;
 				itemIndex = ItemsViewAdapter.GetPositionForItem(bContext);

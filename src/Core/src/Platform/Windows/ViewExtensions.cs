@@ -139,10 +139,14 @@ namespace Microsoft.Maui.Platform
 		{
 			var semantics = view.Semantics;
 
+			if (view is IPicker picker && string.IsNullOrEmpty(semantics?.Description))
+				AutomationProperties.SetName(platformView, picker.Title);
+			else if (semantics != null)
+				AutomationProperties.SetName(platformView, semantics.Description);
+
 			if (semantics == null)
 				return;
 
-			AutomationProperties.SetName(platformView, semantics.Description);
 			AutomationProperties.SetHelpText(platformView, semantics.Hint);
 			AutomationProperties.SetHeadingLevel(platformView, (UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)semantics.HeadingLevel));
 		}
