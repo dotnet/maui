@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				handler.PlatformView.Style = null;
+				handler.PlatformView.ClearValue(FrameworkElement.StyleProperty);
 			}
 
 			RadioButtonHandler.MapContent(handler, radioButton);
