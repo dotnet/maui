@@ -34,7 +34,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateText(this UITextField textField, InputView inputView)
 		{
+			var selectedTextRange = textField.SelectedTextRange;
 			textField.Text = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
+
+			if (selectedTextRange != null)
+				textField.SelectedTextRange = selectedTextRange;
 		}
 
 		public static void UpdateLineBreakMode(this UILabel platformLabel, Label label)
