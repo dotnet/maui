@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 			return new UIDatePicker { Mode = UIDatePickerMode.Time, TimeZone = new NSTimeZone("UTC") };
 		}
 
-		internal bool UpdateImmediately { get; set; }
+		internal bool UpdateImmediately { get; set; } = true;
 
 		protected override void ConnectHandler(UIDatePicker platformView)
 		{
