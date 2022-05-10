@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Handlers
 				if (virtualView == null || platformView == null)
 					return;
 
-				platformView.UpdatePicker(virtualView);
+				platformView.UpdatePicker(virtualView, SelectedIndex);
 			}
 		}
 
