@@ -34,11 +34,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateText(this UITextField textField, InputView inputView)
 		{
-			var selectedTextRange = textField.SelectedTextRange;
+			var startRange = textField.GetPosition(textField.BeginningOfDocument, 0);
+			var selectedTextRange = textField.SelectedTextRange ?? textField.GetTextRange(startRange, startRange);
+
+			// Save the the cursor offset position if the text was modified by a Convertor
+			var cursorOffset = inputView.Text.Length - textField.Text.Length;
+
 			textField.Text = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
 
-			if (selectedTextRange != null)
-				textField.SelectedTextRange = selectedTextRange;
+			var newCursorPosition = textField.GetPosition(selectedTextRange.Start, cursorOffset);
+			textField.SelectedTextRange = textField.GetTextRange(newCursorPosition, newCursorPosition);
 		}
 
 		public static void UpdateLineBreakMode(this UILabel platformLabel, Label label)

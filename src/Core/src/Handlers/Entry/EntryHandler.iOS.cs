@@ -20,7 +20,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.ShouldReturn = OnShouldReturn;
 			platformView.EditingDidBegin += OnEditingBegan;
 			platformView.EditingChanged += OnEditingChanged;
-			platformView.EditingDidBegin += OnEditingBegan;
 			platformView.EditingDidEnd += OnEditingEnded;
 			platformView.TextPropertySet += OnTextPropertySet;
 			platformView.ShouldChangeCharacters += OnShouldChangeCharacters;
@@ -28,9 +27,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiTextField platformView)
 		{
+			platformView.ShouldReturn -= OnShouldReturn;
 			platformView.EditingDidBegin -= OnEditingBegan;
 			platformView.EditingChanged -= OnEditingChanged;
-			platformView.EditingDidBegin -= OnEditingBegan;
 			platformView.EditingDidEnd -= OnEditingEnded;
 			platformView.TextPropertySet -= OnTextPropertySet;
 			platformView.ShouldChangeCharacters -= OnShouldChangeCharacters;
