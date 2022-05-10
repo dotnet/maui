@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -23,10 +24,14 @@ namespace Microsoft.Maui.Controls.Shapes
 			float w = (float)(Width - StrokeThickness);
 			float h = (float)(Height - StrokeThickness);
 
-			float topLeftCornerRadius = (float)CornerRadius.TopLeft;
-			float topRightCornerRadius = (float)CornerRadius.TopRight;
-			float bottomLeftCornerRadius = (float)CornerRadius.BottomLeft;
-			float bottomRightCornerRadius = (float)CornerRadius.BottomRight;
+			double density = 1.0d;
+#if ANDROID
+			density = DeviceDisplay.MainDisplayInfo.Density;
+#endif
+			float topLeftCornerRadius = (float)(CornerRadius.TopLeft * density);
+			float topRightCornerRadius = (float)(CornerRadius.TopRight * density);
+			float bottomLeftCornerRadius = (float)(CornerRadius.BottomLeft * density);
+			float bottomRightCornerRadius = (float)(CornerRadius.BottomRight * density);
 
 			path.AppendRoundedRectangle(x, y, w, h, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
 
