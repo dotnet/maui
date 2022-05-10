@@ -380,7 +380,7 @@
         <GenerateSplashAssets
             Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'"
             IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
-	    MauiSplashScreen="@(MauiSplashScreen)"
+            MauiSplashScreen="@(MauiSplashScreen)"
         />
         <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'">
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
