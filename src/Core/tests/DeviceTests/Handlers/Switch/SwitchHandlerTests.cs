@@ -21,6 +21,22 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(switchStub, () => switchStub.IsOn, GetNativeIsOn, switchStub.IsOn);
 		}
 
+		[Fact(DisplayName = "Is Toggled Does Not Set Same Value")]
+		public async Task IsToggledDoesNotSetSameValue()
+		{
+			var fireCount= 0;
+
+			var switchStub = new SwitchStub()
+			{
+				IsOn = true,
+				IsOnDelegate = () => fireCount++
+			};
+
+			await InvokeOnMainThreadAsync(() => CreateHandler(switchStub));
+
+			Assert.Equal(0, fireCount);
+		}
+
 		[Theory(DisplayName = "Track Color Initializes Correctly")]
 		[InlineData(true)]
 		//[InlineData(false)] // Track color is not always visible when off
