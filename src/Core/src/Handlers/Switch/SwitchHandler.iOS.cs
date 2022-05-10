@@ -43,11 +43,10 @@ namespace Microsoft.Maui.Handlers
 
 		void OnControlValueChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView == null)
+			if (VirtualView is null || PlatformView is null || VirtualView.IsOn == PlatformView.On)
 				return;
 
-			if (PlatformView != null)
-				VirtualView.IsOn = PlatformView.On;
+			VirtualView.IsOn = PlatformView.On;
 		}
 	}
 }

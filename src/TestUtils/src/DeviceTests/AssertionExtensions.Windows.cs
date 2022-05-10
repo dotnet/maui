@@ -50,6 +50,13 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.FromResult(true);
 			});
 
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action) =>
+			view.AttachAndRun(() =>
+			{
+				var result = action();
+				return Task.FromResult(result);
+			});
+
 		public static Task AttachAndRun(this FrameworkElement view, Func<Task> action) =>
 			view.AttachAndRun(async () =>
 			{

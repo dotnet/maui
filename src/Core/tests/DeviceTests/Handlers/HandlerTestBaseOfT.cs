@@ -18,9 +18,9 @@ namespace Microsoft.Maui.DeviceTests
 		protected THandler CreateHandler(IView view, IMauiContext mauiContext = null) =>
 			CreateHandler<THandler>(view, mauiContext);
 
-		protected async Task<THandler> CreateHandlerAsync(IView view)
+		protected Task<THandler> CreateHandlerAsync(IView view)
 		{
-			return await InvokeOnMainThreadAsync(() =>
+			return InvokeOnMainThreadAsync(() =>
 			{
 				return CreateHandler(view);
 			});
@@ -37,10 +37,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task<TValue> GetValueAsync<TValue>(IView view, Func<THandler, Task<TValue>> func)
 		{
-			return InvokeOnMainThreadAsync(async () =>
+			return InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler(view);
-				return await func(handler);
+				return func(handler);
 			});
 		}
 
