@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Platform
 	{
 		public MauiButton()
 		{
-			AllowFocusOnInteraction = false;
 			VerticalAlignment = VerticalAlignment.Stretch;
 			HorizontalAlignment = HorizontalAlignment.Stretch;
 			Content = new StackPanel

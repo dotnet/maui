@@ -1,10 +1,12 @@
 // This class represents common code paths we always want to AOT
 
-// string interpolation
+// string interpolation & split
+// int.Parse(), int.ToString()
 // Culture-aware string comparisons
 // ResourceManager
 // Common Essentials methods
 // GridLayoutManager
+// Label & FontAttributes
 // Microsoft.Maui.Graphics.Color
 // System.Threading.Tasks.Task
 // System.Net.Http.HttpClient
@@ -22,12 +24,17 @@ static class CommonMethods
         var foo = "foo";
         foo.StartsWith("f");
         foo.Contains("o");
+        var split = "foo;bar".Split(';');
+        var x = int.Parse("999");
+        x.ToString();
 
         string someString = MauiTest.Resources.Strings.SomeString;
 
         InitializeCommonEssentials();
 
         _ = new Microsoft.Maui.Layouts.GridLayoutManager(new Grid()).Measure(100, 100);
+
+        _ = new Label { FontAttributes = FontAttributes.Bold, Text = "Test" };
 
         Color c = Color.Parse("MistyRose");
         c = Color.Parse("#663399");

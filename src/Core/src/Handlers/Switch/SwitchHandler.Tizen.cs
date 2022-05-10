@@ -5,21 +5,21 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, Check>
 	{
-		protected override Check CreatePlatformView() => new Check(NativeParent)
+		protected override Check CreatePlatformView() => new Check(PlatformParent)
 		{
 			Style = "toggle"
 		};
 
-		protected override void ConnectHandler(Check nativeView)
+		protected override void ConnectHandler(Check platformView)
 		{
-			base.ConnectHandler(nativeView);
-			nativeView!.StateChanged += OnStateChanged;
+			base.ConnectHandler(platformView);
+			platformView!.StateChanged += OnStateChanged;
 		}
 
-		protected override void DisconnectHandler(Check nativeView)
+		protected override void DisconnectHandler(Check platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView!.StateChanged -= OnStateChanged;
+			base.DisconnectHandler(platformView);
+			platformView!.StateChanged -= OnStateChanged;
 		}
 
 		public static void MapIsOn(ISwitchHandler handler, ISwitch view)

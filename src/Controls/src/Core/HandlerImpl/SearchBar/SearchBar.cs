@@ -5,6 +5,9 @@
 		public static IPropertyMapper<ISearchBar, SearchBarHandler> ControlsSearchBarMapper =
 			new PropertyMapper<SearchBar, SearchBarHandler>(SearchBarHandler.Mapper)
 			{
+#if WINDOWS
+				[PlatformConfiguration.WindowsSpecific.SearchBar.IsSpellCheckEnabledProperty.PropertyName] = MapIsSpellCheckEnabled,
+#endif
 				[nameof(Text)] = MapText,
 				[nameof(TextTransform)] = MapText,
 			};

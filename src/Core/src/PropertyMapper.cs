@@ -1,6 +1,15 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Handlers;
+
+#if IOS || MACCATALYST
+using PlatformView = UIKit.UIView;
+#elif ANDROID
+using PlatformView = Android.Views.View;
+#elif WINDOWS
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = System.Object;
+#endif
 
 namespace Microsoft.Maui
 {
@@ -31,6 +40,9 @@ namespace Microsoft.Maui
 
 		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
 		{
+			if (!CanUpdateProperty(viewHandler))
+				return;
+
 			var action = GetProperty(key);
 			action?.Invoke(viewHandler, virtualView);
 		}
@@ -109,6 +121,17 @@ namespace Microsoft.Maui
 					foreach (var key in chain.GetKeys())
 						yield return key;
 			}
+		}
+		
+		bool CanUpdateProperty(IElementHandler viewHandler)
+		{
+#if ANDROID	
+			var platformView = viewHandler?.PlatformView;
+
+			if(platformView is PlatformView androidView && androidView.IsDisposed())
+				return false;
+#endif
+			return true;
 		}
 	}
 

@@ -5,6 +5,11 @@
 		public static IPropertyMapper<IEntry, EntryHandler> ControlsEntryMapper =
 			new PropertyMapper<Entry, EntryHandler>(EntryHandler.Mapper)
 			{
+#if ANDROID
+				[PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName] = MapImeOptions,
+#elif WINDOWS
+				[PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName] = MapDetectReadingOrderFromContent,
+#endif
 				[nameof(Text)] = MapText,
 				[nameof(TextTransform)] = MapText,
 			};

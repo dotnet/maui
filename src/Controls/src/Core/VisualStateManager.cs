@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using System.Linq;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -21,13 +22,23 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='VisualStateGroupsProperty']/Docs" />
 		public static readonly BindableProperty VisualStateGroupsProperty =
 			BindableProperty.CreateAttached("VisualStateGroups", typeof(VisualStateGroupList), typeof(VisualElement),
-				defaultValue: null, propertyChanged: VisualStateGroupsPropertyChanged,
+				defaultValue: null, propertyChanged: VisualStateGroupsPropertyChanged, propertyChanging: VisualStateGroupsPropertyChanging,
 				defaultValueCreator: bindable => new VisualStateGroupList(true) { VisualElement = (VisualElement)bindable });
 
 		static void VisualStateGroupsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (oldValue is VisualStateGroupList oldVisualStateGroupList)
+			if (oldValue is VisualStateGroupList oldVisualStateGroupList && oldVisualStateGroupList.VisualElement is VisualElement oldElement)
 			{
+				bool fromStyle = false;
+				if (oldValueContext.TryGetValue(bindable, out var oldContext))
+					fromStyle = (oldContext.Attributes & BindableObject.BindableContextAttributes.IsSetFromStyle) == BindableObject.BindableContextAttributes.IsSetFromStyle;
+
+				foreach (var group in oldVisualStateGroupList)
+				{
+					if (group.CurrentState is VisualState state)
+						foreach (var setter in state.Setters)
+							setter.UnApply(oldElement, fromStyle: fromStyle);
+				}
 				oldVisualStateGroupList.VisualElement = null;
 			}
 
@@ -39,18 +50,22 @@ namespace Microsoft.Maui.Controls
 
 			UpdateStateTriggers(visualElement);
 		}
+		static ConditionalWeakTable<BindableObject, BindableObject.BindablePropertyContext> oldValueContext = new ConditionalWeakTable<BindableObject, BindableObject.BindablePropertyContext>();
+
+		static void VisualStateGroupsPropertyChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (oldValueContext.TryGetValue(bindable, out _))
+				oldValueContext.Remove(bindable);
+			oldValueContext.Add(bindable, bindable.GetContext(VisualStateGroupsProperty));
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='GetVisualStateGroups']/Docs" />
 		public static IList<VisualStateGroup> GetVisualStateGroups(VisualElement visualElement)
-		{
-			return (IList<VisualStateGroup>)visualElement.GetValue(VisualStateGroupsProperty);
-		}
+			=> (IList<VisualStateGroup>)visualElement.GetValue(VisualStateGroupsProperty);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='SetVisualStateGroups']/Docs" />
 		public static void SetVisualStateGroups(VisualElement visualElement, VisualStateGroupList value)
-		{
-			visualElement.SetValue(VisualStateGroupsProperty, value);
-		}
+			=> visualElement.SetValue(VisualStateGroupsProperty, value);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='GoToState']/Docs" />
 		public static bool GoToState(VisualElement visualElement, string name)
@@ -61,6 +76,8 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var groups = (IList<VisualStateGroup>)visualElement.GetValue(VisualStateGroupsProperty);
+			var context = visualElement.GetContext(VisualStateGroupsProperty);
+			var fromStyle = (context.Attributes & BindableObject.BindableContextAttributes.IsSetFromStyle) == BindableObject.BindableContextAttributes.IsSetFromStyle;
 
 			foreach (VisualStateGroup group in groups)
 			{
@@ -82,7 +99,7 @@ namespace Microsoft.Maui.Controls
 				{
 					foreach (Setter setter in group.CurrentState.Setters)
 					{
-						setter.UnApply(visualElement);
+						setter.UnApply(visualElement, fromStyle: fromStyle);
 					}
 				}
 
@@ -92,7 +109,7 @@ namespace Microsoft.Maui.Controls
 				// Apply the setters from the new state
 				foreach (Setter setter in target.Setters)
 				{
-					setter.Apply(visualElement);
+					setter.Apply(visualElement, fromStyle: fromStyle);
 				}
 
 				return true;
@@ -309,6 +326,33 @@ namespace Microsoft.Maui.Controls
 		{
 			VisualElement?.ChangeVisualState();
 		}
+
+		public override bool Equals(object obj) => Equals(obj as VisualStateGroupList);
+		bool Equals(VisualStateGroupList other)
+		{
+			if (other is null)
+				return false;
+			if (Object.ReferenceEquals(this, other))
+				return true;
+			if (Count != other.Count)
+				return false;
+			for (var i = 0; i < Count; i++)
+				if (!this[i].Equals(other[i]))
+					return false;
+			return true;
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				var hash = 41;
+				for (var i = 0; i < Count; i++)
+					hash = (hash * 43) ^ this[i].GetHashCode();
+				return hash;
+			}
+		}
+		
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualStateGroup']/Docs" />
@@ -324,12 +368,16 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='TargetType']/Docs" />
 		public Type TargetType { get; set; }
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='Name']/Docs" />
 		public string Name { get; set; }
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='States']/Docs" />
 		public IList<VisualState> States { get; }
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='CurrentState']/Docs" />
 		public VisualState CurrentState { get; internal set; }
+
 		internal VisualElement VisualElement { get; set; }
 
 		internal VisualState GetState(string name)
@@ -479,6 +527,37 @@ namespace Microsoft.Maui.Controls
 
 			StatesChanged?.Invoke(this, EventArgs.Empty);
 		}
+
+		public override bool Equals(object obj) => Equals(obj as VisualStateGroup);
+
+		bool Equals(VisualStateGroup other)
+		{
+			if (other is null)
+				return false;
+			if (object.ReferenceEquals(this, other))
+				return true;
+			if (Name != other.Name)
+				return false;
+			if (TargetType != other.TargetType)
+				return false;
+			if (States.Count != other.States.Count)
+				return false;
+			for (var i = 0; i < States.Count; i++)
+				if (!States[i].Equals(other.States[i]))
+					return false;
+			return true;
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				var hash = (Name, TargetType).GetHashCode();
+				for (var i = 0; i < States.Count; i++)
+					hash = (hash * 43) ^ States[i].GetHashCode();
+				return hash;
+			}
+		}
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualState.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualState']/Docs" />
@@ -528,6 +607,44 @@ namespace Microsoft.Maui.Controls
 			}
 
 			VisualStateGroup?.UpdateStateTriggers();
+		}
+
+		public override bool Equals(object obj) => Equals(obj as VisualState);
+
+		bool Equals (VisualState other)
+		{
+			if (other is null)
+				return false;
+			if (object.ReferenceEquals(this, other))
+				return true;
+			if (Name != other.Name)
+				return false;
+			if (TargetType != other.TargetType)
+				return false;
+			if (Setters.Count != other.Setters.Count)
+				return false;
+			if (StateTriggers.Count != other.StateTriggers.Count)
+				return false;
+			for (var i = 0; i < Setters.Count; i++)
+				if (!Setters[i].Equals(other.Setters[i]))
+					return false;
+			for (var i = 0; i < StateTriggers.Count; i++)
+				if (!StateTriggers[i].Equals(other.StateTriggers[i]))
+					return false;
+			return true;
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				var hash = (Name, TargetType).GetHashCode();
+				for (var i = 0; i < Setters.Count; i++)
+					hash = (hash * 43) ^ Setters[i].GetHashCode();
+				for (var i = 0; i < StateTriggers.Count; i++)
+					hash = (hash * 43) ^ StateTriggers[i].GetHashCode();
+				return hash;
+			}
 		}
 	}
 

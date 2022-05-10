@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls
 {
 	static class ResourcesExtensions
 	{
-		public static IEnumerable<KeyValuePair<string, object>> GetMergedResources(this IElement element)
+		public static IEnumerable<KeyValuePair<string, object>> GetMergedResources(this IElementDefinition element)
 		{
 			Dictionary<string, object> resources = null;
 			while (element != null)
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls
 			return resources;
 		}
 
-		public static bool TryGetResource(this IElement element, string key, out object value)
+		public static bool TryGetResource(this IElementDefinition element, string key, out object value)
 		{
 			while (element != null)
 			{

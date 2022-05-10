@@ -327,7 +327,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (color == null)
 				BackgroundColor = UIColor.Clear;
 			else
-				BackgroundColor = color.ToUIColor();
+				BackgroundColor = color.ToPlatform();
 #else
 			if (color == null)
 				Layer.BackgroundColor = NSColor.Clear.CGColor;
@@ -593,9 +593,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				return;
 			}
 
-			// default value of color documented to be black in iOS docs
 #if __MOBILE__
-			Control.TextColor = textColor.ToUIColor(Maui.Platform.ColorExtensions.LabelColor);
+			Control.TextColor = textColor.ToPlatform(Maui.Platform.ColorExtensions.LabelColor);
 #else
 			var alignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 			var textWithColor = new NSAttributedString(Element.Text ?? "", font: Element.ToNSFont(), foregroundColor: textColor.ToNSColor(ColorExtensions.TextColor), paragraphStyle: new NSMutableParagraphStyle() { Alignment = alignment });

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		EventHandler? _onForceUpdateSizeRequested;
 		PropertyChangedEventHandler? _onPropertyChangedEventHandler;
-		readonly UIColor _defaultCellBgColor = PlatformVersion.IsAtLeast(13) ? UIColor.Clear : UIColor.White;
+		readonly UIColor _defaultCellBgColor = (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)) ? UIColor.Clear : UIColor.White;
 
 		public static PropertyMapper<Cell, CellRenderer> Mapper =
 				new PropertyMapper<Cell, CellRenderer>(ElementHandler.ElementMapper);
@@ -48,7 +48,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
+#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 			tvc.TextLabel.Text = item.ToString();
+#pragma warning restore CA1416
 
 			UpdateBackground(tvc, item);
 
@@ -83,7 +85,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public virtual void SetBackgroundColor(UITableViewCell tableViewCell, Cell cell, UIColor color)
 		{
+#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 			tableViewCell.TextLabel.BackgroundColor = color;
+#pragma warning restore CA1416
 			tableViewCell.ContentView.BackgroundColor = color;
 			tableViewCell.BackgroundColor = color;
 		}

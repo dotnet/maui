@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateAspect(this UIImageView imageView, IImage image)
 		{
 			imageView.ContentMode = image.Aspect.ToUIViewContentMode();
+			imageView.ClipsToBounds = imageView.ContentMode == UIViewContentMode.ScaleAspectFill;
 		}
 
 		public static void UpdateIsAnimationPlaying(this UIImageView imageView, IImageSourcePart image)

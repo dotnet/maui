@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Devices
 			{
 				lock (locker)
 				{
-					if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M) && !AlwaysUseCameraApi)
+					if (OperatingSystem.IsAndroidVersionAtLeast(23) && !AlwaysUseCameraApi)
 					{
 						foreach (var id in CameraManager.GetCameraIdList())
 						{

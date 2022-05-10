@@ -58,11 +58,11 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(UserInterfacePage), "User Interface Concepts",
 				"User interface concepts like Animations, Colors, Fonts and more."),
 
+			new SectionModel(typeof(PlatformSpecificsPage), "Platform Specifics",
+				"Platform-specifics allow you to consume functionality that's only available on a specific platform, without implementing custom renderers, handlers or effects."),
+
 			new SectionModel(typeof(OthersPage), "Others Concepts",
 				"Other options like Graphics."),
-
-			new SectionModel(typeof(HitTestingPage), "Hit Testing",
-				"Demonstrates VisualTreeElementExtensions hit testing methods"),
 		};
 	}
 }

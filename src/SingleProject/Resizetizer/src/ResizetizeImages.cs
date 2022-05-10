@@ -153,6 +153,14 @@ namespace Microsoft.Maui.Resizetizer
 				foreach (var assetGenerated in assetsGenerated)
 					resizedImages.Add(assetGenerated);
 			}
+			else if (PlatformType == "uwp")
+			{
+				LogDebugMessage($"Windows Icon Generator");
+
+				var windowsIconGen = new WindowsIconGenerator(img, IntermediateOutputPath, this);
+
+				resizedImages.Add(windowsIconGen.Generate());
+			}
 			else if (PlatformType == "tizen")
 			{
 				var updator = new TizenIconManifestUpdater(appIconName, appIconDpis, this);
@@ -199,7 +207,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			LogDebugMessage($"Copying {img.Filename}");
 
-			var r = resizer.CopyFile(originalScaleDpi, InputsFile, PlatformType.ToLower().Equals("android"));
+			var r = resizer.CopyFile(originalScaleDpi, InputsFile, PlatformType.Equals("android", StringComparison.OrdinalIgnoreCase));
 			resizedImages.Add(r);
 
 			LogDebugMessage($"Copied {img.Filename}");

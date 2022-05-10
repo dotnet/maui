@@ -13,7 +13,6 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.NavigationPage)]
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 	public partial class NavigationPageTests : HandlerTestBase
 	{
 		// We only want to fire BackButtonVisible Toolbar events if the user
@@ -55,25 +54,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return GetPlatformToolbar(mauiContext)?
 					.LayoutParameters?.Height > 0;
-		}
-
-		public bool ToolbarItemsMatch(
-			IElementHandler handler,
-			params ToolbarItem[] toolbarItems)
-		{
-			var toolbar = GetPlatformToolbar(handler);
-			var menu = toolbar.Menu;
-
-			Assert.Equal(toolbarItems.Length, menu.Size());
-
-			for (var i = 0; i < toolbarItems.Length; i++)
-			{
-				ToolbarItem toolbarItem = toolbarItems[i];
-				var primaryCommand = menu.GetItem(i);
-				Assert.Equal(toolbarItem.Text, $"{primaryCommand.TitleFormatted}");
-			}
-
-			return true;
 		}
 
 		string GetToolbarTitle(IElementHandler handler) =>

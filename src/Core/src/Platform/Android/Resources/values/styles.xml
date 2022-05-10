@@ -15,8 +15,15 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionModeOverlay">true</item>
+        <item name="android:actionModeBackground">?attr/colorPrimary</item>
+        <item name="android:actionModeStyle">@style/ActionMode</item>
     </style>
 
+    <style name="ActionMode">
+      <item name="android:background">?attr/colorPrimary</item>
+      <item name="android:height">?attr/actionBarSize</item>
+    </style>
+  
     <!-- Splash theme -->
     <style name="Maui.SplashTheme" parent="Maui.MainTheme.NoActionBar">
         <item name="maui_splash">true</item>
