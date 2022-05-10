@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnSetImageSource(ImageSource? nativeImageSource)
 		{
-			PlatformView.UpdateImageSource(VirtualView, nativeImageSource);
+			PlatformView.UpdateImageSource(nativeImageSource);
 		}
 
 		void OnClick(object sender, RoutedEventArgs e)

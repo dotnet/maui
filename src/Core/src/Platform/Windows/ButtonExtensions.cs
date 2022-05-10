@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Platform
 				textBlock.CharacterSpacing = characterSpacing;
 		}
 
-		public static void UpdateImageSource(this Button platformButton, IButton button, WImageSource? nativeImageSource)
+		public static void UpdateImageSource(this Button platformButton, WImageSource? nativeImageSource)
 		{
 			if (platformButton.GetContent<WImage>() is WImage nativeImage)
 			{
