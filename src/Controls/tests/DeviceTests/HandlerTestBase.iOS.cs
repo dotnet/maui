@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -50,10 +51,24 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					if (window.Handler != null)
 					{
+						if (window is Controls.Window controlsWindow && controlsWindow.Navigation.ModalStack.Count > 0)
+						{
+							var modalCount = controlsWindow.Navigation.ModalStack.Count;
+
+							for (int i = 0; i < modalCount; i++)
+								await controlsWindow.Navigation.PopModalAsync();
+						}
+
 						window.Handler.DisconnectHandler();
 					}
 				}
 			});
+		}
+
+		internal ModalWrapper GetModalWrapper(Page modalPage)
+		{
+			var pageVC = (modalPage.Handler as IPlatformViewHandler).ViewController;
+			return (ModalWrapper)pageVC.ParentViewController;
 		}
 
 		protected bool IsBackButtonVisible(IElementHandler handler)
