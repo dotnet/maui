@@ -21,7 +21,13 @@ namespace Microsoft.Maui.Controls
 			_shell = shell;
 		}
 
-		public Task GoToAsync(ShellNavigationState state, bool? animate, bool enableRelativeShellRoutes, ShellNavigatingEventArgs deferredArgs = null, ShellRouteParameters parameters = null)
+		public Task GoToAsync(
+			ShellNavigationState state, 
+			bool? animate, 
+			bool enableRelativeShellRoutes, 
+			ShellNavigatingEventArgs deferredArgs = null, 
+			ShellRouteParameters parameters = null,
+			bool? canCancel = null)
 		{
 			return GoToAsync(new ShellNavigationParameters
 			{
@@ -29,7 +35,8 @@ namespace Microsoft.Maui.Controls
 				Animated = animate,
 				EnableRelativeShellRoutes = enableRelativeShellRoutes,
 				DeferredArgs = deferredArgs,
-				Parameters = parameters
+				Parameters = parameters,
+				CanCancel = canCancel
 			});
 		}
 
@@ -64,7 +71,8 @@ namespace Microsoft.Maui.Controls
 			// This scenario only comes up from UI iniated navigation (i.e. switching tabs)
 			if (deferredArgs == null)
 			{
-				var navigatingArgs = ProposeNavigation(source, state, _shell.CurrentState != null, animate ?? true);
+				bool canCancel = (shellNavigationParameters.CanCancel.HasValue) ? shellNavigationParameters.CanCancel.Value : _shell.CurrentState != null;
+				var navigatingArgs = ProposeNavigation(source, state, canCancel, animate ?? true);
 
 				if (navigatingArgs != null)
 				{
@@ -459,6 +467,43 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return lookupDict;
+		}
+
+		public static ShellNavigationParameters GetNavigationParameters(
+			ShellItem shellItem,
+			ShellSection shellSection,
+			ShellContent shellContent,
+			IReadOnlyList<Page> sectionStack,
+			IReadOnlyList<Page> modalStack)
+		{
+			var state = GetNavigationState(shellItem, shellSection, shellContent, sectionStack, modalStack);
+			var navStack = shellSection.Navigation.NavigationStack;
+
+			var topNavStackPage =
+				(modalStack?.Count > 0 ? modalStack[modalStack.Count - 1] : null) ??
+				(navStack?.Count > 0 ? navStack[navStack.Count - 1] : null);
+
+			var queryParametersTarget =
+				topNavStackPage as BindableObject ??
+				(shellContent?.Content as BindableObject) ??
+				shellContent;
+
+			ShellRouteParameters routeParameters = null;
+
+			if (queryParametersTarget?.GetValue(ShellContent.QueryAttributesProperty) is
+				ShellRouteParameters shellRouteParameters)
+			{
+				routeParameters = shellRouteParameters;
+			}
+
+			return new ShellNavigationParameters()
+			{
+				TargetState = state,
+				Animated = false,
+				EnableRelativeShellRoutes = false,
+				DeferredArgs = null,
+				Parameters = routeParameters
+			};
 		}
 
 		public static ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack, IReadOnlyList<Page> modalStack)

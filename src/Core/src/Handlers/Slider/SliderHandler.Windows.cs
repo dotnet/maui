@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(Slider platformView)
 		{
-			platformView.ValueChanged += OnPlatformValueChanged;
+			platformView.Loaded += OnPlatformViewLoaded;
 
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(Slider platformView)
 		{
+			platformView.Loaded -= OnPlatformViewLoaded;
 			platformView.ValueChanged -= OnPlatformValueChanged;
 
 			platformView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
@@ -84,6 +85,14 @@ namespace Microsoft.Maui.Handlers
 			{
 				mauiSlider.UpdateThumbImageSourceAsync(slider, provider).FireAndForget(handler);
 			}
+		}
+
+		void OnPlatformViewLoaded(object sender, RoutedEventArgs e)
+		{
+			var platformView = sender as Slider;
+
+			if (platformView != null)
+				platformView.ValueChanged += OnPlatformValueChanged;
 		}
 
 		void OnPlatformValueChanged(object? sender, RangeBaseValueChangedEventArgs e)

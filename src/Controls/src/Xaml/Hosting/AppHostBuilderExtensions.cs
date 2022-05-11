@@ -209,6 +209,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		internal static MauiAppBuilder RemapForControls(this MauiAppBuilder builder)
 		{
 			// Update the mappings for IView/View to work specifically for Controls
+			Application.RemapForControls();
 			VisualElement.RemapForControls();
 			Label.RemapForControls();
 			Button.RemapForControls();
@@ -221,7 +222,9 @@ namespace Microsoft.Maui.Controls.Hosting
 			SearchBar.RemapForControls();
 			TabbedPage.RemapForControls();
 			Layout.RemapForControls();
+			RefreshView.RemapForControls();
 			Shape.RemapForControls();
+			WebView.RemapForControls();
 
 			return builder;
 		}

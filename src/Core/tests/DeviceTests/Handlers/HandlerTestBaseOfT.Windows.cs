@@ -136,14 +136,20 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotEqual(inputTransparent, uie);
 		}
 
-		protected Maui.Graphics.Rect GetPlatformViewBounds(IViewHandler viewHandler) =>
-			((FrameworkElement)viewHandler.PlatformView).GetPlatformViewBounds();
+		protected Task<Maui.Graphics.Rect> GetPlatformViewBounds(IViewHandler viewHandler)
+		{
+			var fe = (FrameworkElement)viewHandler.PlatformView;
+			return fe.AttachAndRun(() => fe.GetPlatformViewBounds());
+		}
 
 		protected System.Numerics.Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
 			((FrameworkElement)viewHandler.PlatformView).GetViewTransform();
 
-		protected Maui.Graphics.Rect GetBoundingBox(IViewHandler viewHandler) =>
-			((FrameworkElement)viewHandler.PlatformView).GetBoundingBox();
+		protected Task<Maui.Graphics.Rect> GetBoundingBox(IViewHandler viewHandler)
+		{
+			var fe = (FrameworkElement)viewHandler.PlatformView;
+			return fe.AttachAndRun(() => fe.GetBoundingBox());
+		}
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
 			AutomationProperties.GetAutomationId((FrameworkElement)viewHandler.PlatformView);

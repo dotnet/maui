@@ -27,11 +27,11 @@ namespace Microsoft.Maui.Controls
 				   [nameof(Toolbar.BackButtonTitle)] = MapBackButtonTitle,
 				   [nameof(Toolbar.BarBackground)] = MapBarBackground,
 				   [nameof(Toolbar.BarTextColor)] = MapBarTextColor,
+#endif
 #if WINDOWS
 				   [nameof(Toolbar.BackButtonEnabled)] = MapBackButtonEnabled,
 				   [PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName] = MapToolbarPlacement,
 				   [PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty.PropertyName] = MapToolbarDynamicOverflowEnabled,
-#endif
 #endif
 			   };
 

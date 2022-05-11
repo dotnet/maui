@@ -14,8 +14,7 @@
                     Style="{StaticResource Headline}"/>
                 <ImageButton 
                     HorizontalOptions="Center" 
-                    WidthRequest="200"
-                    
+                    WidthRequest="200"    
                     Clicked="OnImageButtonClicked"
                     Aspect="AspectFit" 
                     Background="Green"
@@ -84,6 +83,15 @@
                     Source="cog.png"
                     CornerRadius="10"
                     BackgroundColor="Purple"/>
+                <Label
+                    Text="Custom Size"
+                    Style="{StaticResource Headline}"/>
+                <ImageButton
+                    x:Name="ResizeImageButton"
+                    Source="dotnet_bot.png"
+                    WidthRequest="40"
+                    HeightRequest="40" 
+                    Clicked="OnResizeImageButtonClicked"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
