@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Graphics
 			_clipPath = new Path();
 
 			_context = context;
-			_density = context?.Resources?.DisplayMetrics?.Density ?? 1.0f;
+			_density = context.GetDisplayDensity();
 		}
 
 		public void SetBackgroundColor(AColor? backgroundColor)
@@ -389,9 +389,13 @@ namespace Microsoft.Maui.Graphics
 
 					if (_shape != null)
 					{
-						var bounds = new Graphics.Rect(_strokeThickness / 2, _strokeThickness / 2, _width - _strokeThickness, _height - _strokeThickness);
+						var offset = _strokeThickness / 2 / _density;
+						var w = (_width - _strokeThickness) / _density;
+						var h = (_height - _strokeThickness) / _density;
+
+						var bounds = new Graphics.Rect(offset, offset, w, h);
 						var path = _shape.PathForBounds(bounds);
-						var clipPath = path?.AsAndroidPath();
+						var clipPath = path?.AsAndroidPath(scaleX: (float)_density, scaleY: (float)_density);
 
 						if (clipPath == null)
 							return;
