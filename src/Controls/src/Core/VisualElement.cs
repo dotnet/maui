@@ -441,16 +441,10 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Bounds']/Docs" />
 		public Rect Bounds
 		{
-			get { return new Rect(X, Y, Width, Height); }
+			get { return _frame; }
 			private set
 			{
-				if (value.X == X && value.Y == Y && value.Height == Height && value.Width == Width)
-					return;
-				BatchBegin();
-				X = value.X;
-				Y = value.Y;
-				SetSize(value.Width, value.Height);
-				BatchCommit();
+				Frame = value;
 			}
 		}
 
@@ -1199,16 +1193,19 @@ namespace Microsoft.Maui.Controls
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
-		void SetSize(double width, double height)
+		void UpdateBoundsComponents(Rect bounds) 
 		{
-			if (Width == width && Height == height)
-				return;
+			BatchBegin();
 
-			Width = width;
-			Height = height;
+			X = bounds.X;
+			Y = bounds.Y;
+			Width = bounds.Width;
+			Height = bounds.Height;
 
-			SizeAllocated(width, height);
+			SizeAllocated(Width, Height);
 			SizeChanged?.Invoke(this, EventArgs.Empty);
+
+			BatchCommit();
 		}
 
 		public class FocusRequestArgs : EventArgs

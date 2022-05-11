@@ -15,26 +15,20 @@ namespace Microsoft.Maui.Controls
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;
 
+		Rect _frame = Rect.Zero;
+
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Frame']/Docs" />
 		public Rect Frame
 		{
-			get => Bounds;
+			get => _frame;
 			set
 			{
-				if (value.X == X && value.Y == Y && value.Height == Height && value.Width == Width)
+				if (_frame == value)
 					return;
 
-				BatchBegin();
+				_frame = value;
 
-				X = value.X;
-				Y = value.Y;
-				Width = value.Width;
-				Height = value.Height;
-
-				SizeAllocated(Width, Height);
-				SizeChanged?.Invoke(this, EventArgs.Empty);
-
-				BatchCommit();
+				UpdateBoundsComponents(value);
 			}
 		}
 
