@@ -280,6 +280,11 @@
                 Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiSplashScreen'" />
         </ItemGroup>
 
+        <!-- Make sure animated gifs are not resized by default -->
+        <ItemGroup>
+            <MauiImage Update="@(MauiImage)" Resize="False" Condition="'%(MauiImage.Extension)' == '.gif' and '%(MauiImage.Resize)' == ''" />
+        </ItemGroup>
+
         <!-- Map @(MauiIcon) to @(MauiImage IsAppIcon=true) -->
         <ItemGroup>
             <MauiImage Include="@(MauiIcon)" IsAppIcon="True" />
