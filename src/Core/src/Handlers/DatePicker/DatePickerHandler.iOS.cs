@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Handlers
 
 		internal UIDatePicker? DatePickerDialog { get { return _picker; } }
 
-		internal bool UpdateImmediately { get; set; } = true;
+		internal bool UpdateImmediately { get; set; }
 
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
