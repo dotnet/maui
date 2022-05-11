@@ -118,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
 				await OnFrameSetToNotEmpty(footer);
-				Assert.Equal(20, footer.Frame.Width);
+				Assert.True(Math.Abs(20 - footer.Frame.Width) < 1);
 				Assert.True(footer.Frame.Height > 0);
 			});
 		}
