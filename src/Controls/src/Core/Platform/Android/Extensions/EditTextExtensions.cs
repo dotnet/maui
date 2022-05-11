@@ -1,4 +1,5 @@
-﻿using Android.Widget;
+﻿using Android.Text;
+using Android.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.Android;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
@@ -22,7 +23,11 @@ namespace Microsoft.Maui.Controls.Platform
 			bool transformingPlatformText =
 				(editText.Text == inputView.Text);
 
-			var value = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
+			bool isPasswordEnabled =
+				(editText.InputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
+				(editText.InputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
+
+			var value = TextTransformUtilites.GetTransformedText(inputView.Text, isPasswordEnabled ? TextTransform.None : inputView.TextTransform);
 
 			if (!transformingPlatformText)
 			{
