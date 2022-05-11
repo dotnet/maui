@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;
 
-		Rect _frame = Rect.Zero;
+		Rect _frame = new Rect(0, 0, -1, -1);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Frame']/Docs" />
 		public Rect Frame
@@ -25,8 +25,6 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_frame == value)
 					return;
-
-				_frame = value;
 
 				UpdateBoundsComponents(value);
 			}

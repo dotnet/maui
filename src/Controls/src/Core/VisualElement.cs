@@ -441,7 +441,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Bounds']/Docs" />
 		public Rect Bounds
 		{
-			get { return _frame; }
+			get { return IsMocked() ? new Rect(_mockX, _mockY, _mockWidth, _mockHeight) : _frame; }
 			private set
 			{
 				Frame = value;
@@ -1015,6 +1015,11 @@ namespace Microsoft.Maui.Controls
 #endif
 		}
 
+		bool IsMocked() 
+		{
+			return _mockX != -1 && _mockY != -1 && _mockWidth != -1 && _mockHeight != -1;
+		}
+
 		internal virtual void OnConstraintChanged(LayoutConstraint oldConstraint, LayoutConstraint newConstraint) => ComputeConstrainsForChildren();
 
 		internal virtual void OnIsPlatformEnabledChanged()
@@ -1195,6 +1200,8 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateBoundsComponents(Rect bounds) 
 		{
+			_frame = bounds;
+
 			BatchBegin();
 
 			X = bounds.X;
