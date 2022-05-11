@@ -343,20 +343,18 @@
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />
     </Style>
 
-    <Style x:Key="BaseStyle" TargetType="Element">
+    <Style TargetType="Shell" ApplyToDerivedTypes="True">
         <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Black}}" />
-        <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
+        <Setter Property="Shell.ForegroundColor" Value="{OnPlatform WinUI={StaticResource Primary}, Default={StaticResource White}}"></Setter>
         <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Light={StaticResource LightGray}, Dark={StaticResource White}}" />
         <Setter Property="Shell.DisabledColor" Value="{AppThemeBinding Light={StaticResource LightGray}, Dark={StaticResource DarkGray}}" />
-        <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light={StaticResource LightGray}, Dark={StaticResource DarkGray}}" />
+        <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light={StaticResource LightGray}, Dark={StaticResource LightGray}}" />
         <Setter Property="Shell.NavBarHasShadow" Value="False" />
         <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />
         <Setter Property="Shell.TabBarForegroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
         <Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
-        <Setter Property="Shell.TabBarUnselectedColor" Value="{AppThemeBinding Light={StaticResource LightGray}, Dark={StaticResource DarkGray}}" />
+        <Setter Property="Shell.TabBarUnselectedColor" Value="{AppThemeBinding Light={StaticResource DarkGray}, Dark={StaticResource LightGray}}" />
     </Style>
-
-    <Style BasedOn="{StaticResource BaseStyle}" TargetType="ShellItem" ApplyToDerivedTypes="True" />
 
     <Style TargetType="NavigationPage">
         <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Black}}" />
