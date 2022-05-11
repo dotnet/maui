@@ -63,7 +63,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
-				await OnLayoutPassCompleted(flyoutContent);
+				await OnFrameSetToNotEmpty(flyoutContent);
 
 				Assert.NotNull(flyoutContent.Handler);
 				Assert.True(flyoutContent.Frame.Width > 0);
