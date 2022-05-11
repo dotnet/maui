@@ -17,19 +17,22 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateText(this EditText editText, InputView inputView)
 		{
+			var oldText = editText?.Text ?? string.Empty;
+			var newText = inputView?.Text ?? string.Empty;
+
 			// Setting the text causes the cursor to be reset to position zero.
 			// So, let's retain the current cursor position and calculate a new cursor
 			// position if the text was modified by a Converter.
 			int currentCursorPosition = editText.SelectionStart;
 
 			// Calculate the cursor offset position if the text was modified by a Converter.
-			var cursorOffset = inputView?.Text?.Length - editText.Text?.Length ?? 0;
+			var cursorOffset = newText.Length - oldText.Length;
 
 			bool isPasswordEnabled =
 				(editText.InputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
 				(editText.InputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
 
-			editText.Text = TextTransformUtilites.GetTransformedText(inputView.Text, isPasswordEnabled ? TextTransform.None : inputView.TextTransform);
+			editText.Text = TextTransformUtilites.GetTransformedText(newText, isPasswordEnabled ? TextTransform.None : inputView.TextTransform);
 
 			editText.SetSelection(currentCursorPosition + cursorOffset);
 		}
