@@ -42,7 +42,7 @@ namespace Maui.Controls.Sample.ViewModels
 				new SectionModel(typeof(AndroidWebViewZoomPage), "WebView Zoom Controls",
 					"This Android platform-specific enables pinch-to-zoom and a zoom control on a WebView."),
 			};
-#elif IOS
+#elif IOS || MACCATALYST
 			return new[]
 			{
 				new SectionModel(typeof(iOSBlurEffectPage), "Blur Effect", 

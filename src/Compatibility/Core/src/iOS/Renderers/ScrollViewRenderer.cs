@@ -301,6 +301,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				ScrollView.SendScrollFinished();
 		}
 
+		[PortHandler]
 		void UpdateDelaysContentTouches()
 		{
 			DelaysContentTouches = ((ScrollView)Element).OnThisPlatform().ShouldDelayContentTouches();

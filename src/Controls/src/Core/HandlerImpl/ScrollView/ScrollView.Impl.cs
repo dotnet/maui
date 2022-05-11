@@ -5,7 +5,6 @@ using static Microsoft.Maui.Layouts.LayoutManager;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollView']/Docs" />
 	public partial class ScrollView : IScrollView, IContentView
 	{
 		object IContentView.Content => Content;

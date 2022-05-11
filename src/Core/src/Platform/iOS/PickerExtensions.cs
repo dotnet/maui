@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using System;
 using Foundation;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Platform
 {
