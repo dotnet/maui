@@ -146,7 +146,6 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.Register<Xaml.ResourcesLoader>();
 			DependencyService.Register<Xaml.ValueConverterProvider>();
 			DependencyService.Register<PlatformSizeService>();
-			DependencyService.Register<PlatformInvalidate>();
 
 #pragma warning disable CS0612, CA1416 // Type or member is obsolete, 'ResourcesProvider' is unsupported on: 'iOS' 14.0 and later
 			DependencyService.Register<ResourcesProvider>();
