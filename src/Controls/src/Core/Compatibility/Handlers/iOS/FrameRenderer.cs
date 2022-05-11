@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Drawing;
+using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
 			= new CommandMapper<Frame, FrameRenderer>(VisualElementRendererCommandMapper);
 
-		UIView _actualView;
+		FrameView _actualView;
 		CGSize _previousSize;
 		bool _isDisposed;
 
@@ -40,6 +41,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (e.NewElement != null)
 			{
+				_actualView.CrossPlatformArrange = (e.NewElement as IContentView).CrossPlatformArrange;
+				_actualView.CrossPlatformMeasure = (e.NewElement as IContentView).CrossPlatformMeasure;
 				SetupLayer();
 			}
 		}
@@ -128,6 +131,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.LayoutSubviews();
 		}
 
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			var result = _actualView.SizeThatFits(size);
+			return result;
+		}
+
 		public override void Draw(CGRect rect)
 		{
 			if (_actualView != null)
@@ -165,7 +174,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-		class FrameView : UIView
+		class FrameView : Microsoft.Maui.Platform.ContentView
 		{
 			public override void RemoveFromSuperview()
 			{

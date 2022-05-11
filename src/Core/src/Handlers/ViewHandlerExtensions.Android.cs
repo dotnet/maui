@@ -12,9 +12,10 @@ namespace Microsoft.Maui
 		// TODO: Possibly reconcile this code with LayoutViewGroup.OnLayout
 		// If you make changes here please review if those changes should also
 		// apply to LayoutViewGroup.OnLayout
-		internal static void LayoutVirtualView(
+		internal static Size LayoutVirtualView(
 			this IPlatformViewHandler viewHandler,
-			int l, int t, int r, int b)
+			int l, int t, int r, int b,
+			Func<Rect, Size>? arrangeFunc = null)
 		{
 			var context = viewHandler.MauiContext?.Context;
 			var virtualView = viewHandler.VirtualView;
@@ -22,11 +23,12 @@ namespace Microsoft.Maui
 
 			if (context == null || virtualView == null || platformView == null)
 			{
-				return;
+				return Size.Zero;
 			}
 
 			var destination = context.ToCrossPlatformRectInReferenceFrame(l, t, r, b);
-			virtualView.Arrange(destination);
+			arrangeFunc ??= virtualView.Arrange;
+			return arrangeFunc(destination);
 		}
 
 		// TODO: Possibly reconcile this code with LayoutViewGroup.OnMeasure
@@ -35,7 +37,8 @@ namespace Microsoft.Maui
 		internal static Size MeasureVirtualView(
 			this IPlatformViewHandler viewHandler,
 			int platformWidthConstraint,
-			int platformHeightConstraint)
+			int platformHeightConstraint,
+			Func<double,double, Size>? measureFunc = null)
 		{
 			var context = viewHandler.MauiContext?.Context;
 			var virtualView = viewHandler.VirtualView;
@@ -52,7 +55,8 @@ namespace Microsoft.Maui
 			var widthMode = MeasureSpec.GetMode(platformWidthConstraint);
 			var heightMode = MeasureSpec.GetMode(platformHeightConstraint);
 
-			var measure = virtualView.Measure(deviceIndependentWidth, deviceIndependentHeight);
+			measureFunc ??= virtualView.Measure;
+			var measure = measureFunc(deviceIndependentWidth, deviceIndependentHeight);
 
 			// If the measure spec was exact, we should return the explicit size value, even if the content
 			// measure came out to a different size

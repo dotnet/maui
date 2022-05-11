@@ -120,20 +120,31 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			if (Element?.Handler is IPlatformViewHandler pvh && 
+				Element is IContentView cv)
+			{
+				var size = pvh.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec, cv.CrossPlatformMeasure);
+				SetMeasuredDimension((int)size.Width, (int)size.Height);
+			}
+			else
+				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+		}
+
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			if (Element == null)
 				return;
 
 
-			if (ChildCount > 0)
+			if (Element.Handler is IPlatformViewHandler pvh &&
+				Element is IContentView cv)
 			{
-				var platformView = GetChildAt(0);
-				if (platformView != null)
-				{
-					platformView.Layout(0, 0, r - l, b - t);
-				}
+				pvh.LayoutVirtualView(l, t, r, b, cv.CrossPlatformArrange);
 			}
+			else
+				base.OnLayout(changed, l, t, r, b);
 
 			if (Element.IsClippedToBounds)
 			{
