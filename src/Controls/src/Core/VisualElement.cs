@@ -1017,7 +1017,7 @@ namespace Microsoft.Maui.Controls
 
 		bool IsMocked() 
 		{
-			return _mockX != -1 && _mockY != -1 && _mockWidth != -1 && _mockHeight != -1;
+			return _mockX != -1 || _mockY != -1 || _mockWidth != -1 || _mockHeight != -1;
 		}
 
 		internal virtual void OnConstraintChanged(LayoutConstraint oldConstraint, LayoutConstraint newConstraint) => ComputeConstrainsForChildren();
