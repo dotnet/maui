@@ -34,15 +34,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateText(this UITextField textField, InputView inputView)
 		{
+			// Setting the text causes the cursor to be reset to the end of the UITextView.
+			// So, let's retain the current cursor position and calculate a new cursor
+			// position if the text was modified by a Converter.
 			var startRange = textField.GetPosition(textField.BeginningOfDocument, 0);
-			var selectedTextRange = textField.SelectedTextRange ?? textField.GetTextRange(startRange, startRange);
+			var currentCursorPosition = textField.SelectedTextRange ?? textField.GetTextRange(startRange, startRange);
 
-			// Save the the cursor offset position if the text was modified by a Convertor
+			// Calculate the cursor offset position if the text was modified by a Converter.
 			var cursorOffset = inputView?.Text?.Length - textField.Text?.Length ?? 0;
 
 			textField.Text = TextTransformUtilites.GetTransformedText(inputView.Text, textField.SecureTextEntry ? TextTransform.None : inputView.TextTransform);
 
-			var newCursorPosition = textField.GetPosition(selectedTextRange.Start, cursorOffset);
+			var newCursorPosition = textField.GetPosition(currentCursorPosition.Start, cursorOffset);
 			textField.SelectedTextRange = textField.GetTextRange(newCursorPosition, newCursorPosition);
 		}
 

@@ -17,34 +17,21 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateText(this EditText editText, InputView inputView)
 		{
-			// Is UpdateText being called only to transform the text
-			// that's already set on the platform element?
-			// If so then we want to retain the cursor position
-			bool transformingPlatformText =
-				(editText.Text == inputView.Text);
+			// Setting the text causes the cursor to be reset to position zero.
+			// So, let's retain the current cursor position and calculate a new cursor
+			// position if the text was modified by a Converter.
+			int currentCursorPosition = editText.SelectionStart;
+
+			// Calculate the cursor offset position if the text was modified by a Converter.
+			var cursorOffset = inputView?.Text?.Length - editText.Text?.Length ?? 0;
 
 			bool isPasswordEnabled =
 				(editText.InputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
 				(editText.InputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
 
-			var value = TextTransformUtilites.GetTransformedText(inputView.Text, isPasswordEnabled ? TextTransform.None : inputView.TextTransform);
+			editText.Text = TextTransformUtilites.GetTransformedText(inputView.Text, isPasswordEnabled ? TextTransform.None : inputView.TextTransform);
 
-			if (!transformingPlatformText)
-			{
-				editText.Text = value;
-			}
-			else
-			{
-				// Setting the text causes the cursor to reset to position zero
-				// so if we are transforming the text and then setting it to a 
-				// new value then we need to retain the cursor position
-				if (value == editText.Text)
-					return;
-
-				int selectionStart = editText.SelectionStart;
-				editText.Text = value;
-				editText.SetSelection(selectionStart);
-			}
+			editText.SetSelection(currentCursorPosition + cursorOffset);
 		}
 	}
 }
