@@ -74,7 +74,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(TargetPlatformIdentifier)' == 'tizen') ">
-    <PackageReference Include="Tizen.UIExtensions.ElmSharp" Version="@SamsungTizenUIExtensionsElmSharpPackageVersion@" IsImplicitlyDefined="true" PrivateAssets="all" />
+    <PackageReference Include="Tizen.UIExtensions.ElmSharp" Version="@SamsungTizenUIExtensionsElmSharpPackageVersion@" IsImplicitlyDefined="true" />
   </ItemGroup>
 
 </Project>
