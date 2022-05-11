@@ -80,6 +80,12 @@
         OldValue="@MicrosoftWindowsSDKBuildToolsPackageVersion@"
         NewValue="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
     />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)BundledVersions.targets"
+        Output="$(IntermediateOutputPath)BundledVersions.targets"
+        OldValue="@SamsungTizenUIExtensionsElmSharpPackageVersion@"
+        NewValue="$(SamsungTizenUIExtensionsElmSharpPackageVersion)"
+    />
     <ItemGroup>
       <None
           Include="$(IntermediateOutputPath)BundledVersions.targets"
