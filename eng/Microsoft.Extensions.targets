@@ -111,7 +111,7 @@
     />
     <PackageReference
         Update="Tizen.UIExtensions.ElmSharp"
-        Version="$(TizenUIExtensionsVersion)"
+        Version="$(SamsungTizenUIExtensionsElmSharpPackageVersion)"
     />
     <PackageReference
         Update="Svg.Skia"
