@@ -51,6 +51,13 @@ namespace Microsoft.Maui.Platform
 				context.FromPixels(thickness.Right),
 				context.FromPixels(thickness.Bottom));
 
+		public static Rect FromPixels(this Context context, Rect rect) =>
+			new Rect(
+				context.FromPixels(rect.X),
+				context.FromPixels(rect.Y),
+				context.FromPixels(rect.Width),
+				context.FromPixels(rect.Height));
+
 		public static void HideKeyboard(this Context self, global::Android.Views.View view)
 		{
 			// Service may be null in the context of the Android Designer
@@ -369,8 +376,8 @@ namespace Microsoft.Maui.Platform
 			return mode.MakeMeasureSpec(deviceConstraint);
 		}
 
-		public static float GetDisplayDensity(this Context context) =>
-			context.Resources?.DisplayMetrics?.Density ?? 1.0f;
+		public static float GetDisplayDensity(this Context? context) =>
+			context?.Resources?.DisplayMetrics?.Density ?? 1.0f;
 
 		public static Rect ToCrossPlatformRectInReferenceFrame(this Context context, int left, int top, int right, int bottom)
 		{
