@@ -171,9 +171,10 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				var actionSheetContent = new ActionSheetContent(arguments);
-
+			
 				var actionSheet = new Flyout
 				{
+					FlyoutPresenterStyle = (UI.Xaml.Style)UI.Xaml.Application.Current.Resources["MauiFlyoutPresenterStyle"],
 					Placement = UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Full,
 					Content = actionSheetContent
 				};
@@ -192,12 +193,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 				try
 				{
-					var pageParent = sender.ToPlatform(MauiContext).Parent as FrameworkElement;
+					var current = sender.ToPlatform(MauiContext);
+					var pageParent = current?.Parent as FrameworkElement;
 
 					if (pageParent != null)
 						actionSheet.ShowAt(pageParent);
 					else
-						arguments.SetResult(null);
+					{
+						if (current != null && current is FrameworkElement mainPage)
+							actionSheet.ShowAt(current);
+						else
+							arguments.SetResult(null);
+					}
 				}
 				catch (ArgumentException) // If the page is not in the visual tree
 				{
