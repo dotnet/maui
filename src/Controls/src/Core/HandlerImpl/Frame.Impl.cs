@@ -31,13 +31,5 @@ namespace Microsoft.Maui.Controls
 				return null;
 			}
 		}
-
-		protected override void OnSizeAllocated(double width, double height)
-		{
-			// This calls layout children on the legacy layout code
-			// we don't want the layout calls to come from the xplat layer
-			// the platform layer knows the better moments to call layout
-		}
-
 	}
 }
