@@ -671,7 +671,7 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
-			if (child is IShellContentController sc && sc.Page.IsPlatformEnabled)
+			if (child is IShellContentController sc && (sc.Page?.IsPlatformEnabled == true))
 			{
 				sc.Page.PlatformEnabledChanged += WaitForRendererToGetRemoved;
 				void WaitForRendererToGetRemoved(object s, EventArgs p)
