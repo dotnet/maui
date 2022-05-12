@@ -280,6 +280,11 @@
                 Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiSplashScreen'" />
         </ItemGroup>
 
+        <!-- Make sure animated gifs are not resized by default -->
+        <ItemGroup>
+            <MauiImage Update="@(MauiImage)" Resize="False" Condition="'%(MauiImage.Extension)' == '.gif' and '%(MauiImage.Resize)' == ''" />
+        </ItemGroup>
+
         <!-- Map @(MauiIcon) to @(MauiImage IsAppIcon=true) -->
         <ItemGroup>
             <MauiImage Include="@(MauiIcon)" IsAppIcon="True" />
@@ -380,7 +385,7 @@
         <GenerateSplashAssets
             Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'"
             IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
-	    MauiSplashScreen="@(MauiSplashScreen)"
+            MauiSplashScreen="@(MauiSplashScreen)"
         />
         <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'">
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
@@ -586,7 +591,14 @@
             </ContentWithTargetPath>
 
             <FileWrites Include="@(_ResizetizerCollectedImages)" />
+
+            <_MauiAppIconFile Include="@(_ResizetizerCollectedImages)"
+                              Condition="'%(Extension)' == '.ico'" />
         </ItemGroup>
+
+        <PropertyGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'">
+            <ApplicationIcon Condition="'$(ApplicationIcon)' == ''">%(_MauiAppIconFile.Identity)</ApplicationIcon>
+        </PropertyGroup>
 
         <!-- WPF -->
         <ItemGroup Condition="'$(_ResizetizerIsWPFApp)' == 'True'">

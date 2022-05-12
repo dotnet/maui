@@ -72,7 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 		string TextForHandler(LabelHandler handler)
 		{
 #if __IOS__
-				return handler.PlatformView.AttributedText?.Value;
+			return handler.PlatformView.AttributedText?.Value;
 #elif __ANDROID__
 				return handler.PlatformView.TextFormatted.ToString();
 #elif WINDOWS
@@ -99,6 +99,7 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 		}
 
+#if !WINDOWS
 		[Fact(DisplayName = "Single LineBreakMode changes MaxLines")]
 		public async Task SingleLineBreakModeChangesMaxLines()
 		{
@@ -125,7 +126,42 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 		}
 
-		[Fact(DisplayName = "LineBreakMode does not affect to MaxLines")]
+		[Theory(DisplayName = "Unsetting single LineBreakMode resets MaxLines")]
+		[InlineData(LineBreakMode.HeadTruncation)]
+		[InlineData(LineBreakMode.NoWrap)]
+		public async Task UnsettingSingleLineBreakModeResetsMaxLines(LineBreakMode newMode)
+		{
+			var label = new Label()
+			{
+				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+				MaxLines = 3,
+				LineBreakMode = LineBreakMode.WordWrap,
+			};
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var platformLabel = GetPlatformLabel(handler);
+
+			await InvokeOnMainThreadAsync((System.Action)(() =>
+			{
+				Assert.Equal(3, GetPlatformMaxLines(handler));
+				Assert.Equal(LineBreakMode.WordWrap.ToPlatform(), GetPlatformLineBreakMode(handler));
+
+				label.LineBreakMode = newMode;
+				platformLabel.UpdateLineBreakMode(label);
+
+				Assert.Equal(1, GetPlatformMaxLines(handler));
+				Assert.Equal(newMode.ToPlatform(), GetPlatformLineBreakMode(handler));
+
+				label.LineBreakMode = LineBreakMode.WordWrap;
+				platformLabel.UpdateLineBreakMode(label);
+
+				Assert.Equal(3, GetPlatformMaxLines(handler));
+				Assert.Equal(LineBreakMode.WordWrap.ToPlatform(), GetPlatformLineBreakMode(handler));
+			}));
+		}
+#endif
+
+		[Fact(DisplayName = "LineBreakMode does not affect MaxLines")]
 		public async Task LineBreakModeDoesNotAffectMaxLines()
 		{
 			var label = new Label()
@@ -169,44 +205,10 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 		}
 
-		[Theory(DisplayName = "Unsetting single LineBreakMode resets MaxLines")]
-		[InlineData(LineBreakMode.HeadTruncation)]
-		[InlineData(LineBreakMode.NoWrap)]
-		public async Task UnsettingSingleLineBreakModeResetsMaxLines(LineBreakMode newMode)
-		{
-			var label = new Label()
-			{
-				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-				MaxLines = 3,
-				LineBreakMode = LineBreakMode.WordWrap,
-			};
-
-			var handler = await CreateHandlerAsync<LabelHandler>(label);
-			var platformLabel = GetPlatformLabel(handler);
-
-			await InvokeOnMainThreadAsync((System.Action)(() =>
-			{
-				Assert.Equal(3, GetPlatformMaxLines(handler));
-				Assert.Equal(LineBreakMode.WordWrap.ToPlatform(), GetPlatformLineBreakMode(handler));
-
-				label.LineBreakMode = newMode;
-				platformLabel.UpdateLineBreakMode(label);
-
-				Assert.Equal(1, GetPlatformMaxLines(handler));
-				Assert.Equal(newMode.ToPlatform(), GetPlatformLineBreakMode(handler));
-
-				label.LineBreakMode = LineBreakMode.WordWrap;
-				platformLabel.UpdateLineBreakMode(label);
-
-				Assert.Equal(3, GetPlatformMaxLines(handler));
-				Assert.Equal(LineBreakMode.WordWrap.ToPlatform(), GetPlatformLineBreakMode(handler));
-			}));
-		}
-
 		[Theory(DisplayName = "Negative MaxLines value with wrap is correct")]
-#if __IOS__
+#if __IOS__ || WINDOWS
 		[InlineData(0)]
-#else 
+#else
 		[InlineData(int.MaxValue)]
 #endif
 		public async Task NegativeMaxValueWithWrapIsCorrect(int expectedLines)
@@ -221,6 +223,51 @@ namespace Microsoft.Maui.DeviceTests
 			var platformValue = await GetValueAsync<int, LabelHandler>(label, GetPlatformMaxLines);
 
 			Assert.Equal(expectedLines, platformValue);
+		}
+
+		[Theory(
+#if IOS
+			Skip = "Not able to debug iOS right now"
+#endif
+		)]
+		[InlineData(TextAlignment.Center)]
+		[InlineData(TextAlignment.Start)]
+		[InlineData(TextAlignment.End)]
+		public async Task FormattedStringSpanTextHasCorrectLayoutWhenAligned(TextAlignment alignment)
+		{
+			var formattedLabel = new Label
+			{
+				WidthRequest = 200,
+				HeightRequest = 50,
+				HorizontalTextAlignment = alignment,
+				FormattedText = new FormattedString
+				{
+					Spans =
+					{
+						new Span { Text = "short" },
+						new Span { Text = " long second string"}
+					}
+				},
+			};
+
+			var normalLabel = new Label
+			{
+				WidthRequest = 200,
+				HeightRequest = 50,
+				HorizontalTextAlignment = alignment,
+				Text = "short long second string"
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var formattedHandler = CreateHandler<LabelHandler>(formattedLabel);
+				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap();
+
+				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
+				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
+
+				await normalBitmap.AssertEqual(formattedBitmap);
+			});
 		}
 	}
 }

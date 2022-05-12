@@ -109,7 +109,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 				EnsureMainThread();
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 				return await RequestLocationAsync(true, lm => lm.RequestWhenInUseAuthorization());
+#pragma warning restore CA1416
 			}
 
 			internal static PermissionStatus GetLocationStatus(bool whenInUse)
@@ -117,7 +119,9 @@ namespace Microsoft.Maui.ApplicationModel
 				if (!CLLocationManager.LocationServicesEnabled)
 					return PermissionStatus.Disabled;
 
+#pragma warning disable CA1416 // TODO: CLLocationManager.Status has [UnsupportedOSPlatform("ios14.0")], [UnsupportedOSPlatform("macos11.0")], [UnsupportedOSPlatform("tvos14.0")], [UnsupportedOSPlatform("watchos7.0")]
 				var status = CLLocationManager.Status;
+#pragma warning restore CA1416
 
 				return status switch
 				{

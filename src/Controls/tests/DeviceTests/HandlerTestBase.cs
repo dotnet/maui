@@ -1,13 +1,16 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -23,6 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 		// That being said...
 		// There's definitely a chance that the code written to manage this process could be improved		
 		public const string RunInNewWindowCollection = "Serialize test because it has to add itself to the main window";
+
 		public void EnsureHandlerCreated(Action<MauiAppBuilder> additionalCreationActions = null)
 		{
 			if (_isCreated)
@@ -66,6 +70,9 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Controls.ContentPage), typeof(PageHandler));
 				});
 
+			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
+			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
+
 			additionalCreationActions?.Invoke(appBuilder);
 
 			_mauiApp = appBuilder.Build();
@@ -100,6 +107,7 @@ namespace Microsoft.Maui.DeviceTests
 			where THandler : IElementHandler
 		{
 			var handler = Activator.CreateInstance<THandler>();
+
 			handler.SetMauiContext(mauiContext);
 
 			handler.SetVirtualView(element);
@@ -122,9 +130,22 @@ namespace Microsoft.Maui.DeviceTests
 							Android.Views.ViewGroup.LayoutParams.WrapContent,
 							Android.Views.ViewGroup.LayoutParams.WrapContent);
 				}
+
+				var size = view.Measure(view.Width, view.Height);
+				var w = size.Width;
+				var h = size.Height;
+#elif IOS
+				var size = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
+				var w = size.Width;
+				var h = size.Height;
+#else
+				// Windows cannot measure without the view being loaded
+				// iOS needs more love when I get an IDE again
+				var w = view.Width;
+				var h = view.Height;
 #endif
 
-				view.Arrange(new Rect(0, 0, view.Width, view.Height));
+				view.Arrange(new Rect(0, 0, w, h));
 				viewHandler.PlatformArrange(view.Frame);
 			}
 
@@ -234,6 +255,33 @@ namespace Microsoft.Maui.DeviceTests
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 			OnLoaded(frameworkElement, () => taskCompletionSource.SetResult(true));
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+		}
+
+		protected Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			if (frameworkElement.Frame.Height > 0 &&
+				frameworkElement.Frame.Width > 0)
+			{
+				return Task.CompletedTask;
+			}
+
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			frameworkElement.BatchCommitted += OnBatchCommitted;
+
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+			{
+				if (frameworkElement.Frame.Height <= 0 ||
+					frameworkElement.Frame.Width <= 0)
+				{
+					return;
+				}
+
+				frameworkElement.BatchCommitted -= OnBatchCommitted;
+				taskCompletionSource.SetResult(true);
+			}
 		}
 	}
 }

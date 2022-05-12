@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 		readonly Android.Graphics.Rect _viewBounds;
 
 		APath _currentPath;
-		SizeF _lastPathSize; 
+		SizeF _lastPathSize;
 		bool _invalidateClip;
 
 		Bitmap _shadowBitmap;
@@ -154,15 +154,17 @@ namespace Microsoft.Maui.Platform
 
 		void ClipChild(Canvas canvas)
 		{
-			var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
+			var density = Context.GetDisplayDensity();
+			var newSize = new SizeF(canvas.Width, canvas.Height);
+			var bounds = new Graphics.RectF(Graphics.Point.Zero, newSize / density);
 
-			if (_invalidateClip || _lastPathSize != bounds.Size || _currentPath == null)
+			if (_invalidateClip || _lastPathSize != newSize || _currentPath == null)
 			{
 				_invalidateClip = false;
 
 				var path = Clip.PathForBounds(bounds);
-				_currentPath = path?.AsAndroidPath();
-				_lastPathSize = bounds.Size;
+				_currentPath = path?.AsAndroidPath(scaleX: density, scaleY: density);
+				_lastPathSize = newSize;
 			}
 
 			if (_currentPath != null)
@@ -240,7 +242,9 @@ namespace Microsoft.Maui.Platform
 					if (Shadow.Paint is SolidPaint solidPaint)
 					{
 						solidColor = solidPaint.ToColor();
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 						_shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToPlatform();
+#pragma warning restore CA1416
 					}
 
 					// Apply the shadow radius 
@@ -283,7 +287,9 @@ namespace Microsoft.Maui.Platform
 
 			// Reset alpha to draw child with full alpha
 			if (solidColor != null)
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 				_shadowPaint.Color = solidColor.ToPlatform();
+#pragma warning restore CA1416
 
 			// Draw shadow bitmap
 			if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)

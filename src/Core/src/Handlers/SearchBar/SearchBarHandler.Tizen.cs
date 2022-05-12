@@ -13,9 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override SearchBar CreatePlatformView()
 		{
-			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
-
-			var searchBar = new SearchBar(NativeParent)
+			var searchBar = new SearchBar(PlatformParent)
 			{
 				IsSingleLine = true
 			};

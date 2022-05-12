@@ -15,26 +15,18 @@ namespace Microsoft.Maui.Controls
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;
 
+		Rect _frame = new Rect(0, 0, -1, -1);
+
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Frame']/Docs" />
 		public Rect Frame
 		{
-			get => Bounds;
+			get => _frame;
 			set
 			{
-				if (value.X == X && value.Y == Y && value.Height == Height && value.Width == Width)
+				if (_frame == value)
 					return;
 
-				BatchBegin();
-
-				X = value.X;
-				Y = value.Y;
-				Width = value.Width;
-				Height = value.Height;
-
-				SizeAllocated(Width, Height);
-				SizeChanged?.Invoke(this, EventArgs.Empty);
-
-				BatchCommit();
+				UpdateBoundsComponents(value);
 			}
 		}
 
@@ -207,6 +199,12 @@ namespace Microsoft.Maui.Controls
 
 				// Access once up front to avoid multiple GetValue calls
 				var value = WidthRequest;
+
+				if (value == -1)
+				{
+					return Primitives.Dimension.Unset;
+				}
+				
 				ValidatePositive(value, nameof(IView.Width));
 				return value;
 			}
@@ -223,6 +221,12 @@ namespace Microsoft.Maui.Controls
 
 				// Access once up front to avoid multiple GetValue calls
 				var value = HeightRequest;
+
+				if (value == -1)
+				{
+					return Primitives.Dimension.Unset;
+				}
+				
 				ValidatePositive(value, nameof(IView.Height));
 				return value;
 			}
@@ -443,5 +447,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		partial void HandlePlatformUnloadedLoaded();
+
+		internal IView? ParentView => ((this as IView)?.Parent as IView);
 	}
 }

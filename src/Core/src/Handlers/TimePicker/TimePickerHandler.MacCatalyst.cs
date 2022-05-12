@@ -11,12 +11,14 @@ namespace Microsoft.Maui.Handlers
 			return new UIDatePicker { Mode = UIDatePickerMode.Time, TimeZone = new NSTimeZone("UTC") };
 		}
 
+		internal bool UpdateImmediately { get; set; } = true;
+
 		protected override void ConnectHandler(UIDatePicker platformView)
 		{
 			base.ConnectHandler(platformView);
-      
+
 			if (platformView != null)
-			{	
+			{
 				platformView.EditingDidBegin += OnStarted;
 				platformView.EditingDidEnd += OnEnded;
 				platformView.ValueChanged += OnValueChanged;
@@ -33,8 +35,8 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidBegin -= OnStarted;
 				platformView.EditingDidEnd -= OnEnded;
 				platformView.ValueChanged -= OnValueChanged;
-			 	platformView.RemoveFromSuperview();
-			 	platformView.Dispose();
+				platformView.RemoveFromSuperview();
+				platformView.Dispose();
 			}
 		}
 
@@ -85,7 +87,8 @@ namespace Microsoft.Maui.Handlers
 
 		void OnValueChanged(object? sender, EventArgs e)
 		{
-			SetVirtualViewTime();
+			if (UpdateImmediately)  // Platform Specific
+				SetVirtualViewTime();
 		}
 
 		void SetVirtualViewTime()

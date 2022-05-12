@@ -4,9 +4,9 @@ using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
-using Mono.Cecil.Cil;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void OnPlatformExtensionsAreSimplified([Values("net6.0-ios", "net6.0-android")] string targetFramework)
 			{
 				MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, targetFramework);
-				Assert.That(!methodDef.Body.Instructions.Any(instr=>InstructionIsOnPlatformExtensionCtor(methodDef, instr)), "This Xaml still generates a new OnPlatformExtension()");
+				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsOnPlatformExtensionCtor(methodDef, instr)), "This Xaml still generates a new OnPlatformExtension()");
 			}
 
 			bool InstructionIsOnPlatformExtensionCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)

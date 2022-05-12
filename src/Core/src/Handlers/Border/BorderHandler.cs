@@ -1,4 +1,4 @@
-﻿	#nullable enable
+﻿#nullable enable
 #if __IOS__ || MACCATALYST
 using PlatformView = Microsoft.Maui.Platform.ContentView;
 #elif __ANDROID__
@@ -7,7 +7,7 @@ using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 using PlatformView = Microsoft.Maui.Platform.ContentPanel;
 #elif TIZEN
 using PlatformView = Microsoft.Maui.Platform.BorderView;
-#elif NETSTANDARD
+#elif (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 #endif
 

@@ -1,5 +1,5 @@
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {

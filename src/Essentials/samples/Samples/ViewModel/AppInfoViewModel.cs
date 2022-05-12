@@ -1,6 +1,6 @@
 using Microsoft.Maui;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls;
 
 namespace Samples.ViewModel
 {

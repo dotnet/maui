@@ -7,6 +7,21 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.Page']/Docs" />
 	public partial class Page : IView, ITitledElement, IToolbarElement
 	{
+		Paint IView.Background
+		{
+			get
+			{
+				if (!Brush.IsNullOrEmpty(Background))
+					return Background;
+				if (!ImageSource.IsNullOrEmpty(BackgroundImageSource))
+					return new ImageSourcePaint(BackgroundImageSource);
+				if (BackgroundColor.IsNotDefault())
+					return new SolidColorBrush(BackgroundColor);
+
+				return null;
+			}
+		}
+
 		Toolbar _toolbar;
 		IToolbar IToolbarElement.Toolbar
 		{
@@ -19,9 +34,6 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				_toolbar = value;
-				if (this is NavigationPage np && value is NavigationPageToolbar ct)
-					ct.ApplyNavigationPage(np, HasAppeared);
-
 				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
 			}
 		}

@@ -157,8 +157,8 @@ namespace Microsoft.Maui.Controls.Internals
 			if (_handlers.TryGetValue(viewType, out Dictionary<Type, (Type target, short priority)> visualRenderers))
 				if (visualRenderers.TryGetValue(visualType, out (Type target, short priority) specificTypeRenderer))
 					return specificTypeRenderer.target;
-				//else if (visualType == _materialVisualType)
-				//	VisualMarker.MaterialCheck();
+			//else if (visualType == _materialVisualType)
+			//	VisualMarker.MaterialCheck();
 
 			if (visualType != _defaultVisualType && visualRenderers != null)
 				if (visualRenderers.TryGetValue(_defaultVisualType, out (Type target, short priority) specificTypeRenderer))
@@ -385,14 +385,18 @@ namespace Microsoft.Maui.Controls.Internals
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll'][1]/Docs" />
 		[Obsolete]
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public static void RegisterAll(Type[] attrTypes, IFontRegistrar fontRegistrar = null)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			RegisterAll(attrTypes, default(InitializationFlags), fontRegistrar);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll'][2]/Docs" />
 		[Obsolete]
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags, IFontRegistrar fontRegistrar = null)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			RegisterAll(
 				AppDomain.CurrentDomain.GetAssemblies(),

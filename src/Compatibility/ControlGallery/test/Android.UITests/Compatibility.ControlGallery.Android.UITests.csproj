@@ -7,7 +7,7 @@
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <DefineConstants>$(DefineConstants);__ANDROID__;UITEST;__SHELL__</DefineConstants>
-    <NoWarn>1701;1702;0618;0612</NoWarn>
+    <NoWarn>1701;1702;0618;0612;CA1307;CA1309</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,10 +16,10 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NUnit" Version="3.13.1" />
-    <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
-    <PackageReference Include="Xamarin.UITest" Version="3.0.15" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.1.1" />
+    <PackageReference Include="Xamarin.UITest" Version="3.2.7" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
   </ItemGroup>
 
   <ItemGroup>

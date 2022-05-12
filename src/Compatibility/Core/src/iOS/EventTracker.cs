@@ -578,6 +578,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			if (_dragAndDropDelegate != null)
 			{
+#pragma warning disable CA1416 // TODO: 'UIDragInteraction.Delegate', 'UIView.Interactions' is only supported on: 'ios' 11.0 and later, 'maccatalyst' 11.0 and later
 				foreach (var interaction in _renderer.NativeView.Interactions)
 				{
 					if (interaction is UIDragInteraction uIDrag && uIDrag.Delegate == _dragAndDropDelegate)
@@ -586,6 +587,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					if (interaction is UIDropInteraction uiDrop && uiDrop.Delegate == _dragAndDropDelegate)
 						uIDropInteraction = uiDrop;
 				}
+#pragma warning restore CA1416
 			}
 
 			bool dragFound = false;
@@ -635,10 +637,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 
 #if __MOBILE__
-			if (!dragFound && uIDragInteraction != null)
+			if (!dragFound && uIDragInteraction != null && Forms.IsiOS11OrNewer)
 				_renderer.NativeView.RemoveInteraction(uIDragInteraction);
 
-			if (!dropFound && uIDropInteraction != null)
+			if (!dropFound && uIDropInteraction != null && Forms.IsiOS11OrNewer)
 				_renderer.NativeView.RemoveInteraction(uIDropInteraction);
 #endif
 

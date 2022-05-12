@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return pvh.ViewController;
 				}
 
-				return MauiContext.
+				return WindowMauiContext.
 						GetPlatformWindow()?
 						.RootViewController;
 			}
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task PresentModal(Page modal, bool animated)
 		{
-			modal.ToPlatform(MauiContext);
+			modal.ToPlatform(WindowMauiContext);
 			var wrapper = new ModalWrapper(modal.Handler as IPlatformViewHandler);
 
 			if (ModalStack.Count > 1)

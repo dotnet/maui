@@ -33,8 +33,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="contentRootRelativeToAppRoot">Path to the directory containing application content files.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the fileProvider.</param>
+
 		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler!!, WKWebView webview!!, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string contentRootRelativeToAppRoot, string hostPageRelativePath)
-			: base(provider, dispatcher, new Uri(BlazorWebViewHandler.AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+			: base(provider, dispatcher, BlazorWebViewHandler.AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 		{
 			if (provider.GetService<MauiBlazorMarkerService>() is null)
 			{
@@ -172,8 +173,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (cancelAction != null)
 					AddCancelAction(controller, () => cancelAction(controller));
 
+#pragma warning disable CA1416 // TODO:  'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later
 				GetTopViewController(UIApplication.SharedApplication.Windows.FirstOrDefault(m => m.IsKeyWindow)?.RootViewController)?
 					.PresentViewController(controller, true, null);
+#pragma warning restore CA1416
 			}
 
 			private static UIViewController? GetTopViewController(UIViewController? viewController)
@@ -230,7 +233,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				if (strategy == UrlLoadingStrategy.OpenExternally)
 				{
+#pragma warning disable CA1416 // TODO: OpenUrl(...) has [UnsupportedOSPlatform("ios10.0")]
 					UIApplication.SharedApplication.OpenUrl(requestUrl);
+#pragma warning restore CA1416
 				}
 
 				if (strategy != UrlLoadingStrategy.OpenInWebView)

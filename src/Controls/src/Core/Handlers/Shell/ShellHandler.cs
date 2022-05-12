@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					[nameof(Shell.FlyoutFooterTemplate)] = MapFlyoutFooter,
 					[nameof(Shell.FlyoutHeader)] = MapFlyoutHeader,
 					[nameof(Shell.FlyoutHeaderTemplate)] = MapFlyoutHeader,
+					[nameof(Shell.FlyoutHeaderBehavior)] = MapFlyoutHeaderBehavior,
 					[nameof(Shell.Items)] = MapItems,
 					[nameof(Shell.FlyoutItems)] = MapFlyoutItems,
 				};

@@ -79,11 +79,6 @@
     <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
   </PropertyGroup>
 
-  <!-- .NET Standard or .NET 6 -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net$(_MauiDotNetVersion)' ">
-    <DefineConstants>$(DefineConstants);NETSTANDARD</DefineConstants>
-  </PropertyGroup>
-
   <!-- Android -->
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
     <DefineConstants>$(DefineConstants);MONOANDROID</DefineConstants>
