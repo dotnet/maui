@@ -45,7 +45,12 @@
     <_XamarinAndroidGlideVersion>4.12.0.8</_XamarinAndroidGlideVersion>
     <_XamarinAndroidXSecurityVersion>1.1.0-alpha03</_XamarinAndroidXSecurityVersion>
     <_XamarinGoogleCryptoTinkAndroidVersion>1.6.1.6</_XamarinGoogleCryptoTinkAndroidVersion>
-    <!-- SKIASHARP & HARFBUZZSHARP - the nuget version and sha must be kept in sync with maui graphics -->
+    <!--
+      SKIASHARP & HARFBUZZSHARP - the various things must be kept in sync with maui graphics:
+       - NuGet versions below
+       - Feed URI in the nuget.config
+       - Native assets build and sha
+    -->
     <_SkiaSharpVersion>2.88.0</_SkiaSharpVersion>
     <_HarfBuzzSharpVersion>2.8.2</_HarfBuzzSharpVersion>
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.2e12735359928ead60dd08cdf0b983c4e3d4dc56.268</_SkiaSharpNativeAssetsVersion>
