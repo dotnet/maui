@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -8,6 +10,9 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public class WindowHandlerStub : ElementHandler<IWindow, UIWindow>, IWindowHandler
 	{
+		TaskCompletionSource<bool> _finishedDisconnecting = new TaskCompletionSource<bool>();
+		public Task FinishedDisconnecting => _finishedDisconnecting.Task;
+
 		public static IPropertyMapper<IWindow, WindowHandlerStub> WindowMapper = new PropertyMapper<IWindow, WindowHandlerStub>(WindowHandler.Mapper)
 		{
 			[nameof(IWindow.Content)] = MapContent
@@ -17,16 +22,45 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var view = window.Content.ToPlatform(handler.MauiContext);
 
-			var vc =
-				(window.Content.Handler as IPlatformViewHandler)
-					.ViewController;
+			if (window.Content is Shell)
+			{
+				var vc =
+					(window.Content.Handler as IPlatformViewHandler)
+						.ViewController;
 
-			handler.PlatformView.RootViewController.PresentViewController(vc, false, null);
+				handler.PlatformView.RootViewController.PresentViewController(vc, false, null);
+			}
+			else
+			{
+				handler.PlatformView.RootViewController.View.AddSubview(view);
+			}
 		}
 
 		protected override void DisconnectHandler(UIWindow platformView)
 		{
-			platformView.RootViewController.DismissViewController(false, null);
+			var vc = (VirtualView.Content.Handler as IPlatformViewHandler)
+							.ViewController;
+
+			if (VirtualView.Content is Shell)
+			{
+				platformView.RootViewController
+					.PresentedViewController.
+					DismissViewController(false,
+					() =>
+					{
+						_finishedDisconnecting.SetResult(true);
+					});
+			}
+			else
+			{
+				VirtualView
+					.Content
+					.ToPlatform()
+					.RemoveFromSuperview();
+
+				_finishedDisconnecting.SetResult(true);
+			}
+
 			base.DisconnectHandler(platformView);
 		}
 

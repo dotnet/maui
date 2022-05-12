@@ -59,7 +59,14 @@ namespace Microsoft.Maui.DeviceTests
 								await controlsWindow.Navigation.PopModalAsync();
 						}
 
-						window.Handler.DisconnectHandler();
+						if (window.Handler is WindowHandlerStub whs)
+						{
+							window.Handler.DisconnectHandler();
+							await whs.FinishedDisconnecting;
+						}
+						else
+							window.Handler.DisconnectHandler();
+
 					}
 				}
 			});
@@ -73,20 +80,35 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected bool IsBackButtonVisible(IElementHandler handler)
 		{
+			var vcs = GetActiveChildViewControllers(handler);
+
+			if (vcs.Length <= 1)
+				return false;
+
+			return !vcs[vcs.Length - 1].NavigationItem.HidesBackButton;
+		}
+
+		protected object GetTitleView(IElementHandler handler)
+		{
+			var activeVC = GetVisibleViewController(handler);
+			if ( activeVC.NavigationItem.TitleView is
+				ShellPageRendererTracker.TitleViewContainer tvc)
+			{
+				return tvc.View.Handler.PlatformView;
+			}
+
+			return null;
+		}
+
+		UIViewController[] GetActiveChildViewControllers(IElementHandler handler)
+		{
 			if (handler is ShellRenderer renderer)
 			{
 				if (renderer.ChildViewControllers[0] is ShellItemRenderer sir)
 				{
 					if (sir.ChildViewControllers[0] is ShellSectionRenderer ssr)
 					{
-						// Nothing has been pushed to the stack
-						if (ssr.ChildViewControllers.Length == 1)
-							return false;
-
-						var activeVC =
-							ssr.ChildViewControllers[ssr.ChildViewControllers.Length - 1];
-
-						return !activeVC.NavigationItem.HidesBackButton;
+						return ssr.ChildViewControllers;
 					}
 				}
 			}
@@ -94,9 +116,10 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
-		protected object GetTitleView(IElementHandler handler)
+		UIViewController GetVisibleViewController(IElementHandler handler)
 		{
-			throw new NotImplementedException();
+			var vcs = GetActiveChildViewControllers(handler);
+			return vcs[vcs.Length - 1];
 		}
 	}
 }

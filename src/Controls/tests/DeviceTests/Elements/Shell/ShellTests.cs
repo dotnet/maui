@@ -90,7 +90,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
 		public async Task BackButtonVisibilityChangesWithPushPop()
 		{
@@ -115,12 +114,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var shell = await InvokeOnMainThreadAsync<Shell>(() =>
+			var shell = await CreateShellAsync(shell =>
 			{
-				return new Shell()
-				{
-					Items = { new ContentPage() }
-				};
+				shell.CurrentItem = new ContentPage();
 			});
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>

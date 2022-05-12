@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 	[Category(TestCategory.ListView)]
 	public partial class ListViewTests : HandlerTestBase
 	{
