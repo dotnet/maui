@@ -37,7 +37,7 @@
     <MicrosoftCodeAnalysisNetAnalyzersVersion>7.0.0-preview1.22229.1</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
-    <MicrosoftMauiGraphicsVersion>6.0.300-rc.3.1336</MicrosoftMauiGraphicsVersion>
+    <MicrosoftMauiGraphicsVersion>6.0.300</MicrosoftMauiGraphicsVersion>
     <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
     <_MicrosoftWebWebView2Version>1.0.1210.30</_MicrosoftWebWebView2Version>
     <!-- GLIDE - the android maven artifact in /src/Core/AndroidNative/maui/build.gradle -->
@@ -45,9 +45,15 @@
     <_XamarinAndroidGlideVersion>4.12.0.8</_XamarinAndroidGlideVersion>
     <_XamarinAndroidXSecurityVersion>1.1.0-alpha03</_XamarinAndroidXSecurityVersion>
     <_XamarinGoogleCryptoTinkAndroidVersion>1.6.1.6</_XamarinGoogleCryptoTinkAndroidVersion>
-    <_SkiaSharpVersion>2.88.0-preview.256</_SkiaSharpVersion>
-    <_HarfBuzzSharpVersion>2.8.2-preview.261</_HarfBuzzSharpVersion>
-    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.35941bbf6818bce667625a4dfcc34cc54eb6788c.256</_SkiaSharpNativeAssetsVersion>
+    <!--
+      SKIASHARP & HARFBUZZSHARP - the various things must be kept in sync with maui graphics:
+       - NuGet versions below
+       - Feed URI in the nuget.config
+       - Native assets build and sha
+    -->
+    <_SkiaSharpVersion>2.88.0</_SkiaSharpVersion>
+    <_HarfBuzzSharpVersion>2.8.2</_HarfBuzzSharpVersion>
+    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.2e12735359928ead60dd08cdf0b983c4e3d4dc56.268</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.100-preview.5.22226.1</MicrosoftTemplateEngineTasksVersion>
     <MicrosoftDotNetXHarnessTestRunnersCommonVersion>1.0.0-prerelease.22256.2</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
     <MicrosoftDotNetXHarnessTestRunnersXunitVersion>1.0.0-prerelease.22256.2</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
