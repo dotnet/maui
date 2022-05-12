@@ -28,7 +28,7 @@
     <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>6.0.4</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
     <MicrosoftAspNetCoreComponentsFormsPackageVersion>6.0.4</MicrosoftAspNetCoreComponentsFormsPackageVersion>
     <MicrosoftAspNetCoreComponentsPackageVersion>6.0.4</MicrosoftAspNetCoreComponentsPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.4</MicrosoftAspNetCoreComponentsWebPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.5</MicrosoftAspNetCoreComponentsWebPackageVersion>
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.4</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>6.0.4</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftJSInteropPackageVersion>6.0.4</MicrosoftJSInteropPackageVersion>
