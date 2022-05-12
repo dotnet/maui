@@ -79,11 +79,6 @@
     <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
   </PropertyGroup>
 
-  <!-- .NET Standard or .NET 6 -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net$(_MauiDotNetVersion)' ">
-    <DefineConstants>$(DefineConstants);NETSTANDARD</DefineConstants>
-  </PropertyGroup>
-
   <!-- Android -->
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
     <DefineConstants>$(DefineConstants);MONOANDROID</DefineConstants>
@@ -132,7 +127,7 @@
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
   </ItemGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
-    <PackageReference Include="Tizen.UIExtensions.ElmSharp" />
+    <PackageReference Include="Tizen.UIExtensions.ElmSharp" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Maui.Graphics.Skia" />
   </ItemGroup>
 </Project>

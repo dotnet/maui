@@ -10,7 +10,7 @@ using PlatformView = Android.Views.View;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
 using PlatformView = ElmSharp.EvasObject;
-#elif NET6_0 || NETSTANDARD
+#elif NET6_0 || (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 #endif
 
