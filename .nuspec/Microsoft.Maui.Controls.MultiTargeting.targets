@@ -127,7 +127,7 @@
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
   </ItemGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
-    <PackageReference Include="Tizen.UIExtensions.ElmSharp" PrivateAssets="all" />
+    <PackageReference Include="Tizen.UIExtensions.ElmSharp" />
     <PackageReference Include="Microsoft.Maui.Graphics.Skia" />
   </ItemGroup>
 </Project>
