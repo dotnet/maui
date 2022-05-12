@@ -157,7 +157,9 @@ Task("dotnet-templates")
 
                 // Pack
                 if (alsoPack.Contains(templateName)) {
-                    RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, target: "Pack");
+                    var packProperties = new Dictionary<string, string>(properties);
+                    packProperties["PackageVersion"] = FileReadText("GitInfo.txt").Trim();
+                    RunMSBuildWithDotNet(projectName, packProperties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, target: "Pack");
                 }
             }
         }
