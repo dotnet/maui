@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				oldPage.Appearing -= PageAppearing;
 				oldPage.PropertyChanged -= OnPagePropertyChanged;
-				newPage.Loaded -= OnPageLoaded;
+				oldPage.Loaded -= OnPageLoaded;
 				((INotifyCollectionChanged)oldPage.ToolbarItems).CollectionChanged -= OnToolbarItemsChanged;
 			}
 

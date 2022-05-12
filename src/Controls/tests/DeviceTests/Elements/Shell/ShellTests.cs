@@ -70,6 +70,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if !IOS
 		[Fact(DisplayName = "Flyout Starts as Open correctly")]
 		public async Task FlyoutIsPresented()
 		{
@@ -87,6 +88,7 @@ namespace Microsoft.Maui.DeviceTests
 				await CheckFlyoutState(handler, false);
 			});
 		}
+#endif
 
 
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
