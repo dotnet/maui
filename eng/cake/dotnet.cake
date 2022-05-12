@@ -114,9 +114,12 @@ Task("dotnet-templates")
         var templates = new Dictionary<string, Action<DirectoryPath>> {
             { "maui:maui", null },
             { "mauiblazor:maui-blazor", null },
-            { "mauilib:mauilib", null },
+            { "mauilib:mauilib", dir => {
+                ReplaceTextInFiles($"{dir}/*.csproj", "<!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->", "<TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks>");
+            } },
             { "mauicorelib:mauilib", dir => {
                 CleanDirectories(dir.Combine("Platforms").FullPath);
+                ReplaceTextInFiles($"{dir}/*.csproj", "<!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->", "<TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks>");
                 ReplaceTextInFiles($"{dir}/*.csproj", "UseMaui", "UseMauiCore");
                 ReplaceTextInFiles($"{dir}/*.csproj", "SingleProject", "EnablePreviewMsixTooling");
             } },
