@@ -29,7 +29,7 @@
     <MicrosoftAspNetCoreComponentsFormsPackageVersion>6.0.4</MicrosoftAspNetCoreComponentsFormsPackageVersion>
     <MicrosoftAspNetCoreComponentsPackageVersion>6.0.4</MicrosoftAspNetCoreComponentsPackageVersion>
     <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.4</MicrosoftAspNetCoreComponentsWebPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.4</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.5</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>6.0.4</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftJSInteropPackageVersion>6.0.4</MicrosoftJSInteropPackageVersion>
     <!-- Other packages -->
