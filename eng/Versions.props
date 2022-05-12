@@ -15,8 +15,8 @@
     <MicrosoftMacCatalystSdkPackageVersion>15.4.303</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>12.3.303</MicrosoftmacOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>15.4.303</MicrosofttvOSSdkPackageVersion>
-    <SamsungTizenSdkPackageVersion>7.0.300-rc.3.0</SamsungTizenSdkPackageVersion>
-    <SamsungTizenUIExtensionsElmSharpPackageVersion>0.8.0-pre1</SamsungTizenUIExtensionsElmSharpPackageVersion>
+    <SamsungTizenSdkPackageVersion>7.0.303</SamsungTizenSdkPackageVersion>
+    <SamsungTizenUIExtensionsElmSharpPackageVersion>0.8.1</SamsungTizenUIExtensionsElmSharpPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion>6.0.4</MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenManifest60300PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
