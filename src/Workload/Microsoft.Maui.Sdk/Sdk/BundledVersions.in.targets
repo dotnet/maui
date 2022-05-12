@@ -72,8 +72,5 @@
   <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(TargetPlatformIdentifier)' == 'windows') ">
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="@MicrosoftWindowsSDKBuildToolsPackageVersion@" IsImplicitlyDefined="true" PrivateAssets="all" />
   </ItemGroup>
-  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(TargetPlatformIdentifier)' == 'tizen') ">
-    <PackageReference Include="Tizen.UIExtensions.ElmSharp" Version="@SamsungTizenUIExtensionsElmSharpPackageVersion@" IsImplicitlyDefined="true" />
-  </ItemGroup>
 
 </Project>
