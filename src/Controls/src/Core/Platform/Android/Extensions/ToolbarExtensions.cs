@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		const int DefaultDisabledToolbarAlpha = 127;
-		public static void DisposeMenuItems(this AToolbar toolbar, IEnumerable<ToolbarItem> toolbarItems, PropertyChangedEventHandler toolbarItemChanged)
+		public static void DisposeMenuItems(this AToolbar? toolbar, IEnumerable<ToolbarItem> toolbarItems, PropertyChangedEventHandler toolbarItemChanged)
 		{
 			if (toolbarItems == null)
 				return;

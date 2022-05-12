@@ -109,6 +109,39 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+
+		[Fact(DisplayName = "Pushing the Same Page Disconnects Previous Toolbar Items")]
+		public async Task PushingTheSamePageUpdatesToolbar()
+		{
+			SetupBuilder();
+			bool canExecute = false;
+			var command = new Command(() => { }, () => canExecute);
+			var pushedPage = new ContentPage()
+			{
+				ToolbarItems =
+				{
+					new ToolbarItem()
+					{
+						Command = command
+					}
+				}
+			};
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(pushedPage);
+				await shell.Navigation.PopAsync();
+				canExecute = true;
+				await shell.Navigation.PushAsync(pushedPage);
+				command.ChangeCanExecute();
+			});
+		}
+
 		[Fact(DisplayName = "Set Has Back Button")]
 		public async Task SetHasBackButton()
 		{
