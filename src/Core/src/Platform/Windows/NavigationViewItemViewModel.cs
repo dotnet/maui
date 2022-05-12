@@ -59,10 +59,11 @@ namespace Microsoft.Maui.Platform
 		public event PropertyChangedEventHandler? PropertyChanged;
 
 		object? _content;
-		WBrush? _foreground;
 		bool _isSelected;
 		WBrush? _selectedBackground;
 		WBrush? _unselectedBackground;
+		WBrush? _selectedForeground;
+		WBrush? _unselectedForeground;
 		ObservableCollection<NavigationViewItemViewModel>? _menuItemsSource;
 		WIconElement? _icon;
 
@@ -80,8 +81,7 @@ namespace Microsoft.Maui.Platform
 
 		public WBrush? Foreground
 		{
-			get { return _foreground; }
-			set { this.SetProperty(ref _foreground, value, OnPropertyChanged); }
+			get => IsSelected ? SelectedForeground : (UnselectedForeground ?? SelectedForeground);
 		}
 
 		public WBrush? Background
@@ -95,6 +95,26 @@ namespace Microsoft.Maui.Platform
 		{
 			get { return _menuItemsSource; }
 			set { this.SetProperty(ref _menuItemsSource, value, OnPropertyChanged); }
+		}
+
+		public WBrush? SelectedForeground
+		{
+			get => _selectedForeground;
+			set
+			{
+				_selectedForeground = value;
+				OnPropertyChanged(nameof(Foreground));
+			}
+		}
+
+		public WBrush? UnselectedForeground
+		{
+			get => _unselectedForeground;
+			set
+			{
+				_unselectedForeground = value;
+				OnPropertyChanged(nameof(Foreground));
+			}
 		}
 
 		public WBrush? SelectedBackground
@@ -122,15 +142,28 @@ namespace Microsoft.Maui.Platform
 			get => _isSelected;
 			set
 			{
-				_isSelected = value;
+				if (_isSelected != value)
+					_isSelected = value;
+
 				OnPropertyChanged(nameof(Background));
+				OnPropertyChanged(nameof(Foreground));
 			}
 		}
 
 		void OnPropertyChanged(string args) =>
 			OnPropertyChanged(new PropertyChangedEventArgs(args));
 
-		void OnPropertyChanged(PropertyChangedEventArgs args) =>
+		void OnPropertyChanged(PropertyChangedEventArgs args)
+		{
 			PropertyChanged?.Invoke(this, args);
+
+			if ((args.PropertyName == nameof(Foreground) || args.PropertyName == nameof(Icon))
+				&& Icon != null &&
+				Icon.Foreground != Foreground &&
+				Foreground != null)
+			{
+				Icon.Foreground = Foreground;
+			}
+		}
 	}
 }

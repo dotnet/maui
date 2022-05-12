@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using System.Collections.ObjectModel;
 using WApp = Microsoft.UI.Xaml.Application;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -29,6 +30,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		SearchHandler? _currentSearchHandler;
 		MauiNavigationView? _mauiNavigationView;
 		MauiNavigationView ShellItemNavigationView => _mauiNavigationView!;
+		IShellAppearanceElement? _shellAppearanceElement;
 
 		public ShellItemHandler() : base(Mapper, CommandMapper)
 		{
@@ -52,7 +54,22 @@ namespace Microsoft.Maui.Controls.Handlers
 			platformView.SetApplicationResource("NavigationViewHeaderMargin", null);
 
 			_mauiNavigationView.Loaded += OnNavigationViewLoaded;
+			_mauiNavigationView.OnApplyTemplateFinished += _mauiNavigationView_OnApplyTemplateFinished;
+			_mauiNavigationView.SizeChanged += _mauiNavigationView_SizeChanged;
+			_mauiNavigationView.LayoutUpdated += _mauiNavigationView_LayoutUpdated;
 			return platformView;
+		}
+
+		private void _mauiNavigationView_LayoutUpdated(object? sender, object e)
+		{
+		}
+
+		private void _mauiNavigationView_SizeChanged(object sender, SizeChangedEventArgs e)
+		{
+		}
+
+		private void _mauiNavigationView_OnApplyTemplateFinished(object? sender, EventArgs e)
+		{
 		}
 
 		void OnNavigationViewLoaded(object sender, RoutedEventArgs e)
@@ -144,7 +161,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 			}
 
-			object? selectedItem = null;
+			NavigationViewItemViewModel? selectedItem = null;
 
 			_mainLevelTabs.SyncItems(items, (navItem, baseShellItem) =>
 			{
@@ -155,6 +172,8 @@ namespace Microsoft.Maui.Controls.Handlers
 					navItem.MenuItemsSource = null;
 					if (baseShellItem.Parent == VirtualView.CurrentItem)
 						selectedItem = navItem;
+					else
+						navItem.IsSelected = false;
 
 					return;
 				}
@@ -163,6 +182,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				if (shellSection == VirtualView.CurrentItem)
 					selectedItem = navItem;
+				else
+					navItem.IsSelected = false;
 
 				if (shellSectionItems.Count <= 1)
 				{
@@ -183,12 +204,21 @@ namespace Microsoft.Maui.Controls.Handlers
 							{
 								selectedItem = shellContentNavItem;
 							}
+							else
+								shellContentNavItem.IsSelected = false;
 						});
 				}
 
 				void SetValues(BaseShellItem bsi, NavigationViewItemViewModel vm)
 				{
 					vm.Content = bsi.Title;
+
+					if (_shellAppearanceElement != null)
+					{
+						vm.SelectedForeground = GetSelectedTextForeground()?.ToPlatform();
+						vm.UnselectedForeground = GetTextForeground()?.ToPlatform();
+					}
+
 					var iconSource = bsi.Icon?.ToIconSource(MauiContext!);
 
 					if (iconSource != null)
@@ -197,10 +227,13 @@ namespace Microsoft.Maui.Controls.Handlers
 						{
 							iconSource.Foreground = vm.Foreground;
 						}
-						else if (PlatformView.Resources.TryGetValue("NavigationViewItemForeground", out object nviForeground) &&
-							nviForeground is WBrush brush)
+						else
 						{
-							iconSource.Foreground = brush;
+							if (PlatformView.Resources.TryGetValue("TopNavigationViewItemForeground", out object nviForeground) &&
+								nviForeground is WBrush brush)
+							{
+								iconSource.Foreground = brush;
+							}
 						}
 					}
 
@@ -208,10 +241,18 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 			});
 
-			if (ShellItemNavigationView.SelectedItem != selectedItem)
-				ShellItemNavigationView.SelectedItem = selectedItem;
+			if (selectedItem != null)
+				selectedItem.IsSelected = true;
 
-			ShellItemNavigationView.PinPaneDisplayModeTo = GetNavigationViewPaneDisplayMode(shellItemController);
+			if (ShellItemNavigationView.SelectedItem != selectedItem)
+			{
+				ShellItemNavigationView
+					.DispatcherQueue
+					.TryEnqueue(() =>
+					{
+						ShellItemNavigationView.SelectedItem = selectedItem;
+					});
+			}
 		}
 
 		void UpdateSearchHandler()
@@ -418,6 +459,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			if (appearance is IShellAppearanceElement a)
 			{
+				_shellAppearanceElement = a;
 				// This means the template hasn't been applied yet
 				if (ShellItemNavigationView.TopNavArea == null)
 				{
@@ -436,10 +478,22 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				void ApplyAppearance()
 				{
-					ShellItemNavigationView.UpdateTopNavAreaBackground(a.EffectiveTabBarBackgroundColor?.AsPaint());
-					ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(a.EffectiveTabBarForegroundColor?.AsPaint());
+					ShellItemNavigationView
+						.UpdateTopNavAreaBackground(a.EffectiveTabBarBackgroundColor?.AsPaint());
+
+					ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(
+						GetTextForeground()?.AsPaint());
+
+					ShellItemNavigationView.UpdateTopNavigationViewItemSelectedTextColor(
+						GetSelectedTextForeground()?.AsPaint());
 				}
 			}
 		}
+
+		Graphics.Color? GetTextForeground() =>
+			_shellAppearanceElement?.EffectiveTabBarUnselectedColor ??
+					_shellAppearanceElement?.EffectiveTabBarTitleColor;
+		Graphics.Color? GetSelectedTextForeground() =>
+			_shellAppearanceElement?.EffectiveTabBarTitleColor;
 	}
 }

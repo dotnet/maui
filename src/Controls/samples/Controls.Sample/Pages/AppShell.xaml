@@ -7,6 +7,9 @@
     xmlns:shellPages="clr-namespace:Maui.Controls.Sample.Pages.ShellGalleries"
     FlyoutBackground="{AppThemeBinding Dark=Black, Light=White}"
     Title="Welcome to Shell"
+    Shell.TabBarBackgroundColor="#3399CC"
+    Shell.TabBarUnselectedColor="Purple"
+    Shell.TabBarTitleColor="Blue"
     >
     <Shell.FlyoutHeader>
         <Image Source="dotnet_bot.png"></Image>

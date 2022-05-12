@@ -7,7 +7,6 @@ namespace Maui.Controls.Sample.Pages
 		public AppShell()
 		{
 			InitializeComponent();
-			SetTabBarBackgroundColor(this, Color.FromRgba(3, 169, 244, 255));
 		}
 	}
 }
