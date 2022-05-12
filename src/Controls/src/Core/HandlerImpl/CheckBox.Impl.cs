@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -11,6 +12,14 @@ namespace Microsoft.Maui.Controls
 		void IMapColorPropertyToPaint.MapColorPropertyToPaint(Color color)
 		{
 			Foreground = color?.AsPaint();
+		}
+
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == ColorProperty.PropertyName)
+				Handler?.UpdateValue(nameof(ICheckBox.Foreground));
 		}
 	}
 }
