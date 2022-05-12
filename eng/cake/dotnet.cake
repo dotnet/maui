@@ -122,6 +122,10 @@ Task("dotnet-templates")
             } },
         };
 
+        var alsoPack = new [] {
+            "mauilib"
+        };
+
         foreach (var template in templates)
         {
             foreach (var forceDotNetBuild in new [] { true, false })
@@ -145,6 +149,11 @@ Task("dotnet-templates")
 
                 // Build
                 RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
+
+                // Pack
+                if (alsoPack.Contains(templateName)) {
+                    RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, target: "Pack");
+                }
             }
         }
 
