@@ -7,7 +7,7 @@ using PlatformView = Microsoft.Maui.Platform.LayoutViewGroup;
 using PlatformView = Microsoft.Maui.Platform.LayoutPanel;
 #elif TIZEN
 using PlatformView = Microsoft.Maui.Platform.LayoutCanvas;
-#elif NETSTANDARD || NET6_0
+#elif NETSTANDARD
 using PlatformView = System.Object;
 #endif
 

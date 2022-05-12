@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
 		public static void MapHostPage(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
-#if !NETSTANDARD && !NET6_0
+#if !NETSTANDARD
 			handler.HostPage = webView.HostPage;
 			handler.StartWebViewCoreIfPossible();
 #endif
@@ -59,13 +59,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
 		public static void MapRootComponents(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
-#if !NETSTANDARD && !NET6_0
+#if !NETSTANDARD
 			handler.RootComponents = webView.RootComponents;
 			handler.StartWebViewCoreIfPossible();
 #endif
 		}
 
-#if !NETSTANDARD && !NET6_0
+#if !NETSTANDARD
 		private string? HostPage { get; set; }
 
 		internal void UrlLoading(UrlLoadingEventArgs args) =>

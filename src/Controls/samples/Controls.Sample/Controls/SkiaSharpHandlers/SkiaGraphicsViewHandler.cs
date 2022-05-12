@@ -2,7 +2,7 @@
 using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 
-#if !NETSTANDARD && !NET6_0
+#if !NETSTANDARD
 using Microsoft.Maui.Graphics.Skia.Views;
 #else
 using SkiaGraphicsView = System.Object;
@@ -36,7 +36,7 @@ namespace Maui.Controls.Sample.Controls
 
 		public static void MapDrawable(SkiaGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
-#if !NETSTANDARD && !NET6_0
+#if !NETSTANDARD
 			handler.PlatformView.Drawable = graphicsView.Drawable;
 #endif
 		}

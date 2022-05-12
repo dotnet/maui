@@ -7,7 +7,7 @@ using PlatformView = Android.Views.View;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
 using PlatformView = ElmSharp.EvasObject;
-#elif NETSTANDARD || NET6_0
+#elif NETSTANDARD
 using PlatformView = System.Object;
 #endif
 
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Handlers
 		}
 #endif
 
-#if !NETSTANDARD && !NET6_0
+#if !NETSTANDARD
 		private protected abstract void OnConnectHandler(PlatformView platformView);
 
 		partial void ConnectingHandler(PlatformView? platformView);

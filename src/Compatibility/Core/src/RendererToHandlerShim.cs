@@ -25,7 +25,7 @@ using static Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Platform;
 using PlatformView = ElmSharp.EvasObject;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, ElmSharp.EvasObject>;
-#elif NETSTANDARD || NET6_0
+#elif NETSTANDARD
 using PlatformView = System.Object;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, System.Object>;
 #elif WINDOWS
