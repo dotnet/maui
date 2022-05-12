@@ -102,11 +102,19 @@ namespace Microsoft.Maui.Layouts
 				_rowDefinitions = grid.RowDefinitions;
 				_columnDefinitions = grid.ColumnDefinitions;
 
+
+				// If the width/height constraints are infinity, then Star rows/columns won't really make any sense.
+				// And if the Grid's layout alignment is not Fill, they also don't really make sense.
+				// When that happens, we need to convert them to Auto rows/columns instead.
+				bool isGridWidthConstraintInfinite = double.IsInfinity(_gridWidthConstraint) || _grid.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill;
+				bool isGridHeightConstraintInfinite = double.IsInfinity(_gridHeightConstraint) || _grid.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill;
+
+
 				if (_rowDefinitions.Count == 0)
 				{
 					// Since no rows are specified, we'll create an implied row 0 
 					_rows = new Row[1];
-					_rows[0] = new Row(new ImpliedRow());
+					_rows[0] = new Row(isGridHeightConstraintInfinite ? GridLength.Auto : GridLength.Star);
 				}
 				else
 				{
@@ -114,7 +122,16 @@ namespace Microsoft.Maui.Layouts
 
 					for (int n = 0; n < _rowDefinitions.Count; n++)
 					{
-						_rows[n] = new Row(_rowDefinitions[n]);
+						var rowdef = _rowDefinitions[n];
+
+						if (isGridHeightConstraintInfinite && rowdef.Height.GridUnitType == GridUnitType.Star)
+						{
+							_rows[n] = new Row(GridLength.Auto);
+						}
+						else
+						{
+							_rows[n] = new Row(_rowDefinitions[n].Height);
+						}
 					}
 				}
 
@@ -122,7 +139,7 @@ namespace Microsoft.Maui.Layouts
 				{
 					// Since no columns are specified, we'll create an implied column 0 
 					_columns = new Column[1];
-					_columns[0] = new Column(new ImpliedColumn());
+					_columns[0] = new Column(isGridWidthConstraintInfinite ? GridLength.Auto : GridLength.Star);
 				}
 				else
 				{
@@ -130,7 +147,16 @@ namespace Microsoft.Maui.Layouts
 
 					for (int n = 0; n < _columnDefinitions.Count; n++)
 					{
-						_columns[n] = new Column(_columnDefinitions[n]);
+						var coldef = _columnDefinitions[n];
+
+						if (isGridWidthConstraintInfinite && coldef.Width.GridUnitType == GridUnitType.Star)
+						{
+							_columns[n] = new Column(GridLength.Auto);
+						}
+						else
+						{
+							_columns[n] = new Column(_columnDefinitions[n].Width);
+						}
 					}
 				}
 
@@ -165,10 +191,7 @@ namespace Microsoft.Maui.Layouts
 
 			void InitializeCells()
 			{
-				// If the width/height constraints are infinity, then Star rows/columns won't really make any sense.
-				// When that happens, we need to tag the cells so they can be measured as Auto cells instead.
-				bool isGridWidthConstraintInfinite = double.IsInfinity(_gridWidthConstraint);
-				bool isGridHeightConstraintInfinite = double.IsInfinity(_gridHeightConstraint);
+				
 
 				for (int n = 0; n < _childrenToLayOut.Length; n++)
 				{
@@ -186,7 +209,7 @@ namespace Microsoft.Maui.Layouts
 
 					for (int columnIndex = column; columnIndex < column + columnSpan; columnIndex++)
 					{
-						columnGridLengthType |= ToGridLengthType(_columns[columnIndex].ColumnDefinition.Width.GridUnitType);
+						columnGridLengthType |= ToGridLengthType(_columns[columnIndex].GridLength.GridUnitType);
 					}
 
 					var row = _grid.GetRow(view).Clamp(0, _rows.Length - 1);
@@ -196,14 +219,10 @@ namespace Microsoft.Maui.Layouts
 
 					for (int rowIndex = row; rowIndex < row + rowSpan; rowIndex++)
 					{
-						rowGridLengthType |= ToGridLengthType(_rows[rowIndex].RowDefinition.Height.GridUnitType);
+						rowGridLengthType |= ToGridLengthType(_rows[rowIndex].GridLength.GridUnitType);
 					}
 
-					// Check for infinite constraints and Stars, so we can mark them for measurement as if they were Auto
-					var measureStarAsAuto = (isGridHeightConstraintInfinite && IsStar(rowGridLengthType))
-						|| (isGridWidthConstraintInfinite && IsStar(columnGridLengthType));
-
-					_cells[n] = new Cell(n, row, column, rowSpan, columnSpan, columnGridLengthType, rowGridLengthType, measureStarAsAuto);
+					_cells[n] = new Cell(n, row, column, rowSpan, columnSpan, columnGridLengthType, rowGridLengthType);
 				}
 			}
 
@@ -320,7 +339,7 @@ namespace Microsoft.Maui.Layouts
 						continue;
 					}
 
-					if (cell.IsColumnSpanAuto || cell.IsRowSpanAuto || cell.MeasureStarAsAuto)
+					if (cell.IsColumnSpanAuto || cell.IsRowSpanAuto)
 					{
 						var availableWidth = cell.IsColumnSpanAuto ? double.PositiveInfinity : AvailableWidth(cell);
 						var availableHeight = cell.IsRowSpanAuto ? double.PositiveInfinity : AvailableHeight(cell);
@@ -692,16 +711,8 @@ namespace Microsoft.Maui.Layouts
 			/// </summary>
 			public GridLengthType RowGridLengthType { get; }
 
-			/// <summary>
-			/// Marks the cell as requiring initial measurement even though the measurement type is Star
-			/// Star measurements don't make sense when the axis constraint is infinity; when that happens, we treat them 
-			/// Auto instead. We need to tag that situation in the Cell so the Auto measurement can happen; otherwise, we 
-			/// can end up with un-measured controls when resolving the Star cells.
-			/// </summary>
-			public bool MeasureStarAsAuto { get; }
-
 			public Cell(int viewIndex, int row, int column, int rowSpan, int columnSpan,
-				GridLengthType columnGridLengthType, GridLengthType rowGridLengthType, bool measureStarAsAuto)
+				GridLengthType columnGridLengthType, GridLengthType rowGridLengthType)
 			{
 				ViewIndex = viewIndex;
 				Row = row;
@@ -710,7 +721,6 @@ namespace Microsoft.Maui.Layouts
 				ColumnSpan = columnSpan;
 				ColumnGridLengthType = columnGridLengthType;
 				RowGridLengthType = rowGridLengthType;
-				MeasureStarAsAuto = measureStarAsAuto;
 			}
 
 			public bool IsColumnSpanAuto => HasFlag(ColumnGridLengthType, GridLengthType.Auto);
@@ -775,39 +785,41 @@ namespace Microsoft.Maui.Layouts
 
 		class Column : Definition
 		{
-			public IGridColumnDefinition ColumnDefinition { get; set; }
+			readonly GridLength _gridLength;
 
-			public override bool IsAuto => ColumnDefinition.Width.IsAuto;
-			public override bool IsStar => ColumnDefinition.Width.IsStar;
-			public override bool IsAbsolute => ColumnDefinition.Width.IsAbsolute;
-			public override GridLength GridLength => ColumnDefinition.Width;
+			public override bool IsAuto => _gridLength.IsAuto;
+			public override bool IsStar => _gridLength.IsStar;
+			public override bool IsAbsolute => _gridLength.IsAbsolute;
+			public override GridLength GridLength => _gridLength;
 
-			public Column(IGridColumnDefinition columnDefinition)
+			public Column(GridLength gridLength)
 			{
-				ColumnDefinition = columnDefinition;
-				if (columnDefinition.Width.IsAbsolute)
+				if (gridLength.IsAbsolute)
 				{
-					Size = columnDefinition.Width.Value;
+					Size = gridLength.Value;
 				}
+
+				_gridLength = gridLength;
 			}
 		}
 
 		class Row : Definition
 		{
-			public IGridRowDefinition RowDefinition { get; set; }
+			readonly GridLength _gridLength;
 
-			public override bool IsAuto => RowDefinition.Height.IsAuto;
-			public override bool IsStar => RowDefinition.Height.IsStar;
-			public override bool IsAbsolute => RowDefinition.Height.IsAbsolute;
-			public override GridLength GridLength => RowDefinition.Height;
+			public override bool IsAuto => _gridLength.IsAuto;
+			public override bool IsStar => _gridLength.IsStar;
+			public override bool IsAbsolute => _gridLength.IsAbsolute;
+			public override GridLength GridLength => _gridLength;
 
-			public Row(IGridRowDefinition rowDefinition)
+			public Row(GridLength gridLength)
 			{
-				RowDefinition = rowDefinition;
-				if (rowDefinition.Height.IsAbsolute)
+				if (gridLength.IsAbsolute)
 				{
-					Size = rowDefinition.Height.Value;
+					Size = gridLength.Value;
 				}
+
+				_gridLength = gridLength;
 			}
 		}
 
