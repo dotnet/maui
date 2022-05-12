@@ -59,7 +59,11 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 			handler.SetVirtualView(view);
 			view.Handler = handler;
 
+#if IOS
+			view.Arrange(new Rect(0, 0, double.PositiveInfinity, double.PositiveInfinity));
+#else
 			view.Arrange(new Rect(0, 0, view.Width, view.Height));
+#endif
 			handler.PlatformArrange(view.Frame);
 
 			return handler;
