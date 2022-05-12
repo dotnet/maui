@@ -43,6 +43,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Tizen.UIExtensions.ElmSharp" Condition="$(TargetFramework.Contains('-tizen'))" />
   </ItemGroup>
 
   <ItemGroup>
