@@ -207,3 +207,7 @@ public static int foo = 2130771968;
    control, such as: `src\Controls\src\Core\Platform\Android\Resource.designer.cs`
 
 5. Restore the commented code in `Directory.Build.targets`.
+
+## Stats
+
+<img src="https://repobeats.axiom.co/api/embed/f917a77cbbdeee19b87fa1f2f932895d1df18b71.svg" />
