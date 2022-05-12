@@ -3,7 +3,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
 
-#if !NETSTANDARD
+#if !NETSTANDARD && !NET6_0
 using Microsoft.Maui.Graphics.Skia.Views;
 #else
 using SkiaGraphicsView = System.Object;
@@ -45,7 +45,7 @@ namespace Maui.Controls.Sample.Controls
 
 		public static void MapShape(SkiaShapeViewHandler handler, IShapeView shapeView)
 		{
-#if !NETSTANDARD
+#if !NETSTANDARD && !NET6_0
 			handler.PlatformView.Drawable = new ShapeDrawable(shapeView);
 #endif
 		}
@@ -54,7 +54,7 @@ namespace Maui.Controls.Sample.Controls
 		{
 #if __IOS__ || __MACCATALYST__
 			handler.PlatformView.SetNeedsDisplay();
-#elif !NETSTANDARD
+#elif !NETSTANDARD && !NET6_0
 			handler.PlatformView.Invalidate();
 #endif
 		}

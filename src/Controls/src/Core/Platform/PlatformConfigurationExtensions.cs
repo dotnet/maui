@@ -6,12 +6,12 @@ using CurrentPlatform = Microsoft.Maui.Controls.PlatformConfiguration.Android;
 using CurrentPlatform = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 #elif TIZEN
 using CurrentPlatform = Microsoft.Maui.Controls.PlatformConfiguration.Tizen;
-#elif NETSTANDARD
+#elif NETSTANDARD || NET6_0
 using PlatformView = System.Object;
 #endif
 
 
-#if !NETSTANDARD
+#if !NETSTANDARD && !NET6_0
 namespace Microsoft.Maui.Controls.Platform
 {
 	public static class PlatformConfigurationExtensions

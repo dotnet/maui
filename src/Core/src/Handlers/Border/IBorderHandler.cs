@@ -7,7 +7,7 @@ using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 using PlatformView = Microsoft.Maui.Platform.ContentPanel;
 #elif TIZEN
 using PlatformView = Microsoft.Maui.Platform.BorderView;
-#elif NETSTANDARD
+#elif NETSTANDARD || NET6_0
 using PlatformView = System.Object;
 #endif
 

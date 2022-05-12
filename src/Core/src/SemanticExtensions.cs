@@ -13,7 +13,7 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using ElmSharp;
 using ElmSharp.Accessible;
 using PlatformView = ElmSharp.EvasObject;
-#elif NETSTANDARD
+#elif NETSTANDARD || NET6_0
 using PlatformView = System.Object;
 #endif
 
