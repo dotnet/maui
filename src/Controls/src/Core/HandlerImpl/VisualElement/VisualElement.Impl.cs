@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Controls
 				{
 					return Primitives.Dimension.Unset;
 				}
-				
+
 				ValidatePositive(value, nameof(IView.Width));
 				return value;
 			}
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls
 				{
 					return Primitives.Dimension.Unset;
 				}
-				
+
 				ValidatePositive(value, nameof(IView.Height));
 				return value;
 			}

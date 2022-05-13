@@ -2,12 +2,12 @@
 
 namespace Maui.Controls.Sample.Pages
 {
-    public partial class iOSNavigationPage : NavigationPage
-    {
-        public iOSNavigationPage(Page page)
-        {
-            InitializeComponent();
-            PushAsync(page);
-        }
-    }
+	public partial class iOSNavigationPage : NavigationPage
+	{
+		public iOSNavigationPage(Page page)
+		{
+			InitializeComponent();
+			PushAsync(page);
+		}
+	}
 }

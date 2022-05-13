@@ -17,7 +17,7 @@ namespace Microsoft.Maui.DeviceTests
 		void UpdateContent()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			
+
 			var rootManager = MauiContext.GetNavigationRootManager();
 
 			var previousRootView = rootManager.RootView;

@@ -43,7 +43,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				typeof(View), typeof(Maui6944Layout),
 				defaultValue: null);
 
-		public View ChildContent {
+		public View ChildContent
+		{
 			get => (View)GetValue(ChildContentProperty);
 			set => SetValue(ChildContentProperty, value);
 		}

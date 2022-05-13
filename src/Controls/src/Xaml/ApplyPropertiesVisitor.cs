@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				Exception xpe = null;
 
 				string xKey = null;
-				if (   xpe == null
+				if (xpe == null
 					&& node.Properties.ContainsKey(XmlName.xKey))
 				{
 					if ((node.Properties[XmlName.xKey] is ValueNode valueNode))
@@ -139,12 +139,12 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 
 				//ResourceDictionary
-				if (   xpe == null
+				if (xpe == null
 					&& TryAddToResourceDictionary(source as ResourceDictionary, value, xKey, node, out xpe))
 					return;
 
 				//ContentProperty
-				if (   xpe == null
+				if (xpe == null
 					&& (contentProperty = GetContentPropertyName(Context.Types[parentElement])) != null)
 				{
 					var name = new XmlName(node.NamespaceURI, contentProperty);
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 
 				// Collection element, implicit content, or implicit collection element.
-				if (   xpe == null
+				if (xpe == null
 					&& typeof(IEnumerable).IsAssignableFrom(Context.Types[parentElement])
 					&& Context.Types[parentElement].GetRuntimeMethods().Any(mi => mi.Name == "Add" && mi.GetParameters().Length == 1))
 				{
