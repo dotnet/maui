@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (pinfoRetriever == null || pinfoRetriever() is not ParameterInfo pInfo)
 					return null;
 
-				var convertertype = pInfo.CustomAttributes.GetTypeConverterType();
+				var convertertype = pInfo.GetTypeConverterType();
 				if (convertertype == null)
 					return null;
 				return (TypeConverter)Activator.CreateInstance(convertertype);
@@ -68,10 +68,8 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					if (!s_converterCache.TryGetValue(memberInfo, out converter))
 					{
-						if (memberInfo.CustomAttributes.GetTypeConverterType() is Type converterType)
-						{
+						if (memberInfo.GetTypeConverterType() is Type converterType)
 							converter = (TypeConverter)Activator.CreateInstance(converterType);
-						}
 
 						// cache the result, even if it is null
 						s_converterCache[memberInfo] = converter;
@@ -85,7 +83,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 				if (!s_converterCache.TryGetValue(toType, out converter))
 				{
-					if (toType.CustomAttributes.GetTypeConverterType() is Type converterType)
+					if (toType.GetTypeConverterType() is Type converterType)
 					{
 						converter = (TypeConverter)Activator.CreateInstance(converterType);
 					}
@@ -100,18 +98,64 @@ namespace Microsoft.Maui.Controls.Xaml
 			return ConvertTo(value, toType, getConverter, serviceProvider, out exception);
 		}
 
-		static Type GetTypeConverterType(this IEnumerable<CustomAttributeData> attributes)
+		internal static TypeConverter GetTypeConverter(this MemberInfo memberInfo)
 		{
-			foreach (var converterAttribute in attributes)
+			if (s_converterCache.TryGetValue(memberInfo, out var converter))
+				return converter;
+
+			var converterType = memberInfo.GetTypeConverterType();
+			if (converterType == null && memberInfo is PropertyInfo propertyInfo)
+				converterType = propertyInfo.PropertyType.GetTypeConverterType();
+
+			converter = converterType == null ? null : (TypeConverter)Activator.CreateInstance(converterType);
+
+			// cache the result, even if it is null
+			return (s_converterCache[memberInfo] = converter);
+		}
+
+		internal static Type GetTypeConverterType(this MemberInfo memberInfo)
+		{
+			if (memberInfo == null)
+				return null;
+
+			var attributes = memberInfo.CustomAttributes;
+			if (attributes == null)
+				return null;
+
+			foreach (var attribute in attributes)
 			{
-				if (converterAttribute.AttributeType != typeof(System.ComponentModel.TypeConverterAttribute))
+				if (attribute.AttributeType != typeof(System.ComponentModel.TypeConverterAttribute))
 					continue;
-				var ctor = converterAttribute.ConstructorArguments[0];
+				var ctor = attribute.ConstructorArguments[0];
 				if (ctor.ArgumentType == typeof(string))
 					return Type.GetType((string)ctor.Value);
 				if (ctor.ArgumentType == typeof(Type))
 					return (Type)ctor.Value;
 			}
+
+			return null;
+		}
+
+		internal static Type GetTypeConverterType(this ParameterInfo parameterInfo)
+		{
+			if (parameterInfo == null)
+				return null;
+
+			var attributes = parameterInfo.CustomAttributes;
+			if (attributes == null)
+				return null;
+
+			foreach (var attribute in attributes)
+			{
+				if (attribute.AttributeType != typeof(System.ComponentModel.TypeConverterAttribute))
+					continue;
+				var ctor = attribute.ConstructorArguments[0];
+				if (ctor.ArgumentType == typeof(string))
+					return Type.GetType((string)ctor.Value);
+				if (ctor.ArgumentType == typeof(Type))
+					return (Type)ctor.Value;
+			}
+
 			return null;
 		}
 
@@ -155,7 +199,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 				catch (Exception e)
 				{
-					exception = e;
+					exception = e as XamlParseException ?? new XamlParseException($"Failed to retrieve TypeConverter: {e.Message}", serviceProvider, e);
 					return null;
 				}
 				try
@@ -169,19 +213,6 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					exception = e as XamlParseException ?? new XamlParseException($"Type converter failed: {e.Message}", serviceProvider, e);
 					return null;
-				}
-
-				if (converter != null)
-				{
-					try
-					{
-						return converter.ConvertFromInvariantString(str);
-					}
-					catch (Exception e)
-					{
-						exception = new XamlParseException("Type conversion failed", serviceProvider, e);
-						return null;
-					}
 				}
 
 				var ignoreCase = (serviceProvider?.GetService(typeof(IConverterOptions)) as IConverterOptions)?.IgnoreCase ?? false;
