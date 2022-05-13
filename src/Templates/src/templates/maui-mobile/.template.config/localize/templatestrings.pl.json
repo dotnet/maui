@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": "Aplikacja platformy .NET MAUI (wersja zapoznawcza)",
+  "name": "Aplikacja platformy .NET MAUI",
   "description": "Projekt służący do tworzenia aplikacji .NET MAUI dla systemów iOS, Android, Mac Catalyst, Tizen i WinUI",
   "postActions/openInEditor/description": "Otwiera plik MainPage.xaml w edytorze.",
   "symbols/applicationId/description": "Zastępuje $(ApplicationId) w projekcie"
