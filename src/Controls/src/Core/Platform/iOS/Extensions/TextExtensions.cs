@@ -29,22 +29,34 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateText(this UITextView textView, InputView inputView)
 		{
+			// Setting the text causes the cursor to be reset to the end of the UITextView.
+			// So, let's set back the cursor to the last known position and calculate a new
+			// position if needed when the text was modified by a Converter.
 			var oldText = textView?.Text ?? string.Empty;
 			var newText = inputView?.Text ?? string.Empty;
-			var currentCursorPosition = textView.SelectedTextRange;
+
+			// Calculate the cursor offset position if the text was modified by a Converter.
+			var cursorOffset = newText.Length - oldText.Length;
+			var cursorPosition = textView.GetCursorPosition(cursorOffset);
 
 			textView.Text = TextTransformUtilites.GetTransformedText(newText, inputView.TextTransform);
-			textView.UpdateCursorPosition(oldText, newText, currentCursorPosition);
+			((ITextInput)inputView).CursorPosition = cursorPosition;
 		}
 
 		public static void UpdateText(this UITextField textField, InputView inputView)
 		{
+			// Setting the text causes the cursor to be reset to the end of the UITextView.
+			// So, let's set back the cursor to the last known position and calculate a new
+			// position if needed when the text was modified by a Converter.
 			var oldText = textField?.Text ?? string.Empty;
 			var newText = inputView?.Text ?? string.Empty;
-			var currentCursorPosition = textField.SelectedTextRange;
 
-			textField.Text = TextTransformUtilites.GetTransformedText(newText, textField.SecureTextEntry ? TextTransform.None : inputView.TextTransform);
-			textField.UpdateCursorPosition(oldText, newText, currentCursorPosition);
+			// Calculate the cursor offset position if the text was modified by a Converter.
+			var cursorOffset = newText.Length - oldText.Length;
+			var cursorPosition = textField.GetCursorPosition(cursorOffset);
+
+			textField.Text = TextTransformUtilites.GetTransformedText(newText, inputView.TextTransform);
+			((ITextInput)inputView).CursorPosition = cursorPosition;
 		}
 
 		public static void UpdateLineBreakMode(this UILabel platformLabel, Label label)
@@ -90,20 +102,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			platformLabel.Lines = maxLines;
-		}
-
-		static void UpdateCursorPosition (this IUITextInput textBox, string oldText, string newText, UITextRange previousCursorPosition)
-		{
-			// Setting the text causes the cursor to be reset to the end of the UITextView.
-			// So, let's set back the cursor to the last known position and calculate a new
-			// position if needed when the text was modified by a Converter.
-			var startRange = textBox.GetPosition(textBox.BeginningOfDocument, 0);
-			var currentCursorPosition = previousCursorPosition ?? textBox.GetTextRange(startRange, startRange);
-
-			// Calculate the cursor offset position if the text was modified by a Converter.
-			var cursorOffset = newText.Length - oldText.Length;
-			var newCursorPosition = textBox.GetPosition(currentCursorPosition.Start, cursorOffset);
-			textBox.SelectedTextRange = textBox.GetTextRange(newCursorPosition, newCursorPosition);
 		}
 	}
 }

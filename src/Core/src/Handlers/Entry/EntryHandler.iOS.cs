@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.EditingDidEnd += OnEditingEnded;
 			platformView.TextPropertySet += OnTextPropertySet;
 			platformView.ShouldChangeCharacters += OnShouldChangeCharacters;
+			platformView.SelectionChanged += OnSelectionChanged;
 		}
 
 		protected override void DisconnectHandler(MauiTextField platformView)
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.EditingDidEnd -= OnEditingEnded;
 			platformView.TextPropertySet -= OnTextPropertySet;
 			platformView.ShouldChangeCharacters -= OnShouldChangeCharacters;
+			platformView.SelectionChanged -= OnSelectionChanged;
 		}
 
 		public static void MapText(IEntryHandler handler, IEntry entry)
@@ -141,5 +143,8 @@ namespace Microsoft.Maui.Handlers
 
 		bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString) =>
 			VirtualView.TextWithinMaxLength(textField.Text, range, replacementString);
+
+		private void OnSelectionChanged(object? sender, EventArgs e) =>
+			VirtualView.CursorPosition = PlatformView.GetCursorPosition();
 	}
 }

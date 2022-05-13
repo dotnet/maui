@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Started += OnStarted;
 			platformView.Ended += OnEnded;
 			platformView.TextSetOrChanged += OnTextPropertySet;
+			platformView.SelectionChanged += OnSelectionChanged;
 		}
 
 		protected override void DisconnectHandler(MauiTextView platformView)
@@ -44,6 +45,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Started -= OnStarted;
 			platformView.Ended -= OnEnded;
 			platformView.TextSetOrChanged -= OnTextPropertySet;
+			platformView.SelectionChanged -= OnSelectionChanged;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -146,5 +148,8 @@ namespace Microsoft.Maui.Handlers
 
 		void OnTextPropertySet(object? sender, EventArgs e) =>
 			VirtualView.UpdateText(PlatformView.Text);
+
+		private void OnSelectionChanged(object? sender, EventArgs e) =>
+			VirtualView.CursorPosition = PlatformView.GetCursorPosition();
 	}
 }
