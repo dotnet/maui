@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI 클래스 라이브러리(미리 보기)",
+  "name": ".NET MAUI 클래스 라이브러리",
   "description": ".NET MAUI 클래스 라이브러리를 만들기 위한 프로젝트",
   "postActions/openInEditor/description": "편집기에서 Class1.cs를 엽니다."
 }
