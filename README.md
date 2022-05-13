@@ -34,8 +34,4 @@ Do you have questions? Do not worry, we have prepared a complete [FAQ](https://g
 Some of the best ways to [contribute](./.github/CONTRIBUTING.md) are to try things out, file issues, join in design conversations,
 and make pull-requests. Proposals for changes specific to MAUI can be found [here for discussion](https://github.com/dotnet/maui/issues).
 
-See [CONTRIBUTING](./.github/CONTRIBUTING.md)
-
-## Code of conduct
-
-See [CODE-OF-CONDUCT](./.github/CODE_OF_CONDUCT.md)
+See [CONTRIBUTING](./.github/CONTRIBUTING.md), [CODE-OF-CONDUCT](./.github/CODE_OF_CONDUCT.md) and the [Development Guide](./.github/DEVELOPMENT.md).
