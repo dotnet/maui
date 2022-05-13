@@ -551,12 +551,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			PlatformConfiguration.iOSSpecific.Page.SetPreferredStatusBarUpdateAnimation(Current.OnThisPlatform(), animation);
 		}
 
+		[PortHandler]
 		void UpdateUseLargeTitles()
 		{
 			if (Forms.IsiOS11OrNewer && NavPage != null)
 				NavigationBar.PrefersLargeTitles = NavPage.OnThisPlatform().PrefersLargeTitles();
 		}
 
+		[PortHandler]
 		void UpdateTranslucent()
 		{
 			NavigationBar.Translucent = NavPage.OnThisPlatform().IsNavigationBarTranslucent();

@@ -66,8 +66,6 @@ namespace Microsoft.Maui.Handlers
 			handler.ToPlatform()?.UpdateTransformation(view);
 		}
 
-		public static void MapBackgroundImageSource(IViewHandler handler, IView view) { }
-
 		protected virtual void OnPlatformViewDeleted()
 		{
 		}

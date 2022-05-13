@@ -72,6 +72,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			Altitude = point.Altitude;
 			Accuracy = point.Accuracy;
 			VerticalAccuracy = point.VerticalAccuracy;
+			ReducedAccuracy = point.ReducedAccuracy;
 			Speed = point.Speed;
 			Course = point.Course;
 			IsFromMockProvider = point.IsFromMockProvider;
@@ -94,6 +95,9 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='VerticalAccuracy']/Docs" />
 		public double? VerticalAccuracy { get; set; }
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='ReducedAccuracy']/Docs" />
+		public bool ReducedAccuracy { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Speed']/Docs" />
 		public double? Speed { get; set; }

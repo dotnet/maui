@@ -12,7 +12,7 @@ using PlatformImage = Android.Graphics.Drawables.Drawable;
 using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
 #elif TIZEN
 using PlatformImage = Tizen.UIExtensions.ElmSharp.Image;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformImage = System.Object;
 #endif
 

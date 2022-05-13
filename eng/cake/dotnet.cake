@@ -122,6 +122,10 @@ Task("dotnet-templates")
             } },
         };
 
+        var alsoPack = new [] {
+            "mauilib"
+        };
+
         foreach (var template in templates)
         {
             foreach (var forceDotNetBuild in new [] { true, false })
@@ -143,8 +147,20 @@ Task("dotnet-templates")
                 if (template.Value != null)
                     template.Value(projectName);
 
+                // Enable Tizen
+                ReplaceTextInFiles($"{projectName}/*.csproj",
+                    "<!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->",
+                    "<TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks>");
+
                 // Build
                 RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
+
+                // Pack
+                if (alsoPack.Contains(templateName)) {
+                    var packProperties = new Dictionary<string, string>(properties);
+                    packProperties["PackageVersion"] = FileReadText("GitInfo.txt").Trim();
+                    RunMSBuildWithDotNet(projectName, packProperties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, target: "Pack");
+                }
             }
         }
 

@@ -77,10 +77,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (view != null)
 			{
-				var native = view.ToPlatform(_context);
+				var platformView = GetPlatformView(view);
 				view.Parent = Element;
-				_nativeTable[native] = view;
-				return native;
+				_nativeTable[platformView] = view;
+				return platformView;
 			}
 			return null;
 		}
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_footerCache != null)
 			{
 				_footerCache.Parent = Element;
-				return _footerCache.ToPlatform(_context);
+				return GetPlatformView(_footerCache);
 			}
 			return null;
 		}
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_headerCache != null)
 			{
 				_headerCache.Parent = Element;
-				return _headerCache.ToPlatform(_context);
+				return GetPlatformView(_headerCache);
 			}
 			return null;
 		}
@@ -302,6 +302,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				element.Parent = null;
 			}
+		}
+
+		EvasObject GetPlatformView(View view)
+		{
+			var platformView = view.ToPlatform(_context);
+
+			if (view.Handler is IPlatformViewHandler handler)
+			{
+				handler.ForceContainer = true;
+				handler.HasContainer = true;
+
+				platformView = handler.ContainerView!;
+			}
+			return platformView;
 		}
 	}
 }

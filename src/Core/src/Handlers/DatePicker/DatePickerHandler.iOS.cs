@@ -21,19 +21,12 @@ namespace Microsoft.Maui.Handlers
 				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}
 
-			var width = UIScreen.MainScreen.Bounds.Width;
-			var toolbar = new UIToolbar(new RectangleF(0, 0, width, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
-			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
-			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
+			platformDatePicker.InputView = _picker;
+			platformDatePicker.InputAccessoryView = new MauiDoneAccessoryView(() =>
 			{
 				SetVirtualViewDate();
 				platformDatePicker.ResignFirstResponder();
 			});
-
-			toolbar.SetItems(new[] { spacer, doneButton }, false);
-
-			platformDatePicker.InputView = _picker;
-			platformDatePicker.InputAccessoryView = toolbar;
 
 			platformDatePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 			platformDatePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
@@ -47,6 +40,8 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		internal UIDatePicker? DatePickerDialog { get { return _picker; } }
+
+		internal bool UpdateImmediately { get; set; }
 
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
@@ -127,7 +122,8 @@ namespace Microsoft.Maui.Handlers
 
 		void OnValueChanged(object? sender, EventArgs? e)
 		{
-			SetVirtualViewDate();
+			if (UpdateImmediately)	// Platform Specific
+				SetVirtualViewDate();
 
 			if (VirtualView != null)
 				VirtualView.IsFocused = true;

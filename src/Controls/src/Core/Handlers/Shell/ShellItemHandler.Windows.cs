@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Collections.ObjectModel;
@@ -17,7 +17,6 @@ namespace Microsoft.Maui.Controls.Handlers
 				new PropertyMapper<ShellItem, ShellItemHandler>(ElementMapper)
 				{
 					[nameof(ShellItem.CurrentItem)] = MapCurrentItem,
-					[Shell.SearchHandlerProperty.PropertyName] = MapSearchHandler,
 					[Shell.TabBarIsVisibleProperty.PropertyName] = MapTabBarIsVisible
 				};
 
@@ -61,6 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_mauiNavigationView != null)
 				_mauiNavigationView.Loaded -= OnNavigationViewLoaded;
 
+			UpdateSearchHandler();
 			MapMenuItems();
 		}
 
@@ -80,6 +80,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (_currentShellSection != null)
 				_currentShellSection.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
+
+			if (_currentSearchHandler != null)
+				_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
 		}
 
 		public override void SetVirtualView(Maui.IElement view)
@@ -129,12 +132,16 @@ namespace Microsoft.Maui.Controls.Handlers
 			IShellItemController shellItemController = VirtualView;
 			var items = new List<BaseShellItem>();
 
-			foreach (var item in shellItemController.GetItems())
+			// only add items if we should be showing the tabs
+			if (shellItemController.ShowTabs)
 			{
-				if (Routing.IsImplicit(item))
-					items.Add(item.CurrentItem);
-				else
-					items.Add(item);
+				foreach (var item in shellItemController.GetItems())
+				{
+					if (Routing.IsImplicit(item))
+						items.Add(item.CurrentItem);
+					else
+						items.Add(item);
+				}
 			}
 
 			object? selectedItem = null;
@@ -204,56 +211,64 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (ShellItemNavigationView.SelectedItem != selectedItem)
 				ShellItemNavigationView.SelectedItem = selectedItem;
 
-			if (!shellItemController.ShowTabs)
-			{
-				ShellItemNavigationView.PinPaneDisplayModeTo = NavigationViewPaneDisplayMode.LeftMinimal;
-			}
-			else
-			{
-				ShellItemNavigationView.PinPaneDisplayModeTo = NavigationViewPaneDisplayMode.Top;
-			}
+			ShellItemNavigationView.PinPaneDisplayModeTo = GetNavigationViewPaneDisplayMode(shellItemController);
 		}
 
 		void UpdateSearchHandler()
 		{
-			if (ShellItemNavigationView.AutoSuggestBox == null)
-				ShellItemNavigationView.AutoSuggestBox = new Microsoft.UI.Xaml.Controls.AutoSuggestBox() { Width = 300 };
-
 			if (VirtualView.Parent is not Shell shell)
 				return;
 
-			_currentSearchHandler = shell.GetEffectiveValue<SearchHandler?>(Shell.SearchHandlerProperty, null);
-
-			var AutoSuggestBox = ShellItemNavigationView.AutoSuggestBox;
-			AutoSuggestBox.TextChanged += OnSearchBoxTextChanged;
-			AutoSuggestBox.QuerySubmitted += OnSearchBoxQuerySubmitted;
-			AutoSuggestBox.SuggestionChosen += OnSearchBoxSuggestionChosen;
-
-			if (AutoSuggestBox == null)
-				return;
-
-			if (_currentSearchHandler != null)
+			var newSearchHandler = shell.GetEffectiveValue<SearchHandler?>(Shell.SearchHandlerProperty, null);
+			if (newSearchHandler != _currentSearchHandler)
 			{
-				AutoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
-				AutoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
-				AutoSuggestBox.ItemsSource = _currentSearchHandler.ItemsSource;
-				AutoSuggestBox.Text = _currentSearchHandler.Query;
-			}
-
-			AutoSuggestBox.Visibility = _currentSearchHandler == null || _currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Hidden ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
-			if (_currentSearchHandler != null && _currentSearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
-			{
-				if (_currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Expanded)
+				if (_currentSearchHandler is not null)
 				{
-					// TODO: Expand search
+					_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
 				}
-				else
+
+				_currentSearchHandler = newSearchHandler;
+
+				var autoSuggestBox = ShellItemNavigationView.AutoSuggestBox;
+				if (_currentSearchHandler is not null)
 				{
-					// TODO: Collapse search
+					if (autoSuggestBox == null)
+					{
+						autoSuggestBox = new Microsoft.UI.Xaml.Controls.AutoSuggestBox() { Width = 300 };
+						autoSuggestBox.TextChanged += OnSearchBoxTextChanged;
+						autoSuggestBox.QuerySubmitted += OnSearchBoxQuerySubmitted;
+						autoSuggestBox.SuggestionChosen += OnSearchBoxSuggestionChosen;
+						ShellItemNavigationView.AutoSuggestBox = autoSuggestBox;
+					}
+
+					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
+					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
+					autoSuggestBox.ItemsSource = _currentSearchHandler.ItemsSource;
+					autoSuggestBox.Text = _currentSearchHandler.Query;
+
+					_currentSearchHandler.PropertyChanged += OnCurrentSearchHandlerPropertyChanged;
+
+					autoSuggestBox.Visibility = _currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Hidden ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
+					if (_currentSearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
+					{
+						if (_currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Expanded)
+						{
+							// TODO: Expand search
+						}
+						else
+						{
+							// TODO: Collapse search
+						}
+					}
+
+					UpdateQueryIcon();
+				}
+				else if (autoSuggestBox is not null)
+				{
+					// there is no current search handler, so hide the autoSuggestBox
+					autoSuggestBox.Visibility = UI.Xaml.Visibility.Collapsed;
 				}
 			}
-
-			UpdateQueryIcon();
 		}
 
 		void OnSearchBoxTextChanged(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
@@ -277,6 +292,28 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_currentSearchHandler == null)
 				return;
 			((ISearchHandlerController)_currentSearchHandler).QueryConfirmed();
+		}
+
+		void OnCurrentSearchHandlerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (_currentSearchHandler is null)
+				return;
+
+			switch (e.PropertyName)
+			{
+				case nameof(SearchHandler.Placeholder):
+					ShellItemNavigationView.AutoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
+					break;
+				case nameof(SearchHandler.IsSearchEnabled):
+					ShellItemNavigationView.AutoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
+					break;
+				case nameof(SearchHandler.ItemsSource):
+					ShellItemNavigationView.AutoSuggestBox.ItemsSource = _currentSearchHandler.ItemsSource;
+					break;
+				case nameof(SearchHandler.Query):
+					ShellItemNavigationView.AutoSuggestBox.Text = _currentSearchHandler.Query;
+					break;
+			}
 		}
 
 		void UpdateQueryIcon()
@@ -314,6 +351,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					_shellSectionHandler.SetVirtualView(VirtualView.CurrentItem);
 			}
 
+			UpdateSearchHandler();
 			MapMenuItems();
 
 			if (_currentShellSection != null)
@@ -359,24 +397,16 @@ namespace Microsoft.Maui.Controls.Handlers
 				ShellItemNavigationView.SelectedItem = navigationViewItemViewModel;
 		}
 
-		public static void MapSearchHandler(ShellItemHandler handler, ShellItem item)
-		{
-		}
-
 		public static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
 		{
-			IShellItemController shellItemController = item;
+			handler.ShellItemNavigationView.PaneDisplayMode = handler.GetNavigationViewPaneDisplayMode(item);
+		}
 
-			if (shellItemController.ShowTabs)
-			{
-				handler.ShellItemNavigationView.PaneDisplayMode
-					= NavigationViewPaneDisplayMode.Top;
-			}
-			else
-			{
-				handler.ShellItemNavigationView.PaneDisplayMode
-					= NavigationViewPaneDisplayMode.LeftMinimal;
-			}
+		NavigationViewPaneDisplayMode GetNavigationViewPaneDisplayMode(IShellItemController shellItemController)
+		{
+			return shellItemController.ShowTabs || _currentSearchHandler is not null ?
+				NavigationViewPaneDisplayMode.Top :
+				NavigationViewPaneDisplayMode.LeftMinimal;
 		}
 
 		public static void MapCurrentItem(ShellItemHandler handler, ShellItem item)

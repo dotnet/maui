@@ -5,12 +5,21 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.Page']/Docs" />
-	public partial class Page : IView, IViewBackgroundImagePart, ITitledElement, IToolbarElement
+	public partial class Page : IView, ITitledElement, IToolbarElement
 	{
-		IImageSource IImageSourcePart.Source => BackgroundImageSource;
-		bool IImageSourcePart.IsAnimationPlaying => false;
-		void IImageSourcePart.UpdateIsLoading(bool isLoading)
+		Paint IView.Background
 		{
+			get
+			{
+				if (!Brush.IsNullOrEmpty(Background))
+					return Background;
+				if (!ImageSource.IsNullOrEmpty(BackgroundImageSource))
+					return new ImageSourcePaint(BackgroundImageSource);
+				if (BackgroundColor.IsNotDefault())
+					return new SolidColorBrush(BackgroundColor);
+
+				return null;
+			}
 		}
 
 		Toolbar _toolbar;

@@ -123,12 +123,14 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				if (!Values.TryGetValue(parentNode, out var source) && Context.ExceptionHandler != null)
 					return;
+
 				ProvideValue(ref value, node, source, XmlName.Empty);
 				string contentProperty;
 				Exception xpe = null;
 
 				string xKey = null;
-				if (xpe == null && node.Properties.ContainsKey(XmlName.xKey))
+				if (   xpe == null
+					&& node.Properties.ContainsKey(XmlName.xKey))
 				{
 					if ((node.Properties[XmlName.xKey] is ValueNode valueNode))
 						xKey = valueNode.Value as string;
@@ -137,11 +139,26 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 
 				//ResourceDictionary
-				if (xpe == null && TryAddToResourceDictionary(source as ResourceDictionary, value, xKey, node, out xpe))
+				if (   xpe == null
+					&& TryAddToResourceDictionary(source as ResourceDictionary, value, xKey, node, out xpe))
 					return;
 
+				//ContentProperty
+				if (   xpe == null
+					&& (contentProperty = GetContentPropertyName(Context.Types[parentElement])) != null)
+				{
+					var name = new XmlName(node.NamespaceURI, contentProperty);
+					if (Skips.Contains(name))
+						return;
+					if (parentElement.SkipProperties.Contains(propertyName))
+						return;
+
+					SetPropertyValue(source, name, value, Context.RootElement, node, Context, node);
+					return;
+				}
+
 				// Collection element, implicit content, or implicit collection element.
-				if (xpe == null
+				if (   xpe == null
 					&& typeof(IEnumerable).IsAssignableFrom(Context.Types[parentElement])
 					&& Context.Types[parentElement].GetRuntimeMethods().Any(mi => mi.Name == "Add" && mi.GetParameters().Length == 1))
 				{
@@ -158,17 +175,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 					return;
 				}
-				if (xpe == null && (contentProperty = GetContentPropertyName(Context.Types[parentElement])) != null)
-				{
-					var name = new XmlName(node.NamespaceURI, contentProperty);
-					if (Skips.Contains(name))
-						return;
-					if (parentElement.SkipProperties.Contains(propertyName))
-						return;
 
-					SetPropertyValue(source, name, value, Context.RootElement, node, Context, node);
-					return;
-				}
 				xpe = xpe ?? new XamlParseException($"Can not set the content of {((IElementNode)parentNode).XmlType.Name} as it doesn't have a ContentPropertyAttribute", node);
 				if (Context.ExceptionHandler != null)
 					Context.ExceptionHandler(xpe);
@@ -213,8 +220,6 @@ namespace Microsoft.Maui.Controls.Xaml
 					throw xpe;
 			}
 		}
-
-
 
 		public void Visit(RootNode node, INode parentNode)
 		{

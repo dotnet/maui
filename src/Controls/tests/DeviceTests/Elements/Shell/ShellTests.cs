@@ -39,6 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<MenuBarItem, MenuBarItemHandler>();
 					handlers.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
 					handlers.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
+					handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #if WINDOWS
 					handlers.AddHandler<ShellItem, ShellItemHandler>();
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();
@@ -48,6 +49,27 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "FlyoutContent Renderers When FlyoutBehavior Starts As Locked")]
+		public async Task FlyoutContentRenderersWhenFlyoutBehaviorStartsAsLocked()
+		{
+			SetupBuilder();
+			var flyoutContent = new VerticalStackLayout() { Children = { new Label() { Text = "Rendered" } } };
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() } };
+				shell.FlyoutContent = flyoutContent;
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(flyoutContent);
+
+				Assert.NotNull(flyoutContent.Handler);
+				Assert.True(flyoutContent.Frame.Width > 0);
+				Assert.True(flyoutContent.Frame.Height > 0);
+			});
+		}
 
 		[Fact(DisplayName = "Flyout Starts as Open correctly")]
 		public async Task FlyoutIsPresented()
@@ -84,6 +106,39 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(IsBackButtonVisible(handler));
 				await shell.Navigation.PopAsync();
 				Assert.False(IsBackButtonVisible(handler));
+			});
+		}
+
+
+		[Fact(DisplayName = "Pushing the Same Page Disconnects Previous Toolbar Items")]
+		public async Task PushingTheSamePageUpdatesToolbar()
+		{
+			SetupBuilder();
+			bool canExecute = false;
+			var command = new Command(() => { }, () => canExecute);
+			var pushedPage = new ContentPage()
+			{
+				ToolbarItems =
+				{
+					new ToolbarItem()
+					{
+						Command = command
+					}
+				}
+			};
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(pushedPage);
+				await shell.Navigation.PopAsync();
+				canExecute = true;
+				await shell.Navigation.PushAsync(pushedPage);
+				command.ChangeCanExecute();
 			});
 		}
 

@@ -9,6 +9,8 @@ updates:
     - dependency-name: "MicrosoftMauiGraphicsVersion"         # maestro
     - dependency-name: "Microsoft.Maui.Graphics*"             # maestro
     - dependency-name: "Microsoft.DotNet.XHarness*"           # maestro
+    - dependency-name: "SkiaSharp*"                           # needs to be done manually with maui graphics
+    - dependency-name: "HarfBuzzSharp*"                       # needs to be done manually with maui graphics
     - dependency-name: "Newtonsoft.Json"                      # needs to be done manually to match VS
     - dependency-name: "Microsoft.Build*"                     # these packages neet to be kept on old version that supports netstandard2.0
     - dependency-name: "Microsoft.TemplateEngine.Tasks"

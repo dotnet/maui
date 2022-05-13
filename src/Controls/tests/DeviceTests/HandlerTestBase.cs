@@ -109,7 +109,7 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = Activator.CreateInstance<THandler>();
 
 			handler.SetMauiContext(mauiContext);
-			
+
 			handler.SetVirtualView(element);
 			element.Handler = handler;
 
@@ -130,9 +130,18 @@ namespace Microsoft.Maui.DeviceTests
 							Android.Views.ViewGroup.LayoutParams.WrapContent,
 							Android.Views.ViewGroup.LayoutParams.WrapContent);
 				}
+
+				var size = view.Measure(view.Width, view.Height);
+				var w = size.Width;
+				var h = size.Height;
+#else
+				// Windows cannot measure without the view being loaded
+				// iOS needs more love when I get an IDE again
+				var w = view.Width;
+				var h = view.Height;
 #endif
 
-				view.Arrange(new Rect(0, 0, view.Width, view.Height));
+				view.Arrange(new Rect(0, 0, w, h));
 				viewHandler.PlatformArrange(view.Frame);
 			}
 
@@ -242,6 +251,33 @@ namespace Microsoft.Maui.DeviceTests
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 			OnLoaded(frameworkElement, () => taskCompletionSource.SetResult(true));
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+		}
+
+		protected Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			if (frameworkElement.Frame.Height > 0 &&
+				frameworkElement.Frame.Width > 0)
+			{
+				return Task.CompletedTask;
+			}
+
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			frameworkElement.BatchCommitted += OnBatchCommitted;
+
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+			{
+				if (frameworkElement.Frame.Height <= 0 ||
+					frameworkElement.Frame.Width <= 0)
+				{
+					return;
+				}
+
+				frameworkElement.BatchCommitted -= OnBatchCommitted;
+				taskCompletionSource.SetResult(true);
+			}
 		}
 	}
 }

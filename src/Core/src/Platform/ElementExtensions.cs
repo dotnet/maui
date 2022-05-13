@@ -20,7 +20,7 @@ using PlatformView = ElmSharp.EvasObject;
 using BasePlatformType = System.Object;
 using PlatformWindow = ElmSharp.Window;
 using PlatformApplication = Tizen.Applications.CoreUIApplication;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 using BasePlatformType = System.Object;
 using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (handler == null)
-				throw new Exception($"Handler not found for view {view}.");
+				throw new HandlerNotFoundException($"Handler not found for view {view}.");
 
 			handler.SetMauiContext(context);
 
@@ -101,6 +101,10 @@ namespace Microsoft.Maui.Platform
 					handler.SetVirtualView(view);
 			}
 			catch (ToPlatformException)
+			{
+				throw;
+			}
+			catch (HandlerNotFoundException)
 			{
 				throw;
 			}

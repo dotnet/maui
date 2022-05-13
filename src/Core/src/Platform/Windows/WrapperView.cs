@@ -133,16 +133,13 @@ namespace Microsoft.Maui.Platform
 				await CreateShadowAsync();
 		}
 
-		async void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
+		void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			_shadowHostSize = e.NewSize;
 
 			UpdateClip();
-
 			UpdateBorder();
-		
-			DisposeShadow();
-			await CreateShadowAsync();
+			UpdateShadow();
 		}
 
 		void DisposeShadow()
@@ -159,10 +156,16 @@ namespace Microsoft.Maui.Platform
 				_shadowCanvas.Children.RemoveAt(0);
 
 			if (_shadowVisual != null)
+			{
 				_shadowVisual.Dispose();
+				_shadowVisual = null;
+			}
 
 			if (_dropShadow != null)
+			{
 				_dropShadow.Dispose();
+				_dropShadow = null;
+			}
 		}
 
 		async Task CreateShadowAsync()
@@ -205,6 +208,7 @@ namespace Microsoft.Maui.Platform
 
 			_shadowVisual = compositor.CreateSpriteVisual();
 			_shadowVisual.Size = new Vector2((float)width, (float)height);
+
 			_shadowVisual.Shadow = _dropShadow;
 
 			ElementCompositionPreview.SetElementChildVisual(shadowHost, _shadowVisual);

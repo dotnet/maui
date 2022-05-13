@@ -53,6 +53,8 @@ namespace Microsoft.Maui.Controls.Platform
 			_navigationDrawer.TargetView.SetAlignment(-1.0, -1.0);
 			_navigationDrawer.TargetView.SetWeight(1.0, 1.0);
 			_navigationDrawer.TargetView.Show();
+
+			Show();
 			PackEnd(_navigationDrawer.TargetView);
 		}
 
