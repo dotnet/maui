@@ -9,9 +9,15 @@ namespace Microsoft.Maui.Platform
 		{
 			var zeroPosition = platformView.GetPosition(platformView.BeginningOfDocument, 0);
 			var currentCursorPosition = platformView.SelectedTextRange?.Start ?? zeroPosition;
-			var newCursorPosition = platformView.GetPosition(currentCursorPosition, cursorOffset);
+			var newCursorPosition = cursorOffset + (int)platformView.GetOffsetFromPosition(platformView.BeginningOfDocument, currentCursorPosition);
 
-			return (int)platformView.GetOffsetFromPosition(platformView.BeginningOfDocument, newCursorPosition);
+			return newCursorPosition < 0 ? 0 : newCursorPosition;
+		}
+
+		public static void SetCursorPosition(this IUITextInput platformView, int newCursorPosition)
+		{
+			var cursorPosition = platformView.GetPosition(platformView.BeginningOfDocument, newCursorPosition);
+			platformView.SelectedTextRange = platformView.GetTextRange(cursorPosition, cursorPosition);
 		}
 	}
 }
