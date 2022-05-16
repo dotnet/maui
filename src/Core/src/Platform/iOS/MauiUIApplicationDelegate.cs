@@ -114,6 +114,12 @@ namespace Microsoft.Maui
 			Services?.InvokeLifecycleEvents<iOSLifecycle.OnResignActivation>(del => del(application));
 		}
 
+		[Export("sceneDidDisconnect:")]
+		public void DidDisconnect(UIScene scene)
+		{ 
+			Services?.InvokeLifecycleEvents<iOSLifecycle.SceneDidDisconnect>(del => del(scene));
+		}
+
 		[Export("applicationWillTerminate:")]
 		public virtual void WillTerminate(UIApplication application)
 		{

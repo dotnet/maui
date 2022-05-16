@@ -1,9 +1,7 @@
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.LifecycleEvents;
-using System;
 
 namespace Microsoft.Maui.LifecycleEvents
-{ 
+{
 	public static partial class AppHostBuilderExtensions
 	{
 		internal static MauiAppBuilder ConfigureCrossPlatformLifecycleEvents(this MauiAppBuilder builder) =>
