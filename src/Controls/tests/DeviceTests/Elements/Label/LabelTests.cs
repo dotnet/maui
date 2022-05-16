@@ -266,11 +266,15 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory]
+		[Theory(
+#if IOS
+			Skip = "iOS has issues with null graphics contexts."
+#endif
+		)]
 		[InlineData(10)]
 		[InlineData(20)]
 		[InlineData(30)]
-		public async Task FormattedStringSpanTextHasCorrectLayoutWhenLabelHasInitialFontSize(double fontSize)
+		public async Task UpdatingFormattedTextResultsINTheSmaeLayout(double fontSize)
 		{
 			var initialLabel = new Label
 			{
@@ -311,6 +315,52 @@ namespace Microsoft.Maui.DeviceTests
 						new Span { Text = "second"},
 					}
 				};
+		}
+
+		[Theory(
+#if ANDROID
+			Skip = "Android does not have the exact same layout with a string vs spans."
+#endif
+		)]
+		[InlineData(10)]
+		[InlineData(20)]
+		[InlineData(30)]
+		public async Task InitialFormattedTextMatchesText(double fontSize)
+		{
+			var formattedLabel = new Label
+			{
+				WidthRequest = 200,
+				HeightRequest = 60,
+				FontSize = fontSize,
+				FormattedText = new FormattedString
+				{
+					Spans =
+					{
+						new Span { Text = "first" },
+						new Span { Text = "\n"},
+						new Span { Text = "second"},
+					}
+				},
+			};
+
+			var normalLabel = new Label
+			{
+				WidthRequest = 200,
+				HeightRequest = 60,
+				FontSize = fontSize,
+				Text = "first\nsecond"
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var formattedHandler = CreateHandler<LabelHandler>(formattedLabel);
+				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap();
+
+				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
+				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
+
+				await normalBitmap.AssertEqual(formattedBitmap);
+			});
 		}
 	}
 }
