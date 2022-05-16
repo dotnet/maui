@@ -36,7 +36,7 @@ PowerShell:
 //////////////////////////////////////////////////////////////////////
 
 
-var target = Argument("target", "Default");
+var target = Argument<string>("target", "Default");
 if(String.IsNullOrWhiteSpace(target))
     target = "Default";
 

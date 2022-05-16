@@ -49,6 +49,7 @@ Task("dotnet-local-workloads")
     });
 
 Task("dotnet-buildtasks")
+    .WithCriteria(Argument<string>("sln", null) == null)
     .IsDependentOn("dotnet")
     .Does(() =>
     {
@@ -370,13 +371,6 @@ Task("dotnet-diff")
     });
 
 // Tasks for Local Development
-Task("VS-DOGFOOD")
-    .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
-    .IsDependentOn("dotnet")
-    .Does(() =>
-    {
-        StartVisualStudioForDotNet6(null);
-    });
 
 Task("VS")
     .Description("Provisions .NET 6, and launches an instance of Visual Studio using it.")
@@ -435,9 +429,15 @@ void SetDotNetEnvironmentVariables()
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 }
 
-void StartVisualStudioForDotNet6(string sln = null)
+void StartVisualStudioForDotNet6()
 {
-    sln = sln ?? Argument<string>("sln", null);
+    string sln = Argument<string>("sln", null);
+
+    bool includePrerelease = true;
+
+    if (!String.IsNullOrEmpty(vsVersion))
+        includePrerelease = (vsVersion == "preview");
+
     if (String.IsNullOrWhiteSpace(sln))
     {
         if (IsRunningOnWindows())
@@ -449,23 +449,36 @@ void StartVisualStudioForDotNet6(string sln = null)
             sln = "./Microsoft.Maui-mac.slnf";
         }
     }
+    else
+    {
+        var vsLatest = 
+            VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, })?.CombineWithFilePath("./Common7/IDE/devenv.exe");
+        if (vsLatest == null)
+            throw new Exception("Unable to find Visual Studio!");
+        
+        var dotnetLocation = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
+
+        DotNetCoreTool("pwsh", new DotNetCoreToolSettings
+        {
+            DiagnosticOutput = true,
+            ArgumentCustomization = args => args.Append($"-NoProfile ./eng/vs-dogfood.ps1 -vs \"{vsLatest}\" -dotnet \"{dotnetLocation}\" -sln \"{sln}\"")
+        });
+    }
+
     if (IsCIBuild())
     {
         Information("This target should not run on CI.");
         return;
     }
+
     if(localDotnet)
     {
         SetDotNetEnvironmentVariables();
         SetEnvironmentVariable("_ExcludeMauiProjectCapability", "true");
     }
+
     if (IsRunningOnWindows())
     {
-        bool includePrerelease = true;
-
-        if (!String.IsNullOrEmpty(vsVersion))
-            includePrerelease = (vsVersion == "preview");
-
         var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, });
         if (vsLatest == null)
             throw new Exception("Unable to find Visual Studio!");
