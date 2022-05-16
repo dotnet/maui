@@ -457,6 +457,7 @@ void StartVisualStudioForDotNet6()
     {
         var vsLatest = 
             VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, })?.CombineWithFilePath("./Common7/IDE/devenv.exe");
+        
         if (vsLatest == null)
             throw new Exception("Unable to find Visual Studio!");
         
@@ -467,6 +468,8 @@ void StartVisualStudioForDotNet6()
             DiagnosticOutput = true,
             ArgumentCustomization = args => args.Append($"-NoProfile ./eng/vs-dogfood.ps1 -vs \"{vsLatest}\" -dotnet \"{dotnetLocation}\" -sln \"{sln}\"")
         });
+
+        return;
     }
 
     if (IsCIBuild())
@@ -543,6 +546,7 @@ void RunMSBuildWithDotNet(
         {
             MSBuildSettings = msbuildSettings,
         };
+
         dotnetBuildSettings.ArgumentCustomization = args =>
         {
             if (!restore)
