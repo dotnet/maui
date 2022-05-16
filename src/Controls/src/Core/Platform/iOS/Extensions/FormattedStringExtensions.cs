@@ -60,6 +60,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
 		{
+			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
+
 			var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : defaultTextTransform;
 
 			var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
@@ -84,7 +86,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_ => UITextAlignment.Left
 			};
 
-			var font = span.ToFont();
+			var font = span.ToFont(defaultFontSize);
 			if (font.IsDefault && defaultFont.HasValue)
 				font = defaultFont.Value;
 

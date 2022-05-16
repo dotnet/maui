@@ -22,7 +22,9 @@ namespace Microsoft.Maui
 
 		public string GetFont(Font font)
 		{
-			var size = (float)font.Size;
+			var size = font.Size <= 0 || double.IsNaN(font.Size)
+				? (float)DefaultFontSize
+				: (float)font.Size;
 
 			return GetFont(font.Family, size, font.Slant, GetNativeFontFamily);
 		}
