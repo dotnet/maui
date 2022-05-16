@@ -270,11 +270,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory(
-#if IOS
-			Skip = "Not able to debug iOS right now"
-#endif
-		)]
+		[Theory]
 		[InlineData(10)]
 		public async Task FormattedStringSpanTextHasCorrectLayoutWhenLabelHasInitialFontSize(double fontSize)
 		{
