@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Blazor アプリ (プレビュー)",
+  "name": ".NET MAUI Blazor アプリ",
   "description": "Blazor を使用して、iOS、Android、Mac Catalyst、Tizen、および WinUI 用の .NET MAUI アプリケーションを作成するためのプロジェクト",
   "postActions/openInEditor/description": "エディターで Pages/Index.razor を開きます。",
   "symbols/applicationId/description": "プロジェクト内の $(ApplicationId) をオーバーライドします"
