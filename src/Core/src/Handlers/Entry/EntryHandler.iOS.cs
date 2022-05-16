@@ -144,7 +144,10 @@ namespace Microsoft.Maui.Handlers
 		bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString) =>
 			VirtualView.TextWithinMaxLength(textField.Text, range, replacementString);
 
-		private void OnSelectionChanged(object? sender, EventArgs e) =>
+		private void OnSelectionChanged(object? sender, EventArgs e)
+		{
 			VirtualView.CursorPosition = PlatformView.GetCursorPosition();
+			VirtualView.SelectionLength = PlatformView.GetSelectedTextLength();
+		}
 	}
 }

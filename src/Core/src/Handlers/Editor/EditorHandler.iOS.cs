@@ -149,7 +149,10 @@ namespace Microsoft.Maui.Handlers
 		void OnTextPropertySet(object? sender, EventArgs e) =>
 			VirtualView.UpdateText(PlatformView.Text);
 
-		private void OnSelectionChanged(object? sender, EventArgs e) =>
+		private void OnSelectionChanged(object? sender, EventArgs e)
+		{
 			VirtualView.CursorPosition = PlatformView.GetCursorPosition();
+			VirtualView.SelectionLength = PlatformView.GetSelectedTextLength();
+		}
 	}
 }

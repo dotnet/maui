@@ -14,10 +14,31 @@ namespace Microsoft.Maui.Platform
 			return newCursorPosition < 0 ? 0 : newCursorPosition;
 		}
 
-		public static void SetCursorPosition(this IUITextInput platformView, int newCursorPosition)
+		public static void SetTextRange(this IUITextInput platformView, int start, int selectedTextLength) 
 		{
-			var cursorPosition = platformView.GetPosition(platformView.BeginningOfDocument, newCursorPosition);
-			platformView.SelectedTextRange = platformView.GetTextRange(cursorPosition, cursorPosition);
+			int end = start + selectedTextLength;
+
+			// Let's be sure we have positive positions
+			start = Math.Max(start, 0);
+			end = Math.Max(end, 0);
+
+			// Switch start and end positions if necessary
+			start = Math.Min(start, end);
+			end = Math.Max(start, end);
+
+			var startPosition = platformView.GetPosition(platformView.BeginningOfDocument, start);
+			var endPosition = platformView.GetPosition(platformView.BeginningOfDocument, end);
+			platformView.SelectedTextRange = platformView.GetTextRange(startPosition, endPosition);
+		}
+
+		public static int GetSelectedTextLength(this IUITextInput platformView)
+		{
+			var selectedTextRange = platformView.SelectedTextRange;
+
+			if (selectedTextRange == null)
+				return 0;
+
+			return (int)platformView.GetOffsetFromPosition(selectedTextRange.Start, selectedTextRange.End);
 		}
 	}
 }

@@ -40,17 +40,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var cursorPosition = textView.GetCursorPosition(cursorOffset);
 
 			textView.Text = TextTransformUtilites.GetTransformedText(newText, inputView.TextTransform);
-
-			var textInput = inputView as ITextInput;
-
-			if (textInput.CursorPosition != cursorPosition)
-				// Both PlatformView and VirtualView are out of sync.
-				// Setting the VirtualView property, will sync both.
-				textInput.CursorPosition = cursorPosition;
-			else
-				// PlatformView and VirtualView were in sync, but due text modified by a Converter
-				// PlatformView needs to be synced again, VirtualView is ok.
-				textView.SetCursorPosition(cursorPosition);
+			textView.SetTextRange(cursorPosition, 0);
 		}
 
 		public static void UpdateText(this UITextField textField, InputView inputView)
@@ -66,17 +56,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var cursorPosition = textField.GetCursorPosition(cursorOffset);
 
 			textField.Text = TextTransformUtilites.GetTransformedText(newText, inputView.TextTransform);
-
-			var textInput = inputView as ITextInput;
-
-			if (textInput.CursorPosition != cursorPosition)
-				// Both PlatformView and VirtualView are out of sync.
-				// Setting the VirtualView property, will sync both.
-				textInput.CursorPosition = cursorPosition;
-			else
-				// PlatformView and VirtualView were in sync, but due text modified by a Converter
-				// PlatformView needs to be synced again, VirtualView is ok.
-				textField.SetCursorPosition(cursorPosition);
+			textField.SetTextRange(cursorPosition, 0);
 		}
 
 		public static void UpdateLineBreakMode(this UILabel platformLabel, Label label)
