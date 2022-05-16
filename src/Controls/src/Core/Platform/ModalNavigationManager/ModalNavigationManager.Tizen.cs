@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
-		NavigationStack _modalStack => MauiContext.GetModalStack();
+		NavigationStack _modalStack => WindowMauiContext.GetModalStack();
 		IPageController CurrentPageController => _navModel.CurrentPage;
 
 		partial void OnPageAttachedHandler()

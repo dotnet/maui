@@ -7,7 +7,7 @@ using NImage = Tizen.NUI.BaseComponents.ImageView;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public static class ImageExtensions
+	public static partial class ImageExtensions
 	{
 		public static Task LoadImage(this NImage image, ImageSource source)
 		{

@@ -85,6 +85,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public static Task UpdateBackgroundImageSourceAsync(this NView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		{
+			return Task.CompletedTask;
+		}
+
 		public static void UpdateBorder(this NView platformView, IView view)
 		{
 			if (view is IBorder border && platformView is WrapperView wrapperView)

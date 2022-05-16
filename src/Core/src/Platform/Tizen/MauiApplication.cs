@@ -4,6 +4,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Tizen.Applications;
 using Tizen.NUI;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui
 {
@@ -25,6 +26,7 @@ namespace Microsoft.Maui
 		{
 			base.OnPreCreate();
 			FocusManager.Instance.EnableDefaultAlgorithm(true);
+			NView.SetDefaultGrabTouchAfterLeave(true);
 
 			var mauiApp = CreateMauiApp();
 			var rootContext = new MauiContext(mauiApp.Services);

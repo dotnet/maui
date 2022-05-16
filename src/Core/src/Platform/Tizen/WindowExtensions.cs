@@ -55,8 +55,6 @@ namespace Microsoft.Maui
 				WidthSpecification = LayoutParamPolicies.MatchParent,
 				WidthResizePolicy = ResizePolicyType.FillToParent,
 				HeightResizePolicy = ResizePolicyType.FillToParent,
-				PushAnimation = (v, p) => v.Opacity = 0.5f + 0.5f * (float)p,
-				PopAnimation = (v, p) => v.Opacity = 0.5f + 0.5f * (float)(1 - p)
 			};
 			platformWindow.GetDefaultLayer().Add(modalStack);
 		}

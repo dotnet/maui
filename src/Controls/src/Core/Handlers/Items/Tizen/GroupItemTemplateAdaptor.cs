@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		/// Get absolute index in groups
 		/// </summary>
 		/// <param name="group">Index of group</param>
-		/// <param name="ingroup">Index of item in group</param>
+		/// <param name="inGroup">Index of item in group</param>
 		/// <returns>Index that converted to absolute position</returns>
 		public int GetAbsoluteIndex(int group, int inGroup)
 		{

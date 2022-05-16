@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnStateChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView is null || PlatformView is null || VirtualView.IsOn == PlatformView.IsChecked)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
 			VirtualView.IsOn = PlatformView.IsToggled;

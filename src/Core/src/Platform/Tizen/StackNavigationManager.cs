@@ -36,11 +36,7 @@ namespace Microsoft.Maui.Platform
 			{
 				LinearOrientation = NLinearLayout.Orientation.Vertical
 			};
-			PlatformNavigation = new NavigationStack
-			{
-				PushAnimation = (v, p) => v.Opacity = 0.5f + 0.5f * (float)p,
-				PopAnimation = (v, p) => v.Opacity = 0.5f + 0.5f * (float)(1 - p)
-			};
+			PlatformNavigation = new NavigationStack();
 
 			Add(PlatformNavigation);
 		}
