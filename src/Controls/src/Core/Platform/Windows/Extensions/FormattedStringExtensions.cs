@@ -11,9 +11,25 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static void UpdateInlines(this TextBlock textBlock, Label label)
-			=> UpdateInlines(textBlock, label.RequireFontManager(false), label.FormattedText, label.LineHeight, label.HorizontalTextAlignment, label.ToFont(), label.TextColor, label.TextTransform);
+			=> UpdateInlines(
+				textBlock,
+				label.RequireFontManager(false),
+				label.FormattedText,
+				label.LineHeight,
+				label.HorizontalTextAlignment,
+				label.ToFont(),
+				label.TextColor,
+				label.TextTransform);
 
-		public static void UpdateInlines(this TextBlock textBlock, IFontManager fontManager, FormattedString formattedString, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
+		public static void UpdateInlines(
+			this TextBlock textBlock,
+			IFontManager fontManager,
+			FormattedString formattedString,
+			double defaultLineHeight = 0d,
+			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
+			Font? defaultFont = null,
+			Color? defaultColor = null,
+			TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			textBlock.Inlines.Clear();
 			// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
@@ -57,7 +73,14 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public static IEnumerable<Tuple<Run, Color, Color>> ToRunAndColorsTuples(this FormattedString formattedString, IFontManager fontManager, double defaultLineHeight = 0d, TextAlignment defaultHorizontalAlignment = TextAlignment.Start, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
+		public static IEnumerable<Tuple<Run, Color, Color>> ToRunAndColorsTuples(
+			this FormattedString formattedString,
+			IFontManager fontManager,
+			double defaultLineHeight = 0d,
+			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
+			Font? defaultFont = null,
+			Color? defaultColor = null,
+			TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			var runs = new List<Tuple<Run, Color, Color>>();
 
@@ -74,7 +97,12 @@ namespace Microsoft.Maui.Controls.Platform
 			return runs;
 		}
 
-		public static Tuple<Run, Color, Color> ToRunAndColorsTuple(this Span span, IFontManager fontManager, Font? defaultFont = null, Color? defaultColor = null, TextTransform defaultTextTransform = TextTransform.Default)
+		public static Tuple<Run, Color, Color> ToRunAndColorsTuple(
+			this Span span,
+			IFontManager fontManager,
+			Font? defaultFont = null,
+			Color? defaultColor = null,
+			TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : defaultTextTransform;
 
