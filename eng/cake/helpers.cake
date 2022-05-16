@@ -22,6 +22,29 @@ Task("Clean")
 });
 
 
+DirectoryPath GetArtifactStagingDirectory() =>
+    MakeAbsolute(Directory(EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", "artifacts")));
+
+DirectoryPath GetLogDirectory() => 
+    MakeAbsolute(Directory(EnvironmentVariable("LogDirectory", $"{GetArtifactStagingDirectory()}/logs")));
+
+DirectoryPath GetTestResultsDirectory() => 
+    MakeAbsolute(Directory(EnvironmentVariable("TestResultsDirectory", $"{GetArtifactStagingDirectory()}/test-results")));
+
+DirectoryPath GetDiffDirectory() => 
+    MakeAbsolute(Directory(EnvironmentVariable("ApiDiffDirectory", $"{GetArtifactStagingDirectory()}/api-diff")));
+
+DirectoryPath GetTempDirectory() => 
+    MakeAbsolute(Directory(EnvironmentVariable("AGENT_TEMPDIRECTORY", EnvironmentVariable("TEMP", EnvironmentVariable("TMPDIR", "../maui-temp")) + "/" + Guid.NewGuid())));
+
+string GetAgentName() =>
+    EnvironmentVariable("AGENT_NAME", "");
+
+bool IsCIBuild() =>
+    !String.IsNullOrWhiteSpace(GetAgentName());
+
+bool IsHostedAgent() =>
+    GetAgentName().StartsWith("Azure Pipelines") || GetAgentName().StartsWith("Hosted Agent");
 
 T GetBuildVariable<T>(string key, T defaultValue)
 {

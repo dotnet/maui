@@ -2,6 +2,10 @@
 
 var ext = IsRunningOnWindows() ? ".exe" : "";
 var dotnetPath = $"./bin/dotnet/dotnet{ext}";
+string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
+var localDotnet = GetBuildVariable("workloads",  (target == "VS-WINUI") ? "global" : "local") == "local";
+var vsVersion = GetBuildVariable("VS", "");
+string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 
 // Tasks for CI
 
@@ -15,7 +19,7 @@ Task("dotnet")
         DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger($"{logDirectory}/dotnet-{configuration}.binlog")
+                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}.binlog")
                 .SetConfiguration(configuration),
         });
     });
@@ -29,7 +33,7 @@ Task("dotnet-local-workloads")
         DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger($"{logDirectory}/dotnet-{configuration}.binlog")
+                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}.binlog")
                 .SetConfiguration(configuration)
                 .WithProperty("InstallWorkloadPacks", "false"),
         });
@@ -37,7 +41,7 @@ Task("dotnet-local-workloads")
         DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger($"{logDirectory}/dotnet-install-{configuration}.binlog")
+                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-install-{configuration}.binlog")
                 .SetConfiguration(configuration)
                 .WithTarget("Install"),
             ToolPath = dotnetPath,
@@ -80,7 +84,7 @@ Task("dotnet-templates")
 
         var dn = localDotnet ? dotnetPath : "dotnet";
 
-        var templatesTest = tempDirectory.Combine("templatesTest");
+        var templatesTest = GetTempDirectory().Combine("templatesTest");
 
         EnsureDirectoryExists(templatesTest);
         CleanDirectories(templatesTest.FullPath);
@@ -291,11 +295,11 @@ Task("dotnet-diff")
         else
         {
             // clean all working folders
-            var diffCacheDir = tempDirectory.Combine("diffCache");
+            var diffCacheDir = GetTempDirectory().Combine("diffCache");
             EnsureDirectoryExists(diffCacheDir);
             CleanDirectories(diffCacheDir.FullPath);
-            EnsureDirectoryExists(diffDirectory);
-            CleanDirectories(diffDirectory.FullPath);
+            EnsureDirectoryExists(GetDiffDirectory());
+            CleanDirectories(GetDiffDirectory().FullPath);
 
             // run the diff
             foreach (var nupkg in nupkgs)
@@ -311,7 +315,7 @@ Task("dotnet-diff")
                         .Append("--prerelease")
                         .Append("--group-ids")
                         .Append("--ignore-unchanged")
-                        .AppendSwitchQuoted("--output", diffDirectory.FullPath)
+                        .AppendSwitchQuoted("--output", GetDiffDirectory().FullPath)
                         .AppendSwitchQuoted("--cache", diffCacheDir.FullPath)
                 });
             }
@@ -326,7 +330,7 @@ Task("dotnet-diff")
                 Information("Unable to clean up diff cache directory.");
             }
 
-            var diffs = GetFiles($"{diffDirectory}/**/*.md");
+            var diffs = GetFiles($"{GetDiffDirectory()}/**/*.md");
             if (!diffs.Any())
             {
                 Warning($"##vso[task.logissue type=warning]No NuGet diffs were found.");
@@ -366,7 +370,6 @@ Task("dotnet-diff")
     });
 
 // Tasks for Local Development
-
 Task("VS-DOGFOOD")
     .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
     .IsDependentOn("dotnet")
@@ -375,8 +378,17 @@ Task("VS-DOGFOOD")
         StartVisualStudioForDotNet6(null);
     });
 
-Task("VS-NET6")
-    .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
+Task("VS")
+    .Description("Provisions .NET 6, and launches an instance of Visual Studio using it.")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .Does(() =>
+    {
+        StartVisualStudioForDotNet6();
+    });
+
+Task("VS-CLEAN")
+    .Description("Provisions .NET 6, delete bin/obj, and launches an instance of Visual Studio using it.")
     .IsDependentOn("Clean")
     .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
@@ -385,29 +397,9 @@ Task("VS-NET6")
         StartVisualStudioForDotNet6();
     });
 
-Task("VS-WINUI")
-    .Description("Provisions .NET 6 and launches an instance of Visual Studio with WinUI projects.")
-        .IsDependentOn("VS-NET6");
-    //  .IsDependentOn("dotnet") WINUI currently can't launch application with local dotnet
-    //  .IsDependentOn("dotnet-buildtasks")
-
-Task("VS-ANDROID")
-    .Description("Provisions .NET 6 and launches an instance of Visual Studio with Android projects.")
-    .IsDependentOn("Clean")
-    .IsDependentOn("dotnet")
-    .IsDependentOn("dotnet-buildtasks")
-    .Does(() =>
-    {
-        DotNetCoreRestore("./Microsoft.Maui.sln", new DotNetCoreRestoreSettings
-        {
-            ToolPath = dotnetPath
-        });
-
-        // VS has trouble building all the references correctly so this makes sure everything is built
-        // and we're ready to go right when VS launches
-        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj");
-        StartVisualStudioForDotNet6("./Microsoft.Maui.Droid.sln");
-    });
+Task("VS-NET6")
+    .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
+    .IsDependentOn("VS-CLEAN");
 
 string FindMSBuild()
 {
@@ -445,7 +437,8 @@ void SetDotNetEnvironmentVariables()
 
 void StartVisualStudioForDotNet6(string sln = null)
 {
-    if (sln == null)
+    sln = sln ?? Argument("sln", null);
+    if (String.IsNullOrWhiteSpace(sln))
     {
         if (IsRunningOnWindows())
         {
@@ -456,7 +449,7 @@ void StartVisualStudioForDotNet6(string sln = null)
             sln = "./Microsoft.Maui-mac.slnf";
         }
     }
-    if (isCIBuild)
+    if (IsCIBuild())
     {
         Information("This target should not run on CI.");
         return;
@@ -501,8 +494,8 @@ void RunMSBuildWithDotNet(
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var type = useDotNetBuild ? "dotnet" : "msbuild";
     var binlog = string.IsNullOrEmpty(targetFramework) ?
-        $"\"{logDirectory}/{name}-{configuration}-{target}-{type}.binlog\"" :
-        $"\"{logDirectory}/{name}-{configuration}-{target}-{targetFramework}-{type}.binlog\"";
+        $"\"{GetLogDirectory()}/{name}-{configuration}-{target}-{type}.binlog\"" :
+        $"\"{GetLogDirectory()}/{name}-{configuration}-{target}-{targetFramework}-{type}.binlog\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();
@@ -588,7 +581,7 @@ void RunMSBuildWithDotNet(
 void RunTestWithLocalDotNet(string csproj)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
-    var binlog = $"{logDirectory}/{name}-{configuration}.binlog";
+    var binlog = $"{GetLogDirectory()}/{name}-{configuration}.binlog";
     var results = $"{name}-{configuration}.trx";
 
     if(localDotnet)
@@ -601,7 +594,7 @@ void RunTestWithLocalDotNet(string csproj)
             ToolPath = dotnetPath,
             NoBuild = true,
             Logger = $"trx;LogFileName={results}",
-            ResultsDirectory = testResultsDirectory,
+            ResultsDirectory = GetTestResultsDirectory(),
             ArgumentCustomization = args => args.Append($"-bl:{binlog}")
         });
 }
