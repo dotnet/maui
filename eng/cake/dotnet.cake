@@ -379,7 +379,7 @@ Task("VS")
     .Does(() =>
     {
         // We need to pack maui before we can open a custom sln
-        if (Argument<string>("sln", null) != null)
+        if (Argument<string>("pack", "false").StartsWith("t", StringComparison.InvariantCultureIgnoreCase))
             RunTarget("Default");
 
         StartVisualStudioForDotNet6();
