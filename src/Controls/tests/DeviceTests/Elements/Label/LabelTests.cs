@@ -269,5 +269,49 @@ namespace Microsoft.Maui.DeviceTests
 				await normalBitmap.AssertEqual(formattedBitmap);
 			});
 		}
+
+		[Theory(
+#if IOS
+			Skip = "Not able to debug iOS right now"
+#endif
+		)]
+		[InlineData(10)]
+		public async Task FormattedStringSpanTextHasCorrectLayoutWhenLabelHasInitialFontSize(double fontSize)
+		{
+			var formattedLabel = new Label
+			{
+				WidthRequest = 200,
+				HeightRequest = 60,
+				FontSize = fontSize,
+				FormattedText = new FormattedString
+				{
+					Spans =
+					{
+						new Span { Text = "first" },
+						new Span { Text = "\n"},
+						new Span { Text = "second"},
+					}
+				},
+			};
+
+			var normalLabel = new Label
+			{
+				WidthRequest = 200,
+				HeightRequest = 60,
+				FontSize = fontSize,
+				Text = "first\nsecond"
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var formattedHandler = CreateHandler<LabelHandler>(formattedLabel);
+				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap();
+
+				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
+				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
+
+				await normalBitmap.AssertEqual(formattedBitmap);
+			});
+		}
 	}
 }
