@@ -378,6 +378,10 @@ Task("VS")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
+        // We need to pack maui before we can open a custom sln
+        if (Argument<string>("sln", null) != null)
+            RunTarget("Default");
+
         StartVisualStudioForDotNet6();
     });
 
