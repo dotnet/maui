@@ -437,7 +437,7 @@ void SetDotNetEnvironmentVariables()
 
 void StartVisualStudioForDotNet6(string sln = null)
 {
-    sln = sln ?? Argument("sln", null);
+    sln = sln ?? Argument<string>("sln", null);
     if (String.IsNullOrWhiteSpace(sln))
     {
         if (IsRunningOnWindows())
