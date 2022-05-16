@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.Maui.Graphics;
@@ -17,6 +14,8 @@ namespace Microsoft.Maui.Platform
 
 		public PlatformTouchGraphicsView()
 		{
+			ManipulationMode = ManipulationModes.All;
+
 			Content = _platformGraphicsView = new W2DGraphicsView();
 		}
 
@@ -36,15 +35,12 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnPointerEntered(PointerRoutedEventArgs e)
 		{
-			e.Handled = true;
 			_isInBounds = true;
 			_graphicsView?.StartHoverInteraction(GetViewPoints(e));
 		}
 
 		protected override void OnPointerCanceled(PointerRoutedEventArgs e)
 		{
-			e.Handled = true;
-
 			if (_isTouching)
 			{
 				_isTouching = false;
@@ -55,7 +51,6 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnPointerExited(PointerRoutedEventArgs e)
 		{
-			e.Handled = true;
 			_isInBounds = false;
 
 			_graphicsView?.EndHoverInteraction();
@@ -69,7 +64,6 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnPointerMoved(PointerRoutedEventArgs e)
 		{
-			e.Handled = true;
 			var points = GetViewPoints(e);
 
 			_graphicsView?.MoveHoverInteraction(points);
@@ -80,7 +74,6 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnPointerPressed(PointerRoutedEventArgs e)
 		{
-			e.Handled = true;
 			var points = GetViewPoints(e);
 			_isTouching = true;
 			_graphicsView?.StartInteraction(points);
