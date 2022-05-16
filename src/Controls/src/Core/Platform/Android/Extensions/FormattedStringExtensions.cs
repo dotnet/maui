@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Platform
 					: defaultTextDecorations;
 				if (textDecorations.HasFlag(TextDecorations.Strikethrough))
 					spannable.SetSpan(new StrikethroughSpan(), start, end, SpanTypes.InclusiveInclusive);
-				if (textDecorations.HasFlag(TextDecorations.Strikethrough))
+				if (textDecorations.HasFlag(TextDecorations.Underline))
 					spannable.SetSpan(new UnderlineSpan(), start, end, SpanTypes.InclusiveInclusive);
 			}
 
