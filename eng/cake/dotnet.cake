@@ -3,7 +3,7 @@
 var ext = IsRunningOnWindows() ? ".exe" : "";
 var dotnetPath = $"./bin/dotnet/dotnet{ext}";
 string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
-var localDotnet = GetBuildVariable("workloads",  (target == "VS-WINUI") ? "global" : "local") == "local";
+var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 Exception pendingException = null;
@@ -461,6 +461,30 @@ string FindMSBuild()
     return "msbuild";
 }
 
+
+Dictionary<string, string> GetDotNetEnvironmentVariables()
+{
+    Dictionary<string, string> envVariables = new Dictionary<string, string>();
+    var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
+
+    envVariables.Add("DOTNET_INSTALL_DIR", dotnet);
+    envVariables.Add("DOTNET_ROOT", dotnet);
+    envVariables.Add("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
+    envVariables.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
+    envVariables.Add("MSBuildEnableWorkloadResolver", "true");
+
+    var existingPath = EnvironmentVariable("PATH");
+    Information(dotnet + ":" + existingPath);
+    envVariables.Add("PATH", dotnet + ":" + existingPath);
+
+    // Get "full" .binlog in Project System Tools
+    if (ArgumentSetToTrue("debug"))
+        envVariables.Add("MSBuildDebugEngine", "1");
+
+    return envVariables;
+
+}
+
 void SetDotNetEnvironmentVariables()
 {
     var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
@@ -520,7 +544,8 @@ void StartVisualStudioForDotNet6()
     }
     else
     {
-        StartProcess("open", new ProcessSettings{ Arguments = sln });
+       
+        StartProcess("open", new ProcessSettings{ Arguments = sln, EnvironmentVariables = GetDotNetEnvironmentVariables() });
     }
 }
 
