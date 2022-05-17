@@ -116,3 +116,12 @@ void SetEnvironmentVariable(string name, string value, bool prepend = false)
 
     Information("Setting environment variable: {0} = '{1}'", name, value);
 }
+
+bool IsTarget(string target) =>
+    Argument<string>("target", "Default").Equals(target, StringComparison.InvariantCultureIgnoreCase);
+
+bool TargetStartsWith(string target) =>
+    Argument<string>("target", "Default").StartsWith(target, StringComparison.InvariantCultureIgnoreCase);
+
+bool ArgumentSetToTrue(string argName) =>
+    Argument<string>(argName, "false").StartsWith("t", StringComparison.InvariantCultureIgnoreCase);

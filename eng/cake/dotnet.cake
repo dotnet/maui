@@ -54,7 +54,14 @@ Task("dotnet-buildtasks")
     .IsDependentOn("dotnet")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
+        try
+        {
+            RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
+        }
+        catch
+        {
+            throw;
+        }
     });
 
 Task("dotnet-build")
@@ -400,15 +407,15 @@ Task("VS-NET6")
 bool RunPackTarget()
 {
     // Is the user running the pack target explicitly?
-    if (Argument<string>("target", "Default").Equals("pack", StringComparison.InvariantCultureIgnoreCase))
+    if (TargetStartsWith("dotnet-pack"))
         return true;
 
     // If the default target is running then let the pack target run
-    if (Argument<string>("target", "Default").Equals("Default", StringComparison.InvariantCultureIgnoreCase))
+    if (IsTarget("Default"))
         return true;
 
     // Does the user want to run a pack as part of a different target?
-    if (Argument<string>("pack", "false").StartsWith("t", StringComparison.InvariantCultureIgnoreCase))
+    if (ArgumentSetToTrue("pack"))
         return true;
         
     // If the request is to open a different sln then let's see if pack has ever run
@@ -457,7 +464,7 @@ void SetDotNetEnvironmentVariables()
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 
     // Get "full" .binlog in Project System Tools
-    if (Argument<string>("debug", "f").StartsWith("t", StringComparison.InvariantCultureIgnoreCase))
+    if (ArgumentSetToTrue("debug"))
         SetEnvironmentVariable("MSBuildDebugEngine", "1");
 }
 
