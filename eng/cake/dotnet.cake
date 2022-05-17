@@ -518,7 +518,7 @@ void StartVisualStudioForDotNet6()
         }
         else
         {
-            sln = "./Microsoft.Maui-mac.slnf";
+            sln = "_omnisharp.sln";
         }
     }
 
