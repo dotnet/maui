@@ -410,7 +410,7 @@ Task("VS-NET6")
     .IsDependentOn("VS")
     .Does(() =>
     {
-       Information("!!!!Please switch to using the `VS` target.!!!!");
+       Warning("!!!!Please switch to using the `VS` target.!!!!");
     });
 
 bool RunPackTarget()
