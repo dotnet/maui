@@ -1,5 +1,4 @@
-bool isCleanSet = Argument<string>("clean", "false").StartsWith("t", StringComparison.InvariantCultureIgnoreCase) ||
-    Argument<string>("target", "Default").Equals("clean", StringComparison.InvariantCultureIgnoreCase);
+bool isCleanSet = HasArgument("clean") || IsTarget("clean");
 
 Task("Clean")
     .WithCriteria(isCleanSet)
