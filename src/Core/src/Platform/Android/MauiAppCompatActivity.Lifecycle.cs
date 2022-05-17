@@ -3,7 +3,6 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
 using Android.OS;
-using Android.Views;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -94,6 +93,13 @@ namespace Microsoft.Maui
 			base.OnRestoreInstanceState(savedInstanceState);
 
 			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnRestoreInstanceState>(del => del(this, savedInstanceState));
+		}
+
+		protected override void OnDestroy()
+		{
+			base.OnDestroy();
+
+			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnDestroy>(del => del(this));
 		}
 	}
 }
