@@ -500,7 +500,7 @@ void StartVisualStudioForDotNet6()
 
     if (IsCIBuild())
     {
-        Information("This target should not run on CI.");
+        Error("This target should not run on CI.");
         return;
     }
 
