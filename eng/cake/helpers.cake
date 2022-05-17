@@ -1,4 +1,8 @@
+bool isCleanSet = Argument<string>("clean", "false").StartsWith("t", StringComparison.InvariantCultureIgnoreCase) ||
+    Argument<string>("target", "Default").Equals("clean", StringComparison.InvariantCultureIgnoreCase);
+
 Task("Clean")
+    .WithCriteria(isCleanSet)
     .Description("Deletes all the obj/bin directories")
     .Does(() =>
 {
@@ -21,21 +25,25 @@ Task("Clean")
     } 
 });
 
-
+DirectoryPath _artifactStagingDirectory;
 DirectoryPath GetArtifactStagingDirectory() =>
-    MakeAbsolute(Directory(EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", "artifacts")));
+    _artifactStagingDirectory ??= MakeAbsolute(Directory(EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", "artifacts")));
 
+DirectoryPath _logDirectory;
 DirectoryPath GetLogDirectory() => 
-    MakeAbsolute(Directory(EnvironmentVariable("LogDirectory", $"{GetArtifactStagingDirectory()}/logs")));
+    _logDirectory ??= MakeAbsolute(Directory(EnvironmentVariable("LogDirectory", $"{GetArtifactStagingDirectory()}/logs")));
 
+DirectoryPath _testResultsDirectory;
 DirectoryPath GetTestResultsDirectory() => 
-    MakeAbsolute(Directory(EnvironmentVariable("TestResultsDirectory", $"{GetArtifactStagingDirectory()}/test-results")));
+    _testResultsDirectory ??= MakeAbsolute(Directory(EnvironmentVariable("TestResultsDirectory", $"{GetArtifactStagingDirectory()}/test-results")));
 
+DirectoryPath _diffDirectory;
 DirectoryPath GetDiffDirectory() => 
-    MakeAbsolute(Directory(EnvironmentVariable("ApiDiffDirectory", $"{GetArtifactStagingDirectory()}/api-diff")));
+    _diffDirectory ??= MakeAbsolute(Directory(EnvironmentVariable("ApiDiffDirectory", $"{GetArtifactStagingDirectory()}/api-diff")));
 
+DirectoryPath _tempDirectory;
 DirectoryPath GetTempDirectory() => 
-    MakeAbsolute(Directory(EnvironmentVariable("AGENT_TEMPDIRECTORY", EnvironmentVariable("TEMP", EnvironmentVariable("TMPDIR", "../maui-temp")) + "/" + Guid.NewGuid())));
+    _tempDirectory ??= MakeAbsolute(Directory(EnvironmentVariable("AGENT_TEMPDIRECTORY", EnvironmentVariable("TEMP", EnvironmentVariable("TMPDIR", "../maui-temp")) + "/" + Guid.NewGuid())));
 
 string GetAgentName() =>
     EnvironmentVariable("AGENT_NAME", "");

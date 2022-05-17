@@ -7,6 +7,8 @@ var localDotnet = GetBuildVariable("workloads",  (target == "VS-WINUI") ? "globa
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 
+bool isPackSet = Argument<string>("pack", "false").StartsWith("t", StringComparison.InvariantCultureIgnoreCase);
+
 // Tasks for CI
 
 Task("dotnet")
@@ -371,9 +373,9 @@ Task("dotnet-diff")
     });
 
 // Tasks for Local Development
-
 Task("VS")
     .Description("Provisions .NET 6, and launches an instance of Visual Studio using it.")
+    .IsDependentOn("Clean")
     .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
@@ -385,19 +387,15 @@ Task("VS")
         StartVisualStudioForDotNet6();
     });
 
-Task("VS-CLEAN")
-    .Description("Provisions .NET 6, delete bin/obj, and launches an instance of Visual Studio using it.")
-    .IsDependentOn("Clean")
-    .IsDependentOn("dotnet")
-    .IsDependentOn("dotnet-buildtasks")
-    .Does(() =>
-    {
-        StartVisualStudioForDotNet6();
-    });
-
+// Keeping this for users that are already using this.
 Task("VS-NET6")
     .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
-    .IsDependentOn("VS-CLEAN");
+    .IsDependentOn("Clean")
+    .IsDependentOn("VS")
+    .Does(() =>
+    {
+       Information("!!!!Please switch to using the `VS` target.!!!!");
+    });
 
 string FindMSBuild()
 {
