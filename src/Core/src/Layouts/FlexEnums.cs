@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Layouts
 		internal bool IsAuto => !_isLength && !_isRelative;
 		internal bool IsRelative => _isRelative;
 
-		public static FlexBasis Auto = new();
+		public static readonly FlexBasis Auto = new();
 
 		public FlexBasis(float length, bool isRelative = false)
 		{
