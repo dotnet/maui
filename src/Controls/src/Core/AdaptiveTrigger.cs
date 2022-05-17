@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 			_page = null;
 		}
 
-		void OnVisualElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnVisualElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.WindowProperty.PropertyName)
 			{
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnWindowPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnWindowPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Window.PageProperty.PropertyName)
 			{
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnPageSizeChanged(object sender, EventArgs e)
+		void OnPageSizeChanged(object? sender, EventArgs e)
 		{
 			UpdateState();
 		}
