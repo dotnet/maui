@@ -445,5 +445,53 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			child.Received().Measure(Arg.Is(expectedWidth * widthConstraint), Arg.Is(expectedHeight * heightConstraint));
 		}
+
+		[Fact(DisplayName = "First View in LTR Absolute Layout is on the left")]
+		public void LtrShouldHaveFirstItemOnTheLeft()
+		{
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rect(0, 0, 100, 100);
+			SetLayoutBounds(abs, child, childBounds);
+
+			abs.FlowDirection.Returns(FlowDirection.LeftToRight);
+
+			var manager = new AbsoluteLayoutManager(abs);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
+
+			// We expect that the starting view (0) should be arranged on the left,
+			// and the next rectangle (1) should be on the right
+			var expectedRectangle0 = new Rect(0, 0, 100, 100);
+			var expectedRectangle1 = new Rect(100, 0, 100, 100);
+
+			abs[0].Received().Arrange(Arg.Is(expectedRectangle0));
+			abs[1].Received().Arrange(Arg.Is(expectedRectangle1));
+		}
+
+		[Fact(DisplayName = "First View in RTL Absolute Layout is on the right")]
+		public void RtlShouldHaveFirstItemOnTheRight()
+		{
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rect(0, 0, 100, 100);
+			SetLayoutBounds(abs, child, childBounds);
+
+			abs.FlowDirection.Returns(FlowDirection.LeftToRight);
+
+			var manager = new AbsoluteLayoutManager(abs);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
+
+			// We expect that the starting view (0) should be arranged on the right,
+			// and the next rectangle (1) should be on the left
+			var expectedRectangle0 = new Rect(100, 0, 100, 100);
+			var expectedRectangle1 = new Rect(0, 0, 100, 100);
+
+			abs[0].Received().Arrange(Arg.Is(expectedRectangle0));
+			abs[1].Received().Arrange(Arg.Is(expectedRectangle1));
+		}
 	}
 }
