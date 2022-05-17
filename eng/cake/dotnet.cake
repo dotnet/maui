@@ -7,7 +7,6 @@ var localDotnet = GetBuildVariable("workloads",  (target == "VS-WINUI") ? "globa
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 
-bool isPackSet = Argument<string>("pack", "false").StartsWith("t", StringComparison.InvariantCultureIgnoreCase);
 
 // Tasks for CI
 
@@ -217,6 +216,7 @@ Task("dotnet-test")
     });
 
 Task("dotnet-pack-maui")
+    .WithCriteria(RunPackTarget())
     .Does(() =>
     {
         DotNetCoreTool("pwsh", new DotNetCoreToolSettings
@@ -227,6 +227,7 @@ Task("dotnet-pack-maui")
     });
 
 Task("dotnet-pack-additional")
+    .WithCriteria(RunPackTarget())
     .Does(() =>
     {
         // Download some additional symbols that need to be archived along with the maui symbols:
@@ -248,6 +249,7 @@ Task("dotnet-pack-additional")
     });
 
 Task("dotnet-pack-library-packs")
+    .WithCriteria(RunPackTarget())
     .Does(() =>
     {
         var tempDir = $"./artifacts/library-packs-temp";
@@ -277,6 +279,7 @@ Task("dotnet-pack-library-packs")
     });
 
 Task("dotnet-pack")
+    .WithCriteria(RunPackTarget())
     .IsDependentOn("dotnet-pack-maui")
     .IsDependentOn("dotnet-pack-additional")
     .IsDependentOn("dotnet-pack-library-packs");
@@ -378,12 +381,9 @@ Task("VS")
     .IsDependentOn("Clean")
     .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
+    .IsDependentOn("dotnet-pack") // Run conditionally 
     .Does(() =>
     {
-        // We need to pack maui before we can open a custom sln
-        if (Argument<string>("pack", "false").StartsWith("t", StringComparison.InvariantCultureIgnoreCase))
-            RunTarget("Default");
-
         StartVisualStudioForDotNet6();
     });
 
@@ -396,6 +396,32 @@ Task("VS-NET6")
     {
        Information("!!!!Please switch to using the `VS` target.!!!!");
     });
+
+bool RunPackTarget()
+{
+    // Is the user running the pack target explicitly?
+    if (Argument<string>("target", "Default").Equals("pack", StringComparison.InvariantCultureIgnoreCase))
+        return true;
+
+    // If the default target is running then let the pack target run
+    if (Argument<string>("target", "Default").Equals("Default", StringComparison.InvariantCultureIgnoreCase))
+        return true;
+
+    // Does the user want to run a pack as part of a different target?
+    if (Argument<string>("pack", "false").StartsWith("t", StringComparison.InvariantCultureIgnoreCase))
+        return true;
+        
+    // If the request is to open a different sln then let's see if pack has ever run
+    // if it hasn't then lets pack maui so the sln will open
+    if (Argument<string>("sln", null) != null)
+    {
+        var mauiPacks = MakeAbsolute(Directory("./bin/dotnet/packs/Microsoft.Maui.Sdk")).ToString();
+        if (!DirectoryExists(mauiPacks))
+            return true;
+    }
+
+    return false;
+}
 
 string FindMSBuild()
 {
@@ -429,6 +455,10 @@ void SetDotNetEnvironmentVariables()
     SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
     SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
+
+    // Get "full" .binlog in Project System Tools
+    if (Argument<string>("debug", "f").StartsWith("t", StringComparison.InvariantCultureIgnoreCase))
+        SetEnvironmentVariable("MSBuildDebugEngine", "1");
 }
 
 void StartVisualStudioForDotNet6()
@@ -451,24 +481,6 @@ void StartVisualStudioForDotNet6()
             sln = "./Microsoft.Maui-mac.slnf";
         }
     }
-    else
-    {
-        var vsLatest = 
-            VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, })?.CombineWithFilePath("./Common7/IDE/devenv.exe");
-        
-        if (vsLatest == null)
-            throw new Exception("Unable to find Visual Studio!");
-        
-        var dotnetLocation = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
-
-        DotNetCoreTool("pwsh", new DotNetCoreToolSettings
-        {
-            DiagnosticOutput = true,
-            ArgumentCustomization = args => args.Append($"-NoProfile ./eng/vs-dogfood.ps1 -vs \"{vsLatest}\" -dotnet \"{dotnetLocation}\" -sln \"{sln}\"")
-        });
-
-        return;
-    }
 
     if (IsCIBuild())
     {
@@ -487,7 +499,7 @@ void StartVisualStudioForDotNet6()
         var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, });
         if (vsLatest == null)
             throw new Exception("Unable to find Visual Studio!");
-       
+    
         StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
     }
     else
