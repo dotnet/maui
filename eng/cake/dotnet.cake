@@ -6,7 +6,7 @@ string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD
 var localDotnet = GetBuildVariable("workloads",  (target == "VS-WINUI") ? "global" : "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
-
+Exception pendingException = null;
 
 // Tasks for CI
 
@@ -54,14 +54,17 @@ Task("dotnet-buildtasks")
     .IsDependentOn("dotnet")
     .Does(() =>
     {
-        try
+        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
+    })
+   .OnError(exception =>
+    {
+        if (IsTarget("VS"))
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
+            pendingException = exception;
+            return;
         }
-        catch
-        {
-            throw;
-        }
+
+        throw exception;
     });
 
 Task("dotnet-build")
@@ -391,8 +394,14 @@ Task("VS")
     .IsDependentOn("dotnet-pack") // Run conditionally 
     .Does(() =>
     {
+        if (pendingException != null)
+        {
+            Error($"{pendingException}");
+            Error("!!!!BUILD TASKS FAILED: !!!!!");
+        }
+
         StartVisualStudioForDotNet6();
-    });
+    }); 
 
 // Keeping this for users that are already using this.
 Task("VS-NET6")
