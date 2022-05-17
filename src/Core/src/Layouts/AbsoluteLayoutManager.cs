@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -62,8 +63,14 @@ namespace Microsoft.Maui.Layouts
 
 			double top = padding.Top + bounds.Y;
 			double left = padding.Left + bounds.X;
+			double right = padding.Right + bounds.X;
 			double availableWidth = bounds.Width - padding.HorizontalThickness;
 			double availableHeight = bounds.Height - padding.VerticalThickness;
+
+			bool leftToRight = AbsoluteLayout.ShouldArrangeLeftToRight();
+
+			// Figure out where we're starting from (the left edge of the padded area, or the right edge)
+			double xPosition = leftToRight ? padding.Left + bounds.Left : bounds.Right - padding.Right;
 
 			for (int n = 0; n < AbsoluteLayout.Count; n++)
 			{
@@ -93,14 +100,63 @@ namespace Microsoft.Maui.Layouts
 					destination.Y = (availableHeight - destination.Height) * destination.Y;
 				}
 
-				destination.X += left;
+				if (leftToRight)
+					destination.X += left;
+				else
+					destination.X -= right;
+				
 				destination.Y += top;
 
 				child.Arrange(destination);
+
+				if (leftToRight)
+					xPosition += destination.Width;
+				else
+					xPosition -= destination.Width;
+
+				//if (child.HorizontalLayoutAlignment != LayoutAlignment.Fill)
+				//{
+				//	SizeRequest request = child.Measure(bounds.Width, bounds.Height);
+				//	double diff = Math.Max(0, bounds.Width - request.Request.Width);
+				//	double horizontalAlign = (double)child.HorizontalLayoutAlignment;
+				//	if (!leftToRight)
+				//		horizontalAlign = 1 - horizontalAlign;
+				//	bounds.X += (int)(diff * horizontalAlign);
+				//	bounds.Width -= diff;
+				//}
 			}
+
+			// If we started from the left, the total width is the current x position;
+			// If we started from the right, it's the difference between the right edge and the current x position
+			availableWidth = leftToRight ? xPosition : bounds.Right - xPosition;
 
 			return new Size(availableWidth, availableHeight);
 		}
+
+		//internal static IView UpdateFlowDirection(this IView child, Rect bounds)
+		//{
+		//	bool isRightToLeft = false;
+		//	if (child.Parent is IFlowDirectionController parent &&
+		//		(isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer &&
+		//		parent.EffectiveFlowDirection.IsRightToLeft()) &&
+		//		(parent.Width - bounds.Right) != bounds.X)
+		//	{
+		//		bounds = new Rect(parent.Width - bounds.Right, bounds.Y, bounds.Width, bounds.Height);
+		//	}
+
+		//	if (child.HorizontalLayoutAlignment != LayoutAlignment.Fill)
+		//	{
+		//		SizeRequest request = child.Measure(bounds.Width, bounds.Height);
+		//		double diff = Math.Max(0, bounds.Width - request.Request.Width);
+		//		double horizontalAlign = child.HorizontalLayoutAlignment.ToDouble();
+		//		if (isRightToLeft)
+		//			horizontalAlign = 1 - horizontalAlign;
+		//		bounds.X += (int)(diff * horizontalAlign);
+		//		bounds.Width -= diff;
+		//	}
+
+		//	return child;
+		//}
 
 		static bool HasFlag(AbsoluteLayoutFlags a, AbsoluteLayoutFlags b)
 		{
