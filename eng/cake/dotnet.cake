@@ -424,7 +424,7 @@ bool RunPackTarget()
         return true;
 
     // Does the user want to run a pack as part of a different target?
-    if (ArgumentSetToTrue("pack"))
+    if (HasArgument("pack"))
         return true;
         
     // If the request is to open a different sln then let's see if pack has ever run
@@ -478,7 +478,7 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
     envVariables.Add("PATH", dotnet + ":" + existingPath);
 
     // Get "full" .binlog in Project System Tools
-    if (ArgumentSetToTrue("debug"))
+    if (HasArgument("debug"))
         envVariables.Add("MSBuildDebugEngine", "1");
 
     return envVariables;
@@ -497,7 +497,7 @@ void SetDotNetEnvironmentVariables()
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 
     // Get "full" .binlog in Project System Tools
-    if (ArgumentSetToTrue("debug"))
+    if (HasArgument("debug"))
         SetEnvironmentVariable("MSBuildDebugEngine", "1");
 }
 

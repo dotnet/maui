@@ -122,6 +122,3 @@ bool IsTarget(string target) =>
 
 bool TargetStartsWith(string target) =>
     Argument<string>("target", "Default").StartsWith(target, StringComparison.InvariantCultureIgnoreCase);
-
-bool ArgumentSetToTrue(string argName) =>
-    Argument<string>(argName, "false").StartsWith("t", StringComparison.InvariantCultureIgnoreCase);
