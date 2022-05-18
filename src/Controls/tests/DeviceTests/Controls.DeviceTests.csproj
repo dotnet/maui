@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
-    <Compile Remove="Stubs\MauiAppNewWindowStub.cs" />
     <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
   </ItemGroup>
@@ -36,7 +35,6 @@
   <!-- include/exclude the *.<platform>.cs files -->
   <ItemGroup>
     <None Include="@(Compile)" />
-    <None Include="Stubs\MauiAppNewWindowStub.cs" />
   </ItemGroup>
   <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
     <Compile Remove="**\*.Android.cs" />
