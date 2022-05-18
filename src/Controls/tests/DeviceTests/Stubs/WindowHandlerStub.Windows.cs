@@ -5,7 +5,7 @@ using WWindow = Microsoft.UI.Xaml.Window;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml;
 
-namespace Microsoft.Maui.DeviceTests
+namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class WindowHandlerStub : WindowHandler
 	{

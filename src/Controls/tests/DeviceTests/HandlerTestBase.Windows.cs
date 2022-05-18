@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using WAppBarButton = Microsoft.UI.Xaml.Controls.AppBarButton;
 using Xunit;
+using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {

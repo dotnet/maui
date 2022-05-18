@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	class MauiAppNewWindowStub : IApplication
 	{
