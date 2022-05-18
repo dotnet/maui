@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.TextChanged += OnTextChanged;
 			platformView.LostFocus += OnLostFocus;
 			platformView.Loaded += OnPlatformLoaded;
+			platformView.SelectionChanged += OnSelectionChanged;
 		}
 
 		protected override void DisconnectHandler(TextBox platformView)
@@ -26,6 +27,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Loaded -= OnPlatformLoaded;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.LostFocus -= OnLostFocus;
+			platformView.SelectionChanged -= OnSelectionChanged;
 		}
 
 		public static void MapText(IEditorHandler handler, IEditor editor) =>
@@ -81,5 +83,14 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPlatformLoaded(object sender, RoutedEventArgs e) =>
 			MauiTextBox.InvalidateAttachedProperties(PlatformView);
+
+		private void OnSelectionChanged(object sender, RoutedEventArgs e)
+		{
+			if (VirtualView.CursorPosition != PlatformView.SelectionStart)
+				VirtualView.CursorPosition = PlatformView.SelectionStart;
+
+			if (VirtualView.SelectionLength != PlatformView.SelectionLength)
+				VirtualView.SelectionLength = PlatformView.SelectionLength;
+		}
 	}
 }
