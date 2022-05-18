@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 			var currentCursorPosition = platformView.SelectedTextRange?.Start ?? zeroPosition;
 			var newCursorPosition = cursorOffset + (int)platformView.GetOffsetFromPosition(platformView.BeginningOfDocument, currentCursorPosition);
 
-			return newCursorPosition < 0 ? 0 : newCursorPosition;
+			return Math.Max(0, newCursorPosition);
 		}
 
 		public static void SetTextRange(this IUITextInput platformView, int start, int selectedTextLength) 

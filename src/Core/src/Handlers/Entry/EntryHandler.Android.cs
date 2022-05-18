@@ -1,4 +1,5 @@
-﻿using Android.Content.Res;
+﻿using System;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Runtime;
 using Android.Text;
@@ -7,18 +8,19 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
+using Microsoft.Maui.Platform;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
+	public partial class EntryHandler : ViewHandler<IEntry, MauiAppCompatEditText>
 	{
 		Drawable? _clearButtonDrawable;
 
-		protected override AppCompatEditText CreatePlatformView()
+		protected override MauiAppCompatEditText CreatePlatformView()
 		{
-			var nativeEntry = new AppCompatEditText(Context);
+			var nativeEntry = new MauiAppCompatEditText(Context);
 			return nativeEntry;
 		}
 
@@ -26,21 +28,23 @@ namespace Microsoft.Maui.Handlers
 		protected virtual Drawable GetClearButtonDrawable() =>
 			_clearButtonDrawable ??= ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
 
-		protected override void ConnectHandler(AppCompatEditText platformView)
+		protected override void ConnectHandler(MauiAppCompatEditText platformView)
 		{
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusedChange;
 			platformView.Touch += OnTouch;
 			platformView.EditorAction += OnEditorAction;
+			platformView.SelectionChanged += OnSelectionChanged;
 		}
 
-		protected override void DisconnectHandler(AppCompatEditText platformView)
+		protected override void DisconnectHandler(MauiAppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusedChange;
 			platformView.Touch -= OnTouch;
 			platformView.EditorAction -= OnEditorAction;
+			platformView.SelectionChanged -= OnSelectionChanged;
 		}
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry) =>
@@ -129,6 +133,12 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			e.Handled = true;
+		}
+
+		private void OnSelectionChanged(object? sender, EventArgs e)
+		{
+			VirtualView.CursorPosition = PlatformView.SelectionStart;
+			VirtualView.SelectionLength = PlatformView.GetSelectedTextLength();
 		}
 	}
 }

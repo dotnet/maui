@@ -220,6 +220,12 @@ namespace Microsoft.Maui.Platform
 			editText.ImeOptions = entry.ReturnType.ToPlatform();
 		}
 
+		public static int GetCursorPosition(this EditText editText, int cursorOffset = 0)
+		{
+			var newCursorPosition = editText.SelectionStart + cursorOffset;
+			return Math.Max(0, newCursorPosition);
+		}
+
 		public static void UpdateCursorPosition(this EditText editText, ITextInput entry)
 		{
 			if (editText.SelectionStart != entry.CursorPosition)
@@ -277,6 +283,12 @@ namespace Microsoft.Maui.Platform
 			if (newSelectionLength != selectionLength)
 				entry.SelectionLength = newSelectionLength;
 			return end;
+		}
+
+		public static int GetSelectedTextLength(this EditText editText)
+		{
+			var selectedLength = editText.SelectionEnd - editText.SelectionStart;
+			return Math.Max(0, selectedLength);
 		}
 
 		internal static void SetInputType(this EditText editText, ITextInput textInput)

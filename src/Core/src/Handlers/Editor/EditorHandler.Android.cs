@@ -7,11 +7,11 @@ using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : ViewHandler<IEditor, AppCompatEditText>
+	public partial class EditorHandler : ViewHandler<IEditor, MauiAppCompatEditText>
 	{
-		protected override AppCompatEditText CreatePlatformView()
+		protected override MauiAppCompatEditText CreatePlatformView()
 		{
-			var editText = new AppCompatEditText(Context)
+			var editText = new MauiAppCompatEditText(Context)
 			{
 				ImeOptions = ImeAction.Done,
 				Gravity = GravityFlags.Top,
@@ -24,16 +24,18 @@ namespace Microsoft.Maui.Handlers
 			return editText;
 		}
 
-		protected override void ConnectHandler(AppCompatEditText platformView)
+		protected override void ConnectHandler(MauiAppCompatEditText platformView)
 		{
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
+			platformView.SelectionChanged += OnSelectionChanged;
 		}
 
-		protected override void DisconnectHandler(AppCompatEditText platformView)
+		protected override void DisconnectHandler(MauiAppCompatEditText platformView)
 		{
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
+			platformView.SelectionChanged -= OnSelectionChanged;
 		}
 
 		public static void MapBackground(IEditorHandler handler, IEditor editor) =>
@@ -96,5 +98,11 @@ namespace Microsoft.Maui.Handlers
 
 		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
 			VirtualView?.UpdateText(e);
+
+		private void OnSelectionChanged(object? sender, EventArgs e)
+		{
+			VirtualView.CursorPosition = PlatformView.SelectionStart;
+			VirtualView.SelectionLength = PlatformView.GetSelectedTextLength();
+		}
 	}
 }
