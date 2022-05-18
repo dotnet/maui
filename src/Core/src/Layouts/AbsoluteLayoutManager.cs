@@ -61,9 +61,9 @@ namespace Microsoft.Maui.Layouts
 		{
 			var padding = AbsoluteLayout.Padding;
 
-			double top = padding.Top + bounds.Y;
-			double left = padding.Left + bounds.X;
-			double right = padding.Right + bounds.X;
+			double top = padding.Top + bounds.Top;
+			double left = padding.Left + bounds.Left;
+			double right = bounds.Right - padding.Right;
 			double availableWidth = bounds.Width - padding.HorizontalThickness;
 			double availableHeight = bounds.Height - padding.VerticalThickness;
 
@@ -103,27 +103,11 @@ namespace Microsoft.Maui.Layouts
 				if (leftToRight)
 					destination.X += left;
 				else
-					destination.X -= right;
-				
+					destination.X = right - destination.X - destination.Width;
+
 				destination.Y += top;
 
 				child.Arrange(destination);
-
-				if (leftToRight)
-					xPosition += destination.Width;
-				else
-					xPosition -= destination.Width;
-
-				//if (child.HorizontalLayoutAlignment != LayoutAlignment.Fill)
-				//{
-				//	SizeRequest request = child.Measure(bounds.Width, bounds.Height);
-				//	double diff = Math.Max(0, bounds.Width - request.Request.Width);
-				//	double horizontalAlign = (double)child.HorizontalLayoutAlignment;
-				//	if (!leftToRight)
-				//		horizontalAlign = 1 - horizontalAlign;
-				//	bounds.X += (int)(diff * horizontalAlign);
-				//	bounds.Width -= diff;
-				//}
 			}
 
 			// If we started from the left, the total width is the current x position;
@@ -132,31 +116,6 @@ namespace Microsoft.Maui.Layouts
 
 			return new Size(availableWidth, availableHeight);
 		}
-
-		//internal static IView UpdateFlowDirection(this IView child, Rect bounds)
-		//{
-		//	bool isRightToLeft = false;
-		//	if (child.Parent is IFlowDirectionController parent &&
-		//		(isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer &&
-		//		parent.EffectiveFlowDirection.IsRightToLeft()) &&
-		//		(parent.Width - bounds.Right) != bounds.X)
-		//	{
-		//		bounds = new Rect(parent.Width - bounds.Right, bounds.Y, bounds.Width, bounds.Height);
-		//	}
-
-		//	if (child.HorizontalLayoutAlignment != LayoutAlignment.Fill)
-		//	{
-		//		SizeRequest request = child.Measure(bounds.Width, bounds.Height);
-		//		double diff = Math.Max(0, bounds.Width - request.Request.Width);
-		//		double horizontalAlign = child.HorizontalLayoutAlignment.ToDouble();
-		//		if (isRightToLeft)
-		//			horizontalAlign = 1 - horizontalAlign;
-		//		bounds.X += (int)(diff * horizontalAlign);
-		//		bounds.Width -= diff;
-		//	}
-
-		//	return child;
-		//}
 
 		static bool HasFlag(AbsoluteLayoutFlags a, AbsoluteLayoutFlags b)
 		{

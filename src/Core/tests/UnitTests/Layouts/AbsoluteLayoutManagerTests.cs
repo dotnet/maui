@@ -452,22 +452,19 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var abs = CreateTestLayout();
 			var child = CreateTestView();
 			SubstituteChildren(abs, child);
-			var childBounds = new Rect(0, 0, 100, 100);
+			var childBounds = new Rect(10, 0, 100, 100);
 			SetLayoutBounds(abs, child, childBounds);
 
 			abs.FlowDirection.Returns(FlowDirection.LeftToRight);
 
 			var manager = new AbsoluteLayoutManager(abs);
-			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
 			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
 
-			// We expect that the starting view (0) should be arranged on the left,
-			// and the next rectangle (1) should be on the right
-			var expectedRectangle0 = new Rect(0, 0, 100, 100);
-			var expectedRectangle1 = new Rect(100, 0, 100, 100);
+			// We expect that the view should be arranged on the left
+			var expectedRectangle = new Rect(10, 0, 100, 100);
 
-			abs[0].Received().Arrange(Arg.Is(expectedRectangle0));
-			abs[1].Received().Arrange(Arg.Is(expectedRectangle1));
+			abs[0].Received().Arrange(Arg.Is(expectedRectangle));
 		}
 
 		[Fact(DisplayName = "First View in RTL Absolute Layout is on the right")]
@@ -476,22 +473,19 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var abs = CreateTestLayout();
 			var child = CreateTestView();
 			SubstituteChildren(abs, child);
-			var childBounds = new Rect(0, 0, 100, 100);
+			var childBounds = new Rect(10, 0, 100, 100);
 			SetLayoutBounds(abs, child, childBounds);
 
-			abs.FlowDirection.Returns(FlowDirection.LeftToRight);
+			abs.FlowDirection.Returns(FlowDirection.RightToLeft);
 
 			var manager = new AbsoluteLayoutManager(abs);
-			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
 			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
 
-			// We expect that the starting view (0) should be arranged on the right,
-			// and the next rectangle (1) should be on the left
-			var expectedRectangle0 = new Rect(100, 0, 100, 100);
-			var expectedRectangle1 = new Rect(0, 0, 100, 100);
+			// We expect that the view hould be arranged on the right
+			var expectedRectangle = new Rect(0, 0, 100, 100);
 
-			abs[0].Received().Arrange(Arg.Is(expectedRectangle0));
-			abs[1].Received().Arrange(Arg.Is(expectedRectangle1));
+			abs[0].Received().Arrange(Arg.Is(expectedRectangle));
 		}
 	}
 }
