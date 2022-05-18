@@ -29,7 +29,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				var testingRootPanel = (WFrameworkElement)MauiProgram.CurrentWindow.Content;
 				var applicationContext = MauiContext.MakeApplicationScope(UI.Xaml.Application.Current);
 
 				var appStub = new MauiAppNewWindowStub(window);

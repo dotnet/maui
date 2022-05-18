@@ -15,6 +15,7 @@ using WWindow = Microsoft.UI.Xaml.Window;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {

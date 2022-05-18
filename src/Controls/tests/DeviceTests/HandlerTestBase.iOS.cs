@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Platform;
 using UIKit;
 
