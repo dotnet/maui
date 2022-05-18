@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// Setting the text causes the cursor to be reset to the end of the UITextView.
 			// So, let's set back the cursor to the last known position and calculate a new
 			// position if needed when the text was modified by a Converter.
-			var oldText = textView?.Text ?? string.Empty;
+			var oldText = textView.Text ?? string.Empty;
 			var newText = inputView?.Text ?? string.Empty;
 
 			// Calculate the cursor offset position if the text was modified by a Converter.
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// Setting the text causes the cursor to be reset to the end of the UITextView.
 			// So, let's set back the cursor to the last known position and calculate a new
 			// position if needed when the text was modified by a Converter.
-			var oldText = textField?.Text ?? string.Empty;
+			var oldText = textField.Text ?? string.Empty;
 			var newText = inputView?.Text ?? string.Empty;
 
 			// Calculate the cursor offset position if the text was modified by a Converter.

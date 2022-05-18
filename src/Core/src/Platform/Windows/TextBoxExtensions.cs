@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 
@@ -197,6 +198,12 @@ namespace Microsoft.Maui.Platform
 		{
 			if (textBox.SelectionLength != entry.SelectionLength)
 				textBox.SelectionLength = entry.SelectionLength;
+		}
+
+		public static int GetCursorPosition(this TextBox textBox, int cursorOffset = 0)
+		{
+			var newCursorPosition = textBox.SelectionStart + cursorOffset;
+			return Math.Max(0, newCursorPosition);
 		}
 	}
 }

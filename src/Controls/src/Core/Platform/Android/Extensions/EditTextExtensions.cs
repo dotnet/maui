@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// Setting the text causes the cursor to be reset to position zero.
 			// So, let's retain the current cursor position and calculate a new cursor
 			// position if the text was modified by a Converter.
-			var oldText = editText?.Text ?? string.Empty;
+			var oldText = editText.Text ?? string.Empty;
 			var newText = inputView?.Text ?? string.Empty;
 
 			// Calculate the cursor offset position if the text was modified by a Converter.
