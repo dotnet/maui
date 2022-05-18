@@ -2,12 +2,20 @@
 {
 	public partial class Entry
 	{
-		public static IPropertyMapper<IEntry, EntryHandler> ControlsEntryMapper = 
+		public static IPropertyMapper<IEntry, EntryHandler> ControlsEntryMapper =
 			new PropertyMapper<Entry, EntryHandler>(EntryHandler.Mapper)
-		{
-			[nameof(Text)] = MapText,
-			[nameof(TextTransform)] = MapText,
-		};
+			{
+#if ANDROID
+				[PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName] = MapImeOptions,
+#elif WINDOWS
+				[PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName] = MapDetectReadingOrderFromContent,
+#elif IOS
+				[PlatformConfiguration.iOSSpecific.Entry.CursorColorProperty.PropertyName] = MapCursorColor,
+				[PlatformConfiguration.iOSSpecific.Entry.AdjustsFontSizeToFitWidthProperty.PropertyName] = MapAdjustsFontSizeToFitWidth,
+#endif
+				[nameof(Text)] = MapText,
+				[nameof(TextTransform)] = MapText,
+			};
 
 		internal static new void RemapForControls()
 		{

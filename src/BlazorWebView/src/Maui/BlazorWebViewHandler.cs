@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
@@ -7,16 +8,18 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+#if ANDROID
+	[SupportedOSPlatform("android23.0")]
+#endif
 	public partial class BlazorWebViewHandler
 	{
 		/// <summary>
 		/// This field is part of MAUI infrastructure and is not intended for use by application code.
 		/// </summary>
-		public static readonly PropertyMapper<IBlazorWebView, BlazorWebViewHandler> BlazorWebViewMapper = new(ViewMapper)
+		public static PropertyMapper<IBlazorWebView, BlazorWebViewHandler> BlazorWebViewMapper = new(ViewMapper)
 		{
 			[nameof(IBlazorWebView.HostPage)] = MapHostPage,
 			[nameof(IBlazorWebView.RootComponents)] = MapRootComponents,
-			[nameof(IBlazorWebView.UrlLoading)] = MapNotifyUrlLoading,
 		};
 
 		/// <summary>
@@ -43,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
 		public static void MapHostPage(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
-#if !NETSTANDARD
+#if !(NETSTANDARD || !PLATFORM)
 			handler.HostPage = webView.HostPage;
 			handler.StartWebViewCoreIfPossible();
 #endif
@@ -56,30 +59,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
 		public static void MapRootComponents(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
-#if !NETSTANDARD
+#if !(NETSTANDARD || !PLATFORM)
 			handler.RootComponents = webView.RootComponents;
 			handler.StartWebViewCoreIfPossible();
 #endif
 		}
 
-		/// <summary>
-		/// Maps the <see cref="BlazorWebView.NotifyUrlLoading"/> property to the specified handler.
-		/// </summary>
-		/// <param name="handler">The <see cref="BlazorWebViewHandler"/>.</param>
-		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
-		public static void MapNotifyUrlLoading(BlazorWebViewHandler handler, IBlazorWebView webView)
-		{
-#if !NETSTANDARD
-			if (webView is BlazorWebView bwv)
-			{
-				handler.UrlLoading = bwv.NotifyUrlLoading;
-			}
-#endif
-		}
-
-#if !NETSTANDARD
+#if !(NETSTANDARD || !PLATFORM)
 		private string? HostPage { get; set; }
-		internal Action<UrlLoadingEventArgs>? UrlLoading;
+
+		internal void UrlLoading(UrlLoadingEventArgs args) =>
+			VirtualView.UrlLoading(args);
 
 		private RootComponentsCollection? _rootComponents;
 

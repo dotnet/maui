@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	{
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
 		private readonly WKWebView _webview;
+		private readonly string _contentRootRelativeToAppRoot;
 
 		/// <summary>
 		/// Initializes a new instance of <see cref="IOSWebViewManager"/>
@@ -30,9 +31,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
+		/// <param name="contentRootRelativeToAppRoot">Path to the directory containing application content files.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the fileProvider.</param>
-		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler!!, WKWebView webview!!, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
-			: base(provider, dispatcher, new Uri(BlazorWebViewHandler.AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+
+		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler!!, WKWebView webview!!, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string contentRootRelativeToAppRoot, string hostPageRelativePath)
+			: base(provider, dispatcher, BlazorWebViewHandler.AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 		{
 			if (provider.GetService<MauiBlazorMarkerService>() is null)
 			{
@@ -43,6 +46,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			_blazorMauiWebViewHandler = blazorMauiWebViewHandler;
 			_webview = webview;
+			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
 
 			InitializeWebView();
 		}
@@ -55,8 +59,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webview.LoadRequest(request);
 		}
 
-		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers) =>
-			TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
+		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
+		{
+			var defaultResult = TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
+			var hotReloadedResult = StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, uri, ref statusCode, ref content, headers);
+			return defaultResult || hotReloadedResult;
+		}
 
 		/// <inheritdoc />
 		protected override void SendMessage(string message)
@@ -165,8 +173,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (cancelAction != null)
 					AddCancelAction(controller, () => cancelAction(controller));
 
+#pragma warning disable CA1416 // TODO:  'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later
 				GetTopViewController(UIApplication.SharedApplication.Windows.FirstOrDefault(m => m.IsKeyWindow)?.RootViewController)?
 					.PresentViewController(controller, true, null);
+#pragma warning restore CA1416
 			}
 
 			private static UIViewController? GetTopViewController(UIViewController? viewController)
@@ -217,13 +227,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					// Invoke the UrlLoading event to allow overriding the default link handling behavior
 					var uri = new Uri(requestUrl.ToString());
 					var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, BlazorWebViewHandler.AppOriginUri);
-					_webView.UrlLoading?.Invoke(callbackArgs);
+					_webView.UrlLoading(callbackArgs);
 					strategy = callbackArgs.UrlLoadingStrategy;
 				}
 
 				if (strategy == UrlLoadingStrategy.OpenExternally)
 				{
+#pragma warning disable CA1416 // TODO: OpenUrl(...) has [UnsupportedOSPlatform("ios10.0")]
 					UIApplication.SharedApplication.OpenUrl(requestUrl);
+#pragma warning restore CA1416
 				}
 
 				if (strategy != UrlLoadingStrategy.OpenInWebView)

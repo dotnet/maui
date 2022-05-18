@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -47,11 +48,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		";
 
 		/// <inheritdoc />
+		[SupportedOSPlatform("ios11.0")]
 		protected override WKWebView CreatePlatformView()
 		{
 			var config = new WKWebViewConfiguration();
 
-			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
+			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
 			{
 				Configuration = config
 			});
@@ -71,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				AutosizesSubviews = true
 			};
 
-			((BlazorWebView)VirtualView).NotifyBlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
+			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
 			{
 				WebView = webview
 			});
@@ -134,7 +136,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
 				fileProvider,
 				VirtualView.JSComponents,
+				contentRootDir,
 				hostPageRelativePath);
+
+			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
 			if (RootComponents != null)
 			{
@@ -168,7 +173,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				{
 					throw new ArgumentNullException(nameof(message));
 				}
-				_messageReceivedAction(new Uri(AppOrigin), ((NSString)message.Body).ToString());
+				_messageReceivedAction(AppOriginUri, ((NSString)message.Body).ToString());
 			}
 		}
 
@@ -182,6 +187,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 
 			[Export("webView:startURLSchemeTask:")]
+			[SupportedOSPlatform("ios11.0")]
 			public void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
 				var responseBytes = GetResponseBytes(urlSchemeTask.Request.Url.AbsoluteString, out var contentType, statusCode: out var statusCode);

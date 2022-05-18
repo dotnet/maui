@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void SetBackgroundColor(Color color)
 		{
 			if (Element.BackgroundColor != null)
-				BackgroundColor = Element.BackgroundColor.ToUIColor();
+				BackgroundColor = Element.BackgroundColor.ToPlatform();
 			else
 				BackgroundColor = ColorExtensions.BackgroundColor;
 		}
@@ -413,7 +413,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var emptyContentView = new UIView
 			{
-				BackgroundColor = Colors.Transparent.ToUIColor()
+				BackgroundColor = Colors.Transparent.ToPlatform()
 			};
 
 			return emptyContentView;
@@ -597,7 +597,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var swipeItem = new UIButton(UIButtonType.Custom)
 			{
 				RestorationIdentifier = formsSwipeItem.Text,
-				BackgroundColor = formsSwipeItem.BackgroundColor.ToUIColor()
+				BackgroundColor = formsSwipeItem.BackgroundColor.ToPlatform()
 			};
 
 			if (!string.IsNullOrEmpty(formsSwipeItem.Text))
@@ -609,7 +609,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			swipeItem.SetTitle(formsSwipeItem.Text, UIControlState.Normal);
 
 			var textColor = GetSwipeItemColor(formsSwipeItem.BackgroundColor);
-			swipeItem.SetTitleColor(textColor.ToUIColor(), UIControlState.Normal);
+			swipeItem.SetTitleColor(textColor.ToPlatform(), UIControlState.Normal);
 			swipeItem.UserInteractionEnabled = false;
 			swipeItem.Hidden = !formsSwipeItem.IsVisible;
 
@@ -659,6 +659,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var imageSize = button.ImageView.Image.Size;
 
 			var titleEdgeInsets = new UIEdgeInsets(spacing, -imageSize.Width, -imageSize.Height, 0.0f);
+#pragma warning disable CA1416 // TODO: TitleEdgeInsets, StringSize(...), ImageEdgeInsets unsupported on: 'ios' 15.0 and later
 			button.TitleEdgeInsets = titleEdgeInsets;
 
 			var labelString = button.TitleLabel.Text ?? string.Empty;
@@ -668,6 +669,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #pragma warning restore BI1234 // Type or member is obsolete
 			var imageEdgeInsets = new UIEdgeInsets(-(titleSize.Height + spacing), 0.0f, 0.0f, -titleSize.Width);
 			button.ImageEdgeInsets = imageEdgeInsets;
+#pragma warning restore CA1416
 		}
 
 		Color GetSwipeItemColor(Color backgroundColor)
@@ -699,7 +701,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					swipeButton.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
 					var tintColor = GetSwipeItemColor(swipeItem.BackgroundColor);
-					swipeButton.TintColor = tintColor.ToUIColor();
+					swipeButton.TintColor = tintColor.ToPlatform();
 				}
 				catch (Exception)
 				{

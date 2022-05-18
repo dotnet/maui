@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.ComponentModel;
-using Microsoft.Maui.Networking;
+using System.Linq;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Networking;
 
 namespace Microsoft.Maui.Networking
 {

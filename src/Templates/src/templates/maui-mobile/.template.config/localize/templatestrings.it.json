@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
-  "name": "App .NET MAUI (Anteprima)",
-  "description": "Progetto per la creazione di un'applicazione .NET MAUI per iOS, Android, Mac Catalyst e WinUI",
+  "name": "App .NET MAUI",
+  "description": "Progetto per la creazione di un'applicazione .NET MAUI per iOS, Android, Mac Catalyst, Tizen e WinUI",
   "postActions/openInEditor/description": "Apre MainPage.xaml nell'editor.",
   "symbols/applicationId/description": "Esegue l'override di $(ApplicationId) nel progetto"
 }

@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Devices
 
 #if WINDOWS
 		internal const float BaseLogicalDpi = 96.0f;
-#elif ANDROID
+#elif ANDROID || TIZEN
 		internal const float BaseLogicalDpi = 160.0f;
 #endif
 

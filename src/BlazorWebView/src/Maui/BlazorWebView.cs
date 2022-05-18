@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// <summary>
 	/// A <see cref="View"/> that can render Blazor content.
 	/// </summary>
-	public class BlazorWebView : View, IBlazorWebView
+	public partial class BlazorWebView : View, IBlazorWebView
 	{
 		internal const string AppHostAddress = "0.0.0.0";
 
@@ -33,31 +33,41 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		public RootComponentsCollection RootComponents { get; }
 
-		/// <inheritdoc />
+		/// <summary>
+		/// Allows customizing how links are opened.
+		/// By default, opens internal links in the webview and external links in an external app.
+		/// </summary>
 		public event EventHandler<UrlLoadingEventArgs>? UrlLoading;
 
-		/// <inheritdoc />
+		/// <summary>
+		/// Raised before the web view is initialized. On some platforms this enables customizing the web view configuration.
+		/// </summary>
 		public event EventHandler<BlazorWebViewInitializingEventArgs>? BlazorWebViewInitializing;
 
-		/// <inheritdoc />
+		/// <summary>
+		/// Raised after the web view is initialized but before any component has been rendered. The event arguments provide the instance of the platform-specific web view control.
+		/// </summary>
 		public event EventHandler<BlazorWebViewInitializedEventArgs>? BlazorWebViewInitialized;
 
 		/// <inheritdoc />
+#if ANDROID
+		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
+#elif IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
+#endif
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
 			// Call into the platform-specific code to get that platform's asset file provider
 			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
 		}
 
-		internal void NotifyUrlLoading(UrlLoadingEventArgs args)
-		{
+		void IBlazorWebView.UrlLoading(UrlLoadingEventArgs args) =>
 			UrlLoading?.Invoke(this, args);
-		}
 
-		internal void NotifyBlazorWebViewInitializing(BlazorWebViewInitializingEventArgs args) =>
+		void IBlazorWebView.BlazorWebViewInitializing(BlazorWebViewInitializingEventArgs args) =>
 			BlazorWebViewInitializing?.Invoke(this, args);
 
-		internal void NotifyBlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args) =>
+		void IBlazorWebView.BlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args) =>
 			BlazorWebViewInitialized?.Invoke(this, args);
 	}
 }

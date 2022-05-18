@@ -59,6 +59,12 @@
     <Compile Remove="**\*.uwp.cs" />
     <None Include="**\*.uwp.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsTizen)' != 'True' ">
+    <Compile Remove="**\**\*.Tizen.cs" />
+    <None Include="**\**\*.Tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\Tizen\**\*.cs" />
+    <None Include="**\Tizen\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Remove="bin\**;obj\**" />
     <None Remove="bin\**;obj\**" />
@@ -71,11 +77,6 @@
     <AndroidProjectFolder>Platform\Android\</AndroidProjectFolder>
     <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
     <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
-  </PropertyGroup>
-
-  <!-- .NET Standard or .NET 6 -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net$(_MauiDotNetVersion)' ">
-    <DefineConstants>$(DefineConstants);NETSTANDARD</DefineConstants>
   </PropertyGroup>
 
   <!-- Android -->
@@ -99,6 +100,11 @@
     <DefineConstants>$(DefineConstants);MACCATALYST;IOS</DefineConstants>
   </PropertyGroup>
 
+  <!-- Tizen  -->
+  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
+    <DefineConstants>$(DefineConstants);TIZEN</DefineConstants>
+  </PropertyGroup>
+
   <!-- If this becomes part of the product we will remove these but for now it's useful having them all in one place -->
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
@@ -119,5 +125,9 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
+    <PackageReference Include="Tizen.UIExtensions.ElmSharp" />
+    <PackageReference Include="Microsoft.Maui.Graphics.Skia" />
   </ItemGroup>
 </Project>

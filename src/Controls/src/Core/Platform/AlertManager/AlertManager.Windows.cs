@@ -88,8 +88,16 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					alertDialog.FlowDirection = UI.Xaml.FlowDirection.LeftToRight;
 				}
-
-				// TODO: Check EffectiveFlowDirection
+				else
+				{
+					if (sender is IVisualElementController visualElementController)
+					{
+						if (visualElementController.EffectiveFlowDirection.IsRightToLeft())
+							alertDialog.FlowDirection = UI.Xaml.FlowDirection.RightToLeft;
+						else if (visualElementController.EffectiveFlowDirection.IsLeftToRight())
+							alertDialog.FlowDirection = UI.Xaml.FlowDirection.LeftToRight;
+					}
+				}
 
 				if (arguments.Cancel != null)
 					alertDialog.SecondaryButtonText = arguments.Cancel;
@@ -122,7 +130,7 @@ namespace Microsoft.Maui.Controls.Platform
 					Input = arguments.InitialValue ?? string.Empty,
 					Placeholder = arguments.Placeholder ?? string.Empty,
 					MaxLength = arguments.MaxLength >= 0 ? arguments.MaxLength : 0,
-					// TODO: Implement InputScope property after port the keyboardExtensions
+					InputScope = arguments.Keyboard.ToInputScope()
 				};
 
 				if (arguments.Cancel != null)
@@ -153,13 +161,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (arguments.FlowDirection == FlowDirection.MatchParent)
 				{
-					// TODO: Check EffectiveFlowDirection
+					if (sender is IVisualElementController visualElementController)
+					{
+						if (visualElementController.EffectiveFlowDirection.IsRightToLeft())
+							arguments.FlowDirection = FlowDirection.RightToLeft;
+						else if (visualElementController.EffectiveFlowDirection.IsLeftToRight())
+							arguments.FlowDirection = FlowDirection.LeftToRight;
+					}
 				}
 
 				var actionSheetContent = new ActionSheetContent(arguments);
-
+			
 				var actionSheet = new Flyout
 				{
+					FlyoutPresenterStyle = (UI.Xaml.Style)UI.Xaml.Application.Current.Resources["MauiFlyoutPresenterStyle"],
 					Placement = UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Full,
 					Content = actionSheetContent
 				};
@@ -178,12 +193,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 				try
 				{
-					var pageParent = sender.ToPlatform(MauiContext).Parent as FrameworkElement;
+					var current = sender.ToPlatform(MauiContext);
+					var pageParent = current?.Parent as FrameworkElement;
 
 					if (pageParent != null)
 						actionSheet.ShowAt(pageParent);
 					else
-						arguments.SetResult(null);
+					{
+						if (current != null && current is FrameworkElement mainPage)
+							actionSheet.ShowAt(current);
+						else
+							arguments.SetResult(null);
+					}
 				}
 				catch (ArgumentException) // If the page is not in the visual tree
 				{

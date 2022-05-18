@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 	{
 		public abstract class ExecuteForApp : MSBuildTaskTestFixture<ResizetizeImages>
 		{
+			protected static readonly Dictionary<string, string> ResizeMetadata = new() { ["Resize"] = "true" };
+
 			public ExecuteForApp(string type)
 				: base(Path.Combine(Path.GetTempPath(), "ResizetizeImagesTests", type, Path.GetRandomFileName()))
 			{
@@ -64,6 +66,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				foreach (var snip in snippet)
 					Assert.Contains(snip, content, StringComparison.Ordinal);
+			}
+
+			protected void AssertFileContains(string file, SKColor color, int x, int y)
+			{
+				file = Path.Combine(DestinationDirectory, file);
+
+				using var resultImage = SKBitmap.Decode(file);
+				using var pixmap = resultImage.PeekPixels();
+				Assert.Equal(color, pixmap.GetPixelColor(x, y));
 			}
 		}
 
@@ -147,7 +158,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -179,8 +190,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
-					new TaskItem("images/camera_color.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
+					new TaskItem("images/camera_color.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -199,7 +210,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -223,8 +234,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
-					new TaskItem("images/camera_color.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
+					new TaskItem("images/camera_color.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -657,7 +668,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -673,8 +684,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
-					new TaskItem("images/camera_color.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
+					new TaskItem("images/camera_color.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -693,7 +704,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -717,8 +728,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
-					new TaskItem("images/camera_color.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
+					new TaskItem("images/camera_color.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -937,7 +948,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -953,8 +964,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
-					new TaskItem("images/camera_color.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
+					new TaskItem("images/camera_color.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -973,7 +984,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -997,8 +1008,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var items = new[]
 				{
-					new TaskItem("images/camera.png"),
-					new TaskItem("images/camera_color.png"),
+					new TaskItem("images/camera.png", ResizeMetadata),
+					new TaskItem("images/camera_color.png", ResizeMetadata),
 				};
 
 				var task = GetNewTask(items);
@@ -1177,6 +1188,52 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				AssertFileSize($"{bg}WideTile.scale-100.png", 310, 150);
 				AssertFileSize($"{bg}WideTile.scale-200.png", 620, 300);
+			}
+
+			[Fact]
+			public void ColorsInCssCanBeUsed()
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/not_working.svg"),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize("not_working.scale-100.png", 24, 24);
+
+				AssertFileContains("not_working.scale-100.png", 0xFF71559B, 2, 6);
+			}
+		}
+
+		public class ExecuteForAny : ExecuteForApp
+		{
+			public ExecuteForAny() : base("Any") { }
+
+			[Theory]
+			[InlineData("image.svg", "100,100", true)]
+			[InlineData("image.png", "100,100", true)]
+			[InlineData("image.jpg", "100,100", true)]
+			[InlineData("image.svg", "100;100", true)]
+			[InlineData("image.png", "100;100", true)]
+			[InlineData("image.jpg", "100;100", true)]
+			[InlineData("image.svg", null, true)]
+			[InlineData("image.png", null, false)]
+			[InlineData("image.jpg", null, false)]
+			public void ShouldResize(string filename, string baseSize, bool resize)
+			{
+				Directory.CreateDirectory(DestinationDirectory);
+				var path = Path.Combine(DestinationDirectory, filename);
+				File.WriteAllText(path, contents: "");
+				var item = new TaskItem(path);
+				if (!string.IsNullOrEmpty(baseSize))
+				{
+					item.SetMetadata("BaseSize", baseSize);
+				}
+				var size = ResizeImageInfo.Parse(item);
+				Assert.Equal(resize, size.Resize);
 			}
 		}
 	}

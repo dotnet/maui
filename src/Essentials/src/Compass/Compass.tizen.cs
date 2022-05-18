@@ -1,3 +1,4 @@
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Sensor;
 using TizenCompass = Tizen.Sensor.OrientationSensor;
 
@@ -6,7 +7,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	partial class CompassImplementation : ICompass
 	{
 		static TizenCompass DefaultSensor =>
-			(TizenCompass)Platform.GetDefaultSensor(SensorType.Compass);
+			(TizenCompass)PlatformUtils.GetDefaultSensor(SensorType.Compass);
 
 		bool PlatformIsSupported =>
 			TizenCompass.IsSupported;

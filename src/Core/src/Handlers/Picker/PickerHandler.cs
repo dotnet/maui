@@ -4,7 +4,9 @@ using PlatformView = Microsoft.Maui.Platform.MauiPicker;
 using PlatformView = Microsoft.Maui.Platform.MauiPicker;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.ComboBox;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformView = Tizen.UIExtensions.ElmSharp.Entry;
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 

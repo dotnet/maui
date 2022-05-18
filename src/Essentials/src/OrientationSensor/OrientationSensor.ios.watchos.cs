@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			if (data == null)
 				return;
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			var field = data.Attitude.Quaternion;
+#pragma warning restore CA1416
 
 			// the quaternion returned by the MotionManager refers to a frame where the X axis points north ("iOS frame")
 			var q = new Quaternion((float)field.x, (float)field.y, (float)field.z, (float)field.w);

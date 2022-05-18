@@ -4,6 +4,7 @@ using Tizen.Uix.InputMethod;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class IMEApplication : FormsApplication
 	{
 		public EditorWindow EditorWindow

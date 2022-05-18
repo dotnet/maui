@@ -21,7 +21,13 @@ namespace Microsoft.Maui.Controls
 			_shell = shell;
 		}
 
-		public Task GoToAsync(ShellNavigationState state, bool? animate, bool enableRelativeShellRoutes, ShellNavigatingEventArgs deferredArgs = null, ShellRouteParameters parameters = null)
+		public Task GoToAsync(
+			ShellNavigationState state, 
+			bool? animate, 
+			bool enableRelativeShellRoutes, 
+			ShellNavigatingEventArgs deferredArgs = null, 
+			ShellRouteParameters parameters = null,
+			bool? canCancel = null)
 		{
 			return GoToAsync(new ShellNavigationParameters
 			{
@@ -29,7 +35,8 @@ namespace Microsoft.Maui.Controls
 				Animated = animate,
 				EnableRelativeShellRoutes = enableRelativeShellRoutes,
 				DeferredArgs = deferredArgs,
-				Parameters = parameters
+				Parameters = parameters,
+				CanCancel = canCancel
 			});
 		}
 
@@ -40,6 +47,10 @@ namespace Microsoft.Maui.Controls
 			ShellNavigationParameters shellNavigationParameters,
 			ShellNavigationRequest navigationRequest)
 		{
+			// check for any pending navigations that need to complete
+			if (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
+				await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
+
 			if (shellNavigationParameters.PagePushing != null && navigationRequest == null)
 				Routing.RegisterImplicitPageRoute(shellNavigationParameters.PagePushing);
 
@@ -49,6 +60,7 @@ namespace Microsoft.Maui.Controls
 			ShellNavigatingEventArgs deferredArgs = shellNavigationParameters.DeferredArgs;
 
 			navigationRequest ??= ShellUriHandler.GetNavigationRequest(_shell, state.FullLocation, enableRelativeShellRoutes, shellNavigationParameters: shellNavigationParameters);
+
 			bool isRelativePopping = ShellUriHandler.IsTargetRelativePop(shellNavigationParameters);
 			var parameters = shellNavigationParameters.Parameters ?? new ShellRouteParameters();
 
@@ -59,7 +71,8 @@ namespace Microsoft.Maui.Controls
 			// This scenario only comes up from UI iniated navigation (i.e. switching tabs)
 			if (deferredArgs == null)
 			{
-				var navigatingArgs = ProposeNavigation(source, state, _shell.CurrentState != null, animate ?? true);
+				bool canCancel = (shellNavigationParameters.CanCancel.HasValue) ? shellNavigationParameters.CanCancel.Value : _shell.CurrentState != null;
+				var navigatingArgs = ProposeNavigation(source, state, canCancel, animate ?? true);
 
 				if (navigatingArgs != null)
 				{
@@ -89,6 +102,10 @@ namespace Microsoft.Maui.Controls
 
 			ShellContent shellContent = navigationRequest.Request.Content;
 			bool modalStackPreBuilt = false;
+
+			// check for any pending navigations that need to complete
+			if (currentShellSection?.PendingNavigationTask != null)
+				await (currentShellSection?.PendingNavigationTask ?? Task.CompletedTask);
 
 			// If we're replacing the whole stack and there are global routes then build the navigation stack before setting the shell section visible
 			if (navigationRequest.Request.GlobalRoutes.Count > 0 &&
@@ -132,6 +149,11 @@ namespace Microsoft.Maui.Controls
 					navigatedToNewShellElement = true;
 				}
 
+				// Setting the current item isn't an async operation but it triggers an async
+				// navigation path. So this waits until that's finished before returning from GotoAsync
+				if (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
+					await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
+
 				if (!modalStackPreBuilt && currentShellSection?.Navigation.ModalStack.Count > 0)
 				{
 					// - navigating to new shell element so just pop everything
@@ -160,7 +182,7 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (navigationRequest.Request.GlobalRoutes.Count == 0 &&
 					navigationRequest.StackRequest == ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt &&
-					currentShellSection?.Navigation?.NavigationStack?.Count > 1)
+					nextActiveSection?.Navigation?.NavigationStack?.Count > 1)
 				{
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
 					await _shell.Dispatcher.DispatchAsync(() =>
@@ -173,6 +195,11 @@ namespace Microsoft.Maui.Controls
 			{
 				await _shell.CurrentItem.CurrentItem.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, animate, isRelativePopping);
 			}
+
+			// Setting the current item isn't an async operation but it triggers an async
+			// navigation path. So this waits until that's finished before returning from GotoAsync
+			if (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
+				await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
 
 			(_shell as IShellController).UpdateCurrentState(source);
 			_accumulateNavigatedEvents = false;
@@ -440,6 +467,43 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return lookupDict;
+		}
+
+		public static ShellNavigationParameters GetNavigationParameters(
+			ShellItem shellItem,
+			ShellSection shellSection,
+			ShellContent shellContent,
+			IReadOnlyList<Page> sectionStack,
+			IReadOnlyList<Page> modalStack)
+		{
+			var state = GetNavigationState(shellItem, shellSection, shellContent, sectionStack, modalStack);
+			var navStack = shellSection.Navigation.NavigationStack;
+
+			var topNavStackPage =
+				(modalStack?.Count > 0 ? modalStack[modalStack.Count - 1] : null) ??
+				(navStack?.Count > 0 ? navStack[navStack.Count - 1] : null);
+
+			var queryParametersTarget =
+				topNavStackPage as BindableObject ??
+				(shellContent?.Content as BindableObject) ??
+				shellContent;
+
+			ShellRouteParameters routeParameters = null;
+
+			if (queryParametersTarget?.GetValue(ShellContent.QueryAttributesProperty) is
+				ShellRouteParameters shellRouteParameters)
+			{
+				routeParameters = shellRouteParameters;
+			}
+
+			return new ShellNavigationParameters()
+			{
+				TargetState = state,
+				Animated = false,
+				EnableRelativeShellRoutes = false,
+				DeferredArgs = null,
+				Parameters = routeParameters
+			};
 		}
 
 		public static ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack, IReadOnlyList<Page> modalStack)

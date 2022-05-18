@@ -119,6 +119,8 @@ namespace Microsoft.Maui.Controls
 			await poppingCompleted;
 
 			RemovePage(page);
+
+			(Parent?.Parent as IShellController)?.UpdateCurrentState(ShellNavigationSource.Pop);
 		}
 
 		async void IShellSectionController.SendPoppingToRoot(Task finishedPopping)
@@ -137,6 +139,8 @@ namespace Microsoft.Maui.Controls
 
 			for (int i = 1; i < oldStack.Count; i++)
 				RemovePage(oldStack[i]);
+
+			(Parent?.Parent as IShellController)?.UpdateCurrentState(ShellNavigationSource.PopToRoot);
 		}
 
 		[Obsolete]
@@ -651,6 +655,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		protected override void OnParentSet()
+		{
+			base.OnParentSet();
+
+			if (this.IsVisibleSection)
+				SendAppearanceChanged();
+		}
+
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
@@ -659,7 +671,7 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
-			if (child is IShellContentController sc && sc.Page.IsPlatformEnabled)
+			if (child is IShellContentController sc && (sc.Page?.IsPlatformEnabled == true))
 			{
 				sc.Page.PlatformEnabledChanged += WaitForRendererToGetRemoved;
 				void WaitForRendererToGetRemoved(object s, EventArgs p)

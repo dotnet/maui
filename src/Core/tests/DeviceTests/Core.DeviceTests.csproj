@@ -6,6 +6,7 @@
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Core.DeviceTests</AssemblyName>
+    <NoWarn>$(NoWarn),CA1416</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -46,10 +47,11 @@
     <Compile Remove="Handlers\*\*.cs" />
     <Compile Include="Handlers\ActivityIndicator\*.cs" />
     <Compile Include="Handlers\Button\*.cs" />
-    <Compile Include="Handlers\Navigation\*.cs" />
-    <Compile Include="Handlers\View\*.cs" />
     <Compile Include="Handlers\Layout\*.cs" />
+    <Compile Include="Handlers\Navigation\*.cs" />
     <Compile Include="Handlers\RadioButton\*.cs" />
+    <Compile Include="Handlers\Switch\*.cs" />
+    <Compile Include="Handlers\View\*.cs" />
     <Compile Include="Handlers\Window\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">

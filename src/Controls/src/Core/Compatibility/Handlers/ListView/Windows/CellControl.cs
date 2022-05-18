@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (Cell == null)
 				return;
 
-			/// 🚀 subscribe topropertychanged
+			// 🚀 subscribe topropertychanged
 			// make sure we do not subscribe twice (because this could happen in SetSource(Cell oldCell, Cell newCell))
 			Cell.PropertyChanged -= _propertyChangedHandler;
 			Cell.PropertyChanged += _propertyChangedHandler;
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			Cell.SendDisappearing();
-			/// 🚀 unsubscribe from propertychanged
+			// 🚀 unsubscribe from propertychanged
 			Cell.PropertyChanged -= _propertyChangedHandler;
 		}
 
@@ -460,8 +460,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var flyoutItem = new UI.Xaml.Controls.MenuFlyoutItem();
 				flyoutItem.SetBinding(UI.Xaml.Controls.MenuFlyoutItem.TextProperty, "Text");
-				//WINUI FIX
-				//flyoutItem.Command = new MenuItemCommand(item);
+				flyoutItem.SetBinding(UI.Xaml.Controls.MenuFlyoutItem.IconProperty, "IconImageSource", new IconConverter());
+				flyoutItem.Command = new MenuItemCommand(item);
 				flyoutItem.DataContext = item;
 
 				flyout.Items.Add(flyoutItem);

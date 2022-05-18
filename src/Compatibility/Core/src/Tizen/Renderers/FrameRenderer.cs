@@ -1,8 +1,10 @@
+using Microsoft.Maui.Controls.Platform;
 using EColor = ElmSharp.Color;
 using EPolygon = ElmSharp.Polygon;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class FrameRenderer : LayoutRenderer
 	{
 		const int _thickness = 2;
@@ -104,10 +106,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateColor()
 		{
-			if ((Element as Frame).BorderColor.IsDefault)
+			if ((Element as Frame).BorderColor.IsDefault())
 				_frame.Color = s_DefaultColor;
 			else
-				_frame.Color = (Element as Frame).BorderColor.ToPlatform();
+				_frame.Color = (Element as Frame).BorderColor.ToNative();
 		}
 
 		void UpdateShadowVisibility()

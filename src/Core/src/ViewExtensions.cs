@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Media;
 using System.IO;
-#if NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#if (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
 #endif
 #if IOS || MACCATALYST
@@ -14,6 +14,9 @@ using ParentView = Android.Views.IViewParent;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using ParentView = Microsoft.UI.Xaml.DependencyObject;
+#elif TIZEN
+using PlatformView = ElmSharp.EvasObject;
+using ParentView = ElmSharp.EvasObject;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;

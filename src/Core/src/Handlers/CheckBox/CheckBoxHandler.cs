@@ -5,7 +5,9 @@ using PlatformView = Microsoft.Maui.Platform.MauiCheckBox;
 using PlatformView = AndroidX.AppCompat.Widget.AppCompatCheckBox;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.CheckBox;
-#elif NETSTANDARD
+#elif TIZEN
+using PlatformView = ElmSharp.Check;
+#elif (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 #endif
 

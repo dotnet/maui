@@ -13,6 +13,8 @@ using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 using AWebView = Android.Webkit.WebView;
 #elif IOS || MACCATALYST
 using WebKit;
+#elif TIZEN
+using TWebView = Tizen.WebView.WebView;
 #endif
 
 namespace Microsoft.AspNetCore.Components.WebView
@@ -39,6 +41,11 @@ namespace Microsoft.AspNetCore.Components.WebView
 		/// the default values to allow further configuring additional options.
 		/// </summary>
 		public WKWebView WebView { get; internal set; }
+#elif TIZEN
+		/// <summary>
+		/// Gets the <see cref="TWebView"/> instance that was initialized.
+		/// </summary>
+		public TWebView WebView { get; internal set; }
 #endif
 	}
 }

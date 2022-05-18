@@ -6,6 +6,7 @@ using NSearchBar = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.S
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SearchHandlerRenderer : IDisposable
 	{
 		bool disposedValue;
@@ -152,7 +153,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			var data = (e.Item.Data as View).BindingContext;
 			SearchHandlerController.ItemSelected(data);
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.Dispatch(() =>
 			{
 				DeinitializeSearchResultList();
 			});
@@ -222,18 +223,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateBackgroundColor()
 		{
-			var color = Element.BackgroundColor.ToPlatform();
+			var color = Element.BackgroundColor.ToNative();
 			Control.BackgroundColor = color == EColor.Default ? EColor.White : color;
 		}
 
 		void UpdateTextColor()
 		{
-			Control.TextColor = Element.TextColor.ToPlatform();
+			Control.TextColor = Element.TextColor.ToNative();
 		}
 
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
+			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
 		}
 
 		void OnFocusChangedRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -244,7 +245,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateKeyboard()
 		{
-			Control.Keyboard = Element.Keyboard.ToPlatform();
+			Control.Keyboard = Element.Keyboard.ToNative();
 		}
 
 		void UpdatePlaceholder()
@@ -253,7 +254,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 		void UpdatePlaceholderColor()
 		{
-			Control.PlaceholderColor = Element.PlaceholderColor.ToPlatform();
+			Control.PlaceholderColor = Element.PlaceholderColor.ToNative();
 		}
 
 		void OnFocused(object sender, EventArgs e)
@@ -269,14 +270,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				{
 					_searchResultList.Hide();
 				}
-				Device.BeginInvokeOnMainThread(() =>
-				{
-					Device.StartTimer(TimeSpan.FromMilliseconds(100), () =>
-					{
-						DeinitializeSearchResultList();
-						return false;
-					});
-				});
+				Application.Current.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () => DeinitializeSearchResultList());
 			}
 		}
 

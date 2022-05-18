@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": "ContentView do .NET MAUI (XAML) (Versão Prévia)",
+  "name": "ContentView do .NET MAUI (XAML)",
   "postActions/openInEditor/description": "Abre NewContent1.xaml no editor.",
   "symbols/namespace/description": "Namespace do código gerado."
 }

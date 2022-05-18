@@ -10,7 +10,9 @@ using PlatformImage = UIKit.UIImage;
 using PlatformImage = Android.Graphics.Drawables.Drawable;
 #elif WINDOWS
 using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformImage = Tizen.UIExtensions.ElmSharp.Image;
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformImage = System.Object;
 #endif
 
@@ -52,6 +54,9 @@ namespace Microsoft.Maui
 			return imageSourceService.GetDrawableAsync(imageSource, mauiContext.Context!);
 #elif WINDOWS
 			return imageSourceService.GetImageSourceAsync(imageSource);
+#elif TIZEN
+			var platformImage = new PlatformImage(mauiContext.GetPlatformParent());
+			return imageSourceService.GetImageAsync(imageSource, platformImage);
 #else
 			throw new NotImplementedException();
 #endif

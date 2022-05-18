@@ -1,7 +1,6 @@
 ﻿using System;
 using Android.Views;
 using AndroidX.Core.View;
-using AndroidX.Core.Widget;
 using PlatformView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers

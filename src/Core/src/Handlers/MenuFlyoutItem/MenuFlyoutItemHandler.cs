@@ -7,7 +7,9 @@ using PlatformView = UIKit.UIMenuElement;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.MenuFlyoutItem;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformView = ElmSharp.EvasObject;
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 
@@ -29,6 +31,9 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		public MenuFlyoutItemHandler() : base(Mapper, CommandMapper)
 		{
 
@@ -40,9 +45,13 @@ namespace Microsoft.Maui.Handlers
 			throw new NotImplementedException();
 		}
 #endif
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		IMenuFlyoutItem IMenuFlyoutItemHandler.VirtualView => VirtualView;
-
+#if IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+#endif
 		PlatformView IMenuFlyoutItemHandler.PlatformView => PlatformView;
 	}
 }

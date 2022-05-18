@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Web.Http;
@@ -21,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 			get => _eventState;
 			set => _eventState = value;
 		}
-    
+
 		protected override void ConnectHandler(WebView2 platformView)
 		{
 			platformView.CoreWebView2Initialized += OnCoreWebView2Initialized;
@@ -45,9 +44,9 @@ namespace Microsoft.Maui.Handlers
 
 		void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
 		{
+			sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
 			sender.CoreWebView2.NavigationStarting += OnNavigationStarting;
 			sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
-			sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
 		}
 
 		void OnHistoryChanged(CoreWebView2 sender, object args)
@@ -125,6 +124,8 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView is null)
 				return;
+
+			PlatformView?.UpdateCanGoBackForward(VirtualView);
 		}
 
 		void NavigationFailed(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs e)

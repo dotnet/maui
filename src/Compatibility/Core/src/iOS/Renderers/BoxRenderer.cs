@@ -91,9 +91,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var elementColor = Element.Color;
 
 			if (elementColor != null)
-				_colorToRenderer = elementColor.ToUIColor();
+				_colorToRenderer = elementColor.ToPlatform();
 			else if (color != null)
-				_colorToRenderer = color.ToUIColor();
+				_colorToRenderer = color.ToPlatform();
 
 			SetNeedsDisplay();
 		}
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else
 			{
 				if (brush is SolidColorBrush solidColorBrush)
-					_colorToRenderer = solidColorBrush.Color.ToUIColor();
+					_colorToRenderer = solidColorBrush.Color.ToPlatform();
 				else
 				{
 					var backgroundImage = this.GetBackgroundImage(brush);

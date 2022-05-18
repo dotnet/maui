@@ -139,10 +139,14 @@ namespace Microsoft.Maui.Platform
 		{
 			var semantics = view.Semantics;
 
+			if (view is IPicker picker && string.IsNullOrEmpty(semantics?.Description))
+				AutomationProperties.SetName(platformView, picker.Title);
+			else if (semantics != null)
+				AutomationProperties.SetName(platformView, semantics.Description);
+
 			if (semantics == null)
 				return;
 
-			AutomationProperties.SetName(platformView, semantics.Description);
 			AutomationProperties.SetHelpText(platformView, semantics.Hint);
 			AutomationProperties.SetHeadingLevel(platformView, (UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)semantics.HeadingLevel));
 		}
@@ -240,6 +244,14 @@ namespace Microsoft.Maui.Platform
 				border.UpdateBackground(view.Background);
 			else if (platformView is Panel panel)
 				panel.UpdateBackground(view.Background);
+		}
+
+		public static async Task UpdateBackgroundImageSourceAsync(this FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		{
+			if (platformView is Control control)
+				await control.UpdateBackgroundImageSourceAsync(imageSource, provider);
+			else if (platformView is Panel panel)
+				await panel.UpdateBackgroundImageSourceAsync(imageSource, provider);
 		}
 
 		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)

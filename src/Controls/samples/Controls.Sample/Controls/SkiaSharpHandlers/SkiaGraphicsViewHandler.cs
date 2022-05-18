@@ -2,7 +2,7 @@
 using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 
-#if !NETSTANDARD
+#if !(NETSTANDARD || !PLATFORM)
 using Microsoft.Maui.Graphics.Skia.Views;
 #else
 using SkiaGraphicsView = System.Object;
@@ -27,6 +27,8 @@ namespace Maui.Controls.Sample.Controls
 		{
 #if __ANDROID__
 			return new SkiaGraphicsView(Context);
+#elif TIZEN
+			return new SkiaGraphicsView(NativeParent);
 #else
 			return new SkiaGraphicsView();
 #endif
@@ -34,7 +36,7 @@ namespace Maui.Controls.Sample.Controls
 
 		public static void MapDrawable(SkiaGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
-#if !NETSTANDARD
+#if !(NETSTANDARD || !PLATFORM)
 			handler.PlatformView.Drawable = graphicsView.Drawable;
 #endif
 		}

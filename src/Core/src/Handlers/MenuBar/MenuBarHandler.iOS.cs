@@ -8,6 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
+	[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 	public partial class MenuBarHandler : ElementHandler<IMenuBar, IUIMenuBuilder>, IMenuBarHandler
 	{
 		protected override IUIMenuBuilder CreatePlatformElement()
@@ -24,6 +25,9 @@ namespace Microsoft.Maui.Handlers
 
 		void BuildNewMenu()
 		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				return;
+
 			UIMenu? lastFoundMenu = null;
 			foreach (var item in VirtualView)
 			{

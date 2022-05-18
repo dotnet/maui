@@ -10,6 +10,8 @@
   <ItemGroup>
     <None Remove="**/*.in.*" />
     <None Update="@(None)" PackagePath="" />
+    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Core.props" />
+    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Core.targets" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.SingleProject.props" />
@@ -47,7 +49,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Graphics" GeneratePathProperty="true" />
-    <PackageReference Include="Mono.Cecil" Version="0.11.3" GeneratePathProperty="true" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.4" GeneratePathProperty="true" />
     <PackageReference Include="System.CodeDom" GeneratePathProperty="true" />
     <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/Build.Tasks/Controls.Build.Tasks.csproj" />
     <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/SourceGen/Controls.SourceGen.csproj" />

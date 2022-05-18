@@ -6,6 +6,8 @@ using PlatformView = UIKit.UIWindow;
 using PlatformView = Android.App.Activity;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Window;
+#elif TIZEN
+using PlatformView = ElmSharp.Window;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -47,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-#if !NETSTANDARD
+#if !(NETSTANDARD || !PLATFORM)
 		protected override PlatformView CreatePlatformElement() =>
 			MauiContext?.Services.GetService<PlatformView>() ?? throw new InvalidOperationException($"MauiContext did not have a valid window.");
 #endif

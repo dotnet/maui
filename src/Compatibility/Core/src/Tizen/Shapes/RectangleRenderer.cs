@@ -1,9 +1,11 @@
 using SkiaSharp;
-using FormsRectangle = Microsoft.Maui.Controls.Compatibility.Shapes.Rectangle;
+using Microsoft.Maui.Controls.Platform;
+using FormsRectangle = Microsoft.Maui.Controls.Shapes.Rectangle;
 
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class RectangleRenderer : ShapeRenderer<FormsRectangle, RectView>
 	{
 		public RectangleRenderer() : base()

@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Graphics
 			_clipPath = new Path();
 
 			_context = context;
-			_density = context?.Resources?.DisplayMetrics?.Density ?? 1.0f;
+			_density = context.GetDisplayDensity();
 		}
 
 		public void SetBackgroundColor(AColor? backgroundColor)
@@ -373,7 +373,9 @@ namespace Microsoft.Maui.Graphics
 						_borderPaint.SetPathEffect(_borderPathEffect);
 
 					if (_borderColor != null)
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 						_borderPaint.Color = _borderColor.Value;
+#pragma warning restore CA1416
 					else
 					{
 						if (_stroke != null)
@@ -387,9 +389,13 @@ namespace Microsoft.Maui.Graphics
 
 					if (_shape != null)
 					{
-						var bounds = new Graphics.Rect(0, 0, _width, _height);
+						var offset = _strokeThickness / 2 / _density;
+						var w = (_width - _strokeThickness) / _density;
+						var h = (_height - _strokeThickness) / _density;
+
+						var bounds = new Graphics.Rect(offset, offset, w, h);
 						var path = _shape.PathForBounds(bounds);
-						var clipPath = path?.AsAndroidPath();
+						var clipPath = path?.AsAndroidPath(scaleX: (float)_density, scaleY: (float)_density);
 
 						if (clipPath == null)
 							return;
@@ -511,7 +517,9 @@ namespace Microsoft.Maui.Graphics
 			if (platformPaint != null)
 			{
 				if (_backgroundColor != null)
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					platformPaint.Color = _backgroundColor.Value;
+#pragma warning restore CA1416
 				else
 				{
 					if (_background != null)

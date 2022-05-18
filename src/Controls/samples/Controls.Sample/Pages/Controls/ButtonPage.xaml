@@ -5,57 +5,20 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
     Title="Button">
-    <views:BasePage.Resources>
-        <ResourceDictionary>
-
-            <Style x:Key="CustomButtonStyle" TargetType="Button">
-                <Setter Property="BackgroundColor" Value="Red"/>
-                <Setter Property="TextColor" Value="White"/>
-                <Setter Property="FontSize" Value="24"/>
-                <Setter Property="Margin" Value="8"/>
-                <Setter Property="CornerRadius" Value="40"/>
-                <Setter Property="HorizontalOptions" Value="Center"/>
-                <Setter Property="WidthRequest" Value="80"/>
-                <Setter Property="HeightRequest" Value="80"/>
-                <Setter
-                    Property="VisualStateManager.VisualStateGroups">
-                    <VisualStateGroupList>
-                        <VisualStateGroup
-                            x:Name="CommonStates">
-                            <VisualState
-                                x:Name="Normal">
-                                <VisualState.Setters>
-                                    <Setter
-                                        Property="Scale"
-                                        Value="1" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState
-                                x:Name="Pressed">
-                                <VisualState.Setters>
-                                    <Setter
-                                        Property="Scale"
-                                        Value="0.8" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                    </VisualStateGroupList>
-                </Setter>
-            </Style>
-            
-        </ResourceDictionary>
-    </views:BasePage.Resources>
     <views:BasePage.Content>
         <ScrollView>
             <VerticalStackLayout Margin="12" Spacing="6">
                 <Label
                     Text="Default"
                     Style="{StaticResource Headline}"/>
-                <Button Text="Button"/>
+                <Button
+                    Text="Button"/>
                 <Label
                     Text="Disabled"
                     Style="{StaticResource Headline}"/>
-                <Button Text="Button"/>
+                <Button
+                    Text="Button"
+                    IsEnabled="false"/>
                 <Label
                     Text="Clicked"
                     Style="{StaticResource Headline}"/>
@@ -74,6 +37,20 @@
                 <Button
                     BackgroundColor="Blue"
                     Text="Button"/>
+                <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <Button 
+                    Text="Background">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="1,0">
+                            <GradientStop Color="Yellow"
+                                          Offset="0.1" />
+                            <GradientStop Color="Green"
+                                          Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
                 <Label
                     Text="TextColor"
                     Style="{StaticResource Headline}"/>
@@ -186,16 +163,10 @@
                     Style="{StaticResource Headline}"/>
                 <Button 
                     x:Name="LineBreakModeButton"
-                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."/>  
+                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."/>
                 <Button
                     Text="Update LineBreakMode"
                     Clicked="OnLineBreakModeButtonClicked"/>
-                <Label
-                    Text="Using VisualStates"
-                    Style="{StaticResource Headline}"/>
-                <Button
-                    Text="B" 
-                    Style="{StaticResource CustomButtonStyle}" />
                 <Label
                     Text="Using Custom Button"
                     Style="{StaticResource Headline}"/>

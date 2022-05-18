@@ -1,7 +1,7 @@
 ﻿using Android.Content;
 using Android.Runtime;
 using Android.Views;
-using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Graphics.Drawable;
 using ARect = Android.Graphics.Rect;
 
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 
-	public class MauiPickerBase : EditText
+	public class MauiPickerBase : AppCompatEditText
 	{
 		public MauiPickerBase(Context? context) : base(context)
 		{

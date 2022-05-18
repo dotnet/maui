@@ -2,16 +2,16 @@
 {
 	public partial class CarouselViewHandler
 	{
-		public CarouselViewHandler() : base(CarouselViewMapper)
+		public CarouselViewHandler() : base(Mapper)
 		{
 
 		}
-		public CarouselViewHandler(PropertyMapper mapper = null) : base(mapper ?? CarouselViewMapper)
+		public CarouselViewHandler(PropertyMapper mapper = null) : base(mapper ?? Mapper)
 		{
 
 		}
 
-		public static PropertyMapper<CarouselView, CarouselViewHandler> CarouselViewMapper = new PropertyMapper<CarouselView, CarouselViewHandler>(ViewMapper)
+		public static PropertyMapper<CarouselView, CarouselViewHandler> Mapper = new PropertyMapper<CarouselView, CarouselViewHandler>(ViewMapper)
 		{
 			[Controls.ItemsView.ItemsSourceProperty.PropertyName] = MapItemsSource,
 			[Controls.ItemsView.HorizontalScrollBarVisibilityProperty.PropertyName] = MapHorizontalScrollBarVisibility,

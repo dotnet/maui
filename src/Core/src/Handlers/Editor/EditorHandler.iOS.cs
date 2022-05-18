@@ -1,15 +1,28 @@
 ﻿using System;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler : ViewHandler<IEditor, MauiTextView>
 	{
-		protected override MauiTextView CreatePlatformView() => new MauiTextView();
+		protected override MauiTextView CreatePlatformView()
+		{
+			var platformEditor = new MauiTextView();
+
+#if !MACCATALYST
+			platformEditor.InputAccessoryView = new MauiDoneAccessoryView(() =>
+			{
+				platformEditor.ResignFirstResponder();
+				VirtualView?.Completed();
+			});
+#endif
+
+			return platformEditor;
+		}
 
 		protected override void ConnectHandler(MauiTextView platformView)
 		{
@@ -86,10 +99,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateHorizontalTextAlignment(editor);
 
-		[MissingMapper]
-		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor)
-		{
-		}
+		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateVerticalTextAlignment(editor);
 
 		public static void MapCursorPosition(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateCursorPosition(editor);

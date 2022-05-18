@@ -1,15 +1,20 @@
 #nullable enable
 using System;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
+using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Label;
 using WSize = Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class TextBlockExtensions
 	{
+		public static void UpdateLineBreakMode(this TextBlock textBlock, Label label) =>
+			textBlock.UpdateLineBreakMode(label.LineBreakMode);
+
 		public static void UpdateLineBreakMode(this TextBlock textBlock, LineBreakMode lineBreakMode)
 		{
 			if (textBlock == null)
@@ -80,6 +85,24 @@ namespace Microsoft.Maui.Controls.Platform
 
 			return height;
 		}
-	}
 
+		public static void UpdateMaxLines(this TextBlock platformControl, Label label)
+		{
+			if (label.MaxLines >= 0)
+				platformControl.MaxLines = label.MaxLines;
+			else
+				platformControl.MaxLines = 0;
+		}
+
+		public static void UpdateDetectReadingOrderFromContent(this TextBlock platformControl, Label label)
+		{
+			if (label.IsSet(Specifics.DetectReadingOrderFromContentProperty))
+				platformControl.SetTextReadingOrder(label.OnThisPlatform().GetDetectReadingOrderFromContent());
+		}
+
+		internal static void SetTextReadingOrder(this TextBlock platformControl, bool detectReadingOrderFromContent) =>
+			platformControl.TextReadingOrder = detectReadingOrderFromContent
+				? TextReadingOrder.DetectFromContent
+				: TextReadingOrder.UseFlowDirection;
+	}
 }
