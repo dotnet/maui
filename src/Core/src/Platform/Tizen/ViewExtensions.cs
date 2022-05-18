@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Tizen.NUI;
 using Tizen.UIExtensions.NUI;
 using static Microsoft.Maui.Primitives.Dimension;
-using Rect = Microsoft.Maui.Graphics.Rect;
 using NView = Tizen.NUI.BaseComponents.View;
+using Rect = Microsoft.Maui.Graphics.Rect;
 using TRect = Tizen.UIExtensions.Common.Rect;
 
 namespace Microsoft.Maui.Platform
@@ -58,11 +58,23 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this NView platformView, IView view)
 		{
+			if (view.Background is ImageSourcePaint image)
+			{
+				var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget();
+				return;
+			}
+
 			var paint = view.Background;
 
 			if (platformView is WrapperView wrapperView)
 			{
 				wrapperView.UpdateBackground(paint);
+			}
+			else if (platformView.GetParent() is WrapperView parent)
+			{
+				parent.UpdateBackground(paint);
 			}
 			else if (paint is not null)
 			{
@@ -85,9 +97,32 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static Task UpdateBackgroundImageSourceAsync(this NView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		public static async Task UpdateBackgroundImageSourceAsync(this NView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
-			return Task.CompletedTask;
+			if (provider == null)
+				return;
+
+			if (platformView is WrapperView wrapperView && wrapperView.Content != null)
+			{
+				await UpdateBackgroundImageSourceAsync(wrapperView.Content, imageSource, provider);
+				return;
+			}
+
+			if (imageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(imageSource);
+				var result = await service.GetImageAsync(imageSource);
+
+				if (result != null)
+				{
+					var bg = new ImageVisual
+					{
+						URL = result.Value.ResourceUrl,
+						FittingMode = FittingModeType.ScaleToFill
+					};
+					platformView.Background = bg.OutputVisualMap;
+				}
+			}
 		}
 
 		public static void UpdateBorder(this NView platformView, IView view)
