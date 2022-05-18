@@ -164,17 +164,20 @@ namespace Microsoft.Maui.Graphics
 			if (paint is SolidPaint solidPaint)
 				SetBorderBrush(solidPaint);
 
-			if (paint is LinearGradientPaint linearGradientPaint)
+			else if (paint is LinearGradientPaint linearGradientPaint)
 				SetBorderBrush(linearGradientPaint);
 
-			if (paint is RadialGradientPaint radialGradientPaint)
+			else if (paint is RadialGradientPaint radialGradientPaint)
 				SetBorderBrush(radialGradientPaint);
 
-			if (paint is ImagePaint imagePaint)
+			else if (paint is ImagePaint imagePaint)
 				SetBorderBrush(imagePaint);
 
-			if (paint is PatternPaint patternPaint)
+			else if (paint is PatternPaint patternPaint)
 				SetBorderBrush(patternPaint);
+			
+			else
+				SetEmptyBorderBrush();
 		}
 
 		public void SetBorderBrush(SolidPaint solidPaint)
@@ -218,6 +221,27 @@ namespace Microsoft.Maui.Graphics
 			InvalidateSelf();
 		}
 
+		public void SetEmptyBorderBrush()
+		{
+			_invalidatePath = true;
+
+			if (_backgroundColor != null)
+			{
+				_borderColor = _backgroundColor.Value;
+				_stroke = null;
+			}
+			else
+			{
+				_borderColor = null;
+
+				if (_background != null)
+					SetBorderBrush(_background);
+			}
+
+			InitializeBorderIfNeeded();
+			InvalidateSelf();
+		}
+	
 		public void SetBorderBrush(ImagePaint imagePaint)
 		{
 			throw new NotImplementedException();
@@ -473,7 +497,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			InitializeBorderIfNeeded();
 
-			return _shape != null && (_stroke != null || _borderColor != null);
+			return _shape != null;
 		}
 
 		void InitializeBorderIfNeeded()
