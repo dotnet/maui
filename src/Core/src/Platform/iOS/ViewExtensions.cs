@@ -40,32 +40,20 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVisibility(this UIView platformView, Visibility visibility)
 		{
-			var shouldLayout = false;
-
 			switch (visibility)
 			{
 				case Visibility.Visible:
-					shouldLayout = platformView.Inflate();
+					platformView.Inflate();
 					platformView.Hidden = false;
 					break;
 				case Visibility.Hidden:
-					shouldLayout = platformView.Inflate();
+					platformView.Inflate();
 					platformView.Hidden = true;
 					break;
 				case Visibility.Collapsed:
 					platformView.Hidden = true;
 					platformView.Collapse();
-					shouldLayout = true;
 					break;
-			}
-
-			// If the view is just switching between Visible and Hidden, then a re-layout isn't necessary. The return value
-			// from Inflate will tell us if the view was previously collapsed. If the view is switching to or from a collapsed
-			// state, then we'll have to ask for a re-layout.
-
-			if (shouldLayout)
-			{
-				platformView.Superview?.SetNeedsLayout();
 			}
 		}
 

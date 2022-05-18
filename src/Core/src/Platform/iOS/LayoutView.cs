@@ -33,9 +33,14 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
-
 			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
 			CrossPlatformArrange?.Invoke(bounds);
+		}
+
+		public override void SetNeedsLayout()
+		{
+			base.SetNeedsLayout();
+			Superview?.SetNeedsLayout();
 		}
 
 		public override void SubviewAdded(UIView uiview)
