@@ -101,6 +101,44 @@
       <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
   </ItemGroup>
+  
+  <!-- Platform based file name matching patterns -->
+  <ItemGroup Condition=" '$(EnableMauiPlatformFilePatternCompileItems)' == 'true' ">
+    
+    <!-- Assume any platform file matching pattern used is excluded by default and add the metadata for this -->
+    <Compile Update="**\*.ios*$(DefaultLanguageSourceExtension)">
+			<ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
+		</Compile>
+		<Compile Update="**\*.maccatalyst*$(DefaultLanguageSourceExtension)">
+			<ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
+		</Compile>
+		<Compile Update="**\*.android*$(DefaultLanguageSourceExtension)">
+			<ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
+		</Compile>
+		<Compile Update="**\*.tizen*$(DefaultLanguageSourceExtension)">
+			<ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
+		</Compile>
+		<Compile Update="**\*.windows*$(DefaultLanguageSourceExtension)">
+			<ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
+		</Compile>
+    
+    <!-- Add back in by toggling the metadata flag added above, for the relevant platforms and file patterns -->
+    <Compile Condition=" '$(TargetPlatformIdentifier)' == 'ios' " Update="**\*.ios*$(DefaultLanguageSourceExtension)">
+			<ExcludeFromCurrentConfiguration>False</ExcludeFromCurrentConfiguration>
+		</Compile>
+		<Compile Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' " Update="**\*.maccatalyst*$(DefaultLanguageSourceExtension)">
+			<ExcludeFromCurrentConfiguration>False</ExcludeFromCurrentConfiguration>
+		</Compile>
+		<Compile Condition=" '$(TargetPlatformIdentifier)' == 'android' " Update="**\*.android*$(DefaultLanguageSourceExtension)">
+			<ExcludeFromCurrentConfiguration>False</ExcludeFromCurrentConfiguration>
+		</Compile>
+		<Compile Condition=" '$(TargetPlatformIdentifier)' == 'windows' " Update="**\*.windows*$(DefaultLanguageSourceExtension)">
+			<ExcludeFromCurrentConfiguration>False</ExcludeFromCurrentConfiguration>
+		</Compile>
+		<Compile Condition=" '$(TargetPlatformIdentifier)' == 'tizen' " Update="**\*.tizen*$(DefaultLanguageSourceExtension)">
+			<ExcludeFromCurrentConfiguration>False</ExcludeFromCurrentConfiguration>
+		</Compile>
+  </ItemGroup>
 
   <!--
     Run before both _MauiInjectXamlCssAdditionalFiles and GenerateMSBuildEditorConfigFileShouldRun because
@@ -111,6 +149,15 @@
           BeforeTargets="_MauiInjectXamlCssAdditionalFiles;GenerateMSBuildEditorConfigFileShouldRun"
           Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' ">
 
+    <!-- Removals -->
+    <ItemGroup Condition=" '$(EnableMauiPlatformFilePatternCompileItems)' == 'true' ">
+      <Compile Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' " Remove="**\*.ios*$(DefaultLanguageSourceExtension)" />
+			<Compile Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' " Remove="**\*.maccatalyst*$(DefaultLanguageSourceExtension)" />
+			<Compile Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' " Remove="**\*.android*$(DefaultLanguageSourceExtension)" />
+			<Compile Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' " Remove="**\*.windows*$(DefaultLanguageSourceExtension)" />
+			<Compile Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' " Remove="**\*.tizen*$(DefaultLanguageSourceExtension)" />  
+    </ItemGroup>
+    
     <!-- Removals -->
     <ItemGroup>
       <!-- Remove everything that isn't part of this platform -->
