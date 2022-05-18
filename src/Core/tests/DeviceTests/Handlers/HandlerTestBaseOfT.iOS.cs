@@ -112,6 +112,13 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task InputTransparencyInitializesCorrectly(bool inputTransparent)
 		{
+			if (typeof(TStub) == typeof(LayoutStub))
+			{
+				// The platform type for Layouts (LayoutView) always has UserInteractionEnabled
+				// to allow for its children to be interacted with
+				return;
+			}
+
 			var view = new TStub()
 			{
 				InputTransparent = inputTransparent
