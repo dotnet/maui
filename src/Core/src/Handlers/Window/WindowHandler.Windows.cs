@@ -11,7 +11,8 @@ namespace Microsoft.Maui.Handlers
 				?.GetNavigationRootManager()
 				?.Disconnect();
 
-			platformView.Content = null;
+			if (platformView.Dispatcher != null)
+				platformView.Content = null;
 
 			base.DisconnectHandler(platformView);
 		}
