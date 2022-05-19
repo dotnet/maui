@@ -109,10 +109,6 @@ namespace Microsoft.Maui.Layouts
 				child.Arrange(destination);
 			}
 
-			// If we started from the left, the total width is the current x position;
-			// If we started from the right, it's the difference between the right edge and the current x position
-			availableWidth = leftToRight ? xPosition : bounds.Right - xPosition;
-
 			return new Size(availableWidth, availableHeight);
 		}
 
