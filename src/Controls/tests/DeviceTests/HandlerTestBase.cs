@@ -109,7 +109,7 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = Activator.CreateInstance<THandler>();
 
 			handler.SetMauiContext(mauiContext);
-			
+
 			handler.SetVirtualView(element);
 			element.Handler = handler;
 
@@ -132,6 +132,10 @@ namespace Microsoft.Maui.DeviceTests
 				}
 
 				var size = view.Measure(view.Width, view.Height);
+				var w = size.Width;
+				var h = size.Height;
+#elif IOS
+				var size = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 				var w = size.Width;
 				var h = size.Height;
 #else
@@ -253,10 +257,13 @@ namespace Microsoft.Maui.DeviceTests
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
-		protected Task OnLayoutPassCompleted(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		protected Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
-			if (frameworkElement.Frame.Height * frameworkElement.Frame.Width != 0)
+			if (frameworkElement.Frame.Height > 0 &&
+				frameworkElement.Frame.Width > 0)
+			{
 				return Task.CompletedTask;
+			}
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
@@ -266,8 +273,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
 			{
-				if (frameworkElement.Frame.Height * frameworkElement.Frame.Width == 0)
+				if (frameworkElement.Frame.Height <= 0 ||
+					frameworkElement.Frame.Width <= 0)
+				{
 					return;
+				}
 
 				frameworkElement.BatchCommitted -= OnBatchCommitted;
 				taskCompletionSource.SetResult(true);

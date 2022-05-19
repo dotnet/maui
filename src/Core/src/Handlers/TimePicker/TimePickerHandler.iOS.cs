@@ -1,5 +1,4 @@
 ﻿using System;
-using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -15,6 +14,8 @@ namespace Microsoft.Maui.Handlers
 			});
 		}
 
+		internal bool UpdateImmediately { get; set; }
+
 		protected override void ConnectHandler(MauiTimePicker platformView)
 		{
 			base.ConnectHandler(platformView);
@@ -25,6 +26,8 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidEnd += OnEnded;
 				platformView.ValueChanged += OnValueChanged;
 				platformView.DateSelected += OnDateSelected;
+				platformView.Picker.ValueChanged += OnValueChanged;
+
 				platformView.UpdateTime(VirtualView.Time);
 			}
 		}
@@ -41,6 +44,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidEnd -= OnEnded;
 				platformView.ValueChanged -= OnValueChanged;
 				platformView.DateSelected -= OnDateSelected;
+				platformView.Picker.ValueChanged -= OnValueChanged;
 
 				platformView.Dispose();
 			}
@@ -93,7 +97,8 @@ namespace Microsoft.Maui.Handlers
 
 		void OnValueChanged(object? sender, EventArgs e)
 		{
-			SetVirtualViewTime();
+			if (UpdateImmediately)  // Platform Specific
+				SetVirtualViewTime();
 		}
 
 		void OnDateSelected(object? sender, EventArgs e)

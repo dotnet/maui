@@ -67,6 +67,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				foreach (var snip in snippet)
 					Assert.Contains(snip, content, StringComparison.Ordinal);
 			}
+
+			protected void AssertFileContains(string file, SKColor color, int x, int y)
+			{
+				file = Path.Combine(DestinationDirectory, file);
+
+				using var resultImage = SKBitmap.Decode(file);
+				using var pixmap = resultImage.PeekPixels();
+				Assert.Equal(color, pixmap.GetPixelColor(x, y));
+			}
 		}
 
 		public class ExecuteForAndroid : ExecuteForApp
@@ -1179,6 +1188,23 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				AssertFileSize($"{bg}WideTile.scale-100.png", 310, 150);
 				AssertFileSize($"{bg}WideTile.scale-200.png", 620, 300);
+			}
+
+			[Fact]
+			public void ColorsInCssCanBeUsed()
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/not_working.svg"),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize("not_working.scale-100.png", 24, 24);
+
+				AssertFileContains("not_working.scale-100.png", 0xFF71559B, 2, 6);
 			}
 		}
 

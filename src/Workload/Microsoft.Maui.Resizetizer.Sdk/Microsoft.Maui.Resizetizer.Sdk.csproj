@@ -22,6 +22,4 @@
     <ProjectReference Include="$(MauiRootDirectory)src/SingleProject/Resizetizer/src/Resizetizer.csproj" />
   </ItemGroup>
 
-  <Import Project="../Shared/Svg.Skia.targets" />
-
 </Project>

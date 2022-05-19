@@ -56,16 +56,11 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/EllipseGeometry.xml" path="//Member[@MemberName='AppendPath']/Docs" />
 		public override void AppendPath(PathF path)
 		{
-			double density = 1.0d;
-#if ANDROID
-			density = DeviceDisplay.MainDisplayInfo.Density;
-#endif
+			var centerX = (float)RadiusX;
+			var centerY = (float)RadiusY;
 
-			var centerX = (float)(density * RadiusX);
-			var centerY = (float)(density * RadiusY);
-
-			var radiusX = (float)(density * RadiusX);
-			var radiusY = (float)(density * RadiusY);
+			var radiusX = (float)RadiusX;
+			var radiusY = (float)RadiusY;
 
 			path.AppendEllipse(centerX - radiusX, centerY - radiusY, radiusX * 2f, radiusY * 2f);
 		}

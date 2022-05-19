@@ -42,8 +42,8 @@ namespace Microsoft.Maui
 
 		public FontSize GetFontSize(Font font, float defaultFontSize = 0)
 		{
-			var size = font.Size <= 0
-				? (defaultFontSize > 0 ? defaultFontSize : 14f)
+			var size = font.Size <= 0 || double.IsNaN(font.Size)
+				? (defaultFontSize > 0 ? defaultFontSize : (float)DefaultFontSize)
 				: (float)font.Size;
 
 			ComplexUnitType units;

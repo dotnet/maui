@@ -168,6 +168,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateBackgroundColor();
 		}
 
+		[PortHandler]
 		void UpdateRefreshPullDirection()
 		{
 			if (Element.IsSet(Specifics.RefreshPullDirectionProperty))

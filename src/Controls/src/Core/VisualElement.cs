@@ -441,16 +441,10 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Bounds']/Docs" />
 		public Rect Bounds
 		{
-			get { return new Rect(X, Y, Width, Height); }
+			get { return IsMocked() ? new Rect(_mockX, _mockY, _mockWidth, _mockHeight) : _frame; }
 			private set
 			{
-				if (value.X == X && value.Y == Y && value.Height == Height && value.Width == Width)
-					return;
-				BatchBegin();
-				X = value.X;
-				Y = value.Y;
-				SetSize(value.Width, value.Height);
-				BatchCommit();
+				Frame = value;
 			}
 		}
 
@@ -738,7 +732,6 @@ namespace Microsoft.Maui.Controls
 			if (!Batched)
 			{
 				BatchCommitted?.Invoke(this, new EventArg<VisualElement>(this));
-				DependencyService.Get<IPlatformInvalidate>()?.Invalidate(this);
 			}
 		}
 
@@ -1021,6 +1014,11 @@ namespace Microsoft.Maui.Controls
 #endif
 		}
 
+		bool IsMocked() 
+		{
+			return _mockX != -1 || _mockY != -1 || _mockWidth != -1 || _mockHeight != -1;
+		}
+
 		internal virtual void OnConstraintChanged(LayoutConstraint oldConstraint, LayoutConstraint newConstraint) => ComputeConstrainsForChildren();
 
 		internal virtual void OnIsPlatformEnabledChanged()
@@ -1199,16 +1197,21 @@ namespace Microsoft.Maui.Controls
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
-		void SetSize(double width, double height)
+		void UpdateBoundsComponents(Rect bounds) 
 		{
-			if (Width == width && Height == height)
-				return;
+			_frame = bounds;
 
-			Width = width;
-			Height = height;
+			BatchBegin();
 
-			SizeAllocated(width, height);
+			X = bounds.X;
+			Y = bounds.Y;
+			Width = bounds.Width;
+			Height = bounds.Height;
+
+			SizeAllocated(Width, Height);
 			SizeChanged?.Invoke(this, EventArgs.Empty);
+
+			BatchCommit();
 		}
 
 		public class FocusRequestArgs : EventArgs

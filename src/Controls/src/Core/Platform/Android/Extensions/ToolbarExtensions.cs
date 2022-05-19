@@ -13,6 +13,7 @@ using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
+using AGraphics = Android.Graphics;
 using ATextView = global::Android.Widget.TextView;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = global::Android.Views.View;
@@ -150,7 +151,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (navIconColor != null && nativeToolbar.NavigationIcon != null)
 			{
 				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable dad)
-					dad.Color = Android.Graphics.Color.White;
+					dad.Color = AGraphics.Color.White;
 
 				nativeToolbar.NavigationIcon.SetColorFilter(navIconColor, FilterMode.SrcAtop);
 			}
@@ -200,7 +201,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		const int DefaultDisabledToolbarAlpha = 127;
-		public static void DisposeMenuItems(this AToolbar toolbar, IEnumerable<ToolbarItem> toolbarItems, PropertyChangedEventHandler toolbarItemChanged)
+		public static void DisposeMenuItems(this AToolbar? toolbar, IEnumerable<ToolbarItem> toolbarItems, PropertyChangedEventHandler toolbarItemChanged)
 		{
 			if (toolbarItems == null)
 				return;

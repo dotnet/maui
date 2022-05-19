@@ -1,6 +1,6 @@
 # Development Guide
 
-This page contains steps to build and run the .NET MAUI repository from source. If you are looking to build apps with .NET MAUI please head over to the [.NET MAUI documentation](https://docs.microsoft.com/dotnet/maui) to get started.
+This page contains steps to build and run the .NET MAUI repository from source. If you are looking to build apps with .NET MAUI please head over to the links in the [README](https://github.com/dotnet/maui/blob/main/README.md) to get started.
 
 ## Requirements
 
@@ -13,10 +13,7 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
    - [Install the latest Public Preview of Visual Studio](https://docs.microsoft.com/en-us/dotnet/maui/get-started/installation/)
    - [macOS (x64)](https://aka.ms/dotnet/6.0.3xx/daily/dotnet-sdk-osx-x64.pkg)  
    - [macOS (arm64)](https://aka.ms/dotnet/6.0.3xx/daily/dotnet-sdk-osx-arm64.pkg)
-2. Install the released 6.0.2xx SDK as well:  
-   - https://dotnet.microsoft.com/en-us/download/dotnet/6.0
-   > This is a known issue where we can't use rollback files from one SDK band in another. https://github.com/dotnet/sdk/issues/23402
-3. Clear your nuget cache:  
+2. Clear your nuget cache:  
    ```
    dotnet nuget locals all --clear
    ```
@@ -210,3 +207,7 @@ public static int foo = 2130771968;
    control, such as: `src\Controls\src\Core\Platform\Android\Resource.designer.cs`
 
 5. Restore the commented code in `Directory.Build.targets`.
+
+## Stats
+
+<img src="https://repobeats.axiom.co/api/embed/f917a77cbbdeee19b87fa1f2f932895d1df18b71.svg" />

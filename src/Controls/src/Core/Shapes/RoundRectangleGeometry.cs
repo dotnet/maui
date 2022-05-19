@@ -114,19 +114,15 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public override void AppendPath(Graphics.PathF path)
 		{
-			double density = 1.0d;
-#if ANDROID
-			density = DeviceDisplay.MainDisplayInfo.Density;
-#endif
-			float x = (float)(density * Rect.X);
-			float y = (float)(density * Rect.Y);
-			float w = (float)(density * Rect.Width);
-			float h = (float)(density * Rect.Height);
+			float x = (float)Rect.X;
+			float y = (float)Rect.Y;
+			float w = (float)Rect.Width;
+			float h = (float)Rect.Height;
 
-			float tl = (float)(density * CornerRadius.TopLeft);
-			float tr = (float)(density * CornerRadius.TopRight);
-			float bl = (float)(density * CornerRadius.BottomLeft);
-			float br = (float)(density * CornerRadius.BottomRight);
+			float tl = (float)CornerRadius.TopLeft;
+			float tr = (float)CornerRadius.TopRight;
+			float bl = (float)CornerRadius.BottomLeft;
+			float br = (float)CornerRadius.BottomRight;
 
 			path.AppendRoundedRectangle(x, y, w, h, tl, tr, bl, br);
 		}

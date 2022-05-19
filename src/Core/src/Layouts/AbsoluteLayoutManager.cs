@@ -132,8 +132,8 @@ namespace Microsoft.Maui.Layouts
 		{
 			if (boundsValue < 0)
 			{
-				// If the child view doesn't have bounds set by the AbsoluteLayout, then we'll measure using the full constraint value
-				return constraint;
+				// If the child view doesn't have bounds set by the AbsoluteLayout, then we'll let it auto-size
+				return double.PositiveInfinity;
 			}
 
 			if (proportional)
