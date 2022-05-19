@@ -88,19 +88,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webview.PostWebMessage(new WebMessage("capturePort", destPort), AndroidAppOriginUri);
 		}
 
-		protected override async ValueTask DisposeAsyncCore()
-		{
-			await base.DisposeAsyncCore();
-
-			if (_nativeToJSPorts is not null)
-			{
-				foreach (var port in _nativeToJSPorts)
-				{
-					port?.Close();
-				}
-			}
-		}
-
 		private class BlazorWebMessageCallback : WebMessagePort.WebMessageCallback
 		{
 			private readonly Action<string?> _onMessageReceived;

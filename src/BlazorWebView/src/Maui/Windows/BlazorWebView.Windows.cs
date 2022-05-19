@@ -24,7 +24,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private void Window_Destroying(object? sender, EventArgs e)
 		{
-			// see: https://github.com/microsoft/microsoft-ui-xaml/issues/6872
+			// See: https://github.com/dotnet/maui/issues/7277
+			Handler?.DisconnectHandler();
+
+			// See: https://github.com/microsoft/microsoft-ui-xaml/issues/6872
 			((BlazorWebViewHandler?)Handler)?.PlatformView.Close();
 		}
 	}
