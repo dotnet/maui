@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private static readonly AUri AndroidAppOriginUri = AUri.Parse(AppOrigin)!;
 		private readonly AWebView _webview;
 		private readonly string _contentRootRelativeToAppRoot;
-		private WebMessagePort[]? _nativeToJSPorts;
 
 		/// <summary>
 		/// Constructs an instance of <see cref="AndroidWebKitWebViewManager"/>.
@@ -74,16 +73,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		internal void SetUpMessageChannel()
 		{
-			_nativeToJSPorts = _webview.CreateWebMessageChannel();
+			var nativeToJSPorts = _webview.CreateWebMessageChannel();
 
 			var nativeToJs = new BlazorWebMessageCallback(message =>
 			{
 				MessageReceived(AppOriginUri, message!);
 			});
 
-			var destPort = new[] { _nativeToJSPorts[1] };
+			var destPort = new[] { nativeToJSPorts[1] };
 
-			_nativeToJSPorts[0].SetWebMessageCallback(nativeToJs);
+			nativeToJSPorts[0].SetWebMessageCallback(nativeToJs);
 
 			_webview.PostWebMessage(new WebMessage("capturePort", destPort), AndroidAppOriginUri);
 		}
