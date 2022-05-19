@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using ElmSharp;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
 using ELayout = ElmSharp.Layout;
@@ -110,5 +111,19 @@ namespace Microsoft.Maui.Platform
 				s_windowCloseRequestHandler[window].Invoke();
 		}
 
+		internal static Devices.DisplayOrientation GetOrientation(this IWindow window)
+		{
+			int displayWidth = PlatformUtils.GetFeatureInfo<int>("screen.width");
+			int displayHeight = PlatformUtils.GetFeatureInfo<int>("screen.height");
+
+			if (displayHeight >= displayWidth)
+			{
+				return Devices.DisplayOrientation.Portrait;
+			}
+			else
+			{
+				return Devices.DisplayOrientation.Landscape;
+			}
+		}
 	}
 }
