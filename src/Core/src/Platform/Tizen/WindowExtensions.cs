@@ -111,19 +111,14 @@ namespace Microsoft.Maui.Platform
 				s_windowCloseRequestHandler[window].Invoke();
 		}
 
-		internal static Devices.DisplayOrientation GetOrientation(this IWindow window)
-		{
-			int displayWidth = PlatformUtils.GetFeatureInfo<int>("screen.width");
-			int displayHeight = PlatformUtils.GetFeatureInfo<int>("screen.height");
-
-			if (displayHeight >= displayWidth)
+		internal static Devices.DisplayOrientation GetOrientation(this IWindow window) =>
+			window.Handler?.MauiContext?.GetPlatformWindow()?.Rotation switch
 			{
-				return Devices.DisplayOrientation.Portrait;
-			}
-			else
-			{
-				return Devices.DisplayOrientation.Landscape;
-			}
-		}
+				0 => Devices.DisplayOrientation.Portrait,
+				90 => Devices.DisplayOrientation.Landscape,
+				180 => Devices.DisplayOrientation.Portrait,
+				270 => Devices.DisplayOrientation.Landscape,
+				_ => Devices.DisplayOrientation.Unknown
+			};
 	}
 }
