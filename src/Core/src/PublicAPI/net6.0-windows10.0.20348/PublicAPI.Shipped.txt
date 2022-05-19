@@ -1938,7 +1938,6 @@ override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.SetupC
 override Microsoft.Maui.Handlers.WebViewHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.WebView2! platformView) -> void
 override Microsoft.Maui.Handlers.WebViewHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.WebView2!
 override Microsoft.Maui.Handlers.WebViewHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.WebView2! platformView) -> void
-override Microsoft.Maui.Handlers.WindowHandler.ConnectHandler(Microsoft.UI.Xaml.Window! platformView) -> void
 override Microsoft.Maui.Handlers.WindowHandler.CreatePlatformElement() -> Microsoft.UI.Xaml.Window!
 override Microsoft.Maui.Handlers.WindowHandler.DisconnectHandler(Microsoft.UI.Xaml.Window! platformView) -> void
 override Microsoft.Maui.Layouts.AbsoluteLayoutManager.ArrangeChildren(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
@@ -1967,8 +1966,6 @@ override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnPointerExited(Micro
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnPointerMoved(Microsoft.UI.Xaml.Input.PointerRoutedEventArgs! e) -> void
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnPointerPressed(Microsoft.UI.Xaml.Input.PointerRoutedEventArgs! e) -> void
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnPointerReleased(Microsoft.UI.Xaml.Input.PointerRoutedEventArgs! e) -> void
-override Microsoft.Maui.Platform.RootPanel.ArrangeOverride(Windows.Foundation.Size finalSize) -> Windows.Foundation.Size
-override Microsoft.Maui.Platform.RootPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 override Microsoft.Maui.Platform.WindowRootView.OnApplyTemplate() -> void
 override Microsoft.Maui.Platform.WindowRootView.OnContentChanged(object! oldContent, object! newContent) -> void
 override Microsoft.Maui.RectangleGridAdorner.Draw(Microsoft.Maui.Graphics.ICanvas! canvas, Microsoft.Maui.Graphics.RectF dirtyRect) -> void
