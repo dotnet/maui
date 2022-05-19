@@ -5,7 +5,7 @@ using Microsoft.Maui.Platform;
 using static Microsoft.Maui.DeviceTests.HandlerTestBase;
 using AActivity = Android.App.Activity;
 
-namespace Microsoft.Maui.DeviceTests
+namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class WindowHandlerStub : ElementHandler<IWindow, AActivity>, IWindowHandler
 	{

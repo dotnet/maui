@@ -6,7 +6,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
 
-namespace Microsoft.Maui.DeviceTests
+namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class WindowHandlerStub : ElementHandler<IWindow, UIWindow>, IWindowHandler
 	{
