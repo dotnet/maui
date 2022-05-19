@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Devices;
 using ElmSharp;
 using EBox = ElmSharp.Box;
+using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -154,9 +155,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var backgroundColor = appearance?.BackgroundColor;
 			var foregroundColor = appearance?.ForegroundColor;
 
-			_navBar.TitleColor = titleColor.IsDefault() ? ShellView.DefaultTitleColor : (titleColor?.ToPlatformEFL()).GetValueOrDefault();
-			_navBar.BackgroundColor = backgroundColor.IsDefault() ? ShellView.DefaultBackgroundColor : (backgroundColor?.ToPlatformEFL()).GetValueOrDefault();
-			_navBar.ForegroundColor = foregroundColor.IsDefault() ? ShellView.DefaultForegroundColor : (foregroundColor?.ToPlatformEFL()).GetValueOrDefault();
+			_navBar.TitleColor = titleColor.IsDefault() ? TThemeConstants.Shell.ColorClass.DefaultTitleColor : (titleColor?.ToPlatformEFL()).GetValueOrDefault();
+			_navBar.BackgroundColor = backgroundColor.IsDefault() ? TThemeConstants.Shell.ColorClass.DefaultBackgroundColor : (backgroundColor?.ToPlatformEFL()).GetValueOrDefault();
+			_navBar.ForegroundColor = foregroundColor.IsDefault() ? TThemeConstants.Shell.ColorClass.DefaultForegroundColor : (foregroundColor?.ToPlatformEFL()).GetValueOrDefault();
 		}
 
 
