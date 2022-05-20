@@ -26,9 +26,11 @@ namespace Microsoft.Maui.DeviceTests
 		where TStub : StubBase, IImageStub, new()
 	{
 #if ANDROID
-		const string ImageEventMemberName = "SetImageResource";
+		const string ImageEventAppResourceMemberName = "SetImageResource";
+		const string ImageEventCustomMemberName = "SetImageResource";
 #elif IOS || MACCATALYST
-		const string ImageEventMemberName = "Image";
+		const string ImageEventAppResourceMemberName = "Image";
+		const string ImageEventCustomMemberName = "Image";
 #endif
 
 		[Theory(
@@ -355,7 +357,7 @@ namespace Microsoft.Maui.DeviceTests
 				await handler.PlatformView.AssertContainsColor(Colors.Red);
 
 				Assert.Single(handler.ImageEvents);
-				Assert.Equal(ImageEventMemberName, handler.ImageEvents[0].Member);
+				Assert.Equal(ImageEventAppResourceMemberName, handler.ImageEvents[0].Member);
 				var platformImage = Assert.IsType<PlatformImageType>(handler.ImageEvents[0].Value);
 
 #if ANDROID
@@ -393,7 +395,7 @@ namespace Microsoft.Maui.DeviceTests
 				await handler.PlatformView.AssertContainsColor(Colors.Blue);
 
 				Assert.Single(handler.ImageEvents);
-				Assert.Equal(ImageEventMemberName, handler.ImageEvents[0].Member);
+				Assert.Equal(ImageEventAppResourceMemberName, handler.ImageEvents[0].Member);
 				var platformImage = Assert.IsType<PlatformImageType>(handler.ImageEvents[0].Value);
 
 #if ANDROID
@@ -410,7 +412,7 @@ namespace Microsoft.Maui.DeviceTests
 			var events = await ImageLoadSequenceIsCorrect();
 
 			Assert.Single(events);
-			Assert.Equal(ImageEventMemberName, events[0].Member);
+			Assert.Equal(ImageEventCustomMemberName, events[0].Member);
 
 #if ANDROID
 			var platformImage = Assert.IsType<ColorDrawable>(events[0].Value);
@@ -427,7 +429,7 @@ namespace Microsoft.Maui.DeviceTests
 			var events = await InterruptingLoadCancelsAndStartsOver();
 
 			Assert.Single(events);
-			Assert.Equal(ImageEventMemberName, events[0].Member);
+			Assert.Equal(ImageEventCustomMemberName, events[0].Member);
 
 #if ANDROID
 			var platformImage = Assert.IsType<ColorDrawable>(events[0].Value);
