@@ -482,7 +482,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
 			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
 
-			// We expect that the view hould be arranged on the right
+			// We expect that the view should be arranged on the right
 			var expectedRectangle = new Rect(0, 0, 100, 100);
 
 			abs[0].Received().Arrange(Arg.Is(expectedRectangle));

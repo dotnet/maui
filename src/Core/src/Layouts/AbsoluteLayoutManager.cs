@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Layouts
 			bool leftToRight = AbsoluteLayout.ShouldArrangeLeftToRight();
 
 			// Figure out where we're starting from (the left edge of the padded area, or the right edge)
-			double xPosition = leftToRight ? padding.Left + bounds.Left : bounds.Right - padding.Right;
+			double xPosition = leftToRight ? left : right;
 
 			for (int n = 0; n < AbsoluteLayout.Count; n++)
 			{
