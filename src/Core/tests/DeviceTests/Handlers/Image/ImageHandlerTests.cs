@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 #if ANDROID
 		const string ImageEventAppResourceMemberName = "SetImageResource";
-		const string ImageEventCustomMemberName = "SetImageResource";
+		const string ImageEventCustomMemberName = "SetImageDrawable";
 #elif IOS || MACCATALYST
 		const string ImageEventAppResourceMemberName = "Image";
 		const string ImageEventCustomMemberName = "Image";
