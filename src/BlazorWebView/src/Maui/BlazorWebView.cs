@@ -76,6 +76,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			// See: https://github.com/dotnet/maui/issues/3604
 			Handler?.DisconnectHandler();
+			Unloaded -= OnUnloaded;
 		}
 
 		void IBlazorWebView.UrlLoading(UrlLoadingEventArgs args) =>
