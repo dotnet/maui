@@ -10,6 +10,7 @@ using Xunit;
 using Android.Graphics.Drawables;
 using PlatformImageType = System.Int32;
 #elif IOS || MACCATALYST
+using UIKit;
 using PlatformImageType = UIKit.UIImage;
 #endif
 
