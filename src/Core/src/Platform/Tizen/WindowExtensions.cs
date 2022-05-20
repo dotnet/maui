@@ -111,14 +111,17 @@ namespace Microsoft.Maui.Platform
 				s_windowCloseRequestHandler[window].Invoke();
 		}
 
-		internal static Devices.DisplayOrientation GetOrientation(this IWindow window) =>
-			window.Handler?.MauiContext?.GetPlatformWindow()?.Rotation switch
+		internal static Devices.DisplayOrientation GetOrientation(this IWindow window)
+		{
+			bool isTV = Elementary.GetProfile() == "tv";
+			return window.Handler?.MauiContext?.GetPlatformWindow()?.Rotation switch
 			{
-				0 => Devices.DisplayOrientation.Portrait,
-				90 => Devices.DisplayOrientation.Landscape,
-				180 => Devices.DisplayOrientation.Portrait,
-				270 => Devices.DisplayOrientation.Landscape,
+				0 => isTV ? Devices.DisplayOrientation.Landscape : Devices.DisplayOrientation.Portrait,
+				90 => isTV ? Devices.DisplayOrientation.Portrait : Devices.DisplayOrientation.Landscape,
+				180 => isTV ? Devices.DisplayOrientation.Landscape : Devices.DisplayOrientation.Portrait,
+				270 => isTV ? Devices.DisplayOrientation.Portrait : Devices.DisplayOrientation.Landscape,
 				_ => Devices.DisplayOrientation.Unknown
 			};
+		}
 	}
 }
