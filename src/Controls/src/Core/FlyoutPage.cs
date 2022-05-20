@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls
 					return false;
 
 				FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
-				var orientation = this.Window?.GetOrientation() ?? DisplayOrientation.Unknown;
+				var orientation = Window.GetOrientation();
 
 				bool isSplitOnLandscape = (behavior == FlyoutLayoutBehavior.SplitOnLandscape || behavior == FlyoutLayoutBehavior.Default) && orientation.IsLandscape();
 				bool isSplitOnPortrait = behavior == FlyoutLayoutBehavior.SplitOnPortrait && orientation.IsPortrait();

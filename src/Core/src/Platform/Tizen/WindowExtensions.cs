@@ -111,8 +111,11 @@ namespace Microsoft.Maui.Platform
 				s_windowCloseRequestHandler[window].Invoke();
 		}
 
-		internal static Devices.DisplayOrientation GetOrientation(this IWindow window)
+		internal static Devices.DisplayOrientation GetOrientation(this IWindow? window)
 		{
+			if (window == null)
+				return Devices.DeviceDisplay.Current.MainDisplayInfo.Orientation;
+
 			bool isTV = Elementary.GetProfile() == "tv";
 			return window.Handler?.MauiContext?.GetPlatformWindow()?.Rotation switch
 			{

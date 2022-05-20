@@ -62,8 +62,11 @@ namespace Microsoft.Maui.Platform
 			return UI.Windowing.AppWindow.GetFromWindowId(windowId);
 		}
 
-		internal static DisplayOrientation GetOrientation(this IWindow window)
+		internal static DisplayOrientation GetOrientation(this IWindow? window)
 		{
+			if (window == null)
+				return DeviceDisplay.Current.MainDisplayInfo.Orientation;
+
 			var appWindow = window.Handler?.MauiContext?.GetPlatformWindow()?.GetAppWindow();
 
 			if (appWindow == null)

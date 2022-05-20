@@ -31,11 +31,7 @@ namespace Microsoft.Maui.Platform
 		public static float GetDisplayDensity(this UIWindow uiWindow) =>
 			(float)(uiWindow.Screen?.Scale ?? new nfloat(1.0f));
 
-#pragma warning disable CA1416 // UIApplication.StatusBarOrientation has [UnsupportedOSPlatform("ios9.0")]. (Deprecated but still works)
-		internal static DisplayOrientation GetOrientation(this IWindow window) =>
-			UIApplication.SharedApplication.StatusBarOrientation.IsLandscape()
-				? DisplayOrientation.Landscape
-				: DisplayOrientation.Portrait;
-#pragma warning restore CA1416
+		internal static DisplayOrientation GetOrientation(this IWindow? window) =>
+			DeviceDisplay.Current.MainDisplayInfo.Orientation;
 	}
 }
