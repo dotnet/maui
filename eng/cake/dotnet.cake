@@ -165,8 +165,11 @@ Task("dotnet-templates")
 
                 // Enable Tizen
                 ReplaceTextInFiles($"{projectName}/*.csproj",
-                    "<!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->",
-                    "<TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks>");
+                    "<!-- <TargetFrameworks>",
+                    "<TargetFrameworks>");
+                ReplaceTextInFiles($"{projectName}/*.csproj",
+                    "</TargetFrameworks> -->",
+                    "</TargetFrameworks>");
 
                 // Build
                 RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);

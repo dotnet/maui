@@ -2,7 +2,7 @@
   <Import Project="eng\Versions.props" />
 
   <PropertyGroup>
-    <_MauiDotNetVersion Condition="'$(_MauiDotNetVersion)' == ''">6.0</_MauiDotNetVersion>
+    <_MauiDotNetVersion Condition="'$(_MauiDotNetVersion)' == ''">7.0</_MauiDotNetVersion>
     <_MauiDotNetTfm Condition="'$(_MauiDotNetTfm)' == ''">net$(_MauiDotNetVersion)</_MauiDotNetTfm>
     <_MauiTargetPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MauiTargetPlatformIdentifier>
     <_MauiNoTargetPlatform Condition="'$(_MauiTargetPlatformIdentifier)' == ''">True</_MauiNoTargetPlatform>
