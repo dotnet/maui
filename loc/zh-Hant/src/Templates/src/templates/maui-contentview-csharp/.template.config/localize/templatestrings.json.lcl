@@ -21,10 +21,13 @@
       </Item>
       <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[.NET MAUI ContentView (C#) (Preview)]]></Val>
+          <Val><![CDATA[.NET MAUI ContentView (C#)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[.NET MAUI ContentView (C#) (預覽)]]></Val>
+            <Val><![CDATA[.NET MAUI ContentView (C#)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[.NET MAUI ContentView (C#) (Preview)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
