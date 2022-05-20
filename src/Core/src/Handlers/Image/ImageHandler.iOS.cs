@@ -53,6 +53,7 @@ namespace Microsoft.Maui.Handlers
 			handler.SourceLoader.UpdateImageSourceAsync();
 
 		void OnSetImageSource(UIImage? obj) => 
+			PlatformView.Image = obj;
 
 		void OnWindowChanged(object? sender, EventArgs e)
 		{
