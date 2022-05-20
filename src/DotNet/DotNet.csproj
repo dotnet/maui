@@ -65,7 +65,7 @@
     <CopyWorkloadFiles
         Name="microsoft.net.sdk.maui"
         Files="@(_WorkloadFiles)"
-        WorkloadDirectory="$(MSBuildExtensionsPath)../../sdk-manifests/$(DotNetVersionBand)"
+        WorkloadDirectory="$(MSBuildExtensionsPath)../../sdk-manifests/$(DotNetSdkManifestsFolder)"
     />
     <RemoveDir Directories="$(_InstallTempDirectory)" />
 
