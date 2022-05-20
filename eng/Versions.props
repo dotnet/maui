@@ -69,6 +69,6 @@
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>6.0.300</DotNetMaciOSManifestVersionBand>
-    <DotNetTizenManifestVersionBand>$(DotNetVersionBand)</DotNetTizenManifestVersionBand>
+    <DotNetTizenManifestVersionBand>6.0.300</DotNetTizenManifestVersionBand>
   </PropertyGroup>
 </Project>
