@@ -7,7 +7,18 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
-		protected override ImageView CreatePlatformView() => new AppCompatImageView(Context);
+		protected override ImageView CreatePlatformView() 
+		{ 
+			var imageView = new AppCompatImageView(Context);
+
+			// Enable view bounds adjustment on measure.
+			// This allows the ImageView's OnMeasure method to account for the image's intrinsic
+			// aspect ratio during measurement, which gives us more useful values during constrained
+			// measurement passes.
+			imageView.SetAdjustViewBounds(true);
+
+			return imageView;
+		}
 
 		protected override void DisconnectHandler(ImageView platformView)
 		{
