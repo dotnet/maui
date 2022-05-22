@@ -196,15 +196,17 @@ namespace Microsoft.Maui.DeviceTests
 			public override AView OnCreateView(ALayoutInflater inflater, AViewGroup container, Bundle savedInstanceState)
 			{
 				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
-				_ = _window.ToHandler(ScopedMauiContext);
+				var windowHandler = (Stubs.WindowHandlerStub)_window.ToHandler(ScopedMauiContext);
         
-				var rootView = ScopedMauiContext.GetNavigationRootManager().RootView;
 				var decorView = RequireActivity().Window.DecorView;
-				rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
+				//rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
 
-				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
+				FakeActivityRootView = windowHandler.FakeActivityRootView;
 				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
-				FakeActivityRootView.AddView(rootView);
+				FakeActivityRootView.GetChildAt(0).LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
+				//new FakeActivityRootView(ScopedMauiContext.Context);
+				//FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
+				//FakeActivityRootView.AddView(rootView);
 
 				return FakeActivityRootView;
 			}

@@ -7,18 +7,30 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, Activity>
 	{
-		public static void MapTitle(IWindowHandler handler, IWindow window) { }
-
-		public static void MapContent(IWindowHandler handler, IWindow window)
+		internal static void UpdateContent(IWindowHandler handler, IWindow window, object addTo)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			rootManager.Connect(window.Content);
-			handler.PlatformView.SetContentView(rootManager.RootView);
-			if (window.VisualDiagnosticsOverlay != null && rootManager.RootView is ViewGroup group)
-				window.VisualDiagnosticsOverlay.Initialize();
+
+			if (addTo is Activity activity)
+			{
+				activity.SetContentView(rootManager.RootView);
+				if (window.VisualDiagnosticsOverlay != null && rootManager.RootView is ViewGroup group)
+					window.VisualDiagnosticsOverlay.Initialize();
+			}
+			else if (addTo is ViewGroup vg)
+			{
+				vg.RemoveAllViews();
+				vg.AddView(rootManager.RootView);
+			}
 		}
+
+		public static void MapTitle(IWindowHandler handler, IWindow window) { }
+
+		public static void MapContent(IWindowHandler handler, IWindow window) =>
+			UpdateContent(handler, window, handler.PlatformView);
 
 		public static void MapToolbar(IWindowHandler handler, IWindow view)
 		{

@@ -14,22 +14,30 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			[nameof(IWindow.Content)] = MapContent
 		};
 
+		public FakeActivityRootView FakeActivityRootView { get; private set; }
+
 		void UpdateContent()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			
-			var rootManager = MauiContext.GetNavigationRootManager();
 
-			var previousRootView = rootManager.RootView;
-			rootManager.Connect(VirtualView.Content);
+		//	var decorView = MauiContext.Context.GetActivity().Window.DecorView;
+			var fakeRootView = FakeActivityRootView ??= new FakeActivityRootView(MauiContext.Context);
+			//fakeRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
 
-			// This is used for cases where we are testing swapping out the page set on window
-			if (previousRootView?.Parent is FakeActivityRootView farw)
-			{
-				previousRootView.RemoveFromParent();
-				rootManager.RootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(500, 500);
-				farw.AddView(rootManager.RootView);
-			}
+			Controls.Window.UpdatePlatformContent(this, VirtualView, fakeRootView);
+
+			//var rootManager = MauiContext.GetNavigationRootManager();
+
+			//var previousRootView = rootManager.RootView;
+			//rootManager.Connect(VirtualView.Content);
+
+			//// This is used for cases where we are testing swapping out the page set on window
+			//if (previousRootView?.Parent is FakeActivityRootView farw)
+			//{
+			//	previousRootView.RemoveFromParent();
+			//	rootManager.RootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(500, 500);
+			//	farw.AddView(rootManager.RootView);
+			//}
 		}
 
 		public static void MapContent(WindowHandlerStub handler, IWindow window)

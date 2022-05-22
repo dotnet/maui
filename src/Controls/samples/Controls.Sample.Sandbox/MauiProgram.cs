@@ -17,6 +17,6 @@ namespace Maui.Controls.Sample
 	class App : Application
 	{
 		protected override Window CreateWindow(IActivationState activationState) =>
-			new Window(new MainPage());
+			new Window(new Shell() { CurrentItem = new MainPage() });
 	}
 }

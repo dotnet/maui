@@ -12,7 +12,12 @@ namespace Microsoft.Maui.Controls
 		internal Activity PlatformActivity =>
 			(Handler?.PlatformView as Activity) ?? throw new InvalidOperationException("Window should have an Activity set.");
 
-		public static void MapContent(WindowHandler handler, IWindow view)
+		public static void MapContent(IWindowHandler handler, IWindow view)
+		{
+			UpdatePlatformContent(handler, view, handler.PlatformView);
+		}
+
+		internal static void UpdatePlatformContent(IWindowHandler handler, IWindow view, object addTo)
 		{
 			if (view.Content is not Shell)
 			{
@@ -21,9 +26,18 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var nativeContent = view.Content.ToContainerView(handler.MauiContext!);
-			handler.PlatformView.SetContentView(nativeContent);
 
-			if (view is Window w)
+			if (addTo is Activity activity)
+			{
+				activity.SetContentView(nativeContent);
+			}
+			else if (addTo is ViewGroup vg)
+			{
+				vg.RemoveAllViews();
+				vg.AddView(nativeContent);
+			}
+
+			if (view is Window _)
 				handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
 		}
 	}
