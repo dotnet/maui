@@ -41,6 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				contentView.Content = child;
 				Assert.True(GetChildCount(contentViewHandler) == 1);
+				Assert.True(GetContentChildCount(contentViewHandler) == 0);
 				grid.Children.Add(header);
 				grid.Children.Add(presenter);
 				grid.Children.Add(footer);
