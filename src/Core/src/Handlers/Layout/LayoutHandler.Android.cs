@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 
 			foreach (var child in VirtualView.OrderByZIndex())
 			{
-				PlatformView.SafelyAddView(child.ToPlatform(MauiContext));
+				PlatformView.AddView(child.ToPlatform(MauiContext));
 			}
 		}
 
