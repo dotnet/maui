@@ -3,6 +3,7 @@ using Microsoft.Maui.Devices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Media;
 using WinRT.Interop;
+using Windows.Graphics.Display;
 
 namespace Microsoft.Maui.Platform
 {
@@ -59,6 +60,29 @@ namespace Microsoft.Maui.Platform
 
 			var windowId = UI.Win32Interop.GetWindowIdFromWindow(hwnd);
 			return UI.Windowing.AppWindow.GetFromWindowId(windowId);
+		}
+
+		internal static DisplayOrientation GetOrientation(this IWindow? window)
+		{
+			if (window == null)
+				return DeviceDisplay.Current.MainDisplayInfo.Orientation;
+
+			var appWindow = window.Handler?.MauiContext?.GetPlatformWindow()?.GetAppWindow();
+
+			if (appWindow == null)
+				return DisplayOrientation.Unknown;
+
+			DisplayOrientations orientationEnum;
+			int theScreenWidth = appWindow.Size.Width;
+			int theScreenHeight = appWindow.Size.Height;
+			if (theScreenWidth > theScreenHeight)
+				orientationEnum = DisplayOrientations.Landscape;
+			else
+				orientationEnum = DisplayOrientations.Portrait;
+
+			return orientationEnum == DisplayOrientations.Landscape
+				? DisplayOrientation.Landscape
+				: DisplayOrientation.Portrait;
 		}
 	}
 }

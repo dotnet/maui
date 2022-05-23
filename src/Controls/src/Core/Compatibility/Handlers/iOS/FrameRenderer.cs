@@ -173,6 +173,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		public override void SetNeedsLayout()
+		{
+			base.SetNeedsLayout();
+			Superview?.SetNeedsLayout();
+		}
+
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		class FrameView : Microsoft.Maui.Platform.ContentView
 		{

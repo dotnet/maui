@@ -243,5 +243,37 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(view2, zordered[2]);
 			Assert.Equal(view3, zordered[3]);
 		}
+
+		[Fact]
+		public void ZIndexUpdatePreservesAddOrderLotsOfEqualZIndexes()
+		{
+			// This tests the same thing as ZIndexUpdatePreservesAddOrderForEqualZIndexes,
+			// but for more views - since the sorting algorithm can change when the arrays 
+			// are larger, we were running into situations where layouts with more controls
+			// were _not_ preserving the Add() order when sorting by z-index.
+
+			var layout = new FakeLayout();
+
+			int views = 100;
+			int iterations = 10;
+
+			var toAdd = new IView[views];
+
+			for (int n = 0; n < views; n++)
+			{
+				toAdd[n] = CreateTestView(zIndex: 0);
+				layout.Add(toAdd[n]);
+			}
+
+			for (int i = 0; i < iterations; i++)
+			{
+				var zordered = layout.OrderByZIndex();
+
+				for (int n = 0; n < zordered.Length; n++)
+				{
+					Assert.Equal(toAdd[n], zordered[n]);
+				}
+			}
+		}
 	}
 }

@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Platform;
 using UIKit;
 
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 			return platformView.AccessibilityElementsHidden;
 		}
 
-		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)
+		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests)
 			where THandler : class, IElementHandler
 		{
 			return InvokeOnMainThreadAsync(async () =>
@@ -31,21 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 				try
 				{
 					_ = window.ToHandler(MauiContext);
-					IView content = window.Content;
-
-					if (content is IPageContainer<Page> pc)
-						content = pc.CurrentPage;
-
-					await OnLoadedAsync(content as VisualElement);
-
-					if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
-						await action((THandler)window.Handler);
-					else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
-						await action((THandler)window.Content.Handler);
-					else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
-						await action((THandler)cp.Content.Handler);
-					else
-						throw new Exception($"I can't work with {typeof(THandler)}");
+					await runTests.Invoke();
 				}
 				finally
 				{
@@ -91,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected object GetTitleView(IElementHandler handler)
 		{
 			var activeVC = GetVisibleViewController(handler);
-			if ( activeVC.NavigationItem.TitleView is
+			if (activeVC.NavigationItem.TitleView is
 				ShellPageRendererTracker.TitleViewContainer tvc)
 			{
 				return tvc.View.Handler.PlatformView;
