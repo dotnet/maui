@@ -377,7 +377,6 @@ namespace Microsoft.Maui.Controls.Xaml
 				context.ExceptionHandler(xpe);
 			else
 				throw xpe;
-
 		}
 
 		//Used by HotReload, do not change signature
