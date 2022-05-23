@@ -226,6 +226,32 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			UpdateTablayoutVisibility();
+
+			if (_viewPager?.Adapter is ShellFragmentStateAdapter adapter)
+			{
+				adapter.OnItemsCollectionChanged(sender, e);
+				SafeNotifyDataSetChanged();
+			}
+		}
+
+		void SafeNotifyDataSetChanged()
+		{
+			if (_disposed)
+				return;
+
+			if (_viewPager?.Adapter is ShellFragmentStateAdapter adapter)
+			{
+				// https://stackoverflow.com/questions/43221847/cannot-call-this-method-while-recyclerview-is-computing-a-layout-or-scrolling-wh
+				// ViewPager2 is based on RecyclerView which really doesn't like NotifyDataSetChanged when a layout is happening
+				if (!_viewPager.IsInLayout)
+				{
+					adapter.NotifyDataSetChanged();
+				}
+				else
+				{
+					_viewPager.Post(SafeNotifyDataSetChanged);
+				}
+			}
 		}
 
 		void UpdateTablayoutVisibility()
@@ -258,7 +284,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var newIndex = SectionController.GetItems().IndexOf(ShellSection.CurrentItem);
 
 				if (SectionController.GetItems().Count != _viewPager.ChildCount)
-					_viewPager.Adapter.NotifyDataSetChanged();
+				{
+					SafeNotifyDataSetChanged();
+				}
 
 				if (newIndex >= 0)
 				{
@@ -299,7 +327,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			var shellSection = ShellSection;
-			var shellContent = SectionController.GetItems()[position];
+			var visibleItems = SectionController.GetItems();
+
+			// This mainly happens if all of the items that are part of this shell section 
+			// vanish. Android calls `OnPageSelected` with the last item left in the list
+			if (visibleItems.Count >= position)
+				return;
+
+			var shellContent = visibleItems[position];
 
 			if (shellContent == shellSection.CurrentItem)
 				return;
@@ -314,7 +349,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (shellSection?.CurrentItem != null)
 			{
-				var currentPosition = SectionController.GetItems().IndexOf(shellSection.CurrentItem);
+				var currentPosition = visibleItems.IndexOf(shellSection.CurrentItem);
 				_selecting = true;
 
 				// Android doesn't really appreciate you calling SetCurrentItem inside a OnPageSelected callback.
