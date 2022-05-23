@@ -68,9 +68,6 @@ namespace Microsoft.Maui.Layouts
 
 			bool leftToRight = AbsoluteLayout.ShouldArrangeLeftToRight();
 
-			// Figure out where we're starting from (the left edge of the padded area, or the right edge)
-			double xPosition = leftToRight ? left : right;
-
 			for (int n = 0; n < AbsoluteLayout.Count; n++)
 			{
 				var child = AbsoluteLayout[n];
@@ -99,6 +96,7 @@ namespace Microsoft.Maui.Layouts
 					destination.Y = (availableHeight - destination.Height) * destination.Y;
 				}
 
+				// Figure out where we're starting from (the left edge of the padded area, or the right edge)
 				if (leftToRight)
 					destination.X += left;
 				else
