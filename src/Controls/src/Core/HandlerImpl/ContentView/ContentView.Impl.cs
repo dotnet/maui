@@ -7,8 +7,8 @@
 
 		protected override void OnApplyTemplate()
 		{
-			Handler?.UpdateValue(nameof(Content));
 			base.OnApplyTemplate();
+			Handler?.UpdateValue(nameof(Content));
 		}
 	}
 }
