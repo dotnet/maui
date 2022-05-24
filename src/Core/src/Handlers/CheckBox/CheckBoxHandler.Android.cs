@@ -1,6 +1,7 @@
 ﻿using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using Google.Android.Material.CheckBox;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -8,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override AppCompatCheckBox CreatePlatformView()
 		{
-			var platformCheckBox = new AppCompatCheckBox(Context)
+			var platformCheckBox = new MaterialCheckBox(Context)
 			{
 				SoundEffectsEnabled = false
 			};

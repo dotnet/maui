@@ -6,6 +6,14 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ViewGroupExtensions
 	{
+		public static void SafelyAddView(this AViewGroup viewGroup, AView child)
+		{
+			if (child.Parent != null)
+				child.RemoveFromParent();
+
+			viewGroup.AddView(child);
+		}
+
 		public static IEnumerable<T> GetChildrenOfType<T>(this AViewGroup viewGroup) where T : AView
 		{
 			for (var i = 0; i < viewGroup.ChildCount; i++)

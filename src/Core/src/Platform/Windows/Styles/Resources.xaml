@@ -15,8 +15,6 @@
 
     <windows:ColorConverter x:Key="ColorConverter" />
 
-    <Style x:Key="MauiRootContainerStyle" TargetType="Panel" />
-
     <Style x:Key="MauiFlyoutPresenterStyle" TargetType="FlyoutPresenter">
         <Setter Property="MaxHeight" Value="250"/>
         <Setter Property="MaxWidth" Value="300"/>

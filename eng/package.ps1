@@ -101,11 +101,15 @@ if ($IsWindows)
 else
 {
     $oldPATH=$env:PATH
+    $oldDOTNET_ROOT=$env:DOTNET_ROOT
     try
     {
         # Put our local dotnet on $PATH
         $env:PATH=($dotnet + [IO.Path]::PathSeparator + $env:PATH)
         $dotnet_tool = Join-Path $dotnet dotnet
+
+        # This tells .NET to use the bootstrapped runtime
+        $env:DOTNET_ROOT=$dotnet
 
         # Build with ./bin/dotnet/dotnet
         & $dotnet_tool pack $slnMac `
@@ -117,5 +121,6 @@ else
     finally
     {
         $env:PATH=$oldPATH
+        $env:DOTNET_ROOT=$oldDOTNET_ROOT
     }
 }

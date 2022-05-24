@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			Homogeneous = true;
 			SelectionMode = GenItemSelectionMode.Always;
-			BackgroundColor = ShellView.DefaultBackgroundColor;
+			BackgroundColor = TThemeConstants.Shell.ColorClass.DefaultBackgroundColor;
 			_defaultClass = new GenItemClass(TThemeConstants.GenItemClass.Styles.Full)
 			{
 				GetContentHandler = GetContent,

@@ -11,6 +11,7 @@ using Xunit;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.DeviceTests.Stubs;
 
 #if ANDROID || IOS
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;

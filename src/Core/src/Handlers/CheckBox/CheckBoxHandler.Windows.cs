@@ -1,11 +1,49 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class CheckBoxHandler : ViewHandler<ICheckBox, CheckBox>
 	{
-		protected override CheckBox CreatePlatformView() => new CheckBox();
+		protected override CheckBox CreatePlatformView()
+		{
+			var checkBox = new CheckBox();
+
+			AdjustCheckBoxForNoText(checkBox);
+
+			return checkBox;
+		}
+
+		static void AdjustCheckBoxForNoText(CheckBox checkBox)
+		{
+			checkBox.MinWidth = 0;
+			checkBox.MinHeight = 0;
+			checkBox.Padding = new UI.Xaml.Thickness(0);
+
+			checkBox.Loaded += OnCheckBoxLoaded;
+
+			static void OnCheckBoxLoaded(object sender, RoutedEventArgs e)
+			{
+				if (sender is not CheckBox checkBox)
+					return;
+
+				checkBox.Loaded -= OnCheckBoxLoaded;
+
+				if (VisualTreeHelper.GetChildrenCount(checkBox) <= 0)
+					return;
+
+				var root = VisualTreeHelper.GetChild(checkBox, 0);
+				if (root is not Grid rootGrid)
+					return;
+
+				var checkBoxHeight = Application.Current.Resources.TryGet<double>("CheckBoxHeight");
+				var checkBoxSize = Application.Current.Resources.TryGet<double>("CheckBoxSize");
+				var margin = (checkBoxHeight - checkBoxSize) / 2.0;
+
+				rootGrid.Margin = new UI.Xaml.Thickness(margin);
+			}
+		}
 
 		protected override void ConnectHandler(CheckBox platformView)
 		{

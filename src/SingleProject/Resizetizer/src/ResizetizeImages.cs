@@ -32,8 +32,6 @@ namespace Microsoft.Maui.Resizetizer
 
 		public override System.Threading.Tasks.Task ExecuteAsync()
 		{
-			Svg.SvgDocument.SkipGdiPlusCapabilityCheck = true;
-
 			var images = ResizeImageInfo.Parse(Images);
 
 			var dpis = DpiPath.GetDpis(PlatformType);

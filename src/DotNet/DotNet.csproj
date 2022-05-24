@@ -103,6 +103,14 @@
     <RemoveDir Directories="$(DotNetDirectory)" />
     <Exec Command="$(DotNetInstallCommand)" />
     <Touch Files="$(DotNetDirectory).stamp" AlwaysCreate="true" />
+    
+    <!-- This is used by iOS pair to mac because pair to mac can't
+        determine the version of preview versions. -->
+    <WriteLinesToFile
+        File="$(DotNetDirectory)dotnet-sdk-version.txt"
+        Lines="$(MicrosoftDotnetSdkInternalPackageVersion)"
+        Condition="$([MSBuild]::IsOSPlatform('windows'))"
+        Overwrite="true" />
   </Target>
 
   <ItemGroup>

@@ -141,7 +141,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnToolbarPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			UpdateTitle();
+			if (e.PropertyName == Shell.TitleViewProperty.PropertyName)
+			{
+				UpdateTitleView();
+			}
+			else if (e.PropertyName == Page.TitleProperty.PropertyName)
+			{
+				UpdateTitle();
+			}
 		}
 
 		protected virtual void UpdateTitle()
@@ -168,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				oldPage.Appearing -= PageAppearing;
 				oldPage.PropertyChanged -= OnPagePropertyChanged;
-				newPage.Loaded -= OnPageLoaded;
+				oldPage.Loaded -= OnPageLoaded;
 				((INotifyCollectionChanged)oldPage.ToolbarItems).CollectionChanged -= OnToolbarItemsChanged;
 			}
 
@@ -207,7 +214,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTitleView()
 		{
-			var titleView = _context.Shell.GetEffectiveValue<View>(Shell.TitleViewProperty, () => Shell.GetTitleView(_context.Shell), null, Page);
+			var titleView = _context.Shell.Toolbar.TitleView as View;
+
+			if (NavigationItem.TitleView is TitleViewContainer tvc &&
+				tvc.View == titleView)
+			{
+				return;
+			}
 
 			if (titleView == null)
 			{
