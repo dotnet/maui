@@ -12,6 +12,7 @@ using AndroidX.Fragment.App;
 using AndroidX.ViewPager.Widget;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.Tabs;
+using Microsoft.Extensions.Logging;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -234,10 +235,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		void SafeNotifyDataSetChanged()
+		void SafeNotifyDataSetChanged(int iteration = 0)
 		{
 			if (_disposed)
 				return;
+
+			if (!_viewPager.IsAlive())
+				return;
+
+			if (iteration >= 10)
+			{
+				// It's very unlikely this will happen but just in case there's a scenario
+				// where we might hit an infinite loop we're adding an exit strategy
+				MauiContext.CreateLogger<ShellSectionRenderer>()
+					.LogWarning("ViewPager2 stuck in layout, unable to NotifyDataSetChanged;");
+
+				return;
+			}
 
 			if (_viewPager?.Adapter is ShellFragmentStateAdapter adapter)
 			{
@@ -249,7 +263,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else
 				{
-					_viewPager.Post(SafeNotifyDataSetChanged);
+					_viewPager.Post(() => SafeNotifyDataSetChanged(++iteration));
 				}
 			}
 		}
@@ -330,7 +344,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var visibleItems = SectionController.GetItems();
 
 			// This mainly happens if all of the items that are part of this shell section 
-			// vanish. Android calls `OnPageSelected` with the last item left in the list
+			// vanish. Android calls `OnPageSelected` with position zero even though the view pager is
+			// empty
 			if (visibleItems.Count >= position)
 				return;
 
