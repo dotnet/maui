@@ -109,6 +109,8 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(entry);
 		}
 
+		public static void MapIsSpellCheckEnabled(IEntryHandler handler, IEntry entry) { }
+
 		public static void MapKeyboard(IEntryHandler handler, IEntry entry)
 		{
 			handler.PlatformView?.UpdateKeyboard(entry);
