@@ -12,7 +12,7 @@
             <Button Grid.Row="3" Clicked="PushNavigationModalClicked" Text="Push Modal Navigation Page" />
             <Button Grid.Row="4" Clicked="PushFlyoutPageClicked" Text="Push Modal Flyout Page" />
             <Button Grid.Row="5" Clicked="PushTransparentModal" Text="Push Transparent Modal Page" />
-            <Button Grid.Row="6" x:Name="PushModal" Clicked="PopModalClicked" Text="Pop Modal Page" />
+            <Button Grid.Row="6" x:Name="PopModal" Clicked="PopModalClicked" Text="Pop Modal Page" />
         </Grid>
     </views:BasePage.Content>
 </views:BasePage>
