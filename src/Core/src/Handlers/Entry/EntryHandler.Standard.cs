@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(IEntryHandler handler, IEntry entry) { }
 		public static void MapVerticalTextAlignment(IEntryHandler handler, IEntry entry) { }
 		public static void MapIsTextPredictionEnabled(IEntryHandler handler, IEntry entry) { }
+		public static void MapIsSpellCheckEnabled(IEntryHandler handler, IEntry entry) { }
 		public static void MapMaxLength(IEntryHandler handler, IEntry entry) { }
 		public static void MapPlaceholder(IEntryHandler handler, IEntry entry) { }
 		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry) { }

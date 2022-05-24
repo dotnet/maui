@@ -51,10 +51,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsTextPredictionEnabled(this UITextField textField, IEntry entry)
 		{
-			if (entry.IsTextPredictionEnabled)
-				textField.AutocorrectionType = UITextAutocorrectionType.Yes;
-			else
-				textField.AutocorrectionType = UITextAutocorrectionType.No;
+			textField.UpdateKeyboard(entry);
+		}
+
+		public static void UpdateIsSpellCheckEnabled(this UITextField textField, IEntry entry)
+		{
+			textField.UpdateKeyboard(entry);
 		}
 
 		public static void UpdateMaxLength(this UITextField textField, IEntry entry)
@@ -117,7 +119,15 @@ namespace Microsoft.Maui.Platform
 			textField.ApplyKeyboard(keyboard);
 
 			if (keyboard is not CustomKeyboard)
+			{
 				textField.UpdateIsTextPredictionEnabled(entry);
+
+				if (!entry.IsSpellCheckEnabled)
+					textField.SpellCheckingType = UITextSpellCheckingType.No;
+
+				if (!entry.IsTextPredictionEnabled)
+					textField.AutocorrectionType = UITextAutocorrectionType.No;
+			}
 
 			textField.ReloadInputViews();
 		}
@@ -138,6 +148,11 @@ namespace Microsoft.Maui.Platform
 				return;
 			if (textField.GetOffsetFromPosition(selectedTextRange.Start, selectedTextRange.End) != entry.SelectionLength)
 				UpdateCursorSelection(textField, entry);
+		}
+
+		public static void UpdateClearButtonVisibility(this UITextField textField, IEntry entry)
+		{
+			textField.ClearButtonMode = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing ? UITextFieldViewMode.WhileEditing : UITextFieldViewMode.Never;
 		}
 
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
@@ -180,11 +195,6 @@ namespace Microsoft.Maui.Platform
 				entry.SelectionLength = newSelectionLength;
 
 			return end;
-		}
-
-		public static void UpdateClearButtonVisibility(this UITextField textField, IEntry entry)
-		{
-			textField.ClearButtonMode = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing ? UITextFieldViewMode.WhileEditing : UITextFieldViewMode.Never;
 		}
 	}
 }

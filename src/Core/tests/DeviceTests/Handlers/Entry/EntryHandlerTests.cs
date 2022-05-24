@@ -1,8 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -578,6 +575,18 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(text.Length, actualLength);
 		}
 
+		[Theory(DisplayName = "Is Spell Check Enabled")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsSpellCheckEnabledCorrectly(bool isSpellCheckEnabled)
+		{
+			var entry = new EntryStub()
+			{
+				IsSpellCheckEnabled = isSpellCheckEnabled
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, isSpellCheckEnabled);
+		}
 
 		[Category(TestCategory.Entry)]
 		public class EntryTextInputTests : TextInputHandlerTests<EntryHandler, EntryStub>
@@ -596,6 +605,5 @@ namespace Microsoft.Maui.DeviceTests
 				EntryHandlerTests.UpdateCursorStartPosition(entryHandler, position);
 			}
 		}
-
 	}
 }

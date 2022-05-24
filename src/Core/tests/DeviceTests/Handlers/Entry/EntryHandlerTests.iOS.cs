@@ -218,5 +218,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		bool GetNativeIsSpellCheckEnabled(EntryHandler entryHandler) =>	
+			GetNativeEntry(entryHandler).SpellCheckingType == UITextSpellCheckingType.Yes;
 	}
 }
