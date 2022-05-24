@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -43,8 +44,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			Page pushMe = new ModalPage()
 			{
-				BackgroundColor =
-						   (BackgroundColor == Colors.Purple) ? Colors.Pink : Colors.Purple
+				BackgroundColor = (BackgroundColor == Colors.Purple) ? Colors.Pink : Colors.Purple
 			};
 
 			await Navigation.PushModalAsync(pushMe);
@@ -67,7 +67,7 @@ namespace Maui.Controls.Sample.Pages
 		async void PushFlyoutPageClicked(object sender, EventArgs e)
 		{
 			var modalPage = new ModalPage();
-			Page newMainPage = new NavigationPage(new ModalPage())
+			Page newMainPage = new NavigationPage(modalPage)
 			{
 				BackgroundColor =
 						(BackgroundColor == Colors.Purple) ? Colors.Pink : Colors.Purple,
@@ -85,6 +85,17 @@ namespace Maui.Controls.Sample.Pages
 			};
 
 			await Navigation.PushModalAsync(flyoutPage);
+		}
+
+		async void PushTransparentModal(object sender, EventArgs e)
+		{
+			Page transparentModalPage = new ModalPage()
+			{
+				Background = SolidColorBrush.Transparent,
+				Padding = new Thickness(100, 100, 100, 100)
+			};
+
+			await Navigation.PushModalAsync(transparentModalPage);
 		}
 	}
 }

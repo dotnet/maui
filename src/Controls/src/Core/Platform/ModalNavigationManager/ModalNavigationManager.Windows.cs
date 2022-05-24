@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WRect = Windows.Foundation.Rect;
 
@@ -109,6 +110,9 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						if (!ContentPanel.Children.Contains(windowManager.RootView))
 							ContentPanel.Children.Add(windowManager.RootView);
+
+						if (windowManager.RootView is Control control)
+							control.Background = SolidColorBrush.Transparent.ToBrush();
 					}
 					else
 						_window.NativeWindow.Content = windowManager.RootView;

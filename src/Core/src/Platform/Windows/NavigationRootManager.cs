@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					_rootView.Visibility = UI.Xaml.Visibility.Collapsed;
+					//_rootView.Visibility = UI.Xaml.Visibility.Collapsed;
 				}
 			}
 			else
