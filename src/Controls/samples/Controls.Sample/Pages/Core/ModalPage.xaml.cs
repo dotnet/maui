@@ -12,6 +12,7 @@ namespace Maui.Controls.Sample.Pages
 	public partial class ModalPage
 	{
 		static int s_instanceCount = 0;
+		string _previousTitle;
 		public ModalPage()
 		{
 			InitializeComponent();
@@ -20,10 +21,29 @@ namespace Maui.Controls.Sample.Pages
 			lblModalPageNumber.Text = $"Modal Page {s_instanceCount}";
 		}
 
+		protected override void OnNavigatingFrom(NavigatingFromEventArgs args)
+		{
+			_previousTitle = this.Window.Title;
+			base.OnNavigatingFrom(args);
+		}
+
+		protected override void OnNavigatedTo(NavigatedToEventArgs args)
+		{
+			if (PopModal.IsVisible)
+			{
+				this.Window.Title = "Modal Gallery";
+			}
+			else
+			{
+				this.Window.Title = _previousTitle;
+			}
+		}
+
+
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-			PushModal.IsVisible = Navigation.ModalStack.Count > 0;
+			PopModal.IsVisible = Navigation.ModalStack.Count > 0;
 		}
 
 		async void PushNavigationModalClicked(object sender, EventArgs e)

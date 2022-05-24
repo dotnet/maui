@@ -46,5 +46,37 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(rootView, handler.PlatformView.Content);
 				});
 		}
+
+		[Fact]
+		public async Task WindowTitleSetToModalTitleContainer()
+		{
+			SetupBuilder();
+
+			var navPage = new NavigationPage(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
+				async (handler) =>
+				{
+					var rootView = handler.PlatformView.Content;
+					ContentPage modalPage = new ContentPage();
+
+					await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
+
+					var customTitleBar = modalPage
+						.FindMauiContext()
+						.GetNavigationRootManager()
+						.AppTitleBarContentControl;
+
+
+					var mauiWindow = (MauiWinUIWindow)handler.PlatformView;
+					Assert.Equal(mauiWindow.MauiCustomTitleBar, customTitleBar);
+					(handler.VirtualView as Window).Title = "Update Title";
+
+					var customTitle = mauiWindow.MauiCustomTitleBar.GetDescendantByName<UI.Xaml.Controls.TextBlock>("AppTitle");
+
+					Assert.Equal("Update Title", customTitle.Text);
+				});
+		}
 	}
 }

@@ -369,6 +369,8 @@ namespace Microsoft.Maui.Controls
 			_rowDefs = null;
 			_colDefs = null;
 
+			UpdateRowColumnBindingContexts();
+
 			InvalidateMeasure();
 		}
 
@@ -376,6 +378,29 @@ namespace Microsoft.Maui.Controls
 		{
 			base.InvalidateMeasure();
 			(this as IView)?.InvalidateMeasure();
+		}
+
+		protected override void OnBindingContextChanged()
+		{
+			base.OnBindingContextChanged();
+			UpdateRowColumnBindingContexts();
+		}
+
+		void UpdateRowColumnBindingContexts()
+		{
+			var bindingContext = BindingContext;
+
+			RowDefinitionCollection rowDefs = RowDefinitions;
+			for (var i = 0; i < rowDefs.Count; i++)
+			{
+				SetInheritedBindingContext(rowDefs[i], bindingContext);
+			}
+
+			ColumnDefinitionCollection colDefs = ColumnDefinitions;
+			for (var i = 0; i < colDefs.Count; i++)
+			{
+				SetInheritedBindingContext(colDefs[i], bindingContext);
+			}
 		}
 
 		class GridInfo
