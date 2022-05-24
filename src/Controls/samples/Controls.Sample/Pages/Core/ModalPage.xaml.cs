@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Pages
 
 		protected override void OnNavigatingFrom(NavigatingFromEventArgs args)
 		{
-			_previousTitle = this.Window.Title;
+			_previousTitle = this.Window?.Title;			
 			base.OnNavigatingFrom(args);
 		}
 
