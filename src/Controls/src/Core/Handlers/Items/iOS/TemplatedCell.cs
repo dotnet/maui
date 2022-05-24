@@ -177,22 +177,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(renderer.VirtualView as View).MeasureInvalidated += MeasureInvalidated;
 		}
 
-		protected void Layout(CGSize constraints)
-		{
-			var platformView = PlatformHandler.ToPlatform();
-
-			var width = constraints.Width;
-			var height = constraints.Height;
-
-			PlatformHandler.VirtualView.Measure(width, height);
-
-			platformView.Frame = new CGRect(0, 0, width, height);
-
-			var rectangle = platformView.Frame.ToRectangle();
-			PlatformHandler.VirtualView.Arrange(rectangle);
-			_size = rectangle.Size;
-		}
-
 		void ClearSubviews()
 		{
 			for (int n = ContentView.Subviews.Length - 1; n >= 0; n--)
