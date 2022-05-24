@@ -16,6 +16,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 			BackgroundColor = Colors.Purple;
 			Title = $"Modal Page {s_instanceCount++}";
+			lblModalPageNumber.Text = $"Modal Page {s_instanceCount}";
 		}
 
 		protected override void OnAppearing()

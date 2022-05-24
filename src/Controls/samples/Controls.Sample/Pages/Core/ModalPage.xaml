@@ -6,6 +6,7 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
     <views:BasePage.Content>
         <VerticalStackLayout Margin="12">
+            <Label Text="" x:Name="lblModalPageNumber"></Label>
             <Button Clicked="PushClicked" Text="Push Page" />
             <Button Clicked="PushModalClicked" Text="Push Modal Page" />
             <Button Clicked="PushNavigationModalClicked" Text="Push Modal Navigation Page" />
