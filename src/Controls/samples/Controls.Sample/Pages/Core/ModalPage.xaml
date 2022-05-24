@@ -5,14 +5,13 @@
     x:Class="Maui.Controls.Sample.Pages.ModalPage"    
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
     <views:BasePage.Content>
-        <Grid Margin="12" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+        <Grid Margin="12" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
             <Label Grid.Row="0" Text="" x:Name="lblModalPageNumber"></Label>
             <Button Grid.Row="1" Clicked="PushClicked" Text="Push Page" />
             <Button Grid.Row="2" Clicked="PushModalClicked" Text="Push Modal Page" />
             <Button Grid.Row="3" Clicked="PushNavigationModalClicked" Text="Push Modal Navigation Page" />
             <Button Grid.Row="4" Clicked="PushFlyoutPageClicked" Text="Push Modal Flyout Page" />
-            <Button Grid.Row="5" Clicked="PushTransparentModal" Text="Push Transparent Modal Page" />
-            <Button Grid.Row="6" x:Name="PopModal" Clicked="PopModalClicked" Text="Pop Modal Page" />
+            <Button Grid.Row="5" x:Name="PopModal" Clicked="PopModalClicked" Text="Pop Modal Page" />
         </Grid>
     </views:BasePage.Content>
 </views:BasePage>
