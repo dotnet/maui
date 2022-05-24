@@ -17,15 +17,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <summary>
 		/// Initializes a new instance of <see cref="BlazorWebView"/>.
 		/// </summary>
-#if ANDROID
-		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
-#elif IOS
-		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
-#endif
 		public BlazorWebView()
 		{
 			RootComponents = new RootComponentsCollection(_jSComponents);
-			Unloaded += OnUnloaded;
 		}
 
 		JSComponentConfigurationStore IBlazorWebView.JSComponents => _jSComponents;
@@ -65,18 +59,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			// Call into the platform-specific code to get that platform's asset file provider
 			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
-		}
-
-#if ANDROID
-		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
-#elif IOS
-		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
-#endif
-		private void OnUnloaded(object? sender, EventArgs e)
-		{
-			// See: https://github.com/dotnet/maui/issues/3604
-			Handler?.DisconnectHandler();
-			Unloaded -= OnUnloaded;
 		}
 
 		void IBlazorWebView.UrlLoading(UrlLoadingEventArgs args) =>

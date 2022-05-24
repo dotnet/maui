@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		internal void SetUpMessageChannel()
 		{
+			// These ports will be closed automatically when the webview gets disposed.
 			var nativeToJSPorts = _webview.CreateWebMessageChannel();
 
 			var nativeToJs = new BlazorWebMessageCallback(message =>
