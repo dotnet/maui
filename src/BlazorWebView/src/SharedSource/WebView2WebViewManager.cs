@@ -156,7 +156,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		)
 			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPagePathWithinFileProvider)
 		{
-
 			ArgumentNullException.ThrowIfNull(webview);
 
 			if (services.GetService<MauiBlazorMarkerService>() is null)
