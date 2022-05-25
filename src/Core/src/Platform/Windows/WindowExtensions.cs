@@ -13,11 +13,8 @@ namespace Microsoft.Maui.Platform
 		{
 			platformWindow.Title = window.Title;
 
-			var rootManager = window.Handler?.MauiContext?.GetNavigationRootManager();
-			if (rootManager != null)
-			{
-				rootManager.SetWindowTitle(window.Title);
-			}
+			if (platformWindow is MauiWinUIWindow mauiWindow)
+				mauiWindow.UpdateTitleOnCustomTitleBar();
 		}
 
 		public static IWindow? GetWindow(this UI.Xaml.Window platformWindow)
