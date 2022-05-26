@@ -1,5 +1,7 @@
 using System;
-using Tizen.UIExtensions.NUI.GraphicsView;
+using Tizen.NUI;
+using Tizen.NUI.BaseComponents;
+using Tizen.NUI.Components;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -13,11 +15,25 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(Slider nativeView)
 		{
 			nativeView!.ValueChanged += OnControlValueChanged;
+			nativeView.SlidingStarted += OnSlidingStarted;
+			nativeView.SlidingFinished += OnSlidingFinished;
+		}
+
+		void OnSlidingStarted(object? sender, SliderSlidingStartedEventArgs e)
+		{
+			VirtualView.DragStarted();
+		}
+
+		void OnSlidingFinished(object? sender, SliderSlidingFinishedEventArgs e)
+		{
+			VirtualView.DragCompleted();
 		}
 
 		protected override void DisconnectHandler(Slider nativeView)
 		{
 			nativeView!.ValueChanged -= OnControlValueChanged;
+			nativeView.SlidingStarted -= OnSlidingStarted;
+			nativeView.SlidingFinished -= OnSlidingFinished;
 		}
 
 		public static void MapMinimum(ISliderHandler handler, ISlider slider)
@@ -29,7 +45,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateMaximum(slider);
 		}
-
 
 		public static void MapValue(ISliderHandler handler, ISlider slider)
 		{
@@ -48,21 +63,23 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapThumbColor(ISliderHandler handler, ISlider slider)
 		{
-
 			handler.PlatformView?.UpdateThumbColor(slider);
 		}
 
-		[MissingMapper]
-		public static void MapThumbImageSource(ISliderHandler handler, ISlider slider) { }
+		public static void MapThumbImageSource(ISliderHandler handler, ISlider slider)
+		{
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			handler.PlatformView?.UpdateThumbImageSourceAsync(slider, provider)
+				.FireAndForget(handler);
+		}
 
 		void OnControlValueChanged(object? sender, EventArgs eventArgs)
 		{
-			if (PlatformView == null || VirtualView == null || PlatformView.Value == VirtualView.Value)
+			if (PlatformView == null || VirtualView == null || PlatformView.CurrentValue == VirtualView.Value)
 				return;
 
-			VirtualView.DragStarted();
-			VirtualView.Value = PlatformView.Value;
-			VirtualView.DragCompleted();
+			VirtualView.Value = PlatformView.CurrentValue;
 		}
 	}
 }

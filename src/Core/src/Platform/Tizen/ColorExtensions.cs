@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui.Graphics;
 using TLog = Tizen.UIExtensions.Common.Log;
 using TColor = Tizen.UIExtensions.Common.Color;
+using NColor = Tizen.NUI.Color;
 
 namespace Microsoft.Maui.Platform
 {
@@ -9,6 +10,11 @@ namespace Microsoft.Maui.Platform
 		public static TColor ToPlatform(this Color c)
 		{
 			return c == null ? TColor.Default : new TColor(c.Red, c.Green, c.Blue, c.Alpha);
+		}
+
+		public static NColor? ToNUIColor(this Color c)
+		{
+			return c == null ? null : new NColor(c.Red, c.Green, c.Blue, c.Alpha);
 		}
 
 		public static Color WithAlpha(this Color color, double alpha)
