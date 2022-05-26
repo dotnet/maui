@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			for (int i = 0; i < points.Count; i++)
 			{
 				path.LineTo(
-					(float)points[i].X, 
+					(float)points[i].X,
 					(float)points[i].Y);
 			}
 		}

@@ -48,7 +48,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				};
 			}
 
-			if (e.NewElement == null) return;
+			if (e.NewElement == null)
+				return;
 			UpdateText();
 			UpdateFont();
 			UpdateTextColor();

@@ -352,7 +352,7 @@ namespace Microsoft.Maui.Controls
 				return hash;
 			}
 		}
-		
+
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualStateGroup']/Docs" />
@@ -611,7 +611,7 @@ namespace Microsoft.Maui.Controls
 
 		public override bool Equals(object obj) => Equals(obj as VisualState);
 
-		bool Equals (VisualState other)
+		bool Equals(VisualState other)
 		{
 			if (other is null)
 				return false;

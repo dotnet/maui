@@ -12,7 +12,7 @@
 			Platform.TextExtensions.UpdateAdjustsFontSizeToFitWidth(handler.PlatformView, entry);
 		}
 
-		public static void MapText(EntryHandler handler, Entry entry) 
+		public static void MapText(EntryHandler handler, Entry entry)
 		{
 			Platform.TextExtensions.UpdateText(handler.PlatformView, entry);
 		}

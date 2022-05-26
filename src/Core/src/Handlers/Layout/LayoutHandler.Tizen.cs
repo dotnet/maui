@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Handlers
 			if (targetIndex > currentIndex)
 			{
 				child.ToPlatform(MauiContext!).RaiseTop();
-				for (int i = targetIndex+1; i < PlatformView.Children.Count; i++)
+				for (int i = targetIndex + 1; i < PlatformView.Children.Count; i++)
 				{
 					PlatformView.Children[i].RaiseTop();
 				}
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Handlers
 			else
 			{
 				child.ToPlatform(MauiContext!).Lower();
-				for (int i = targetIndex-1; i >= 0; i--)
+				for (int i = targetIndex - 1; i >= 0; i--)
 				{
 					PlatformView.Children[i].Lower();
 				}

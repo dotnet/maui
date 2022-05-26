@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			textField.AdjustsFontSizeToFitWidth = entry.OnThisPlatform().AdjustsFontSizeToFitWidth();
 		}
-		
+
 		public static void UpdateText(this UITextView textView, InputView inputView)
 		{
 			textView.Text = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);

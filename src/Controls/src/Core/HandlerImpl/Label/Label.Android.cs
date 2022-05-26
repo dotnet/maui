@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
-		
+
 		public static void MapTextType(LabelHandler handler, Label label)
 		{
 			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);

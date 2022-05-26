@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected bool HeaderOnMenu => _headerBehavior == FlyoutHeaderBehavior.Scroll || _headerBehavior == FlyoutHeaderBehavior.CollapseOnScroll;
 
-		public  virtual void SetElement(Shell shell, IMauiContext context)
+		public virtual void SetElement(Shell shell, IMauiContext context)
 		{
 			Element = shell;
 			Element.PropertyChanged += OnElementPropertyChanged;
@@ -385,7 +385,8 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnHeaderSizeChanged(object? sender, EventArgs e)
 		{
 			var bound = (_navigationView as EvasObject)?.Geometry;
-			Application.Current?.Dispatcher.Dispatch(()=> {
+			Application.Current?.Dispatcher.Dispatch(() =>
+			{
 				UpdateHeaderLayout((bound?.Width).GetValueOrDefault(), (bound?.Height).GetValueOrDefault());
 			});
 		}
@@ -393,7 +394,8 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnFooterSizeChanged(object? sender, EventArgs e)
 		{
 			var bound = (_navigationView as EvasObject)?.Geometry;
-			Application.Current?.Dispatcher.Dispatch(() => {
+			Application.Current?.Dispatcher.Dispatch(() =>
+			{
 				UpdateFooterLayout((bound?.Width).GetValueOrDefault(), (bound?.Height).GetValueOrDefault());
 			});
 		}
@@ -403,7 +405,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if ((!HeaderOnMenu) && (_headerView != null))
 			{
 				var requestSize = _headerView.Measure(widthConstraint, heightConstraint);
-				if(_navigationView.Header != null)
+				if (_navigationView.Header != null)
 					_navigationView.Header.MinimumHeight = TDPExtensions.ConvertToScaledPixel(requestSize.Request.Height);
 			}
 		}

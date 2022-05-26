@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.iOS
 		{
 			base.OnElementChanged(e);
 
-			if(e.NewElement != null)
+			if (e.NewElement != null)
 				UpdatePlaceholder();
 		}
 

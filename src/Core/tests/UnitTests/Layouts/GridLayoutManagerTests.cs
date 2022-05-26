@@ -1823,7 +1823,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view1 = CreateTestView(new Size(10, 10));
 
 			// Since this is collapsed, it should not count toward the star row height
-			view0.Visibility.Returns(Visibility.Collapsed); 
+			view0.Visibility.Returns(Visibility.Collapsed);
 
 			SubstituteChildren(grid, view0, view1);
 

@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample.Pages
 	{
 		public WindowsVisualElementAccessKeysPage()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
 		async void OnButtonClicked(object sender, EventArgs e)

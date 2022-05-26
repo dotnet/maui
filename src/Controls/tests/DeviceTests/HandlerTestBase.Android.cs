@@ -115,7 +115,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return true;
 		}
-    
+
 		protected AView GetTitleView(IElementHandler handler)
 		{
 			var toolbar = GetPlatformToolbar(handler);
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 				var handler = (WindowHandlerStub)_window.ToHandler(ScopedMauiContext);
-        
+
 				var decorView = RequireActivity().Window.DecorView;
 				handler.PlatformViewUnderTest.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
 

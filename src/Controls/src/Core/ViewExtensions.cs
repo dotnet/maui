@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (element.FindMauiContext() is IMauiContext viewMauiContext)
 					return viewMauiContext.GetAnimationManager();
-				
+
 				if (Application.Current?.FindMauiContext() is IMauiContext applicationMauiContext)
 					return applicationMauiContext.GetAnimationManager();
 			}

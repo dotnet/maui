@@ -38,7 +38,7 @@ namespace Microsoft.Maui
 			this IPlatformViewHandler viewHandler,
 			int platformWidthConstraint,
 			int platformHeightConstraint,
-			Func<double,double, Size>? measureFunc = null)
+			Func<double, double, Size>? measureFunc = null)
 		{
 			var context = viewHandler.MauiContext?.Context;
 			var virtualView = viewHandler.VirtualView;

@@ -7,22 +7,22 @@ using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
 namespace Maui.Controls.Sample.Pages
 {
-    public partial class AndroidSwipeViewTransitionModePage : ContentPage
-    {
-        public AndroidSwipeViewTransitionModePage()
-        {
-            InitializeComponent();
-        }
+	public partial class AndroidSwipeViewTransitionModePage : ContentPage
+	{
+		public AndroidSwipeViewTransitionModePage()
+		{
+			InitializeComponent();
+		}
 
-        void OnSwipeViewTransitionModeChanged(object sender, EventArgs e)
-        {
-            SwipeTransitionMode transitionMode = (SwipeTransitionMode)(sender as EnumPicker).SelectedItem;
-            swipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetSwipeTransitionMode(transitionMode);
-        }
+		void OnSwipeViewTransitionModeChanged(object sender, EventArgs e)
+		{
+			SwipeTransitionMode transitionMode = (SwipeTransitionMode)(sender as EnumPicker).SelectedItem;
+			swipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetSwipeTransitionMode(transitionMode);
+		}
 
-        async void OnDeleteSwipeItemInvoked(object sender, EventArgs e)
-        {
-            await DisplayAlert("SwipeView", "Delete invoked.", "OK");
-        }
-    }
+		async void OnDeleteSwipeItemInvoked(object sender, EventArgs e)
+		{
+			await DisplayAlert("SwipeView", "Delete invoked.", "OK");
+		}
+	}
 }

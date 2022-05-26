@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Devices.Sensors
                 reducedAccuracy = manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy;
             }
 #endif
-            return location?.ToLocation(reducedAccuracy);
+			return location?.ToLocation(reducedAccuracy);
 		}
 
 		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)

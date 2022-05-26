@@ -29,19 +29,22 @@ namespace Microsoft.Maui.Platform
 
 			_gestureLayer.SetLineCallback(GestureLayer.GestureState.Start, (_) => { OnGestureStarted(); });
 
-			_gestureLayer.SetLineCallback(GestureLayer.GestureState.Move, (_) => { 
+			_gestureLayer.SetLineCallback(GestureLayer.GestureState.Move, (_) =>
+			{
 				_graphicsView?.DragInteraction(new[] { _gestureLayer.EvasCanvas.Pointer.ToPointF() });
 			});
 
-			_gestureLayer.SetLineCallback(GestureLayer.GestureState.End, (_) => { 
+			_gestureLayer.SetLineCallback(GestureLayer.GestureState.End, (_) =>
+			{
 				OnGestureEnded(Geometry.ToDP().Contains(_gestureLayer.EvasCanvas.Pointer.ToPoint()));
 			});
 
-			_gestureLayer.SetLineCallback(GestureLayer.GestureState.Abort, (_) => { 
+			_gestureLayer.SetLineCallback(GestureLayer.GestureState.Abort, (_) =>
+			{
 				_graphicsView?.CancelInteraction();
 			});
 		}
-		
+
 		public void Disconnect()
 		{
 			_gestureLayer?.Unrealize();

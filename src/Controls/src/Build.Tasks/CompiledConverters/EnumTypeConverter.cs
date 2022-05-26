@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 
 namespace Microsoft.Maui.Controls.XamlC
 {
-	class EnumTypeConverter<TEnum> : ICompiledTypeConverter where TEnum: struct
+	class EnumTypeConverter<TEnum> : ICompiledTypeConverter where TEnum : struct
 	{
 		public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
 		{

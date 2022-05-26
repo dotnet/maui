@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Platform
 			var visual = ElementCompositionPreview.GetElementVisual(Child);
 			visual.Clip = null;
 		}
-		
+
 		void DisposeBorder()
 		{
 			_borderPath = null;
@@ -242,7 +242,7 @@ namespace Microsoft.Maui.Platform
 						width = (float)frameworkElement.ActualWidth;
 
 					float height = (float)_shadowHostSize.Height;
-				
+
 					if (height <= 0)
 						height = (float)frameworkElement.ActualHeight;
 

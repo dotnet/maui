@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls
 
 				Controls.Platform.ToolbarExtensions.DisposeMenuItems(
 					oldHandler?.PlatformView as AToolbar,
-					ToolbarItems, 
+					ToolbarItems,
 					OnToolbarItemPropertyChanged);
 			}
 		}
