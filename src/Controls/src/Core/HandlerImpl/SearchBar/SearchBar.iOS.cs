@@ -7,7 +7,7 @@
 			Platform.SearchBarExtensions.UpdateSearchBarStyle(handler.PlatformView, searchBar);
 		}
 
-		public static void MapText(SearchBarHandler handler, SearchBar searchBar) 
+		public static void MapText(SearchBarHandler handler, SearchBar searchBar)
 		{
 			Platform.SearchBarExtensions.UpdateText(handler.PlatformView, searchBar);
 		}

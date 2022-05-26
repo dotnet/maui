@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Resizetizer
 			MemoryStream memoryStream = new MemoryStream();
 			tools.Resize(dpi, destination, () => memoryStream);
 			memoryStream.Position = 0;
-			
+
 			int numberOfImages = 1;
 			using BinaryWriter writer = new BinaryWriter(File.Create(destination));
 			writer.Write((short)0x0); // Reserved. Must always be 0.
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Resizetizer
 			writer.Write((short)0x1); // Specifies color planes. Should be 0 or 1
 			writer.Write((short)0x8); // Specifies bits per pixel.
 			writer.Write((int)memoryStream.Length); // Specifies the size of the image's data in bytes
-			
+
 			int offset = 6 + (16 * numberOfImages); // + length of previous images
 			writer.Write(offset); // Specifies the offset of BMP or PNG data from the beginning of the ICO/CUR file
 

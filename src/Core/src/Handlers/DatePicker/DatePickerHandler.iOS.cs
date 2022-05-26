@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnValueChanged(object? sender, EventArgs? e)
 		{
-			if (UpdateImmediately)	// Platform Specific
+			if (UpdateImmediately)  // Platform Specific
 				SetVirtualViewDate();
 
 			if (VirtualView != null)

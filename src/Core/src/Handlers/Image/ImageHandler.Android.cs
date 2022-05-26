@@ -7,8 +7,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
-		protected override ImageView CreatePlatformView() 
-		{ 
+		protected override ImageView CreatePlatformView()
+		{
 			var imageView = new AppCompatImageView(Context);
 
 			// Enable view bounds adjustment on measure.

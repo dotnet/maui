@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class ListViewRenderer : ViewRenderer<ListView, AListView>
 	{
-		public static PropertyMapper<ListView, ListViewRenderer> Mapper =	
+		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
 			new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
 
 		public static CommandMapper<ListView, ListViewRenderer> CommandMapper =
