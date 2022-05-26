@@ -180,8 +180,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					break;
 
 				case FlyoutBehavior.Disabled:
-					flyoutElementsHidden = false;
-					detailsElementsHidden = true;
+					flyoutElementsHidden = true;
+					detailsElementsHidden = false;
 
 					break;
 			}
