@@ -89,11 +89,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_listCount = count;
 				}
 
-				//if (_listView.CachingStrategy == ListViewCachingStrategy.RetainElement &&
-				//	_layoutsCreated.Count > _listCount)
-				//{ 
-				//}
-
 				return _listCount;
 			}
 		}
