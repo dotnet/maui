@@ -1,12 +1,21 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Platform
 {
 	internal static class ResourceDictionaryExtensions
 	{
-		public static void AddLibraryResources(this UI.Xaml.ResourceDictionary resources, string key, string uri)
+		public static T? TryGet<T>(this UI.Xaml.ResourceDictionary? resources, string key)
+		{
+			if (resources?.ContainsKey(key) == true && resources[key] is T typed)
+				return typed;
+			return default;
+		}
+
+		public static void AddLibraryResources(this UI.Xaml.ResourceDictionary? resources, string key, string uri)
 		{
 			if (resources == null)
 				return;
@@ -24,7 +33,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void AddLibraryResources<T>(this UI.Xaml.ResourceDictionary resources)
+		public static void AddLibraryResources<T>(this UI.Xaml.ResourceDictionary? resources)
 			where T : UI.Xaml.ResourceDictionary, new()
 		{
 			var dictionaries = resources?.MergedDictionaries;
@@ -56,7 +65,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void SetValueForAllKey(this UI.Xaml.ResourceDictionary resources, IEnumerable<string> keys, object value)
+		internal static void SetValueForAllKey(this UI.Xaml.ResourceDictionary resources, IEnumerable<string> keys, object? value)
 		{
 			foreach (string key in keys)
 			{

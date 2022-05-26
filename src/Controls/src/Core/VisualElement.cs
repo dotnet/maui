@@ -332,7 +332,6 @@ namespace Microsoft.Maui.Controls
 		IFlowDirectionController FlowController => this;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='FlowDirection']/Docs" />
-		[System.ComponentModel.TypeConverter(typeof(FlowDirectionConverter))]
 		public FlowDirection FlowDirection
 		{
 			get { return (FlowDirection)GetValue(FlowDirectionProperty); }
@@ -810,14 +809,14 @@ namespace Microsoft.Maui.Controls
 			Size request = result.Request;
 			Size minimum = result.Minimum;
 
-			if (heightRequest != -1)
+			if (heightRequest != -1 && !double.IsNaN(heightRequest))
 			{
 				request.Height = heightRequest;
 				if (!hasMinimum)
 					minimum.Height = heightRequest;
 			}
 
-			if (widthRequest != -1)
+			if (widthRequest != -1 && !double.IsNaN(widthRequest))
 			{
 				request.Width = widthRequest;
 				if (!hasMinimum)

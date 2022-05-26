@@ -3,24 +3,24 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WRect = Windows.Foundation.Rect;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
-		Panel Container
+		ContentPanel? _contentPanel;
+		ContentPanel ContentPanel => _contentPanel ??= new ContentPanel()
 		{
-			get
-			{
-				if (_window.NativeWindow.Content is Panel p)
-					return p;
+			CrossPlatformArrange = ArrangeContentPanel,
+			CrossPlatformMeasure = MeasureContentPanel
+		};
 
-				throw new InvalidOperationException("Root container Panel not found");
-			}
-		}
+		bool UsingContentPanel => _window.NativeWindow.Content == _contentPanel;
 
-		public  Task<Page> PopModalAsync(bool animated)
+		public Task<Page> PopModalAsync(bool animated)
 		{
 			var tcs = new TaskCompletionSource<Page>();
 			var currentPage = _navModel.CurrentPage;
@@ -43,13 +43,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void RemovePage(Page page)
 		{
-			if (Container == null || page == null)
+			if (page == null)
 				return;
 
 			var mauiContext = page.FindMauiContext() ??
 				throw new InvalidOperationException("Maui Context removed from outgoing page too early");
 
-			Container.Children.Remove(mauiContext.GetNavigationRootManager().RootView);
+			if (UsingContentPanel)
+			{
+				ContentPanel.Children.Remove(mauiContext.GetNavigationRootManager().RootView);
+			}
 		}
 
 		void SetCurrent(Page newPage, Page previousPage, bool popping, Action? completedCallback = null)
@@ -59,10 +62,18 @@ namespace Microsoft.Maui.Controls.Platform
 				if (popping)
 				{
 					RemovePage(previousPage);
-				}				
+				}
 				else if (newPage.BackgroundColor.IsDefault() && newPage.Background.IsEmpty)
 				{
 					RemovePage(previousPage);
+				}
+				else if (_window.NativeWindow.Content != ContentPanel)
+				{
+					var rootContent = _window.NativeWindow.Content;
+					_window.NativeWindow.Content = ContentPanel;
+
+					if (!ContentPanel.Children.Contains(rootContent))
+						ContentPanel.Children.Add(rootContent);
 				}
 
 
@@ -79,9 +90,10 @@ namespace Microsoft.Maui.Controls.Platform
 					previousPage.Parent = null;
 				}
 
-				if (Container == null || newPage == null)
+				if (newPage == null)
 					return;
 
+				// pushing modal
 				if (!popping)
 				{
 					var modalContext =
@@ -93,20 +105,44 @@ namespace Microsoft.Maui.Controls.Platform
 
 					var windowManager = modalContext.GetNavigationRootManager();
 					windowManager.Connect(newPage.ToPlatform(modalContext));
-					Container.Children.Add(windowManager.RootView);
+
+					if (UsingContentPanel)
+					{
+						if (!ContentPanel.Children.Contains(windowManager.RootView))
+							ContentPanel.Children.Add(windowManager.RootView);
+					}
+					else
+						_window.NativeWindow.Content = windowManager.RootView;
 
 					previousPage
 						.FindMauiContext()
 						?.GetNavigationRootManager()
 						?.UpdateAppTitleBar(false);
 				}
+				// popping modal
 				else
 				{
 					var windowManager = newPage.FindMauiContext()?.GetNavigationRootManager() ??
 						throw new InvalidOperationException("Previous Page Has Lost its MauiContext");
 
-					if(!Container.Children.Contains(windowManager.RootView))
-						Container.Children.Add(windowManager.RootView);
+					if (UsingContentPanel)
+					{
+						// This means we no longer need to place the modal ontop of the content under it
+						// so just remove the panel and set the window content
+						if (_navModel.Modals.Count == 0)
+						{
+							if (ContentPanel.Children.Contains(windowManager.RootView))
+								ContentPanel.Children.Remove(windowManager.RootView);
+
+							_window.NativeWindow.Content = windowManager.RootView;
+						}
+						else if (!ContentPanel.Children.Contains(windowManager.RootView))
+							ContentPanel.Children.Add(windowManager.RootView);
+					}
+					else
+					{
+						_window.NativeWindow.Content = windowManager.RootView;
+					}
 
 					windowManager.UpdateAppTitleBar(true);
 				}
@@ -123,6 +159,30 @@ namespace Microsoft.Maui.Controls.Platform
 						"Please ensure that the new page is in the same UI thread as the current page.");
 				throw;
 			}
+		}
+
+		Size MeasureContentPanel(double width, double height)
+		{
+			var size = new Size(width, height);
+			var platformSize = size.ToPlatform();
+
+			for (int i = 0; i < ContentPanel.Children.Count; i++)
+			{
+				ContentPanel.Children[i].Measure(platformSize);
+			}
+
+			return size;
+		}
+
+		Size ArrangeContentPanel(Rect arg)
+		{
+			var platformRect = new WRect(arg.Location.ToPlatform(), arg.Size.ToPlatform());
+			for (int i = 0; i < ContentPanel.Children.Count; i++)
+			{
+				ContentPanel.Children[i].Arrange(platformRect);
+			}
+
+			return arg.Size;
 		}
 	}
 }
