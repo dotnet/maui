@@ -253,6 +253,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				cellIsBeingReused = true;
 				convertView = layout.GetChildAt(0);
+
+				_layoutsCreated[position] = layout;
 			}
 			else
 			{
@@ -546,6 +548,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var element = (renderedView as INativeElementView)?.Element;
 			var view = (element as ViewCell)?.View;
+
+			if (renderedView is ViewGroup vg && view?.Handler?.PlatformView is AView aView)
+				vg.RemoveView(aView);
+
 			view?.Handler?.DisconnectHandler();
 		}
 

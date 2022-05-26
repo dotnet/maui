@@ -46,7 +46,6 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						View = new VerticalStackLayout()
 						{
-							new Label(),
 							new Label()
 						}
 					};
@@ -62,12 +61,17 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async (handler) =>
 			{
 				await Task.Delay(100);
+				ValidatePlatformCells(listView);
 				data.RemoveAt(0);
 				await Task.Delay(100);
+				ValidatePlatformCells(listView);
 				data.Insert(1, "new");
 				data.Insert(2, "record");
 				await Task.Delay(100);
+				ValidatePlatformCells(listView);
 				data.RemoveAt(0);
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
 			});
 		}
 
@@ -101,8 +105,10 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				listView.ItemsSource = Enumerable.Range(1, 1);
 				await Task.Delay(100);
+				ValidatePlatformCells(listView);
 				listView.ItemsSource = Enumerable.Range(1, 2);
 				await Task.Delay(100);
+				ValidatePlatformCells(listView);
 			});
 		}
 	}
