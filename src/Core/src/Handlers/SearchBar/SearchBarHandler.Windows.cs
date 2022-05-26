@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Media;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, AutoSuggestBox>
-	{   
+	{
 		public AutoSuggestBox? QueryEditor => null;
 
 		protected override AutoSuggestBox CreatePlatformView() => new AutoSuggestBox
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdatePlaceholder(searchBar);
 		}
-			
+
 		public static void MapVerticalTextAlignment(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateVerticalTextAlignment(searchBar);
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Handlers
 			handler?.PlatformView?.UpdateTextColor(searchBar);
 		}
 
-		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar) 
+		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar);
 		}

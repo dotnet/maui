@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					if (_moreTabItem != null)
 						_moreTabItem.IsSelected = true;
-					
+
 					_disableMoreItemOpen = false;
 				}
 
@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateCurrentItemFromUI(ShellSection? section)
 		{
-			if (section != null &&  ShellItem.CurrentItem != section)
+			if (section != null && ShellItem.CurrentItem != section)
 			{
 				ShellItem.SetValueFromRenderer(ShellItem.CurrentItemProperty, section);
 			}

@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			if (!IsSpanned)
 				return Rectangle.Zero;
 
-			if(IsLandscape)
+			if (IsLandscape)
 				return new Rectangle(0, 490, DeviceInfo.ScaledScreenSize.Width, 20);
 
 			return new Rectangle(490, 0, 20, DeviceInfo.ScaledScreenSize.Height);
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 		public void StopWatchingForChangesOnLayout(VisualElement visualElement, object handle)
 		{
-			if(handle is EventHandler<EventArg<VisualElement>> eh)
+			if (handle is EventHandler<EventArg<VisualElement>> eh)
 				visualElement.BatchCommitted -= eh;
 		}
 

@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var mauiContext = Element?.Handler?.MauiContext;
 			var minimumSize = MinimumSize();
 			var mauiRect = Control?.DesiredSize ?? minimumSize.ToPlatform();
-			
+
 			if (Element is not IVisualTreeElement vte || mauiContext == null)
 				return mauiRect;
 
