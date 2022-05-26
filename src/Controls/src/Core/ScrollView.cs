@@ -237,41 +237,6 @@ namespace Microsoft.Maui.Controls
 
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
-			var over = ((IScrollViewController)this).LayoutAreaOverride;
-			if (!over.IsEmpty)
-			{
-				x = over.X + Padding.Left;
-				y = over.Y + Padding.Top;
-				width = over.Width - Padding.HorizontalThickness;
-				height = over.Height - Padding.VerticalThickness;
-			}
-
-			if (_content != null)
-			{
-				SizeRequest size;
-				switch (Orientation)
-				{
-					case ScrollOrientation.Horizontal:
-						size = _content.Measure(double.PositiveInfinity, height, MeasureFlags.IncludeMargins);
-						LayoutChildIntoBoundingRegion(_content, new Rect(x, y, GetMaxWidth(width, size), height));
-						ContentSize = new Size(GetMaxWidth(width), height);
-						break;
-					case ScrollOrientation.Vertical:
-						size = _content.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-						LayoutChildIntoBoundingRegion(_content, new Rect(x, y, width, GetMaxHeight(height, size)));
-						ContentSize = new Size(width, GetMaxHeight(height));
-						break;
-					case ScrollOrientation.Both:
-						size = _content.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-						LayoutChildIntoBoundingRegion(_content, new Rect(x, y, GetMaxWidth(width, size), GetMaxHeight(height, size)));
-						ContentSize = new Size(GetMaxWidth(width), GetMaxHeight(height));
-						break;
-					case ScrollOrientation.Neither:
-						LayoutChildIntoBoundingRegion(_content, new Rect(x, y, width, height));
-						ContentSize = new Size(width, height);
-						break;
-				}
-			}
 		}
 
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
