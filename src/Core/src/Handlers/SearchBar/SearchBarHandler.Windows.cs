@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Media;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, AutoSuggestBox>
-	{   
+	{
 		public AutoSuggestBox? QueryEditor => null;
 
 		protected override AutoSuggestBox CreatePlatformView() => new AutoSuggestBox
@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.Loaded += OnLoaded;
 			platformView.QuerySubmitted += OnQuerySubmitted;
+			platformView.KeyDown += OnKeyDown;
 			platformView.TextChanged += OnTextChanged;
 		}
 
@@ -25,6 +26,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.Loaded -= OnLoaded;
 			platformView.QuerySubmitted -= OnQuerySubmitted;
+			platformView.KeyDown -= OnKeyDown;
 			platformView.TextChanged -= OnTextChanged;
 		}
 
@@ -47,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdatePlaceholder(searchBar);
 		}
-			
+
 		public static void MapVerticalTextAlignment(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateVerticalTextAlignment(searchBar);
@@ -80,7 +82,7 @@ namespace Microsoft.Maui.Handlers
 			handler?.PlatformView?.UpdateTextColor(searchBar);
 		}
 
-		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar) 
+		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar);
 		}
@@ -123,6 +125,12 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.Text = e.QueryText;
 
 			VirtualView.SearchButtonPressed();
+		}
+
+		void OnKeyDown(object sender, UI.Xaml.Input.KeyRoutedEventArgs e)
+		{
+			if (VirtualView.MaxLength != -1)
+				PlatformView?.UpdateMaxLength(VirtualView);
 		}
 
 		void OnTextChanged(AutoSuggestBox? sender, AutoSuggestBoxTextChangedEventArgs e)

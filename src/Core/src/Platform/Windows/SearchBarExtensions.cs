@@ -106,8 +106,8 @@ namespace Microsoft.Maui.Platform
 
 			var currentControlText = platformControl.Text;
 
-			if (currentControlText.Length > maxLength)
-				platformControl.Text = currentControlText.Substring(0, maxLength);
+			if (currentControlText.Length >= maxLength)
+				platformControl.Text = currentControlText.Substring(0, maxLength - 1);
 		}
 
 		public static void UpdateIsReadOnly(this AutoSuggestBox platformControl, ISearchBar searchBar)
