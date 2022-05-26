@@ -18,7 +18,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Run dotnet format
-        run: dotnet style whitespace ./src --folder
+        run: dotnet format style ./src --folder
     
       - name: Commit files
         if: steps.format.outputs.has-changes == 'true'
