@@ -68,40 +68,19 @@ steps:
     displayName: publish artifacts
     inputs:
       ArtifactName: ${{ parameters.artifact }}
-  # library packs
-  - task: DeleteFiles@1
-    inputs:
-      SourceFolder: $(build.artifactstagingdirectory)
-      Contents: '**/*'
-  - task: CopyFiles@2
-    condition: always()
-    displayName: 'Copy library packs to staging'
-    inputs:
-      Contents: |
-        artifacts/library-packs/**
-      TargetFolder: $(build.artifactstagingdirectory)
-      flattenFolders: true
+  # library-packs
   - task: PublishBuildArtifacts@1
     condition: always()
     displayName: publish library packs artifacts
     inputs:
+      PathToPublish: artifacts/library-packs
       ArtifactName: ${{ parameters.libraryPacksArtifact }}
+  # xml-docs
   - ${{ if eq(parameters.platform, 'Windows') }}:
-    # docs packs
-    - task: DeleteFiles@1
-      inputs:
-        SourceFolder: $(build.artifactstagingdirectory)
-        Contents: '**/*'
-    - task: CopyFiles@2
-      condition: always()
-      displayName: 'Copy library packs to staging'
-      inputs:
-        Contents: |
-          artifacts/docs-packs/**
-        TargetFolder: $(build.artifactstagingdirectory)
     - task: PublishBuildArtifacts@1
       condition: always()
       displayName: publish library packs artifacts
       inputs:
+        PathToPublish: artifacts/docs-packs
         ArtifactName: xml-docs
 
