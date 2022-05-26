@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
+			ContentSize = (this as IContentView)?.PresentedContent.DesiredSize ?? Size.Zero;
 			return DesiredSize;
 		}
 
@@ -73,8 +74,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			content.Measure(widthConstraint, heightConstraint);
-			ContentSize = content.DesiredSize;
-			return ContentSize;
+			return content.DesiredSize;
 		}
 
 		protected override Size ArrangeOverride(Rect bounds)
