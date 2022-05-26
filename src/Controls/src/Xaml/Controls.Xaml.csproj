@@ -5,8 +5,9 @@
 		<RootNamespace>Microsoft.Maui.Controls.Xaml</RootNamespace>
 		<IsPackable>false</IsPackable>
 		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
-		<NoWarn>$(NoWarn);CA2200</NoWarn>
+		<NoWarn>$(NoWarn);CA2200;CS1591</NoWarn>
 		<PackageId>Microsoft.Maui.Controls.Xaml</PackageId>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
