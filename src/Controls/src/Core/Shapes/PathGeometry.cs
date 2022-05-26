@@ -1,5 +1,5 @@
-using Microsoft.Maui.Devices;
 using System.Collections.Generic;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			for (int i = 0; i < points.Count; i++)
 			{
 				path.LineTo(
-					(float)points[i].X, 
+					(float)points[i].X,
 					(float)points[i].Y);
 			}
 		}

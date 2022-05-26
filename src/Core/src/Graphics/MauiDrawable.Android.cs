@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Graphics
 
 			else if (paint is PatternPaint patternPaint)
 				SetBorderBrush(patternPaint);
-			
+
 			else
 				SetEmptyBorderBrush();
 		}
@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Graphics
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
 		}
-	
+
 		public void SetBorderBrush(ImagePaint imagePaint)
 		{
 			throw new NotImplementedException();

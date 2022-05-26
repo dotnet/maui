@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		}
 
 		[Test]
-		public void RowDefinitionsGetBindingContext() 
+		public void RowDefinitionsGetBindingContext()
 		{
 			var def = new RowDefinition();
 			var def2 = new RowDefinition();

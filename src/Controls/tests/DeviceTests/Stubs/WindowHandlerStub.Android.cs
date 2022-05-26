@@ -1,11 +1,11 @@
 ﻿using System;
-using AView = Android.Views.View;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using static Microsoft.Maui.DeviceTests.HandlerTestBase;
 using AActivity = Android.App.Activity;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {

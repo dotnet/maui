@@ -52,14 +52,14 @@ namespace Maui.Controls.Sample.Pages
 				labelInteractions.Text = $"{name}: "
 					+ string.Join(", ", e.Touches.Select(t => $"[{Math.Round(t.X, 1)},{Math.Round(t.Y, 1)}]"))
 					+ $" IsInsideBounds: {e.IsInsideBounds}");
-			
+
 			Dispatcher.DispatchAsync(() =>
 				labelGestures.Text = string.Empty);
 		}
 
 		void UpdateGestures(string name)
 		{
-			Dispatcher.DispatchAsync(() =>	
+			Dispatcher.DispatchAsync(() =>
 				labelGestures.Text = $"{name}");
 		}
 
