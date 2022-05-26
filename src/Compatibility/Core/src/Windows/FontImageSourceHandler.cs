@@ -114,15 +114,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var allFamilies = fontFamily.Source.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
 			if (allFamilies.Length > 1)
-			{       
+			{
 				// There's really no perfect solution to handle font families with fallbacks (comma-separated)	
 				// So if the font family has fallbacks, only one is taken, because CanvasTextFormat	
 				// only supports one font family
 				string source = fontImageSource.FontFamily;
 
-				foreach(var family in allFamilies)
+				foreach (var family in allFamilies)
 				{
-					if(family.Contains(source, StringComparison.Ordinal))
+					if (family.Contains(source, StringComparison.Ordinal))
 					{
 						fontSource = family;
 						break;

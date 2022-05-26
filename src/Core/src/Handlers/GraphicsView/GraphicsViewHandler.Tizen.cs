@@ -1,4 +1,4 @@
-﻿using  Microsoft.Maui.Platform;
+﻿using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {

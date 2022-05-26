@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			Application.SetCurrentApplication(application);
 			_application = application;
 
-			if(NSApplication.SharedApplication.MainMenu != null)
+			if (NSApplication.SharedApplication.MainMenu != null)
 				_storyboardMainMenuCount = (int)NSApplication.SharedApplication.MainMenu.Count;
 
 			application.PropertyChanged += ApplicationOnPropertyChanged;
@@ -56,7 +56,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			// applicationDidBecomeActive
 			// execute any OpenGL ES drawing calls
-			if (_application == null || !_isSuspended) return;
+			if (_application == null || !_isSuspended)
+				return;
 			_isSuspended = false;
 			_application.SendResume();
 		}
@@ -64,7 +65,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public override void DidResignActive(Foundation.NSNotification notification)
 		{
 			// applicationWillResignActive
-			if (_application == null) return;
+			if (_application == null)
+				return;
 			_isSuspended = true;
 			_application.SendSleep();
 		}

@@ -92,8 +92,8 @@ namespace Microsoft.Maui.Handlers
 			_ = Canvas ?? throw new InvalidOperationException($"{nameof(Canvas)} cannot be null");
 
 			if (VirtualView == null || VirtualView.PresentedContent == null)
-			    return;
-			    
+				return;
+
 			Canvas.MinimumWidth = (VirtualView.PresentedContent.Margin.HorizontalThickness + VirtualView.PresentedContent.Frame.Width + VirtualView.Padding.HorizontalThickness).ToScaledPixel();
 			Canvas.MinimumHeight = (VirtualView.PresentedContent.Margin.VerticalThickness + VirtualView.PresentedContent.Frame.Height + VirtualView.Padding.VerticalThickness).ToScaledPixel();
 

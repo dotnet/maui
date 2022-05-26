@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics.Win2D;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class LineHandler 
+	public partial class LineHandler
 	{
 		public static void MapX1(IShapeViewHandler handler, Line line)
 		{

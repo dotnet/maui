@@ -102,7 +102,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
-		
+
 		[Fact(DisplayName = "Clicking BackButton Fires Correct Navigation Events")]
 		public async Task ShellWithFlyoutDisabledDoesntRenderFlyout()
 		{

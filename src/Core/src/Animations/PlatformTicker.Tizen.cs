@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Animations
 			{
 				TizenSynchronizationContext.Initialize();
 			}
-			
+
 			_context = SynchronizationContext.Current;
 			_timer = new Timer((object? o) => HandleElapsed(o), this, Timeout.Infinite, Timeout.Infinite);
 		}
