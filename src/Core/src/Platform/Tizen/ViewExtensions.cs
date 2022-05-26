@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Platform
 			if (platformView == null)
 				return new Rect();
 			var screenPostion = platformView.ScreenPosition;
-			return new TRect(screenPostion.X, screenPostion.Y, platformView.SizeWidth, platformView.SizeHeight).ToDP();
+			return new Rect(screenPostion.X, screenPostion.Y, platformView.SizeWidth, platformView.SizeHeight);
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)

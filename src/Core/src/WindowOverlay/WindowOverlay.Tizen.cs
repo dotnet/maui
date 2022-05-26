@@ -98,7 +98,7 @@ namespace Microsoft.Maui
 			if (touch == null)
 				return false;
 
-			var point = new Point(touch.GetLocalPosition(0).X.ToScaledDP(), touch.GetLocalPosition(0).Y.ToScaledDP());
+			var point = new Point(touch.GetLocalPosition(0).X, touch.GetLocalPosition(0).Y);
 
 			var disableTouchEvent = false;
 
