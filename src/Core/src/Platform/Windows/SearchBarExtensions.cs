@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -107,7 +108,7 @@ namespace Microsoft.Maui.Platform
 			var currentControlText = platformControl.Text;
 
 			if (currentControlText.Length >= maxLength)
-				platformControl.Text = currentControlText.Substring(0, maxLength - 1);
+				platformControl.Text = currentControlText.Substring(0, maxLength);
 		}
 
 		public static void UpdateIsReadOnly(this AutoSuggestBox platformControl, ISearchBar searchBar)
