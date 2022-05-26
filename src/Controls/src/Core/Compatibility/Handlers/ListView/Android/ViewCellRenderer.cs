@@ -198,7 +198,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_viewCell = cell;
 
 					Performance.Start(reference, "Reuse.SetElement");
-					_viewHandler.SetVirtualView(cell.View);
+
+					if (_viewHandler != cell.View.Handler)
+					{
+						RemoveView(_viewHandler.PlatformView);
+						cell.View.Handler?.DisconnectHandler();
+						_viewHandler.SetVirtualView(cell.View);
+						AddView(_viewHandler.PlatformView);
+
+					}
+
 					Performance.Stop(reference, "Reuse.SetElement");
 
 					Invalidate();

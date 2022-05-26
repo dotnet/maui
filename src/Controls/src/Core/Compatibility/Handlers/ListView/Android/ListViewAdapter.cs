@@ -88,6 +88,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					_listCount = count;
 				}
+
+				//if (_listView.CachingStrategy == ListViewCachingStrategy.RetainElement &&
+				//	_layoutsCreated.Count > _listCount)
+				//{ 
+				//}
+
 				return _listCount;
 			}
 		}
@@ -267,6 +273,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 				{
 					layout = new ConditionalFocusLayout(_context) { Orientation = Orientation.Vertical };
+
+					if (_layoutsCreated.TryGetValue(position, out ConditionalFocusLayout value))
+						DisposeOfConditionalFocusLayout(value);
+
 					_layoutsCreated[position] = layout;
 				}
 			}

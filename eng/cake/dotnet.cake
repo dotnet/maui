@@ -497,7 +497,7 @@ void SetDotNetEnvironmentVariables()
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 
     // Get "full" .binlog in Project System Tools
-    if (HasArgument("debug"))
+    if (HasArgument("dbg"))
         SetEnvironmentVariable("MSBuildDebugEngine", "1");
 }
 
