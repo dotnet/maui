@@ -99,7 +99,6 @@ steps:
         Contents: |
           artifacts/docs-packs/**
         TargetFolder: $(build.artifactstagingdirectory)
-        flattenFolders: true
     - task: PublishBuildArtifacts@1
       condition: always()
       displayName: publish library packs artifacts

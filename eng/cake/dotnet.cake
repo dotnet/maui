@@ -304,6 +304,8 @@ Task("dotnet-pack-docs")
         {
             var d = $"{tempDir}/{nupkg.GetFilename()}";
             Unzip(nupkg, d);
+            DeleteFiles($"{d}/**/*.pri");
+            DeleteFiles($"{d}/**/*.aar");
             CopyDirectory($"{d}/ref", $"{destDir}");
         }
 
