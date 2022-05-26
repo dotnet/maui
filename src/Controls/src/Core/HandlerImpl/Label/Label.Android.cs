@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Controls
 				if (_mauiTextView != null)
 				{
 					_mauiTextView.LayoutChanged -= OnLayoutChanged;
-					_mauiTextView.Dispose();
 					_mauiTextView = null;
 				}
 			}
