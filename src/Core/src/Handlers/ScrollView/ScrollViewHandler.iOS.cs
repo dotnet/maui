@@ -57,6 +57,20 @@ namespace Microsoft.Maui.Handlers
 				hasExplicitHeight ? explicitHeight : size.Height);
 		}
 
+		public override void PlatformArrange(Rect rect)
+		{
+			base.PlatformArrange(rect);
+
+			// Determine the destination Rect for the content. The content can be larger than the UIScrollView itself,
+			// but if it's smaller we still want it to fill up the UIScrollView.
+
+			var destination = new Rect(0, 0, 
+				Math.Max(PlatformView.ContentSize.Width, rect.Width), 
+				Math.Max(PlatformView.ContentSize.Height, rect.Height));
+
+			VirtualView.PresentedContent?.Arrange(destination);
+		}
+
 		void ScrollAnimationEnded(object? sender, EventArgs e)
 		{
 			VirtualView.ScrollFinished();
