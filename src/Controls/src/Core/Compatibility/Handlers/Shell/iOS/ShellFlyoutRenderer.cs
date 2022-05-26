@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (Flyout?.ViewController?.View != null)
 				Flyout.ViewController.View.AccessibilityElementsHidden = flyoutElementsHidden;
 
-			if (Detail.View != null)
+			if (Detail?.View != null)
 				Detail.View.AccessibilityElementsHidden = detailsElementsHidden;
 		}
 
