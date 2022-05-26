@@ -43,7 +43,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			NSImage image = null;
 			var streamsource = imagesource as StreamImageSource;
-			if (streamsource?.Stream == null) return null;
+			if (streamsource?.Stream == null)
+				return null;
 			using (
 				var streamImage = await ((IStreamImageSource)streamsource).GetStreamAsync(cancelationToken).ConfigureAwait(false))
 			{
@@ -81,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			ImageSource imagesource,
 			CancellationToken cancelationToken = default(CancellationToken),
 			float scale = 1f)
-		{ 
+		{
 			NSImage image = null;
 			var fontsource = imagesource as FontImageSource;
 			if (fontsource != null)

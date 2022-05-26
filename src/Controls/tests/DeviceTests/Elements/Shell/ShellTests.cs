@@ -49,6 +49,25 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Swap Shell Root Page for NavigationPage")]
+		public async Task SwapShellRootPageForNavigationPage()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				var newPage = new ContentPage();
+				(handler.VirtualView as Window).Page = new NavigationPage(newPage);
+				await OnNavigatedToAsync(newPage);
+				await OnFrameSetToNotEmpty(newPage);
+				Assert.True(newPage.Frame.Height > 0);
+			});
+		}
+
 		[Fact(DisplayName = "FlyoutContent Renderers When FlyoutBehavior Starts As Locked")]
 		public async Task FlyoutContentRenderersWhenFlyoutBehaviorStartsAsLocked()
 		{

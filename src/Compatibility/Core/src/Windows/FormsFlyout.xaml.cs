@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			RightBtn.Visibility = RightBtn.Content == null ? WVisibility.Collapsed : WVisibility.Visible;
 		}
 
-		void ListItemSelected (object sender, ItemClickEventArgs e)
+		void ListItemSelected(object sender, ItemClickEventArgs e)
 		{
 			var selection = (string)e.ClickedItem;
 			options.SetResult(selection);

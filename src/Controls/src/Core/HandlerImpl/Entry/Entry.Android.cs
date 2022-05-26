@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 			Platform.EditTextExtensions.UpdateImeOptions(handler.PlatformView, entry);
 		}
 
-		public static void MapText(EntryHandler handler, Entry entry) 
+		public static void MapText(EntryHandler handler, Entry entry)
 		{
 			Platform.EditTextExtensions.UpdateText(handler.PlatformView, entry);
 		}

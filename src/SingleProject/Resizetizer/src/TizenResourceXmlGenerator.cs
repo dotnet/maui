@@ -71,17 +71,17 @@ namespace Microsoft.Maui.Resizetizer
 						foreach (XmlNode groupNode in rootNode)
 						{
 							XmlElement node = doc.CreateElement("node", NamespaceURI);
-							node.SetAttribute("folder", $"contents/{ subDir.Name }");
+							node.SetAttribute("folder", $"contents/{subDir.Name}");
 							node.SetAttribute("screen-dpi-range", dpiRange);
 							groupNode.AppendChild(node);
 
-							Logger.Log($"Add { subDir.Name } to { groupNode.Name }");
+							Logger.Log($"Add {subDir.Name} to {groupNode.Name}");
 						}
 					}
 				}
 			}
 			doc.Save(Path.Combine(outputResourceDir, "res.xml"));
-			Logger.Log($"res.xml file has been saved in { outputResourceDir }");
+			Logger.Log($"res.xml file has been saved in {outputResourceDir}");
 		}
 	}
 }

@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Layouts
 				MeasureCells();
 			}
 
-			static Definition[] Implied(bool treatStarAsAuto) 
+			static Definition[] Implied(bool treatStarAsAuto)
 			{
 				return new Definition[]
 				{
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Layouts
 				};
 			}
 
-			Definition[] InitializeRows(bool treatStarAsAuto) 
+			Definition[] InitializeRows(bool treatStarAsAuto)
 			{
 				int count = _rowDefinitions.Count;
 
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Layouts
 					// Since no rows are specified, we'll create an implied row 0 
 					return Implied(treatStarAsAuto);
 				}
-				
+
 				var rows = new Definition[count];
 
 				for (int n = 0; n < count; n++)
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Layouts
 
 				return rows;
 			}
-			
+
 			Definition[] InitializeColumns(bool treatStarAsAuto)
 			{
 				int count = _columnDefinitions.Count;
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Layouts
 					// Since no columns are specified, we'll create an implied column 0 
 					return Implied(treatStarAsAuto);
 				}
-				
+
 				var definitions = new Definition[count];
 
 				for (int n = 0; n < count; n++)
@@ -603,7 +603,7 @@ namespace Microsoft.Maui.Layouts
 					{
 						continue;
 					}
-					
+
 					_childrenToLayOut[cell.ViewIndex].Measure(width, height);
 				}
 			}
