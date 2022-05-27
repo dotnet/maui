@@ -23,28 +23,30 @@ namespace Microsoft.Maui.Platform
 		{
 			platformCheckBox.Checked = check.IsChecked;
 		}
-
+	
 		public static void UpdateForeground(this AppCompatCheckBox platformCheckBox, ICheckBox check)
 		{
-			// TODO: Delete when implementing the logic to set the system accent color. 
+			var mode = PorterDuff.Mode.SrcIn;
+
+			CompoundButtonCompat.SetButtonTintList(platformCheckBox, platformCheckBox.GetColorStateList(check));
+			CompoundButtonCompat.SetButtonTintMode(platformCheckBox, mode);
+		}
+
+		internal static ColorStateList GetColorStateList(this AppCompatCheckBox platformCheckBox, ICheckBox check)
+		{
 			Graphics.Color accent = Graphics.Color.FromArgb("#ff33b5e5");
 
-			var targetColor = accent;
+			var tintColor = accent.ToPlatform();
 
 			// For the moment, we're only supporting solid color Paint for the Android Checkbox
 			if (check.Foreground is SolidPaint solid)
 			{
-				targetColor = solid.Color;
+				tintColor = solid.Color.ToPlatform();
 			}
 
-			var tintColor = targetColor.ToPlatform();
-
-			var tintList = ColorStateListExtensions.CreateCheckBox(tintColor);
-
-			var tintMode = PorterDuff.Mode.SrcIn;
-
-			CompoundButtonCompat.SetButtonTintList(platformCheckBox, tintList);
-			CompoundButtonCompat.SetButtonTintMode(platformCheckBox, tintMode);
+			var tintList = CompoundButtonCompat.GetButtonTintList(platformCheckBox);
+			var disabledColor = tintList.DefaultColor;
+			return ColorStateListExtensions.CreateSwitch(disabledColor, tintColor, tintColor);
 		}
 	}
 }
