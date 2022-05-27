@@ -116,7 +116,7 @@ namespace Microsoft.Maui
 
 		[Export("sceneDidDisconnect:")]
 		public virtual void DidDisconnect(UIScene scene)
-		{ 
+		{
 			Services?.InvokeLifecycleEvents<iOSLifecycle.SceneDidDisconnect>(del => del(scene));
 		}
 
