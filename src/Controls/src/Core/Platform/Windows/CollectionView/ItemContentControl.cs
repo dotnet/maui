@@ -129,10 +129,17 @@ namespace Microsoft.Maui.Controls.Platform
 			base.OnContentChanged(oldContent, newContent);
 
 			if (oldContent != null && _visualElement != null)
+			{
 				_visualElement.MeasureInvalidated -= OnViewMeasureInvalidated;
+				_visualElement.PropertyChanged -= OnViewPropertyChanged;
+			}
 
 			if (newContent != null && _visualElement != null)
+			{
 				_visualElement.MeasureInvalidated += OnViewMeasureInvalidated;
+				_visualElement.PropertyChanged += OnViewPropertyChanged;
+				UpdateSemanticProperties(_visualElement);
+			}
 		}
 
 		internal void Realize()
@@ -215,6 +222,44 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnViewMeasureInvalidated(object sender, EventArgs e)
 		{
 			InvalidateMeasure();
+		}
+
+		void OnViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.IsOneOf(
+				SemanticProperties.HeadingLevelProperty,
+				SemanticProperties.HintProperty,
+				SemanticProperties.DescriptionProperty,
+				AutomationProperties.IsInAccessibleTreeProperty) &&
+				sender is IView view)
+			{
+				UpdateSemanticProperties(view);
+			}
+		}
+
+		void UpdateSemanticProperties(IView view)
+		{
+			// If you don't set the automation properties on the root element
+			// of a list item it just reads out the class type to narrator
+			// https://docs.microsoft.com/en-us/accessibility-tools-docs/items/uwpxaml/listitem_name
+			// Because this is the root element of the ListViewItem we need to propagate
+			// the semantic properties from the root xplat element to this platform element
+			if (view == null)
+				return;
+
+			this.UpdateSemantics(view);
+
+			var semantics = view.Semantics;
+
+			UI.Xaml.Automation.Peers.AccessibilityView defaultAccessibilityView = 
+				UI.Xaml.Automation.Peers.AccessibilityView.Content;
+
+			if (!String.IsNullOrWhiteSpace(semantics?.Description) || !String.IsNullOrWhiteSpace(semantics?.Hint))
+			{
+				defaultAccessibilityView = UI.Xaml.Automation.Peers.AccessibilityView.Raw;
+			}
+
+			this.SetAutomationPropertiesAccessibilityView(_visualElement, defaultAccessibilityView);
 		}
 
 		protected override WSize MeasureOverride(WSize availableSize)
