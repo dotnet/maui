@@ -10,9 +10,7 @@ using EScroller = ElmSharp.Scroller;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {
-	/// <summary>
-	/// Type alias which identifies list of cells whose data model was transformed by Xamarin.
-	/// </summary>
+	// Type alias which identifies list of cells whose data model was transformed by Xamarin.
 	using GroupList = TemplatedItemsList<ItemsView<Cell>, Cell>;
 
 	/// <summary>
