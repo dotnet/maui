@@ -14,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			if (contentViewHandler.PlatformView.GetChildAt(0) is LayoutViewGroup childLayoutViewGroup)
 				return childLayoutViewGroup.ChildCount;
-			else 
+			else
 				return 0;
 		}
 	}
