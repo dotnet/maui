@@ -46,11 +46,9 @@ namespace Microsoft.Maui.DeviceTests
 				await InvokeOnMainThreadAsync(() =>
 					frame.ToHandler(MauiContext).PlatformView.AttachAndRun(async () =>
 					{
-						frame.Measure(300, 300);
-						frame.Arrange(new Graphics.Rect(0, 0, 300, 300));
+						(frame as IView).Measure(300, 300);
+						(frame as IView).Arrange(new Graphics.Rect(0, 0, 300, 300));
 
-						// This means the label has been added to the platforms visual tree
-						await OnLoadedAsync(frame.Content);
 						await OnFrameSetToNotEmpty(frame.Content);
 
 						return frame.Content.Frame;
