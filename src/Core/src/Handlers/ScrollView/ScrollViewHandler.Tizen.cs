@@ -7,6 +7,9 @@ namespace Microsoft.Maui.Handlers
 	{
 
 		IPlatformViewHandler? _contentHandler;
+		double _cachedWidth;
+		double _cachedHeight;
+		Graphics.Size _measureCache;
 
 		protected override ScrollView CreatePlatformView() => new();
 
@@ -50,8 +53,18 @@ namespace Microsoft.Maui.Handlers
 			{
 				var width = Math.Max((VirtualView.PresentedContent.Margin.HorizontalThickness + VirtualView.PresentedContent.Frame.Width + VirtualView.Padding.HorizontalThickness).ToScaledPixel(), 100);
 				var height = Math.Max((VirtualView.PresentedContent.Margin.VerticalThickness + VirtualView.PresentedContent.Frame.Height + VirtualView.Padding.VerticalThickness).ToScaledPixel(), 100);
-				PlatformView.ContentContainer.SizeWidth = width;
-				PlatformView.ContentContainer.SizeHeight = height;
+
+				if (_cachedWidth != width)
+				{
+					PlatformView.ContentContainer.SizeWidth = width;
+					_cachedWidth = width;
+				}
+
+				if (_cachedHeight != height)
+				{
+					PlatformView.ContentContainer.SizeHeight = height;
+					_cachedHeight = height;
+				}
 			}
 		}
 
@@ -59,6 +72,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_contentHandler != null)
 			{
+				if (_contentHandler.PlatformView is LayoutViewGroup viewgroup)
+				{
+					viewgroup.LayoutUpdated -= OnContentLayoutUpdated;
+				}
+
 				PlatformView.ContentContainer.Remove(_contentHandler.PlatformView);
 				_contentHandler.Dispose();
 				_contentHandler = null;
@@ -68,8 +86,27 @@ namespace Microsoft.Maui.Handlers
 			if (_contentHandler != null)
 			{
 				PlatformView.ContentContainer.Add(_contentHandler.PlatformView);
+
+				if (_contentHandler.PlatformView is LayoutViewGroup viewgroup)
+				{
+					viewgroup.LayoutUpdated += OnContentLayoutUpdated;
+				}
 			} 
 			UpdateContentSize();
+		}
+
+		void OnContentLayoutUpdated(object? sender, Tizen.UIExtensions.Common.LayoutEventArgs e)
+		{
+			var platformGeometry = PlatformView.GetBounds().ToDP();
+
+			var measuredSize = VirtualView.CrossPlatformMeasure(platformGeometry.Width, platformGeometry.Height);
+			if (_measureCache != measuredSize)
+			{
+				platformGeometry.X = 0;
+				platformGeometry.Y = 0;
+				VirtualView.CrossPlatformArrange(platformGeometry);
+			}
+			_measureCache = measuredSize;
 		}
 
 		void OnRelayout(object? sender, EventArgs e)
