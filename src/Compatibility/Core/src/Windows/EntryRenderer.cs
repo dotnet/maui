@@ -507,7 +507,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return new SizeRequest();
 
 			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
-            child.Measure(constraint);
+			child.Measure(constraint);
 			var result = FormsTextBox.GetCopyOfSize(child, constraint);
 			return new SizeRequest(result);
 		}

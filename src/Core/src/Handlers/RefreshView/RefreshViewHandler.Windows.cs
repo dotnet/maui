@@ -72,8 +72,8 @@ namespace Microsoft.Maui.Handlers
 			if (handler.VirtualView == null || handler.PlatformView?.Visualizer == null)
 				return;
 
-			handler.PlatformView.Visualizer.Foreground = handler.VirtualView.RefreshColor != null	
-				? handler.VirtualView.RefreshColor.ToPlatform()	
+			handler.PlatformView.Visualizer.Foreground = handler.VirtualView.RefreshColor != null
+				? handler.VirtualView.RefreshColor.ToPlatform()
 				: (WBrush)UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
 		}
 

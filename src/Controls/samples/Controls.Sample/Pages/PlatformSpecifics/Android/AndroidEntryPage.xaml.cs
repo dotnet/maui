@@ -5,12 +5,12 @@ using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
 namespace Maui.Controls.Sample.Pages
 {
-    public partial class AndroidEntryPage : ContentPage
-    {
-        public AndroidEntryPage()
-        {
-            InitializeComponent();
-        }
+	public partial class AndroidEntryPage : ContentPage
+	{
+		public AndroidEntryPage()
+		{
+			InitializeComponent();
+		}
 
 		void OnSelectedIndexChanged(object sender, EventArgs e)
 		{
@@ -18,5 +18,5 @@ namespace Maui.Controls.Sample.Pages
 			_entry.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetImeOptions(flag);
 			_label.Text = $"ImeOptions: {_entry.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().ImeOptions()}";
 		}
-    }
+	}
 }

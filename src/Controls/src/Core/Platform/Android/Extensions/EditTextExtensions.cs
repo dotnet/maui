@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			editText.ImeOptions = imeOptions;
 		}
-		
+
 		public static void UpdateText(this EditText editText, InputView inputView)
 		{
 			// Is UpdateText being called only to transform the text

@@ -49,19 +49,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapSourceAsync(IImageHandler handler, IImage image)
-		{
-			if (handler.PlatformView == null)
-				return Task.CompletedTask;
+		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
+			handler.SourceLoader.UpdateImageSourceAsync();
 
-			handler.PlatformView.Clear();
-			return handler.SourceLoader.UpdateImageSourceAsync();
-		}
-
-		void OnSetImageSource(UIImage? obj)
-		{
+		void OnSetImageSource(UIImage? obj) =>
 			PlatformView.Image = obj;
-		}
 
 		void OnWindowChanged(object? sender, EventArgs e)
 		{

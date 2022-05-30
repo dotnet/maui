@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			void OnTimerElapsed()
 			{
-				Label.Text = $"{ DateTime.Now.ToString() }: expecting {ScrollContent?.Children.Count} dates to show up.";
+				Label.Text = $"{DateTime.Now.ToString()}: expecting {ScrollContent?.Children.Count} dates to show up.";
 				ScrollContent.Children.Add(new Label { Text = DateTime.Now.ToString() });
 			}
 		}

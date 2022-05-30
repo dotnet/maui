@@ -290,6 +290,22 @@ namespace Microsoft.Maui.DeviceTests
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
+		protected Task OnNavigatedToAsync(Page page, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+
+			page.NavigatedTo += NavigatedTo;
+
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			void NavigatedTo(object sender, NavigatedToEventArgs e)
+			{
+				taskCompletionSource.SetResult(true);
+				page.NavigatedTo -= NavigatedTo;
+			}
+		}
+
+
 		protected Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			if (frameworkElement.Frame.Height > 0 &&

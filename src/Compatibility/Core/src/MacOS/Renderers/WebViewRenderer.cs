@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public void DecidePolicyForNavigation(WebKit.WebView webView, NSDictionary actionInformation, NSUrlRequest request, WebKit.WebFrame frame, WebKit.IWebPolicyDecisionListener decisionToken)
 		{
 			var navEvent = WebNavigationEvent.NewPage;
-			if(actionInformation.ContainsKey(WebPolicyDelegate.WebActionNavigationTypeKey))
+			if (actionInformation.ContainsKey(WebPolicyDelegate.WebActionNavigationTypeKey))
 			{
 				var navigationType = ((WebNavigationType)((NSNumber)actionInformation[WebPolicyDelegate.WebActionNavigationTypeKey]).Int32Value);
 				switch (navigationType)
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 						break;
 				}
 			}
-			
+
 			if (!_sentNavigating)
 			{
 				_lastEvent = navEvent;
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				{
 					decisionToken.Use();
 				}
-				
+
 				_sentNavigating = false;
 			}
 		}
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 						AutoresizingMask = NSViewResizingMask.WidthSizable,
 						AutoresizesSubviews = true
 					});
-				
+
 					Element.EvalRequested += OnEvalRequested;
 					Element.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 					Element.GoBackRequested += OnGoBackRequested;
@@ -156,7 +156,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var tcr = new TaskCompletionSource<string>();
 			var task = tcr.Task;
 
-			Device.BeginInvokeOnMainThread(() => {
+			Device.BeginInvokeOnMainThread(() =>
+			{
 				tcr.SetResult(Control?.StringByEvaluatingJavaScriptFromString(script));
 			});
 
@@ -201,7 +202,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			public override void FinishedLoad(WebKit.WebView sender, WebFrame forFrame)
 			{
 				Renderer._sentNavigating = false;
-				
+
 				if (Renderer.Control.IsLoading)
 					return;
 
@@ -221,7 +222,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			public override void FailedLoadWithError(WebKit.WebView sender, NSError error, WebFrame forFrame)
 			{
 				Renderer._sentNavigating = false;
-				
+
 				Renderer._lastEvent = Renderer._lastBackForwardEvent;
 
 				Renderer.Element?.SendNavigated(new WebNavigatedEventArgs(Renderer._lastEvent, new UrlWebViewSource { Url = Renderer.Control.MainFrameUrl }, Renderer.Control.MainFrameUrl, WebNavigationResult.Failure));

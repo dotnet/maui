@@ -12,7 +12,8 @@ using Rectangle = Microsoft.Maui.Controls.Compatibility.Shapes.Rectangle;
 [assembly: ExportImageSourceHandler(typeof(FontImageSource), typeof(FontImageSourceHandler))]
 [assembly: ExportRenderer(typeof(Page), typeof(PageRenderer))]
 #pragma warning disable CS0618 // Type or member is obsolete
-[assembly: ExportRenderer(typeof(CarouselPage), typeof(CarouselPageRenderer))][assembly: ExportRenderer(typeof(MasterDetailPage), typeof(MasterDetailPageRenderer))]
+[assembly: ExportRenderer(typeof(CarouselPage), typeof(CarouselPageRenderer))]
+[assembly: ExportRenderer(typeof(MasterDetailPage), typeof(MasterDetailPageRenderer))]
 #pragma warning restore CS0618 // Type or member is obsolete
 
 [assembly: ExportRenderer(typeof(FlyoutPage), typeof(FlyoutPageRenderer))]

@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				SetCornerRadius(Element.CornerRadius);
 			else if (e.PropertyName == BoxView.ColorProperty.PropertyName)
 				UpdateBackgroundColor();
-			
+
 		}
 
 		protected override AutomationPeer OnCreateAutomationPeer()

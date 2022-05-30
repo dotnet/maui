@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var wsize = new WSize(ItemWidth, ItemHeight);
 
-				frameworkElement.Margin = 
+				frameworkElement.Margin =
 					WinUIHelpers.CreateThickness(
 						margin.Left + ItemSpacing.Left,
 						margin.Top + ItemSpacing.Top,

@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 			platformCheckBox.IsChecked = check.IsChecked;
 		}
 
-		public static void UpdateForeground(this CheckBox platformCheckBox, ICheckBox check) 
+		public static void UpdateForeground(this CheckBox platformCheckBox, ICheckBox check)
 		{
 			var tintBrush = check.Foreground?.ToPlatform();
 

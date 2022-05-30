@@ -1,9 +1,9 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using Microsoft.Maui.Graphics;
-using PlatformView = Android.Views.View;
 using Microsoft.Maui.Platform;
-using System;
 using static Android.Views.View;
+using PlatformView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
@@ -38,7 +38,7 @@ namespace Microsoft.Maui
 			this IPlatformViewHandler viewHandler,
 			int platformWidthConstraint,
 			int platformHeightConstraint,
-			Func<double,double, Size>? measureFunc = null)
+			Func<double, double, Size>? measureFunc = null)
 		{
 			var context = viewHandler.MauiContext?.Context;
 			var virtualView = viewHandler.VirtualView;

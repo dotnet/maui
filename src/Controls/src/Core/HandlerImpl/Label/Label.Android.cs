@@ -27,12 +27,11 @@ namespace Microsoft.Maui.Controls
 				if (_mauiTextView != null)
 				{
 					_mauiTextView.LayoutChanged -= OnLayoutChanged;
-					_mauiTextView.Dispose();
 					_mauiTextView = null;
 				}
 			}
 		}
-		
+
 		public static void MapTextType(LabelHandler handler, Label label)
 		{
 			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);

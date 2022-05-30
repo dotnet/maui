@@ -326,7 +326,7 @@ namespace Microsoft.Maui.Platform
 		internal static Rect GetPlatformViewBounds(this IView view)
 		{
 			var platformView = view?.ToPlatform();
-			
+
 			if (platformView?.Context == null)
 			{
 				return new Rect();

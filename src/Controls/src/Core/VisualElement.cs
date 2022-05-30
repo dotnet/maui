@@ -809,14 +809,14 @@ namespace Microsoft.Maui.Controls
 			Size request = result.Request;
 			Size minimum = result.Minimum;
 
-			if (heightRequest != -1)
+			if (heightRequest != -1 && !double.IsNaN(heightRequest))
 			{
 				request.Height = heightRequest;
 				if (!hasMinimum)
 					minimum.Height = heightRequest;
 			}
 
-			if (widthRequest != -1)
+			if (widthRequest != -1 && !double.IsNaN(widthRequest))
 			{
 				request.Width = widthRequest;
 				if (!hasMinimum)
@@ -1013,7 +1013,7 @@ namespace Microsoft.Maui.Controls
 #endif
 		}
 
-		bool IsMocked() 
+		bool IsMocked()
 		{
 			return _mockX != -1 || _mockY != -1 || _mockWidth != -1 || _mockHeight != -1;
 		}
@@ -1196,7 +1196,7 @@ namespace Microsoft.Maui.Controls
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
-		void UpdateBoundsComponents(Rect bounds) 
+		void UpdateBoundsComponents(Rect bounds)
 		{
 			_frame = bounds;
 

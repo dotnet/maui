@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Resizetizer
 					foreach (var orientation in orientations)
 					{
 						var newImage = Path.GetFileNameWithoutExtension(splash.ItemSpec) + "." + resolution + "." + orientation + ".png";
-						splashDpiMap.Add((resolution, orientation), $"{splashDirectoryName}/{ newImage }");
+						splashDpiMap.Add((resolution, orientation), $"{splashDirectoryName}/{newImage}");
 						UpdateColorAndMoveFile(GetScreenSize(resolution, orientation), imageFullPath, Path.Combine(splashFullPath, newImage));
 					}
 				}

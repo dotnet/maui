@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	public partial class Maui6367 
+	public partial class Maui6367
 	{
 		public Maui6367() => InitializeComponent();
 		public Maui6367(bool useCompiledXaml)
