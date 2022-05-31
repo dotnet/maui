@@ -897,16 +897,27 @@ namespace Microsoft.Maui.Controls
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
-			var view = child as View;
-			if (view != null)
+
+
+			if (child is View view)
+			{
 				ComputeConstraintForView(view);
+
+				if (this is not Microsoft.Maui.ILayout)
+					return;
+				view.MeasureInvalidated += ChildViewMeasureInvalidated;
+			}
 		}
 
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
+
 			if (child is View view)
+			{
 				view.ComputedConstraint = LayoutConstraint.None;
+				view.MeasureInvalidated -= ChildViewMeasureInvalidated;
+			}
 		}
 
 		protected void OnChildrenReordered()
@@ -1211,6 +1222,24 @@ namespace Microsoft.Maui.Controls
 			SizeChanged?.Invoke(this, EventArgs.Empty);
 
 			BatchCommit();
+		}
+
+		void ChildViewMeasureInvalidated(object sender, EventArgs e)
+		{
+			var trigger = (e as InvalidationEventArgs)?.Trigger ?? InvalidationTrigger.MeasureChanged;
+
+			//We only this for new Layouts, old layouts already have this invalidation
+			if (sender is View view)
+			{
+				// we can ignore the request if we are either fully constrained or when the size request changes and we were already fully constrainted
+				if ((trigger == InvalidationTrigger.MeasureChanged && view.Constraint == LayoutConstraint.Fixed) ||
+					(trigger == InvalidationTrigger.SizeRequestChanged && view.ComputedConstraint == LayoutConstraint.Fixed))
+				{
+					return;
+				}
+			}
+
+			InvalidateMeasureNonVirtual(trigger);
 		}
 
 		public class FocusRequestArgs : EventArgs
