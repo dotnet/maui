@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Platform
 
 			float density = Context.GetDisplayDensity();
 
-			float strokeThickness = (float)Clip.StrokeThickness;
+			float strokeThickness = (float)(Clip.StrokeThickness * density);
 			float offset = strokeThickness / 2;
 			float w = (canvas.Width / density) - strokeThickness;
 			float h = (canvas.Height / density) - strokeThickness;

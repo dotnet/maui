@@ -285,8 +285,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				InsertTabsItem(content);
 			}
-			
-			if(_tabs !=null)
+
+			if (_tabs != null)
 				_tabs.Scrollable = ShellSection.Items.Count > 3 ? TabsType.Scrollable : TabsType.Fixed;
 		}
 

@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class PathHandler 
+	public partial class PathHandler
 	{
 		public static void MapData(IShapeViewHandler handler, Path path)
 		{

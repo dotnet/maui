@@ -1,14 +1,14 @@
-﻿using Microsoft.Maui.Controls;
-using Maui.Controls.Sample.ViewModels;
+﻿using Maui.Controls.Sample.ViewModels;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
 {
-    public partial class iOSListViewPage : ContentPage
-    {
-        public iOSListViewPage()
-        {
-            InitializeComponent();
+	public partial class iOSListViewPage : ContentPage
+	{
+		public iOSListViewPage()
+		{
+			InitializeComponent();
 			BindingContext = new ListViewViewModel();
-        }
-    }
+		}
+	}
 }

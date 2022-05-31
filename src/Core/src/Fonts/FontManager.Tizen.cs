@@ -34,7 +34,7 @@ namespace Microsoft.Maui
 			if (string.IsNullOrEmpty(fontFamliy))
 				return "";
 
-			var cleansedFont = CleanseFontName(fontFamliy??string.Empty);
+			var cleansedFont = CleanseFontName(fontFamliy ?? string.Empty);
 			if (cleansedFont == null)
 				return "";
 
@@ -61,7 +61,7 @@ namespace Microsoft.Maui
 			if (string.IsNullOrEmpty(fontKey.family))
 				return "";
 
-			var cleansedFont = CleanseFontName(fontKey.family??string.Empty);
+			var cleansedFont = CleanseFontName(fontKey.family ?? string.Empty);
 
 			if (cleansedFont == null)
 				return "";

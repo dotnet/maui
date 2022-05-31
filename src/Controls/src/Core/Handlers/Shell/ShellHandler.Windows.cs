@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				rnv.FlyoutView = flyoutView.Flyout;
 
 			handler.PlatformView.FlyoutCustomContent = flyoutView.Flyout?.ToPlatform(handler.MauiContext);
-			
+
 		}
 
 		public static void MapIsPresented(ShellHandler handler, IFlyoutView flyoutView)

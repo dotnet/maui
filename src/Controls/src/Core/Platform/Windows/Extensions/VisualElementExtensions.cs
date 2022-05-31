@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			foreach (Element element in self.Descendants())
 			{
-				if(element is Maui.IElement mauiElement)
+				if (element is Maui.IElement mauiElement)
 					mauiElement.Handler?.DisconnectHandler();
 			}
 

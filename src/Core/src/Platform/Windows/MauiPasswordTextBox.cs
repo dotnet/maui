@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		private void OnNativeTextChanging(TextBox sender, TextBoxTextChangingEventArgs args)
-		{	
+		{
 			// As we are obfuscating the text by ourselves, transforming the text, or a user could be using a custom Converter;
 			// we are setting the Text property directly on code many times.
 			// This causes that we invoke the SelectionChanged event many times with SelectionStart = 0, setting the cursor to
