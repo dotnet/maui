@@ -3,6 +3,7 @@ trigger:
     include:
     - main
     - release/*
+    - net7.0
     - loc
   tags:
     include:
@@ -26,6 +27,7 @@ pr:
     include:
     - main
     - release/*
+    - net7.0
   paths:
     include:
     - '*'
@@ -73,14 +75,14 @@ parameters:
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
-        artifact: net6-windows
+        artifact: net7-windows
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
-        artifact: net6-macos
+        artifact: net7-macos
   - name: PackPlatforms
     type: object
     default:

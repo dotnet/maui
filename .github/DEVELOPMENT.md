@@ -121,10 +121,8 @@ dotnet tool restore
 dotnet cake --target=VS-NET6
 ```
 
-_NOTES:_
-- _If the IDE doesn't show any Android devices try unloading and reloading the `Sample.Droid-net6` project._
-
 You can also run commands individually:
+
 ```dotnetcli
 # install local tools required to build (cake, pwsh, etc..)
 dotnet tool restore
@@ -142,8 +140,8 @@ To build & run .NET 6 sample apps, you will also need to use `.\bin\dotnet\dotne
 installed the workloads globally: as well as need the `-f` switch to choose the platform:
 
 ```dotnetcli
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample\Maui.Controls.Sample.csproj -t:Run -f net6.0-android
-.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample\Maui.Controls.Sample.csproj -t:Run -f net6.0-ios
+.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample\Maui.Controls.Sample.csproj -t:Run -f net7.0-android
+.\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample\Maui.Controls.Sample.csproj -t:Run -f net7.0-ios
 ```
 
 #### MacOS
@@ -161,9 +159,9 @@ dotnet build Microsoft.Maui-mac.slnf
 Try out a "single project", you will need the `-f` switch to choose the platform:
 
 ```bash
-dotnet build src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj -t:Run -f net6.0-ios
-dotnet build src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj -t:Run -f net6.0-maccatalyst
-dotnet build src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj -t:Run -f net6.0-android
+dotnet build src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj -t:Run -f net7.0-ios
+dotnet build src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj -t:Run -f net7.0-maccatalyst
+dotnet build src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj -t:Run -f net7.0-android
 ```
 
 ### Blazor Desktop
@@ -192,10 +190,10 @@ code in .NET MAUI:
    `$(AndroidUseIntermediateDesignerFile)` to `false`.
 
 2. Build .NET MAUI as you normally would. You will get compiler errors
-   about duplicate fields, but `obj\Debug\net6.0-android\Resource.designer.cs`
+   about duplicate fields, but `obj\Debug\net7.0-android\Resource.designer.cs`
    should now be generated.
 
-3. Open `obj\Debug\net6.0-android\Resource.designer.cs`, and find the
+3. Open `obj\Debug\net7.0-android\Resource.designer.cs`, and find the
    field you need such as:
 
 ```csharp

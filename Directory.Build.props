@@ -2,7 +2,7 @@
   <Import Project="eng\Versions.props" />
 
   <PropertyGroup>
-    <_MauiDotNetVersion Condition="'$(_MauiDotNetVersion)' == ''">6.0</_MauiDotNetVersion>
+    <_MauiDotNetVersion Condition="'$(_MauiDotNetVersion)' == ''">7.0</_MauiDotNetVersion>
     <_MauiDotNetTfm Condition="'$(_MauiDotNetTfm)' == ''">net$(_MauiDotNetVersion)</_MauiDotNetTfm>
     <_MauiTargetPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MauiTargetPlatformIdentifier>
     <_MauiNoTargetPlatform Condition="'$(_MauiTargetPlatformIdentifier)' == ''">True</_MauiNoTargetPlatform>
@@ -14,7 +14,7 @@
     <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
     <_MauiTargetPlatformIsTizen Condition="'$(_MauiTargetPlatformIdentifier)' == 'tizen'">True</_MauiTargetPlatformIsTizen>
 
-    <IncludeWindowsTargetFrameworks Condition="($([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full') or ('$(Packing)' == 'true')">true</IncludeWindowsTargetFrameworks>
+    <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) or '$(Packing)' == 'true'">true</IncludeWindowsTargetFrameworks>
     <IncludeTizenTargetFrameworks Condition="'$(CI)' == 'true' or '$(TF_BUILD)' == 'true' or
              Exists('$(DOTNET_ROOT)\sdk-manifests\$(DotNetVersionBand)\samsung.net.sdk.tizen\WorkloadManifest.json') or
              Exists('$(ProgramFiles)\dotnet\sdk-manifests\$(DotNetVersionBand)\samsung.net.sdk.tizen\WorkloadManifest.json')">true</IncludeTizenTargetFrameworks>
@@ -63,7 +63,7 @@
     <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
     <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
     <DotNetLibraryPacksDirectory>$(DotNetDirectory)library-packs/</DotNetLibraryPacksDirectory>
-    <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/</DotNetSdkManifestsDirectory>
+    <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetSdkManifestsFolder)/</DotNetSdkManifestsDirectory>
     <DotNetTemplatePacksDirectory>$(DotNetDirectory)template-packs/</DotNetTemplatePacksDirectory>
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
     <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\</_MauiBuildTasksLocation>

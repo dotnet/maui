@@ -53,11 +53,11 @@
             // in vscode.
             "id": "framework",
             "type": "pickString",
-            "default": "net6.0-android",
+            "default": "net7.0-android",
             "description": "Pick the framework you want to target.",
             "options": [
-                "net6.0-android",
-                "net6.0-ios",
+                "net7.0-android",
+                "net7.0-ios",
             ]
         },
         {
