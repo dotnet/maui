@@ -65,12 +65,11 @@
   <PropertyGroup>
     <!-- Match the first three version numbers and append 00 -->
     <!-- <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</DotNetVersionBand> -->
-    <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">6.0.300</DotNetVersionBand>
-    <!-- NOTE: temporarily hardcode these to 6.0.200 -->
-    <DotNetMauiManifestVersionBand>$(DotNetVersionBand)</DotNetMauiManifestVersionBand>
-    <DotNetMonoManifestVersionBand>$(DotNetVersionBand)</DotNetMonoManifestVersionBand>
-    <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
-    <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
+    <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">6.0.400</DotNetVersionBand>
+    <DotNetMauiManifestVersionBand>6.0.300</DotNetMauiManifestVersionBand>
+    <DotNetMonoManifestVersionBand>6.0.300</DotNetMonoManifestVersionBand>
+    <DotNetEmscriptenManifestVersionBand>6.0.300</DotNetEmscriptenManifestVersionBand>
+    <DotNetAndroidManifestVersionBand>6.0.300</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>6.0.400</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>6.0.400</DotNetTizenManifestVersionBand>
   </PropertyGroup>
