@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -110,41 +108,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.False(double.IsInfinity(size.Width));
 			Assert.False(double.IsInfinity(size.Height));
-		}
-
-		[Theory(DisplayName = "Slider Maximum Text Updates Correctly")]
-		[InlineData(0, 1)]
-		[InlineData(0, 10)]
-		[InlineData(10, 20)]
-		public async Task MinimumUpdatesCorrectly(int setValue, int unsetValue)
-		{
-			var slider = new SliderStub
-			{
-				Maximum = 100
-			};
-
-			await ValidatePropertyUpdatesValue(
-				slider,
-				nameof(ISlider.Minimum),
-				GetNativeMinimum,
-				setValue,
-				unsetValue);
-		}
-
-		[Theory(DisplayName = "Slider Maximum Text Updates Correctly")]
-		[InlineData(10, 20)]
-		[InlineData(0, 10)]
-		[InlineData(10, 100)]
-		public async Task MaximumUpdatesCorrectly(int setValue, int unsetValue)
-		{
-			var slider = new SliderStub();
-
-			await ValidatePropertyUpdatesValue(
-				slider,
-				nameof(ISlider.Maximum),
-				GetNativeMaximum,
-				setValue,
-				unsetValue);
 		}
 	}
 }
