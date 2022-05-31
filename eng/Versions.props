@@ -15,7 +15,8 @@
     <MicrosoftMacCatalystSdkPackageVersion>15.4.704-ci.net7-0</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>12.3.704-ci.net7-0</MicrosoftmacOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>15.4.704-ci.net7-0</MicrosofttvOSSdkPackageVersion>
-    <SamsungTizenSdkPackageVersion>7.0.303</SamsungTizenSdkPackageVersion>
+    <!-- Samsung/Tizen.NET -->
+    <SamsungTizenSdkPackageVersion>7.0.100-preview.6.7</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenManifest70100PackageVersion>7.0.0-preview.5.22252.1</MicrosoftNETWorkloadEmscriptenManifest70100PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenManifest70100PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
