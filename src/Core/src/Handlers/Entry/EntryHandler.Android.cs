@@ -1,10 +1,6 @@
-﻿using Android.Content.Res;
+﻿using System;
 using Android.Graphics.Drawables;
-using Android.Runtime;
 using Android.Text;
-using Android.Views;
-using Android.Views.InputMethods;
-using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
 using static Android.Views.View;
@@ -16,11 +12,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		Drawable? _clearButtonDrawable;
 
-		protected override AppCompatEditText CreatePlatformView()
-		{
-			var nativeEntry = new AppCompatEditText(Context);
-			return nativeEntry;
-		}
+		protected override AppCompatEditText CreatePlatformView() 
+			=> new MauiEditText(Context);
 
 		// Returns the default 'X' char drawable in the AppCompatEditText.
 		protected virtual Drawable GetClearButtonDrawable() =>
@@ -32,6 +25,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange += OnFocusedChange;
 			platformView.Touch += OnTouch;
 			platformView.EditorAction += OnEditorAction;
+
+			if (platformView is IMauiEditText mauiEditText)
+				mauiEditText.OnKeyboardBackPressed += OnKeyboardBackPressed;
 		}
 
 		protected override void DisconnectHandler(AppCompatEditText platformView)
@@ -41,6 +37,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange -= OnFocusedChange;
 			platformView.Touch -= OnTouch;
 			platformView.EditorAction -= OnEditorAction;
+
+			if (platformView is IMauiEditText mauiEditText)
+				mauiEditText.OnKeyboardBackPressed -= OnKeyboardBackPressed;
 		}
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry) =>
@@ -123,12 +122,17 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (e.IsCompletedAction())
 			{
-				// TODO: Dismiss keyboard for hardware / physical keyboards
+				PlatformView?.HideKeyboard();
 
 				VirtualView?.Completed();
 			}
 
 			e.Handled = true;
+		}
+
+		void OnKeyboardBackPressed(object? sender, EventArgs eventArgs)
+		{
+			PlatformView?.ClearFocus();
 		}
 	}
 }

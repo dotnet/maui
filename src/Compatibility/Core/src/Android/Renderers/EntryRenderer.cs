@@ -371,6 +371,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		abstract protected void UpdatePlaceholderColor();
 
+		[PortHandler]
 		void OnKeyboardBackPressed(object sender, EventArgs eventArgs)
 		{
 			Control?.ClearFocus();

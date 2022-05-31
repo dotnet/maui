@@ -1,16 +1,16 @@
+﻿#nullable disable
 using System;
-using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Views.InputMethods;
 using Android.Widget;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui.Controls.Platform
+namespace Microsoft.Maui.Platform
 {
-	internal static class KeyboardManager
+	public static class KeyboardManager
 	{
-		internal static void HideKeyboard(this AView inputView, bool overrideValidation = false)
+		public static void HideKeyboard(this AView inputView, bool overrideValidation = false)
 		{
 			if (inputView == null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be hidden.");
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal static void ShowKeyboard(this TextView inputView)
+		public static void ShowKeyboard(this TextView inputView)
 		{
 			if (inputView == null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be shown.");
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal static void ShowKeyboard(this SearchView searchView)
+		public static void ShowKeyboard(this SearchView searchView)
 		{
 			if (searchView == null)
 			{
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal static void ShowKeyboard(this AView view)
+		public static void ShowKeyboard(this AView view)
 		{
 			switch (view)
 			{
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal static void PostShowKeyboard(this AView view)
+		public static void PostShowKeyboard(this AView view)
 		{
 			void ShowKeyboard()
 			{
