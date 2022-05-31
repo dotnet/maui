@@ -67,8 +67,8 @@
     <DotNetMauiManifestVersionBand>$(DotNetVersionBand)</DotNetMauiManifestVersionBand>
     <DotNetMonoManifestVersionBand>$(DotNetVersionBand)</DotNetMonoManifestVersionBand>
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
-    <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
-    <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)-preview.4</DotNetMaciOSManifestVersionBand>
+    <DotNetAndroidManifestVersionBand>$(DotNetSdkManifestsFolder)</DotNetAndroidManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>$(DotNetSdkManifestsFolder)</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>6.0.300</DotNetTizenManifestVersionBand>
   </PropertyGroup>
 </Project>
