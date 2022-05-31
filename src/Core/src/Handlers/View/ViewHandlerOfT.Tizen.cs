@@ -32,56 +32,11 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Shadow != null ||
 			base.NeedsContainer;
 
-		public override void PlatformArrange(Rect frame)
-		{
-			var platformView = this.ToPlatform();
+		public override void PlatformArrange(Rect frame) =>
+			this.PlatformArrangeHandler(frame);
 
-			if (platformView == null)
-				return;
-
-			if (frame.Width < 0 || frame.Height < 0)
-			{
-				// This is just some initial Forms value nonsense, nothing is actually laying out yet
-				return;
-			}
-			platformView.UpdateBounds(frame.ToPixel());
-		}
-
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			var platformView = base.PlatformView;
-
-			if (platformView == null || VirtualView == null)
-			{
-				return VirtualView == null || double.IsNaN(VirtualView.Width) || double.IsNaN(VirtualView.Height) ? Size.Zero : new Size(VirtualView.Width, VirtualView.Height);
-			}
-
-			double availableWidth = widthConstraint.ToScaledPixel();
-			double availableHeight = heightConstraint.ToScaledPixel();
-
-			if (availableWidth < 0)
-				availableWidth = double.PositiveInfinity;
-			if (availableHeight < 0)
-				availableHeight = double.PositiveInfinity;
-
-			var explicitWidth = VirtualView.Width;
-			var explicitHeight = VirtualView.Height;
-			var hasExplicitWidth = explicitWidth >= 0;
-			var hasExplicitHeight = explicitHeight >= 0;
-
-			Size measured;
-			if (platformView is IMeasurable platformViewMeasurable)
-			{
-				measured = platformViewMeasurable.Measure(availableWidth, availableHeight).ToDP();
-			}
-			else
-			{
-				measured = Measure(availableWidth, availableHeight);
-			}
-
-			return new Size(hasExplicitWidth ? explicitWidth : measured.Width,
-				hasExplicitHeight ? explicitHeight : measured.Height);
-		}
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
+			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 
 		protected virtual Size Measure(double availableWidth, double availableHeight)
 		{

@@ -108,6 +108,9 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
 			handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
 #endif
+#if TIZEN
+			handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
+#endif
 
 #if WINDOWS || MACCATALYST
 			handlersCollection.AddHandler(typeof(MenuFlyout), typeof(MenuFlyoutHandler));

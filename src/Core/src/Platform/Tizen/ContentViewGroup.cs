@@ -10,10 +10,10 @@ namespace Microsoft.Maui.Platform
 {
 	public class ContentViewGroup : ViewGroup, IMeasurable
 	{
-		IView _virtualView;
+		IView? _virtualView;
 		Size _measureCache;
 
-		public ContentViewGroup(IView view)
+		public ContentViewGroup(IView? view)
 		{
 			_virtualView = view;
 			LayoutUpdated += OnLayoutUpdated;
@@ -30,9 +30,12 @@ namespace Microsoft.Maui.Platform
 
 		void OnLayoutUpdated(object? sender, LayoutEventArgs e)
 		{
+			if (CrossPlatformArrange == null || CrossPlatformMeasure == null)
+				return;
+
 			var platformGeometry = this.GetBounds().ToDP();
 
-			var measured = CrossPlatformMeasure!(platformGeometry.Width, platformGeometry.Height);
+			var measured = CrossPlatformMeasure(platformGeometry.Width, platformGeometry.Height);
 			if (measured != _measureCache && _virtualView?.Parent is IView parentView)
 			{
 				parentView?.InvalidateMeasure();
@@ -43,7 +46,7 @@ namespace Microsoft.Maui.Platform
 			{
 				platformGeometry.X = 0;
 				platformGeometry.Y = 0;
-				CrossPlatformArrange!(platformGeometry);
+				CrossPlatformArrange(platformGeometry);
 			}
 		}
 	}

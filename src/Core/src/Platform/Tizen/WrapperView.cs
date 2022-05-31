@@ -5,10 +5,11 @@ using Tizen.UIExtensions.NUI;
 using Tizen.UIExtensions.NUI.GraphicsView;
 using NView = Tizen.NUI.BaseComponents.View;
 using TRect = Tizen.UIExtensions.Common.Rect;
+using TSize = Tizen.UIExtensions.Common.Size;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : ViewGroup
+	public partial class WrapperView : ViewGroup, IMeasurable
 	{
 		Lazy<SkiaGraphicsView> _drawableCanvas;
 		Lazy<MauiClipperView> _clipperView;
@@ -165,6 +166,18 @@ namespace Microsoft.Maui.Platform
 				bounds = bounds.ToDP().ExpandTo(shadowThinkness).ToPixel();
 			}
 			_drawableCanvas.Value.UpdateBounds(bounds);
+		}
+
+		TSize IMeasurable.Measure(double availableWidth, double availableHeight)
+		{
+			if (Content is IMeasurable measurable)
+			{
+				return measurable.Measure(availableWidth, availableHeight);
+			}
+			else
+			{
+				return NaturalSize2D.ToCommon();
+			}
 		}
 	}
 }
