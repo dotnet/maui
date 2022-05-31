@@ -1966,6 +1966,8 @@ override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnPointerExited(Micro
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnPointerMoved(Microsoft.UI.Xaml.Input.PointerRoutedEventArgs! e) -> void
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnPointerPressed(Microsoft.UI.Xaml.Input.PointerRoutedEventArgs! e) -> void
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnPointerReleased(Microsoft.UI.Xaml.Input.PointerRoutedEventArgs! e) -> void
+override Microsoft.Maui.Platform.RootPanel.ArrangeOverride(Windows.Foundation.Size finalSize) -> Windows.Foundation.Size
+override Microsoft.Maui.Platform.RootPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 override Microsoft.Maui.Platform.WindowRootView.OnApplyTemplate() -> void
 override Microsoft.Maui.Platform.WindowRootView.OnContentChanged(object! oldContent, object! newContent) -> void
 override Microsoft.Maui.RectangleGridAdorner.Draw(Microsoft.Maui.Graphics.ICanvas! canvas, Microsoft.Maui.Graphics.RectF dirtyRect) -> void
