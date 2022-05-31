@@ -1,3 +1,2 @@
 ﻿#nullable enable
-Microsoft.Maui.Graphics.MauiDrawable.SetEmptyBorderBrush() -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void

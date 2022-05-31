@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Platform
 				label.TextTransform,
 				label.TextDecorations);
 
-		// TODO: this overload must be removed in net7.0 and replaced with the one below
+		// TODO: NET7 this overload must be removed in net7.0 and replace with the one below
 		public static SpannableString ToSpannableString(
 			this FormattedString formattedString,
 			IFontManager fontManager,
