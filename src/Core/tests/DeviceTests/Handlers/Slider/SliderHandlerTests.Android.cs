@@ -42,8 +42,15 @@ namespace Microsoft.Maui.DeviceTests
 			return 0;
 		}
 
-		double GetNativeMaximum(SliderHandler sliderHandler) =>
-			GetNativeSlider(sliderHandler).Max;
+		double GetNativeMaximum(SliderHandler sliderHandler)
+		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				return GetNativeSlider(sliderHandler).Max;
+			}
+
+			return 0;
+		}
 
 		Task ValidateNativeThumbColor(ISlider slider, Color color)
 		{
