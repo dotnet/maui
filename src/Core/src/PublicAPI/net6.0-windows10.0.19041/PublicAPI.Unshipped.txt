@@ -1,1 +1,3 @@
 ﻿#nullable enable
+override Microsoft.Maui.Platform.RootPanel.ArrangeOverride(Windows.Foundation.Size finalSize) -> Windows.Foundation.Size
+override Microsoft.Maui.Platform.RootPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
