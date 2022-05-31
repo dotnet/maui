@@ -1,23 +1,23 @@
 <Project>
   <PropertyGroup>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>7.0.100-preview.5.22263.22</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>7.0.100-preview.6.22276.1</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>7.0.0-preview.5.22258.4</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>7.0.0-preview.5.22272.3</MicrosoftNETCoreAppRefPackageVersion>
     <!-- NOTE: should eventually revert back to $(MicrosoftNETCoreAppRefPackageVersion) in .NET 7 -->
     <MicrosoftExtensionsPackageVersion>6.0.0</MicrosoftExtensionsPackageVersion>
     <MicrosoftExtensionsServicingPackageVersion>6.0.1</MicrosoftExtensionsServicingPackageVersion>
     <SystemCodeDomPackageVersion>6.0.0</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>33.0.0-preview.4.6</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>33.0.0-preview.4.25</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftiOSSdkPackageVersion>15.4.676-ci.net7-0</MicrosoftiOSSdkPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>15.4.676-ci.net7-0</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>12.3.676-ci.net7-0</MicrosoftmacOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>15.4.676-ci.net7-0</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>15.4.704-ci.net7-0</MicrosoftiOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>15.4.704-ci.net7-0</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>12.3.704-ci.net7-0</MicrosoftmacOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>15.4.704-ci.net7-0</MicrosofttvOSSdkPackageVersion>
     <SamsungTizenSdkPackageVersion>7.0.303</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
-    <MicrosoftNETWorkloadEmscriptenManifest70100PackageVersion>7.0.0-preview.4.22215.1</MicrosoftNETWorkloadEmscriptenManifest70100PackageVersion>
+    <MicrosoftNETWorkloadEmscriptenManifest70100PackageVersion>7.0.0-preview.5.22252.1</MicrosoftNETWorkloadEmscriptenManifest70100PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenManifest70100PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
     <MicrosoftWindowsAppSDKPackageVersion>1.0.3</MicrosoftWindowsAppSDKPackageVersion>
