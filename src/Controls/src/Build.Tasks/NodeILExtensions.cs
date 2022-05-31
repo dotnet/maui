@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexAlignSelfTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexAlignSelf>) },
 					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexWrapTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexWrap>) },
 					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexBasisTypeConverter")), typeof(FlexBasisTypeConverter) },
-					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlowDirectionTypeConverter")), typeof(EnumTypeConverter<FlowDirection>) },
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Controls", "FlowDirectionConverter")), typeof(EnumTypeConverter<FlowDirection>) },
 
 				};
 			}
