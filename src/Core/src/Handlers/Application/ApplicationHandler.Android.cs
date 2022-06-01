@@ -11,10 +11,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (currentActivity != null)
 			{
-				if (OperatingSystem.IsAndroidVersionAtLeast(21))
-					currentActivity.FinishAndRemoveTask();
-				else
-					currentActivity.FinishAffinity();
+				currentActivity.FinishAndRemoveTask();
 
 				Environment.Exit(0);
 			}
