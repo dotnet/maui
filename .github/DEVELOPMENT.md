@@ -121,6 +121,13 @@ dotnet tool restore
 dotnet cake --target=VS-NET6
 ```
 
+You can also run:
+
+```dotnetcli
+dotnet tool restore
+dotnet cake --target=VS
+```
+
 _NOTES:_
 - _If the IDE doesn't show any Android devices try unloading and reloading the `Sample.Droid-net6` project._
 
