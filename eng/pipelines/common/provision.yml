@@ -80,6 +80,9 @@ steps:
       displayName: 'Install the macOS certificate'
       inputs:
         certSecureFile: 'Components Mac Certificate.p12'
+    - pwsh: |
+        'y' | & ~/Library/Developer/Xamarin/android-sdk-macosx/cmdline-tools/5.0/bin/sdkmanager "platforms;android-32"
+      displayName: Install Android API 32
 
 
   # Prepare Windows
@@ -107,14 +110,14 @@ steps:
       displayName: 'Setup MSBuild Paths'
       condition: eq(variables['provisioningVS'], 'true')
 
+    - pwsh: |
+        'y' | & "${env:ProgramFiles(x86)}\Android\android-sdk\cmdline-tools\5.0\bin\sdkmanager" "platforms;android-32"
+      displayName: Install Android API 32
+
   # Prepare Both
   - pwsh: ./build.ps1 --target provision
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
-
-  - pwsh: |
-      'y' | & "${env:ProgramFiles(x86)}\Android\android-sdk\cmdline-tools\5.0\bin\sdkmanager" "platforms;android-32"
-    displayName: Install Android API 32
 
   - task: PowerShell@2
     condition: eq(variables['PrivateBuild'], 'true')
