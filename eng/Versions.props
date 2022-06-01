@@ -33,7 +33,7 @@
     <MicrosoftAspNetCoreMetadataPackageVersion>6.0.5</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftJSInteropPackageVersion>6.0.5</MicrosoftJSInteropPackageVersion>
     <!-- Other packages -->
-    <MicrosoftCodeAnalysisNetAnalyzersVersion>7.0.0-preview1.22274.2</MicrosoftCodeAnalysisNetAnalyzersVersion>
+    <MicrosoftCodeAnalysisNetAnalyzersVersion>7.0.0-preview1.22277.2</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
     <MicrosoftMauiGraphicsVersion>6.0.400-preview.1.1367</MicrosoftMauiGraphicsVersion>
@@ -54,9 +54,9 @@
     <_HarfBuzzSharpVersion>2.8.2</_HarfBuzzSharpVersion>
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.2e12735359928ead60dd08cdf0b983c4e3d4dc56.268</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.100-preview.5.22226.1</MicrosoftTemplateEngineTasksVersion>
-    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>1.0.0-prerelease.22270.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
-    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>1.0.0-prerelease.22270.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
-    <MicrosoftDotNetXHarnessCLIVersion>1.0.0-prerelease.22270.1</MicrosoftDotNetXHarnessCLIVersion>
+    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>1.0.0-prerelease.22276.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
+    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>1.0.0-prerelease.22276.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
+    <MicrosoftDotNetXHarnessCLIVersion>1.0.0-prerelease.22276.1</MicrosoftDotNetXHarnessCLIVersion>
     <TizenUIExtensionsVersion>0.8.1</TizenUIExtensionsVersion>
     <SvgSkiaPackageVersion>0.5.13</SvgSkiaPackageVersion>
     <FizzlerPackageVersion>1.2.0</FizzlerPackageVersion>

@@ -18,7 +18,7 @@
     <PackageReference Include="Svg.Model" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="ShimSkiaSharp" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Fizzler" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Memory" Version="4.5.4" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Memory" Version="4.5.5" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Buffers" Version="4.5.1" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.IO.UnmanagedMemoryStream" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
