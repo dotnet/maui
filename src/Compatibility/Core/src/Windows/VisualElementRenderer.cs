@@ -433,7 +433,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			control.GotFocus += OnControlGotFocus;
 			control.LostFocus += OnControlLostFocus;
 			Children.Add(control);
-			
+
 			UpdateBackgroundColor();
 			UpdateBackground();
 
@@ -520,7 +520,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		protected void UpdateAccessKey() {
+		protected void UpdateAccessKey()
+		{
 			var control = Control;
 			var element = Element as IElementConfiguration<TElement>;
 

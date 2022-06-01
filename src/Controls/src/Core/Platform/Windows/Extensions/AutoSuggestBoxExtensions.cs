@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			queryTextBox.IsSpellCheckEnabled = searchBar.OnThisPlatform().GetIsSpellCheckEnabled();
 		}
-		
+
 		public static void UpdateText(this AutoSuggestBox platformControl, InputView inputView)
 		{
 			platformControl.Text = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);

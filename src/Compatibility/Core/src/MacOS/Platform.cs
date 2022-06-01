@@ -45,13 +45,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				{
 					int maxScrollHeight = (int)(0.6 * NSScreen.MainScreen.Frame.Height);
 					NSView extraButtons = GetExtraButton(arguments);
-					if (extraButtons.Frame.Height > maxScrollHeight) {
+					if (extraButtons.Frame.Height > maxScrollHeight)
+					{
 						NSScrollView scrollView = new NSScrollView();
 						scrollView.Frame = new RectangleF(0, 0, extraButtons.Frame.Width, maxScrollHeight);
 						scrollView.DocumentView = extraButtons;
 						scrollView.HasVerticalScroller = true;
 						alert.AccessoryView = scrollView;
-					} else {
+					}
+					else
+					{
 						alert.AccessoryView = extraButtons;
 					}
 					alert.Layout();
@@ -104,7 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			Page.DisposeModalAndChildRenderers();
 			//foreach (var modal in _modals)
-				//modal.DisposeModalAndChildRenderers();
+			//modal.DisposeModalAndChildRenderers();
 			_renderer.Dispose();
 		}
 

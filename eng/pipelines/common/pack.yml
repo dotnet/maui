@@ -32,6 +32,7 @@ steps:
   - ${{ if eq(parameters.platform, 'Windows') }}:
     - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
       displayName: 'Diff .NET Maui artifacts with NuGet'
+  # artifacts
   - task: CopyFiles@2
     condition: always()
     displayName: 'Copy files to staging'
@@ -42,6 +43,7 @@ steps:
         artifacts/vs-workload.props
         eng/automation/SignList.xml
         !artifacts/library-packs/**
+        !artifacts/docs-packs/**
       TargetFolder: $(build.artifactstagingdirectory)
       flattenFolders: true
   - task: CopyFiles@2
@@ -66,21 +68,19 @@ steps:
     displayName: publish artifacts
     inputs:
       ArtifactName: ${{ parameters.artifact }}
-  - task: DeleteFiles@1
-    inputs:
-      SourceFolder: $(build.artifactstagingdirectory)
-      Contents: '**/*'
-  - task: CopyFiles@2
-    condition: always()
-    displayName: 'Copy library packs to staging'
-    inputs:
-      Contents: |
-        artifacts/library-packs/**
-      TargetFolder: $(build.artifactstagingdirectory)
-      flattenFolders: true
+  # library-packs
   - task: PublishBuildArtifacts@1
     condition: always()
     displayName: publish library packs artifacts
     inputs:
+      PathToPublish: artifacts/library-packs
       ArtifactName: ${{ parameters.libraryPacksArtifact }}
+  # xml-docs
+  - ${{ if eq(parameters.platform, 'Windows') }}:
+    - task: PublishBuildArtifacts@1
+      condition: always()
+      displayName: publish library packs artifacts
+      inputs:
+        PathToPublish: artifacts/docs-packs
+        ArtifactName: xml-docs
 

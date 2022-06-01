@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (Cell != oldCell)
 					{
-						oldCell.Handler.DisconnectHandler();
+						oldCell.Handler?.DisconnectHandler();
 					}
 				}
 			}

@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample.ViewModels
 			var rnd = new Random();
 			var employees = new List<Person>();
 
-			for(int i = 0; i < num; i++)
+			for (int i = 0; i < num; i++)
 			{
 				employees.Add(new Person($"Name {i + 1}", rnd.Next(18, 65), $"Location {i + 1}"));
 			}

@@ -166,8 +166,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				return;
 			}
-			
-			BrushHelpers.UpdateColor(Element.ThumbColor, ref _defaultThumbColor, 
+
+			BrushHelpers.UpdateColor(Element.ThumbColor, ref _defaultThumbColor,
 				() => thumb.Background, brush => thumb.Background = brush);
 		}
 
