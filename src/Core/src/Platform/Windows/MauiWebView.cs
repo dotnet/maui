@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml.Controls;
+using Windows.ApplicationModel;
 
 namespace Microsoft.Maui.Platform
 {
@@ -9,7 +10,9 @@ namespace Microsoft.Maui.Platform
 	{
 		WebView2? _internalWebView;
 
-		const string LocalScheme = "ms-appx-web:///";
+		// Arbitrary local host name for virtual folder mapping
+		const string LocalHostName = "appxpackage";
+		const string LocalScheme = $"https://{LocalHostName}/";
 
 		// Script to insert a <base> tag into an HTML document
 		const string BaseInsertionScript = @"
@@ -21,9 +24,12 @@ namespace Microsoft.Maui.Platform
 
 		public async void LoadHtml(string? html, string? baseUrl)
 		{
+			var mapAppxFolder = false;
+
 			if (string.IsNullOrEmpty(baseUrl))
 			{
 				baseUrl = LocalScheme;
+				mapAppxFolder = true;
 			}
 
 			// Generate a base tag for the document
@@ -36,7 +42,7 @@ namespace Microsoft.Maui.Platform
 			_internalWebView = new WebView2();
 
 			// TODO: For now, the CoreWebView2 won't be created without either setting Source or
-			// calling EnsureCoreWebView2Async(). 
+			// calling EnsureCoreWebView2Async().
 			await _internalWebView.EnsureCoreWebView2Async();
 
 			// When the 'navigation' to the original HTML string is done, we can modify it to include our <base> tag
@@ -55,6 +61,16 @@ namespace Microsoft.Maui.Platform
 
 				await EnsureCoreWebView2Async();
 
+				if (mapAppxFolder)
+				{
+					var appxFolder = Package.Current.InstalledLocation.Path;
+
+					CoreWebView2.SetVirtualHostNameToFolderMapping(
+						LocalHostName,
+						appxFolder,
+						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+				}
+
 				// Set the HTML for the 'real' WebView to the updated HTML
 				NavigateToString(!string.IsNullOrEmpty(htmlWithBaseTag) ? htmlWithBaseTag : html);
 
@@ -66,12 +82,21 @@ namespace Microsoft.Maui.Platform
 			_internalWebView.NavigateToString(html);
 		}
 
-		public void LoadUrl(string? url)
+		public async void LoadUrl(string? url)
 		{
 			Uri uri = new Uri(url ?? string.Empty, UriKind.RelativeOrAbsolute);
 
 			if (!uri.IsAbsoluteUri)
 			{
+				await EnsureCoreWebView2Async();
+
+				var appxFolder = Package.Current.InstalledLocation.Path;
+
+				CoreWebView2.SetVirtualHostNameToFolderMapping(
+					LocalHostName,
+					appxFolder,
+					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+
 				uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
 			}
 
