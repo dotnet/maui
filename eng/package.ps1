@@ -9,8 +9,11 @@ Write-Host "MSBUILD_EXE: $env:MSBUILD_EXE"
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $logsDirectory = Join-Path $artifacts logs
-$sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages.slnf
-$slnMac = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-mac.slnf
+if ($IsWindows) {
+    $sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages.slnf
+} else {
+    $sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-mac.slnf
+}
 
 # Full path to dotnet folder
 $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/
@@ -35,7 +38,7 @@ try
     $env:DOTNET_ROOT=$dotnet
 
     # Build with ./bin/dotnet/dotnet
-    & $dotnet_tool pack $slnMac `
+    & $dotnet_tool pack $sln `
         -c:$configuration `
         -p:SymbolPackageFormat=snupkg `
         -bl:$logsDirectory/maui-pack-$configuration.binlog
