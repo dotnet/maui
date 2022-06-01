@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using static Microsoft.Maui.Layouts.LayoutManager;
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Controls
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
-			ContentSize = (this as IContentView)?.PresentedContent.DesiredSize ?? Size.Zero;
+			//ContentSize = (this as IContentView)?.PresentedContent.DesiredSize ?? Size.Zero;
 			return DesiredSize;
 		}
 
@@ -98,9 +99,17 @@ namespace Microsoft.Maui.Controls
 				bounds.Height = Math.Max(Frame.Height, presentedContent.DesiredSize.Height + padding.VerticalThickness);
 
 				this.ArrangeContent(bounds);
+
+				//ContentSize = bounds.Size;
 			}
 
 			return bounds.Size;
+		}
+
+		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+		{
+			base.InvalidateMeasureInternal(trigger);
+
 		}
 	}
 }

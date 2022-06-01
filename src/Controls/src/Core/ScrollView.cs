@@ -136,15 +136,32 @@ namespace Microsoft.Maui.Controls
 
 				OnPropertyChanging();
 				if (_content != null)
+				{
+					_content.SizeChanged -= _content_SizeChanged;
 					InternalChildren.Remove(_content);
+				}
 				_content = value;
 				if (_content != null)
+				{
 					InternalChildren.Add(_content);
+					_content.SizeChanged += _content_SizeChanged;
+				}
+				
 				OnPropertyChanged();
 
 				Handler?.UpdateValue(nameof(Content));
 			}
 		}
+
+
+		// Push this to a new branch, clean it up, verify it works on iOS/Android, then move the 
+		// other failing tests to this model and see where we are
+		private void _content_SizeChanged(object sender, EventArgs e)
+		{
+			ContentSize = (sender as IView).Frame.Size;
+		}
+
+
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ContentSize']/Docs" />
 		public Size ContentSize

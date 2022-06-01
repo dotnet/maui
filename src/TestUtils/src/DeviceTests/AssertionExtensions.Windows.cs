@@ -77,28 +77,26 @@ namespace Microsoft.Maui.DeviceTests
 				tcs = new TaskCompletionSource();
 				view.Loaded += OnViewLoaded;
 
+				var destWidth = view.Width;
+				var destHeight = view.Height;
+
 				// attach to the UI
-				Grid grid;
+				Grid grid = new Grid()
+				{
+					HorizontalAlignment = HorizontalAlignment.Center,
+					VerticalAlignment = VerticalAlignment.Center
+				};
+
+				grid.RowDefinitions.Add(new RowDefinition() { Height = UI.Xaml.GridLength.Auto });
+				grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = UI.Xaml.GridLength.Auto });
+
+				grid.Children.Add(view);
+
 				var window = new Window
 				{
-					Content = new Grid
-					{
-						HorizontalAlignment = HorizontalAlignment.Center,
-						VerticalAlignment = VerticalAlignment.Center,
-						Children =
-						{
-							(grid = new Grid
-							{
-								Width = view.Width,
-								Height = view.Height,
-								Children =
-								{
-									view
-								}
-							})
-						}
-					}
+					Content = grid,
 				};
+
 				window.Activate();
 
 				// wait for element to be loaded

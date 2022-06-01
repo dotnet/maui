@@ -142,7 +142,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = Substitute.For<IViewHandler>();
 			scroll.Handler = handler;
 
-			scroll.Layout(new Rect(0, 0, 50, 50));
+			var dest = new Rect(0, 0, 50, 50);
+			(scroll as IView).Measure(dest.Width, dest.Height);
+			(scroll as IView).Arrange(dest);
 
 			Assert.AreEqual(new Size(100, 50), scroll.ContentSize);
 
@@ -161,7 +163,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Verify that the WidthRequest change invalidated the layout, and simulate a native layout update 
 			AssertInvalidated(handler);
-			scroll.ForceLayout();
+			(scroll as IView).Arrange(dest);
 
 			Assert.True(changed);
 			Assert.AreEqual(new Size(200, 50), scroll.ContentSize);

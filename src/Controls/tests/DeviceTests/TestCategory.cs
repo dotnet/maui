@@ -17,6 +17,7 @@
 		public const string Modal = "Modal";
 		public const string NavigationPage = "NavigationPage";
 		public const string Page = "Page";
+		public const string ScrollView = "ScrollView";
 		public const string SearchBar = "SearchBar";
 		public const string Shell = "Shell";
 		public const string TabbedPage = "TabbedPage";
