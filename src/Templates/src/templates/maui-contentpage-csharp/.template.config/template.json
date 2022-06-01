@@ -37,17 +37,6 @@
         "description": "Namespace for the generated code.",
         "replaces": "MauiApp1",
         "type": "parameter"
-      },
-      "Framework": {
-        "type": "parameter",
-        "description": "The target framework for the project.",
-        "datatype": "choice",
-        "choices": [
-          {
-            "choice": "DOTNET_TFM_VALUE",
-            "description": "Target DOTNET_TFM_VALUE"
-          }
-        ]
       }
     }
   }
