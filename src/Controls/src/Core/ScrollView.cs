@@ -136,14 +136,37 @@ namespace Microsoft.Maui.Controls
 
 				OnPropertyChanging();
 				if (_content != null)
+				{
+					_content.SizeChanged -= ContentSizeChanged;
 					InternalChildren.Remove(_content);
+				}
 				_content = value;
 				if (_content != null)
+				{
 					InternalChildren.Add(_content);
+					_content.SizeChanged += ContentSizeChanged;
+				}
+				
 				OnPropertyChanged();
-
 				Handler?.UpdateValue(nameof(Content));
 			}
+		}
+
+		void ContentSizeChanged(object sender, EventArgs e)
+		{
+			var view = (sender as IView);
+			if (view == null)
+			{
+				ContentSize = Size.Zero;
+				return;
+			}
+
+			var margin = view.Margin;
+			var frameSize = view.Frame.Size;
+			
+			// The ContentSize includes the margins for the content
+			ContentSize = new Size(frameSize.Width + margin.HorizontalThickness, 
+				frameSize.Height + margin.VerticalThickness);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ContentSize']/Docs" />
