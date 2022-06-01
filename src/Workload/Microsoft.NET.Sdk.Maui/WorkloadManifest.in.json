@@ -295,7 +295,7 @@
       "kind": "sdk",
       "version": "@VERSION@"
     },
-    "Microsoft.Maui.Templates": {
+    "Microsoft.Maui.Templates-@MAUI_DOTNET_VERSION@": {
       "kind": "template",
       "version": "@VERSION@"
     }
