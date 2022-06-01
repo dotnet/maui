@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Design
 			AddMemberAttributes("Microsoft.Maui.Controls.VisualElement", "Visual",
 			   new TypeConverterAttribute(typeof(VisualDesignTypeConverter)));
 
-			AddTypeAttributes("Microsoft.Maui.FlowDirection",
+			AddMemberAttributes("Microsoft.Maui.Controls.VisualElement", "FlowDirection",
 			   new TypeConverterAttribute(typeof(FlowDirectionDesignTypeConverter)));
 
 			AddMemberAttributes("Microsoft.Maui.Controls.ItemsView", "ItemsLayout",
