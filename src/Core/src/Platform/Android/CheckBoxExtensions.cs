@@ -44,9 +44,7 @@ namespace Microsoft.Maui.Platform
 				tintColor = solid.Color.ToPlatform();
 			}
 
-			var tintList = CompoundButtonCompat.GetButtonTintList(platformCheckBox);
-			var disabledColor = tintList.DefaultColor;
-			return ColorStateListExtensions.CreateSwitch(disabledColor, tintColor, tintColor);
+			return ColorStateListExtensions.CreateSwitch(tintColor);
 		}
 	}
 }
