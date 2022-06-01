@@ -221,7 +221,8 @@ namespace Microsoft.Maui.Graphics
 			InvalidateSelf();
 		}
 
-		public void SetEmptyBorderBrush()
+		// TODO: NET7 make public for net7.0
+		internal void SetEmptyBorderBrush()
 		{
 			_invalidatePath = true;
 
