@@ -112,10 +112,6 @@ steps:
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
 
-  - pwsh: |
-      'y' | & "${env:ProgramFiles(x86)}\Android\android-sdk\cmdline-tools\5.0\bin\sdkmanager" "platforms;android-32"
-    displayName: Install Android API 32
-
   - task: PowerShell@2
     condition: eq(variables['PrivateBuild'], 'true')
     displayName: Setup Private Feeds Credentials
