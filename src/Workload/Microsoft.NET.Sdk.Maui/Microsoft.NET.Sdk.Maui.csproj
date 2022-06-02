@@ -81,9 +81,18 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_GenerateVSWorkloadProps" AfterTargets="Build" Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/automation/vs-workload.template.props" Outputs="$(PackageOutputPath)/vs-workload.temp.props;$(PackageOutputPath)/vs-workload.props">
-    <ReplaceText Input="$(MauiRootDirectory)eng/automation/vs-workload.template.props" Output="$(PackageOutputPath)/vs-workload.temp.props" OldValue="@PACK_VERSION_LONG@" NewValue="$(PackageReferenceVersion)" />
-    <ReplaceText Input="$(PackageOutputPath)/vs-workload.temp.props" Output="$(PackageOutputPath)/vs-workload.props" OldValue="@VS_COMPONENT_VERSION@" NewValue="$(VSComponentVersion)" />
+  <Target Name="_GenerateVSWorkloadProps" AfterTargets="Build" Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/automation/vs-workload.template.props" Outputs="$(PackageOutputPath)/vs-workload.props">
+    <ItemGroup>
+      <_WorkloadPropsReplacements Include="@PACK_VERSION_LONG@"     NewValue="$(PackageReferenceVersion)" />
+      <_WorkloadPropsReplacements Include="@VS_COMPONENT_VERSION@"  NewValue="$(VSComponentVersion)" />
+      <_WorkloadPropsReplacements Include="@VSMAN_VERSION@"         NewValue="7.0" /> <!-- TODO: Replace with $(_MauiDotNetVersion) -->
+    </ItemGroup>
+    <ReplaceText
+        Input="$(MauiRootDirectory)eng/automation/vs-workload.template.props"
+        Output="$(PackageOutputPath)/vs-workload.props"
+        OldValue="%(_WorkloadPropsReplacements.Identity)"
+        NewValue="%(_WorkloadPropsReplacements.NewValue)"
+    />
     <ItemGroup>
       <FileWrites Include="$(PackageOutputPath)/vs-workload.props" />
     </ItemGroup>
