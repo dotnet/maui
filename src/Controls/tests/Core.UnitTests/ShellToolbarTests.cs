@@ -226,5 +226,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(Colors.Orange, toolbar.IconColor);
 			Assert.AreEqual(Colors.Pink, toolbar.BarTextColor);
 		}
+
+		[Test]
+		public void ToolBarShouldBeVisibleWithEmptyTitleAndFlyoutBehaviorSetToFlyout()
+		{
+			TestShell testShell = new TestShell()
+			{
+				CurrentItem = new FlyoutItem()
+				{
+					CurrentItem = new ContentPage()
+				}
+			};
+
+			_ = new Window() { Page = testShell };
+			var toolbar = testShell.Toolbar;
+
+			Assert.IsTrue(toolbar.IsVisible);
+		}
 	}
 }

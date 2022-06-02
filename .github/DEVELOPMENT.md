@@ -121,6 +121,13 @@ dotnet tool restore
 dotnet cake --target=VS-NET6
 ```
 
+You can also run:
+
+```dotnetcli
+dotnet tool restore
+dotnet cake --target=VS
+```
+
 _NOTES:_
 - _If the IDE doesn't show any Android devices try unloading and reloading the `Sample.Droid-net6` project._
 
@@ -135,7 +142,7 @@ dotnet build src\DotNet\DotNet.csproj
 # Builds the rest of Maui
 .\bin\dotnet\dotnet build Microsoft.Maui.sln
 # (Windows-only) to launch Visual Studio
-dotnet cake --target=VS-DOGFOOD
+dotnet cake --target=VS
 ```
 
 To build & run .NET 6 sample apps, you will also need to use `.\bin\dotnet\dotnet` or just `dotnet` if you've

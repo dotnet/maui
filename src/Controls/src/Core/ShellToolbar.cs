@@ -111,17 +111,20 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
+				var flyoutBehavior = (_shell as IFlyoutView).FlyoutBehavior;
 #if WINDOWS
 				IsVisible = (BackButtonVisible ||
 					!String.IsNullOrEmpty(Title) ||
 					TitleView != null ||
 					_toolbarTracker.ToolbarItems.Count > 0 ||
-					_menuBarTracker.ToolbarItems.Count > 0);
+					_menuBarTracker.ToolbarItems.Count > 0 ||
+					flyoutBehavior == FlyoutBehavior.Flyout);
 #else
 				IsVisible = (BackButtonVisible ||
 					!String.IsNullOrEmpty(Title) ||
 					TitleView != null ||
-					_toolbarTracker.ToolbarItems.Count > 0);
+					_toolbarTracker.ToolbarItems.Count > 0 ||
+					flyoutBehavior == FlyoutBehavior.Flyout);
 #endif
 			}
 
