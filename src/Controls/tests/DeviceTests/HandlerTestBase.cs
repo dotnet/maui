@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
@@ -68,6 +69,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
 					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
 					handlers.AddHandler(typeof(Controls.ContentPage), typeof(PageHandler));
+					handlers.AddHandler(typeof(MauiAppNewWindowStub), typeof(ApplicationHandler));
 				});
 
 			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
@@ -82,7 +84,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public void Dispose()
 		{
-			((IDisposable)_mauiApp).Dispose();
+			((IDisposable)_mauiApp)?.Dispose();
 
 			_mauiApp = null;
 			_mauiContext = null;
@@ -109,7 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = Activator.CreateInstance<THandler>();
 
 			handler.SetMauiContext(mauiContext);
-			
+
 			handler.SetVirtualView(element);
 			element.Handler = handler;
 
@@ -134,11 +136,15 @@ namespace Microsoft.Maui.DeviceTests
 				var size = view.Measure(view.Width, view.Height);
 				var w = size.Width;
 				var h = size.Height;
+#elif IOS
+				var size = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
+				var w = size.Width;
+				var h = size.Height;
 #else
 				// Windows cannot measure without the view being loaded
 				// iOS needs more love when I get an IDE again
-				var w = view.Width;
-				var h = view.Height;
+				var w = view.Width.Equals(double.NaN) ? -1 : view.Width;
+				var h = view.Height.Equals(double.NaN) ? -1 : view.Height;
 #endif
 
 				view.Arrange(new Rect(0, 0, w, h));
@@ -170,6 +176,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		static SemaphoreSlim _takeOverMainContentSempahore = new SemaphoreSlim(1);
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
 			where THandler : class, IElementHandler
 		{
@@ -190,7 +197,37 @@ namespace Microsoft.Maui.DeviceTests
 					window = new Controls.Window(new ContentPage() { Content = (View)view });
 				}
 
-				await RunWindowTest<THandler>(window, (handler) => action(handler as THandler));
+				try
+				{
+					await _takeOverMainContentSempahore.WaitAsync();
+
+					await SetupWindowForTests<THandler>(window, async () =>
+					{
+						IView content = window.Content;
+
+						if (content is IPageContainer<Page> pc)
+							content = pc.CurrentPage;
+
+						await OnLoadedAsync(content as VisualElement);
+#if WINDOWS
+
+						await Task.Delay(10);
+#endif
+
+						if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
+							await action((THandler)window.Handler);
+						else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
+							await action((THandler)window.Content.Handler);
+						else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
+							await action((THandler)cp.Content.Handler);
+						else
+							throw new Exception($"I can't work with {typeof(THandler)}");
+					});
+				}
+				finally
+				{
+					_takeOverMainContentSempahore.Release();
+				}
 			});
 		}
 
@@ -253,10 +290,29 @@ namespace Microsoft.Maui.DeviceTests
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
-		protected Task OnLayoutPassCompleted(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		protected Task OnNavigatedToAsync(Page page, TimeSpan? timeOut = null)
 		{
-			if (frameworkElement.Frame.Height * frameworkElement.Frame.Width != 0)
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+
+			page.NavigatedTo += NavigatedTo;
+
+			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			void NavigatedTo(object sender, NavigatedToEventArgs e)
+			{
+				taskCompletionSource.SetResult(true);
+				page.NavigatedTo -= NavigatedTo;
+			}
+		}
+
+
+		protected Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			if (frameworkElement.Frame.Height > 0 &&
+				frameworkElement.Frame.Width > 0)
+			{
 				return Task.CompletedTask;
+			}
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
@@ -266,8 +322,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
 			{
-				if (frameworkElement.Frame.Height * frameworkElement.Frame.Width == 0)
+				if (frameworkElement.Frame.Height <= 0 ||
+					frameworkElement.Frame.Width <= 0)
+				{
 					return;
+				}
 
 				frameworkElement.BatchCommitted -= OnBatchCommitted;
 				taskCompletionSource.SetResult(true);

@@ -9,6 +9,7 @@ using Microsoft.Maui.Primitives;
 using NSubstitute;
 using Xunit;
 using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
+using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace Microsoft.Maui.UnitTests.Layouts
 {
@@ -878,31 +879,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Category(GridStarSizing)]
-		[Fact(DisplayName = "Multiple star columns with views measured at infinite width get the width of the widest view")]
-		public void MultipleStarColumnsWithViewsInfiniteWidthMeasure()
-		{
-			var grid = CreateGridLayout(rows: "auto", columns: $"*,*,*");
-			var view0 = CreateTestView(new Size(50, 50));
-			var view1 = CreateTestView(new Size(75, 50));
-			var view2 = CreateTestView(new Size(50, 50));
-
-			SubstituteChildren(grid, view0, view1, view2);
-
-			SetLocation(grid, view0);
-			SetLocation(grid, view1, col: 1);
-			SetLocation(grid, view2, col: 2);
-
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
-
-			// Row height is auto, so it gets the height of the tallest view
-			// The widest view has width 75, so we expect all three * columns to have 75 width
-			var expectedWidth = 75;
-			AssertArranged(view0, 0, 0, expectedWidth, 50);
-			AssertArranged(view1, expectedWidth, 0, expectedWidth, 50);
-			AssertArranged(view2, expectedWidth * 2, 0, expectedWidth, 50);
-		}
-
-		[Category(GridStarSizing)]
 		[Fact(DisplayName = "Single star row consumes all vertical space")]
 		public void SingleStarRow()
 		{
@@ -1026,31 +1002,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			Assert.Equal(100, measuredSize.Width);
 			Assert.Equal(50, measuredSize.Height);
-		}
-
-		[Category(GridStarSizing)]
-		[Fact(DisplayName = "Multiple star rows with views measured at infinite height get the height of the tallest view")]
-		public void MultipleStarRowsWithViewsInfiniteHeightMeasure()
-		{
-			var grid = CreateGridLayout(rows: "*,*,*", columns: "auto");
-			var view0 = CreateTestView(new Size(50, 50));
-			var view1 = CreateTestView(new Size(50, 75));
-			var view2 = CreateTestView(new Size(50, 50));
-
-			SubstituteChildren(grid, view0, view1, view2);
-
-			SetLocation(grid, view0);
-			SetLocation(grid, view1, row: 1);
-			SetLocation(grid, view2, row: 2);
-
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
-
-			// Column width is auto, so it gets the width of the widest view
-			// The tallest view has height 75, so we expect all three * rows to have 75 height
-			var expectedHeight = 75;
-			AssertArranged(view0, 0, 0, 50, expectedHeight);
-			AssertArranged(view1, 0, expectedHeight, 50, expectedHeight);
-			AssertArranged(view2, 0, expectedHeight * 2, 50, expectedHeight);
 		}
 
 		[Category(GridAbsoluteSizing)]
@@ -1205,7 +1156,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		[Category(GridStarSizing)]
 		[Fact]
-		public void StarValuesAreMeasuredTwiceWhenConstraintsAreInfinite()
+		public void StarValuesAreAutoWhenConstraintsAreInfinite()
 		{
 			// A one-row, one-column grid
 			var grid = CreateGridLayout();
@@ -1219,13 +1170,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Set up the row/column values and spans
 			SetLocation(grid, view);
 
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			var size = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
-			// View must be measured to figure out the Auto value
-			view.Received().Measure(Arg.Is(double.PositiveInfinity), Arg.Is(double.PositiveInfinity));
-
-			// And again at the final size
-			view.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(100));
+			Assert.Equal(100, size.Width);
+			Assert.Equal(100, size.Height);
 		}
 
 		[Category(GridAbsoluteSizing)]
@@ -1875,7 +1823,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view1 = CreateTestView(new Size(10, 10));
 
 			// Since this is collapsed, it should not count toward the star row height
-			view0.Visibility.Returns(Visibility.Collapsed); 
+			view0.Visibility.Returns(Visibility.Collapsed);
 
 			SubstituteChildren(grid, view0, view1);
 
@@ -1901,6 +1849,53 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var measuredSize = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.Equal(10, measuredSize.Width);
+		}
+
+		[Theory]
+		[InlineData(LayoutAlignment.Center, true)]
+		[InlineData(LayoutAlignment.Center, false)]
+		[InlineData(LayoutAlignment.Start, true)]
+		[InlineData(LayoutAlignment.Start, false)]
+		[InlineData(LayoutAlignment.End, true)]
+		[InlineData(LayoutAlignment.End, false)]
+		public void StarColumnsAreAutoWhenGridAlignmentIsNotFill(LayoutAlignment alignment, bool impliedColumn)
+		{
+			string columns = impliedColumn ? null : "*";
+
+			var grid = CreateGridLayout(columns: columns);
+
+			grid.HorizontalLayoutAlignment.Returns(alignment);
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			SubstituteChildren(grid, view0);
+
+			var measuredSize = MeasureAndArrange(grid, 100, 100);
+
+			Assert.Equal(20, measuredSize.Width);
+		}
+
+		[Theory]
+		[InlineData(LayoutAlignment.Center, true)]
+		[InlineData(LayoutAlignment.Center, false)]
+		[InlineData(LayoutAlignment.Start, true)]
+		[InlineData(LayoutAlignment.Start, false)]
+		[InlineData(LayoutAlignment.End, true)]
+		[InlineData(LayoutAlignment.End, false)]
+		public void StarRowsAreAutoWhenGridAlignmentIsNotFill(LayoutAlignment alignment, bool impliedRow)
+		{
+			string rows = impliedRow ? null : "*";
+
+			var grid = CreateGridLayout(rows: rows);
+			grid.VerticalLayoutAlignment.Returns(alignment);
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			SubstituteChildren(grid, view0);
+
+			var measuredSize = MeasureAndArrange(grid, 100, 100);
+
+			Assert.Equal(20, measuredSize.Height);
 		}
 	}
 }

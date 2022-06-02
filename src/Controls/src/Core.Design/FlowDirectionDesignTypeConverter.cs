@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Design
 			=> new[]
 			{
 				"MatchParent",
-				"LeftToRight",	
+				"LeftToRight",
 				"RightToLeft"
 			};
 	}

@@ -7,7 +7,18 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
-		protected override ImageView CreatePlatformView() => new AppCompatImageView(Context);
+		protected override ImageView CreatePlatformView()
+		{
+			var imageView = new AppCompatImageView(Context);
+
+			// Enable view bounds adjustment on measure.
+			// This allows the ImageView's OnMeasure method to account for the image's intrinsic
+			// aspect ratio during measurement, which gives us more useful values during constrained
+			// measurement passes.
+			imageView.SetAdjustViewBounds(true);
+
+			return imageView;
+		}
 
 		protected override void DisconnectHandler(ImageView platformView)
 		{
@@ -36,16 +47,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapSourceAsync(IImageHandler handler, IImage image)
-		{
-			handler.PlatformView.Clear();
-			return handler.SourceLoader.UpdateImageSourceAsync();
-		}
+		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
+			handler.SourceLoader.UpdateImageSourceAsync();
 
-		void OnSetImageSource(Drawable? obj)
-		{
+		void OnSetImageSource(Drawable? obj) =>
 			PlatformView.SetImageDrawable(obj);
-		}
 
 		public override void PlatformArrange(Graphics.Rect frame)
 		{

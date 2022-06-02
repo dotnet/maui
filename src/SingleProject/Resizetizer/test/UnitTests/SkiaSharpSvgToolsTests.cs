@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			public void Dispose()
 			{
 				//Logger.Persist();
-				//File.Copy(DestinationFilename, "output.png", true);
+				File.Copy(DestinationFilename, "output.png", true);
 				File.Delete(DestinationFilename);
 			}
 
@@ -250,6 +250,25 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(SKColors.Red.WithAlpha(127), pixmap.GetPixelColor(37, 137));
 				Assert.Equal(SKColors.Red.WithAlpha(127), pixmap.GetPixelColor(81, 137));
 				Assert.Equal(SKColors.Red.WithAlpha(127), pixmap.GetPixelColor(125, 137));
+			}
+
+			[Fact]
+			public void ColorsInCssCanBeUsed()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/not_working.svg";
+				var tools = new SkiaSharpSvgTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(24, resultImage.Width);
+				Assert.Equal(24, resultImage.Height);
+
+				using var pixmap = resultImage.PeekPixels();
+				Assert.Equal(SKColors.Empty, pixmap.GetPixelColor(2, 2));
+				Assert.Equal(0xFF71559B, pixmap.GetPixelColor(2, 6));
 			}
 		}
 	}

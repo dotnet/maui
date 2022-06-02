@@ -1,39 +1,18 @@
 using System;
 using Microsoft.UI.Xaml.Controls;
-using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UI.Xaml.Window>
 	{
-		RootPanel? _rootPanel = null;
-
-		protected override void ConnectHandler(UI.Xaml.Window platformView)
-		{
-			base.ConnectHandler(platformView);
-
-			if (_rootPanel == null)
-			{
-				// TODO WINUI should this be some other known constant or via some mechanism? Or done differently?
-				MauiWinUIApplication.Current.Resources.TryGetValue("MauiRootContainerStyle", out object? style);
-
-				_rootPanel = new RootPanel
-				{
-					Style = style as UI.Xaml.Style
-				};
-			}
-
-			platformView.Content = _rootPanel;
-		}
-
 		protected override void DisconnectHandler(UI.Xaml.Window platformView)
 		{
 			MauiContext
 				?.GetNavigationRootManager()
 				?.Disconnect();
 
-			_rootPanel?.Children?.Clear();
-			platformView.Content = null;
+			if (platformView.Dispatcher != null)
+				platformView.Content = null;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -47,13 +26,8 @@ namespace Microsoft.Maui.Handlers
 			var windowManager = handler.MauiContext.GetNavigationRootManager();
 			windowManager.Disconnect();
 			windowManager.Connect(handler.VirtualView.Content.ToPlatform(handler.MauiContext));
-			var rootPanel = handler.PlatformView.Content as Panel;
 
-			if (rootPanel == null)
-				return;
-
-			rootPanel.Children.Clear();
-			rootPanel.Children.Add(windowManager.RootView);
+			handler.PlatformView.Content = windowManager.RootView;
 
 			if (window.VisualDiagnosticsOverlay != null)
 				window.VisualDiagnosticsOverlay.Initialize();

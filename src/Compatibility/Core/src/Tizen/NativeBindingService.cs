@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	class NativeBindingService : INativeBindingService
 	{
-		[UnconditionalSuppressMessage ("Trimming", "IL2075", Justification = TrimmerConstants.NativeBindingService)]
+		[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = TrimmerConstants.NativeBindingService)]
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();

@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		// bug wherein the GoToStateCore override for those controls is never called (Item 10976357 in VSTS)
 		// So until that's resolved, the FormsTextBox control is doing that work as best it can. 
 
-		protected override bool GoToStateCore(Control control, FrameworkElement templateRoot, string stateName, 
+		protected override bool GoToStateCore(Control control, FrameworkElement templateRoot, string stateName,
 			Microsoft.UI.Xaml.VisualStateGroup @group, Microsoft.UI.Xaml.VisualState state, bool useTransitions)
 		{
 			// If this custom VSM is in play, it's because the control is using the Forms VSM or the user has disabled

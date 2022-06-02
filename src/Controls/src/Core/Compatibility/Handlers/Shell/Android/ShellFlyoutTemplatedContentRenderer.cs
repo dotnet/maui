@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Runtime;
@@ -105,7 +106,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (FlyoutView.FlyoutBehavior == FlyoutBehavior.Locked)
 				OnFlyoutViewLayoutChanged();
-			else if (View is ShellFlyoutLayout sfl)
+
+			if (View is ShellFlyoutLayout sfl)
 				sfl.LayoutChanging += OnFlyoutViewLayoutChanged;
 		}
 
@@ -206,6 +208,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_headerView != null)
 			{
+				_headerView.LayoutChange -= OnHeaderViewLayoutChange;
 				var oldHeaderView = _headerView;
 				_headerView = null;
 				_appBar.RemoveView(oldHeaderView);
@@ -226,6 +229,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				MatchWidth = true
 			};
 
+			_headerView.LayoutChange += OnHeaderViewLayoutChange;
+
 			_headerView.SetMinimumHeight(_actionBarHeight);
 			_headerView.LayoutParameters = new AppBarLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
 			{
@@ -235,6 +240,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateFlyoutHeaderBehavior();
 
 			UpdateContentLayout();
+		}
+
+		void OnHeaderViewLayoutChange(object sender, AView.LayoutChangeEventArgs e)
+		{
+			// If the flyoutheader/footer have changed size then we need to 
+			// remeasure the flyout content
+			if (UpdateContentPadding())
+				UpdateContentLayout();
 		}
 
 		protected virtual void UpdateFlyoutFooter()
@@ -265,10 +278,67 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFooterLayout()
 		{
-			_ = _footerView?
-					.Measure(MeasureSpecMode.Exactly
-					.MakeMeasureSpec(_rootView.LayoutParameters.Width), MeasureSpecMode.Unspecified.MakeMeasureSpec(0), null, null);
+			if (_flyoutWidth == 0)
+			{
+				return;
+			}
 
+			var footerSize =
+				_footerView?
+					.Measure(
+						MeasureSpecMode.Exactly.MakeMeasureSpec(_flyoutWidth),
+						MeasureSpecMode.Unspecified.MakeMeasureSpec(0),
+						null,
+						null);
+
+			if (_footerView?.View != null && footerSize.HasValue)
+			{
+				var width = _shellContext.AndroidContext.FromPixels(footerSize.Value.Width);
+				var height = _shellContext.AndroidContext.FromPixels(footerSize.Value.Height);
+
+				_footerView.View.Frame =
+					new Graphics.Rect(Graphics.Point.Zero, new Graphics.Size(width, height));
+			}
+		}
+
+		bool UpdateContentPadding()
+		{
+			bool returnValue = false;
+			var flyoutView = _flyoutContentView ?? _contentView?.PlatformView;
+
+			if (flyoutView?.LayoutParameters is ViewGroup.MarginLayoutParams cl)
+			{
+				// For scrollable content we use padding so once it's all the way scrolled up
+				// the bottom of the view isn't obscured by the footer view
+				// If you try to use Margin the RecylcerView won't render anything.
+				if (flyoutView is AndroidX.Core.View.IScrollingView &&
+					flyoutView is ViewGroup vg)
+				{
+					var bottomPadding = FooterView?.MeasuredHeight ?? 0;
+					returnValue = true;
+					cl.BottomMargin = 0;
+					if (vg.PaddingBottom != bottomPadding)
+					{
+						vg.SetPadding(0, 0, 0, bottomPadding);
+						returnValue = true;
+					}
+
+					vg.SetClipToPadding(false);
+				}
+				else
+				{
+					var bottomMargin = FooterView?.MeasuredHeight ?? 0;
+					bottomMargin += _headerView?.MeasuredHeight ?? 0;
+
+					if (cl.BottomMargin != bottomMargin)
+					{
+						cl.BottomMargin = bottomMargin;
+						returnValue = true;
+					}
+				}
+			}
+
+			return returnValue;
 		}
 
 		void UpdateContentLayout()
@@ -278,6 +348,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_contentView == null)
 					return;
 
+				UpdateContentPadding();
+
 				var height =
 					(View.MeasuredHeight) -
 					(FooterView?.MeasuredHeight ?? 0) -
@@ -285,14 +357,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				var width = View.MeasuredWidth;
 
-				if (_flyoutContentView?.LayoutParameters is ViewGroup.MarginLayoutParams cl)
-					cl.BottomMargin = FooterView?.MeasuredHeight ?? 0;
-
 				var frameSize = _contentView.Measure(
 					MeasureSpecMode.Exactly.MakeMeasureSpec(width),
 					MeasureSpecMode.Exactly.MakeMeasureSpec(height), null, null);
 
-				_contentView.View.Frame = new Graphics.Rect(Graphics.Point.Zero, frameSize);
+				var dpWidth = _shellContext.AndroidContext.FromPixels(frameSize.Width);
+				var dpHeight = _shellContext.AndroidContext.FromPixels(frameSize.Height);
+
+				_contentView.View.Frame = new Graphics.Rect(0, 0, dpWidth, dpHeight);
+			}
+			else if (_flyoutContentView != null)
+			{
+				// For scrollable content we need to use padding instead of margin
+				// if you use margin the recycler view won't render.			
+				UpdateContentPadding();
 			}
 		}
 
@@ -483,6 +561,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (View != null && View is ShellFlyoutLayout sfl)
 					sfl.LayoutChanging -= OnFlyoutViewLayoutChanged;
+
+				if (_headerView != null)
+					_headerView.LayoutChange -= OnHeaderViewLayoutChange;
 
 				_contentView?.TearDown();
 				_flyoutContentView?.Dispose();

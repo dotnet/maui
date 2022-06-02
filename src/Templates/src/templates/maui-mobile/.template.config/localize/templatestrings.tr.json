@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Uygulaması (Önizleme)",
+  "name": ".NET MAUI Uygulaması",
   "description": "iOS, Android, Mac Catalyst, Tizen .NET MAUI ve WinUI için yeni bir uygulama oluşturmaya yönelik proje",
   "postActions/openInEditor/description": "Düzenleyicide MainPage.xaml dosyasını açar.",
   "symbols/applicationId/description": "Projedeki $(ApplicationId) uygulamasın geçersiz kılar"

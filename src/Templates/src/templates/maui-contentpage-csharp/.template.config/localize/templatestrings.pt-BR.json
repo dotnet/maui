@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": "ContentPage do .NET MAUI (C#) (Versão Prévia)",
+  "name": "ContentPage do .NET MAUI (C#)",
   "postActions/openInEditor/description": "Abre NewPage1.cs no editor.",
   "symbols/namespace/description": "Namespace do código gerado."
 }

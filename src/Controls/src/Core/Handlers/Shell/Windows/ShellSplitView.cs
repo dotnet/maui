@@ -67,14 +67,14 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			// Because shell is currently Nesting Navigation Views we have to be careful and make sure to retrive the correct one
 			// If we just do a straight search for "LightDismissLayer it will return the wrong one.
-			if(_dismissLayer == null)
+			if (_dismissLayer == null)
 			{
 				var contentRoot = _splitView.GetDescendantByName<WGrid>("ContentRoot");
-				if(contentRoot != null)
+				if (contentRoot != null)
 				{
-					foreach(var child in contentRoot.Children)
+					foreach (var child in contentRoot.Children)
 					{
-						if(child is WRectangle maybe && 
+						if (child is WRectangle maybe &&
 							$"{child.GetValue(FrameworkElement.NameProperty)}" == "LightDismissLayer")
 						{
 							_dismissLayer = maybe;
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 			}
-			
+
 			if (_dismissLayer == null)
 				return;
 

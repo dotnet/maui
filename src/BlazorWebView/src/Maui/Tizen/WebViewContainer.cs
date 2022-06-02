@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// </summary>
 	public class WebViewContainer : WidgetLayout
 	{
-		
+
 		/// <summary>
 		/// A Tizen WebView.
 		/// </summary>

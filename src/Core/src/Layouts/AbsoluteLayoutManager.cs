@@ -60,10 +60,13 @@ namespace Microsoft.Maui.Layouts
 		{
 			var padding = AbsoluteLayout.Padding;
 
-			double top = padding.Top + bounds.Y;
-			double left = padding.Left + bounds.X;
+			double top = padding.Top + bounds.Top;
+			double left = padding.Left + bounds.Left;
+			double right = bounds.Right - padding.Right;
 			double availableWidth = bounds.Width - padding.HorizontalThickness;
 			double availableHeight = bounds.Height - padding.VerticalThickness;
+
+			bool leftToRight = AbsoluteLayout.ShouldArrangeLeftToRight();
 
 			for (int n = 0; n < AbsoluteLayout.Count; n++)
 			{
@@ -93,7 +96,12 @@ namespace Microsoft.Maui.Layouts
 					destination.Y = (availableHeight - destination.Height) * destination.Y;
 				}
 
-				destination.X += left;
+				// Figure out where we're starting from (the left edge of the padded area, or the right edge)
+				if (leftToRight)
+					destination.X += left;
+				else
+					destination.X = right - destination.X - destination.Width;
+
 				destination.Y += top;
 
 				child.Arrange(destination);
@@ -132,8 +140,8 @@ namespace Microsoft.Maui.Layouts
 		{
 			if (boundsValue < 0)
 			{
-				// If the child view doesn't have bounds set by the AbsoluteLayout, then we'll measure using the full constraint value
-				return constraint;
+				// If the child view doesn't have bounds set by the AbsoluteLayout, then we'll let it auto-size
+				return double.PositiveInfinity;
 			}
 
 			if (proportional)

@@ -7,7 +7,7 @@
     "unsupportedHosts": [
         {
             "id": "vs",
-            "version": "(,17.2)"
+            "version": "(,17.3)"
         }
     ],
     "requiredComponents": [ 

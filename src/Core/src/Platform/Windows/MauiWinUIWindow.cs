@@ -4,6 +4,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui
 {
@@ -61,7 +62,7 @@ namespace Microsoft.Maui
 			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnVisibilityChanged>(del => del(this, args));
 		}
 
-		#region Native Window
+		#region Platform Window
 
 		IntPtr _hwnd = IntPtr.Zero;
 
@@ -136,6 +137,28 @@ namespace Microsoft.Maui
 				}
 			}
 		}
+
+		UI.Xaml.UIElement? _customTitleBar;
+		internal UI.Xaml.UIElement? MauiCustomTitleBar
+		{
+			get => _customTitleBar;
+			set
+			{
+				_customTitleBar = value;
+				SetTitleBar(_customTitleBar);
+				UpdateTitleOnCustomTitleBar();
+			}
+		}
+
+		internal void UpdateTitleOnCustomTitleBar()
+		{
+			if (_customTitleBar is UI.Xaml.FrameworkElement fe &&
+				fe.GetDescendantByName<TextBlock>("AppTitle") is TextBlock tb)
+			{
+				tb.Text = Title;
+			}
+		}
+
 
 		[DllImport("shell32.dll", CharSet = CharSet.Auto)]
 		static extern IntPtr ExtractAssociatedIcon(IntPtr hInst, string iconPath, ref IntPtr index);

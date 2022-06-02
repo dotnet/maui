@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
 {
+	[Obsolete("Use Microsoft.Maui.Platform.ContentPanel")]
 	public class RootPanel : Panel
 	{
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Platform
 		{
 			foreach (var child in Children)
 			{
-				child.Arrange(new global::Windows.Foundation.Rect(new global::Windows.Foundation.Point(0,0), finalSize));
+				child.Arrange(new global::Windows.Foundation.Rect(new global::Windows.Foundation.Point(0, 0), finalSize));
 			}
 
 			return finalSize;

@@ -22,7 +22,9 @@ namespace Microsoft.Maui
 
 		public string GetFont(Font font)
 		{
-			var size = (float)font.Size;
+			var size = font.Size <= 0 || double.IsNaN(font.Size)
+				? (float)DefaultFontSize
+				: (float)font.Size;
 
 			return GetFont(font.Family, size, font.Slant, GetNativeFontFamily);
 		}
@@ -32,7 +34,7 @@ namespace Microsoft.Maui
 			if (string.IsNullOrEmpty(fontFamliy))
 				return "";
 
-			var cleansedFont = CleanseFontName(fontFamliy??string.Empty);
+			var cleansedFont = CleanseFontName(fontFamliy ?? string.Empty);
 			if (cleansedFont == null)
 				return "";
 
@@ -59,7 +61,7 @@ namespace Microsoft.Maui
 			if (string.IsNullOrEmpty(fontKey.family))
 				return "";
 
-			var cleansedFont = CleanseFontName(fontKey.family??string.Empty);
+			var cleansedFont = CleanseFontName(fontKey.family ?? string.Empty);
 
 			if (cleansedFont == null)
 				return "";

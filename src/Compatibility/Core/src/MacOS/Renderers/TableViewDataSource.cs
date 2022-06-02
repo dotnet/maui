@@ -94,9 +94,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		protected override void Dispose(bool disposing)
 		{
-			if(disposing)
+			if (disposing)
 			{
-				if(!_disposed)
+				if (!_disposed)
 				{
 					_nsTableView = null;
 					_tableView = null;

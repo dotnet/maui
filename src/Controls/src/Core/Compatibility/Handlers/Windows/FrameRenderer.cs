@@ -5,6 +5,8 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.Platform;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
+using WRect = Windows.Foundation.Rect;
+using System;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -44,6 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				PackChild();
 				UpdateBorder();
 				UpdateCornerRadius();
+				UpdatePadding();
 			}
 		}
 
@@ -63,6 +66,34 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				UpdateCornerRadius();
 			}
+			else if (e.PropertyName == Frame.PaddingProperty.PropertyName)
+			{
+				UpdatePadding();
+			}
+		}
+
+		void UpdatePadding()
+		{
+			Control.Padding = Element.Padding.ToPlatform();
+		}
+
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+		{
+			Control.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
+			if (Element is IContentView cv)
+				cv.CrossPlatformArrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+
+			return finalSize;
+		}
+
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+		{
+			var size = base.MeasureOverride(availableSize);
+
+			if (Element is IContentView cv)
+				size = cv.CrossPlatformMeasure(availableSize.Width, availableSize.Height).ToPlatform();
+
+			return size;
 		}
 
 		protected override void UpdateBackgroundColor()

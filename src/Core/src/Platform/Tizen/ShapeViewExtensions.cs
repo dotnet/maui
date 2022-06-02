@@ -12,6 +12,6 @@ namespace Microsoft.Maui.Platform
 		public static void InvalidateShape(this MauiShapeView platformView, IShapeView shapeView)
 		{
 			platformView.Invalidate();
-		}		
+		}
 	}
 }

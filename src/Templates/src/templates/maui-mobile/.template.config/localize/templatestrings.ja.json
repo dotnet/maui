@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI アプリ (プレビュー)",
+  "name": ".NET MAUI アプリ",
   "description": "iOS、Android、Mac Catalyst、Tizen、および WinUI 用の .NET MAUI アプリケーションを作成するためのプロジェクト",
   "postActions/openInEditor/description": "エディターで MainPage.xaml を開きます。",
   "symbols/applicationId/description": "プロジェクト内の $(ApplicationId) をオーバーライドします"

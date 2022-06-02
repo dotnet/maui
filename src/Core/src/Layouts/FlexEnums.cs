@@ -75,10 +75,12 @@ namespace Microsoft.Maui.Layouts
 	{
 		bool _isLength;
 		bool _isRelative;
-		public static FlexBasis Auto = new();
 		public float Length { get; }
 		internal bool IsAuto => !_isLength && !_isRelative;
 		internal bool IsRelative => _isRelative;
+
+		public static readonly FlexBasis Auto = new();
+
 		public FlexBasis(float length, bool isRelative = false)
 		{
 			if (length < 0)
@@ -91,8 +93,6 @@ namespace Microsoft.Maui.Layouts
 		}
 
 		public static implicit operator FlexBasis(float length)
-		{
-			return new FlexBasis(length);
-		}
+			=> new FlexBasis(length);
 	}
 }
