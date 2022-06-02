@@ -1,1 +1,2 @@
 ﻿#nullable enable
+override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
