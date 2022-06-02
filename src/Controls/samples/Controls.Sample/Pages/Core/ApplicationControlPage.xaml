@@ -4,14 +4,14 @@
     x:Class="Maui.Controls.Sample.Pages.ApplicationControlPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="App Control">
-
-    <VerticalStackLayout Padding="12" Spacing="6">
-
-        <Button Text="Terminate Application"
-                Clicked="OnTerminateClicked"
-                HorizontalOptions="Start"
-                Padding="20,10" />
-
+    <VerticalStackLayout
+        Margin="12">
+        <Label
+            Text="Quits the application"
+            Style="{StaticResource Headline}" />
+        <Button
+            Text="Terminate Application"
+            Clicked="OnTerminateClicked"
+            HorizontalOptions="Center" />
     </VerticalStackLayout>
-
 </views:BasePage>

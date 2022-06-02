@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var visibleCells = CollectionView.VisibleCells;
 			List<NSIndexPath> paths = new List<NSIndexPath>();
-			
+
 			for (int n = 0; n < visibleCells.Length; n++)
 			{
 				paths.Add(CollectionView.IndexPathForCell(visibleCells[n]));

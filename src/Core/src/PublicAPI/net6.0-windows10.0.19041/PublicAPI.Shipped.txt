@@ -1938,7 +1938,6 @@ override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.SetupC
 override Microsoft.Maui.Handlers.WebViewHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.WebView2! platformView) -> void
 override Microsoft.Maui.Handlers.WebViewHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.WebView2!
 override Microsoft.Maui.Handlers.WebViewHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.WebView2! platformView) -> void
-override Microsoft.Maui.Handlers.WindowHandler.ConnectHandler(Microsoft.UI.Xaml.Window! platformView) -> void
 override Microsoft.Maui.Handlers.WindowHandler.CreatePlatformElement() -> Microsoft.UI.Xaml.Window!
 override Microsoft.Maui.Handlers.WindowHandler.DisconnectHandler(Microsoft.UI.Xaml.Window! platformView) -> void
 override Microsoft.Maui.Layouts.AbsoluteLayoutManager.ArrangeChildren(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
@@ -2453,7 +2452,7 @@ static Microsoft.Maui.Keyboard.Plain.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Telephone.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Text.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Url.get -> Microsoft.Maui.Keyboard!
-static Microsoft.Maui.Layouts.FlexBasis.Auto -> Microsoft.Maui.Layouts.FlexBasis
+static readonly Microsoft.Maui.Layouts.FlexBasis.Auto -> Microsoft.Maui.Layouts.FlexBasis
 static Microsoft.Maui.Layouts.FlexBasis.implicit operator Microsoft.Maui.Layouts.FlexBasis(float length) -> Microsoft.Maui.Layouts.FlexBasis
 static Microsoft.Maui.Layouts.LayoutExtensions.AdjustForFill(this Microsoft.Maui.Graphics.Size size, Microsoft.Maui.Graphics.Rect bounds, Microsoft.Maui.IView! view) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContent(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> void
