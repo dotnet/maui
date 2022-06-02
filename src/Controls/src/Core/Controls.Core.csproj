@@ -8,7 +8,7 @@
     <_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
     <GitInfoReportImportance>high</GitInfoReportImportance>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027;RS0022</NoWarn>
   </PropertyGroup>
 
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
@@ -28,13 +28,19 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <AndroidResource Include="Compatibility\Android\Resources\Layout\flyoutcontent.axml" />
     <AndroidResource Include="Compatibility\Android\Resources\Layout\shellcontent.axml" />
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <AdditionalFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
   <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);
