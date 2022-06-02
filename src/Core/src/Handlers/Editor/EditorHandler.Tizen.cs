@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Text = PlatformView.Text;
 		}
 
-		
+
 
 		void OnEntryFocused(object? sender, EventArgs e)
 		{

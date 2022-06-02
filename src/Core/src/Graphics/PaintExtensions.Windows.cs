@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Graphics
 
 			if (paint is ImagePaint imagePaint)
 				return imagePaint.CreateBrush();
-			
+
 			if (paint is PatternPaint patternPaint)
 				return patternPaint.CreateBrush();
 

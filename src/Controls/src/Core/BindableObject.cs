@@ -446,7 +446,7 @@ namespace Microsoft.Maui.Controls
 			// else omitted on purpose
 
 			//if we're updating a dynamic resource from style, set the default backup value
-			if (   (context.Attributes & (BindableContextAttributes.IsDynamicResource | BindableContextAttributes.IsSetFromStyle)) != 0
+			if ((context.Attributes & (BindableContextAttributes.IsDynamicResource | BindableContextAttributes.IsSetFromStyle)) != 0
 				&& (attributes & SetValueFlags.ClearDynamicResource) == 0)
 				SetBackupStyleValue(property, value);
 

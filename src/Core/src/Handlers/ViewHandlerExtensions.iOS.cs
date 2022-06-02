@@ -1,7 +1,7 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
-using CoreGraphics;
 
 namespace Microsoft.Maui
 {

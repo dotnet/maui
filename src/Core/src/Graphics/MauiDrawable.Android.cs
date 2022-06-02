@@ -164,17 +164,20 @@ namespace Microsoft.Maui.Graphics
 			if (paint is SolidPaint solidPaint)
 				SetBorderBrush(solidPaint);
 
-			if (paint is LinearGradientPaint linearGradientPaint)
+			else if (paint is LinearGradientPaint linearGradientPaint)
 				SetBorderBrush(linearGradientPaint);
 
-			if (paint is RadialGradientPaint radialGradientPaint)
+			else if (paint is RadialGradientPaint radialGradientPaint)
 				SetBorderBrush(radialGradientPaint);
 
-			if (paint is ImagePaint imagePaint)
+			else if (paint is ImagePaint imagePaint)
 				SetBorderBrush(imagePaint);
 
-			if (paint is PatternPaint patternPaint)
+			else if (paint is PatternPaint patternPaint)
 				SetBorderBrush(patternPaint);
+
+			else
+				SetEmptyBorderBrush();
 		}
 
 		public void SetBorderBrush(SolidPaint solidPaint)
@@ -213,6 +216,28 @@ namespace Microsoft.Maui.Graphics
 
 			_borderColor = null;
 			_stroke = radialGradientPaint;
+
+			InitializeBorderIfNeeded();
+			InvalidateSelf();
+		}
+
+		// TODO: NET7 make public for net7.0
+		internal void SetEmptyBorderBrush()
+		{
+			_invalidatePath = true;
+
+			if (_backgroundColor != null)
+			{
+				_borderColor = _backgroundColor.Value;
+				_stroke = null;
+			}
+			else
+			{
+				_borderColor = null;
+
+				if (_background != null)
+					SetBorderBrush(_background);
+			}
 
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
@@ -389,9 +414,9 @@ namespace Microsoft.Maui.Graphics
 
 					if (_shape != null)
 					{
-						var offset = _strokeThickness / 2 / _density;
-						var w = (_width - _strokeThickness) / _density;
-						var h = (_height - _strokeThickness) / _density;
+						float offset = _strokeThickness / 2;
+						float w = (float)(_width / _density) - _strokeThickness;
+						float h = (float)(_height / _density) - _strokeThickness;
 
 						var bounds = new Graphics.Rect(offset, offset, w, h);
 						var path = _shape.PathForBounds(bounds);
@@ -473,7 +498,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			InitializeBorderIfNeeded();
 
-			return _shape != null && (_stroke != null || _borderColor != null);
+			return _shape != null;
 		}
 
 		void InitializeBorderIfNeeded()

@@ -19,12 +19,12 @@ namespace Microsoft.Maui.Handlers
 		protected override TEntry CreatePlatformView()
 		{
 			return new EditfieldEntry(PlatformParent)
-			   {
-				   IsSingleLine = true,
-				   InputPanelShowByOnDemand = true,
-				   IsEditable = false,
-				   HorizontalTextAlignment = TTextAlignment.Center
-			   };
+			{
+				IsSingleLine = true,
+				InputPanelShowByOnDemand = true,
+				IsEditable = false,
+				HorizontalTextAlignment = TTextAlignment.Center
+			};
 		}
 
 		protected override void ConnectHandler(TEntry platformView)

@@ -21,24 +21,24 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapMinimum(IStepperHandler handler, IStepper stepper) 
-		{ 
-			handler.PlatformView?.UpdateMinimum(stepper); 
+		public static void MapMinimum(IStepperHandler handler, IStepper stepper)
+		{
+			handler.PlatformView?.UpdateMinimum(stepper);
 		}
 
-		public static void MapMaximum(IStepperHandler handler, IStepper stepper) 
-		{ 
-			handler.PlatformView?.UpdateMaximum(stepper); 
+		public static void MapMaximum(IStepperHandler handler, IStepper stepper)
+		{
+			handler.PlatformView?.UpdateMaximum(stepper);
 		}
 
-		public static void MapIncrement(IStepperHandler handler, IStepper stepper) 
-		{ 
-			handler.PlatformView?.UpdateInterval(stepper); 
+		public static void MapIncrement(IStepperHandler handler, IStepper stepper)
+		{
+			handler.PlatformView?.UpdateInterval(stepper);
 		}
 
-		public static void MapValue(IStepperHandler handler, IStepper stepper) 
-		{ 
-			handler.PlatformView?.UpdateValue(stepper); 
+		public static void MapValue(IStepperHandler handler, IStepper stepper)
+		{
+			handler.PlatformView?.UpdateValue(stepper);
 		}
 
 		// This is a Windows-specific mapping

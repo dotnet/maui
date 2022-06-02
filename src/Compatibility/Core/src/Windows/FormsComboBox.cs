@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
-			
+
 			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 			{
 				// If we're running on the phone, we have to give the PickerRenderer hooks

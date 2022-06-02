@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_view?.Cleanup();
 
-				if(_view != null)
+				if (_view != null)
 					_view.MeasureInvalidated -= OnMeasureInvalidated;
 			}
 
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Platform
 				Children.Add(FrameworkElement);
 
 				// make sure we re-measure once the template is applied
-				
+
 				FrameworkElement.Loaded += (sender, args) =>
 				{
 					// If the view is a layout (stacklayout, grid, etc) we need to trigger a layout pass
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Platform
 			protected override WSize ArrangeOverride(WSize finalSize)
 			{
 				_view.IsInPlatformLayout = true;
-				(_view.Handler as IPlatformViewHandler)?.LayoutVirtualView(finalSize);				
+				(_view.Handler as IPlatformViewHandler)?.LayoutVirtualView(finalSize);
 
 				if (_view.Width <= 0 || _view.Height <= 0)
 				{

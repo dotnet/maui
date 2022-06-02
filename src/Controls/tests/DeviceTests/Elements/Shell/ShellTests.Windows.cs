@@ -234,7 +234,7 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.CompletedTask;
 			});
 		}
-				
+
 		[Fact(DisplayName = "Single Shell Section with Multiple Children")]
 		public async Task SingleShellSectionWithMultipleChildren()
 		{

@@ -25,10 +25,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (item is MenuFlyoutSeparator)
 				return SeperatorTemplate;
-				
+
 			if (item is MenuItem)
 				return MenuItemTemplate;
-			
+
 			return BaseShellItemTemplate;
 		}
 	}

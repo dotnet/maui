@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void MakeInputTransparent(Brush? background) 
+		void MakeInputTransparent(Brush? background)
 		{
 			Background = null;
 
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void MakeInputVisible(Brush? background) 
+		void MakeInputVisible(Brush? background)
 		{
 			// If we aren't input transparent, we don't need the background layer hack 
 			RemoveBackgroundLayer();

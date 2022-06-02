@@ -39,13 +39,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public WVisibility EmptyViewVisibility
 		{
-			get 
-			{ 
-				return (WVisibility)GetValue(EmptyViewVisibilityProperty); 
-			}
-			set 
+			get
 			{
-				SetValue(EmptyViewVisibilityProperty, value); 
+				return (WVisibility)GetValue(EmptyViewVisibilityProperty);
+			}
+			set
+			{
+				SetValue(EmptyViewVisibilityProperty, value);
 			}
 		}
 

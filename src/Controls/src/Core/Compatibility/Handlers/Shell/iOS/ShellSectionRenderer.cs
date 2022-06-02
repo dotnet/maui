@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			
+
 			// Do not remove, wonky behavior on some versions of iOS if you dont dispatch
 			// Shane: ^ not sure if this is true anymore because of how
 			// we now route this through "GoToAsync"

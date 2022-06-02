@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
@@ -352,7 +352,7 @@ namespace Microsoft.Maui.Controls
 				return hash;
 			}
 		}
-		
+
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualStateGroup']/Docs" />
@@ -611,7 +611,7 @@ namespace Microsoft.Maui.Controls
 
 		public override bool Equals(object obj) => Equals(obj as VisualState);
 
-		bool Equals (VisualState other)
+		bool Equals(VisualState other)
 		{
 			if (other is null)
 				return false;
