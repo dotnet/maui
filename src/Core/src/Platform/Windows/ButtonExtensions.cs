@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Platform
 			platformButton.UpdateText(text.Text);
 		}
 
-		public static void UpdateText(this Button platformButton, string text) 
+		public static void UpdateText(this Button platformButton, string text)
 		{
 			if (platformButton.GetContent<TextBlock>() is TextBlock textBlock)
 			{
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Platform
 
 							if (actualImageSource is not null && nativeImage.Source == actualImageSource)
 								nativeImage.Height = nativeImage.Width = Primitives.Dimension.Unset;
-					
+
 							if (platformButton.Parent is FrameworkElement frameworkElement)
 								frameworkElement.InvalidateMeasure();
 						};

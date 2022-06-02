@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Platform;
 using UIKit;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			textField.AdjustsFontSizeToFitWidth = entry.OnThisPlatform().AdjustsFontSizeToFitWidth();
 		}
-		
+
 		public static void UpdateText(this UITextView textView, InputView inputView)
 		{
 			textView.Text = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);

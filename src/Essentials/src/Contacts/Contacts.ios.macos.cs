@@ -136,7 +136,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 			public override void DidSelectContactProperty(CNContactPickerViewController picker, CNContactProperty contactProperty) =>
 				picker.DismissModalViewController(true);
-#pragma warning restore CA1416 
+#pragma warning restore CA1416
 		}
 #endif
 	}

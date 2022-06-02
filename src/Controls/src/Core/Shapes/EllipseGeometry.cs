@@ -56,8 +56,8 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/EllipseGeometry.xml" path="//Member[@MemberName='AppendPath']/Docs" />
 		public override void AppendPath(PathF path)
 		{
-			var centerX = (float)RadiusX;
-			var centerY = (float)RadiusY;
+			var centerX = (float)Center.X;
+			var centerY = (float)Center.Y;
 
 			var radiusX = (float)RadiusX;
 			var radiusY = (float)RadiusY;

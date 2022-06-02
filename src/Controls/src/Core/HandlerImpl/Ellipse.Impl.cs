@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			base.OnPropertyChanged(propertyName);
 
 			if (propertyName == XProperty.PropertyName ||
-				propertyName == YProperty.PropertyName || 
+				propertyName == YProperty.PropertyName ||
 				propertyName == WidthProperty.PropertyName ||
 				propertyName == HeightProperty.PropertyName)
 			{

@@ -83,9 +83,9 @@ namespace Microsoft.Maui.Controls
 
 		object GetValue()
 			=> Application.Current.RequestedTheme switch
-				{
-					AppTheme.Dark => _isDarkSet ? Dark : Default,
-					_ => _isLightSet ? Light : Default,
-				};
+			{
+				AppTheme.Dark => _isDarkSet ? Dark : Default,
+				_ => _isLightSet ? Light : Default,
+			};
 	}
 }

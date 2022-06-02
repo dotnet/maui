@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			{
 				var label = new XLabel
 				{
-					TextColor = XColor.FromRgb(0,0,0),
+					TextColor = XColor.FromRgb(0, 0, 0),
 				};
 				label.SetBinding(XLabel.TextProperty, new Binding(".", converter: new ToTextConverter()));
 

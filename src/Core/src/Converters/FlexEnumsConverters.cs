@@ -218,9 +218,9 @@ namespace Microsoft.Maui.Converters
 			var strValue = value?.ToString();
 			if (strValue != null)
 			{
+				strValue = strValue.Trim();
 				if (strValue.Equals("auto", StringComparison.OrdinalIgnoreCase))
 					return FlexBasis.Auto;
-				value = strValue.Trim();
 				if (strValue.EndsWith("%", StringComparison.OrdinalIgnoreCase) && float.TryParse(strValue.Substring(0, strValue.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
 					return new FlexBasis(relflex / 100, isRelative: true);
 				if (float.TryParse(strValue, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))

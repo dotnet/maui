@@ -288,7 +288,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateMaximumDate()
 		{
 			if (Element != null && Control != null)
-				Control.MaxYear = new DateTimeOffset(new DateTime(Element.MaximumDate.Ticks, DateTimeKind.Unspecified));			
+				Control.MaxYear = new DateTimeOffset(new DateTime(Element.MaximumDate.Ticks, DateTimeKind.Unspecified));
 		}
 
 		[PortHandler]
