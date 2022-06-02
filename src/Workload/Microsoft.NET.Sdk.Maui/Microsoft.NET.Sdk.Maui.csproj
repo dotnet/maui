@@ -85,7 +85,7 @@
     <ItemGroup>
       <_WorkloadPropsReplacements Include="@PACK_VERSION_LONG@"     NewValue="$(PackageReferenceVersion)" />
       <_WorkloadPropsReplacements Include="@VS_COMPONENT_VERSION@"  NewValue="$(VSComponentVersion)" />
-      <_WorkloadPropsReplacements Include="@VSMAN_VERSION@"         NewValue="7.0" /> <!-- TODO: Replace with $(_MauiDotNetVersion) -->
+      <_WorkloadPropsReplacements Include="@VSMAN_VERSION@"         NewValue="net7.0" /> <!-- TODO: Replace with $(_MauiDotNetTfm) -->
     </ItemGroup>
     <ReplaceText
         Input="$(MauiRootDirectory)eng/automation/vs-workload.template.props"
