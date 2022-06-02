@@ -5,7 +5,7 @@
 		<RootNamespace>Microsoft.Maui.Controls.Xaml</RootNamespace>
 		<IsPackable>false</IsPackable>
 		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
-		<NoWarn>$(NoWarn);CA2200;CS1591</NoWarn>
+		<NoWarn>$(NoWarn);CA2200;CS1591;RS0041</NoWarn>
 		<PackageId>Microsoft.Maui.Controls.Xaml</PackageId>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
@@ -18,12 +18,16 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Controls.Core.csproj" />
 		<ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Diagnostics\" />
-		<Folder Include="Hosting\" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" />
+		<PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="All" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AdditionalFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
+		<AdditionalFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
 	</ItemGroup>
 
 	<PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">

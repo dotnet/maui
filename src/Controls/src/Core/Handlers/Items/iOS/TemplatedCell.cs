@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
@@ -91,6 +92,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_size = nativeBounds.Size;
 
 			return size;
+		}
+
+		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		protected void Layout(CGSize constraints)
+		{
+			var platformView = PlatformHandler.ToPlatform();
+
+			var width = constraints.Width;
+			var height = constraints.Height;
+
+			PlatformHandler.VirtualView.Measure(width, height);
+
+			platformView.Frame = new CGRect(0, 0, width, height);
+
+			var rectangle = platformView.Frame.ToRectangle();
+			PlatformHandler.VirtualView.Arrange(rectangle);
+			_size = rectangle.Size;
 		}
 
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
