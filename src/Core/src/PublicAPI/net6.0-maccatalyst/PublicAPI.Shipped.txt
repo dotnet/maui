@@ -2522,7 +2522,7 @@ static Microsoft.Maui.Keyboard.Plain.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Telephone.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Text.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Url.get -> Microsoft.Maui.Keyboard!
-static Microsoft.Maui.Layouts.FlexBasis.Auto -> Microsoft.Maui.Layouts.FlexBasis
+static readonly Microsoft.Maui.Layouts.FlexBasis.Auto -> Microsoft.Maui.Layouts.FlexBasis
 static Microsoft.Maui.Layouts.FlexBasis.implicit operator Microsoft.Maui.Layouts.FlexBasis(float length) -> Microsoft.Maui.Layouts.FlexBasis
 static Microsoft.Maui.Layouts.LayoutExtensions.AdjustForFill(this Microsoft.Maui.Graphics.Size size, Microsoft.Maui.Graphics.Rect bounds, Microsoft.Maui.IView! view) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContent(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> void

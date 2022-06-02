@@ -3,7 +3,6 @@
 namespace Microsoft.Maui
 {
 	/// <include file="../../docs/Microsoft.Maui/FlowDirection.xml" path="Type[@FullName='Microsoft.Maui.FlowDirection']/Docs" />
-	[TypeConverter(typeof(Converters.FlowDirectionTypeConverter))]
 	public enum FlowDirection
 	{
 		/// <include file="../../docs/Microsoft.Maui/FlowDirection.xml" path="//Member[@MemberName='MatchParent']/Docs" />
