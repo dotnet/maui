@@ -5,7 +5,7 @@ using System.Globalization;
 #nullable disable
 namespace Microsoft.Maui.Controls
 {
-	public class FlowDirectionConverter: TypeConverter
+	public class FlowDirectionConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
