@@ -95,6 +95,10 @@ namespace Microsoft.Maui.DeviceTests
 				return true;
 			});
 
+		// Android doesn't handle adding and removing views in parallel very well
+		// If a view is removed while a different test triggers a layout then you hit
+		// a NRE exception
+		static SemaphoreSlim _attachAndRunSemaphore = new SemaphoreSlim(1);
 		public static async Task<T> AttachAndRun<T>(this AView view, Func<Task<T>> action)
 		{
 			if (view.Parent is WrapperView wrapper)
@@ -115,17 +119,21 @@ namespace Microsoft.Maui.DeviceTests
 				var act = context.GetActivity()!;
 				var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content)!;
 
-				layout.AddView(view);
-				rootView.AddView(layout);
+				view.Id = AView.GenerateViewId();
+				layout.Id = AView.GenerateViewId();
 
 				try
 				{
+					await _attachAndRunSemaphore.WaitAsync();
+					layout.AddView(view);
+					rootView.AddView(layout);
 					return await Run(view, action);
 				}
 				finally
 				{
 					rootView.RemoveView(layout);
 					layout.RemoveView(view);
+					_attachAndRunSemaphore.Release();
 				}
 			}
 			else

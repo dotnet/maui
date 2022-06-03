@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 #pragma warning disable CA1416 // TODO: 'UINavigationBar.PrefersLargeTitles' is only supported on: 'ios' 11.0 and later
-		bool CanUseRefreshControlProperty() => 
+		bool CanUseRefreshControlProperty() =>
 			this.GetNavigationController()?.NavigationBar?.PrefersLargeTitles ?? true;
 #pragma warning restore CA1416
 	}

@@ -53,7 +53,7 @@ namespace Microsoft.Maui
 			_graphicsView.Visibility = UI.Xaml.Visibility.Collapsed;
 
 			_panel?.Children.Add(_graphicsView);
-			
+
 			IsPlatformViewInitialized = true;
 			return IsPlatformViewInitialized;
 		}

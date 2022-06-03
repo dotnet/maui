@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateMauiDrawable(this AView platformView, IBorderStroke border)
 		{
-			bool hasBorder = border.Shape != null && border.Stroke != null;
+			bool hasBorder = border.Shape != null;
 
 			if (!hasBorder)
 				return;

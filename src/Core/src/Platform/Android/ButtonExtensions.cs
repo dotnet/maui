@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Platform
 					mauiDrawable.SetCornerRadius(button.CornerRadius);
 				else
 				{
-					const int defaultCornerRadius =  2; // Default value for Android material button.
+					const int defaultCornerRadius = 2; // Default value for Android material button.
 					mauiDrawable.SetCornerRadius(platformView.Context.ToPixels(defaultCornerRadius));
 				}
 			}

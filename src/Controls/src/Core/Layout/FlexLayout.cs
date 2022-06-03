@@ -611,8 +611,8 @@ namespace Microsoft.Maui.Controls
 				PrepareMeasureHack();
 			}
 
-			var result =  base.MeasureOverride(widthConstraint, heightConstraint);
-			
+			var result = base.MeasureOverride(widthConstraint, heightConstraint);
+
 			if (useMeasureHack)
 			{
 				RestoreValues();
@@ -621,12 +621,12 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		static bool NeedsMeasureHack(double widthConstraint, double heightConstraint) 
+		static bool NeedsMeasureHack(double widthConstraint, double heightConstraint)
 		{
 			return double.IsInfinity(widthConstraint) || double.IsInfinity(heightConstraint);
 		}
 
-		void PrepareMeasureHack() 
+		void PrepareMeasureHack()
 		{
 			// FlexLayout's Shrink and Stretch features require a fixed area to measure/layout correctly;
 			// when the dimensions they are working in are infinite, they don't really make sense. We can
@@ -643,7 +643,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void RestoreValues() 
+		void RestoreValues()
 		{
 			// If we had to modify the Shrink and Stretch values of the FlexItems for measurement, we 
 			// restore them to their original values.
@@ -653,7 +653,7 @@ namespace Microsoft.Maui.Controls
 				if (GetFlexItem(child) is Flex.Item item)
 				{
 					item.Shrink = GetShrink(child);
-					item.AlignSelf =  (Flex.AlignSelf)GetAlignSelf(child);
+					item.AlignSelf = (Flex.AlignSelf)GetAlignSelf(child);
 				}
 			}
 		}

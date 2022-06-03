@@ -58,12 +58,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override void Dispose(bool disposing)
 		{
-			if(disposing && !_disposed)
+			if (disposing && !_disposed)
 			{
 				_disposed = true;
-				if(Control != null)
+				if (Control != null)
 				{
-					Control.SelectionChanged -= OnSelectionChanged;				
+					Control.SelectionChanged -= OnSelectionChanged;
 				}
 			}
 			base.Dispose(disposing);

@@ -2,7 +2,6 @@
 <Project>
 
   <ItemGroup>
-    <PackageReference Include="Fizzler" Version="1.3.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="HarfBuzzSharp" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
@@ -16,8 +15,10 @@
     <PackageReference Include="SkiaSharp.HarfBuzz" Version="$(_SkiaSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Skia" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Custom" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Svg.Picture" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Memory" Version="4.5.4" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Svg.Model" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="ShimSkiaSharp" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Fizzler" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Memory" Version="4.5.5" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Buffers" Version="4.5.1" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.IO.UnmanagedMemoryStream" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
@@ -34,11 +35,10 @@
     <_ResizetizerFiles Include="$(PkgSystem_Numerics_Vectors)\lib\netstandard2.0\System.Numerics.Vectors.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_Runtime_CompilerServices_Unsafe)\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_ObjectModel)\lib\netstandard1.3\System.ObjectModel.dll" />
-    <_ResizetizerFiles Include="$(PkgSvg_Custom)\lib\net461\Svg.Custom.dll" />
-    <_ResizetizerFiles Include="$(PkgSvg_Custom)\lib\net461\Svg.Custom.pdb" />
-    <_ResizetizerFiles Include="$(PkgSvg_Picture)\lib\net461\Svg.Picture.dll" />
-    <_ResizetizerFiles Include="$(PkgSvg_Picture)\lib\net461\Svg.Picture.pdb" />
-    <!-- <_ResizetizerFiles Include="$(PkgSvg_Skia)\lib\net461\Svg.Skia.dll" /> -->
+    <_ResizetizerFiles Include="$(PkgSvg_Custom)\lib\netstandard2.0\Svg.Custom.dll" />
+    <_ResizetizerFiles Include="$(PkgSvg_Model)\lib\netstandard2.0\Svg.Model.dll" />
+    <_ResizetizerFiles Include="$(PkgShimSkiaSharp)\lib\netstandard2.0\ShimSkiaSharp.dll" />
+    <_ResizetizerFiles Include="$(PkgSvg_Skia)\lib\netstandard2.0\Svg.Skia.dll" />
     <_ResizetizerFiles Include="$(PkgFizzler)\lib\netstandard2.0\Fizzler.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_IO_UnmanagedMemoryStream)\lib\netstandard1.3\System.IO.UnmanagedMemoryStream.dll" />
     <_ResizetizerFiles Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll" />

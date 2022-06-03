@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ThirdParty Include="Svg.*.dll" />
+    <ThirdParty Include="ShimSkiaSharp.dll" />
     <ThirdParty Include="Fizzler.dll" />
     <ThirdParty Include="Newtonsoft.Json.dll;" />
     <ThirdParty Include="Svg2VectorDrawable.Net.dll" />

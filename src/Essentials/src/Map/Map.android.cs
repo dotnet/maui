@@ -91,9 +91,12 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			switch (mode)
 			{
-				case NavigationMode.Bicycling: return "&mode=b";
-				case NavigationMode.Driving: return "&mode=d";
-				case NavigationMode.Walking: return "&mode=w";
+				case NavigationMode.Bicycling:
+					return "&mode=b";
+				case NavigationMode.Driving:
+					return "&mode=d";
+				case NavigationMode.Walking:
+					return "&mode=w";
 			}
 			return string.Empty;
 		}

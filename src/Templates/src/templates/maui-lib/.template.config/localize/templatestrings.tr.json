@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Sınıf Kitaplığı (Önizleme)",
+  "name": ".NET MAUI Sınıf Kitaplığı",
   "description": ".NET MAUI sınıf kitaplığı oluşturmaya yönelik proje",
   "postActions/openInEditor/description": "Düzenleyicide Class1.cs dosyasını açar."
 }

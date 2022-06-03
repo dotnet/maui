@@ -11,10 +11,10 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 
 		public override Size PixelScreenSize
 		{
-			get 
-			{ 
-				if(CurrentOrientation == DeviceOrientation.Landscape)
-					return new Size(1000, 2000); 
+			get
+			{
+				if (CurrentOrientation == DeviceOrientation.Landscape)
+					return new Size(1000, 2000);
 				else
 					return new Size(2000, 1000);
 			}

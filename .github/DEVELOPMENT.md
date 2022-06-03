@@ -1,6 +1,6 @@
 # Development Guide
 
-This page contains steps to build and run the .NET MAUI repository from source. If you are looking to build apps with .NET MAUI please head over to the [.NET MAUI documentation](https://docs.microsoft.com/dotnet/maui) to get started.
+This page contains steps to build and run the .NET MAUI repository from source. If you are looking to build apps with .NET MAUI please head over to the links in the [README](https://github.com/dotnet/maui/blob/main/README.md) to get started.
 
 ## Requirements
 
@@ -121,6 +121,13 @@ dotnet tool restore
 dotnet cake --target=VS-NET6
 ```
 
+You can also run:
+
+```dotnetcli
+dotnet tool restore
+dotnet cake --target=VS
+```
+
 _NOTES:_
 - _If the IDE doesn't show any Android devices try unloading and reloading the `Sample.Droid-net6` project._
 
@@ -135,7 +142,7 @@ dotnet build src\DotNet\DotNet.csproj
 # Builds the rest of Maui
 .\bin\dotnet\dotnet build Microsoft.Maui.sln
 # (Windows-only) to launch Visual Studio
-dotnet cake --target=VS-DOGFOOD
+dotnet cake --target=VS
 ```
 
 To build & run .NET 6 sample apps, you will also need to use `.\bin\dotnet\dotnet` or just `dotnet` if you've
@@ -207,3 +214,7 @@ public static int foo = 2130771968;
    control, such as: `src\Controls\src\Core\Platform\Android\Resource.designer.cs`
 
 5. Restore the commented code in `Directory.Build.targets`.
+
+## Stats
+
+<img src="https://repobeats.axiom.co/api/embed/f917a77cbbdeee19b87fa1f2f932895d1df18b71.svg" />

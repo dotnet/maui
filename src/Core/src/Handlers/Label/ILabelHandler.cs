@@ -6,7 +6,7 @@ using PlatformView = AndroidX.AppCompat.Widget.AppCompatTextView;
 using PlatformView = Microsoft.UI.Xaml.Controls.TextBlock;
 #elif TIZEN
 using PlatformView = Tizen.UIExtensions.ElmSharp.Label;
-#elif NETSTANDARD || (NET6_0 && !IOS && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !TIZEN)
 using PlatformView = System.Object;
 #endif
 
