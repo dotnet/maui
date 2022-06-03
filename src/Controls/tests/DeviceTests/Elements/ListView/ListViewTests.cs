@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -26,6 +27,54 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task RemovingFirstItemOfListViewDoesntCrash()
+		{
+			SetupBuilder();
+			ObservableCollection<string> data = new ObservableCollection<string>()
+			{
+				"cat",
+				"dog",
+				"catdog"
+			};
+
+			var listView = new ListView()
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					return new ViewCell()
+					{
+						View = new VerticalStackLayout()
+						{
+							new Label()
+						}
+					};
+				}),
+				ItemsSource = data
+			};
+
+			var layout = new VerticalStackLayout()
+			{
+				listView
+			};
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async (handler) =>
+			{
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+				data.RemoveAt(0);
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+				data.Insert(1, "new");
+				data.Insert(2, "record");
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+				data.RemoveAt(0);
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+			});
+		}
+
 		[Fact(DisplayName = "ReAssigning ListView in VSL Crashes")]
 		public async Task ReAssigninListViewInVSLCrashes()
 		{
@@ -37,12 +86,12 @@ namespace Microsoft.Maui.DeviceTests
 					return new ViewCell()
 					{
 						View = new VerticalStackLayout()
+						{
+							new Label()
 							{
-								new Label()
-								{
-									Text = "Cat"
-								}
+								Text = "Cat"
 							}
+						}
 					};
 				})
 			};
@@ -56,8 +105,10 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				listView.ItemsSource = Enumerable.Range(1, 1);
 				await Task.Delay(100);
+				ValidatePlatformCells(listView);
 				listView.ItemsSource = Enumerable.Range(1, 2);
 				await Task.Delay(100);
+				ValidatePlatformCells(listView);
 			});
 		}
 	}

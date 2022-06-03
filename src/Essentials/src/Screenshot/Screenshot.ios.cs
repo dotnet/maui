@@ -22,9 +22,9 @@ namespace Microsoft.Maui.Media
 		public Task<IScreenshotResult> CaptureAsync()
 		{
 			var scenes = UIApplication.SharedApplication.ConnectedScenes;
-//#pragma warning disable CA1416 // Known false positive with Lambda expression
+			//#pragma warning disable CA1416 // Known false positive with Lambda expression
 			var currentScene = scenes.ToArray().Where(n => n.ActivationState == UISceneActivationState.ForegroundActive).FirstOrDefault();
-//#pragma warning restore CA1416
+			//#pragma warning restore CA1416
 			if (currentScene == null)
 				throw new InvalidOperationException("Unable to find current scene.");
 

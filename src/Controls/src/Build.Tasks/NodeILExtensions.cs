@@ -163,7 +163,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexAlignSelfTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexAlignSelf>) },
 					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexWrapTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexWrap>) },
 					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexBasisTypeConverter")), typeof(FlexBasisTypeConverter) },
-					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlowDirectionTypeConverter")), typeof(EnumTypeConverter<FlowDirection>) },
 
 				};
 			}
@@ -171,7 +170,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var str = (string)node.Value;
 			//If the TypeConverter has a ProvideCompiledAttribute that can be resolved, shortcut this
 			Type compiledConverterType;
-			if (   typeConverter?.GetCustomAttribute(module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName
+			if (typeConverter?.GetCustomAttribute(module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName
 				&& (compiledConverterType = Type.GetType(compiledConverterName)) != null
 				|| (typeConverter != null && KnownCompiledTypeConverters.TryGetValue(typeConverter, out compiledConverterType)))
 			{

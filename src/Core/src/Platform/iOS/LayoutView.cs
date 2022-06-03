@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Platform
 				// If user interaction is disabled (IOW, if the corresponding Layout is InputTransparent),
 				// then we exclude the LayoutView itself from hit testing. But it's children are valid
 				// hit testing targets.
-				
+
 				return null!;
 			}
 

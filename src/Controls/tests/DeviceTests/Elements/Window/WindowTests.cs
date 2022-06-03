@@ -73,7 +73,7 @@ namespace Microsoft.Maui.DeviceTests
 				var shell = new Shell() { CurrentItem = contentPage };
 				window.Page = shell;
 
-				
+
 				await OnLoadedAsync(shell);
 				await OnLoadedAsync(shell.CurrentPage);
 

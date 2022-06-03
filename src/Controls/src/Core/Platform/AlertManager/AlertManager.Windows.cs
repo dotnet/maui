@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				var actionSheetContent = new ActionSheetContent(arguments);
-			
+
 				var actionSheet = new Flyout
 				{
 					FlyoutPresenterStyle = (UI.Xaml.Style)UI.Xaml.Application.Current.Resources["MauiFlyoutPresenterStyle"],

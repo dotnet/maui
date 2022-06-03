@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentView']/Docs" />
 	[ContentProperty("Content")]
-	public class ContentView : TemplatedView, IContentView
+	public partial class ContentView : TemplatedView
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentView.xml" path="//Member[@MemberName='ContentProperty']/Docs" />
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentView), null, propertyChanged: TemplateUtilities.OnContentChanged);
@@ -16,9 +16,6 @@ namespace Microsoft.Maui.Controls
 			get { return (View)GetValue(ContentProperty); }
 			set { SetValue(ContentProperty, value); }
 		}
-
-		object IContentView.Content => Content;
-		IView IContentView.PresentedContent => ((this as IControlTemplated).TemplateRoot as IView) ?? Content;
 
 		protected override void OnBindingContextChanged()
 		{

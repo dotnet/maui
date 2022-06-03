@@ -1,5 +1,5 @@
-﻿using System.Windows.Input;
-using System;
+﻿using System;
+using System.Windows.Input;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample.Pages
 	{
 		public WindowsVisualElementAccessKeysPage()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 		}
 
 		async void OnButtonClicked(object sender, EventArgs e)

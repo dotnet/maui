@@ -34,11 +34,10 @@ body:
       label: Version with bug
       description: In what version do you see this issue?
       options:
-        - Preview 13
-        - Preview 14
-        - Release Candidate 1
-        - Release Candidate 2
-        - Release Candidate 3 (current)
+        - 6.0 Release Candidate 1 or older
+        - 6.0 Release Candidate 2
+        - 6.0 Release Candidate 3
+        - 6.0 (current)
         - Unknown/Other (please specify)
     validations:
       required: true

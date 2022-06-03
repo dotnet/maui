@@ -288,11 +288,36 @@ Task("dotnet-pack-library-packs")
         Download("Microsoft.Maui.Graphics.Win2D.WinUI.Desktop", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json", "https://api.nuget.org/v3/index.json");
     });
 
+Task("dotnet-pack-docs")
+    .WithCriteria(RunPackTarget())
+    .Does(() =>
+    {
+        var tempDir = $"./artifacts/docs-packs-temp";
+        EnsureDirectoryExists(tempDir);
+        CleanDirectories(tempDir);
+
+        var destDir = $"./artifacts/docs-packs";
+        EnsureDirectoryExists(destDir);
+        CleanDirectories(destDir);
+
+        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Ref.*.nupkg"))
+        {
+            var d = $"{tempDir}/{nupkg.GetFilename()}";
+            Unzip(nupkg, d);
+            DeleteFiles($"{d}/**/*.pri");
+            DeleteFiles($"{d}/**/*.aar");
+            CopyDirectory($"{d}/ref", $"{destDir}");
+        }
+
+        CleanDirectories(tempDir);
+    });
+
 Task("dotnet-pack")
     .WithCriteria(RunPackTarget())
     .IsDependentOn("dotnet-pack-maui")
     .IsDependentOn("dotnet-pack-additional")
-    .IsDependentOn("dotnet-pack-library-packs");
+    .IsDependentOn("dotnet-pack-library-packs")
+    .IsDependentOn("dotnet-pack-docs");
 
 Task("dotnet-build-test")
     .IsDependentOn("dotnet")
@@ -497,7 +522,7 @@ void SetDotNetEnvironmentVariables()
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 
     // Get "full" .binlog in Project System Tools
-    if (HasArgument("debug"))
+    if (HasArgument("dbg"))
         SetEnvironmentVariable("MSBuildDebugEngine", "1");
 }
 

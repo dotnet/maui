@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _innerCollectionChange = false;
 		bool _observeChanges = true;
 
-		public ObservableItemTemplateCollection(IList itemsSource, DataTemplate itemTemplate, BindableObject container, 
+		public ObservableItemTemplateCollection(IList itemsSource, DataTemplate itemTemplate, BindableObject container,
 			double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null, IMauiContext mauiContext = null)
 		{
 			if (!(itemsSource is INotifyCollectionChanged notifyCollectionChanged))
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var count = args.NewItems.Count;
 
-			for(int n = 0; n < count; n++)
+			for (int n = 0; n < count; n++)
 			{
 				Insert(startIndex, new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
 			}
@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			for(int n = count - 1; n >= 0; n--)
+			for (int n = count - 1; n >= 0; n--)
 			{
 				Move(args.OldStartingIndex + n, args.NewStartingIndex + n);
 			}
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var count = args.OldItems.Count;
 
-			for(int n = startIndex + count - 1; n >= startIndex; n--)
+			for (int n = startIndex + count - 1; n >= startIndex; n--)
 			{
 				RemoveAt(n);
 			}

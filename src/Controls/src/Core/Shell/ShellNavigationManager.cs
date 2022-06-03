@@ -22,10 +22,10 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public Task GoToAsync(
-			ShellNavigationState state, 
-			bool? animate, 
-			bool enableRelativeShellRoutes, 
-			ShellNavigatingEventArgs deferredArgs = null, 
+			ShellNavigationState state,
+			bool? animate,
+			bool enableRelativeShellRoutes,
+			ShellNavigatingEventArgs deferredArgs = null,
 			ShellRouteParameters parameters = null,
 			bool? canCancel = null)
 		{

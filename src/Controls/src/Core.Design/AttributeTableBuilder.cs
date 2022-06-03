@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Design
 			AddMemberAttributes("Microsoft.Maui.Controls.VisualElement", "Visual",
 			   new TypeConverterAttribute(typeof(VisualDesignTypeConverter)));
 
-			AddTypeAttributes("Microsoft.Maui.FlowDirection",
+			AddMemberAttributes("Microsoft.Maui.Controls.VisualElement", "FlowDirection",
 			   new TypeConverterAttribute(typeof(FlowDirectionDesignTypeConverter)));
 
 			AddMemberAttributes("Microsoft.Maui.Controls.ItemsView", "ItemsLayout",
@@ -51,14 +51,14 @@ namespace Microsoft.Maui.Controls.Design
 			// though, since its visibility in the markup is controlled by the EditorBrowsableAttribute.
 			// Make OnPlatform/OnIdiom visible for intellisense, and set as markup extension. 
 			AddTypeAttributes("Microsoft.Maui.Controls.OnPlatform<>",
-				new EditorBrowsableAttribute (EditorBrowsableState.Always)
-				//new System.ComponentModel.TypeConverterAttribute(typeof(AnythingConverter)),
-				//new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),
+				new EditorBrowsableAttribute(EditorBrowsableState.Always)
+			//new System.ComponentModel.TypeConverterAttribute(typeof(AnythingConverter)),
+			//new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),
 			);
 			AddTypeAttributes("Microsoft.Maui.Controls.OnIdiom<>",
 				new EditorBrowsableAttribute(EditorBrowsableState.Always)
-				//new System.ComponentModel.TypeConverterAttribute(typeof(AnythingConverter)),
-				//new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),
+			//new System.ComponentModel.TypeConverterAttribute(typeof(AnythingConverter)),
+			//new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),
 			);
 
 			AddTypeAttributes("Microsoft.Maui.Graphics.Color", new TypeConverterAttribute(typeof(ColorDesignTypeConverter)));

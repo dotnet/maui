@@ -1,8 +1,8 @@
 ﻿using System;
+using Maui.Controls.Sample.ViewModels;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Maui.Controls.Sample.ViewModels;
 
 namespace Maui.Controls.Sample.Pages
 {

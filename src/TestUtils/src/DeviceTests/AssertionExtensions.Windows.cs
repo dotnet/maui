@@ -124,7 +124,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				return await action();
 			}
-			
+
 			void OnViewLoaded(object sender, RoutedEventArgs e)
 			{
 				view.Loaded -= OnViewLoaded;

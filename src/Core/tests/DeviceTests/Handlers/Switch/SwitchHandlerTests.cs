@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Is Toggled Does Not Set Same Value")]
 		public async Task IsToggledDoesNotSetSameValue()
 		{
-			var fireCount= 0;
+			var fireCount = 0;
 
 			var switchStub = new SwitchStub()
 			{

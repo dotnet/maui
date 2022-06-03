@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		[TestFixture]
 #if !DEBUG
-		[Ignore("This test runs only in debug")] 
+		[Ignore("This test runs only in debug")]
 #endif
 		public class Tests
 		{
