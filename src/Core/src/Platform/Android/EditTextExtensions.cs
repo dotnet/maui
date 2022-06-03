@@ -220,7 +220,8 @@ namespace Microsoft.Maui.Platform
 			editText.ImeOptions = entry.ReturnType.ToPlatform();
 		}
 
-		public static int GetCursorPosition(this EditText editText, int cursorOffset = 0)
+		// TODO: NET7 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
+		internal static int GetCursorPosition(this EditText editText, int cursorOffset = 0)
 		{
 			var newCursorPosition = editText.SelectionStart + cursorOffset;
 			return Math.Max(0, newCursorPosition);
@@ -285,7 +286,8 @@ namespace Microsoft.Maui.Platform
 			return end;
 		}
 
-		public static int GetSelectedTextLength(this EditText editText)
+		// TODO: NET7 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
+		internal static int GetSelectedTextLength(this EditText editText)
 		{
 			var selectedLength = editText.SelectionEnd - editText.SelectionStart;
 			return Math.Max(0, selectedLength);

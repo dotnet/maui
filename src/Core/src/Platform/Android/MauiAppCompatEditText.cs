@@ -4,7 +4,7 @@ using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiAppCompatEditText : AppCompatEditText
+	internal class MauiAppCompatEditText : AppCompatEditText
 	{
 		public event EventHandler? SelectionChanged;
 

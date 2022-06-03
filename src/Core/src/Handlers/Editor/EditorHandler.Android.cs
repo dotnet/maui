@@ -7,9 +7,12 @@ using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : ViewHandler<IEditor, MauiAppCompatEditText>
+	// TODO: NET7 issoto - Change the TPlatformView generic type to MauiAppCompatEditText
+	// This type adds support to the SelectionChanged event
+	public partial class EditorHandler : ViewHandler<IEditor, AppCompatEditText>
 	{
-		protected override MauiAppCompatEditText CreatePlatformView()
+		// TODO: NET7 issoto - Change the return type to MauiAppCompatEditText
+		protected override AppCompatEditText CreatePlatformView()
 		{
 			var editText = new MauiAppCompatEditText(Context)
 			{
@@ -24,18 +27,24 @@ namespace Microsoft.Maui.Handlers
 			return editText;
 		}
 
-		protected override void ConnectHandler(MauiAppCompatEditText platformView)
+		// TODO: NET7 issoto - Change the platformView type to MauiAppCompatEditText
+		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
-			platformView.SelectionChanged += OnSelectionChanged;
+
+			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView as MauiAppCompatEditText
+			((MauiAppCompatEditText)platformView).SelectionChanged += OnSelectionChanged;
 		}
 
-		protected override void DisconnectHandler(MauiAppCompatEditText platformView)
+		// TODO: NET7 issoto - Change the platformView type to MauiAppCompatEditText
+		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
-			platformView.SelectionChanged -= OnSelectionChanged;
+
+			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView as MauiAppCompatEditText
+			((MauiAppCompatEditText)platformView).SelectionChanged -= OnSelectionChanged;
 		}
 
 		public static void MapBackground(IEditorHandler handler, IEditor editor) =>
