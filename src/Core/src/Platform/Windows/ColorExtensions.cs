@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using Windows.UI;
 using Microsoft.UI;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
@@ -40,6 +39,9 @@ namespace Microsoft.Maui.Platform
 
 		public static global::Windows.UI.Color ToWindowsColor(this Graphics.Color color)
 		{
+			if (color == null)
+				return Microsoft.UI.Colors.Transparent;
+
 			return global::Windows.UI.Color.FromArgb((byte)(color.Alpha * 255), (byte)(color.Red * 255), (byte)(color.Green * 255), (byte)(color.Blue * 255));
 		}
 	}

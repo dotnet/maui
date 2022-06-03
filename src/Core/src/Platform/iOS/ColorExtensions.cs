@@ -1,7 +1,6 @@
 using System;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 using UIColor = UIKit.UIColor;
 
@@ -138,7 +137,7 @@ namespace Microsoft.Maui.Platform
 
 		public static CGColor ToCGColor(this Color color)
 		{
-			return color.ToPlatform().CGColor;
+			return color != null ? color.ToPlatform().CGColor : UIColor.Clear.CGColor;
 		}
 
 		public static UIColor FromPatternImageFromBundle(string bgImage)
