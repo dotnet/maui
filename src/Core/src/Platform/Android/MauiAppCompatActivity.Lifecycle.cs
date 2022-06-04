@@ -3,7 +3,6 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
 using Android.OS;
-using Android.Views;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -81,6 +80,7 @@ namespace Microsoft.Maui
 			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnRestart>(del => del(this));
 		}
 
+		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
 		public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
 		{
 			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnRequestPermissionsResult>(del => del(this, requestCode, permissions, grantResults));
@@ -93,6 +93,13 @@ namespace Microsoft.Maui
 			base.OnRestoreInstanceState(savedInstanceState);
 
 			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnRestoreInstanceState>(del => del(this, savedInstanceState));
+		}
+
+		protected override void OnDestroy()
+		{
+			base.OnDestroy();
+
+			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnDestroy>(del => del(this));
 		}
 	}
 }

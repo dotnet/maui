@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public void UpdateToolbarPlacement()
 		{
 			if (_commandBar == null || _getToolbarPlacement == null || _bottomCommandBarArea == null ||
-			    _topCommandBarArea == null)
+				_topCommandBarArea == null)
 			{
 				// Template hasn't been applied yet, so we're not ready to update the toolbar placement
 				return;

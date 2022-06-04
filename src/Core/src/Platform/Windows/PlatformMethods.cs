@@ -72,9 +72,9 @@ namespace Microsoft.Maui.Platform
 			DwmGetWindowAttribute(hWnd, DwmWindowAttribute.DWMWA_CAPTION_BUTTON_BOUNDS, out RECT value, Marshal.SizeOf(typeof(RECT)));
 			var density = GetDpiForWindow(hWnd) / 96f;
 			return new Graphics.Rect(
-				value.Left / density, 
-				value.Top / density, 
-				value.Right / density, 
+				value.Left / density,
+				value.Top / density,
+				value.Right / density,
 				value.Bottom / density);
 		}
 

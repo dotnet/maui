@@ -46,9 +46,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
-		public static void MapTitle(IPickerHandler handler, IPicker picker) 
+		public static void MapTitle(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateTitle(picker);
+			handler.UpdateValue(nameof(IView.Semantics));
 		}
 
 		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
@@ -66,12 +67,12 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateSelectedIndex(picker);
 		}
 
-		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker) 
+		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateCharacterSpacing(picker);
 		}
 
-		public static void MapFont(IPickerHandler handler, IPicker picker) 
+		public static void MapFont(IPickerHandler handler, IPicker picker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
@@ -90,7 +91,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateHorizontalTextAlignment(picker);
 		}
-		
+
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateVerticalTextAlignment(picker);

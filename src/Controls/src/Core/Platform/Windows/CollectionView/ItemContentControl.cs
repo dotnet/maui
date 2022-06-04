@@ -117,22 +117,29 @@ namespace Microsoft.Maui.Controls.Platform
 		public static readonly DependencyProperty ItemSpacingProperty = DependencyProperty.Register(
 			nameof(ItemSpacing), typeof(Thickness), typeof(ItemContentControl),
 			new PropertyMetadata(default(Thickness)));
-		
+
 		public Thickness ItemSpacing
 		{
 			get => (Thickness)GetValue(ItemSpacingProperty);
 			set => SetValue(ItemSpacingProperty, value);
 		}
-				
+
 		protected override void OnContentChanged(object oldContent, object newContent)
 		{
 			base.OnContentChanged(oldContent, newContent);
 
 			if (oldContent != null && _visualElement != null)
+			{
 				_visualElement.MeasureInvalidated -= OnViewMeasureInvalidated;
+				_visualElement.PropertyChanged -= OnViewPropertyChanged;
+			}
 
 			if (newContent != null && _visualElement != null)
+			{
 				_visualElement.MeasureInvalidated += OnViewMeasureInvalidated;
+				_visualElement.PropertyChanged += OnViewPropertyChanged;
+				UpdateSemanticProperties(_visualElement);
+			}
 		}
 
 		internal void Realize()
@@ -185,7 +192,7 @@ namespace Microsoft.Maui.Controls.Platform
 			itemsView?.AddLogicalChild(_visualElement);
 		}
 
-		void SetNativeStateConsistent(VisualElement visualElement) 
+		void SetNativeStateConsistent(VisualElement visualElement)
 		{
 			visualElement.IsPlatformStateConsistent = true;
 
@@ -217,6 +224,44 @@ namespace Microsoft.Maui.Controls.Platform
 			InvalidateMeasure();
 		}
 
+		void OnViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.IsOneOf(
+				SemanticProperties.HeadingLevelProperty,
+				SemanticProperties.HintProperty,
+				SemanticProperties.DescriptionProperty,
+				AutomationProperties.IsInAccessibleTreeProperty) &&
+				sender is IView view)
+			{
+				UpdateSemanticProperties(view);
+			}
+		}
+
+		void UpdateSemanticProperties(IView view)
+		{
+			// If you don't set the automation properties on the root element
+			// of a list item it just reads out the class type to narrator
+			// https://docs.microsoft.com/en-us/accessibility-tools-docs/items/uwpxaml/listitem_name
+			// Because this is the root element of the ListViewItem we need to propagate
+			// the semantic properties from the root xplat element to this platform element
+			if (view == null)
+				return;
+
+			this.UpdateSemantics(view);
+
+			var semantics = view.Semantics;
+
+			UI.Xaml.Automation.Peers.AccessibilityView defaultAccessibilityView =
+				UI.Xaml.Automation.Peers.AccessibilityView.Content;
+
+			if (!String.IsNullOrWhiteSpace(semantics?.Description) || !String.IsNullOrWhiteSpace(semantics?.Hint))
+			{
+				defaultAccessibilityView = UI.Xaml.Automation.Peers.AccessibilityView.Raw;
+			}
+
+			this.SetAutomationPropertiesAccessibilityView(_visualElement, defaultAccessibilityView);
+		}
+
 		protected override WSize MeasureOverride(WSize availableSize)
 		{
 			if (_renderer == null)
@@ -225,17 +270,24 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var frameworkElement = Content as FrameworkElement;
-
 			var formsElement = _renderer.VirtualView as VisualElement;
+			var margin = _renderer.VirtualView.Margin;
+
 			if (ItemHeight != default || ItemWidth != default)
 			{
 				formsElement.Layout(new Rect(0, 0, ItemWidth, ItemHeight));
 
 				var wsize = new WSize(ItemWidth, ItemHeight);
 
-				frameworkElement.Margin = WinUIHelpers.CreateThickness(ItemSpacing.Left, ItemSpacing.Top, ItemSpacing.Right, ItemSpacing.Bottom);
+				frameworkElement.Margin =
+					WinUIHelpers.CreateThickness(
+						margin.Left + ItemSpacing.Left,
+						margin.Top + ItemSpacing.Top,
+						margin.Right + ItemSpacing.Right,
+						margin.Bottom + ItemSpacing.Bottom);
 
-				frameworkElement.Measure(wsize);
+				if (CanMeasureContent(frameworkElement))
+					frameworkElement.Measure(wsize);
 
 				return base.MeasureOverride(wsize);
 			}
@@ -251,7 +303,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var wsize = new WSize(width, height);
 
-				frameworkElement.Measure(wsize);
+				frameworkElement.Margin = WinUIHelpers.CreateThickness(
+					margin.Left,
+					margin.Top,
+					margin.Right,
+					margin.Bottom);
+
+				if (CanMeasureContent(frameworkElement))
+					frameworkElement.Measure(wsize);
 
 				return base.MeasureOverride(wsize);
 			}
@@ -265,6 +324,15 @@ namespace Microsoft.Maui.Controls.Platform
 		double ClampInfinity(double value)
 		{
 			return double.IsInfinity(value) ? 0 : value;
+		}
+
+		bool CanMeasureContent(FrameworkElement frameworkElement)
+		{
+			// Measure the SwipeControl before has loaded causes a crash on the first layout pass
+			if (frameworkElement is SwipeControl swipeControl && !swipeControl.IsLoaded)
+				return false;
+
+			return true;
 		}
 	}
 }

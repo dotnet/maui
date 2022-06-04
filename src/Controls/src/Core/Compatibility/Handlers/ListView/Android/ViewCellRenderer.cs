@@ -58,6 +58,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return c;
 		}
 
+		protected override void DisconnectHandler(AView platformView)
+		{
+			base.DisconnectHandler(platformView);
+			ViewCellContainer c = platformView.GetParentOfType<ViewCellContainer>();
+			c?.DisconnectHandler();
+		}
+
 		internal class ViewCellContainer : ViewGroup, INativeElementView
 		{
 			readonly View _parent;
@@ -69,6 +76,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			GestureDetector _longPressGestureDetector;
 			ListViewRenderer _listViewRenderer;
 			bool _watchForLongPress;
+			AView _currentView;
 
 			ListViewRenderer ListViewRenderer
 			{
@@ -185,6 +193,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public void Update(ViewCell cell)
 			{
+				// This cell could have a handler that was used for the measure pass for the Listview height calculations
+				//cell.View.Handler.DisconnectHandler();
+
 				Performance.Start(out string reference);
 				var viewHandlerType = _viewHandler.MauiContext.Handlers.GetHandlerType(cell.View.GetType());
 				var reflectableType = _viewHandler as System.Reflection.IReflectableType;
@@ -195,7 +206,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_viewCell = cell;
 
 					Performance.Start(reference, "Reuse.SetElement");
-					_viewHandler.SetVirtualView(cell.View);
+
+					if (_viewHandler != cell.View.Handler)
+					{
+						if (cell.View.Handler?.PlatformView is AView oldCellView &&
+							oldCellView.GetParentOfType<ViewCellContainer>() is ViewCellContainer vc)
+						{
+							vc.DisconnectHandler();
+						}
+
+						var oldView = _currentView ?? _viewHandler.PlatformView;
+						if (oldView != null)
+							RemoveView(oldView);
+
+						cell.View.Handler?.DisconnectHandler();
+						_viewHandler.SetVirtualView(cell.View);
+						AddView(_viewHandler.PlatformView);
+					}
+
 					Performance.Stop(reference, "Reuse.SetElement");
 
 					Invalidate();
@@ -205,7 +233,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 				}
 
-				RemoveView(_viewHandler.PlatformView);
+				RemoveView(_currentView ?? _viewHandler.PlatformView);
 				_viewCell.View.Handler?.DisconnectHandler();
 				_viewCell.View.IsPlatformEnabled = false;
 
@@ -225,7 +253,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public void UpdateIsEnabled()
 			{
-				Enabled = _viewCell.IsEnabled;
+				Enabled = _parent.IsEnabled && _viewCell.IsEnabled;
+			}
+
+			public void DisconnectHandler()
+			{
+				var oldView = _currentView ?? _viewHandler.PlatformView;
+				if (oldView != null)
+					RemoveView(oldView);
+
+				_viewCell?.View?.Handler?.DisconnectHandler();
+
+			}
+
+			public override void AddView(AView child)
+			{
+				base.AddView(child);
+				_currentView = child;
 			}
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -235,7 +279,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 				}
 
-				_viewHandler.PlatformView.Layout(l, t, r, b);
+				_viewHandler.LayoutVirtualView(l, t, r, b);
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -253,24 +297,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						return;
 					}
 
-					_viewHandler.PlatformView.Measure(widthMeasureSpec, heightMeasureSpec);
-					height = (int)Context.ToPixels(_viewHandler.PlatformView.MeasuredHeight);
+					var size = _viewHandler.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec);
+					height = (int)size.Height;
 				}
 				else
 				{
 					height = (int)Context.ToPixels(ParentRowHeight == -1 ? BaseCellView.DefaultMinHeight : ParentRowHeight);
-
-
-					if (_viewHandler.PlatformView != null)
-					{
-						_viewHandler.PlatformView.Measure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
-					}
-				}
-
-				if (_viewHandler.VirtualView != null)
-				{
-					_viewHandler.VirtualView.Frame = new Rect(0, 0, Context.FromPixels(width), Context.FromPixels(height));
-
+					var size = _viewHandler.MeasureVirtualView(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
+					width = (int)size.Width;
 				}
 
 				SetMeasuredDimension(width, height);

@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
-			
+
 		}
 
 		protected override ListViewBase SelectListViewBase()

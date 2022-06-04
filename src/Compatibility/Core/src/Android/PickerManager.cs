@@ -65,7 +65,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return new Java.Lang.String(title);
 
 			var spannableTitle = new SpannableString(title ?? "");
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 			spannableTitle.SetSpan(new ForegroundColorSpan(titleColor.ToAndroid()), 0, spannableTitle.Length(), SpanTypes.ExclusiveExclusive);
+#pragma warning restore CA1416
 			return spannableTitle;
 		}
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Web.Http;
@@ -21,11 +20,11 @@ namespace Microsoft.Maui.Handlers
 			get => _eventState;
 			set => _eventState = value;
 		}
-    
+
 		protected override void ConnectHandler(WebView2 platformView)
 		{
 			platformView.CoreWebView2Initialized += OnCoreWebView2Initialized;
-			
+
 			base.ConnectHandler(platformView);
 		}
 
@@ -45,9 +44,9 @@ namespace Microsoft.Maui.Handlers
 
 		void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
 		{
+			sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
 			sender.CoreWebView2.NavigationStarting += OnNavigationStarting;
 			sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
-			sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
 		}
 
 		void OnHistoryChanged(CoreWebView2 sender, object args)
@@ -125,6 +124,8 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView is null)
 				return;
+
+			PlatformView?.UpdateCanGoBackForward(VirtualView);
 		}
 
 		void NavigationFailed(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs e)
@@ -152,7 +153,7 @@ namespace Microsoft.Maui.Handlers
 		void SyncPlatformCookiesToVirtualView(string url)
 		{
 			var myCookieJar = VirtualView.Cookies;
-		
+
 			if (myCookieJar == null)
 				return;
 
@@ -184,25 +185,25 @@ namespace Microsoft.Maui.Handlers
 		void SyncPlatformCookies(string url)
 		{
 			var uri = CreateUriForCookies(url);
-			
+
 			if (uri == null)
 				return;
 
 			var myCookieJar = VirtualView.Cookies;
-			
+
 			if (myCookieJar == null)
 				return;
 
 			InitialCookiePreloadIfNecessary(url);
 			var cookies = myCookieJar.GetCookies(uri);
-			
+
 			if (cookies == null)
 				return;
 
 			var retrieveCurrentWebCookies = GetCookiesFromPlatformStore(url);
 
 			var filter = new global::Windows.Web.Http.Filters.HttpBaseProtocolFilter();
-			
+
 			foreach (Cookie cookie in cookies)
 			{
 				HttpCookie httpCookie = new HttpCookie(cookie.Name, cookie.Domain, cookie.Path)
@@ -251,7 +252,7 @@ namespace Microsoft.Maui.Handlers
 			var uri = CreateUriForCookies(url);
 			var filter = new global::Windows.Web.Http.Filters.HttpBaseProtocolFilter();
 			var platformCookies = filter.CookieManager.GetCookies(uri);
-			
+
 			return platformCookies;
 		}
 
@@ -276,14 +277,14 @@ namespace Microsoft.Maui.Handlers
 			return null;
 		}
 
-		
 
-		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg) 
+
+		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{
 				if (handler.PlatformView == null)
-				{ 
+				{
 					request.SetCanceled();
 					return;
 				}

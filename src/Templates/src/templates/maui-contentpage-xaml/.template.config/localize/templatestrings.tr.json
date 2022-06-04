@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI ContentPage (XAML) (Önizleme)",
+  "name": ".NET MAUI ContentPage (XAML)",
   "postActions/openInEditor/description": "Düzenleyicide NewPage1.xaml dosyasını açar.",
   "symbols/namespace/description": "oluşturulan kod için ad alanı"
 }

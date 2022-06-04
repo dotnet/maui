@@ -114,25 +114,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// So we give it an alternate delegate for creating the views
 
 			var oldItemViewAdapter = ItemsViewAdapter;
-			UnsubscribeCollectionItemsSourceChanged(oldItemViewAdapter);
+
 			if (oldItemViewAdapter != null)
 			{
+				UnsubscribeCollectionItemsSourceChanged(oldItemViewAdapter);
 				ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, 0);
 				ItemsView.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 			}
 
-			ItemsViewAdapter = CreateAdapter();
-
 			_gotoPosition = -1;
 
-			SwapAdapter(ItemsViewAdapter, false);
+			base.UpdateAdapter();
 
 			UpdateInitialPosition();
 
-			if (ItemsViewAdapter.ItemsSource is ObservableItemsSource observableItemsSource)
-				observableItemsSource.CollectionItemsSourceChanged += CollectionItemsSourceChanged;
-
-			oldItemViewAdapter?.Dispose();
+			SubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
 		}
 
 		public override void UpdateItemsSource()
@@ -196,8 +192,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter<CarouselView, IItemsViewSource> oldItemViewAdapter)
 		{
-			if (oldItemViewAdapter != null && oldItemViewAdapter.ItemsSource is ObservableItemsSource oldObservableItemsSource)
+			if (oldItemViewAdapter?.ItemsSource is ObservableItemsSource oldObservableItemsSource)
 				oldObservableItemsSource.CollectionItemsSourceChanged -= CollectionItemsSourceChanged;
+		}
+
+		void SubscribeCollectionItemsSourceChanged(ItemsViewAdapter<CarouselView, IItemsViewSource> oldItemViewAdapter)
+		{
+			if (oldItemViewAdapter?.ItemsSource is ObservableItemsSource oldObservableItemsSource)
+				oldObservableItemsSource.CollectionItemsSourceChanged += CollectionItemsSourceChanged;
 		}
 
 		void CollectionItemsSourceChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -283,7 +285,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdateInitialPosition()
 		{
 			//if we don't have any items don't update position
-			if (ItemsViewAdapter.ItemsSource.Count == 0)
+			if (ItemsViewAdapter == null || ItemsViewAdapter.ItemsSource.Count == 0)
 				return;
 
 			int itemCount = 0;

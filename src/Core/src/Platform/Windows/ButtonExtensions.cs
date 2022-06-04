@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Platform
 			platformButton.UpdateText(text.Text);
 		}
 
-		public static void UpdateText(this Button platformButton, string text) 
+		public static void UpdateText(this Button platformButton, string text)
 		{
 			if (platformButton.GetContent<TextBlock>() is TextBlock textBlock)
 			{
@@ -101,8 +101,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this ButtonBase platformButton, ITextStyle button)
 		{
-			var brush = button.TextColor?.ToPlatform();
+			UpdateTextColor(platformButton, button.TextColor);
+		}
 
+		public static void UpdateTextColor(this ButtonBase platformButton, Color textColor)
+		{
+			var brush = textColor?.ToPlatform();
 			if (brush is null)
 			{
 				// Windows.Foundation.UniversalApiContract < 5
@@ -165,15 +169,14 @@ namespace Microsoft.Maui.Platform
 						{
 							bitmapImage.ImageOpened -= OnImageOpened;
 
-							// check if the image that just loaded is still the current image
+							// Check if the image that just loaded is still the current image
 							var actualImageSource = sender as BitmapImage;
+
 							if (actualImageSource is not null && nativeImage.Source == actualImageSource)
-							{
-								// do the actual resize
-								var imageSourceSize = actualImageSource.GetImageSourceSize(platformButton);
-								nativeImage.Width = imageSourceSize.Width;
-								nativeImage.Height = imageSourceSize.Height;
-							}
+								nativeImage.Height = nativeImage.Width = Primitives.Dimension.Unset;
+
+							if (platformButton.Parent is FrameworkElement frameworkElement)
+								frameworkElement.InvalidateMeasure();
 						};
 					}
 				}

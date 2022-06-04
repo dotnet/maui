@@ -373,40 +373,6 @@ namespace Microsoft.Maui.Controls.Platform
 			return true;
 		}
 
-		// This logic should all be replaced once we implement the "InputTransparent" property
-		// https://github.com/dotnet/maui/issues/1190		
-		bool? _previousUserInteractionEnabled;
-		void CalculateUserInteractionEnabled()
-		{
-			if (ElementGestureRecognizers == null || _platformView == null || _handler?.VirtualView == null)
-				return;
-
-			bool hasGestureRecognizers = ElementGestureRecognizers.Count > 0;
-
-			// If no gestures have ever been added then don't do anything
-			if (!hasGestureRecognizers && _previousUserInteractionEnabled == null)
-				return;
-
-			_previousUserInteractionEnabled ??= _platformView.UserInteractionEnabled;
-
-			if (hasGestureRecognizers)
-			{
-				_platformView.UserInteractionEnabled = true;
-			}
-			else
-			{
-				_platformView.UserInteractionEnabled = _previousUserInteractionEnabled.Value;
-
-				// These are the known places where UserInteractionEnabled is modified inside Maui.Core
-				// Once we implement "InputTransparent" all of this should just get managed the "InputTransparent" mapper property
-				if (_handler.VirtualView is ITextInput)
-					_handler.UpdateValue(nameof(ITextInput.IsReadOnly));
-
-				_handler.UpdateValue(nameof(IView.IsEnabled));
-				_previousUserInteractionEnabled = null;
-			}
-		}
-
 		void LoadRecognizers()
 		{
 			if (ElementGestureRecognizers == null)
@@ -418,13 +384,12 @@ namespace Microsoft.Maui.Controls.Platform
 				_shouldReceiveTouch = ShouldReceiveTouch;
 			}
 
-			CalculateUserInteractionEnabled();
 			UIDragInteraction? uIDragInteraction = null;
 			UIDropInteraction? uIDropInteraction = null;
 
 			if (_dragAndDropDelegate != null && _platformView != null)
 			{
-				if (PlatformVersion.IsAtLeast(11))
+				if (OperatingSystem.IsIOSVersionAtLeast(11))
 				{
 					foreach (var interaction in _platformView.Interactions)
 					{
@@ -447,7 +412,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_platformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
 				_addedFlags |= UIAccessibilityTrait.Button;
-				if (PlatformVersion.IsAtLeast(13))
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
 					_defaultAccessibilityRespondsToUserInteraction = _platformView.AccessibilityRespondsToUserInteraction;
 					_platformView.AccessibilityRespondsToUserInteraction = true;
@@ -471,7 +436,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_gestureRecognizers[recognizer] = nativeRecognizer;
 				}
 
-				if (PlatformVersion.IsAtLeast(11) && recognizer is DragGestureRecognizer)
+				if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DragGestureRecognizer)
 				{
 					dragFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
@@ -483,7 +448,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 
-				if (PlatformVersion.IsAtLeast(11) && recognizer is DropGestureRecognizer)
+				if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DropGestureRecognizer)
 				{
 					dropFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
@@ -494,7 +459,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 			}
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				if (!dragFound && uIDragInteraction != null && _handler.PlatformView != null)
 					_handler.PlatformView.RemoveInteraction(uIDragInteraction);
@@ -526,7 +491,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
-			if (touch.View == _handler.PlatformView)
+			var platformView = _handler?.PlatformView;
+			var virtualView = _handler?.VirtualView;
+
+			if (virtualView == null || platformView == null)
+			{
+				return false;
+			}
+
+			if (virtualView.InputTransparent)
+			{
+				return false;
+			}
+
+			if (touch.View == platformView)
 			{
 				return true;
 			}
@@ -534,13 +512,9 @@ namespace Microsoft.Maui.Controls.Platform
 			// If the touch is coming from the UIView our handler is wrapping (e.g., if it's  
 			// wrapping a UIView which already has a gesture recognizer), then we should let it through
 			// (This goes for children of that control as well)
-			if (_handler?.PlatformView == null)
-			{
-				return false;
-			}
 
-			if (touch.View.IsDescendantOfView(_handler.PlatformView) &&
-				(touch.View.GestureRecognizers?.Length > 0 || _handler.PlatformView.GestureRecognizers?.Length > 0))
+			if (touch.View.IsDescendantOfView(platformView) &&
+				(touch.View.GestureRecognizers?.Length > 0 || platformView.GestureRecognizers?.Length > 0))
 			{
 				return true;
 			}
@@ -554,7 +528,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_platformView.AccessibilityTraits &= ~_addedFlags;
 
-				if (PlatformVersion.IsAtLeast(13))
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
 					if (_defaultAccessibilityRespondsToUserInteraction != null)
 						_platformView.AccessibilityRespondsToUserInteraction = _defaultAccessibilityRespondsToUserInteraction.Value;

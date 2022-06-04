@@ -8,9 +8,8 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiImageButton CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a ImageButton");
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
 
-			var view = new MauiImageButton(NativeParent);
+			var view = new MauiImageButton(PlatformParent);
 			return view;
 		}
 

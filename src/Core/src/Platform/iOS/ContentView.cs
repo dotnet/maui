@@ -31,6 +31,12 @@ namespace Microsoft.Maui.Platform
 			CrossPlatformArrange?.Invoke(bounds);
 		}
 
+		public override void SetNeedsLayout()
+		{
+			base.SetNeedsLayout();
+			Superview?.SetNeedsLayout();
+		}
+
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Rect, Size>? CrossPlatformArrange { get; set; }
 	}

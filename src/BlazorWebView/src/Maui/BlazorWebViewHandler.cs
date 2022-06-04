@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
@@ -7,6 +8,9 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+#if ANDROID
+	[SupportedOSPlatform("android23.0")]
+#endif
 	public partial class BlazorWebViewHandler
 	{
 		/// <summary>
@@ -42,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
 		public static void MapHostPage(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
-#if !NETSTANDARD
+#if !(NETSTANDARD || !PLATFORM)
 			handler.HostPage = webView.HostPage;
 			handler.StartWebViewCoreIfPossible();
 #endif
@@ -55,13 +59,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
 		public static void MapRootComponents(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
-#if !NETSTANDARD
+#if !(NETSTANDARD || !PLATFORM)
 			handler.RootComponents = webView.RootComponents;
 			handler.StartWebViewCoreIfPossible();
 #endif
 		}
 
-#if !NETSTANDARD
+#if !(NETSTANDARD || !PLATFORM)
 		private string? HostPage { get; set; }
 
 		internal void UrlLoading(UrlLoadingEventArgs args) =>

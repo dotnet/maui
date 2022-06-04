@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (!_isLoaded)
 				return;
 
-			if (!Element?.IsRefreshing??false)
+			if (!Element?.IsRefreshing ?? false)
 			{
 				CompleteRefresh();
 			}
@@ -168,6 +168,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateBackgroundColor();
 		}
 
+		[PortHandler]
 		void UpdateRefreshPullDirection()
 		{
 			if (Element.IsSet(Specifics.RefreshPullDirectionProperty))

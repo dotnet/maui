@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					await image.SetSourceAsync(stream);
 					return image;
 				}
-				catch (Exception ex) 
+				catch (Exception ex)
 				{
 					Application.Current?.FindMauiContext()?.CreateLogger<UriImageSourceHandler>()?.LogWarning(ex, "Could not load {uri}", imageLoader.Uri);
 

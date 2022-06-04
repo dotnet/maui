@@ -40,32 +40,20 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVisibility(this UIView platformView, Visibility visibility)
 		{
-			var shouldLayout = false;
-
 			switch (visibility)
 			{
 				case Visibility.Visible:
-					shouldLayout = platformView.Inflate();
+					platformView.Inflate();
 					platformView.Hidden = false;
 					break;
 				case Visibility.Hidden:
-					shouldLayout = platformView.Inflate();
+					platformView.Inflate();
 					platformView.Hidden = true;
 					break;
 				case Visibility.Collapsed:
 					platformView.Hidden = true;
 					platformView.Collapse();
-					shouldLayout = true;
 					break;
-			}
-
-			// If the view is just switching between Visible and Hidden, then a re-layout isn't necessary. The return value
-			// from Inflate will tell us if the view was previously collapsed. If the view is switching to or from a collapsed
-			// state, then we'll have to ask for a re-layout.
-
-			if (shouldLayout)
-			{
-				platformView.Superview?.SetNeedsLayout();
 			}
 		}
 
@@ -262,6 +250,24 @@ namespace Microsoft.Maui.Platform
 			// Handling of the default width/height will be taken care of by GetDesiredSize
 			var currentFrame = platformView.Frame;
 			platformView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
+		}
+
+		public static async Task UpdateBackgroundImageSourceAsync(this UIView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		{
+			if (provider == null)
+				return;
+
+			if (imageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(imageSource);
+				var result = await service.GetImageAsync(imageSource);
+				var backgroundImage = result?.Value;
+
+				if (backgroundImage == null)
+					return;
+
+				platformView.BackgroundColor = UIColor.FromPatternImage(backgroundImage);
+			}
 		}
 
 		public static int IndexOfSubview(this UIView platformView, UIView subview)

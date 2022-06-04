@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
 using AndroidX.AppCompat.App;
+using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Xunit;
 using ALayoutInflater = Android.Views.LayoutInflater;
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;
@@ -34,7 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		static Drawable _decorDrawable;
-		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)
+		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests)
 			where THandler : class, IElementHandler
 		{
 			return InvokeOnMainThreadAsync(async () =>
@@ -57,18 +62,7 @@ namespace Microsoft.Maui.DeviceTests
 						.Commit();
 
 					await viewFragment.FinishedLoading;
-
-					if (window.Content is Shell shell)
-						await OnLoadedAsync(shell.CurrentPage);
-
-					if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
-						await action((THandler)window.Handler);
-					else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
-						await action((THandler)window.Content.Handler);
-					else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
-						await action((THandler)cp.Content.Handler);
-					else
-						throw new Exception($"I can't work with {typeof(THandler)}");
+					await runTests.Invoke();
 				}
 				finally
 				{
@@ -103,6 +97,25 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		public bool ToolbarItemsMatch(
+			IElementHandler handler,
+			params ToolbarItem[] toolbarItems)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			var menu = toolbar.Menu;
+
+			Assert.Equal(toolbarItems.Length, menu.Size());
+
+			for (var i = 0; i < toolbarItems.Length; i++)
+			{
+				ToolbarItem toolbarItem = toolbarItems[i];
+				var primaryCommand = menu.GetItem(i);
+				Assert.Equal(toolbarItem.Text, $"{primaryCommand.TitleFormatted}");
+			}
+
+			return true;
+		}
+
 		protected AView GetTitleView(IElementHandler handler)
 		{
 			var toolbar = GetPlatformToolbar(handler);
@@ -116,6 +129,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected MaterialToolbar GetPlatformToolbar(IElementHandler handler)
 		{
+			if (handler is IWindowHandler wh)
+			{
+				handler = wh.VirtualView.Content.Handler;
+			}
+
 			if (handler is Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer sr)
 			{
 				var shell = handler.VirtualView as Shell;
@@ -153,12 +171,12 @@ namespace Microsoft.Maui.DeviceTests
 			return toolBar;
 		}
 
-		protected bool IsBackButtonVisible(IElementHandler handler) =>
-			GetPlatformToolbar(handler)?.NavigationIcon != null;
-
-		bool IsBackButtonVisible(IMauiContext mauiContext)
+		protected bool IsBackButtonVisible(IElementHandler handler)
 		{
-			return GetPlatformToolbar(mauiContext)?.NavigationIcon != null;
+			if (GetPlatformToolbar(handler)?.NavigationIcon is DrawerArrowDrawable dad)
+				return dad.Progress == 1;
+
+			return false;
 		}
 
 		class WindowTestFragment : Fragment
@@ -174,6 +192,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			public Task FinishedDestroying => _taskCompletionSource.Task;
 
+			public FakeActivityRootView FakeActivityRootView { get; set; }
+
 			public WindowTestFragment(IMauiContext mauiContext, IWindow window)
 			{
 				_mauiContext = mauiContext;
@@ -183,11 +203,16 @@ namespace Microsoft.Maui.DeviceTests
 			public override AView OnCreateView(ALayoutInflater inflater, AViewGroup container, Bundle savedInstanceState)
 			{
 				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
-				_ = _window.ToHandler(ScopedMauiContext);
-				var rootView = ScopedMauiContext.GetNavigationRootManager().RootView;
+				var handler = (WindowHandlerStub)_window.ToHandler(ScopedMauiContext);
+
 				var decorView = RequireActivity().Window.DecorView;
-				rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
-				return rootView;
+				handler.PlatformViewUnderTest.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
+
+				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
+				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
+				FakeActivityRootView.AddView(handler.PlatformViewUnderTest);
+
+				return FakeActivityRootView;
 			}
 
 			public override void OnResume()
@@ -200,6 +225,14 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				base.OnDestroy();
 				_finishedDestroying.SetResult(true);
+			}
+		}
+
+		public class FakeActivityRootView : LinearLayoutCompat
+		{
+			public FakeActivityRootView(Context context) : base(context)
+			{
+				Id = AView.GenerateViewId();
 			}
 		}
 	}

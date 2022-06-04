@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI 앱(미리 보기)",
+  "name": ".NET MAUI 앱",
   "description": "iOS, Android, Mac Catalyst, Tizen 및 WinUI용 .NET MAUI 애플리케이션을 만들기 위한 프로젝트",
   "postActions/openInEditor/description": "편집기에서 MainPage.xaml을 엽니다.",
   "symbols/applicationId/description": "프로젝트에서 $(ApplicationId) 재정의"

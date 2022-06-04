@@ -168,8 +168,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (string.IsNullOrEmpty(nativeCell.Identifier))
 				nativeCell.Identifier = templateId;
 
-			if (!isHeader) return nativeCell;
-			if (nativeCell.Layer != null) nativeCell.Layer.BackgroundColor = ColorExtensions.GroupedBackground.CGColor;
+			if (!isHeader)
+				return nativeCell;
+			if (nativeCell.Layer != null)
+				nativeCell.Layer.BackgroundColor = ColorExtensions.GroupedBackground.CGColor;
 			return nativeCell;
 		}
 

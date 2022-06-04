@@ -14,14 +14,14 @@ using PlatformView = AppKit.NSView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
-#elif NET6_0 || NETSTANDARD
+#elif NET6_0 || (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Behavior)]
-#if ANDROID
+#if ANDROID || IOS
 	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 #endif
 	public partial class PlatformBehaviorTests : HandlerTestBase

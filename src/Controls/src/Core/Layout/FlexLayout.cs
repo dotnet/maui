@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Flex = Microsoft.Maui.Layouts.Flex;
 
@@ -599,6 +600,62 @@ namespace Microsoft.Maui.Controls
 			base.OnClear();
 			ClearLayout();
 			PopulateLayout();
+		}
+
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		{
+			var useMeasureHack = NeedsMeasureHack(widthConstraint, heightConstraint);
+
+			if (useMeasureHack)
+			{
+				PrepareMeasureHack();
+			}
+
+			var result = base.MeasureOverride(widthConstraint, heightConstraint);
+
+			if (useMeasureHack)
+			{
+				RestoreValues();
+			}
+
+			return result;
+		}
+
+		static bool NeedsMeasureHack(double widthConstraint, double heightConstraint)
+		{
+			return double.IsInfinity(widthConstraint) || double.IsInfinity(heightConstraint);
+		}
+
+		void PrepareMeasureHack()
+		{
+			// FlexLayout's Shrink and Stretch features require a fixed area to measure/layout correctly;
+			// when the dimensions they are working in are infinite, they don't really make sense. We can
+			// get a sensible measure by temporarily setting the Shrink values of all items to 0 and the 
+			// Stretch alignment values to Start. So we prepare for that here.
+
+			foreach (var child in Children)
+			{
+				if (GetFlexItem(child) is Flex.Item item)
+				{
+					item.Shrink = 0;
+					item.AlignSelf = Flex.AlignSelf.Start;
+				}
+			}
+		}
+
+		void RestoreValues()
+		{
+			// If we had to modify the Shrink and Stretch values of the FlexItems for measurement, we 
+			// restore them to their original values.
+
+			foreach (var child in Children)
+			{
+				if (GetFlexItem(child) is Flex.Item item)
+				{
+					item.Shrink = GetShrink(child);
+					item.AlignSelf = (Flex.AlignSelf)GetAlignSelf(child);
+				}
+			}
 		}
 	}
 }

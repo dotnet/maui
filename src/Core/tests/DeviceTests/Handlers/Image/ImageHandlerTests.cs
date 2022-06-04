@@ -4,9 +4,15 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Xunit;
+
+#if ANDROID
+using Android.Graphics.Drawables;
+using PlatformImageType = System.Int32;
+#elif IOS || MACCATALYST
+using UIKit;
+using PlatformImageType = UIKit.UIImage;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -19,6 +25,54 @@ namespace Microsoft.Maui.DeviceTests
 		where TImageHandler : IImageHandler, new()
 		where TStub : StubBase, IImageStub, new()
 	{
+#if ANDROID
+		const string ImageEventAppResourceMemberName = "SetImageResource";
+		const string ImageEventCustomMemberName = "SetImageDrawable";
+#elif IOS || MACCATALYST
+		const string ImageEventAppResourceMemberName = "Image";
+		const string ImageEventCustomMemberName = "Image";
+#endif
+
+		[Theory(
+#if IOS
+			Skip = "Test failing on IOS"
+#endif
+			)]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#000000")]
+		public async Task UpdatingSourceUpdatesImageCorrectly(string colorHex)
+		{
+			// create files
+			var expectedColor = Color.FromArgb(colorHex);
+			var firstPath = BaseImageSourceServiceTests.CreateBitmapFile(100, 100, Colors.Blue);
+			var secondPath = BaseImageSourceServiceTests.CreateBitmapFile(100, 100, expectedColor);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var image = new TStub { Width = 100, Height = 100 };
+				var handler = CreateHandler(image);
+				var platformView = GetPlatformImageView(handler);
+
+				await platformView.AttachAndRun(async () =>
+				{
+					// the first one works
+					image.Source = new FileImageSourceStub(firstPath);
+					handler.UpdateValue(nameof(IImage.Source));
+					await image.Wait();
+
+					await platformView.AssertContainsColor(Colors.Blue.ToPlatform());
+
+					// the second one does not
+					image.Source = new FileImageSourceStub(secondPath);
+					handler.UpdateValue(nameof(IImage.Source));
+					await image.Wait();
+
+					await platformView.AssertContainsColor(expectedColor.ToPlatform());
+				});
+			});
+		}
+
 		[Theory(
 #if _ANDROID__
 			Skip = "Test failing on ANDROID"
@@ -260,6 +314,132 @@ namespace Microsoft.Maui.DeviceTests
 			return events;
 		}
 
+		[Theory]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#000000")]
+		public async Task InitializingNullSourceOnlyUpdatesNull(string colorHex)
+		{
+			var expectedColor = Color.FromArgb(colorHex);
+
+			var image = new TStub
+			{
+				Background = new SolidPaintStub(expectedColor),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<CountedImageHandler>(image);
+
+				await image.Wait();
+
+				Assert.Empty(handler.ImageEvents);
+
+				await handler.PlatformView.AssertContainsColor(expectedColor);
+			});
+		}
+
+		[Fact]
+		public async Task InitializingSourceOnlyUpdatesImageOnce()
+		{
+			var image = new TStub
+			{
+				Background = new SolidPaintStub(Colors.Black),
+				Source = new FileImageSourceStub("red.png"),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<CountedImageHandler>(image);
+
+				await image.Wait();
+
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
+
+				Assert.Single(handler.ImageEvents);
+				Assert.Equal(ImageEventAppResourceMemberName, handler.ImageEvents[0].Member);
+				var platformImage = Assert.IsType<PlatformImageType>(handler.ImageEvents[0].Value);
+
+#if ANDROID
+				Assert.Equal(GetDrawableId("red"), platformImage);
+#elif IOS || MACCATALYST
+				platformImage.AssertContainsColor(Colors.Red.ToPlatform());
+#endif
+			});
+		}
+
+		[Fact]
+		public async Task UpdatingSourceOnlyUpdatesImageOnce()
+		{
+			var image = new TStub
+			{
+				Background = new SolidPaintStub(Colors.Black),
+				Source = new FileImageSourceStub("red.png"),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<CountedImageHandler>(image);
+
+				await image.Wait();
+
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
+
+				handler.ImageEvents.Clear();
+
+				image.Source = new FileImageSourceStub("blue.png");
+				handler.UpdateValue(nameof(IImage.Source));
+
+				await image.Wait();
+
+				await handler.PlatformView.AssertContainsColor(Colors.Blue);
+
+				Assert.Single(handler.ImageEvents);
+				Assert.Equal(ImageEventAppResourceMemberName, handler.ImageEvents[0].Member);
+				var platformImage = Assert.IsType<PlatformImageType>(handler.ImageEvents[0].Value);
+
+#if ANDROID
+				Assert.Equal(GetDrawableId("blue"), platformImage);
+#elif IOS || MACCATALYST
+				platformImage.AssertContainsColor(Colors.Blue.ToPlatform());
+#endif
+			});
+		}
+
+		[Fact]
+		public async Task ImageLoadSequenceIsCorrectWithChecks()
+		{
+			var events = await ImageLoadSequenceIsCorrect();
+
+			Assert.Single(events);
+			Assert.Equal(ImageEventCustomMemberName, events[0].Member);
+
+#if ANDROID
+			var platformImage = Assert.IsType<ColorDrawable>(events[0].Value);
+			platformImage.Color.IsEquivalent(Colors.Blue.ToPlatform());
+#elif IOS || MACCATALYST
+			var platformImage = Assert.IsType<UIImage>(events[0].Value);
+			platformImage.AssertContainsColor(Colors.Blue.ToPlatform());
+#endif
+		}
+
+		[Fact]
+		public async Task InterruptingLoadCancelsAndStartsOverWithChecks()
+		{
+			var events = await InterruptingLoadCancelsAndStartsOver();
+
+			Assert.Single(events);
+			Assert.Equal(ImageEventCustomMemberName, events[0].Member);
+
+#if ANDROID
+			var platformImage = Assert.IsType<ColorDrawable>(events[0].Value);
+			platformImage.Color.IsEquivalent(Colors.Red.ToPlatform());
+#elif IOS || MACCATALYST
+			var platformImage = Assert.IsType<UIImage>(events[0].Value);
+			platformImage.AssertContainsColor(Colors.Red.ToPlatform());
+#endif
+		}
+
 		protected TCustomHandler CreateHandler<TCustomHandler>(IView view)
 			where TCustomHandler : IImageHandler, new()
 		{
@@ -275,5 +455,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			return handler;
 		}
+
+#if ANDROID
+		static int GetDrawableId(string image) =>
+			MauiProgram.DefaultContext.Resources.GetDrawableId(MauiProgram.DefaultContext.PackageName, image);
+#endif
 	}
 }

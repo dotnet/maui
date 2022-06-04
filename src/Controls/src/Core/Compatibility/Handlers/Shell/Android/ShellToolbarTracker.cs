@@ -627,13 +627,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (_searchView.View.Parent != null)
 						_searchView.View.RemoveFromParent();
 
-					_searchView.ShowKeyboardOnAttached = true;
 					item.SetActionView(_searchView.View);
 					item.Dispose();
 				}
 				else if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Expanded)
 				{
-					_searchView.ShowKeyboardOnAttached = false;
 					if (_searchView.View.Parent != _platformToolbar)
 						_platformToolbar.AddView(_searchView.View);
 				}
@@ -741,7 +739,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					var paint = new Paint { AntiAlias = true };
 					paint.TextSize = _defaultSize;
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					paint.Color = pressed ? _pressedBackgroundColor.ToPlatform() : TintColor.ToPlatform();
+#pragma warning restore CA1416
 					paint.SetStyle(Paint.Style.Fill);
 					var y = (Bounds.Height() + paint.TextSize) / 2;
 					canvas.DrawText(Text, 0, y, paint);

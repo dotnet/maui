@@ -3,9 +3,11 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
 using AColor = Android.Graphics.Color;
@@ -37,20 +39,21 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static string CreateColorAtPointError(this Bitmap bitmap, AColor expectedColor, int x, int y)
+		public static string ToBase64String(this Bitmap bitmap)
 		{
-			return CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
+			using var ms = new MemoryStream();
+			bitmap.Compress(Bitmap.CompressFormat.Png, 0, ms);
+			return Convert.ToBase64String(ms.ToArray());
 		}
 
-		public static string CreateColorError(this Bitmap bitmap, string message)
-		{
-			using (var ms = new MemoryStream())
-			{
-				bitmap.Compress(Bitmap.CompressFormat.Png, 0, ms);
-				var imageAsString = Convert.ToBase64String(ms.ToArray());
-				return $"{message}. This is what it looked like:<img>{imageAsString}</img>";
-			}
-		}
+		public static string CreateColorAtPointError(this Bitmap bitmap, AColor expectedColor, int x, int y) =>
+			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
+
+		public static string CreateColorError(this Bitmap bitmap, string message) =>
+			$"{message} This is what it looked like:<img>{bitmap.ToBase64String()}</img>";
+
+		public static string CreateEqualError(this Bitmap bitmap, Bitmap other, string message) =>
+			$"{message} This is what it looked like: <img>{bitmap.ToBase64String()}</img> and <img>{other.ToBase64String()}</img>";
 
 		public static AColor ColorAtPoint(this Bitmap bitmap, int x, int y, bool includeAlpha = false)
 		{
@@ -75,10 +78,28 @@ namespace Microsoft.Maui.DeviceTests
 			view.AttachAndRun(() =>
 			{
 				action();
+				return Task.FromResult(true);
+			});
+
+		public static Task<T> AttachAndRun<T>(this AView view, Func<T> action) =>
+			view.AttachAndRun(() =>
+			{
+				var result = action();
+				return Task.FromResult(result);
+			});
+
+		public static Task AttachAndRun(this AView view, Func<Task> action) =>
+			view.AttachAndRun(async () =>
+			{
+				await action();
 				return true;
 			});
 
-		public static async Task<T> AttachAndRun<T>(this AView view, Func<T> action)
+		// Android doesn't handle adding and removing views in parallel very well
+		// If a view is removed while a different test triggers a layout then you hit
+		// a NRE exception
+		static SemaphoreSlim _attachAndRunSemaphore = new SemaphoreSlim(1);
+		public static async Task<T> AttachAndRun<T>(this AView view, Func<Task<T>> action)
 		{
 			if (view.Parent is WrapperView wrapper)
 				view = wrapper;
@@ -98,17 +119,21 @@ namespace Microsoft.Maui.DeviceTests
 				var act = context.GetActivity()!;
 				var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content)!;
 
-				layout.AddView(view);
-				rootView.AddView(layout);
+				view.Id = AView.GenerateViewId();
+				layout.Id = AView.GenerateViewId();
 
 				try
 				{
+					await _attachAndRunSemaphore.WaitAsync();
+					layout.AddView(view);
+					rootView.AddView(layout);
 					return await Run(view, action);
 				}
 				finally
 				{
 					rootView.RemoveView(layout);
 					layout.RemoveView(view);
+					_attachAndRunSemaphore.Release();
 				}
 			}
 			else
@@ -116,14 +141,13 @@ namespace Microsoft.Maui.DeviceTests
 				return await Run(view, action);
 			}
 
-			static async Task<T> Run(AView view, Func<T> action)
+			static async Task<T> Run(AView view, Func<Task<T>> action)
 			{
 				await Task.WhenAll(
 					WaitForLayout(view),
 					Wait(() => view.Width > 0 && view.Height > 0));
 
-				var result = action();
-				return result;
+				return await action();
 			}
 		}
 
@@ -149,6 +173,15 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedColor, actualColor);
 
 			return bitmap;
+		}
+
+		public static Bitmap AssertColorAtCenter(this Drawable drawable, AColor expectedColor)
+		{
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable);
+			var bitmap = bitmapDrawable.Bitmap;
+			Assert.NotNull(bitmap);
+
+			return bitmap!.AssertColorAtCenter(expectedColor);
 		}
 
 		public static Bitmap AssertColorAtCenter(this Bitmap bitmap, AColor expectedColor)
@@ -236,6 +269,34 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtTopRight(expectedColor);
+		}
+
+		public static Task AssertEqual(this Bitmap bitmap, Bitmap other)
+		{
+			Assert.NotNull(bitmap);
+			Assert.NotNull(other);
+
+			Assert.Equal(new Size(bitmap.Width, bitmap.Height), new Size(other.Width, other.Height));
+
+			Assert.True(IsMatching(), CreateEqualError(bitmap, other, $"Images did not match."));
+
+			return Task.CompletedTask;
+
+			bool IsMatching()
+			{
+				for (int x = 0; x < bitmap.Width; x++)
+				{
+					for (int y = 0; y < bitmap.Height; y++)
+					{
+						var first = bitmap.ColorAtPoint(x, y, true);
+						var second = other.ColorAtPoint(x, y, true);
+
+						if (!first.IsEquivalent(second))
+							return false;
+					}
+				}
+				return true;
+			}
 		}
 
 		public static TextUtils.TruncateAt? ToPlatform(this LineBreakMode mode) =>

@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Handlers
 				var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
 				NSUrlRequest request = new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri));
 
-				if (HasCookiesToLoad(url) && !PlatformVersion.IsAtLeast(11))
+				if (HasCookiesToLoad(url) && !(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 					return;
 
 				await SyncPlatformCookiesAsync(url);
@@ -293,7 +293,7 @@ namespace Microsoft.Maui.Handlers
 				// So on iOS10 if the user wants to remove any cookies we just delete 
 				// the cookie for the entire domain inside of DeleteCookies and then rewrite
 				// all the cookies
-				if (PlatformVersion.IsAtLeast(11) || deleteCookies.Count == 0)
+				if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11) || deleteCookies.Count == 0)
 				{
 					foreach (var nsCookie in retrieveCurrentWebCookies)
 					{
@@ -332,7 +332,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			// Pre ios 11 we sync cookies after navigated
-			if (!PlatformVersion.IsAtLeast(11))
+			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 				return;
 
 			var cookies = myCookieJar.GetCookies(uri);
@@ -351,7 +351,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			NSHttpCookie[]? _initialCookiesLoaded = null;
 
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				_initialCookiesLoaded = await PlatformView.Configuration.WebsiteDataStore.HttpCookieStore.GetAllCookiesAsync();
 			}
@@ -385,7 +385,7 @@ namespace Microsoft.Maui.Handlers
 
 		async Task SetCookie(List<Cookie> cookies)
 		{
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				foreach (var cookie in cookies)
 					await PlatformView.Configuration.WebsiteDataStore.HttpCookieStore.SetCookieAsync(new NSHttpCookie(cookie));
@@ -405,7 +405,7 @@ namespace Microsoft.Maui.Handlers
 
 		async Task DeleteCookies(List<NSHttpCookie> cookies)
 		{
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				foreach (var cookie in cookies)
 					await PlatformView.Configuration.WebsiteDataStore.HttpCookieStore.DeleteCookieAsync(cookie);

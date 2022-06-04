@@ -40,8 +40,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (FindInsetPanel(this) is ContentViewGroup paddingLayer)
 			{
-				var (l, t, r, b) = Context.ToPixels(frame);
-				paddingLayer.Layout(0, 0, r - l, b - t);
+				paddingLayer.Layout(0, 0, paddingLayer.MeasuredWidth, paddingLayer.MeasuredHeight);
 			}
 		}
 

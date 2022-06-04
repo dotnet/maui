@@ -24,6 +24,9 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='IsEmpty']/Docs" />
 		public virtual bool IsEmpty => false;
 
+		public static bool IsNullOrEmpty(ImageSource imageSource) =>
+			imageSource == null || imageSource.IsEmpty;
+
 		private protected CancellationTokenSource CancellationTokenSource
 		{
 			get { return _cancellationTokenSource; }

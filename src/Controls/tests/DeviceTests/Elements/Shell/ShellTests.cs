@@ -20,6 +20,7 @@ using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRendere
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
+	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 	public partial class ShellTests : HandlerTestBase
 	{
 		void SetupBuilder()
@@ -34,6 +35,11 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Toolbar, ToolbarHandler>();
+					handlers.AddHandler<MenuBar, MenuBarHandler>();
+					handlers.AddHandler<MenuBarItem, MenuBarItemHandler>();
+					handlers.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
+					handlers.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
+					handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #if WINDOWS
 					handlers.AddHandler<ShellItem, ShellItemHandler>();
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();
@@ -43,7 +49,48 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Swap Shell Root Page for NavigationPage")]
+		public async Task SwapShellRootPageForNavigationPage()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
 
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				var newPage = new ContentPage();
+				(handler.VirtualView as Window).Page = new NavigationPage(newPage);
+				await OnNavigatedToAsync(newPage);
+				await OnFrameSetToNotEmpty(newPage);
+				Assert.True(newPage.Frame.Height > 0);
+			});
+		}
+
+		[Fact(DisplayName = "FlyoutContent Renderers When FlyoutBehavior Starts As Locked")]
+		public async Task FlyoutContentRenderersWhenFlyoutBehaviorStartsAsLocked()
+		{
+			SetupBuilder();
+			var flyoutContent = new VerticalStackLayout() { Children = { new Label() { Text = "Rendered" } } };
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() } };
+				shell.FlyoutContent = flyoutContent;
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(flyoutContent);
+
+				Assert.NotNull(flyoutContent.Handler);
+				Assert.True(flyoutContent.Frame.Width > 0);
+				Assert.True(flyoutContent.Frame.Height > 0);
+			});
+		}
+
+#if !IOS
 		[Fact(DisplayName = "Flyout Starts as Open correctly")]
 		public async Task FlyoutIsPresented()
 		{
@@ -61,7 +108,7 @@ namespace Microsoft.Maui.DeviceTests
 				await CheckFlyoutState(handler, false);
 			});
 		}
-
+#endif
 
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
 		public async Task BackButtonVisibilityChangesWithPushPop()
@@ -82,17 +129,47 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+
+		[Fact(DisplayName = "Pushing the Same Page Disconnects Previous Toolbar Items")]
+		public async Task PushingTheSamePageUpdatesToolbar()
+		{
+			SetupBuilder();
+			bool canExecute = false;
+			var command = new Command(() => { }, () => canExecute);
+			var pushedPage = new ContentPage()
+			{
+				ToolbarItems =
+				{
+					new ToolbarItem()
+					{
+						Command = command
+					}
+				}
+			};
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(pushedPage);
+				await shell.Navigation.PopAsync();
+				canExecute = true;
+				await shell.Navigation.PushAsync(pushedPage);
+				command.ChangeCanExecute();
+			});
+		}
+
 		[Fact(DisplayName = "Set Has Back Button")]
 		public async Task SetHasBackButton()
 		{
 			SetupBuilder();
 
-			var shell = await InvokeOnMainThreadAsync<Shell>(() =>
+			var shell = await CreateShellAsync(shell =>
 			{
-				return new Shell()
-				{
-					Items = { new ContentPage() }
-				};
+				shell.CurrentItem = new ContentPage();
 			});
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>

@@ -88,6 +88,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					_listCount = count;
 				}
+
 				return _listCount;
 			}
 		}
@@ -203,6 +204,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return key;
 		}
 
+		// This is used by the `ListViewRenderer.GetDesiredSize` call to retrieve an already created ViewCellContainer
+		// This helps us fake cell reuse so we aren't creating extra views during the measure pass.
+		internal ConditionalFocusLayout GetConvertViewForMeasuringInfiniteHeight(int position)
+		{
+			if (_layoutsCreated.TryGetValue(position, out ConditionalFocusLayout foundValue))
+				return foundValue;
+
+			return null;
+		}
+
 		public override AView GetView(int position, AView convertView, ViewGroup parent)
 		{
 			Cell cell = null;
@@ -242,6 +253,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				cellIsBeingReused = true;
 				convertView = layout.GetChildAt(0);
+
+				_layoutsCreated[position] = layout;
 			}
 			else
 			{
@@ -257,6 +270,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 				{
 					layout = new ConditionalFocusLayout(_context) { Orientation = Orientation.Vertical };
+
+					if (_layoutsCreated.TryGetValue(position, out ConditionalFocusLayout value))
+						DisposeOfConditionalFocusLayout(value);
+
 					_layoutsCreated[position] = layout;
 				}
 			}
@@ -531,6 +548,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var element = (renderedView as INativeElementView)?.Element;
 			var view = (element as ViewCell)?.View;
+
+			if (renderedView is ViewGroup vg && view?.Handler?.PlatformView is AView aView)
+				vg.RemoveView(aView);
+
 			view?.Handler?.DisconnectHandler();
 		}
 

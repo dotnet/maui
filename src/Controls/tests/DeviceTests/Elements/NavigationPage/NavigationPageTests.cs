@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
@@ -12,6 +13,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.NavigationPage)]
+	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 	public partial class NavigationPageTests : HandlerTestBase
 	{
 		void SetupBuilder()
@@ -61,7 +63,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Set Has Navigation Bar")]
-		public async Task SettHasNavigationBar()
+		public async Task SetHasNavigationBar()
 		{
 			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage());

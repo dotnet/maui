@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Android.Graphics.Drawables;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 using Color = Microsoft.Maui.Graphics.Color;
@@ -34,12 +33,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			using var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
-
-			var bitmap = bitmapDrawable.Bitmap;
-
 			var expectedColor = Color.FromArgb(colorHex);
-			bitmap.AssertColorAtCenter(expectedColor.ToPlatform());
+			result.Value.AssertColorAtCenter(expectedColor.ToPlatform());
 		}
 
 		[Theory]
@@ -57,21 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			using var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
-
-			var bitmap = bitmapDrawable.Bitmap;
-
-			bitmap.AssertColorAtCenter(expectedColor.ToPlatform());
-		}
-
-		async Task<Drawable> GetDrawable(IImageSourceService service, IImageSource imageSource)
-		{
-			var tcsDrawable = new TaskCompletionSource<Drawable>();
-
-			// get an image
-			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext).ConfigureAwait(false);
-
-			return await tcsDrawable.Task.ConfigureAwait(false);
+			result.Value.AssertColorAtCenter(expectedColor.ToPlatform());
 		}
 	}
 }

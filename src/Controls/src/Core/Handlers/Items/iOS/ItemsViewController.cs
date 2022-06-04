@@ -134,8 +134,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ItemsSource = CreateItemsViewSource();
 
-			if (!PlatformVersion.IsAtLeast(11))
+			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+			{
 				AutomaticallyAdjustsScrollViewInsets = false;
+			}
 			else
 			{
 				// We set this property to keep iOS from trying to be helpful about insetting all the 
@@ -292,12 +294,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var visibleCells = CollectionView.VisibleCells;
+			List<NSIndexPath> paths = new List<NSIndexPath>();
 
 			for (int n = 0; n < visibleCells.Length; n++)
 			{
+				paths.Add(CollectionView.IndexPathForCell(visibleCells[n]));
 				if (cell == visibleCells[n])
 				{
-					Layout?.InvalidateLayout();
+					CollectionView.ReloadItems(paths.ToArray());
 					return;
 				}
 			}
@@ -339,7 +343,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		UICollectionViewCell GetPrototype()
 		{
-			if (ItemsSource.ItemCount == 0)
+			if (ItemsSource == null || ItemsSource.ItemCount == 0)
 			{
 				return null;
 			}
@@ -475,7 +479,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			bool isRtl;
 
-			if (PlatformVersion.IsAtLeast(10))
+			if (OperatingSystem.IsIOSVersionAtLeast(10) || OperatingSystem.IsTvOSVersionAtLeast(10))
 				isRtl = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
 			else
 				isRtl = CollectionView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;

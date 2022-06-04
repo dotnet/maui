@@ -23,19 +23,16 @@ namespace Microsoft.Maui.Controls.Platform
 			Element.PropertyChanged += OnElementPropertyChanged;
 			(Element as ISearchHandlerController).ListProxyChanged += OnSearchResultListChanged;
 
-			if (NativeParent != null)
+			Control = new TSearchBar(PlatformParent)
 			{
-				Control = new TSearchBar(NativeParent)
-				{
-					IsSingleLine = true,
-				};
-				Control.Show();
-				Control.SetInputPanelReturnKeyType(InputPanelReturnKeyType.Search);
-				Control.TextChanged += OnTextChanged;
-				Control.Activated += OnActivated;
-				Control.Focused += OnFocused;
-				Control.Unfocused += OnFocused;
-			}
+				IsSingleLine = true,
+			};
+			Control.Show();
+			Control.SetInputPanelReturnKeyType(InputPanelReturnKeyType.Search);
+			Control.TextChanged += OnTextChanged;
+			Control.Activated += OnActivated;
+			Control.Focused += OnFocused;
+			Control.Unfocused += OnFocused;
 
 			UpdateKeyboard();
 			UpdatePlaceholder();
@@ -52,18 +49,15 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		public SearchHandler Element { get; }
-		
+
 		public EvasObject? PlatformView => Control;
 
 		protected IMauiContext? MauiContext { get; private set; }
 
-		protected EvasObject? NativeParent
-		{
-			get => MauiContext?.GetNativeParent();
-		}
+		protected EvasObject PlatformParent => MauiContext?.GetPlatformParent() ?? throw new InvalidOperationException($"PlatformParent cannot be null here");
 
 		ISearchHandlerController SearchHandlerController => Element;
-		
+
 		TSearchBar? Control { get; }
 
 		~ShellSearchView()

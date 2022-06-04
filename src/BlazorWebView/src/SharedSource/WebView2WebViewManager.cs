@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		internal static readonly Uri AppOriginUri = new(AppOrigin);
 
 		private readonly WebView2Control _webview;
-		private readonly Task _webviewReadyTask;
+		private readonly Task<bool> _webviewReadyTask;
 		private readonly string _contentRootRelativeToAppRoot;
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="blazorWebViewInitializing">Callback invoked before the webview is initialized.</param>
 		/// <param name="blazorWebViewInitialized">Callback invoked after the webview is initialized.</param>
 		internal WebView2WebViewManager(
-			WebView2Control webview!!,
+			WebView2Control webview,
 			IServiceProvider services,
 			Dispatcher dispatcher,
 			IFileProvider fileProvider,
@@ -99,6 +99,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPagePathWithinFileProvider)
 
 		{
+			ArgumentNullException.ThrowIfNull(webview);
+
 #if WEBVIEW2_WINFORMS
 			if (services.GetService<WindowsFormsBlazorMarkerService>() is null)
 			{
@@ -125,7 +127,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
 			// so keep track of a task we can await during LoadUri.
-			_webviewReadyTask = InitializeWebView2();
+			_webviewReadyTask = TryInitializeWebView2();
 		}
 #elif WEBVIEW2_MAUI
 		private protected CoreWebView2Environment? _coreWebView2Environment;
@@ -143,7 +145,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="hostPagePathWithinFileProvider">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="blazorWebViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
 		internal WebView2WebViewManager(
-			WebView2Control webview!!,
+			WebView2Control webview,
 			IServiceProvider services,
 			Dispatcher dispatcher,
 			IFileProvider fileProvider,
@@ -154,6 +156,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		)
 			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPagePathWithinFileProvider)
 		{
+			ArgumentNullException.ThrowIfNull(webview);
+
 			if (services.GetService<MauiBlazorMarkerService>() is null)
 			{
 				throw new InvalidOperationException(
@@ -168,7 +172,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
 			// so keep track of a task we can await during LoadUri.
-			_webviewReadyTask = InitializeWebView2();
+			_webviewReadyTask = TryInitializeWebView2();
 		}
 #endif
 
@@ -177,8 +181,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		{
 			_ = Dispatcher.InvokeAsync(async () =>
 			{
-				await _webviewReadyTask;
-				_webview.Source = absoluteUri;
+				var isWebviewInitialized = await _webviewReadyTask;
+
+				if (isWebviewInitialized)
+				{
+					_webview.Source = absoluteUri;
+				}
 			});
 		}
 
@@ -186,17 +194,30 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		protected override void SendMessage(string message)
 			=> _webview.CoreWebView2.PostWebMessageAsString(message);
 
-		private async Task InitializeWebView2()
+		private async Task<bool> TryInitializeWebView2()
 		{
 			var args = new BlazorWebViewInitializingEventArgs();
 #if WEBVIEW2_MAUI
 			_blazorWebViewHandler.VirtualView.BlazorWebViewInitializing(args);
-			_coreWebView2Environment = await CoreWebView2Environment.CreateWithOptionsAsync(
-				browserExecutableFolder: args.BrowserExecutableFolder,
-				userDataFolder: args.UserDataFolder,
-				options: args.EnvironmentOptions)
-				.AsTask()
-				.ConfigureAwait(true);
+
+			try
+			{
+				_coreWebView2Environment = await CoreWebView2Environment.CreateWithOptionsAsync(
+					browserExecutableFolder: args.BrowserExecutableFolder,
+					userDataFolder: args.UserDataFolder,
+					options: args.EnvironmentOptions)
+					.AsTask()
+					.ConfigureAwait(true);
+			}
+			catch (FileNotFoundException)
+			{
+				// This method needs to be invoked even if the WebView2 Runtime is not installed,
+				// since it is reponsible for creating the warning label and WebView2 Runtime
+				// download link.
+				await _webview.EnsureCoreWebView2Async();
+				return false;
+			}
+
 			await _webview.EnsureCoreWebView2Async();
 
 			var developerTools = _blazorWebViewHandler.DeveloperTools;
@@ -241,15 +262,15 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			// The code inside blazor.webview.js is meant to be agnostic to specific webview technologies,
 			// so the following is an adaptor from blazor.webview.js conventions to WebView2 APIs
 			await _webview.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(@"
-                window.external = {
-                    sendMessage: message => {
-                        window.chrome.webview.postMessage(message);
-                    },
-                    receiveMessage: callback => {
-                        window.chrome.webview.addEventListener('message', e => callback(e.data));
-                    }
-                };
-            ")
+				window.external = {
+					sendMessage: message => {
+						window.chrome.webview.postMessage(message);
+					},
+					receiveMessage: callback => {
+						window.chrome.webview.addEventListener('message', e => callback(e.data));
+					}
+				};
+			")
 #if WEBVIEW2_MAUI
 				.AsTask()
 #endif
@@ -258,6 +279,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			QueueBlazorStart();
 
 			_webview.CoreWebView2.WebMessageReceived += (s, e) => MessageReceived(new Uri(e.Source), e.TryGetWebMessageAsString());
+
+			return true;
 		}
 
 		/// <summary>

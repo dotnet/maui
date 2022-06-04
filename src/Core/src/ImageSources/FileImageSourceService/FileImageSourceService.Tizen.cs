@@ -73,11 +73,11 @@ namespace Microsoft.Maui
 			{
 				string resPath = app.DirectoryInfo.Resource + res;
 
-				foreach (var file in new []{ resPath, resPath + ".jpg", resPath + ".png", resPath + ".gif" })
+				foreach (var file in new[] { resPath, resPath + ".jpg", resPath + ".png", resPath + ".gif" })
 				{
 					if (File.Exists(file))
 					{
-						return resPath;
+						return file;
 					}
 				}
 			}

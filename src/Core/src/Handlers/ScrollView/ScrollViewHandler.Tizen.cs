@@ -15,9 +15,20 @@ namespace Microsoft.Maui.Handlers
 
 		protected override ScrollView CreatePlatformView()
 		{
-			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
-			var scrollView = new ScrollView(NativeParent);
-			_scrollCanvas = new Box(scrollView);
+			var scrollView = new ScrollView(PlatformParent)
+			{
+				AlignmentX = -1,
+				AlignmentY = -1,
+				WeightX = 1,
+				WeightY = 1
+			};
+			_scrollCanvas = new Box(scrollView)
+			{
+				AlignmentX = -1,
+				AlignmentY = -1,
+				WeightX = 1,
+				WeightY = 1
+			};
 			scrollView.SetContent(_scrollCanvas);
 			return scrollView;
 		}
@@ -81,8 +92,8 @@ namespace Microsoft.Maui.Handlers
 			_ = Canvas ?? throw new InvalidOperationException($"{nameof(Canvas)} cannot be null");
 
 			if (VirtualView == null || VirtualView.PresentedContent == null)
-			    return;
-			    
+				return;
+
 			Canvas.MinimumWidth = (VirtualView.PresentedContent.Margin.HorizontalThickness + VirtualView.PresentedContent.Frame.Width + VirtualView.Padding.HorizontalThickness).ToScaledPixel();
 			Canvas.MinimumHeight = (VirtualView.PresentedContent.Margin.VerticalThickness + VirtualView.PresentedContent.Frame.Height + VirtualView.Padding.VerticalThickness).ToScaledPixel();
 

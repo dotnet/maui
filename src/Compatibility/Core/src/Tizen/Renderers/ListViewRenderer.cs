@@ -8,7 +8,6 @@ using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	/// <summary>
 	/// Renderer class for Xamarin ListView class. This provides necessary logic translating
 	/// Xamarin API to Tizen Native API. This is a derivate of a ViewRenderer base class.
@@ -18,6 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	/// types, and can be accessed with Control property. This represents actual native control
 	/// which is used to draw control and realize xamarin forms api.
 	/// </summary>
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ListViewRenderer : ViewRenderer<ListView, Native.ListView>
 	{
 		IListViewController Controller => Element;
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// Invoked on creation of new ListView renderer. Handles the creation of a native
 		/// element and initialization of the renderer.
 		/// </summary>
-		/// <param name="e"><see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.ElementChangedEventArgs"/>.</param>
+		/// <param name="e"><see cref="Microsoft.Maui.Controls.Platform.ElementChangedEventArgs{TElement}"/>.</param>
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
 		{
 			if (Control == null)
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// Method will not be invoked for grouping mode, but for example event with
 		/// action reset will be handled here when switching between group and no-group mode.
 		/// </summary>
-		/// <param name="sender">TemplatedItemsList<ItemsView<Cell>, Cell>.</param>
+		/// <param name="sender">TemplatedItemsList{ItemsView{Cell}, Cell}.</param>
 		/// <param name="e">NotifyCollectionChangedEventArgs.</param>
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -254,7 +254,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// Method will be invoked for grouping mode, but some action can be also handled
 		/// by OnCollectionChanged handler.
 		/// </summary>
-		/// <param name="sender">TemplatedItemsList<ItemsView<Cell>, Cell>.</param>
+		/// <param name="sender">TemplatedItemsList{ItemsView{Cell}, Cell}.</param>
 		/// <param name="e">NotifyCollectionChangedEventArgs.</param>
 		void OnGroupedCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{

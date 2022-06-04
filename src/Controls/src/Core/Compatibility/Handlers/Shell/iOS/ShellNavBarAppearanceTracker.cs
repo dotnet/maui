@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_defaultTitleAttributes = navBar.TitleTextAttributes;
 			}
 
-			if (PlatformVersion.IsAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15NavigationBarAppearance(controller, appearance);
 			else
 				UpdateNavigationBarAppearance(controller, appearance);
@@ -84,6 +85,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		#endregion
 
+		[SupportedOSPlatform("ios15.0")]
+		[SupportedOSPlatform("tvos15.0")]
 		void UpdateiOS15NavigationBarAppearance(UINavigationController controller, ShellAppearance appearance)
 		{
 			var navBar = controller.NavigationBar;

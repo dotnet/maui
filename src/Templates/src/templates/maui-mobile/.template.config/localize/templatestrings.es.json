@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": "Aplicación .NET MAUI (versión preliminar)",
+  "name": "Aplicación .NET MAUI",
   "description": "Un proyecto para crear una aplicación .NET MAUI para iOS, Android, Mac Catalyst, Tizen y WinUI",
   "postActions/openInEditor/description": "Abre MainPage.xaml en el editor.",
   "symbols/applicationId/description": "Reemplaza $(ApplicationId) en el proyecto"

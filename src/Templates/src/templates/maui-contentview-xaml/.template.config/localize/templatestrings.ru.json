@@ -1,6 +1,6 @@
 {
   "author": "Майкрософт",
-  "name": ".NET MAUI ContentView (XAML) (предварительная версия)",
+  "name": ".NET MAUI ContentView (XAML)",
   "postActions/openInEditor/description": "Открывает NewContent1.xaml в редакторе.",
   "symbols/namespace/description": "Пространство имен для созданного кода."
 }

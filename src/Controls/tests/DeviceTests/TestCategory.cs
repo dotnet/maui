@@ -4,6 +4,7 @@
 	{
 		public const string Behavior = "Behavior";
 		public const string Button = "Button";
+		public const string ContentView = "ContentView";
 		public const string Dispatcher = "Dispatcher";
 		public const string Editor = "Editor";
 		public const string Element = "Element";
@@ -12,6 +13,7 @@
 		public const string Gesture = "Gesture";
 		public const string Label = "Label";
 		public const string Layout = "Layout";
+		public const string ListView = "ListView";
 		public const string Modal = "Modal";
 		public const string NavigationPage = "NavigationPage";
 		public const string Page = "Page";

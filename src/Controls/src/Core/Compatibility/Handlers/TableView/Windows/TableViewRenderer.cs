@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					SetNativeControl(new Microsoft.UI.Xaml.Controls.ListView
 					{
-						ItemContainerStyle = (Microsoft.UI.Xaml.Style)Microsoft.UI.Xaml.Application.Current.Resources["FormsListViewItem"],
+						ItemContainerStyle = (Microsoft.UI.Xaml.Style)Microsoft.UI.Xaml.Application.Current.Resources["MauiListViewItem"],
 						ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["CellTemplate"],
 						GroupStyle = { new GroupStyle { HidesIfEmpty = false, HeaderTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["TableSection"] } },
 						HeaderTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["TableRoot"],
@@ -58,12 +58,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override void Dispose(bool disposing)
 		{
-			if(disposing && !_disposed)
+			if (disposing && !_disposed)
 			{
 				_disposed = true;
-				if(Control != null)
+				if (Control != null)
 				{
-					Control.SelectionChanged -= OnSelectionChanged;				
+					Control.SelectionChanged -= OnSelectionChanged;
 				}
 			}
 			base.Dispose(disposing);

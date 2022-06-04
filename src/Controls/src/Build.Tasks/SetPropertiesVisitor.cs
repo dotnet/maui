@@ -145,6 +145,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					Context.IL.Append(parentVar.LoadAs(Module.GetTypeDefinition(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary")), Module));
 					Context.IL.Append(AddToResourceDictionary(parentVar, node, node, Context));
 				}
+				else if ((contentProperty = GetContentProperty(parentVar.VariableType)) != null)
+				{
+					var name = new XmlName(node.NamespaceURI, contentProperty);
+					if (skips.Contains(name))
+						return;
+					if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
+						return;
+					Context.IL.Append(SetPropertyValue(Context.Variables[(IElementNode)parentNode], name, node, Context, node));
+				}
 				// Collection element, implicit content, or implicit collection element.
 				else if (parentVar.VariableType.ImplementsInterface(Module.ImportReference(("mscorlib", "System.Collections", "IEnumerable")))
 						 && parentVar.VariableType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any())
@@ -160,15 +169,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					if (adderRef.ReturnType.FullName != "System.Void")
 						Context.IL.Emit(Pop);
 				}
-				else if ((contentProperty = GetContentProperty(parentVar.VariableType)) != null)
-				{
-					var name = new XmlName(node.NamespaceURI, contentProperty);
-					if (skips.Contains(name))
-						return;
-					if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
-						return;
-					Context.IL.Append(SetPropertyValue(Context.Variables[(IElementNode)parentNode], name, node, Context, node));
-				}
+
 				else
 					throw new BuildException(BuildExceptionCode.ContentPropertyAttributeMissing, node, null, ((IElementNode)parentNode).XmlType.Name);
 			}

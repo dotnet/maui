@@ -10,6 +10,11 @@ namespace Microsoft.Maui.Resizetizer
 {
 	public class GeneratePackageAppxManifest : Task
 	{
+		const string DefaultPlaceholder = "$placeholder$";
+		const string PngPlaceholder = "$placeholder$.png";
+		const string PackageNamePlaceholder = "maui-package-name-placeholder";
+		const string PackageVersionPlaceholder = "0.0.0.0";
+
 		const string ErrorInvalidApplicationId = "ApplicationId '{0}' was not a valid GUID. Windows apps use a GUID for an application ID instead of the reverse domain used by Android and/or iOS apps. Either set the <ApplicationIdGuid> property to a valid GUID or use a condition on <ApplicationId> for Windows apps.";
 		const string ErrorVersionNumberCombination = "ApplicationDisplayVersion '{0}' was not a valid 3 part semver version number and/or ApplicationVersion '{1}' was not a valid integer.";
 
@@ -87,7 +92,7 @@ namespace Microsoft.Maui.Resizetizer
 				{
 					var xname = "Name";
 					var attr = identity.Attribute(xname);
-					if (attr == null || string.IsNullOrEmpty(attr.Value))
+					if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PackageNamePlaceholder)
 					{
 						if (!Guid.TryParse(ApplicationId, out _))
 						{
@@ -104,7 +109,7 @@ namespace Microsoft.Maui.Resizetizer
 				{
 					var xname = "Version";
 					var attr = identity.Attribute(xname);
-					if (attr == null || string.IsNullOrEmpty(attr.Value))
+					if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PackageVersionPlaceholder)
 					{
 						if (!TryMergeVersionNumbers(ApplicationDisplayVersion, ApplicationVersion, out var finalVersion))
 						{
@@ -137,7 +142,7 @@ namespace Microsoft.Maui.Resizetizer
 				{
 					var xname = xmlns + "DisplayName";
 					var xelem = properties.Element(xname);
-					if (xelem == null || string.IsNullOrEmpty(xelem.Value))
+					if (xelem == null || string.IsNullOrEmpty(xelem.Value) || xelem.Value == DefaultPlaceholder)
 						properties.SetElementValue(xname, ApplicationTitle);
 				}
 
@@ -146,7 +151,7 @@ namespace Microsoft.Maui.Resizetizer
 				{
 					var xname = xmlns + "Logo";
 					var xelem = properties.Element(xname);
-					if (xelem == null || string.IsNullOrEmpty(xelem.Value))
+					if (xelem == null || string.IsNullOrEmpty(xelem.Value) || xelem.Value == PngPlaceholder)
 					{
 						var dpi = DpiPath.Windows.StoreLogo[0];
 						var path = Path.Combine(dpi.Path, appIconInfo.OutputName + dpi.NameSuffix + imageExtension);
@@ -202,7 +207,7 @@ namespace Microsoft.Maui.Resizetizer
 					{
 						var xname = "DisplayName";
 						var attr = visual.Attribute(xname);
-						if (attr == null || string.IsNullOrEmpty(attr.Value))
+						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == DefaultPlaceholder)
 							visual.SetAttributeValue(xname, ApplicationTitle);
 					}
 
@@ -210,7 +215,7 @@ namespace Microsoft.Maui.Resizetizer
 					{
 						var xname = "Description";
 						var attr = visual.Attribute(xname);
-						if (attr == null || string.IsNullOrEmpty(attr.Value))
+						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == DefaultPlaceholder)
 							visual.SetAttributeValue(xname, ApplicationTitle);
 					}
 				}
@@ -229,7 +234,7 @@ namespace Microsoft.Maui.Resizetizer
 					{
 						var xname = "Square150x150Logo";
 						var attr = visual.Attribute(xname);
-						if (attr == null || string.IsNullOrEmpty(attr.Value))
+						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PngPlaceholder)
 						{
 							var dpi = DpiPath.Windows.MediumTile[0];
 							var path = Path.Combine(dpi.Path, appIconInfo.OutputName + dpi.NameSuffix + imageExtension);
@@ -241,7 +246,7 @@ namespace Microsoft.Maui.Resizetizer
 					{
 						var xname = "Square44x44Logo";
 						var attr = visual.Attribute(xname);
-						if (attr == null || string.IsNullOrEmpty(attr.Value))
+						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PngPlaceholder)
 						{
 							var dpi = DpiPath.Windows.Logo[0];
 							var path = Path.Combine(dpi.Path, appIconInfo.OutputName + dpi.NameSuffix + imageExtension);
@@ -265,7 +270,7 @@ namespace Microsoft.Maui.Resizetizer
 					{
 						var xname = "Wide310x150Logo";
 						var attr = tile.Attribute(xname);
-						if (attr == null || string.IsNullOrEmpty(attr.Value))
+						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PngPlaceholder)
 						{
 							var dpi = DpiPath.Windows.WideTile[0];
 							var path = Path.Combine(dpi.Path, appIconInfo.OutputName + dpi.NameSuffix + imageExtension);
@@ -277,7 +282,7 @@ namespace Microsoft.Maui.Resizetizer
 					{
 						var xname = "Square71x71Logo";
 						var attr = tile.Attribute(xname);
-						if (attr == null || string.IsNullOrEmpty(attr.Value))
+						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PngPlaceholder)
 						{
 							var dpi = DpiPath.Windows.SmallTile[0];
 							var path = Path.Combine(dpi.Path, appIconInfo.OutputName + dpi.NameSuffix + imageExtension);
@@ -289,7 +294,7 @@ namespace Microsoft.Maui.Resizetizer
 					{
 						var xname = "Square310x310Logo";
 						var attr = tile.Attribute(xname);
-						if (attr == null || string.IsNullOrEmpty(attr.Value))
+						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PngPlaceholder)
 						{
 							var dpi = DpiPath.Windows.LargeTile[0];
 							var path = Path.Combine(dpi.Path, appIconInfo.OutputName + dpi.NameSuffix + imageExtension);
@@ -339,7 +344,7 @@ namespace Microsoft.Maui.Resizetizer
 					{
 						var xname = "Image";
 						var attr = splash.Attribute(xname);
-						if (attr == null || string.IsNullOrEmpty(attr.Value))
+						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PngPlaceholder)
 						{
 							var dpi = DpiPath.Windows.SplashScreen[0];
 							var path = Path.Combine(dpi.Path, splashInfo.OutputName + dpi.NameSuffix + imageExtension);

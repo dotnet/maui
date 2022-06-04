@@ -49,7 +49,7 @@ namespace Microsoft.Maui
 
 			this.SetApplicationHandler(Application, _applicationContext);
 
-			this.CreateNativeWindow(Application);
+			this.CreatePlatformWindow(Application);
 
 			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
 		}
