@@ -11,6 +11,11 @@ namespace Microsoft.Maui.Controls
 		IView? IContentView.PresentedContent =>
 			(this as IControlTemplated).TemplateRoot as IView;
 
+		partial void OnApplyTemplateImpl()
+		{
+			Handler?.UpdateValue(nameof(IContentView.Content));
+		}
+
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
