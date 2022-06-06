@@ -41,17 +41,16 @@ namespace Microsoft.Maui.Controls.XamlC
 				}
 			}
 
-			Uri uri;
+			var uri = new Uri(value, UriKind.Relative);
+			string resourcePath;
 			try
 			{
-				uri = new Uri(value, UriKind.Relative);
+				resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(uri, rootTargetPath);
 			}
 			catch (Exception exc)
 			{
-				throw new BuildException(BuildExceptionCode.InvalidUri, node, exc, value);
+				throw new BuildException(BuildExceptionCode.GetResourcePath, node, exc, uri, rootTargetPath);
 			}
-
-			var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(uri, rootTargetPath);
 
 			//fail early
 			var resourceId = XamlCTask.GetResourceIdForPath(module, resourcePath);
