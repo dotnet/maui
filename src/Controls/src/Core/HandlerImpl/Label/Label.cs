@@ -12,8 +12,8 @@ namespace Microsoft.Maui.Controls
 			[nameof(Text)] = MapText,
 			[nameof(FormattedText)] = MapText,
 			[nameof(TextTransform)] = MapText,
-#if WINDOWS
-			[PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName] = MapDetectReadingOrderFromContent,
+#if ANDROID
+			[nameof(TextColor)] = MapTextColor,
 #endif
 #if __IOS__
 			[nameof(TextDecorations)] = MapTextDecorations,
@@ -21,6 +21,9 @@ namespace Microsoft.Maui.Controls
 			[nameof(LineHeight)] = MapLineHeight,
 			[nameof(ILabel.Font)] = MapFont,
 			[nameof(TextColor)] = MapTextColor,
+#endif
+#if WINDOWS
+			[PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName] = MapDetectReadingOrderFromContent,
 #endif
 			[nameof(Label.LineBreakMode)] = MapLineBreakMode,
 			[nameof(Label.MaxLines)] = MapMaxLines,

@@ -42,6 +42,16 @@ namespace Microsoft.Maui.Controls
 			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
 		}
 
+		public static void MapTextColor(LabelHandler handler, Label label)
+		{
+			handler.PlatformView?.UpdateTextColor(label);
+
+			if (label?.HasFormattedTextSpans ?? false)
+				return;
+
+			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
+		}
+
 		public static void MapLineBreakMode(LabelHandler handler, Label label)
 		{
 			handler.PlatformView?.UpdateLineBreakMode(label);
