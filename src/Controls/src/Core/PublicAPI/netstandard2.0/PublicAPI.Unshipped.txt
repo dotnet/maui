@@ -1,3 +1,5 @@
 ﻿#nullable enable
+override Microsoft.Maui.Controls.ContentPresenter.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Controls.ContentPresenter.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.ContentView.OnApplyTemplate() -> void
 override Microsoft.Maui.Controls.Grid.OnBindingContextChanged() -> void
