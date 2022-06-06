@@ -11,9 +11,6 @@ namespace Microsoft.Maui.Platform
 			if (semantics == null)
 				return;
 
-			var desc = semantics.Description;
-			var hint = semantics.Hint;
-
 			if (platformView is UISearchBar searchBar)
 			{
 				var textField = searchBar.GetSearchTextField();
@@ -22,22 +19,10 @@ namespace Microsoft.Maui.Platform
 					return;
 				else
 					platformView = textField;
-
-				if (!string.IsNullOrWhiteSpace(desc))
-				{
-					textField.AccessibilityLabel = desc;
-				}
-
-				if (!string.IsNullOrWhiteSpace(hint))
-				{
-					textField.AccessibilityHint = hint;
-				}
 			}
-			else
-			{
-				platformView.AccessibilityLabel = desc;
-				platformView.AccessibilityHint = hint;
-			}
+
+			platformView.AccessibilityLabel = semantics.Description;
+			platformView.AccessibilityHint = semantics.Hint;
 
 			// UIControl elements automatically have IsAccessibilityElement set to true
 			if (platformView is not UIControl && (!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description)))
