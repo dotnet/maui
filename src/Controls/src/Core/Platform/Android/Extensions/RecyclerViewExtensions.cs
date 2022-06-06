@@ -12,8 +12,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var mode = selectableItemsView.SelectionMode;
 
-			var adapter = (recyclerView.GetAdapter() as SelectableItemsViewAdapter<SelectableItemsView, IItemsViewSource>);
-			adapter?.ClearPlatformSelection();
+			if (recyclerView.GetAdapter() is not SelectableItemsViewAdapter<SelectableItemsView, IItemsViewSource> adapter)
+				return;
+
+			adapter.ClearPlatformSelection();
 
 			switch (mode)
 			{
