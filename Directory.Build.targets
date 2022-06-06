@@ -36,6 +36,8 @@
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsTizen)' == 'True'">
     <SupportedOSPlatformVersion>6.5</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>6.5</TargetPlatformMinVersion>
+    <!-- Workaround: https://github.com/dotnet/linker/issues/2817 -->
+    <NoWarn>$(NoWarn);AD0001</NoWarn>
   </PropertyGroup>
 
   <!-- 
@@ -64,7 +66,7 @@
 
   <!-- Until we get a new enough dotnet -->
   <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
-    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.18362.22" TargetingPackVersion="10.0.18362.22" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.18362.24" TargetingPackVersion="10.0.18362.24" />
   </ItemGroup>
 
 </Project>

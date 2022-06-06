@@ -4,7 +4,7 @@ using UIKit;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 
-#if !NET6_0
+#if !NET6_0_OR_GREATER
 using Microsoft.Maui.Controls;
 #endif
 

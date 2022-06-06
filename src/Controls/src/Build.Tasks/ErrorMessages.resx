@@ -248,5 +248,8 @@
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Key expects a string literal.</value>
   </data>
+  <data name="GetResourcePath" xml:space="preserve">
+    <value>GetResourcePath failed: uri={0}, rootTargetPath={1}</value>
+  </data>
   
 </root>
