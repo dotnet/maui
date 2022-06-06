@@ -75,14 +75,14 @@ parameters:
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
-        artifact: net7-windows
+        artifact: build-windows
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
-        artifact: net7-macos
+        artifact: build-macos
   - name: PackPlatforms
     type: object
     default:
