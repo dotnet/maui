@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Touch += OnTouch;
 			platformView.EditorAction += OnEditorAction;
 
-			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView as MauiAppCompatEditText
+			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			((MauiAppCompatEditText)platformView).SelectionChanged += OnSelectionChanged;
 		}
 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Touch -= OnTouch;
 			platformView.EditorAction -= OnEditorAction;
 
-			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView as MauiAppCompatEditText
+			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			((MauiAppCompatEditText)platformView).SelectionChanged -= OnSelectionChanged;
 		}
 
