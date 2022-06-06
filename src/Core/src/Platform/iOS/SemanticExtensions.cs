@@ -17,8 +17,8 @@ namespace Microsoft.Maui.Platform
 
 				if (textField == null)
 					return;
-				else
-					platformView = textField;
+				
+				platformView = textField;
 			}
 
 			platformView.AccessibilityLabel = semantics.Description;
