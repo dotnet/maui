@@ -40,7 +40,16 @@ namespace Microsoft.Maui.Controls.XamlC
 					module = currentModule.AssemblyResolver.Resolve(ar).MainModule;
 				}
 			}
-			var uri = new Uri(value, UriKind.Relative);
+
+			Uri uri;
+			try
+			{
+				uri = new Uri(value, UriKind.Relative);
+			}
+			catch (Exception exc)
+			{
+				throw new BuildException(BuildExceptionCode.InvalidUri, node, exc, value);
+			}
 
 			var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(uri, rootTargetPath);
 

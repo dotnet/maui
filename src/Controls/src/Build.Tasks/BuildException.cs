@@ -89,6 +89,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public static BuildExceptionCode ResourceDictDuplicateKey = new BuildExceptionCode("XFC0125", nameof(ResourceDictDuplicateKey), "");
 		public static BuildExceptionCode ResourceDictMissingKey = new BuildExceptionCode("XFC0126", nameof(ResourceDictMissingKey), "");
 		public static BuildExceptionCode XKeyNotLiteral = new BuildExceptionCode("XFC0127", nameof(XKeyNotLiteral), "");
+		public static BuildExceptionCode InvalidUri = new BuildExceptionCode("XFC0128", nameof(InvalidUri), "");
 
 		public string Code { get; private set; }
 		public string ErrorMessageKey { get; private set; }
