@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Platform
 		IView _virtualView;
 		Size _measureCache;
 
+		bool _needMeasureUpdate;
+
 		public LayoutViewGroup(IView view)
 		{
 			_virtualView = view;
@@ -22,9 +24,20 @@ namespace Microsoft.Maui.Platform
 		public Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		public Func<Rect, Size>? CrossPlatformArrange { get; set; }
 
+		public void SetNeedMeasureUpdate()
+		{
+			_needMeasureUpdate = true;
+			MarkChanged();
+		}
+
+		public void ClearNeedMeasureUpdate()
+		{
+			_needMeasureUpdate = false;
+		}
+
 		public TSize Measure(double availableWidth, double availableHeight)
 		{
-			return CrossPlatformMeasure?.Invoke(availableWidth.ToScaledDP(), availableHeight.ToScaledDP()).ToPixel() ?? new TSize(0, 0);
+			return InvokeCrossPlatformMeasure(availableWidth.ToScaledDP(), availableHeight.ToScaledDP()).ToPixel();
 		}
 
 		public bool InputTransparent { get; set; } = false;
@@ -34,22 +47,34 @@ namespace Microsoft.Maui.Platform
 			return !InputTransparent;
 		}
 
-		void OnLayoutUpdated(object? sender, LayoutEventArgs e)
+		public Size InvokeCrossPlatformMeasure(double availableWidth, double availableHeight)
 		{
-			var platformGeometry = this.GetBounds().ToDP();
+			if (CrossPlatformMeasure == null)
+				return Graphics.Size.Zero;
 
-			var measured = CrossPlatformMeasure!(platformGeometry.Width, platformGeometry.Height);
+			ClearNeedMeasureUpdate();
+			var measured = CrossPlatformMeasure(availableWidth, availableHeight);
 			if (measured != _measureCache && _virtualView?.Parent is IView parentView)
 			{
 				parentView?.InvalidateMeasure();
 			}
 			_measureCache = measured;
+			return measured;
+		}
 
+		void OnLayoutUpdated(object? sender, LayoutEventArgs e)
+		{
+			var platformGeometry = this.GetBounds().ToDP();
+
+			if (_needMeasureUpdate)
+			{
+				InvokeCrossPlatformMeasure(platformGeometry.Width, platformGeometry.Height);
+			}
 			if (platformGeometry.Width > 0 && platformGeometry.Height > 0)
 			{
 				platformGeometry.X = 0;
 				platformGeometry.Y = 0;
-				CrossPlatformArrange!(platformGeometry);
+				CrossPlatformArrange?.Invoke(platformGeometry);
 			}
 		}
 	}

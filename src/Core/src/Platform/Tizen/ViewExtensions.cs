@@ -162,7 +162,11 @@ namespace Microsoft.Maui.Platform
 
 		public static void InvalidateMeasure(this NView platformView, IView view)
 		{
-			if (platformView is ViewGroup viewGroup)
+			if (platformView is LayoutViewGroup layoutViewGroup)
+			{
+				layoutViewGroup.SetNeedMeasureUpdate();
+			}
+			else if (platformView is ViewGroup viewGroup)
 			{
 				viewGroup.MarkChanged();
 			}

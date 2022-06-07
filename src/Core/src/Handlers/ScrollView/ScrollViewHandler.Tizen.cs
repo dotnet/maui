@@ -5,7 +5,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, ScrollView>
 	{
-
 		IPlatformViewHandler? _contentHandler;
 		double _cachedWidth;
 		double _cachedHeight;
@@ -19,7 +18,6 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.Scrolling += OnScrolled;
 			platformView.ScrollAnimationEnded += ScrollAnimationEnded;
-			platformView.Relayout += OnRelayout;
 		}
 
 		protected override void DisconnectHandler(ScrollView platformView)
@@ -27,7 +25,6 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 			platformView.Scrolling -= OnScrolled;
 			platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
-			platformView.Relayout -= OnRelayout;
 		}
 
 		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -98,20 +95,15 @@ namespace Microsoft.Maui.Handlers
 		void OnContentLayoutUpdated(object? sender, Tizen.UIExtensions.Common.LayoutEventArgs e)
 		{
 			var platformGeometry = PlatformView.GetBounds().ToDP();
-
 			var measuredSize = VirtualView.CrossPlatformMeasure(platformGeometry.Width, platformGeometry.Height);
 			if (_measureCache != measuredSize)
 			{
 				platformGeometry.X = 0;
 				platformGeometry.Y = 0;
 				VirtualView.CrossPlatformArrange(platformGeometry);
+				UpdateContentSize();
 			}
 			_measureCache = measuredSize;
-		}
-
-		void OnRelayout(object? sender, EventArgs e)
-		{
-			UpdateContentSize();
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)

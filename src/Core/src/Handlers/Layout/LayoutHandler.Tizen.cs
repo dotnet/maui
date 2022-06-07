@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+			return PlatformView.InvokeCrossPlatformMeasure(widthConstraint, heightConstraint);
 		}
 
 		public override void SetVirtualView(IView view)
@@ -59,6 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
+			PlatformView.SetNeedMeasureUpdate();
 		}
 
 		public void Remove(IView child)
@@ -71,6 +72,8 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.Children.Remove(childView);
 				thandler.Dispose();
 			}
+			PlatformView.MarkChanged();
+			PlatformView.SetNeedMeasureUpdate();
 		}
 
 		public void Clear()
@@ -84,6 +87,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				child.Dispose();
 			}
+			PlatformView.SetNeedMeasureUpdate();
 		}
 
 		public void Insert(int index, IView child)
@@ -94,6 +98,7 @@ namespace Microsoft.Maui.Handlers
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
+			PlatformView.SetNeedMeasureUpdate();
 		}
 
 		public void Update(int index, IView child)
@@ -108,6 +113,7 @@ namespace Microsoft.Maui.Handlers
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
+			PlatformView.SetNeedMeasureUpdate();
 		}
 
 		public void UpdateZIndex(IView child)
