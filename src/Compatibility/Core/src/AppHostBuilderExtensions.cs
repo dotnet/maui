@@ -36,12 +36,12 @@ using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platf
 #elif TIZEN
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Microsoft.Maui.Graphics.Skia;
+using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.BoxViewRenderer;
 using CollectionViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.StructuredItemsViewRenderer;
 using OpenGLViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.DefaultRenderer;
-using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.BoxViewRenderer;
-using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.DefaultRenderer;
 using StreamImagesourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.StreamImageSourceHandler;
 using ImageLoaderSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.UriImageSourceHandler;
+using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.DefaultRenderer;
 #endif
 
 namespace Microsoft.Maui.Controls.Compatibility.Hosting
@@ -149,7 +149,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 		{
 			public void Initialize(IServiceProvider services)
 			{
-
 #if WINDOWS
 				var dispatcher =
 					services.GetService<IDispatcher>() ??

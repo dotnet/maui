@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Devices;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 using Tizen.UIExtensions.NUI;
-using Tizen.UIExtensions.Common;
+using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 
 namespace Microsoft.Maui
 {
@@ -79,6 +80,21 @@ namespace Microsoft.Maui
 		public static float GetDisplayDensity(this Window platformWindow)
 		{
 			return (float)DeviceInfo.ScalingFactor;
+		}
+
+		internal static DisplayOrientation GetOrientation(this IWindow? window)
+		{
+			if (window == null)
+				return DeviceDisplay.Current.MainDisplayInfo.Orientation;
+
+			return window.Handler?.MauiContext?.GetPlatformWindow()?.GetCurrentOrientation() switch
+			{
+				Window.WindowOrientation.Portrait => DisplayOrientation.Portrait,
+				Window.WindowOrientation.PortraitInverse => DisplayOrientation.Portrait,
+				Window.WindowOrientation.Landscape => DisplayOrientation.Landscape,
+				Window.WindowOrientation.LandscapeInverse => DisplayOrientation.Landscape,
+				_ => DisplayOrientation.Unknown
+			};
 		}
 
 		static void OnRotate(Window platformWindow)

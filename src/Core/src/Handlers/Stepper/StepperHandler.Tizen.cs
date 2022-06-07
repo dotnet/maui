@@ -1,7 +1,6 @@
 using System;
 using Tizen.UIExtensions.NUI.GraphicsView;
 
-
 namespace Microsoft.Maui.Handlers
 {
 	public partial class StepperHandler : ViewHandler<IStepper, Stepper>
