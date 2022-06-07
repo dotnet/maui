@@ -4,3 +4,5 @@ override Microsoft.Maui.Platform.LayoutView.HitTest(CoreGraphics.CGPoint point, 
 override Microsoft.Maui.Platform.LayoutView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.get -> bool
 override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.set -> void
+static Microsoft.Maui.Handlers.EditorHandler.MapIsEnabled(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Platform.TextViewExtensions.UpdateIsEnabled(this UIKit.UITextView! textView, Microsoft.Maui.IEditor! editor) -> void
