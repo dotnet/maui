@@ -72,6 +72,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 
 		[Test]
+		public void SettingCurrentItemOnShellViaContentPage()
+		{
+			var page1 = new ContentPage();
+			var page2 = new ContentPage();
+			var shell = new TestShell()
+			{
+				Items =
+				{
+					new TabBar()
+					{
+						Items =
+						{
+							new ShellContent() { Content = page1 },
+							new ShellContent() { Content = page2 },
+						}
+					}
+				}
+			};
+
+			shell.CurrentItem = page2;
+			Assert.AreEqual(1, shell.Items.Count);
+			Assert.AreEqual(2, shell.Items[0].Items.Count);
+			Assert.AreEqual(1, shell.Items[0].Items[0].Items.Count);
+			Assert.AreEqual(1, shell.Items[0].Items[1].Items.Count);
+			Assert.AreEqual(shell.CurrentItem.CurrentItem, shell.Items[0].Items[1]);
+		}
+
+		[Test]
 		public void SetCurrentItemAddsToShellCollection()
 		{
 			var shell = new Shell();
