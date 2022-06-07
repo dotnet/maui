@@ -36,7 +36,14 @@ namespace Microsoft.Maui.Platform
 			platformLabel.TextAlignment = label.HorizontalTextAlignment.ToPlatformHorizontal(label);
 		}
 
-		public static void UpdateVerticalTextAlignment(this MauiLabel platformLabel, ILabel label)
+		// Don't use this method, it doesn't work. But we can't remove it.
+		public static void UpdateVerticalTextAlignment(this UILabel platformLabel, ILabel label)
+		{
+			if (!platformLabel.Bounds.IsEmpty)
+				platformLabel.InvalidateMeasure(label);
+		}
+
+		internal static void UpdateVerticalTextAlignment(this MauiLabel platformLabel, ILabel label)
 		{
 			platformLabel.VerticalAlignment = label.VerticalTextAlignment.ToPlatformVertical();
 		}
