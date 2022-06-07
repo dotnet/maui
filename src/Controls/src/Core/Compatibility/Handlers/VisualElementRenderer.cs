@@ -213,7 +213,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		IMauiContext? IElementHandler.MauiContext => _mauiContext;
 
-		PlatformView? IPlatformViewHandler.PlatformView => (Element?.Handler as IElementHandler)?.PlatformView as PlatformView;
+		PlatformView? IPlatformViewHandler.PlatformView
+		{
+			get => ((Element?.Handler)?.PlatformView as PlatformView) ?? this;
+		}
 
 		PlatformView? IPlatformViewHandler.ContainerView => this;
 

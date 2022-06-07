@@ -2,8 +2,9 @@
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
     "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen", "Blazor" ],
-    "identity": "Microsoft.Maui.BlazorApp",
+    "identity": "Microsoft.Maui.BlazorApp.CSharp.DOTNET_TFM_VERSION_VALUE",
     "groupIdentity": "Microsoft.Maui.BlazorApp",
+    "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
     "name": ".NET MAUI Blazor App",
     "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor",
     "shortName": "maui-blazor",
@@ -70,9 +71,16 @@
         "replaces": "WIN2D_VERSION",
         "defaultValue": "WIN2D_VERSION_VALUE"
       },
-      "DotNetTfm": {
+      "Framework": {
         "type": "parameter",
-        "dataType": "string",
+        "description": "The target framework for the project.",
+        "datatype": "choice",
+        "choices": [
+          {
+            "choice": "DOTNET_TFM_VALUE",
+            "description": "Target DOTNET_TFM_VALUE"
+          }
+        ],
         "replaces": "DOTNET_TFM",
         "defaultValue": "DOTNET_TFM_VALUE"
       },
