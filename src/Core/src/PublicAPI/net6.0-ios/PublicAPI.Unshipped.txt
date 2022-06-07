@@ -4,3 +4,4 @@ override Microsoft.Maui.Platform.LayoutView.HitTest(CoreGraphics.CGPoint point, 
 override Microsoft.Maui.Platform.LayoutView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.get -> bool
 override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.set -> void
+static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this UIKit.UIView! platformView, Microsoft.Maui.Graphics.Paint? paint, Microsoft.Maui.IButtonStroke? stroke = null) -> void
