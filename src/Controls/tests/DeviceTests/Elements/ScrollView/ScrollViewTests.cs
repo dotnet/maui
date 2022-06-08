@@ -28,12 +28,14 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await handler.PlatformView.AttachAndRun(async () =>
 				{
-					await WaitAssert(() => scroll.ContentSize == new Size(100, 100));
+					var expectedSize = new Size(100, 100);
+					await AssertContentSize(() => scroll.ContentSize, expectedSize);
 
 					scroll.Content.WidthRequest = 200;
+					await AssertContentSizeChanged(changed);
 
-					await WaitAssert(() => changed.IsCompleted && changed.Result, message: "PropertyChanged event with PropertyName 'ContentSize' did not fire");
-					await WaitAssert(() => scroll.ContentSize == new Size(200, 100));
+					expectedSize = new Size(200, 100);
+					await AssertContentSize(() => scroll.ContentSize, expectedSize);
 				});
 			});
 		}
@@ -51,10 +53,14 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await handler.PlatformView.AttachAndRun(async () =>
 				{
-					await WaitAssert(() => scroll.ContentSize == new Size(100, 100));
+					var expectedSize = new Size(100, 100);
+					await AssertContentSize(() => scroll.ContentSize, expectedSize);
+
 					scroll.Content.HeightRequest = 200;
 					await AssertContentSizeChanged(changed);
-					await WaitAssert(() => scroll.ContentSize == new Size(100, 200));
+
+					expectedSize = new Size(100, 200);
+					await AssertContentSize(() => scroll.ContentSize, expectedSize);
 				});
 
 			});
@@ -74,7 +80,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await handler.PlatformView.AttachAndRun(async () =>
 				{
-					await WaitAssert(() => scroll.ContentSize == new Size(expectedWidth, expectedHeight));
+					var expectedSize = new Size(expectedWidth, expectedHeight);
+					await AssertContentSize(() => scroll.ContentSize, expectedSize);
 				});
 
 			});
@@ -82,7 +89,12 @@ namespace Microsoft.Maui.DeviceTests
 
 		static async Task AssertContentSizeChanged(Task<bool> changed) 
 		{
-			await WaitAssert(() => changed.IsCompleted && changed.Result, message: "PropertyChanged event with PropertyName 'ContentSize' did not fire").ConfigureAwait(false);
+			await WaitAssert(() => changed.IsCompleted && changed.Result, timeout: 5000, message: "PropertyChanged event with PropertyName 'ContentSize' did not fire").ConfigureAwait(false);
+		}
+
+		static async Task AssertContentSize(Func<Size> actual, Size expected) 
+		{
+			await WaitAssert(() => actual() == expected, timeout: 5000, message: $"ContentSize was {actual()}, expected {expected}");
 		}
 
 		static Task<bool> WatchContentSizeChanged(ScrollView scrollView)
