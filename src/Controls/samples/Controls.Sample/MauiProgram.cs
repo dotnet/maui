@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample
 		static bool UseMauiGraphicsSkia = false;
 
 		enum PageType { Main, Blazor, Shell, Template, FlyoutPage, TabbedPage }
-		readonly static PageType _pageType = PageType.Template;
+		readonly static PageType _pageType = PageType.Main;
 
 		public static MauiApp CreateMauiApp()
 		{
