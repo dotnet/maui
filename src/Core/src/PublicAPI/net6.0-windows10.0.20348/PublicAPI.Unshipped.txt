@@ -1,2 +1,12 @@
 ﻿#nullable enable
 *REMOVED*override Microsoft.Maui.Handlers.WindowHandler.ConnectHandler(Microsoft.UI.Xaml.Window! platformView) -> void
+Microsoft.Maui.Handlers.IMapHander
+Microsoft.Maui.Handlers.IMapHander.PlatformView.get -> Microsoft.UI.Xaml.Controls.WebView2!
+Microsoft.Maui.Handlers.IMapHander.VirtualView.get -> Microsoft.Maui.IMap!
+Microsoft.Maui.Handlers.MapHandler
+Microsoft.Maui.Handlers.MapHandler.MapHandler() -> void
+Microsoft.Maui.Handlers.MapHandler.MapHandler(Microsoft.Maui.IPropertyMapper? mapper = null, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.IMap
+override Microsoft.Maui.Handlers.MapHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.WebView2!
+static Microsoft.Maui.Handlers.MapHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMap!, Microsoft.Maui.Handlers.IMapHander!>!
+static Microsoft.Maui.Handlers.MapHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMap!, Microsoft.Maui.Handlers.IMapHander!>!

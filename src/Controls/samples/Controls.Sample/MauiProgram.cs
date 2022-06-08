@@ -19,8 +19,14 @@ using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Hosting;
 
+
 #if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Components.WebView.Maui;
+#endif
+
+#if ANDROID
+using Android.Gms.Common;
+using Android.Gms.Maps;
 #endif
 
 namespace Maui.Controls.Sample
@@ -37,6 +43,10 @@ namespace Maui.Controls.Sample
 		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
+			appBuilder.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddMauiMapsControlsHandlers();
+			});
 
 			appBuilder.UseMauiApp<XamlApp>();
 #if TIZEN
@@ -178,7 +188,30 @@ namespace Maui.Controls.Sample
 						.OnActivityResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnActivityResult), b.ToString()))
 						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)) && false)
 						.OnConfigurationChanged((a, b) => LogEvent(nameof(AndroidLifecycle.OnConfigurationChanged)))
-						.OnCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnCreate)))
+						.OnCreate((a, b) =>
+						{
+
+						Microsoft.Maui.Handlers.MapHandler.Bundle = b;
+#pragma warning disable CS0618 // Type or member is obsolete
+						if (GooglePlayServicesUtil.IsGooglePlayServicesAvailable(a) == ConnectionResult.Success)
+#pragma warning restore 618
+						{
+							try
+							{
+								MapsInitializer.Initialize(a);
+							}
+							catch (Exception e)
+							{
+								Console.WriteLine("Google Play Services Not Found");
+								Console.WriteLine("Exception: {0}", e);
+							}
+						}
+#pragma warning restore CS0618 // Type or member is obsolete
+
+							//new GeocoderBackend(activity).Register();
+							LogEvent(nameof(AndroidLifecycle.OnCreate));
+						})
+					
 						.OnDestroy((a) => LogEvent(nameof(AndroidLifecycle.OnDestroy)))
 						.OnNewIntent((a, b) => LogEvent(nameof(AndroidLifecycle.OnNewIntent)))
 						.OnPause((a) => LogEvent(nameof(AndroidLifecycle.OnPause)))

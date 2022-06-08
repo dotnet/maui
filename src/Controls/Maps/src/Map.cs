@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Maps
 {
-	public class Map : View, IEnumerable<Pin>
+	public partial class Map : View, IEnumerable<Pin>
 	{
 		public static readonly BindableProperty MapTypeProperty = BindableProperty.Create("MapType", typeof(MapType), typeof(Map), default(MapType));
 

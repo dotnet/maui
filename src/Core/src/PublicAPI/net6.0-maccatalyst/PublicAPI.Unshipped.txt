@@ -1,6 +1,16 @@
 ﻿#nullable enable
+Microsoft.Maui.Handlers.IMapHander
+Microsoft.Maui.Handlers.IMapHander.PlatformView.get -> MapKit.MKMapView!
+Microsoft.Maui.Handlers.IMapHander.VirtualView.get -> Microsoft.Maui.IMap!
+Microsoft.Maui.Handlers.MapHandler
+Microsoft.Maui.Handlers.MapHandler.MapHandler() -> void
+Microsoft.Maui.Handlers.MapHandler.MapHandler(Microsoft.Maui.IPropertyMapper? mapper = null, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+override Microsoft.Maui.Handlers.MapHandler.CreatePlatformView() -> MapKit.MKMapView!
 override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.LayoutView.HitTest(CoreGraphics.CGPoint point, UIKit.UIEvent? uievent) -> UIKit.UIView!
 override Microsoft.Maui.Platform.LayoutView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.get -> bool
 override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.set -> void
+Microsoft.Maui.IMap
+static Microsoft.Maui.Handlers.MapHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMap!, Microsoft.Maui.Handlers.IMapHander!>!
+static Microsoft.Maui.Handlers.MapHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMap!, Microsoft.Maui.Handlers.IMapHander!>!
