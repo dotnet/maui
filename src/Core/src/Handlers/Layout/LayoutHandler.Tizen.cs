@@ -59,6 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
+			EnsureZIndexOrder(child);
 			PlatformView.SetNeedMeasureUpdate();
 		}
 
@@ -98,6 +99,7 @@ namespace Microsoft.Maui.Handlers
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
+			EnsureZIndexOrder(child);
 			PlatformView.SetNeedMeasureUpdate();
 		}
 
@@ -113,6 +115,7 @@ namespace Microsoft.Maui.Handlers
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
+			EnsureZIndexOrder(child);
 			PlatformView.SetNeedMeasureUpdate();
 		}
 
