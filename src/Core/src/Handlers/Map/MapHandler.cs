@@ -16,11 +16,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IMap, IMapHander> Mapper = new PropertyMapper<IMap, IMapHander>(ViewHandler.ViewMapper)
 		{
-			//[nameof(IButton.Background)] = MapBackground,
-			//[nameof(IButton.Padding)] = MapPadding,
-			//[nameof(IButtonStroke.StrokeThickness)] = MapStrokeThickness,
-			//[nameof(IButtonStroke.StrokeColor)] = MapStrokeColor,
-			//[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius
 		};
 
 		public static CommandMapper<IMap, IMapHander> CommandMapper = new(ViewCommandMapper);
