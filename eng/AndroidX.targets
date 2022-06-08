@@ -42,7 +42,7 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.RecyclerView"
-        Version="1.2.1.6"
+        Version="1.2.1.7"
     />
     <PackageReference
         Update="Xamarin.Build.Download"
