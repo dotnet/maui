@@ -114,7 +114,7 @@ namespace Microsoft.Maui.DeviceTests
 				throw new InvalidOperationException($"Could not attach view - unable to find a target to attach to. currentView is {currentView}");
 			}
 
-			return attachParent;
+			return attachParent ?? currentView;
 		}
 
 		public static Task<UIImage> ToBitmap(this UIView view)
