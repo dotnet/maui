@@ -30,17 +30,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 			platformView.GetMapAsync(_mapReady);
-			//platformView.OnCreate(s_bundle);
-			//platformView.OnResume();
+		
 		}
 
 		protected override MapView CreatePlatformView()
 		{
 			_mapReady = new MapReadyCallbackHandler(this);
 			MapView mapView = new Android.Gms.Maps.MapView(Context);
-
-			//mapView.OnCreate(s_bundle);
-			//mapView.OnResume();
+			mapView.OnCreate(s_bundle);
+			mapView.OnResume();
 			return mapView;
 		}
 
