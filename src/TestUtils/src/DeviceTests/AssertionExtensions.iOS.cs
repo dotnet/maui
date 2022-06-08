@@ -83,17 +83,28 @@ namespace Microsoft.Maui.DeviceTests
 				viewController = viewController.PresentedViewController;
 			}
 
+			if (viewController == null)
+			{
+				throw new InvalidOperationException("Could not attach view - unable to find presented ViewController");
+			}
+
 			if (viewController is UINavigationController nav)
 			{
 				viewController = nav.VisibleViewController;
 			}
 
 			var currentView = viewController.View;
-			var contentView = currentView?.FindDescendantView<ContentView>();
+
+			if (currentView == null)
+			{
+				throw new InvalidOperationException("Could not attach view - unable to find visible view");
+			}
+
+			var contentView = currentView.FindDescendantView<ContentView>();
 
 			if (contentView == null)
 			{
-				throw new InvalidOperationException("Could not attach view - unable to find ContentView");
+				throw new InvalidOperationException($"Could not attach view - unable to find ContentView. currentView is {currentView}");
 			}
 
 			return contentView;
