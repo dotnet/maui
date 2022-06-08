@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using UIKit;
 
@@ -14,6 +14,10 @@ namespace Microsoft.Maui.Handlers
 		protected override UIButton CreatePlatformView()
 		{
 			var button = new UIButton(UIButtonType.System);
+
+#if MACCATALYST
+			button.PreferredBehavioralStyle = UIBehavioralStyle.Pad;
+#endif
 			SetControlPropertiesFromProxy(button);
 			return button;
 		}
