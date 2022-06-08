@@ -94,7 +94,22 @@ namespace Microsoft.Maui.DeviceTests
 
 		static async Task AssertContentSize(Func<Size> actual, Size expected) 
 		{
-			await WaitAssert(() => actual() == expected, timeout: 5000, message: $"ContentSize was {actual()}, expected {expected}");
+			await WaitAssert(() => CloseEnough(actual(), expected, 0.2), timeout: 5000, message: $"ContentSize was {actual()}, expected {expected}");
+		}
+
+		static bool CloseEnough(Size a, Size b, double tolerance) 
+		{
+			if (System.Math.Abs(a.Width - b.Width) > tolerance) 
+			{
+				return false;
+			}
+
+			if (System.Math.Abs(a.Height - b.Height) > tolerance)
+			{
+				return false;
+			}
+
+			return true;
 		}
 
 		static Task<bool> WatchContentSizeChanged(ScrollView scrollView)
