@@ -68,10 +68,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		static ContentView FindContentView() 
 		{
-			if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window
-				|| window.RootViewController is not UIViewController viewController)
+			if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window)
 			{
-				throw new InvalidOperationException("Could not attach view");
+				throw new InvalidOperationException("Could not attach view - unable to find UIWindow");
+			}
+
+			if (window.RootViewController is not UIViewController viewController)
+			{
+				throw new InvalidOperationException("Could not attach view - unable to find RootViewController");
 			}
 
 			while (viewController.PresentedViewController != null)
@@ -89,7 +93,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			if (contentView == null)
 			{
-				throw new InvalidOperationException("Could not attach view");
+				throw new InvalidOperationException("Could not attach view - unable to find ContentView");
 			}
 
 			return contentView;
