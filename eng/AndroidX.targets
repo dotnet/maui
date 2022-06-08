@@ -18,7 +18,7 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.Navigation.UI"
-        Version="2.4.2"
+        Version="2.4.2.1"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Navigation.Fragment"
