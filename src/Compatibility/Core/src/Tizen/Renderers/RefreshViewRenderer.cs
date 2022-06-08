@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Layouts;
@@ -281,11 +282,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return false;
 		}
 
+		//TODO: the following method is not trimming safe
+		[UnconditionalSuppressMessage("Trimming", "IL2026")]
+		[UnconditionalSuppressMessage("Trimming", "IL2075")]
+		[UnconditionalSuppressMessage("Trimming", "IL2091")]
 		int GetScrollYOnGenList(IntPtr handle)
 		{
-#pragma warning disable IL2026
 			var interop = typeof(EvasObject).Assembly.GetType("Interop");
-#pragma warning disable IL2026
 			var elementary = interop?.GetNestedType("Elementary", BindingFlags.NonPublic | BindingFlags.Static) ?? null;
 
 			if (elementary != null)

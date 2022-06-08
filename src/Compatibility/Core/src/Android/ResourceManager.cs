@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		static Assembly _assembly;
 		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Resource.designer.cs is in the root application assembly, which should be preserved.")]
+		[UnconditionalSuppressMessage("Trimming", "IL2073", Justification = "Resource.designer.cs may be linked away, so don't worry if there are missing things.")]
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
 		static Type FindType(string name, string altName)
 		{
