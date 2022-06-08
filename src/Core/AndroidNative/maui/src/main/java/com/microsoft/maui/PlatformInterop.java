@@ -84,7 +84,7 @@ public class PlatformInterop {
 
     public static View getSemanticPlatformElement(View view) {
         if (view instanceof SearchView) {
-            view = view.findViewById(androidx.appcompat.R.id.search_button);
+            view = view.findViewById(androidx.appcompat.R.id.search_src_text);
         }
 
         return view;
