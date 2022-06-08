@@ -40,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						for (int i = 0; i < contentViewGroup.ChildCount; i++)
 						{
-							if (contentViewGroup.GetChildAt(n) is AppCompatEditText)
+							if (contentViewGroup.GetChildAt(i) is AppCompatEditText)
 							{
 								return true;
 							}

@@ -39,7 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						foreach (var content in contentView.Subviews)
 						{
-							if (platformView is MauiTextField)
+							if (content is MauiTextField)
 							{
 								return true;
 							}
