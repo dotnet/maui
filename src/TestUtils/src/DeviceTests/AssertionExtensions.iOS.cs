@@ -66,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 			return result;
 		}
 
-		static ContentView FindContentView() 
+		static UIView FindContentView() 
 		{
 			if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window)
 			{
@@ -100,14 +100,21 @@ namespace Microsoft.Maui.DeviceTests
 				throw new InvalidOperationException("Could not attach view - unable to find visible view");
 			}
 
-			var contentView = currentView.FindDescendantView<ContentView>();
+			var attachParent = currentView.FindDescendantView<ContentView>() as UIView;
 
-			if (contentView == null)
+			if (attachParent == null)
 			{
-				throw new InvalidOperationException($"Could not attach view - unable to find ContentView. currentView is {currentView}");
+				attachParent = currentView.FindDescendantView<UIView>();
+
+				throw new InvalidOperationException($"Could not attach view - unable to find a target to attach to. currentView is {currentView}");
 			}
 
-			return contentView;
+			if (attachParent == null)
+			{
+				throw new InvalidOperationException($"Could not attach view - unable to find a target to attach to. currentView is {currentView}");
+			}
+
+			return attachParent;
 		}
 
 		public static Task<UIImage> ToBitmap(this UIView view)
