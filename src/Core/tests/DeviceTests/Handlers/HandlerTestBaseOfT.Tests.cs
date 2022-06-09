@@ -195,7 +195,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			bool CloseEnough(double value1, double value2)
 			{
-				return System.Math.Abs(value2 - value1) < 0.1;
+				return System.Math.Abs(value2 - value1) < 0.2;
 			}
 		}
 
