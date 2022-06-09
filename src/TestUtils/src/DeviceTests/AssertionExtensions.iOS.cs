@@ -109,11 +109,6 @@ namespace Microsoft.Maui.DeviceTests
 				throw new InvalidOperationException($"Could not attach view - unable to find a target to attach to. currentView is {currentView}");
 			}
 
-			if (attachParent == null)
-			{
-				throw new InvalidOperationException($"Could not attach view - unable to find a target to attach to. currentView is {currentView}");
-			}
-
 			return attachParent ?? currentView;
 		}
 
