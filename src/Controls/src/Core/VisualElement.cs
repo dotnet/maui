@@ -1015,7 +1015,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void MockBounds(Rect bounds)
 		{
-#if NETSTANDARD2_0 || NET6_0
+#if NETSTANDARD2_0 || NET6_0_OR_GREATER
 			(_mockX, _mockY, _mockWidth, _mockHeight) = bounds;
 #else
 			_mockX = bounds.X;

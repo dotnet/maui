@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
-    <TargetName>Microsoft.NET.Sdk.Maui.Workload</TargetName>
+    <TargetName>Microsoft.NET.Sdk.Maui.Workload.@VSMAN_VERSION@</TargetName>
     <ManifestBuildVersion>@VS_COMPONENT_VERSION@</ManifestBuildVersion>
   </PropertyGroup>
   <ItemGroup>
