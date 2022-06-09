@@ -50,5 +50,20 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.ShowsUserLocation = map.IsShowingUser;
 
 		}
+
+		public static void MapHasScrollEnabled(IMapHander handler, IMap map)
+		{
+			handler.PlatformView.ScrollEnabled = map.HasScrollEnabled;
+		}
+
+		public static void MapHasTrafficEnabled(IMapHander handler, IMap map)
+		{
+			handler.PlatformView.ShowsTraffic = map.HasTrafficEnabled;
+		}
+
+		public static void MapHasZoomEnabled(IMapHander handler, IMap map)
+		{
+			handler.PlatformView.ZoomEnabled = map.HasZoomEnabled;
+		}
 	}
 }

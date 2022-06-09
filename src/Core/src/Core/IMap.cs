@@ -15,8 +15,23 @@ namespace Microsoft.Maui
 		MapType MapType { get; }
 
 		/// <summary>
-		/// Get whether this Map is showing the user's current location.
+		/// Get whether the Map is showing the user's current location.
 		/// </summary>
 		bool IsShowingUser { get; }
+
+		/// <summary>
+		/// Get whether the Map is allowed to scroll.
+		/// </summary>
+		bool HasScrollEnabled { get; }
+
+		/// <summary>
+		/// Get whether this Map is allowed to zoom.
+		/// </summary>
+		bool HasZoomEnabled { get; }
+
+		/// <summary>
+		/// Get whether this Map is showing traffic information.
+		/// </summary>
+		bool HasTrafficEnabled { get; }
 	}
 }

@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IMap.MapType)] = MapMapType,
 			[nameof(IMap.IsShowingUser)] = MapIsShowingUser,
+			[nameof(IMap.HasScrollEnabled)] = MapHasScrollEnabled,
+			[nameof(IMap.HasTrafficEnabled)] = MapHasTrafficEnabled,
+			[nameof(IMap.HasZoomEnabled)] = MapHasZoomEnabled,
 		};
 
 		public static CommandMapper<IMap, IMapHander> CommandMapper = new(ViewCommandMapper);

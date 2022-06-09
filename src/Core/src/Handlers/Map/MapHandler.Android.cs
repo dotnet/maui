@@ -55,21 +55,14 @@ namespace Microsoft.Maui.Handlers
 			GoogleMap? googleMap = handler?.Map;
 			if (googleMap == null)
 				return;
-		
-			switch (map.MapType)
+
+			googleMap.MapType = map.MapType switch
 			{
-				case MapType.Street:
-					googleMap.MapType = GoogleMap.MapTypeNormal;
-					break;
-				case MapType.Satellite:
-					googleMap.MapType = GoogleMap.MapTypeSatellite;
-					break;
-				case MapType.Hybrid:
-					googleMap.MapType = GoogleMap.MapTypeHybrid;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+				MapType.Street => GoogleMap.MapTypeNormal,
+				MapType.Satellite => GoogleMap.MapTypeSatellite,
+				MapType.Hybrid => GoogleMap.MapTypeHybrid,
+				_ => throw new ArgumentOutOfRangeException(),
+			};
 		}
 
 		public static void MapIsShowingUser(IMapHander handler, IMap map)
@@ -100,6 +93,34 @@ namespace Microsoft.Maui.Handlers
 			{
 				googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = false;
 			}
+		}
+
+		public static void MapHasScrollEnabled(IMapHander handler, IMap map)
+		{
+			GoogleMap? googleMap = handler?.Map;
+			if (googleMap == null)
+				return;
+
+			googleMap.UiSettings.ScrollGesturesEnabled = map.HasScrollEnabled;
+		}
+
+		public static void MapHasTrafficEnabled(IMapHander handler, IMap map)
+		{
+			GoogleMap? googleMap = handler?.Map;
+			if (googleMap == null)
+				return;
+
+			googleMap.TrafficEnabled = map.HasTrafficEnabled;
+		}
+
+		public static void MapHasZoomEnabled(IMapHander handler, IMap map)
+		{
+			GoogleMap? googleMap = handler?.Map;
+			if (googleMap == null)
+				return;
+
+			googleMap.UiSettings.ZoomControlsEnabled = map.HasZoomEnabled;
+			googleMap.UiSettings.ZoomGesturesEnabled = map.HasZoomEnabled;
 		}
 
 		internal void OnMapReady(GoogleMap map)
