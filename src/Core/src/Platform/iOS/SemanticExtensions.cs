@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Platform
 
 				if (textField == null)
 					return;
-				
+
 				platformView = textField;
 			}
 
