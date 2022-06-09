@@ -105,8 +105,6 @@ namespace Microsoft.Maui.DeviceTests
 			if (attachParent == null)
 			{
 				attachParent = currentView.FindDescendantView<UIView>();
-
-				throw new InvalidOperationException($"Could not attach view - unable to find a target to attach to. currentView is {currentView}");
 			}
 
 			return attachParent ?? currentView;
