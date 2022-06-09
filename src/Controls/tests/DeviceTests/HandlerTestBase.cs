@@ -11,6 +11,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 namespace Microsoft.Maui.DeviceTests
@@ -209,6 +210,9 @@ namespace Microsoft.Maui.DeviceTests
 							content = pc.CurrentPage;
 
 						await OnLoadedAsync(content as VisualElement);
+
+						if (content is Page page)
+							await OnNavigatedToAsync(page);
 #if WINDOWS
 
 						await Task.Delay(10);
@@ -310,19 +314,23 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		protected Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		protected async Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			if (frameworkElement.Frame.Height > 0 &&
 				frameworkElement.Frame.Width > 0)
 			{
-				return Task.CompletedTask;
+				return;
 			}
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 			frameworkElement.BatchCommitted += OnBatchCommitted;
 
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			// Wait for the layout to propagate to the platform
+			if (frameworkElement.GetBoundingBox().Equals(new Rect()))
+				await Task.Delay(10);
 
 			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
 			{
