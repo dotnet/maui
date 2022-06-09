@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Controls.Maps
+﻿namespace Microsoft.Maui
 {
 	public enum MapType
 	{

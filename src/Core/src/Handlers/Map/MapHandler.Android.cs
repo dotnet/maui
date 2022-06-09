@@ -1,4 +1,5 @@
-﻿using Android.Gms.Maps;
+﻿using System;
+using Android.Gms.Maps;
 using Android.OS;
 namespace Microsoft.Maui.Handlers
 {
@@ -17,6 +18,8 @@ namespace Microsoft.Maui.Handlers
 	}
 	public partial class MapHandler : ViewHandler<IMap, MapView>
 	{
+		public GoogleMap? Map { get; set; }
+
 		static Bundle? s_bundle;
 
 		public static Bundle? Bundle
@@ -30,7 +33,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 			platformView.GetMapAsync(_mapReady);
-		
 		}
 
 		protected override MapView CreatePlatformView()
@@ -42,12 +44,40 @@ namespace Microsoft.Maui.Handlers
 			return mapView;
 		}
 
+
+		public static void MapMapType(IMapHander handler, IMap map)
+		{
+
+			GoogleMap? googleMap = handler?.Map;
+			if (googleMap == null)
+			{
+				return;
+			}
+			
+			switch (map.MapType)
+			{
+				case MapType.Street:
+					googleMap.MapType = GoogleMap.MapTypeNormal;
+					break;
+				case MapType.Satellite:
+					googleMap.MapType = GoogleMap.MapTypeSatellite;
+					break;
+				case MapType.Hybrid:
+					googleMap.MapType = GoogleMap.MapTypeHybrid;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+
 		internal void OnMapReady(GoogleMap map)
 		{
 			if (map == null)
 			{
 				return;
 			}
+
+			Map = map;
 
 			//map.SetOnCameraMoveListener(this);
 			//map.MarkerClick += OnMarkerClick;

@@ -8,5 +8,7 @@ namespace Microsoft.Maui.Handlers
 	{
 
 		protected override object CreatePlatformView() => throw new NotImplementedException();
+
+		public static void MapMapType(IMapHander handler, IMap map) => throw new NotImplementedException();
 	}
 }
