@@ -1,6 +1,11 @@
 ﻿using System;
+using Android;
+using Android.Content.PM;
 using Android.Gms.Maps;
 using Android.OS;
+using AndroidX.Core.Content;
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.Maui.Handlers
 {
 	class MapReadyCallbackHandler : Java.Lang.Object, IOnMapReadyCallback
@@ -47,13 +52,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMapType(IMapHander handler, IMap map)
 		{
-
 			GoogleMap? googleMap = handler?.Map;
 			if (googleMap == null)
-			{
 				return;
-			}
-			
+		
 			switch (map.MapType)
 			{
 				case MapType.Street:
@@ -67,6 +69,36 @@ namespace Microsoft.Maui.Handlers
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
+			}
+		}
+
+		public static void MapIsShowingUser(IMapHander handler, IMap map)
+		{
+			GoogleMap? googleMap = handler?.Map;
+			if (googleMap == null)
+				return;
+
+			if (handler?.MauiContext?.Context == null)
+				return;
+
+			if (map.IsShowingUser)
+			{
+				var coarseLocationPermission = ContextCompat.CheckSelfPermission(handler.MauiContext.Context, Manifest.Permission.AccessCoarseLocation);
+				var fineLocationPermission = ContextCompat.CheckSelfPermission(handler.MauiContext.Context, Manifest.Permission.AccessFineLocation);
+
+				if (coarseLocationPermission == Permission.Granted || fineLocationPermission == Permission.Granted)
+				{
+					googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = true;
+				}
+				else
+				{
+					handler?.MauiContext?.CreateLogger<MapHandler>()?.LogWarning("Missing location permissions for IsShowingUser");
+					googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = false;
+				}
+			}
+			else
+			{
+				googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = false;
 			}
 		}
 

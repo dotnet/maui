@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 		public static IPropertyMapper<IMap, IMapHander> Mapper = new PropertyMapper<IMap, IMapHander>(ViewHandler.ViewMapper)
 		{
 			[nameof(IMap.MapType)] = MapMapType,
+			[nameof(IMap.IsShowingUser)] = MapIsShowingUser,
 		};
 
 		public static CommandMapper<IMap, IMapHander> CommandMapper = new(ViewCommandMapper);

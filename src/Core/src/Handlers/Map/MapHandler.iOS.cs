@@ -1,16 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using CoreLocation;
 using MapKit;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class MapHandler : ViewHandler<IMap, MKMapView>
 	{
+		CLLocationManager? _locationManager;
 
 		protected override MKMapView CreatePlatformView()
 		{
 			return new MKMapView();
+		}
+
+		protected override void ConnectHandler(MKMapView platformView)
+		{
+			base.ConnectHandler(platformView);
+			_locationManager = new CLLocationManager();
 		}
 
 		public static void MapMapType(IMapHander handler, IMap map)
@@ -27,6 +35,20 @@ namespace Microsoft.Maui.Handlers
 					handler.PlatformView.MapType = MKMapType.Hybrid;
 					break;
 			}
+		}
+
+		public static void MapIsShowingUser(IMapHander handler, IMap map)
+		{
+
+#if !MACCATALYST
+			if (map.IsShowingUser)
+			{
+				MapHandler? mapHandler = handler as MapHandler;
+				mapHandler?._locationManager?.RequestWhenInUseAuthorization();
+			}
+#endif
+			handler.PlatformView.ShowsUserLocation = map.IsShowingUser;
+
 		}
 	}
 }

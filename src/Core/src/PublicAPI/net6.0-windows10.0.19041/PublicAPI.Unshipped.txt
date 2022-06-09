@@ -7,6 +7,7 @@ Microsoft.Maui.Handlers.MapHandler
 Microsoft.Maui.Handlers.MapHandler.MapHandler() -> void
 Microsoft.Maui.Handlers.MapHandler.MapHandler(Microsoft.Maui.IPropertyMapper? mapper = null, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.IMap
+Microsoft.Maui.IMap.IsShowingUser.get -> bool
 Microsoft.Maui.IMap.MapType.get -> Microsoft.Maui.MapType
 Microsoft.Maui.MapType
 Microsoft.Maui.MapType.Hybrid = 2 -> Microsoft.Maui.MapType
@@ -14,5 +15,6 @@ Microsoft.Maui.MapType.Satellite = 1 -> Microsoft.Maui.MapType
 Microsoft.Maui.MapType.Street = 0 -> Microsoft.Maui.MapType
 override Microsoft.Maui.Handlers.MapHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.WebView2!
 static Microsoft.Maui.Handlers.MapHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMap!, Microsoft.Maui.Handlers.IMapHander!>!
+static Microsoft.Maui.Handlers.MapHandler.MapIsShowingUser(Microsoft.Maui.Handlers.IMapHander! handler, Microsoft.Maui.IMap! map) -> void
 static Microsoft.Maui.Handlers.MapHandler.MapMapType(Microsoft.Maui.Handlers.IMapHander! handler, Microsoft.Maui.IMap! map) -> void
 static Microsoft.Maui.Handlers.MapHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMap!, Microsoft.Maui.Handlers.IMapHander!>!
