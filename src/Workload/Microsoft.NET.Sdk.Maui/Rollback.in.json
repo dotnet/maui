@@ -1,10 +1,10 @@
 {
-  "microsoft.net.sdk.android": "@MicrosoftAndroidSdkWindowsPackageVersion@",
-  "microsoft.net.sdk.ios": "@MicrosoftiOSSdkPackageVersion@",
-  "microsoft.net.sdk.maccatalyst": "@MicrosoftMacCatalystSdkPackageVersion@",
-  "microsoft.net.sdk.macos": "@MicrosoftmacOSSdkPackageVersion@",
-  "microsoft.net.sdk.maui": "@VERSION@",
-  "microsoft.net.sdk.tvos": "@MicrosofttvOSSdkPackageVersion@",
-  "microsoft.net.workload.mono.toolchain": "@MicrosoftNETCoreAppRefPackageVersion@",
-  "microsoft.net.workload.emscripten": "@MicrosoftNETWorkloadEmscriptenPackageVersion@"
+  "microsoft.net.sdk.android": "@MicrosoftAndroidSdkWindowsPackageVersion@/@DotNetAndroidManifestVersionBand@",
+  "microsoft.net.sdk.ios": "@MicrosoftiOSSdkPackageVersion@/@DotNetMaciOSManifestVersionBand@",
+  "microsoft.net.sdk.maccatalyst": "@MicrosoftMacCatalystSdkPackageVersion@/@DotNetMaciOSManifestVersionBand@",
+  "microsoft.net.sdk.macos": "@MicrosoftmacOSSdkPackageVersion@/@DotNetMaciOSManifestVersionBand@",
+  "microsoft.net.sdk.maui": "@VERSION@/@DotNetMauiManifestVersionBand@",
+  "microsoft.net.sdk.tvos": "@MicrosofttvOSSdkPackageVersion@/@DotNetMaciOSManifestVersionBand@",
+  "microsoft.net.workload.mono.toolchain": "@MicrosoftNETCoreAppRefPackageVersion@/@DotNetMonoManifestVersionBand@",
+  "microsoft.net.workload.emscripten": "@MicrosoftNETWorkloadEmscriptenPackageVersion@/@DotNetEmscriptenManifestVersionBand@"
 }

@@ -190,6 +190,45 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+
+
+		[Fact(DisplayName = "Correctly Adjust to Making Currently Visible Shell Page Invisible")]
+		public async Task CorrectlyAdjustToMakingCurrentlyVisibleShellPageInvisible()
+		{
+			SetupBuilder();
+
+			var page1 = new ContentPage();
+			var page2 = new ContentPage();
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				var tabBar = new TabBar()
+				{
+					Items =
+					{
+						new ShellContent(){ Content = page1 },
+						new ShellContent(){ Content = page2 },
+					}
+				};
+
+				shell.Items.Add(tabBar);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnNavigatedToAsync(page1);
+				shell.CurrentItem = page2;
+				await OnNavigatedToAsync(page2);
+				page2.IsVisible = false;
+				await OnNavigatedToAsync(page1);
+				Assert.Equal(shell.CurrentPage, page1);
+				page2.IsVisible = true;
+				shell.CurrentItem = page2;
+				await OnNavigatedToAsync(page2);
+				Assert.Equal(shell.CurrentPage, page2);
+			});
+		}
+
 		[Fact(DisplayName = "Empty Shell")]
 		public async Task DetailsViewUpdates()
 		{
