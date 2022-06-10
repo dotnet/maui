@@ -1,4 +1,5 @@
-﻿using CoreLocation;
+﻿using System.Collections.ObjectModel;
+using CoreLocation;
 using MapKit;
 
 namespace Microsoft.Maui.Handlers
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Handlers
 			_locationManager = new CLLocationManager();
 		}
 
-		public static void MapMapType(IMapHander handler, IMap map)
+		public static void MapMapType(IMapHandler handler, IMap map)
 		{
 			switch (map.MapType)
 			{
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapIsShowingUser(IMapHander handler, IMap map)
+		public static void MapIsShowingUser(IMapHandler handler, IMap map)
 		{
 
 #if !MACCATALYST
@@ -47,17 +48,17 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.ShowsUserLocation = map.IsShowingUser;
 		}
 
-		public static void MapHasScrollEnabled(IMapHander handler, IMap map)
+		public static void MapHasScrollEnabled(IMapHandler handler, IMap map)
 		{
 			handler.PlatformView.ScrollEnabled = map.HasScrollEnabled;
 		}
 
-		public static void MapHasTrafficEnabled(IMapHander handler, IMap map)
+		public static void MapHasTrafficEnabled(IMapHandler handler, IMap map)
 		{
 			handler.PlatformView.ShowsTraffic = map.HasTrafficEnabled;
 		}
 
-		public static void MapHasZoomEnabled(IMapHander handler, IMap map)
+		public static void MapHasZoomEnabled(IMapHandler handler, IMap map)
 		{
 			handler.PlatformView.ZoomEnabled = map.HasZoomEnabled;
 		}

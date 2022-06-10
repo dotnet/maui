@@ -7,15 +7,23 @@
              x:Class="Maui.Controls.Sample.Pages.MapsGalleries.BasicMapGallery"
              Title="Basic Map">
 
-    <Grid RowDefinitions="Auto, *">
+    <Grid RowDefinitions="Auto, Auto, *">
         <HorizontalStackLayout Grid.Row="0">
             <Switch x:Name="ShowUserLocationSwitch" Margin="5"/>
             <Label Text="Show user" VerticalOptions="Center"/>
             <Switch x:Name="ShowTrafficSwitch" Margin="5"/>
             <Label Text="Show traffic" VerticalOptions="Center"/>
         </HorizontalStackLayout>
-        <Map x:Name="basicMap" Grid.Row="1" 
+        <HorizontalStackLayout Grid.Row="1">
+            <Switch x:Name="ZoomEnabledSwitch" Margin="5" IsToggled="True"/>
+            <Label Text="Zoom enabled" VerticalOptions="Center"/>
+            <Switch x:Name="ScrollEnabledSwitch" Margin="5" IsToggled="True"/>
+            <Label Text="Scroll enabled" VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+        <Map x:Name="basicMap" Grid.Row="2" 
              IsShowingUser="{Binding IsToggled, Source={x:Reference ShowUserLocationSwitch}}}"
-             HasTrafficEnabled="{Binding IsToggled, Source={x:Reference ShowTrafficSwitch}}}" />
+             HasTrafficEnabled="{Binding IsToggled, Source={x:Reference ShowTrafficSwitch}}}"
+             HasZoomEnabled="{Binding IsToggled, Source={x:Reference ZoomEnabledSwitch}}}"
+             HasScrollEnabled="{Binding IsToggled, Source={x:Reference ScrollEnabledSwitch}}}"/>
     </Grid>
 </ContentPage>

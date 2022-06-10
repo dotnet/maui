@@ -12,9 +12,9 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MapHandler : IMapHander
+	public partial class MapHandler : IMapHandler
 	{
-		public static IPropertyMapper<IMap, IMapHander> Mapper = new PropertyMapper<IMap, IMapHander>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IMap, IMapHandler> Mapper = new PropertyMapper<IMap, IMapHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IMap.MapType)] = MapMapType,
 			[nameof(IMap.IsShowingUser)] = MapIsShowingUser,
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IMap.HasZoomEnabled)] = MapHasZoomEnabled,
 		};
 
-		public static CommandMapper<IMap, IMapHander> CommandMapper = new(ViewCommandMapper);
+		public static CommandMapper<IMap, IMapHandler> CommandMapper = new(ViewCommandMapper);
 
 		public MapHandler() : base(Mapper, CommandMapper)
 		{
@@ -35,8 +35,8 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		IMap IMapHander.VirtualView => VirtualView;
+		IMap IMapHandler.VirtualView => VirtualView;
 
-		PlatformView IMapHander.PlatformView => PlatformView;
+		PlatformView IMapHandler.PlatformView => PlatformView;
 	}
 }

@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 
-		public static void MapMapType(IMapHander handler, IMap map)
+		public static void MapMapType(IMapHandler handler, IMap map)
 		{
 			GoogleMap? googleMap = handler?.Map;
 			if (googleMap == null)
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		public static void MapIsShowingUser(IMapHander handler, IMap map)
+		public static void MapIsShowingUser(IMapHandler handler, IMap map)
 		{
 			GoogleMap? googleMap = handler?.Map;
 			if (googleMap == null)
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapHasScrollEnabled(IMapHander handler, IMap map)
+		public static void MapHasScrollEnabled(IMapHandler handler, IMap map)
 		{
 			GoogleMap? googleMap = handler?.Map;
 			if (googleMap == null)
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Handlers
 			googleMap.UiSettings.ScrollGesturesEnabled = map.HasScrollEnabled;
 		}
 
-		public static void MapHasTrafficEnabled(IMapHander handler, IMap map)
+		public static void MapHasTrafficEnabled(IMapHandler handler, IMap map)
 		{
 			GoogleMap? googleMap = handler?.Map;
 			if (googleMap == null)
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Handlers
 			googleMap.TrafficEnabled = map.HasTrafficEnabled;
 		}
 
-		public static void MapHasZoomEnabled(IMapHander handler, IMap map)
+		public static void MapHasZoomEnabled(IMapHandler handler, IMap map)
 		{
 			GoogleMap? googleMap = handler?.Map;
 			if (googleMap == null)

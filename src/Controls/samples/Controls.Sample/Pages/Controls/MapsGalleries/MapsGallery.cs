@@ -15,6 +15,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 					{
 						GalleryBuilder.NavButton("Basic Map", () => new BasicMapGallery(), Navigation),
 						GalleryBuilder.NavButton("Map Type", () => new MapTypeGallery(), Navigation),
+						GalleryBuilder.NavButton("Map Pins", () => new MapPinsGallery(), Navigation),
 					}
 				}
 			};
