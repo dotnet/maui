@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs
 Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.BlazorWebViewInitializedEventArgs() -> void
 Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs
