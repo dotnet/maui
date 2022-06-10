@@ -30,3 +30,4 @@ static Microsoft.Maui.Handlers.MapHandler.MapHasZoomEnabled(Microsoft.Maui.Handl
 static Microsoft.Maui.Handlers.MapHandler.MapIsShowingUser(Microsoft.Maui.Handlers.IMapHander! handler, Microsoft.Maui.IMap! map) -> void
 static Microsoft.Maui.Handlers.MapHandler.MapMapType(Microsoft.Maui.Handlers.IMapHander! handler, Microsoft.Maui.IMap! map) -> void
 static Microsoft.Maui.Handlers.MapHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMap!, Microsoft.Maui.Handlers.IMapHander!>!
+override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size

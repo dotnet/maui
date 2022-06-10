@@ -11,6 +11,16 @@ namespace Microsoft.Maui.Platform
 			if (semantics == null)
 				return;
 
+			if (platformView is UISearchBar searchBar)
+			{
+				var textField = searchBar.GetSearchTextField();
+
+				if (textField == null)
+					return;
+
+				platformView = textField;
+			}
+
 			platformView.AccessibilityLabel = semantics.Description;
 			platformView.AccessibilityHint = semantics.Hint;
 
