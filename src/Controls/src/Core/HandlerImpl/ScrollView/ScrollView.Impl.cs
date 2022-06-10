@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using static Microsoft.Maui.Layouts.LayoutManager;
@@ -73,8 +74,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			content.Measure(widthConstraint, heightConstraint);
-			ContentSize = content.DesiredSize;
-			return ContentSize;
+			return content.DesiredSize;
 		}
 
 		protected override Size ArrangeOverride(Rect bounds)

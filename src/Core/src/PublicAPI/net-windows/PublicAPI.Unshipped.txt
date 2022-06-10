@@ -1,0 +1,3 @@
+﻿#nullable enable
+*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+*REMOVED*override Microsoft.Maui.Handlers.WindowHandler.ConnectHandler(Microsoft.UI.Xaml.Window! platformView) -> void
