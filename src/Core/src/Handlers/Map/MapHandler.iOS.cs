@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using CoreLocation;
+﻿using CoreLocation;
 using MapKit;
 
 namespace Microsoft.Maui.Handlers
