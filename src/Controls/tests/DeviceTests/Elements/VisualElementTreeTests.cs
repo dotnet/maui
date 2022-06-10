@@ -24,7 +24,11 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
+#if IOS
+					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
+#else
 					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+#endif
 					handlers.AddHandler<Layout, LayoutHandler>();
 					handlers.AddHandler<Image, ImageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
