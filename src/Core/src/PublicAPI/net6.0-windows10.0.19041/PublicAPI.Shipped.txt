@@ -1906,7 +1906,6 @@ override Microsoft.Maui.Handlers.RefreshViewHandler.DisconnectHandler(Microsoft.
 override Microsoft.Maui.Handlers.ScrollViewHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.ScrollViewer! platformView) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.ScrollViewer!
 override Microsoft.Maui.Handlers.ScrollViewHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.ScrollViewer! platformView) -> void
-override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.SearchBarHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformView) -> void
 override Microsoft.Maui.Handlers.SearchBarHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.AutoSuggestBox!
 override Microsoft.Maui.Handlers.SearchBarHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformView) -> void

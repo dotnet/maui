@@ -12,6 +12,7 @@ using AndroidX.Fragment.App;
 using AndroidX.ViewPager.Widget;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.Tabs;
+using Microsoft.Extensions.Logging;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -226,6 +227,45 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			UpdateTablayoutVisibility();
+
+			if (_viewPager?.Adapter is ShellFragmentStateAdapter adapter)
+			{
+				adapter.OnItemsCollectionChanged(sender, e);
+				SafeNotifyDataSetChanged();
+			}
+		}
+
+		void SafeNotifyDataSetChanged(int iteration = 0)
+		{
+			if (_disposed)
+				return;
+
+			if (!_viewPager.IsAlive())
+				return;
+
+			if (iteration >= 10)
+			{
+				// It's very unlikely this will happen but just in case there's a scenario
+				// where we might hit an infinite loop we're adding an exit strategy
+				MauiContext.CreateLogger<ShellSectionRenderer>()
+					.LogWarning("ViewPager2 stuck in layout, unable to NotifyDataSetChanged;");
+
+				return;
+			}
+
+			if (_viewPager?.Adapter is ShellFragmentStateAdapter adapter)
+			{
+				// https://stackoverflow.com/questions/43221847/cannot-call-this-method-while-recyclerview-is-computing-a-layout-or-scrolling-wh
+				// ViewPager2 is based on RecyclerView which really doesn't like NotifyDataSetChanged when a layout is happening
+				if (!_viewPager.IsInLayout)
+				{
+					adapter.NotifyDataSetChanged();
+				}
+				else
+				{
+					_viewPager.Post(() => SafeNotifyDataSetChanged(++iteration));
+				}
+			}
 		}
 
 		void UpdateTablayoutVisibility()
@@ -258,7 +298,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var newIndex = SectionController.GetItems().IndexOf(ShellSection.CurrentItem);
 
 				if (SectionController.GetItems().Count != _viewPager.ChildCount)
-					_viewPager.Adapter.NotifyDataSetChanged();
+				{
+					SafeNotifyDataSetChanged();
+				}
 
 				if (newIndex >= 0)
 				{
@@ -299,7 +341,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			var shellSection = ShellSection;
-			var shellContent = SectionController.GetItems()[position];
+			var visibleItems = SectionController.GetItems();
+
+			// This mainly happens if all of the items that are part of this shell section 
+			// vanish. Android calls `OnPageSelected` with position zero even though the view pager is
+			// empty
+			if (visibleItems.Count >= position)
+				return;
+
+			var shellContent = visibleItems[position];
 
 			if (shellContent == shellSection.CurrentItem)
 				return;
@@ -314,7 +364,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (shellSection?.CurrentItem != null)
 			{
-				var currentPosition = SectionController.GetItems().IndexOf(shellSection.CurrentItem);
+				var currentPosition = visibleItems.IndexOf(shellSection.CurrentItem);
 				_selecting = true;
 
 				// Android doesn't really appreciate you calling SetCurrentItem inside a OnPageSelected callback.
