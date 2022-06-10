@@ -69,15 +69,15 @@ namespace Microsoft.Maui.DeviceTests
 
 				// find label at the bottom right corner
 				Assert.Contains(label, window.GetVisualTreeElements(
-						locationOnScreen.X + labelFrame.Width - 0.1,
-						locationOnScreen.Y + labelFrame.Height - 0.1
+						locationOnScreen.X + labelFrame.Width - 0.2,
+						locationOnScreen.Y + labelFrame.Height - 0.2
 					));
 
 				// Ensure that the point directly outside the bounds of the label doesn't
 				// return the label
 				Assert.DoesNotContain(label, window.GetVisualTreeElements(
-						locationOnScreen.X + labelFrame.Width + 0.1,
-						locationOnScreen.Y + labelFrame.Height + 0.1
+						locationOnScreen.X + labelFrame.Width + 0.2,
+						locationOnScreen.Y + labelFrame.Height + 0.2
 					));
 
 			});
