@@ -66,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 				var window = rootPage.Window;
 
 				// Find label at the top left corner
-				var topLeft = new Graphics.Point(locationOnScreen.X, locationOnScreen.Y);
+				var topLeft = new Graphics.Point(locationOnScreen.X + 1, locationOnScreen.Y + 1);
 
 				AssertionExtensions.AssertWithMessage(
 					() => Assert.Contains(label, window.GetVisualTreeElements(topLeft)),
