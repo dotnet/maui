@@ -122,5 +122,45 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected.Right, native.Right, Precision);
 			Assert.Equal(expected.Bottom, native.Bottom, Precision);
 		}
+
+		[Theory]
+		[InlineData(null)]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#0000FF")]
+		[InlineData("#000000")]
+		public async Task BorderColorInitializesCorrectly(string colorHex)
+		{
+			var expectedColor = Color.FromArgb(colorHex);
+
+			var button = new ButtonStub { Text = "Test", StrokeColor = expectedColor };
+
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await handler.PlatformView.AssertContainsColor(expectedColor);
+			});
+		}
+
+		[Theory]
+		[InlineData(null)]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#0000FF")]
+		[InlineData("#000000")]
+		public async Task BorderColorUpdatesCorrectly(string colorHex)
+		{
+			var expectedColor = Color.FromArgb(colorHex);
+
+			var button = new ButtonStub { Text = "Test" };
+
+			var handler = await CreateHandlerAsync(button);
+
+			button.StrokeColor = expectedColor;
+			handler.UpdateValue(nameof(IButton.StrokeColor));
+
+			await handler.PlatformView.AssertContainsColor(expectedColor);
+		}
 	}
 }
