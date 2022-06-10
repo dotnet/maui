@@ -5,9 +5,9 @@ using Microsoft.Maui.Graphics;
 using Tizen.NUI;
 using Tizen.UIExtensions.NUI;
 using static Microsoft.Maui.Primitives.Dimension;
+using NColor = Tizen.NUI.Color;
 using NView = Tizen.NUI.BaseComponents.View;
 using Rect = Microsoft.Maui.Graphics.Rect;
-using TRect = Tizen.UIExtensions.Common.Rect;
 
 namespace Microsoft.Maui.Platform
 {
@@ -75,6 +75,7 @@ namespace Microsoft.Maui.Platform
 			else if (platformView.GetParent() is WrapperView parent)
 			{
 				parent.UpdateBackground(paint);
+				platformView.BackgroundColor = NColor.Transparent;
 			}
 			else if (paint is not null)
 			{

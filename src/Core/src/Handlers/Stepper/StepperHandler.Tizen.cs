@@ -1,21 +1,17 @@
 using System;
-using Tizen.UIExtensions.NUI.GraphicsView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : ViewHandler<IStepper, Stepper>
+	public partial class StepperHandler : ViewHandler<IStepper, MauiStepper>
 	{
-		protected override Stepper CreatePlatformView() => new Stepper
-		{
-			Focusable = true,
-		};
+		protected override MauiStepper CreatePlatformView() => new MauiStepper();
 
-		protected override void ConnectHandler(Stepper platformView)
+		protected override void ConnectHandler(MauiStepper platformView)
 		{
 			platformView!.ValueChanged += OnValueChanged;
 		}
 
-		protected override void DisconnectHandler(Stepper platformView)
+		protected override void DisconnectHandler(MauiStepper platformView)
 		{
 			platformView!.ValueChanged -= OnValueChanged;
 		}

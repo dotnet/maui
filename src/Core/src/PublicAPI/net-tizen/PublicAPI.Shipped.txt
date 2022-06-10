@@ -473,7 +473,7 @@ Microsoft.Maui.Handlers.ISliderHandler
 Microsoft.Maui.Handlers.ISliderHandler.PlatformView.get -> Tizen.NUI.Components.Slider!
 Microsoft.Maui.Handlers.ISliderHandler.VirtualView.get -> Microsoft.Maui.ISlider!
 Microsoft.Maui.Handlers.IStepperHandler
-Microsoft.Maui.Handlers.IStepperHandler.PlatformView.get -> Tizen.UIExtensions.NUI.GraphicsView.Stepper!
+Microsoft.Maui.Handlers.IStepperHandler.PlatformView.get -> Microsoft.Maui.Platform.MauiStepper!
 Microsoft.Maui.Handlers.IStepperHandler.VirtualView.get -> Microsoft.Maui.IStepper!
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.PlatformView.get -> Tizen.UIExtensions.NUI.Button!
@@ -1492,6 +1492,22 @@ Microsoft.Maui.Platform.MauiSearchBar.MauiSearchBar() -> void
 Microsoft.Maui.Platform.MauiSearchBar.SearchButtonPressed -> System.EventHandler?
 Microsoft.Maui.Platform.MauiShapeView
 Microsoft.Maui.Platform.MauiShapeView.MauiShapeView() -> void
+Microsoft.Maui.Platform.MauiStepper
+Microsoft.Maui.Platform.MauiStepper.Increment.get -> double
+Microsoft.Maui.Platform.MauiStepper.Increment.set -> void
+Microsoft.Maui.Platform.MauiStepper.MauiStepper() -> void
+Microsoft.Maui.Platform.MauiStepper.Maximum.get -> double
+Microsoft.Maui.Platform.MauiStepper.Maximum.set -> void
+Microsoft.Maui.Platform.MauiStepper.Measure(double availableWidth, double availableHeight) -> Tizen.UIExtensions.Common.Size
+Microsoft.Maui.Platform.MauiStepper.Minimum.get -> double
+Microsoft.Maui.Platform.MauiStepper.Minimum.set -> void
+Microsoft.Maui.Platform.MauiStepper.Value.get -> double
+Microsoft.Maui.Platform.MauiStepper.Value.set -> void
+Microsoft.Maui.Platform.MauiStepper.ValueChanged -> System.EventHandler?
+Microsoft.Maui.Platform.MauiStepper.UpdateIncrement(Microsoft.Maui.IStepper! stepper) -> void
+Microsoft.Maui.Platform.MauiStepper.UpdateMaximum(Microsoft.Maui.IStepper! stepper) -> void
+Microsoft.Maui.Platform.MauiStepper.UpdateMinimum(Microsoft.Maui.IStepper! stepper) -> void
+Microsoft.Maui.Platform.MauiStepper.UpdateValue(Microsoft.Maui.IStepper! stepper) -> void
 Microsoft.Maui.Platform.MauiSwipeView
 Microsoft.Maui.Platform.MauiSwipeView.BatchBegin() -> void
 Microsoft.Maui.Platform.MauiSwipeView.BatchCommit() -> void
@@ -1525,7 +1541,6 @@ Microsoft.Maui.Platform.SliderExtensions
 Microsoft.Maui.Platform.StackNavigationManager
 Microsoft.Maui.Platform.StackNavigationManager.SetToolbar(Microsoft.Maui.Platform.MauiToolbar! toolbar) -> void
 Microsoft.Maui.Platform.StackNavigationManager.StackNavigationManager() -> void
-Microsoft.Maui.Platform.StepperExtensions
 Microsoft.Maui.Platform.StrokeExtensions
 Microsoft.Maui.Platform.SwipeViewExtensions
 Microsoft.Maui.Platform.SwitchExtensions
@@ -1895,9 +1910,9 @@ override Microsoft.Maui.Handlers.ShapeViewHandler.SetupContainer() -> void
 override Microsoft.Maui.Handlers.SliderHandler.ConnectHandler(Tizen.NUI.Components.Slider! nativeView) -> void
 override Microsoft.Maui.Handlers.SliderHandler.CreatePlatformView() -> Tizen.NUI.Components.Slider!
 override Microsoft.Maui.Handlers.SliderHandler.DisconnectHandler(Tizen.NUI.Components.Slider! nativeView) -> void
-override Microsoft.Maui.Handlers.StepperHandler.ConnectHandler(Tizen.UIExtensions.NUI.GraphicsView.Stepper! platformView) -> void
-override Microsoft.Maui.Handlers.StepperHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.GraphicsView.Stepper!
-override Microsoft.Maui.Handlers.StepperHandler.DisconnectHandler(Tizen.UIExtensions.NUI.GraphicsView.Stepper! platformView) -> void
+override Microsoft.Maui.Handlers.StepperHandler.ConnectHandler(Microsoft.Maui.Platform.MauiStepper! platformView) -> void
+override Microsoft.Maui.Handlers.StepperHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiStepper!
+override Microsoft.Maui.Handlers.StepperHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiStepper! platformView) -> void
 override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CreatePlatformElement() -> Tizen.UIExtensions.NUI.Button!
 override Microsoft.Maui.Handlers.SwipeItemViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.ContentViewGroup!
 override Microsoft.Maui.Handlers.SwipeItemViewHandler.Dispose(bool disposing) -> void
@@ -2545,10 +2560,6 @@ static Microsoft.Maui.Platform.SliderExtensions.UpdateMinimumTrackColor(this Tiz
 static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbColor(this Tizen.NUI.Components.Slider! platformSlider, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbImageSourceAsync(this Tizen.NUI.Components.Slider! platformSlider, Microsoft.Maui.ISlider! slider, Microsoft.Maui.IImageSourceServiceProvider! provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.SliderExtensions.UpdateValue(this Tizen.NUI.Components.Slider! platformSlider, Microsoft.Maui.ISlider! slider) -> void
-static Microsoft.Maui.Platform.StepperExtensions.UpdateIncrement(this Tizen.UIExtensions.NUI.GraphicsView.Stepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
-static Microsoft.Maui.Platform.StepperExtensions.UpdateMaximum(this Tizen.UIExtensions.NUI.GraphicsView.Stepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
-static Microsoft.Maui.Platform.StepperExtensions.UpdateMinimum(this Tizen.UIExtensions.NUI.GraphicsView.Stepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
-static Microsoft.Maui.Platform.StepperExtensions.UpdateValue(this Tizen.UIExtensions.NUI.GraphicsView.Stepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
 static Microsoft.Maui.Platform.StrokeExtensions.UpdateStroke(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IBorderStroke! border) -> void
 static Microsoft.Maui.Platform.StrokeExtensions.UpdateStrokeDashOffset(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IBorderStroke! border) -> void
 static Microsoft.Maui.Platform.StrokeExtensions.UpdateStrokeDashPattern(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IBorderStroke! border) -> void

@@ -1,1 +1,2 @@
 ﻿#nullable enable
+override Microsoft.Maui.Platform.MauiStepper.OnEnabled(bool enabled) -> void
