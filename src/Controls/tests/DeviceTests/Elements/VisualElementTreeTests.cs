@@ -66,13 +66,20 @@ namespace Microsoft.Maui.DeviceTests
 				var window = rootPage.Window;
 
 				// Find label at the top left corner
-				Assert.Contains(label, window.GetVisualTreeElements(locationOnScreen.X + 0.1, locationOnScreen.Y + 0.1));
+				var topLeft = new Graphics.Point(locationOnScreen.X, locationOnScreen.Y);
+
+				AssertionExtensions.AssertWithMessage(
+					() => Assert.Contains(label, window.GetVisualTreeElements(topLeft)),
+					$"Unable to find label using top left coordinate: {topLeft} with label frame of: {labelFrame}");
 
 				// find label at the bottom right corner
-				Assert.Contains(label, window.GetVisualTreeElements(
-						locationOnScreen.X + labelFrame.Width - 1,
-						locationOnScreen.Y + labelFrame.Height - 1
-					));
+				var bottomRight = new Graphics.Point(
+					locationOnScreen.X + labelFrame.Width - 1,
+					locationOnScreen.Y + labelFrame.Height - 1);
+
+				AssertionExtensions.AssertWithMessage(
+					() => Assert.Contains(label, window.GetVisualTreeElements(bottomRight)),
+					$"Unable to find label using bottom right coordinate: {bottomRight} with label frame of: {labelFrame}");
 
 				// Ensure that the point directly outside the bounds of the label doesn't
 				// return the label
