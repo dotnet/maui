@@ -2,6 +2,7 @@
 using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Platform
 {
@@ -167,12 +168,12 @@ namespace Microsoft.Maui.Platform
 				textBox.IsSpellCheckEnabled = textInput.IsTextPredictionEnabled;
 			}
 
-			var inputScope = new UI.Xaml.Input.InputScope();
+			var inputScope = new InputScope();
 
 			if (textInput is IEntry entry && entry.ReturnType == ReturnType.Search)
-				inputScope.Names.Add(new UI.Xaml.Input.InputScopeName(UI.Xaml.Input.InputScopeNameValue.Search));
+				inputScope.Names.Add(new InputScopeName(InputScopeNameValue.Search));
 
-			inputScope.Names.Add(textInput.Keyboard.ToInputScopeName());
+			inputScope.Names.Add(textInput.Keyboard?.ToInputScopeName() ?? new InputScopeName(InputScopeNameValue.Default));
 
 			textBox.InputScope = inputScope;
 		}
@@ -190,12 +191,17 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCursorPosition(this TextBox textBox, ITextInput entry)
 		{
+			// It seems that the TextBox does not limit the CursorPosition to the Text.Length natively
+			entry.CursorPosition = Math.Min(entry.CursorPosition, textBox.Text.Length);
+
 			if (textBox.SelectionStart != entry.CursorPosition)
 				textBox.SelectionStart = entry.CursorPosition;
 		}
 
 		public static void UpdateSelectionLength(this TextBox textBox, ITextInput entry)
 		{
+			entry.SelectionLength = Math.Min(entry.SelectionLength, textBox.Text.Length - textBox.SelectionStart);
+
 			if (textBox.SelectionLength != entry.SelectionLength)
 				textBox.SelectionLength = entry.SelectionLength;
 		}
