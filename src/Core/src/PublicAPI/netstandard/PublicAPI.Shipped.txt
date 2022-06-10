@@ -916,6 +916,8 @@ Microsoft.Maui.IPlaceholder.PlaceholderColor.get -> Microsoft.Maui.Graphics.Colo
 Microsoft.Maui.IPlaceholder.PlaceholderColor.set -> void
 Microsoft.Maui.IPlatformApplication
 Microsoft.Maui.IPlatformApplication.Application.get -> Microsoft.Maui.IApplication!
+Microsoft.Maui.IPlatformApplication.Current.get -> Microsoft.Maui.IPlatformApplication?
+Microsoft.Maui.IPlatformApplication.Current.set -> void
 Microsoft.Maui.IPlatformApplication.Services.get -> System.IServiceProvider!
 Microsoft.Maui.IProgress
 Microsoft.Maui.IProgress.Progress.get -> double
