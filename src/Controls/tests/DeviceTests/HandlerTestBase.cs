@@ -324,8 +324,9 @@ namespace Microsoft.Maui.DeviceTests
 			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
 
 			// Wait for the layout to propagate to the platform
-			if (frameworkElement.GetBoundingBox().Equals(new Rect()))
-				await Task.Delay(10);
+			await AssertionExtensions.Wait(
+				() => !frameworkElement.GetBoundingBox().Size.Equals(Size.Zero)
+			);
 
 			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
 			{
