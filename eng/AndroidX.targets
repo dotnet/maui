@@ -34,11 +34,11 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.MediaRouter"
-        Version="1.3.0"
+        Version="1.3.0.1"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Palette"
-        Version="1.0.0.13"
+        Version="1.0.0.14"
     />
     <PackageReference
         Update="Xamarin.AndroidX.RecyclerView"
@@ -59,7 +59,7 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.Window.WindowJava"
-        Version="1.0.0.8"
+        Version="1.0.0.9"
     />
   </ItemGroup>
 </Project>

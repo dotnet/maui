@@ -28,7 +28,10 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size ArrangeChildren(Rect bounds)
 		{
-			var structure = _gridStructure ?? new GridStructure(Grid, bounds.Width, bounds.Height);
+			if (_gridStructure  == null || NeedsRemeasure(bounds, Grid, _gridStructure))
+			{
+				_gridStructure = new GridStructure(Grid, bounds.Width, bounds.Height);
+			}
 
 			var reverseColumns = Grid.ColumnDefinitions.Count > 1 && !Grid.ShouldArrangeLeftToRight();
 
@@ -39,7 +42,7 @@ namespace Microsoft.Maui.Layouts
 					continue;
 				}
 
-				var cell = structure.GetCellBoundsFor(view, bounds.Left, bounds.Top);
+				var cell = _gridStructure.GetCellBoundsFor(view, bounds.Left, bounds.Top);
 
 				if (reverseColumns)
 				{
@@ -50,16 +53,37 @@ namespace Microsoft.Maui.Layouts
 				view.Arrange(cell);
 			}
 
-			var actual = new Size(structure.MeasuredGridWidth(), structure.MeasuredGridHeight());
+			var actual = new Size(_gridStructure.MeasuredGridWidth(), _gridStructure.MeasuredGridHeight());
 
 			return actual.AdjustForFill(bounds, Grid);
 		}
 
+		static bool NeedsRemeasure(Rect bounds, IGridLayout grid, GridStructure structure) 
+		{
+			if (grid.VerticalLayoutAlignment == Primitives.LayoutAlignment.Fill
+					&& structure.HeightConstraint != bounds.Height)
+			{
+				return true;
+			}
+			
+			if (grid.HorizontalLayoutAlignment == Primitives.LayoutAlignment.Fill
+				&& structure.WidthConstraint != bounds.Width)
+			{
+				return true;
+			}
+
+			return false;
+		}
+
 		class GridStructure
 		{
+			public double HeightConstraint => _gridHeightConstraint;
+			public double WidthConstraint => _gridWidthConstraint;
+
 			readonly IGridLayout _grid;
 			readonly double _gridWidthConstraint;
 			readonly double _gridHeightConstraint;
+			
 			readonly double _explicitGridHeight;
 			readonly double _explicitGridWidth;
 			readonly double _gridMaxHeight;

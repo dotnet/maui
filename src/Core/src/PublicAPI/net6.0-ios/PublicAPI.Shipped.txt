@@ -1922,7 +1922,6 @@ override Microsoft.Maui.Handlers.IndicatorViewHandler.CreatePlatformView() -> Mi
 override Microsoft.Maui.Handlers.IndicatorViewHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiPageControl! platformView) -> void
 override Microsoft.Maui.Handlers.LabelHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiLabel!
 override Microsoft.Maui.Handlers.LabelHandler.NeedsContainer.get -> bool
-override Microsoft.Maui.Handlers.LabelHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Handlers.LayoutHandler.CreatePlatformView() -> Microsoft.Maui.Platform.LayoutView!
 override Microsoft.Maui.Handlers.LayoutHandler.DisconnectHandler(Microsoft.Maui.Platform.LayoutView! platformView) -> void
 override Microsoft.Maui.Handlers.LayoutHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
@@ -1952,7 +1951,6 @@ override Microsoft.Maui.Handlers.RefreshViewHandler.DisconnectHandler(Microsoft.
 override Microsoft.Maui.Handlers.ScrollViewHandler.ConnectHandler(UIKit.UIScrollView! platformView) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.CreatePlatformView() -> UIKit.UIScrollView!
 override Microsoft.Maui.Handlers.ScrollViewHandler.DisconnectHandler(UIKit.UIScrollView! platformView) -> void
-override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.SearchBarHandler.ConnectHandler(Microsoft.Maui.Platform.MauiSearchBar! platformView) -> void
 override Microsoft.Maui.Handlers.SearchBarHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiSearchBar!
 override Microsoft.Maui.Handlers.SearchBarHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiSearchBar! platformView) -> void
