@@ -16,7 +16,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Maui.Graphics" />
     <PackageReference Include="System.Numerics.Vectors" Condition="$(TargetFramework.StartsWith('netstandard'))" />
-    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xamarin.Android.Glide" />
@@ -24,8 +23,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <AdditionalFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
-    <AdditionalFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
-  </ItemGroup>
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 </Project>
