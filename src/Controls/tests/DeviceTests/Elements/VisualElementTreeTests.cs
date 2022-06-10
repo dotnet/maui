@@ -24,6 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
+					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler<Layout, LayoutHandler>();
 					handlers.AddHandler<Image, ImageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
@@ -53,16 +54,16 @@ namespace Microsoft.Maui.DeviceTests
 				label
 			};
 
-			var shell = await InvokeOnMainThreadAsync(() =>
-				new Shell() { CurrentItem = new FlyoutItem() { Items = { page } } }
+			var rootPage = await InvokeOnMainThreadAsync(() =>
+				new NavigationPage(page)
 			);
 
-			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async handler =>
+			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage, async handler =>
 			{
 				await OnFrameSetToNotEmpty(label);
 				var locationOnScreen = label.GetLocationOnScreen().Value;
 				var labelFrame = label.Frame;
-				var window = shell.Window;
+				var window = rootPage.Window;
 
 				// Find label at the top left corner
 				Assert.Contains(label, window.GetVisualTreeElements(locationOnScreen.X + 0.1, locationOnScreen.Y + 0.1));
