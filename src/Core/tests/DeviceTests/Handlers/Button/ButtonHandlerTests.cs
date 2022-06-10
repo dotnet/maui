@@ -133,7 +133,12 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var expectedColor = Color.FromArgb(colorHex);
 
-			var button = new ButtonStub { Text = "Test", StrokeColor = expectedColor };
+			var button = new ButtonStub
+			{
+				Text = "Test",
+				StrokeColor = expectedColor,
+				StrokeThickness = 3
+			};
 
 			var handler = await CreateHandlerAsync(button);
 
@@ -153,14 +158,24 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var expectedColor = Color.FromArgb(colorHex);
 
-			var button = new ButtonStub { Text = "Test" };
+			var button = new ButtonStub
+			{
+				Text = "Test",
+				StrokeThickness = 3
+			};
 
 			var handler = await CreateHandlerAsync(button);
 
-			button.StrokeColor = expectedColor;
-			handler.UpdateValue(nameof(IButton.StrokeColor));
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					button.StrokeColor = expectedColor;
+					handler.UpdateValue(nameof(IButton.StrokeColor));
 
-			await handler.PlatformView.AssertContainsColor(expectedColor);
+					await handler.PlatformView.AssertContainsColor(expectedColor);
+				});
+			});
 		}
 	}
 }

@@ -327,16 +327,16 @@ namespace Microsoft.Maui.Platform
 
 		internal static void RefreshThemeResources(this FrameworkElement nativeView)
 		{
-			//var previous = nativeView.RequestedTheme;
+			var previous = nativeView.RequestedTheme;
 
-			//// Workaround for https://github.com/dotnet/maui/issues/7820
-			//nativeView.RequestedTheme = nativeView.ActualTheme switch
-			//{
-			//	ElementTheme.Dark => ElementTheme.Light,
-			//	_ => ElementTheme.Dark
-			//};
+			// Workaround for https://github.com/dotnet/maui/issues/7820
+			nativeView.RequestedTheme = nativeView.ActualTheme switch
+			{
+				ElementTheme.Dark => ElementTheme.Light,
+				_ => ElementTheme.Dark
+			};
 
-			//nativeView.RequestedTheme = previous;
+			nativeView.RequestedTheme = previous;
 		}
 	}
 }
