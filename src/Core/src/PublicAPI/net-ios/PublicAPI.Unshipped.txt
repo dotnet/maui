@@ -1,4 +1,5 @@
 ﻿#nullable enable
+Microsoft.Maui.Platform.ContentView.Dispose() -> void
 override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.LayoutView.HitTest(CoreGraphics.CGPoint point, UIKit.UIEvent? uievent) -> UIKit.UIView!
 override Microsoft.Maui.Platform.LayoutView.SetNeedsLayout() -> void
