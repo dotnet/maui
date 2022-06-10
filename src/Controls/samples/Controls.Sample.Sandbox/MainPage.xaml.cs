@@ -14,12 +14,5 @@ namespace Maui.Controls.Sample
 		{
 			InitializeComponent();
 		}
-
-		private void Button_Clicked(object sender, EventArgs e)
-		{
-			((Button)sender).BorderWidth = 5;
-			((Button)sender).BorderColor = Colors.Red;
-			((Button)sender).CornerRadius = 10;
-		}
 	}
 }
