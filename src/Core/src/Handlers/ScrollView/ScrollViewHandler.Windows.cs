@@ -31,16 +31,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.ViewChanged -= ViewChanged;
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			widthConstraint = Math.Max(widthConstraint, 0);
-			heightConstraint = Math.Max(heightConstraint, 0);
-		
-			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
-	
-			return result;
-		}
-
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			if (handler.PlatformView == null || handler.MauiContext == null)
@@ -100,7 +90,7 @@ namespace Microsoft.Maui.Handlers
 			The methods below exist to support inserting/updating the padding/margin panel.
 		 */
 
-		static ContentPanel? GetContentPanel(ScrollViewer scrollViewer) 
+		static ContentPanel? GetContentPanel(ScrollViewer scrollViewer)
 		{
 			if (scrollViewer.Content is ContentPanel contentPanel)
 			{
@@ -129,6 +119,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					currentPaddingLayer.Children.Clear();
 					currentPaddingLayer.Children.Add(nativeContent);
+					
 				}
 			}
 			else
@@ -164,7 +155,7 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		static Size InsetScrollView(double widthConstraint, double heightConstraint, Func<double, double, Size> internalMeasure, IScrollView scrollView) 
+		static Size InsetScrollView(double widthConstraint, double heightConstraint, Func<double, double, Size> internalMeasure, IScrollView scrollView)
 		{
 			var padding = scrollView.Padding;
 			var presentedContent = scrollView.PresentedContent;

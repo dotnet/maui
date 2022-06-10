@@ -165,8 +165,8 @@ namespace Microsoft.Maui.Controls.Platform
 			// We need to reset the toolbar text color to the default color when it's unset
 			if (_defaultTitleTextColor == null)
 			{
-				var context = nativeToolbar.Context?.GetThemedContext ();
-				_defaultTitleTextColor = PlatformInterop.GetColorStateListForToolbarStyleableAttribute (context,
+				var context = nativeToolbar.Context?.GetThemedContext();
+				_defaultTitleTextColor = PlatformInterop.GetColorStateListForToolbarStyleableAttribute(context,
 					Resource.Attribute.toolbarStyle, Resource.Styleable.Toolbar_titleTextColor);
 			}
 
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		const int DefaultDisabledToolbarAlpha = 127;
-		public static void DisposeMenuItems(this AToolbar toolbar, IEnumerable<ToolbarItem> toolbarItems, PropertyChangedEventHandler toolbarItemChanged)
+		public static void DisposeMenuItems(this AToolbar? toolbar, IEnumerable<ToolbarItem> toolbarItems, PropertyChangedEventHandler toolbarItemChanged)
 		{
 			if (toolbarItems == null)
 				return;

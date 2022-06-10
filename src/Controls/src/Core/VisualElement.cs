@@ -441,16 +441,10 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Bounds']/Docs" />
 		public Rect Bounds
 		{
-			get { return new Rect(X, Y, Width, Height); }
+			get { return IsMocked() ? new Rect(_mockX, _mockY, _mockWidth, _mockHeight) : _frame; }
 			private set
 			{
-				if (value.X == X && value.Y == Y && value.Height == Height && value.Width == Width)
-					return;
-				BatchBegin();
-				X = value.X;
-				Y = value.Y;
-				SetSize(value.Width, value.Height);
-				BatchCommit();
+				Frame = value;
 			}
 		}
 
@@ -738,7 +732,6 @@ namespace Microsoft.Maui.Controls
 			if (!Batched)
 			{
 				BatchCommitted?.Invoke(this, new EventArg<VisualElement>(this));
-				DependencyService.Get<IPlatformInvalidate>()?.Invalidate(this);
 			}
 		}
 
@@ -817,14 +810,14 @@ namespace Microsoft.Maui.Controls
 			Size request = result.Request;
 			Size minimum = result.Minimum;
 
-			if (heightRequest != -1)
+			if (heightRequest != -1 && !double.IsNaN(heightRequest))
 			{
 				request.Height = heightRequest;
 				if (!hasMinimum)
 					minimum.Height = heightRequest;
 			}
 
-			if (widthRequest != -1)
+			if (widthRequest != -1 && !double.IsNaN(widthRequest))
 			{
 				request.Width = widthRequest;
 				if (!hasMinimum)
@@ -905,16 +898,27 @@ namespace Microsoft.Maui.Controls
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
-			var view = child as View;
-			if (view != null)
+
+
+			if (child is View view)
+			{
 				ComputeConstraintForView(view);
+
+				if (this is not Microsoft.Maui.ILayout)
+					return;
+				view.MeasureInvalidated += ChildViewMeasureInvalidated;
+			}
 		}
 
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
+
 			if (child is View view)
+			{
 				view.ComputedConstraint = LayoutConstraint.None;
+				view.MeasureInvalidated -= ChildViewMeasureInvalidated;
+			}
 		}
 
 		protected void OnChildrenReordered()
@@ -1019,6 +1023,11 @@ namespace Microsoft.Maui.Controls
 			_mockWidth = bounds.Width;
 			_mockHeight = bounds.Height;
 #endif
+		}
+
+		bool IsMocked()
+		{
+			return _mockX != -1 || _mockY != -1 || _mockWidth != -1 || _mockHeight != -1;
 		}
 
 		internal virtual void OnConstraintChanged(LayoutConstraint oldConstraint, LayoutConstraint newConstraint) => ComputeConstrainsForChildren();
@@ -1199,16 +1208,39 @@ namespace Microsoft.Maui.Controls
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
-		void SetSize(double width, double height)
+		void UpdateBoundsComponents(Rect bounds)
 		{
-			if (Width == width && Height == height)
-				return;
+			_frame = bounds;
 
-			Width = width;
-			Height = height;
+			BatchBegin();
 
-			SizeAllocated(width, height);
+			X = bounds.X;
+			Y = bounds.Y;
+			Width = bounds.Width;
+			Height = bounds.Height;
+
+			SizeAllocated(Width, Height);
 			SizeChanged?.Invoke(this, EventArgs.Empty);
+
+			BatchCommit();
+		}
+
+		void ChildViewMeasureInvalidated(object sender, EventArgs e)
+		{
+			var trigger = (e as InvalidationEventArgs)?.Trigger ?? InvalidationTrigger.MeasureChanged;
+
+			//We only this for new Layouts, old layouts already have this invalidation
+			if (sender is View view)
+			{
+				// we can ignore the request if we are either fully constrained or when the size request changes and we were already fully constrainted
+				if ((trigger == InvalidationTrigger.MeasureChanged && view.Constraint == LayoutConstraint.Fixed) ||
+					(trigger == InvalidationTrigger.SizeRequestChanged && view.ComputedConstraint == LayoutConstraint.Fixed))
+				{
+					return;
+				}
+			}
+
+			InvalidateMeasureNonVirtual(trigger);
 		}
 
 		public class FocusRequestArgs : EventArgs

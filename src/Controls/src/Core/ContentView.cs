@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentView']/Docs" />
 	[ContentProperty("Content")]
-	public class ContentView : TemplatedView, IContentView
+	public partial class ContentView : TemplatedView
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentView.xml" path="//Member[@MemberName='ContentProperty']/Docs" />
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentView), null, propertyChanged: TemplateUtilities.OnContentChanged);
@@ -16,9 +16,6 @@ namespace Microsoft.Maui.Controls
 			get { return (View)GetValue(ContentProperty); }
 			set { SetValue(ContentProperty, value); }
 		}
-
-		object IContentView.Content => Content;
-		IView IContentView.PresentedContent => ((this as IControlTemplated).TemplateRoot as IView) ?? Content;
 
 		protected override void OnBindingContextChanged()
 		{
@@ -44,30 +41,6 @@ namespace Microsoft.Maui.Controls
 			{
 				SetInheritedBindingContext(content, BindingContext);
 			}
-		}
-
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-		{
-			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
-			return DesiredSize;
-		}
-
-		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
-		{
-			return this.MeasureContent(widthConstraint, heightConstraint);
-		}
-
-		protected override Size ArrangeOverride(Rect bounds)
-		{
-			Frame = this.ComputeFrame(bounds);
-			Handler?.PlatformArrange(Frame);
-			return Frame.Size;
-		}
-
-		Size IContentView.CrossPlatformArrange(Rect bounds)
-		{
-			this.ArrangeContent(bounds);
-			return bounds.Size;
 		}
 	}
 }

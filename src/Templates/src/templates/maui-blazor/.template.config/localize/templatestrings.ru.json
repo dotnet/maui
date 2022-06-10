@@ -1,6 +1,6 @@
 {
   "author": "Майкрософт",
-  "name": "Приложение .NET MAUI Blazor (предварительная версия)",
+  "name": "Приложение .NET MAUI Blazor",
   "description": "Проект по созданию приложения .NET MAUI для iOS, Android, Mac Catalyst, Tizen и WinUI с использованием Blazor",
   "postActions/openInEditor/description": "Открывает Pages/Index.razor в редакторе.",
   "symbols/applicationId/description": "Переопределяет $(ApplicationId) в проекте"

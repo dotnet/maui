@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (Control == null)
 				{
 					var boxView = new FormsBoxView();
-					SetNativeControl (boxView);
+					SetNativeControl(boxView);
 				}
 
 				SetBackgroundColor(Element.Color);
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			Control.Layer.MasksToBounds = true;
 
-			(Control as FormsBoxView)?.SetCornerRadius ((float)cornerRadius.TopLeft, (float)cornerRadius.TopRight, (float)cornerRadius.BottomLeft, (float)cornerRadius.BottomRight);
+			(Control as FormsBoxView)?.SetCornerRadius((float)cornerRadius.TopLeft, (float)cornerRadius.TopRight, (float)cornerRadius.BottomLeft, (float)cornerRadius.BottomRight);
 		}
 	}
 }

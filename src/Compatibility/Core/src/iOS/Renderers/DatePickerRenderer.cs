@@ -152,6 +152,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void HandleValueChanged(object sender, EventArgs e)
 		{
 			if (Element.OnThisPlatform().UpdateMode() == UpdateMode.Immediately)

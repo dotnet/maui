@@ -619,8 +619,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var semanticLocation = new SemanticZoomLocation { Item = c };
 
-			// async scrolling
-			await Control.Dispatcher.RunAsync(global::Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+			// NOTE: For now, WinUI Dispatcher and CoreDisptacher are null. We use DispatcherQueue instead.
+			Control.DispatcherQueue.TryEnqueue(UI.Dispatching.DispatcherQueuePriority.Normal, () =>
 			{
 				switch (toPosition)
 				{

@@ -10,7 +10,7 @@ using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.Nav
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.VisualElement)]
-#if ANDROID
+#if ANDROID || IOS
 	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 #endif
 	public partial class VisualElementTests : HandlerTestBase

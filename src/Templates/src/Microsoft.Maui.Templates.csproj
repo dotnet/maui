@@ -31,7 +31,7 @@
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <PackageType>Template</PackageType>
-    <PackageId>Microsoft.Maui.Templates</PackageId>
+    <PackageId>Microsoft.Maui.Templates-$(_MauiDotNetVersion)</PackageId>
     <Title>.NET MAUI Templates</Title>
     <Authors>Microsoft</Authors>
     <Description>Templates for .NET MAUI.</Description>
@@ -71,8 +71,8 @@
     <ReplaceFileText
         InputFilename="%(TemplateJsonInput.IntermediateLocation)"
         OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
-        MatchExpression="WINDOWSAPPSDK_VERSION_VALUE;WIN2D_VERSION_VALUE;DOTNET_TFM_VALUE"
-        ReplacementText="$(MicrosoftWindowsAppSDKPackageVersion);$(MicrosoftGraphicsWin2DPackageVersion);$(_MauiDotNetTfm)" />
+        MatchExpression="WINDOWSAPPSDK_VERSION_VALUE;WIN2D_VERSION_VALUE;DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE"
+        ReplacementText="$(MicrosoftWindowsAppSDKPackageVersion);$(MicrosoftGraphicsWin2DPackageVersion);$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000" />
 
     <ItemGroup>
       <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />

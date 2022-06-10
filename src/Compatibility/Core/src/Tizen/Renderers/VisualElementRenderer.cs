@@ -129,14 +129,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		protected bool IsDisposed => _flags.HasFlag(VisualElementRendererFlags.Disposed);
 
 		/// <summary>
-		/// Releases all resource used by the <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.VisualElementRenderer"/> object.
+		/// Releases all resource used by the <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.VisualElementRenderer{TElement}"/> object.
 		/// </summary>
-		/// <remarks>Call <see cref="Dispose"/> when you are finished using the
-		/// <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.VisualElementRenderer"/>. The <see cref="Dispose"/> method
-		/// leaves the <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.VisualElementRenderer"/> in an unusable state.
-		/// After calling <see cref="Dispose"/>, you must release all references to the
-		/// <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.VisualElementRenderer"/> so the garbage collector can reclaim
-		/// the memory that the <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.VisualElementRenderer"/> was occupying.</remarks>
+		/// <remarks>Call <see cref="Dispose()"/> when you are finished using the
+		/// <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.VisualElementRenderer{TElement}"/>. The <see cref="Dispose()"/> method
+		/// leaves the <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.VisualElementRenderer{TElement}"/> in an unusable state.
+		/// After calling <see cref="Dispose()"/>, you must release all references to the
+		/// <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.VisualElementRenderer{TElement}"/> so the garbage collector can reclaim
+		/// the memory that the <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.VisualElementRenderer{TElement}"/> was occupying.</remarks>
 		public void Dispose()
 		{
 			Dispose(true);

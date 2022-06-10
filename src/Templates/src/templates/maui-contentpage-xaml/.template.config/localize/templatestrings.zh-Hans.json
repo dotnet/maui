@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI ContentPage (XAML) (预览)",
+  "name": ".NET MAUI ContentPage (XAML)",
   "postActions/openInEditor/description": "在编辑器中打开 NewPage1.xaml。",
   "symbols/namespace/description": "生成的代码的命名空间"
 }

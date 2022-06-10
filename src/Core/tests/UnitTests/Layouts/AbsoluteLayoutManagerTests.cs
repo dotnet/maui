@@ -445,5 +445,47 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			child.Received().Measure(Arg.Is(expectedWidth * widthConstraint), Arg.Is(expectedHeight * heightConstraint));
 		}
+
+		[Fact(DisplayName = "First View in LTR Absolute Layout is on the left")]
+		public void LtrShouldHaveFirstItemOnTheLeft()
+		{
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rect(10, 0, 100, 100);
+			SetLayoutBounds(abs, child, childBounds);
+
+			abs.FlowDirection.Returns(FlowDirection.LeftToRight);
+
+			var manager = new AbsoluteLayoutManager(abs);
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
+			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
+
+			// We expect that the view should be arranged on the left
+			var expectedRectangle = new Rect(10, 0, 100, 100);
+
+			abs[0].Received().Arrange(Arg.Is(expectedRectangle));
+		}
+
+		[Fact(DisplayName = "First View in RTL Absolute Layout is on the right")]
+		public void RtlShouldHaveFirstItemOnTheRight()
+		{
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rect(10, 0, 100, 100);
+			SetLayoutBounds(abs, child, childBounds);
+
+			abs.FlowDirection.Returns(FlowDirection.RightToLeft);
+
+			var manager = new AbsoluteLayoutManager(abs);
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
+			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
+
+			// We expect that the view should be arranged on the right
+			var expectedRectangle = new Rect(0, 0, 100, 100);
+
+			abs[0].Received().Arrange(Arg.Is(expectedRectangle));
+		}
 	}
 }

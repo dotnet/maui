@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Platform
 {
 	public class LayoutView : MauiView
 	{
+		bool _userInteractionEnabled;
+
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
 		// If you make changes here please review if those changes should also
 		// apply to ViewHandlerExtensions.MeasureVirtualView
@@ -33,9 +35,14 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
-
 			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
 			CrossPlatformArrange?.Invoke(bounds);
+		}
+
+		public override void SetNeedsLayout()
+		{
+			base.SetNeedsLayout();
+			Superview?.SetNeedsLayout();
 		}
 
 		public override void SubviewAdded(UIView uiview)
@@ -52,5 +59,35 @@ namespace Microsoft.Maui.Platform
 
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Rect, Size>? CrossPlatformArrange { get; set; }
+
+		public override UIView HitTest(CGPoint point, UIEvent? uievent)
+		{
+			var result = base.HitTest(point, uievent);
+
+			if (!_userInteractionEnabled && this.Equals(result))
+			{
+				// If user interaction is disabled (IOW, if the corresponding Layout is InputTransparent),
+				// then we exclude the LayoutView itself from hit testing. But it's children are valid
+				// hit testing targets.
+
+				return null!;
+			}
+
+			return result;
+		}
+
+		public override bool UserInteractionEnabled
+		{
+			get => base.UserInteractionEnabled;
+			set
+			{
+				// We leave the base UIE value true no matter what, so that hit testing will find children
+				// of the LayoutView. But we track the intended value so we can use it during hit testing
+				// to ignore the LayoutView itself, if necessary.
+
+				base.UserInteractionEnabled = true;
+				_userInteractionEnabled = value;
+			}
+		}
 	}
 }

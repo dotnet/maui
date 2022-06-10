@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 			GetFont(font, defaultFontSize, CreateFont);
 
 		double GetFontSize(Font font, double defaultFontSize = 0) =>
-			font.Size <= 0
+			font.Size <= 0 || double.IsNaN(font.Size)
 				? (defaultFontSize > 0 ? (float)defaultFontSize : DefaultFont.PointSize)
 				: (nfloat)font.Size;
 
@@ -166,7 +166,7 @@ namespace Microsoft.Maui
 
 			UIFont ApplyScaling(Font font, UIFont uiFont)
 			{
-				if (font.AutoScalingEnabled && (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+				if (font.AutoScalingEnabled && (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
 					return UIFontMetrics.DefaultMetrics.GetScaledFont(uiFont);
 
 				return uiFont;

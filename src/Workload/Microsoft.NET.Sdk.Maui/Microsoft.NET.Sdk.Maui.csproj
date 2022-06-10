@@ -38,6 +38,11 @@
       <_VersionsToReplace Include="MicrosoftmacOSSdkPackageVersion" />
       <_VersionsToReplace Include="MicrosofttvOSSdkPackageVersion" />
       <_VersionsToReplace Include="MicrosoftNETWorkloadEmscriptenPackageVersion" />
+      <_VersionsToReplace Include="DotNetMauiManifestVersionBand" />
+      <_VersionsToReplace Include="DotNetMonoManifestVersionBand" />
+      <_VersionsToReplace Include="DotNetEmscriptenManifestVersionBand" />
+      <_VersionsToReplace Include="DotNetAndroidManifestVersionBand" />
+      <_VersionsToReplace Include="DotNetMaciOSManifestVersionBand" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreAuthorizationPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsAnalyzersPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsFormsPackageVersion" />
@@ -70,6 +75,12 @@
         NewValue="$(MicrosoftMauiGraphicsVersion)"
     />
     <ReplaceText
+        Input="$(IntermediateOutputPath)WorkloadManifest.json"
+        Output="$(IntermediateOutputPath)WorkloadManifest.json"
+        OldValue="@MAUI_DOTNET_VERSION@"
+        NewValue="$(_MauiDotNetVersion)"
+    />
+    <ReplaceText
         Input="%(_JsonVariableMatrix.OutputPath)"
         Output="%(_JsonVariableMatrix.OutputPath)"
         OldValue="%(_JsonVariableMatrix.OldValue)"
@@ -93,15 +104,19 @@
     <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(GitSha).json" />
     <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(GitSemVerLabel).$(BUILDVERSION).json" />
     <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(GitSemVerLabel).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(PackageReferenceVersion).json" />
     <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(GitSha).json" />
     <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(GitSemVerLabel).json" />
     <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(GitBranch).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(PackageReferenceVersion).json" />
     <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(GitSha).json" />
     <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(GitSemVerLabel).$(BUILDVERSION).json" />
     <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(GitSemVerLabel).json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(PackageReferenceVersion).json" />
     <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(GitSha).json" />
     <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(GitSemVerLabel).json" />
     <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(GitBranch).json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(PackageReferenceVersion).json" />
   </Target>
 
   <Target Name="_CopyManifest" AfterTargets="Build">

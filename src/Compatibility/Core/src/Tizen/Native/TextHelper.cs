@@ -34,8 +34,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		/// Gets the ELM text part of evas object.
 		/// </summary>
 		/// <param name="textable">The <see cref="ElmSharp.EvasObject"/> with text part.</param>
-		/// <exception cref="ArgumentException">Throws exception when parameter <param name="textable"> isn't text-able object or doesn't have ELM text part.</exception>
 		/// <returns>Requested <see cref="ElmSharp.EdjeTextPartObject"/> instance.</returns>
+		/// <exception cref="ArgumentException">Throws exception when parameter <paramref name="textable" /> isn't text-able object or doesn't have ELM text part.</exception>
 		static EdjeTextPartObject GetElmTextPart(EvasObject textable)
 		{
 			ELayout widget = textable as ELayout;

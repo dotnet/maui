@@ -64,7 +64,8 @@
                 Stroke="Red"
                 StrokeThickness="12"
                 WidthRequest="300"
-                HeightRequest="20" />
+                HeightRequest="20"
+                HorizontalOptions="Start" />
 
             <Label
                 Text="Polyline"
@@ -75,7 +76,8 @@
                 StrokeThickness="20"
                 StrokeLineJoin="Round"
                 WidthRequest="250"
-                HeightRequest="250" />
+                HeightRequest="250"
+                HorizontalOptions="Start" />
 
             <Label
                 Text="Polygon"
@@ -86,7 +88,8 @@
                 Stroke="Red"
                 StrokeThickness="3"
                 WidthRequest="250"
-                HeightRequest="250" />
+                HeightRequest="250"
+                HorizontalOptions="Start" />
 
             <Label
                 Text="Path"
@@ -95,9 +98,9 @@
                 Data="M 10,100 L 100,100 100,50Z"
                 Stroke="Black"
                 Aspect="Uniform"
-                HorizontalOptions="Start"
                 WidthRequest="150"
-                HeightRequest="150" />
+                HeightRequest="150"
+                HorizontalOptions="Start" />
 
             <Button
                 Text="More samples"

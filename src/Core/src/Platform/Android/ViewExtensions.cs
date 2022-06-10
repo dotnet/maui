@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this ContentViewGroup platformView, IBorderStroke border)
 		{
-			bool hasBorder = border.Shape != null && border.Stroke != null;
+			bool hasBorder = border.Shape != null;
 
 			if (hasBorder)
 				platformView.UpdateBorderStroke(border);
@@ -192,6 +192,10 @@ namespace Microsoft.Maui.Platform
 					if (paint!.ToDrawable(platformView.Context) is Drawable drawable)
 						platformView.Background = drawable;
 				}
+			}
+			else if (platformView is LayoutViewGroup)
+			{
+				platformView.Background = null;
 			}
 		}
 
@@ -326,7 +330,7 @@ namespace Microsoft.Maui.Platform
 		internal static Rect GetPlatformViewBounds(this IView view)
 		{
 			var platformView = view?.ToPlatform();
-			
+
 			if (platformView?.Context == null)
 			{
 				return new Rect();

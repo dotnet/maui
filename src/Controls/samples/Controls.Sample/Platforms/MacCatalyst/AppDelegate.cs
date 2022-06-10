@@ -1,8 +1,8 @@
 using Foundation;
-using ObjCRuntime;
-using UIKit;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
+using ObjCRuntime;
+using UIKit;
 
 #if !NET6_0
 using Microsoft.Maui.Controls;

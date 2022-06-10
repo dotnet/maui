@@ -73,8 +73,8 @@
                                 CenterX="{Binding Source={x:Reference SliderCenterX}, Path=Value}"
                                 CenterY="{Binding Source={x:Reference SliderCenterY},  Path=Value}" />
                             <TranslateTransform
-                                X="{Binding Source={x:Reference TranslateX}, Path=Value}"
-                                Y="{Binding Source={x:Reference TranslateY}, Path=Value}"/>
+                                X="{Binding Source={x:Reference SliderTranslateX}, Path=Value}"
+                                Y="{Binding Source={x:Reference SliderTranslateY}, Path=Value}"/>
                         </TransformGroup>
                     </Path.RenderTransform>
                 </Path>

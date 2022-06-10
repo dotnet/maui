@@ -9,6 +9,7 @@ using Android.Views;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using LP = Android.Views.ViewGroup.LayoutParams;
 
 namespace Microsoft.Maui.Controls
@@ -33,6 +34,11 @@ namespace Microsoft.Maui.Controls
 					_platformTitleView.Child = null;
 
 				_platformTitleViewHandler?.DisconnectHandler();
+
+				Controls.Platform.ToolbarExtensions.DisposeMenuItems(
+					oldHandler?.PlatformView as AToolbar,
+					ToolbarItems,
+					OnToolbarItemPropertyChanged);
 			}
 		}
 
