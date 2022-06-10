@@ -11,15 +11,15 @@ namespace Microsoft.Maui.Controls.Maps
 {
 	public partial class Map : View, IEnumerable<Pin>
 	{
-		public static readonly BindableProperty MapTypeProperty = BindableProperty.Create("MapType", typeof(MapType), typeof(Map), default(MapType));
+		public static readonly BindableProperty MapTypeProperty = BindableProperty.Create(nameof(MapType), typeof(MapType), typeof(Map), default(MapType));
 
-		public static readonly BindableProperty IsShowingUserProperty = BindableProperty.Create("IsShowingUser", typeof(bool), typeof(Map), default(bool));
+		public static readonly BindableProperty IsShowingUserProperty = BindableProperty.Create(nameof(IsShowingUser), typeof(bool), typeof(Map), default(bool));
 
-		public static readonly BindableProperty TrafficEnabledProperty = BindableProperty.Create("TrafficEnabled", typeof(bool), typeof(Map), default(bool));
+		public static readonly BindableProperty HasTrafficEnabledProperty = BindableProperty.Create(nameof(HasTrafficEnabled), typeof(bool), typeof(Map), default(bool));
 
-		public static readonly BindableProperty HasScrollEnabledProperty = BindableProperty.Create("HasScrollEnabled", typeof(bool), typeof(Map), true);
+		public static readonly BindableProperty HasScrollEnabledProperty = BindableProperty.Create(nameof(HasScrollEnabled), typeof(bool), typeof(Map), true);
 
-		public static readonly BindableProperty HasZoomEnabledProperty = BindableProperty.Create("HasZoomEnabled", typeof(bool), typeof(Map), true);
+		public static readonly BindableProperty HasZoomEnabledProperty = BindableProperty.Create(nameof(HasZoomEnabled), typeof(bool), typeof(Map), true);
 
 		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(Map), default(IEnumerable),
 			propertyChanged: (b, o, n) => ((Map)b).OnItemsSourcePropertyChanged((IEnumerable)o, (IEnumerable)n));
@@ -70,10 +70,10 @@ namespace Microsoft.Maui.Controls.Maps
 			set { SetValue(IsShowingUserProperty, value); }
 		}
 
-		public bool TrafficEnabled
+		public bool HasTrafficEnabled
 		{
-			get => (bool)GetValue(TrafficEnabledProperty);
-			set => SetValue(TrafficEnabledProperty, value);
+			get => (bool)GetValue(HasTrafficEnabledProperty);
+			set => SetValue(HasTrafficEnabledProperty, value);
 		}
 
 		public MapType MapType

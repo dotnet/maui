@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CoreLocation;
+﻿using CoreLocation;
 using MapKit;
 
 namespace Microsoft.Maui.Handlers
@@ -48,7 +45,6 @@ namespace Microsoft.Maui.Handlers
 			}
 #endif
 			handler.PlatformView.ShowsUserLocation = map.IsShowingUser;
-
 		}
 
 		public static void MapHasScrollEnabled(IMapHander handler, IMap map)
