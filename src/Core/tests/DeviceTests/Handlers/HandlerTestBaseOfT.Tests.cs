@@ -190,8 +190,20 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeBoundingBox = await GetValueAsync(view, handler => GetBoundingBox(handler));
 			Assert.NotEqual(nativeBoundingBox, new Graphics.Rect());
 
-			if (!CloseEnough(size, nativeBoundingBox.Size.Height) || !CloseEnough(size, nativeBoundingBox.Size.Width))
-				Assert.Equal(new Size(size, size), nativeBoundingBox.Size);
+
+			// Currently there's an issue with label/progress where they don't set the frame size to
+			// the explicit Width and Height values set
+			// https://github.com/dotnet/maui/issues/7935
+			if (view is ILabel || view is IProgress)
+			{
+				if (!CloseEnough(size, nativeBoundingBox.Size.Width))
+					Assert.Equal(new Size(size, size), nativeBoundingBox.Size);
+			}
+			else
+			{
+				if (!CloseEnough(size, nativeBoundingBox.Size.Height) || !CloseEnough(size, nativeBoundingBox.Size.Width))
+					Assert.Equal(new Size(size, size), nativeBoundingBox.Size);
+			}
 
 			bool CloseEnough(double value1, double value2)
 			{
