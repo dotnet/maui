@@ -76,7 +76,13 @@ namespace Microsoft.Maui.Platform
 			platformView.RemoveBackgroundLayer();
 
 			if (paint.IsNullOrEmpty())
-				return;
+			{
+				if (platformView is LayoutView)
+					platformView.BackgroundColor = null;
+				else
+					return;
+			}
+
 
 			if (paint is SolidPaint solidPaint)
 			{

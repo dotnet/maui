@@ -2044,7 +2044,6 @@ override Microsoft.Maui.Handlers.RefreshViewHandler.DisconnectHandler(Microsoft.
 override Microsoft.Maui.Handlers.ScrollViewHandler.ConnectHandler(Microsoft.Maui.Platform.MauiScrollView! platformView) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiScrollView!
 override Microsoft.Maui.Handlers.ScrollViewHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiScrollView! platformView) -> void
-override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 override Microsoft.Maui.Handlers.SearchBarHandler.ConnectHandler(AndroidX.AppCompat.Widget.SearchView! platformView) -> void
 override Microsoft.Maui.Handlers.SearchBarHandler.CreatePlatformView() -> AndroidX.AppCompat.Widget.SearchView!
 override Microsoft.Maui.Handlers.SearchBarHandler.DisconnectHandler(AndroidX.AppCompat.Widget.SearchView! platformView) -> void

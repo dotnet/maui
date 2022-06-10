@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	public abstract partial class VisualElementRenderer<TElement> : UIView, IPlatformViewHandler, IElementHandler
 		where TElement : Element, IView
 	{
-		object? IElementHandler.PlatformView => Subviews.Length > 0 ? Subviews[0] : null;
+		object? IElementHandler.PlatformView => Subviews.Length > 0 ? Subviews[0] : this;
 
 		public virtual UIViewController? ViewController => null;
 
