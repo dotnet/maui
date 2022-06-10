@@ -210,14 +210,9 @@ namespace Microsoft.Maui.DeviceTests
 							content = pc.CurrentPage;
 
 						await OnLoadedAsync(content as VisualElement);
-
-						if (content is Page page)
-							await OnNavigatedToAsync(page);
 #if WINDOWS
-
 						await Task.Delay(10);
 #endif
-
 						if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
 							await action((THandler)window.Handler);
 						else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
