@@ -37,35 +37,35 @@
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>ecdeda764fb69f671e3b5e4b136a7b0fbac0ae2c</Sha>
+      <Sha>bd44d9015cf34ade0b01390677a98026d4e09c03</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Components" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>ecdeda764fb69f671e3b5e4b136a7b0fbac0ae2c</Sha>
+      <Sha>bd44d9015cf34ade0b01390677a98026d4e09c03</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>ecdeda764fb69f671e3b5e4b136a7b0fbac0ae2c</Sha>
+      <Sha>bd44d9015cf34ade0b01390677a98026d4e09c03</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Components.Forms" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>ecdeda764fb69f671e3b5e4b136a7b0fbac0ae2c</Sha>
+      <Sha>bd44d9015cf34ade0b01390677a98026d4e09c03</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>ecdeda764fb69f671e3b5e4b136a7b0fbac0ae2c</Sha>
+      <Sha>bd44d9015cf34ade0b01390677a98026d4e09c03</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>ecdeda764fb69f671e3b5e4b136a7b0fbac0ae2c</Sha>
+      <Sha>bd44d9015cf34ade0b01390677a98026d4e09c03</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Metadata" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>ecdeda764fb69f671e3b5e4b136a7b0fbac0ae2c</Sha>
+      <Sha>bd44d9015cf34ade0b01390677a98026d4e09c03</Sha>
     </Dependency>
     <Dependency Name="Microsoft.JSInterop" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>ecdeda764fb69f671e3b5e4b136a7b0fbac0ae2c</Sha>
+      <Sha>bd44d9015cf34ade0b01390677a98026d4e09c03</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Tasks" Version="7.0.100-preview.2.22102.8">
       <Uri>https://github.com/dotnet/templating</Uri>
