@@ -49,6 +49,10 @@
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.GeneratePackageAppxManifest" />
 
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GenerateAndroidManifestXml" />
+
     <PropertyGroup>
         <CleanDependsOn>
             $(CleanDependsOn);
@@ -636,10 +640,11 @@
          on "_ValidatePresenceOfAppxManifestItems" and we need to get in before then. -->
     <Target Name="_ValidatePresenceOfAppxManifestItemsBeforeTarget"
             BeforeTargets="_ValidatePresenceOfAppxManifestItems"
-            DependsOnTargets="MauiGeneratePackageAppxManifest" />
+            DependsOnTargets="MauiGeneratePackageAppxManifest"
+            Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'" />
 
     <Target Name="MauiGeneratePackageAppxManifest"
-            Condition="'$(WindowsPackageType)' != 'None'"
+            Condition="('$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True') And '$(WindowsPackageType)' != 'None'"
             DependsOnTargets="$(MauiGeneratePackageAppxManifestDependsOnTargets)"
             Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);@(AppxManifest)"
             Outputs="$(_MauiManifestStampFile);$(_MauiIntermediateManifest)Package.appxmanifest">
@@ -671,6 +676,36 @@
         <ItemGroup>
             <FileWrites Include="$(_MauiManifestStampFile)" />
         </ItemGroup>
+
+    </Target>
+
+    <Target Name="_MauiManifestMergerAfterTarget"
+            AfterTargets="_ManifestMerger"
+            Condition=" '$(_ResizetizerIsAndroidApp)' == 'True' And '$(AndroidManifestMerger)' == 'manifestmerger.jar' "
+            DependsOnTargets="_MauiGenerateAndroidManifestAttributes" />
+
+    <Target Name="_MauiGenerateJavaStubsAfterTarget"
+            AfterTargets="_GenerateJavaStubs"
+            Condition=" '$(_ResizetizerIsAndroidApp)' == 'True' And '$(AndroidManifestMerger)' != 'manifestmerger.jar' "
+            DependsOnTargets="_MauiGenerateAndroidManifestAttributes" />
+
+    <Target Name="_MauiGenerateAndroidManifestAttributes"
+            Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);$(IntermediateOutputPath)android\AndroidManifest.xml"
+            Outputs="$(_MauiManifestStampFile);$(IntermediateOutputPath)android\AndroidManifest.xml"
+            Condition=" '$(_ResizetizerIsAndroidApp)' == 'True' ">
+
+        <GenerateAndroidManifestXml
+            AppIcon="@(MauiImage->WithMetadataValue('IsAppIcon', 'true'))"
+            Manifest="$(IntermediateOutputPath)android\AndroidManifest.xml"
+            IntermediateOutputPath="$(IntermediateOutputPath)android"
+            GeneratedFilename="AndroidManifest.xml" />
+
+        <!-- Stamp file for Outputs -->
+        <Touch Files="$(_MauiManifestStampFile)" AlwaysCreate="True" />
+        <ItemGroup>
+            <FileWrites Include="$(_MauiManifestStampFile)" />
+        </ItemGroup>
+
     </Target>
 
     <Target Name="_CleanResizetizer">
