@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Handlers
 		void OnTouch(object? sender, TouchEventArgs e) =>
 			e.Handled =
 				VirtualView?.ClearButtonVisibility == ClearButtonVisibility.WhileEditing &&
-				PlatformView.HandleClearButtonTouched(VirtualView.FlowDirection, e, GetClearButtonDrawable);
+				PlatformView.HandleClearButtonTouched(VirtualView.GetEffectiveFlowDirection(), e, GetClearButtonDrawable);
 
 		void OnEditorAction(object? sender, EditorActionEventArgs e)
 		{
