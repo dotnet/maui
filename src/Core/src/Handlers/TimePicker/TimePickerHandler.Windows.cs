@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			if (handler is TimePickerHandler platformHandler)
-				handler.PlatformView?.UpdateTextColor(timePicker);
+				platformHandler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
 		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)

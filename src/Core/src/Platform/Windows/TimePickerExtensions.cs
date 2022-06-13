@@ -30,24 +30,32 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this TimePicker platformTimePicker, ITimePicker timePicker)
 		{
-			var brush = timePicker.TextColor?.ToPlatform();
+			Color textColor = timePicker.TextColor;
 
-			if (brush is null)
+			UI.Xaml.Media.Brush? platformBrush = textColor?.ToPlatform();
+
+			if (platformBrush == null)
+			{
 				platformTimePicker.Resources.RemoveKeys(TextColorResourceKeys);
+				platformTimePicker.ClearValue(TimePicker.ForegroundProperty);
+			}
 			else
-				platformTimePicker.Resources.SetValueForAllKey(TextColorResourceKeys, brush);
-
+			{
+				platformTimePicker.Resources.SetValueForAllKey(TextColorResourceKeys, platformBrush);
+				platformTimePicker.Foreground = platformBrush;
+			}
+			
 			platformTimePicker.RefreshThemeResources();
 		}
 
+		// ResourceKeys controlling the foreground color of the TimePicker.
+		// https://docs.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.timepicker?view=windows-app-sdk-1.1
 		static readonly string[] TextColorResourceKeys =
 		{
 			"TimePickerButtonForeground",
-			"TimePickerButtonForegroundDefault",
 			"TimePickerButtonForegroundPointerOver",
 			"TimePickerButtonForegroundPressed",
-			"TimePickerButtonForegroundDisabled",
-			"TimePickerButtonForegroundFocused",
+			"TimePickerButtonForegroundDisabled"
 		};
 	}
 }

@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateTextColor(datePicker);
+				platformHandler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
 		private void DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
