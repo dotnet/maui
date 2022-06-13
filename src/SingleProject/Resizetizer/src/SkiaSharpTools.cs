@@ -7,21 +7,25 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal abstract class SkiaSharpTools
 	{
-		public static SkiaSharpTools Create(bool isVector, string filename, SKSize? baseSize, SKColor? tintColor, ILogger logger)
+		public static SkiaSharpTools Create(bool isVector, string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ILogger logger)
 			=> isVector
-				? new SkiaSharpSvgTools(filename, baseSize, tintColor, logger) as SkiaSharpTools
-				: new SkiaSharpBitmapTools(filename, baseSize, tintColor, logger);
+				? new SkiaSharpSvgTools(filename, baseSize, backgroundColor, tintColor, logger) as SkiaSharpTools
+				: new SkiaSharpBitmapTools(filename, baseSize, backgroundColor, tintColor, logger);
+
+		public static SkiaSharpTools CreateImaginary(SKSize? baseSize, SKColor? backgroundColor, ILogger logger)
+			=> new SkiaSharpImaginaryTools(baseSize, backgroundColor, logger);
 
 		public SkiaSharpTools(ResizeImageInfo info, ILogger logger)
-			: this(info.Filename, info.BaseSize, info.TintColor, logger)
+			: this(info.Filename, info.BaseSize, info.Color, info.TintColor, logger)
 		{
 		}
 
-		public SkiaSharpTools(string filename, SKSize? baseSize, SKColor? tintColor, ILogger logger)
+		public SkiaSharpTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ILogger logger)
 		{
 			Logger = logger;
 			Filename = filename;
 			BaseSize = baseSize;
+			BackgroundColor = backgroundColor;
 
 			if (tintColor is SKColor tint)
 			{
@@ -38,37 +42,64 @@ namespace Microsoft.Maui.Resizetizer
 
 		public SKSize? BaseSize { get; }
 
+		public SKColor? BackgroundColor { get; }
+
 		public ILogger Logger { get; }
 
 		public SKPaint Paint { get; }
 
-		public void Resize(DpiPath dpi, string destination)
+		public void Resize(DpiPath dpi, string destination, double additionalScale = 1.0)
 		{
-			var originalSize = GetOriginalSize();
-			var (scaledSize, scale) = GetScaledSize(originalSize, dpi.Scale);
-
 			var sw = new Stopwatch();
 			sw.Start();
 
-			// Allocate
+			var originalSize = GetOriginalSize();
+			var (scaledSize, scale) = GetScaledSize(originalSize, dpi.Scale);
+
 			using (var tempBitmap = new SKBitmap(scaledSize.Width, scaledSize.Height))
 			{
-				// Draw (copy)
-				using (var canvas = new SKCanvas(tempBitmap))
-				{
-					canvas.Clear(SKColors.Transparent);
-					canvas.Save();
-					canvas.Scale(scale, scale);
-					DrawUnscaled(canvas, scale);
-				}
-
-				// Save (encode)
-				using var stream = File.Create(destination);
-				tempBitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
+				Draw(tempBitmap, additionalScale, originalSize, scale);
+				Save(destination, tempBitmap);
 			}
 
 			sw.Stop();
 			Logger?.Log($"Save Image took {sw.ElapsedMilliseconds}ms ({destination})");
+		}
+
+		void Draw(SKBitmap tempBitmap, double additionalScale, SKSize originalSize, float scale)
+		{
+			using var canvas = new SKCanvas(tempBitmap);
+		
+			// clear
+			canvas.Clear(BackgroundColor ?? SKColors.Transparent);
+
+			// apply initial scale to size the image to fit the canvas
+			canvas.Scale(scale, scale);
+
+			// apply additional user scaling
+			if (additionalScale != 1.0)
+			{
+				var userFgScale = (float)additionalScale;
+
+				// add the user scale to the main scale
+				scale *= userFgScale;
+
+				// work out the center as if the canvas was exactly the same size as the foreground
+				var fgCenterX = originalSize.Width / 2;
+				var fgCenterY = originalSize.Height / 2;
+
+				// scale to the user scale, centering
+				canvas.Scale(userFgScale, userFgScale, fgCenterX, fgCenterY);
+			}
+
+			// draw
+			DrawUnscaled(canvas, scale);
+		}
+
+		void Save(string destination, SKBitmap tempBitmap)
+		{
+			using var stream = File.Create(destination);
+			tempBitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
 		}
 
 		public abstract SKSize GetOriginalSize();
