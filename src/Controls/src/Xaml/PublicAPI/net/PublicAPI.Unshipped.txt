@@ -1,2 +1,1 @@
 ﻿#nullable enable
-Microsoft.Maui.IMap

@@ -21,9 +21,9 @@
             <Label Text="Scroll enabled" VerticalOptions="Center"/>
         </HorizontalStackLayout>
         <Map x:Name="basicMap" Grid.Row="2" 
-             IsShowingUser="{Binding IsToggled, Source={x:Reference ShowUserLocationSwitch}}}"
-             HasTrafficEnabled="{Binding IsToggled, Source={x:Reference ShowTrafficSwitch}}}"
-             HasZoomEnabled="{Binding IsToggled, Source={x:Reference ZoomEnabledSwitch}}}"
-             HasScrollEnabled="{Binding IsToggled, Source={x:Reference ScrollEnabledSwitch}}}"/>
+             IsShowingUser="{Binding IsToggled, Source={x:Reference ShowUserLocationSwitch}}"
+             HasTrafficEnabled="{Binding IsToggled, Source={x:Reference ShowTrafficSwitch}}"
+             HasZoomEnabled="{Binding IsToggled, Source={x:Reference ZoomEnabledSwitch}}"
+             HasScrollEnabled="{Binding IsToggled, Source={x:Reference ScrollEnabledSwitch}}"/>
     </Grid>
 </ContentPage>

@@ -1,7 +1,7 @@
 ﻿namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Represents a View that displays a map.
+	/// Represents a <see cref="IView"/> that displays a map.
 	/// </summary>
 	public interface IMap : IView
 	{

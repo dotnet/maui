@@ -1,1 +1,21 @@
 ﻿#nullable enable
+Microsoft.Maui.Handlers.IMapHandler
+Microsoft.Maui.Handlers.IMapHandler.PlatformView.get -> object!
+Microsoft.Maui.Handlers.IMapHandler.VirtualView.get -> Microsoft.Maui.IMap!
+Microsoft.Maui.Handlers.MapHandler
+Microsoft.Maui.Handlers.MapHandler.MapHandler() -> void
+Microsoft.Maui.Handlers.MapHandler.MapHandler(Microsoft.Maui.IPropertyMapper? mapper = null, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.IMap
+Microsoft.Maui.IMap.HasScrollEnabled.get -> bool
+Microsoft.Maui.IMap.HasTrafficEnabled.get -> bool
+Microsoft.Maui.IMap.HasZoomEnabled.get -> bool
+Microsoft.Maui.IMap.IsShowingUser.get -> bool
+Microsoft.Maui.IMap.MapType.get -> Microsoft.Maui.MapType
+Microsoft.Maui.MapType
+Microsoft.Maui.MapType.Hybrid = 2 -> Microsoft.Maui.MapType
+Microsoft.Maui.MapType.Satellite = 1 -> Microsoft.Maui.MapType
+Microsoft.Maui.MapType.Street = 0 -> Microsoft.Maui.MapType
+override Microsoft.Maui.Handlers.MapHandler.CreatePlatformView() -> object!
+static Microsoft.Maui.Handlers.MapHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMap!, Microsoft.Maui.Handlers.IMapHandler!>!
+static Microsoft.Maui.Handlers.MapHandler.MapMapType(Microsoft.Maui.Handlers.IMapHandler! handler, Microsoft.Maui.IMap! map) -> void
+static Microsoft.Maui.Handlers.MapHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMap!, Microsoft.Maui.Handlers.IMapHandler!>!

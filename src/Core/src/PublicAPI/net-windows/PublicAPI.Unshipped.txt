@@ -1,3 +1,10 @@
 ﻿#nullable enable
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Handlers.WindowHandler.ConnectHandler(Microsoft.UI.Xaml.Window! platformView) -> void
+Microsoft.Maui.Handlers.MapHandler
+override Microsoft.Maui.Handlers.MapHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.WebView2!
+static Microsoft.Maui.Handlers.MapHandler.MapHasScrollEnabled(Microsoft.Maui.Handlers.IMapHandler! handler, Microsoft.Maui.IMap! map) -> void
+static Microsoft.Maui.Handlers.MapHandler.MapHasTrafficEnabled(Microsoft.Maui.Handlers.IMapHandler! handler, Microsoft.Maui.IMap! map) -> void
+static Microsoft.Maui.Handlers.MapHandler.MapHasZoomEnabled(Microsoft.Maui.Handlers.IMapHandler! handler, Microsoft.Maui.IMap! map) -> void
+static Microsoft.Maui.Handlers.MapHandler.MapIsShowingUser(Microsoft.Maui.Handlers.IMapHandler! handler, Microsoft.Maui.IMap! map) -> void
+static Microsoft.Maui.Handlers.MapHandler.MapMapType(Microsoft.Maui.Handlers.IMapHandler! handler, Microsoft.Maui.IMap! map) -> void
