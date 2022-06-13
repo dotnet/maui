@@ -56,6 +56,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapContentSize(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.PlatformView.UpdateContentSize(scrollView.ContentSize);
+
+			if (GetContentView(handler.PlatformView) is ContentView currentContentContainer)
+			{
+				var rect = new Rect(Point.Zero, scrollView.ContentSize);
+				currentContentContainer.Center = new CGPoint(rect.Center.X, rect.Center.Y);
+				currentContentContainer.Bounds = new CGRect(currentContentContainer.Bounds.X, currentContentContainer.Bounds.Y, rect.Width, rect.Height);
+			}
 		}
 
 		public static void MapIsEnabled(IScrollViewHandler handler, IScrollView scrollView)
@@ -115,10 +122,10 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			var scrollViewer = handler.PlatformView;
+			var platformScrollView = handler.PlatformView;
 			var nativeContent = scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 
-			if (GetContentView(scrollViewer) is ContentView currentContentContainer)
+			if (GetContentView(platformScrollView) is ContentView currentContentContainer)
 			{
 				if (currentContentContainer.Subviews.Length == 0 || currentContentContainer.Subviews[0] != nativeContent)
 				{
@@ -128,7 +135,7 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
-				InsertContentView(scrollViewer, scrollView, nativeContent);
+				InsertContentView(platformScrollView, scrollView, nativeContent);
 			}
 		}
 
