@@ -16,6 +16,7 @@ Microsoft.Maui.MapType.Hybrid = 2 -> Microsoft.Maui.MapType
 Microsoft.Maui.MapType.Satellite = 1 -> Microsoft.Maui.MapType
 Microsoft.Maui.MapType.Street = 0 -> Microsoft.Maui.MapType
 override Microsoft.Maui.Handlers.MapHandler.ConnectHandler(MapKit.MKMapView! platformView) -> void
+override Microsoft.Maui.Handlers.MapHandler.DisconnectHandler(MapKit.MKMapView! platformView) -> void
 override Microsoft.Maui.Handlers.MapHandler.CreatePlatformView() -> MapKit.MKMapView!
 override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.LayoutView.HitTest(CoreGraphics.CGPoint point, UIKit.UIEvent? uievent) -> UIKit.UIView!

@@ -30,6 +30,19 @@ namespace Microsoft.Maui.Handlers
 			OnPinCollectionChanged(mapsPinsItemsSource, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 		}
 
+		protected override void DisconnectHandler(MKMapView platformView)
+		{
+			base.DisconnectHandler(platformView);
+
+			var mapsPinsItemsSource = (ObservableCollection<IMapPin>)VirtualView.Pins;
+			mapsPinsItemsSource.CollectionChanged -= OnPinCollectionChanged;
+
+			foreach (IMapPin pin in mapsPinsItemsSource)
+			{
+				pin.PropertyChanged -= PinOnPropertyChanged;
+			}
+		}
+
 		void OnPinCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			Dispatcher.GetForCurrentThread()?.Dispatch(() => PinCollectionChanged(e));
@@ -93,7 +106,7 @@ namespace Microsoft.Maui.Handlers
 
 		void PinOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			IMapPin pin = sender as IMapPin ?? throw new ArgumentNullException("sender cannot be null");
+			IMapPin pin = sender as IMapPin ?? throw new ArgumentNullException(nameof(sender), $"Argument cannot be null for {nameof(PinCollectionChanged)}");
 			var annotation = pin.MarkerId as MKPointAnnotation;
 
 			if (annotation == null)
