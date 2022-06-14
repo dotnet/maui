@@ -24,5 +24,9 @@ namespace Microsoft.Maui.Core
 		/// The geographical location of this pin.
 		/// </summary>
 		Location Position { get; }
+
+		bool SendMarkerClick();
+
+		bool SendInfoWindowClick();
 	}
 }

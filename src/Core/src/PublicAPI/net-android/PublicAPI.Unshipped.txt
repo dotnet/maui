@@ -5,6 +5,8 @@ Microsoft.Maui.Core.IMapPin.Label.get -> string!
 Microsoft.Maui.Core.IMapPin.MarkerId.get -> object!
 Microsoft.Maui.Core.IMapPin.MarkerId.set -> void
 Microsoft.Maui.Core.IMapPin.Position.get -> Microsoft.Maui.Devices.Sensors.Location!
+Microsoft.Maui.Core.IMapPin.SendInfoWindowClick() -> bool
+Microsoft.Maui.Core.IMapPin.SendMarkerClick() -> bool
 Microsoft.Maui.Handlers.IMapHandler
 Microsoft.Maui.Handlers.IMapHandler.Map.get -> Android.Gms.Maps.GoogleMap?
 Microsoft.Maui.Handlers.IMapHandler.Map.set -> void

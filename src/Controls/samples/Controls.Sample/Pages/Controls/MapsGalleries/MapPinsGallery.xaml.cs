@@ -55,11 +55,25 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 		{
 			InitializeComponent();
 
-			pinsMap.Pins.Add(new Pin()
+			var microsoftPin = new Pin()
 			{
+				Address = "One Microsoft Way, Redmond, USA",
 				Label = "Microsoft Visitors Center",
 				Position = new Location(47.64232, -122.13684),
-			});
+			};
+
+			microsoftPin.MarkerClicked += (s, a) =>
+			{
+				DisplayAlert("Marker", "OK", "OK");
+			};
+
+			// TODO this doesn't seem to work on iOS?
+			microsoftPin.InfoWindowClicked += (s, a) =>
+			{
+				DisplayAlert("Info", "OK", "OK");
+			};
+
+			pinsMap.Pins.Add(microsoftPin);
 		}
 
 		private void AddPin_Clicked(object sender, EventArgs e)

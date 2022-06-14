@@ -7,6 +7,8 @@ Microsoft.Maui.Core.IMapPin.Label.get -> string!
 Microsoft.Maui.Core.IMapPin.MarkerId.get -> object!
 Microsoft.Maui.Core.IMapPin.MarkerId.set -> void
 Microsoft.Maui.Core.IMapPin.Position.get -> Microsoft.Maui.Devices.Sensors.Location!
+Microsoft.Maui.Core.IMapPin.SendInfoWindowClick() -> bool
+Microsoft.Maui.Core.IMapPin.SendMarkerClick() -> bool
 Microsoft.Maui.Handlers.IMapHandler
 Microsoft.Maui.Handlers.IMapHandler.PlatformView.get -> Microsoft.UI.Xaml.Controls.WebView2!
 Microsoft.Maui.Handlers.IMapHandler.VirtualView.get -> Microsoft.Maui.IMap!
