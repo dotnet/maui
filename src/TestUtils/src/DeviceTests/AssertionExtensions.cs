@@ -48,7 +48,8 @@ namespace Microsoft.Maui.DeviceTests
 			if (!String.IsNullOrWhiteSpace(message))
 				message = " " + message;
 
-			Assert.True(Math.Abs(expected - actual) <= epsilon, $"Expected: {expected}. Actual: {actual}. Epsilon: {epsilon}.{message}");
+			var diff = Math.Abs(expected - actual);
+			Assert.True(diff <= epsilon, $"Expected: {expected}. Actual: {actual}. Diff: {diff} Epsilon: {epsilon}.{message}");
 		}
 	}
 }

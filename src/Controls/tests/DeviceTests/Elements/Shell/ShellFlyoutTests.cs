@@ -130,22 +130,22 @@ namespace Microsoft.Maui.DeviceTests
 				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
 				// validate header position
-				AssertionExtensions.CloseEnough(headerFrame.X, 0);
-				AssertionExtensions.CloseEnough(headerFrame.Y, 0);
-				AssertionExtensions.CloseEnough(headerFrame.Width, flyoutFrame.Width);
+				AssertionExtensions.CloseEnough(0, headerFrame.X, message: "Header X");
+				AssertionExtensions.CloseEnough(0, headerFrame.Y, message: "Header Y");
+				AssertionExtensions.CloseEnough(flyoutFrame.Width, headerFrame.Width, message: "Header Width");
 
 				// validate content position
-				AssertionExtensions.CloseEnough(contentFrame.X, 0);
-				AssertionExtensions.CloseEnough(headerFrame.Height, contentFrame.Y);
-				AssertionExtensions.CloseEnough(contentFrame.Width, flyoutFrame.Width);
+				AssertionExtensions.CloseEnough(0, contentFrame.X, message: "Content X");
+				AssertionExtensions.CloseEnough(headerFrame.Height, contentFrame.Y, epsilon: 0.5, message: "Content Y");
+				AssertionExtensions.CloseEnough(flyoutFrame.Width, contentFrame.Width, message: "Content Width");
 
 				// validate footer position
-				AssertionExtensions.CloseEnough(contentFrame.X, 0);
-				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height, footerFrame.Y);
-				AssertionExtensions.CloseEnough(footerFrame.Width, flyoutFrame.Width);
+				AssertionExtensions.CloseEnough(0, footerFrame.X, message: "Footer X");
+				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height, footerFrame.Y, epsilon: 0.5, message: "Footer Y");
+				AssertionExtensions.CloseEnough(flyoutFrame.Width, footerFrame.Width, message: "Footer Width");
 
 				//All three views should measure to the height of the flyout
-				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + footerFrame.Height, flyoutFrame.Height);
+				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + footerFrame.Height, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
 			});
 		}
 
@@ -189,7 +189,7 @@ namespace Microsoft.Maui.DeviceTests
 				await ScrollFlyoutToBottom(handler);
 
 				var scrolledBox = (shell.FlyoutHeader as IView).GetBoundingBox();
-				AssertionExtensions.CloseEnough(100, initialBox.Height, 0.3);
+				AssertionExtensions.CloseEnough(100, scrolledBox.Height, 0.3);
 			});
 		}
 
