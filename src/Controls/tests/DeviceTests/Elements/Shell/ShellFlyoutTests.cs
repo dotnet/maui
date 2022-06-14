@@ -36,10 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 				await OpenFlyout(handler);
 				var flyoutFrame = GetFrameRelativeToFlyout(handler, shell.FlyoutHeader as IView);
 
-				AssertionExtensions.AssertWithMessage(() =>
-					Assert.True(Math.Abs(30 - flyoutFrame.Height) < 0.2),
-					$"Expected: {30} Actual: {flyoutFrame.Height}"
-				);
+				AssertionExtensions.CloseEnough(flyoutFrame.Height, 30);
 			});
 		}
 
@@ -68,10 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 					// 56 was pulled from the ActionBar height on Android
 					// and then just used across all three platforms for
 					// the min height when using collapse on scroll
-					AssertionExtensions.AssertWithMessage(() =>
-						Assert.True(Math.Abs(56 - flyoutFrame.Height) < 0.2),
-						$"Expected: 56 Actual: {flyoutFrame.Height}"
-					);
+					AssertionExtensions.CloseEnough(56, flyoutFrame.Height);
 				}
 				else
 				{
@@ -111,7 +105,7 @@ namespace Microsoft.Maui.DeviceTests
 				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
 				// validate footer position
-				Assert.Equal(headerFrame.Height + contentFrame.Height, footerFrame.Y);
+				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height);
 			});
 		}
 
@@ -136,22 +130,22 @@ namespace Microsoft.Maui.DeviceTests
 				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
 				// validate header position
-				Assert.Equal(0, headerFrame.X);
-				Assert.Equal(0, headerFrame.Y);
-				Assert.Equal(headerFrame.Width, flyoutFrame.Width);
+				AssertionExtensions.CloseEnough(headerFrame.X, 0);
+				AssertionExtensions.CloseEnough(headerFrame.Y, 0);
+				AssertionExtensions.CloseEnough(headerFrame.Width, flyoutFrame.Width);
 
 				// validate content position
-				Assert.Equal(0, contentFrame.X);
-				Assert.Equal(headerFrame.Height, contentFrame.Y);
-				Assert.Equal(contentFrame.Width, flyoutFrame.Width);
+				AssertionExtensions.CloseEnough(contentFrame.X, 0);
+				AssertionExtensions.CloseEnough(headerFrame.Height, contentFrame.Y);
+				AssertionExtensions.CloseEnough(contentFrame.Width, flyoutFrame.Width);
 
 				// validate footer position
-				Assert.Equal(0, contentFrame.X);
-				Assert.Equal(headerFrame.Height + contentFrame.Height, footerFrame.Y);
-				Assert.Equal(footerFrame.Width, flyoutFrame.Width);
+				AssertionExtensions.CloseEnough(contentFrame.X, 0);
+				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height, footerFrame.Y);
+				AssertionExtensions.CloseEnough(footerFrame.Width, flyoutFrame.Width);
 
 				//All three views should measure to the height of the flyout
-				Assert.Equal(headerFrame.Height + contentFrame.Height + footerFrame.Height, flyoutFrame.Height);
+				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + footerFrame.Height, flyoutFrame.Height);
 			});
 		}
 
@@ -190,19 +184,12 @@ namespace Microsoft.Maui.DeviceTests
 
 				var initialBox = (shell.FlyoutHeader as IView).GetBoundingBox();
 
-				AssertionExtensions.AssertWithMessage(() =>
-					Assert.True(Math.Abs(250 - initialBox.Height) < 0.2),
-					$"Expected: 250 Actual: {initialBox.Height}"
-				);
+				AssertionExtensions.CloseEnough(250, initialBox.Height, 0.3);
 
 				await ScrollFlyoutToBottom(handler);
 
 				var scrolledBox = (shell.FlyoutHeader as IView).GetBoundingBox();
-
-				AssertionExtensions.AssertWithMessage(() =>
-					Assert.True(Math.Abs(100 - scrolledBox.Height) < 0.2),
-					$"Expected: 100 Actual: {scrolledBox.Height}"
-				);
+				AssertionExtensions.CloseEnough(100, initialBox.Height, 0.3);
 			});
 		}
 
