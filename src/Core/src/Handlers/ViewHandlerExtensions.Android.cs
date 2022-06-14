@@ -77,16 +77,16 @@ namespace Microsoft.Maui
 		{
 			var Context = viewHandler.MauiContext?.Context;
 			var platformView = viewHandler.ToPlatform();
-			var VirtualView = viewHandler.VirtualView;
+			var virtualView = viewHandler.VirtualView;
 
-			if (platformView == null || VirtualView == null || Context == null)
+			if (platformView == null || virtualView == null || Context == null)
 			{
 				return Size.Zero;
 			}
 
 			// Create a spec to handle the native measure
-			var widthSpec = Context.CreateMeasureSpec(widthConstraint, VirtualView.Width, VirtualView.MaximumWidth);
-			var heightSpec = Context.CreateMeasureSpec(heightConstraint, VirtualView.Height, VirtualView.MaximumHeight);
+			var widthSpec = Context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MaximumWidth);
+			var heightSpec = Context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MaximumHeight);
 
 			platformView.Measure(widthSpec, heightSpec);
 

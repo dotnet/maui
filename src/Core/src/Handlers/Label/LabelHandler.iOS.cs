@@ -13,55 +13,6 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Background != null ||
 			base.NeedsContainer;
 
-
-		public override void PlatformArrange(Rect rect)
-		{
-			base.PlatformArrange(rect);
-
-			if (VirtualView == null)
-				return;
-
-			SizeF fitSize;
-			double fitHeight;
-			var bounds = PlatformView.Bounds;
-			var offsetFromParent = rect.Y;
-
-			// VerticalTextAlignment currently doesn't work
-			// if the label is inside a container
-			// Because the wrapper view resets the frame on the
-			// wrapped view
-			if (NeedsContainer)
-				offsetFromParent = 0;
-
-			switch (VirtualView.VerticalTextAlignment)
-			{
-				case Maui.TextAlignment.Start:
-					fitSize = PlatformView.SizeThatFits(rect.Size.ToCGSize());
-					fitHeight = Math.Min(bounds.Height, fitSize.Height);
-					var startFrame = new RectangleF(rect.X, offsetFromParent, rect.Width, fitHeight);
-
-					if (startFrame != RectangleF.Empty)
-						PlatformView.Frame = startFrame;
-
-					break;
-
-				case Maui.TextAlignment.Center:
-					break;
-
-				case Maui.TextAlignment.End:
-					fitSize = PlatformView.SizeThatFits(rect.Size.ToCGSize());
-					fitHeight = Math.Min(bounds.Height, fitSize.Height);
-
-					var yOffset = offsetFromParent + rect.Height - fitHeight;
-					var endFrame = new RectangleF(rect.X, yOffset, rect.Width, fitHeight);
-
-					if (endFrame != RectangleF.Empty)
-						PlatformView.Frame = endFrame;
-
-					break;
-			}
-		}
-
 		public static void MapBackground(ILabelHandler handler, ILabel label)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
