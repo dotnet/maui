@@ -57,9 +57,6 @@ namespace Microsoft.Maui.ApplicationModel
 
 		static LayoutDirection GetLayoutDirection()
 		{
-			if (!OperatingSystem.IsAndroidVersionAtLeast(17))
-					return LayoutDirection.LeftToRight;
-
 			var config = Application.Context.Resources?.Configuration;
 			if (config == null)
 				return LayoutDirection.Unknown;
