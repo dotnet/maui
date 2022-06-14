@@ -193,6 +193,10 @@ namespace Microsoft.Maui.Platform
 						platformView.Background = drawable;
 				}
 			}
+			else if (platformView is LayoutViewGroup)
+			{
+				platformView.Background = null;
+			}
 		}
 
 		public static void UpdateOpacity(this AView platformView, IView view)

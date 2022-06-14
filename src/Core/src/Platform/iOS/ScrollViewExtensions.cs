@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 
@@ -16,6 +17,8 @@ namespace Microsoft.Maui.Platform
 			scrollView.ShowsHorizontalScrollIndicator = scrollBarVisibility == ScrollBarVisibility.Always || scrollBarVisibility == ScrollBarVisibility.Default;
 		}
 
+
+		// TODO ezhart This method is no longer used internally; we can't delete it right now because that'd be a breaking change
 		public static void UpdateContent(this UIScrollView scrollView, IView? content, IMauiContext context)
 		{
 			var nativeContent = content == null ? null : content.ToPlatform(context);
