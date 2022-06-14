@@ -18,8 +18,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		TPlatformElement? _nativeView;
 		public FrameworkElement ContainerElement => this;
 
-		public TPlatformElement? Control => ((IElementHandler)this).PlatformView as TPlatformElement ?? _nativeView;
-		object? IElementHandler.PlatformView => _nativeView;
+		public TPlatformElement? Control
+		{
+			get
+			{
+				var value = ((IElementHandler)this).PlatformView as TPlatformElement;
+				if (value != this && value != null)
+					return value;
+
+				return _nativeView;
+			}
+		}
+
+		object? IElementHandler.PlatformView
+		{
+			get => (_nativeView as object) ?? this;
+		}
 
 		public UIElement? GeTPlatformElement() => Control;
 

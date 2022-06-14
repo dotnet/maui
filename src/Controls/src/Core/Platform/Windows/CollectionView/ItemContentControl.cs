@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var semantics = view.Semantics;
 
-			UI.Xaml.Automation.Peers.AccessibilityView defaultAccessibilityView = 
+			UI.Xaml.Automation.Peers.AccessibilityView defaultAccessibilityView =
 				UI.Xaml.Automation.Peers.AccessibilityView.Content;
 
 			if (!String.IsNullOrWhiteSpace(semantics?.Description) || !String.IsNullOrWhiteSpace(semantics?.Hint))
