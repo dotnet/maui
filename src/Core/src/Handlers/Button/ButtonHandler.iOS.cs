@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Handlers
 			var button = new UIButton(UIButtonType.System);
 
 #if MACCATALYST
-			button.PreferredBehavioralStyle = UIBehavioralStyle.Pad;
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				button.PreferredBehavioralStyle = UIBehavioralStyle.Pad;
 #endif
 			SetControlPropertiesFromProxy(button);
 			return button;
