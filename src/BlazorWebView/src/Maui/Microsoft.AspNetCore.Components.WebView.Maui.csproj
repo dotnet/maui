@@ -31,11 +31,7 @@
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" PrivateAssets="all" />
   </ItemGroup>
 
-  <ItemGroup>
-    <AdditionalFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
-    <AdditionalFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
-  </ItemGroup>
-
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
   <Import Project="$(MauiRootDirectory)src\Workload\Shared\LibraryPacks.targets" />
 
 </Project>

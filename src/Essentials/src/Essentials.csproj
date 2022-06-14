@@ -17,7 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Graphics" />
-    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="All" />
     <None Include="..\..\..\LICENSE" PackagePath="" Pack="true" />
     <None Include="..\..\..\Assets\xamarin.essentials_128x128.png" PackagePath="icon.png" Pack="true" />
     <None Include="nugetreadme.txt" PackagePath="readme.txt" Pack="true" />
@@ -67,8 +66,5 @@
     <Compile Include="**\*.macos.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Include="**\*.macos.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup> -->
-  <ItemGroup>
-    <AdditionalFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
-    <AdditionalFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
-  </ItemGroup>
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 </Project>
