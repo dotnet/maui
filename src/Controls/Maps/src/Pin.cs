@@ -1,19 +1,20 @@
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Core;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Controls.Maps
 {
-	public class Pin : Element
+	public class Pin : Element, IMapPin
 	{
-		public static readonly BindableProperty TypeProperty = BindableProperty.Create("Type", typeof(PinType), typeof(Pin), default(PinType));
+		public static readonly BindableProperty TypeProperty = BindableProperty.Create(nameof(Type), typeof(PinType), typeof(Pin), default(PinType));
 
-		public static readonly BindableProperty PositionProperty = BindableProperty.Create("Position", typeof(Position), typeof(Pin), default(Position));
+		public static readonly BindableProperty PositionProperty = BindableProperty.Create(nameof(Position), typeof(Location), typeof(Pin), default(Location));
 
-		public static readonly BindableProperty AddressProperty = BindableProperty.Create("Address", typeof(string), typeof(Pin), default(string));
+		public static readonly BindableProperty AddressProperty = BindableProperty.Create(nameof(Address), typeof(string), typeof(Pin), default(string));
 
-		public static readonly BindableProperty LabelProperty = BindableProperty.Create("Label", typeof(string), typeof(Pin), default(string));
+		public static readonly BindableProperty LabelProperty = BindableProperty.Create(nameof(Label), typeof(string), typeof(Pin), default(string));
 		private object _markerId;
-		private object _id;
 
 		public string Address
 		{
@@ -27,9 +28,9 @@ namespace Microsoft.Maui.Controls.Maps
 			set { SetValue(LabelProperty, value); }
 		}
 
-		public Position Position
+		public Location Position
 		{
-			get { return (Position)GetValue(PositionProperty); }
+			get { return (Location)GetValue(PositionProperty); }
 			set { SetValue(PositionProperty, value); }
 		}
 
@@ -46,8 +47,6 @@ namespace Microsoft.Maui.Controls.Maps
 			set
 			{
 				_markerId = value;
-				// Keep Id working just in case someone has taken a dependency on it
-				_id = value;
 			}
 		}
 

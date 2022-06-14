@@ -1,4 +1,7 @@
-﻿namespace Microsoft.Maui
+﻿using System.Collections.Generic;
+using Microsoft.Maui.Core;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a <see cref="IView"/> that displays a map.
@@ -29,5 +32,10 @@
 		/// Get whether this Map is showing traffic information.
 		/// </summary>
 		bool HasTrafficEnabled { get; }
+
+		/// <summary>
+		/// The pins that are to be shown on this Map.
+		/// </summary>
+		IList<IMapPin> Pins { get; }
 	}
 }

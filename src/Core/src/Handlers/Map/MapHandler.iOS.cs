@@ -1,5 +1,13 @@
-﻿using CoreLocation;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using CoreLocation;
 using MapKit;
+using Microsoft.Maui.Core;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -16,6 +24,96 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 			_locationManager = new CLLocationManager();
+
+			var mapsPinsItemsSource = (ObservableCollection<IMapPin>)VirtualView.Pins;
+			mapsPinsItemsSource.CollectionChanged += OnPinCollectionChanged;
+			OnPinCollectionChanged(mapsPinsItemsSource, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+		}
+
+		void OnPinCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+		{
+			Dispatcher.GetForCurrentThread()?.Dispatch(() => PinCollectionChanged(e));
+		}
+
+		void PinCollectionChanged(NotifyCollectionChangedEventArgs e)
+		{
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+					AddPins(e.NewItems ?? new List<IMapPin>());
+					break;
+				case NotifyCollectionChangedAction.Remove:
+					RemovePins(e.OldItems ?? new List<IMapPin>());
+					break;
+				case NotifyCollectionChangedAction.Replace:
+					RemovePins(e.OldItems ?? new List<IMapPin>());
+					AddPins(e.NewItems ?? new List<IMapPin>());
+					break;
+				case NotifyCollectionChangedAction.Reset:
+					if (PlatformView.Annotations?.Length > 0)
+						PlatformView.RemoveAnnotations(PlatformView.Annotations);
+					AddPins((IList)VirtualView.Pins);
+					break;
+				case NotifyCollectionChangedAction.Move:
+					//do nothing
+					break;
+			}
+		}
+
+		void AddPins(IList pins)
+		{
+			foreach (IMapPin pin in pins)
+			{
+				pin.PropertyChanged += PinOnPropertyChanged;
+
+				var annotation = CreateAnnotation(pin);
+				pin.MarkerId = annotation;
+				PlatformView.AddAnnotation(annotation);
+			}
+		}
+
+		void RemovePins(IList pins)
+		{
+			foreach (IMapPin pin in pins)
+			{
+				pin.PropertyChanged -= PinOnPropertyChanged;
+				PlatformView.RemoveAnnotation((IMKAnnotation)pin.MarkerId);
+			}
+		}
+
+		IMKAnnotation CreateAnnotation(IMapPin pin)
+		{
+			return new MKPointAnnotation
+			{
+				Title = pin.Label,
+				Subtitle = pin.Address ?? "",
+				Coordinate = new CLLocationCoordinate2D(pin.Position.Latitude, pin.Position.Longitude)
+			};
+		}
+
+		void PinOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			IMapPin pin = sender as IMapPin ?? throw new ArgumentNullException("sender cannot be null");
+			var annotation = pin.MarkerId as MKPointAnnotation;
+
+			if (annotation == null)
+			{
+				return;
+			}
+
+			if (e.PropertyName == nameof(IMapPin.Label))
+			{
+				annotation.Title = pin.Label;
+			}
+			else if (e.PropertyName == nameof(IMapPin.Address))
+			{
+				annotation.Subtitle = pin.Address;
+			}
+			else if (e.PropertyName == nameof(IMapPin.Position))
+			{
+				annotation.Coordinate = new CLLocationCoordinate2D(pin.Position.Latitude, pin.Position.Longitude);
+			}
+
 		}
 
 		public static void MapMapType(IMapHandler handler, IMap map)

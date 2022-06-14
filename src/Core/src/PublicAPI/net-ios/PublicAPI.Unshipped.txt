@@ -10,6 +10,7 @@ Microsoft.Maui.IMap.HasTrafficEnabled.get -> bool
 Microsoft.Maui.IMap.HasZoomEnabled.get -> bool
 Microsoft.Maui.IMap.IsShowingUser.get -> bool
 Microsoft.Maui.IMap.MapType.get -> Microsoft.Maui.MapType
+Microsoft.Maui.IMap.Pins.get -> System.Collections.Generic.IList<Microsoft.Maui.Core.IMapPin!>!
 Microsoft.Maui.MapType
 Microsoft.Maui.MapType.Hybrid = 2 -> Microsoft.Maui.MapType
 Microsoft.Maui.MapType.Satellite = 1 -> Microsoft.Maui.MapType

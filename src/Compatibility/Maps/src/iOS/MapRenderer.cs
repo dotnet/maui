@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				UpdateHasScrollEnabled();
 			else if (e.PropertyName == Map.HasZoomEnabledProperty.PropertyName)
 				UpdateHasZoomEnabled();
-			else if (e.PropertyName == Map.TrafficEnabledProperty.PropertyName)
+			else if (e.PropertyName == Map.HasTrafficEnabledProperty.PropertyName)
 				UpdateTrafficEnabled();
 			else if (e.PropertyName == VisualElement.HeightProperty.PropertyName && ((Map)Element).LastMoveToRegion != null)
 				_shouldUpdateRegion = ((Map)Element).MoveToLastRegionOnLayoutChange;
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				var pin = map.Pins[i];
 				if ((IMKAnnotation)pin.MarkerId == annotation)
 				{
-					targetPin = pin;
+					targetPin = (Pin)pin;
 					break;
 				}
 			}
@@ -457,7 +457,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 		void UpdateTrafficEnabled()
 		{
-			((MKMapView)Control).ShowsTraffic = ((Map)Element).TrafficEnabled;
+			((MKMapView)Control).ShowsTraffic = ((Map)Element).HasTrafficEnabled;
 		}
 
 		void UpdateHasZoomEnabled()

@@ -6,10 +6,11 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Core;
 
 namespace Microsoft.Maui.Controls.Maps
 {
-	public partial class Map : View, IEnumerable<Pin>
+	public partial class Map : View, IEnumerable<IMapPin>
 	{
 		public static readonly BindableProperty MapTypeProperty = BindableProperty.Create(nameof(MapType), typeof(MapType), typeof(Map), default(MapType));
 
@@ -32,8 +33,8 @@ namespace Microsoft.Maui.Controls.Maps
 
 		public static readonly BindableProperty MoveToLastRegionOnLayoutChangeProperty = BindableProperty.Create(nameof(MoveToLastRegionOnLayoutChange), typeof(bool), typeof(Map), defaultValue: true);
 
-		readonly ObservableCollection<Pin> _pins = new ObservableCollection<Pin>();
-		readonly ObservableCollection<MapElement> _mapElements = new ObservableCollection<MapElement>();
+		readonly ObservableCollection<IMapPin> _pins = new ();
+		readonly ObservableCollection<MapElement> _mapElements = new ();
 		MapSpan _visibleRegion;
 
 		public Map(MapSpan region)
@@ -82,7 +83,7 @@ namespace Microsoft.Maui.Controls.Maps
 			set { SetValue(MapTypeProperty, value); }
 		}
 
-		public IList<Pin> Pins
+		public IList<IMapPin> Pins
 		{
 			get { return _pins; }
 		}
@@ -143,7 +144,7 @@ namespace Microsoft.Maui.Controls.Maps
 			return GetEnumerator();
 		}
 
-		public IEnumerator<Pin> GetEnumerator()
+		public IEnumerator<IMapPin> GetEnumerator()
 		{
 			return _pins.GetEnumerator();
 		}
@@ -234,16 +235,18 @@ namespace Microsoft.Maui.Controls.Maps
 
 		void RemovePin(object itemToRemove)
 		{
-			// Instead of just removing by item (i.e. _pins.Remove(pinToRemove))
-			//  we need to remove by index because of how Pin.Equals() works
-			for (int i = 0; i < _pins.Count; ++i)
-			{
-				Pin pin = _pins[i];
-				if (pin.BindingContext?.Equals(itemToRemove) == true)
-				{
-					_pins.RemoveAt(i);
-				}
-			}
+			// TODO
+			throw new NotImplementedException();
+			//// Instead of just removing by item (i.e. _pins.Remove(pinToRemove))
+			////  we need to remove by index because of how Pin.Equals() works
+			//for (int i = 0; i < _pins.Count; ++i)
+			//{
+			//	IMapPin pin = _pins[i];
+			//	if (pin.BindingContext?.Equals(itemToRemove) == true)
+			//	{
+			//		_pins.RemoveAt(i);
+			//	}
+			//}
 		}
 	}
 }

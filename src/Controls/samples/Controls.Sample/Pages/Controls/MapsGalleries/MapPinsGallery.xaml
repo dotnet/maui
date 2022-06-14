@@ -9,7 +9,9 @@
 
     <Grid RowDefinitions="Auto, *">
         <HorizontalStackLayout Grid.Row="0">
-            
+            <Button Text="Add Pin" Clicked="AddPin_Clicked" />
+            <Button Text="Remove Pin" Clicked="RemovePin_Clicked" />
+            <Button Text="Add 10 Pins" Clicked="Add10Pins_Clicked" />
         </HorizontalStackLayout>
         <Map x:Name="pinsMap" Grid.Row="1" />
     </Grid>
