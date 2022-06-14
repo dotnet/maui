@@ -1,4 +1,10 @@
 ﻿#nullable enable
+Microsoft.Maui.Core.IMapPin
+Microsoft.Maui.Core.IMapPin.Address.get -> string!
+Microsoft.Maui.Core.IMapPin.Label.get -> string!
+Microsoft.Maui.Core.IMapPin.MarkerId.get -> object!
+Microsoft.Maui.Core.IMapPin.MarkerId.set -> void
+Microsoft.Maui.Core.IMapPin.Position.get -> Microsoft.Maui.Devices.Sensors.Location!
 Microsoft.Maui.Handlers.IMapHandler
 Microsoft.Maui.Handlers.IMapHandler.PlatformView.get -> object!
 Microsoft.Maui.Handlers.IMapHandler.VirtualView.get -> Microsoft.Maui.IMap!
