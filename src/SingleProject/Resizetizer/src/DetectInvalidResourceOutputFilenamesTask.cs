@@ -47,10 +47,10 @@ namespace Microsoft.Maui.Resizetizer
 					{
 						var builder = new StringBuilder();
 						builder.AppendLine(ErrorMessage);
-						foreach (var file in invalidFilenames)
+						for (var i = 0; i < invalidFilenames.Length; i++)
 						{
-							builder.AppendLine();
-							builder.Append('\t');
+							if (i > 0)
+								builder.Append(', ');
 							builder.Append(Path.GetFileNameWithoutExtension(file));
 						}
 
