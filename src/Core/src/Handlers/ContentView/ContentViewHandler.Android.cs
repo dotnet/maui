@@ -41,7 +41,12 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.RemoveAllViews();
 
 			if (handler.VirtualView.PresentedContent is IView view)
-				handler.PlatformView.AddView(view.ToPlatform(handler.MauiContext));
+			{
+				var platformContent = view.ToPlatform(handler.MauiContext);
+				// Make sure we don't belong to a previous parent
+				platformContent.RemoveFromParent();
+				handler.PlatformView.AddView(platformContent);
+			}
 		}
 
 		public static void MapContent(IContentViewHandler handler, IContentView page)
