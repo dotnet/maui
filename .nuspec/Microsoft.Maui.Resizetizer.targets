@@ -49,6 +49,10 @@
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.GeneratePackageAppxManifest" />
 
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GenerateAndroidManifestXml" />
+
     <PropertyGroup>
         <CleanDependsOn>
             $(CleanDependsOn);
@@ -671,6 +675,35 @@
         <ItemGroup>
             <FileWrites Include="$(_MauiManifestStampFile)" />
         </ItemGroup>
+    </Target>
+
+    <Target Name="_MauiManifestMergerAfterTarget"
+            AfterTargets="_ManifestMerger"
+            Condition=" '$(_ResizetizerIsAndroidApp)' == 'True' And '$(AndroidManifestMerger)' == 'manifestmerger.jar' "
+            DependsOnTargets="_MauiGenerateAndroidManifestAttributes" />
+
+    <Target Name="_MauiGenerateJavaStubsAfterTarget"
+            AfterTargets="_GenerateJavaStubs"
+            Condition=" '$(_ResizetizerIsAndroidApp)' == 'True' And '$(AndroidManifestMerger)' != 'manifestmerger.jar' "
+            DependsOnTargets="_MauiGenerateAndroidManifestAttributes" />
+
+    <Target Name="_MauiGenerateAndroidManifestAttributes"
+            Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);$(IntermediateOutputPath)android\AndroidManifest.xml"
+            Outputs="$(_MauiManifestStampFile);$(IntermediateOutputPath)android\AndroidManifest.xml"
+            Condition=" '$(_ResizetizerIsAndroidApp)' == 'True' ">
+
+        <GenerateAndroidManifestXml
+            AppIcon="@(MauiImage->WithMetadataValue('IsAppIcon', 'true'))"
+            Manifest="$(IntermediateOutputPath)android\AndroidManifest.xml"
+            IntermediateOutputPath="$(IntermediateOutputPath)android"
+            GeneratedFilename="AndroidManifest.xml" />
+
+        <!-- Stamp file for Outputs -->
+        <Touch Files="$(_MauiManifestStampFile)" AlwaysCreate="True" />
+        <ItemGroup>
+            <FileWrites Include="$(_MauiManifestStampFile)" />
+        </ItemGroup>
+
     </Target>
 
     <Target Name="_CleanResizetizer">
