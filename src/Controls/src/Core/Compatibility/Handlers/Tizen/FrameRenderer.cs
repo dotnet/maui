@@ -6,10 +6,11 @@ using Microsoft.Maui.Graphics;
 using SkiaSharp;
 using Tizen.UIExtensions.NUI;
 using IMeasurable = Tizen.UIExtensions.Common.IMeasurable;
-using TColor = Tizen.UIExtensions.Common.Color;
 using NColor = Tizen.NUI.Color;
-using TShadow = Tizen.NUI.Shadow;
+using TColor = Tizen.UIExtensions.Common.Color;
 using TLayoutParamPolicies = Tizen.NUI.BaseComponents.LayoutParamPolicies;
+using TShadow = Tizen.NUI.Shadow;
+using TSize = Tizen.UIExtensions.Common.Size;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -171,7 +172,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (Element.HasShadow)
 			{
-				BoxShadow = new TShadow(6.0.ToScaledPixel(), TColor.FromHex("#111111").ToNative());
+				BoxShadow = new TShadow(2.0.ToScaledPixel(), TColor.FromHex("#111111").ToNative());
 			}
 			else
 			{
@@ -217,17 +218,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		#region IPlatformViewHandler
-		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint)
+
+		TSize IMeasurable.Measure(double availableWidth, double availableHeight)
 		{
 			if (Element?.Handler is IPlatformViewHandler pvh && Element is IContentView cv)
 			{
-				return pvh.MeasureVirtualView(widthConstraint, heightConstraint, cv.CrossPlatformMeasure);
+				return pvh.MeasureVirtualView(availableWidth.ToScaledDP(), availableHeight.ToScaledDP(), cv.CrossPlatformMeasure).ToPixel();
 			}
 			else
 			{
-				return Graphics.Size.Zero;
+				return NaturalSize2D.ToCommon();
 			}
+		}
+
+		#region IPlatformViewHandler
+		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			return this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 		}
 
 		bool IViewHandler.HasContainer { get => false; set { } }

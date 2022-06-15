@@ -110,6 +110,7 @@ namespace Microsoft.Maui.Controls.Hosting
 #endif
 #if TIZEN
 			handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
+			handlersCollection.AddHandler<ContentView, ContentViewHandler>();
 #endif
 
 #if WINDOWS || MACCATALYST
