@@ -13,7 +13,7 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
    - [Install the latest Public Preview of Visual Studio](https://docs.microsoft.com/en-us/dotnet/maui/get-started/installation/)
    - [macOS](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)  
 2. If you're on a Windows development machine, install [SDK 20348](https://go.microsoft.com/fwlink/?linkid=2164145)
-3. If you're on a MacOS development machine, install [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-macos)
+3. If you're on a MacOS development machine, install [PowerShell](https://docs.microsoft.com/powershell/scripting/install/installing-powershell-on-macos)
    
 ### iOS / MacCatalyst
 
