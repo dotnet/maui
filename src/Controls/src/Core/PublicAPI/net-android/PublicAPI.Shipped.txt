@@ -1633,7 +1633,7 @@ Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.MatchHeight.set -> 
 Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.MatchWidth.get -> bool
 Microsoft.Maui.Controls.Platform.Compatibility.ContainerView.MatchWidth.set -> void
 Microsoft.Maui.Controls.Platform.Compatibility.CustomFrameLayout
-Microsoft.Maui.Controls.Platform.Compatibility.CustomFrameLayout.CustomFrameLayout(System.IntPtr javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Controls.Platform.Compatibility.CustomFrameLayout.CustomFrameLayout(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Controls.Platform.Compatibility.IShellBottomNavViewAppearanceTracker
 Microsoft.Maui.Controls.Platform.Compatibility.IShellContext
 Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer
