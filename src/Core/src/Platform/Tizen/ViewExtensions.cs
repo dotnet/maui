@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this ContentViewGroup platformView, IBorderView border)
 		{
-			(platformView.GetParent() as WrapperView)?.UpdateMauiDrawable(border);
+			(platformView.GetParent() as WrapperView)?.UpdateBackground(border.Background);
 		}
 
 		public static void UpdateBackground(this NView platformView, IView view)
