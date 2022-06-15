@@ -28,21 +28,6 @@ In most cases, when you have Visual Studio installed with the .NET workloads che
 
 Install the .NET MAUI workload using the versions from a particular branch:  
 
-#### RC 2 branch
-
-1. First, install .NET SDK 6.0.300
-
-2. Next run the following workload command:
-
-```
-dotnet workload install maui `
-  --from-rollback-file https://aka.ms/dotnet/maui/6.0.300/rc.2.json `
-  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-a21b9a2d/nuget/v3/index.json `
-  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-572aeedc/nuget/v3/index.json `
-  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json `
-  --source https://api.nuget.org/v3/index.json
-```
-
 #### main branch
 
 1. First, install .NET SDK 6.0.300
@@ -70,25 +55,6 @@ dotnet workload install maui \
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json \
   --source https://api.nuget.org/v3/index.json
 ```
-
-
-#### Preview 14 branch
-
-Windows:
-
-```bat
-iwr https://aka.ms/dotnet/maui/maui-install.ps1 -OutFile maui-install.ps1;
-.\maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
-```
-
-MacOS:
-
-```bash
-curl -O -L https://aka.ms/dotnet/maui/maui-install.ps1
-sudo pwsh -File ./maui-install.ps1 -b 'release/6.0.2xx-preview14' -v '6.0.200-preview'
-```
-
-> NOTE: the branch (`-b 'release/6.0.2xx-preview14'`) and version (`-v 6.0.200-preview`) parameters. The "preview 14" branch currently requires the 6.0.200 SDK band since the manifests are all in that SDK band - this will change in the future
 
 ### iOS / MacCatalyst
 
