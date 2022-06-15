@@ -454,7 +454,7 @@ Microsoft.Maui.Handlers.IProgressBarHandler
 Microsoft.Maui.Handlers.IProgressBarHandler.PlatformView.get -> Tizen.UIExtensions.NUI.GraphicsView.ProgressBar!
 Microsoft.Maui.Handlers.IProgressBarHandler.VirtualView.get -> Microsoft.Maui.IProgress!
 Microsoft.Maui.Handlers.IRadioButtonHandler
-Microsoft.Maui.Handlers.IRadioButtonHandler.PlatformView.get -> Tizen.NUI.BaseComponents.View!
+Microsoft.Maui.Handlers.IRadioButtonHandler.PlatformView.get -> Microsoft.Maui.Platform.ContentViewGroup!
 Microsoft.Maui.Handlers.IRadioButtonHandler.VirtualView.get -> Microsoft.Maui.IRadioButton!
 Microsoft.Maui.Handlers.IRefreshViewHandler
 Microsoft.Maui.Handlers.IRefreshViewHandler.PlatformView.get -> Tizen.NUI.BaseComponents.View!
@@ -1896,7 +1896,9 @@ override Microsoft.Maui.Handlers.PickerHandler.ConnectHandler(Tizen.UIExtensions
 override Microsoft.Maui.Handlers.PickerHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.Entry!
 override Microsoft.Maui.Handlers.PickerHandler.DisconnectHandler(Tizen.UIExtensions.NUI.Entry! platformView) -> void
 override Microsoft.Maui.Handlers.ProgressBarHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.GraphicsView.ProgressBar!
-override Microsoft.Maui.Handlers.RadioButtonHandler.CreatePlatformView() -> Tizen.NUI.BaseComponents.View!
+override Microsoft.Maui.Handlers.RadioButtonHandler.CreatePlatformView() -> Microsoft.Maui.Platform.ContentViewGroup!
+override Microsoft.Maui.Handlers.RadioButtonHandler.ConnectHandler(Microsoft.Maui.Platform.ContentViewGroup! platformView) -> void
+override Microsoft.Maui.Handlers.RadioButtonHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentViewGroup! platformView) -> void
 override Microsoft.Maui.Handlers.RefreshViewHandler.CreatePlatformView() -> Tizen.NUI.BaseComponents.View!
 override Microsoft.Maui.Handlers.ScrollViewHandler.ConnectHandler(Tizen.UIExtensions.NUI.ScrollView! platformView) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.ScrollView!
@@ -2214,7 +2216,7 @@ static Microsoft.Maui.Handlers.ProgressBarHandler.MapProgress(Microsoft.Maui.Han
 static Microsoft.Maui.Handlers.ProgressBarHandler.MapProgressColor(Microsoft.Maui.Handlers.IProgressBarHandler! handler, Microsoft.Maui.IProgress! progress) -> void
 static Microsoft.Maui.Handlers.RadioButtonHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IRadioButton!, Microsoft.Maui.Handlers.IRadioButtonHandler!>!
 static Microsoft.Maui.Handlers.RadioButtonHandler.MapCharacterSpacing(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.ITextStyle! textStyle) -> void
-static Microsoft.Maui.Handlers.RadioButtonHandler.MapContent(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.IRadioButton! radioButton) -> void
+static Microsoft.Maui.Handlers.RadioButtonHandler.MapContent(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.IContentView! page) -> void
 static Microsoft.Maui.Handlers.RadioButtonHandler.MapCornerRadius(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.IRadioButton! radioButton) -> void
 static Microsoft.Maui.Handlers.RadioButtonHandler.MapFont(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.ITextStyle! textStyle) -> void
 static Microsoft.Maui.Handlers.RadioButtonHandler.MapIsChecked(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.IRadioButton! radioButton) -> void

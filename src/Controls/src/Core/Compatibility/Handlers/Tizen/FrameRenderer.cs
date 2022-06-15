@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			Children.Add(_clipperView);
 
-			BorderlineColor = NColor.Black;
+			BorderlineColor = NColor.Transparent;
 			BorderlineWidth = 1.0.ToScaledPixel();
 			_viewHandlerWrapper = new ViewHandlerDelegator<Frame>(Mapper, CommandMapper, this);
 		}
@@ -141,7 +141,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element == null || _disposed)
 				return;
 
-			BackgroundColor = Element.BackgroundColor.ToNUIColor();
+			if (Element.BackgroundColor.IsNotDefault())
+				BackgroundColor = Element.BackgroundColor.ToNUIColor();
+			else
+				BackgroundColor = Colors.White.ToNUIColor();
 		}
 
 		void UpdateBackground()
@@ -149,9 +152,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element == null || _disposed)
 				return;
 
+			// If BackgroundColor is valid, do not update Background
+			if (Element.BackgroundColor.IsNotDefault())
+				return;
+
 			var color = ((Paint)Element.Background)?.ToColor();
+
 			if (color != null)
 				BackgroundColor = color.ToNUIColor();
+			else
+				BackgroundColor = Colors.White.ToNUIColor();
 		}
 
 		void UpdateBorderColor()
@@ -162,7 +172,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element.BorderColor.IsNotDefault())
 				BorderlineColor = Element.BorderColor.ToNUIColor();
 			else
-				BorderlineColor = Tizen.NUI.Color.Black;
+				BorderlineColor = NColor.Transparent;
 		}
 
 		void UpdateShadow()

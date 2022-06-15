@@ -6136,6 +6136,7 @@ Microsoft.Maui.Controls.TappedEventArgs.TappedEventArgs(object? parameter) -> vo
 ~static Microsoft.Maui.Controls.PointCollection.implicit operator Microsoft.Maui.Controls.PointCollection(Microsoft.Maui.Graphics.Point[] d) -> Microsoft.Maui.Controls.PointCollection
 ~static Microsoft.Maui.Controls.RadioButton.ControlsRadioButtonMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.RadioButton, Microsoft.Maui.Handlers.RadioButtonHandler>
 ~static Microsoft.Maui.Controls.RadioButton.DefaultTemplate.get -> Microsoft.Maui.Controls.ControlTemplate
+~static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.RadioButtonHandler handler, Microsoft.Maui.Controls.RadioButton radioButton) -> void
 ~static Microsoft.Maui.Controls.RadioButtonGroup.GetGroupName(Microsoft.Maui.Controls.BindableObject b) -> string
 ~static Microsoft.Maui.Controls.RadioButtonGroup.GetSelectedValue(Microsoft.Maui.Controls.BindableObject bindableObject) -> object
 ~static Microsoft.Maui.Controls.RadioButtonGroup.SetGroupName(Microsoft.Maui.Controls.BindableObject bindable, string groupName) -> void
