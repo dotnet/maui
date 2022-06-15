@@ -60,8 +60,8 @@ Create new .NET MAUI app using your new packs
 ```dotnetcli
 dotnet tool restore
 dotnet cake --pack
-mkdir MauiApp
-cd MauiApp
+mkdir MyMauiApp
+cd MyMauiApp
 ..\bin\dotnet\dotnet new maui
 ..\bin\dotnet\dotnet build -t:Run -f net6.0-android
 ```
