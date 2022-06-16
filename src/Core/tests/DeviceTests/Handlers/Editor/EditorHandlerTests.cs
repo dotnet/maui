@@ -120,7 +120,12 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test"
 			};
 
+#if WINDOWS
+			// On Windows, the default value for the Placeholder text is an empty string ("")
+			await ValidatePropertyInitValue(editor, () => editor.Placeholder ?? string.Empty, GetNativePlaceholderText, editor.Placeholder ?? string.Empty);
+#else
 			await ValidatePropertyInitValue(editor, () => editor.Placeholder, GetNativePlaceholderText, editor.Placeholder);
+#endif
 		}
 
 		[Theory]
@@ -183,7 +188,11 @@ namespace Microsoft.Maui.DeviceTests
 			//Assert.Equal(expectedText, editor.Text);
 		}
 
-		[Theory(DisplayName = "MaxLength Clips Native Text Correctly")]
+		[Theory(DisplayName = "MaxLength Clips Native Text Correctly"
+#if WINDOWS
+			, Skip = "https://github.com/dotnet/maui/issues/7939"
+#endif
+		)]
 		[InlineData(2)]
 		[InlineData(5)]
 		[InlineData(8)]
@@ -319,13 +328,20 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory(DisplayName = "Validates Text Keyboard")]
 		[InlineData(nameof(Keyboard.Chat), false)]
-		[InlineData(nameof(Keyboard.Default), false)]
 		[InlineData(nameof(Keyboard.Email), false)]
 		[InlineData(nameof(Keyboard.Numeric), false)]
-		[InlineData(nameof(Keyboard.Plain), false)]
 		[InlineData(nameof(Keyboard.Telephone), false)]
 		[InlineData(nameof(Keyboard.Text), true)]
 		[InlineData(nameof(Keyboard.Url), false)]
+#if WINDOWS
+		// The Text keyboard is the default one on Windows
+		[InlineData(nameof(Keyboard.Default), true)]
+		// Plain is the same as the Default keyboard on Windows
+		[InlineData(nameof(Keyboard.Plain), true)]
+#else
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+#endif
 		public async Task ValidateTextKeyboard(string keyboardName, bool expected)
 		{
 			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
