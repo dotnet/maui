@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Resizetizer
 						for (var i = 0; i < invalidFilenames.Length; i++)
 						{
 							if (i > 0)
-								builder.Append(', ');
+								builder.Append(", ");
 							builder.Append(Path.GetFileNameWithoutExtension(file));
 						}
 
