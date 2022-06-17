@@ -35,33 +35,20 @@ namespace Microsoft.Maui.Resizetizer
 			return destination;
 		}
 
-		public ResizedImageInfo CopyFile(DpiPath dpi, string inputsFile, bool isAndroid = false)
+		public ResizedImageInfo CopyFile(DpiPath dpi, string inputsFile)
 		{
 			var destination = GetFileDestination(dpi);
-			var androidVector = false;
 
-			if (isAndroid && Info.IsVector && !Info.Resize)
-			{
-				// Update destination to be .xml file
-				destination = Path.ChangeExtension(destination, ".xml");
-				androidVector = true;
-			}
+			if (Info.IsVector)
+				destination = Path.ChangeExtension(destination, ".png");
 
 			if (IsUpToDate(Info.Filename, destination, inputsFile, Logger))
 				return new ResizedImageInfo { Filename = destination, Dpi = dpi };
 
-			if (androidVector)
-			{
-				Logger.Log("Converting SVG to Android Drawable Vector: " + Info.Filename);
-
-				// Transform into an android vector drawable
-				Svg2VectorDrawable.Svg2Vector.Convert(Info.Filename, destination);
-			}
+			if (Info.IsVector)
+				Rasterize(dpi, destination);
 			else
-			{
-				// Otherwise just copy it straight
 				File.Copy(Info.Filename, destination, true);
-			}
 
 			return new ResizedImageInfo { Filename = destination, Dpi = dpi };
 		}
@@ -93,14 +80,15 @@ namespace Microsoft.Maui.Resizetizer
 			if (IsUpToDate(Info.Filename, destination, inputsFile, Logger))
 				return new ResizedImageInfo { Filename = destination, Dpi = dpi };
 
-			if (tools == null)
-			{
-				tools = SkiaSharpTools.Create(Info.IsVector, Info.Filename, Info.BaseSize, Info.TintColor, Logger);
-			}
-
-			tools.Resize(dpi, destination);
+			Rasterize(dpi, destination);
 
 			return new ResizedImageInfo { Filename = destination, Dpi = dpi };
+		}
+
+		void Rasterize(DpiPath dpi, string destination)
+		{
+			tools ??= SkiaSharpTools.Create(Info.IsVector, Info.Filename, Info.BaseSize, Info.Color, Info.TintColor, Logger);
+			tools.Resize(dpi, destination);
 		}
 	}
 }
