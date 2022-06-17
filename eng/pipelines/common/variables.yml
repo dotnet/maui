@@ -27,7 +27,7 @@ variables:
   value: $[or(
             eq(variables['Sign'], 'true'),
             in(variables['Build.SourceBranch'], 'refs/heads/net6.0', 'refs/heads/net7.0', 'refs/heads/main'),
-            startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+            startsWith(variables['Build.SourceBranch'], 'refs/tags/'),
             startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
           )]
 # Common Agent Pools in use
