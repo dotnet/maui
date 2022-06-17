@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_dataBindedViewTable.TryGetValue(GetData(index), out View? createdView) && createdView != null)
 			{
-				return createdView.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins).Request.ToPixel();
+				return (createdView as IView).Measure(widthConstraint, heightConstraint).ToPixel();
 			}
 
 			View view;
@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				view.BindingContext = this[index];
 
 			view.ToPlatform(MauiContext);
-			return view.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins).Request.ToPixel();
+			return (view as IView).Measure(widthConstraint, heightConstraint).ToPixel();
 		}
 
 		public override TSize MeasureHeader(double widthConstraint, double heightConstraint)
@@ -276,12 +276,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 			}
 
-			return _headerCache?.Measure(widthConstraint.ToScaledDP(), heightConstraint.ToScaledDP(), MeasureFlags.IncludeMargins).Request.ToPixel() ?? new TSize(0, 0);
+			return (_headerCache as IView)?.Measure(widthConstraint.ToScaledDP(), heightConstraint.ToScaledDP()).ToPixel() ?? new TSize(0, 0);
 		}
 
 		public override TSize MeasureFooter(double widthConstraint, double heightConstraint)
 		{
-			return _footerCache?.Measure(widthConstraint.ToScaledDP(), heightConstraint.ToScaledDP(), MeasureFlags.IncludeMargins).Request.ToPixel() ?? new TSize(0, 0);
+			return (_footerCache as IView)?.Measure(widthConstraint.ToScaledDP(), heightConstraint.ToScaledDP()).ToPixel() ?? new TSize(0, 0);
 		}
 
 		protected virtual View? CreateHeaderView()
