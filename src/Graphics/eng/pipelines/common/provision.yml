@@ -1,0 +1,107 @@
+parameters:
+  platform : ''
+  skipXcode: false
+
+steps:
+
+  # # Prepare macOS
+  # - ${{ if eq(parameters.platform, 'macos') }}:
+  #   # Provision Xcode
+  #   - ${{ if ne(parameters.skipXcode, 'true') }}:
+  #     - task: xamops.azdevex.provisionator-task.provisionator@1
+  #       displayName: 'Provision Xcode'
+  #       condition: ne(variables['REQUIRED_XCODE'], '')
+  #       inputs:
+  #         provisioning_script: $(provisionator.xcode)
+  #   # Provision Additional Software
+  #   - task: xamops.azdevex.provisionator-task.provisionator@1
+  #     displayName: 'Provision Additional Software'
+  #     condition: eq(variables['provisioning'], 'true')
+  #     inputs:
+  #       provisioning_script: $(provisionator.path)
+  #       provisioning_extra_args: $(provisionator.extraArguments)
+  #   # Setup SDK Paths
+  #   - bash: |
+  #       echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
+  #       echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
+  #     displayName: 'Setup SDK Paths'
+  #     condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
+  #   # Setup JDK Paths
+  #   - bash: |
+  #       echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)"
+  #     displayName: 'Setup JDK Paths'
+  #   # Configure VS Mac for Xcode
+  #   - bash: |
+  #       set -x
+  #       mkdir -p ~/Library/Preferences/Xamarin
+  #       rm -f ~/Library/Preferences/Xamarin/Settings.plist
+  #       /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
+  #       cat ~/Library/Preferences/Xamarin/Settings.plist || true
+  #     displayName: 'Configure Visual Studio'
+  #   # Install Certificates and Provisioning Profiles
+  #   - task: InstallAppleProvisioningProfile@1
+  #     displayName: 'Install the iOS provisioning profile'
+  #     inputs:
+  #       provProfileSecureFile: 'Components iOS Provisioning.mobileprovision'
+  #   - task: InstallAppleProvisioningProfile@1
+  #     displayName: 'Install the macOS provisioning profile'
+  #     inputs:
+  #       provProfileSecureFile: 'Components Mac Provisioning.mobileprovision'
+  #   - task: InstallAppleProvisioningProfile@1
+  #     displayName: 'Install the tvOS provisioning profile'
+  #     inputs:
+  #       provProfileSecureFile: 'Components tvOS Provisioning.mobileprovision'
+  #   - task: InstallAppleCertificate@2
+  #     displayName: 'Install the iOS certificate'
+  #     inputs:
+  #       certSecureFile: 'Components iOS Certificate.p12'
+  #   - task: InstallAppleCertificate@2
+  #     condition: eq(variables['System.JobName'], 'macos')
+  #     displayName: 'Install the macOS certificate'
+  #     inputs:
+  #       certSecureFile: 'Components Mac Certificate.p12'
+
+
+  # Prepare Windows
+  - ${{ if eq(parameters.platform, 'windows') }}:
+    - powershell: |
+        if (-not $(where.exe pwsh)) {
+          $url = "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.msi"
+          $output = "$env:TEMP\PowerShell.msi"
+          Remove-Item -Force $output -ErrorAction Ignore
+          Invoke-WebRequest -Uri $url -OutFile $output
+          msiexec.exe /package $output /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1
+        }
+      displayName: 'Install PowerShell Core'
+    - task: xamops.azdevex.provisionator-task.provisionator@1
+      displayName: 'Provision Visual Studio'
+      condition: eq(variables['provisioningVS'], 'true')
+      inputs:
+        provisioning_script: $(provisionator.vs)
+    - pwsh: |
+        $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+        echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
+      displayName: 'Setup MSBuild Paths'
+      condition: eq(variables['provisioningVS'], 'true')
+
+
+  # # Prepare Both
+  # - pwsh: ./build.ps1 --target provision
+  #   displayName: 'Cake Provision'
+  #   condition: eq(variables['provisioningCake'], 'true')
+  # - pwsh: dotnet nuget locals all --clear
+  #   displayName: 'Clear all NuGet caches'
+
+
+  # # Prepare for Reunion packages
+  # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  #   - task: NuGetAuthenticate@0
+  #     displayName: 'Authenticate Reunion NuGet sources'
+  #     inputs:
+  #       nuGetServiceConnections: Project.Reunion.nuget.internal
+  #   - pwsh: |
+  #       $path = '$(Build.SourcesDirectory)\NuGet.config'
+  #       [xml]$xml = Get-Content $path
+  #       $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
+  #       $xml.Save($path)
+  #     displayName: 'Add "wasdk-internal" to NuGet.config'

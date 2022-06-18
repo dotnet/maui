@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <EnvironmentBuildPropsImported>true</EnvironmentBuildPropsImported>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CI)' == ''">
+    <CI>false</CI>
+    <CI Condition="'$(TF_BUILD)' == 'true'">true</CI>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+
+  <!-- Auto install any missing Android SDKs -->
+  <PropertyGroup Condition="'$(CI)' == 'true'">
+    <AndroidRestoreOnBuild Condition="'$(AndroidRestoreOnBuild)' == ''">False</AndroidRestoreOnBuild>
+    <AcceptAndroidSDKLicenses Condition="'$(AcceptAndroidSDKLicenses)' == ''">True</AcceptAndroidSDKLicenses>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0-macos</TargetFramework>
+		<OutputType>Exe</OutputType>
+		<RootNamespace>GraphicsTester.Mac</RootNamespace>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>10.0</LangVersion>
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-macos'">10.14</SupportedOSPlatformVersion>
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+	  <EnableCodeSigning>false</EnableCodeSigning>
+	  <UseSGen>false</UseSGen>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+	  <EnableCodeSigning>false</EnableCodeSigning>
+	  <UseSGen>false</UseSGen>
+	</PropertyGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Skia\Microsoft.Maui.Graphics.Skia-net6.csproj" />
+	  <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics-net6.csproj" />
+	  <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Text.Markdig\Microsoft.Maui.Graphics.Text.Markdig-net6.csproj" />
+	  <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable-net6.csproj" />
+	</ItemGroup>
+
+</Project>
