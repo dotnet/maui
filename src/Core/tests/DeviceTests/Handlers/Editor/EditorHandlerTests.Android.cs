@@ -208,7 +208,7 @@ namespace Microsoft.Maui.DeviceTests
 			var textView = GetNativeEditor(editorHandler);
 
 			if (textView != null)
-				return textView.SelectionEnd;
+				return textView.SelectionStart;
 
 			return -1;
 		}
