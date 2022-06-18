@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -23,22 +22,11 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
 
-		static void SetNativeText(EditorHandler editorHandler, string text)
-		{
-			var platformView = GetNativeEditor(editorHandler);
-
-			platformView.TextChanged += PlatformView_TextChanged;
-
-			platformView.Text = text;
-		}
-
-		private static void PlatformView_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			Console.WriteLine();
-		}
+		static void SetNativeText(EditorHandler editorHandler, string text) =>
+			GetNativeEditor(editorHandler).Text = text;
 
 		static int GetCursorStartPosition(EditorHandler editorHandler) =>
-			GetNativeEditor(editorHandler).SelectionStart;
+			GetNativeEditor(editorHandler).GetCursorPosition();
 
 		static void UpdateCursorStartPosition(EditorHandler editorHandler, int position) =>
 			GetNativeEditor(editorHandler).SelectionStart = position;
@@ -94,6 +82,6 @@ namespace Microsoft.Maui.DeviceTests
 			IsInputScopeEquals(GetNativeEditor(editorHandler).InputScope, InputScopeNameValue.Chat);
 
 		int GetNativeCursorPosition(EditorHandler editorHandler) =>
-			GetNativeEditor(editorHandler).SelectionStart;
+			GetNativeEditor(editorHandler).GetCursorPosition();
 	}
 }

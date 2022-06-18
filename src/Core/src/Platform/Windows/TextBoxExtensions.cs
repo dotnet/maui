@@ -79,6 +79,9 @@ namespace Microsoft.Maui.Platform
 			textBox.UpdateInputScope(textInput);
 		}
 
+		internal static bool GetClearButtonVisibility(this TextBox textBox) =>
+			MauiTextBox.GetIsDeleteButtonEnabled(textBox);
+
 		public static void UpdateClearButtonVisibility(this TextBox textBox, IEntry entry) =>
 			MauiTextBox.SetIsDeleteButtonEnabled(textBox, entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing);
 
@@ -200,6 +203,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateSelectionLength(this TextBox textBox, ITextInput entry)
 		{
+			// It seems that the TextBox does not limit the SelectionLength to the Text.Length natively
 			entry.SelectionLength = Math.Min(entry.SelectionLength, textBox.Text.Length - textBox.SelectionStart);
 
 			if (textBox.SelectionLength != entry.SelectionLength)

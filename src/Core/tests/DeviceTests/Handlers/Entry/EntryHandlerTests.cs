@@ -297,7 +297,11 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsChatKeyboard, expected);
 		}
 
-		[Theory(DisplayName = "MaxLength Initializes Correctly")]
+		[Theory(DisplayName = "MaxLength Initializes Correctly"
+#if WINDOWS
+			, Skip = "https://github.com/dotnet/maui/issues/7939"
+#endif
+			)]
 		[InlineData(2)]
 		[InlineData(5)]
 		[InlineData(8)]
