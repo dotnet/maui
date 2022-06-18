@@ -1,10 +1,29 @@
-﻿using Foundation;
+using System;
+using Foundation;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class SearchBarExtensions
 	{
+		// TODO: NET7 maybe make this public?
+		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			uiSearchBar.UpdateBackground(searchBar, null);
+		}
+
+		// TODO: NET7 maybe make this public?
+		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar, UIColor? defaultTintColor = null)
+		{
+			ViewExtensions.UpdateBackground(uiSearchBar, searchBar);
+
+			var background = searchBar.Background;
+
+			if (background is SolidPaint solidPaint)
+				uiSearchBar.BarTintColor = solidPaint.Color.ToPlatform(defaultTintColor ?? ColorExtensions.BackgroundColor);
+		}
+
 		public static void UpdateIsEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			uiSearchBar.UserInteractionEnabled = searchBar.IsEnabled;
