@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Resizetizer
 					if (ThrowsError)
 					{
 						var builder = new StringBuilder();
-						builder.AppendLine(ErrorMessage);
+						builder.Append(ErrorMessage);
 
 						for (var i = 0; i < invalidFilenames.Count; i++)
 						{
