@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.False(success);
 
-				Assert.Equal("Invalid Filenames: appiconfg-red-512", LogMessageEvents[0]);
+				Assert.Equal("Invalid Filenames: appiconfg-red-512", LogMessageEvents[0].Message);
 			}
 
 			[Fact]
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.False(success);
 
-				Assert.Equal("Invalid Filenames: appiconfg-red-512, appiconfg-red-512", LogMessageEvents[0]);
+				Assert.Equal("Invalid Filenames: appiconfg-red-512, appiconfg-red-512", LogMessageEvents[0].Message);
 			}
 		}
 	}
