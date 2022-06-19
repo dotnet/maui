@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel;
 
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.Platform
 		WebView2? _internalWebView;
 
 		// Arbitrary local host name for virtual folder mapping
-		const string LocalHostName = "appxpackage";
+		const string LocalHostName = "appdir";
 		const string LocalScheme = $"https://{LocalHostName}/";
 
 		// Script to insert a <base> tag into an HTML document
@@ -22,14 +23,19 @@ namespace Microsoft.Maui.Platform
 				head.innerHTML = 'baseTag' + head.innerHTML;
 			}";
 
+		// Allow for packaged/unpackaged app support
+		string ApplicationPath = AppInfoUtils.IsPackagedApp
+			? Package.Current.InstalledLocation.Path
+			: AppContext.BaseDirectory;
+
 		public async void LoadHtml(string? html, string? baseUrl)
 		{
-			var mapAppxFolder = false;
+			var mapBaseDirectory = false;
 
 			if (string.IsNullOrEmpty(baseUrl))
 			{
 				baseUrl = LocalScheme;
-				mapAppxFolder = true;
+				mapBaseDirectory = true;
 			}
 
 			// Generate a base tag for the document
@@ -61,13 +67,11 @@ namespace Microsoft.Maui.Platform
 
 				await EnsureCoreWebView2Async();
 
-				if (mapAppxFolder)
+				if (mapBaseDirectory)
 				{
-					var appxFolder = Package.Current.InstalledLocation.Path;
-
 					CoreWebView2.SetVirtualHostNameToFolderMapping(
 						LocalHostName,
-						appxFolder,
+						ApplicationPath,
 						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
 				}
 
@@ -90,11 +94,9 @@ namespace Microsoft.Maui.Platform
 			{
 				await EnsureCoreWebView2Async();
 
-				var appxFolder = Package.Current.InstalledLocation.Path;
-
 				CoreWebView2.SetVirtualHostNameToFolderMapping(
 					LocalHostName,
-					appxFolder,
+					ApplicationPath,
 					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
 
 				uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
