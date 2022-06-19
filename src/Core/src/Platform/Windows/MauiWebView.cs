@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 			}";
 
 		// Allow for packaged/unpackaged app support
-		string ApplicationPath = AppInfoUtils.IsPackagedApp
+		string ApplicationPath => AppInfoUtils.IsPackagedApp
 			? Package.Current.InstalledLocation.Path
 			: AppContext.BaseDirectory;
 
