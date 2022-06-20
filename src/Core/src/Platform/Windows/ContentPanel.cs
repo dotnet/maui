@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Platform
 
 			_borderPath?.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
 
-			return new global::Windows.Foundation.Size(actual.Width, actual.Height);
+			return new global::Windows.Foundation.Size(Math.Max(0, actual.Width), Math.Max(0, actual.Height));
 		}
 
 		public ContentPanel()

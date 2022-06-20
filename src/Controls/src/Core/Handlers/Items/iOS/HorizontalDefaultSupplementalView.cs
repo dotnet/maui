@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal sealed class HorizontalDefaultSupplementalView : DefaultCell
 	{
-		public static NSString ReuseId = new NSString("Microsoft.Maui.Controls.Compatibility.Platform.iOS.HorizontalDefaultSupplementalView");
+		public static NSString ReuseId = new NSString("Microsoft.Maui.Controls.HorizontalDefaultSupplementalView");
 
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]

@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		public SearchHandler Element { get; }
-		
+
 		public EvasObject? PlatformView => Control;
 
 		protected IMauiContext? MauiContext { get; private set; }
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Platform
 		protected EvasObject PlatformParent => MauiContext?.GetPlatformParent() ?? throw new InvalidOperationException($"PlatformParent cannot be null here");
 
 		ISearchHandlerController SearchHandlerController => Element;
-		
+
 		TSearchBar? Control { get; }
 
 		~ShellSearchView()

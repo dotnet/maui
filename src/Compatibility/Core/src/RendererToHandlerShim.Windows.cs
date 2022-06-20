@@ -7,8 +7,8 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
-    public partial class RendererToHandlerShim
-    {
+	public partial class RendererToHandlerShim
+	{
 		protected override PlatformView CreatePlatformView()
 		{
 			return VisualElementRenderer.ContainerElement;

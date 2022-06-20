@@ -34,9 +34,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="contentRootRelativeToAppRoot">Path to the directory containing application content files.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the fileProvider.</param>
 
-		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler!!, WKWebView webview!!, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string contentRootRelativeToAppRoot, string hostPageRelativePath)
+		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, WKWebView webview, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string contentRootRelativeToAppRoot, string hostPageRelativePath)
 			: base(provider, dispatcher, BlazorWebViewHandler.AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 		{
+			ArgumentNullException.ThrowIfNull(nameof(blazorMauiWebViewHandler));
+			ArgumentNullException.ThrowIfNull(nameof(webview));
+
 			if (provider.GetService<MauiBlazorMarkerService>() is null)
 			{
 				throw new InvalidOperationException(
@@ -263,7 +266,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					var uri = _currentUri;
 					_currentUri = null;
 					_currentNavigation = null;
-					var request = new NSUrlRequest(uri);
+					var request = new NSUrlRequest(uri!);
 					webView.LoadRequest(request);
 				}
 			}

@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			(handler.PlatformView as Button)?.UpdateCornerRadius(buttonStroke);
-    }
+		}
 
 		public static void MapBackground(IImageButtonHandler handler, IImageButton imageButton)
 		{

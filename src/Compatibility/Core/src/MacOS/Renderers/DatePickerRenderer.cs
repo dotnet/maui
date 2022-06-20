@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateFont()
 		{
 			if (Control == null || Element == null)
-				return; 
+				return;
 
 			var newFont = Element.ToNSFont();
 

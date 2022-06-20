@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static void ApplyFont<TFontElement>(this Control self, TFontElement element) where TFontElement : Element, IFontElement
 			=> self.UpdateFont(element.ToFont(), element.RequireFontManager());
 
-		internal static void ApplyFont<TFontElement>(this TextBlock self, TFontElement element) where TFontElement: Element, IFontElement
+		internal static void ApplyFont<TFontElement>(this TextBlock self, TFontElement element) where TFontElement : Element, IFontElement
 			=> self.UpdateFont(element.ToFont(), element.RequireFontManager());
 
 		internal static void ApplyFont<TFontElement>(this UI.Xaml.Documents.TextElement self, TFontElement element) where TFontElement : Element, IFontElement

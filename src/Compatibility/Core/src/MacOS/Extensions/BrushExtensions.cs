@@ -175,6 +175,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return false;
 		}
 
-	
+
 	}
 }

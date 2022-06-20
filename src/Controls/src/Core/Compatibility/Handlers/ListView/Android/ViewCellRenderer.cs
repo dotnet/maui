@@ -58,6 +58,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return c;
 		}
 
+		protected override void DisconnectHandler(AView platformView)
+		{
+			base.DisconnectHandler(platformView);
+			ViewCellContainer c = platformView.GetParentOfType<ViewCellContainer>();
+			c?.DisconnectHandler();
+		}
+
 		internal class ViewCellContainer : ViewGroup, INativeElementView
 		{
 			readonly View _parent;
@@ -69,6 +76,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			GestureDetector _longPressGestureDetector;
 			ListViewRenderer _listViewRenderer;
 			bool _watchForLongPress;
+			AView _currentView;
 
 			ListViewRenderer ListViewRenderer
 			{
@@ -198,7 +206,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_viewCell = cell;
 
 					Performance.Start(reference, "Reuse.SetElement");
-					_viewHandler.SetVirtualView(cell.View);
+
+					if (_viewHandler != cell.View.Handler)
+					{
+						if (cell.View.Handler?.PlatformView is AView oldCellView &&
+							oldCellView.GetParentOfType<ViewCellContainer>() is ViewCellContainer vc)
+						{
+							vc.DisconnectHandler();
+						}
+
+						var oldView = _currentView ?? _viewHandler.PlatformView;
+						if (oldView != null)
+							RemoveView(oldView);
+
+						cell.View.Handler?.DisconnectHandler();
+						_viewHandler.SetVirtualView(cell.View);
+						AddView(_viewHandler.PlatformView);
+					}
+
 					Performance.Stop(reference, "Reuse.SetElement");
 
 					Invalidate();
@@ -208,7 +233,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 				}
 
-				RemoveView(_viewHandler.PlatformView);
+				RemoveView(_currentView ?? _viewHandler.PlatformView);
 				_viewCell.View.Handler?.DisconnectHandler();
 				_viewCell.View.IsPlatformEnabled = false;
 
@@ -229,6 +254,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public void UpdateIsEnabled()
 			{
 				Enabled = _parent.IsEnabled && _viewCell.IsEnabled;
+			}
+
+			public void DisconnectHandler()
+			{
+				var oldView = _currentView ?? _viewHandler.PlatformView;
+				if (oldView != null)
+					RemoveView(oldView);
+
+				_viewCell?.View?.Handler?.DisconnectHandler();
+
+			}
+
+			public override void AddView(AView child)
+			{
+				base.AddView(child);
+				_currentView = child;
 			}
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)

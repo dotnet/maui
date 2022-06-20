@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (Application.Current != null)
 			{
 				WindowSoftInputModeAdjust elementValue = Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust();
-				
+
 				switch (elementValue)
 				{
 					case WindowSoftInputModeAdjust.Resize:

@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(WebView2 platformView)
 		{
 			platformView.CoreWebView2Initialized += OnCoreWebView2Initialized;
-			
+
 			base.ConnectHandler(platformView);
 		}
 
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Handlers
 		void SyncPlatformCookiesToVirtualView(string url)
 		{
 			var myCookieJar = VirtualView.Cookies;
-		
+
 			if (myCookieJar == null)
 				return;
 
@@ -185,25 +185,25 @@ namespace Microsoft.Maui.Handlers
 		void SyncPlatformCookies(string url)
 		{
 			var uri = CreateUriForCookies(url);
-			
+
 			if (uri == null)
 				return;
 
 			var myCookieJar = VirtualView.Cookies;
-			
+
 			if (myCookieJar == null)
 				return;
 
 			InitialCookiePreloadIfNecessary(url);
 			var cookies = myCookieJar.GetCookies(uri);
-			
+
 			if (cookies == null)
 				return;
 
 			var retrieveCurrentWebCookies = GetCookiesFromPlatformStore(url);
 
 			var filter = new global::Windows.Web.Http.Filters.HttpBaseProtocolFilter();
-			
+
 			foreach (Cookie cookie in cookies)
 			{
 				HttpCookie httpCookie = new HttpCookie(cookie.Name, cookie.Domain, cookie.Path)
@@ -252,7 +252,7 @@ namespace Microsoft.Maui.Handlers
 			var uri = CreateUriForCookies(url);
 			var filter = new global::Windows.Web.Http.Filters.HttpBaseProtocolFilter();
 			var platformCookies = filter.CookieManager.GetCookies(uri);
-			
+
 			return platformCookies;
 		}
 
@@ -277,14 +277,14 @@ namespace Microsoft.Maui.Handlers
 			return null;
 		}
 
-		
 
-		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg) 
+
+		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{
 				if (handler.PlatformView == null)
-				{ 
+				{
 					request.SetCanceled();
 					return;
 				}

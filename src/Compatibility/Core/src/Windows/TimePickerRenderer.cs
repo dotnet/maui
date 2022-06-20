@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			Control.UpdateFlowDirection(Element);
 		}
-		
+
 		void PickerOnForceInvalidate(object sender, EventArgs eventArgs)
 		{
 			((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.SizeRequestChanged);

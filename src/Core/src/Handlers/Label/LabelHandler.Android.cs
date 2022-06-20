@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ViewHandler<ILabel, AppCompatTextView>
 	{
-		protected override AppCompatTextView CreatePlatformView() 
+		protected override AppCompatTextView CreatePlatformView()
 			=> new MauiTextView(Context);
 
 		public override void PlatformArrange(Rect frame)

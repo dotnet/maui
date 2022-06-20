@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static SpannableString ToSpannableString(this Label label)
-			=> ToSpannableString(
+			=> ToSpannableStringNewWay(
 				label.FormattedText,
 				label.RequireFontManager(),
 				label.Handler?.MauiContext?.Context,
@@ -26,7 +26,28 @@ namespace Microsoft.Maui.Controls.Platform
 				label.TextTransform,
 				label.TextDecorations);
 
+		// TODO: NET7 this overload must be removed in net7.0 and replace with the one below
 		public static SpannableString ToSpannableString(
+			this FormattedString formattedString,
+			IFontManager fontManager,
+			TextPaint? textPaint = null,
+			Context? context = null,
+			double defaultLineHeight = 0,
+			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
+			Font? defaultFont = null,
+			Graphics.Color? defaultColor = null,
+			TextTransform defaultTextTransform = TextTransform.Default)
+			=> formattedString.ToSpannableStringNewWay(
+				fontManager,
+				context,
+				0d,
+				defaultHorizontalAlignment,
+				defaultFont,
+				defaultColor,
+				defaultTextTransform,
+				TextDecorations.None);
+
+		internal static SpannableString ToSpannableStringNewWay(
 			this FormattedString formattedString,
 			IFontManager fontManager,
 			Context? context = null,
@@ -133,7 +154,11 @@ namespace Microsoft.Maui.Controls.Platform
 			int count = 0;
 			IList<int> totalLineHeights = new List<int>();
 
-			for (int i = 0; i < spannableString.Length(); i = next)
+#pragma warning disable CA1416
+			var strlen = spannableString.Length();
+#pragma warning restore CA1416
+
+			for (int i = 0; i < strlen; i = next)
 			{
 				var type = Java.Lang.Class.FromType(typeof(Java.Lang.Object));
 
@@ -145,7 +170,7 @@ namespace Microsoft.Maui.Controls.Platform
 					continue;
 
 				// Find the next span
-				next = spannableString.NextSpanTransition(i, spannableString.Length(), type);
+				next = spannableString.NextSpanTransition(i, strlen, type);
 
 				// Get all spans in the range - Android can have overlapping spans				
 				var spans = spannableString.GetSpans(i, next, type);

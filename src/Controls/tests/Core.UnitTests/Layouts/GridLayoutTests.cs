@@ -128,5 +128,61 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		{
 			handler.Received().Invoke(Arg.Is(nameof(IView.InvalidateMeasure)), Arg.Any<object>());
 		}
+
+		[Test]
+		public void RowDefinitionsGetBindingContext()
+		{
+			var def = new RowDefinition();
+			var def2 = new RowDefinition();
+
+			var grid = new Grid()
+			{
+				RowDefinitions = new RowDefinitionCollection
+				{
+					def
+				}
+			};
+
+			var context = new object();
+
+			Assert.That(def.BindingContext, Is.Null);
+			Assert.That(def2.BindingContext, Is.Null);
+
+			grid.BindingContext = context;
+
+			Assert.That(def.BindingContext, Is.EqualTo(context));
+
+			grid.RowDefinitions.Add(def2);
+
+			Assert.That(def2.BindingContext, Is.EqualTo(context));
+		}
+
+		[Test]
+		public void ColumnDefinitionsGetBindingContext()
+		{
+			var def = new ColumnDefinition();
+			var def2 = new ColumnDefinition();
+
+			var grid = new Grid()
+			{
+				ColumnDefinitions = new ColumnDefinitionCollection
+				{
+					def
+				}
+			};
+
+			var context = new object();
+
+			Assert.That(def.BindingContext, Is.Null);
+			Assert.That(def2.BindingContext, Is.Null);
+
+			grid.BindingContext = context;
+
+			Assert.That(def.BindingContext, Is.EqualTo(context));
+
+			grid.ColumnDefinitions.Add(def2);
+
+			Assert.That(def2.BindingContext, Is.EqualTo(context));
+		}
 	}
 }

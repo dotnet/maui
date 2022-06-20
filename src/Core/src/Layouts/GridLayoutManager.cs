@@ -28,7 +28,10 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size ArrangeChildren(Rect bounds)
 		{
-			var structure = _gridStructure ?? new GridStructure(Grid, bounds.Width, bounds.Height);
+			if (_gridStructure  == null || NeedsRemeasure(bounds, Grid, _gridStructure))
+			{
+				_gridStructure = new GridStructure(Grid, bounds.Width, bounds.Height);
+			}
 
 			var reverseColumns = Grid.ColumnDefinitions.Count > 1 && !Grid.ShouldArrangeLeftToRight();
 
@@ -39,7 +42,7 @@ namespace Microsoft.Maui.Layouts
 					continue;
 				}
 
-				var cell = structure.GetCellBoundsFor(view, bounds.Left, bounds.Top);
+				var cell = _gridStructure.GetCellBoundsFor(view, bounds.Left, bounds.Top);
 
 				if (reverseColumns)
 				{
@@ -50,16 +53,37 @@ namespace Microsoft.Maui.Layouts
 				view.Arrange(cell);
 			}
 
-			var actual = new Size(structure.MeasuredGridWidth(), structure.MeasuredGridHeight());
+			var actual = new Size(_gridStructure.MeasuredGridWidth(), _gridStructure.MeasuredGridHeight());
 
 			return actual.AdjustForFill(bounds, Grid);
 		}
 
+		static bool NeedsRemeasure(Rect bounds, IGridLayout grid, GridStructure structure) 
+		{
+			if (grid.VerticalLayoutAlignment == Primitives.LayoutAlignment.Fill
+					&& structure.HeightConstraint != bounds.Height)
+			{
+				return true;
+			}
+			
+			if (grid.HorizontalLayoutAlignment == Primitives.LayoutAlignment.Fill
+				&& structure.WidthConstraint != bounds.Width)
+			{
+				return true;
+			}
+
+			return false;
+		}
+
 		class GridStructure
 		{
+			public double HeightConstraint => _gridHeightConstraint;
+			public double WidthConstraint => _gridWidthConstraint;
+
 			readonly IGridLayout _grid;
 			readonly double _gridWidthConstraint;
 			readonly double _gridHeightConstraint;
+			
 			readonly double _explicitGridHeight;
 			readonly double _explicitGridWidth;
 			readonly double _gridMaxHeight;
@@ -140,7 +164,7 @@ namespace Microsoft.Maui.Layouts
 				MeasureCells();
 			}
 
-			static Definition[] Implied(bool treatStarAsAuto) 
+			static Definition[] Implied(bool treatStarAsAuto)
 			{
 				return new Definition[]
 				{
@@ -148,7 +172,7 @@ namespace Microsoft.Maui.Layouts
 				};
 			}
 
-			Definition[] InitializeRows(bool treatStarAsAuto) 
+			Definition[] InitializeRows(bool treatStarAsAuto)
 			{
 				int count = _rowDefinitions.Count;
 
@@ -157,7 +181,7 @@ namespace Microsoft.Maui.Layouts
 					// Since no rows are specified, we'll create an implied row 0 
 					return Implied(treatStarAsAuto);
 				}
-				
+
 				var rows = new Definition[count];
 
 				for (int n = 0; n < count; n++)
@@ -176,7 +200,7 @@ namespace Microsoft.Maui.Layouts
 
 				return rows;
 			}
-			
+
 			Definition[] InitializeColumns(bool treatStarAsAuto)
 			{
 				int count = _columnDefinitions.Count;
@@ -186,7 +210,7 @@ namespace Microsoft.Maui.Layouts
 					// Since no columns are specified, we'll create an implied column 0 
 					return Implied(treatStarAsAuto);
 				}
-				
+
 				var definitions = new Definition[count];
 
 				for (int n = 0; n < count; n++)
@@ -603,7 +627,7 @@ namespace Microsoft.Maui.Layouts
 					{
 						continue;
 					}
-					
+
 					_childrenToLayOut[cell.ViewIndex].Measure(width, height);
 				}
 			}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -11,17 +12,38 @@ namespace Maui.Controls.Sample.Pages
 	public partial class ModalPage
 	{
 		static int s_instanceCount = 0;
+		string _previousTitle;
 		public ModalPage()
 		{
 			InitializeComponent();
 			BackgroundColor = Colors.Purple;
 			Title = $"Modal Page {s_instanceCount++}";
+			lblModalPageNumber.Text = $"Modal Page {s_instanceCount}";
 		}
+
+		protected override void OnNavigatingFrom(NavigatingFromEventArgs args)
+		{
+			_previousTitle = this.Window?.Title;
+			base.OnNavigatingFrom(args);
+		}
+
+		protected override void OnNavigatedTo(NavigatedToEventArgs args)
+		{
+			if (PopModal.IsVisible)
+			{
+				this.Window.Title = "Modal Gallery";
+			}
+			else
+			{
+				this.Window.Title = _previousTitle;
+			}
+		}
+
 
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-			PushModal.IsVisible = Navigation.ModalStack.Count > 0;
+			PopModal.IsVisible = Navigation.ModalStack.Count > 0;
 		}
 
 		async void PushNavigationModalClicked(object sender, EventArgs e)
@@ -66,7 +88,7 @@ namespace Maui.Controls.Sample.Pages
 		async void PushFlyoutPageClicked(object sender, EventArgs e)
 		{
 			var modalPage = new ModalPage();
-			Page newMainPage = new NavigationPage(new ModalPage())
+			Page newMainPage = new NavigationPage(modalPage)
 			{
 				BackgroundColor =
 						(BackgroundColor == Colors.Purple) ? Colors.Pink : Colors.Purple,

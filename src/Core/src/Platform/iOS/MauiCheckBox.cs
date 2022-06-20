@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Platform
 		Color? _tintColor;
 		bool _isChecked;
 		bool _isEnabled;
-		float _minimumViewSize;
 		bool _disposed;
 
 		public EventHandler? CheckedChanged;
@@ -31,7 +30,7 @@ namespace Microsoft.Maui.Platform
 		{
 			ContentMode = UIViewContentMode.Center;
 			ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
-			HorizontalAlignment = UIControlContentHorizontalAlignment.Left;
+			HorizontalAlignment = UIControlContentHorizontalAlignment.Center;
 			VerticalAlignment = UIControlContentVerticalAlignment.Center;
 #pragma warning disable CA1416 // TODO: both has [UnsupportedOSPlatform("ios15.0")]
 			AdjustsImageWhenDisabled = false;
@@ -46,18 +45,7 @@ namespace Microsoft.Maui.Platform
 			CheckedChanged?.Invoke(this, EventArgs.Empty);
 		}
 
-		internal float MinimumViewSize
-		{
-			get { return _minimumViewSize; }
-			set
-			{
-				_minimumViewSize = value;
-				var xOffset = (value - DefaultSize + LineWidth) / 4;
-#pragma warning disable CA1416 // TODO: 'ContentEdgeInsets' has [UnsupportedOSPlatform("ios15.0")]
-				ContentEdgeInsets = new UIEdgeInsets(0, xOffset, 0, 0);
-#pragma warning restore CA1416
-			}
-		}
+		internal float MinimumViewSize { get; set; }
 
 		public bool IsChecked
 		{

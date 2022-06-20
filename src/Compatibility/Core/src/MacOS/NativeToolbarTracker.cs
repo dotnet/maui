@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			group.View = view;
 
 			if (itemIdentifier == NavigationGroupIdentifier)
-				_navigationGroup = new NativeToolbarGroup(group,BackButtonItemWidth);
+				_navigationGroup = new NativeToolbarGroup(group, BackButtonItemWidth);
 			else if (itemIdentifier == TitleGroupIdentifier)
 				_titleGroup = new NativeToolbarGroup(group);
 			else if (itemIdentifier == TabbedGroupIdentifier)
@@ -231,7 +231,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var bgColor = GetBackgroundColor().CGColor;
 
 			if (_nsToolbarItemViewer?.Superview?.Superview == null ||
-				_nsToolbarItemViewer.Superview.Superview.Superview == null) return;
+				_nsToolbarItemViewer.Superview.Superview.Superview == null)
+				return;
 			// NSTitlebarView
 			_nsToolbarItemViewer.Superview.Superview.Superview.WantsLayer = true;
 			_nsToolbarItemViewer.Superview.Superview.Superview.Layer.BackgroundColor = bgColor;

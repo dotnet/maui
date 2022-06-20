@@ -9,6 +9,7 @@
         <item name="appBarLayoutStyle">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
         <item name="bottomNavigationViewStyle">@style/Widget.Design.BottomNavigationView</item>
         <item name="materialButtonStyle">@style/MauiMaterialButton</item>
+        <item name="checkboxStyle">@style/MauiCheckBox</item>
         <item name="android:textAllCaps">false</item>
     </style>
     <style name="Maui.MainTheme.NoActionBar" parent="Maui.MainTheme">
@@ -52,7 +53,13 @@
       <item name="android:insetLeft">0dp</item>
       <item name="android:insetRight">0dp</item>
     </style>
-  
+
+    <style name="MauiCheckBox" parent="Widget.Material3.CompoundButton.CheckBox">
+      <!-- remove all the min sizes as MAUI manages it -->
+      <item name="android:minWidth">0dp</item>
+      <item name="android:minHeight">0dp</item>
+    </style>
+
   <!-- 
     The collectionViewScrollBars style will be used as the default style for ItemsViewRenderer (the base renderer
     for CollectionView and CarouselView. We have to use a style to set up the scrollbars because there is currently

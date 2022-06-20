@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.ContainerView is WrapperView wrapperView)
 				wrapperView.UpdateShape(shapeView.Shape);
 		}
-		
+
 		public static void MapAspect(IShapeViewHandler handler, IShapeView shapeView)
 		{
 			handler.PlatformView?.InvalidateShape(shapeView);

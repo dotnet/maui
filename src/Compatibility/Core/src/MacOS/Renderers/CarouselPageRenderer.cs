@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			if (Element.LogicalChildren.Count == 0 && ArrangedObjects.Length == 0)
 				return;
-			
+
 			var pages = new List<NSPageContainer>();
 			for (var i = 0; i < Element.LogicalChildren.Count; i++)
 			{
@@ -233,7 +233,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (animated)
 					NSAnimationContext.RunAnimation(context => { ((NSPageController)Animator).SelectedIndex = index; },
 						CompleteTransition);
-				else SelectedIndex = index;
+				else
+					SelectedIndex = index;
 			}
 		}
 	}

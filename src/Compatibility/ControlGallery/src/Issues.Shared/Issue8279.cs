@@ -14,12 +14,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 8279, "[Feature requested] ListView do not ScrollTo a group when there is no child of this group", PlatformAffected.Android)]
-    public class Issue8279 : TestContentPage
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 8279, "[Feature requested] ListView do not ScrollTo a group when there is no child of this group", PlatformAffected.Android)]
+	public class Issue8279 : TestContentPage
 	{
-        public static ListView List { get; set; }
-        public static List<MyGroup> Data { get; set;  }
+		public static ListView List { get; set; }
+		public static List<MyGroup> Data { get; set; }
 		const string ScrollWithNoItemButGroup = "ScrollWithNoItemButGroup";
 		const string ScrollWithItemButNoGroup = "ScrollWithItemButNoGroup";
 		const string ScrollWithItemWithGroup = "ScrollWithItemWithGroup";
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		public Issue8279()
-        {
+		{
 #if APP
 			Data = new List<MyGroup>();
             Data.Add(new MyGroup(){Headertitle = "Header 1"});
@@ -241,5 +241,5 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			}
 		}
 	}
-	
+
 }
