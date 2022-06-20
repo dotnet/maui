@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
+    <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <AssemblyName>Microsoft.Maui.Graphics</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
+    <PackageId>Microsoft.Maui.Graphics</PackageId>
+    <Product>Microsoft.Maui.Graphics</Product>
+    <NoWarn>$(NoWarn);CA1307;CA1309</NoWarn>
+  </PropertyGroup>
+
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+
+  <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.5.4" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" Condition="$(TargetFramework.StartsWith('netstandard'))" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\Workload\Shared\LibraryPacks.targets" />
+
+</Project>

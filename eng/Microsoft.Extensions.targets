@@ -1,16 +1,20 @@
 <Project>
   <ItemGroup>
     <PackageReference
-        Update="Microsoft.Maui.Graphics"
-        Version="$(MicrosoftMauiGraphicsVersion)"
+        Update="SkiaSharp"
+        Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
-         Update="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
-         Version="$(MicrosoftMauiGraphicsVersion)"
+        Update="SkiaSharp.Views"
+        Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
-         Update="Microsoft.Maui.Graphics.Skia"
-         Version="$(MicrosoftMauiGraphicsVersion)"
+        Update="SkiaSharp.Views.WinUI"
+        Version="$(_SkiaSharpVersion)"
+    />
+    <PackageReference
+        Update="SkiaSharp.HarfBuzz"
+        Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
          Update="System.Numerics.Vectors"

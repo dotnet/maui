@@ -2,6 +2,7 @@
   "solution": {
     "path": "Microsoft.Maui.sln",
     "projects": [
+      "src\\Graphics\\src\\Graphics\\Graphics.csproj",
       "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks.csproj",
       "src\\Controls\\src\\Core\\Controls.Core.csproj",
       "src\\Controls\\src\\Xaml\\Controls.Xaml.csproj",

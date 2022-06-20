@@ -69,7 +69,7 @@
     <Compile Remove="bin\**;obj\**" />
     <None Remove="bin\**;obj\**" />
   </ItemGroup>
-  
+
   <PropertyGroup>
     <!-- Windows -->
     <WindowsProjectFolder>Platform\Windows\</WindowsProjectFolder>
@@ -96,38 +96,22 @@
     <DefineConstants>$(DefineConstants);IOS</DefineConstants>
   </PropertyGroup>
 
+  <!-- Mac Catalyst -->
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsMacCatalyst)' == 'True' ">
     <DefineConstants>$(DefineConstants);MACCATALYST;IOS</DefineConstants>
   </PropertyGroup>
 
-  <!-- Tizen  -->
+  <!-- Tizen -->
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
     <DefineConstants>$(DefineConstants);TIZEN</DefineConstants>
   </PropertyGroup>
 
-  <!-- If this becomes part of the product we will remove these but for now it's useful having them all in one place -->
-  <ItemGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
-    <PackageReference Include="Xamarin.Google.Android.Material" />
-    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
-  </ItemGroup>
+  <!-- Windows -->
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' ">
     <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
     <DefineConstants>WINDOWS_UWP;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' ">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.Graphics.Win2D" />
-    <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
-    <PackageReference Include="Tizen.UIExtensions.ElmSharp" />
-    <PackageReference Include="Microsoft.Maui.Graphics.Skia" />
-  </ItemGroup>
+
 </Project>
