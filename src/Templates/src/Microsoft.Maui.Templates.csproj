@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <UsingTask TaskName="ReplaceFileText" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
@@ -71,8 +71,8 @@
     <ReplaceFileText
         InputFilename="%(TemplateJsonInput.IntermediateLocation)"
         OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
-        MatchExpression="WINDOWSAPPSDK_VERSION_VALUE;WIN2D_VERSION_VALUE;DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE"
-        ReplacementText="$(MicrosoftWindowsAppSDKPackageVersion);$(MicrosoftGraphicsWin2DPackageVersion);$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000" />
+        MatchExpression="WINDOWSAPPSDK_VERSION_VALUE;WIN2D_VERSION_VALUE;DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE;MS_EXT_VERSION_VALUE"
+        ReplacementText="$(MicrosoftWindowsAppSDKPackageVersion);$(MicrosoftGraphicsWin2DPackageVersion);$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(MicrosoftExtensionsServicingPackageVersion)" />
 
     <ItemGroup>
       <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />
