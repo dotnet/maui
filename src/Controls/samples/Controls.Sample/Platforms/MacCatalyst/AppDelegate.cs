@@ -4,7 +4,7 @@ using Microsoft.Maui.Hosting;
 using ObjCRuntime;
 using UIKit;
 
-#if !NET6_0
+#if !NET6_0_OR_GREATER
 using Microsoft.Maui.Controls;
 #endif
 

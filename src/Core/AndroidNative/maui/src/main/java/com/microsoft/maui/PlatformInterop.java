@@ -318,4 +318,11 @@ public class PlatformInterop {
             styledAttributes.recycle();
         }
     }
+    
+    public static long measureAndGetWidthAndHeight(View view, int widthMeasureSpec, int heightMeasureSpec) {
+        view.measure(widthMeasureSpec, heightMeasureSpec);
+        int width = view.getMeasuredWidth();
+        int height = view.getMeasuredHeight();
+        return ((long)width << 32) | (height & 0xffffffffL);
+    }
 }
