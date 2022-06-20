@@ -9,6 +9,26 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiWebView : WebView2, IWebViewDelegate
 	{
+		public MauiWebView()
+		{
+			NavigationStarting += (sender, args) =>
+			{
+				// Auto map local virtual app dir host, e.g. if navigating back to local site from a link to an external site
+				if (args?.Uri?.ToLowerInvariant().StartsWith(LocalScheme.TrimEnd('/').ToLowerInvariant()) == true)
+				{
+					CoreWebView2.SetVirtualHostNameToFolderMapping(
+						LocalHostName,
+						ApplicationPath,
+						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+				}
+				// Auto unmap local virtual app dir host if navigating to any other potentially unsafe domain
+				else
+				{
+					CoreWebView2.ClearVirtualHostNameToFolderMapping(LocalHostName);
+				}
+			};
+		}
+
 		WebView2? _internalWebView;
 
 		// Arbitrary local host name for virtual folder mapping
