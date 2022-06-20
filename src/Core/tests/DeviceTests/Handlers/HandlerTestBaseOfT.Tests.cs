@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -9,8 +10,50 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
-		[Fact(DisplayName = "Automation Id is set correctly")]
+
+		[Fact(DisplayName = "Handlers Deallocate When No Longer Referenced")]
 		[InlineData()]
+		public async Task HandlersDeallocateWhenNoLongerReferenced()
+		{
+			var stub = new TStub();
+			WeakReference<TStub> weakView = new WeakReference<TStub>(stub);
+			var handler = await CreateHandlerAsync(stub) as IPlatformViewHandler;
+			WeakReference<THandler> weakHandler = new WeakReference<THandler>((THandler)handler);
+
+			// This probably doesn't add anything to the test but it feels
+			// useful to attach the platformview to windows hierarchy
+			// just in case it is useful
+			//await handler.PlatformView.AttachAndRun(() => { });
+
+			//stub.Handler = null;
+			stub = null;
+			handler = null;
+
+			// This is a bit excessive for now but we can reduce it down 
+			// just being extra sure for the first pass
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			await Task.Delay(100);
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			await Task.Delay(100);
+
+			if (weakHandler.TryGetTarget(out THandler _))
+				Assert.True(false, $"{typeof(THandler)} failed to collect");
+
+			if (weakView.TryGetTarget(out TStub _))
+				Assert.True(false, $"{typeof(TStub)} failed to collect");
+		}
+
+		[Fact(DisplayName = "Automation Id is set correctly")]
 		public async Task SetAutomationId()
 		{
 			var view = new TStub
