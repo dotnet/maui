@@ -4,10 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+
+#if ANDROID || IOS
+using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+#endif
 
 #if IOS
 using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
@@ -35,58 +40,83 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
+
+					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
+					handlers.AddHandler<Layout, LayoutHandler>();
+					handlers.AddHandler<Image, ImageHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Toolbar, ToolbarHandler>();
+#if WINDOWS
+					handlers.AddHandler<ShellItem, ShellItemHandler>();
+					handlers.AddHandler<ShellSection, ShellSectionHandler>();
+					handlers.AddHandler<ShellContent, ShellContentHandler>();
+#endif
 				});
 			});
 		}
 
 		[Theory]
 		[ClassData(typeof(PageTypes))]
-		public async Task BasicPushAndPop(Page modalPage)
+		public async Task BasicPushAndPop(Page rootPage, Page modalPage)
 		{
 			SetupBuilder();
 
-			var navPage = new NavigationPage(new ContentPage());
-
-			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
+			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage,
 				async (_) =>
 				{
-					await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
+					var currentPage = (rootPage as IPageContainer<Page>).CurrentPage;
+					await currentPage.Navigation.PushModalAsync(modalPage);
 					await OnLoadedAsync(modalPage);
-					Assert.Equal(1, navPage.Navigation.ModalStack.Count);
-					await navPage.CurrentPage.Navigation.PopModalAsync();
+					Assert.Equal(1, currentPage.Navigation.ModalStack.Count);
+					await currentPage.Navigation.PopModalAsync();
 					await OnUnloadedAsync(modalPage);
 				});
 
 
-			Assert.Equal(0, navPage.Navigation.ModalStack.Count);
+			Assert.Equal(0, (rootPage as IPageContainer<Page>).CurrentPage.Navigation.ModalStack.Count);
 		}
 
 		class PageTypes : IEnumerable<object[]>
 		{
 			public IEnumerator<object[]> GetEnumerator()
 			{
-				yield return new object[] {
-					new ContentPage()
-				};
+#if IOS // Shell currently fails to run in CI for tests
+				for (int i = 0; i < 1; i++)
+#else
+				for (int i = 0; i < 2; i++)
+#endif
+				{
+					Func<Page> rootPage;
 
-				yield return new object[] {
-					new TabbedPage()
-					{
-						Children =
+					if (i == 0)
+						rootPage = () => new NavigationPage(new ContentPage());
+					else
+						rootPage = () => new Shell() { CurrentItem = new ContentPage() };
+
+					yield return new object[] {
+						rootPage(), new ContentPage()
+					};
+
+					yield return new object[] {
+						rootPage(), new TabbedPage()
 						{
-							new ContentPage(),
-							new NavigationPage(new ContentPage())
+							Children =
+							{
+								new ContentPage(),
+								new NavigationPage(new ContentPage())
+							}
 						}
-					}
-				};
+					};
 
-				yield return new object[] {
-					new FlyoutPage()
-					{
-						Flyout = new ContentPage() { Title = "Flyout" },
-						Detail = new ContentPage() { Title = "Detail" },
-					}
-				};
+					yield return new object[] {
+						rootPage(), new FlyoutPage()
+						{
+							Flyout = new ContentPage() { Title = "Flyout" },
+							Detail = new ContentPage() { Title = "Detail" },
+						}
+					};
+
+				}
 			}
 
 			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
