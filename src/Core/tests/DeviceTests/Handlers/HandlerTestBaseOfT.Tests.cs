@@ -8,15 +8,18 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	// We shouldn't need this collection but just leaving here for now
+	// Once these are all green when run separately we can take a more prudent approach
+	// for some reason when ran in parallel the tests will occasionally fail
+	[Collection("AllocationTests")]
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
-
 		[Fact(DisplayName = "Handlers Deallocate When No Longer Referenced")]
-		[InlineData()]
 		public async Task HandlersDeallocateWhenNoLongerReferenced()
 		{
 			var stub = new TStub();
 			WeakReference<TStub> weakView = new WeakReference<TStub>(stub);
+
 			var handler = await CreateHandlerAsync(stub) as IPlatformViewHandler;
 			WeakReference<THandler> weakHandler = new WeakReference<THandler>((THandler)handler);
 
@@ -37,14 +40,20 @@ namespace Microsoft.Maui.DeviceTests
 			GC.WaitForPendingFinalizers();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
-			await Task.Delay(100);
+			await Task.Delay(200);
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
-			await Task.Delay(100);
+			await Task.Delay(200);
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
 
 			if (weakHandler.TryGetTarget(out THandler _))
 				Assert.True(false, $"{typeof(THandler)} failed to collect");
