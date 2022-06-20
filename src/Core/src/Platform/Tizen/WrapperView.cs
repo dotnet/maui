@@ -174,6 +174,10 @@ namespace Microsoft.Maui.Platform
 			{
 				return measurable.Measure(availableWidth, availableHeight);
 			}
+			else if (Content != null)
+			{
+				return Content.NaturalSize2D.ToCommon();
+			}
 			else
 			{
 				return NaturalSize2D.ToCommon();
