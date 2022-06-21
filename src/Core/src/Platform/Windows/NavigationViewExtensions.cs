@@ -42,6 +42,8 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundPressed"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundDisabled"] = brush;
 				}
+
+				navigationView.TopNavArea.RefreshThemeResources();
 			}
 
 			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)

@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Platform
 			{
 				platformCheckBox.Resources.SetValueForAllKey(_tintColorResourceKeys, tintBrush);
 			}
+
+			platformCheckBox.RefreshThemeResources();
 		}
 
 		// ResourceKeys controlling the stroke and the checked fill color of the CheckBox.

@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Platform
 			{
 				nativeComboBox.Resources.SetValueForAllKey(_backgroundColorResourceKeys, platformBrush);
 			}
+
+			nativeComboBox.RefreshThemeResources();
 		}
 
 		static readonly string[] _backgroundColorResourceKeys =
@@ -44,18 +46,21 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this ComboBox nativeComboBox, IPicker picker)
 		{
 			var platformBrush = picker.TextColor?.ToPlatform();
+			
 			if (platformBrush == null)
 			{
-				nativeComboBox.Resources.RemoveKeys(_textColorResourceKeys);
+				nativeComboBox.Resources.RemoveKeys(TextColorResourceKeys);
 			}
 			else
 			{
-				nativeComboBox.Resources.SetValueForAllKey(_textColorResourceKeys, platformBrush);
+				nativeComboBox.Resources.SetValueForAllKey(TextColorResourceKeys, platformBrush);
 				nativeComboBox.Foreground = platformBrush;
 			}
+
+			nativeComboBox.RefreshThemeResources();
 		}
 
-		static readonly string[] _textColorResourceKeys =
+		static readonly string[] TextColorResourceKeys =
 		{
 			"ComboBoxForeground",
 			"ComboBoxForegroundDisabled",
