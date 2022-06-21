@@ -60,7 +60,11 @@ namespace Microsoft.Maui.Handlers
 				parent?.Remove(PlatformView);
 			}
 
-			ContainerView ??= new WrapperView();
+			ContainerView ??= new WrapperView()
+			{
+				WidthSpecification = PlatformView.WidthSpecification,
+				HeightSpecification = PlatformView.HeightSpecification
+			};
 			PlatformView.UpdatePosition(new Point(0, 0));
 			ContainerView.Content = PlatformView;
 
