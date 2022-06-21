@@ -10,18 +10,13 @@ namespace Microsoft.Maui.Platform
 		// TODO: NET7 maybe make this public?
 		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
-			uiSearchBar.UpdateBackground(searchBar, null);
-		}
-
-		// TODO: NET7 maybe make this public?
-		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar, UIColor? defaultTintColor = null)
-		{
-			ViewExtensions.UpdateBackground(uiSearchBar, searchBar);
-
 			var background = searchBar.Background;
 
 			if (background is SolidPaint solidPaint)
-				uiSearchBar.BarTintColor = solidPaint.Color.ToPlatform(defaultTintColor ?? ColorExtensions.BackgroundColor);
+				uiSearchBar.BarTintColor = solidPaint.Color.ToPlatform();
+
+			if (background == null)
+				uiSearchBar.BarTintColor = UISearchBar.Appearance.BarTintColor;
 		}
 
 		public static void UpdateIsEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar)

@@ -8,8 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
 		UITextField? _editor;
-		UIColor? _defaultTintColor;
-
+	
 		public UITextField? QueryEditor => _editor;
 
 		protected override MauiSearchBar CreatePlatformView()
@@ -20,9 +19,6 @@ namespace Microsoft.Maui.Handlers
 				_editor = searchBar.SearchTextField;
 			else
 				_editor = searchBar.FindDescendantView<UITextField>();
-
-
-			_defaultTintColor = searchBar.TintColor;
 
 			return searchBar;
 		}
@@ -73,8 +69,7 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET7 make this public
 		internal static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			if (handler is SearchBarHandler platformHandler)
-				handler.PlatformView?.UpdateBackground(searchBar, platformHandler._defaultTintColor);
+			handler.PlatformView?.UpdateBackground(searchBar);
 		}
 
 		public static void MapIsEnabled(ISearchBarHandler handler, ISearchBar searchBar)
