@@ -281,7 +281,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
 		}
-	
+
 		[PortHandler]
 		void UpdateText()
 		{

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFont(ISwipeItemMenuItemHandler handler, ITextStyle view) { }
 
-		public static void MapText(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) 
+		public static void MapText(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			handler.PlatformView.Text = view.Text;
 		}

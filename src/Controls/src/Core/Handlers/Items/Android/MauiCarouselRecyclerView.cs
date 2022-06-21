@@ -114,14 +114,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// So we give it an alternate delegate for creating the views
 
 			var oldItemViewAdapter = ItemsViewAdapter;
-		
+
 			if (oldItemViewAdapter != null)
 			{
 				UnsubscribeCollectionItemsSourceChanged(oldItemViewAdapter);
 				ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, 0);
 				ItemsView.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 			}
-			
+
 			_gotoPosition = -1;
 
 			base.UpdateAdapter();

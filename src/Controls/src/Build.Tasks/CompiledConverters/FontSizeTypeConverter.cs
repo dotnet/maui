@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Microsoft.Maui.Controls.XamlC
@@ -25,7 +23,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				}
 
 #pragma warning disable CS0612 // Type or member is obsolete
-				if (Enum.TryParse<NamedSize>(value, out NamedSize namedSize))
+				if (Enum.TryParse(value, out NamedSize namedSize))
 				{
 					//Device.GetNamedSize(namedSize, targetObject.GetType())
 					yield return Instruction.Create(OpCodes.Ldc_I4, (int)namedSize);

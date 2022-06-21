@@ -84,9 +84,7 @@
 
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
-        <_ResizetizerDefaultInvalidFilenamesErrorMessage>
-            One or more invalid file names were detected.  File names must be lowercase, start and end with a letter character, and contain only alphanumeric characters or underscores: &#13;&#10;
-        </_ResizetizerDefaultInvalidFilenamesErrorMessage>
+        <_ResizetizerDefaultInvalidFilenamesErrorMessage>One or more invalid file names were detected.  File names must be lowercase, start and end with a letter character, and contain only alphanumeric characters or underscores: </_ResizetizerDefaultInvalidFilenamesErrorMessage>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -306,7 +304,7 @@
 
         <WriteLinesToFile
             File="$(_MauiSplashInputsFile)"
-            Lines="@(MauiSplashScreen->'File=%(Identity);Color=%(Color)')"
+            Lines="@(MauiSplashScreen->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);ForegroundScale=%(ForegroundScale)')"
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
 
@@ -636,10 +634,11 @@
          on "_ValidatePresenceOfAppxManifestItems" and we need to get in before then. -->
     <Target Name="_ValidatePresenceOfAppxManifestItemsBeforeTarget"
             BeforeTargets="_ValidatePresenceOfAppxManifestItems"
-            DependsOnTargets="MauiGeneratePackageAppxManifest" />
+            DependsOnTargets="MauiGeneratePackageAppxManifest"
+            Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'" />
 
     <Target Name="MauiGeneratePackageAppxManifest"
-            Condition="'$(WindowsPackageType)' != 'None'"
+            Condition="('$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True') And '$(WindowsPackageType)' != 'None'"
             DependsOnTargets="$(MauiGeneratePackageAppxManifestDependsOnTargets)"
             Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);@(AppxManifest)"
             Outputs="$(_MauiManifestStampFile);$(_MauiIntermediateManifest)Package.appxmanifest">
@@ -671,6 +670,7 @@
         <ItemGroup>
             <FileWrites Include="$(_MauiManifestStampFile)" />
         </ItemGroup>
+
     </Target>
 
     <Target Name="_CleanResizetizer">

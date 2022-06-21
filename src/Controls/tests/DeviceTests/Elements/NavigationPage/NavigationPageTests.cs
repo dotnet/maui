@@ -63,7 +63,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Set Has Navigation Bar")]
-		public async Task SettHasNavigationBar()
+		public async Task SetHasNavigationBar()
 		{
 			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage());

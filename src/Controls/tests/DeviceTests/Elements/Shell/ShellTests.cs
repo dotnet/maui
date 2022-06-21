@@ -49,6 +49,25 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Swap Shell Root Page for NavigationPage")]
+		public async Task SwapShellRootPageForNavigationPage()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				var newPage = new ContentPage();
+				(handler.VirtualView as Window).Page = new NavigationPage(newPage);
+				await OnNavigatedToAsync(newPage);
+				await OnFrameSetToNotEmpty(newPage);
+				Assert.True(newPage.Frame.Height > 0);
+			});
+		}
+
 		[Fact(DisplayName = "FlyoutContent Renderers When FlyoutBehavior Starts As Locked")]
 		public async Task FlyoutContentRenderersWhenFlyoutBehaviorStartsAsLocked()
 		{
@@ -168,6 +187,45 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(IsBackButtonVisible(shell.Handler));
 				behavior.IsVisible = true;
 				NavigationPage.SetHasBackButton(shell.CurrentPage, true);
+			});
+		}
+
+
+
+		[Fact(DisplayName = "Correctly Adjust to Making Currently Visible Shell Page Invisible")]
+		public async Task CorrectlyAdjustToMakingCurrentlyVisibleShellPageInvisible()
+		{
+			SetupBuilder();
+
+			var page1 = new ContentPage();
+			var page2 = new ContentPage();
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				var tabBar = new TabBar()
+				{
+					Items =
+					{
+						new ShellContent(){ Content = page1 },
+						new ShellContent(){ Content = page2 },
+					}
+				};
+
+				shell.Items.Add(tabBar);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnNavigatedToAsync(page1);
+				shell.CurrentItem = page2;
+				await OnNavigatedToAsync(page2);
+				page2.IsVisible = false;
+				await OnNavigatedToAsync(page1);
+				Assert.Equal(shell.CurrentPage, page1);
+				page2.IsVisible = true;
+				shell.CurrentItem = page2;
+				await OnNavigatedToAsync(page2);
+				Assert.Equal(shell.CurrentPage, page2);
 			});
 		}
 

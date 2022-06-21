@@ -3,7 +3,7 @@ using System;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {
 	/// <summary>
-	/// Event arguments for <see cref="DatePicker.DateChanged"/> event.
+	/// Event arguments for <see cref="DatePicker.DateSelected"/> event.
 	/// </summary>
 	public class DateChangedEventArgs : EventArgs
 	{
@@ -13,9 +13,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		public DateTime NewDate { get; }
 
 		/// <summary>
-		/// Creates a new <see cref="DateChangedEventArgs"/> object that represents a change from <paramref name="oldDate"/> to <paramref name="newDate"/>.
+		/// Creates a new <see cref="DateChangedEventArgs"/> object that represents a change to <paramref name="newDate"/>.
 		/// </summary>
-		/// <param name="oldDate">Old date of <see cref="DatePicker"/>.</param>
 		/// <param name="newDate">Current date of <see cref="DatePicker"/>.</param>
 		public DateChangedEventArgs(DateTime newDate)
 		{

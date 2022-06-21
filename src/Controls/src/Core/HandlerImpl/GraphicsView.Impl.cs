@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls
 		void IGraphicsView.EndHoverInteraction() => EndHoverInteraction?.Invoke(this, EventArgs.Empty);
 
 		void IGraphicsView.EndInteraction(PointF[] points, bool isInsideBounds) => EndInteraction?.Invoke(this, new TouchEventArgs(points, isInsideBounds));
-		
+
 		void IGraphicsView.StartHoverInteraction(PointF[] points) => StartHoverInteraction?.Invoke(this, new TouchEventArgs(points, true));
 
 		void IGraphicsView.MoveHoverInteraction(PointF[] points) => MoveHoverInteraction?.Invoke(this, new TouchEventArgs(points, true));

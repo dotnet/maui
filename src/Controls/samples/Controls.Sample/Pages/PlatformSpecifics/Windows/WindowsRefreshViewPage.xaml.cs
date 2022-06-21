@@ -7,16 +7,16 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class WindowsRefreshViewPage : ContentPage
 	{
-		public WindowsRefreshViewPage ()
+		public WindowsRefreshViewPage()
 		{
-			InitializeComponent ();
-            enumPicker.EnumType = typeof(Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.RefreshView.RefreshPullDirection);
-            enumPicker.SelectedIndex = 0;
+			InitializeComponent();
+			enumPicker.EnumType = typeof(Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.RefreshView.RefreshPullDirection);
+			enumPicker.SelectedIndex = 0;
 		}
 
-        void OnSelectedIndexChanged(object sender, EventArgs e)
-        {
-            refreshView.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetRefreshPullDirection((RefreshPullDirection)enumPicker.SelectedItem);
-        }
-    }
+		void OnSelectedIndexChanged(object sender, EventArgs e)
+		{
+			refreshView.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetRefreshPullDirection((RefreshPullDirection)enumPicker.SelectedItem);
+		}
+	}
 }

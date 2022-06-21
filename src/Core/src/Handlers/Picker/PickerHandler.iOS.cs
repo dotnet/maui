@@ -33,10 +33,10 @@ namespace Microsoft.Maui.Handlers
 		}
 #else
 		protected override MauiPicker CreatePlatformView()
-		{	
+		{
 			var platformPicker = new MauiPicker(null) { BorderStyle = UITextBorderStyle.RoundedRect };
-	
-			platformPicker.ShouldBeginEditing += (textField) => 
+
+			platformPicker.ShouldBeginEditing += (textField) =>
 			{
 				var alertController = CreateAlert(textField);
 				var platformWindow = MauiContext?.GetPlatformWindow();
@@ -44,44 +44,44 @@ namespace Microsoft.Maui.Handlers
 				{
 					_ = platformWindow?.RootViewController?.PresentViewControllerAsync(alertController, true);
 				});
-                return false;
-            };
-	
+				return false;
+			};
+
 			return platformPicker;
 		}
-		
+
 		UIAlertController CreateAlert(UITextField uITextField)
 		{
 			var paddingTitle = 0;
-			if(!string.IsNullOrEmpty(VirtualView.Title))
-				paddingTitle+= 25;
-				
+			if (!string.IsNullOrEmpty(VirtualView.Title))
+				paddingTitle += 25;
+
 			var pickerHeight = 240;
 			var frame = new RectangleF(0, paddingTitle, 269, pickerHeight);
 			var pickerView = new UIPickerView(frame);
-			pickerView.Model  = new PickerSource(this);
+			pickerView.Model = new PickerSource(this);
 			pickerView?.ReloadAllComponents();
 
 			var pickerController = UIAlertController.Create(VirtualView.Title, "", UIAlertControllerStyle.ActionSheet);
 
 			// needs translation
-    		pickerController.AddAction(UIAlertAction.Create("Done",
-								UIAlertActionStyle.Default, 
-								action => FinishSelectItem(pickerView,uITextField)
+			pickerController.AddAction(UIAlertAction.Create("Done",
+								UIAlertActionStyle.Default,
+								action => FinishSelectItem(pickerView, uITextField)
 							));
-			
-			if(pickerController.View != null && pickerView != null)
+
+			if (pickerController.View != null && pickerView != null)
 			{
 				pickerController.View.AddSubview(pickerView);
 				var doneButtonHeight = 90;
-				var height = NSLayoutConstraint.Create(pickerController.View,  NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, pickerHeight+doneButtonHeight);
+				var height = NSLayoutConstraint.Create(pickerController.View, NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, pickerHeight + doneButtonHeight);
 				pickerController.View.AddConstraint(height);
 			}
-			
+
 			var popoverPresentation = pickerController.PopoverPresentationController;
-			if (popoverPresentation!=null)
+			if (popoverPresentation != null)
 			{
-    			popoverPresentation.SourceView = uITextField;
+				popoverPresentation.SourceView = uITextField;
 				popoverPresentation.SourceRect = uITextField.Bounds;
 			}
 

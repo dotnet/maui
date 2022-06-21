@@ -122,10 +122,10 @@ namespace Microsoft.Maui
 						yield return key;
 			}
 		}
-		
+
 		bool CanUpdateProperty(IElementHandler viewHandler)
 		{
-#if ANDROID	
+#if ANDROID
 			var platformView = viewHandler?.PlatformView;
 
 			if(platformView is PlatformView androidView && androidView.IsDisposed())

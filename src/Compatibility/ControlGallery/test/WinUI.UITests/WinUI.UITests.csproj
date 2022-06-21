@@ -23,7 +23,7 @@
     <PackageReference Include="Selenium.Support" Version="4.1.1" />
     <PackageReference Include="Selenium.WebDriver" Version="4.1.1" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.1.1" />
-    <PackageReference Include="Xamarin.UITest" Version="3.2.7" />
+    <PackageReference Include="Xamarin.UITest" Version="3.2.8" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
   </ItemGroup>
 

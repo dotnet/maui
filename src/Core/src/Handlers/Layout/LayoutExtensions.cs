@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			public int Compare(ViewAndIndex? x, ViewAndIndex? y)
 			{
-				if(x == null || y == null)
+				if (x == null || y == null)
 				{
 					return 0;
 				}
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static IView[] OrderByZIndex(this ILayout layout)
 		{
-			var count = layout.Count;	
+			var count = layout.Count;
 			var indexedViews = new ViewAndIndex[count];
 
 			for (int n = 0; n < count; n++)
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			Array.Sort(indexedViews, s_comparer);
-			
+
 			var ordered = new IView[count];
 
 			for (int n = 0; n < count; n++)

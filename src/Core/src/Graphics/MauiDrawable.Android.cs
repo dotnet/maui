@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Graphics
 
 			else if (paint is PatternPaint patternPaint)
 				SetBorderBrush(patternPaint);
-			
+
 			else
 				SetEmptyBorderBrush();
 		}
@@ -221,7 +221,8 @@ namespace Microsoft.Maui.Graphics
 			InvalidateSelf();
 		}
 
-		public void SetEmptyBorderBrush()
+		// TODO: NET7 make public for net7.0
+		internal void SetEmptyBorderBrush()
 		{
 			_invalidatePath = true;
 
@@ -241,7 +242,7 @@ namespace Microsoft.Maui.Graphics
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
 		}
-	
+
 		public void SetBorderBrush(ImagePaint imagePaint)
 		{
 			throw new NotImplementedException();
@@ -413,9 +414,9 @@ namespace Microsoft.Maui.Graphics
 
 					if (_shape != null)
 					{
-						var offset = _strokeThickness / 2 / _density;
-						var w = (_width - _strokeThickness) / _density;
-						var h = (_height - _strokeThickness) / _density;
+						float offset = _strokeThickness / 2;
+						float w = (float)(_width / _density) - _strokeThickness;
+						float h = (float)(_height / _density) - _strokeThickness;
 
 						var bounds = new Graphics.Rect(offset, offset, w, h);
 						var path = _shape.PathForBounds(bounds);
