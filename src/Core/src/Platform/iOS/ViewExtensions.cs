@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void Focus(this UIView platformView, FocusRequest request)
 		{
-			platformView.BecomeFirstResponder();
+			request.IsFocused = platformView.BecomeFirstResponder();
 		}
 
 		public static void Unfocus(this UIView platformView, IView view)
