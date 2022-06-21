@@ -8,7 +8,7 @@
     </MauiXaml>
   </ItemDefinitionGroup>
 
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' and ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') and $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@')) ">
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' and ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') and '$(TargetPlatformIdentifier)' != '' and $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@')) ">
     <!-- %(Sdk) is only here if something later needs to identify these -->
     <Using Include="Microsoft.Extensions.DependencyInjection" Sdk="Maui" />
     <Using Include="Microsoft.Maui" Sdk="Maui" />
