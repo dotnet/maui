@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Handlers
 			return Context.FromPixels(platformView.MeasuredWidth, platformView.MeasuredHeight);
 		}
 
-		static int AdjustSpecForAlignment(int measureSpec, Primitives.LayoutAlignment alignment) 
+		static int AdjustSpecForAlignment(int measureSpec, Primitives.LayoutAlignment alignment)
 		{
 			if (alignment == Primitives.LayoutAlignment.Fill && measureSpec.GetMode() == MeasureSpecMode.AtMost)
 			{

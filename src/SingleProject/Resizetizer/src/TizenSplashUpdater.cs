@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			using var bmp = SKBitmap.Decode(sourceFilePath);
 			SKImageInfo info = new SKImageInfo(screenSize.Width, screenSize.Height);
-			
+
 			using var surface = SKSurface.Create(info);
 			SKCanvas canvas = surface.Canvas;
 			canvas.Clear(color);
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			using var data = updatedsplash.Encode(SKEncodedImageFormat.Png, 100);
 			using var stream = File.Create(destFilePath);
-				data.SaveTo(stream);
+			data.SaveTo(stream);
 		}
 
 		public void UpdateManifest()

@@ -14,6 +14,7 @@
     <Using Include="Microsoft.Maui.Controls" Sdk="Maui" />
     <Using Include="Microsoft.Maui.Controls.Hosting" Sdk="Maui" />
     <Using Include="Microsoft.Maui.Controls.Xaml" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Dispatching" Sdk="Maui" />
     <Using Include="Microsoft.Maui.Hosting" Sdk="Maui" />
     <Using Include="Microsoft.Maui.Graphics" Sdk="Maui" />
     <Using Include="Microsoft.Maui.Accessibility" Sdk="Maui" />
