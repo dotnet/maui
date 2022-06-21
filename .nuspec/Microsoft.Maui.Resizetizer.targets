@@ -84,9 +84,7 @@
 
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
-        <_ResizetizerDefaultInvalidFilenamesErrorMessage>
-            One or more invalid file names were detected.  File names must be lowercase, start and end with a letter character, and contain only alphanumeric characters or underscores: &#13;&#10;
-        </_ResizetizerDefaultInvalidFilenamesErrorMessage>
+        <_ResizetizerDefaultInvalidFilenamesErrorMessage>One or more invalid file names were detected.  File names must be lowercase, start and end with a letter character, and contain only alphanumeric characters or underscores: </_ResizetizerDefaultInvalidFilenamesErrorMessage>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
