@@ -14,14 +14,14 @@ namespace Microsoft.Maui.Platform
 		public MauiTextView()
 		{
 			_placeholderLabel = InitPlaceholderLabel();
-			//Changed += OnChanged;
+			Changed += OnChanged;
 		}
 
 		public MauiTextView(CGRect frame)
 			: base(frame)
 		{
 			_placeholderLabel = InitPlaceholderLabel();
-			//Changed += OnChanged;
+			Changed += OnChanged;
 		}
 
 		// Native Changed doesn't fire when the Text Property is set in code
@@ -155,29 +155,5 @@ namespace Microsoft.Maui.Platform
 				_ => new CGPoint(0, 0),
 			};
 		}
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		public event EventHandler? DoneClicked;
-
-		public override UIView? InputAccessoryView
-		{
-			get => base.InputAccessoryView;
-			set
-			{
-				base.InputAccessoryView = value;
-
-#if !MACCATALYST
-				//if (value is MauiDoneAccessoryView mdac)
-				//	mdac.DoneClicked += OnDoneClicked;
-#endif
-			}
-		}
-
-		static void OnDoneClicked(object? sender, EventArgs e)
-		{
-			if (sender is UIView view && view.Superview is MauiTextView textView)
-				textView.DoneClicked?.Invoke(sender, e);
-		}
-#pragma warning restore RS0016 // Add public types and members to the declared API
 	}
 }

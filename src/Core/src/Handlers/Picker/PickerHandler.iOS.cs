@@ -18,11 +18,12 @@ namespace Microsoft.Maui.Handlers
 			platformPicker.InputView = _pickerView;
 
 			var accessoryView = new MauiDoneAccessoryView();
+			accessoryView.DoneClicked += (_, _) =>
+			{
+				FinishSelectItem(_pickerView, platformPicker);
+			};
+
 			platformPicker.InputAccessoryView = accessoryView;
-			//accessoryView.DoneClicked += OnAccessoryViewDoneClicked;
-
-			platformPicker.InputAccessoryView = new MauiDoneAccessoryView();
-
 			platformPicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 			platformPicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 			platformPicker.InputAssistantItem.LeadingBarButtonGroups = null;

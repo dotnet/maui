@@ -21,15 +21,15 @@ namespace Microsoft.Maui.Handlers
 				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}
 
-			//platformDatePicker.InputView = _picker;
-			//platformDatePicker.InputAccessoryView = new MauiDoneAccessoryView((data) =>
-			//{
-			//	if (data is DatePickerHandler dph)
-			//	{
-			//		dph.SetVirtualViewDate();
-			//		dph.PlatformView.ResignFirstResponder();
-			//	}
-			//}, this);
+			platformDatePicker.InputView = _picker;
+			var accessoryView = new MauiDoneAccessoryView();
+			accessoryView.DoneClicked += (_, _) =>
+			{
+				SetVirtualViewDate();
+				PlatformView.ResignFirstResponder();
+			};
+
+			platformDatePicker.InputAccessoryView = accessoryView;
 
 			//platformDatePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 			////platformDatePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
