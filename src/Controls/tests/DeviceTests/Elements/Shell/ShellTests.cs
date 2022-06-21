@@ -49,6 +49,104 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Appearing Fires Before NavigatedTo")]
+		public async Task AppearingFiresBeforeNavigatedTo()
+		{
+			SetupBuilder();
+			var contentPage = new ContentPage();
+			int contentPageAppearingFired = 0;
+			int navigatedToFired = 0;
+			int shellNavigatedToFired = 0;
+
+			contentPage.Appearing += (_, _) =>
+			{
+				contentPageAppearingFired++;
+				Assert.Equal(0, navigatedToFired);
+				Assert.Equal(0, shellNavigatedToFired);
+			};
+
+			contentPage.NavigatedTo += (_, _) =>
+			{
+				navigatedToFired++;
+				Assert.Equal(1, contentPageAppearingFired);
+			};
+
+			Shell shell = await CreateShellAsync(shell =>
+			{
+				shell.Navigated += (_, _) =>
+				{
+					Assert.Equal(1, contentPageAppearingFired);
+					shellNavigatedToFired++;
+
+				};
+
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							ContentTemplate = new DataTemplate(() => contentPage)
+						}
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(contentPage);
+				Assert.Equal(1, contentPageAppearingFired);
+				Assert.Equal(1, shellNavigatedToFired);
+				Assert.Equal(1, navigatedToFired);
+			});
+		}
+
+
+
+		[Fact(DisplayName = "Navigating During Navigated Doesnt ReFire Appearing")]
+		public async Task NavigatingDuringNavigatedDoesntReFireAppearing()
+		{
+			SetupBuilder();
+			var contentPage = new ContentPage();
+			int contentPageAppearingFired = 0;
+			int navigatedToFired = 0;
+			TaskCompletionSource<object> finishedSecondNavigation = new TaskCompletionSource<object>();
+			contentPage.Appearing += (_, _) =>
+			{
+				contentPageAppearingFired++;
+			};
+
+			Shell shell = null;
+			contentPage.NavigatedTo += async (_, _) =>
+			{
+				navigatedToFired++;
+				await shell.Navigation.PushAsync(new ContentPage());
+				finishedSecondNavigation.SetResult(true);
+			};
+
+			shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							ContentTemplate = new DataTemplate(() => contentPage)
+						}
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await finishedSecondNavigation.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+				Assert.Equal(1, contentPageAppearingFired);
+				Assert.Equal(1, navigatedToFired);
+			});
+		}
+
 		[Fact(DisplayName = "Swap Shell Root Page for NavigationPage")]
 		public async Task SwapShellRootPageForNavigationPage()
 		{
