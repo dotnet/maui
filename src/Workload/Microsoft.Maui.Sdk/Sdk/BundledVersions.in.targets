@@ -62,7 +62,7 @@
   <!-- These implicit <PackageReference/> pull dependencies from NuGet transitively -->
   <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' ">
     <PackageReference Include="Microsoft.Maui.Extensions" Version="$(MauiVersion)" IsImplicitlyDefined="true">
-      <PrivateAssets Condition=" '$(OutputType)' == 'Library' or '$(AndroidApplication)' == 'true' ">all</PrivateAssets>
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' or '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' ">
