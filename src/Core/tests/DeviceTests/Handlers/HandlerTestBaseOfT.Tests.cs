@@ -9,48 +9,42 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	// for some reason the handler memory tests don't run so well when 
+	// executing in parallel
+	[Collection("Temporary")]
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
-		static readonly SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(1, 1);
-
 		[Fact(DisplayName = "Handlers Deallocate When No Longer Referenced")]
 		public async Task HandlersDeallocateWhenNoLongerReferenced()
 		{
-			await SemaphoreSlim.WaitAsync();
-			try
-			{
-				var stub = new TStub();
-				WeakReference<TStub> weakView = new WeakReference<TStub>(stub);
 
-				var handler = await CreateHandlerAsync(stub) as IPlatformViewHandler;
-				WeakReference<THandler> weakHandler = new WeakReference<THandler>((THandler)handler);
+			var stub = new TStub();
+			WeakReference<TStub> weakView = new WeakReference<TStub>(stub);
 
-				stub = null;
-				handler = null;
+			var handler = await CreateHandlerAsync(stub) as IPlatformViewHandler;
+			WeakReference<THandler> weakHandler = new WeakReference<THandler>((THandler)handler);
 
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				await Task.Delay(100);
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				await Task.Delay(100);
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
+			stub = null;
+			handler = null;
 
-				if (weakHandler.TryGetTarget(out THandler _))
-					Assert.True(false, $"{typeof(THandler)} failed to collect");
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			await Task.Delay(100);
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			await Task.Delay(100);
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
 
-				if (weakView.TryGetTarget(out TStub _))
-					Assert.True(false, $"{typeof(TStub)} failed to collect");
-			}
-			finally
-			{
-				SemaphoreSlim.Release();
-			}
+			if (weakHandler.TryGetTarget(out THandler _))
+				Assert.True(false, $"{typeof(THandler)} failed to collect");
+
+			if (weakView.TryGetTarget(out TStub _))
+				Assert.True(false, $"{typeof(TStub)} failed to collect");
 		}
 
 		[Fact(DisplayName = "Automation Id is set correctly")]
