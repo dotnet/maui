@@ -97,7 +97,7 @@
       BeforeTargets="Build;AssignTargetPaths"
       DependsOnTargets="SetVersions"
       Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/Versions.props;Sdk/AutoImport.in.props"
-      Outputs="$(IntermediateOutputPath)AutoImport.targets">
+      Outputs="$(IntermediateOutputPath)AutoImport.props">
     <ReplaceText
         Input="Sdk/AutoImport.in.props"
         Output="$(IntermediateOutputPath)AutoImport.props"
