@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size ArrangeChildren(Rect bounds)
 		{
-			if (_gridStructure  == null || NeedsRemeasure(bounds, Grid, _gridStructure))
+			if (_gridStructure == null || NeedsRemeasure(bounds, Grid, _gridStructure))
 			{
 				_gridStructure = new GridStructure(Grid, bounds.Width, bounds.Height);
 			}
@@ -58,14 +58,14 @@ namespace Microsoft.Maui.Layouts
 			return actual.AdjustForFill(bounds, Grid);
 		}
 
-		static bool NeedsRemeasure(Rect bounds, IGridLayout grid, GridStructure structure) 
+		static bool NeedsRemeasure(Rect bounds, IGridLayout grid, GridStructure structure)
 		{
 			if (grid.VerticalLayoutAlignment == Primitives.LayoutAlignment.Fill
 					&& structure.HeightConstraint != bounds.Height)
 			{
 				return true;
 			}
-			
+
 			if (grid.HorizontalLayoutAlignment == Primitives.LayoutAlignment.Fill
 				&& structure.WidthConstraint != bounds.Width)
 			{
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Layouts
 			readonly IGridLayout _grid;
 			readonly double _gridWidthConstraint;
 			readonly double _gridHeightConstraint;
-			
+
 			readonly double _explicitGridHeight;
 			readonly double _explicitGridWidth;
 			readonly double _gridMaxHeight;

@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Platform
 				service.ShowSoftInput(view, ShowFlags.Implicit);
 		}
 
-		internal static float ToPixels (this View view, double dp)
+		internal static float ToPixels(this View view, double dp)
 		{
 			if (s_displayDensity != float.MinValue)
 				return (float)Math.Ceiling(dp * s_displayDensity);
