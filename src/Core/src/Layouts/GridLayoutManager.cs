@@ -35,26 +35,6 @@ namespace Microsoft.Maui.Layouts
 
 			_gridStructure.AdjustStarsForArrange(bounds.Size);
 
-			// The problem isn't that we need to measure again
-			// the problem is that the stars are all wrong because the size has changed
-			// So we just need to resize the star stuff based on the new size
-			// 
-
-			// NeedsStarAdjustments is basically "is the bounds size at all different than the measured size?"
-			
-
-			// When we measure stars as auto because of infinity, we need to mark that col/row definition so we know
-			// to adjust it later if the size is no longer infinity
-
-			// Then we need to loop through all star defs and starasauto defs and mark them as not having a size
-			// then run resolve star rows and resolve star columns again 
-
-			// and then we should be good.
-
-			// This should be pretty easy to write unit tests for
-
-			// Once we have that in place and verify that it works for Windows, check to make sure that this is functional for iOS as well (I don't think it used this feature anyway)
-
 			var reverseColumns = Grid.ColumnDefinitions.Count > 1 && !Grid.ShouldArrangeLeftToRight();
 
 			foreach (var view in Grid)
