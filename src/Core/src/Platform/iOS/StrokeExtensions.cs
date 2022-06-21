@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using CoreAnimation;
 using Microsoft.Maui.Graphics;
-using ObjCRuntime;
+using CoreGraphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -125,20 +125,48 @@ namespace Microsoft.Maui.Platform
 			if (backgroundLayer is MauiCALayer mauiCALayer)
 			{
 				backgroundLayer.Frame = platformView.Bounds;
-				if (border is IView v)
-					mauiCALayer.SetBackground(v.Background);
+
+				if (border is IView view)
+					mauiCALayer.SetBackground(view.Background);
 				else
 					mauiCALayer.SetBackground(new SolidPaint(Colors.Transparent));
+
 				mauiCALayer.SetBorderBrush(border?.Stroke);
 				mauiCALayer.SetBorderWidth(border?.StrokeThickness ?? 0);
 				mauiCALayer.SetBorderDash(border?.StrokeDashPattern, border?.StrokeDashOffset ?? 0);
 				mauiCALayer.SetBorderMiterLimit(border?.StrokeMiterLimit ?? 0);
+				
 				if (border != null)
 				{
 					mauiCALayer.SetBorderLineJoin(border.StrokeLineJoin);
 					mauiCALayer.SetBorderLineCap(border.StrokeLineCap);
 				}
+
 				mauiCALayer.SetBorderShape(border?.Shape);
+			}
+		}
+
+		internal static void UpdateMauiCALayer(this UIView view)
+		{
+			if (view == null || view.Frame.IsEmpty)
+				return;
+
+			var layer = view.Layer;
+
+			UpdateBackgroundLayer(layer, view.Bounds);
+		}
+
+		static void UpdateBackgroundLayer(this CALayer layer, CGRect bounds)
+		{
+			if (layer != null && layer.Sublayers != null)
+			{
+				foreach (var sublayer in layer.Sublayers)
+				{
+					UpdateBackgroundLayer(sublayer, bounds);
+
+					if (sublayer.Name == ViewExtensions.BackgroundLayerName && sublayer.Frame != bounds)
+						sublayer.Frame = bounds;
+				}
 			}
 		}
 	}
