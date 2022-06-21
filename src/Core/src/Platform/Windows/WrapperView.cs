@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Platform
 			var visual = ElementCompositionPreview.GetElementVisual(Child);
 			visual.Clip = null;
 		}
-		
+
 		void DisposeBorder()
 		{
 			_borderPath = null;
@@ -173,15 +173,23 @@ namespace Microsoft.Maui.Platform
 			if (Child == null || Shadow == null || Shadow.Paint == null)
 				return;
 
+			var visual = ElementCompositionPreview.GetElementVisual(Child);
+
+			if (Clip != null && visual.Clip == null)
+				return;
+
 			double width = _shadowHostSize.Width;
+
+			if (width <= 0)
+				width = (float)ActualWidth;
+
 			double height = _shadowHostSize.Height;
+
+			if (height <= 0)
+				height = (float)ActualHeight;
 
 			if (height <= 0 && width <= 0)
 				return;
-
-			// TODO: Fix ArgumentException
-			if (Clip != null)
-				await Task.Delay(500);
 
 			var ttv = Child.TransformToVisual(_shadowCanvas);
 			global::Windows.Foundation.Point offset = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
@@ -226,10 +234,17 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_shadowVisual != null)
 			{
-				if (Child is FrameworkElement child)
+				if (Child is FrameworkElement frameworkElement)
 				{
 					float width = (float)_shadowHostSize.Width;
+
+					if (width <= 0)
+						width = (float)frameworkElement.ActualWidth;
+
 					float height = (float)_shadowHostSize.Height;
+
+					if (height <= 0)
+						height = (float)frameworkElement.ActualHeight;
 
 					_shadowVisual.Size = new Vector2(width, height);
 				}

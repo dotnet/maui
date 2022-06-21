@@ -234,7 +234,7 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.CompletedTask;
 			});
 		}
-				
+
 		[Fact(DisplayName = "Single Shell Section with Multiple Children")]
 		public async Task SingleShellSectionWithMultipleChildren()
 		{
@@ -435,6 +435,26 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(IsNavigationBarVisible(handler));
 
 				return Task.CompletedTask;
+			});
+		}
+
+
+		// this is only relevant on windows where the title/backbutton aren't in the same
+		// area
+		[Fact(DisplayName = "Shell Toolbar not visible when only back button is present")]
+		public async Task ShellToolbarNotVisibleWhenOnlyBackButtonIsPresent()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(new ContentPage());
+				Assert.False(IsNavigationBarVisible(handler));
 			});
 		}
 	}

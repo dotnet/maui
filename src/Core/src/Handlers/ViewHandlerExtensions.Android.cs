@@ -1,9 +1,9 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using Microsoft.Maui.Graphics;
-using PlatformView = Android.Views.View;
 using Microsoft.Maui.Platform;
-using System;
 using static Android.Views.View;
+using PlatformView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
@@ -38,7 +38,7 @@ namespace Microsoft.Maui
 			this IPlatformViewHandler viewHandler,
 			int platformWidthConstraint,
 			int platformHeightConstraint,
-			Func<double,double, Size>? measureFunc = null)
+			Func<double, double, Size>? measureFunc = null)
 		{
 			var context = viewHandler.MauiContext?.Context;
 			var virtualView = viewHandler.VirtualView;
@@ -77,22 +77,23 @@ namespace Microsoft.Maui
 		{
 			var Context = viewHandler.MauiContext?.Context;
 			var platformView = viewHandler.ToPlatform();
-			var VirtualView = viewHandler.VirtualView;
+			var virtualView = viewHandler.VirtualView;
 
-			if (platformView == null || VirtualView == null || Context == null)
+			if (platformView == null || virtualView == null || Context == null)
 			{
 				return Size.Zero;
 			}
 
 			// Create a spec to handle the native measure
-			var widthSpec = Context.CreateMeasureSpec(widthConstraint, VirtualView.Width, VirtualView.MaximumWidth);
-			var heightSpec = Context.CreateMeasureSpec(heightConstraint, VirtualView.Height, VirtualView.MaximumHeight);
+			var widthSpec = Context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MaximumWidth);
+			var heightSpec = Context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MaximumHeight);
 
-			platformView.Measure(widthSpec, heightSpec);
+			var packed = PlatformInterop.MeasureAndGetWidthAndHeight(platformView, widthSpec, heightSpec);
+			var measuredWidth = (int)(packed >> 32);
+			var measuredHeight = (int)(packed & 0xffffffffL);
 
 			// Convert back to xplat sizes for the return value
-			return Context.FromPixels(platformView.MeasuredWidth, platformView.MeasuredHeight);
-
+			return Context.FromPixels(measuredWidth, measuredHeight);
 		}
 
 		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rect frame)

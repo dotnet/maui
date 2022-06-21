@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.iOS
 			if (!UpdateIfTextViewShouldCollapse() &&
 				!AutoSizeWithChanges &&
 				ExpandsOnOverflow &&
-				ShouldRestrainSize()) 
+				ShouldRestrainSize())
 			{
 				ExpandsOnOverflow = false;
 			}

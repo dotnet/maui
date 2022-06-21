@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public void Clear() 
+		public void Clear()
 		{
 			PlatformView?.Children.Clear();
 		}
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
 		}
 
-		public void Update(int index, IView child) 
+		public void Update(int index, IView child)
 		{
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Handlers
 			EnsureZIndexOrder(child);
 		}
 
-		public void UpdateZIndex(IView child) 
+		public void UpdateZIndex(IView child)
 		{
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		void EnsureZIndexOrder(IView child) 
+		void EnsureZIndexOrder(IView child)
 		{
 			if (PlatformView.Children.Count == 0)
 			{
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			
+
 			if (currentIndex != targetIndex)
 			{
 				PlatformView.Children.Move((uint)currentIndex, (uint)targetIndex);

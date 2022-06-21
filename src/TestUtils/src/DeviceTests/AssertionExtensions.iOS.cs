@@ -48,11 +48,66 @@ namespace Microsoft.Maui.DeviceTests
 				return true;
 			});
 
-		// TODO: Actually attach this view to the UI if anything breaks.
-		public static Task<T> AttachAndRun<T>(this UIView view, Func<Task<T>> action)
+		public static async Task<T> AttachAndRun<T>(this UIView view, Func<Task<T>> action)
 		{
-			var result = action();
+			var currentView = FindContentView();
+			currentView.AddSubview(view);
+
+			// Give the UI time to refresh
+			await Task.Delay(100);
+
+			var result = await action();
+			
+			view.RemoveFromSuperview();
+
+			// Give the UI time to refresh
+			await Task.Delay(100);
+
 			return result;
+		}
+
+		static UIView FindContentView() 
+		{
+			if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window)
+			{
+				throw new InvalidOperationException("Could not attach view - unable to find UIWindow");
+			}
+
+			if (window.RootViewController is not UIViewController viewController)
+			{
+				throw new InvalidOperationException("Could not attach view - unable to find RootViewController");
+			}
+
+			while (viewController.PresentedViewController != null)
+			{
+				viewController = viewController.PresentedViewController;
+			}
+
+			if (viewController == null)
+			{
+				throw new InvalidOperationException("Could not attach view - unable to find presented ViewController");
+			}
+
+			if (viewController is UINavigationController nav)
+			{
+				viewController = nav.VisibleViewController;
+			}
+
+			var currentView = viewController.View;
+
+			if (currentView == null)
+			{
+				throw new InvalidOperationException("Could not attach view - unable to find visible view");
+			}
+
+			var attachParent = currentView.FindDescendantView<ContentView>() as UIView;
+
+			if (attachParent == null)
+			{
+				attachParent = currentView.FindDescendantView<UIView>();
+			}
+
+			return attachParent ?? currentView;
 		}
 
 		public static Task<UIImage> ToBitmap(this UIView view)
@@ -321,6 +376,40 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal((double)expected.M42, (double)actual.M42, precision);
 			Assert.Equal((double)expected.M43, (double)actual.M43, precision);
 			Assert.Equal((double)expected.M44, (double)actual.M44, precision);
+		}
+
+		static UIWindow? GetKeyWindow(UIApplication application)
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				foreach (var scene in application.ConnectedScenes)
+				{
+					if (scene is UIWindowScene windowScene 
+						&& windowScene.ActivationState == UISceneActivationState.ForegroundActive)
+					{
+						foreach (var window in windowScene.Windows)
+						{
+							if (window.IsKeyWindow)
+							{
+								return window;
+							}
+						}
+					}
+				}
+
+				return null;
+			}
+
+			var windows = application.Windows;
+
+			for (int i = 0; i < windows.Length; i++)
+			{
+				var window = windows[i];
+				if (window.IsKeyWindow)
+					return window;
+			}
+
+			return null;
 		}
 	}
 }

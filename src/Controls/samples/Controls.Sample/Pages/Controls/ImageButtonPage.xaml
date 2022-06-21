@@ -92,6 +92,35 @@
                     WidthRequest="40"
                     HeightRequest="40" 
                     Clicked="OnResizeImageButtonClicked"/>
+                <Label
+                    Text="Using VisualStateManager"
+                    Style="{StaticResource Headline}"/>
+                <ImageButton 
+                    Source="cog.png"   
+                    Background="Green"
+                    HorizontalOptions="Center" 
+                    WidthRequest="200" 
+                    HeightRequest="100">
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="Scale" Value="1" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Focused">
+                                <VisualState.Setters>
+                                    <Setter Property="Scale" Value="1" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="Scale" Value="0.8" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                </ImageButton>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

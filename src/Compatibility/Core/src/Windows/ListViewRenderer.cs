@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		bool _subscribedToItemClick;
 		bool _subscribedToTapped;
 		bool _disposed;
-		CollectionViewSource _collectionViewSource;	
+		CollectionViewSource _collectionViewSource;
 
 		UwpScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		UwpScrollBarVisibility? _defaultVerticalScrollVisibility;
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					foreach (var item in Element.ItemsSource)
 						_collection.Add(item);
 				}
-				else if(!object.ReferenceEquals(_collection, Element.ItemsSource))
+				else if (!object.ReferenceEquals(_collection, Element.ItemsSource))
 				{
 					_collection = (IList)Element.ItemsSource;
 				}

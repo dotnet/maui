@@ -18,7 +18,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public NativeEventWrapper(object target, string targetProperty, string updateSourceEventName)
 		{
 			TargetProperty = targetProperty;
-			try {
+			try
+			{
 				var updateSourceEvent = target.GetType().GetRuntimeEvent(updateSourceEventName);
 				MethodInfo addMethod = updateSourceEvent.AddMethod;
 				MethodInfo removeMethod = updateSourceEvent.RemoveMethod;
@@ -31,7 +32,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				// TODO WINUI3
 				//WindowsRuntimeMarshal.AddEventHandler(add, remove, s_handlerinfo);
 			}
-			catch (Exception) {
+			catch (Exception)
+			{
 				Application.Current?.FindMauiContext()?.CreateLogger<NativeEventWrapper>()?.LogWarning("Can not attach NativeEventWrapper.");
 			}
 		}

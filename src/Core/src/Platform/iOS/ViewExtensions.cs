@@ -76,7 +76,13 @@ namespace Microsoft.Maui.Platform
 			platformView.RemoveBackgroundLayer();
 
 			if (paint.IsNullOrEmpty())
-				return;
+			{
+				if (platformView is LayoutView)
+					platformView.BackgroundColor = null;
+				else
+					return;
+			}
+
 
 			if (paint is SolidPaint solidPaint)
 			{
@@ -381,6 +387,17 @@ namespace Microsoft.Maui.Platform
 
 		internal static Matrix4x4 GetViewTransform(this UIView view)
 			=> view.Layer.GetViewTransform();
+
+		internal static Point GetLocationOnScreen(this UIView view) =>
+			view.GetPlatformViewBounds().Location;
+
+		internal static Point? GetLocationOnScreen(this IElement element)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			return (element.ToPlatform())?.GetLocationOnScreen();
+		}
 
 		internal static Graphics.Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();

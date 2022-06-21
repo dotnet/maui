@@ -341,7 +341,7 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			twoPaneView.Layout(new Rectangle(0, 0, 300, 500));
 			twoPaneView.MinTallModeHeight = 4000;
 			twoPaneView.PanePriority = TwoPaneViewPriority.Pane2;
-			
+
 			Assert.IsFalse(twoPaneView.Children[0].IsVisible);
 			Assert.IsTrue(twoPaneView.Children[1].IsVisible);
 			twoPaneView.MinTallModeHeight = 0;

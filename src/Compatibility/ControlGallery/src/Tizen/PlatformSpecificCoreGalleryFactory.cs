@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 [assembly: Dependency(typeof(PlatformSpecificCoreGalleryFactory))]
 
-namespace  Microsoft.Maui.Controls.Compatibility.ControlGallery.Tizen
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tizen
 {
 	public class PlatformSpecificCoreGalleryFactory : IPlatformSpecificCoreGalleryFactory
 	{

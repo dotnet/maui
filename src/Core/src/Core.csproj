@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
   </PropertyGroup>
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
   <ItemGroup>
@@ -23,4 +23,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 </Project>

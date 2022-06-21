@@ -10,12 +10,14 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Xunit;
 using ALayoutInflater = Android.Views.LayoutInflater;
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;
 using ImportantForAccessibility = Android.Views.ImportantForAccessibility;
-using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -113,7 +115,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return true;
 		}
-    
+
 		protected AView GetTitleView(IElementHandler handler)
 		{
 			var toolbar = GetPlatformToolbar(handler);
@@ -127,6 +129,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected MaterialToolbar GetPlatformToolbar(IElementHandler handler)
 		{
+			if (handler is IWindowHandler wh)
+			{
+				handler = wh.VirtualView.Content.Handler;
+			}
+
 			if (handler is Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer sr)
 			{
 				var shell = handler.VirtualView as Shell;
@@ -196,15 +203,14 @@ namespace Microsoft.Maui.DeviceTests
 			public override AView OnCreateView(ALayoutInflater inflater, AViewGroup container, Bundle savedInstanceState)
 			{
 				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
-				_ = _window.ToHandler(ScopedMauiContext);
-        
-				var rootView = ScopedMauiContext.GetNavigationRootManager().RootView;
+				var handler = (WindowHandlerStub)_window.ToHandler(ScopedMauiContext);
+
 				var decorView = RequireActivity().Window.DecorView;
-				rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
+				handler.PlatformViewUnderTest.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
 
 				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
 				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
-				FakeActivityRootView.AddView(rootView);
+				FakeActivityRootView.AddView(handler.PlatformViewUnderTest);
 
 				return FakeActivityRootView;
 			}

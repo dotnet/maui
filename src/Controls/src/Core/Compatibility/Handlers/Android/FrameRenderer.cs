@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			if (Element?.Handler is IPlatformViewHandler pvh && 
+			if (Element?.Handler is IPlatformViewHandler pvh &&
 				Element is IContentView cv)
 			{
 				var size = pvh.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec, cv.CrossPlatformMeasure);

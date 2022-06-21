@@ -209,6 +209,11 @@ namespace Microsoft.Maui.Controls
 
 		public static implicit operator ShellContent(TemplatedPage page)
 		{
+			if (page.Parent != null)
+			{
+				return (ShellContent)page.Parent;
+			}
+
 			var shellContent = new ShellContent();
 
 			var pageRoute = Routing.GetRoute(page);
