@@ -47,18 +47,14 @@ namespace Microsoft.Maui.Platform
 		{
 			Color textColor = datePicker.TextColor;
 
-			WBrush? platformBrush = textColor?.ToPlatform();
+			WBrush? brush = textColor?.ToPlatform();
 
-			if (platformBrush == null)
-			{
+			if (brush is null)
 				platformDatePicker.Resources.RemoveKeys(TextColorResourceKeys);
-				platformDatePicker.ClearValue(DatePicker.ForegroundProperty);
-			}
 			else
-			{
-				platformDatePicker.Resources.SetValueForAllKey(TextColorResourceKeys, platformBrush);
-				platformDatePicker.Foreground = platformBrush;
-			}
+				platformDatePicker.Resources.SetValueForAllKey(TextColorResourceKeys, brush);
+
+			platformDatePicker.RefreshThemeResources();
 		}
 
 		// ResourceKeys controlling the foreground color of the CalendarDatePicker.
