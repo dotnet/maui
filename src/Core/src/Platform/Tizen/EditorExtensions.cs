@@ -21,6 +21,22 @@ namespace Microsoft.Maui.Platform
 			platformEditor.HorizontalTextAlignment = editor.HorizontalTextAlignment.ToPlatform();
 		}
 
+		public static void UpdateVerticalTextAlignment(this Editor platformEditor, ITextAlignment editor)
+		{
+			switch (editor.HorizontalTextAlignment)
+			{
+				case TextAlignment.Start:
+					platformEditor.VerticalAlignment = Tizen.NUI.VerticalAlignment.Top;
+					break;
+				case TextAlignment.Center:
+					platformEditor.VerticalAlignment = Tizen.NUI.VerticalAlignment.Center;
+					break;
+				case TextAlignment.End:
+					platformEditor.VerticalAlignment = Tizen.NUI.VerticalAlignment.Bottom;
+					break;
+			}
+		}
+
 		public static void UpdateFont(this Editor platformEditor, ITextStyle textStyle, IFontManager fontManager)
 		{
 			platformEditor.FontSize = textStyle.Font.Size > 0 ? textStyle.Font.Size.ToScaledPoint() : 25d.ToScaledPoint();
@@ -81,6 +97,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateKeyboard(this Editor platformEditor, ITextInput editor)
 		{
 			platformEditor.Keyboard = editor.Keyboard.ToPlatform();
+		}
+
+		public static void UpdateCharacterSpacing(this Editor platformEditor, ITextInput editor)
+		{
+			platformEditor.CharacterSpacing = editor.CharacterSpacing.ToScaledPixel();
 		}
 	}
 }

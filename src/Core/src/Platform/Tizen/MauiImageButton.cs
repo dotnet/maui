@@ -1,6 +1,6 @@
 ﻿using System;
 using Tizen.NUI;
-using Tizen.UIExtensions.Common;
+using NColor = Tizen.NUI.Color;
 using TImage = Tizen.UIExtensions.NUI.Image;
 
 namespace Microsoft.Maui.Platform
@@ -16,6 +16,23 @@ namespace Microsoft.Maui.Platform
 		public MauiImageButton()
 		{
 			TouchEvent += OnTouched;
+			Border = Border = new Rectangle(0, 0, 0, 0);
+		}
+
+		public void UpdateStrokeColor(IButtonStroke button)
+		{
+			BorderlineColor = button.StrokeColor.ToNUIColor() ?? NColor.Transparent;
+		}
+
+		public void UpdateStrokeThickness(IButtonStroke button)
+		{
+			BorderlineWidth = button.StrokeThickness.ToScaledPixel();
+		}
+
+		public void UpdateCornerRadius(IButtonStroke button)
+		{
+			if (button.CornerRadius != -1)
+				CornerRadius = ((double)button.CornerRadius).ToScaledPixel();
 		}
 
 		bool OnTouched(object source, TouchEventArgs e)
@@ -38,7 +55,6 @@ namespace Microsoft.Maui.Platform
 				_isPressed = false;
 				return true;
 			}
-			_isPressed = false;
 			return false;
 		}
 	}

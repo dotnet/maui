@@ -80,8 +80,10 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(ISearchBarHandler handler, ISearchBar searchBar) { }
+		public static void MapCharacterSpacing(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView.Entry.UpdateCharacterSpacing(searchBar);
+		}
 
 		void OnTextChanged(object? sender, Tizen.NUI.BaseComponents.TextField.TextChangedEventArgs e)
 		{

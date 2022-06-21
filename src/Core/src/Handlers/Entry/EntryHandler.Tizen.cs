@@ -109,8 +109,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapReturnType(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateReturnType(entry);
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(IEntryHandler handler, IEntry entry) { }
+		public static void MapCharacterSpacing(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView.UpdateCharacterSpacing(entry);
 
 		public static void MapCursorPosition(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateCursorPosition(entry);

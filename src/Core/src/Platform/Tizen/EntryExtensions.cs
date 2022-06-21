@@ -104,6 +104,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public static void UpdateCharacterSpacing(this Entry platformEntry, ITextStyle entry)
+		{
+			platformEntry.CharacterSpacing = entry.CharacterSpacing.ToScaledPixel();
+		}
+
 		public static TReturnType ToPlatform(this ReturnType returnType)
 		{
 			switch (returnType)

@@ -1480,6 +1480,9 @@ Microsoft.Maui.Platform.MauiImageButton.Clicked -> System.EventHandler?
 Microsoft.Maui.Platform.MauiImageButton.MauiImageButton() -> void
 Microsoft.Maui.Platform.MauiImageButton.Pressed -> System.EventHandler?
 Microsoft.Maui.Platform.MauiImageButton.Released -> System.EventHandler?
+Microsoft.Maui.Platform.MauiImageButton.UpdateCornerRadius(Microsoft.Maui.IButtonStroke! button) -> void
+Microsoft.Maui.Platform.MauiImageButton.UpdateStrokeColor(Microsoft.Maui.IButtonStroke! button) -> void
+Microsoft.Maui.Platform.MauiImageButton.UpdateStrokeThickness(Microsoft.Maui.IButtonStroke! button) -> void
 Microsoft.Maui.Platform.MauiImageSource
 Microsoft.Maui.Platform.MauiImageSource.Dispose() -> void
 Microsoft.Maui.Platform.MauiImageSource.LoadSource(System.IO.Stream! stream) -> System.Threading.Tasks.Task!
@@ -1873,6 +1876,7 @@ override Microsoft.Maui.Handlers.GraphicsViewHandler.DisconnectHandler(Microsoft
 override Microsoft.Maui.Handlers.ImageButtonHandler.ConnectHandler(Microsoft.Maui.Platform.MauiImageButton! platformView) -> void
 override Microsoft.Maui.Handlers.ImageButtonHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiImageButton!
 override Microsoft.Maui.Handlers.ImageButtonHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiImageButton! platformView) -> void
+override Microsoft.Maui.Handlers.ImageButtonHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.ImageHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.Image!
 override Microsoft.Maui.Handlers.ImageHandler.DisconnectHandler(Tizen.UIExtensions.NUI.Image! platformView) -> void
 override Microsoft.Maui.Handlers.ImageHandler.NeedsContainer.get -> bool
@@ -2056,7 +2060,6 @@ static Microsoft.Maui.Handlers.ButtonHandler.MapCornerRadius(Microsoft.Maui.Hand
 static Microsoft.Maui.Handlers.ButtonHandler.MapFont(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.ITextStyle! button) -> void
 static Microsoft.Maui.Handlers.ButtonHandler.MapImageSource(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IImage! image) -> void
 static Microsoft.Maui.Handlers.ButtonHandler.MapImageSourceAsync(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IImage! image) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.Handlers.ButtonHandler.MapLineBreakMode(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IButton! button) -> void
 static Microsoft.Maui.Handlers.ButtonHandler.MapPadding(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IButton! button) -> void
 static Microsoft.Maui.Handlers.ButtonHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IButton!, Microsoft.Maui.Handlers.IButtonHandler!>!
 static Microsoft.Maui.Handlers.ButtonHandler.MapStrokeColor(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IButtonStroke! buttonStroke) -> void
@@ -2461,6 +2464,11 @@ static Microsoft.Maui.Platform.ActivityIndicatorExtensions.UpdateIsRunning(this 
 static Microsoft.Maui.Platform.AspectExtensions.ToPlatform(this Microsoft.Maui.Aspect aspect) -> Tizen.UIExtensions.Common.Aspect
 static Microsoft.Maui.Platform.ButtonExtensions.UpdateText(this Tizen.UIExtensions.NUI.Button! platformButton, Microsoft.Maui.IText! button) -> void
 static Microsoft.Maui.Platform.ButtonExtensions.UpdateTextColor(this Tizen.UIExtensions.NUI.Button! platformButton, Microsoft.Maui.ITextStyle! button) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateCharacterSpacing(this Tizen.UIExtensions.NUI.Button! platformButton, Microsoft.Maui.ITextStyle! button) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateCornerRadius(this Tizen.UIExtensions.NUI.Button! platformButton, Microsoft.Maui.IButtonStroke! button) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateFont(this Tizen.UIExtensions.NUI.Button! platformButton, Microsoft.Maui.ITextStyle! label, Microsoft.Maui.IFontManager! fontManager) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateStrokeColor(this Tizen.UIExtensions.NUI.Button! platformButton, Microsoft.Maui.IButtonStroke! button) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateStrokeThickness(this Tizen.UIExtensions.NUI.Button! platformButton, Microsoft.Maui.IButtonStroke! button) -> void
 static Microsoft.Maui.Platform.CheckBoxExtensions.UpdateForeground(this Tizen.UIExtensions.NUI.GraphicsView.CheckBox! platformCheck, Microsoft.Maui.ICheckBox! check) -> void
 static Microsoft.Maui.Platform.CheckBoxExtensions.UpdateIsChecked(this Tizen.UIExtensions.NUI.GraphicsView.CheckBox! platformCheck, Microsoft.Maui.ICheckBox! check) -> void
 static Microsoft.Maui.Platform.ColorExtensions.ToNUIColor(this Microsoft.Maui.Graphics.Color! c) -> Tizen.NUI.Color?
@@ -2489,6 +2497,7 @@ static Microsoft.Maui.Platform.DPExtensions.ToScaledPoint(this double dp) -> dou
 static Microsoft.Maui.Platform.EditorExtensions.UpdateCursorPosition(this Tizen.UIExtensions.NUI.Editor! platformEditor, Microsoft.Maui.ITextInput! entry) -> void
 static Microsoft.Maui.Platform.EditorExtensions.UpdateFont(this Tizen.UIExtensions.NUI.Editor! platformEditor, Microsoft.Maui.ITextStyle! textStyle, Microsoft.Maui.IFontManager! fontManager) -> void
 static Microsoft.Maui.Platform.EditorExtensions.UpdateHorizontalTextAlignment(this Tizen.UIExtensions.NUI.Editor! platformEditor, Microsoft.Maui.ITextAlignment! editor) -> void
+static Microsoft.Maui.Platform.EditorExtensions.UpdateVerticalTextAlignment(this Tizen.UIExtensions.NUI.Editor! platformEditor, Microsoft.Maui.ITextAlignment! editor) -> void
 static Microsoft.Maui.Platform.EditorExtensions.UpdateIsReadOnly(this Tizen.UIExtensions.NUI.Editor! platformEditor, Microsoft.Maui.ITextInput! editor) -> void
 static Microsoft.Maui.Platform.EditorExtensions.UpdateIsTextPredictionEnabled(this Tizen.UIExtensions.NUI.Editor! platformEditor, Microsoft.Maui.ITextInput! editor) -> void
 static Microsoft.Maui.Platform.EditorExtensions.UpdateKeyboard(this Tizen.UIExtensions.NUI.Editor! platformEditor, Microsoft.Maui.ITextInput! editor) -> void
@@ -2500,6 +2509,7 @@ static Microsoft.Maui.Platform.EditorExtensions.UpdatePlaceholderColor(this Tize
 static Microsoft.Maui.Platform.EditorExtensions.UpdateSelectionLength(this Tizen.UIExtensions.NUI.Editor! platformEditor, Microsoft.Maui.ITextInput! entry) -> void
 static Microsoft.Maui.Platform.EditorExtensions.UpdateText(this Tizen.UIExtensions.NUI.Editor! platformEditor, Microsoft.Maui.IText! editor) -> void
 static Microsoft.Maui.Platform.EditorExtensions.UpdateTextColor(this Tizen.UIExtensions.NUI.Editor! platformEditor, Microsoft.Maui.ITextStyle! editor) -> void
+static Microsoft.Maui.Platform.EditorExtensions.UpdateCharacterSpacing(this Tizen.UIExtensions.NUI.Editor! platformEditor, Microsoft.Maui.ITextInput! editor) -> void
 static Microsoft.Maui.Platform.ElementExtensions.SetApplicationHandler(this Tizen.Applications.CoreApplication! platformApplication, Microsoft.Maui.IApplication! application, Microsoft.Maui.IMauiContext! context) -> void
 static Microsoft.Maui.Platform.ElementExtensions.SetWindowHandler(this Tizen.NUI.Window! platformWindow, Microsoft.Maui.IWindow! window, Microsoft.Maui.IMauiContext! context) -> void
 static Microsoft.Maui.Platform.ElementExtensions.ToContainerView(this Microsoft.Maui.IElement! view, Microsoft.Maui.IMauiContext! context) -> Tizen.NUI.BaseComponents.View!
@@ -2524,6 +2534,7 @@ static Microsoft.Maui.Platform.EntryExtensions.UpdateSelectionLength(this Tizen.
 static Microsoft.Maui.Platform.EntryExtensions.UpdateText(this Tizen.UIExtensions.NUI.Entry! platformEntry, Microsoft.Maui.IText! entry) -> void
 static Microsoft.Maui.Platform.EntryExtensions.UpdateTextColor(this Tizen.UIExtensions.NUI.Entry! platformEntry, Microsoft.Maui.ITextStyle! entry) -> void
 static Microsoft.Maui.Platform.EntryExtensions.UpdateVerticalTextAlignment(this Tizen.UIExtensions.NUI.Entry! platformEntry, Microsoft.Maui.ITextAlignment! entry) -> void
+static Microsoft.Maui.Platform.EntryExtensions.UpdateCharacterSpacing(this Tizen.UIExtensions.NUI.Entry! platformEntry, Microsoft.Maui.ITextStyle! entry) -> void
 static Microsoft.Maui.Platform.GraphicsViewExtensions.UpdateDrawable(this Tizen.UIExtensions.NUI.GraphicsView.SkiaGraphicsView! platformGraphicsView, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Platform.ImageExtensions.Clear(this Tizen.UIExtensions.NUI.Image! platformImage) -> void
 static Microsoft.Maui.Platform.ImageExtensions.UpdateAspect(this Tizen.UIExtensions.NUI.Image! platformImage, Microsoft.Maui.IImage! image) -> void
@@ -2541,6 +2552,8 @@ static Microsoft.Maui.Platform.LabelExtensions.UpdateText(this Tizen.UIExtension
 static Microsoft.Maui.Platform.LabelExtensions.UpdateTextColor(this Tizen.UIExtensions.NUI.Label! platformLabel, Microsoft.Maui.ILabel! label) -> void
 static Microsoft.Maui.Platform.LabelExtensions.UpdateTextDecorations(this Tizen.UIExtensions.NUI.Label! platformLabel, Microsoft.Maui.ILabel! label) -> void
 static Microsoft.Maui.Platform.LabelExtensions.UpdateVerticalTextAlignment(this Tizen.UIExtensions.NUI.Label! platformLabel, Microsoft.Maui.ILabel! label) -> void
+static Microsoft.Maui.Platform.LabelExtensions.UpdateCharacterSpacing(this Tizen.UIExtensions.NUI.Label! platformLabel, Microsoft.Maui.ILabel! label) -> void
+static Microsoft.Maui.Platform.LabelExtensions.UpdateLineHeight(this Tizen.UIExtensions.NUI.Label! platformLabel, Microsoft.Maui.ILabel! label) -> void
 static Microsoft.Maui.Platform.LayoutCanvasExtensions.UpdateClipsToBounds(this Microsoft.Maui.Platform.LayoutViewGroup! layoutViewGroup, Microsoft.Maui.ILayout! layout) -> void
 static Microsoft.Maui.Platform.NavigationStackExtensions.PushDummyPopupPage(this Tizen.UIExtensions.NUI.NavigationStack! stack, System.Func<System.Threading.Tasks.Task!>! openPopup) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.PickerExtensions.UpdateSelectedIndex(this Tizen.UIExtensions.NUI.Entry! platformPicker, Microsoft.Maui.IPicker! picker) -> void

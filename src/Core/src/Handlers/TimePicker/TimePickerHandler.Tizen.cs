@@ -48,8 +48,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateTextColor(timePicker);
 		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(ITimePickerHandler handler, ITimePicker timePicker) { }
+		public static void MapCharacterSpacing(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.PlatformView.UpdateCharacterSpacing(timePicker);
+		}
 
 		bool OnTouch(object source, Tizen.NUI.BaseComponents.View.TouchEventArgs e)
 		{

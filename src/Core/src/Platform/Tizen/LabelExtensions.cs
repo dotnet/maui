@@ -65,6 +65,16 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public static void UpdateCharacterSpacing(this Label platformLabel, ILabel label)
+		{
+			platformLabel.CharacterSpacing = label.CharacterSpacing.ToScaledPixel();
+		}
+
+		public static void UpdateLineHeight(this Label platformLabel, ILabel label)
+		{
+			platformLabel.RelativeLineHeight = (float)label.LineHeight;
+		}
+
 		public static FontAttributes GetFontAttributes(this Font font)
 		{
 			FontAttributes attributes = font.Weight == FontWeight.Bold ? FontAttributes.Bold : FontAttributes.None;

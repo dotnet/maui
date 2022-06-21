@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
+		public override bool NeedsContainer => false;
+
 		protected override void ConnectHandler(MauiImageButton platformView)
 		{
 			platformView.Clicked += OnClicked;
@@ -28,14 +30,20 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		[MissingMapper]
-		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.PlatformView.UpdateStrokeColor(buttonStroke);
+		}
 
-		[MissingMapper]
-		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.PlatformView.UpdateStrokeThickness(buttonStroke);
+		}
 
-		[MissingMapper]
-		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.PlatformView.UpdateCornerRadius(buttonStroke);
+		}
 
 		[MissingMapper]
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton) { }

@@ -48,26 +48,34 @@ namespace Microsoft.Maui.Handlers
 			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button) { }
+		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
+		{
+			handler.PlatformView.UpdateCharacterSpacing(button);
+		}
 
-		[MissingMapper]
-		public static void MapFont(IButtonHandler handler, ITextStyle button) { }
+		public static void MapFont(IButtonHandler handler, ITextStyle button)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.PlatformView.UpdateFont(button, fontManager);
+		}
 
 		[MissingMapper]
 		public static void MapPadding(IButtonHandler handler, IButton button) { }
 
-		[MissingMapper]
-		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.PlatformView.UpdateStrokeColor(buttonStroke);
+		}
 
-		[MissingMapper]
-		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.PlatformView.UpdateStrokeThickness(buttonStroke);
+		}
 
-		[MissingMapper]
-		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke) { }
-
-		[MissingMapper]
-		public static void MapLineBreakMode(IButtonHandler handler, IButton button) { }
+		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.PlatformView.UpdateCornerRadius(buttonStroke);
+		}
 
 		bool OnTouch(object source, View.TouchEventArgs e)
 		{

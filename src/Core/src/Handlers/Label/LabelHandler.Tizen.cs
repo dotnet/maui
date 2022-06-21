@@ -48,11 +48,15 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateShadow(label);
 		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(ILabelHandler handler, ILabel label) { }
+		public static void MapCharacterSpacing(ILabelHandler handler, ILabel label)
+		{
+			handler.PlatformView.UpdateCharacterSpacing(label);
+		}
 
-		[MissingMapper]
-		public static void MapLineHeight(ILabelHandler handler, ILabel label) { }
+		public static void MapLineHeight(ILabelHandler handler, ILabel label)
+		{
+			handler.PlatformView.UpdateLineHeight(label);
+		}
 
 		[MissingMapper]
 		public static void MapPadding(ILabelHandler handler, ILabel label) { }
