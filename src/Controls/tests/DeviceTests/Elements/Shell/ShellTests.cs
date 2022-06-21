@@ -101,26 +101,40 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
-
 		[Fact(DisplayName = "Navigating During Navigated Doesnt ReFire Appearing")]
 		public async Task NavigatingDuringNavigatedDoesntReFireAppearing()
 		{
 			SetupBuilder();
 			var contentPage = new ContentPage();
+			var secondContentPage = new ContentPage();
 			int contentPageAppearingFired = 0;
 			int navigatedToFired = 0;
+
+			int secondContentPageAppearingFired = 0;
+			int secondNavigatedToFired = 0;
+
 			TaskCompletionSource<object> finishedSecondNavigation = new TaskCompletionSource<object>();
 			contentPage.Appearing += (_, _) =>
 			{
 				contentPageAppearingFired++;
 			};
 
+			secondContentPage.Appearing += (_, _) =>
+			{
+				secondContentPageAppearingFired++;
+				Assert.Equal(0, secondNavigatedToFired);
+			};
+
+			secondContentPage.NavigatedTo += (_, _) =>
+			{
+				secondNavigatedToFired++;
+			};
+
 			Shell shell = null;
 			contentPage.NavigatedTo += async (_, _) =>
 			{
 				navigatedToFired++;
-				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PushAsync(secondContentPage);
 				finishedSecondNavigation.SetResult(true);
 			};
 
@@ -144,6 +158,8 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Equal(1, contentPageAppearingFired);
 				Assert.Equal(1, navigatedToFired);
+				Assert.Equal(1, secondContentPageAppearingFired);
+				Assert.Equal(1, secondNavigatedToFired);
 			});
 		}
 
