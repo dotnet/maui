@@ -77,6 +77,12 @@
     <ReplaceText
         Input="$(IntermediateOutputPath)WorkloadManifest.json"
         Output="$(IntermediateOutputPath)WorkloadManifest.json"
+        OldValue="@MAUI_DOTNET_VERSION_PREVIOUS@"
+        NewValue="$(_MauiPreviousDotNetVersion)"
+    />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)WorkloadManifest.json"
+        Output="$(IntermediateOutputPath)WorkloadManifest.json"
         OldValue="@MAUI_DOTNET_VERSION@"
         NewValue="$(_MauiDotNetVersion)"
     />

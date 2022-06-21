@@ -31,6 +31,7 @@
           "Microsoft.Maui.Sdk",
           "Microsoft.Maui.Graphics",
           "Microsoft.Maui.Resizetizer.Sdk",
+          "Microsoft.Maui.Templates-@MAUI_DOTNET_VERSION_PREVIOUS@",
           "Microsoft.Maui.Templates-@MAUI_DOTNET_VERSION@",
           "Microsoft.Maui.Core.Ref.any",
           "Microsoft.Maui.Core.Runtime.any",
