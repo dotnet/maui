@@ -14,11 +14,14 @@ namespace Microsoft.Maui.Handlers
 			var platformEditor = new MauiTextView();
 
 #if !MACCATALYST
-			platformEditor.InputAccessoryView = new MauiDoneAccessoryView(() =>
+			var accessoryView = new MauiDoneAccessoryView();
+			accessoryView.DoneClicked += (_, _) =>
 			{
 				platformEditor.ResignFirstResponder();
-				VirtualView?.Completed();
-			});
+				VirtualView.Completed();
+			};
+
+			platformEditor.InputAccessoryView = accessoryView;
 #endif
 
 			return platformEditor;

@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Platform
 
 #if !MACCATALYST
 		readonly Action _dateSelected;
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		public MauiTimePicker(Action dateSelected)
 #else
 		public MauiTimePicker()
@@ -32,11 +33,15 @@ namespace Microsoft.Maui.Platform
 			InputView = _picker;
 
 #if !MACCATALYST
-			InputAccessoryView = new MauiDoneAccessoryView(() =>
+
+			var accessoryView = new MauiDoneAccessoryView();
+			accessoryView.DoneClicked += (_, _) =>
 			{
-				DateSelected?.Invoke(this, EventArgs.Empty);
+				_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(DateSelected));
 				_dateSelected?.Invoke();
-			});
+			};
+
+			InputAccessoryView = accessoryView;
 
 			InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 #endif
@@ -54,7 +59,11 @@ namespace Microsoft.Maui.Platform
 		public NSDate Date => Picker.Date;
 
 #if !MACCATALYST
-		public event EventHandler? DateSelected;
+		public event EventHandler? DateSelected
+		{
+			add => _weakEventManager.AddEventHandler(value, nameof(DateSelected));
+			remove => _weakEventManager.RemoveEventHandler(value, nameof(DateSelected));
+		}
 #endif
 		public void UpdateTime(TimeSpan time)
 		{

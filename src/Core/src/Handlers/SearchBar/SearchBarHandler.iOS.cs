@@ -25,16 +25,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiSearchBar platformView)
 		{
-			platformView.CancelButtonClicked += OnCancelClicked;
-			platformView.SearchButtonClicked += OnSearchButtonClicked;
-			platformView.TextSetOrChanged += OnTextPropertySet;
-			platformView.ShouldChangeTextInRange += ShouldChangeText;
+			//platformView.CancelButtonClicked += OnCancelClicked;
+			//platformView.SearchButtonClicked += OnSearchButtonClicked;
+			//platformView.TextSetOrChanged += OnTextPropertySet;
+			//platformView.ShouldChangeTextInRange += ShouldChangeText;
 
-			platformView.OnEditingStarted += OnEditingStarted;
-			platformView.OnEditingStopped += OnEditingEnded;
+			//platformView.OnEditingStarted += OnEditingStarted;
+			//platformView.OnEditingStopped += OnEditingEnded;
 
-			if (_editor != null)
-				_editor.EditingChanged += OnEditingChanged;
+			//if (_editor != null)
+			//	_editor.EditingChanged += OnEditingChanged;
 
 			base.ConnectHandler(platformView);
 		}

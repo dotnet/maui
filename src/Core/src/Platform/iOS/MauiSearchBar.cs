@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiSearchBar : UISearchBar
 	{
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		public MauiSearchBar() : this(RectangleF.Empty)
 		{
 		}
@@ -32,7 +33,20 @@ namespace Microsoft.Maui.Platform
 		// Native Changed doesn't fire when the Text Property is set in code
 		// We use this event as a way to fire changes whenever the Text changes
 		// via code or user interaction.
-		public event EventHandler<UISearchBarTextChangedEventArgs>? TextSetOrChanged;
+		public event EventHandler<UISearchBarTextChangedEventArgs>? TextSetOrChanged
+		{
+			add
+			{
+				if (value != null)
+					_weakEventManager.AddEventHandler(value);
+			}
+
+			remove
+			{
+				if (value != null)
+					_weakEventManager.RemoveEventHandler(value);
+			}
+		}
 
 		public override string? Text
 		{
@@ -45,7 +59,7 @@ namespace Microsoft.Maui.Platform
 
 				if (old != value)
 				{
-					TextSetOrChanged?.Invoke(this, new UISearchBarTextChangedEventArgs(value ?? String.Empty));
+					_weakEventManager.HandleEvent(this, new UISearchBarTextChangedEventArgs(value ?? String.Empty), nameof(TextSetOrChanged));
 				}
 			}
 		}

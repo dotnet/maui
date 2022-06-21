@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -8,58 +9,48 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	// We shouldn't need this collection but just leaving here for now
-	// Once these are all green when run separately we can take a more prudent approach
-	// for some reason when ran in parallel the tests will occasionally fail
-	[Collection("AllocationTests")]
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
+		static readonly SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(1, 1);
+
 		[Fact(DisplayName = "Handlers Deallocate When No Longer Referenced")]
 		public async Task HandlersDeallocateWhenNoLongerReferenced()
 		{
-			var stub = new TStub();
-			WeakReference<TStub> weakView = new WeakReference<TStub>(stub);
+			await SemaphoreSlim.WaitAsync();
+			try
+			{
+				var stub = new TStub();
+				WeakReference<TStub> weakView = new WeakReference<TStub>(stub);
 
-			var handler = await CreateHandlerAsync(stub) as IPlatformViewHandler;
-			WeakReference<THandler> weakHandler = new WeakReference<THandler>((THandler)handler);
+				var handler = await CreateHandlerAsync(stub) as IPlatformViewHandler;
+				WeakReference<THandler> weakHandler = new WeakReference<THandler>((THandler)handler);
 
-			// This probably doesn't add anything to the test but it feels
-			// useful to attach the platformview to windows hierarchy
-			// just in case it is useful
-			//await handler.PlatformView.AttachAndRun(() => { });
+				stub = null;
+				handler = null;
 
-			//stub.Handler = null;
-			stub = null;
-			handler = null;
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				await Task.Delay(100);
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				await Task.Delay(100);
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
 
-			// This is a bit excessive for now but we can reduce it down 
-			// just being extra sure for the first pass
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			await Task.Delay(200);
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			await Task.Delay(200);
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+				if (weakHandler.TryGetTarget(out THandler _))
+					Assert.True(false, $"{typeof(THandler)} failed to collect");
 
-			if (weakHandler.TryGetTarget(out THandler _))
-				Assert.True(false, $"{typeof(THandler)} failed to collect");
-
-			if (weakView.TryGetTarget(out TStub _))
-				Assert.True(false, $"{typeof(TStub)} failed to collect");
+				if (weakView.TryGetTarget(out TStub _))
+					Assert.True(false, $"{typeof(TStub)} failed to collect");
+			}
+			finally
+			{
+				SemaphoreSlim.Release();
+			}
 		}
 
 		[Fact(DisplayName = "Automation Id is set correctly")]

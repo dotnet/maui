@@ -21,20 +21,23 @@ namespace Microsoft.Maui.Handlers
 				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}
 
-			platformDatePicker.InputView = _picker;
-			platformDatePicker.InputAccessoryView = new MauiDoneAccessoryView(() =>
-			{
-				SetVirtualViewDate();
-				platformDatePicker.ResignFirstResponder();
-			});
+			//platformDatePicker.InputView = _picker;
+			//platformDatePicker.InputAccessoryView = new MauiDoneAccessoryView((data) =>
+			//{
+			//	if (data is DatePickerHandler dph)
+			//	{
+			//		dph.SetVirtualViewDate();
+			//		dph.PlatformView.ResignFirstResponder();
+			//	}
+			//}, this);
 
-			platformDatePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-			platformDatePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+			//platformDatePicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+			////platformDatePicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 
-			platformDatePicker.InputAssistantItem.LeadingBarButtonGroups = null;
-			platformDatePicker.InputAssistantItem.TrailingBarButtonGroups = null;
+			//platformDatePicker.InputAssistantItem.LeadingBarButtonGroups = null;
+			//platformDatePicker.InputAssistantItem.TrailingBarButtonGroups = null;
 
-			platformDatePicker.AccessibilityTraits = UIAccessibilityTrait.Button;
+			//platformDatePicker.AccessibilityTraits = UIAccessibilityTrait.Button;
 
 			return platformDatePicker;
 		}

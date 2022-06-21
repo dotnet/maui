@@ -16,10 +16,12 @@ namespace Microsoft.Maui.Handlers
 
 			var platformPicker = new MauiPicker(_pickerView) { BorderStyle = UITextBorderStyle.RoundedRect };
 			platformPicker.InputView = _pickerView;
-			platformPicker.InputAccessoryView = new MauiDoneAccessoryView(() =>
-			{
-				FinishSelectItem(_pickerView, platformPicker);
-			});
+
+			var accessoryView = new MauiDoneAccessoryView();
+			platformPicker.InputAccessoryView = accessoryView;
+			//accessoryView.DoneClicked += OnAccessoryViewDoneClicked;
+
+			platformPicker.InputAccessoryView = new MauiDoneAccessoryView();
 
 			platformPicker.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 			platformPicker.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
@@ -30,6 +32,12 @@ namespace Microsoft.Maui.Handlers
 			_pickerView.Model = new PickerSource(this);
 
 			return platformPicker;
+		}
+
+		void OnAccessoryViewDoneClicked(object? sender, EventArgs e)
+		{
+			if (PlatformView.InputView is UIPickerView pickerView)
+				FinishSelectItem(pickerView, PlatformView);
 		}
 #else
 		protected override MauiPicker CreatePlatformView()
@@ -256,12 +264,31 @@ namespace Microsoft.Maui.Handlers
 	{
 		bool _disposed;
 
+		WeakReference<PickerHandler>? _handler;
+
 		public PickerSource(PickerHandler? handler)
 		{
-			Handler = handler;
+			if (handler != null)
+				_handler = new WeakReference<PickerHandler>(handler);
 		}
 
-		public PickerHandler? Handler { get; set; }
+		public PickerHandler? Handler
+		{
+			get
+			{
+				if (_handler?.TryGetTarget(out var handler) == true)
+					return handler;
+
+				return null;
+			}
+			set
+			{
+				_handler = null;
+				if (value != null)
+					_handler = new WeakReference<PickerHandler>(value);
+			}
+		}
+
 		public int SelectedIndex { get; internal set; }
 
 		public override nint GetComponentCount(UIPickerView picker) => 1;

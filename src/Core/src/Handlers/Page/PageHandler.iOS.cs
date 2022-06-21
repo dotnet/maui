@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(ContentView nativeView)
 		{
-			var uiTapGestureRecognizer = new UITapGestureRecognizer(a => nativeView?.EndEditing(true));
+			var uiTapGestureRecognizer = new UITapGestureRecognizer(OnPageTapped);
 
 			uiTapGestureRecognizer.ShouldRecognizeSimultaneously = (recognizer, gestureRecognizer) => true;
 			uiTapGestureRecognizer.ShouldReceiveTouch = OnShouldReceiveTouch;
@@ -35,6 +35,11 @@ namespace Microsoft.Maui.Handlers
 			nativeView.AddGestureRecognizer(uiTapGestureRecognizer);
 
 			base.ConnectHandler(nativeView);
+		}
+
+		void OnPageTapped()
+		{
+			PlatformView?.EndEditing(true);
 		}
 
 		protected override void DisconnectHandler(ContentView nativeView)

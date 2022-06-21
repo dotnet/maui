@@ -7,11 +7,17 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override MauiTimePicker CreatePlatformView()
 		{
-			return new MauiTimePicker(() =>
+			var timePicker = new MauiTimePicker(() =>
+			{
+			});
+
+			timePicker.DateSelected += (_, _) =>
 			{
 				SetVirtualViewTime();
 				PlatformView?.ResignFirstResponder();
-			});
+			};
+
+			return timePicker;
 		}
 
 		internal bool UpdateImmediately { get; set; }
