@@ -73,14 +73,14 @@ parameters:
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
-        artifact: net6-windows
+        artifact: build-windows
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
-        artifact: net6-macos
+        artifact: build-macos
   - name: PackPlatforms
     type: object
     default:
@@ -114,7 +114,7 @@ resources:
 stages:
 
   - stage: build_net6
-    displayName: Build .NET 6
+    displayName: Build .NET MAUI
     dependsOn: []
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
@@ -170,7 +170,7 @@ stages:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
   - stage: pack_net6
-    displayName: Pack .NET 6
+    displayName: Pack .NET MAUI
     dependsOn: []
     jobs:
       - ${{ each PackPlatform in parameters.PackPlatforms }}:
@@ -196,7 +196,7 @@ stages:
                 artifact:  ${{ PackPlatform.artifact }}
 
   - stage: samples_net6
-    displayName: Build .NET 6 Samples
+    displayName: Build .NET MAUI Samples
     dependsOn: pack_net6
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
@@ -245,7 +245,7 @@ stages:
                   DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
                   PRIVATE_BUILD: $(PrivateBuild)
               - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-                displayName: 'Build .NET 6 Samples'
+                displayName: 'Build .NET MAUI Samples'
               - task: PublishBuildArtifacts@1
                 condition: always()
                 displayName: publish artifacts
@@ -253,7 +253,7 @@ stages:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
   - stage: templates_net6
-    displayName: Build .NET 6 Templates
+    displayName: Build .NET MAUI Templates
     dependsOn: pack_net6
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
@@ -302,7 +302,7 @@ stages:
                   DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
                   PRIVATE_BUILD: $(PrivateBuild)
               - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-                displayName: 'Build .NET 6 Templates'
+                displayName: 'Build .NET MAUI Templates'
               - task: PublishBuildArtifacts@1
                 condition: always()
                 displayName: publish artifacts
