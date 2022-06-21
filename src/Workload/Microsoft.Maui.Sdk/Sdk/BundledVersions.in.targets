@@ -67,7 +67,7 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' ">
     <PackageReference Include="Microsoft.Maui.Dependencies" Version="$(MauiVersion)" IsImplicitlyDefined="true">
-      <PrivateAssets Condition=" '$(OutputType)' == 'Library' or '$(AndroidApplication)' 1= 'true' ">all</PrivateAssets>
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' or '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
