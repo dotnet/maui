@@ -1,0 +1,4 @@
+﻿#nullable enable
+override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
+*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
+override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
