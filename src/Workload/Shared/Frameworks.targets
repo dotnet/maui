@@ -55,7 +55,8 @@
   <Import Condition=" '$(MauiPlatformName)' != '' " Project="FrameworkList.targets" />
 
   <ItemGroup>
-    <_Platforms Include="any;android;maccatalyst;ios;tizen" />
+    <_Platforms Include="any;android;maccatalyst;ios" />
+    <_Platforms Include="tizen" Condition="'$(IncludeTizenTargetFrameworks)' == 'true'" />
     <_Platforms Include="win" Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'" />
   </ItemGroup>
 

@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			if (UpdateSplashImage())
 				UpdateManifest();
+
 			return !Log.HasLoggedErrors;
 		}
 
@@ -38,26 +39,29 @@ namespace Microsoft.Maui.Resizetizer
 		public bool UpdateSplashImage()
 		{
 			var splash = MauiSplashScreen[0];
-			var image = Path.GetFileNameWithoutExtension(splash.ItemSpec) + ".png";
+
+			var info = ResizeImageInfo.Parse(splash);
+
+			var image = info.OutputName + ".png";
 			var sharedResFullPath = Path.GetFullPath(Path.Combine(IntermediateOutputPath, "shared/res/"));
 			var splashFullPath = Path.Combine(sharedResFullPath, splashDirectoryName);
 
 			if (Directory.Exists(splashFullPath))
-			{
 				Directory.Delete(splashFullPath, true);
-			}
 			Directory.CreateDirectory(splashFullPath);
 
 			foreach (var dpi in DpiPath.Tizen.SplashScreen)
 			{
 				var imageOutputPath = Path.GetFullPath(Path.Combine(IntermediateOutputPath, dpi.Path));
 				var imageFullPath = Path.Combine(imageOutputPath, image);
+
 				if (File.Exists(imageFullPath))
 				{
 					var resolution = dpi.Path.Split('-')[1].ToLower();
 					foreach (var orientation in orientations)
 					{
-						var newImage = Path.GetFileNameWithoutExtension(splash.ItemSpec) + "." + resolution + "." + orientation + ".png";
+						var newImage = $"{info.OutputName}.{resolution}.{orientation}.png";
+
 						splashDpiMap.Add((resolution, orientation), $"{splashDirectoryName}/{newImage}");
 						UpdateColorAndMoveFile(GetScreenSize(resolution, orientation), imageFullPath, Path.Combine(splashFullPath, newImage));
 					}
@@ -68,65 +72,51 @@ namespace Microsoft.Maui.Resizetizer
 					return false;
 				}
 			}
+
 			return true;
 		}
 
-		Size GetScreenSize(string resolution, string orientation)
-		{
-			if (resolution == "mdpi")
+		Size GetScreenSize(string resolution, string orientation) =>
+			resolution switch
 			{
-				return orientation == "portrait" ? hdSize : new Size(hdSize.Height, hdSize.Width);
-			}
-			else
-			{
-				return orientation == "portrait" ? fhdSize : new Size(fhdSize.Height, fhdSize.Width);
-			}
-		}
+				"mdpi" => orientation == "portrait" ? hdSize : new Size(hdSize.Height, hdSize.Width),
+				_ => orientation == "portrait" ? fhdSize : new Size(fhdSize.Height, fhdSize.Width)
+			};
 
 		public void UpdateColorAndMoveFile(Size screenSize, string sourceFilePath, string destFilePath)
 		{
 			var splash = MauiSplashScreen[0];
-			var colorMetadata = splash.GetMetadata("Color");
-			var color = Utils.ParseColorString(colorMetadata);
-			if (color == null)
+
+			var splashInfo = ResizeImageInfo.Parse(splash);
+
+			var color = splashInfo.Color ?? SKColors.White;
+
+			using var bmp = SKBitmap.Decode(sourceFilePath);
+			SKImageInfo info = new SKImageInfo(screenSize.Width, screenSize.Height);
+
+			using var surface = SKSurface.Create(info);
+			SKCanvas canvas = surface.Canvas;
+			canvas.Clear(color);
+
+			using var paint = new SKPaint
 			{
-				if (!string.IsNullOrEmpty(colorMetadata))
-				{
-					Log.LogWarning($"Unable to parse color value '{colorMetadata}' for '{splash.ItemSpec}'.");
-				}
-				color = SKColors.White;
-			}
+				IsAntialias = true,
+				FilterQuality = SKFilterQuality.High
+			};
 
-			using (SKBitmap bmp = SKBitmap.Decode(sourceFilePath))
-			{
-				SKImageInfo info = new SKImageInfo(screenSize.Width, screenSize.Height);
-				using (SKSurface surface = SKSurface.Create(info))
-				{
-					SKCanvas canvas = surface.Canvas;
-					canvas.Clear(color.Value);
-					using SKPaint paint = new SKPaint
-					{
-						IsAntialias = true,
-						FilterQuality = SKFilterQuality.High
-					};
+			var left = screenSize.Width <= bmp.Width ? 0 : (screenSize.Width - bmp.Width) / 2;
+			var top = screenSize.Height <= bmp.Height ? 0 : (screenSize.Height - bmp.Height) / 2;
+			var right = screenSize.Width <= bmp.Width ? left + screenSize.Width : left + bmp.Width;
+			var bottom = screenSize.Height <= bmp.Height ? top + screenSize.Height : top + bmp.Height;
 
-					var left = screenSize.Width <= bmp.Width ? 0 : (screenSize.Width - bmp.Width) / 2;
-					var top = screenSize.Height <= bmp.Height ? 0 : (screenSize.Height - bmp.Height) / 2;
-					var right = screenSize.Width <= bmp.Width ? left + screenSize.Width : left + bmp.Width;
-					var bottom = screenSize.Height <= bmp.Height ? top + screenSize.Height : top + bmp.Height;
-					canvas.DrawBitmap(bmp, new SKRect(left, top, right, bottom), paint);
-					canvas.Flush();
+			canvas.DrawBitmap(bmp, new SKRect(left, top, right, bottom), paint);
+			canvas.Flush();
 
-					var updatedsplash = surface.Snapshot();
-					using (var data = updatedsplash.Encode(SKEncodedImageFormat.Png, 100))
-					{
-						using (var stream = File.Create(destFilePath))
-						{
-							data.SaveTo(stream);
-						}
-					}
-				}
-			}
+			var updatedsplash = surface.Snapshot();
+
+			using var data = updatedsplash.Encode(SKEncodedImageFormat.Png, 100);
+			using var stream = File.Create(destFilePath);
+			data.SaveTo(stream);
 		}
 
 		public void UpdateManifest()
@@ -151,6 +141,7 @@ namespace Microsoft.Maui.Resizetizer
 				Log.LogWarning($"Failed to find <ui-application>");
 				return;
 			}
+
 			var splashScreensNodeList = doc.SelectNodes("//manifest:splash-screens", nsmgr);
 			XmlNode splashScreensNode;
 			if (splashScreensNodeList.Count == 0)
@@ -166,9 +157,7 @@ namespace Microsoft.Maui.Resizetizer
 				{
 					var dpiValue = splashScreenNode.Attributes.GetNamedItem("dpi")?.Value;
 					if (dpiValue == "mdpi" || dpiValue == "hdpi")
-					{
 						nodesToRemove.Add(splashScreenNode);
-					}
 				}
 				foreach (XmlNode node in nodesToRemove)
 				{

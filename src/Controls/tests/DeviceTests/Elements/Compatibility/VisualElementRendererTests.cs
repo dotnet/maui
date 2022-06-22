@@ -47,9 +47,11 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task CompatibilityRendererWorksWithNoInnerContrlSpecified()
 		{
 			SetupBuilder();
+
 			var renderer = await InvokeOnMainThreadAsync(() => new LegacyComponent().ToPlatform(MauiContext));
 
-			Assert.Equal(renderer, (renderer as IPlatformViewHandler).PlatformView);
+			await InvokeOnMainThreadAsync(() => Assert.Equal(renderer, (renderer as IPlatformViewHandler).PlatformView));
+
 			Assert.NotNull(renderer);
 		}
 	}
