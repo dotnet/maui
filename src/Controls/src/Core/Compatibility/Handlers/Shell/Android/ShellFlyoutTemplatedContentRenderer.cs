@@ -71,14 +71,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		class ThingBehavior : AppBarLayout.Behavior
-		{
-			public override void OnNestedPreScroll(CoordinatorLayout coordinatorLayout, Java.Lang.Object child, AView target, int dx, int dy, int[] consumed, int type)
-			{
-				base.OnNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type);
-			}
-		}
-
 		protected virtual void LoadView(IShellContext shellContext)
 		{
 			var context = shellContext.AndroidContext;
@@ -88,7 +80,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_appBar = coordinator.FindViewById<AppBarLayout>(Controls.Resource.Id.flyoutcontent_appbar);
 
 			(_appBar.LayoutParameters as CoordinatorLayout.LayoutParams)
-				.Behavior = new ThingBehavior();
+				.Behavior = new AppBarLayout.Behavior();
 
 			_rootView = coordinator as ViewGroup;
 
