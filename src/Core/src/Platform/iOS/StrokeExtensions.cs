@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Platform
 				mauiCALayer.SetBorderWidth(border?.StrokeThickness ?? 0);
 				mauiCALayer.SetBorderDash(border?.StrokeDashPattern, border?.StrokeDashOffset ?? 0);
 				mauiCALayer.SetBorderMiterLimit(border?.StrokeMiterLimit ?? 0);
-				
+
 				if (border != null)
 				{
 					mauiCALayer.SetBorderLineJoin(border.StrokeLineJoin);

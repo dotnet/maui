@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 				platformView.UpdateMauiCALayer(border);
 			}
 		}
-		
+
 		public static void UpdateBackground(this UIView platformView, IView view)
 		{
 			platformView.UpdateBackground(view.Background, view as IButtonStroke);
