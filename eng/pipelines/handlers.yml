@@ -309,7 +309,7 @@ stages:
                   env:
                     DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
                     PRIVATE_BUILD: $(PrivateBuild)
-                - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --testtfm="""${{ TestTFM.tfm }}""" --verbosity=diagnostic
+                - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --testtfm="\""${{ TestTFM.tfm }}"\"" --verbosity=diagnostic
                   displayName: 'Build .NET MAUI Templates'
                 - task: PublishBuildArtifacts@1
                   condition: always()
