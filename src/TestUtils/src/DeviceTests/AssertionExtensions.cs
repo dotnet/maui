@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Sdk;
@@ -28,6 +29,18 @@ namespace Microsoft.Maui.DeviceTests
 
 			if (!hasFlag)
 				throw new ContainsException(flag, self);
+		}
+
+		public static void AssertWithMessage(Action assertion, string message)
+		{
+			try
+			{
+				assertion();
+			}
+			catch (Exception e)
+			{
+				Assert.True(false, $"Message: {message} Failure: {e}");
+			}
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Build.Framework;
@@ -8,18 +9,22 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class ResizeImageInfo
 	{
-		public string Alias { get; set; }
+		public string? Alias { get; set; }
 
-		public string Filename { get; set; }
+		public string? Filename { get; set; }
 
 		public string OutputName =>
 			string.IsNullOrWhiteSpace(Alias)
-				? Path.GetFileNameWithoutExtension(Filename)
+				? string.IsNullOrWhiteSpace(Filename)
+					? Path.GetFileNameWithoutExtension(ForegroundFilename)
+					: Path.GetFileNameWithoutExtension(Filename)
 				: Path.GetFileNameWithoutExtension(Alias);
 
 		public string OutputExtension =>
 			string.IsNullOrWhiteSpace(Alias) || !Path.HasExtension(Alias)
-				? Path.GetExtension(Filename)
+				? string.IsNullOrWhiteSpace(Filename) || !Path.HasExtension(Filename)
+					? Path.GetExtension(ForegroundFilename)
+					: Path.GetExtension(Filename)
 				: Path.GetExtension(Alias);
 
 		public SKSize? BaseSize { get; set; }
@@ -34,13 +39,13 @@ namespace Microsoft.Maui.Resizetizer
 
 		public bool IsAppIcon { get; set; }
 
-		public string ForegroundFilename { get; set; }
+		public string? ForegroundFilename { get; set; }
 
 		public bool ForegroundIsVector => IsVectorFilename(ForegroundFilename);
 
 		public double ForegroundScale { get; set; } = 1.0;
 
-		private static bool IsVectorFilename(string filename)
+		private static bool IsVectorFilename(string? filename)
 			=> Path.GetExtension(filename)?.Equals(".svg", StringComparison.OrdinalIgnoreCase) ?? false;
 
 		public static ResizeImageInfo Parse(ITaskItem image)
@@ -77,8 +82,15 @@ namespace Microsoft.Maui.Resizetizer
 					info.Resize = false;
 				}
 
-				info.TintColor = Utils.ParseColorString(image.GetMetadata("TintColor"));
-				info.Color = Utils.ParseColorString(image.GetMetadata("Color"));
+				var tintColor = image.GetMetadata("TintColor");
+				info.TintColor = Utils.ParseColorString(tintColor);
+				if (info.TintColor is null && !string.IsNullOrEmpty(tintColor))
+					throw new InvalidDataException($"Unable to parse color value '{tintColor}' for '{info.Filename}'.");
+
+				var color = image.GetMetadata("Color");
+				info.Color = Utils.ParseColorString(color);
+				if (info.Color is null && !string.IsNullOrEmpty(color))
+					throw new InvalidDataException($"Unable to parse color value '{color}' for '{info.Filename}'.");
 
 				if (bool.TryParse(image.GetMetadata("IsAppIcon"), out var iai))
 					info.IsAppIcon = iai;
@@ -94,6 +106,13 @@ namespace Microsoft.Maui.Resizetizer
 						throw new FileNotFoundException("Unable to find foreground file: " + fgFileInfo.FullName, fgFileInfo.FullName);
 
 					info.ForegroundFilename = fgFileInfo.FullName;
+				}
+
+				// make sure the image is a foreground if this is an icon
+				if (info.IsAppIcon && string.IsNullOrEmpty(info.ForegroundFilename))
+				{
+					info.ForegroundFilename = info.Filename;
+					info.Filename = null;
 				}
 
 				// TODO:

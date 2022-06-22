@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 			await Task.Delay(100);
 
 			var result = await action();
-			
+
 			view.RemoveFromSuperview();
 
 			// Give the UI time to refresh
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 			return result;
 		}
 
-		static UIView FindContentView() 
+		static UIView FindContentView()
 		{
 			if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window)
 			{
@@ -384,7 +384,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				foreach (var scene in application.ConnectedScenes)
 				{
-					if (scene is UIWindowScene windowScene 
+					if (scene is UIWindowScene windowScene
 						&& windowScene.ActivationState == UISceneActivationState.ForegroundActive)
 					{
 						foreach (var window in windowScene.Windows)

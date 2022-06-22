@@ -8,13 +8,14 @@ Those rules are all defined in the associated [fabricbot.json](/.github/fabricbo
 While you can _try_ to edit this file manually, you can instead use the Fabric Bot editor UI to modify the file in a more reliable manner:
 
 1. Download the [fabricbot.json](/.github/fabricbot.json) file to your local disk
-2. Go to https://portal.fabricbot.ms/bot/
-3. Click **Choose File** and select the JSON file that you downloaded
-4. And press Submit to load the file and launch the FabricBot rules editor
-5. In this UI you can:
+1. Go to https://portal.fabricbot.ms/bot/
+1. Click **Sign in** and use your `@microsoft.com` credentials
+1. In the **Import Configuration** section click **Choose File** and select the JSON file that you downloaded
+1. Press **Submit** to load the file and launch the FabricBot rules editor
+1. In this UI you can:
    - View all existing rules
    - Click **Add Task** in the upper-right corner to add a new task. This is where you can see the various capabilities of FabricBot
-6. And then click around in the tool to see the various abilities and options
+1. And then click around in the tool to see the various abilities and options
 
 Don't worry, you can click all you want, because that UI won't save anything to anywhere. You can export the rules and download the generated JSON file. But don't worry about accidentally changing the FabricBot rules in this repo 😊
 
