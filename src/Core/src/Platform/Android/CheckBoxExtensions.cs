@@ -37,7 +37,6 @@ namespace Microsoft.Maui.Platform
 			Graphics.Color accent = Graphics.Color.FromArgb("#ff33b5e5");
 
 			var tintColor = accent.ToPlatform();
-			var disabledColor = accent.WithAlpha(0.75f).ToPlatform();
 
 			// For the moment, we're only supporting solid color Paint for the Android Checkbox
 			if (check.Foreground is SolidPaint solid)
@@ -45,10 +44,9 @@ namespace Microsoft.Maui.Platform
 				var color = solid.Color;
 
 				tintColor = color.ToPlatform();
-				disabledColor = color.WithAlpha(0.75f).ToPlatform();
 			}
 
-			return ColorStateListExtensions.CreateSwitch(disabledColor, tintColor, tintColor);
+			return ColorStateListExtensions.CreateSwitch(tintColor, tintColor, tintColor);
 		}
 	}
 }
