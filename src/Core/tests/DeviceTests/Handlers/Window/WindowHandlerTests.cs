@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class WindowHandlerTests : HandlerTestBase
 	{
 		//TODO: Fix this test on Android, it fails a lot of times
-#if !ANDROID 
+#if !ANDROID
 		[Fact]
 		public async Task WindowHasReasonableDisplayDensity()
 		{

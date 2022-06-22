@@ -12,25 +12,33 @@ namespace Microsoft.Maui.Platform
 	public class ContentViewGroup : ViewGroup
 	{
 		IBorderStroke? _clip;
+		readonly Context _context;
 
 		public ContentViewGroup(Context context) : base(context)
 		{
+			_context = context;
 		}
 
 		public ContentViewGroup(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
+			var context = Context;
+			ArgumentNullException.ThrowIfNull(context);
+			_context = context;
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
+			_context = context;
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
+			_context = context;
 		}
 
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
+			_context = context;
 		}
 
 		protected override void DispatchDraw(Canvas? canvas)
@@ -43,19 +51,14 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			if (Context == null)
-			{
-				return;
-			}
-
 			if (CrossPlatformMeasure == null)
 			{
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 				return;
 			}
 
-			var deviceIndependentWidth = widthMeasureSpec.ToDouble(Context);
-			var deviceIndependentHeight = heightMeasureSpec.ToDouble(Context);
+			var deviceIndependentWidth = widthMeasureSpec.ToDouble(_context);
+			var deviceIndependentHeight = heightMeasureSpec.ToDouble(_context);
 
 			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
 			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
@@ -67,8 +70,8 @@ namespace Microsoft.Maui.Platform
 			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
 			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
 
-			var platformWidth = Context.ToPixels(width);
-			var platformHeight = Context.ToPixels(height);
+			var platformWidth = _context.ToPixels(width);
+			var platformHeight = _context.ToPixels(height);
 
 			// Minimum values win over everything
 			platformWidth = Math.Max(MinimumWidth, platformWidth);
@@ -79,12 +82,12 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
-			if (CrossPlatformArrange == null || Context == null)
+			if (CrossPlatformArrange == null)
 			{
 				return;
 			}
 
-			var destination = Context!.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
+			var destination = _context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
 
 			CrossPlatformArrange(destination);
 		}
@@ -107,7 +110,7 @@ namespace Microsoft.Maui.Platform
 			if (Clip == null || canvas == null)
 				return;
 
-			float density = Context.GetDisplayDensity();
+			float density = _context.GetDisplayDensity();
 
 			float strokeThickness = (float)(Clip.StrokeThickness * density);
 			float offset = strokeThickness / 2;
