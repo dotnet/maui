@@ -5534,6 +5534,7 @@ Microsoft.Maui.Controls.TappedEventArgs.TappedEventArgs(object? parameter) -> vo
 ~static Microsoft.Maui.Controls.Handlers.LineHandler.MapY1(Microsoft.Maui.Handlers.IShapeViewHandler handler, Microsoft.Maui.Controls.Shapes.Line line) -> void
 ~static Microsoft.Maui.Controls.Handlers.LineHandler.MapY2(Microsoft.Maui.Handlers.IShapeViewHandler handler, Microsoft.Maui.Controls.Shapes.Line line) -> void
 ~static Microsoft.Maui.Controls.Handlers.PathHandler.MapData(Microsoft.Maui.Handlers.IShapeViewHandler handler, Microsoft.Maui.Controls.Shapes.Path path) -> void
+~static Microsoft.Maui.Controls.Handlers.PathHandler.MapShape(Microsoft.Maui.Handlers.IShapeViewHandler handler, Microsoft.Maui.Controls.Shapes.Path path) -> void
 ~static Microsoft.Maui.Controls.Handlers.PathHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.Shapes.Path, Microsoft.Maui.Handlers.IShapeViewHandler>
 ~static Microsoft.Maui.Controls.Handlers.PathHandler.MapRenderTransform(Microsoft.Maui.Handlers.IShapeViewHandler handler, Microsoft.Maui.Controls.Shapes.Path path) -> void
 ~static Microsoft.Maui.Controls.Handlers.PolygonHandler.MapFillRule(Microsoft.Maui.Handlers.IShapeViewHandler handler, Microsoft.Maui.Controls.Shapes.Polygon polygon) -> void

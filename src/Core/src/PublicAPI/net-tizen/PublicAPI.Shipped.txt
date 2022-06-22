@@ -2715,7 +2715,6 @@ virtual Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.Measure
 virtual Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.SetVirtualView(Microsoft.Maui.IView! view) -> void
 virtual Microsoft.Maui.Handlers.WebViewHandler.MinimumSize.get -> double
 virtual Microsoft.Maui.Platform.MauiImageSource.Dispose(bool disposing) -> void
-virtual Microsoft.Maui.Platform.MauiShapeView.DefaultSize.get -> double
 virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IView! navigationView) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.Disconnect() -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.RequestNavigation(Microsoft.Maui.NavigationRequest! e) -> void

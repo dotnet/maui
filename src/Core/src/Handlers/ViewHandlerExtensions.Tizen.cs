@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
 using Tizen.UIExtensions.NUI;
-using NView = Tizen.NUI.BaseComponents.View;
 using IMeasurable = Tizen.UIExtensions.Common.IMeasurable;
 
 namespace Microsoft.Maui
@@ -60,10 +59,8 @@ namespace Microsoft.Maui
 			double availableWidth = (availableWidthAsInt < 0 || availableWidthAsInt == int.MaxValue) ? double.PositiveInfinity : availableWidthAsInt;
 			double availableHeight = (availableHeightAsInt < 0 || availableHeightAsInt == int.MaxValue) ? double.PositiveInfinity : availableHeightAsInt;
 
-			var explicitWidth = virtualView.Width;
-			var explicitHeight = virtualView.Height;
-			var hasExplicitWidth = explicitWidth >= 0;
-			var hasExplicitHeight = explicitHeight >= 0;
+			double? explicitWidth = (virtualView.Width >= 0) ? virtualView.Width : null;
+			double? explicitHeight = (virtualView.Height >=0) ? virtualView.Height : null;
 
 			Size measured;
 			if (platformView is IMeasurable platformViewMeasurable)
@@ -75,8 +72,7 @@ namespace Microsoft.Maui
 				measured = platformView.NaturalSize2D.ToCommon().ToDP();
 			}
 
-			return new Size(hasExplicitWidth ? explicitWidth : measured.Width,
-				hasExplicitHeight ? explicitHeight : measured.Height);
+			return new Size(explicitWidth ?? measured.Width, explicitHeight ?? measured.Height);
 		}
 
 		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rect frame)
