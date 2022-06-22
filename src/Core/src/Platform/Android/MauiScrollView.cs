@@ -10,7 +10,7 @@ using AndroidX.Core.Widget;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiScrollView : NestedScrollView, IScrollBarView
+	public class MauiScrollView : NestedScrollView, IScrollBarView, NestedScrollView.IOnScrollChangeListener
 	{
 		View? _content;
 
@@ -277,6 +277,11 @@ namespace Microsoft.Maui.Platform
 			animator.Start();
 		}
 
+		void IOnScrollChangeListener.OnScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
+		{
+			OnScrollChanged(scrollX, scrollY, oldScrollX, oldScrollY);
+		}
+
 		internal Func<Graphics.Rect, Graphics.Size>? CrossPlatformArrange { get; set; }
 	}
 
@@ -396,6 +401,16 @@ namespace Microsoft.Maui.Platform
 		}
 
 		bool IScrollBarView.ScrollBarsInitialized { get; set; } = false;
+
+		protected override void OnScrollChanged(int l, int t, int oldl, int oldt)
+		{
+			base.OnScrollChanged(l, t, oldl, oldt);
+
+			if (_parentScrollView is NestedScrollView.IOnScrollChangeListener scrollChangeListener)
+			{
+				scrollChangeListener.OnScrollChange(_parentScrollView, l, t, oldl, oldt);
+			}
+		}
 	}
 
 	internal interface IScrollBarView
