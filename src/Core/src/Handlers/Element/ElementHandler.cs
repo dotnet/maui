@@ -30,6 +30,8 @@ namespace Microsoft.Maui.Handlers
 
 #if IOS
 		WeakReference<object>? _platformView;
+		object? _strongReference;
+
 		public object? PlatformView
 		{
 			get
@@ -37,10 +39,11 @@ namespace Microsoft.Maui.Handlers
 				if (_platformView?.TryGetTarget(out object? target) == true)
 					return target;
 
-				return null;
+				return _strongReference;
 			}
 			private protected set
 			{
+				_strongReference = value;
 				if (value == null)
 				{
 					_platformView = null;
