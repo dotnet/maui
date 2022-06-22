@@ -94,4 +94,8 @@
   <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
     <PackageReference Include="Microsoft.TemplateEngine.Tasks" Version="$(MicrosoftTemplateEngineTasksVersion)" PrivateAssets="all" IsImplicitlyDefined="true" />
   </ItemGroup>
+
+  <!-- this target will get replaced by the nuget -->
+  <Target Name="LocalizeTemplatesAfterBuild" />
+
 </Project>
