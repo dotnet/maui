@@ -65,14 +65,14 @@ namespace Microsoft.Maui.DeviceTests
 
 			});
 		}
-		
+
 		[Theory]
 		[InlineData(ScrollOrientation.Vertical, 100, 300, 0, 100)]
 		[InlineData(ScrollOrientation.Horizontal, 0, 100, 100, 300)]
 		[InlineData(ScrollOrientation.Both, 100, 300, 100, 300)]
-		public async Task TestScrollContentMargin(ScrollOrientation orientation, int verticalMargin, 
+		public async Task TestScrollContentMargin(ScrollOrientation orientation, int verticalMargin,
 			int expectedHeight, int horizontalMargin, int expectedWidth)
-{
+		{
 			var handler = await SetUpScrollView(orientation, verticalMargin: verticalMargin, horizontalMargin: horizontalMargin);
 			var scroll = handler.VirtualView as ScrollView;
 
@@ -87,19 +87,19 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		static async Task AssertContentSizeChanged(Task<bool> changed) 
+		static async Task AssertContentSizeChanged(Task<bool> changed)
 		{
 			await WaitAssert(() => changed.IsCompleted && changed.Result, timeout: 5000, message: "PropertyChanged event with PropertyName 'ContentSize' did not fire").ConfigureAwait(false);
 		}
 
-		static async Task AssertContentSize(Func<Size> actual, Size expected) 
+		static async Task AssertContentSize(Func<Size> actual, Size expected)
 		{
 			await WaitAssert(() => CloseEnough(actual(), expected, 0.2), timeout: 5000, message: $"ContentSize was {actual()}, expected {expected}");
 		}
 
-		static bool CloseEnough(Size a, Size b, double tolerance) 
+		static bool CloseEnough(Size a, Size b, double tolerance)
 		{
-			if (System.Math.Abs(a.Width - b.Width) > tolerance) 
+			if (System.Math.Abs(a.Width - b.Width) > tolerance)
 			{
 				return false;
 			}
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.DeviceTests
 			return await CreateHandlerAsync<ScrollViewHandler>(scroll);
 		}
 
-		static async Task WaitAssert(Func<bool> predicate, int interval = 100, int timeout = 1000, string message = "") 
+		static async Task WaitAssert(Func<bool> predicate, int interval = 100, int timeout = 1000, string message = "")
 		{
 			System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
 			watch.Start();
