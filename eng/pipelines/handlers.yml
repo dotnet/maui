@@ -153,7 +153,7 @@ stages:
                     UninstallMono: false
                     UninstallXamarinMac: false
                     CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
-              - pwsh: ./build.ps1 --target=dotnet-build  --testtfm="\""${{ parameters.THEBIGTEST }}"\"" --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+              - pwsh: ./build.ps1 --target=dotnet-build  --testtfm=""${{ parameters.THEBIGTEST }}"" --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
               - template: common/provision.yml
                 parameters:
