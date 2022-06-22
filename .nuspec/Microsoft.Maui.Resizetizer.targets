@@ -49,6 +49,10 @@
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.GeneratePackageAppxManifest" />
 
+  <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GenerateTizenManifest" />
+
     <PropertyGroup>
         <CleanDependsOn>
             $(CleanDependsOn);
@@ -393,7 +397,7 @@
             <FileWrites Include="@(_MauiSplashAssets)" />
         </ItemGroup>
 
-      <!-- Tizen -->
+        <!-- Tizen -->
         <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
             <MauiImage Include="@(MauiSplashScreen)" />
         </ItemGroup>
@@ -733,6 +737,35 @@
             </AssemblyAttribute>
         </ItemGroup>
 
+    <Target Name="MauiGenerateTizenManifest"
+            Condition="'$(_ResizetizerIsTizenApp)' == 'True'"
+            BeforeTargets="$(ResizetizeBeforeTargets)"
+            AfterTargets="$(ResizetizeImages)"
+            Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);$(TizenManifestFile)"
+            Outputs="$(_MauiManifestStampFile);$(_MauiIntermediateManifest)tizen-manifest.xml">
+
+        <GenerateTizenManifest
+            IntermediateOutputPath="$(_MauiIntermediateManifest)"
+            IntermediateImagesOutputPath="$(_MauiIntermediateImages)"
+            TizenManifestFile="$(TizenManifestFile)"
+            GeneratedFilename="tizen-manifest.xml"
+            ApplicationId="$(ApplicationId)"
+            ApplicationDisplayVersion="$(ApplicationDisplayVersion)"
+            ApplicationVersion="$(ApplicationVersion)"
+            ApplicationTitle="$(ApplicationTitle)"
+            AppIcon="@(MauiImage->WithMetadataValue('IsAppIcon', 'true'))"
+            SplashScreen="@(MauiSplashScreen)" />
+
+        <!-- replace user manifest -->
+        <PropertyGroup>
+          <TizenManifestFile>$(_MauiIntermediateManifest)tizen-manifest.xml</TizenManifestFile>
+        </PropertyGroup>
+
+        <!-- Stamp file for Outputs -->
+        <Touch Files="$(_MauiManifestStampFile)" AlwaysCreate="True" />
+        <ItemGroup>
+          <FileWrites Include="$(_MauiManifestStampFile)" />
+        </ItemGroup>
     </Target>
 
     <Target Name="_CleanResizetizer">
