@@ -130,7 +130,6 @@ Task("dotnet-templates")
         };
 
         var templates = new Dictionary<string, Action<DirectoryPath>> {
-            { "classlib:classlib", null },
             { "maui:maui", null },
             { "mauiblazor:maui-blazor", null },
             { "mauilib:mauilib", null },
