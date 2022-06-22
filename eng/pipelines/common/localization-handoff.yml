@@ -2,7 +2,7 @@ stages:
   - stage: localization_handoff
     displayName: Localization Handoff
     dependsOn: []
-    condition: and(succeeded(), eq(variables.isMainBranch, true))
+    condition: and(succeeded(), eq(variables.isLocHandoffBranch, true))
 
     jobs:
       - job : generate_lci
