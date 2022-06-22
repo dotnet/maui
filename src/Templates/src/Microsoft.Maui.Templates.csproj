@@ -67,6 +67,12 @@
         SourceFiles="%(TemplateJsonInput.Fullpath)"
         DestinationFiles="%(TemplateJsonInput.IntermediateLocation)" />
 
+     <!-- Copy the templatestrings.en.json to templatestrings.json -->
+    <Copy
+        SourceFiles="%(TemplateJsonInput.Fullpath)"
+        DestinationFiles="%(TemplateJsonInput.RelativeDir)templatestrings.json"
+        Condition="'%(TemplateJsonInput.Filename)%(TemplateJsonInput.Extension)' == 'templatestrings.en.json'" />
+
     <!-- Replace WinAppSDK, Win2D, .NET TFM versions -->
     <ReplaceFileText
         InputFilename="%(TemplateJsonInput.IntermediateLocation)"
@@ -78,6 +84,7 @@
       <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />
       <Content Include="%(TemplateJsonInput.IntermediateLocation)" PackagePath="$(ContentTargetFolders)\%(TemplateJsonInput.PackageDestination)" Pack="true" />
     </ItemGroup>
+
   </Target>
 
   <Target Name="_CopyToTemplatePacks" AfterTargets="Pack">
