@@ -11,6 +11,8 @@ variables:
   value: 'loc-hb'
 - name: LocBranch
   value: 'loc'
+- name: LocBaseBranch
+  value: 'main'
 - name: isMainBranch
   value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 - name: isLocBranch

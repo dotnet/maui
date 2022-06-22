@@ -19,7 +19,7 @@ stages:
               Import-Module $(Build.SourcesDirectory)\eng\automation\scripts\Invoke-Git.psm1 -Force -DisableNameChecking
               git config user.email "vs-mobiletools-engineering-service2@microsoft.com"
               git config user.name "VS Mobile Engineering Serice Account"
-              Invoke-Git checkout main
+              Invoke-Git checkout $(LocBaseBranch)
               Invoke-Git merge origin/$(LocBranch) --no-commit
             displayName: 'Merge loc Branch'
 
@@ -64,7 +64,7 @@ stages:
               $payload=@{
                 title = "[LOC_HB] checkin of localized string files"
                 head = "$(HANDBACK_BRANCH_NAME)"
-                base = "main"
+                base = "$(LocBaseBranch)"
                 maintainer_can_modify = $true
               }
 
