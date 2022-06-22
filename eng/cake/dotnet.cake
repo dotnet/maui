@@ -12,8 +12,6 @@ Exception pendingException = null;
 var NuGetOnlyPackages = new string[] {
 };
 
-throw new Exception($"We got '{TestTFM}'.");
-
 // Tasks for CI
 
 Task("dotnet")
