@@ -158,7 +158,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task FlyoutItemsRendererWhenFlyoutHeaderIsSet()
+		public async Task FlyoutItemsRenderWhenFlyoutHeaderIsSet()
 		{
 			SetupBuilder();
 			VerticalStackLayout header = new VerticalStackLayout()
