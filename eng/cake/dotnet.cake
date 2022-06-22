@@ -6,7 +6,14 @@ string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
+string TestTFM = Argument("testtfm", "");
+if (TestTFM == "default")
+    TestTFM = "";
+
 Exception pendingException = null;
+
+var NuGetOnlyPackages = new string[] {
+};
 
 // Tasks for CI
 
@@ -82,9 +89,12 @@ Task("dotnet-build")
 Task("dotnet-samples")
     .Does(() =>
     {
+        var tempDir = PrepareSeparateBuildContext("samplesTest", false);
+
         RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
             ["UseWorkload"] = "true",
             // ["GenerateAppxPackageOnBuild"] = "true",
+            ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
         });
     });
 
@@ -96,15 +106,7 @@ Task("dotnet-templates")
 
         var dn = localDotnet ? dotnetPath : "dotnet";
 
-        var templatesTest = GetTempDirectory().Combine("templatesTest");
-
-        EnsureDirectoryExists(templatesTest);
-        CleanDirectories(templatesTest.FullPath);
-
-        // Create empty Directory.Build.props/targets
-        FileWriteText(templatesTest.CombineWithFilePath("Directory.Build.props"), "<Project/>");
-        FileWriteText(templatesTest.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
-        CopyFileToDirectory(File("./NuGet.config"), templatesTest);
+        var tempDir = PrepareSeparateBuildContext("templatesTest", true);
 
         // See: https://github.com/dotnet/project-system/blob/main/docs/design-time-builds.md
         var designTime = new Dictionary<string, string> {
@@ -120,8 +122,8 @@ Task("dotnet-templates")
             // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
             { "RestoreNoCache", "true" },
             // { "GenerateAppxPackageOnBuild", "true" },
-            { "RestorePackagesPath", MakeAbsolute(templatesTest.CombineWithFilePath("packages")).FullPath },
-            { "RestoreConfigFile", MakeAbsolute(templatesTest.CombineWithFilePath("nuget.config")).FullPath },
+            { "RestorePackagesPath", tempDir.Combine("packages").FullPath },
+            { "RestoreConfigFile", tempDir.CombineWithFilePath("NuGet.config").FullPath },
 
             // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
             { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
@@ -154,10 +156,13 @@ Task("dotnet-templates")
                 var projectName = template.Key.Split(":")[0];
                 var templateName = template.Key.Split(":")[1];
 
-                projectName = $"{templatesTest}/{projectName}_{type}";
+                var framework = string.IsNullOrWhiteSpace(TestTFM) ? "" : $"--framework {TestTFM}";
+
+                projectName = $"{tempDir}/{projectName}_{type}";
+                projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM}";
 
                 // Create
-                StartProcess(dn, $"new {templateName} -o \"{projectName}\"");
+                StartProcess(dn, $"new {templateName} -o \"{projectName}\" {framework}");
 
                 // Modify
                 if (template.Value != null)
@@ -185,7 +190,7 @@ Task("dotnet-templates")
 
         try
         {
-            CleanDirectories(templatesTest.FullPath);
+            CleanDirectories(tempDir.FullPath);
         }
         catch
         {
@@ -636,4 +641,35 @@ void RunTestWithLocalDotNet(string csproj)
             ResultsDirectory = GetTestResultsDirectory(),
             ArgumentCustomization = args => args.Append($"-bl:{binlog}")
         });
+}
+
+DirectoryPath PrepareSeparateBuildContext(string dirName, bool generateDirectoryProps = false)
+{
+    var dir = GetTempDirectory().Combine(dirName);
+    EnsureDirectoryExists(dir);
+    CleanDirectories(dir.FullPath);
+
+    var nugetOnly = dir.Combine("nuget-only");
+    EnsureDirectoryExists(nugetOnly);
+    CleanDirectories(nugetOnly.FullPath);
+
+    CopyFileToDirectory(File("./NuGet.config"), dir);
+    var config = dir.CombineWithFilePath("NuGet.config");
+
+    foreach (var pattern in NuGetOnlyPackages)
+    {
+        CopyFiles($"./artifacts/{pattern}", nugetOnly, false);
+    }
+
+    // Add a specific folder for nuget-only packages
+    ReplaceTextInFiles(
+        config.FullPath,
+        $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
+        $"<add key=\"nuget-only\" value=\"{nugetOnly.FullPath}\" />");
+
+    // Create empty Directory.Build.props/targets
+    FileWriteText(dir.CombineWithFilePath("Directory.Build.props"), "<Project/>");
+    FileWriteText(dir.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
+
+    return MakeAbsolute(dir);
 }
