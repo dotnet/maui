@@ -46,7 +46,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <TemplateJsonInput Include="templates\*\.template.config\template.in.json">
+    <TemplateJsonInput Include="templates\*\.template.config\template.json">
       <PackageDestination>$([System.String]::Concat(%(RelativeDir), 'template.json'))</PackageDestination>
       <IntermediateLocation>$(IntermediateOutputPath)$([System.String]::Concat(%(RelativeDir), 'template.json'))</IntermediateLocation>
     </TemplateJsonInput>
