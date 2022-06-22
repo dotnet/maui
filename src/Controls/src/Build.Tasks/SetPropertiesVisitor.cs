@@ -978,14 +978,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var bpOwnerType = parent.VariableType;
 			attached = GetNameAndTypeRef(ref bpOwnerType, namespaceURI, ref localName, context, iXmlLineInfo);
 			var name = $"{localName}Property";
-			FieldReference bpRef = bpOwnerType.GetField(fd => fd.Name == name &&
+			FieldDefinition bpDef = bpOwnerType.GetField(fd => fd.Name == name &&
 														fd.IsStatic &&
 														(fd.IsPublic || fd.IsAssembly), out declaringTypeReference);
-			if (bpRef != null)
-			{
-				bpRef = module.ImportReference(bpRef.ResolveGenericParameters(declaringTypeReference));
-				bpRef.FieldType = module.ImportReference(bpRef.FieldType);
-			}
+			if (bpDef == null)
+			    return null;
+			var bpRef = module.ImportReference(bpDef.ResolveGenericParameters(declaringTypeReference));
+			bpRef.FieldType = module.ImportReference(bpRef.FieldType);
+
+			var isObsolete = bpDef.CustomAttributes.Any(ca=>ca.AttributeType.FullName == "System.ObsoleteAttribute");
+			if (isObsolete)
+			    context.LoggingHelper.LogWarning("XamlC", null, null, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0,0, $"BindableProperty {localName} is deprecated.", null);
+
 			return bpRef;
 		}
 
@@ -1319,7 +1323,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var module = context.Body.Method.Module;
 			TypeReference declaringTypeReference;
 			var property = parent.VariableType.GetProperty(pd => pd.Name == localName, out declaringTypeReference);
+			var propertyIsObsolete = property.CustomAttributes.Any(ca=>ca.AttributeType.FullName == "System.ObsoleteAttribute");
+			if (propertyIsObsolete)
+			    context.LoggingHelper.LogWarning("XamlC", null, null, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0,0, $"Property {localName} is deprecated.", null);
+
 			var propertySetter = property.SetMethod;
+			var propertySetterIsObsolete = propertySetter.CustomAttributes.Any(ca=>ca.AttributeType.FullName == "System.ObsoleteAttribute");
+			if (propertySetterIsObsolete)
+			    context.LoggingHelper.LogWarning("XamlC", null, null, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0,0, $"Property setter for {localName} is deprecated.", null);
 
 			//			IL_0007:  ldloc.0
 			//			IL_0008:  ldstr "foo"

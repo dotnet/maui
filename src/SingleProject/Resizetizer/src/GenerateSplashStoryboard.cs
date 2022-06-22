@@ -20,35 +20,50 @@ namespace Microsoft.Maui.Resizetizer
 		public override bool Execute()
 		{
 			var splash = MauiSplashScreen[0];
-			var colorMetadata = splash.GetMetadata("Color");
-			var color = Utils.ParseColorString(colorMetadata);
-			if (color == null)
+
+			var info = ResizeImageInfo.Parse(splash);
+
+			var outputFileName = info.OutputName;
+			var image = outputFileName + ".png";
+
+			var color = info.Color ?? SKColors.White;
+			float r = color.Red / (float)byte.MaxValue;
+			float g = color.Green / (float)byte.MaxValue;
+			float b = color.Blue / (float)byte.MaxValue;
+			float a = color.Alpha / (float)byte.MaxValue;
+
+			var rStr = r.ToString(CultureInfo.InvariantCulture);
+			var gStr = g.ToString(CultureInfo.InvariantCulture);
+			var bStr = b.ToString(CultureInfo.InvariantCulture);
+			var aStr = a.ToString(CultureInfo.InvariantCulture);
+
+			var dir = Path.GetDirectoryName(OutputFile);
+			Directory.CreateDirectory(dir);
+
+			using (var writer = File.CreateText(OutputFile))
 			{
-				if (!string.IsNullOrEmpty(colorMetadata))
-				{
-					Log.LogWarning($"Unable to parse color value '{colorMetadata}' for '{splash.ItemSpec}'.");
-				}
-				color = SKColors.White;
-			}
-
-			Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
-			using var resourceStream = GetType().Assembly.GetManifestResourceStream("MauiSplash.storyboard");
-			using var reader = new StreamReader(resourceStream);
-			using var writer = File.CreateText(OutputFile);
-
-			string image = Path.GetFileNameWithoutExtension(splash.ItemSpec) + ".png";
-			float r = color.Value.Red / (float)byte.MaxValue;
-			float g = color.Value.Green / (float)byte.MaxValue;
-			float b = color.Value.Blue / (float)byte.MaxValue;
-			float a = color.Value.Alpha / (float)byte.MaxValue;
-
-			while (!reader.EndOfStream)
-			{
-				var line = string.Format(CultureInfo.InvariantCulture, reader.ReadLine(), image, r, g, b, a);
-				writer.WriteLine(line);
+				SubstituteStoryboard(writer, image, rStr, gStr, bStr, aStr);
 			}
 
 			return !Log.HasLoggedErrors;
+		}
+
+		internal static void SubstituteStoryboard(TextWriter writer, string image, string r, string g, string b, string a)
+		{
+			using var resourceStream = typeof(GenerateSplashStoryboard).Assembly.GetManifestResourceStream("MauiSplash.storyboard");
+			using var reader = new StreamReader(resourceStream);
+
+			while (!reader.EndOfStream)
+			{
+				var line = reader.ReadLine()
+					.Replace("{imageView.image}", image)
+					.Replace("{color.red}", r)
+					.Replace("{color.green}", g)
+					.Replace("{color.blue}", b)
+					.Replace("{color.alpha}", a);
+
+				writer.WriteLine(line);
+			}
 		}
 	}
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFlyoutBgImageAsync()
 		{
-			// image
+			// Image
 			var imageSource = _shellContext.Shell.FlyoutBackgroundImage;
 			if (imageSource == null || !_shellContext.Shell.IsSet(Shell.FlyoutBackgroundImageProperty))
 			{
@@ -261,9 +261,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			imageSource.LoadImage(imageSource.FindMauiContext(), result =>
+			var mauiContext = _shellContext.Shell.FindMauiContext();
+
+			if (mauiContext == null)
+				return;
+
+			imageSource.LoadImage(mauiContext, result =>
 			{
 				var nativeImage = result?.Value;
+
 				if (View == null || nativeImage == null)
 					return;
 

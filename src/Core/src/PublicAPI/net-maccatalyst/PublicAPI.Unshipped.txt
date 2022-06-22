@@ -1,0 +1,12 @@
+﻿#nullable enable
+override Microsoft.Maui.Handlers.BorderHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
+override Microsoft.Maui.Handlers.BorderHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
+override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
+override Microsoft.Maui.Platform.LayoutView.HitTest(CoreGraphics.CGPoint point, UIKit.UIEvent? uievent) -> UIKit.UIView!
+override Microsoft.Maui.Platform.LayoutView.SetNeedsLayout() -> void
+override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.get -> bool
+override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.set -> void
+*REMOVED*override Microsoft.Maui.Handlers.LabelHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
+static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this UIKit.UIView! platformView, Microsoft.Maui.Graphics.Paint? paint, Microsoft.Maui.IButtonStroke? stroke = null) -> void
