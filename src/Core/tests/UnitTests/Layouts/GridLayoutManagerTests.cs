@@ -1897,5 +1897,58 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			Assert.Equal(20, measuredSize.Height);
 		}
+
+		[Fact]
+		public void StarRowsResizeWhenGridExpandsToFill()
+		{
+			var grid = CreateGridLayout(rows: "*");
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			SubstituteChildren(grid, view0);
+
+			var manager = new GridLayoutManager(grid);
+
+			// Measuring at infinite height, we expect the Grid's only row (*) to act like an
+			// Auto row and get the height of the view
+			var measuredSize = manager.Measure(20, double.PositiveInfinity);
+			Assert.Equal(20, measuredSize.Height);
+			
+			grid.DesiredSize.Returns(measuredSize);
+
+			// We arrange at a height taller than the Grid's measurement; because the Grid
+			// is set to vertically Fill, we expect it to expand to the arranged height
+			manager.ArrangeChildren(new Rect(0, 0, 20, 100));
+
+			// And we expect the * row to fill up that new height
+			AssertArranged(view0, new Rect(0, 0, 20, 100));
+		}
+
+		[Fact]
+		public void StarColumnsResizeWhenGridExpandsToFill()
+		{
+			var grid = CreateGridLayout(columns: "*");
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			SubstituteChildren(grid, view0);
+
+			var manager = new GridLayoutManager(grid);
+
+			// Measuring at infinite width, we expect the Grid's only column (*) to act like an
+			// Auto column and get the width of the view
+			var measuredSize = manager.Measure(double.PositiveInfinity, 20);
+			Assert.Equal(20, measuredSize.Width);
+
+			grid.DesiredSize.Returns(measuredSize);
+
+			// We arrange at a width wider than the Grid's measurement; because the Grid
+			// is set to horizontally Fill, we expect it to expand to the arranged width
+			manager.ArrangeChildren(new Rect(0, 0, 100, 20));
+
+			// And we expect the * column to fill up that new width
+			AssertArranged(view0, new Rect(0, 0, 100, 20));
+		}
+
 	}
 }
