@@ -1,4 +1,5 @@
 <!-- all <ItemGroup/>'s must check if $(EnableDefaultMauiItems) is true -->
+<!-- all <ItemGroup/>'s must include $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@'))  -->
 <Project>
 
   <ItemDefinitionGroup>
@@ -7,7 +8,7 @@
     </MauiXaml>
   </ItemDefinitionGroup>
 
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' and ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') ">
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' and ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@')) ">
     <!-- %(Sdk) is only here if something later needs to identify these -->
     <Using Include="Microsoft.Extensions.DependencyInjection" Sdk="Maui" />
     <Using Include="Microsoft.Maui" Sdk="Maui" />
@@ -30,7 +31,7 @@
   </ItemGroup>
 
   <!-- Default .NET MAUI files-->
-  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(EnableDefaultEmbeddedResourceItems)' == 'true' ">
+  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(EnableDefaultEmbeddedResourceItems)' == 'true' and $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@')) ">
     <MauiXaml Condition=" '$(EnableDefaultXamlItems)' == 'true' "  Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
     <MauiCss  Condition=" '$(EnableDefaultCssItems)' == 'true' "   Include="**\*.css"  Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
   </ItemGroup>
@@ -41,7 +42,7 @@
   -->
 
   <!-- Android -->
-  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'android' and '$(MonoAndroidResourcePrefix)' != '' ">
+  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'android' and '$(MonoAndroidResourcePrefix)' != '' and $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@')) ">
     <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.xml" />
     <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.axml" />
     <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.png" />
@@ -55,7 +56,7 @@
   </ItemGroup>
 
   <!-- iOS -->
-  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' ">
+  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' and $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@')) ">
     <None
         Include="$(iOSProjectFolder)Info.plist"
         Condition="Exists('$(iOSProjectFolder)Info.plist')"
@@ -90,7 +91,7 @@
   </ItemGroup>
 
   <!-- MacCatalyst -->
-  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' ">
+  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' and $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@')) ">
     <None
         Include="$(MacCatalystProjectFolder)Info.plist"
         Condition="Exists('$(MacCatalystProjectFolder)Info.plist')"
@@ -125,7 +126,7 @@
   </ItemGroup>
 
   <!-- Windows -->
-  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' ">
+  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' and $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@')) ">
     <Manifest
         Include="$(ApplicationManifest)"
         Condition="Exists('$(ApplicationManifest)')" />
