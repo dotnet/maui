@@ -24,7 +24,7 @@ variables:
 - name: isPullRequest
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: isLocHandoffBranch
-  value: and(succeeded(), in(variables['Build.SourceBranch'], 'refs/heads/net6.0', 'refs/heads/net7.0', 'refs/heads/main'),)
+  value: and(succeeded(), in(variables['Build.SourceBranch'], 'refs/heads/net6.0', 'refs/heads/net7.0', 'refs/heads/main'))
 - name: signingCondition
   value: $[or(
             eq(variables['Sign'], 'true'),
