@@ -39,6 +39,9 @@ namespace Microsoft.Maui.DeviceTests
 			await Task.Delay(100);
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			await Task.Delay(300);
 
 			if (weakHandler.TryGetTarget(out THandler _))
 				Assert.True(false, $"{typeof(THandler)} failed to collect");
