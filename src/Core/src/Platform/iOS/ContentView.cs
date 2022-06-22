@@ -6,6 +6,8 @@ namespace Microsoft.Maui.Platform
 {
 	public class ContentView : MauiView
 	{
+		internal event EventHandler? LayoutSubviewsChanged;
+
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (CrossPlatformMeasure == null)
@@ -29,6 +31,8 @@ namespace Microsoft.Maui.Platform
 
 			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
 			CrossPlatformArrange?.Invoke(bounds);
+
+			LayoutSubviewsChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		public override void SetNeedsLayout()
