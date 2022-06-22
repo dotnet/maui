@@ -6,6 +6,7 @@ string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
+string TestTFM = Argument("testtfm", "");
 Exception pendingException = null;
 
 var NuGetOnlyPackages = new [] {
@@ -126,6 +127,7 @@ Task("dotnet-templates")
         };
 
         var templates = new Dictionary<string, Action<DirectoryPath>> {
+            { "classlib:classlib", null },
             { "maui:maui", null },
             { "mauiblazor:maui-blazor", null },
             { "mauilib:mauilib", null },
@@ -152,10 +154,13 @@ Task("dotnet-templates")
                 var projectName = template.Key.Split(":")[0];
                 var templateName = template.Key.Split(":")[1];
 
+                var framework = string.IsNullOrWhiteSpace(TestTFM) ? "" : $"--framework {TestTFM}";
+
                 projectName = $"{tempDir}/{projectName}_{type}";
+                projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM}";
 
                 // Create
-                StartProcess(dn, $"new {templateName} -o \"{projectName}\"");
+                StartProcess(dn, $"new {templateName} -o \"{projectName}\" {framework}");
 
                 // Modify
                 if (template.Value != null)
@@ -163,8 +168,11 @@ Task("dotnet-templates")
 
                 // Enable Tizen
                 ReplaceTextInFiles($"{projectName}/*.csproj",
-                    "<!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->",
-                    "<TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks>");
+                    "<!-- <TargetFrameworks>",
+                    "<TargetFrameworks>");
+                ReplaceTextInFiles($"{projectName}/*.csproj",
+                    "</TargetFrameworks> -->",
+                    "</TargetFrameworks>");
 
                 // Build
                 RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
