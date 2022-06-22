@@ -9,7 +9,7 @@ string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string TestTFM = Argument("testtfm", "");
 Exception pendingException = null;
 
-var NuGetOnlyPackages = new [] {
+var NuGetOnlyPackages = new string[] {
 };
 
 // Tasks for CI
