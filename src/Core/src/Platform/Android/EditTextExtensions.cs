@@ -372,7 +372,7 @@ namespace Microsoft.Maui.Platform
 			if (motionEvent.Action != MotionEventActions.Up)
 				return false;
 
-			var x = motionEvent.GetX();
+			var x = motionEvent.RawX;
 			var y = motionEvent.GetY();
 
 			if ((flowDirection != FlowDirection.LeftToRight
