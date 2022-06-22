@@ -30,7 +30,7 @@ stages:
               Write-Host "Using loc branch: $locBranchName"
               Write-Host "##vso[task.setvariable variable=LOC_BASE_BRANCH_NAME;]$baseBranchName"
               Write-Host "##vso[task.setvariable variable=LOC_BRANCH_NAME;]$locBranchName"
-            displayName: 'Merge loc Branch'
+            displayName: 'Extract branch name variables'
 
           - powershell: |
               #-- Import Invoke-Git Module function
