@@ -46,9 +46,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <TemplateJsonInput Include="templates\*\.template.config\template.json">
-      <PackageDestination>$([System.String]::Concat(%(RelativeDir), 'template.json'))</PackageDestination>
-      <IntermediateLocation>$(IntermediateOutputPath)$([System.String]::Concat(%(RelativeDir), 'template.json'))</IntermediateLocation>
+    <TemplateJsonInput Include="templates\*\.template.config\template.json;templates\*\.template.config\localize\templatestrings.*.json">
+      <PackageDestination>$([System.String]::Concat(%(RelativeDir), '%(Filename)%(Extension)'))</PackageDestination>
+      <IntermediateLocation>$(IntermediateOutputPath)$([System.String]::Concat(%(RelativeDir), '%(Filename)%(Extension)'))</IntermediateLocation>
     </TemplateJsonInput>
     <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**;@(TemplateJsonInput)" />
     <Compile Remove="**\*" />
@@ -58,7 +58,7 @@
     <BeforePack>_UpdateTemplateVersions</BeforePack>
   </PropertyGroup>
 
-  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions"
+  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions;LocalizeTemplatesAfterBuild"
       Inputs="@(TemplateJsonInput)"
       Outputs="%(TemplateJsonInput.IntermediateLocation)">
 
