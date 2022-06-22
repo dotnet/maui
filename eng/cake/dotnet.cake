@@ -7,6 +7,9 @@ var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string TestTFM = Argument("testtfm", "");
+if (TestTFM == "default")
+    TestTFM = "";
+
 Exception pendingException = null;
 
 var NuGetOnlyPackages = new string[] {
