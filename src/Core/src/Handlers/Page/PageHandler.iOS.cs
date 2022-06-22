@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Handlers
 			uiTapGestureRecognizer.ShouldReceiveTouch = OnShouldReceiveTouch;
 			uiTapGestureRecognizer.DelaysTouchesBegan =
 				uiTapGestureRecognizer.DelaysTouchesEnded = uiTapGestureRecognizer.CancelsTouchesInView = false;
+
 			nativeView.AddGestureRecognizer(uiTapGestureRecognizer);
 
 			base.ConnectHandler(nativeView);
@@ -58,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
+		static bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
 			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
 			{
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.Handlers
 			return true;
 		}
 
-		IEnumerable<UIView> ViewAndSuperviewsOfView(UIView view)
+		static IEnumerable<UIView> ViewAndSuperviewsOfView(UIView view)
 		{
 			while (view != null)
 			{
