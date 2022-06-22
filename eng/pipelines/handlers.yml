@@ -104,6 +104,9 @@ parameters:
         tfm: ''
       - name: net6
         tfm: net6.0
+  - name: THEBIGTEST
+    type: string
+    default: ''
 
 resources:
   repositories:
@@ -150,6 +153,8 @@ stages:
                     UninstallMono: false
                     UninstallXamarinMac: false
                     CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
+              - pwsh: ./build.ps1 --target=dotnet-build  --testtfm="\""${{ parameters.THEBIGTEST }}"\"" --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+                displayName: 'Build .NET Maui'
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
@@ -161,7 +166,7 @@ stages:
                 env:
                   DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
                   PRIVATE_BUILD: $(PrivateBuild)
-              - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+              - pwsh: ./build.ps1 --target=dotnet-build  --testtfm="\""${{ parameters.THEBIGTEST }}"\"" --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
               - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Run Unit Tests'
