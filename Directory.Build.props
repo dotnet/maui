@@ -16,7 +16,7 @@
     <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
     <_MauiTargetPlatformIsTizen Condition="'$(_MauiTargetPlatformIdentifier)' == 'tizen'">True</_MauiTargetPlatformIsTizen>
 
-    <IncludeWindowsTargetFrameworks Condition="($([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full') or ('$(Packing)' == 'true')">true</IncludeWindowsTargetFrameworks>
+    <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) or '$(Packing)' == 'true'">true</IncludeWindowsTargetFrameworks>
     <IncludeTizenTargetFrameworks Condition="'$(CI)' == 'true' or '$(TF_BUILD)' == 'true' or
              Exists('$(DOTNET_ROOT)\sdk-manifests\$(DotNetVersionBand)\samsung.net.sdk.tizen\WorkloadManifest.json') or
              Exists('$(ProgramFiles)\dotnet\sdk-manifests\$(DotNetVersionBand)\samsung.net.sdk.tizen\WorkloadManifest.json')">true</IncludeTizenTargetFrameworks>
@@ -29,6 +29,7 @@
     <!-- HACK: WinUI seems to have issues without this -->
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
   </PropertyGroup>
 
   <!-- version number information -->
