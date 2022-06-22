@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidEnd += OnEnded;
 				platformView.ValueChanged += OnValueChanged;
 				platformView.DateSelected += OnDateSelected;
-				platformView.Picker.ValueChanged += OnValueChanged;
+				platformView.PickerValueChanged += OnValueChanged;
 
 				platformView.UpdateTime(VirtualView.Time);
 			}
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidEnd -= OnEnded;
 				platformView.ValueChanged -= OnValueChanged;
 				platformView.DateSelected -= OnDateSelected;
-				platformView.Picker.ValueChanged -= OnValueChanged;
+				platformView.PickerValueChanged -= OnValueChanged;
 
 				platformView.Dispose();
 			}

@@ -7,11 +7,10 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiTimePicker : NoCaretField
 	{
-		readonly UIDatePicker _picker;
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
 #if !MACCATALYST
 		readonly Action _dateSelected;
-		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		public MauiTimePicker(Action dateSelected)
 #else
 		public MauiTimePicker()
@@ -19,7 +18,8 @@ namespace Microsoft.Maui.Platform
 		{
 			BorderStyle = UITextBorderStyle.RoundedRect;
 
-			_picker = new UIDatePicker { Mode = UIDatePickerMode.Time, TimeZone = new NSTimeZone("UTC") };
+			var picker = new DatePickerInputView { Mode = UIDatePickerMode.Time, TimeZone = new NSTimeZone("UTC") };
+			picker.TimePicker = new WeakReference<MauiTimePicker>(this);
 
 #if !MACCATALYST
 			_dateSelected = dateSelected;
@@ -27,10 +27,10 @@ namespace Microsoft.Maui.Platform
 
 			if (OperatingSystem.IsIOSVersionAtLeast(14))
 			{
-				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
+				picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}
 
-			InputView = _picker;
+			InputView = picker;
 
 #if !MACCATALYST
 
@@ -52,9 +52,20 @@ namespace Microsoft.Maui.Platform
 			InputAssistantItem.TrailingBarButtonGroups = null;
 
 			AccessibilityTraits = UIAccessibilityTrait.Button;
+
+			picker.ValueChanged += OnPickerValueChanged;
 		}
 
-		public UIDatePicker Picker => _picker;
+		static void OnPickerValueChanged(object? sender, EventArgs e)
+		{
+			if (sender is DatePickerInputView datePicker &&
+				datePicker.TimePicker?.TryGetTarget(out MauiTimePicker? mtp) == true)
+			{
+				mtp._weakEventManager.HandleEvent(sender, e, nameof(PickerValueChanged));
+			}
+		}
+
+		public UIDatePicker Picker => (InputView as UIDatePicker)!;
 
 		public NSDate Date => Picker.Date;
 
@@ -65,9 +76,21 @@ namespace Microsoft.Maui.Platform
 			remove => _weakEventManager.RemoveEventHandler(value, nameof(DateSelected));
 		}
 #endif
+
+		internal event EventHandler? PickerValueChanged
+		{
+			add => _weakEventManager.AddEventHandler(value, nameof(PickerValueChanged));
+			remove => _weakEventManager.RemoveEventHandler(value, nameof(PickerValueChanged));
+		}
+
 		public void UpdateTime(TimeSpan time)
 		{
-			_picker.Date = new DateTime(1, 1, 1, time.Hours, time.Minutes, time.Seconds).ToNSDate();
+			Picker.Date = new DateTime(1, 1, 1, time.Hours, time.Minutes, time.Seconds).ToNSDate();
+		}
+
+		class DatePickerInputView : UIDatePicker
+		{
+			public WeakReference<MauiTimePicker>? TimePicker { get; set; }
 		}
 	}
 }
