@@ -37,9 +37,9 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(nativeView);
 		}
 
-		void OnPageTapped()
+		static void OnPageTapped(UITapGestureRecognizer uITapGestureRecognizer)
 		{
-			PlatformView?.EndEditing(true);
+			uITapGestureRecognizer.View.EndEditing(true);
 		}
 
 		protected override void DisconnectHandler(ContentView nativeView)

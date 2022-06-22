@@ -28,7 +28,35 @@ namespace Microsoft.Maui.Handlers
 
 		public IServiceProvider? Services => MauiContext?.Services;
 
-		public object? PlatformView { get; private protected set; }
+#if IOS
+		WeakReference<object>? _platformView;
+		public object? PlatformView
+		{
+			get
+			{
+				if (_platformView?.TryGetTarget(out object? target) == true)
+					return target;
+
+				return null;
+			}
+			private protected set
+			{
+				if (value == null)
+				{
+					_platformView = null;
+					return;
+				}
+
+				_platformView = new WeakReference<object>(value);
+			}
+		}
+#else
+		public object? PlatformView
+		{
+			get;
+			private protected set;
+		}
+#endif
 
 		public IElement? VirtualView { get; private protected set; }
 

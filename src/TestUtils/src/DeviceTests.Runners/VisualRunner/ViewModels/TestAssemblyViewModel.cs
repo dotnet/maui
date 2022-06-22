@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		TestState _result;
 		TestState _resultFilter;
 		RunStatus _runStatus;
-		string? _searchQuery;
+		string? _searchQuery = "Handlers ";
 
 		string? _detailText;
 		string? _displayName;
