@@ -2748,7 +2748,6 @@ static Microsoft.Maui.Platform.ViewExtensions.ToHandler(this Microsoft.Maui.IVie
 static Microsoft.Maui.Platform.ViewExtensions.Unfocus(this UIKit.UIView! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateAutomationId(this UIKit.UIView! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this Microsoft.Maui.Platform.ContentView! platformView, Microsoft.Maui.IBorderStroke! border) -> void
-static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this UIKit.UIView! platformView, Microsoft.Maui.Graphics.Paint? paint) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this UIKit.UIView! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackgroundImageSourceAsync(this UIKit.UIView! platformView, Microsoft.Maui.IImageSource? imageSource, Microsoft.Maui.IImageSourceServiceProvider? provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackgroundLayerFrame(this UIKit.UIView! view) -> void

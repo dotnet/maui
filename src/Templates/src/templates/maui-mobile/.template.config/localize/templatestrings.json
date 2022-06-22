@@ -1,7 +1,9 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI App",
-  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, Tizen, and WinUI",
+  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen",
   "postActions/openInEditor/description": "Opens MainPage.xaml in the editor.",
-  "symbols/applicationId/description": "Overrides the $(ApplicationId) in the project"
+  "symbols/applicationId/description": "Overrides the $(ApplicationId) in the project",
+  "symbols/Framework/description": "The target framework for the project.",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"
 }
