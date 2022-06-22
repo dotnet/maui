@@ -24,7 +24,12 @@ variables:
 - name: isPullRequest
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: signingCondition
-  value: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+  value: $[or(
+            eq(variables['Sign'], 'true'),
+            in(variables['Build.SourceBranch'], 'refs/heads/net6.0', 'refs/heads/net7.0', 'refs/heads/main'),
+            startsWith(variables['Build.SourceBranch'], 'refs/tags/'),
+            startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
+          )]
 # Common Agent Pools in use
 - name: LogDirectory
   value: $(Build.ArtifactStagingDirectory)/logs

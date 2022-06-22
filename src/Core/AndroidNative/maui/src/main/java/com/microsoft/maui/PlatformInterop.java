@@ -84,7 +84,7 @@ public class PlatformInterop {
 
     public static View getSemanticPlatformElement(View view) {
         if (view instanceof SearchView) {
-            view = view.findViewById(androidx.appcompat.R.id.search_button);
+            view = view.findViewById(androidx.appcompat.R.id.search_src_text);
         }
 
         return view;
@@ -317,5 +317,12 @@ public class PlatformInterop {
         } finally {
             styledAttributes.recycle();
         }
+    }
+    
+    public static long measureAndGetWidthAndHeight(View view, int widthMeasureSpec, int heightMeasureSpec) {
+        view.measure(widthMeasureSpec, heightMeasureSpec);
+        int width = view.getMeasuredWidth();
+        int height = view.getMeasuredHeight();
+        return ((long)width << 32) | (height & 0xffffffffL);
     }
 }
