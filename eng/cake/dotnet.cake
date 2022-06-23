@@ -160,7 +160,7 @@ Task("dotnet-templates")
                     ? ""
                     : TestTFM.StartsWith("net6")
                         ? $"--Framework {TestTFM}" // this is just needed until we ship the next MAUI SR2
-                        ? $"--framework {TestTFM}";
+                        : $"--framework {TestTFM}";
 
                 projectName = $"{tempDir}/{projectName}_{type}";
                 projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM}";
