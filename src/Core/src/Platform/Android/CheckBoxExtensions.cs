@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static ColorStateList GetColorStateList(this AppCompatCheckBox platformCheckBox, ICheckBox check)
 		{
-			Graphics.Color accent = Graphics.Color.FromArgb("#ff33b5e5");
+			Graphics.Color accent = platformCheckBox.Context?.GetAccentColor() ?? Graphics.Color.FromArgb("#ff33b5e5");
 
 			var tintColor = accent.ToPlatform();
 
