@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Platform
 {
 	public class ContentView : MauiView
 	{
-		IBorderStroke? _clip;
+		WeakReference<IBorderStroke>? _clip;
 		CAShapeLayer? _childMaskLayer;
 		internal event EventHandler? LayoutSubviewsChanged;
 
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Platform
 
 			SetClip();
 
-      LayoutSubviewsChanged?.Invoke(this, EventArgs.Empty);
+			LayoutSubviewsChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		public override void SetNeedsLayout()
@@ -55,10 +55,19 @@ namespace Microsoft.Maui.Platform
 
 		internal IBorderStroke? Clip
 		{
-			get { return _clip; }
+			get
+			{
+				if (_clip?.TryGetTarget(out IBorderStroke? target) == true)
+					return target;
+
+				return null;
+			}
 			set
 			{
-				_clip = value;
+				_clip = null;
+
+				if (value != null)
+					_clip = new WeakReference<IBorderStroke>(value);
 
 				SetClip();
 			}
