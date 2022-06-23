@@ -565,6 +565,25 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		internal static Rect GetFrameRelativeTo(this View view, View relativeTo)
+		{
+			var viewWindowLocation = view.GetLocationOnScreen();
+			var relativeToLocation = relativeTo.GetLocationOnScreen();
+
+			return
+				new Rect(
+						new Point(viewWindowLocation.X - relativeToLocation.X, viewWindowLocation.Y - relativeToLocation.Y),
+						new Graphics.Size(view.Context.FromPixels(view.MeasuredWidth), view.Context.FromPixels(view.MeasuredHeight))
+					);
+		}
+
+		internal static Rect GetFrameRelativeToWindow(this View view)
+		{
+			return
+				new Rect(view.GetLocationOnScreen(),
+				new(view.Context.FromPixels(view.MeasuredHeight), view.Context.FromPixels(view.MeasuredWidth)));
+		}
+
 		internal static Point GetLocationOnScreen(this View view)
 		{
 			int[] location = new int[2];

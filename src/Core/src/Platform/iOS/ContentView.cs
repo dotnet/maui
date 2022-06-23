@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Platform
 	{
 		IBorderStroke? _clip;
 		CAShapeLayer? _childMaskLayer;
+		internal event EventHandler? LayoutSubviewsChanged;
 
 		public override CGSize SizeThatFits(CGSize size)
 		{
@@ -39,6 +40,8 @@ namespace Microsoft.Maui.Platform
 				ChildMaskLayer.Frame = bounds;
 
 			SetClip();
+
+      LayoutSubviewsChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		public override void SetNeedsLayout()

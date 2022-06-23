@@ -3,5 +3,7 @@
   "name": ".NET MAUI アプリ",
   "description": "iOS、Android、Mac Catalyst、Tizen、および WinUI 用の .NET MAUI アプリケーションを作成するためのプロジェクト",
   "postActions/openInEditor/description": "エディターで MainPage.xaml を開きます。",
-  "symbols/applicationId/description": "プロジェクト内の $(ApplicationId) をオーバーライドします"
+  "symbols/applicationId/description": "プロジェクト内の $(ApplicationId) をオーバーライドします",
+  "symbols/Framework/description": "The target framework for the project.",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"
 }
