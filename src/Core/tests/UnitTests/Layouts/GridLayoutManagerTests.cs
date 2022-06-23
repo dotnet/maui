@@ -1851,6 +1851,23 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(10, measuredSize.Width);
 		}
 
+		[Fact("ArrangeChildren should arranged within measured size")]
+		[Category(GridStarSizing)]
+		public void ArrangeChildrenShouldArrangedWithinMeasuredSize()
+		{
+			var grid = CreateGridLayout(rows: "*");
+			grid.Width.Returns(105);
+			grid.Height.Returns(120);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			SubstituteChildren(grid, view0);
+
+			var measuredSize = MeasureAndArrange(grid, 300, double.PositiveInfinity);
+
+			// we expect that the child will be arranged within measured size
+			AssertArranged(view0, 0, 0, measuredSize.Width, measuredSize.Height);
+		}
+
 		[Theory]
 		[InlineData(LayoutAlignment.Center, true)]
 		[InlineData(LayoutAlignment.Center, false)]
