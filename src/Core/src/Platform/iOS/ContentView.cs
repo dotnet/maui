@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {
-	public class ContentView : MauiView, IDisposable
+	public class ContentView : MauiView
 	{
 		IBorderStroke? _clip;
 		CAShapeLayer? _childMaskLayer;
@@ -45,13 +45,6 @@ namespace Microsoft.Maui.Platform
 		{
 			base.SetNeedsLayout();
 			Superview?.SetNeedsLayout();
-		}
-
-		public new void Dispose()
-		{
-			DisposeClip();
-
-			base.Dispose();
 		}
 
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
@@ -96,19 +89,6 @@ namespace Microsoft.Maui.Platform
 				return null;
 
 			return child.Layer;
-		}
-
-		void DisposeClip()
-		{
-			if (Subviews.Length == 0)
-				return;
-
-			var mask = ChildMaskLayer;
-
-			if (mask == null && Clip == null)
-				return;
-
-			ChildMaskLayer = null;
 		}
 
 		void SetClip()
