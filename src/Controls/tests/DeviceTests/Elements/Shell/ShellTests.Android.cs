@@ -4,13 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Views;
+using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.Controls.Platform;
 using Xunit;
 using AView = Android.Views.View;
+using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
+using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -69,7 +75,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await Task.Delay(100);
 				var dl = GetDrawerLayout(handler);
-				var flyoutContainer = GetRecyclerView(handler);
+				var flyoutContainer = GetFlyoutMenuReyclerView(handler);
 
 				Assert.True(flyoutContainer.MeasuredWidth > 0);
 				Assert.True(flyoutContainer.MeasuredHeight > 0);
@@ -142,24 +148,118 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await Task.Delay(100);
 				var dl = GetDrawerLayout(handler);
-				await OpenDrawerLayout(handler);
+				await OpenFlyout(handler);
 
-				var flyoutContainer = GetRecyclerView(handler);
+				var flyoutContainer = GetFlyoutMenuReyclerView(handler);
 
 				Assert.True(flyoutContainer.MeasuredWidth > 0);
 				Assert.True(flyoutContainer.MeasuredHeight > 0);
 			});
 		}
 
-		protected Task OpenDrawerLayout(ShellRenderer shellRenderer, TimeSpan? timeOut = null)
+		[Fact]
+		public async Task FlyoutItemsRenderWhenFlyoutHeaderIsSet()
+		{
+			SetupBuilder();
+			VerticalStackLayout header = new VerticalStackLayout()
+			{
+				new Label() { Text = "Hello there"}
+			};
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() }, Title = "Flyout Item" };
+				shell.FlyoutHeader = header;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				await Task.Delay(100);
+				var dl = GetDrawerLayout(handler);
+				await OpenFlyout(handler);
+
+				var flyoutContainer = GetFlyoutMenuReyclerView(handler);
+
+				Assert.True(flyoutContainer.MeasuredWidth > 0);
+				Assert.True(flyoutContainer.MeasuredHeight > 0);
+			});
+		}
+
+		[Fact]
+		public async Task FlyoutHeaderRendersCorrectSizeWithFlyoutContentSet()
+		{
+			SetupBuilder();
+			VerticalStackLayout header = new VerticalStackLayout()
+			{
+				new Label() { Text = "Flyout Header"}
+			};
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() }, Title = "Flyout Item" };
+				shell.FlyoutHeader = header;
+
+				shell.FlyoutContent = new VerticalStackLayout()
+				{
+					new Label(){ Text = "Flyout Content"}
+				};
+
+				shell.FlyoutFooter = new VerticalStackLayout()
+				{
+					new Label(){ Text = "Flyout Footer"}
+				};
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				await Task.Delay(100);
+				var headerPlatformView = header.ToPlatform();
+				var appBar = headerPlatformView.GetParentOfType<AppBarLayout>();
+				Assert.Equal(appBar.MeasuredHeight, headerPlatformView.MeasuredHeight);
+			});
+		}
+
+		protected AView GetFlyoutPlatformView(ShellRenderer shellRenderer)
 		{
 			var drawerLayout = GetDrawerLayout(shellRenderer);
-			drawerLayout.Open();
+			return drawerLayout.GetChildrenOfType<ShellFlyoutLayout>().First();
+		}
+
+		internal Graphics.Rect GetFlyoutFrame(ShellRenderer shellRenderer)
+		{
+			var platformView = GetFlyoutPlatformView(shellRenderer);
+			var context = platformView.Context;
+
+			return new Graphics.Rect(0, 0,
+				context.FromPixels(platformView.MeasuredWidth),
+				context.FromPixels(platformView.MeasuredHeight));
+		}
+
+		internal Graphics.Rect GetFrameRelativeToFlyout(ShellRenderer shellRenderer, IView view)
+		{
+			var platformView = (view.Handler as IPlatformViewHandler).PlatformView;
+			return platformView.GetFrameRelativeTo(GetFlyoutPlatformView(shellRenderer));
+		}
+
+		protected async Task OpenFlyout(ShellRenderer shellRenderer, TimeSpan? timeOut = null)
+		{
+			var flyoutView = GetFlyoutPlatformView(shellRenderer);
+			var drawerLayout = GetDrawerLayout(shellRenderer);
+
+			if (!drawerLayout.FlyoutFirstDrawPassFinished)
+				await Task.Delay(10);
+
+			var hamburger =
+				GetPlatformToolbar((IPlatformViewHandler)shellRenderer).GetChildrenOfType<AppCompatImageButton>().FirstOrDefault() ??
+				throw new InvalidOperationException("Unable to find Drawer Button");
+
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 			drawerLayout.DrawerOpened += OnDrawerOpened;
+			hamburger.PerformClick();
 
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
 
 			void OnDrawerOpened(object sender, DrawerLayout.DrawerOpenedEventArgs e)
 			{
@@ -168,13 +268,44 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		DrawerLayout GetDrawerLayout(ShellRenderer shellRenderer)
+		protected async Task ScrollFlyoutToBottom(ShellRenderer shellRenderer)
 		{
-			IShellContext shellContext = shellRenderer;
-			return shellContext.CurrentDrawerLayout;
+			var flyoutItems = GetFlyoutMenuReyclerView(shellRenderer);
+
+			TaskCompletionSource<object> result = new TaskCompletionSource<object>();
+			flyoutItems.ScrollChange += OnFlyoutItemsScrollChange;
+			flyoutItems.ScrollToPosition(flyoutItems.GetAdapter().ItemCount - 1);
+			await result.Task.WaitAsync(TimeSpan.FromSeconds(2));
+			await Task.Delay(10);
+
+			void OnFlyoutItemsScrollChange(object sender, AView.ScrollChangeEventArgs e)
+			{
+				flyoutItems.ScrollChange -= OnFlyoutItemsScrollChange;
+				result.TrySetResult(true);
+			}
+
+			// The appbar layout won't offset if you programmatically scroll the RecyclerView
+			// I haven't found a way to match the exact behavior when you touch and scroll
+			// I think we'd have to actually send touch events through adb
+
+			var coordinatorLayout = flyoutItems.Parent.GetParentOfType<CoordinatorLayout>();
+			var appbarLayout = coordinatorLayout.GetFirstChildOfType<AppBarLayout>();
+			var clLayoutParams = appbarLayout.LayoutParameters as CoordinatorLayout.LayoutParams;
+			var behavior = clLayoutParams.Behavior as AppBarLayout.Behavior;
+			var headerContainer = appbarLayout.GetFirstChildOfType<HeaderContainer>();
+
+			var verticalOffset = flyoutItems.ComputeVerticalScrollOffset();
+			behavior.OnNestedPreScroll(coordinatorLayout, appbarLayout, flyoutItems, 0, verticalOffset, new int[2], ViewCompat.TypeTouch);
+			await Task.Delay(10);
 		}
 
-		RecyclerViewContainer GetRecyclerView(ShellRenderer shellRenderer)
+		ShellFlyoutRenderer GetDrawerLayout(ShellRenderer shellRenderer)
+		{
+			IShellContext shellContext = shellRenderer;
+			return (ShellFlyoutRenderer)shellContext.CurrentDrawerLayout;
+		}
+
+		RecyclerViewContainer GetFlyoutMenuReyclerView(ShellRenderer shellRenderer)
 		{
 			IShellContext shellContext = shellRenderer;
 			DrawerLayout dl = shellContext.CurrentDrawerLayout;
