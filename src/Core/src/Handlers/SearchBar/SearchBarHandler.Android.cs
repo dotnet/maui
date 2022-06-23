@@ -1,4 +1,4 @@
-using Android.Content.Res;
+﻿using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using static AndroidX.AppCompat.Widget.SearchView;
@@ -36,7 +36,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.QueryTextSubmit -= OnQueryTextSubmit;
 		}
 
-		// This is a Android-specific mapping
 		public static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateBackground(searchBar);
