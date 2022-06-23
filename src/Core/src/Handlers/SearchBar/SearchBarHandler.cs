@@ -17,11 +17,10 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ISearchBar, ISearchBarHandler> Mapper = new PropertyMapper<ISearchBar, ISearchBarHandler>(ViewHandler.ViewMapper)
 		{
-#if __ANDROID__ || __WINDOWS__
-			[nameof(ISearchBar.Background)] = MapBackground,
-#elif __IOS__
+#if __IOS__
 			[nameof(ISearchBar.IsEnabled)] = MapIsEnabled,
 #endif
+			[nameof(ISearchBar.Background)] = MapBackground,
 			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ISearchBar.Font)] = MapFont,
 			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,

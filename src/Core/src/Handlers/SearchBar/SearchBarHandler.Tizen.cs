@@ -41,6 +41,12 @@ namespace Microsoft.Maui.Handlers
 			platformView.EntryLayoutUnfocused -= OnUnfocused;
 		}
 
+		// TODO: NET7 make this public
+		internal static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateBackground(searchBar);
+		}
+
 		public static void MapText(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateText(searchBar);
