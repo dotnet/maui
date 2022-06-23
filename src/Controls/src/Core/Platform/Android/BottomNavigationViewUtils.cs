@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static async Task SetMenuItemIcon(IMenuItem menuItem, ImageSource source, IMauiContext context)
 		{
-			if (menuItem.IsDisposed())
+			if (!menuItem.IsAlive())
 				return;
 
 			if (source == null)
