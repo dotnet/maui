@@ -3011,7 +3011,6 @@ override Microsoft.Maui.Controls.Editor.ArrangeOverride(Microsoft.Maui.Graphics.
 override Microsoft.Maui.Controls.Editor.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.Element.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.FileImageSource.IsEmpty.get -> bool
-override Microsoft.Maui.Controls.FlexLayout.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.FlexLayout.OnClear() -> void
 override Microsoft.Maui.Controls.FlexLayout.OnParentSet() -> void
 override Microsoft.Maui.Controls.FlyoutPage.LayoutChildren(double x, double y, double width, double height) -> void
