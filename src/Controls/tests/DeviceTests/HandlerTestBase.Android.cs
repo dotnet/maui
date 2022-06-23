@@ -47,7 +47,6 @@ namespace Microsoft.Maui.DeviceTests
 				AViewGroup rootView = MauiContext.Context.GetActivity().Window.DecorView as AViewGroup;
 				_decorDrawable ??= rootView.Background;
 				var linearLayoutCompat = new LinearLayoutCompat(MauiContext.Context);
-
 				var fragmentManager = MauiContext.GetFragmentManager();
 				var viewFragment = new WindowTestFragment(MauiContext, window);
 
@@ -206,10 +205,10 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = (WindowHandlerStub)_window.ToHandler(ScopedMauiContext);
 
 				var decorView = RequireActivity().Window.DecorView;
-				handler.PlatformViewUnderTest.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
+				handler.PlatformViewUnderTest.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 
 				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
-				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
+				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 				FakeActivityRootView.AddView(handler.PlatformViewUnderTest);
 
 				return FakeActivityRootView;
@@ -228,7 +227,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public class FakeActivityRootView : LinearLayoutCompat
+		public class FakeActivityRootView : FitWindowsFrameLayout
 		{
 			public FakeActivityRootView(Context context) : base(context)
 			{

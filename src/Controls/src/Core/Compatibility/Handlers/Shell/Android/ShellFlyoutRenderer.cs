@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		int _flyoutWidthDefault;
 		double _flyoutWidth = -1;
 		double _flyoutHeight;
-		bool _flyoutFirstDrawPassFinished;
+		internal bool FlyoutFirstDrawPassFinished { get; private set; }
 		int _currentLockMode;
 		bool _disposed;
 		Brush _scrimBrush;
@@ -182,10 +182,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				canvas.DrawRect(0, 0, Width, Height, _scrimPaint);
 			}
 
-			if (!_flyoutFirstDrawPassFinished && _flyoutContent != null)
+			if (!FlyoutFirstDrawPassFinished && _flyoutContent != null)
 			{
 				if (child == _flyoutContent?.AndroidView)
-					_flyoutFirstDrawPassFinished = true;
+					FlyoutFirstDrawPassFinished = true;
 
 				if (this.IsDrawerOpen(_flyoutContent.AndroidView) != _shellContext.Shell.FlyoutIsPresented)
 				{
@@ -261,7 +261,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (e.PropertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
 			{
-				if (!_flyoutFirstDrawPassFinished)
+				if (!FlyoutFirstDrawPassFinished)
 				{
 					// if the first draw pass hasn't happened yet
 					// then calling close/open drawer really confuses 
