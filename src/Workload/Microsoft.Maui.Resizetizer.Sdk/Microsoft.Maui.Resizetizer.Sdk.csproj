@@ -22,8 +22,4 @@
     <ProjectReference Include="$(MauiRootDirectory)src/SingleProject/Resizetizer/src/Resizetizer.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
-  </ItemGroup>
-
 </Project>
