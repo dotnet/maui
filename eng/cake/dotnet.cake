@@ -156,7 +156,7 @@ Task("dotnet-templates")
                 var projectName = template.Key.Split(":")[0];
                 var templateName = template.Key.Split(":")[1];
 
-                var framework = string.IsNullOrWhiteSpace(TestTFM) ? "" : $"--framework {TestTFM}";
+                var framework = string.IsNullOrWhiteSpace(TestTFM) ? "" : $"--Framework {TestTFM}";
 
                 projectName = $"{tempDir}/{projectName}_{type}";
                 projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM}";
