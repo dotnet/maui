@@ -46,7 +46,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <TemplateJsonInput Include="templates\*\.template.config\template.json;templates\*\.template.config\localize\templatestrings.*.json">
+    <TemplateJsonInput Include="templates\*\.template.config\**\*.json">
       <PackageDestination>$([System.String]::Concat(%(RelativeDir), '%(Filename)%(Extension)'))</PackageDestination>
       <IntermediateLocation>$(IntermediateOutputPath)$([System.String]::Concat(%(RelativeDir), '%(Filename)%(Extension)'))</IntermediateLocation>
     </TemplateJsonInput>
@@ -73,12 +73,12 @@
         DestinationFiles="%(TemplateJsonInput.RelativeDir)templatestrings.json"
         Condition="'%(TemplateJsonInput.Filename)%(TemplateJsonInput.Extension)' == 'templatestrings.en.json'" />
 
-    <!-- Replace WinAppSDK, Win2D, .NET TFM versions -->
+    <!-- Replace .NET TFM versions -->
     <ReplaceFileText
         InputFilename="%(TemplateJsonInput.IntermediateLocation)"
         OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
-        MatchExpression="WINDOWSAPPSDK_VERSION_VALUE;WIN2D_VERSION_VALUE;DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE"
-        ReplacementText="$(MicrosoftWindowsAppSDKPackageVersion);$(MicrosoftGraphicsWin2DPackageVersion);$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000" />
+        MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE"
+        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000" />
 
     <ItemGroup>
       <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />
