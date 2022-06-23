@@ -59,18 +59,6 @@
         "datatype": "string",
         "replaces": "com.companyname.MauiApp.1"
       },
-      "windowsAppSdkVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "WINDOWSAPPSDK_VERSION",
-        "defaultValue": "WINDOWSAPPSDK_VERSION_VALUE"
-      },
-      "win2dVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "WIN2D_VERSION",
-        "defaultValue": "WIN2D_VERSION_VALUE"
-      },
       "Framework": {
         "type": "parameter",
         "description": "The target framework for the project.",
