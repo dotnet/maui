@@ -14,11 +14,11 @@ namespace Microsoft.Maui.Resizetizer
 		public string IntermediateOutputPath { get; set; } = null!;
 
 		[Required]
-		public string TizenManifestFile { get; set; } = "tizen-manifest.xml";
+		public string TizenManifestFile { get; set; } = TizenManifestFileName;
 
 		public string IntermediateImagesOutputPath { get; set; } = null!;
 
-		public string GeneratedFilename { get; set; } = "tizen-manifest.xml";
+		public string GeneratedFilename { get; set; } = TizenManifestFileName;
 
 		public string? ApplicationId { get; set; }
 
@@ -35,9 +35,33 @@ namespace Microsoft.Maui.Resizetizer
 		[Output]
 		public ITaskItem GeneratedTizenManifest { get; set; } = null!;
 
-		const string iconDefaultDpiType = "xhdpi";
+		const string TizenManifestFileName = "tizen-manifest.xml";
 
-		const string sharedResourcePath = "shared/res/";
+		const string IconDefaultDpiType = "xhdpi";
+
+		const string SharedResourcePath = "shared/res/";
+
+		const string UiApplicationName = "ui-application";
+
+		const string PackageName = "package";
+
+		const string AppidName = "appid";
+
+		const string VersionName = "version";
+
+		const string LabelName = "label";
+
+		const string IconName= "icon";
+
+		const string SplashScreensName = "splash-screens";
+
+		const string SplashScreenName = "splash-screen";
+
+		const string DpiName = "dpi";
+
+		bool shouldUpdateOriginalManifest;
+
+		string? tizenManifestFilePath;
 
 		public override bool Execute()
 		{
@@ -45,7 +69,7 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				Directory.CreateDirectory(IntermediateOutputPath);
 
-				var tizenManifestFilePath = Path.Combine(Environment.CurrentDirectory, TizenManifestFile);
+				tizenManifestFilePath = Path.Combine(Environment.CurrentDirectory, TizenManifestFile);
 
 				var targetFilename = Path.Combine(IntermediateOutputPath, GeneratedFilename);
 
@@ -69,120 +93,142 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			var xmlns = tizenManifest.Root!.GetDefaultNamespace();
 			var manifest = tizenManifest.Root;
-			var xuiApplication = xmlns + "ui-application";
-			var uiApplication = tizenManifest.Root.Element(xuiApplication);
+			var uiApplication = manifest.Element(xmlns + UiApplicationName);
 
 			if (manifest == null || uiApplication == null)
 			{
 				return;
 			}
 
-			if (!string.IsNullOrEmpty(ApplicationId) || !string.IsNullOrEmpty(ApplicationDisplayVersion) || !string.IsNullOrEmpty(ApplicationVersion))
+			UpdateSharedManifest(xmlns, manifest);
+
+			UpdateOriginalManifest(tizenManifest);
+
+			UpdateSharedResources(xmlns, manifest);
+		}
+
+		void UpdateSharedManifest(XNamespace xmlns ,XElement manifest)
+		{
+			var uiApplication = manifest.Element(xmlns + UiApplicationName);
+
+			if (!string.IsNullOrEmpty(ApplicationId))
 			{
-				if (!string.IsNullOrEmpty(ApplicationId))
-				{
-					var xpackageName = "package";
-					var packageAttr = manifest.Attribute(xpackageName);
-					if (packageAttr != null)
-					{
-						manifest.SetAttributeValue(xpackageName, ApplicationId);
-					}
+				UpdateElementAttribute(manifest, PackageName, ApplicationId);
+				UpdateElementAttribute(uiApplication, AppidName, ApplicationId);
+			}
 
-					var xappidName= "appid";
-					var appidAttr = uiApplication.Attribute(xappidName);
-					if (appidAttr != null)
-					{
-						uiApplication.SetAttributeValue(xappidName, ApplicationId);
-					}
+			if (!string.IsNullOrEmpty(ApplicationDisplayVersion))
+			{
+				if (TryMergeVersionNumbers(ApplicationDisplayVersion, out var finalVersion))
+				{
+					UpdateElementAttribute(manifest, VersionName, finalVersion);
+				}
+				else
+				{
+					Log.LogWarning($"ApplicationDisplayVersion '{ApplicationDisplayVersion}' was not a valid version for Tizen");
 				}
 
-				if (!string.IsNullOrEmpty(ApplicationDisplayVersion) || !string.IsNullOrEmpty(ApplicationVersion))
-				{
-					var xversionName = "version";
-					var versionAttr = manifest.Attribute(xversionName);
-					if (versionAttr != null)
-					{
-						if (!TryMergeVersionNumbers(ApplicationDisplayVersion, ApplicationVersion, out var finalVersion))
-						{
-							Log.LogWarning($"ApplicationDisplayVersion '{ApplicationDisplayVersion}' was not a valid version for Tizen");
-							return;
-						}
-						manifest.SetAttributeValue(xversionName, finalVersion);
-					}
-				}
 			}
 
 			if (!string.IsNullOrEmpty(ApplicationTitle))
 			{
-				var xlabelName = xmlns + "label";
-				var labelElement = uiApplication.Element(xlabelName);
-				if (labelElement != null)
-				{
-					labelElement.Value = ApplicationTitle;
-				}
+				var label = uiApplication.Element(xmlns + LabelName);
+				UpdateElementValue(label, ApplicationTitle);
 			}
+		}
 
+		void UpdateOriginalManifest(XDocument tizenManifest)
+		{
+			if (shouldUpdateOriginalManifest)
+			{
+				tizenManifest.Save(tizenManifestFilePath);
+			}
+		}
+
+		void UpdateSharedResources(XNamespace xmlns, XElement menifestElement)
+		{
+			var uiApplicationElement = menifestElement.Element(xmlns + UiApplicationName);
 			var appIconInfo = AppIcon?.Length > 0 ? ResizeImageInfo.Parse(AppIcon[0]) : null;
+
 			if (appIconInfo != null)
 			{
-				var xiconName = xmlns + "icon";
-				var iconElements = uiApplication.Elements(xiconName);
+				var xiconName = xmlns + IconName;
+				var iconElements = uiApplicationElement.Elements(xiconName);
 				if (iconElements != null)
 				{
-					var elementsToRemove = iconElements.Where(d => d.Attribute("dpi") == null || d.Attribute("dpi")?.Value == "hdpi" || d.Attribute("dpi")?.Value == "xhdpi");
+					var elementsToRemove = iconElements.Where(d => d.Attribute(DpiName) == null || d.Attribute(DpiName)?.Value == "hdpi" || d.Attribute(DpiName)?.Value == "xhdpi");
 					elementsToRemove?.Remove();
 				}
 
-				foreach (var dpi in DpiPath.Tizen.AppIcon)
+				foreach (var dpiPath in DpiPath.Tizen.AppIcon)
 				{
-					var dpiType = dpi.Path.Replace(sharedResourcePath, "");
-					var iconElement = new XElement(xmlns + "icon");
-					iconElement.SetAttributeValue("dpi", dpiType);
-					iconElement.Value = dpiType + "/" + appIconInfo.OutputName + dpi.FileSuffix + ".png";
-					uiApplication.AddFirst(iconElement);
+					var dpiType = dpiPath.Path.Replace(SharedResourcePath, "");
+					var iconElement = new XElement(xmlns + IconName);
+					iconElement.SetAttributeValue(DpiName, dpiType);
+					iconElement.Value = dpiType + "/" + appIconInfo.OutputName + dpiPath.FileSuffix + ".png";
+					uiApplicationElement.AddFirst(iconElement);
 				}
-				var defaultIconElement = new XElement(xmlns + "icon");
-				var defaultDpi = DpiPath.Tizen.AppIcon.Where(n => n.Path.EndsWith(iconDefaultDpiType)).FirstOrDefault();
-				defaultIconElement.Value = iconDefaultDpiType + "/" + appIconInfo.OutputName + defaultDpi.FileSuffix + ".png";
-				uiApplication.AddFirst(defaultIconElement);
+				var defaultIconElement = new XElement(xmlns + IconName);
+				var defaultDpi = DpiPath.Tizen.AppIcon.Where(n => n.Path.EndsWith(IconDefaultDpiType)).FirstOrDefault();
+				defaultIconElement.Value = IconDefaultDpiType + "/" + appIconInfo.OutputName + defaultDpi.FileSuffix + ".png";
+				uiApplicationElement.AddFirst(defaultIconElement);
 			}
 
 			var splashInfo = SplashScreen?.Length > 0 ? ResizeImageInfo.Parse(SplashScreen[0]) : null;
+
 			if (splashInfo != null)
 			{
-				var splashscreens = uiApplication.Element(xmlns + "splash-screens");
-				if (splashscreens == null)
+				var splashscreensElement = uiApplicationElement.Element(xmlns + SplashScreensName);
+				if (splashscreensElement == null)
 				{
-					splashscreens = new XElement(xmlns + "splash-screens");
-					uiApplication.Add(splashscreens);
+					splashscreensElement = new XElement(xmlns + SplashScreensName);
+					uiApplicationElement.Add(splashscreensElement);
 				}
 				else
 				{
-					var elementsToRemove = splashscreens.Elements(xmlns + "splash-screen").Where(d => d.Attribute("dpi")?.Value == "mdpi" || d.Attribute("dpi")?.Value == "hdpi");
+					var elementsToRemove = splashscreensElement.Elements(xmlns + SplashScreenName).Where(d => d.Attribute(DpiName)?.Value == "mdpi" || d.Attribute(DpiName)?.Value == "hdpi");
 					elementsToRemove?.Remove();
 				}
 
 				foreach (var image in TizenSplashUpdater.splashDpiMap)
 				{
-					var splashscreenElement = new XElement(xmlns + "splash-screen");
+					var splashscreenElement = new XElement(xmlns + SplashScreenName);
 					splashscreenElement.SetAttributeValue("src", image.Value);
 					splashscreenElement.SetAttributeValue("type", "img");
-					splashscreenElement.SetAttributeValue("dpi", image.Key.Resolution);
+					splashscreenElement.SetAttributeValue(DpiName, image.Key.Resolution);
 					splashscreenElement.SetAttributeValue("orientation", image.Key.Orientation);
 					splashscreenElement.SetAttributeValue("indicator-display", "false");
-					splashscreens.Add(splashscreenElement);
+					splashscreensElement.Add(splashscreenElement);
 				}
 			}
 		}
 
-		public static bool TryMergeVersionNumbers(string? displayVersion, string? version, out string? finalVersion)
+		void UpdateElementAttribute(XElement element, XName attrName, string? value)
+		{
+			var attr = element.Attribute(attrName);
+			if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value != value)
+			{
+				element.SetAttributeValue(attrName, value);
+				shouldUpdateOriginalManifest = true;
+			}
+		}
+
+		void UpdateElementValue(XElement element, string? value)
+		{
+			if (element != null && !string.IsNullOrEmpty(value) && element.Value != value)
+			{
+				element.Value = value;
+				shouldUpdateOriginalManifest = true;
+			}
+		}
+
+		public static bool TryMergeVersionNumbers(string? displayVersion, out string? finalVersion)
 		{
 			displayVersion = displayVersion?.Trim();
-			version = version?.Trim();
 			finalVersion = null;
 
 			var parts = displayVersion?.Split('.') ?? Array.Empty<string>();
-			if (parts.Length > 3 && !string.IsNullOrEmpty(version))
+			if (parts.Length > 3)
 				return false;
 
 			var v = new int[3];
@@ -203,11 +249,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		static bool VerifyTizenVersion(int x, int y, int z)
 		{
-			if (x < 0 || x > 255 || y < 0 || y > 255)
-				return false;
-			if (z < 0 || z > 65535)
-				return false;
-			return true;
+			return (x < 0 || x > 255 || y < 0 || y > 255 || z < 0 || z > 65535) ? false : true;
 		}
 	}
 }

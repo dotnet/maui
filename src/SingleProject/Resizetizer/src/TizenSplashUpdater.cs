@@ -15,8 +15,6 @@ namespace Microsoft.Maui.Resizetizer
 		[Required]
 		public string IntermediateOutputPath { get; set; }
 
-		public string ManifestFile { get; set; } = "tizen-manifest.xml";
-
 		public ILogger Logger { get; private set; }
 
 		static public Dictionary<(string Resolution, string Orientation), string> splashDpiMap = new Dictionary<(string, string), string>();
