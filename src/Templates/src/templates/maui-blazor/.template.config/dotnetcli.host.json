@@ -6,6 +6,6 @@
       }
     },
     "usageExamples": [
-      "--framework net7.0"
+      "--framework DOTNET_TFM_VALUE"
     ]
   }
