@@ -108,8 +108,8 @@ namespace Microsoft.Maui.Controls.Platform
 				source,
 				context.Context);
 
-			if (result is not null)
-				menuItem?.SetIcon(result.Value);
+			if (menuItem.IsAlive() && result is not null)
+				menuItem.SetIcon(result.Value);
 		}
 
 		public static BottomSheetDialog CreateMoreBottomSheet(
