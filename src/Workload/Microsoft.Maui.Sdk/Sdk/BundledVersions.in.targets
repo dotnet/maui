@@ -9,7 +9,7 @@
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">win</_MauiPlatformName>
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' != 'windows' ">$(TargetPlatformIdentifier.ToLowerInvariant())</_MauiPlatformName>
     <_MauiPlatformName Condition=" '$(_MauiPlatformName)' == '' ">any</_MauiPlatformName>
-    <_MauiRuntimePackAlwaysCopyLocal Condition=" '$(_MauiPlatformName)' == 'any' or '$(SelfContained)' == 'false' ">true</_MauiRuntimePackAlwaysCopyLocal>
+    <_MauiRuntimePackAlwaysCopyLocal Condition=" '$(_MauiPlatformName)' == 'any' or '$(SelfContained)' != 'true' ">true</_MauiRuntimePackAlwaysCopyLocal>
   </PropertyGroup>
 
   <!-- Framework references -->
