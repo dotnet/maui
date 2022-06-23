@@ -438,7 +438,21 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		protected Task OpenFlyout(ShellHandler shellRenderer, TimeSpan? timeOut = null)
+		{
+			throw new NotImplementedException();
+		}
 
+		internal Graphics.Rect GetFrameRelativeToFlyout(ShellHandler shellRenderer, IView view)
+		{
+			throw new NotImplementedException();
+		}
+
+		internal Graphics.Rect GetFlyoutFrame(ShellHandler shellRenderer)
+		{
+			throw new NotImplementedException();
+    }
+    
 		// this is only relevant on windows where the title/backbutton aren't in the same
 		// area
 		[Fact(DisplayName = "Shell Toolbar not visible when only back button is present")]
