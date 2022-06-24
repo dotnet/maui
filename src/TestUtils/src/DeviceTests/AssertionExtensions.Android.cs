@@ -33,7 +33,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var view = (AView)sender!;
 
-				view.LayoutChange -= OnLayout;
+				if (view.Handle != IntPtr.Zero)
+					view.LayoutChange -= OnLayout;
 
 				tcs.TrySetResult(e != null);
 			}

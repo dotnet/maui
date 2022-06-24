@@ -28,10 +28,12 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size ArrangeChildren(Rect bounds)
 		{
-			if (_gridStructure  == null || NeedsRemeasure(bounds, Grid, _gridStructure))
+			if (_gridStructure  == null)
 			{
 				_gridStructure = new GridStructure(Grid, bounds.Width, bounds.Height);
 			}
+
+			_gridStructure.AdjustStarsForArrange(bounds.Size);
 
 			var reverseColumns = Grid.ColumnDefinitions.Count > 1 && !Grid.ShouldArrangeLeftToRight();
 
@@ -56,23 +58,6 @@ namespace Microsoft.Maui.Layouts
 			var actual = new Size(_gridStructure.MeasuredGridWidth(), _gridStructure.MeasuredGridHeight());
 
 			return actual.AdjustForFill(bounds, Grid);
-		}
-
-		static bool NeedsRemeasure(Rect bounds, IGridLayout grid, GridStructure structure) 
-		{
-			if (grid.VerticalLayoutAlignment == Primitives.LayoutAlignment.Fill
-					&& structure.HeightConstraint != bounds.Height)
-			{
-				return true;
-			}
-			
-			if (grid.HorizontalLayoutAlignment == Primitives.LayoutAlignment.Fill
-				&& structure.WidthConstraint != bounds.Width)
-			{
-				return true;
-			}
-
-			return false;
 		}
 
 		class GridStructure
@@ -108,11 +93,12 @@ namespace Microsoft.Maui.Layouts
 			{
 				_grid = grid;
 
-				_gridWidthConstraint = widthConstraint;
-				_gridHeightConstraint = heightConstraint;
-
 				_explicitGridHeight = _grid.Height;
 				_explicitGridWidth = _grid.Width;
+
+				_gridWidthConstraint = _explicitGridWidth > -1 ? _explicitGridWidth : widthConstraint;
+				_gridHeightConstraint = _explicitGridHeight > -1 ? _explicitGridHeight : heightConstraint;
+				
 				_gridMaxHeight = _grid.MaximumHeight;
 				_gridMinHeight = _grid.MinimumHeight;
 				_gridMaxWidth = _grid.MaximumWidth;
@@ -168,7 +154,7 @@ namespace Microsoft.Maui.Layouts
 			{
 				return new Definition[]
 				{
-					new Definition(treatStarAsAuto ? GridLength.Auto : GridLength.Star)
+					new Definition(treatStarAsAuto ? GridLength.Auto : GridLength.Star, treatStarAsAuto)
 				};
 			}
 
@@ -190,7 +176,7 @@ namespace Microsoft.Maui.Layouts
 
 					if (definition.Height.GridUnitType == GridUnitType.Star && treatStarAsAuto)
 					{
-						rows[n] = new Definition(GridLength.Auto);
+						rows[n] = new Definition(GridLength.Auto, treatStarAsAuto);
 					}
 					else
 					{
@@ -219,7 +205,7 @@ namespace Microsoft.Maui.Layouts
 
 					if (definition.Width.GridUnitType == GridUnitType.Star && treatStarAsAuto)
 					{
-						definitions[n] = new Definition(GridLength.Auto);
+						definitions[n] = new Definition(GridLength.Auto, treatStarAsAuto);
 					}
 					else
 					{
@@ -415,8 +401,8 @@ namespace Microsoft.Maui.Layouts
 
 				ResolveSpans();
 
-				ResolveStarColumns();
-				ResolveStarRows();
+				ResolveStarColumns(_gridWidthConstraint);
+				ResolveStarRows(_gridHeightConstraint);
 
 				EnsureFinalMeasure();
 			}
@@ -583,18 +569,18 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			void ResolveStarColumns()
+			void ResolveStarColumns(double widthConstraint)
 			{
-				var availableSpace = _gridWidthConstraint - GridWidth();
+				var availableSpace = widthConstraint - GridWidth();
 				static bool cellCheck(Cell cell) => cell.IsColumnSpanStar;
 				static double getDimension(Size size) => size.Width;
 
 				ResolveStars(_columns, availableSpace, cellCheck, getDimension);
 			}
 
-			void ResolveStarRows()
+			void ResolveStarRows(double heightConstraint)
 			{
-				var availableSpace = _gridHeightConstraint - GridHeight();
+				var availableSpace = heightConstraint - GridHeight();
 				static bool cellCheck(Cell cell) => cell.IsRowSpanStar;
 				static double getDimension(Size size) => size.Height;
 
@@ -707,6 +693,65 @@ namespace Microsoft.Maui.Layouts
 
 				return available + cellRowsHeight;
 			}
+
+			public void AdjustStarsForArrange(Size targetSize) 
+			{
+				if (_grid.VerticalLayoutAlignment == Primitives.LayoutAlignment.Fill)
+				{
+					if (_grid.DesiredSize.Height < targetSize.Height)
+					{
+						// Reset the size on all star rows
+						for (int n = 0; n < _rows.Length; n++)
+						{
+							var definition = _rows[n];
+							if (definition.IsStar)
+							{
+								definition.Size = 0;
+							}
+						}
+
+						// Reset the size on all "star as auto" rows
+						for (int n = 0; n < _rows.Length; n++)
+						{
+							var definition = _rows[n];
+							if (definition.IsStarAsAuto)
+							{
+								_rows[n] = new Definition(GridLength.Star);
+							}
+						}
+
+						ResolveStarRows(targetSize.Height);
+					}
+				}
+				
+				if (_grid.HorizontalLayoutAlignment == Primitives.LayoutAlignment.Fill)
+				{
+					if (_grid.DesiredSize.Width < targetSize.Width)
+					{
+						// Reset the size on all star rows
+						for (int n = 0; n < _columns.Length; n++)
+						{
+							var definition = _columns[n];
+							if (definition.IsStar)
+							{
+								definition.Size = 0;
+							}
+						}
+
+						// Reset the size on all "star as auto" rows
+						for (int n = 0; n < _columns.Length; n++)
+						{
+							var definition = _columns[n];
+							if (definition.IsStarAsAuto)
+							{
+								_columns[n] = new Definition(GridLength.Star);
+							}
+						}
+
+						ResolveStarColumns(targetSize.Width);
+					}
+				}
+			}
 		}
 
 		// Dictionary key for tracking a Span
@@ -814,10 +859,11 @@ namespace Microsoft.Maui.Layouts
 			public bool IsAuto => _gridLength.IsAuto;
 			public bool IsStar => _gridLength.IsStar;
 			public bool IsAbsolute => _gridLength.IsAbsolute;
+			public bool IsStarAsAuto { get; }
 
 			public GridLength GridLength => _gridLength;
 
-			public Definition(GridLength gridLength)
+			public Definition(GridLength gridLength, bool treatStarAsAuto = false)
 			{
 				if (gridLength.IsAbsolute)
 				{
@@ -825,6 +871,8 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				_gridLength = gridLength;
+
+				IsStarAsAuto = gridLength.IsAuto && treatStarAsAuto;
 			}
 		}
 	}

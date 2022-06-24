@@ -1,17 +1,22 @@
-﻿using System;
+using System;
 using Foundation;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class SearchBarExtensions
 	{
-		internal static UITextField? GetSearchTextField(this UISearchBar searchBar)
+		// TODO: NET7 maybe make this public?
+		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(13))
-				return searchBar.SearchTextField;
-			else
-				return searchBar.GetSearchTextField();
+			var background = searchBar.Background;
+
+			if (background is SolidPaint solidPaint)
+				uiSearchBar.BarTintColor = solidPaint.Color.ToPlatform();
+
+			if (background == null)
+				uiSearchBar.BarTintColor = UISearchBar.Appearance.BarTintColor;
 		}
 
 		public static void UpdateIsEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar)
@@ -26,7 +31,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePlaceholder(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField)
 		{
-			textField ??= uiSearchBar.GetSearchTextField();
+			textField ??= uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField == null)
 				return;
@@ -49,7 +54,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFont(this UISearchBar uiSearchBar, ITextStyle textStyle, IFontManager fontManager, UITextField? textField)
 		{
-			textField ??= uiSearchBar.GetSearchTextField();
+			textField ??= uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField == null)
 				return;
@@ -64,7 +69,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVerticalTextAlignment(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField)
 		{
-			textField ??= uiSearchBar.GetSearchTextField();
+			textField ??= uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField == null)
 				return;
@@ -111,7 +116,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsTextPredictionEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField)
 		{
-			textField ??= uiSearchBar.GetSearchTextField();
+			textField ??= uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField == null)
 				return;
