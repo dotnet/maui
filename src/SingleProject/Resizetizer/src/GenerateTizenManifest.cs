@@ -16,8 +16,6 @@ namespace Microsoft.Maui.Resizetizer
 		[Required]
 		public string TizenManifestFile { get; set; } = TizenManifestFileName;
 
-		public string IntermediateImagesOutputPath { get; set; } = null!;
-
 		public string GeneratedFilename { get; set; } = TizenManifestFileName;
 
 		public string? ApplicationId { get; set; }
@@ -59,9 +57,9 @@ namespace Microsoft.Maui.Resizetizer
 
 		const string DpiName = "dpi";
 
-		bool shouldUpdateOriginalManifest;
+		bool _shouldUpdateOriginalManifest;
 
-		string? tizenManifestFilePath;
+		string? _tizenManifestFilePath;
 
 		public override bool Execute()
 		{
@@ -69,11 +67,11 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				Directory.CreateDirectory(IntermediateOutputPath);
 
-				tizenManifestFilePath = Path.Combine(Environment.CurrentDirectory, TizenManifestFile);
+				_tizenManifestFilePath = Path.Combine(Environment.CurrentDirectory, TizenManifestFile);
 
 				var targetFilename = Path.Combine(IntermediateOutputPath, GeneratedFilename);
 
-				var manifest = XDocument.Load(tizenManifestFilePath);
+				var manifest = XDocument.Load(_tizenManifestFilePath);
 
 				UpdateManifest(manifest);
 
@@ -139,9 +137,9 @@ namespace Microsoft.Maui.Resizetizer
 
 		void UpdateOriginalManifest(XDocument tizenManifest)
 		{
-			if (shouldUpdateOriginalManifest)
+			if (_shouldUpdateOriginalManifest)
 			{
-				tizenManifest.Save(tizenManifestFilePath);
+				tizenManifest.Save(_tizenManifestFilePath);
 			}
 		}
 
@@ -209,7 +207,7 @@ namespace Microsoft.Maui.Resizetizer
 			if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value != value)
 			{
 				element.SetAttributeValue(attrName, value);
-				shouldUpdateOriginalManifest = true;
+				_shouldUpdateOriginalManifest = true;
 			}
 		}
 
@@ -218,7 +216,7 @@ namespace Microsoft.Maui.Resizetizer
 			if (element != null && !string.IsNullOrEmpty(value) && element.Value != value)
 			{
 				element.Value = value;
-				shouldUpdateOriginalManifest = true;
+				_shouldUpdateOriginalManifest = true;
 			}
 		}
 

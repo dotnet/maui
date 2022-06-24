@@ -532,7 +532,6 @@
         <TizenSplashUpdater
             Condition="'$(_ResizetizerIsTizenApp)' == 'True' And '@(MauiSplashScreen)' != ''"
             IntermediateOutputPath="$(_MauiIntermediateImages)"
-            ManifestFile="$(TizenManifestFile)"
             MauiSplashScreen="@(MauiSplashScreen)" />
 
         <ItemGroup>
@@ -686,7 +685,6 @@
 
         <GenerateTizenManifest
             IntermediateOutputPath="$(_MauiIntermediateManifest)"
-            IntermediateImagesOutputPath="$(_MauiIntermediateImages)"
             TizenManifestFile="$(TizenManifestFile)"
             GeneratedFilename="tizen-manifest.xml"
             ApplicationId="$(ApplicationId)"
