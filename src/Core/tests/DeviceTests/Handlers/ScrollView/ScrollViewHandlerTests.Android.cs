@@ -34,7 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 				for (int n = 0; n < scrollViewHandler.PlatformView.ChildCount; n++)
 				{
 					var platformView = scrollViewHandler.PlatformView.GetChildAt(n);
-					
+
 					// ScrollView on Android uses an intermediate ContentViewGroup to handle measurement/arrangement/padding
 					if (platformView is ContentViewGroup contentViewGroup)
 					{

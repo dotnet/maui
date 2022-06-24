@@ -97,6 +97,13 @@ parameters:
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: nuget-macos
+  - name: TestTargetFrameworks
+    type: object
+    default:
+      - name: default
+        tfm: default
+      - name: net6
+        tfm: net6.0
 
 resources:
   repositories:
@@ -258,56 +265,57 @@ stages:
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
-            workspace:
-              clean: all
-            displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-            timeoutInMinutes: 120
-            condition: or(
-              ${{ parameters.BuildEverything }},
-              ne(variables['Build.Reason'], 'PullRequest'),
-              eq('${{ BuildConfiguration }}', 'Release'))
-            pool:
-              name: ${{ BuildPlatform.poolName }}
-              vmImage: ${{ BuildPlatform.vmImage }}
-              demands:
-                - macOS.Name -equals Monterey
-                - macOS.Architecture -equals x64
-                - Agent.HasDevices -equals False
-                - Agent.IsPaired -equals False
-            steps:
-              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml@xamarin-templates
+          - ${{ each TestTFM in parameters.TestTargetFrameworks }}:
+            - job: build_${{ TestTFM.name }}_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+              workspace:
+                clean: all
+              displayName: ${{ BuildPlatform.name }} ${{ TestTFM.tfm }} (${{ BuildConfiguration }})
+              timeoutInMinutes: 120
+              condition: or(
+                ${{ parameters.BuildEverything }},
+                ne(variables['Build.Reason'], 'PullRequest'),
+                eq('${{ BuildConfiguration }}', 'Release'))
+              pool:
+                name: ${{ BuildPlatform.poolName }}
+                vmImage: ${{ BuildPlatform.vmImage }}
+                demands:
+                  - macOS.Name -equals Monterey
+                  - macOS.Architecture -equals x64
+                  - Agent.HasDevices -equals False
+                  - Agent.IsPaired -equals False
+              steps:
+                - ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                  - template: agent-cleanser/v1.yml@xamarin-templates
+                    parameters:
+                      UninstallMono: false
+                      UninstallXamarinMac: false
+                      CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
+                - template: common/provision.yml
                   parameters:
-                    UninstallMono: false
-                    UninstallXamarinMac: false
-                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
-              - template: common/provision.yml
-                parameters:
-                  platform: ${{ BuildPlatform.name }}
-                  poolName: ${{ BuildPlatform.poolName }}
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
-              - task: DownloadBuildArtifacts@0
-                displayName: 'Download Packages'
-                inputs:
-                  artifactName: nuget
-                  itemPattern: '**/*.nupkg'
-                  downloadPath: $(System.DefaultWorkingDirectory)/artifacts
-              - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
-                displayName: Move the downloaded artifacts
-              - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-                displayName: 'Install .NET (Local Workloads)'
-                retryCountOnTaskFailure: 3
-                env:
-                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-                  PRIVATE_BUILD: $(PrivateBuild)
-              - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-                displayName: 'Build .NET MAUI Templates'
-              - task: PublishBuildArtifacts@1
-                condition: always()
-                displayName: publish artifacts
-                inputs:
-                  ArtifactName: ${{ BuildPlatform.artifact }}
+                    platform: ${{ BuildPlatform.name }}
+                    poolName: ${{ BuildPlatform.poolName }}
+                    provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                - task: DownloadBuildArtifacts@0
+                  displayName: 'Download Packages'
+                  inputs:
+                    artifactName: nuget
+                    itemPattern: '**/*.nupkg'
+                    downloadPath: $(System.DefaultWorkingDirectory)/artifacts
+                - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
+                  displayName: Move the downloaded artifacts
+                - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+                  displayName: 'Install .NET (Local Workloads)'
+                  retryCountOnTaskFailure: 3
+                  env:
+                    DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                    PRIVATE_BUILD: $(PrivateBuild)
+                - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --testtfm="${{ TestTFM.tfm }}" --verbosity=diagnostic
+                  displayName: 'Build .NET MAUI Templates'
+                - task: PublishBuildArtifacts@1
+                  condition: always()
+                  displayName: publish artifacts
+                  inputs:
+                    ArtifactName: ${{ BuildPlatform.artifact }}
 
   - template: common/security-compliance.yml
 

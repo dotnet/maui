@@ -82,26 +82,24 @@ dotnet cake --target=VS
 
 ### Compile with globally installed `dotnet`
 
-> You'll probably need to run these commands with elevated privileges:
-
-#### WARNING ####
-
+> **Warning**
 > This will replace what Visual Studio has installed for your workloads so now your entire machine will be using the workloads you have installed here.
 
 #### main branch
 
-1. Clear your nuget cache:  
-   ```
-   dotnet nuget locals all --clear
-   ```
-   > NOTE: this is going to contain the "stable" versions of the packages, so you will have to clear the NuGet cache when this feed changes and when .NET ships. The various `darc-pub-dotnet-*` feeds are temporary and are generated on various builds. These feeds my disappear and be replaced with new ones as new builds come out. Make sure to verify that you are on the latest here and clear the nuget cache if it changes.
+> You'll probably need to run these commands with elevated privileges.
 
-2. 
+> **Warning**
+> This is going to contain the "stable" versions of the packages, so you will have to clear the NuGet cache when this feed changes and when .NET ships. The various `darc-pub-dotnet-*` feeds are temporary and are generated on various builds. These feeds my disappear and be replaced with new ones as new builds come out. Make sure to verify that you are on the latest here and clear the nuget cache if it changes.
+> ```
+> dotnet nuget locals all --clear
+> ```
+
 Windows:
 
 ```bat
 dotnet workload install maui `
-  --from-rollback-file https://aka.ms/dotnet/maui/main.json `
+  --from-rollback-file https://aka.ms/dotnet/maui/net6.0.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-a21b9a2d/nuget/v3/index.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-52e9452f-3/nuget/v3/index.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json `
@@ -112,7 +110,7 @@ MacOS:
 
 ```bash
 dotnet workload install maui \
-  --from-rollback-file https://aka.ms/dotnet/maui/main.json \
+  --from-rollback-file https://aka.ms/dotnet/maui/net6.0.json \
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-a21b9a2d/nuget/v3/index.json \
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-52e9452f-3/nuget/v3/index.json \
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json \

@@ -1,1829 +1,1968 @@
-[
-    {
+{
+    "version": "1.0",
+    "tasks": [
+      {
         "taskType": "trigger",
         "capabilityId": "IssueResponder",
         "subCapability": "IssueCommentResponder",
         "version": "1.0",
         "config": {
-            "conditions": {
-                "operator": "and",
+          "conditions": {
+            "operator": "and",
+            "operands": [
+              {
+                "operator": "not",
                 "operands": [
-                    {
-                        "operator": "not",
-                        "operands": [
-                            {
-                                "name": "isOpen",
-                                "parameters": {}
-                            }
-                        ]
-                    },
-                    {
-                        "name": "isAction",
-                        "parameters": {
-                            "action": "created"
-                        }
-                    },
-                    {
-                        "name": "hasLabel",
-                        "parameters": {
-                            "label": "s/no-recent-activity"
-                        }
-                    },
-                    {
-                        "operator": "or",
-                        "operands": [
-                            {
-                                "name": "hasLabel",
-                                "parameters": {
-                                    "label": "s/needs-info"
-                                }
-                            },
-                            {
-                                "name": "hasLabel",
-                                "parameters": {
-                                    "label": "s/needs-repro"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "operator": "not",
-                        "operands": [
-                            {
-                                "name": "noActivitySince",
-                                "parameters": {
-                                    "days": 7
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "operator": "not",
-                        "operands": [
-                            {
-                                "name": "isCloseAndComment",
-                                "parameters": {}
-                            }
-                        ]
-                    },
-                    {
-                        "name": "isActivitySender",
-                        "parameters": {
-                            "user": {
-                                "type": "author"
-                            }
-                        }
-                    },
-                    {
-                        "name": "activitySenderHasPermissions",
-                        "parameters": {
-                            "permissions": "none"
-                        }
-                    }
-                ]
-            },
-            "eventType": "issue",
-            "eventNames": [
-                "issue_comment"
-            ],
-            "taskName": "[Idle Issue Management] For issues closed due to inactivity, re-open an issue if issue author posts a reply within 7 days.",
-            "actions": [
-                {
-                    "name": "reopenIssue",
-                    "parameters": {}
-                },
-                {
-                    "name": "removeLabel",
-                    "parameters": {
-                        "label": "s/no-recent-activity"
-                    }
-                },
-                {
-                    "name": "removeLabel",
-                    "parameters": {
-                        "label": "s/needs-info"
-                    }
-                },
-                {
-                    "name": "removeLabel",
-                    "parameters": {
-                        "label": "s/needs-repro"
-                    }
-                },
-                {
-                    "name": "addLabel",
-                    "parameters": {
-                        "label": "s/needs-attention"
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "taskType": "trigger",
-        "capabilityId": "IssueResponder",
-        "subCapability": "IssueCommentResponder",
-        "version": "1.0",
-        "config": {
-            "conditions": {
-                "operator": "and",
-                "operands": [
-                    {
-                        "name": "isAction",
-                        "parameters": {
-                            "action": "created"
-                        }
-                    },
-                    {
-                        "operator": "not",
-                        "operands": [
-                            {
-                                "name": "isOpen",
-                                "parameters": {}
-                            }
-                        ]
-                    },
-                    {
-                        "name": "activitySenderHasPermissions",
-                        "parameters": {
-                            "permissions": "none"
-                        }
-                    },
-                    {
-                        "name": "noActivitySince",
-                        "parameters": {
-                            "days": 7
-                        }
-                    },
-                    {
-                        "operator": "not",
-                        "operands": [
-                            {
-                                "name": "isCloseAndComment",
-                                "parameters": {}
-                            }
-                        ]
-                    }
-                ]
-            },
-            "eventType": "issue",
-            "eventNames": [
-                "issue_comment"
-            ],
-            "taskName": "[Closed Issue Management] For issues closed with no activity over 7 days, ask non-contributor to consider opening a new issue instead.",
-            "actions": [
-                {
-                    "name": "addReply",
-                    "parameters": {
-                        "comment": "Hello lovely human, thank you for your comment on this issue. Because this issue has been closed for a period of time, please strongly consider opening a new issue linking to this issue instead to ensure better visibility of your comment. Thank you!"
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "taskType": "scheduled",
-        "capabilityId": "ScheduledSearch",
-        "subCapability": "ScheduledSearch",
-        "version": "1.1",
-        "config": {
-            "frequency": [
-                {
-                    "weekDay": 0,
-                    "hours": [
-                        1,
-                        4,
-                        7,
-                        10,
-                        13,
-                        16,
-                        19,
-                        22
-                    ],
-                    "timezoneOffset": -8
-                },
-                {
-                    "weekDay": 1,
-                    "hours": [
-                        1,
-                        4,
-                        7,
-                        10,
-                        13,
-                        16,
-                        19,
-                        22
-                    ],
-                    "timezoneOffset": -8
-                },
-                {
-                    "weekDay": 2,
-                    "hours": [
-                        1,
-                        4,
-                        7,
-                        10,
-                        13,
-                        16,
-                        19,
-                        22
-                    ],
-                    "timezoneOffset": -8
-                },
-                {
-                    "weekDay": 3,
-                    "hours": [
-                        1,
-                        4,
-                        7,
-                        10,
-                        13,
-                        16,
-                        19,
-                        22
-                    ],
-                    "timezoneOffset": -8
-                },
-                {
-                    "weekDay": 4,
-                    "hours": [
-                        1,
-                        4,
-                        7,
-                        10,
-                        13,
-                        16,
-                        19,
-                        22
-                    ],
-                    "timezoneOffset": -8
-                },
-                {
-                    "weekDay": 5,
-                    "hours": [
-                        1,
-                        4,
-                        7,
-                        10,
-                        13,
-                        16,
-                        19,
-                        22
-                    ],
-                    "timezoneOffset": -8
-                },
-                {
-                    "weekDay": 6,
-                    "hours": [
-                        1,
-                        4,
-                        7,
-                        10,
-                        13,
-                        16,
-                        19,
-                        22
-                    ],
-                    "timezoneOffset": -8
-                }
-            ],
-            "searchTerms": [
-                {
-                    "name": "isClosed",
-                    "parameters": {}
-                },
-                {
-                    "name": "noActivitySince",
-                    "parameters": {
-                        "days": 30
-                    }
-                },
-                {
-                    "name": "isUnlocked",
-                    "parameters": {}
-                },
-                {
-                    "name": "isIssue",
-                    "parameters": {}
-                }
-            ],
-            "taskName": "[Closed Issue Management] Lock issues closed without activity for over 30 days",
-            "actions": [
-                {
-                    "name": "lockIssue",
-                    "parameters": {
-                        "reason": "resolved"
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "taskType": "trigger",
-        "capabilityId": "IssueResponder",
-        "subCapability": "IssueCommentResponder",
-        "version": "1.0",
-        "config": {
-            "taskName": "[Idle Issue Management] Replace needs author feedback label with needs attention label when the author comments on an issue",
-            "conditions": {
-                "operator": "and",
-                "operands": [
-                    {
-                        "name": "isAction",
-                        "parameters": {
-                            "action": "created"
-                        }
-                    },
-                    {
-                        "operator": "or",
-                        "operands": [
-                            {
-                                "name": "hasLabel",
-                                "parameters": {
-                                    "label": "s/needs-info"
-                                }
-                            },
-                            {
-                                "name": "hasLabel",
-                                "parameters": {
-                                    "label": "s/needs-repro"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "isOpen",
-                        "parameters": {}
-                    },
-                    {
-                        "operator": "or",
-                        "operands": [
-                            {
-                                "operator": "and",
-                                "operands": [
-                                    {
-                                        "operator": "not",
-                                        "operands": [
-                                            {
-                                                "name": "activitySenderHasPermissions",
-                                                "parameters": {
-                                                    "permissions": "write"
-                                                }
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
-                                "name": "isActivitySender",
-                                "parameters": {
-                                    "user": {
-                                        "type": "author"
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                ]
-            },
-            "actions": [
-                {
-                    "name": "addLabel",
-                    "parameters": {
-                        "label": "s/needs-attention"
-                    }
-                },
-                {
-                    "name": "removeLabel",
-                    "parameters": {
-                        "label": "s/needs-info"
-                    }
-                },
-                {
-                    "name": "removeLabel",
-                    "parameters": {
-                        "label": "s/needs-repro"
-                    }
-                }
-            ],
-            "eventType": "issue",
-            "eventNames": [
-                "issue_comment"
-            ]
-        }
-    },
-    {
-        "taskType": "trigger",
-        "capabilityId": "IssueResponder",
-        "subCapability": "IssuesOnlyResponder",
-        "version": "1.0",
-        "config": {
-            "taskName": "[Closed Issue Management] Remove no recent activity label from issues",
-            "conditions": {
-                "operator": "and",
-                "operands": [
-                    {
-                        "operator": "not",
-                        "operands": [
-                            {
-                                "name": "isAction",
-                                "parameters": {
-                                    "action": "closed"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "hasLabel",
-                        "parameters": {
-                            "label": "s/no-recent-activity"
-                        }
-                    }
-                ]
-            },
-            "actions": [
-                {
-                    "name": "removeLabel",
-                    "parameters": {
-                        "label": "s/no-recent-activity"
-                    }
-                }
-            ],
-            "eventType": "issue",
-            "eventNames": [
-                "issues",
-                "project_card"
-            ]
-        }
-    },
-    {
-        "taskType": "trigger",
-        "capabilityId": "IssueResponder",
-        "subCapability": "IssueCommentResponder",
-        "version": "1.0",
-        "config": {
-            "taskName": "[Idle Issue Management] Remove no recent activity label when an issue is commented on",
-            "conditions": {
-                "operator": "and",
-                "operands": [
-                    {
-                        "name": "hasLabel",
-                        "parameters": {
-                            "label": "s/no-recent-activity"
-                        }
-                    }
-                ]
-            },
-            "actions": [
-                {
-                    "name": "removeLabel",
-                    "parameters": {
-                        "label": "s/no-recent-activity"
-                    }
-                }
-            ],
-            "eventType": "issue",
-            "eventNames": [
-                "issue_comment"
-            ]
-        }
-    },
-    {
-        "taskType": "scheduled",
-        "capabilityId": "ScheduledSearch",
-        "subCapability": "ScheduledSearch",
-        "version": "1.1",
-        "config": {
-            "taskName": "[Idle Issue Management] Close stale 's/needs-info' issues",
-            "frequency": [
-                {
-                    "weekDay": 1,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 2,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 3,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 4,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 5,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                }
-            ],
-            "searchTerms": [
-                {
-                    "name": "isIssue",
-                    "parameters": {}
-                },
-                {
+                  {
                     "name": "isOpen",
                     "parameters": {}
-                },
-                {
-                    "name": "hasLabel",
-                    "parameters": {
-                        "label": "s/needs-info"
-                    }
-                },
-                {
-                    "name": "hasLabel",
-                    "parameters": {
-                        "label": "s/no-recent-activity"
-                    }
-                },
-                {
-                    "name": "noActivitySince",
-                    "parameters": {
-                        "days": 3
-                    }
-                }
-            ],
-            "actions": [
-                {
-                    "name": "closeIssue",
-                    "parameters": {}
-                }
-            ]
-        }
-    },
-    {
-        "taskType": "scheduled",
-        "capabilityId": "ScheduledSearch",
-        "subCapability": "ScheduledSearch",
-        "version": "1.1",
-        "config": {
-            "taskName": "[Idle Issue Management] Close stale 's/needs-repro' issues",
-            "frequency": [
-                {
-                    "weekDay": 1,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 2,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 3,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 4,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 5,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                }
-            ],
-            "searchTerms": [
-                {
-                    "name": "isIssue",
-                    "parameters": {}
-                },
-                {
-                    "name": "isOpen",
-                    "parameters": {}
-                },
-                {
-                    "name": "hasLabel",
-                    "parameters": {
-                        "label": "s/needs-repro"
-                    }
-                },
-                {
-                    "name": "hasLabel",
-                    "parameters": {
-                        "label": "s/no-recent-activity"
-                    }
-                },
-                {
-                    "name": "noActivitySince",
-                    "parameters": {
-                        "days": 3
-                    }
-                }
-            ],
-            "actions": [
-                {
-                    "name": "closeIssue",
-                    "parameters": {}
-                }
-            ]
-        }
-    },
-    {
-        "taskType": "scheduled",
-        "capabilityId": "ScheduledSearch",
-        "subCapability": "ScheduledSearch",
-        "version": "1.1",
-        "config": {
-            "taskName": "[Idle Issue Management] Add no recent activity label to 's/needs-info' issues",
-            "frequency": [
-                {
-                    "weekDay": 1,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 2,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 3,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 4,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 5,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                }
-            ],
-            "searchTerms": [
-                {
-                    "name": "isIssue",
-                    "parameters": {}
-                },
-                {
-                    "name": "isOpen",
-                    "parameters": {}
-                },
-                {
-                    "name": "hasLabel",
-                    "parameters": {
-                        "label": "s/needs-info"
-                    }
-                },
-                {
-                    "name": "noActivitySince",
-                    "parameters": {
-                        "days": 4
-                    }
-                },
-                {
-                    "name": "noLabel",
-                    "parameters": {
-                        "label": "s/no-recent-activity"
-                    }
-                }
-            ],
-            "actions": [
-                {
-                    "name": "addLabel",
-                    "parameters": {
-                        "label": "s/no-recent-activity"
-                    }
-                },
-                {
-                    "name": "addReply",
-                    "parameters": {
-                        "comment": "This issue has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **4 days**. It will be closed if no further activity occurs **within 3 days of this comment**. If it *is* closed, feel free to comment when you are able to provide the additional information and we will re-investigate."
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "taskType": "scheduled",
-        "capabilityId": "ScheduledSearch",
-        "subCapability": "ScheduledSearch",
-        "version": "1.1",
-        "config": {
-            "taskName": "[Idle Issue Management] Add no recent activity label to 's/needs-repro' issues",
-            "frequency": [
-                {
-                    "weekDay": 1,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 2,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 3,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 4,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                },
-                {
-                    "weekDay": 5,
-                    "hours": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18,
-                        19,
-                        20,
-                        21,
-                        22,
-                        23
-                    ]
-                }
-            ],
-            "searchTerms": [
-                {
-                    "name": "isIssue",
-                    "parameters": {}
-                },
-                {
-                    "name": "isOpen",
-                    "parameters": {}
-                },
-                {
-                    "name": "hasLabel",
-                    "parameters": {
-                        "label": "s/needs-repro"
-                    }
-                },
-                {
-                    "name": "noActivitySince",
-                    "parameters": {
-                        "days": 4
-                    }
-                },
-                {
-                    "name": "noLabel",
-                    "parameters": {
-                        "label": "s/no-recent-activity"
-                    }
-                }
-            ],
-            "actions": [
-                {
-                    "name": "addLabel",
-                    "parameters": {
-                        "label": "s/no-recent-activity"
-                    }
-                },
-                {
-                    "name": "addReply",
-                    "parameters": {
-                        "comment": "This issue has been automatically marked as stale because it has been marked as requiring author feedback to reproduce the issue but has not had any activity for **4 days**. It will be closed if no further activity occurs **within 3 days of this comment**. If it *is* closed, feel free to comment when you are able to provide the additional information and we will re-investigate."
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "taskType": "trigger",
-        "capabilityId": "IssueResponder",
-        "subCapability": "PullRequestResponder",
-        "version": "1.0",
-        "config": {
-            "conditions": {
-                "operator": "and",
-                "operands": [
-                    {
-                        "name": "isAction",
-                        "parameters": {
-                            "action": "opened"
-                        }
-                    },
-                    {
-                        "name": "isActivitySender",
-                        "parameters": {
-                            "user": "dotnet-maestro[bot]",
-                            "association": "CONTRIBUTOR"
-                        }
-                    },
-                    {
-                        "name": "titleContains",
-                        "parameters": {
-                            "titlePattern": "Update dependencies"
-                        }
-                    }
+                  }
                 ]
-            },
-            "eventType": "pull_request",
-            "eventNames": [
-                "pull_request",
-                "issues",
-                "project_card"
-            ],
-            "taskName": "[Infrastructure PRs] Add area-infrastructure label to dependency update Pull Requests",
-            "actions": [
-                {
-                    "name": "addLabel",
-                    "parameters": {
-                        "label": "area/infrastructure 🏗️"
-                    }
+              },
+              {
+                "name": "isAction",
+                "parameters": {
+                  "action": "created"
                 }
-            ]
-        }
-    },
-    {
-        "taskType": "trigger",
-        "capabilityId": "IssueResponder",
-        "subCapability": "IssuesOnlyResponder",
-        "version": "1.0",
-        "config": {
-            "conditions": {
-                "operator": "and",
-                "operands": [
-                    {
-                        "name": "addedToMilestone",
-                        "parameters": {
-                            "milestoneName": "Future"
-                        }
-                    }
-                ]
-            },
-            "eventType": "issue",
-            "eventNames": [
-                "issues",
-                "project_card"
-            ],
-            "taskName": "Comment: Issue moved to Future",
-            "actions": [
-                {
-                    "name": "addReply",
-                    "parameters": {
-                        "comment": "We've moved this issue to the Future milestone. This means that it is not going to be worked on for the coming release. We will reassess the issue following the current release and consider this item at that time."
-                    }
+              },
+              {
+                "name": "hasLabel",
+                "parameters": {
+                  "label": "s/no-recent-activity"
                 }
-            ]
-        }
-    },
-    {
-        "taskType": "trigger",
-        "capabilityId": "IssueResponder",
-        "subCapability": "PullRequestResponder",
-        "version": "1.0",
-        "config": {
-            "conditions": {
-                "operator": "and",
-                "operands": [
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "s/needs-info"
-                        }
-                    }
-                ]
-            },
-            "eventType": "pull_request",
-            "eventNames": [
-                "pull_request",
-                "issues",
-                "project_card"
-            ],
-            "taskName": "Replace `s/needs-info` with `s/pr-needs-author-input` for PRs",
-            "actions": [
-                {
-                    "name": "addReply",
-                    "parameters": {
-                        "comment": "Hello. I see that you've just added `s/needs-info` label to this PR.\nThat label is for Issues and not for PRs. Don't worry, I'm going to replace it with the correct one."
-                    }
-                },
-                {
-                    "name": "removeLabel",
-                    "parameters": {
-                        "label": "s/needs-info"
-                    }
-                },
-                {
-                    "name": "addLabel",
-                    "parameters": {
-                        "label": "s/pr-needs-author-input"
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "taskType": "trigger",
-        "capabilityId": "IssueResponder",
-        "subCapability": "PullRequestResponder",
-        "version": "1.0",
-        "config": {
-            "conditions": {
-                "operator": "and",
-                "operands": [
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "s/needs-repro"
-                        }
-                    }
-                ]
-            },
-            "eventType": "pull_request",
-            "eventNames": [
-                "pull_request",
-                "issues",
-                "project_card"
-            ],
-            "taskName": "Remove `s/needs-repro` from PRs",
-            "actions": [
-                {
-                    "name": "addReply",
-                    "parameters": {
-                        "comment": "Hello. I see that you've just added `s/needs-repro` label to this PR.\nThat label is for Issues and not for PRs, so I removed it."
-                    }
-                },
-                {
-                    "name": "removeLabel",
-                    "parameters": {
-                        "label": "s/needs-repro"
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "taskType": "trigger",
-        "capabilityId": "IssueResponder",
-        "subCapability": "IssuesOnlyResponder",
-        "version": "1.0",
-        "config": {
-            "conditions": {
-                "operator": "and",
-                "operands": [
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "s/needs-info"
-                        }
-                    }
-                ]
-            },
-            "eventType": "issue",
-            "eventNames": [
-                "issues",
-                "project_card"
-            ],
-            "taskName": "Add comment when 's/needs-info' is applied to issue",
-            "actions": [
-                {
-                    "name": "addReply",
-                    "parameters": {
-                        "comment": "Hi @${issueAuthor}. We have added the \"s/needs-info\" label to this issue, which indicates that we have an open question for you before we can take further action. This issue will be closed automatically in 7 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time."
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "taskType": "trigger",
-        "capabilityId": "IssueResponder",
-        "subCapability": "IssuesOnlyResponder",
-        "version": "1.0",
-        "config": {
-            "conditions": {
-                "operator": "and",
-                "operands": [
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "s/needs-repro"
-                        }
-                    }
-                ]
-            },
-            "eventType": "issue",
-            "eventNames": [
-                "issues",
-                "project_card"
-            ],
-            "taskName": "Add comment when 's/needs-repro' is applied to issue",
-            "actions": [
-                {
-                    "name": "addReply",
-                    "parameters": {
-                        "comment": "Hi @${issueAuthor}. We have added the \"s/needs-repro\" label to this issue, which indicates that we require steps and sample code to reproduce the issue before we can take further action. Please try to create a minimal sample project/solution or code samples which reproduce the issue, ideally as a GitHub repo that we can clone. See more details about creating repros here: https://github.com/dotnet/maui/blob/main/.github/repro.md\n\nThis issue will be closed automatically in 7 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time."
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "taskType": "trigger",
-        "capabilityId": "IssueResponder",
-        "subCapability": "IssuesOnlyResponder",
-        "version": "1.0",
-        "config": {
-            "conditions": {
+              },
+              {
                 "operator": "or",
                 "operands": [
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-newcontrol"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-general"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-webview"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-datetimepicker"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-picker"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-switch"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-dualscreen"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-checkbox"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-border"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-label"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-button"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-dialogalert"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-entry"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-frame"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-stepper"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-refreshview"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-image"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-activityindicator"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-radiobutton"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-slider"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-progressbar"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-pages"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-map"
-                        }
-                    }
-                ]
-            },
-            "eventType": "issue",
-            "eventNames": [
-                "issues",
-                "project_card"
-            ],
-            "taskName": "Add area/controls label when any 'control-X' label is applied to the issue",
-            "actions": [
-                {
-                    "name": "addLabel",
+                  {
+                    "name": "hasLabel",
                     "parameters": {
-                        "label": "area/controls 🎮"
+                      "label": "s/needs-info"
                     }
+                  },
+                  {
+                    "name": "hasLabel",
+                    "parameters": {
+                      "label": "s/needs-repro"
+                    }
+                  }
+                ]
+              },
+              {
+                "operator": "not",
+                "operands": [
+                  {
+                    "name": "noActivitySince",
+                    "parameters": {
+                      "days": 7
+                    }
+                  }
+                ]
+              },
+              {
+                "operator": "not",
+                "operands": [
+                  {
+                    "name": "isCloseAndComment",
+                    "parameters": {}
+                  }
+                ]
+              },
+              {
+                "name": "isActivitySender",
+                "parameters": {
+                  "user": {
+                    "type": "author"
+                  }
                 }
+              },
+              {
+                "name": "activitySenderHasPermissions",
+                "parameters": {
+                  "permissions": "none"
+                }
+              }
             ]
+          },
+          "eventType": "issue",
+          "eventNames": [
+            "issue_comment"
+          ],
+          "taskName": "[Idle Issue Management] For issues closed due to inactivity, re-open an issue if issue author posts a reply within 7 days.",
+          "actions": [
+            {
+              "name": "reopenIssue",
+              "parameters": {}
+            },
+            {
+              "name": "removeLabel",
+              "parameters": {
+                "label": "s/no-recent-activity"
+              }
+            },
+            {
+              "name": "removeLabel",
+              "parameters": {
+                "label": "s/needs-info"
+              }
+            },
+            {
+              "name": "removeLabel",
+              "parameters": {
+                "label": "s/needs-repro"
+              }
+            },
+            {
+              "name": "addLabel",
+              "parameters": {
+                "label": "s/needs-attention"
+              }
+            }
+          ]
         }
-    },
-    {
+      },
+      {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "IssueCommentResponder",
+        "version": "1.0",
+        "config": {
+          "conditions": {
+            "operator": "and",
+            "operands": [
+              {
+                "name": "isAction",
+                "parameters": {
+                  "action": "created"
+                }
+              },
+              {
+                "operator": "not",
+                "operands": [
+                  {
+                    "name": "isOpen",
+                    "parameters": {}
+                  }
+                ]
+              },
+              {
+                "name": "activitySenderHasPermissions",
+                "parameters": {
+                  "permissions": "none"
+                }
+              },
+              {
+                "name": "noActivitySince",
+                "parameters": {
+                  "days": 7
+                }
+              },
+              {
+                "operator": "not",
+                "operands": [
+                  {
+                    "name": "isCloseAndComment",
+                    "parameters": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "eventType": "issue",
+          "eventNames": [
+            "issue_comment"
+          ],
+          "taskName": "[Closed Issue Management] For issues closed with no activity over 7 days, ask non-contributor to consider opening a new issue instead.",
+          "actions": [
+            {
+              "name": "addReply",
+              "parameters": {
+                "comment": "Hello lovely human, thank you for your comment on this issue. Because this issue has been closed for a period of time, please strongly consider opening a new issue linking to this issue instead to ensure better visibility of your comment. Thank you!"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "taskType": "scheduled",
+        "capabilityId": "ScheduledSearch",
+        "subCapability": "ScheduledSearch",
+        "version": "1.1",
+        "config": {
+          "frequency": [
+            {
+              "weekDay": 0,
+              "hours": [
+                1,
+                4,
+                7,
+                10,
+                13,
+                16,
+                19,
+                22
+              ],
+              "timezoneOffset": -8
+            },
+            {
+              "weekDay": 1,
+              "hours": [
+                1,
+                4,
+                7,
+                10,
+                13,
+                16,
+                19,
+                22
+              ],
+              "timezoneOffset": -8
+            },
+            {
+              "weekDay": 2,
+              "hours": [
+                1,
+                4,
+                7,
+                10,
+                13,
+                16,
+                19,
+                22
+              ],
+              "timezoneOffset": -8
+            },
+            {
+              "weekDay": 3,
+              "hours": [
+                1,
+                4,
+                7,
+                10,
+                13,
+                16,
+                19,
+                22
+              ],
+              "timezoneOffset": -8
+            },
+            {
+              "weekDay": 4,
+              "hours": [
+                1,
+                4,
+                7,
+                10,
+                13,
+                16,
+                19,
+                22
+              ],
+              "timezoneOffset": -8
+            },
+            {
+              "weekDay": 5,
+              "hours": [
+                1,
+                4,
+                7,
+                10,
+                13,
+                16,
+                19,
+                22
+              ],
+              "timezoneOffset": -8
+            },
+            {
+              "weekDay": 6,
+              "hours": [
+                1,
+                4,
+                7,
+                10,
+                13,
+                16,
+                19,
+                22
+              ],
+              "timezoneOffset": -8
+            }
+          ],
+          "searchTerms": [
+            {
+              "name": "isClosed",
+              "parameters": {}
+            },
+            {
+              "name": "noActivitySince",
+              "parameters": {
+                "days": 30
+              }
+            },
+            {
+              "name": "isUnlocked",
+              "parameters": {}
+            },
+            {
+              "name": "isIssue",
+              "parameters": {}
+            }
+          ],
+          "taskName": "[Closed Issue Management] Lock issues closed without activity for over 30 days",
+          "actions": [
+            {
+              "name": "lockIssue",
+              "parameters": {
+                "reason": "resolved"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "IssueCommentResponder",
+        "version": "1.0",
+        "config": {
+          "taskName": "[Idle Issue Management] Replace needs author feedback label with needs attention label when the author comments on an issue",
+          "conditions": {
+            "operator": "and",
+            "operands": [
+              {
+                "name": "isAction",
+                "parameters": {
+                  "action": "created"
+                }
+              },
+              {
+                "operator": "or",
+                "operands": [
+                  {
+                    "name": "hasLabel",
+                    "parameters": {
+                      "label": "s/needs-info"
+                    }
+                  },
+                  {
+                    "name": "hasLabel",
+                    "parameters": {
+                      "label": "s/needs-repro"
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "isOpen",
+                "parameters": {}
+              },
+              {
+                "operator": "or",
+                "operands": [
+                  {
+                    "operator": "and",
+                    "operands": [
+                      {
+                        "operator": "not",
+                        "operands": [
+                          {
+                            "name": "activitySenderHasPermissions",
+                            "parameters": {
+                              "permissions": "write"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": {
+                        "type": "author"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "actions": [
+            {
+              "name": "addLabel",
+              "parameters": {
+                "label": "s/needs-attention"
+              }
+            },
+            {
+              "name": "removeLabel",
+              "parameters": {
+                "label": "s/needs-info"
+              }
+            },
+            {
+              "name": "removeLabel",
+              "parameters": {
+                "label": "s/needs-repro"
+              }
+            }
+          ],
+          "eventType": "issue",
+          "eventNames": [
+            "issue_comment"
+          ]
+        }
+      },
+      {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "IssuesOnlyResponder",
+        "version": "1.0",
+        "config": {
+          "taskName": "[Closed Issue Management] Remove no recent activity label from issues",
+          "conditions": {
+            "operator": "and",
+            "operands": [
+              {
+                "operator": "not",
+                "operands": [
+                  {
+                    "name": "isAction",
+                    "parameters": {
+                      "action": "closed"
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "hasLabel",
+                "parameters": {
+                  "label": "s/no-recent-activity"
+                }
+              }
+            ]
+          },
+          "actions": [
+            {
+              "name": "removeLabel",
+              "parameters": {
+                "label": "s/no-recent-activity"
+              }
+            }
+          ],
+          "eventType": "issue",
+          "eventNames": [
+            "issues",
+            "project_card"
+          ]
+        }
+      },
+      {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "IssueCommentResponder",
+        "version": "1.0",
+        "config": {
+          "taskName": "[Idle Issue Management] Remove no recent activity label when an issue is commented on",
+          "conditions": {
+            "operator": "and",
+            "operands": [
+              {
+                "name": "hasLabel",
+                "parameters": {
+                  "label": "s/no-recent-activity"
+                }
+              }
+            ]
+          },
+          "actions": [
+            {
+              "name": "removeLabel",
+              "parameters": {
+                "label": "s/no-recent-activity"
+              }
+            }
+          ],
+          "eventType": "issue",
+          "eventNames": [
+            "issue_comment"
+          ]
+        }
+      },
+      {
+        "taskType": "scheduled",
+        "capabilityId": "ScheduledSearch",
+        "subCapability": "ScheduledSearch",
+        "version": "1.1",
+        "config": {
+          "taskName": "[Idle Issue Management] Close stale 's/needs-info' issues",
+          "frequency": [
+            {
+              "weekDay": 1,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 2,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 3,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 4,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 5,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            }
+          ],
+          "searchTerms": [
+            {
+              "name": "isIssue",
+              "parameters": {}
+            },
+            {
+              "name": "isOpen",
+              "parameters": {}
+            },
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "s/needs-info"
+              }
+            },
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "s/no-recent-activity"
+              }
+            },
+            {
+              "name": "noActivitySince",
+              "parameters": {
+                "days": 3
+              }
+            }
+          ],
+          "actions": [
+            {
+              "name": "closeIssue",
+              "parameters": {}
+            }
+          ]
+        }
+      },
+      {
+        "taskType": "scheduled",
+        "capabilityId": "ScheduledSearch",
+        "subCapability": "ScheduledSearch",
+        "version": "1.1",
+        "config": {
+          "taskName": "[Idle Issue Management] Close stale 's/needs-repro' issues",
+          "frequency": [
+            {
+              "weekDay": 1,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 2,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 3,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 4,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 5,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            }
+          ],
+          "searchTerms": [
+            {
+              "name": "isIssue",
+              "parameters": {}
+            },
+            {
+              "name": "isOpen",
+              "parameters": {}
+            },
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "s/needs-repro"
+              }
+            },
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "s/no-recent-activity"
+              }
+            },
+            {
+              "name": "noActivitySince",
+              "parameters": {
+                "days": 3
+              }
+            }
+          ],
+          "actions": [
+            {
+              "name": "closeIssue",
+              "parameters": {}
+            }
+          ]
+        }
+      },
+      {
+        "taskType": "scheduled",
+        "capabilityId": "ScheduledSearch",
+        "subCapability": "ScheduledSearch",
+        "version": "1.1",
+        "config": {
+          "taskName": "[Idle Issue Management] Add no recent activity label to 's/needs-info' issues",
+          "frequency": [
+            {
+              "weekDay": 1,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 2,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 3,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 4,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 5,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            }
+          ],
+          "searchTerms": [
+            {
+              "name": "isIssue",
+              "parameters": {}
+            },
+            {
+              "name": "isOpen",
+              "parameters": {}
+            },
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "s/needs-info"
+              }
+            },
+            {
+              "name": "noActivitySince",
+              "parameters": {
+                "days": 4
+              }
+            },
+            {
+              "name": "noLabel",
+              "parameters": {
+                "label": "s/no-recent-activity"
+              }
+            }
+          ],
+          "actions": [
+            {
+              "name": "addLabel",
+              "parameters": {
+                "label": "s/no-recent-activity"
+              }
+            },
+            {
+              "name": "addReply",
+              "parameters": {
+                "comment": "This issue has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **4 days**. It will be closed if no further activity occurs **within 3 days of this comment**. If it *is* closed, feel free to comment when you are able to provide the additional information and we will re-investigate."
+              }
+            }
+          ]
+        }
+      },
+      {
+        "taskType": "scheduled",
+        "capabilityId": "ScheduledSearch",
+        "subCapability": "ScheduledSearch",
+        "version": "1.1",
+        "config": {
+          "taskName": "[Idle Issue Management] Add no recent activity label to 's/needs-repro' issues",
+          "frequency": [
+            {
+              "weekDay": 1,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 2,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 3,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 4,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "weekDay": 5,
+              "hours": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            }
+          ],
+          "searchTerms": [
+            {
+              "name": "isIssue",
+              "parameters": {}
+            },
+            {
+              "name": "isOpen",
+              "parameters": {}
+            },
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "s/needs-repro"
+              }
+            },
+            {
+              "name": "noActivitySince",
+              "parameters": {
+                "days": 4
+              }
+            },
+            {
+              "name": "noLabel",
+              "parameters": {
+                "label": "s/no-recent-activity"
+              }
+            }
+          ],
+          "actions": [
+            {
+              "name": "addLabel",
+              "parameters": {
+                "label": "s/no-recent-activity"
+              }
+            },
+            {
+              "name": "addReply",
+              "parameters": {
+                "comment": "This issue has been automatically marked as stale because it has been marked as requiring author feedback to reproduce the issue but has not had any activity for **4 days**. It will be closed if no further activity occurs **within 3 days of this comment**. If it *is* closed, feel free to comment when you are able to provide the additional information and we will re-investigate."
+              }
+            }
+          ]
+        }
+      },
+      {
         "taskType": "trigger",
         "capabilityId": "IssueResponder",
         "subCapability": "PullRequestResponder",
         "version": "1.0",
         "config": {
-            "conditions": {
+          "conditions": {
+            "operator": "and",
+            "operands": [
+              {
+                "name": "isAction",
+                "parameters": {
+                  "action": "opened"
+                }
+              },
+              {
+                "name": "isActivitySender",
+                "parameters": {
+                  "user": "dotnet-maestro[bot]",
+                  "association": "CONTRIBUTOR"
+                }
+              },
+              {
+                "name": "titleContains",
+                "parameters": {
+                  "titlePattern": "Update dependencies"
+                }
+              }
+            ]
+          },
+          "eventType": "pull_request",
+          "eventNames": [
+            "pull_request",
+            "issues",
+            "project_card"
+          ],
+          "taskName": "[Infrastructure PRs] Add area-infrastructure label to dependency update Pull Requests",
+          "actions": [
+            {
+              "name": "addLabel",
+              "parameters": {
+                "label": "area/infrastructure 🏗️"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "IssuesOnlyResponder",
+        "version": "1.0",
+        "config": {
+          "conditions": {
+            "operator": "and",
+            "operands": [
+              {
+                "name": "addedToMilestone",
+                "parameters": {
+                  "milestoneName": "Future"
+                }
+              }
+            ]
+          },
+          "eventType": "issue",
+          "eventNames": [
+            "issues",
+            "project_card"
+          ],
+          "taskName": "Comment: Issue moved to Future",
+          "actions": [
+            {
+              "name": "addReply",
+              "parameters": {
+                "comment": "We've moved this issue to the Future milestone. This means that it is not going to be worked on for the coming release. We will reassess the issue following the current release and consider this item at that time."
+              }
+            }
+          ]
+        }
+      },
+      {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "PullRequestResponder",
+        "version": "1.0",
+        "config": {
+          "conditions": {
+            "operator": "and",
+            "operands": [
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "s/needs-info"
+                }
+              }
+            ]
+          },
+          "eventType": "pull_request",
+          "eventNames": [
+            "pull_request",
+            "issues",
+            "project_card"
+          ],
+          "taskName": "Replace `s/needs-info` with `s/pr-needs-author-input` for PRs",
+          "actions": [
+            {
+              "name": "addReply",
+              "parameters": {
+                "comment": "Hello. I see that you've just added `s/needs-info` label to this PR.\nThat label is for Issues and not for PRs. Don't worry, I'm going to replace it with the correct one."
+              }
+            },
+            {
+              "name": "removeLabel",
+              "parameters": {
+                "label": "s/needs-info"
+              }
+            },
+            {
+              "name": "addLabel",
+              "parameters": {
+                "label": "s/pr-needs-author-input"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "PullRequestResponder",
+        "version": "1.0",
+        "config": {
+          "conditions": {
+            "operator": "and",
+            "operands": [
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "s/needs-repro"
+                }
+              }
+            ]
+          },
+          "eventType": "pull_request",
+          "eventNames": [
+            "pull_request",
+            "issues",
+            "project_card"
+          ],
+          "taskName": "Remove `s/needs-repro` from PRs",
+          "actions": [
+            {
+              "name": "addReply",
+              "parameters": {
+                "comment": "Hello. I see that you've just added `s/needs-repro` label to this PR.\nThat label is for Issues and not for PRs, so I removed it."
+              }
+            },
+            {
+              "name": "removeLabel",
+              "parameters": {
+                "label": "s/needs-repro"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "IssuesOnlyResponder",
+        "version": "1.0",
+        "config": {
+          "conditions": {
+            "operator": "and",
+            "operands": [
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "s/needs-info"
+                }
+              }
+            ]
+          },
+          "eventType": "issue",
+          "eventNames": [
+            "issues",
+            "project_card"
+          ],
+          "taskName": "Add comment when 's/needs-info' is applied to issue",
+          "actions": [
+            {
+              "name": "addReply",
+              "parameters": {
+                "comment": "Hi @${issueAuthor}. We have added the \"s/needs-info\" label to this issue, which indicates that we have an open question for you before we can take further action. This issue will be closed automatically in 7 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time."
+              }
+            }
+          ]
+        }
+      },
+      {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "IssuesOnlyResponder",
+        "version": "1.0",
+        "config": {
+          "conditions": {
+            "operator": "and",
+            "operands": [
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "s/needs-repro"
+                }
+              }
+            ]
+          },
+          "eventType": "issue",
+          "eventNames": [
+            "issues",
+            "project_card"
+          ],
+          "taskName": "Add comment when 's/needs-repro' is applied to issue",
+          "actions": [
+            {
+              "name": "addReply",
+              "parameters": {
+                "comment": "Hi @${issueAuthor}. We have added the \"s/needs-repro\" label to this issue, which indicates that we require steps and sample code to reproduce the issue before we can take further action. Please try to create a minimal sample project/solution or code samples which reproduce the issue, ideally as a GitHub repo that we can clone. See more details about creating repros here: https://github.com/dotnet/maui/blob/main/.github/repro.md\n\nThis issue will be closed automatically in 7 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time."
+              }
+            }
+          ]
+        }
+      },
+      {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "IssuesOnlyResponder",
+        "version": "1.0",
+        "config": {
+          "conditions": {
+            "operator": "or",
+            "operands": [
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-newcontrol"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-general"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-webview"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-datetimepicker"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-picker"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-switch"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-dualscreen"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-checkbox"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-border"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-label"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-button"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-dialogalert"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-entry"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-frame"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-stepper"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-refreshview"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-image"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-activityindicator"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-radiobutton"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-slider"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-progressbar"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-pages"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-map"
+                }
+              }
+            ]
+          },
+          "eventType": "issue",
+          "eventNames": [
+            "issues",
+            "project_card"
+          ],
+          "taskName": "Add area/controls label when any 'control-X' label is applied to the issue",
+          "actions": [
+            {
+              "name": "addLabel",
+              "parameters": {
+                "label": "area/controls 🎮"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "PullRequestResponder",
+        "version": "1.0",
+        "config": {
+          "conditions": {
+            "operator": "or",
+            "operands": [
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-newcontrol"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-general"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-webview"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-datetimepicker"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-picker"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-switch"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-dualscreen"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-checkbox"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-border"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-label"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-button"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-dialogalert"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-entry"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-frame"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-stepper"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-refreshview"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-image"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-activityindicator"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-radiobutton"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-slider"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-progressbar"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-pages"
+                }
+              },
+              {
+                "name": "labelAdded",
+                "parameters": {
+                  "label": "control-map"
+                }
+              }
+            ]
+          },
+          "eventType": "pull_request",
+          "eventNames": [
+            "pull_request",
+            "issues",
+            "project_card"
+          ],
+          "taskName": "Add area/controls label when any 'control-X' label is applied to the PR",
+          "actions": [
+            {
+              "name": "addLabel",
+              "parameters": {
+                "label": "area/controls 🎮"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "taskType": "trigger",
+        "capabilityId": "IssueResponder",
+        "subCapability": "IssuesOnlyResponder",
+        "version": "1.0",
+        "config": {
+          "conditions": {
+            "operator": "and",
+            "operands": [
+              {
+                "name": "isAction",
+                "parameters": {
+                  "action": "opened"
+                }
+              },
+              {
                 "operator": "or",
                 "operands": [
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-newcontrol"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-general"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-webview"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-datetimepicker"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-picker"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-switch"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-dualscreen"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-checkbox"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-border"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-label"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-button"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-dialogalert"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-entry"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-frame"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-stepper"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-refreshview"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-image"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-activityindicator"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-radiobutton"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-slider"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-progressbar"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-pages"
-                        }
-                    },
-                    {
-                        "name": "labelAdded",
-                        "parameters": {
-                            "label": "control-map"
-                        }
-                    }
-                ]
-            },
-            "eventType": "issue",
-            "eventNames": [
-                "issues",
-                "project_card"
-            ],
-            "taskName": "Add area/controls label when any 'control-X' label is applied to the PR",
-            "actions": [
-                {
-                    "name": "addLabel",
+                  {
+                    "name": "isActivitySender",
                     "parameters": {
-                        "label": "area/controls 🎮"
+                      "user": "alexeystrakh"
                     }
-                }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "alexkblount"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "BenBtg"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "DeanFaizal"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "jgold6"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "jmongaras"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "jonlipsky"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "JoonghyunCho"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "juanlao"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "migueBarrera"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "mikeparker104"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "myroot"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "rookiejava"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "shyunMin"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "sung-su"
+                    }
+                  },
+                  {
+                    "name": "isActivitySender",
+                    "parameters": {
+                      "user": "Sweekriti91"
+                    }
+                  }
+                ]
+              }
             ]
+          },
+          "eventType": "issue",
+          "eventNames": [
+            "issues",
+            "project_card"
+          ],
+          "taskName": "Add 'partner' label when issue is opened by a partner",
+          "actions": [
+            {
+              "name": "addLabel",
+              "parameters": {
+                "label": "partner"
+              }
+            }
+          ]
         }
-    }
-]
+      }
+    ],
+    "userGroups": []
+  }
