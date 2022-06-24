@@ -94,6 +94,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static async Task SetMenuItemIcon(IMenuItem menuItem, ImageSource source, IMauiContext context)
 		{
+			if (!menuItem.IsAlive())
+				return;
+
 			if (source == null)
 				return;
 
@@ -105,10 +108,9 @@ namespace Microsoft.Maui.Controls.Platform
 				source,
 				context.Context);
 
-			if (result is not null)
-				menuItem?.SetIcon(result.Value);
+			if (menuItem.IsAlive() && result is not null)
+				menuItem.SetIcon(result.Value);
 		}
-
 
 		public static BottomSheetDialog CreateMoreBottomSheet(
 			Action<int, BottomSheetDialog> selectCallback,

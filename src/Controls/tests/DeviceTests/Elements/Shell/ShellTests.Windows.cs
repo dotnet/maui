@@ -451,8 +451,8 @@ namespace Microsoft.Maui.DeviceTests
 		internal Graphics.Rect GetFlyoutFrame(ShellHandler shellRenderer)
 		{
 			throw new NotImplementedException();
-    }
-    
+		}
+
 		// this is only relevant on windows where the title/backbutton aren't in the same
 		// area
 		[Fact(DisplayName = "Shell Toolbar not visible when only back button is present")]

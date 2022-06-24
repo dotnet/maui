@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Layouts
 
 				_gridWidthConstraint = _explicitGridWidth > -1 ? _explicitGridWidth : widthConstraint;
 				_gridHeightConstraint = _explicitGridHeight > -1 ? _explicitGridHeight : heightConstraint;
-				
+
 				_gridMaxHeight = _grid.MaximumHeight;
 				_gridMinHeight = _grid.MinimumHeight;
 				_gridMaxWidth = _grid.MaximumWidth;
