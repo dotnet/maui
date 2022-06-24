@@ -31,32 +31,7 @@ Task("dotnet")
                 .SetConfiguration(configuration),
         });
 
-        if (IsTarget("VS"))
-        {
-            var manifests = GetSubDirectories("./bin/dotnet/sdk-manifests");
-
-            DirectoryPath stable7 = null;
-            DirectoryPath preview7 = null;
-
-            foreach(var dp in GetSubDirectories("./bin/dotnet/sdk-manifests"))
-            {
-                if (dp.FullPath.EndsWith("7.0.100"))
-                {
-                    stable7 = dp;
-                    break;
-                }
-
-                if (dp.FullPath.Contains("/7.") || dp.FullPath.Contains("\\7."))
-                {
-                    preview7 = dp;
-                }
-            }
-
-            if (stable7 == null && preview7 != null)
-            {
-                CopyDirectory(preview7, "./bin/dotnet/sdk-manifests/7.0.100");
-            }
-        }
+        ApplyNet7Workaround();
     });
 
 Task("dotnet-local-workloads")
@@ -352,7 +327,8 @@ Task("dotnet-pack")
     .IsDependentOn("dotnet-pack-maui")
     .IsDependentOn("dotnet-pack-additional")
     .IsDependentOn("dotnet-pack-library-packs")
-    .IsDependentOn("dotnet-pack-docs");
+    .IsDependentOn("dotnet-pack-docs")
+    .Does(() => ApplyNet7Workaround());
 
 Task("dotnet-build-test")
     .IsDependentOn("dotnet")
@@ -699,4 +675,35 @@ DirectoryPath PrepareSeparateBuildContext(string dirName, bool generateDirectory
     FileWriteText(dir.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
 
     return MakeAbsolute(dir);
+}
+
+void ApplyNet7Workaround()
+{
+    // https://github.com/xamarin/xamarin-android/blob/main/Documentation/guides/InstallBuildsFromMain.md#using-visual-studio
+    if (IsTarget("VS"))
+    {
+        var manifests = GetSubDirectories("./bin/dotnet/sdk-manifests");
+
+        DirectoryPath stable7 = null;
+        DirectoryPath preview7 = null;
+
+        foreach(var dp in GetSubDirectories("./bin/dotnet/sdk-manifests"))
+        {
+            if (dp.FullPath.EndsWith("7.0.100"))
+            {
+                stable7 = dp;
+                break;
+            }
+
+            if (dp.FullPath.Contains("/7.") || dp.FullPath.Contains("\\7."))
+            {
+                preview7 = dp;
+            }
+        }
+
+        if (preview7 != null)
+        {
+            CopyDirectory(preview7, "./bin/dotnet/sdk-manifests/7.0.100");
+        }
+    }
 }
