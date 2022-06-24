@@ -856,10 +856,9 @@ namespace Microsoft.Maui.Controls
 				SetCurrentItem()
 					.FireAndForget();
 
-			((ShellElementCollection)Items).VisibleItemsChangedInternal += (s, e) =>
+			((ShellElementCollection)Items).VisibleItemsChangedInternal += async (s, e) =>
 			{
-				SetCurrentItem()
-					.FireAndForget();
+				await SetCurrentItem();
 
 				SendStructureChanged();
 				SendFlyoutItemsChanged();

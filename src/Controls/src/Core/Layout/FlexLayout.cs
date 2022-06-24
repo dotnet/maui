@@ -481,7 +481,7 @@ namespace Microsoft.Maui.Controls
 			var layoutManager = _layoutManager ??= CreateLayoutManager();
 
 			InMeasureMode = true;
-			var result =  layoutManager.Measure(widthConstraint, heightConstraint);
+			var result = layoutManager.Measure(widthConstraint, heightConstraint);
 			InMeasureMode = false;
 
 			return result;
@@ -496,7 +496,7 @@ namespace Microsoft.Maui.Controls
 			var item = (child as FlexLayout)?._root ?? new Flex.Item();
 			InitItemProperties(child, item);
 			if (child is not FlexLayout)
-			{ 
+			{
 				item.SelfSizing = (Flex.Item it, ref float w, ref float h) =>
 				{
 					var sizeConstraints = item.GetConstraints();
