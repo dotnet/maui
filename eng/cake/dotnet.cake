@@ -173,12 +173,22 @@ Task("dotnet-templates")
                     template.Value(projectName);
 
                 // Enable Tizen
-                ReplaceTextInFiles($"{projectName}/*.csproj",
-                    "<!-- <TargetFrameworks>",
-                    "<TargetFrameworks>");
-                ReplaceTextInFiles($"{projectName}/*.csproj",
-                    "</TargetFrameworks> -->",
-                    "</TargetFrameworks>");
+                if (!TestTFM.StartsWith("net6")) // Tizen does not yet support net6 on the net7 SDK: https://github.com/Samsung/Tizen.NET/issues/182
+                {
+                    ReplaceTextInFiles($"{projectName}/*.csproj",
+                        "<!-- <TargetFrameworks>",
+                        "<TargetFrameworks>");
+                    ReplaceTextInFiles($"{projectName}/*.csproj",
+                        "</TargetFrameworks> -->",
+                        "</TargetFrameworks>");
+                }
+                else
+                {
+                    // Mac Catalyst/iOS does not yet support net6 from the net7 SDK: https://github.com/xamarin/xamarin-macios/issues/15344
+                    ReplaceTextInFiles($"{projectName}/*.csproj",
+                        ";net6.0-ios;net6.0-maccatalyst",
+                        "");
+                }
 
                 // Build
                 RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
