@@ -49,7 +49,6 @@ Task("dotnet")
                 if (dp.FullPath.Contains("/7.") || dp.FullPath.Contains("\\7."))
                 {
                     preview7 = dp;
-                    break;
                 }
             }
 
