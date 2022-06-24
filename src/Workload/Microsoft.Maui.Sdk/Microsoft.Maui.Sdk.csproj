@@ -55,6 +55,19 @@
     <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/SourceGen/Controls.SourceGen.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ValuesToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
+    <_ValuesToReplace Include="TFM" PropertyName="_MauiDotNetTfm" />
+    <_ValuesToReplace Include="PREVIOUS_TFM" PropertyName="_MauiPreviousDotNetTfm" />
+    <_ValuesToReplace Include="MAUI_DOTNET_VERSION" PropertyName="_MauiDotNetVersion" />
+    <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION" PropertyName="_MauiPreviousDotNetVersion" />
+    <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_NO_DOT" PropertyName="_MauiPreviousDotNetVersionNoDot" />
+    <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION" PropertyName="MicrosoftMauiPreviousDotNetReleasedVersion" />
+    <_ValuesToReplace Include="MicrosoftWindowsSDKBuildToolsPackageVersion" PropertyName="MicrosoftWindowsSDKBuildToolsPackageVersion" />
+    <_ValuesToReplace Include="MicrosoftExtensionsPackageVersion" PropertyName="MicrosoftExtensionsPackageVersion" />
+    <_ValuesToReplace Include="MicrosoftExtensionsServicingPackageVersion" PropertyName="MicrosoftExtensionsServicingPackageVersion" />
+  </ItemGroup>
+
   <Import Project="$(MauiRootDirectory)eng/ReplaceText.targets" />
 
   <Target Name="_GenerateBundledVersions"
@@ -62,35 +75,15 @@
       DependsOnTargets="SetVersions"
       Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/Versions.props;Sdk/BundledVersions.in.targets"
       Outputs="$(IntermediateOutputPath)BundledVersions.targets">
-    <ReplaceText
-        Input="Sdk/BundledVersions.in.targets"
-        Output="$(IntermediateOutputPath)BundledVersions.targets"
-        OldValue="@VERSION@"
-        NewValue="$(PackageReferenceVersion)"
+    <Copy
+        SourceFiles="Sdk/BundledVersions.in.targets"
+        DestinationFiles="$(IntermediateOutputPath)BundledVersions.targets"
     />
     <ReplaceText
         Input="$(IntermediateOutputPath)BundledVersions.targets"
         Output="$(IntermediateOutputPath)BundledVersions.targets"
-        OldValue="@TFM@"
-        NewValue="$(_MauiDotNetTfm)"
-    />
-    <ReplaceText
-        Input="$(IntermediateOutputPath)BundledVersions.targets"
-        Output="$(IntermediateOutputPath)BundledVersions.targets"
-        OldValue="@MicrosoftWindowsSDKBuildToolsPackageVersion@"
-        NewValue="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
-    />
-    <ReplaceText
-        Input="$(IntermediateOutputPath)BundledVersions.targets"
-        Output="$(IntermediateOutputPath)BundledVersions.targets"
-        OldValue="@MicrosoftExtensionsPackageVersion@"
-        NewValue="$(MicrosoftExtensionsPackageVersion)"
-    />
-    <ReplaceText
-        Input="$(IntermediateOutputPath)BundledVersions.targets"
-        Output="$(IntermediateOutputPath)BundledVersions.targets"
-        OldValue="@MicrosoftExtensionsServicingPackageVersion@"
-        NewValue="$(MicrosoftExtensionsServicingPackageVersion)"
+        OldValue="@%(_ValuesToReplace.Identity)@"
+        NewValue="$(%(_ValuesToReplace.PropertyName))"
     />
     <ItemGroup>
       <None

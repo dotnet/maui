@@ -81,8 +81,7 @@
     />
     <ItemGroup>
       <FileWrites Include="@(_JsonInputFile->'%(OutputPath)')" />
-      <None Include="%(_JsonInputFile.OutputPath)" Link="$([System.IO.Path]::GetFileName('%(_JsonInputFile.OutputPath)'))"
-            CopyToOutputDirectory="PreserveNewest" Pack="%(_JsonInputFile.Pack)" PackagePath="data" Visible="false" />
+      <None Include="%(_JsonInputFile.OutputPath)" Link="$([System.IO.Path]::GetFileName('%(_JsonInputFile.OutputPath)'))" CopyToOutputDirectory="PreserveNewest" Pack="%(_JsonInputFile.Pack)" PackagePath="data" Visible="false" />
     </ItemGroup>
   </Target>
 

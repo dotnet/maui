@@ -1,11 +1,15 @@
 <Project>
 
   <PropertyGroup>
+    <!-- current -->
     <_MauiRuntimePackVersion>$(MauiVersion)</_MauiRuntimePackVersion>
     <_MauiRuntimePackVersion Condition=" '$(_MauiRuntimePackVersion)' == '' ">**FromWorkload**</_MauiRuntimePackVersion>
     <MauiWorkloadVersion>@VERSION@</MauiWorkloadVersion>
     <MauiWorkloadTargetFramework>@TFM@</MauiWorkloadTargetFramework>
     <MauiVersion Condition=" '$(MauiVersion)' == '' ">$(MauiWorkloadVersion)</MauiVersion>
+    <!-- previous -->
+    <_MauiPreviousRuntimePackVersion Condition=" '$(_MauiPreviousRuntimePackVersion)' == '' ">@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@</_MauiPreviousRuntimePackVersion>
+    <_MauiPreviousWorkloadTargetFramework>@PREVIOUS_TFM@</_MauiPreviousWorkloadTargetFramework>
     <!-- $(_MauiPlatformName) is used as RIDs as well as a suffix to targeting pack names -->
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">win</_MauiPlatformName>
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' != 'windows' ">$(TargetPlatformIdentifier.ToLowerInvariant())</_MauiPlatformName>
@@ -15,49 +19,57 @@
 
   <!-- Framework references -->
   <ItemGroup>
-    <_MauiRuntimeIdentifiers Include="android;ios;maccatalyst;win;tizen" />
-    <KnownFrameworkReference
+
+    <!-- MAUI framework references -->
+    <_MauiKnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
         Include="Microsoft.Maui.Core"
-        TargetFramework="$(MauiWorkloadTargetFramework)"
         RuntimeFrameworkName="Microsoft.Maui.Core"
-        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
-        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         TargetingPackName="Microsoft.Maui.Core.Ref.$(_MauiPlatformName)"
-        TargetingPackVersion="$(_MauiRuntimePackVersion)"
         RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
         RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
         Profile="$(TargetPlatformIdentifier)"
         RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
     />
-    <KnownFrameworkReference
+    <_MauiKnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' "
         Include="Microsoft.Maui.Controls"
-        TargetFramework="$(MauiWorkloadTargetFramework)"
         RuntimeFrameworkName="Microsoft.Maui.Controls"
-        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
-        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         TargetingPackName="Microsoft.Maui.Controls.Ref.$(_MauiPlatformName)"
-        TargetingPackVersion="$(_MauiRuntimePackVersion)"
         RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
         RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
         Profile="$(TargetPlatformIdentifier)"
         RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
     />
-    <KnownFrameworkReference
+    <_MauiKnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' "
         Include="Microsoft.Maui.Essentials"
-        TargetFramework="$(MauiWorkloadTargetFramework)"
         RuntimeFrameworkName="Microsoft.Maui.Essentials"
-        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
-        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         TargetingPackName="Microsoft.Maui.Essentials.Ref.$(_MauiPlatformName)"
-        TargetingPackVersion="$(_MauiRuntimePackVersion)"
         RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
         RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
         Profile="$(TargetPlatformIdentifier)"
         RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
     />
+
+    <!-- Current SDK version -->
+    <KnownFrameworkReference
+        Include="@(_MauiKnownFrameworkReference)"
+        TargetFramework="$(MauiWorkloadTargetFramework)"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
+    />
+
+    <!-- Previous SDK version -->
+    <KnownFrameworkReference
+        Include="@(_MauiKnownFrameworkReference)"
+        TargetFramework="$(_MauiPreviousWorkloadTargetFramework)"
+        DefaultRuntimeFrameworkVersion="$(_MauiPreviousRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiPreviousRuntimePackVersion)"
+        TargetingPackVersion="$(_MauiPreviousRuntimePackVersion)"
+    />
+
   </ItemGroup>
 
   <!-- These implicit <PackageReference/> pull dependencies from NuGet transitively -->
