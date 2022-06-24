@@ -18,7 +18,7 @@ var NuGetOnlyPackages = new string[] {
 // Tasks for CI
 
 Task("dotnet")
-    .Description("Provisions .NET 6 into bin/dotnet based on eng/Versions.props")
+    .Description("Provisions .NET SDK into bin/dotnet based on eng/Versions.props")
     .Does(() =>
     {
         if (!localDotnet) 
@@ -30,6 +30,34 @@ Task("dotnet")
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}.binlog")
                 .SetConfiguration(configuration),
         });
+
+        if (IsTarget("VS"))
+        {
+            var manifests = GetSubDirectories("./bin/dotnet/sdk-manifests");
+
+            DirectoryPath stable7 = null;
+            DirectoryPath preview7 = null;
+
+            foreach(var dp in GetSubDirectories("./bin/dotnet/sdk-manifests"))
+            {
+                if (dp.FullPath.EndsWith("7.0.100"))
+                {
+                    stable7 = dp;
+                    break;
+                }
+
+                if (dp.FullPath.Contains("/7.") || dp.FullPath.Contains("\\7."))
+                {
+                    preview7 = dp;
+                    break;
+                }
+            }
+
+            if (stable7 == null && preview7 != null)
+            {
+                CopyDirectory(preview7, "./bin/dotnet/sdk-manifests/7.0.100");
+            }
+        }
     });
 
 Task("dotnet-local-workloads")
