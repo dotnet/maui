@@ -1,4 +1,5 @@
 <Project>
+
   <PropertyGroup>
     <_MauiRuntimePackVersion>$(MauiVersion)</_MauiRuntimePackVersion>
     <_MauiRuntimePackVersion Condition=" '$(_MauiRuntimePackVersion)' == '' ">**FromWorkload**</_MauiRuntimePackVersion>
