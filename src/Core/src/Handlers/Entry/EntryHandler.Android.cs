@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
 	{
 		Drawable? _clearButtonDrawable;
+		bool _set;
 
 		protected override AppCompatEditText CreatePlatformView()
 		{
@@ -30,6 +31,17 @@ namespace Microsoft.Maui.Handlers
 		protected virtual Drawable GetClearButtonDrawable() =>
 			_clearButtonDrawable ??= ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
 
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+
+			if (!_set)
+				// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+				((MauiAppCompatEditText)PlatformView).SelectionChanged += OnSelectionChanged;
+
+			_set = true;
+		}
+
 		// TODO: NET7 issoto - Change the return type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
@@ -37,9 +49,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange += OnFocusedChange;
 			platformView.Touch += OnTouch;
 			platformView.EditorAction += OnEditorAction;
-
-			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-			((MauiAppCompatEditText)platformView).SelectionChanged += OnSelectionChanged;
 		}
 
 		// TODO: NET7 issoto - Change the return type to MauiAppCompatEditText
@@ -51,8 +60,11 @@ namespace Microsoft.Maui.Handlers
 			platformView.Touch -= OnTouch;
 			platformView.EditorAction -= OnEditorAction;
 
-			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-			((MauiAppCompatEditText)platformView).SelectionChanged -= OnSelectionChanged;
+			if (_set)
+				// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+				((MauiAppCompatEditText)platformView).SelectionChanged -= OnSelectionChanged;
+
+			_set = false;
 		}
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry) =>

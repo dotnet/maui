@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Platform
 			platformControl.Text = newText ?? string.Empty;
 
 			if (!string.IsNullOrEmpty(platformControl.Text))
-				platformControl.SelectionStart = platformControl.Text.Length;
+				platformControl.Select(platformControl.Text.Length, 0);
 		}
 
 		public static void UpdateBackground(this TextBox textBox, IView view)

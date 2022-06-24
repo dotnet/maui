@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Handlers
 	// This type adds support to the SelectionChanged event
 	public partial class EditorHandler : ViewHandler<IEditor, AppCompatEditText>
 	{
+		bool _set;
+
 		// TODO: NET7 issoto - Change the return type to MauiAppCompatEditText
 		protected override AppCompatEditText CreatePlatformView()
 		{
@@ -27,14 +29,22 @@ namespace Microsoft.Maui.Handlers
 			return editText;
 		}
 
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+
+			if (!_set)
+				// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+				((MauiAppCompatEditText)PlatformView).SelectionChanged += OnSelectionChanged;
+
+			_set = true;
+		}
+
 		// TODO: NET7 issoto - Change the platformView type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
-
-			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-			((MauiAppCompatEditText)platformView).SelectionChanged += OnSelectionChanged;
 		}
 
 		// TODO: NET7 issoto - Change the platformView type to MauiAppCompatEditText
@@ -43,8 +53,11 @@ namespace Microsoft.Maui.Handlers
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
 
-			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-			((MauiAppCompatEditText)platformView).SelectionChanged -= OnSelectionChanged;
+			if (_set)
+				// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+				((MauiAppCompatEditText)platformView).SelectionChanged -= OnSelectionChanged;
+
+			_set = false;
 		}
 
 		public static void MapBackground(IEditorHandler handler, IEditor editor) =>

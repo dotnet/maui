@@ -249,9 +249,6 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!entry.IsReadOnly)// && editText.HasFocus)// || editText.RequestFocus()))//&& editText.RequestFocus())
 			{
-				if (!editText.HasFocus)
-					editText.RequestFocus();
-
 				int start = GetSelectionStart(editText, entry);
 				int end = GetSelectionEnd(editText, entry, start);
 
