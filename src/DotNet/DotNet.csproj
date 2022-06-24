@@ -165,6 +165,7 @@
     <Exec
         Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
     />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />
   </Target>
