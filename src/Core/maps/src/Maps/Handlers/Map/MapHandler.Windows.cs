@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Maps.Handlers
 {
     public partial class MapHandler : ViewHandler<IMap, WebView2>
 	{

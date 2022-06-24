@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.Core
+namespace Microsoft.Maui.Maps
 {
 	/// <summary>
 	/// Represents a Pin that displays a map.

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Maui.Core;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Maps
 {
 	/// <summary>
 	/// Represents a <see cref="IView"/> that displays a map.

@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Maps.Handlers
 {
 	public partial class MapHandler : ViewHandler<IMap, MKMapView>
 	{

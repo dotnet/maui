@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui
+﻿namespace Microsoft.Maui.Maps
 {
 	/// <summary>
 	/// Specify which visual representation should be shown for a map.

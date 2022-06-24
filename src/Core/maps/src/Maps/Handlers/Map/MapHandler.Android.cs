@@ -6,7 +6,7 @@ using Android.OS;
 using AndroidX.Core.Content;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Maps.Handlers
 {
 	class MapReadyCallbackHandler : Java.Lang.Object, IOnMapReadyCallback
 	{

@@ -10,7 +10,7 @@ using PlatformView = System.Object;
 using PlatformView = System.Object;
 #endif
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Maps.Handlers
 {
 	public partial class MapHandler : IMapHandler
 	{
