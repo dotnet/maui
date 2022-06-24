@@ -692,10 +692,8 @@ void ApplyNet7Workaround()
             if (dp.FullPath.EndsWith("7.0.100"))
             {
                 stable7 = dp;
-                break;
             }
-
-            if (dp.FullPath.Contains("/7.") || dp.FullPath.Contains("\\7."))
+            else if (dp.FullPath.Contains("/7.") || dp.FullPath.Contains("\\7."))
             {
                 preview7 = dp;
             }
