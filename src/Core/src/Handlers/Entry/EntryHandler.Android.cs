@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry) =>
-			handler.PlatformView?.UpdateBackground(entry);
+			handler.PlatformView?.UpdateBackground(entry, keepPreviousDrawable: true);
 
 		public static void MapText(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateText(entry);
