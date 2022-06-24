@@ -21,12 +21,12 @@
       </Item>
       <Item ItemId=";description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, Tizen and WinUI using Blazor]]></Val>
+          <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Projekt służący do tworzenia aplikacji platformy .NET MAUI dla systemów iOS, Android, Mac Catalyst, Tizen i WinUI przy użyciu platformy Blazor]]></Val>
+            <Val><![CDATA[Projekt służący do tworzenia aplikacji platformy .NET MAUI dla systemów iOS, Android, Mac Catalyst, WinUI i Tizen przy użyciu platformy Blazor]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, and WinUI using Blazor]]></Val>
+            <Val><![CDATA[A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, Tizen and WinUI using Blazor]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -48,6 +48,24 @@
           <Val><![CDATA[Opens Pages/Index.razor in the editor.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Otwiera plik Pages/Index.razor w edytorze.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";symbols/Framework/choices/DOTNET_TFM_VALUE/description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Target DOTNET_TFM_VALUE]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Docelowa wartość DOTNET_TFM_VALUE]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";symbols/Framework/description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The target framework for the project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Platforma docelowa dla tego projektu.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
