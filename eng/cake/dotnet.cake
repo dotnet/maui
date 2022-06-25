@@ -684,18 +684,14 @@ void ApplyNet7Workaround()
     {
         var manifests = GetSubDirectories("./bin/dotnet/sdk-manifests");
 
-        DirectoryPath stable7 = null;
         DirectoryPath preview7 = null;
 
         foreach(var dp in GetSubDirectories("./bin/dotnet/sdk-manifests"))
         {
-            if (dp.FullPath.EndsWith("7.0.100"))
-            {
-                stable7 = dp;
-            }
-            else if (dp.FullPath.Contains("/7.") || dp.FullPath.Contains("\\7."))
+            if (!dp.FullPath.EndsWith("7.0.100") && (dp.FullPath.Contains("/7.") || dp.FullPath.Contains("\\7.")))
             {
                 preview7 = dp;
+                break;
             }
         }
 
