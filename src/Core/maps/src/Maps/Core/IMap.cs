@@ -7,6 +7,9 @@ namespace Microsoft.Maui.Maps
 	/// </summary>
 	public interface IMap : IView
 	{
+
+		MapArea VisibleArea { get; set; }
+
 		/// <summary>
 		/// Gets the display type of map that can be shown.
 		/// </summary>
@@ -36,5 +39,6 @@ namespace Microsoft.Maui.Maps
 		/// The pins that are to be shown on this Map.
 		/// </summary>
 		IList<IMapPin> Pins { get; }
+
 	}
 }

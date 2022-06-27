@@ -2,28 +2,47 @@
 using Android;
 using Android.Content.PM;
 using Android.Gms.Maps;
+using Android.Gms.Maps.Model;
 using Android.OS;
 using AndroidX.Core.Content;
+using Java.Lang;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
+using Math = System.Math;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-	class MapReadyCallbackHandler : Java.Lang.Object, IOnMapReadyCallback
+	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
 	{
 		MapHandler _handler;
-		public MapReadyCallbackHandler(MapHandler mapHandler)
+		GoogleMap? _googleMap;
+		public MapCallbackHandler(MapHandler mapHandler)
 		{
 			_handler = mapHandler;
 		}
 
 		public void OnMapReady(GoogleMap googleMap)
 		{
+			_googleMap = googleMap;
 			_handler.OnMapReady(googleMap);
 		}
+
+		void GoogleMap.IOnCameraMoveListener.OnCameraMove()
+		{
+			if (_googleMap == null)
+				return;
+
+			_handler.UpdateVisibleRegion(_googleMap.CameraPosition.Target);
+		}
 	}
+
 	public partial class MapHandler : ViewHandler<IMap, MapView>
 	{
+		bool _init = true;
+
+		MapCallbackHandler? _mapReady;
+
 		public GoogleMap? Map { get; set; }
 
 		static Bundle? s_bundle;
@@ -33,23 +52,30 @@ namespace Microsoft.Maui.Maps.Handlers
 			set { s_bundle = value; }
 		}
 
-		MapReadyCallbackHandler? _mapReady;
-
 		protected override void ConnectHandler(MapView platformView)
 		{
 			base.ConnectHandler(platformView);
+			_mapReady = new MapCallbackHandler(this);
 			platformView.GetMapAsync(_mapReady);
+			platformView.LayoutChange += MapViewLayoutChange;
+		}
+
+		protected override void DisconnectHandler(MapView platformView)
+		{
+			base.DisconnectHandler(platformView);
+			platformView.LayoutChange -= MapViewLayoutChange;
+			if (Map != null)
+				Map.SetOnCameraMoveListener(null);
+			_mapReady = null;
 		}
 
 		protected override MapView CreatePlatformView()
 		{
-			_mapReady = new MapReadyCallbackHandler(this);
-			MapView mapView = new Android.Gms.Maps.MapView(Context);
+			MapView mapView = new MapView(Context);
 			mapView.OnCreate(s_bundle);
 			mapView.OnResume();
 			return mapView;
 		}
-
 
 		public static void MapMapType(IMapHandler handler, IMap map)
 		{
@@ -86,7 +112,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				}
 				else
 				{
-					//handler?.MauiContext?.CreateLogger<MapHandler>()?.LogWarning("Missing location permissions for IsShowingUser");
+					handler.MauiContext?.Services.GetService<ILogger<MapHandler>>()?.LogWarning("Missing location permissions for IsShowingUser");
 					googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = false;
 				}
 			}
@@ -133,22 +159,75 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			Map = map;
 
-			//map.SetOnCameraMoveListener(this);
+			map.SetOnCameraMoveListener(_mapReady);
 			//map.MarkerClick += OnMarkerClick;
 			//map.InfoWindowClick += OnInfoWindowClick;
 			//map.MapClick += OnMapClick;
-
-			//map.TrafficEnabled = Map.TrafficEnabled;
-			//map.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
-			//map.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
-			//map.UiSettings.ScrollGesturesEnabled = Map.HasScrollEnabled;
-			//SetUserVisible();
-			//SetMapType();
 		}
 
-		//void GoogleMap.IOnCameraMoveListener.OnCameraMove()
-		//{
-		//	//UpdateVisibleRegion(NativeMap.CameraPosition.Target);
-		//}
+		internal void UpdateVisibleRegion(LatLng pos)
+		{
+			if (Map == null)
+			{
+				return;
+			}
+			Projection projection = Map.Projection;
+			int width = PlatformView.Width;
+			int height = PlatformView.Height;
+			LatLng ul = projection.FromScreenLocation(new global::Android.Graphics.Point(0, 0));
+			LatLng ur = projection.FromScreenLocation(new global::Android.Graphics.Point(width, 0));
+			LatLng ll = projection.FromScreenLocation(new global::Android.Graphics.Point(0, height));
+			LatLng lr = projection.FromScreenLocation(new global::Android.Graphics.Point(width, height));
+			double dlat = Math.Max(Math.Abs(ul.Latitude - lr.Latitude), Math.Abs(ur.Latitude - ll.Latitude));
+			double dlong = Math.Max(Math.Abs(ul.Longitude - lr.Longitude), Math.Abs(ur.Longitude - ll.Longitude));
+			VirtualView.VisibleArea = new MapArea(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong);
+		}
+
+		void MapViewLayoutChange(object? sender, Android.Views.View.LayoutChangeEventArgs e)
+		{
+			if (_init)
+			{
+				if (VirtualView.VisibleArea != null)
+				{
+					MoveToRegion(VirtualView.VisibleArea, false);
+				}
+				_init = false;
+			}
+
+			if (Map != null)
+			{
+				UpdateVisibleRegion(Map.CameraPosition.Target);
+			}
+		}
+
+		void MoveToRegion(MapArea span, bool animate)
+		{
+			if (Map == null)
+			{
+				return;
+			}
+
+			var ne = new LatLng(span.Center.Latitude + span.LatitudeDegrees / 2,
+				span.Center.Longitude + span.LongitudeDegrees / 2);
+			var sw = new LatLng(span.Center.Latitude - span.LatitudeDegrees / 2,
+				span.Center.Longitude - span.LongitudeDegrees / 2);
+			CameraUpdate update = CameraUpdateFactory.NewLatLngBounds(new LatLngBounds(sw, ne), 0);
+
+			try
+			{
+				if (animate)
+				{
+					Map.AnimateCamera(update);
+				}
+				else
+				{
+					Map.MoveCamera(update);
+				}
+			}
+			catch (IllegalStateException exc)
+			{
+				MauiContext?.Services.GetService<ILogger<MapHandler>>()?.LogWarning(exc, $"MoveToRegion exception");
+			}
+		}
 	}
 }
