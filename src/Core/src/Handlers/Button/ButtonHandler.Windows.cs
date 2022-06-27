@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
 
+			platformView.AllowFocusOnInteraction = false;
 			platformView.Click += OnClick;
 			platformView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
 			platformView.AddHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
