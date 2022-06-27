@@ -6,10 +6,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-public partial class Maui7744 : ContentPage
+public partial class Maui8149 : ContentView
 {
-	public Maui7744() => InitializeComponent();
-	public Maui7744(bool useCompiledXaml)
+
+	public Maui8149() => InitializeComponent();
+	
+	public Maui8149(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
 	}
@@ -21,11 +23,13 @@ public partial class Maui7744 : ContentPage
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void ConvertersAreExecutedWhileApplyingSetter([Values(false, true)] bool useCompiledXaml)
+		public void NamescopeWithXamlC([Values(false, true)] bool useCompiledXaml)
 		{
-			var page = new Maui7744(useCompiledXaml);
-			Assert.That(page.border0.StrokeShape, Is.TypeOf<RoundRectangle>());
-			Assert.That(page.border1.StrokeShape, Is.TypeOf<RoundRectangle>());
+			if (useCompiledXaml)
+				MockCompiler.Compile(typeof(Maui8149));
+
+			var page = new Maui8149(useCompiledXaml);
+			Assert.That((page.Content as Maui8149View).Text, Is.EqualTo("Microsoft.Maui.Controls.Xaml.UnitTests.Maui8149"));			
 		}
 	}
 }
