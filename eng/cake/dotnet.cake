@@ -156,11 +156,7 @@ Task("dotnet-templates")
                 var projectName = template.Key.Split(":")[0];
                 var templateName = template.Key.Split(":")[1];
 
-                var framework = string.IsNullOrWhiteSpace(TestTFM)
-                    ? ""
-                    : TestTFM.StartsWith("net6")
-                        ? $"--Framework {TestTFM}" // this is just needed until we ship the next MAUI SR2
-                        : $"--framework {TestTFM}";
+                var framework = string.IsNullOrWhiteSpace(TestTFM) ? "" : $"--framework {TestTFM}";
 
                 projectName = $"{tempDir}/{projectName}_{type}";
                 projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM}";
