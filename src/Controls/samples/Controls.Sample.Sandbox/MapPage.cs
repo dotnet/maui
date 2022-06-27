@@ -58,7 +58,7 @@ namespace Maui.Controls.Sample
 
 			AddBoolMapOption(grid, nameof(map.IsShowingUser), 2, map.IsShowingUser, (bool b) => map.IsShowingUser = b);
 			AddBoolMapOption(grid, nameof(map.HasScrollEnabled), 3, map.HasScrollEnabled, (bool b) => map.HasScrollEnabled = b);
-		//	AddBoolMapOption(grid, nameof(map.TrafficEnabled), 4, map.TrafficEnabled, (bool b) => map.TrafficEnabled = b);
+			AddBoolMapOption(grid, nameof(map.HasTrafficEnabled), 4, map.HasTrafficEnabled, (bool b) => map.HasTrafficEnabled = b);
 			AddBoolMapOption(grid, nameof(map.HasZoomEnabled), 5, map.HasZoomEnabled, (bool b) => map.HasZoomEnabled = b);
 
 			grid.Children.Add(map);
