@@ -5,6 +5,7 @@ using Android.Gms.Maps;
 using Android.OS;
 using AndroidX.Core.Content;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
@@ -85,7 +86,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				}
 				else
 				{
-					handler?.MauiContext?.CreateLogger<MapHandler>()?.LogWarning("Missing location permissions for IsShowingUser");
+					//handler?.MauiContext?.CreateLogger<MapHandler>()?.LogWarning("Missing location permissions for IsShowingUser");
 					googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = false;
 				}
 			}

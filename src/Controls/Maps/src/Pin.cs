@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
-using Microsoft.Maui.Core;
 using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
 {

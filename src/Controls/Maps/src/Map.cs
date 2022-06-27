@@ -6,7 +6,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Core;
+using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
 {

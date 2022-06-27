@@ -6,10 +6,10 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using CoreLocation;
 using MapKit;
-using Microsoft.Maui.Core;
 using Microsoft.Maui.Dispatching;
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Maps.Handlers
 {

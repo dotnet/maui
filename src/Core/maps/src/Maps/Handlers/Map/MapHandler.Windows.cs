@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
