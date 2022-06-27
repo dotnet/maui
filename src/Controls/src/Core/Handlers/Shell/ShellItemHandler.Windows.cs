@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using System.Collections.ObjectModel;
 using WApp = Microsoft.UI.Xaml.Application;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -51,6 +52,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			platformView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
 			platformView.SetApplicationResource("NavigationViewHeaderMargin", null);
 
+			MapMenuItems(platformView);
 			_mauiNavigationView.Loaded += OnNavigationViewLoaded;
 			return platformView;
 		}
@@ -122,12 +124,14 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		void MapMenuItems()
+		void MapMenuItems(FrameworkElement? platformView = null)
 		{
+			platformView ??= PlatformView;
+
 			// NavigationView makes a lot of changes to properties before it's been loaded
 			// So we like to just wait until it's loaded to project our changes over it
-			if (!ShellItemNavigationView.IsLoaded)
-				return;
+			//if (!ShellItemNavigationView.IsLoaded)
+			//	return;
 
 			IShellItemController shellItemController = VirtualView;
 			var items = new List<BaseShellItem>();
@@ -197,7 +201,7 @@ namespace Microsoft.Maui.Controls.Handlers
 						{
 							iconSource.Foreground = vm.Foreground;
 						}
-						else if (PlatformView.Resources.TryGetValue("NavigationViewItemForeground", out object nviForeground) &&
+						else if (platformView.Resources.TryGetValue("NavigationViewItemForeground", out object nviForeground) &&
 							nviForeground is WBrush brush)
 						{
 							iconSource.Foreground = brush;
