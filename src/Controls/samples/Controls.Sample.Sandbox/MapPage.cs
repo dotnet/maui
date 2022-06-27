@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Maps;
 
 namespace Maui.Controls.Sample
 {
@@ -57,7 +58,7 @@ namespace Maui.Controls.Sample
 
 			AddBoolMapOption(grid, nameof(map.IsShowingUser), 2, map.IsShowingUser, (bool b) => map.IsShowingUser = b);
 			AddBoolMapOption(grid, nameof(map.HasScrollEnabled), 3, map.HasScrollEnabled, (bool b) => map.HasScrollEnabled = b);
-			AddBoolMapOption(grid, nameof(map.TrafficEnabled), 4, map.TrafficEnabled, (bool b) => map.TrafficEnabled = b);
+		//	AddBoolMapOption(grid, nameof(map.TrafficEnabled), 4, map.TrafficEnabled, (bool b) => map.TrafficEnabled = b);
 			AddBoolMapOption(grid, nameof(map.HasZoomEnabled), 5, map.HasZoomEnabled, (bool b) => map.HasZoomEnabled = b);
 
 			grid.Children.Add(map);
