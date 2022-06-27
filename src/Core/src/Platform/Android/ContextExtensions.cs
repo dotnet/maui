@@ -32,11 +32,23 @@ namespace Microsoft.Maui.Platform
 		// TODO FromPixels/ToPixels is both not terribly descriptive and also possibly sort of inaccurate?
 		// These need better names. It's really To/From Device-Independent, but that doesn't exactly roll off the tongue.
 
+		internal static double FromPixels(this View view, double pixels)
+		{
+			if (s_displayDensity != float.MinValue)
+				return pixels / s_displayDensity;
+			return view.Context.FromPixels(pixels);
+		}
+
 		public static double FromPixels(this Context? self, double pixels)
 		{
 			EnsureMetrics(self);
 
 			return pixels / s_displayDensity;
+		}
+
+		internal static Size FromPixels(this View view, double width, double height)
+		{
+			return new Size(view.FromPixels(width), view.FromPixels(height));
 		}
 
 		public static Size FromPixels(this Context context, double width, double height)
@@ -70,6 +82,13 @@ namespace Microsoft.Maui.Platform
 			// Can happen in the context of the Android Designer
 			if (self.GetSystemService(Context.InputMethodService) is InputMethodManager service)
 				service.ShowSoftInput(view, ShowFlags.Implicit);
+		}
+
+		internal static float ToPixels(this View view, double dp)
+		{
+			if (s_displayDensity != float.MinValue)
+				return (float)Math.Ceiling(dp * s_displayDensity);
+			return view.Context.ToPixels(dp);
 		}
 
 		public static float ToPixels(this Context? self, double dp)

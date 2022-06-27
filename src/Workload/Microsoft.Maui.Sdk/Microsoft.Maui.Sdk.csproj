@@ -80,6 +80,18 @@
         OldValue="@MicrosoftWindowsSDKBuildToolsPackageVersion@"
         NewValue="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
     />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)BundledVersions.targets"
+        Output="$(IntermediateOutputPath)BundledVersions.targets"
+        OldValue="@MicrosoftExtensionsPackageVersion@"
+        NewValue="$(MicrosoftExtensionsPackageVersion)"
+    />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)BundledVersions.targets"
+        Output="$(IntermediateOutputPath)BundledVersions.targets"
+        OldValue="@MicrosoftExtensionsServicingPackageVersion@"
+        NewValue="$(MicrosoftExtensionsServicingPackageVersion)"
+    />
     <ItemGroup>
       <None
           Include="$(IntermediateOutputPath)BundledVersions.targets"

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -7,6 +8,20 @@ namespace Microsoft.Maui.Handlers
 		protected override PlatformTouchGraphicsView CreatePlatformView()
 		{
 			return new PlatformTouchGraphicsView();
+		}
+
+		private protected override void OnConnectHandler(FrameworkElement platformView)
+		{
+			base.OnConnectHandler(platformView);
+
+			platformView.Loaded += OnLoaded;
+		}
+
+		private protected override void OnDisconnectHandler(FrameworkElement platformView)
+		{
+			base.OnDisconnectHandler(platformView);
+
+			platformView.Loaded -= OnLoaded;
 		}
 
 		public static void MapDrawable(IGraphicsViewHandler handler, IGraphicsView graphicsView)
@@ -23,6 +38,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapInvalidate(IGraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
 		{
 			handler.PlatformView?.Invalidate();
+		}
+
+		void OnLoaded(object sender, RoutedEventArgs e)
+		{
+			VirtualView?.InvalidateMeasure();
 		}
 	}
 }
