@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample
 					.OnCreate((a, b) =>
 					{
 
-						Microsoft.Maui.Handlers.MapHandler.Bundle = b;
+						Microsoft.Maui.Maps.Handlers.MapHandler.Bundle = b;
 #pragma warning disable CS0618 // Type or member is obsolete
 						if (GooglePlayServicesUtil.IsGooglePlayServicesAvailable(a) == ConnectionResult.Success)
 #pragma warning restore 618
