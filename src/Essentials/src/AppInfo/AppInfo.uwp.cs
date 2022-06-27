@@ -32,8 +32,8 @@ namespace Microsoft.Maui.ApplicationModel
 		public void ShowSettingsUI() =>
 			global::Windows.System.Launcher.LaunchUriAsync(new global::System.Uri("ms-settings:appsfeatures-app")).WatchForError();
 
-		public AppTheme RequestedTheme =>
-			Application.Current.RequestedTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
+		public AppTheme RequestedTheme => MainThread.IsMainThread ?
+			(Application.Current.RequestedTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light) : AppTheme.Unspecified;
 
 		public AppPackagingModel PackagingModel => AppInfoUtils.IsPackagedApp
 			? AppPackagingModel.Packaged
