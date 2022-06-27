@@ -7,6 +7,15 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SearchBarExtensions
 	{
+
+		internal static UITextField? GetSearchTextField(this UISearchBar searchBar)
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(13))
+				return searchBar.SearchTextField;
+			else
+				return searchBar.GetSearchTextField();
+		}
+
 		// TODO: NET7 maybe make this public?
 		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
