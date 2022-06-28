@@ -11,6 +11,13 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	class AppInfoImplementation : IAppInfo
 	{
+		ApplicationTheme? _applicationTheme;
+		public AppInfoImplementation()
+		{
+			if (MainThread.IsMainThread)
+				_applicationTheme = Application.Current.RequestedTheme;
+		}
+
 		public string PackageName => Package.Current.Id.Name;
 
 		public string Name => Package.Current.DisplayName;
@@ -32,14 +39,19 @@ namespace Microsoft.Maui.ApplicationModel
 		public void ShowSettingsUI() =>
 			global::Windows.System.Launcher.LaunchUriAsync(new global::System.Uri("ms-settings:appsfeatures-app")).WatchForError();
 
+		internal void ThemeChanged() =>
+			_applicationTheme = Application.Current.RequestedTheme;
+
 		public AppTheme RequestedTheme
 		{
 			get
 			{
-				if (!MainThread.IsMainThread)
-					throw new InvalidOperationException("RequestedTheme must be called from the UI Thread");
+				if (MainThread.IsMainThread)
+					_applicationTheme = Application.Current.RequestedTheme;
+				else if (_applicationTheme == null)
+					return AppTheme.Unspecified;
 
-				return Application.Current.RequestedTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
+				return _applicationTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
 			}
 		}
 

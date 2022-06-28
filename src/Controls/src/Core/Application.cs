@@ -174,18 +174,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public AppTheme PlatformAppTheme
-		{
-			get
-			{
-#if WINDOWS
-				if (!MainThread.IsMainThread)
-					return _lastAppTheme;
-#endif
-
-				return AppInfo.RequestedTheme;
-			}
-		}
+		public AppTheme PlatformAppTheme => AppInfo.RequestedTheme;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='RequestedTheme']/Docs" />
 		public AppTheme RequestedTheme => UserAppTheme != AppTheme.Unspecified ? UserAppTheme : PlatformAppTheme;
@@ -233,30 +222,24 @@ namespace Microsoft.Maui.Controls
 
 		void TriggerThemeChangedActual()
 		{
-			// This will most likely never be called off the main thread but just in case.
-			// BeginInvokeOnMainThread will invoke on the action immediately if we
-			// are already on the MainThread
-			MainThread.BeginInvokeOnMainThread(() =>
+			var newTheme = RequestedTheme;
+
+			// On iOS the event is triggered more than once.
+			// To minimize that for us, we only do it when the theme actually changes and it's not currently firing
+			if (_themeChangedFiring || newTheme == _lastAppTheme)
+				return;
+
+			try
 			{
-				var newTheme = RequestedTheme;
+				_themeChangedFiring = true;
+				_lastAppTheme = newTheme;
 
-				// On iOS the event is triggered more than once.
-				// To minimize that for us, we only do it when the theme actually changes and it's not currently firing
-				if (_themeChangedFiring || newTheme == _lastAppTheme)
-					return;
-
-				try
-				{
-					_themeChangedFiring = true;
-					_lastAppTheme = newTheme;
-
-					_weakEventManager.HandleEvent(this, new AppThemeChangedEventArgs(newTheme), nameof(RequestedThemeChanged));
-				}
-				finally
-				{
-					_themeChangedFiring = false;
-				}
-			});
+				_weakEventManager.HandleEvent(this, new AppThemeChangedEventArgs(newTheme), nameof(RequestedThemeChanged));
+			}
+			finally
+			{
+				_themeChangedFiring = false;
+			}
 		}
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
