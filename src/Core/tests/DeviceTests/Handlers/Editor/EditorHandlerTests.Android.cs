@@ -212,5 +212,15 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		int GetPlatformSelectionLength(EditorHandler editorHandler)
+		{
+			var textView = GetNativeEditor(editorHandler);
+
+			if (textView != null)
+				return textView.SelectionEnd - textView.SelectionStart;
+
+			return -1;
+		}
 	}
 }

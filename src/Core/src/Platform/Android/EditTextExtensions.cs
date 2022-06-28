@@ -19,22 +19,16 @@ namespace Microsoft.Maui.Platform
 			// Therefore if:
 			// User Types => VirtualView Updated => Triggers Native Update
 			// Then it will cause the cursor to reset to position zero as the user typed
-			if (entry.Text != editText.Text)
-			{
-				editText.Text = entry.Text;
-				editText.SetSelection(editText.Text?.Length ?? 0);
-			}
+			editText.Text = entry.Text;
+			editText.SetSelection(editText.Text?.Length ?? 0);
 
 			// TODO ezhart The renderer sets the text to selected and shows the keyboard if the EditText is focused
 		}
 
 		public static void UpdateText(this EditText editText, IEditor editor)
 		{
-			if (editor.Text != editText.Text)
-			{
-				editText.Text = editor.Text;
-				editText.SetSelection(editText.Text?.Length ?? 0);
-			}
+			editText.Text = editor.Text;
+			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
 		public static void UpdateTextColor(this EditText editText, ITextStyle entry)

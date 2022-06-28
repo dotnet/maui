@@ -532,8 +532,42 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(text.Length, actualPosition);
 		}
 
+		[Theory(DisplayName = "Unset CursorPosition keeps to zero on initialization")]
+		[InlineData("This is a test!!!")]
+		[InlineData("a")]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task UnsetCursorPositionKeepsToZeroOnInitialization(string text)
+		{
+			var entry = new EntryStub
+			{
+				Text = text
+			};
+
+			int actualPosition = await GetValueAsync(entry, GetNativeCursorPosition);
+
+			Assert.Equal(0, actualPosition);
+		}
+
+		[Theory(DisplayName = "CursorPosition moves to the end on text change after initialization")]
+		[InlineData("This is a test!!!")]
+		[InlineData("a")]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task CursorPositionMovesToTheEndOnTextChangeAfterInitialization(string text)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test"
+			};
+
+			await SetValueAsync(entry, text, SetNativeText);
+
+			Assert.Equal(text.Length, entry.CursorPosition);
+		}																								
+
 		[Theory(DisplayName = "SelectionLength Initializes Correctly")]
-		[InlineData(0)]
+		[InlineData(2)]
 		public async Task SelectionLengthInitializesCorrectly(int initialLength)
 		{
 			var entry = new EntryStub
@@ -582,6 +616,39 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(text.Length, actualLength);
 		}
 
+		[Theory(DisplayName = "Unset SelectionLength keeps to zero on initialization")]
+		[InlineData("This is a test!!!")]
+		[InlineData("a")]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task UnsetSelectionLengthKeepsToZeroOnInitialization(string text)
+		{
+			var entry = new EntryStub
+			{
+				Text = text
+			};
+
+			int actualPosition = await GetValueAsync(entry, GetNativeCursorPosition);
+
+			Assert.Equal(0, actualPosition);
+		}
+
+		[Theory(DisplayName = "SelectionLength keeps on zero on text change after initialization")]
+		[InlineData("This is a test!!!")]
+		[InlineData("a")]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task SelectionLengthMovesToTheEndOnTextChangeAfterInitialization(string text)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test"
+			};
+
+			await SetValueAsync(entry, text, SetNativeText);
+
+			Assert.Equal(0, entry.SelectionLength);
+		}
 
 		[Category(TestCategory.Entry)]
 		public class EntryTextInputTests : TextInputHandlerTests<EntryHandler, EntryStub>

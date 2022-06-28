@@ -83,5 +83,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		int GetNativeCursorPosition(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).GetCursorPosition();
+
+		int GetPlatformSelectionLength(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).SelectionLength;
 	}
 }
