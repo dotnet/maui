@@ -5,13 +5,13 @@ using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 using TSize = Tizen.UIExtensions.Common.Size;
 
-
 namespace Microsoft.Maui.Platform
 {
 	public class ContentViewGroup : ViewGroup, IMeasurable
 	{
 		IView? _virtualView;
 		Size _measureCache;
+		bool _needMeasureUpdate;
 
 		public ContentViewGroup(IView? view)
 		{
@@ -22,11 +22,36 @@ namespace Microsoft.Maui.Platform
 		public Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		public Func<Rect, Size>? CrossPlatformArrange { get; set; }
 
-		public TSize Measure(double availableWidth, double availableHeight)
+		public void SetNeedMeasureUpdate()
 		{
-			return CrossPlatformMeasure?.Invoke(availableWidth.ToScaledDP(), availableHeight.ToScaledDP()).ToPixel() ?? new TSize(0, 0);
+			_needMeasureUpdate = true;
+			MarkChanged();
 		}
 
+		public void ClearNeedMeasureUpdate()
+		{
+			_needMeasureUpdate = false;
+		}
+
+		public TSize Measure(double availableWidth, double availableHeight)
+		{
+			return InvokeCrossPlatformMeasure(availableWidth.ToScaledDP(), availableHeight.ToScaledDP()).ToPixel();
+		}
+
+		public Size InvokeCrossPlatformMeasure(double availableWidth, double availableHeight)
+		{
+			if (CrossPlatformMeasure == null)
+				return Graphics.Size.Zero;
+
+			var measured = CrossPlatformMeasure(availableWidth, availableHeight);
+			if (measured != _measureCache && _virtualView?.Parent is IView parentView)
+			{
+				parentView?.InvalidateMeasure();
+			}
+			_measureCache = measured;
+			ClearNeedMeasureUpdate();
+			return measured;
+		}
 
 		void OnLayoutUpdated(object? sender, LayoutEventArgs e)
 		{
@@ -34,13 +59,10 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var platformGeometry = this.GetBounds().ToDP();
-
-			var measured = CrossPlatformMeasure(platformGeometry.Width, platformGeometry.Height);
-			if (measured != _measureCache && _virtualView?.Parent is IView parentView)
+			if (_needMeasureUpdate)
 			{
-				parentView?.InvalidateMeasure();
+				InvokeCrossPlatformMeasure(platformGeometry.Width, platformGeometry.Height);
 			}
-			_measureCache = measured;
 
 			if (platformGeometry.Width > 0 && platformGeometry.Height > 0)
 			{

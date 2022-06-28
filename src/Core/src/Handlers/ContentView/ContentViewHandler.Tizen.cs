@@ -19,11 +19,6 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
-		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			return VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
-		}
-
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
@@ -65,6 +60,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					_contentHandler = thandler;
 				}
+				PlatformView.SetNeedMeasureUpdate();
 			}
 		}
 

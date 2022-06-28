@@ -52,13 +52,13 @@ namespace Microsoft.Maui.Platform
 			if (CrossPlatformMeasure == null)
 				return Graphics.Size.Zero;
 
-			ClearNeedMeasureUpdate();
 			var measured = CrossPlatformMeasure(availableWidth, availableHeight);
 			if (measured != _measureCache && _virtualView?.Parent is IView parentView)
 			{
 				parentView?.InvalidateMeasure();
 			}
 			_measureCache = measured;
+			ClearNeedMeasureUpdate();
 			return measured;
 		}
 

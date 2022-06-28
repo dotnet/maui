@@ -2959,7 +2959,6 @@ override Microsoft.Maui.Controls.Handlers.Items.EmptyItemAdaptor.MeasureItem(dou
 override Microsoft.Maui.Controls.Handlers.Items.GroupItemTemplateAdaptor.CreateNativeView(int index) -> Tizen.NUI.BaseComponents.View!
 override Microsoft.Maui.Controls.Handlers.Items.GroupItemTemplateAdaptor.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Items.GroupItemTemplateAdaptor.GetViewCategory(int index) -> object!
-override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.Handlers.Items.ItemTemplateAdaptor.CreateNativeView() -> Tizen.NUI.BaseComponents.View!
 override Microsoft.Maui.Controls.Handlers.Items.ItemTemplateAdaptor.CreateNativeView(int index) -> Tizen.NUI.BaseComponents.View!
 override Microsoft.Maui.Controls.Handlers.Items.ItemTemplateAdaptor.Dispose(bool disposing) -> void

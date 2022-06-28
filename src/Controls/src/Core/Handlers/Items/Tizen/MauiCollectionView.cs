@@ -4,14 +4,16 @@ using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Maui.Controls.Platform;
 using Tizen.UIExtensions.NUI;
+using IMeasurable = Tizen.UIExtensions.Common.IMeasurable;
 using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 using TScrollToPosition = Tizen.UIExtensions.Common.ScrollToPosition;
+using TSize = Tizen.UIExtensions.Common.Size;
 using TSnapPointsAlignment = Tizen.UIExtensions.NUI.SnapPointsAlignment;
 using TSnapPointsType = Tizen.UIExtensions.NUI.SnapPointsType;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract class MauiCollectionView<TItemsView> : TCollectionView where TItemsView : ItemsView
+	public abstract class MauiCollectionView<TItemsView> : TCollectionView, IMeasurable where TItemsView : ItemsView
 	{
 		INotifyCollectionChanged? _observableSource;
 		protected TItemsView? ItemsView { get; set; }
@@ -129,6 +131,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		public abstract IItemsLayout GetItemsLayout();
+
+		TSize IMeasurable.Measure(double availableWidth, double availableHeight)
+		{
+			if (Adaptor == null || LayoutManager == null || AllocatedSize == TSize.Zero)
+			{
+				var scaled = Devices.DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+				var size = new TSize(availableWidth, availableHeight);
+				if (size.Width == double.PositiveInfinity)
+					size.Width = scaled.Width.ToScaledPixel();
+				if (size.Height == double.PositiveInfinity)
+					size.Height = scaled.Height.ToScaledPixel();
+				return size;
+			}
+
+			var canvasSize = LayoutManager.GetScrollCanvasSize();
+			canvasSize.Width = System.Math.Min(canvasSize.Width, availableWidth);
+			canvasSize.Height = System.Math.Min(canvasSize.Height, availableHeight);
+
+			return canvasSize;
+		}
 
 		void OnLayoutPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{

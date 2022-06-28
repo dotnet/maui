@@ -1441,7 +1441,10 @@ Microsoft.Maui.Platform.ContentViewGroup.CrossPlatformArrange.get -> System.Func
 Microsoft.Maui.Platform.ContentViewGroup.CrossPlatformArrange.set -> void
 Microsoft.Maui.Platform.ContentViewGroup.CrossPlatformMeasure.get -> System.Func<double, double, Microsoft.Maui.Graphics.Size>?
 Microsoft.Maui.Platform.ContentViewGroup.CrossPlatformMeasure.set -> void
+Microsoft.Maui.Platform.ContentViewGroup.ClearNeedMeasureUpdate() -> void
+Microsoft.Maui.Platform.ContentViewGroup.InvokeCrossPlatformMeasure(double availableWidth, double availableHeight) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Platform.ContentViewGroup.Measure(double availableWidth, double availableHeight) -> Tizen.UIExtensions.Common.Size
+Microsoft.Maui.Platform.ContentViewGroup.SetNeedMeasureUpdate() -> void
 Microsoft.Maui.Platform.DatePickerExtensions
 Microsoft.Maui.Platform.DPExtensions
 Microsoft.Maui.Platform.EditorExtensions
@@ -1860,7 +1863,6 @@ override Microsoft.Maui.Handlers.CheckBoxHandler.CreatePlatformView() -> Tizen.U
 override Microsoft.Maui.Handlers.CheckBoxHandler.DisconnectHandler(Tizen.UIExtensions.NUI.GraphicsView.CheckBox! platformView) -> void
 override Microsoft.Maui.Handlers.ContentViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.ContentViewGroup!
 override Microsoft.Maui.Handlers.ContentViewHandler.Dispose(bool disposing) -> void
-override Microsoft.Maui.Handlers.ContentViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.ContentViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.DatePickerHandler.CreatePlatformView() -> Tizen.NUI.BaseComponents.View!
 override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(Tizen.UIExtensions.NUI.Editor! nativeView) -> void
@@ -1884,7 +1886,6 @@ override Microsoft.Maui.Handlers.IndicatorViewHandler.CreatePlatformView() -> Ti
 override Microsoft.Maui.Handlers.LabelHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.Label!
 override Microsoft.Maui.Handlers.LayoutHandler.CreatePlatformView() -> Microsoft.Maui.Platform.LayoutViewGroup!
 override Microsoft.Maui.Handlers.LayoutHandler.Dispose(bool disposing) -> void
-override Microsoft.Maui.Handlers.LayoutHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.LayoutHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.LayoutHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.MenuBarHandler.CreatePlatformElement() -> Tizen.NUI.BaseComponents.View!

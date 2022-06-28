@@ -17,11 +17,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.DisconnectHandler(nativeView);
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			return VirtualView.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins).Request;
-		}
-
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateItemsSource();
