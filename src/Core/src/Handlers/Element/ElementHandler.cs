@@ -28,17 +28,9 @@ namespace Microsoft.Maui.Handlers
 
 		public IServiceProvider? Services => MauiContext?.Services;
 
-		public object? PlatformView
-		{
-			get;
-			private protected set;
-		}
+		public object? PlatformView { get; private protected set; }
 
-		public IElement? VirtualView
-		{
-			get;
-			private protected set;
-		}
+		public IElement? VirtualView { get; private protected set; }
 
 		public virtual void SetMauiContext(IMauiContext mauiContext) =>
 			MauiContext = mauiContext;
