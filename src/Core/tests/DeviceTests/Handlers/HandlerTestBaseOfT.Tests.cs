@@ -9,15 +9,12 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	// for some reason the handler memory tests don't run so well when 
-	// executing in parallel
-	[Collection("Temporary")]
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
+#if IOS
 		[Fact(DisplayName = "Handlers Deallocate When No Longer Referenced")]
 		public async Task HandlersDeallocateWhenNoLongerReferenced()
 		{
-
 			var stub = new TStub();
 			WeakReference<TStub> weakView = new WeakReference<TStub>(stub);
 
@@ -27,21 +24,22 @@ namespace Microsoft.Maui.DeviceTests
 			stub = null;
 			handler = null;
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			await Task.Delay(100);
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			await Task.Delay(100);
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			await Task.Delay(300);
+			await AssertionExtensions.Wait(() =>
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+
+				if (weakHandler.TryGetTarget(out THandler _) ||
+					weakView.TryGetTarget(out TStub _))
+				{
+					return false;
+				}
+
+				return true;
+
+			}, 5000);
 
 			if (weakHandler.TryGetTarget(out THandler _))
 				Assert.True(false, $"{typeof(THandler)} failed to collect");
@@ -49,6 +47,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (weakView.TryGetTarget(out TStub _))
 				Assert.True(false, $"{typeof(TStub)} failed to collect");
 		}
+#endif
 
 		[Fact(DisplayName = "Automation Id is set correctly")]
 		public async Task SetAutomationId()
