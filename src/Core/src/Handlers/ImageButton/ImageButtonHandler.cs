@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IButtonStroke.StrokeColor)] = MapStrokeColor,
 			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius,
 			[nameof(IImageButton.Padding)] = MapPadding,
-#if WINDOWS
+#if ANDROID || WINDOWS
 			[nameof(IImageButton.Background)] = MapBackground,
 #endif
 		};

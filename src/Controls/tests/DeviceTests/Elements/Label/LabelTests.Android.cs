@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Android.Text;
 using Android.Widget;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -13,6 +14,30 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class LabelTests
 	{
+		[Fact]
+		public async Task FormattedStringSpanTextHasCorrectColorWhenChanges()
+		{
+			var expected = Colors.Red;
+
+			var formattedLabel = new Label
+			{
+				WidthRequest = 200,
+				HeightRequest = 50,
+				FormattedText = new FormattedString
+				{
+					Spans =
+					{
+						new Span { Text = "short" },
+						new Span { Text = " long second string"}
+					}
+				},
+			};
+
+			formattedLabel.TextColor = expected;
+
+			await ValidateHasColor(formattedLabel, expected);
+		}
+
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 
@@ -21,5 +46,15 @@ namespace Microsoft.Maui.DeviceTests
 
 		int GetPlatformMaxLines(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).MaxLines;
+
+		Task ValidateHasColor(Label label, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var labelHandler = CreateHandler<LabelHandler>(label);
+				action?.Invoke();
+				labelHandler.PlatformView.AssertContainsColor(color);
+			});
+		}
 	}
 }

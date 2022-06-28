@@ -36,29 +36,29 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public static readonly BindableProperty StrokeShapeProperty =
-			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Layout), null);
+			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Border), null);
 
 		public static readonly BindableProperty StrokeProperty =
-			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Layout), null);
+			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Border), null);
 
 		public static readonly BindableProperty StrokeThicknessProperty =
-			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Layout), 1.0, propertyChanged: StrokeThicknessChanged);
+			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Border), 1.0, propertyChanged: StrokeThicknessChanged);
 
 		public static readonly BindableProperty StrokeDashArrayProperty =
-			BindableProperty.Create(nameof(StrokeDashArray), typeof(DoubleCollection), typeof(Layout), null,
+			BindableProperty.Create(nameof(StrokeDashArray), typeof(DoubleCollection), typeof(Border), null,
 				defaultValueCreator: bindable => new DoubleCollection());
 
 		public static readonly BindableProperty StrokeDashOffsetProperty =
-			BindableProperty.Create(nameof(StrokeDashOffset), typeof(double), typeof(Layout), 0.0);
+			BindableProperty.Create(nameof(StrokeDashOffset), typeof(double), typeof(Border), 0.0);
 
 		public static readonly BindableProperty StrokeLineCapProperty =
-			BindableProperty.Create(nameof(StrokeLineCap), typeof(PenLineCap), typeof(Layout), PenLineCap.Flat);
+			BindableProperty.Create(nameof(StrokeLineCap), typeof(PenLineCap), typeof(Border), PenLineCap.Flat);
 
 		public static readonly BindableProperty StrokeLineJoinProperty =
-			BindableProperty.Create(nameof(StrokeLineJoin), typeof(PenLineJoin), typeof(Layout), PenLineJoin.Miter);
+			BindableProperty.Create(nameof(StrokeLineJoin), typeof(PenLineJoin), typeof(Border), PenLineJoin.Miter);
 
 		public static readonly BindableProperty StrokeMiterLimitProperty =
-			BindableProperty.Create(nameof(StrokeMiterLimit), typeof(double), typeof(Layout), 10.0);
+			BindableProperty.Create(nameof(StrokeMiterLimit), typeof(double), typeof(Border), 10.0);
 
 		[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
 		public IShape? StrokeShape

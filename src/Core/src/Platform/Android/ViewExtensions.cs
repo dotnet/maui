@@ -22,12 +22,8 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void Initialize(this AView platformView, IView view)
 		{
-			var context = platformView.Context;
-			if (context == null)
-				return;
-
-			var pivotX = (float)(view.AnchorX * context.ToPixels(view.Frame.Width));
-			var pivotY = (float)(view.AnchorY * context.ToPixels(view.Frame.Height));
+			var pivotX = (float)(view.AnchorX * platformView.ToPixels(view.Frame.Width));
+			var pivotY = (float)(view.AnchorY * platformView.ToPixels(view.Frame.Height));
 			int visibility;
 
 			if (view is IActivityIndicator a)
@@ -43,12 +39,12 @@ namespace Microsoft.Maui.Platform
 			PlatformInterop.Set(platformView,
 				visibility: visibility,
 				layoutDirection: (int)GetLayoutDirection(view),
-				minimumHeight: (int)context.ToPixels(view.MinimumHeight),
-				minimumWidth: (int)context.ToPixels(view.MinimumWidth),
+				minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
+				minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
 				enabled: view.IsEnabled,
 				alpha: (float)view.Opacity,
-				translationX: context.ToPixels(view.TranslationX),
-				translationY: context.ToPixels(view.TranslationY),
+				translationX: platformView.ToPixels(view.TranslationX),
+				translationY: platformView.ToPixels(view.TranslationY),
 				scaleX: (float)(view.Scale * view.ScaleX),
 				scaleY: (float)(view.Scale * view.ScaleY),
 				rotation: (float)view.Rotation,
@@ -563,6 +559,25 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+
+		internal static Rect GetFrameRelativeTo(this View view, View relativeTo)
+		{
+			var viewWindowLocation = view.GetLocationOnScreen();
+			var relativeToLocation = relativeTo.GetLocationOnScreen();
+
+			return
+				new Rect(
+						new Point(viewWindowLocation.X - relativeToLocation.X, viewWindowLocation.Y - relativeToLocation.Y),
+						new Graphics.Size(view.Context.FromPixels(view.MeasuredWidth), view.Context.FromPixels(view.MeasuredHeight))
+					);
+		}
+
+		internal static Rect GetFrameRelativeToWindow(this View view)
+		{
+			return
+				new Rect(view.GetLocationOnScreen(),
+				new(view.Context.FromPixels(view.MeasuredHeight), view.Context.FromPixels(view.MeasuredWidth)));
 		}
 
 		internal static Point GetLocationOnScreen(this View view)

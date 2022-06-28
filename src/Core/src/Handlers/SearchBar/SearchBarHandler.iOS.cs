@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -15,10 +15,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var searchBar = new MauiSearchBar() { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13))
-				_editor = searchBar.SearchTextField;
-			else
-				_editor = searchBar.FindDescendantView<UITextField>();
+			_editor = searchBar.GetSearchTextField();
 
 			return searchBar;
 		}
@@ -64,6 +61,12 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
+		}
+
+		// TODO: NET7 make this public
+		internal static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateBackground(searchBar);
 		}
 
 		public static void MapIsEnabled(ISearchBarHandler handler, ISearchBar searchBar)

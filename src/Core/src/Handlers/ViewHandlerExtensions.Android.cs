@@ -88,11 +88,12 @@ namespace Microsoft.Maui
 			var widthSpec = Context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MaximumWidth);
 			var heightSpec = Context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MaximumHeight);
 
-			platformView.Measure(widthSpec, heightSpec);
+			var packed = PlatformInterop.MeasureAndGetWidthAndHeight(platformView, widthSpec, heightSpec);
+			var measuredWidth = (int)(packed >> 32);
+			var measuredHeight = (int)(packed & 0xffffffffL);
 
 			// Convert back to xplat sizes for the return value
-			return Context.FromPixels(platformView.MeasuredWidth, platformView.MeasuredHeight);
-
+			return Context.FromPixels(measuredWidth, measuredHeight);
 		}
 
 		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rect frame)
