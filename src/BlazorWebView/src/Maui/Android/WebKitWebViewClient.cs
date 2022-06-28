@@ -8,7 +8,9 @@ using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
-	[SupportedOSPlatform("android23.0")]
+	[SupportedOSPlatform("android21.0")]
+
+	//理论上应该是android 5.1以上才被支持WebMessage
 	internal class WebKitWebViewClient : WebViewClient
 	{
 		// Using an IP address means that WebView doesn't wait for any DNS resolution,

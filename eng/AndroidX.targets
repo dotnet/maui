@@ -61,5 +61,10 @@
         Update="Xamarin.AndroidX.Window.WindowJava"
         Version="1.0.0.9"
     />
+	<PackageReference
+        Update="Xamarin.AndroidX.WebKit"
+        Version="1.4.0.8"
+    />
+	
   </ItemGroup>
 </Project>

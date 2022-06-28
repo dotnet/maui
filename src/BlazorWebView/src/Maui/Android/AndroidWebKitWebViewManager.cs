@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Android.Webkit;
+using AndroidX.WebKit;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// An implementation of <see cref="WebViewManager"/> that uses the Android WebKit WebView browser control
 	/// to render web content.
 	/// </summary>
-	[SupportedOSPlatform("android23.0")]
+	[SupportedOSPlatform("android21.0")]
 	internal class AndroidWebKitWebViewManager : WebViewManager
 	{
 		// Using an IP address means that WebView doesn't wait for any DNS resolution,
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void SendMessage(string message)
 		{
-			_webview.PostWebMessage(new WebMessage(message), AndroidAppOriginUri);
+			WebViewCompat.PostWebMessage(_webview, new WebMessageCompat(message), AndroidAppOriginUri);
 		}
 
 		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal void SetUpMessageChannel()
 		{
 			// These ports will be closed automatically when the webview gets disposed.
-			var nativeToJSPorts = _webview.CreateWebMessageChannel();
+			var nativeToJSPorts = WebViewCompat.CreateWebMessageChannel(_webview);
 
 			var nativeToJs = new BlazorWebMessageCallback(message =>
 			{
@@ -87,10 +88,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			nativeToJSPorts[0].SetWebMessageCallback(nativeToJs);
 
-			_webview.PostWebMessage(new WebMessage("capturePort", destPort), AndroidAppOriginUri);
+			WebViewCompat.PostWebMessage(_webview, new WebMessageCompat("capturePort", destPort), AndroidAppOriginUri);
 		}
 
-		private class BlazorWebMessageCallback : WebMessagePort.WebMessageCallback
+		private class BlazorWebMessageCallback : WebMessagePortCompat.WebMessageCallbackCompat
 		{
 			private readonly Action<string?> _onMessageReceived;
 
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				_onMessageReceived = onMessageReceived ?? throw new ArgumentNullException(nameof(onMessageReceived));
 			}
 
-			public override void OnMessage(WebMessagePort? port, WebMessage? message)
+			public override void OnMessage(WebMessagePortCompat? port, WebMessageCompat? message)
 			{
 				if (message is null)
 				{
@@ -108,6 +109,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				_onMessageReceived(message.Data);
 			}
+
 		}
 	}
 }

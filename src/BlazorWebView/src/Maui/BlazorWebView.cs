@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		/// <inheritdoc />
 #if ANDROID
-		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("android21.0")]
 #elif IOS
 		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
 #endif

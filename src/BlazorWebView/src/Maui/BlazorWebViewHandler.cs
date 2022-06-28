@@ -9,7 +9,7 @@ using Microsoft.Maui.Handlers;
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 #if ANDROID
-	[SupportedOSPlatform("android23.0")]
+	[SupportedOSPlatform("android21.0")]
 #endif
 	public partial class BlazorWebViewHandler
 	{
