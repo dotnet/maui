@@ -34,12 +34,6 @@ namespace Microsoft.Maui.Handlers
 
 			return platformPicker;
 		}
-
-		void OnAccessoryViewDoneClicked(object? sender, EventArgs e)
-		{
-			if (PlatformView.InputView is UIPickerView pickerView)
-				FinishSelectItem(pickerView, PlatformView);
-		}
 #else
 		protected override MauiPicker CreatePlatformView()
 		{
