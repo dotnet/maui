@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Platform
 	public class StackNavigationManager : View, IToolbarContainer
 	{
 		Dictionary<IView, NaviPage> _pageMap = new Dictionary<IView, NaviPage>();
+		Dictionary<IView, IViewHandler?> _handlerMap = new Dictionary<IView, IViewHandler?>();
 
 		MauiToolbar? _toolbar;
 
@@ -142,7 +143,11 @@ namespace Microsoft.Maui.Platform
 					{
 						PlatformNavigation.Pop(GetNavigationItem(page));
 						_pageMap.Remove(page);
-						(page.Handler as IPlatformViewHandler)?.Dispose();
+						if (_handlerMap.TryGetValue(page, out var handler))
+						{
+							(handler as IPlatformViewHandler)?.Dispose();
+							_handlerMap.Remove(page);
+						}
 					}
 				}
 			}
@@ -175,7 +180,11 @@ namespace Microsoft.Maui.Platform
 					PlatformNavigation.Pop(GetNavigationItem(NavigationStack[i]));
 				}
 				_pageMap.Remove(page);
-				(page.Handler as IPlatformViewHandler)?.Dispose();
+				if (_handlerMap.TryGetValue(page, out var handler))
+				{
+					(handler as IPlatformViewHandler)?.Dispose();
+					_handlerMap.Remove(page);
+				}
 			}
 		}
 
@@ -202,6 +211,7 @@ namespace Microsoft.Maui.Platform
 				HeightSpecification = LayoutParamPolicies.MatchParent,
 			};
 			_pageMap[page] = naviPage;
+			_handlerMap[page] = page.Handler;
 			return naviPage;
 		}
 	}
