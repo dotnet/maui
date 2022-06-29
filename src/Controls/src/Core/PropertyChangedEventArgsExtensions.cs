@@ -27,6 +27,9 @@ namespace Microsoft.Maui.Controls
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool IsOneOf(this PropertyChangedEventArgs args, BindableProperty p0, BindableProperty p1, BindableProperty p2)
 		{
+			if (string.IsNullOrEmpty(args.PropertyName))
+				return true;
+
 			return args.PropertyName == p0.PropertyName ||
 				args.PropertyName == p1.PropertyName ||
 				args.PropertyName == p2.PropertyName;
@@ -35,6 +38,9 @@ namespace Microsoft.Maui.Controls
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool IsOneOf(this PropertyChangedEventArgs args, BindableProperty p0, BindableProperty p1, BindableProperty p2, BindableProperty p3)
 		{
+			if (string.IsNullOrEmpty(args.PropertyName))
+				return true;
+
 			return args.PropertyName == p0.PropertyName ||
 				args.PropertyName == p1.PropertyName ||
 				args.PropertyName == p2.PropertyName ||
@@ -44,6 +50,9 @@ namespace Microsoft.Maui.Controls
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool IsOneOf(this PropertyChangedEventArgs args, BindableProperty p0, BindableProperty p1, BindableProperty p2, BindableProperty p3, BindableProperty p4)
 		{
+			if (string.IsNullOrEmpty(args.PropertyName))
+				return true;
+
 			return args.PropertyName == p0.PropertyName ||
 				args.PropertyName == p1.PropertyName ||
 				args.PropertyName == p2.PropertyName ||
