@@ -11,12 +11,12 @@ namespace Microsoft.Maui.Storage
 	{
 		string PlatformCacheDirectory
 			=> AppInfoUtils.IsPackagedApp
-				? ApplicationData.Current.LocalCacheFolder.Path;
+				? ApplicationData.Current.LocalCacheFolder.Path
 				: Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
 		string PlatformAppDataDirectory
 			=> AppInfoUtils.IsPackagedApp
-				? ApplicationData.Current.LocalFolder.Path;
+				? ApplicationData.Current.LocalFolder.Path
 				: Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
 		Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
