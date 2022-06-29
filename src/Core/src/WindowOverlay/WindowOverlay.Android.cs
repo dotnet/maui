@@ -91,7 +91,10 @@ namespace Microsoft.Maui
 			if (e.Event.Action != MotionEventActions.Down && e.Event.ButtonState != MotionEventButtonState.Primary)
 				return;
 
-			var point = new Point(e.Event.RawX, e.Event.RawY);
+			var x = this._nativeLayer?.Context.FromPixels(e.Event.RawX) ?? 0;
+			var y = this._nativeLayer?.Context.FromPixels(e.Event.RawY) ?? 0;
+
+			var point = new Point(x, y);
 
 			e.Handled = false;
 			if (DisableUITouchEventPassthrough)
