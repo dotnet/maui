@@ -6,9 +6,9 @@ namespace Microsoft.Maui
 	public static class IPickerExtension
 	{
 		public static string[] GetItemsAsArray(this IPicker picker)
-			=> Enumerable.Range(0, picker.GetCount()).Select(i => picker.GetItem(i)).ToArray();
+			=> Enumerable.Range(0, picker.GetCount()).Select(picker.GetItem).ToArray();
 
 		public static List<string> GetItemsAsList(this IPicker picker)
-			=> Enumerable.Range(0, picker.GetCount()).Select(i => picker.GetItem(i)).ToList();
+			=> Enumerable.Range(0, picker.GetCount()).Select(picker.GetItem).ToList();
 	}
 }
