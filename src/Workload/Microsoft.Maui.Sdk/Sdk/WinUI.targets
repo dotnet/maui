@@ -18,4 +18,6 @@
     </ItemGroup>
   </Target>
 
+  <Import Project="WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' " />
+
 </Project>
