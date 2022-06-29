@@ -112,6 +112,10 @@ steps:
         AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
 
     - pwsh: |
+        'y' | & "${env:ProgramFiles(x86)}\Android\android-sdk\cmdline-tools\5.0\bin\sdkmanager" "platforms;android-33"
+      displayName: Install Android API 33
+
+    - pwsh: |
         $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
         echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
       displayName: 'Setup MSBuild Paths'
