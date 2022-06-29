@@ -10,10 +10,14 @@ namespace Microsoft.Maui.Storage
 	partial class FileSystemImplementation : IFileSystem
 	{
 		string PlatformCacheDirectory
-			=> ApplicationData.Current.LocalCacheFolder.Path;
+			=> AppInfoUtils.IsPackagedApp
+				? ApplicationData.Current.LocalCacheFolder.Path;
+				: Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
 		string PlatformAppDataDirectory
-			=> ApplicationData.Current.LocalFolder.Path;
+			=> AppInfoUtils.IsPackagedApp
+				? ApplicationData.Current.LocalFolder.Path;
+				: Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
 		Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
 		{
