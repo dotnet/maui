@@ -222,7 +222,7 @@ public static int foo = 2130771968;
 - net6.0
   - This PR seems like it should go out with a net6.0 service release
 - main (start here if you don't know what to use)
-  - I want to use the net6.0 sdk and make changes that will be released with the .NET7 release of MAUI
+  - I want to use the net6.0 sdk and make changes that will be released with the .NET 7 release of MAUI
 
 ## Repository projects
 
