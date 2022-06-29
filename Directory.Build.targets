@@ -69,7 +69,6 @@
 
   <!--
     Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
-    This replaces the error check target entirely as it is not needed.
   -->
   <Import Project="src\Workload\Microsoft.Maui.Sdk\Sdk\WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' and '$(_MauiTargetPlatformIsWindows)' == 'True' " />
 
