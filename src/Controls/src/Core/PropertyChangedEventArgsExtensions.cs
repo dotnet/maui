@@ -8,12 +8,18 @@ namespace Microsoft.Maui.Controls
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool Is(this PropertyChangedEventArgs args, BindableProperty property)
 		{
+			if (string.IsNullOrEmpty(args.PropertyName))
+				return true;
+
 			return args.PropertyName == property.PropertyName;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool IsOneOf(this PropertyChangedEventArgs args, BindableProperty p0, BindableProperty p1)
 		{
+			if (string.IsNullOrEmpty(args.PropertyName))
+				return true;
+
 			return args.PropertyName == p0.PropertyName ||
 				args.PropertyName == p1.PropertyName;
 		}
