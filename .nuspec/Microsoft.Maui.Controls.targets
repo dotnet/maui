@@ -28,6 +28,11 @@
 		<AndroidAotProfile Include="$(MSBuildThisFileDirectory)maui-blazor.aotprofile" />
 	</ItemGroup>
 
+	<!-- Allows .NET MAUI XAML Hot Reload to deploy on iOS Devices. -->
+	<PropertyGroup>
+		<LinkMode Condition="'$(Configuration)' == 'Debug' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">None</LinkMode>
+	</PropertyGroup>
+
 	<!-- Check Tasks ABI and other validations -->
 	<PropertyGroup>
 		<_MauiTargetsImportedAgain Condition="'$(_MauiTargetsImported)'=='True'">True</_MauiTargetsImportedAgain>
