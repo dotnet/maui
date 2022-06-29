@@ -14,7 +14,7 @@ namespace Microsoft.Maui.ApplicationModel
 		ApplicationTheme? _applicationTheme;
 		public AppInfoImplementation()
 		{
-			if (MainThread.IsMainThread)
+			if (MainThread.IsMainThread && Application.Current != null)
 				_applicationTheme = Application.Current.RequestedTheme;
 		}
 
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			get
 			{
-				if (MainThread.IsMainThread)
+				if (MainThread.IsMainThread && Application.Current != null)
 					_applicationTheme = Application.Current.RequestedTheme;
 				else if (_applicationTheme == null)
 					return AppTheme.Unspecified;
