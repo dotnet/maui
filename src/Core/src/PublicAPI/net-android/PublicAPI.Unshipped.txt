@@ -2,3 +2,35 @@
 override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiPicker.MauiPicker(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiPickerBase.MauiPickerBase(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.GetAccessibilityNodeProvider(Android.Views.View! host) -> AndroidX.Core.View.Accessibility.AccessibilityNodeProviderCompat?
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAccessibilityAction(Android.Views.View! host, int action, Android.OS.Bundle? args) -> bool
+override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
+override Microsoft.Maui.Platform.NavigationViewFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
+static Microsoft.Maui.Platform.SwitchExtensions.GetDefaultSwitchThumbDrawable(this AndroidX.AppCompat.Widget.SwitchCompat! aSwitch) -> Android.Graphics.Drawables.Drawable?
+static Microsoft.Maui.Platform.SwitchExtensions.GetDefaultSwitchTrackDrawable(this AndroidX.AppCompat.Widget.SwitchCompat! aSwitch) -> Android.Graphics.Drawables.Drawable?
+virtual Microsoft.Maui.Handlers.EntryHandler.GetClearButtonDrawable() -> Android.Graphics.Drawables.Drawable?
+*REMOVED*virtual Microsoft.Maui.Handlers.EntryHandler.GetClearButtonDrawable() -> Android.Graphics.Drawables.Drawable!
+*REMOVED*static Microsoft.Maui.Platform.SwitchExtensions.GetDefaultSwitchTrackDrawable(this AndroidX.AppCompat.Widget.SwitchCompat! aSwitch) -> Android.Graphics.Drawables.Drawable!
+*REMOVED*override Microsoft.Maui.Platform.NavigationViewFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup! container, Android.OS.Bundle! savedInstanceState) -> Android.Views.View!
+*REMOVED*override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAccessibilityAction(Android.Views.View! host, int action, Android.OS.Bundle! args) -> bool
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.GetAccessibilityNodeProvider(Android.Views.View! host) -> AndroidX.Core.View.Accessibility.AccessibilityNodeProviderCompat!
+*REMOVED*static Microsoft.Maui.Platform.SwitchExtensions.GetDefaultSwitchThumbDrawable(this AndroidX.AppCompat.Widget.SwitchCompat! aSwitch) -> Android.Graphics.Drawables.Drawable!
+*REMOVED*Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs, int defStyleAttr) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context? context) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiPickerBase.MauiPickerBase(Android.Content.Context? context) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiPicker.MauiPicker(Android.Content.Context? context) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs, int defStyleAttr) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context? context) -> void
