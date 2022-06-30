@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				nativeToolbar.SetTitleTextColor(textColor.ToPlatform().ToArgb());
 			}
-			else
+			else if(_defaultTitleTextColor != null)
 			{
 				nativeToolbar.SetTitleTextColor(_defaultTitleTextColor);
 			}
@@ -238,7 +238,10 @@ namespace Microsoft.Maui.Controls.Platform
 			int toolBarItemCount = i;
 			while (toolBarItemCount < previousMenuItems.Count)
 			{
-				menu.RemoveItem(previousMenuItems[toolBarItemCount].ItemId);
+				if (menu != null)
+				{
+					menu.RemoveItem(previousMenuItems[toolBarItemCount].ItemId);
+				}
 				previousMenuItems[toolBarItemCount].Dispose();
 				previousMenuItems.RemoveAt(toolBarItemCount);
 			}
@@ -257,10 +260,10 @@ namespace Microsoft.Maui.Controls.Platform
 			List<ToolbarItem> previousToolBarItems,
 			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
 		{
-			var context = mauiContext.Context ??
+			var context = mauiContext?.Context ??
 					throw new ArgumentNullException($"{nameof(mauiContext.Context)}");
 
-			IMenu menu = toolbar.Menu;
+			IMenu? menu = toolbar.Menu;
 
 			item.PropertyChanged -= toolbarItemChanged;
 			item.PropertyChanged += toolbarItemChanged;
@@ -292,7 +295,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (menuItemIndex == null || menuItemIndex >= previousMenuItems?.Count)
 			{
-				menuitem = menu.Add(0, AView.GenerateViewId(), 0, newTitle) ??
+				menuitem = menu?.Add(0, AView.GenerateViewId(), 0, newTitle) ??
 					throw new InvalidOperationException($"Failed to create menuitem: {newTitle}");
 				previousMenuItems?.Add(menuitem);
 			}
