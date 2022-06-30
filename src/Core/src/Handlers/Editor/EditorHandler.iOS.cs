@@ -14,14 +14,20 @@ namespace Microsoft.Maui.Handlers
 			var platformEditor = new MauiTextView();
 
 #if !MACCATALYST
-			platformEditor.InputAccessoryView = new MauiDoneAccessoryView(() =>
-			{
-				platformEditor.ResignFirstResponder();
-				VirtualView?.Completed();
-			});
+			var accessoryView = new MauiDoneAccessoryView(OnDoneClicked, this);
+			platformEditor.InputAccessoryView = accessoryView;
 #endif
 
 			return platformEditor;
+		}
+
+		static void OnDoneClicked(object sender)
+		{
+			if (sender is EditorHandler handler)
+			{
+				handler.PlatformView.ResignFirstResponder();
+				handler.VirtualView.Completed();
+			}
 		}
 
 		protected override void ConnectHandler(MauiTextView platformView)

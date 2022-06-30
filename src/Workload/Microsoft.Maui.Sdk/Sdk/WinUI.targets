@@ -18,6 +18,4 @@
     </ItemGroup>
   </Target>
 
-  <Import Project="WinUI.NetCore.targets" Condition=" '$(EnablePriGenTooling)'!='true' " />
-
 </Project>
