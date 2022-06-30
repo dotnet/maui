@@ -9,15 +9,14 @@
     <MicrosoftExtensionsServicingPackageVersion>6.0.1</MicrosoftExtensionsServicingPackageVersion>
     <SystemCodeDomPackageVersion>6.0.0</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>33.0.0-preview.6.67</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>33.0.0-preview.6.69</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftiOSSdkPackageVersion>15.4.744-ci.net7-0</MicrosoftiOSSdkPackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>15.4.744-ci.net7-0</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>12.3.744-ci.net7-0</MicrosoftmacOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>15.4.744-ci.net7-0</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
-    <SamsungTizenSdkPackageVersion>7.0.303</SamsungTizenSdkPackageVersion>
-    <SamsungTizenSdkPackageVersion>7.0.100-preview.6.7</SamsungTizenSdkPackageVersion>
+    <SamsungTizenSdkPackageVersion>7.0.100-preview.6.14</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenManifest70100PackageVersion>7.0.0-preview.6.22281.1</MicrosoftNETWorkloadEmscriptenManifest70100PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenManifest70100PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
