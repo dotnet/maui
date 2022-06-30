@@ -7,7 +7,6 @@
 		<DefineConstants Condition="!$(_IsHotRestartDefined) And '$(IsHotRestartBuild)' == 'true'">HOTRESTART;$(DefineConstants)</DefineConstants>
 		<UseInterpreter Condition="'$(UseInterpreter)' == '' and '$(Configuration)' == 'Debug'">True</UseInterpreter>
 		<MtouchLink Condition="'$(MtouchLink)' == '' and '$(Configuration)' == 'Debug' and '$(UseInterpreter)' == 'true'">None</MtouchLink>
-		<LinkMode Condition="'$(LinkMode)' == '' and '$(Configuration)' == 'Debug' and '$(UseInterpreter)' == 'true'">None</LinkMode>
 	</PropertyGroup>
 
 	<ItemGroup>
