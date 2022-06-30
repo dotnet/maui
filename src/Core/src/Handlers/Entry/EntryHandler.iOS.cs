@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiTextField platformView)
 		{
-			platformView.ShouldReturn = OnShouldReturn;
+			platformView.ShouldReturn += OnShouldReturn;
 			platformView.EditingDidBegin += OnEditingBegan;
 			platformView.EditingChanged += OnEditingChanged;
 			platformView.EditingDidEnd += OnEditingEnded;

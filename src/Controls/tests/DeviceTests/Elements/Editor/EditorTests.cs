@@ -95,5 +95,189 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		[Theory(DisplayName = "CursorPosition Initializes Correctly")]
+		[InlineData(2)]
+		public async Task CursorPositionInitializesCorrectly(int initialPosition)
+		{
+			var editor = new Editor
+			{
+				Text = "This is TEXT!",
+				CursorPosition = initialPosition
+			};
+
+			await ValidatePropertyInitValue<int, EditorHandler>(
+				editor,
+				() => editor.CursorPosition,
+				GetPlatformCursorPosition,
+				initialPosition);
+		}
+
+		[Theory(DisplayName = "CursorPosition Updates Correctly")]
+		[InlineData(2, 5)]
+		public async Task CursorPositionUpdatesCorrectly(int setValue, int unsetValue)
+		{
+			string text = "This is TEXT!";
+
+			var editor = new Editor
+			{
+				Text = text
+			};
+
+			await ValidatePropertyUpdatesValue<int, EditorHandler>(
+				editor,
+				nameof(ITextInput.CursorPosition),
+				GetPlatformCursorPosition,
+				setValue,
+				unsetValue
+			);
+		}
+
+		[Theory(DisplayName = "CursorPosition is Capped to Text's Length")]
+		[InlineData(30)]
+		public async Task CursorPositionIsCapped(int initialPosition)
+		{
+			string text = "This is TEXT!";
+
+			var editor = new Editor
+			{
+				Text = text,
+				CursorPosition = initialPosition
+			};
+
+			await ValidatePropertyInitValue<int, EditorHandler>(
+				editor,
+				() => editor.CursorPosition,
+				GetPlatformCursorPosition,
+				text.Length);
+		}
+
+		[Theory(DisplayName = "Unset CursorPosition keeps to zero on initialization")]
+		[InlineData("This is a test!!!")]
+		[InlineData("a")]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task UnsetCursorPositionKeepsToZeroOnInitialization(string text)
+		{
+			var editor = new Editor
+			{
+				Text = text
+			};
+
+			await ValidatePropertyInitValue<int, EditorHandler>(
+				editor,
+				() => editor.CursorPosition,
+				GetPlatformCursorPosition,
+				0);
+		}
+
+		[Theory(DisplayName = "CursorPosition moves to the end on text change after initialization")]
+		[InlineData("This is a test!!!")]
+		[InlineData("a")]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task CursorPositionMovesToTheEndOnTextChangeAfterInitialization(string text)
+		{
+			var editor = new Editor
+			{
+				Text = "Test"
+			};
+
+			await SetValueAsync<string, EditorHandler>(editor, text, SetPlatformText);
+
+			Assert.Equal(text.Length, editor.CursorPosition);
+		}
+
+		[Theory(DisplayName = "SelectionLength Initializes Correctly")]
+		[InlineData(2)]
+		public async Task SelectionLengthInitializesCorrectly(int initialLength)
+		{
+			var entry = new Entry
+			{
+				Text = "This is TEXT!",
+				SelectionLength = initialLength
+			};
+
+			await ValidatePropertyInitValue<int, EditorHandler>(
+				entry,
+				() => entry.SelectionLength,
+				GetPlatformSelectionLength,
+				initialLength);
+		}
+
+		[Theory(DisplayName = "SelectionLength Updates Correctly")]
+		[InlineData(2, 5)]
+		public async Task SelectionLengthUpdatesCorrectly(int setValue, int unsetValue)
+		{
+			string text = "This is TEXT!";
+
+			var entry = new Entry
+			{
+				Text = text,
+			};
+
+			await ValidatePropertyUpdatesValue<int, EditorHandler>(
+				entry,
+				nameof(IEntry.SelectionLength),
+				GetPlatformSelectionLength,
+				setValue,
+				unsetValue
+			);
+		}
+
+		[Theory(DisplayName = "SelectionLength is Capped to Text Length")]
+		[InlineData(30)]
+		public async Task SelectionLengthIsCapped(int selectionLength)
+		{
+			string text = "This is TEXT!";
+
+			var entry = new Entry
+			{
+				Text = text,
+				SelectionLength = selectionLength
+			};
+
+			await ValidatePropertyInitValue<int, EditorHandler>(
+				entry,
+				() => entry.SelectionLength,
+				GetPlatformSelectionLength,
+				text.Length);
+		}
+
+		[Theory(DisplayName = "Unset SelectionLength keeps to zero on initialization")]
+		[InlineData("This is a test!!!")]
+		[InlineData("a")]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task UnsetSelectionLengthKeepsToZeroOnInitialization(string text)
+		{
+			var editor = new Editor
+			{
+				Text = text
+			};
+
+			await ValidatePropertyInitValue<int, EditorHandler>(
+				editor,
+				() => editor.SelectionLength,
+				GetPlatformSelectionLength,
+				0);
+		}
+
+		[Theory(DisplayName = "SelectionLength keeps on zero on text change after initialization")]
+		[InlineData("This is a test!!!")]
+		[InlineData("a")]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task SelectionLengthMovesToTheEndOnTextChangeAfterInitialization(string text)
+		{
+			var editor = new Editor
+			{
+				Text = "Test"
+			};
+
+			await SetValueAsync<string, EditorHandler>(editor, text, SetPlatformText);
+
+			Assert.Equal(0, editor.SelectionLength);
+		}
 	}
 }

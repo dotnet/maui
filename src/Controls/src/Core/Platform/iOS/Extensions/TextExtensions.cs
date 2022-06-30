@@ -33,13 +33,16 @@ namespace Microsoft.Maui.Controls.Platform
 			// So, let's set back the cursor to the last known position and calculate a new
 			// position if needed when the text was modified by a Converter.
 			var oldText = textView.Text ?? string.Empty;
-			var newText = inputView?.Text ?? string.Empty;
+			var newText = TextTransformUtilites.GetTransformedText(inputView?.Text, inputView.TextTransform);
+
+			if (oldText == newText)
+				return;
 
 			// Calculate the cursor offset position if the text was modified by a Converter.
 			var cursorOffset = newText.Length - oldText.Length;
 			var cursorPosition = textView.GetCursorPosition(cursorOffset);
 
-			textView.Text = TextTransformUtilites.GetTransformedText(newText, inputView.TextTransform);
+			textView.Text = newText;
 			textView.SetTextRange(cursorPosition, 0);
 		}
 
@@ -49,13 +52,16 @@ namespace Microsoft.Maui.Controls.Platform
 			// So, let's set back the cursor to the last known position and calculate a new
 			// position if needed when the text was modified by a Converter.
 			var oldText = textField.Text ?? string.Empty;
-			var newText = inputView?.Text ?? string.Empty;
+			var newText = TextTransformUtilites.GetTransformedText(inputView?.Text, inputView.TextTransform);
+
+			if (oldText == newText)
+				return;
 
 			// Calculate the cursor offset position if the text was modified by a Converter.
 			var cursorOffset = newText.Length - oldText.Length;
 			var cursorPosition = textField.GetCursorPosition(cursorOffset);
 
-			textField.Text = TextTransformUtilites.GetTransformedText(newText, inputView.TextTransform);
+			textField.Text = newText;
 			textField.SetTextRange(cursorPosition, 0);
 		}
 

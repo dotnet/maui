@@ -213,7 +213,7 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
-		int GetPlatformSelectionLength(EditorHandler editorHandler)
+		int GetNativeSelectionLength(EditorHandler editorHandler)
 		{
 			var textView = GetNativeEditor(editorHandler);
 
