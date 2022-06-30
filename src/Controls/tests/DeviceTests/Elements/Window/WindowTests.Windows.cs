@@ -4,11 +4,35 @@ using Microsoft.Maui.Platform;
 using Microsoft.Maui.Handlers;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 using Xunit;
+using System.Linq;
+using Microsoft.Maui.Graphics.Win2D;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WindowTests : HandlerTestBase
 	{
+		[Fact]
+		public async Task AdornerLayerAdded()
+		{
+			SetupBuilder();
+
+			var mainPage = new NavigationPage(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, (handler) =>
+			{
+				var windowRootViewContainer = (WPanel)handler.PlatformView.Content;
+				var overlayView =
+					windowRootViewContainer
+						.Children
+						.OfType<W2DGraphicsView>()
+						.SingleOrDefault();
+
+				Assert.NotNull(overlayView);
+				Assert.Equal(overlayView, windowRootViewContainer.Children.Last());
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact(DisplayName = "Swapping Root Page Removes Previous Page from WindowRootViewContainer")]
 		public async Task SwappingRootPageRemovesPreviousPageFromWindowRootViewContainer()
 		{
@@ -33,6 +57,5 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(countBeforePageSwap, countAfterPageSwap);
 			});
 		}
-
 	}
 }
