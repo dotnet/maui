@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Platform
 {
 	internal class WindowRootViewContainer : Panel
 	{
+		FrameworkElement? _topPage;
 		protected override Size MeasureOverride(Size availableSize)
 		{
 			var width = availableSize.Width;
@@ -43,12 +44,28 @@ namespace Microsoft.Maui.Platform
 		internal void AddPage(FrameworkElement pageView)
 		{
 			if (!Children.Contains(pageView))
-				Children.Add(pageView);
+			{
+				int indexOFTopPage = 0;
+				if (_topPage != null)
+					indexOFTopPage = Children.IndexOf(_topPage) + 1;
+
+				Children.Insert(indexOFTopPage, pageView);
+				_topPage = pageView;
+			}
 		}
 
 		internal void RemovePage(FrameworkElement pageView)
 		{
+			int indexOFTopPage = -1;
+			if (_topPage != null)
+				indexOFTopPage = Children.IndexOf(_topPage) - 1;
+
 			Children.Remove(pageView);
+
+			if (indexOFTopPage >= 0)
+				_topPage = (FrameworkElement)Children[indexOFTopPage];
+			else
+				_topPage = null;
 		}
 
 		internal void AddOverlay(FrameworkElement overlayView)
