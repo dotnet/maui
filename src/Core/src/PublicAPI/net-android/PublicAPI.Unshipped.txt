@@ -34,3 +34,5 @@ virtual Microsoft.Maui.Handlers.EntryHandler.GetClearButtonDrawable() -> Android
 *REMOVED*Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs, int defStyleAttr) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context? context) -> void
+virtual Microsoft.Maui.Platform.StackNavigationManager.OnDestinationChanged(AndroidX.Navigation.NavController! navController, AndroidX.Navigation.NavDestination! navDestination, Android.OS.Bundle? bundle) -> void
+*REMOVED*virtual Microsoft.Maui.Platform.StackNavigationManager.OnDestinationChanged(AndroidX.Navigation.NavController! navController, AndroidX.Navigation.NavDestination! navDestination, Android.OS.Bundle! bundle) -> void
