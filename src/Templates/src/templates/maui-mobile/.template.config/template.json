@@ -1,13 +1,13 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen", "Blazor" ],
-    "identity": "Microsoft.Maui.BlazorApp.CSharp.DOTNET_TFM_VERSION_VALUE",
-    "groupIdentity": "Microsoft.Maui.BlazorApp",
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen" ],
+    "identity": "Microsoft.Maui.MauiApp.CSharp.DOTNET_TFM_VERSION_VALUE",
+    "groupIdentity": "Microsoft.Maui.App",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
-    "name": ".NET MAUI Blazor App",
-    "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor",
-    "shortName": "maui-blazor",
+    "name": ".NET MAUI App",
+    "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen",
+    "shortName": "maui",
     "tags": {
       "language": "C#",
       "type": "solution"
@@ -16,18 +16,22 @@
     "primaryOutputs": [
       {
         "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-        "path": "Pages/Index.razor"
+        "path": "MainPage.xaml.cs"
+      },
+      {
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+        "path": "MainPage.xaml"
       }
     ],
     "postActions": [
         {
             "id": "openInEditor",
             "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-            "description": "Opens Pages/Index.razor in the editor.",
+            "description": "Opens MainPage.xaml in the editor.",
             "manualInstructions": [],
             "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
             "args": {
-                "files": "0"
+                "files": "0;1"
             },
             "continueOnError": true
         }
@@ -36,12 +40,12 @@
       {
         "source": "./",
         "target": "./",
-        "copyOnly": [ "**/wwwroot/css/**", "**/*.svg", "**/*.ttf" ],
+        "copyOnly": [ "**/*.svg", "**/*.ttf" ],
         "modifiers": [
           {
             "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
             "rename": {
-              ".App.sln": ".sln"
+               ".App.sln": ".sln"
             }
           }
         ]
@@ -50,7 +54,7 @@
     "preferNameDirectory": true,
     "guids": [
       "07CD65EF-6238-4365-AF5D-F6D433967F48",
-      "8B51DC95-6D07-4C39-BC6C-3BFE96E8A7EA"
+      "919dc1f9-17a9-48b3-81f8-0b8016bdfbf7"
     ],
     "symbols": {
       "applicationId": {
@@ -59,17 +63,11 @@
         "datatype": "string",
         "replaces": "com.companyname.MauiApp.1"
       },
-      "windowsAppSdkVersion": {
+      "msExtensionsVersion": {
         "type": "parameter",
         "dataType": "string",
-        "replaces": "WINDOWSAPPSDK_VERSION",
-        "defaultValue": "WINDOWSAPPSDK_VERSION_VALUE"
-      },
-      "win2dVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "WIN2D_VERSION",
-        "defaultValue": "WIN2D_VERSION_VALUE"
+        "replaces": "MS_EXT_VERSION",
+        "defaultValue": "MS_EXT_VERSION_VALUE"
       },
       "Framework": {
         "type": "parameter",
