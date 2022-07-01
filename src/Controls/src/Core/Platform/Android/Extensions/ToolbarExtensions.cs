@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				nativeToolbar.SetTitleTextColor(textColor.ToPlatform().ToArgb());
 			}
-			else if(_defaultTitleTextColor != null)
+			else if (_defaultTitleTextColor != null)
 			{
 				nativeToolbar.SetTitleTextColor(_defaultTitleTextColor);
 			}
