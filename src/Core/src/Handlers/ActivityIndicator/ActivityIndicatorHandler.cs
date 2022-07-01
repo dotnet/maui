@@ -5,13 +5,8 @@ using PlatformView = Android.Widget.ProgressBar;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.ProgressRing;
 #elif TIZEN
-<<<<<<< HEAD
-using PlatformView = ElmSharp.ProgressBar;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
-=======
 using PlatformView = Tizen.UIExtensions.NUI.GraphicsView.ActivityIndicator;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
->>>>>>> 1139ee986 (Bump to latest)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 

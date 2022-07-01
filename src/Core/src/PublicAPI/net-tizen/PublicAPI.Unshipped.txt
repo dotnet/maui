@@ -49,3 +49,4 @@ static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.Mapper -> Microsoft.Ma
 static Microsoft.Maui.Handlers.ViewHandler.MapToolTip(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateToolTip(this ElmSharp.EvasObject! platformView, Microsoft.Maui.ToolTip? tooltip) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapContextFlyout(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Platform.MauiStepper.OnEnabled(bool enabled) -> void
