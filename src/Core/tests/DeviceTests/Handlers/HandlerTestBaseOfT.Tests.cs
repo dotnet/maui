@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -20,7 +21,13 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task HandlersDeallocateWhenNoLongerReferenced()
 		{
 			// Once this includes all handlers we can't delete this
-			if (!typeof(TStub).IsAssignableTo(typeof(IEditor)))
+			Type[] testedTypes = new[]
+			{
+				typeof(EditorHandler),
+				typeof(DatePickerHandler)
+			};
+
+			if (!testedTypes.Any(t => t.IsAssignableTo(typeof(THandler))))
 				return;
 
 			var stub = new TStub();
