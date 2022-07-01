@@ -307,7 +307,7 @@ namespace Microsoft.Maui.Platform
 			var navHostFragment = fragmentManager.FindFragmentById(Resource.Id.nav_host);
 			_navHost = navHostFragment as NavHostFragment;
 
-			if(_navHost == null)
+			if (_navHost == null)
 				throw new InvalidOperationException($"No NavHostFragment found");
 
 			System.Diagnostics.Debug.WriteLine($"_navHost: {_navHost} {_navHost.GetHashCode()}");
