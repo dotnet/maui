@@ -9,6 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Editor)]
 	public partial class EditorHandlerTests : HandlerTestBase<EditorHandler, EditorStub>
 	{
+#if !WINDOWS
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
 		{
@@ -421,5 +422,7 @@ namespace Microsoft.Maui.DeviceTests
 				EditorHandlerTests.UpdateCursorStartPosition(editorHandler, position);
 			}
 		}
+
+#endif
 	}
 }

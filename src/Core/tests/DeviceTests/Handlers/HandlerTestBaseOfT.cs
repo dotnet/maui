@@ -15,7 +15,10 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000) =>
 			AssertionExtensions.Wait(exitCondition, timeout);
 
-		protected THandler CreateHandler(IView view, IMauiContext mauiContext = null) =>
+		protected THandler CreateHandler(IView view) =>
+			CreateHandler<THandler>(view, MauiContext);
+
+		static protected THandler CreateHandler(IView view, IMauiContext mauiContext) =>
 			CreateHandler<THandler>(view, mauiContext);
 
 		protected Task<THandler> CreateHandlerAsync(IView view)

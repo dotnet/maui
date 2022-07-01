@@ -58,14 +58,18 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
-		protected THandler CreateHandler<THandler>(IElement view, IMauiContext mauiContext = null)
+		protected THandler CreateHandler<THandler>(IElement view)
+			where THandler : IElementHandler, new()
+			=> CreateHandler<THandler, THandler>(view, MauiContext);
+
+		static protected THandler CreateHandler<THandler>(IElement view, IMauiContext mauiContext)
 			where THandler : IElementHandler, new()
 			=> CreateHandler<THandler, THandler>(view, mauiContext);
 
 
-		protected void InitializeViewHandler(IElement element, IElementHandler handler, IMauiContext mauiContext = null)
+		protected void InitializeViewHandler(IElement element, IElementHandler handler)
 		{
-			handler.SetMauiContext(mauiContext ?? MauiContext);
+			handler.SetMauiContext(MauiContext);
 
 			handler.SetVirtualView(element);
 			element.Handler = handler;
@@ -79,7 +83,23 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		protected TCustomHandler CreateHandler<THandler, TCustomHandler>(IElement view, IMauiContext mauiContext)
+		static protected void InitializeViewHandler(IElement element, IElementHandler handler, IMauiContext mauiContext = null)
+		{
+			handler.SetMauiContext(mauiContext);
+
+			handler.SetVirtualView(element);
+			element.Handler = handler;
+
+			if (element is IView view)
+			{
+				view.Arrange(new Rect(0, 0, view.Width, view.Height));
+
+				if (handler is IViewHandler ivh)
+					ivh.PlatformArrange(view.Frame);
+			}
+		}
+
+		static protected TCustomHandler CreateHandler<THandler, TCustomHandler>(IElement view, IMauiContext mauiContext)
 			where THandler : IElementHandler, new()
 			where TCustomHandler : THandler, new()
 		{

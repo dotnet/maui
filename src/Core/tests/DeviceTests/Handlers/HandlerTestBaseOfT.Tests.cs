@@ -12,25 +12,31 @@ namespace Microsoft.Maui.DeviceTests
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
 
+
+		static (WeakReference<THandler> handler, WeakReference<TStub> stub) CreateLife(IMauiContext mauiContext)
+		{
+			var handler = CreateHandler(new TStub(), mauiContext) as IPlatformViewHandler;
+			var weakView = new WeakReference<TStub>((TStub)handler.VirtualView);
+			var weakHandler = new WeakReference<THandler>((THandler)handler);
+			handler = null;
+
+			return (weakHandler, weakView);
+		}
+
 		// This way of testing leaks currently doesn't seem to work on WinAppSDK
 		// If you set a break point and the app breaks then the test passes?!?
 		// Not sure if you can test this type of thing with WinAppSDK or not
-#if !WINDOWS
 		[Fact(DisplayName = "Handlers Deallocate When No Longer Referenced")]
 		public async Task HandlersDeallocateWhenNoLongerReferenced()
 		{
-			// Once this includes all handlers we can't delete this
+			// Once this includes all handlers we can delete this
 			if (!typeof(TStub).IsAssignableTo(typeof(IEditor)))
 				return;
 
-			var stub = new TStub();
-			WeakReference<TStub> weakView = new WeakReference<TStub>(stub);
+			WeakReference<TStub> weakView = null;
+			WeakReference<THandler> weakHandler = null;
 
-			var handler = await CreateHandlerAsync(stub) as IPlatformViewHandler;
-			WeakReference<THandler> weakHandler = new WeakReference<THandler>((THandler)handler);
-
-			stub = null;
-			handler = null;
+			(weakHandler, weakView) = await InvokeOnMainThreadAsync(() => CreateLife(MauiContext));
 
 			await AssertionExtensions.Wait(() =>
 			{
@@ -55,7 +61,6 @@ namespace Microsoft.Maui.DeviceTests
 			if (weakView.TryGetTarget(out TStub _))
 				Assert.True(false, $"{typeof(TStub)} failed to collect");
 		}
-#endif
 
 		[Fact(DisplayName = "Automation Id is set correctly")]
 		public async Task SetAutomationId()
