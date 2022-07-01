@@ -61,15 +61,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void ConnectHandler(NWebView platformView)
 		{
-			PlatformView.PageLoadFinished += OnLoadFinished;
-			PlatformView.Context.RegisterHttpRequestInterceptedCallback(OnRequestInterceptCallback);
-			PlatformView.AddJavaScriptMessageHandler("BlazorHandler", PostMessageFromJS);
+			platformView.PageLoadFinished += OnLoadFinished;
+			platformView.Context.RegisterHttpRequestInterceptedCallback(OnRequestInterceptCallback);
+			platformView.AddJavaScriptMessageHandler("BlazorHandler", PostMessageFromJS);
 		}
 
 		/// <inheritdoc />
 		protected override void DisconnectHandler(NWebView platformView)
 		{
-			PlatformView.PageLoadFinished -= OnLoadFinished;
+			platformView.PageLoadFinished -= OnLoadFinished;
 			base.DisconnectHandler(platformView);
 		}
 

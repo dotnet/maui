@@ -13,9 +13,9 @@ namespace Microsoft.Maui.Platform
 
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)
 		{
-			if (baseUrl == null)
+			if (baseUrl != null)
 			{
-				LoadContents(html, (uint)(html?.Length ?? 0), null, null, baseUrl);
+				LoadContents(html, (uint)(html?.Length ?? 0), "text/html", "UTF-8", baseUrl);
 			}
 			else
 			{
