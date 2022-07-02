@@ -355,7 +355,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Element.SizeChanged -= OnElementSizeChanged;
 			((IShellController)Element).RemoveAppearanceObserver(this);
 
-			// This cast is necessary because IShellFlyoutRenderer doesn't implement IDisposable
 			if (_flyoutView is ShellFlyoutRenderer sfr)
 				sfr.Disconnect();
 			else
