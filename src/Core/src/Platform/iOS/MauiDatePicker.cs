@@ -7,11 +7,6 @@ namespace Microsoft.Maui.Platform
 	public class MauiDatePicker : NoCaretField
 	{
 #if !MACCATALYST
-		Action<object>? _editingDidBegin;
-		Action<object>? _editingDidEnd;
-		Action<object>? _valueChanged;
-		WeakReference<object>? _data;
-
 		public MauiDatePicker()
 		{
 			BorderStyle = UITextBorderStyle.RoundedRect;
@@ -23,7 +18,11 @@ namespace Microsoft.Maui.Platform
 			}
 
 			this.InputView = picker;
-			this.InputAccessoryView = new MauiDoneAccessoryView();
+			var accessoryView = new MauiDoneAccessoryView();
+			this.InputAccessoryView = accessoryView;
+
+			accessoryView.SetDataContext(this);
+			accessoryView.SetDoneClicked(OnDoneClicked);
 
 			this.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 			this.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
@@ -38,62 +37,26 @@ namespace Microsoft.Maui.Platform
 			picker.ValueChanged += OnValueChanged;
 		}
 
-		void OnValueChanged(object? sender, EventArgs e)
+		static void OnDoneClicked(object obj)
 		{
-			if (DataContext != null)
-				_valueChanged?.Invoke(DataContext);
+			if (obj is MauiDatePicker mdp)
+				mdp.MauiDatePickerDelegate?.DoneClicked();
 		}
 
-		void OnEnded(object? sender, EventArgs e)
+		void OnValueChanged(object? sender, EventArgs e) =>
+			MauiDatePickerDelegate?.DatePickerValueChanged();
+
+		void OnEnded(object? sender, EventArgs e) =>
+			MauiDatePickerDelegate?.DatePickerEditingDidEnd();
+
+		void OnStarted(object? sender, EventArgs e) =>
+			MauiDatePickerDelegate?.DatePickerEditingDidBegin();
+
+		internal MauiDatePickerDelegate? MauiDatePickerDelegate
 		{
-			if (DataContext != null)
-				_editingDidEnd?.Invoke(DataContext);
+			get;
+			set;
 		}
-
-		void OnStarted(object? sender, EventArgs e)
-		{
-			if (DataContext != null)
-				_editingDidBegin?.Invoke(DataContext);
-		}
-
-		internal void SetPickerDialogActions(
-			Action<object>? editingDidBegin,
-			Action<object>? editingDidEnd,
-			Action<object>? valueChanged)
-		{
-			_editingDidBegin = editingDidBegin;
-			_editingDidEnd = editingDidEnd;
-			_valueChanged = valueChanged;
-		}
-
-		object? DataContext
-		{
-			get
-			{
-				if (_data?.TryGetTarget(out object? target) == true)
-					return target;
-
-				return null;
-			}
-		}
-		internal void SetDoneClicked(Action<object>? value, object? dataContext)
-		{
-			if (this.InputAccessoryView is MauiDoneAccessoryView mda)
-			{
-				mda?.SetDoneClicked(value);
-				mda?.SetDataContext(dataContext);
-			}
-		}
-
-		internal void SetDataContext(object? dataContext)
-		{
-			_data = null;
-			if (dataContext == null)
-				return;
-
-			_data = new WeakReference<object>(dataContext);
-		}
-
 
 		internal UIDatePicker? DatePickerDialog { get { return InputView as UIDatePicker; } }
 #else
