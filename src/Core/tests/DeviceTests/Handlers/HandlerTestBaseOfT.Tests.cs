@@ -24,9 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 			Type[] testedTypes = new[]
 			{
 				typeof(EditorHandler),
-#if IOS
 				typeof(DatePickerHandler)
-#endif
 			};
 
 			if (!testedTypes.Any(t => t.IsAssignableTo(typeof(THandler))))
