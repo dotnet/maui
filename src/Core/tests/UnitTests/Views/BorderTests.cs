@@ -12,7 +12,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Border border = new Border();
 
 			Assert.NotNull(border);
-			Assert.Null(border.StrokeShape);
+			Assert.NotNull(border.StrokeShape);
 		}
 
 		[Fact]
