@@ -24,12 +24,13 @@ namespace Microsoft.Maui.DeviceTests
 			== AccessibilityView.Content;
 
 
-		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests)
+		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{
+			mauiContext ??= MauiContext;
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				var applicationContext = MauiContext.MakeApplicationScope(UI.Xaml.Application.Current);
+				var applicationContext = mauiContext.MakeApplicationScope(UI.Xaml.Application.Current);
 
 				var appStub = new MauiAppNewWindowStub(window);
 				UI.Xaml.Application.Current.SetApplicationHandler(appStub, applicationContext);
