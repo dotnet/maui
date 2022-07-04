@@ -229,8 +229,11 @@ namespace Microsoft.Maui.Platform
 		public virtual FragmentNavigator.Destination AddFragmentDestination()
 		{
 			var destination = new FragmentNavigator.Destination(FragmentNavigator);
+			var canonicalName = Java.Lang.Class.FromType(typeof(NavigationViewFragment)).CanonicalName;
 
-			destination.SetClassName(Java.Lang.Class.FromType(typeof(NavigationViewFragment)).CanonicalName);
+			if (canonicalName != null)
+				destination.SetClassName(canonicalName);
+
 			destination.Id = AView.GenerateViewId();
 			NavGraph.AddDestination(destination);
 			return destination;
@@ -307,7 +310,7 @@ namespace Microsoft.Maui.Platform
 			var navHostFragment = fragmentManager.FindFragmentById(Resource.Id.nav_host);
 			_navHost = navHostFragment as NavHostFragment;
 
-			if(_navHost == null)
+			if (_navHost == null)
 				throw new InvalidOperationException($"No NavHostFragment found");
 
 			System.Diagnostics.Debug.WriteLine($"_navHost: {_navHost} {_navHost.GetHashCode()}");
@@ -368,7 +371,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		protected virtual void OnDestinationChanged(NavController navController, NavDestination navDestination, Bundle bundle)
+		protected virtual void OnDestinationChanged(NavController navController, NavDestination navDestination, Bundle? bundle)
 		{
 		}
 
@@ -419,7 +422,7 @@ namespace Microsoft.Maui.Platform
 			#region IOnDestinationChangedListener
 
 			void NavController.IOnDestinationChangedListener.OnDestinationChanged(
-				NavController p0, NavDestination p1, Bundle p2)
+				NavController p0, NavDestination p1, Bundle? p2)
 			{
 				_stackNavigationManager.OnDestinationChanged(p0, p1, p2);
 			}
