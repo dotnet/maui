@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			detail.SetBinding(Label.TextProperty, new Binding("Detail", source: textcell));
 			detail.SetBinding(Label.TextColorProperty, new Binding("DetailColor", source: textcell));
 #pragma warning disable CS0612 // Type or member is obsolete
-			detail.FontSize = Device.GetNamedSize(NamedSize.Default, typeof(Label)) / 2;
+			detail.FontSize = Device.GetNamedSize(NamedSize.Micro, typeof(Label));
 #pragma warning restore CS0612 // Type or member is obsolete
 			detail.Margin = new Thickness(10, 0, 0, 0);
 
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			label.SetBinding(Label.TextProperty, new Binding("Label", source: entryCell));
 			label.SetBinding(Label.TextColorProperty, new Binding("LabelColor", source: entryCell));
 #pragma warning disable CS0612 // Type or member is obsolete
-			label.FontSize = Device.GetNamedSize(NamedSize.Default, typeof(Label)) / 2;
+			label.FontSize = Device.GetNamedSize(NamedSize.Micro, typeof(Label));
 #pragma warning restore CS0612 // Type or member is obsolete
 			label.Margin = new Thickness(20, 0, 0, 0);
 			var layout = new Controls.StackLayout
@@ -277,6 +277,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			void SetupVisualState()
 			{
 				VisualStateGroup stateGroup = new VisualStateGroup();
+
 				var selected = new VisualState
 				{
 					Name = VisualStateManager.CommonStates.Selected,
@@ -318,22 +319,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					}
 				};
 
-				var unfocused = new VisualState
-				{
-					Name = VisualStateManager.CommonStates.Normal,
-					TargetType = typeof(View),
-					Setters =
-					{
-						new Setter
-						{
-							Property = View.BackgroundColorProperty,
-							Value = Colors.Transparent
-						}
-					}
-				};
+				stateGroup.States.Add(normal);
 				stateGroup.States.Add(focused);
 				stateGroup.States.Add(selected);
-				stateGroup.States.Add(unfocused);
 				VisualStateManager.GetVisualStateGroups(this).Add(stateGroup);
 			}
 

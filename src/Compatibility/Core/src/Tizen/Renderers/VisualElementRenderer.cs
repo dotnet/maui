@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 				else
 				{
-					measured = Measure(availableWidth, availableHeight);
+					measured = Measure(widthConstraint, heightConstraint);
 				}
 
 				return new SizeRequest(measured, MinimumSize());
@@ -560,7 +560,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// Calculates how much space this element should take, given how much room there is.
 		/// </summary>
 		/// <returns>a desired dimensions of the element</returns>
-		protected virtual Size Measure(int availableWidth, int availableHeight)
+		protected virtual Size Measure(double availableWidth, double availableHeight)
 		{
 			return MinimumSize();
 		}

@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			if (_dataBindedViewTable.TryGetValue(this[index], out View createdView) && createdView != null)
 			{
-				return createdView.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins).Request.ToPixel();
+				return (createdView as IView).Measure(widthConstraint, heightConstraint).ToPixel();
 			}
 
 			View view = null;
@@ -221,8 +221,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				view.Parent = Element;
 				if (Count > index)
 					view.BindingContext = this[index];
-				var request = view.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins).Request;
-				return request.ToPixel();
+				return (view as IView).Measure(widthConstraint, heightConstraint).ToPixel();
 			}
 		}
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.Platform;
 using Tizen.UIExtensions.NUI;
+using Size = Microsoft.Maui.Graphics.Size;
 using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 using TItemSizingStrategy = Tizen.UIExtensions.NUI.ItemSizingStrategy;
 
@@ -34,6 +35,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			base.OnElementChanged(e);
 			Control.LayoutManager = new LinearLayoutManager(false, TItemSizingStrategy.MeasureAllItems);
 			ApplyTableRoot();
+		}
+
+		protected override Size Measure(double availableWidth, double availableHeight)
+		{
+			if (Control.Adaptor == null || Control.LayoutManager == null || Control.LayoutManager.GetScrollCanvasSize().Height == 0 || Control.LayoutManager.GetScrollCanvasSize().Width == 0)
+			{
+				var scaled = Devices.DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+				var size = new Size(availableWidth, availableHeight);
+				if (size.Width == double.PositiveInfinity)
+					size.Width = scaled.Width;
+				if (size.Height == double.PositiveInfinity)
+					size.Height = scaled.Height;
+				return size;
+			}
+
+			var canvasSize = Control.LayoutManager.GetScrollCanvasSize();
+			canvasSize.Width = Math.Min(canvasSize.Width, availableWidth.ToScaledPixel());
+			canvasSize.Height = Math.Min(canvasSize.Height, availableHeight.ToScaledPixel());
+			return canvasSize.ToDP();
 		}
 
 		protected override void Dispose(bool disposing)
