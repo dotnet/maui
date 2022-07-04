@@ -82,6 +82,15 @@ dotnet cake --target=VS
 
 ### Compile with globally installed `dotnet`
 
+- Try this first. This will build using the workloads installed by VS. If you receive a build failure related to workloads we recommend using a [local dotnet build](https://github.com/dotnet/maui/blob/main/.github/DEVELOPMENT.md#compile-using-a-local-bindotnet). If you want to keep on this path, proceed to the next step and then try to run these commands again.
+
+```dotnetcli
+dotnet tool restore
+dotnet cake --target=VS --workloads=global
+```
+
+- If you need/want to update your global workloads to the latest workloads. 
+
 > **Warning**
 > This will replace what Visual Studio has installed for your workloads so now your entire machine will be using the workloads you have installed here.
 
@@ -117,12 +126,6 @@ dotnet workload install maui \
   --source https://api.nuget.org/v3/index.json
 ```
 
-3. This will build and launch Visual Studio using global workloads
-
-```dotnetcli
-dotnet tool restore
-dotnet cake --target=VS --workloads=global
-```
 
 #### MacOS
 
