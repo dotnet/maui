@@ -58,6 +58,9 @@ namespace Samples.ViewModel
 
 		void DoSaveFile()
 		{
+			var dir = Path.GetDirectoryName(localPath);
+			Directory.CreateDirectory(dir);
+
 			File.WriteAllText(localPath, CurrentContents);
 		}
 

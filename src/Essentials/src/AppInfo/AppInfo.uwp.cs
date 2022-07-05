@@ -13,9 +13,9 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	class AppInfoImplementation : IAppInfo
 	{
-		const string SettingsUri = "ms-settings:appsfeatures-app";
-
 		static readonly Assembly _launchingAssembly = Assembly.GetEntryAssembly();
+
+		const string SettingsUri = "ms-settings:appsfeatures-app";
 
 		ApplicationTheme? _applicationTheme;
 
@@ -32,6 +32,11 @@ namespace Microsoft.Maui.ApplicationModel
 		public string PackageName => AppInfoUtils.IsPackagedApp
 			? Package.Current.Id.Name
 			: _launchingAssembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? string.Empty;
+
+		// TODO: NET7 add this as a actual data point and public property if it is valid on platforms
+		internal static string PublisherName => AppInfoUtils.IsPackagedApp
+			? Package.Current.Id.Publisher
+			: _launchingAssembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? string.Empty;
 
 		public string Name => AppInfoUtils.IsPackagedApp
 			? Package.Current.DisplayName

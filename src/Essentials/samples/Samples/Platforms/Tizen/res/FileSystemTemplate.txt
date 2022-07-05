@@ -1,4 +1,0 @@
-This file was loaded from the app package.
-
-You can use this as a starting point for your comments...
-
