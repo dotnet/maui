@@ -35,7 +35,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		// TODO: NET7 add this as a actual data point and public property if it is valid on platforms
 		internal static string PublisherName => AppInfoUtils.IsPackagedApp
-			? Package.Current.Id.Publisher
+			? Package.Current.PublisherDisplayName
 			: _launchingAssembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? string.Empty;
 
 		public string Name => AppInfoUtils.IsPackagedApp
