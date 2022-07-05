@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				Spacing = 0,
 				HorizontalOptions = LayoutOptions.Fill,
-				Padding = new Thickness(10, 5),
+				Margin = new Thickness(10, 5),
 				Children =
 				{
 					text,
@@ -128,19 +128,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions =
 				{
-					new ColumnDefinition
-					{
-						Width = new GridLength(2, GridUnitType.Star)
-					},
-					new ColumnDefinition
-					{
-						Width = new GridLength(8, GridUnitType.Star)
-					},
-				}
+					new ColumnDefinition(GridLength.Auto),
+					new ColumnDefinition(GridLength.Star)
+				},
+				Margin = new Thickness(10, 5),
 			};
 			var img = new Image
 			{
-				HorizontalOptions = LayoutOptions.Start,
 				Aspect = Aspect.AspectFit,
 			};
 			img.SetBinding(Image.SourceProperty, new Binding("ImageSource", source: imageCell));
@@ -164,9 +158,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 #pragma warning disable CS0612 // Type or member is obsolete
 			label.FontSize = Device.GetNamedSize(NamedSize.Micro, typeof(Label));
 #pragma warning restore CS0612 // Type or member is obsolete
-			label.Margin = new Thickness(20, 0, 0, 0);
 			var layout = new Controls.StackLayout
 			{
+				Margin = new Thickness(10, 5),
 				HorizontalOptions = LayoutOptions.Fill,
 				Children =
 				{
@@ -180,10 +174,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		static View CreateContent(SwitchCell switchCell)
 		{
+#pragma warning disable CS0618
 			var text = new Label
 			{
-				HorizontalOptions = LayoutOptions.Start
+				VerticalTextAlignment = TextAlignment.Center,
+				HorizontalOptions = LayoutOptions.StartAndExpand,
 			};
+#pragma warning restore CS0618
 			text.SetBinding(Label.TextProperty, new Binding("Text", source: switchCell));
 
 			var sw = new Switch
@@ -195,8 +192,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			var layout = new Controls.StackLayout
 			{
-				Padding = new Thickness(10, 5),
-				Spacing = 0,
+				Margin = new Thickness(10, 5),
 				HorizontalOptions = LayoutOptions.Fill,
 				Orientation = StackOrientation.Horizontal,
 				Children =
@@ -218,6 +214,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			BindableObject _target;
 			public CellContentView(BindableObject target, BindableObject container = null, bool hasVisualState = true, bool hasSeparator = true)
 			{
+				BackgroundColor = Colors.Transparent;
 				var separator = new BoxView
 				{
 					Margin = new Thickness(10, 0),
@@ -281,7 +278,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				var selected = new VisualState
 				{
 					Name = VisualStateManager.CommonStates.Selected,
-					TargetType = typeof(View),
+					TargetType = typeof(Controls.Layout),
 					Setters =
 					{
 						new Setter
@@ -295,7 +292,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				var normal = new VisualState
 				{
 					Name = VisualStateManager.CommonStates.Normal,
-					TargetType = typeof(View),
+					TargetType = typeof(Controls.Layout),
 					Setters =
 					{
 						new Setter
@@ -308,7 +305,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				var focused = new VisualState
 				{
 					Name = VisualStateManager.CommonStates.Focused,
-					TargetType = typeof(View),
+					TargetType = typeof(Controls.Layout),
 					Setters =
 					{
 						new Setter
