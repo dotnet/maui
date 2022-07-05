@@ -264,6 +264,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(window, cp.Window);
 		}
 
+		[Test]
+		public void DeActivatedFiresDisappearingEvent()
+		{
+			int disappear = 0;
+			int appear = 0;
+
+			var cp = new ContentPage();
+			IWindow window = new Window(cp);
+			cp.Appearing += (_, __) => appear++;
+			cp.Disappearing += (_, __) => disappear++;
+
+			window.Deactivated();
+			Assert.AreEqual(1, disappear);
+			Assert.AreEqual(0, appear);
+		}
+
+		[Test]
+		public void ReActivatedFiresCorrectActivatedEvent()
+		{
+			int disappear = 0;
+			int appear = 0;
+
+			var cp = new ContentPage();
+			IWindow window = new Window(cp);
+			cp.Appearing += (_, __) => appear++;
+			cp.Disappearing += (_, __) => disappear++;
+
+			Assert.AreEqual(0, disappear);
+			window.Deactivated();
+			window.Activated();
+			Assert.AreEqual(1, disappear);
+			Assert.AreEqual(1, appear);
+		}
+
 		void ValidateSetup(Application app, Page page = null)
 		{
 			var window = (Window)app.Windows[0];
