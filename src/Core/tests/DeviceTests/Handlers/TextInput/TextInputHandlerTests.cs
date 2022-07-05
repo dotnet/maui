@@ -9,7 +9,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	public abstract partial class TextInputHandlerTests<THandler, TStub> : HandlerTestBase<THandler, TStub>
-		where THandler : IViewHandler, new()
+		where THandler : class, IViewHandler, new()
 		where TStub : StubBase, ITextInputStub, new()
 	{
 		[Theory(DisplayName = "TextChanged Events Fire Correctly")]
