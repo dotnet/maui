@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
@@ -29,11 +32,17 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='FiguresProperty']/Docs" />
 		public static readonly BindableProperty FiguresProperty =
-			BindableProperty.Create(nameof(Figures), typeof(PathFigureCollection), typeof(PathGeometry), null);
+			BindableProperty.Create(nameof(Figures), typeof(PathFigureCollection), typeof(PathGeometry), null,
+				propertyChanged: OnPathFigureCollectionChanged);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='FillRuleProperty']/Docs" />
 		public static readonly BindableProperty FillRuleProperty =
 			BindableProperty.Create(nameof(FillRule), typeof(FillRule), typeof(PathGeometry), FillRule.EvenOdd);
+
+		static void OnPathFigureCollectionChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			(bindable as PathGeometry)?.UpdatePathFigureCollection(oldValue as PathFigureCollection, newValue as PathFigureCollection);
+		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='Figures']/Docs" />
 		[System.ComponentModel.TypeConverter(typeof(PathFigureCollectionConverter))]
@@ -49,6 +58,8 @@ namespace Microsoft.Maui.Controls.Shapes
 			set { SetValue(FillRuleProperty, value); }
 			get { return (FillRule)GetValue(FillRuleProperty); }
 		}
+
+		internal event EventHandler InvalidatePathGeometryRequested;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='AppendPath']/Docs" />
 		public override void AppendPath(PathF path)
@@ -168,6 +179,75 @@ namespace Microsoft.Maui.Controls.Shapes
 					path.QuadTo(pt1, pt2);
 				}
 			}
+		}
+
+		void UpdatePathFigureCollection(PathFigureCollection oldCollection, PathFigureCollection newCollection)
+		{
+			if (oldCollection != null)
+			{
+				oldCollection.CollectionChanged -= OnPathFigureCollectionChanged;
+
+				foreach (var oldPathFigure in oldCollection)
+				{
+					oldPathFigure.PropertyChanged -= OnPathFigurePropertyChanged;
+					oldPathFigure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
+				}
+			}
+
+			if (newCollection == null)
+				return;
+
+			newCollection.CollectionChanged += OnPathFigureCollectionChanged;
+
+			foreach (var newPathFigure in newCollection)
+			{
+				newPathFigure.PropertyChanged += OnPathFigurePropertyChanged;
+				newPathFigure.InvalidatePathSegmentRequested += OnInvalidatePathSegmentRequested;
+			}
+		}
+
+		void OnPathFigureCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (e.OldItems != null)
+			{
+				foreach (var oldItem in e.OldItems)
+				{
+					if (!(oldItem is PathFigure oldPathFigure))
+						continue;
+
+					oldPathFigure.PropertyChanged -= OnPathFigurePropertyChanged;
+					oldPathFigure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
+				}
+			}
+
+			if (e.NewItems != null)
+			{
+				foreach (var newItem in e.NewItems)
+				{
+					if (!(newItem is PathFigure newPathFigure))
+						continue;
+
+					newPathFigure.PropertyChanged += OnPathFigurePropertyChanged;
+					newPathFigure.InvalidatePathSegmentRequested += OnInvalidatePathSegmentRequested;
+				}
+			}
+
+			Invalidate();
+		}
+
+		void OnPathFigurePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			Invalidate();
+		}
+
+		void OnInvalidatePathSegmentRequested(object sender, EventArgs e)
+		{
+			Invalidate();
+		}
+
+		void Invalidate()
+		{
+			InvalidatePathGeometryRequested?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }
