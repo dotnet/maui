@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Entry)]
 	public partial class EntryTests : HandlerTestBase
 	{
-		[Theory]
+		[Theory(DisplayName = "Text is Transformed Correctly at Initialization")]
 		[ClassData(typeof(TextTransformCases))]
 		public async Task InitialTextTransformApplied(string text, TextTransform transform, string expected)
 		{
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, platformText);
 		}
 
-		[Theory]
+		[Theory(DisplayName = "Text is Transformed Correctly after Initialization")]
 		[ClassData(typeof(TextTransformCases))]
 		public async Task TextTransformUpdated(string text, TextTransform transform, string expected)
 		{
@@ -110,12 +110,12 @@ namespace Microsoft.Maui.DeviceTests
 				text.Length);
 		}
 
-		[Theory(DisplayName = "Unset CursorPosition keeps to zero on initialization")]
+		[Theory(DisplayName = "Unset CursorPosition is kept at zero at initialization")]
 		[InlineData("This is a test!!!")]
 		[InlineData("a")]
 		[InlineData("")]
 		[InlineData(" ")]
-		public async Task UnsetCursorPositionKeepsToZeroOnInitialization(string text)
+		public async Task UnsetCursorPositionIsKeptAtZeroAtInitialization(string text)
 		{
 			var entry = new Entry
 			{
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.DeviceTests
 				0);
 		}
 
-		[Theory(DisplayName = "CursorPosition moves to the end on text change after initialization")]
+		[Theory(DisplayName = "CursorPosition moves to the end on text change by code after initialization")]
 		[InlineData("This is a test!!!")]
 		[InlineData("a")]
 		[InlineData("")]
@@ -202,12 +202,12 @@ namespace Microsoft.Maui.DeviceTests
 				text.Length);
 		}
 
-		[Theory(DisplayName = "Unset SelectionLength keeps to zero on initialization")]
+		[Theory(DisplayName = "Unset SelectionLength is kept at zero at initialization")]
 		[InlineData("This is a test!!!")]
 		[InlineData("a")]
 		[InlineData("")]
 		[InlineData(" ")]
-		public async Task UnsetSelectionLengthKeepsToZeroOnInitialization(string text)
+		public async Task UnsetSelectionLengthIsKeptAtZeroAtInitialization(string text)
 		{
 			var entry = new Entry
 			{
@@ -221,7 +221,7 @@ namespace Microsoft.Maui.DeviceTests
 				0);
 		}
 
-		[Theory(DisplayName = "SelectionLength keeps on zero on text change after initialization")]
+		[Theory(DisplayName = "SelectionLength keeps on zero on text change by code after initialization")]
 		[InlineData("This is a test!!!")]
 		[InlineData("a")]
 		[InlineData("")]

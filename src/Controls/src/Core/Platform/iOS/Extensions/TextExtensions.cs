@@ -33,16 +33,19 @@ namespace Microsoft.Maui.Controls.Platform
 			// So, let's set back the cursor to the last known position and calculate a new
 			// position if needed when the text was modified by a Converter.
 			var oldText = textView.Text ?? string.Empty;
-			var newText = TextTransformUtilites.GetTransformedText(inputView?.Text, inputView.TextTransform);
-
-			if (oldText == newText)
-				return;
-
-			// Calculate the cursor offset position if the text was modified by a Converter.
+			var newText = TextTransformUtilites.GetTransformedText(
+				inputView?.Text,
+				textView.SecureTextEntry ? TextTransform.Default : inputView.TextTransform
+				);
+			
+			// Re-calculate the cursor offset position if the text was modified by a Converter.
+			// but if the text is being set by code, let's just move the cursor to the end.
 			var cursorOffset = newText.Length - oldText.Length;
-			var cursorPosition = textView.GetCursorPosition(cursorOffset);
+			var cursorPosition = textView.IsFirstResponder ? textView.GetCursorPosition(cursorOffset) : newText.Length;
 
-			textView.Text = newText;
+			if (oldText != newText)
+				textView.Text = newText;
+
 			textView.SetTextRange(cursorPosition, 0);
 		}
 
@@ -52,16 +55,19 @@ namespace Microsoft.Maui.Controls.Platform
 			// So, let's set back the cursor to the last known position and calculate a new
 			// position if needed when the text was modified by a Converter.
 			var oldText = textField.Text ?? string.Empty;
-			var newText = TextTransformUtilites.GetTransformedText(inputView?.Text, inputView.TextTransform);
+			var newText = TextTransformUtilites.GetTransformedText(
+				inputView?.Text,
+				textField.SecureTextEntry ? TextTransform.Default : inputView.TextTransform
+				);
 
-			if (oldText == newText)
-				return;
-
-			// Calculate the cursor offset position if the text was modified by a Converter.
+			// Re-calculate the cursor offset position if the text was modified by a Converter.
+			// but if the text is being set by code, let's just move the cursor to the end.
 			var cursorOffset = newText.Length - oldText.Length;
-			var cursorPosition = textField.GetCursorPosition(cursorOffset);
+			var cursorPosition = textField.IsEditing ? textField.GetCursorPosition(cursorOffset) : newText.Length;
 
-			textField.Text = newText;
+			if (oldText != newText)
+				textField.Text = newText;
+
 			textField.SetTextRange(cursorPosition, 0);
 		}
 

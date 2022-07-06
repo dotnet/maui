@@ -161,8 +161,14 @@ namespace Microsoft.Maui.Handlers
 
 		private void OnSelectionChanged(object? sender, EventArgs e)
 		{
-			VirtualView.CursorPosition = PlatformView.GetCursorPosition();
-			VirtualView.SelectionLength = PlatformView.GetSelectedTextLength();
+			var cursorPostion = PlatformView.GetCursorPosition();
+			var selectedTextLength = PlatformView.GetSelectedTextLength();
+
+			if (VirtualView.CursorPosition != cursorPostion)
+				VirtualView.CursorPosition = cursorPostion;
+
+			if (VirtualView.SelectionLength != selectedTextLength)
+				VirtualView.SelectionLength = selectedTextLength;
 		}
 	}
 }

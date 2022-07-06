@@ -51,7 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-		[Theory]
+		[Theory(DisplayName = "Text is Transformed Correctly at Initialization")]
 		[ClassData(typeof(TextTransformCases))]
 		public async Task InitialTextTransformApplied(string text, TextTransform transform, string expected)
 		{
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, platformText);
 		}
 
-		[Theory]
+		[Theory(DisplayName = "Text is Transformed Correctly after Initialization")]
 		[ClassData(typeof(TextTransformCases))]
 		public async Task TextTransformUpdated(string text, TextTransform transform, string expected)
 		{
@@ -192,15 +192,15 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(2)]
 		public async Task SelectionLengthInitializesCorrectly(int initialLength)
 		{
-			var entry = new Entry
+			var editor = new Editor
 			{
 				Text = "This is TEXT!",
 				SelectionLength = initialLength
 			};
 
 			await ValidatePropertyInitValue<int, EditorHandler>(
-				entry,
-				() => entry.SelectionLength,
+				editor,
+				() => editor.SelectionLength,
 				GetPlatformSelectionLength,
 				initialLength);
 		}
@@ -211,14 +211,14 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			string text = "This is TEXT!";
 
-			var entry = new Entry
+			var editor = new Editor
 			{
 				Text = text,
 			};
 
 			await ValidatePropertyUpdatesValue<int, EditorHandler>(
-				entry,
-				nameof(IEntry.SelectionLength),
+				editor,
+				nameof(IEditor.SelectionLength),
 				GetPlatformSelectionLength,
 				setValue,
 				unsetValue
@@ -231,15 +231,15 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			string text = "This is TEXT!";
 
-			var entry = new Entry
+			var editor = new Editor
 			{
 				Text = text,
 				SelectionLength = selectionLength
 			};
 
 			await ValidatePropertyInitValue<int, EditorHandler>(
-				entry,
-				() => entry.SelectionLength,
+				editor,
+				() => editor.SelectionLength,
 				GetPlatformSelectionLength,
 				text.Length);
 		}
