@@ -159,7 +159,11 @@ namespace Microsoft.Maui.Storage
 		public void Set<T>(string key, T value, string sharedName = null)
 		{
 			var prefs = _preferences.GetOrAdd(CleanSharedName(sharedName), _ => new ShareNameDictionary());
-			prefs[key] = string.Format(CultureInfo.InvariantCulture, "{0}", value);
+
+			if (value is null)
+				prefs.TryRemove(key, out _);
+			else
+				prefs[key] = string.Format(CultureInfo.InvariantCulture, "{0}", value);
 
 			Save();
 		}
@@ -168,7 +172,7 @@ namespace Microsoft.Maui.Storage
 		{
 			if (_preferences.TryGetValue(CleanSharedName(sharedName), out var inner))
 			{
-				if (inner.TryGetValue(key, out var value))
+				if (inner.TryGetValue(key, out var value) && value is not null)
 				{
 					try
 					{
