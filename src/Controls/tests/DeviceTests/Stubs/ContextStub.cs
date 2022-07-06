@@ -15,6 +15,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		NavigationRootManager _windowManager;
 #endif
 
+#if ANDROID
+		Android.Content.Context _androidContext;
+#endif
+
 		public ContextStub(IServiceProvider services)
 		{
 			_services = services;
@@ -31,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				return _manager ??= _services.GetRequiredService<IAnimationManager>();
 #if ANDROID
 			if (serviceType == typeof(Android.Content.Context))
-				return MauiProgram.CurrentContext;
+				return _androidContext ?? MauiProgram.CurrentContext;
 
 			if (serviceType == typeof(NavigationRootManager))
 				return _windowManager ??= new NavigationRootManager(this);
@@ -56,8 +60,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			Services.GetRequiredService<IMauiHandlersFactory>();
 
 #if __ANDROID__
-		public Android.Content.Context Context =>
-			Services.GetRequiredService<Android.Content.Context>();
+		public Android.Content.Context Context
+		{
+			get => Services.GetRequiredService<Android.Content.Context>();
+			set => _androidContext = value;
+		}
+			
 #endif
 	}
 }

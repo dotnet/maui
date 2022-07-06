@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using ObjCRuntime;
 using UIKit;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -56,13 +58,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapContentSize(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.PlatformView.UpdateContentSize(scrollView.ContentSize);
-
-			if (GetContentView(handler.PlatformView) is ContentView currentContentContainer)
-			{
-				var rect = new Rect(Point.Zero, scrollView.ContentSize);
-				currentContentContainer.Center = new CGPoint(rect.Center.X, rect.Center.Y);
-				currentContentContainer.Bounds = new CGRect(currentContentContainer.Bounds.X, currentContentContainer.Bounds.Y, rect.Width, rect.Height);
-			}
 		}
 
 		public static void MapIsEnabled(IScrollViewHandler handler, IScrollView scrollView)
@@ -131,6 +126,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					currentContentContainer.ClearSubviews();
 					currentContentContainer.AddSubview(nativeContent);
+					currentContentContainer.View = scrollView.PresentedContent;
 				}
 			}
 			else
@@ -148,14 +144,39 @@ namespace Microsoft.Maui.Handlers
 
 			var contentContainer = new ContentView()
 			{
+				View = scrollView.PresentedContent,
 				CrossPlatformMeasure = ConstrainToScrollView(scrollView.CrossPlatformMeasure, platformScrollView, scrollView),
-				CrossPlatformArrange = scrollView.CrossPlatformArrange,
 				Tag = ContentPanelTag
 			};
+
+			contentContainer.CrossPlatformArrange = ArrangeScrollViewContent(scrollView.CrossPlatformArrange, contentContainer);
 
 			platformScrollView.ClearSubviews();
 			contentContainer.AddSubview(platformContent);
 			platformScrollView.AddSubview(contentContainer);
+		}
+
+		static Func<Rect, Size> ArrangeScrollViewContent(Func<Rect, Size> internalArrange, ContentView container)
+		{
+			return (rect) =>
+			{
+				if (container.Superview is UIScrollView scrollView)
+				{
+					// Ensure the container is at least the size of the UIScrollView itself, so that the 
+					// cross-platform layout logic makes sense and the contents don't arrange out side the 
+					// container. (Everything will look correct if they do, but hit testing won't work properly.)
+
+					var scrollViewBounds = scrollView.Bounds;
+					var containerBounds = container.Bounds;
+
+					container.Bounds = new CGRect(0, 0, 
+						Math.Max(containerBounds.Width, scrollViewBounds.Width), 
+						Math.Max(containerBounds.Height, scrollViewBounds.Height));
+					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
+				}
+
+				return internalArrange(rect);
+			};
 		}
 
 		static Func<double, double, Size> ConstrainToScrollView(Func<double, double, Size> internalMeasure, UIScrollView platformScrollView, IScrollView scrollView)
@@ -176,12 +197,12 @@ namespace Microsoft.Maui.Handlers
 
 			if (widthConstraint == 0)
 			{
-				widthConstraint = platformScrollView.Frame.Width;
+				widthConstraint = platformScrollView.Bounds.Width;
 			}
 
 			if (heightConstraint == 0)
 			{
-				heightConstraint = platformScrollView.Frame.Height;
+				heightConstraint = platformScrollView.Bounds.Height;
 			}
 
 			widthConstraint -= scrollView.Padding.HorizontalThickness;
@@ -189,7 +210,6 @@ namespace Microsoft.Maui.Handlers
 
 			var result = internalMeasure.Invoke(widthConstraint, heightConstraint);
 
-			// If the presented content has LayoutAlignment Fill, we'll need to adjust the measurement to account for that
 			return result.AdjustForFill(new Rect(0, 0, widthConstraint, heightConstraint), presentedContent);
 		}
 	}

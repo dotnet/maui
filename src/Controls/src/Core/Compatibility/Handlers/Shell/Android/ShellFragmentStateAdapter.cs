@@ -49,6 +49,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override Fragment CreateFragment(int position)
 		{
+
 			var shellContent = _items[position];
 			return new ShellFragmentContainer(shellContent, _mauiContext) { Arguments = Bundle.Empty };
 		}
