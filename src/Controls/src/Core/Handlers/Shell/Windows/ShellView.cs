@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		class FlyoutItemMenuSeparator : MenuFlyoutSeparator
+		class FlyoutItemMenuSeparator : Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator
 		{
 			public FlyoutItemMenuSeparator(int separatorNumber)
 			{
