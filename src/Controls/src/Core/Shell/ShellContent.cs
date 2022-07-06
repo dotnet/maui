@@ -156,12 +156,6 @@ namespace Microsoft.Maui.Controls
 			base.OnChildAdded(child);
 			if (child is Page page)
 			{
-				if (IsVisibleContent && page.IsVisible)
-				{
-					SendAppearing();
-					SendPageAppearing(page);
-				}
-
 				page.PropertyChanged += OnPagePropertyChanged;
 				_isPageVisibleChanged?.Invoke(this, EventArgs.Empty);
 			}
