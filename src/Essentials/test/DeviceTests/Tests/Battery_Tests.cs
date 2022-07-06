@@ -5,6 +5,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	// TEST NOTES:
 	//   - these tests require a battery to be present
+	[Category("Battery")]
 	public class Battery_Tests
 	{
 		[Fact]

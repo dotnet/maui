@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("Permissions")]
 	public class Permissions_Tests
 	{
 		[Theory]

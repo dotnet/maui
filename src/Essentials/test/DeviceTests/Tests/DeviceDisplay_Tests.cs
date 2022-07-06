@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("DeviceDisplay")]
 	public class DeviceDisplay_Tests
 	{
 		[Fact]

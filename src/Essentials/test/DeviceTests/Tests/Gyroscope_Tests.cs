@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	// TEST NOTES:
 	//   - these tests require a gyroscope to be present
+	[Category("Gyroscope")]
 	public class Gyroscope_Tests
 	{
 		[Fact]

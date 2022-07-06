@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("WebAuthenticator")]
 	public class WebAuthenticator_Tests
 	{
 		[Theory]

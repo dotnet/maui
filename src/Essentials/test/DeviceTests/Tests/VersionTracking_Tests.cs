@@ -6,6 +6,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("VersionTracking")]
 	public class VersionTracking_Tests
 	{
 		/// <summary>

@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("MainThread")]
 	public class MainThread_Tests
 	{
 		[Fact]

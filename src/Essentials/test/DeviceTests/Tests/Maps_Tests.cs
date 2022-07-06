@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("Maps")]
 	public class Maps_Tests
 	{
 		const double testLatitude = 47.645160;

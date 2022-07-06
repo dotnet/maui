@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("Geocoding")]
 	public class Geocoding_Tests
 	{
 		public Geocoding_Tests()

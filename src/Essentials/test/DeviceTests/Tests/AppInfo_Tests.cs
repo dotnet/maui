@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("AppInfo")]
 	public class AppInfo_Tests
 	{
 		[Fact]
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public void AppPackageName_Is_Correct()
 		{
 #if WINDOWS_UWP || WINDOWS
-			Assert.Equal("ec0cc741-fd3e-485c-81be-68815c480690", AppInfo.PackageName);
+			Assert.Equal("CD693923-B3C2-4043-B044-F070046D2DAF", AppInfo.PackageName);
 #elif __IOS__
 			Assert.Equal("com.microsoft.maui.essentials.devicetests", AppInfo.PackageName);
 #elif __ANDROID__
@@ -58,8 +59,13 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public void App_Versions_Are_Correct()
 		{
-			Assert.Equal("1.0.1.0", AppInfo.VersionString);
-			Assert.Equal(new Version(1, 0, 1, 0), AppInfo.Version);
+#if WINDOWS_UWP || WINDOWS
+			Assert.Equal("1.0.0.1", AppInfo.VersionString);
+			Assert.Equal(new Version(1, 0, 0, 1), AppInfo.Version);
+#else
+			Assert.Equal("1.0", AppInfo.VersionString);
+			Assert.Equal(new Version(1, 0), AppInfo.Version);
+#endif
 		}
 	}
 }

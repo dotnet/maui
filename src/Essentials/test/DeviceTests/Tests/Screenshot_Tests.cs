@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("Screenshot")]
 	public class Screenshot_Tests
 	{
 		[Fact]

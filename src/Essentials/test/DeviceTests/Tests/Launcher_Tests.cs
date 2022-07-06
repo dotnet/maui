@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	// TEST NOTES:
 	//   - a human needs to close the browser window
+	[Category("Launcher")]
 	public class Launcher_Tests
 	{
 		[Theory]

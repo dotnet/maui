@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
 	using Platform = Microsoft.Maui.ApplicationModel.Platform;
 
+	[Category("Android FileProvider")]
 	public class Android_FileProvider_Tests
 	{
 		[Fact]

@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("AppActions")]
 	public class AppActions_Tests
 	{
 		[Fact]

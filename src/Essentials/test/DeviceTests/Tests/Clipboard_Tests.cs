@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("Clipboard")]
 	public class Clipboard_Tests
 	{
 		[Theory]
