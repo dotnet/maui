@@ -17,11 +17,6 @@ namespace Microsoft.Maui.Handlers
 				HidePicker = HidePickerDialog
 			};
 
-			var date = VirtualView?.Date;
-
-			if (date != null)
-				_dialog = CreateDatePickerDialog(date.Value.Year, date.Value.Month, date.Value.Day);
-
 			return mauiDatePicker;
 		}
 
@@ -152,7 +147,12 @@ namespace Microsoft.Maui.Handlers
 
 		void HidePickerDialog()
 		{
-			_dialog?.Hide();
+			if (_dialog != null)
+			{
+				_dialog.Hide();
+			}
+
+			_dialog = null;
 		}
 
 		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
