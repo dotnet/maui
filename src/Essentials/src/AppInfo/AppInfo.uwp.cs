@@ -48,7 +48,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public string VersionString => Version.ToString();
 
-		public string BuildString => Version.Build.ToString(CultureInfo.InvariantCulture);
+		public string BuildString => Version.Revision.ToString(CultureInfo.InvariantCulture);
 
 		public void ShowSettingsUI()
 		{
