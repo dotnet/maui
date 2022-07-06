@@ -403,7 +403,7 @@ Microsoft.Maui.Handlers.IImageHandler.PlatformView.get -> Tizen.UIExtensions.NUI
 Microsoft.Maui.Handlers.IImageHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 Microsoft.Maui.Handlers.IImageHandler.VirtualView.get -> Microsoft.Maui.IImage!
 Microsoft.Maui.Handlers.IIndicatorViewHandler
-Microsoft.Maui.Handlers.IIndicatorViewHandler.PlatformView.get -> Tizen.NUI.BaseComponents.View!
+Microsoft.Maui.Handlers.IIndicatorViewHandler.PlatformView.get -> Microsoft.Maui.Platform.MauiPageControl!
 Microsoft.Maui.Handlers.IIndicatorViewHandler.VirtualView.get -> Microsoft.Maui.IIndicatorView!
 Microsoft.Maui.Handlers.ILabelHandler
 Microsoft.Maui.Handlers.ILabelHandler.PlatformView.get -> Tizen.UIExtensions.NUI.Label!
@@ -1492,6 +1492,12 @@ Microsoft.Maui.Platform.MauiImageSource.LoadSource(System.IO.Stream! stream) -> 
 Microsoft.Maui.Platform.MauiImageSource.MauiImageSource() -> void
 Microsoft.Maui.Platform.MauiImageSource.ResourceUrl.get -> string?
 Microsoft.Maui.Platform.MauiImageSource.ResourceUrl.set -> void
+Microsoft.Maui.Platform.MauiPageControl
+Microsoft.Maui.Platform.MauiPageControl.MauiPageControl(Microsoft.Maui.IIndicatorView! view) -> void
+Microsoft.Maui.Platform.MauiPageControl.Measure(double availableWidth, double availableHeight) -> Tizen.UIExtensions.Common.Size
+Microsoft.Maui.Platform.MauiPageControl.ResetIndicators() -> void
+Microsoft.Maui.Platform.MauiPageControl.UpdateCount() -> void
+Microsoft.Maui.Platform.MauiPageControl.UpdatePosition() -> void
 Microsoft.Maui.Platform.MauiSearchBar
 Microsoft.Maui.Platform.MauiSearchBar.Entry.get -> Tizen.UIExtensions.NUI.Entry!
 Microsoft.Maui.Platform.MauiSearchBar.MauiSearchBar() -> void
@@ -1882,7 +1888,7 @@ override Microsoft.Maui.Handlers.ImageButtonHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.ImageHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.Image!
 override Microsoft.Maui.Handlers.ImageHandler.DisconnectHandler(Tizen.UIExtensions.NUI.Image! platformView) -> void
 override Microsoft.Maui.Handlers.ImageHandler.NeedsContainer.get -> bool
-override Microsoft.Maui.Handlers.IndicatorViewHandler.CreatePlatformView() -> Tizen.NUI.BaseComponents.View!
+override Microsoft.Maui.Handlers.IndicatorViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiPageControl!
 override Microsoft.Maui.Handlers.LabelHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.Label!
 override Microsoft.Maui.Handlers.LayoutHandler.CreatePlatformView() -> Microsoft.Maui.Platform.LayoutViewGroup!
 override Microsoft.Maui.Handlers.LayoutHandler.Dispose(bool disposing) -> void

@@ -1,41 +1,47 @@
-﻿using System;
-using NView = Tizen.NUI.BaseComponents.View;
-
-namespace Microsoft.Maui.Handlers
+﻿namespace Microsoft.Maui.Handlers
 {
-	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, NView>
+	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, MauiPageControl>
 	{
-		protected override NView CreatePlatformView() => new NView
-		{
-			BackgroundColor = Tizen.NUI.Color.Red
-		};
+		protected override MauiPageControl CreatePlatformView() => new MauiPageControl(VirtualView);
 
 		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
+			handler.PlatformView.UpdateCount();
 		}
 
 		public static void MapPosition(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
+			handler.PlatformView.UpdatePosition();
 		}
 
-		//TODO : Need to impl
-		[MissingMapper]
-		public static void MapHideSingle(IIndicatorViewHandler handler, IIndicatorView indicator) { }
+		public static void MapHideSingle(IIndicatorViewHandler handler, IIndicatorView indicator) 
+		{
+			handler.PlatformView.UpdateCount();
+		}
 
-		[MissingMapper]
-		public static void MapMaximumVisible(IIndicatorViewHandler handler, IIndicatorView indicator) { }
+		public static void MapMaximumVisible(IIndicatorViewHandler handler, IIndicatorView indicator)
+		{
+			handler.PlatformView.UpdateCount();
+		}
 
-		[MissingMapper]
-		public static void MapIndicatorSize(IIndicatorViewHandler handler, IIndicatorView indicator) { }
+		public static void MapIndicatorSize(IIndicatorViewHandler handler, IIndicatorView indicator)
+		{
+			handler.PlatformView.ResetIndicators();
+		}
 
-		[MissingMapper]
-		public static void MapIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator) { }
+		public static void MapIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator)
+		{
+			handler.PlatformView.ResetIndicators();
+		}
 
-		[MissingMapper]
-		public static void MapSelectedIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator) { }
+		public static void MapSelectedIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator)
+		{
+			handler.PlatformView.ResetIndicators();
+		}
 
-		[MissingMapper]
-		public static void MapIndicatorShape(IIndicatorViewHandler handler, IIndicatorView indicator) { }
-
+		public static void MapIndicatorShape(IIndicatorViewHandler handler, IIndicatorView indicator)
+		{
+			handler.PlatformView.ResetIndicators();
+		}
 	}
 }
