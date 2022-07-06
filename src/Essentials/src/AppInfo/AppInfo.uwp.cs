@@ -31,20 +31,20 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public string PackageName => AppInfoUtils.IsPackagedApp
 			? Package.Current.Id.Name
-			: _launchingAssembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? string.Empty;
+			: _launchingAssembly.GetAppInfoValue("PackageName") ?? _launchingAssembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? string.Empty;
 
 		// TODO: NET7 add this as a actual data point and public property if it is valid on platforms
 		internal static string PublisherName => AppInfoUtils.IsPackagedApp
 			? Package.Current.PublisherDisplayName
-			: _launchingAssembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? string.Empty;
+			: _launchingAssembly.GetAppInfoValue("PublisherName") ?? _launchingAssembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? string.Empty;
 
 		public string Name => AppInfoUtils.IsPackagedApp
 			? Package.Current.DisplayName
-			: _launchingAssembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? string.Empty;
+			: _launchingAssembly.GetAppInfoValue("Name") ?? _launchingAssembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? string.Empty;
 
 		public Version Version => AppInfoUtils.IsPackagedApp
 			? Package.Current.Id.Version.ToVersion()
-			: _launchingAssembly.GetName().Version;
+			: _launchingAssembly.GetAppInfoVersionValue("Version") ?? _launchingAssembly.GetName().Version;
 
 		public string VersionString => Version.ToString();
 
@@ -106,5 +106,27 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public static Version ToVersion(this PackageVersion version) =>
 			new Version(version.Major, version.Minor, version.Build, version.Revision);
+
+		public static Version GetAppInfoVersionValue(this Assembly assembly, string name)
+		{
+			if (assembly.GetAppInfoValue(name) is string value && !string.IsNullOrEmpty(value))
+				return Version.Parse(value);
+
+			return null;
+		}
+
+		public static string GetAppInfoValue(this Assembly assembly, string name) =>
+			assembly.GetMetadataAttributeValue("Microsoft.Maui.ApplicationModel.AppInfo." + name);
+
+		public static string GetMetadataAttributeValue(this Assembly assembly, string key)
+		{
+			foreach (var attr in assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+			{
+				if (attr.Key == key)
+					return attr.Value;
+			}
+
+			return null;
+		}
 	}
 }
