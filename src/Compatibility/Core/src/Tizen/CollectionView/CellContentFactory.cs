@@ -278,7 +278,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				var selected = new VisualState
 				{
 					Name = VisualStateManager.CommonStates.Selected,
-					TargetType = typeof(Controls.Layout),
+					TargetType = typeof(View),
 					Setters =
 					{
 						new Setter
@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				var normal = new VisualState
 				{
 					Name = VisualStateManager.CommonStates.Normal,
-					TargetType = typeof(Controls.Layout),
+					TargetType = typeof(View),
 					Setters =
 					{
 						new Setter
@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				var focused = new VisualState
 				{
 					Name = VisualStateManager.CommonStates.Focused,
-					TargetType = typeof(Controls.Layout),
+					TargetType = typeof(View),
 					Setters =
 					{
 						new Setter

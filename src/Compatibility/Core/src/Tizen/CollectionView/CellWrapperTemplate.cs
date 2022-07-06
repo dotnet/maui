@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				return _cache[template];
 			}
-			var wrapper = new CellWrapperTemplate(template);
+			var wrapper = new CellWrapperTemplate(template, container);
 			_cache[template] = wrapper;
 			return wrapper;
 		}

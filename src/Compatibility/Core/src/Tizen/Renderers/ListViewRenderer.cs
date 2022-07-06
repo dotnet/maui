@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 				else if (Element.ItemTemplate != null)
 				{
-					template = new CellWrapperTemplate(Element.ItemTemplate);
+					template = new CellWrapperTemplate(Element.ItemTemplate, Element);
 				}
 				else
 				{
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 						var label = new TextCell();
 						label.SetBinding(TextCell.TextProperty, new Binding("."));
 						return label;
-					}));
+					}), Element);
 				}
 				var adaptor = new ListViewAdaptor(Element, Element.ItemsSource, template);
 				Control.Adaptor = adaptor;
