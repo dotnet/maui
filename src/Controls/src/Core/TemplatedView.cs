@@ -87,7 +87,10 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnApplyTemplate()
 		{
+			OnApplyTemplateImpl();
 		}
+
+		partial void OnApplyTemplateImpl();
 
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{

@@ -92,6 +92,31 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertInvalidFilename(task, i);
 				Assert.False(success);
 			}
+
+			[Fact]
+			public void SingleInvalidFileFailsWithCorrectErrorMessage()
+			{
+				var i = new TaskItem("images/appiconfg-red-512.svg");
+				var task = GetNewTask(i);
+
+				var success = task.Execute();
+				Assert.False(success);
+
+				Assert.Equal("Invalid Filenames: appiconfg-red-512", LogErrorEvents[0].Message);
+			}
+
+			[Fact]
+			public void MultipleInvalidFileFailsWithCorrectErrorMessage()
+			{
+				var i = new TaskItem("images/appiconfg-red-512.svg");
+				var j = new TaskItem("images/appiconfg-red-512.svg");
+				var task = GetNewTask(i, j);
+
+				var success = task.Execute();
+				Assert.False(success);
+
+				Assert.Equal("Invalid Filenames: appiconfg-red-512, appiconfg-red-512", LogErrorEvents[0].Message);
+			}
 		}
 	}
 }

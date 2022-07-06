@@ -11,6 +11,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 namespace Microsoft.Maui.DeviceTests
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class HandlerTestBase : TestBase, IDisposable
 	{
 		bool _isCreated;
-		MauiApp _mauiApp;
+		protected MauiApp MauiApp { get; private set; }
 		IMauiContext _mauiContext;
 
 		// In order to run any page level tests android needs to add itself to the decor view inside a new fragment
@@ -77,16 +78,16 @@ namespace Microsoft.Maui.DeviceTests
 
 			additionalCreationActions?.Invoke(appBuilder);
 
-			_mauiApp = appBuilder.Build();
+			MauiApp = appBuilder.Build();
 
-			_mauiContext = new ContextStub(_mauiApp.Services);
+			_mauiContext = new ContextStub(MauiApp.Services);
 		}
 
 		public void Dispose()
 		{
-			((IDisposable)_mauiApp)?.Dispose();
+			((IDisposable)MauiApp)?.Dispose();
 
-			_mauiApp = null;
+			MauiApp = null;
 			_mauiContext = null;
 		}
 
@@ -177,7 +178,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		static SemaphoreSlim _takeOverMainContentSempahore = new SemaphoreSlim(1);
-		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
+		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{
 			return InvokeOnMainThreadAsync(async () =>
@@ -210,10 +211,8 @@ namespace Microsoft.Maui.DeviceTests
 
 						await OnLoadedAsync(content as VisualElement);
 #if WINDOWS
-
 						await Task.Delay(10);
 #endif
-
 						if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
 							await action((THandler)window.Handler);
 						else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
@@ -222,7 +221,7 @@ namespace Microsoft.Maui.DeviceTests
 							await action((THandler)cp.Content.Handler);
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
-					});
+					}, mauiContext);
 				}
 				finally
 				{
@@ -290,14 +289,19 @@ namespace Microsoft.Maui.DeviceTests
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
-		protected Task OnNavigatedToAsync(Page page, TimeSpan? timeOut = null)
+		protected async Task OnNavigatedToAsync(Page page, TimeSpan? timeOut = null)
 		{
+			await OnLoadedAsync(page, timeOut);
+
+			if (page.HasNavigatedTo)
+				return;
+
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 
 			page.NavigatedTo += NavigatedTo;
 
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
 			void NavigatedTo(object sender, NavigatedToEventArgs e)
 			{
 				taskCompletionSource.SetResult(true);
@@ -305,20 +309,24 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-
-		protected Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		protected async Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			if (frameworkElement.Frame.Height > 0 &&
 				frameworkElement.Frame.Width > 0)
 			{
-				return Task.CompletedTask;
+				return;
 			}
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 			frameworkElement.BatchCommitted += OnBatchCommitted;
 
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			// Wait for the layout to propagate to the platform
+			await AssertionExtensions.Wait(
+				() => !frameworkElement.GetBoundingBox().Size.Equals(Size.Zero)
+			);
 
 			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
 			{

@@ -43,6 +43,12 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(platformView);
 		}
 
+		// TODO: NET7 make this public
+		internal static void MapBackground(IImageButtonHandler handler, IImageButton imageButton)
+		{
+			(handler.PlatformView as ShapeableImageView)?.UpdateBackground(imageButton);
+		}
+
 		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			(handler.PlatformView as ShapeableImageView)?.UpdateStrokeColor(buttonStroke);
