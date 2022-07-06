@@ -680,10 +680,10 @@
     <!-- This is required because the "GetAssemblyAttributes" target does not have an open DependsOnTargets. -->
     <Target Name="_GetAssemblyAttributesBeforeTarget"
             BeforeTargets="GetAssemblyAttributes"
-            DependsOnTargets="MauiGeneratePackageAppxManifest;_MauiGetAssemblyAttributes"
+            DependsOnTargets="MauiGeneratePackageAppxManifest;_MauiGetAssemblyAttributesFromAppxManifest"
             Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'" />
 
-    <Target Name="_MauiGetAssemblyAttributes">
+    <Target Name="_MauiGetAssemblyAttributesFromAppxManifest">
 
         <PropertyGroup>
             <_MauiAppxManifestContents>$([System.IO.File]::ReadAllText('$(_MauiIntermediateManifest)Package.appxmanifest'))</_MauiAppxManifestContents>
