@@ -138,6 +138,12 @@ Task("dotnet-templates")
                 ReplaceTextInFiles($"{dir}/*.csproj", "UseMaui", "UseMauiCore");
                 ReplaceTextInFiles($"{dir}/*.csproj", "SingleProject", "EnablePreviewMsixTooling");
             } },
+            { "mauiunpackaged:maui", dir => {
+                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
+            } },
+            { "mauiblazorunpackaged:maui-blazor", dir => {
+                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
+            } },
         };
 
         var alsoPack = new [] {
@@ -159,7 +165,7 @@ Task("dotnet-templates")
                 var framework = string.IsNullOrWhiteSpace(TestTFM) ? "" : $"--framework {TestTFM}";
 
                 projectName = $"{tempDir}/{projectName}_{type}";
-                projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM}";
+                projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM.Replace('.', '_')}";
 
                 // Create
                 StartProcess(dn, $"new {templateName} -o \"{projectName}\" {framework}");

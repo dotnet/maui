@@ -114,6 +114,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		IShellFlyoutRenderer _flyoutView;
 		FrameLayout _frameLayout;
 		IMauiContext _mauiContext;
+		bool _disposed;
 
 		event EventHandler<PropertyChangedEventArgs> _elementPropertyChanged;
 
@@ -345,6 +346,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IElementHandler.DisconnectHandler()
 		{
+			if (_disposed)
+				return;
+
+			_disposed = true;
+
+			Element.PropertyChanged -= OnElementPropertyChanged;
+			Element.SizeChanged -= OnElementSizeChanged;
+			((IShellController)Element).RemoveAppearanceObserver(this);
+
+			if (_flyoutView is ShellFlyoutRenderer sfr)
+				sfr.Disconnect();
+			else
+				(_flyoutView as IDisposable)?.Dispose();
+
+			if (_currentView is ShellItemRendererBase sir)
+				sir.Disconnect();
+			else
+				_currentView.Dispose();
+
+			_currentView = null;
+
+			Element = null;
+
+			_disposed = true;
 		}
 
 		class SplitDrawable : Drawable

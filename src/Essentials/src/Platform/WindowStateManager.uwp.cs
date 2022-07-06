@@ -75,6 +75,8 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		const uint DISPLAY_CHANGED = 126;
 		const uint DPI_CHANGED = 736;
+		const int WM_SETTINGCHANGE = 0x001A;
+		const int WM_THEMECHANGE = 0x031A;
 
 		Window? _activeWindow;
 
@@ -106,6 +108,10 @@ namespace Microsoft.Maui.ApplicationModel
 		// Hopefully there will be a more public API for this down the road so we can just use that directly from Essentials
 		public void OnWindowMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
 		{
+			// TODO NET7 expose a theme changed event property?
+			if ((msg == WM_SETTINGCHANGE || msg == WM_THEMECHANGE) && AppInfo.Current is AppInfoImplementation ai)
+				ai.ThemeChanged();
+
 			if (ActiveWindowDisplayChanged == null)
 				return;
 
