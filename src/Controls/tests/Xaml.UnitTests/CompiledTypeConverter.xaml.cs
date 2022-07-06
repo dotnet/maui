@@ -19,6 +19,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		public Point PointP { get; set; }
 
+		public Brush BrushByName { get; set; }
+
+		public Brush BrushByARGB { get; set; }
+
+		public Brush BrushByRGB { get; set; }
+
 		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> List { get; set; }
 
@@ -41,6 +47,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual(new Rect(0, 1, 2, 4), p.RectangleP);
 				Assert.AreEqual(new Rect(4, 8, 16, 32), p.RectangleBP);
 				Assert.AreEqual(new Point(1, 2), p.PointP);
+				Assert.AreEqual(Brush.Red, p.BrushByName);
+				Assert.AreEqual(new Color(1, 2, 3, 0), ((SolidColorBrush)p.BrushByARGB).Color);
+				Assert.AreEqual(new Color(1, 2, 3), ((SolidColorBrush)p.BrushByRGB).Color);
 				Assert.AreEqual(Colors.Pink, p.BackgroundColor);
 				Assert.AreEqual(LayoutOptions.EndAndExpand, p.label.GetValue(View.HorizontalOptionsProperty));
 				var xConstraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetXConstraint(p.label);

@@ -6,6 +6,9 @@
 			 RectangleP="0,1,2,4"
 			 RectangleBP="4,8,16,32"
 			 PointP="1,2"
+			 BrushByName="Red"
+			 BrushByARGB="#00010203"
+			 BrushByRGB="#010203"
 			 BackgroundColor="Pink"
 			 List="Foo, Bar">
 	<Label x:Name="label"
