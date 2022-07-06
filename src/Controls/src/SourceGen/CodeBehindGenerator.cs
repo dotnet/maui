@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			// add MemberNotNull attributes
 			if (namedFields != null)
 			{
-				sb.AppendLine($"#if NET5_0_OR_GREATER");
+				sb.AppendLine($"#if NET6_0_OR_GREATER");
 				foreach ((var fname, _, _) in namedFields)
 				{
 
