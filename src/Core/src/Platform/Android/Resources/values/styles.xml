@@ -29,6 +29,12 @@
     <style name="Maui.SplashTheme" parent="Maui.MainTheme.NoActionBar">
         <item name="maui_splash">true</item>
         <item name="android:windowBackground">@drawable/maui_splash</item>
+        <!--
+          Android 12+ specific settings
+          See: https://developer.android.com/guide/topics/ui/splash-screen#set-theme
+        -->
+        <item name="android:windowSplashScreenBackground">@color/maui_splash_color</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/maui_splash</item>
     </style>
 
     <!-- Themes for Xamarin.Forms backwards compatibility -->
