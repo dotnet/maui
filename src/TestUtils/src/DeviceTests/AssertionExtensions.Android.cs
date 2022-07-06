@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 			view.LayoutChange += OnLayout;
 
 			var cts = new CancellationTokenSource();
-			cts.Token.Register(() => OnLayout(view));
+			cts.Token.Register(() => OnLayout(view), true);
 			cts.CancelAfter(timeout);
 
 			return tcs.Task;
