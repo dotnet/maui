@@ -70,6 +70,7 @@ namespace Microsoft.Maui.Dispatching
 			IsRunning = false;
 
 			_dispatchBlock?.Cancel();
+			_dispatchBlock = null;
 		}
 
 		void OnTimerTick()
@@ -79,7 +80,7 @@ namespace Microsoft.Maui.Dispatching
 
 			Tick?.Invoke(this, EventArgs.Empty);
 
-			if (IsRepeating)
+			if (IsRepeating && _dispatchBlock is not null)
 				_dispatchQueue.DispatchAfter(new DispatchTime(DispatchTime.Now, Interval), _dispatchBlock);
 		}
 	}
