@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// Returns the default 'X' char drawable in the AppCompatEditText.
-		protected virtual Drawable GetClearButtonDrawable() =>
+		protected virtual Drawable? GetClearButtonDrawable() =>
 			_clearButtonDrawable ??= ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
 
 		protected override void ConnectHandler(AppCompatEditText platformView)

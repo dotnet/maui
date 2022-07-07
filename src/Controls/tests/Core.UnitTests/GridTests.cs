@@ -597,7 +597,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void Issue13127()
 		{
-			var scrollView = new ScrollView() { IsPlatformEnabled = true };
 			var outerGrid = new Grid() { RowSpacing = 0, IsPlatformEnabled = true };
 			var outerStackLayout = new StackLayout() { Spacing = 0, IsPlatformEnabled = true };
 
@@ -624,10 +623,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			outerStackLayout.Children.Add(innerGrid);
 			outerGrid.Children.Add(outerStackLayout);
-			scrollView.Content = outerGrid;
 
-			var sizeRequest = scrollView.Measure(500, 1000);
-			scrollView.Layout(new Rect(0, 0, sizeRequest.Request.Width, 1000));
+			var sizeRequest = outerGrid.Measure(500, 1000);
+			outerGrid.Layout(new Rect(0, 0, sizeRequest.Request.Width, 1000));
 
 			Assert.That(innerGrid.Height, Is.EqualTo(foreground.Height));
 			Assert.That(background.Height, Is.EqualTo(foreground.Height * 0.6).Within(0.01));

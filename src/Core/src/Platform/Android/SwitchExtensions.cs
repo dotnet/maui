@@ -29,10 +29,10 @@ namespace Microsoft.Maui.Platform
 				aSwitch.ThumbDrawable?.SetColorFilter(thumbColor, FilterMode.SrcAtop);
 		}
 
-		public static Drawable GetDefaultSwitchTrackDrawable(this ASwitch aSwitch) =>
+		public static Drawable? GetDefaultSwitchTrackDrawable(this ASwitch aSwitch) =>
 			aSwitch.TrackDrawable;
 
-		public static Drawable GetDefaultSwitchThumbDrawable(this ASwitch aSwitch) =>
+		public static Drawable? GetDefaultSwitchThumbDrawable(this ASwitch aSwitch) =>
 			aSwitch.ThumbDrawable;
 	}
 }

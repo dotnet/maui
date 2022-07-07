@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellFlyoutRecyclerAdapter : RecyclerView.Adapter
 	{
-		readonly IShellContext _shellContext;
+		IShellContext _shellContext;
 		List<AdapterListItem> _listItems;
 		List<List<Element>> _flyoutGroupings;
 		Action<Element> _selectedCallback;
@@ -203,13 +203,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (disposing)
 			{
-				((IShellController)Shell).FlyoutItemsChanged -= OnFlyoutItemsChanged;
-
-				_listItems = null;
-				_selectedCallback = null;
+				Disconnect();
 			}
 
 			base.Dispose(disposing);
+		}
+
+		internal void Disconnect()
+		{
+			if (Shell is IShellController scc)
+				scc.FlyoutItemsChanged -= OnFlyoutItemsChanged;
+
+			_listItems = null;
+			_selectedCallback = null;
+			_shellContext = null;
 		}
 
 		public class AdapterListItem

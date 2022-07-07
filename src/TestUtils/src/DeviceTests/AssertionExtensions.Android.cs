@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 			view.LayoutChange += OnLayout;
 
 			var cts = new CancellationTokenSource();
-			cts.Token.Register(() => OnLayout(view));
+			cts.Token.Register(() => OnLayout(view), true);
 			cts.CancelAfter(timeout);
 
 			return tcs.Task;
@@ -33,7 +33,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var view = (AView)sender!;
 
-				view.LayoutChange -= OnLayout;
+				if (view.Handle != IntPtr.Zero)
+					view.LayoutChange -= OnLayout;
 
 				tcs.TrySetResult(e != null);
 			}

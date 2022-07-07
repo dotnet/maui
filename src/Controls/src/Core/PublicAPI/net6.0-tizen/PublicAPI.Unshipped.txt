@@ -1,3 +1,0 @@
-﻿#nullable enable
-override Microsoft.Maui.Controls.ContentView.OnApplyTemplate() -> void
-override Microsoft.Maui.Controls.Grid.OnBindingContextChanged() -> void
