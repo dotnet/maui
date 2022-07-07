@@ -65,6 +65,11 @@ namespace Maui.Controls.Sample.Pages.Base
 			var page = (Handler?.MauiContext?.Services?.GetService(model.Type) as Page) ?? (Page)Activator.CreateInstance(model.Type);
 			page.Title = model.Title;
 
+			if (model.ViewModel != null)
+			{
+				page.BindingContext = model.ViewModel;
+			}
+
 			return page;
 		}
 	}
