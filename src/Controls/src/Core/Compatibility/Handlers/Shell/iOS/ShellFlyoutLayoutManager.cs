@@ -240,11 +240,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else
 				{
-					ContentView.Frame =
-							new CGRect(parent.Bounds.X, HeaderTopMargin, parent.Bounds.Width, parent.Bounds.Height - HeaderTopMargin - footerHeight);
-
-					var platformFrame = new CGRect(0, 0, ContentView.Frame.Width, ContentView.Frame.Height - contentViewYOffset);
-					Content?.Arrange(platformFrame.ToRectangle());
+					var contentFrame = new Rect(parent.Bounds.X, HeaderTopMargin, parent.Bounds.Width, parent.Bounds.Height - HeaderTopMargin - footerHeight);
+					(Content as IView)?.Arrange(contentFrame);
 				}
 			}
 			else
@@ -259,11 +256,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					topMargin = (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
 				}
 
-				ContentView.Frame =
-						new CGRect(parent.Bounds.X, topMargin + contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - topMargin - footerHeight - contentViewYOffset);
-
-				var platformFrame = new CGRect(0, 0, ContentView.Frame.Width, ContentView.Frame.Height);
-				Content?.Arrange(platformFrame.ToRectangle());
+				var contentFrame = new Rect(parent.Bounds.X, topMargin + contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - topMargin - footerHeight - contentViewYOffset);
+				(Content as IView)?.Arrange(contentFrame);
 			}
 
 			if (HeaderView != null && !double.IsNaN(HeaderSize))

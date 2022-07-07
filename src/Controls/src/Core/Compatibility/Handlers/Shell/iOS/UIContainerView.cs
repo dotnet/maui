@@ -92,12 +92,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void LayoutSubviews()
 		{
-			var platformFrame = new CGRect(0, 0, Width ?? Frame.Width, Height ?? MeasuredHeight);
-
-			if (_view.Handler != null)
-				_view.ToPlatform().Frame = platformFrame;
-
-			_view.Arrange(platformFrame.ToRectangle());
+			var platformFrame = new Rect(0, 0, Width ?? Frame.Width, Height ?? MeasuredHeight);
+			(_view as IView).Arrange(platformFrame);
 		}
 
 		protected override void Dispose(bool disposing)
