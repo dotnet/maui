@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Platform
 			if (view.Visibility.ToPlatformVisibility())
 			{
 				platformView.Show();
+				platformView.Layout?.RequestLayout();
 			}
 			else
 			{
