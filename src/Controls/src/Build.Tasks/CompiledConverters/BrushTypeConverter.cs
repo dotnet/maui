@@ -45,9 +45,6 @@ class BrushTypeConverter : ICompiledTypeConverter
 			if (parts.Length == 1 || (parts.Length == 2 && parts[0] == "Brush"))
 			{
 				var brush = parts[parts.Length - 1];
-				if (brush == "lightgrey")
-					brush = "lightgray";
-
 				var propertyGetterReference = module.ImportPropertyGetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Brush"),
 																   brush,
 																   isStatic: true,
