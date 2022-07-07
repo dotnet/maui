@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <_JsonInputFile Include="WorkloadManifest.in.json" OutputPath="$(IntermediateOutputPath)WorkloadManifest.json" Pack="true" />
+    <_JsonInputFile Include="WorkloadManifest.in.targets" OutputPath="$(IntermediateOutputPath)WorkloadManifest.targets" Pack="true" />
     <_JsonInputFile Include="Rollback.in.json" OutputPath="$(IntermediateOutputPath)Rollback.json" Pack="false" />
     <_JsonInputFile Include="SdkInstaller.in.json" OutputPath="$(IntermediateOutputPath)SdkInstaller.json" Pack="false" />
   </ItemGroup>
@@ -54,6 +55,12 @@
       <_VersionsToReplace Include="MicrosoftMauiGraphicsVersion" />
       <_VersionsToReplace Update="@(_VersionsToReplace)" PropertyName="%(Identity)" />
       <_VersionsToReplace Include="MicrosoftMauiGraphicsWin2DWinUIDesktopPackageVersion" PropertyName="MicrosoftMauiGraphicsVersion" />
+      <_VersionsToReplace Include="MAUI_GRAPHICS_VERSION" PropertyName="MicrosoftMauiGraphicsVersion" />
+      <_VersionsToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
+      <_VersionsToReplace Include="MAUI_DOTNET_VERSION" PropertyName="_MauiDotNetVersion" />
+      <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION" PropertyName="_MauiPreviousDotNetVersion" />
+      <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_NO_DOT" PropertyName="_MauiPreviousDotNetVersionNoDot" />
+      <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION" PropertyName="MicrosoftMauiPreviousDotNetReleasedVersion" />
     </ItemGroup>
     <CreateItem
         Include="@(_JsonInputFile)"
@@ -62,23 +69,9 @@
             TaskParameter="Include"
             ItemName="_JsonVariableMatrix"/>
     </CreateItem>
-    <ReplaceText
-        Input="%(_JsonInputFile.Identity)"
-        Output="%(_JsonInputFile.OutputPath)"
-        OldValue="@VERSION@"
-        NewValue="$(PackageReferenceVersion)"
-    />
-    <ReplaceText
-        Input="$(IntermediateOutputPath)WorkloadManifest.json"
-        Output="$(IntermediateOutputPath)WorkloadManifest.json"
-        OldValue="@MAUI_GRAPHICS_VERSION@"
-        NewValue="$(MicrosoftMauiGraphicsVersion)"
-    />
-    <ReplaceText
-        Input="$(IntermediateOutputPath)WorkloadManifest.json"
-        Output="$(IntermediateOutputPath)WorkloadManifest.json"
-        OldValue="@MAUI_DOTNET_VERSION@"
-        NewValue="$(_MauiDotNetVersion)"
+    <Copy
+        SourceFiles="%(_JsonInputFile.Identity)"
+        DestinationFiles="%(_JsonInputFile.OutputPath)"
     />
     <ReplaceText
         Input="%(_JsonVariableMatrix.OutputPath)"
