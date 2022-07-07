@@ -6,6 +6,7 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using Microsoft.Extensions.DependencyInjection;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
@@ -281,45 +282,53 @@ namespace Microsoft.Maui.Platform
 
 		internal static void SetInputType(this EditText editText, ITextInput textInput)
 		{
-			if (textInput.IsReadOnly)
+			var keyboard = textInput.Keyboard;
+			var nativeInputTypeToUpdate = keyboard.ToInputType();
+
+			if (keyboard is not CustomKeyboard)
 			{
-				editText.InputType = InputTypes.Null;
+				// TODO: IsSpellCheckEnabled handling must be here.
+
+				if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+				{
+					if (!textInput.IsTextPredictionEnabled)
+						nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
+				}
 			}
-			else
+
+			if (keyboard == Keyboard.Numeric)
 			{
-				var keyboard = textInput.Keyboard;
-				var nativeInputTypeToUpdate = keyboard.ToInputType();
-
-				if (keyboard is not CustomKeyboard)
-				{
-					// TODO: IsSpellCheckEnabled handling must be here.
-
-					if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
-					{
-						if (!textInput.IsTextPredictionEnabled)
-							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
-					}
-				}
-
-				if (keyboard == Keyboard.Numeric)
-				{
-					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
-				}
-
-				if (textInput is IEntry entry && entry.IsPassword)
-				{
-					if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
-						nativeInputTypeToUpdate |= InputTypes.TextVariationPassword;
-
-					if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
-						nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
-				}
-
-				editText.InputType = nativeInputTypeToUpdate;
+				editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 			}
+
+			bool hasPassword = false;
+
+			if (textInput is IEntry entry && entry.IsPassword)
+			{
+				if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
+					nativeInputTypeToUpdate |= InputTypes.TextVariationPassword;
+
+				if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
+					nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
+
+				hasPassword = true;
+			}
+
+			editText.InputType = nativeInputTypeToUpdate;
 
 			if (textInput is IEditor)
 				editText.InputType |= InputTypes.TextFlagMultiLine;
+
+			if (hasPassword && textInput is IElement element)
+			{
+				var services = element.Handler?.MauiContext?.Services;
+
+				if (services == null)
+					return;
+
+				var fontManager = services.GetRequiredService<IFontManager>();
+				editText.UpdateFont(textInput, fontManager);
+			}
 		}
 
 		internal static bool IsCompletedAction(this EditorActionEventArgs e)
