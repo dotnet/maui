@@ -256,7 +256,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					topMargin = (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
 				}
-				else if (OperatingSystem.IsIOSVersionAtLeast(11))
+				else
 					contentViewYOffset -= (nfloat)HeaderTopMargin;
 
 				var contentFrame = new Rect(parent.Bounds.X, topMargin + contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - topMargin - footerHeight - contentViewYOffset);
