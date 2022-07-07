@@ -75,13 +75,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		protected IShellContext ShellContext { get; }
+		protected IShellContext ShellContext { get; private set; }
 
 		protected ShellItem ShellItem { get; private set; }
 
 		protected virtual IShellObservableFragment CreateFragmentForPage(Page page)
 		{
 			return ShellContext.CreateFragmentForPage(page);
+		}
+
+		internal void Disconnect()
+		{
+			ShellSection = null;
+			DisplayedPage = null;
+			ShellContext = null;
 		}
 
 		void Destroy()

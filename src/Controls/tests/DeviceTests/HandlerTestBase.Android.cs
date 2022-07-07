@@ -39,9 +39,10 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		static Drawable _decorDrawable;
-		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests)
+		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{
+			mauiContext ??= MauiContext;
 			return InvokeOnMainThreadAsync(async () =>
 			{
 				AViewGroup rootView = MauiContext.Context.GetActivity().Window.DecorView as AViewGroup;

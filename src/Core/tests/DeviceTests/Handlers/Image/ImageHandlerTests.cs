@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 	}
 
 	public abstract partial class ImageHandlerTests<TImageHandler, TStub> : HandlerTestBase<TImageHandler, TStub>
-		where TImageHandler : IImageHandler, new()
+		where TImageHandler : class, IImageHandler, new()
 		where TStub : StubBase, IImageStub, new()
 	{
 #if ANDROID

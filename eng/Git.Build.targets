@@ -1,6 +1,6 @@
 <Project>
   <ItemGroup>
-    <PackageReference Include="GitInfo" Version="2.1.2" PrivateAssets="All" />
+    <PackageReference Include="GitInfo" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="MSBuilder.GenerateAssemblyInfo" Version="0.2.2" PrivateAssets="All" />
 	</ItemGroup>
  </Project>
