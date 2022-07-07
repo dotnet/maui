@@ -1,6 +1,9 @@
 namespace Microsoft.Maui.Controls
 {
-	public partial class MenuFlyoutSeparator : MenuFlyoutItem, IMenuFlyoutSeparator
+	/// <summary>
+	/// Represents a horizontal line that separates items in a menu. 
+	/// </summary>
+	public class MenuFlyoutSeparator : MenuFlyoutItem, IMenuFlyoutSeparator
 	{
 	}
 }
