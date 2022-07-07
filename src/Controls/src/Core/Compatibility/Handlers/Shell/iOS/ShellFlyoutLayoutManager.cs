@@ -243,7 +243,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					ContentView.Frame =
 							new CGRect(parent.Bounds.X, HeaderTopMargin, parent.Bounds.Width, parent.Bounds.Height - HeaderTopMargin - footerHeight);
 
-					Content?.LayoutToSize(ContentView.Frame.Width, ContentView.Frame.Height - contentViewYOffset);
+					var platformFrame = new CGRect(0, 0, ContentView.Frame.Width, ContentView.Frame.Height - contentViewYOffset);
+					Content?.Arrange(platformFrame.ToRectangle());
 				}
 			}
 			else
@@ -261,8 +262,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ContentView.Frame =
 						new CGRect(parent.Bounds.X, topMargin + contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - topMargin - footerHeight - contentViewYOffset);
 
-
-				Content?.LayoutToSize(ContentView.Frame.Width, ContentView.Frame.Height);
+				var platformFrame = new CGRect(0, 0, ContentView.Frame.Width, ContentView.Frame.Height);
+				Content?.Arrange(platformFrame.ToRectangle());
 			}
 
 			if (HeaderView != null && !double.IsNaN(HeaderSize))
