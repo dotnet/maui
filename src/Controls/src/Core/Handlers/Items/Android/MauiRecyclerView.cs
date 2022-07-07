@@ -544,6 +544,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				// TODO hartez 2018/10/24 17:34:36 If this works, cache this layout manager as _emptyLayoutManager	
 				SetLayoutManager(new LinearLayoutManager(Context));
+				UpdateEmptyView();
 			}
 			else if (!showEmptyView && currentAdapter != ItemsViewAdapter)
 			{
