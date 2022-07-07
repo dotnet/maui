@@ -25,8 +25,8 @@
 
     <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) or '$(Packing)' == 'true'">true</IncludeWindowsTargetFrameworks>
     <IncludeTizenTargetFrameworks Condition="'$(CI)' == 'true' or '$(TF_BUILD)' == 'true' or
-             Exists('$(DOTNET_ROOT)\sdk-manifests\$(DotNetVersionBand)\samsung.net.sdk.tizen\WorkloadManifest.json') or
-             Exists('$(ProgramFiles)\dotnet\sdk-manifests\$(DotNetVersionBand)\samsung.net.sdk.tizen\WorkloadManifest.json')">true</IncludeTizenTargetFrameworks>
+             Exists('$(DOTNET_ROOT)\sdk-manifests\$(DotNetSdkManifestsFolder)\samsung.net.sdk.tizen\WorkloadManifest.json') or
+             Exists('$(ProgramFiles)\dotnet\sdk-manifests\$(DotNetSdkManifestsFolder)\samsung.net.sdk.tizen\WorkloadManifest.json')">true</IncludeTizenTargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
