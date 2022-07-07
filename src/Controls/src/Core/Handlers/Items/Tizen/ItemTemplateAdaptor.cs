@@ -128,8 +128,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				view = (View)ItemTemplate.CreateContent();
 			}
-			view.Parent = Element;
-
 			var native = view.ToPlatform(MauiContext);
 			_nativeMauiTable[native] = view;
 			return native;
@@ -205,6 +203,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				view.BindingContext = this[index];
 				_dataBindedViewTable[this[index]!] = view;
 				view.MeasureInvalidated += OnItemMeasureInvalidated;
+				view.Parent = Element;
 
 				AddLogicalChild(view);
 			}
@@ -254,9 +253,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			using var handler = (IPlatformViewHandler)view.Handler!;
-			view.Parent = Element;
 			if (Count > index)
 				view.BindingContext = this[index];
+			view.Parent = Element;
 
 			view.ToPlatform(MauiContext);
 			return (view as IView).Measure(widthConstraint, heightConstraint).ToPixel();

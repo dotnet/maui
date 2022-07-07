@@ -114,7 +114,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var renderer = Platform.GetOrCreateRenderer(view);
 			var native = renderer.NativeView;
 
-			view.Parent = Element;
 			(renderer as ILayoutRenderer)?.RegisterOnLayoutUpdated();
 
 			_nativeFormsTable[native] = view;
@@ -170,6 +169,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				view.BindingContext = this[index];
 				_dataBindedViewTable[this[index]] = view;
 				view.MeasureInvalidated += OnItemMeasureInvalidated;
+				view.Parent = Element;
 
 				AddLogicalChild(view);
 			}
@@ -218,9 +218,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 			using (var renderer = Platform.GetOrCreateRenderer(view))
 			{
-				view.Parent = Element;
 				if (Count > index)
 					view.BindingContext = this[index];
+				view.Parent = Element;
 				return (view as IView).Measure(widthConstraint, heightConstraint).ToPixel();
 			}
 		}
