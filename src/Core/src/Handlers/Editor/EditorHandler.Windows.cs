@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler : ViewHandler<IEditor, TextBox>
 	{
+		bool _set;
+
 		protected override TextBox CreatePlatformView() =>
 			new TextBox
 			{
@@ -14,12 +16,21 @@ namespace Microsoft.Maui.Handlers
 				TextWrapping = TextWrapping.Wrap,
 			};
 
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+
+			if (!_set)
+				PlatformView.SelectionChanged += OnSelectionChanged;
+
+			_set = true;
+		}
+
 		protected override void ConnectHandler(TextBox platformView)
 		{
 			platformView.TextChanged += OnTextChanged;
 			platformView.LostFocus += OnLostFocus;
 			platformView.Loaded += OnPlatformLoaded;
-			platformView.SelectionChanged += OnSelectionChanged;
 		}
 
 		protected override void DisconnectHandler(TextBox platformView)
@@ -27,7 +38,11 @@ namespace Microsoft.Maui.Handlers
 			platformView.Loaded -= OnPlatformLoaded;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.LostFocus -= OnLostFocus;
-			platformView.SelectionChanged -= OnSelectionChanged;
+
+			if (_set)
+				platformView.SelectionChanged -= OnSelectionChanged;
+
+			_set = false;
 		}
 
 		public static void MapText(IEditorHandler handler, IEditor editor) =>
@@ -86,11 +101,14 @@ namespace Microsoft.Maui.Handlers
 
 		private void OnSelectionChanged(object sender, RoutedEventArgs e)
 		{
-			if (VirtualView.CursorPosition != PlatformView.SelectionStart)
-				VirtualView.CursorPosition = PlatformView.SelectionStart;
+			var cursorPostion = PlatformView.GetCursorPosition();
+			var selectedTextLength = PlatformView.SelectionLength;
 
-			if (VirtualView.SelectionLength != PlatformView.SelectionLength)
-				VirtualView.SelectionLength = PlatformView.SelectionLength;
+			if (VirtualView.CursorPosition != cursorPostion)
+				VirtualView.CursorPosition = cursorPostion;
+
+			if (VirtualView.SelectionLength != selectedTextLength)
+				VirtualView.SelectionLength = selectedTextLength;
 		}
 	}
 }

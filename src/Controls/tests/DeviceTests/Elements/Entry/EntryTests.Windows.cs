@@ -19,9 +19,9 @@ namespace Microsoft.Maui.DeviceTests
 			GetPlatformControl(entryHandler).Text = text;
 
 		int GetPlatformCursorPosition(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).GetCursorPosition();
+			GetPlatformControl(entryHandler).SelectionStart;
 
 		int GetPlatformSelectionLength(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).SelectionLength;
+			GetPlatformControl(entryHandler).SelectionLength;
 	}
 }

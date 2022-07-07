@@ -9,22 +9,29 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this TextBox platformControl, InputView inputView)
 		{
+			var hasFocus = platformControl.FocusState != UI.Xaml.FocusState.Unfocused;
+			var passwordBox = platformControl as MauiPasswordTextBox;
+			var isPassword = passwordBox?.IsPassword ?? false;
+			var textTransform = inputView?.TextTransform ?? TextTransform.None;
+
 			// Setting the text causes the cursor to be reset to position zero.
 			// So, let's retain the current cursor position and calculate a new cursor
 			// position if the text was modified by a Converter.
 			var oldText = platformControl.Text ?? string.Empty;
-			var newText = inputView?.Text ?? string.Empty;
+			var newText = TextTransformUtilites.GetTransformedText(
+				inputView?.Text, 
+				isPassword ? TextTransform.None : textTransform
+				);
 
-			// Calculate the cursor offset position if the text was modified by a Converter.
+			// Re-calculate the cursor offset position if the text was modified by a Converter.
+			// but if the text is being set by code, let's just move the cursor to the end.
 			var cursorOffset = newText.Length - oldText.Length;
-			int cursorPosition = platformControl.GetCursorPosition(cursorOffset);
+			int cursorPosition = hasFocus ? platformControl.GetCursorPosition(cursorOffset) : newText.Length;
 
-			var textTransform = inputView?.TextTransform ?? TextTransform.None;
-
-			if (platformControl is MauiPasswordTextBox passwordBox)
-				passwordBox.Password = TextTransformUtilites.GetTransformedText(newText, passwordBox.IsPassword ? TextTransform.None : textTransform);
-			else
-				platformControl.Text = TextTransformUtilites.GetTransformedText(newText, textTransform);
+			if (oldText != newText && passwordBox is not null)
+				passwordBox.Password = newText;
+			else if (oldText != newText)
+				platformControl.Text = newText;
 
 			platformControl.Select(cursorPosition, 0);
 		}
