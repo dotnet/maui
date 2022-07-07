@@ -29,8 +29,10 @@
       "packs": [
           "Microsoft.Maui.Dependencies",
           "Microsoft.Maui.Sdk",
+          "Microsoft.Maui.Sdk-@MAUI_PREVIOUS_DOTNET_VERSION@",
           "Microsoft.Maui.Graphics",
           "Microsoft.Maui.Resizetizer.Sdk",
+          "Microsoft.Maui.Templates-@MAUI_PREVIOUS_DOTNET_VERSION@",
           "Microsoft.Maui.Templates-@MAUI_DOTNET_VERSION@",
           "Microsoft.Maui.Core.Ref.any",
           "Microsoft.Maui.Core.Runtime.any",
@@ -286,6 +288,13 @@
       "kind": "sdk",
       "version": "@VERSION@"
     },
+    "Microsoft.Maui.Sdk-@MAUI_PREVIOUS_DOTNET_VERSION@": {
+      "kind": "sdk",
+      "version": "@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@",
+      "alias-to": {
+        "any": "Microsoft.Maui.Sdk"
+      }
+    },
     "Microsoft.Maui.Resizetizer.Sdk": {
       "kind": "sdk",
       "version": "@VERSION@"
@@ -293,6 +302,10 @@
     "Microsoft.Maui.Templates-@MAUI_DOTNET_VERSION@": {
       "kind": "template",
       "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Templates-@MAUI_PREVIOUS_DOTNET_VERSION@": {
+      "kind": "template",
+      "version": "@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
     }
   }
 }
