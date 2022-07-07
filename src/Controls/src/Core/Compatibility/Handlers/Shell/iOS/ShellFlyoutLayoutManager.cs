@@ -231,6 +231,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				footerHeight = FooterView.Frame.Height;
 
 			var contentViewYOffset = HeaderView?.Frame.Height ?? 0;
+
 			if (ScrollView != null)
 			{
 				if (Content == null)
@@ -255,6 +256,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					topMargin = (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
 				}
+				else if (OperatingSystem.IsIOSVersionAtLeast(11))
+					contentViewYOffset -= (nfloat)HeaderTopMargin;
 
 				var contentFrame = new Rect(parent.Bounds.X, topMargin + contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - topMargin - footerHeight - contentViewYOffset);
 				(Content as IView)?.Arrange(contentFrame);
