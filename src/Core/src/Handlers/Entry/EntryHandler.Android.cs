@@ -35,9 +35,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			if (!_set)
-				// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-				((MauiAppCompatEditText)PlatformView).SelectionChanged += OnSelectionChanged;
+			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+			if (!_set && PlatformView is MauiAppCompatEditText editText)
+				editText.SelectionChanged += OnSelectionChanged;
 
 			_set = true;
 		}
@@ -60,9 +60,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.Touch -= OnTouch;
 			platformView.EditorAction -= OnEditorAction;
 
-			if (_set)
-				// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-				((MauiAppCompatEditText)platformView).SelectionChanged -= OnSelectionChanged;
+			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+			if (_set && PlatformView is MauiAppCompatEditText editText)
+				editText.SelectionChanged -= OnSelectionChanged;
 
 			_set = false;
 		}
