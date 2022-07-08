@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(IsChecked), typeof(bool), typeof(CheckBox), false,
 				propertyChanged: (bindable, oldValue, newValue) =>
 				{
+					((CheckBox)bindable).Handler?.UpdateValue(nameof(ICheckBox.Foreground));
 					((CheckBox)bindable).CheckedChanged?.Invoke(bindable, new CheckedChangedEventArgs((bool)newValue));
 					((CheckBox)bindable).ChangeVisualState();
 				}, defaultBindingMode: BindingMode.TwoWay);
