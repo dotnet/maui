@@ -27,6 +27,8 @@ string DEVICE_ID = "";
 string DEVICE_ARCH = "";
 bool DEVICE_BOOT = Argument("boot", true);
 bool DEVICE_BOOT_WAIT = Argument("wait", true);
+string DataPartitionSizeMB  = "2048";
+string RamSizeMB = "2048";
 
 // set up env
 var ANDROID_SDK_ROOT = GetAndroidSDKPath();
@@ -106,6 +108,13 @@ Setup(context =>
 		// create the new AVD
 		Information("Creating AVD: {0}...", ANDROID_AVD);
 		AndroidAvdCreate(ANDROID_AVD, DEVICE_ID, DEVICE_NAME, force: true, settings: avdSettings);
+
+		var configPath = System.IO.Path.Combine (ANDROID_SDK_ROOT, ".android", "avd", $"{ANDROID_AVD}.avd", "config.ini");
+		if (FileExists (configPath)) {
+			Information ($"Config file for AVD '{ANDROID_AVD}' found at {configPath}");
+			WriteConfigFile (configPath);
+		}
+
 
 		// start the emulator
 		Information("Starting Emulator: {0}...", ANDROID_AVD);
@@ -248,3 +257,88 @@ Task("Test")
 });
 
 RunTarget(TARGET);
+
+
+void WriteConfigFile (string configPath)
+{
+	if (!ulong.TryParse (DataPartitionSizeMB, out var diskSize))
+		Information ($"Invalid data partition size '{DataPartitionSizeMB}' - must be a positive integer value expressing size in megabytes");
+
+	if (!ulong.TryParse (RamSizeMB, out var ramSize))
+		Information ($"Invalid RAM size '{RamSizeMB}' - must be a positive integer value expressing size in megabytes");
+
+
+	var values = new [] {
+		new ConfigValue {
+			Key = "disk.dataPartition.size=",
+			Value = diskSize,
+			Suffix = "M",
+		},
+		new ConfigValue {
+			Key = "hw.ramSize=",
+			Value = ramSize,
+		},
+		new ConfigValue {
+			Key = "vm.heapSize=",
+			Value = 228,
+		},
+		new ConfigValue {
+			Key = "disk.cachePartition.size=",
+			Value = 66,
+		},
+		new ConfigValue {
+			Key = "hw.cpu.ncore=",
+			Value = 3,
+		}
+	};
+
+	var lines = new List<string> ();
+	using (var reader = System.IO.File.OpenText (configPath)) {
+		while (!reader.EndOfStream) {
+			var line = reader.ReadLine ();
+			foreach (var value in values) {
+				if (line == value.ToString ()) {
+					value.Set = true;
+					Information ($"Value already present: {line}");
+				} else if (line.StartsWith (value.Key, StringComparison.OrdinalIgnoreCase)) {
+					continue;
+				}
+			}
+			lines.Add (line);
+		}
+	}
+
+	var append = values.Where (v => !v.Set);
+	if (!append.Any ()) {
+		Information($"Skip writing file: {configPath}");
+		return;
+	}
+
+	lines.AddRange (append.Select (v => v.ToString ()));
+	System.IO.File.WriteAllLines (configPath, lines);
+}
+
+class ConfigValue
+{
+	/// <summary>
+	/// Key including the `=` symbol
+	/// </summary>
+	public string Key { get; set; }
+
+	public ulong Value { get; set; }
+
+	/// <summary>
+	/// Set to true if the file contains this value
+	/// </summary>
+	public bool Set { get; set; }
+
+	/// <summary>
+	/// Optional suffix such as `M`
+	/// </summary>
+	public string Suffix { get; set; } = "";
+
+	public override string ToString ()
+	{
+		return $"{Key}{Value}{Suffix}";
+	}
+}
