@@ -6,8 +6,8 @@ namespace Microsoft.Maui.Accessibility
 	{
 		public void Announce(string text)
 		{
-			AccessibilityManager manager = Android.App.Application.Context.GetSystemService(Android.Content.Context.AccessibilityService) as AccessibilityManager;
-			AccessibilityEvent announcement = AccessibilityEvent.Obtain();
+			var manager = Android.App.Application.Context.GetSystemService(Android.Content.Context.AccessibilityService) as AccessibilityManager;
+			var announcement = new AccessibilityEvent();
 
 			if (manager == null || announcement == null)
 				return;
