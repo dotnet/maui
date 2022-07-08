@@ -34,6 +34,7 @@ string RamSizeMB = "2048";
 var ANDROID_SDK_ROOT = GetAndroidSDKPath();
 var ANDROID_EMULATOR_HOME = EnvironmentVariable("ANDROID_EMULATOR_HOME");
 var ANDROID_AVD_HOME = EnvironmentVariable("ANDROID_AVD_HOME");
+var ANDROID_USER_HOME = EnvironmentVariable("ANDROID_USER_HOME");
 
 SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/tools/bin", prepend: true);
 SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/cmdline-tools/5.0/bin", prepend: true);
@@ -49,6 +50,7 @@ Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Configuration: {0}", CONFIGURATION);
 Information("ANDROID_EMULATOR_HOME: {0}", ANDROID_EMULATOR_HOME);
 Information("ANDROID_AVD_HOME: {0}", ANDROID_AVD_HOME);
+Information("ANDROID_USER_HOME: {0}", ANDROID_USER_HOME);
 
 var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = ANDROID_SDK_ROOT };
 var adbSettings = new AdbToolSettings { SdkRoot = ANDROID_SDK_ROOT };
@@ -114,6 +116,10 @@ Setup(context =>
 		AndroidAvdCreate(ANDROID_AVD, DEVICE_ID, DEVICE_NAME, force: true, settings: avdSettings);
 
 		var configPath = System.IO.Path.Combine (ANDROID_AVD_HOME, $"{ANDROID_AVD}.avd", "config.ini");
+
+		if (!FileExists(configPath))
+			configPath = System.IO.Path.Combine (ANDROID_USER_HOME, "avd", $"{ANDROID_AVD}.avd", "config.ini");
+
 		if (FileExists (configPath)) {
 			Information ($"Config file for AVD '{ANDROID_AVD}' found at {configPath}");
 			WriteConfigFile (configPath);
