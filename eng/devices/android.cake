@@ -114,6 +114,9 @@ Setup(context =>
 			Information ($"Config file for AVD '{ANDROID_AVD}' found at {configPath}");
 			WriteConfigFile (configPath);
 		}
+		else{
+			Information ($"Config file for AVD '{ANDROID_AVD}' not found at {configPath}");
+		}
 
 
 		// start the emulator
