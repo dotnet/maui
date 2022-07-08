@@ -145,8 +145,6 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!entry.IsReadOnly)
 			{
-				if (!textField.IsFirstResponder)
-					textField.BecomeFirstResponder();
 				UITextPosition start = GetSelectionStart(textField, entry, out int startOffset);
 				UITextPosition end = GetSelectionEnd(textField, entry, start, startOffset);
 
