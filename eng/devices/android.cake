@@ -268,29 +268,44 @@ void WriteConfigFile (string configPath)
 		Information ($"Invalid RAM size '{RamSizeMB}' - must be a positive integer value expressing size in megabytes");
 
 
-	var values = new [] {
-		new ConfigValue {
-			Key = "disk.dataPartition.size=",
-			Value = diskSize,
-			Suffix = "M",
-		},
-		new ConfigValue {
-			Key = "hw.ramSize=",
-			Value = ramSize,
-		},
-		new ConfigValue {
-			Key = "vm.heapSize=",
-			Value = 228,
-		},
-		new ConfigValue {
-			Key = "disk.cachePartition.size=",
-			Value = 66,
-		},
-		new ConfigValue {
-			Key = "hw.cpu.ncore=",
-			Value = 3,
-		}
-	};
+	ConfigValue[] values;
+
+	if (IsRunningOnWindows())
+	{
+		values = new [] {
+			new ConfigValue {
+				Key = "disk.dataPartition.size=",
+				Value = diskSize,
+				Suffix = "M",
+			},
+			new ConfigValue {
+				Key = "hw.ramSize=",
+				Value = ramSize,
+			},
+			new ConfigValue {
+				Key = "vm.heapSize=",
+				Value = 228,
+			},
+			new ConfigValue {
+				Key = "disk.cachePartition.size=",
+				Value = 66,
+			},
+			new ConfigValue {
+				Key = "hw.cpu.ncore=",
+				Value = 3,
+			}
+		};
+	}
+	else
+	{
+		values = new [] {
+			new ConfigValue {
+				Key = "hw.cpu.ncore=",
+				Value = 3,
+			}
+		};
+	}
+	
 
 	var lines = new List<string> ();
 	using (var reader = System.IO.File.OpenText (configPath)) {
