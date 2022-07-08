@@ -47,7 +47,7 @@ steps:
       displayName: 'Setup SDK Paths'
       condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
     - bash: |
-        echo 'y' | ~/Library/Developer/Xamarin/android-sdk-macosx/cmdline-tools/5.0/bin/sdkmanager "platforms;android-33"
+        echo 'y' | ~/Library/Android/sdk/cmdline-tools/5.0/bin/sdkmanager "platforms;android-33"
       displayName: Install Android API 33
     # Setup JDK Paths
     - bash: |
