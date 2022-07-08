@@ -109,7 +109,7 @@ Setup(context =>
 		Information("Creating AVD: {0}...", ANDROID_AVD);
 		AndroidAvdCreate(ANDROID_AVD, DEVICE_ID, DEVICE_NAME, force: true, settings: avdSettings);
 
-		var configPath = System.IO.Path.Combine (ANDROID_SDK_ROOT, ".android", "avd", $"{ANDROID_AVD}.avd", "config.ini");
+		var configPath = System.IO.Path.Combine ("~", ".android", "avd", $"{ANDROID_AVD}.avd", "config.ini");
 		if (FileExists (configPath)) {
 			Information ($"Config file for AVD '{ANDROID_AVD}' found at {configPath}");
 			WriteConfigFile (configPath);
