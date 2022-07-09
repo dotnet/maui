@@ -1,14 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
         <AssemblyName>GraphicsTester.Portable</AssemblyName>
         <RootNamespace>GraphicsTester</RootNamespace>
         <Version>2.0.0</Version>
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Properties\" />
+      <Compile Remove="Properties\**" />
+      <EmbeddedResource Remove="Properties\**" />
+      <None Remove="Properties\**" />
     </ItemGroup>
     <ItemGroup>
         <None Remove="Resources\royals.png" />

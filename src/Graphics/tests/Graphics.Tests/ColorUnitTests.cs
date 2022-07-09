@@ -54,11 +54,11 @@ namespace Microsoft.Maui.Graphics.Tests
 		[Fact]
 		public void TestMultiplyAlpha()
 		{
-			var color = new Color(1, 1, 1, 1);
+			var color = new Color(1f, 1f, 1f, 1f);
 			color = color.MultiplyAlpha(0.25f);
 			Assert.Equal(.25, color.Alpha);
 
-			color = Color.FromHsla(1, 1, 1, 1);
+			color = Color.FromHsla(1f, 1f, 1f, 1f);
 			color = color.MultiplyAlpha(0.25f);
 			Assert.Equal(.25, color.Alpha);
 		}
@@ -66,14 +66,14 @@ namespace Microsoft.Maui.Graphics.Tests
 		[Fact]
 		public void TestClamping()
 		{
-			var color = new Color(2, 2, 2, 2);
+			var color = new Color(2f, 2f, 2f, 2f);
 
 			Assert.Equal(1, color.Red);
 			Assert.Equal(1, color.Green);
 			Assert.Equal(1, color.Blue);
 			Assert.Equal(1, color.Alpha);
 
-			color = new Color(-1, -1, -1, -1);
+			color = new Color(-1f, -1f, -1f, -1f);
 
 			Assert.Equal(0, color.Red);
 			Assert.Equal(0, color.Green);

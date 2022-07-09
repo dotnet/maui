@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
+		<RootNamespace>GraphicsTester.WinUI.Desktop</RootNamespace>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+		<WinUISDKReferences>false</WinUISDKReferences>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.WindowsAppSdk" />
+		<PackageReference Include="Microsoft.Graphics.Win2D" />
+		<Manifest Include="$(ApplicationManifest)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AppxManifest Include="Package.appxmanifest">
+			<SubType>Designer</SubType>
+		</AppxManifest>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Images\SplashScreen.scale-200.png" />
+		<Content Include="Images\LockScreenLogo.scale-200.png" />
+		<Content Include="Images\Square150x150Logo.scale-200.png" />
+		<Content Include="Images\Square44x44Logo.scale-200.png" />
+		<Content Include="Images\Square44x44Logo.targetsize-24_altform-unplated.png" />
+		<Content Include="Images\StoreLogo.png" />
+		<Content Include="Images\Wide310x150Logo.scale-200.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\src\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.csproj" />
+		<ProjectReference Include="..\..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
+		<ProjectReference Include="..\..\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
+	</ItemGroup>
+
+</Project>
