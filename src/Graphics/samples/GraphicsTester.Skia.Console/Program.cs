@@ -45,8 +45,8 @@ namespace GraphicsTester.Skia.ConsoleApp
 			}
 
 			string safe = new string(chars);
-			while (safe.Contains("--"))
-				safe = safe.Replace("--", "-");
+			while (safe.Contains("--", StringComparison.OrdinalIgnoreCase))
+				safe = safe.Replace("--", "-", StringComparison.OrdinalIgnoreCase);
 			return safe.Trim('-');
 		}
 	}

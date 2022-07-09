@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
-#if NETSTANDARD || NETSTANDARD2_0 || NETSTANDARD2_1 || TIZEN || TIZEN40
+#if NETSTANDARD || NETSTANDARD2_0 || NETSTANDARD2_1 || (NET6_0_OR_GREATER && !PLATFORM) || TIZEN || TIZEN40
 	public class PlatformImage : IImage
 	{
 		private readonly byte[] _bytes;

@@ -12,7 +12,7 @@ if (TestTFM == "default")
 
 Exception pendingException = null;
 
-var NuGetOnlyPackages = new [] {
+var NuGetOnlyPackages = new string[] {
     "Microsoft.Maui.Graphics.*.nupkg",
 };
 
@@ -217,6 +217,7 @@ Task("dotnet-test")
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
+            "**/Graphics.Tests.csproj",
         };
 
         var success = true;
