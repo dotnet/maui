@@ -122,7 +122,7 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 			AndroidSystemImageApi.GooglePlayStore,
 			AndroidSystemImageAbi.x86,
 			AndroidVirtualDevice.NEXUS_5X)
-		.SdkManagerPackage ("build-tools;33.0.2");
+		.SdkManagerPackage ("build-tools;33.0.0");
 }
 else{
 
