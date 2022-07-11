@@ -42,8 +42,6 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(BlazorPage), "Blazor",
 				"The BlazorWebView control allow to easily embed Razor components into native UI."),
 #endif
-			new SectionModel(typeof(EilonPage), "Eilon",
-				"Eilon UI test"),
 
 			new SectionModel(typeof(CompatibilityPage), "Compatibility",
 				"Functionality available using the compatibility package."),
