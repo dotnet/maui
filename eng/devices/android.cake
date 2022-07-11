@@ -52,9 +52,9 @@ Information("ANDROID_EMULATOR_HOME: {0}", ANDROID_EMULATOR_HOME);
 Information("ANDROID_AVD_HOME: {0}", ANDROID_AVD_HOME);
 Information("ANDROID_USER_HOME: {0}", ANDROID_USER_HOME);
 
-var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = ANDROID_SDK_ROOT, ArgumentCustomization = args => args.Append("-p DEVICE_TESTS_EMULATOR") };
+var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = ANDROID_SDK_ROOT };
 var adbSettings = new AdbToolSettings { SdkRoot = ANDROID_SDK_ROOT };
-var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = ANDROID_SDK_ROOT, ArgumentCustomization = args => args.Append("-no-window -p DEVICE_TESTS_EMULATOR") };
+var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = ANDROID_SDK_ROOT, ArgumentCustomization = args => args.Append("-cores 3") };
 
 AndroidEmulatorProcess emulatorProcess = null;
 
