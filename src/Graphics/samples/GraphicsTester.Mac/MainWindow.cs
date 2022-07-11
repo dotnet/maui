@@ -8,8 +8,6 @@ namespace GraphicsTester.Mac
 {
 	public partial class MainWindow : AppKit.NSWindow
 	{
-		private TesterView testerView;
-
 		// Called when created from unmanaged code
 		public MainWindow (IntPtr handle) : base (handle)
 		{

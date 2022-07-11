@@ -1,19 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net6.0-maccatalyst</TargetFramework>
-		<OutputType>Exe</OutputType>
-		<RootNamespace>GraphicsTester.MacCatalyst</RootNamespace>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<LangVersion>10.0</LangVersion>
-		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.2</SupportedOSPlatformVersion>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net6.0-maccatalyst</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>GraphicsTester.MacCatalyst</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>10.0</LangVersion>
+    <SupportedOSPlatformVersion>14.2</SupportedOSPlatformVersion>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Skia\Microsoft.Maui.Graphics.Skia.csproj" />
-	  <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
-	  <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Text.Markdig\Microsoft.Maui.Graphics.Text.Markdig.csproj" />
-	  <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Graphics.Skia\Graphics.Skia.csproj" />
+    <ProjectReference Include="..\..\src\Graphics\Graphics.csproj" />
+    <ProjectReference Include="..\..\src\Text.Markdig\Graphics.Text.Markdig.csproj" />
+    <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
+  </ItemGroup>
 
 </Project>

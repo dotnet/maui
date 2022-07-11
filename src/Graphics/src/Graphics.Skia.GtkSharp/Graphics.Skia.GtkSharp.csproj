@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Microsoft.Maui.Graphics.Skia</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Graphics.Skia.GtkSharp</AssemblyName>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp.Views.Gtk3" Version="2.88.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Graphics.Skia\Graphics.Skia.csproj" />
+    <ProjectReference Include="..\Graphics\Graphics.csproj" />
+  </ItemGroup>
+
+</Project>
