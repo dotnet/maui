@@ -9,6 +9,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler : ViewHandler<IEditor, MauiTextView>
 	{
+		bool _set;
+
 		protected override MauiTextView CreatePlatformView()
 		{
 			var platformEditor = new MauiTextView();
@@ -30,6 +32,16 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+
+			if (!_set)
+				PlatformView.SelectionChanged += OnSelectionChanged;
+
+			_set = true;
+		}
+
 		protected override void ConnectHandler(MauiTextView platformView)
 		{
 			platformView.ShouldChangeText += OnShouldChangeText;
@@ -44,6 +56,11 @@ namespace Microsoft.Maui.Handlers
 			platformView.Started -= OnStarted;
 			platformView.Ended -= OnEnded;
 			platformView.TextSetOrChanged -= OnTextPropertySet;
+
+			if (_set)
+				platformView.SelectionChanged -= OnSelectionChanged;
+
+			_set = false;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -146,5 +163,17 @@ namespace Microsoft.Maui.Handlers
 
 		void OnTextPropertySet(object? sender, EventArgs e) =>
 			VirtualView.UpdateText(PlatformView.Text);
+
+		private void OnSelectionChanged(object? sender, EventArgs e)
+		{
+			var cursorPostion = PlatformView.GetCursorPosition();
+			var selectedTextLength = PlatformView.GetSelectedTextLength();
+
+			if (VirtualView.CursorPosition != cursorPostion)
+				VirtualView.CursorPosition = cursorPostion;
+
+			if (VirtualView.SelectionLength != selectedTextLength)
+				VirtualView.SelectionLength = selectedTextLength;
+		}
 	}
 }
