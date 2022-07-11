@@ -6,8 +6,10 @@ namespace Microsoft.Maui.Accessibility
 	{
 		public void Announce(string text)
 		{
-			var manager = Android.App.Application.Context.GetSystemService(Android.Content.Context.AccessibilityService) as AccessibilityManager;
-			var announcement = new AccessibilityEvent();
+			AccessibilityManager manager = Android.App.Application.Context.GetSystemService(Android.Content.Context.AccessibilityService) as AccessibilityManager;
+#pragma warning disable 618 // TODO: one day use the API 33+ version:
+			AccessibilityEvent announcement = AccessibilityEvent.Obtain();
+#pragma warning restore 618
 
 			if (manager == null || announcement == null)
 				return;
