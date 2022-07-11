@@ -5,7 +5,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
-#if IOS && !MACCATALYST
+#if !MACCATALYST
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
 		protected override MauiDatePicker CreatePlatformView()
