@@ -115,7 +115,7 @@ Setup(context =>
 		Information("Creating AVD: {0}...", ANDROID_AVD);
 		AndroidAvdCreate(ANDROID_AVD, DEVICE_ID, DEVICE_NAME, force: true, settings: avdSettings);
 
-		var configPath = System.IO.Path.Combine (ANDROID_AVD_HOME, $"{ANDROID_AVD}.avd", "config.ini");
+		/*var configPath = System.IO.Path.Combine (ANDROID_AVD_HOME, $"{ANDROID_AVD}.avd", "config.ini");
 
 		if (!FileExists(configPath))
 			configPath = System.IO.Path.Combine (ANDROID_USER_HOME, "avd", $"{ANDROID_AVD}.avd", "config.ini");
@@ -126,7 +126,7 @@ Setup(context =>
 		}
 		else{
 			Information ($"Config file for AVD '{ANDROID_AVD}' not found at {configPath}");
-		}
+		}*/
 
 
 		// start the emulator
