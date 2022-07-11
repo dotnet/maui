@@ -132,7 +132,9 @@ namespace Microsoft.Maui.Controls
 
 			if (window is Element windowElement)
 			{
-				windowElement.Parent = this;
+				if (windowElement.Parent != this)
+					windowElement.Parent = this;
+
 				InternalChildren.Add(windowElement);
 				OnChildAdded(windowElement);
 			}

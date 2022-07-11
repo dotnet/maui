@@ -67,6 +67,9 @@ namespace Microsoft.Maui.Controls
 		public Window(Page page)
 			: this()
 		{
+			if (this is Element windowElement)
+				windowElement.Parent = Application.Current;
+
 			Page = page;
 		}
 

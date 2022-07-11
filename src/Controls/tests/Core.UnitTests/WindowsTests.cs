@@ -265,6 +265,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
+		public void WindowParentIsNotNull()
+		{
+			var app = new TestApp();
+			var window = app.CreateWindow();
+
+			Assert.NotNull(window.Parent);
+		}
+		
 		public void DeActivatedFiresDisappearingEvent()
 		{
 			int disappear = 0;
