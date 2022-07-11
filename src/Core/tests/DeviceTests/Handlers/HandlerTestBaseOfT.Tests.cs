@@ -23,6 +23,10 @@ namespace Microsoft.Maui.DeviceTests
 			if (!typeof(TStub).IsAssignableTo(typeof(IEditor)))
 				return;
 
+#if ANDROID
+			var numProcessors = Java.Lang.Runtime.GetRuntime().AvailableProcessors();
+			Android.Util.Log.Error($"numProcessors: {numProcessors}", $"numProcessors: {numProcessors}");
+#endif
 			var stub = new TStub();
 			WeakReference<TStub> weakView = new WeakReference<TStub>(stub);
 
