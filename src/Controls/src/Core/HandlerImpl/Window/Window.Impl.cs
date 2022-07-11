@@ -430,6 +430,9 @@ namespace Microsoft.Maui.Controls
 			if (bindable is not Window window)
 				return;
 
+			if (oldValue is Page oldPage)
+				oldPage.SendDisappearing();
+
 			if (newValue is IToolbarElement toolbarElement &&
 				toolbarElement.Toolbar is Toolbar tb &&
 				newValue is not Shell)

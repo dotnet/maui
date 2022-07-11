@@ -272,6 +272,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var cp = new ContentPage();
 			IWindow window = new Window(cp);
+			window.Activated();
+
 			cp.Appearing += (_, __) => appear++;
 			cp.Disappearing += (_, __) => disappear++;
 
@@ -288,6 +290,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var cp = new ContentPage();
 			IWindow window = new Window(cp);
+			window.Activated();
+
 			cp.Appearing += (_, __) => appear++;
 			cp.Disappearing += (_, __) => disappear++;
 
@@ -296,6 +300,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			window.Activated();
 			Assert.AreEqual(1, disappear);
 			Assert.AreEqual(1, appear);
+		}
+
+		[Test]
+		public void RemovedPageFiresDisappearing()
+		{
+			int disappear = 0;
+			int appear = 0;
+
+			var cp = new ContentPage();
+			cp.Disappearing += (_, __) => disappear++;
+
+			Window window = new Window(cp);
+			(window as IWindow).Activated();
+			Assert.AreEqual(0, disappear);
+			window.Page = new ContentPage();
+			Assert.AreEqual(1, disappear);
 		}
 
 		void ValidateSetup(Application app, Page page = null)
