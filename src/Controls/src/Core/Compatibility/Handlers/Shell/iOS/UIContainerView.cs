@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_renderer = (IPlatformViewHandler)view.ToHandler(view.FindMauiContext());
 
-			AddSubview(_renderer.PlatformView);
+			AddSubview(view.ToPlatform());
 			ClipsToBounds = true;
 			view.MeasureInvalidated += OnMeasureInvalidated;
 			MeasuredHeight = double.NaN;
@@ -92,7 +92,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void LayoutSubviews()
 		{
-			_view.LayoutToSize(Width ?? Frame.Width, Height ?? MeasuredHeight);
+			var platformFrame = new Rect(0, 0, Width ?? Frame.Width, Height ?? MeasuredHeight);
+			(_view as IView).Arrange(platformFrame);
 		}
 
 		protected override void Dispose(bool disposing)
