@@ -64,6 +64,16 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+		[Fact]
+		public async Task DisconnectHandlerDoesntCrash()
+		{
+			var handler = await CreateHandlerAsync(new TStub()) as IPlatformViewHandler;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				handler.DisconnectHandler();
+			});
+		}
+
 		[Fact(DisplayName = "Automation Id is set correctly")]
 		public async Task SetAutomationId()
 		{
