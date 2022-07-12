@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Platform
 
 			if (platformControl is MauiPasswordTextBox passwordTextBox && passwordTextBox.Password == newText)
 				return;
+
 			if (platformControl.Text == newText)
 				return;
 

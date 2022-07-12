@@ -16,6 +16,26 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
+		[Theory(DisplayName = "MaxLength Works Correctly")]
+		[InlineData("123")]
+		[InlineData("Hello")]
+		[InlineData("Goodbye")]
+		public async Task MaxLengthWorksCorrectly(string text)
+		{
+			const int maxLength = 4;
+
+			var entry = new EntryStub
+			{
+				Text = text,
+				MaxLength = maxLength
+			};
+
+			var expectedText = text.Length > maxLength ? text.Substring(0, maxLength) : text;
+			var platformText = await GetValueAsync(entry, GetNativeText);
+
+			Assert.Equal(expectedText, platformText);
+		}
+
 		static TextBox GetNativeEntry(EntryHandler entryHandler) =>
 			entryHandler.PlatformView;
 
