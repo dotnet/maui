@@ -1,3 +1,4 @@
+using System;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -18,6 +19,9 @@ namespace Microsoft.Maui
 			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnActivityResult>(del => del(this, requestCode, resultCode, data));
 		}
 
+		// TODO: Investigate whether the new AndroidX way is actually useful:
+		//       https://developer.android.com/reference/android/app/Activity#onBackPressed()
+		[Obsolete]
 		public override void OnBackPressed()
 		{
 			var preventBackPropagation = false;

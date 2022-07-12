@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -297,7 +298,11 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeIsChatKeyboard, expected);
 		}
 
-		[Theory(DisplayName = "MaxLength Initializes Correctly")]
+		[Theory(DisplayName = "MaxLength Initializes Correctly"
+#if WINDOWS
+			, Skip = "https://github.com/dotnet/maui/issues/7939"
+#endif
+			)]
 		[InlineData(2)]
 		[InlineData(5)]
 		[InlineData(8)]
@@ -477,107 +482,6 @@ namespace Microsoft.Maui.DeviceTests
 				nameof(IEntry.CharacterSpacing),
 				() => entry.CharacterSpacing = newSize);
 		}
-
-		[Theory(DisplayName = "CursorPosition Initializes Correctly")]
-		[InlineData(0)]
-		public async Task CursorPositionInitializesCorrectly(int initialPosition)
-		{
-			var entry = new EntryStub
-			{
-				Text = "This is TEXT!",
-				CursorPosition = initialPosition
-			};
-
-			await ValidatePropertyInitValue(entry, () => entry.CursorPosition, GetNativeCursorPosition, initialPosition);
-		}
-
-		[Theory(DisplayName = "CursorPosition Updates Correctly")]
-		[InlineData(2, 5)]
-		public async Task CursorPositionUpdatesCorrectly(int setValue, int unsetValue)
-		{
-			string text = "This is TEXT!";
-
-			var entry = new EntryStub
-			{
-				Text = text,
-			};
-
-			await ValidatePropertyUpdatesValue(
-				entry,
-				nameof(IEntry.CursorPosition),
-				GetNativeCursorPosition,
-				setValue,
-				unsetValue
-			);
-		}
-
-		[Theory(DisplayName = "CursorPosition is Capped to Text's Length")]
-		[InlineData(30)]
-		public async Task CursorPositionIsCapped(int initialPosition)
-		{
-			string text = "This is TEXT!";
-
-			var entry = new EntryStub
-			{
-				Text = text,
-				CursorPosition = initialPosition
-			};
-
-			int actualPosition = await GetValueAsync(entry, GetNativeCursorPosition);
-
-			Assert.Equal(text.Length, actualPosition);
-		}
-
-		[Theory(DisplayName = "SelectionLength Initializes Correctly")]
-		[InlineData(0)]
-		public async Task SelectionLengthInitializesCorrectly(int initialLength)
-		{
-			var entry = new EntryStub
-			{
-				Text = "This is TEXT!",
-				SelectionLength = initialLength
-			};
-
-			await ValidatePropertyInitValue(entry, () => entry.SelectionLength, GetPlatformSelectionLength, initialLength);
-		}
-
-		[Theory(DisplayName = "SelectionLength Updates Correctly")]
-		[InlineData(2, 5)]
-		public async Task SelectionLengthUpdatesCorrectly(int setValue, int unsetValue)
-		{
-			string text = "This is TEXT!";
-
-			var entry = new EntryStub
-			{
-				Text = text,
-			};
-
-			await ValidatePropertyUpdatesValue(
-				entry,
-				nameof(IEntry.SelectionLength),
-				GetPlatformSelectionLength,
-				setValue,
-				unsetValue
-			);
-		}
-
-		[Theory(DisplayName = "SelectionLength is Capped to Text Length")]
-		[InlineData(30)]
-		public async Task SelectionLengthIsCapped(int selectionLength)
-		{
-			string text = "This is TEXT!";
-
-			var entry = new EntryStub
-			{
-				Text = text,
-				SelectionLength = selectionLength
-			};
-
-			var actualLength = await GetValueAsync(entry, GetPlatformSelectionLength);
-
-			Assert.Equal(text.Length, actualLength);
-		}
-
 
 		[Category(TestCategory.Entry)]
 		public class EntryTextInputTests : TextInputHandlerTests<EntryHandler, EntryStub>
