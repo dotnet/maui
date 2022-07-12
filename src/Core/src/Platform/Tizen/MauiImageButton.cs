@@ -1,5 +1,6 @@
 ﻿using System;
 using Tizen.NUI;
+using Tizen.UIExtensions.NUI;
 using NColor = Tizen.NUI.Color;
 using TImage = Tizen.UIExtensions.NUI.Image;
 
@@ -16,6 +17,7 @@ namespace Microsoft.Maui.Platform
 		public MauiImageButton()
 		{
 			TouchEvent += OnTouched;
+			KeyEvent += OnKeyEvent;
 			Border = Border = new Rectangle(0, 0, 0, 0);
 		}
 
@@ -48,11 +50,21 @@ namespace Microsoft.Maui.Platform
 			else if (state == PointStateType.Up)
 			{
 				Released?.Invoke(this, EventArgs.Empty);
-				if (_isPressed)
+				if (_isPressed && this.IsInside(e.Touch.GetLocalPosition(0)))
 				{
 					Clicked?.Invoke(this, EventArgs.Empty);
 				}
 				_isPressed = false;
+				return true;
+			}
+			return false;
+		}
+
+		bool OnKeyEvent(object source, KeyEventArgs e)
+		{
+			if (e.Key.IsAcceptKeyEvent())
+			{
+				Clicked?.Invoke(this, EventArgs.Empty);
 				return true;
 			}
 			return false;
