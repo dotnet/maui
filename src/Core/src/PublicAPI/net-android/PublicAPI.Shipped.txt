@@ -1975,7 +1975,7 @@ override Microsoft.Maui.Font.ToString() -> string!
 override Microsoft.Maui.FontImageSourceService.GetDrawableAsync(Microsoft.Maui.IImageSource! imageSource, Android.Content.Context! context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.IImageSourceServiceResult<Android.Graphics.Drawables.Drawable!>?>!
 override Microsoft.Maui.FontImageSourceService.LoadDrawableAsync(Microsoft.Maui.IImageSource! imageSource, Android.Widget.ImageView! imageView, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.IImageSourceServiceResult?>!
 override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
-override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect? bounds) -> void
+override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
 override Microsoft.Maui.GridLength.Equals(object? obj) -> bool
 override Microsoft.Maui.GridLength.GetHashCode() -> int
@@ -2115,7 +2115,7 @@ override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAcces
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEvent(Android.Views.View! host, int eventType) -> void
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEventUnchecked(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> void
 override Microsoft.Maui.Platform.BorderDrawable.Dispose(bool disposing) -> void
-override Microsoft.Maui.Platform.BorderDrawable.OnBoundsChange(Android.Graphics.Rect? bounds) -> void
+override Microsoft.Maui.Platform.BorderDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 override Microsoft.Maui.Platform.BorderDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
 override Microsoft.Maui.Platform.ContentViewGroup.DispatchDraw(Android.Graphics.Canvas? canvas) -> void
 override Microsoft.Maui.Platform.ContentViewGroup.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
