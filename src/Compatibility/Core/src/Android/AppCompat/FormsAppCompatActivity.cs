@@ -69,6 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public event EventHandler ConfigurationChanged;
 
+		[Obsolete]
 		public override void OnBackPressed()
 		{
 			if (BackPressed != null && BackPressed(this, EventArgs.Empty))
