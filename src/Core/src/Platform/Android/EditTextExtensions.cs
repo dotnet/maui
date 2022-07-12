@@ -6,6 +6,7 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using Microsoft.Extensions.DependencyInjection;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
