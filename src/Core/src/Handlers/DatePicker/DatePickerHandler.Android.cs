@@ -30,11 +30,11 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
 			base.ConnectHandler(platformView);
-			//platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
-			//platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
+			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
+			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
 
-			//if (platformView.IsAttachedToWindow)
-			//	DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+			if (platformView.IsAttachedToWindow)
+				DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 		}
 
 		void OnViewDetachedFromWindow(object? sender, View.ViewDetachedFromWindowEventArgs e)
@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Handlers
 
 		void OnViewAttachedToWindow(object? sender, View.ViewAttachedToWindowEventArgs e)
 		{
-			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 		}
 
