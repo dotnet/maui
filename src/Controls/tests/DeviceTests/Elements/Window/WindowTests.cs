@@ -65,9 +65,9 @@ namespace Microsoft.Maui.DeviceTests
 				var contentPage = new ContentPage()
 				{
 					ToolbarItems =
-				{
-					toolbarItem
-				}
+					{
+						toolbarItem
+					}
 				};
 
 				var shell = new Shell() { CurrentItem = contentPage };
