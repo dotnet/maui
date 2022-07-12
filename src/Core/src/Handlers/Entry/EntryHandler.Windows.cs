@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		static readonly bool s_shouldBeDelayed = DeviceInfo.Idiom != DeviceIdiom.Desktop;
 		bool _set;
+		TextBlock? _placeholder;
 
 		protected override TextBox CreatePlatformView() =>
 			new MauiPasswordTextBox()
@@ -64,8 +66,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateHorizontalTextAlignment(entry);
 
-		public static void MapVerticalTextAlignment(IEntryHandler handler, IEntry entry) =>
-			handler.PlatformView?.UpdateVerticalTextAlignment(entry);
+		public static void MapVerticalTextAlignment(IEntryHandler handler, IEntry entry)
+		{
+			if (handler is EntryHandler entryHandler)
+				handler.PlatformView?.UpdateVerticalTextAlignment(entry, entryHandler._placeholder);
+		}
 
 		public static void MapIsTextPredictionEnabled(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(entry);
@@ -140,7 +145,13 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.SelectionLength = selectedTextLength;
 		}
 
-		void OnPlatformLoaded(object sender, RoutedEventArgs e) =>
+		void OnPlatformLoaded(object sender, RoutedEventArgs e)
+		{
+			_placeholder = PlatformView.GetFirstDescendant<TextBlock>();
+
+			PlatformView.UpdateVerticalTextAlignment(VirtualView, _placeholder);
+
 			MauiTextBox.InvalidateAttachedProperties(PlatformView);
+		}
 	}
 }
