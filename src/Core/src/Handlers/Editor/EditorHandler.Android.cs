@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.TextChanged -= OnTextChanged;
 
 			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-			if (_set && PlatformView is MauiAppCompatEditText editText)
+			if (_set && platformView is MauiAppCompatEditText editText)
 				editText.SelectionChanged -= OnSelectionChanged;
 
 			_set = false;
