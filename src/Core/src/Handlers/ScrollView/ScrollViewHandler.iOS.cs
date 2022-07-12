@@ -147,13 +147,37 @@ namespace Microsoft.Maui.Handlers
 			{
 				View = scrollView.PresentedContent,
 				CrossPlatformMeasure = ConstrainToScrollView(scrollView.CrossPlatformMeasure, platformScrollView, scrollView),
-				CrossPlatformArrange = scrollView.CrossPlatformArrange,
 				Tag = ContentPanelTag
 			};
+
+			contentContainer.CrossPlatformArrange = ArrangeScrollViewContent(scrollView.CrossPlatformArrange, contentContainer);
 
 			platformScrollView.ClearSubviews();
 			contentContainer.AddSubview(platformContent);
 			platformScrollView.AddSubview(contentContainer);
+		}
+
+		static Func<Rect, Size> ArrangeScrollViewContent(Func<Rect, Size> internalArrange, ContentView container)
+		{
+			return (rect) =>
+			{
+				if (container.Superview is UIScrollView scrollView)
+				{
+					// Ensure the container is at least the size of the UIScrollView itself, so that the 
+					// cross-platform layout logic makes sense and the contents don't arrange out side the 
+					// container. (Everything will look correct if they do, but hit testing won't work properly.)
+
+					var scrollViewBounds = scrollView.Bounds;
+					var containerBounds = container.Bounds;
+
+					container.Bounds = new CGRect(0, 0, 
+						Math.Max(containerBounds.Width, scrollViewBounds.Width), 
+						Math.Max(containerBounds.Height, scrollViewBounds.Height));
+					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
+				}
+
+				return internalArrange(rect);
+			};
 		}
 
 		static Func<double, double, Size> ConstrainToScrollView(Func<double, double, Size> internalMeasure, UIScrollView platformScrollView, IScrollView scrollView)
