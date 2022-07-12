@@ -424,16 +424,6 @@ namespace Microsoft.Maui.Platform
 			return view?.Superview;
 		}
 
-		internal static void LayoutToSize(this IView view, double width, double height)
-		{
-			var platformFrame = new CGRect(0, 0, width, height);
-
-			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
-				viewHandler.PlatformView.Frame = platformFrame;
-
-			view.Arrange(platformFrame.ToRectangle());
-		}
-
 		internal static Size LayoutToMeasuredSize(this IView view, double width, double height)
 		{
 			var size = view.Measure(width, height);
