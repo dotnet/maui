@@ -193,6 +193,16 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateVerticalTextAlignment(this TextBox textBox, ITextAlignment textAlignment) =>
 			MauiTextBox.SetVerticalTextAlignment(textBox, textAlignment.VerticalTextAlignment.ToPlatformVerticalAlignment());
 
+		// TODO: NET7 make public for net7.0
+		internal static void UpdateVerticalTextAlignment(this TextBox textBox, ITextAlignment textAlignment, TextBlock? placeholder = null)
+		{
+			var platformVerticalAlignment = textAlignment.VerticalTextAlignment.ToPlatformVerticalAlignment();
+			MauiTextBox.SetVerticalTextAlignment(textBox, platformVerticalAlignment);
+
+			if (placeholder != null)
+				placeholder.VerticalAlignment = platformVerticalAlignment;
+		}
+
 		public static void UpdateCursorPosition(this TextBox textBox, ITextInput entry)
 		{
 			// It seems that the TextBox does not limit the CursorPosition to the Text.Length natively
