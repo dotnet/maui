@@ -1851,6 +1851,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void Convert()
 		{
+			System.Threading.Thread.CurrentThread.CurrentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
 			var slider = new Slider();
 			var vm = new MockViewModel { Text = "0.5" };
 			slider.BindingContext = vm;
