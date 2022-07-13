@@ -211,6 +211,14 @@ namespace Microsoft.Maui.Controls
 			base.OnAppearing();
 		}
 
+		protected override void OnDisappearing()
+		{
+			Flyout?.SendDisappearing();
+			Detail?.SendDisappearing();
+
+			base.OnDisappearing();
+		}
+
 		protected override bool OnBackButtonPressed()
 		{
 			if (IsPresented)
