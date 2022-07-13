@@ -5,6 +5,7 @@
              xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
 			 RectangleP="0,1,2,4"
 			 RectangleBP="4,8,16,32"
+			 PointP="1,2"
 			 BackgroundColor="Pink"
 			 List="Foo, Bar">
 	<Label x:Name="label"

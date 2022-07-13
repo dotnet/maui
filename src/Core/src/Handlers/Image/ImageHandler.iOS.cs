@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.DisconnectHandler(platformView);
 
-			if (PlatformView is MauiImageView imageView)
+			if (platformView is MauiImageView imageView)
 				imageView.WindowChanged -= OnWindowChanged;
 
 			SourceLoader.Reset();
