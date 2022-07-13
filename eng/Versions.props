@@ -25,7 +25,7 @@
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.22000.194</MicrosoftWindowsSDKBuildToolsPackageVersion>
     <MicrosoftGraphicsWin2DPackageVersion>1.0.3.1</MicrosoftGraphicsWin2DPackageVersion>
     <!-- Everything else -->
-    <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.6</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.7</MicrosoftAspNetCoreAuthorizationPackageVersion>
     <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>6.0.5</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
     <MicrosoftAspNetCoreComponentsFormsPackageVersion>6.0.5</MicrosoftAspNetCoreComponentsFormsPackageVersion>
     <MicrosoftAspNetCoreComponentsPackageVersion>6.0.5</MicrosoftAspNetCoreComponentsPackageVersion>
