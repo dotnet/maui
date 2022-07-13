@@ -53,6 +53,9 @@ namespace Microsoft.Maui.Handlers
 
 		void Rebuild()
 		{
+			// REVIEW: For context flyout support this likely also needs some logic like in MenuFlyoutItemHandler.iOS.cs where
+			// it follows one code path for main menus (this existing code), and a different code path for context menus that
+			// rebuilds the UIMenu of the context menu.
 			MenuBarHandler.Rebuild();
 		}
 	}

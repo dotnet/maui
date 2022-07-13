@@ -109,6 +109,10 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
 #endif
 
+#if WINDOWS || MACCATALYST
+			handlersCollection.AddHandler(typeof(ContextFlyout), typeof(ContextFlyoutHandler));
+#endif
+
 #if IOS || MACCATALYST
 			handlersCollection.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
 			handlersCollection.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
@@ -136,7 +140,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
 			handlersCollection.AddHandler<Shell, ShellHandler>();
 #endif
-			return handlersCollection;
+            return handlersCollection;
 		}
 
 		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)

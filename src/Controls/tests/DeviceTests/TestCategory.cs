@@ -7,6 +7,7 @@
 		public const string CheckBox = "CheckBox";
 		public const string Compatibility = "Compatibility";
 		public const string ContentView = "ContentView";
+		public const string ContextFlyout = nameof(ContextFlyout);
 		public const string Dispatcher = "Dispatcher";
 		public const string Editor = "Editor";
 		public const string Element = "Element";

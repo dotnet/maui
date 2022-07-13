@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="Type[@FullName='Microsoft.Maui.Controls.View']/Docs" />
-	public partial class View : VisualElement, IViewController, IGestureController, IGestureRecognizers
+	public partial class View : VisualElement, IViewController, IGestureController, IGestureRecognizers, IContextFlyoutContainer
 	{
 		protected internal IGestureController GestureController => this;
 
@@ -197,6 +198,21 @@ namespace Microsoft.Maui.Controls
 				return;
 			if (gesture is PinchGestureRecognizer && _gestureRecognizers.GetGesturesFor<PinchGestureRecognizer>().Count() > 1)
 				throw new InvalidOperationException($"Only one {nameof(PinchGestureRecognizer)} per view is allowed");
+		}
+
+        private ContextFlyout _contextFlyout;
+
+		/// <inheritdoc />
+		public virtual IContextFlyout ContextFlyout
+        {
+			get
+			{
+				if (_contextFlyout == null)
+				{
+					_contextFlyout = new ContextFlyout();
+				}
+				return _contextFlyout;
+			}
 		}
 	}
 }

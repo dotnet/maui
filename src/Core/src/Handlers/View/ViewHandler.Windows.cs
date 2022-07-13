@@ -1,6 +1,11 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace Microsoft.Maui.Handlers
@@ -95,6 +100,52 @@ namespace Microsoft.Maui.Handlers
 			{
 				var toolBar = toolbarElement.Toolbar.ToPlatform(handler.MauiContext);
 				handler.MauiContext.GetNavigationRootManager().SetToolbar(toolBar);
+			}
+		}
+
+		public static void MapContextFlyout(IViewHandler handler, IView view)
+		{
+			if (view is IContextFlyoutContainer contextFlyoutContainer)
+			{
+				MapContextFlyout(handler, contextFlyoutContainer);
+			}
+		}
+
+		internal static void MapContextFlyout(IElementHandler handler, IContextFlyoutContainer contextFlyoutContainer)
+		{
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"The handler's {nameof(handler.MauiContext)} cannot be null.");
+
+			if (contextFlyoutContainer.ContextFlyout != null && contextFlyoutContainer.ContextFlyout.Any())
+			{
+				// REVIEW: I'd like to call this code, but it throws because the ContextFlyout doesn't yet have a
+				// handler associated, so calling 'ToPlatform()' throws an exception. Instead, I've copied most of
+				// the code of those code paths and changed it to make it work here to create the ContextFlyoutHandler.
+				//var platformViewAttempt = contextFlyoutContainer.ContextFlyout.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert view to {typeof(PlatformView)}");
+
+				// This will set the MauiContext and get everything created first
+				var handler2 = contextFlyoutContainer.ContextFlyout.ToHandler(handler.MauiContext);
+
+				object? contextFlyoutPlatformView;
+				if (contextFlyoutContainer.ContextFlyout is IReplaceableView replaceableView && replaceableView.ReplacedView != contextFlyoutContainer.ContextFlyout)
+					contextFlyoutPlatformView = replaceableView.ReplacedView.ToPlatform();
+
+				_ = contextFlyoutContainer.ContextFlyout.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
+
+				if (contextFlyoutContainer.ContextFlyout.Handler is IViewHandler viewHandler)
+				{
+					if (viewHandler.ContainerView is PlatformView containerView)
+						contextFlyoutPlatformView = containerView;
+
+					if (viewHandler.PlatformView is PlatformView platformView)
+						contextFlyoutPlatformView = platformView;
+				}
+
+				contextFlyoutPlatformView = contextFlyoutContainer.ContextFlyout.Handler?.PlatformView;
+
+				if (handler.PlatformView is Microsoft.UI.Xaml.UIElement uiElement && contextFlyoutPlatformView is FlyoutBase flyoutBase)
+				{
+					uiElement.ContextFlyout = flyoutBase;
+				}
 			}
 		}
 
