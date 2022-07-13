@@ -21,6 +21,8 @@ namespace Microsoft.Maui.Controls
 		{
 			base.Apply(fromTarget);
 			ApplyCore();
+
+			AttachEvents();
 		}
 
 		internal override void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged = false)
@@ -30,18 +32,16 @@ namespace Microsoft.Maui.Controls
 			base.Apply(context, bindObj, targetProperty, fromBindingContextChanged);
 			ApplyCore();
 
-			if (Application.Current != null)
-				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+			AttachEvents();
 		}
 
 		internal override void Unapply(bool fromBindingContextChanged = false)
 		{
+			DetachEvents();
+
 			base.Unapply(fromBindingContextChanged);
 			_weakTarget = null;
 			_targetProperty = null;
-
-			if (Application.Current != null)
-				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
 		}
 
 		void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
@@ -50,7 +50,10 @@ namespace Microsoft.Maui.Controls
 		void ApplyCore(bool dispatch = false)
 		{
 			if (_weakTarget == null || !_weakTarget.TryGetTarget(out var target))
+			{
+				DetachEvents();
 				return;
+			}
 
 			if (dispatch)
 				target.Dispatcher.DispatchIfRequired(Set);
@@ -87,6 +90,11 @@ namespace Microsoft.Maui.Controls
 
 		public object Default { get; set; }
 
+		// Ideally this will get reworked to not use `Application.Current` at all
+		// https://github.com/dotnet/maui/issues/8713
+		// But I'm going with a simple nudge for now so that we can get our 
+		// device tests back to a working state and address issues
+		// of the more crashing variety
 		object GetValue()
 		{
 			Application app;
@@ -113,6 +121,20 @@ namespace Microsoft.Maui.Controls
 				AppTheme.Dark => _isDarkSet ? Dark : Default,
 				_ => _isLightSet ? Light : Default,
 			};
+		}
+
+		void AttachEvents()
+		{
+			DetachEvents();
+
+			if (Application.Current != null)
+				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+		}
+
+		void DetachEvents()
+		{
+			if (Application.Current != null)
+				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
 		}
 	}
 }
