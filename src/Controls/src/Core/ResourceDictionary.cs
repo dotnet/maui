@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="Type[@FullName='Microsoft.Maui.Controls.ResourceDictionary']/Docs" />
 	public class ResourceDictionary : IResourceDictionary, IDictionary<string, object>
 	{
+		const string GetResourcePathUriScheme = "maui://";
 		static ConditionalWeakTable<Type, ResourceDictionary> s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 		readonly Dictionary<string, object> _innerDictionary = new Dictionary<string, object>();
 		ResourceDictionary _mergedInstance;
@@ -383,10 +384,11 @@ namespace Microsoft.Maui.Controls
 
 			internal static string GetResourcePath(Uri uri, string rootTargetPath)
 			{
-				//need a fake scheme so it's not seen as file:// uri, and the forward slashes are valid on all plats
+				// GetResourcePathUriScheme is a fake scheme so it's not seen as file:// uri,
+				// and the forward slashes are valid on all plats
 				var resourceUri = uri.OriginalString.StartsWith("/", StringComparison.Ordinal)
-									 ? new Uri($"pack://{uri.OriginalString}", UriKind.Absolute)
-									 : new Uri($"pack:///{rootTargetPath}/../{uri.OriginalString}", UriKind.Absolute);
+									 ? new Uri($"{GetResourcePathUriScheme}{uri.OriginalString}", UriKind.Absolute)
+									 : new Uri($"{GetResourcePathUriScheme}/{rootTargetPath}/../{uri.OriginalString}", UriKind.Absolute);
 
 				//drop the leading '/'
 				return resourceUri.AbsolutePath.Substring(1);

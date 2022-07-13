@@ -67,10 +67,12 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateBackground(this UIView platformView, IView view) =>
-			platformView.UpdateBackground(view.Background);
+		public static void UpdateBackground(this UIView platformView, IView view)
+		{
+			platformView.UpdateBackground(view.Background, view as IButtonStroke);
+		}
 
-		public static void UpdateBackground(this UIView platformView, Paint? paint)
+		public static void UpdateBackground(this UIView platformView, Paint? paint, IButtonStroke? stroke = null)
 		{
 			// Remove previous background gradient layer if any
 			platformView.RemoveBackgroundLayer();
@@ -103,6 +105,9 @@ namespace Microsoft.Maui.Platform
 				{
 					backgroundLayer.Name = BackgroundLayerName;
 					platformView.BackgroundColor = UIColor.Clear;
+
+					backgroundLayer.UpdateLayerBorder(stroke);
+
 					platformView.InsertBackgroundLayer(backgroundLayer, 0);
 				}
 			}
@@ -440,16 +445,6 @@ namespace Microsoft.Maui.Platform
 			return view?.Superview;
 		}
 
-		internal static void LayoutToSize(this IView view, double width, double height)
-		{
-			var platformFrame = new CGRect(0, 0, width, height);
-
-			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
-				viewHandler.PlatformView.Frame = platformFrame;
-
-			view.Arrange(platformFrame.ToRectangle());
-		}
-
 		internal static Size LayoutToMeasuredSize(this IView view, double width, double height)
 		{
 			var size = view.Measure(width, height);
@@ -562,6 +557,21 @@ namespace Microsoft.Maui.Platform
 			};
 
 			return disposable;
+		}
+
+		internal static void UpdateLayerBorder(this CoreAnimation.CALayer layer, IButtonStroke? stroke)
+		{
+			if (stroke == null)
+				return;
+
+			if (stroke.StrokeColor != null)
+				layer.BorderColor = stroke.StrokeColor.ToCGColor();
+
+			if (stroke.StrokeThickness >= 0)
+				layer.BorderWidth = (float)stroke.StrokeThickness;
+
+			if (stroke.CornerRadius >= 0)
+				layer.CornerRadius = stroke.CornerRadius;
 		}
 	}
 }

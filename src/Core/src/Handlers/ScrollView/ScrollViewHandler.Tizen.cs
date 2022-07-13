@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		EContainer? _scrollCanvas;
 
-		Box? Canvas => (Box?)_scrollCanvas;
+		LayoutCanvas? Canvas => (LayoutCanvas?)_scrollCanvas;
 
 		protected override ScrollView CreatePlatformView()
 		{
@@ -22,12 +22,14 @@ namespace Microsoft.Maui.Handlers
 				WeightX = 1,
 				WeightY = 1
 			};
-			_scrollCanvas = new Box(scrollView)
+			_scrollCanvas = new LayoutCanvas(scrollView, VirtualView)
 			{
 				AlignmentX = -1,
 				AlignmentY = -1,
 				WeightX = 1,
-				WeightY = 1
+				WeightY = 1,
+				CrossPlatformArrange = VirtualView.CrossPlatformArrange,
+				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure
 			};
 			scrollView.SetContent(_scrollCanvas);
 			return scrollView;

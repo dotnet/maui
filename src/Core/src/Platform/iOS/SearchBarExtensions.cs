@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -7,6 +7,14 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SearchBarExtensions
 	{
+		internal static UITextField? GetSearchTextField(this UISearchBar searchBar)
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(13))
+				return searchBar.SearchTextField;
+			else
+				return searchBar.GetSearchTextField();
+		}
+
 		// TODO: NET7 maybe make this public?
 		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
@@ -31,7 +39,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePlaceholder(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField)
 		{
-			textField ??= uiSearchBar.FindDescendantView<UITextField>();
+			textField ??= uiSearchBar.GetSearchTextField();
 
 			if (textField == null)
 				return;
@@ -54,7 +62,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFont(this UISearchBar uiSearchBar, ITextStyle textStyle, IFontManager fontManager, UITextField? textField)
 		{
-			textField ??= uiSearchBar.FindDescendantView<UITextField>();
+			textField ??= uiSearchBar.GetSearchTextField();
 
 			if (textField == null)
 				return;
@@ -69,7 +77,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVerticalTextAlignment(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField)
 		{
-			textField ??= uiSearchBar.FindDescendantView<UITextField>();
+			textField ??= uiSearchBar.GetSearchTextField();
 
 			if (textField == null)
 				return;
@@ -116,7 +124,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsTextPredictionEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField)
 		{
-			textField ??= uiSearchBar.FindDescendantView<UITextField>();
+			textField ??= uiSearchBar.GetSearchTextField();
 
 			if (textField == null)
 				return;

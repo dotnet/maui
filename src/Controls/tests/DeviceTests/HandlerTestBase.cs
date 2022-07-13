@@ -1,4 +1,5 @@
 using System;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,13 +14,14 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase : TestBase, IDisposable
 	{
 		bool _isCreated;
-		MauiApp _mauiApp;
+		protected MauiApp MauiApp { get; private set; }
 		IMauiContext _mauiContext;
 
 		// In order to run any page level tests android needs to add itself to the decor view inside a new fragment
@@ -78,16 +80,16 @@ namespace Microsoft.Maui.DeviceTests
 
 			additionalCreationActions?.Invoke(appBuilder);
 
-			_mauiApp = appBuilder.Build();
+			MauiApp = appBuilder.Build();
 
-			_mauiContext = new ContextStub(_mauiApp.Services);
+			_mauiContext = new ContextStub(MauiApp.Services);
 		}
 
 		public void Dispose()
 		{
-			((IDisposable)_mauiApp)?.Dispose();
+			((IDisposable)MauiApp)?.Dispose();
 
-			_mauiApp = null;
+			MauiApp = null;
 			_mauiContext = null;
 		}
 
@@ -167,6 +169,17 @@ namespace Microsoft.Maui.DeviceTests
 				return func(handler);
 			});
 		}
+
+		protected Task SetValueAsync<TValue, THandler>(IView view, TValue value, Action<THandler, TValue> func)
+			where THandler : IElementHandler
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<THandler>(view);
+				func(handler, value);
+			});
+		}
+
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Action<THandler> action)
 			where THandler : class, IElementHandler
 		{
@@ -178,7 +191,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		static SemaphoreSlim _takeOverMainContentSempahore = new SemaphoreSlim(1);
-		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
+		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{
 			return InvokeOnMainThreadAsync(async () =>
@@ -221,13 +234,97 @@ namespace Microsoft.Maui.DeviceTests
 							await action((THandler)cp.Content.Handler);
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
-					});
+					}, mauiContext);
 				}
 				finally
 				{
 					_takeOverMainContentSempahore.Release();
 				}
 			});
+		}
+
+		async protected Task ValidatePropertyInitValue<TValue, THandler>(
+			IView view,
+			Func<TValue> GetValue,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedValue)
+			where THandler : IElementHandler
+		{
+			var values = await GetValueAsync(view, (THandler handler) =>
+			{
+				return new
+				{
+					ViewValue = GetValue(),
+					PlatformViewValue = GetPlatformValue(handler)
+				};
+			});
+
+			Assert.Equal(expectedValue, values.ViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
+		}
+
+		async protected Task ValidatePropertyUpdatesValue<TValue, THandler>(
+			IView view,
+			string property,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+			where THandler : IElementHandler
+		{
+			var propInfo = view.GetType().GetProperty(property);
+
+			// set initial values
+
+			propInfo.SetValue(view, expectedSetValue);
+
+			var (handler, viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<THandler>(view);
+				return (handler, (TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedSetValue, viewVal);
+			Assert.Equal(expectedSetValue, nativeVal);
+
+			await ValidatePropertyUpdatesAfterInitValue(handler, property, GetPlatformValue, expectedSetValue, expectedUnsetValue);
+		}
+
+		async protected Task ValidatePropertyUpdatesAfterInitValue<TValue, THandler>(
+			THandler handler,
+			string property,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+			where THandler : IElementHandler
+		{
+			var view = handler.VirtualView;
+			var propInfo = handler.VirtualView.GetType().GetProperty(property);
+
+			// confirm can update
+
+			var (viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				propInfo.SetValue(view, expectedUnsetValue);
+				handler.UpdateValue(property);
+
+				return ((TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedUnsetValue, viewVal);
+			Assert.Equal(expectedUnsetValue, nativeVal);
+
+			// confirm can revert
+
+			(viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				propInfo.SetValue(view, expectedSetValue);
+				handler.UpdateValue(property);
+
+				return ((TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedSetValue, viewVal);
+			Assert.Equal(expectedSetValue, nativeVal);
 		}
 
 		protected void OnLoaded(VisualElement frameworkElement, Action action)

@@ -40,7 +40,7 @@ namespace Sample.Server.WebAuthenticator
 				{
 					{ "access_token", auth.Properties.GetTokenValue("access_token") },
 					{ "refresh_token", auth.Properties.GetTokenValue("refresh_token") ?? string.Empty },
-					{ "expires", (auth.Properties.ExpiresUtc?.ToUnixTimeSeconds() ?? -1).ToString() },
+					{ "expires_in", (auth.Properties.ExpiresUtc?.ToUnixTimeSeconds() ?? -1).ToString() },
 					{ "email", email }
 				};
 
