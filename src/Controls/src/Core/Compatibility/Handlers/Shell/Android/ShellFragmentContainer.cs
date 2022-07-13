@@ -29,11 +29,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// Handler and MauiContext
 			// But we want to update the inflater and ChildFragmentManager to match
 			// the handlers new home			
-			if (_page?.Handler?.MauiContext is MauiContext scopedMauiContext)
+			if (_page.Handler?.MauiContext is MauiContext scopedMauiContext)
 			{
-				scopedMauiContext.AddWeakSpecific(ChildFragmentManager);
-				scopedMauiContext.AddWeakSpecific(inflater);
-				mauiContext = scopedMauiContext;
+				// If this page comes to us from a different activity then don't reuse it
+				// disconnect the handler so it can recreate against new MauiContext
+				if (scopedMauiContext.GetActivity() == Context.GetActivity())
+				{
+					scopedMauiContext.AddWeakSpecific(ChildFragmentManager);
+					scopedMauiContext.AddWeakSpecific(inflater);
+					mauiContext = scopedMauiContext;
+				}
+				else
+				{
+					_page.Handler.DisconnectHandler();
+				}
 			}
 
 			mauiContext ??= _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);

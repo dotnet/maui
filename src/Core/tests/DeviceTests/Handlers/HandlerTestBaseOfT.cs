@@ -9,7 +9,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase<THandler, TStub> : HandlerTestBase
-		where THandler : IViewHandler, new()
+		where THandler : class, IViewHandler, new()
 		where TStub : StubBase, IView, new()
 	{
 		public static Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000) =>
@@ -94,9 +94,22 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedSetValue, viewVal);
 			Assert.Equal(expectedSetValue, nativeVal);
 
+			await ValidatePropertyUpdatesAfterInitValue(handler, property, GetPlatformValue, expectedSetValue, expectedUnsetValue);
+		}
+
+		async protected Task ValidatePropertyUpdatesAfterInitValue<TValue>(
+			THandler handler,
+			string property,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+		{
+			var view = handler.VirtualView;
+			var propInfo = handler.VirtualView.GetType().GetProperty(property);
+
 			// confirm can update
 
-			(viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			var (viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
 			{
 				propInfo.SetValue(view, expectedUnsetValue);
 				handler.UpdateValue(property);
