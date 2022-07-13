@@ -163,6 +163,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if !IOS
 		[Fact(DisplayName = "Swap Shell Root Page for NavigationPage")]
 		public async Task SwapShellRootPageForNavigationPage()
 		{
@@ -181,6 +182,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(newPage.Frame.Height > 0);
 			});
 		}
+#endif
 
 		[Fact(DisplayName = "FlyoutContent Renderers When FlyoutBehavior Starts As Locked")]
 		public async Task FlyoutContentRenderersWhenFlyoutBehaviorStartsAsLocked()
@@ -304,8 +306,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
-
+#if !IOS
 		[Fact(DisplayName = "Correctly Adjust to Making Currently Visible Shell Page Invisible")]
 		public async Task CorrectlyAdjustToMakingCurrentlyVisibleShellPageInvisible()
 		{
@@ -342,6 +343,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(shell.CurrentPage, page2);
 			});
 		}
+#endif
 
 		[Fact(DisplayName = "Empty Shell")]
 		public async Task DetailsViewUpdates()
