@@ -439,12 +439,35 @@ namespace Microsoft.Maui.Controls
 
 		void HandleRadioButtonGroupValueChanged(Element layout, RadioButtonGroupValueChanged args)
 		{
-			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || !object.Equals(Value, args.Value) || !MatchesScope(args))
+			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || !MatchesScope(args))
 			{
 				return;
 			}
 
-			IsChecked = true;
+			// If both value and args value are null, we consider it good.
+			if (Value == null && args.Value == null)
+			{
+				IsChecked = true;
+				return;
+			}
+			else if (args.Value is bool && bool.TryParse(Value.ToString(), out bool boolRes))
+			{
+				// If it is a boolean value, compare as bool
+				if ((bool)args.Value == boolRes)
+				{
+					IsChecked = true;
+					return;
+				}
+			}
+
+			// Other values we can probably safely compare as string (int, string, enum)
+			if (Value != null && Value.ToString().Equals(args.Value.ToString(), StringComparison.Ordinal))
+			{
+				IsChecked = true;
+				return;
+			}
+
+			IsChecked = false;
 		}
 
 		static void BindToTemplatedParent(BindableObject bindableObject, params BindableProperty[] properties)

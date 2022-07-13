@@ -247,7 +247,14 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Background != null)
 			{
-				Background.Parent = this;
+				Dispatcher.DispatchIfRequiredAsync(() =>
+				{
+					if (Background != null)
+					{
+						Background.Parent = this;
+					}
+				});
+
 				Background.PropertyChanged += OnBackgroundChanged;
 
 				if (Background is GradientBrush gradientBrush)

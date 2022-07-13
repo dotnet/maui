@@ -413,6 +413,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				e.PropertyName == NavigationPage.BarBackgroundProperty.PropertyName)
 			{
 				UpdateBarBackground();
+				UpdateHideNavigationBarSeparator();
 			}
 			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName
 				  || e.PropertyName == StatusBarTextColorModeProperty.PropertyName)

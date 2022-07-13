@@ -156,12 +156,20 @@ namespace Microsoft.Maui.Handlers
 
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
-			if (VirtualView != null)
-			{
-				VirtualView.IsFocused = false;
+			if (VirtualView == null || PlatformView == null)
+				return;
 
-				VirtualView.Completed();
-			}
+			// Typing aid changes don't always raise EditingChanged event
+			// Normalizing nulls to string.Empty allows us to ensure that a change from null to "" doesn't result in a change event.
+			// While technically this is a difference it serves no functional good.
+			var platformText = PlatformView.Text ?? string.Empty;
+			var virtualText = VirtualView.Text ?? string.Empty;
+
+			if (platformText != virtualText)
+				VirtualView.Text = platformText;
+
+			VirtualView.IsFocused = false;
+			VirtualView.Completed();
 		}
 
 		void OnTextPropertySet(object? sender, EventArgs e) =>
