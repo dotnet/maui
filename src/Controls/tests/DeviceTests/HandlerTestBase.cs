@@ -3,6 +3,7 @@ using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Devices;
@@ -77,6 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
 			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
+			appBuilder.Services.TryAddSingleton(typeof(IApplication), (_) => new Application());
 
 			additionalCreationActions?.Invoke(appBuilder);
 
@@ -220,7 +222,16 @@ namespace Microsoft.Maui.DeviceTests
 						IView content = window.Content;
 
 						if (content is IPageContainer<Page> pc)
+						{
 							content = pc.CurrentPage;
+							if (content == null)
+							{
+								await Task.Delay(100);
+								content = pc.CurrentPage;
+							}
+
+							_ = content ?? throw new InvalidOperationException("Current Page Not Initialized");
+						}
 
 						await OnLoadedAsync(content as VisualElement);
 #if WINDOWS
