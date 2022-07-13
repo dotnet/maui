@@ -78,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
 			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
-			appBuilder.Services.TryAddSingleton(typeof(IApplication), (_) => new Application());
+			appBuilder.Services.TryAddSingleton<IApplication>((_) => new Application());
 
 			additionalCreationActions?.Invoke(appBuilder);
 
@@ -226,6 +226,12 @@ namespace Microsoft.Maui.DeviceTests
 							content = pc.CurrentPage;
 							if (content == null)
 							{
+								// This is mainly a timing issue with Shell.
+								// Basically the `CurrentPage` on Shell isn't initialized until it's
+								// actually navigated to because it's a DataTemplate.
+								// The CurrentPage doesn't come into existence until the platform requests it.
+								// The initial `Navigated` events on Shell all fire a bit too early as well.
+								// Ideally I'd just use that instead of having to add a delay.
 								await Task.Delay(100);
 								content = pc.CurrentPage;
 							}
