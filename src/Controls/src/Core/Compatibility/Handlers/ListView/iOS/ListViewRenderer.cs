@@ -57,6 +57,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set { _dataSource.ReloadSectionsAnimation = value; }
 		}
 
+		[Internals.Preserve(Conditional = true)]
+		public ListViewRenderer(IntPtr handle)
+		{
+
+		}
+
 		public ListViewRenderer() : base(Mapper, CommandMapper)
 		{
 			AutoPackage = false;
