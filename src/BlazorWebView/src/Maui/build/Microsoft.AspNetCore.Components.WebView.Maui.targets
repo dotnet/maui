@@ -67,6 +67,8 @@
       <!-- Add Scoped CSS files in the app to the list of hidden items -->
       <_TemporaryHiddenContent Include="Pages\**\*.razor.css" />
       <_TemporaryHiddenContent Include="Shared\**\*.razor.css" />
+      <!-- Add global.json to the list of hidden items -->
+      <_TemporaryHiddenContent Include="global.json" />
       <!-- Temporarily remove the items -->
       <Content Remove="@(_TemporaryHiddenContent)" />
     </ItemGroup>
