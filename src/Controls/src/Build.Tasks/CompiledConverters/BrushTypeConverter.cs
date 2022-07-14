@@ -13,11 +13,8 @@ class BrushTypeConverter : ICompiledTypeConverter
 	{
 		var module = context.Body.Method.Module;
 
-		do
+		if (!string.IsNullOrEmpty (value))
 		{
-			if (string.IsNullOrEmpty(value))
-				break;
-
 			value = value.Trim();
 
 			if (value.StartsWith("#", StringComparison.Ordinal))
@@ -56,8 +53,7 @@ class BrushTypeConverter : ICompiledTypeConverter
 					yield break;
 				}
 			}
-
-		} while (false);
+		}
 		throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Brush));
 	}
 }
