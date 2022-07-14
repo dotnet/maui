@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Graphics;
 using Mono.Cecil.Cil;
 
 namespace Microsoft.Maui.Controls.XamlC;
 
-class BrushTypeConverter : ICompiledTypeConverter
+class BrushTypeConverter : ColorTypeConverter
 {
-	public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
+	public override IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
 	{
 		var module = context.Body.Method.Module;
 
@@ -19,18 +18,8 @@ class BrushTypeConverter : ICompiledTypeConverter
 
 			if (value.StartsWith("#", StringComparison.Ordinal))
 			{
-				var color = Color.FromArgb(value);
-
-				yield return Instruction.Create(OpCodes.Ldc_R4, color.Red);
-				yield return Instruction.Create(OpCodes.Ldc_R4, color.Green);
-				yield return Instruction.Create(OpCodes.Ldc_R4, color.Blue);
-				yield return Instruction.Create(OpCodes.Ldc_R4, color.Alpha);
-
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Color"), parameterTypes: new[] {
-						("mscorlib", "System", "Single"),
-						("mscorlib", "System", "Single"),
-						("mscorlib", "System", "Single"),
-						("mscorlib", "System", "Single")}));
+				foreach (var instruction in base.ConvertFromString(value, context, node))
+					yield return instruction;
 
 				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SolidColorBrush"), parameterTypes: new[] {
 						("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Color")}));
