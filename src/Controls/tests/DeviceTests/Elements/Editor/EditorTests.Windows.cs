@@ -14,5 +14,14 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() => GetPlatformControl(handler).Text);
 		}
+
+		void SetPlatformText(EditorHandler editorHandler, string text) =>
+			GetPlatformControl(editorHandler).Text = text;
+
+		int GetPlatformCursorPosition(EditorHandler editorHandler) =>
+			GetPlatformControl(editorHandler).SelectionStart;
+
+		int GetPlatformSelectionLength(EditorHandler editorHandler) =>
+			GetPlatformControl(editorHandler).SelectionLength;
 	}
 }

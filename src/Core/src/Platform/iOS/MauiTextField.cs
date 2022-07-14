@@ -45,6 +45,21 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public override UITextRange? SelectedTextRange
+		{
+			get => base.SelectedTextRange;
+			set
+			{
+				var old = base.SelectedTextRange;
+
+				base.SelectedTextRange = value;
+
+				if (old?.Start != value?.Start || old?.End != value?.End)
+					SelectionChanged?.Invoke(this, EventArgs.Empty);
+			}
+		}
+
 		public event EventHandler? TextPropertySet;
+		internal event EventHandler? SelectionChanged;
 	}
 }
