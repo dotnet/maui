@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -15,6 +16,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// </summary>
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, NWebView>
 	{
+		private const string BlazorWebViewIdentifier = "BlazorWebView:";
+		private const string UserAgentHeaderKey = "User-Agent";
 		private const string AppOrigin = "http://0.0.0.0/";
 		private const string BlazorInitScript = @"
 			window.__receiveMessageCallbacks = [];
@@ -41,6 +44,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			})();
 		";
 
+		static private Dictionary<string, WeakReference<BlazorWebViewHandler>> s_webviewHandlerTable = new Dictionary<string, WeakReference<BlazorWebViewHandler>>();
+
 		private TizenWebViewManager? _webviewManager;
 
 		private bool RequiredStartupPropertiesSet =>
@@ -62,8 +67,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected override void ConnectHandler(NWebView platformView)
 		{
 			platformView.PageLoadFinished += OnLoadFinished;
-			platformView.Context.RegisterHttpRequestInterceptedCallback(OnRequestInterceptCallback);
+			platformView.Context.RegisterHttpRequestInterceptedCallback(OnRequestInterceptStaticCallback);
 			platformView.AddJavaScriptMessageHandler("BlazorHandler", PostMessageFromJS);
+			platformView.UserAgent += $" {BlazorWebViewIdentifier}{GetHashCode()}";
+			s_webviewHandlerTable[GetHashCode().ToString()] = new WeakReference<BlazorWebViewHandler>(this);
 		}
 
 		/// <inheritdoc />
@@ -71,6 +78,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			platformView.PageLoadFinished -= OnLoadFinished;
 			base.DisconnectHandler(platformView);
+			s_webviewHandlerTable.Remove(GetHashCode().ToString());
 		}
 
 
@@ -86,6 +94,25 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			if (url == AppOrigin)
 				PlatformView.EvaluateJavaScript(BlazorInitScript);
+		}
+
+		private static void OnRequestInterceptStaticCallback(WebHttpRequestInterceptor interceptor)
+		{
+			if (interceptor.Headers.TryGetValue(UserAgentHeaderKey, out var agent))
+			{
+				var idx = agent.IndexOf(BlazorWebViewIdentifier);
+				if (idx >= 0)
+				{
+					var webviewKey = agent.Substring(idx + BlazorWebViewIdentifier.Length);
+					if (s_webviewHandlerTable.TryGetValue(webviewKey, out var weakHandler)
+						&& weakHandler.TryGetTarget(out var handler))
+					{
+						handler.OnRequestInterceptCallback(interceptor);
+						return;
+					}
+				}
+			}
+			interceptor.Ignore();
 		}
 
 		private void OnRequestInterceptCallback(WebHttpRequestInterceptor interceptor)
