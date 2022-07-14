@@ -28,8 +28,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public object GetService(Type serviceType)
 		{
-			if (serviceType == typeof(IApplication))
-				return Controls.Application.Current;
+			// Don't add serviceType == typeof(IApplication) here
+			// The headless runner doesn't set Application.Current
+			// so you'll get confusing behavior if you do.
 
 			if (serviceType == typeof(IAnimationManager))
 				return _manager ??= _services.GetRequiredService<IAnimationManager>();

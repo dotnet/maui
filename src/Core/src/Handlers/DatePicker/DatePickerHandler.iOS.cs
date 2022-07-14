@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
-			PlatformView.MauiDatePickerDelegate = new DatePickerDelegate(this);
+			platformView.MauiDatePickerDelegate = new DatePickerDelegate(this);
 
 			if (DatePickerDialog is UIDatePicker picker)
 			{
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
-			PlatformView.MauiDatePickerDelegate = null;
+			platformView.MauiDatePickerDelegate = null;
 			base.DisconnectHandler(platformView);
 		}
 

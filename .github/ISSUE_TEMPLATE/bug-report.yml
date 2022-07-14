@@ -40,7 +40,8 @@ body:
         - 6.0 Release Candidate 2 or older
         - 6.0 Release Candidate 3
         - 6.0.312
-        - 6.0.400 (current)
+        - 6.0.400
+        - 6.0.408 (current)
         - Unknown/Other (please specify)
     validations:
       required: true
@@ -53,6 +54,7 @@ body:
         - 6.0 Release Candidate 2 or older
         - 6.0 Release Candidate 3
         - 6.0.312
+        - 6.0.400
         - Unknown/Other
     validations:
       required: true
