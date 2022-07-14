@@ -1,7 +1,9 @@
 using System;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Devices;
@@ -13,6 +15,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -75,6 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
 			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
+			appBuilder.Services.TryAddSingleton<IApplication>((_) => new Application());
 
 			additionalCreationActions?.Invoke(appBuilder);
 
@@ -167,6 +171,17 @@ namespace Microsoft.Maui.DeviceTests
 				return func(handler);
 			});
 		}
+
+		protected Task SetValueAsync<TValue, THandler>(IView view, TValue value, Action<THandler, TValue> func)
+			where THandler : IElementHandler
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<THandler>(view);
+				func(handler, value);
+			});
+		}
+
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Action<THandler> action)
 			where THandler : class, IElementHandler
 		{
@@ -207,7 +222,22 @@ namespace Microsoft.Maui.DeviceTests
 						IView content = window.Content;
 
 						if (content is IPageContainer<Page> pc)
+						{
 							content = pc.CurrentPage;
+							if (content == null)
+							{
+								// This is mainly a timing issue with Shell.
+								// Basically the `CurrentPage` on Shell isn't initialized until it's
+								// actually navigated to because it's a DataTemplate.
+								// The CurrentPage doesn't come into existence until the platform requests it.
+								// The initial `Navigated` events on Shell all fire a bit too early as well.
+								// Ideally I'd just use that instead of having to add a delay.
+								await Task.Delay(100);
+								content = pc.CurrentPage;
+							}
+
+							_ = content ?? throw new InvalidOperationException("Current Page Not Initialized");
+						}
 
 						await OnLoadedAsync(content as VisualElement);
 #if WINDOWS
@@ -228,6 +258,90 @@ namespace Microsoft.Maui.DeviceTests
 					_takeOverMainContentSempahore.Release();
 				}
 			});
+		}
+
+		async protected Task ValidatePropertyInitValue<TValue, THandler>(
+			IView view,
+			Func<TValue> GetValue,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedValue)
+			where THandler : IElementHandler
+		{
+			var values = await GetValueAsync(view, (THandler handler) =>
+			{
+				return new
+				{
+					ViewValue = GetValue(),
+					PlatformViewValue = GetPlatformValue(handler)
+				};
+			});
+
+			Assert.Equal(expectedValue, values.ViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
+		}
+
+		async protected Task ValidatePropertyUpdatesValue<TValue, THandler>(
+			IView view,
+			string property,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+			where THandler : IElementHandler
+		{
+			var propInfo = view.GetType().GetProperty(property);
+
+			// set initial values
+
+			propInfo.SetValue(view, expectedSetValue);
+
+			var (handler, viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<THandler>(view);
+				return (handler, (TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedSetValue, viewVal);
+			Assert.Equal(expectedSetValue, nativeVal);
+
+			await ValidatePropertyUpdatesAfterInitValue(handler, property, GetPlatformValue, expectedSetValue, expectedUnsetValue);
+		}
+
+		async protected Task ValidatePropertyUpdatesAfterInitValue<TValue, THandler>(
+			THandler handler,
+			string property,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+			where THandler : IElementHandler
+		{
+			var view = handler.VirtualView;
+			var propInfo = handler.VirtualView.GetType().GetProperty(property);
+
+			// confirm can update
+
+			var (viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				propInfo.SetValue(view, expectedUnsetValue);
+				handler.UpdateValue(property);
+
+				return ((TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedUnsetValue, viewVal);
+			Assert.Equal(expectedUnsetValue, nativeVal);
+
+			// confirm can revert
+
+			(viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				propInfo.SetValue(view, expectedSetValue);
+				handler.UpdateValue(property);
+
+				return ((TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedSetValue, viewVal);
+			Assert.Equal(expectedSetValue, nativeVal);
 		}
 
 		protected void OnLoaded(VisualElement frameworkElement, Action action)

@@ -1,6 +1,8 @@
 #nullable enable
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Platform
 {
@@ -24,7 +26,7 @@ namespace Microsoft.Maui.Platform
 			platformControl.Text = newText ?? string.Empty;
 
 			if (!string.IsNullOrEmpty(platformControl.Text))
-				platformControl.SelectionStart = platformControl.Text.Length;
+				platformControl.Select(platformControl.Text.Length, 0);
 		}
 
 		public static void UpdateBackground(this TextBox textBox, IView view)
@@ -76,6 +78,9 @@ namespace Microsoft.Maui.Platform
 		{
 			textBox.UpdateInputScope(textInput);
 		}
+
+		internal static bool GetClearButtonVisibility(this TextBox textBox) =>
+			MauiTextBox.GetIsDeleteButtonEnabled(textBox);
 
 		public static void UpdateClearButtonVisibility(this TextBox textBox, IEntry entry) =>
 			MauiTextBox.SetIsDeleteButtonEnabled(textBox, entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing);
@@ -166,12 +171,12 @@ namespace Microsoft.Maui.Platform
 				textBox.IsSpellCheckEnabled = textInput.IsTextPredictionEnabled;
 			}
 
-			var inputScope = new UI.Xaml.Input.InputScope();
+			var inputScope = new InputScope();
 
 			if (textInput is IEntry entry && entry.ReturnType == ReturnType.Search)
-				inputScope.Names.Add(new UI.Xaml.Input.InputScopeName(UI.Xaml.Input.InputScopeNameValue.Search));
+				inputScope.Names.Add(new InputScopeName(InputScopeNameValue.Search));
 
-			inputScope.Names.Add(textInput.Keyboard.ToInputScopeName());
+			inputScope.Names.Add(textInput.Keyboard?.ToInputScopeName() ?? new InputScopeName(InputScopeNameValue.Default));
 
 			textBox.InputScope = inputScope;
 		}
@@ -189,14 +194,27 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCursorPosition(this TextBox textBox, ITextInput entry)
 		{
+			// It seems that the TextBox does not limit the CursorPosition to the Text.Length natively
+			entry.CursorPosition = Math.Min(entry.CursorPosition, textBox.Text.Length);
+
 			if (textBox.SelectionStart != entry.CursorPosition)
 				textBox.SelectionStart = entry.CursorPosition;
 		}
 
 		public static void UpdateSelectionLength(this TextBox textBox, ITextInput entry)
 		{
+			// It seems that the TextBox does not limit the SelectionLength to the Text.Length natively
+			entry.SelectionLength = Math.Min(entry.SelectionLength, textBox.Text.Length - textBox.SelectionStart);
+
 			if (textBox.SelectionLength != entry.SelectionLength)
 				textBox.SelectionLength = entry.SelectionLength;
+		}
+
+		// TODO: NET7 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
+		internal static int GetCursorPosition(this TextBox textBox, int cursorOffset = 0)
+		{
+			var newCursorPosition = textBox.SelectionStart + cursorOffset;
+			return Math.Max(0, newCursorPosition);
 		}
 	}
 }
