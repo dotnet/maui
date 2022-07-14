@@ -5,6 +5,7 @@ using Xunit;
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
 
+	[Category("Preferences")]
 	[Collection("UsesPreferences")]
 	public class Preferences_Tests
 	{

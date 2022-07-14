@@ -9,7 +9,7 @@
   <Identity
     Name="CD693923-B3C2-4043-B044-F070046D2DAF"
     Publisher="CN=User Name"
-    Version="1.0.0.0" />
+    Version="1.0.1.0" />
 
   <Properties>
     <DisplayName>Essentials Tests</DisplayName>

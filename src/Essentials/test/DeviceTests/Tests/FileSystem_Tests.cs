@@ -5,6 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("FileSystem")]
 	public class FileSystem_Tests
 	{
 		const string bundleFileContents = "This file was in the app bundle.";
