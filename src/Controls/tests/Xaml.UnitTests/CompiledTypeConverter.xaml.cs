@@ -1,5 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Graphics;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -57,6 +61,27 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual(new Thickness(2, 3), p.label.Margin);
 				Assert.AreEqual(2, p.List.Count);
 				Assert.AreEqual("Bar", p.List[1]);
+			}
+
+			[Test]
+			[TestCase(typeof(Microsoft.Maui.Controls.BrushTypeConverter))]
+			[TestCase(typeof(Microsoft.Maui.Graphics.Converters.PointTypeConverter))]
+			[TestCase(typeof(Microsoft.Maui.Graphics.Converters.RectTypeConverter))]
+			public void ConvertersAreReplaced(Type converterType)
+			{
+				MockCompiler.Compile(typeof(CompiledTypeConverter), out var methodDef);
+				Assert.That(!methodDef.Body.Instructions.Any(instr => HasConstructorForType(methodDef, instr, converterType)), $"This Xaml still generates a new {converterType}()");
+			}
+
+			bool HasConstructorForType(MethodDefinition methodDef, Instruction instruction, Type converterType)
+			{
+				if (instruction.OpCode != OpCodes.Newobj)
+					return false;
+				if (!(instruction.Operand is MethodReference methodRef))
+					return false;
+				if (!Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(converterType)))
+					return false;
+				return true;
 			}
 		}
 	}
