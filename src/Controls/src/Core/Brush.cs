@@ -227,8 +227,6 @@ namespace Microsoft.Maui.Controls
 		static ImmutableBrush lightGray;
 		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightGray']/Docs" />
 		public static SolidColorBrush LightGray => lightGray ??= new(Colors.LightGray);
-		/// NOTE: not a public API
-		internal static SolidColorBrush LightGrey => LightGray;
 		static ImmutableBrush lightGreen;
 		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightGreen']/Docs" />
 		public static SolidColorBrush LightGreen => lightGreen ??= new(Colors.LightGreen);
