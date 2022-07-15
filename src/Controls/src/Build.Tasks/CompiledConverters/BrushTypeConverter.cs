@@ -27,20 +27,15 @@ class BrushTypeConverter : ColorTypeConverter
 				yield break;
 			}
 
-			var parts = value.Split('.');
-			if (parts.Length == 1 || (parts.Length == 2 && parts[0] == "Brush"))
-			{
-				var brush = parts[parts.Length - 1];
-				var propertyGetterReference = module.ImportPropertyGetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Brush"),
-																   brush,
-																   isStatic: true,
-																   caseSensitive: false);
+			var propertyGetterReference = module.ImportPropertyGetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Brush"),
+																				value,
+																				isStatic: true,
+																				caseSensitive: false);
 
-				if (propertyGetterReference != null)
-				{
-					yield return Instruction.Create(OpCodes.Call, propertyGetterReference);
-					yield break;
-				}
+			if (propertyGetterReference != null)
+			{
+				yield return Instruction.Create(OpCodes.Call, propertyGetterReference);
+				yield break;
 			}
 		}
 		throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Brush));
