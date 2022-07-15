@@ -9,7 +9,7 @@
     <UseMaui Condition=" '$(UseWorkload)' == 'true' ">true</UseMaui>
   </PropertyGroup>
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
-  <ItemGroup>
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.Maui.Graphics" />
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
@@ -22,7 +22,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' and '$(TargetPlatformIdentifier)' == 'android' ">
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
