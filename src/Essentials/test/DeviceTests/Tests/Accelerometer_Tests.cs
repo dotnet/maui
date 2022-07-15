@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	// TEST NOTES:
 	//   - these tests require an accelerometer to be present
+	[Category("Accelerometer")]
 	public class Accelerometer_Tests
 	{
 		[Fact]
