@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	// TEST NOTES:
 	//   - a human needs to accept permissions on all systems
+	[Category("Geolocation")]
 	public class Geolocation_Tests
 	{
 		[Fact]
