@@ -99,7 +99,9 @@ namespace Microsoft.Maui.ApplicationModel
 				return;
 
 			_activeWindow = window;
-			_activeWindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window);
+			_activeWindowHandle = window is null
+				? IntPtr.Zero
+				: WinRT.Interop.WindowNative.GetWindowHandle(window);
 
 			ActiveWindowChanged?.Invoke(window, EventArgs.Empty);
 		}
