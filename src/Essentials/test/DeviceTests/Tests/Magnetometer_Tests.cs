@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	// TEST NOTES:
 	//   - these tests require a magnetometer to be present
+	[Category("Magnetometer")]
 	public class Magnetometer_Tests
 	{
 		[Fact]
