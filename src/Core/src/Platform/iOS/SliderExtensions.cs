@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ObjCRuntime;
 using UIKit;
 
@@ -48,9 +48,22 @@ namespace Microsoft.Maui.Platform
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var result = await service.GetImageAsync(thumbImageSource);
-				var thumbImage = result?.Value;
+				UIImage? thumbImage = result?.Value;
+
+				if (thumbImage != null)
+				{
+					var trackRect = uiSlider.TrackRectForBounds(uiSlider.Bounds);
+					var thumbRect = uiSlider.ThumbRectForBounds(uiSlider.Bounds, trackRect, uiSlider.Value);
+
+					if (thumbImage.Size.Height > thumbRect.Size.Height || thumbImage.Size.Width > thumbRect.Size.Width)
+						thumbImage = thumbImage.Scale(thumbRect.Size);
+				}
 
 				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);
+			}
+			else
+			{
+				uiSlider.SetThumbImage(null, UIControlState.Normal);
 			}
 		}
 	}
