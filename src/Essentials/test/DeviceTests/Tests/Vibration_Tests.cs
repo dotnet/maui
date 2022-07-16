@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("Vibration")]
 	public class Vibration_Tests
 	{
 		[Fact]
