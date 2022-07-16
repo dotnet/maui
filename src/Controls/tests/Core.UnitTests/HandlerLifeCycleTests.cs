@@ -12,6 +12,42 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class HandlerLifeCycleTests : BaseTestFixture
 	{
+		[Test]
+		public void SettingNewHandlerDisconnectsOldHandler()
+		{
+			var mauiApp1 = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton, HandlerStub>())
+				.Build();
+
+			LifeCycleButton button = new LifeCycleButton();
+
+			MauiContext mauiContext1 = new MauiContext(mauiApp1.Services);
+			var handler1 = button.ToHandler(mauiContext1);
+
+			var mauiApp2 = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton, HandlerStub>())
+				.Build();
+
+			MauiContext mauiContext2 = new MauiContext(mauiApp2.Services);
+
+			List<HandlerChangingEventArgs> changingArgs = new List<HandlerChangingEventArgs>();
+			button.HandlerChanging += (s, a) =>
+			{
+				Assert.AreEqual(handler1, a.OldHandler);
+				Assert.NotNull(a.NewHandler);
+
+				changingArgs.Add(a);
+			};
+
+			var handler2 = button.ToHandler(mauiContext2);
+
+			Assert.AreNotEqual(button, handler1.VirtualView);
+			Assert.AreEqual(button, handler2.VirtualView);
+			Assert.AreEqual(1, changingArgs.Count);
+		}
+
 		[Fact]
 		public void ChangingAndChangedBothFireInitially()
 		{
