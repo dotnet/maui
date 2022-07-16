@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net472</TargetFrameworks>
+		<TargetFrameworks>netstandard2.0</TargetFrameworks>
 		<AssemblyName>Microsoft.Maui.Controls.Xaml.DesignTools</AssemblyName>
 		<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
 		<IsPackable>False</IsPackable>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <RootNamespace>WinUI.UITests</RootNamespace>
     <AssemblyName>WinUI.UITests</AssemblyName>
     <IsPackable>false</IsPackable>
