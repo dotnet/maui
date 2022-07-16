@@ -11,8 +11,18 @@
   <PropertyGroup>
     <ApplicationTitle>Essentials Tests</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.essentials.devicetests</ApplicationId>
+    <ApplicationIdGuid>CD693923-B3C2-4043-B044-F070046D2DAF</ApplicationIdGuid>
     <ApplicationVersion>1</ApplicationVersion>
-    <ApplicationDisplayVersion>1.0.1.0</ApplicationDisplayVersion>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Uncomment the below to enabled unpackaged apps and change the
+      value of the "commandName" in the Properties\launchSettings.json
+      from "MsixPackage" to "Project".
+    -->
+    <!--<WindowsPackageType>None</WindowsPackageType>-->
   </PropertyGroup>
 
   <PropertyGroup>
