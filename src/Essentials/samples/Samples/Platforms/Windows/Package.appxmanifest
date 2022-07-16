@@ -9,7 +9,7 @@
   <Identity
     Name="ec0cc741-fd3e-485c-81be-68815c480690"
     Publisher="CN=User Name"
-    Version="1.0.0.0" />
+    Version="0.0.0.0" />
 
   <Properties>
     <DisplayName>Essentials</DisplayName>
