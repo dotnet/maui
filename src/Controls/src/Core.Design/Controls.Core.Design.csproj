@@ -35,27 +35,13 @@
 		</EmbeddedResource>
 	</ItemGroup>
 
-	<!-- Ensure that all images in the 'mac' and 'win' subdirectories are included as embedded resources -->
-	<!-- using a defined format. That format is "{platform}.{imagename}". We will look up images using   -->
-	<!-- exact-match logic so there's no guessework to figure out which image we need to load.           -->
-	<PropertyGroup>
-		<AssignTargetPathsDependsOn>
-			$(AssignTargetPathsDependsOn);
-			IncludeToolboxImages
-		</AssignTargetPathsDependsOn>
-	</PropertyGroup>
-	<Target Name="IncludeToolboxImages">
-		<!-- Be explicit about the prefix rather than relying on the directory name being exactly what we need -->
-		<ItemGroup>
-			<Images Include="toolbox\icons\mac\*.png">
-				<Prefix>mac</Prefix>
-			</Images>
-			<Images Include="toolbox\icons\win\*.png">
-				<Prefix>win</Prefix>
-			</Images>
-		</ItemGroup>
-		<CreateItem Include="@(Images)" AdditionalMetadata="LogicalName=%(Prefix).%(Filename)%(Extension)">
-			<Output TaskParameter="Include" ItemName="EmbeddedResource" />
-		</CreateItem>
-	</Target>
+	<!-- Be explicit about the prefix rather than relying on the directory name being exactly what we need -->
+	<ItemGroup>
+		<EmbeddedResource Include="toolbox\icons\mac\*.png">
+			<LogicalName>mac.%(Filename)%(Extension)</LogicalName>
+		</EmbeddedResource>
+		<EmbeddedResource Include="toolbox\icons\win\*.png">
+			<LogicalName>win.%(Filename)%(Extension)</LogicalName>
+		</EmbeddedResource>
+	</ItemGroup>
 </Project>
