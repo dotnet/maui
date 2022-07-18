@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	// TEST NOTES:
 	//   - a human needs to close the email composer window
+	[Category("Email")]
 	public class Email_Tests
 	{
 		[Fact]
