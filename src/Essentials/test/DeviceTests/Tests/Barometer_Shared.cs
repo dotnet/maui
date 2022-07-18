@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("Barometer")]
 	public class Barometer_Tests
 	{
 		[Fact]
