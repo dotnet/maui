@@ -18,9 +18,16 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.1.1" />
-    <PackageReference Include="Xamarin.UITest" Version="3.2.8" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Xamarin.UITest" Version="3.2.8" ExcludeAssets="Compile" GeneratePathProperty="true" />
+    <Reference Include="Xamarin.UITest">
+      <HintPath>$(PkgXamarin_UITest)lib\net45\Xamarin.UITest.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
