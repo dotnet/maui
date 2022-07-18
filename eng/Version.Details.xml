@@ -12,21 +12,21 @@
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
       <Sha>91a1c4436387c642e56271dff6a48f53bc6dce97</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.4.858-preview.7">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.4.906-preview.7">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>ea1419d6fc273cec7bfc26f91bded199f26a878a</Sha>
+      <Sha>9f7f1cef5ffbf066ec5fba5ed972570eda32cc43</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk" Version="15.4.858-preview.7">
+    <Dependency Name="Microsoft.iOS.Sdk" Version="15.4.906-preview.7">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>ea1419d6fc273cec7bfc26f91bded199f26a878a</Sha>
+      <Sha>9f7f1cef5ffbf066ec5fba5ed972570eda32cc43</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.4.858-preview.7">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.4.906-preview.7">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>ea1419d6fc273cec7bfc26f91bded199f26a878a</Sha>
+      <Sha>9f7f1cef5ffbf066ec5fba5ed972570eda32cc43</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk" Version="12.3.858-preview.7">
+    <Dependency Name="Microsoft.macOS.Sdk" Version="12.3.906-preview.7">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>ea1419d6fc273cec7bfc26f91bded199f26a878a</Sha>
+      <Sha>9f7f1cef5ffbf066ec5fba5ed972570eda32cc43</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-7.0.100" Version="7.0.0-preview.7.22330.1" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
@@ -35,37 +35,37 @@
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="6.0.5">
+    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>308378368c1182e98e7af93ed6e66c38f945837e</Sha>
+      <Sha>e8bba19667fae8b6f9cb154d2645d4550f235360</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components" Version="6.0.5">
+    <Dependency Name="Microsoft.AspNetCore.Components" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>308378368c1182e98e7af93ed6e66c38f945837e</Sha>
+      <Sha>e8bba19667fae8b6f9cb154d2645d4550f235360</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="6.0.5">
+    <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>308378368c1182e98e7af93ed6e66c38f945837e</Sha>
+      <Sha>e8bba19667fae8b6f9cb154d2645d4550f235360</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Forms" Version="6.0.5">
+    <Dependency Name="Microsoft.AspNetCore.Components.Forms" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>308378368c1182e98e7af93ed6e66c38f945837e</Sha>
+      <Sha>e8bba19667fae8b6f9cb154d2645d4550f235360</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="6.0.5">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>308378368c1182e98e7af93ed6e66c38f945837e</Sha>
+      <Sha>e8bba19667fae8b6f9cb154d2645d4550f235360</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="6.0.5">
+    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>308378368c1182e98e7af93ed6e66c38f945837e</Sha>
+      <Sha>e8bba19667fae8b6f9cb154d2645d4550f235360</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Metadata" Version="6.0.5">
+    <Dependency Name="Microsoft.AspNetCore.Metadata" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>308378368c1182e98e7af93ed6e66c38f945837e</Sha>
+      <Sha>e8bba19667fae8b6f9cb154d2645d4550f235360</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.JSInterop" Version="6.0.5">
+    <Dependency Name="Microsoft.JSInterop" Version="6.0.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>308378368c1182e98e7af93ed6e66c38f945837e</Sha>
+      <Sha>e8bba19667fae8b6f9cb154d2645d4550f235360</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Tasks" Version="7.0.100-preview.2.22102.8">
       <Uri>https://github.com/dotnet/templating</Uri>
