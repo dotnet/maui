@@ -215,6 +215,76 @@ public static int foo = 2130771968;
 
 5. Restore the commented code in `Directory.Build.targets`.
 
+## What branch should I use?
+
+- net7.0
+  - I want to use the net7.0 sdk and make changes that will be released with the .NET 7 release of MAUI
+- net6.0
+  - This PR seems like it should go out with a net6.0 service release
+- main (start here if you don't know what to use)
+  - I want to use the net6.0 sdk and make changes that will be released with the .NET 7 release of MAUI
+
+## Repository projects
+
+### Samples
+ ```
+├── Controls 
+│   ├── samples
+│   │   ├── Maui.Controls.Sample
+│   │   ├── Maui.Controls.Sample.Sandbox
+├── Essentials 
+│   ├── samples
+│   │   ├── Essentials.Sample
+├── BlazorWebView 
+│   ├── samples
+│   │   ├── BlazorWinFormsApp
+│   │   ├── BlazorWpfApp
+```
+
+- *Maui.Controls.Sample*: Full gallery sample with all of the controls and features of .NET MAUI
+- *Maui.Controls.Sample.Sandbox*: Empty project useful for testing reproductions or use cases
+- *Essentials.Sample*: Full gallery demonstrating  the library previously known as essentials. These are all the non UI related MAUI APIs.
+
+### Device Test Projects
+
+These are tests that will run on an actual device
+
+ ```
+├── Controls 
+│   ├── test
+│   │   ├── Controls.DeviceTests
+├── Core 
+│   ├── test
+│   │   ├── Core.DeviceTests
+├── Essentials 
+│   ├── test
+│   │   ├── Essentials.DeviceTests
+├── BlazorWebView 
+│   ├── test
+│   │   ├── MauiBlazorWebView.DeviceTests
+```
+
+- *Controls.DeviceTests*: .NET MAUI Controls Visual Runner for running device based xunit tests. This is useful for tests that require XAML features
+- *Core.DeviceTests*: .NET MAUI Core Visual Runner for running device based xunit tests. This is for tests that don't require any MAUI Controls based features
+- *Essentials.DeviceTests*: Visual Runner running all the .NET MAUI essentials xunit tests.
+- *MauiBlazorWebView.DeviceTests*: Visual Runner for BlazorWebView tests. 
+
+### Unit Test Projects
+
+These are tests that will not run on a device. This is useful for testing device independent logic.
+
+ ```
+├── Controls 
+│   ├── test
+│   │   ├── Controls.Core.UnitTests
+├── Core 
+│   ├── test
+│   │   ├── Core.UnitTests
+├── Essentials 
+│   ├── test
+│   │   ├── Essentials.UnitTests
+```
+
 ## Stats
 
 <img src="https://repobeats.axiom.co/api/embed/f917a77cbbdeee19b87fa1f2f932895d1df18b71.svg" />

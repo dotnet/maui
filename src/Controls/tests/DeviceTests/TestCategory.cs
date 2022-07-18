@@ -19,11 +19,13 @@
 		public const string Modal = "Modal";
 		public const string NavigationPage = "NavigationPage";
 		public const string Page = "Page";
+		public const string ScrollView = "ScrollView";
 		public const string SearchBar = "SearchBar";
 		public const string Shell = "Shell";
 		public const string TabbedPage = "TabbedPage";
 		public const string TemplatedView = "TemplatedView";
 		public const string VisualElement = "VisualElement";
+		public const string VisualElementTree = "VisualElementTree";
 		public const string Window = "Window";
 	}
 }

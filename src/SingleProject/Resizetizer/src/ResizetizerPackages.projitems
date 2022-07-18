@@ -25,7 +25,6 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.ObjectModel" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Svg2VectorDrawable.Net" Version="0.3.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Mono.ApiTools.MSBuildTasks" Version="0.1.0" PrivateAssets="all" />
   </ItemGroup>
 
@@ -63,8 +62,6 @@
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-arm64\native\libHarfBuzzSharp.so" Link="arm64\libHarfBuzzSharp.so" Arch="arm64/" />
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-musl-x64\native\libHarfBuzzSharp.so" Link="musl-x64\libHarfBuzzSharp.so" Arch="musl-x64/" />
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-x64\native\libHarfBuzzSharp.so" Link="x64\libHarfBuzzSharp.so" Arch="x64/" />
-    <_ResizetizerFiles Include="$(PkgSvg2VectorDrawable_Net)\lib\netstandard2.0\Svg2VectorDrawable.Net.dll" />
-    <_ResizetizerFiles Include="$(PkgSvg2VectorDrawable_Net)\lib\netstandard2.0\Svg2VectorDrawable.Net.pdb" />
     <_ResizetizerFiles Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" />
   </ItemGroup>
 

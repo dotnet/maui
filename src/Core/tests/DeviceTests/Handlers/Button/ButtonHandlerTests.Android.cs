@@ -1,19 +1,56 @@
+using System;
 using System.Threading.Tasks;
 using Android.Text;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
-using Google.Android.Material.Button;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Xunit;
-using AColor = global::Android.Graphics.Color;
+using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonHandlerTests
 	{
+		[Fact(DisplayName = "IsVisible updates Correctly")]
+		public async Task IsVisibleUpdatesCorrectly()
+		{
+			var expected = Colors.Red;
+
+			var layout = new LayoutStub();
+
+			var hiddenButton = new ButtonStub
+			{
+				Text = "Text",
+				TextColor = expected,
+				Visibility = Visibility.Collapsed,
+			};
+
+			var button = new ButtonStub
+			{
+				Text = "Change IsVisible"
+			};
+
+			layout.Add(hiddenButton);
+			layout.Add(button);
+
+			var clicked = false;
+
+			button.Clicked += delegate
+			{
+				hiddenButton.Visibility = Visibility.Visible;
+				clicked = true;
+			};
+
+			await PerformClick(button);
+
+			Assert.True(clicked);
+
+			var result = await GetValueAsync(hiddenButton, GetVisibility);
+			Assert.Equal(hiddenButton.Visibility, result);
+
+			await ValidateHasColor(hiddenButton, expected);
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
@@ -41,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>
-			(AppCompatButton)buttonHandler.PlatformView;
+			buttonHandler.PlatformView;
 
 		string GetNativeText(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).Text;
@@ -94,6 +131,16 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		TextUtils.TruncateAt GetNativeLineBreakMode(ButtonHandler buttonHandler) =>
-			GetNativeButton(buttonHandler).Ellipsize;
+			GetNativeButton(buttonHandler).Ellipsize; 
+		
+		Task ValidateHasColor(IButton button, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var platformButton = GetNativeButton(CreateHandler(button));
+				action?.Invoke();
+				platformButton.AssertContainsColor(color);
+			});
+		}
 	}
 }

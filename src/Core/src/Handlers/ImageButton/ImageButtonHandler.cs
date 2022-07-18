@@ -15,7 +15,7 @@ using PlatformView = Microsoft.UI.Xaml.Controls.Button;
 using PlatformImage = Tizen.UIExtensions.ElmSharp.Image;
 using PlatformImageView = Tizen.UIExtensions.ElmSharp.Image;
 using PlatformView = Microsoft.Maui.Platform.MauiImageButton;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformImage = System.Object;
 using PlatformImageView = System.Object;
 using PlatformView = System.Object;
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IButtonStroke.StrokeColor)] = MapStrokeColor,
 			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius,
 			[nameof(IImageButton.Padding)] = MapPadding,
-#if WINDOWS
+#if ANDROID || WINDOWS
 			[nameof(IImageButton.Background)] = MapBackground,
 #endif
 		};

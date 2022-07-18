@@ -17,7 +17,6 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5" />
     <PackageReference Include="coverlet.collector" Version="3.1.2" />
     <PackageReference Include="Svg.Skia" />
-    <PackageReference Include="Svg2VectorDrawable.Net" Version="0.3.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,10 +26,7 @@
   <ItemGroup>
     <None Include="images\**" CopyToOutputDirectory="PreserveNewest" />
     <None Include="testdata\**" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="resources\*" LogicalName="%(FileName)%(Extension)" />
+    <None Include="imageresults\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

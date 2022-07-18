@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("Share")]
 	public class Share_Tests
 	{
 		[Fact]

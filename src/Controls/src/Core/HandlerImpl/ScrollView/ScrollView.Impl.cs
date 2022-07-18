@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using static Microsoft.Maui.Layouts.LayoutManager;
@@ -73,8 +74,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			content.Measure(widthConstraint, heightConstraint);
-			ContentSize = content.DesiredSize;
-			return ContentSize;
+			return content.DesiredSize;
 		}
 
 		protected override Size ArrangeOverride(Rect bounds)
@@ -94,8 +94,8 @@ namespace Microsoft.Maui.Controls
 				// Normally we'd just want the content to be arranged within the ContentView's Frame,
 				// but ScrollView content might be larger than the ScrollView itself (for obvious reasons)
 				// So in each dimension, we assume the larger of the two values.
-				bounds.Width = Math.Max(Frame.Width, presentedContent.DesiredSize.Width + padding.HorizontalThickness);
-				bounds.Height = Math.Max(Frame.Height, presentedContent.DesiredSize.Height + padding.VerticalThickness);
+				bounds.Width = Math.Max(bounds.Width, presentedContent.DesiredSize.Width + padding.HorizontalThickness);
+				bounds.Height = Math.Max(bounds.Height, presentedContent.DesiredSize.Height + padding.VerticalThickness);
 
 				this.ArrangeContent(bounds);
 			}

@@ -1,2 +1,0 @@
-﻿#nullable enable
-*REMOVED*override Microsoft.Maui.Handlers.WindowHandler.ConnectHandler(Microsoft.UI.Xaml.Window! platformView) -> void

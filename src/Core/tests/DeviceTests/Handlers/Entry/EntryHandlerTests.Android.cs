@@ -282,7 +282,7 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
-		int GetPlatformSelectionLength(EntryHandler entryHandler)
+		int GetNativeSelectionLength(EntryHandler entryHandler)
 		{
 			var editText = GetNativeEntry(entryHandler);
 

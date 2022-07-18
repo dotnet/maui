@@ -1,0 +1,5 @@
+﻿#nullable enable
+override Microsoft.Maui.Handlers.EditorHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Handlers.EntryHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
+override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size

@@ -4,7 +4,7 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	static class ExceptionUtils
 	{
-#if (NETSTANDARD || !PLATFORM) || NET6_0
+#if (NETSTANDARD || !PLATFORM) || NET6_0_OR_GREATER
 		internal static NotImplementedInReferenceAssemblyException NotSupportedOrImplementedException =>
 			new NotImplementedInReferenceAssemblyException();
 #else

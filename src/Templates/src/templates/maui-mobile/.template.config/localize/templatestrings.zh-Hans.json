@@ -3,5 +3,7 @@
   "name": ".NET MAUI应用",
   "description": "用于创建适用于 iOS、Android、Mac Catalyst、Tizen 和 WinUI 的 .NET MAUI 应用程序的项目",
   "postActions/openInEditor/description": "在编辑器中打开 MainPage.xaml。",
-  "symbols/applicationId/description": "替代项目中的 $(ApplicationId)"
+  "symbols/applicationId/description": "替代项目中的 $(ApplicationId)",
+  "symbols/Framework/description": "The target framework for the project.",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"
 }

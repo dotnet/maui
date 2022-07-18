@@ -1,6 +1,8 @@
 #nullable enable
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Platform
 {
@@ -24,51 +26,48 @@ namespace Microsoft.Maui.Platform
 			platformControl.Text = newText ?? string.Empty;
 
 			if (!string.IsNullOrEmpty(platformControl.Text))
-				platformControl.SelectionStart = platformControl.Text.Length;
+				platformControl.Select(platformControl.Text.Length, 0);
 		}
 
 		public static void UpdateBackground(this TextBox textBox, IView view)
 		{
 			var brush = view.Background?.ToPlatform();
+
 			if (brush is null)
-			{
-				textBox.Resources.Remove("TextControlBackground");
-				textBox.Resources.Remove("TextControlBackgroundPointerOver");
-				textBox.Resources.Remove("TextControlBackgroundFocused");
-				textBox.Resources.Remove("TextControlBackgroundDisabled");
-			}
+				textBox.Resources.RemoveKeys(BackgroundResourceKeys);
 			else
-			{
-				textBox.Resources["TextControlBackground"] = brush;
-				textBox.Resources["TextControlBackgroundPointerOver"] = brush;
-				textBox.Resources["TextControlBackgroundFocused"] = brush;
-				textBox.Resources["TextControlBackgroundDisabled"] = brush;
-			}
+				textBox.Resources.SetValueForAllKey(BackgroundResourceKeys, brush);
+
+			textBox.RefreshThemeResources();
 		}
+
+		static readonly string[] BackgroundResourceKeys =
+		{
+			"TextControlBackground",
+			"TextControlBackgroundPointerOver",
+			"TextControlBackgroundFocused",
+			"TextControlBackgroundDisabled",
+		};
 
 		public static void UpdateTextColor(this TextBox textBox, ITextStyle textStyle)
 		{
 			var brush = textStyle.TextColor?.ToPlatform();
 
 			if (brush is null)
-			{
-				textBox.Resources.Remove("TextControlForeground");
-				textBox.Resources.Remove("TextControlForegroundPointerOver");
-				textBox.Resources.Remove("TextControlForegroundFocused");
-				textBox.Resources.Remove("TextControlForegroundDisabled");
-
-				textBox.ClearValue(TextBox.ForegroundProperty);
-			}
+				textBox.Resources.RemoveKeys(TextColorResourceKeys);
 			else
-			{
-				textBox.Resources["TextControlForeground"] = brush;
-				textBox.Resources["TextControlForegroundPointerOver"] = brush;
-				textBox.Resources["TextControlForegroundFocused"] = brush;
-				textBox.Resources["TextControlForegroundDisabled"] = brush;
+				textBox.Resources.SetValueForAllKey(TextColorResourceKeys, brush);
 
-				textBox.Foreground = brush;
-			}
+			textBox.RefreshThemeResources();
 		}
+
+		static readonly string[] TextColorResourceKeys =
+		{
+			"TextControlForeground",
+			"TextControlForegroundPointerOver",
+			"TextControlForegroundFocused",
+			"TextControlForegroundDisabled",
+		};
 
 		public static void UpdateCharacterSpacing(this TextBox textBox, ITextStyle textStyle)
 		{
@@ -79,6 +78,9 @@ namespace Microsoft.Maui.Platform
 		{
 			textBox.UpdateInputScope(textInput);
 		}
+
+		internal static bool GetClearButtonVisibility(this TextBox textBox) =>
+			MauiTextBox.GetIsDeleteButtonEnabled(textBox);
 
 		public static void UpdateClearButtonVisibility(this TextBox textBox, IEntry entry) =>
 			MauiTextBox.SetIsDeleteButtonEnabled(textBox, entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing);
@@ -95,26 +97,28 @@ namespace Microsoft.Maui.Platform
 			if (brush is null)
 			{
 				// Windows.Foundation.UniversalApiContract < 5
-				textBox.Resources.Remove("TextControlPlaceholderForeground");
-				textBox.Resources.Remove("TextControlPlaceholderForegroundPointerOver");
-				textBox.Resources.Remove("TextControlPlaceholderForegroundFocused");
-				textBox.Resources.Remove("TextControlPlaceholderForegroundDisabled");
-
+				textBox.Resources.RemoveKeys(PlaceholderColorResourceKeys);
 				// Windows.Foundation.UniversalApiContract >= 5
 				textBox.ClearValue(TextBox.PlaceholderForegroundProperty);
 			}
 			else
 			{
 				// Windows.Foundation.UniversalApiContract < 5
-				textBox.Resources["TextControlPlaceholderForeground"] = brush;
-				textBox.Resources["TextControlPlaceholderForegroundPointerOver"] = brush;
-				textBox.Resources["TextControlPlaceholderForegroundFocused"] = brush;
-				textBox.Resources["TextControlPlaceholderForegroundDisabled"] = brush;
-
+				textBox.Resources.SetValueForAllKey(PlaceholderColorResourceKeys, brush);
 				// Windows.Foundation.UniversalApiContract >= 5
 				textBox.PlaceholderForeground = brush;
 			}
+
+			textBox.RefreshThemeResources();
 		}
+
+		static readonly string[] PlaceholderColorResourceKeys =
+		{
+			"TextControlPlaceholderForeground",
+			"TextControlPlaceholderForegroundPointerOver",
+			"TextControlPlaceholderForegroundFocused",
+			"TextControlPlaceholderForegroundDisabled",
+		};
 
 		public static void UpdateFont(this TextBox platformControl, IText text, IFontManager fontManager) =>
 			platformControl.UpdateFont(text.Font, fontManager);
@@ -167,12 +171,12 @@ namespace Microsoft.Maui.Platform
 				textBox.IsSpellCheckEnabled = textInput.IsTextPredictionEnabled;
 			}
 
-			var inputScope = new UI.Xaml.Input.InputScope();
+			var inputScope = new InputScope();
 
 			if (textInput is IEntry entry && entry.ReturnType == ReturnType.Search)
-				inputScope.Names.Add(new UI.Xaml.Input.InputScopeName(UI.Xaml.Input.InputScopeNameValue.Search));
+				inputScope.Names.Add(new InputScopeName(InputScopeNameValue.Search));
 
-			inputScope.Names.Add(textInput.Keyboard.ToInputScopeName());
+			inputScope.Names.Add(textInput.Keyboard?.ToInputScopeName() ?? new InputScopeName(InputScopeNameValue.Default));
 
 			textBox.InputScope = inputScope;
 		}
@@ -190,14 +194,27 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCursorPosition(this TextBox textBox, ITextInput entry)
 		{
+			// It seems that the TextBox does not limit the CursorPosition to the Text.Length natively
+			entry.CursorPosition = Math.Min(entry.CursorPosition, textBox.Text.Length);
+
 			if (textBox.SelectionStart != entry.CursorPosition)
 				textBox.SelectionStart = entry.CursorPosition;
 		}
 
 		public static void UpdateSelectionLength(this TextBox textBox, ITextInput entry)
 		{
+			// It seems that the TextBox does not limit the SelectionLength to the Text.Length natively
+			entry.SelectionLength = Math.Min(entry.SelectionLength, textBox.Text.Length - textBox.SelectionStart);
+
 			if (textBox.SelectionLength != entry.SelectionLength)
 				textBox.SelectionLength = entry.SelectionLength;
+		}
+
+		// TODO: NET7 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
+		internal static int GetCursorPosition(this TextBox textBox, int cursorOffset = 0)
+		{
+			var newCursorPosition = textBox.SelectionStart + cursorOffset;
+			return Math.Max(0, newCursorPosition);
 		}
 	}
 }

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Media;
 using System.IO;
-#if (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
+#if (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
 #endif
 #if IOS || MACCATALYST
