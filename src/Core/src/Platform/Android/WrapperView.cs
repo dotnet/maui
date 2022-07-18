@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Platform
 		bool _invalidateClip;
 
 		Bitmap _shadowBitmap;
+		SizeF _lastShadowSize;
 		Canvas _shadowCanvas;
 		Android.Graphics.Paint _shadowPaint;
 		bool _invalidateShadow;
@@ -83,10 +84,39 @@ namespace Microsoft.Maui.Platform
 
 		public override void RequestLayout()
 		{
-			// Redraw shadow (if exists)
-			_invalidateShadow = true;
+			// Redraw shadow (if exists and required)
+			_invalidateShadow = ShouldInvalidateShadow();
 
 			base.RequestLayout();
+		}
+
+		bool ShouldInvalidateShadow()
+		{
+			if (_shadowBitmap == null)
+				return true;
+
+			if (_viewBounds == null)
+				return false;
+	
+			var viewHeight = _viewBounds.Height();
+			var viewWidth = _viewBounds.Width();
+
+			if (GetChildAt(0) is AView child)
+			{
+				if (viewHeight == 0)
+					viewHeight = child.MeasuredHeight;
+
+				if (viewWidth == 0)
+					viewWidth = child.MeasuredWidth;
+			}
+
+			viewHeight += MaximumRadius;
+			viewWidth += MaximumRadius;
+
+			if (viewHeight == _lastShadowSize.Height && viewWidth == _lastShadowSize.Width)
+				return false;
+
+			return true;
 		}
 
 		protected override void DispatchDraw(Canvas canvas)
@@ -211,6 +241,8 @@ namespace Microsoft.Maui.Platform
 					_shadowBitmap = Bitmap.CreateBitmap(
 						bitmapWidth, bitmapHeight, Bitmap.Config.Argb8888
 					);
+
+					_lastShadowSize = new SizeF(bitmapWidth, bitmapHeight);
 
 					// Reset Canvas
 					_shadowCanvas.SetBitmap(_shadowBitmap);
