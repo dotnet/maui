@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		Window _window;
 
-		public ApplicationStub()
+		public ApplicationStub() : base(false)
 		{
 		}
 
