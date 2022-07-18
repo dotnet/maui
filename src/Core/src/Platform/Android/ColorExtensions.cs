@@ -9,8 +9,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ColorExtensions
 	{
-		public static AColor ToPlatform(this Color self) 
-			=> self != null ? self.AsColor() : AColor.Transparent;
+		public static AColor ToPlatform(this Color self) => self.AsColor();
 
 		public static AColor ToPlatform(this Color self, int defaultColorResourceId, Context context)
 			=> self?.ToPlatform() ?? new AColor(ContextCompat.GetColor(context, defaultColorResourceId));

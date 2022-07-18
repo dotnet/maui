@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Platform
 
 		public static CGColor ToCGColor(this Color color)
 		{
-			return color != null ? color.ToPlatform().CGColor : UIColor.Clear.CGColor;
+			return color.ToPlatform().CGColor;
 		}
 
 		public static UIColor FromPatternImageFromBundle(string bgImage)
