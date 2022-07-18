@@ -34,16 +34,18 @@ namespace Microsoft.Maui.Platform
 
 		internal static ColorStateList GetColorStateList(this AppCompatCheckBox platformCheckBox, ICheckBox check)
 		{
-			Graphics.Color accent = platformCheckBox.Context?.GetAccentColor() ?? Graphics.Color.FromArgb("#ff33b5e5");
-
-			var tintColor = accent.ToPlatform();
+			AColor tintColor;
 
 			// For the moment, we're only supporting solid color Paint for the Android Checkbox
 			if (check.Foreground is SolidPaint solid)
 			{
 				var color = solid.Color;
-
 				tintColor = color.ToPlatform();
+			}
+			else
+			{
+				Graphics.Color accent = platformCheckBox.Context?.GetAccentColor() ?? Graphics.Color.FromArgb("#ff33b5e5");
+				tintColor = accent.ToPlatform();
 			}
 
 			return ColorStateListExtensions.CreateCheckBox(tintColor);
