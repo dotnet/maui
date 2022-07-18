@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 		{
 			platformCheckBox.Checked = check.IsChecked;
 		}
-	
+
 		public static void UpdateForeground(this AppCompatCheckBox platformCheckBox, ICheckBox check)
 		{
 			var mode = PorterDuff.Mode.SrcIn;
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Platform
 				tintColor = color.ToPlatform();
 			}
 
-			return ColorStateListExtensions.CreateSwitch(tintColor, tintColor, tintColor);
+			return ColorStateListExtensions.CreateCheckBox(tintColor);
 		}
 	}
 }
