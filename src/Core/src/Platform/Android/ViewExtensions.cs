@@ -170,8 +170,27 @@ namespace Microsoft.Maui.Platform
 			platformView.UpdateBackground(view.Background);
 
 		// TODO: NET7 make this public for net7.0
-		internal static void UpdateBackground(this AView platformView, IView view, bool keepPreviousDrawable) =>
-			platformView.UpdateBackground(view.Background, keepPreviousDrawable);
+		internal static void UpdateBackground(this EditText platformView, IView view)
+		{
+			var paint = view.Background;
+
+			if (paint.IsNullOrEmpty())
+			{
+				return;
+			}
+
+			// Remove previous background gradient if any
+			if (platformView.Background is MauiDrawable mauiDrawable)
+			{
+				platformView.Background = null;
+				mauiDrawable.Dispose();
+			}
+
+			var previousDrawable = platformView.Background;
+			var backgroundDrawable = paint!.ToDrawable(platformView.Context);
+			LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable! });
+			platformView.Background = layer;
+		}
 
 		public static void UpdateBackground(this AView platformView, Paint? background)
 		{
@@ -190,39 +209,6 @@ namespace Microsoft.Maui.Platform
 				{
 					if (solidPaint.Color is Color backgroundColor)
 						platformView.SetBackgroundColor(backgroundColor.ToPlatform());
-				}
-				else
-				{
-					if (paint!.ToDrawable(platformView.Context) is Drawable drawable)
-						platformView.Background = drawable;
-				}
-			}
-			else if (platformView is LayoutViewGroup)
-			{
-				platformView.Background = null;
-			}
-		}
-
-		// TODO: NET7 make this public for net7.0
-		internal static void UpdateBackground(this AView platformView, Paint? background, bool keepPreviousDrawable)
-		{
-			var paint = background;
-
-			if (!paint.IsNullOrEmpty())
-			{
-				// Remove previous background gradient if any
-				if (platformView.Background is MauiDrawable mauiDrawable)
-				{
-					platformView.Background = null;
-					mauiDrawable.Dispose();
-				}
-
-				if (keepPreviousDrawable)
-				{
-					var previousDrawable = platformView.Background;
-					var backgroundDrawable = paint!.ToDrawable(platformView.Context);
-					LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable! });
-					platformView.Background = layer;
 				}
 				else
 				{

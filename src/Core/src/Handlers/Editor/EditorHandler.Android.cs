@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
 using static Android.Views.View;
@@ -59,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapBackground(IEditorHandler handler, IEditor editor) =>		
-			handler.PlatformView?.UpdateBackground(editor, keepPreviousDrawable: true);
+			handler.PlatformView?.UpdateBackground(editor);
 
 		public static void MapText(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateText(editor);
