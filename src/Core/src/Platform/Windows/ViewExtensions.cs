@@ -272,9 +272,7 @@ namespace Microsoft.Maui.Platform
 		internal static Matrix4x4 GetViewTransform(this FrameworkElement element)
 		{
 			var root = element?.XamlRoot;
-			if (root == null)
-				return new Matrix4x4();
-			var offset = element?.TransformToVisual(root.Content) as MatrixTransform;
+			var offset = element?.TransformToVisual(root?.Content ?? element) as MatrixTransform;
 			if (offset == null)
 				return new Matrix4x4();
 			Matrix matrix = offset.Matrix;

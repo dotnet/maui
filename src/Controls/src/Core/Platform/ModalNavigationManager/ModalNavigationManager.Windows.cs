@@ -1,24 +1,15 @@
 ﻿#nullable enable
-
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using WRect = Windows.Foundation.Rect;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
-		ContentPanel? _contentPanel;
-		ContentPanel ContentPanel => _contentPanel ??= new ContentPanel()
-		{
-			CrossPlatformArrange = ArrangeContentPanel,
-			CrossPlatformMeasure = MeasureContentPanel
-		};
-
-		bool UsingContentPanel => _window.NativeWindow.Content == _contentPanel;
+		WindowRootViewContainer Container =>
+			_window.NativeWindow.Content as WindowRootViewContainer ??
+			throw new InvalidOperationException("Root container Panel not found");
 
 		public Task<Page> PopModalAsync(bool animated)
 		{
@@ -31,8 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public Task PushModalAsync(Page modal, bool animated)
 		{
-			if (modal == null)
-				throw new ArgumentNullException(nameof(modal));
+			_ = modal ?? throw new ArgumentNullException(nameof(modal));
 
 			var tcs = new TaskCompletionSource<bool>();
 			var currentPage = _navModel.CurrentPage;
@@ -49,10 +39,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var mauiContext = page.FindMauiContext() ??
 				throw new InvalidOperationException("Maui Context removed from outgoing page too early");
 
-			if (UsingContentPanel)
-			{
-				ContentPanel.Children.Remove(mauiContext.GetNavigationRootManager().RootView);
-			}
+			var windowManager = mauiContext.GetNavigationRootManager();
+			Container.RemovePage(windowManager.RootView);
 		}
 
 		void SetCurrent(Page newPage, Page previousPage, bool popping, Action? completedCallback = null)
@@ -67,15 +55,6 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					RemovePage(previousPage);
 				}
-				else if (_window.NativeWindow.Content != ContentPanel)
-				{
-					var rootContent = _window.NativeWindow.Content;
-					_window.NativeWindow.Content = ContentPanel;
-
-					if (!ContentPanel.Children.Contains(rootContent))
-						ContentPanel.Children.Add(rootContent);
-				}
-
 
 				if (popping)
 				{
@@ -85,12 +64,13 @@ namespace Microsoft.Maui.Controls.Platform
 						?.Disconnect();
 
 					previousPage.Handler = null;
-					// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the 
-					// page will leak 
+
+					// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the
+					// page will leak
 					previousPage.Parent = null;
 				}
 
-				if (newPage == null)
+				if (Container == null || newPage == null)
 					return;
 
 				// pushing modal
@@ -105,14 +85,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					var windowManager = modalContext.GetNavigationRootManager();
 					windowManager.Connect(newPage.ToPlatform(modalContext));
-
-					if (UsingContentPanel)
-					{
-						if (!ContentPanel.Children.Contains(windowManager.RootView))
-							ContentPanel.Children.Add(windowManager.RootView);
-					}
-					else
-						_window.NativeWindow.Content = windowManager.RootView;
+					Container.AddPage(windowManager.RootView);
 
 					previousPage
 						.FindMauiContext()
@@ -125,64 +98,22 @@ namespace Microsoft.Maui.Controls.Platform
 					var windowManager = newPage.FindMauiContext()?.GetNavigationRootManager() ??
 						throw new InvalidOperationException("Previous Page Has Lost its MauiContext");
 
-					if (UsingContentPanel)
-					{
-						// This means we no longer need to place the modal ontop of the content under it
-						// so just remove the panel and set the window content
-						if (_navModel.Modals.Count == 0)
-						{
-							if (ContentPanel.Children.Contains(windowManager.RootView))
-								ContentPanel.Children.Remove(windowManager.RootView);
-
-							_window.NativeWindow.Content = windowManager.RootView;
-						}
-						else if (!ContentPanel.Children.Contains(windowManager.RootView))
-							ContentPanel.Children.Add(windowManager.RootView);
-					}
-					else
-					{
-						_window.NativeWindow.Content = windowManager.RootView;
-					}
+					Container.AddPage(windowManager.RootView);
 
 					windowManager.UpdateAppTitleBar(true);
 				}
 
 				completedCallback?.Invoke();
 			}
-			catch (Exception error)
+			catch (Exception error) when (error.HResult == -2147417842)
 			{
-				//This exception prevents the Main Page from being changed in a child 
-				//window or a different thread, except on the Main thread. 
+				//This exception prevents the Main Page from being changed in a child
+				//window or a different thread, except on the Main thread.
 				//HEX 0x8001010E 
-				if (error.HResult == -2147417842)
-					throw new InvalidOperationException("Changing the current page is only allowed if it's being called from the same UI thread." +
-						"Please ensure that the new page is in the same UI thread as the current page.");
-				throw;
+				throw new InvalidOperationException(
+					"Changing the current page is only allowed if it's being called from the same UI thread." +
+					"Please ensure that the new page is in the same UI thread as the current page.", error);
 			}
-		}
-
-		Size MeasureContentPanel(double width, double height)
-		{
-			var size = new Size(width, height);
-			var platformSize = size.ToPlatform();
-
-			for (int i = 0; i < ContentPanel.Children.Count; i++)
-			{
-				ContentPanel.Children[i].Measure(platformSize);
-			}
-
-			return size;
-		}
-
-		Size ArrangeContentPanel(Rect arg)
-		{
-			var platformRect = new WRect(arg.Location.ToPlatform(), arg.Size.ToPlatform());
-			for (int i = 0; i < ContentPanel.Children.Count; i++)
-			{
-				ContentPanel.Children[i].Arrange(platformRect);
-			}
-
-			return arg.Size;
 		}
 	}
 }

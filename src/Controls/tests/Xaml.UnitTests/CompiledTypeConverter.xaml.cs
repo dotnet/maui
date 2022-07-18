@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		public Rect RectangleP { get; set; }
 
+		public Point PointP { get; set; }
+
 		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> List { get; set; }
 
@@ -38,6 +40,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var p = new CompiledTypeConverter(useCompiledXaml);
 				Assert.AreEqual(new Rect(0, 1, 2, 4), p.RectangleP);
 				Assert.AreEqual(new Rect(4, 8, 16, 32), p.RectangleBP);
+				Assert.AreEqual(new Point(1, 2), p.PointP);
 				Assert.AreEqual(Colors.Pink, p.BackgroundColor);
 				Assert.AreEqual(LayoutOptions.EndAndExpand, p.label.GetValue(View.HorizontalOptionsProperty));
 				var xConstraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetXConstraint(p.label);

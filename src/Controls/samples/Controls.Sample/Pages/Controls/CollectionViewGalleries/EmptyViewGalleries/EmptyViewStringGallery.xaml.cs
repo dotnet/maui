@@ -16,6 +16,17 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 
 			CollectionView.ItemsSource = _demoFilteredItemSource.Items;
 
+			SearchBar.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == nameof(SearchBar.Text))
+				{
+					if (string.IsNullOrEmpty(SearchBar.Text))
+					{
+						_demoFilteredItemSource.FilterItems(SearchBar.Text);
+					}
+				}
+			};
+
 			SearchBar.SearchCommand = new Command(() => _demoFilteredItemSource.FilterItems(SearchBar.Text));
 		}
 	}

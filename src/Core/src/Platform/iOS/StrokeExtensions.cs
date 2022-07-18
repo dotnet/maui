@@ -144,6 +144,9 @@ namespace Microsoft.Maui.Platform
 
 				mauiCALayer.SetBorderShape(border?.Shape);
 			}
+
+			if (platformView is ContentView contentView)
+				contentView.Clip = border;
 		}
 
 		internal static void UpdateMauiCALayer(this UIView view)

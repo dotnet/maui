@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
 		UITextField? _editor;
-	
+
 		public UITextField? QueryEditor => _editor;
 
 		protected override MauiSearchBar CreatePlatformView()

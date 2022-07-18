@@ -1,5 +1,4 @@
-﻿#if !IOS
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -50,6 +49,121 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Appearing Fires Before NavigatedTo")]
+		public async Task AppearingFiresBeforeNavigatedTo()
+		{
+			SetupBuilder();
+			var contentPage = new ContentPage();
+			int contentPageAppearingFired = 0;
+			int navigatedToFired = 0;
+			int shellNavigatedToFired = 0;
+
+			contentPage.Appearing += (_, _) =>
+			{
+				contentPageAppearingFired++;
+				Assert.Equal(0, navigatedToFired);
+				Assert.Equal(0, shellNavigatedToFired);
+			};
+
+			contentPage.NavigatedTo += (_, _) =>
+			{
+				navigatedToFired++;
+				Assert.Equal(1, contentPageAppearingFired);
+			};
+
+			Shell shell = await CreateShellAsync(shell =>
+			{
+				shell.Navigated += (_, _) =>
+				{
+					Assert.Equal(1, contentPageAppearingFired);
+					shellNavigatedToFired++;
+
+				};
+
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							ContentTemplate = new DataTemplate(() => contentPage)
+						}
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(contentPage);
+				Assert.Equal(1, contentPageAppearingFired);
+				Assert.Equal(1, shellNavigatedToFired);
+				Assert.Equal(1, navigatedToFired);
+			});
+		}
+
+		[Fact(DisplayName = "Navigating During Navigated Doesnt ReFire Appearing")]
+		public async Task NavigatingDuringNavigatedDoesntReFireAppearing()
+		{
+			SetupBuilder();
+			var contentPage = new ContentPage();
+			var secondContentPage = new ContentPage();
+			int contentPageAppearingFired = 0;
+			int navigatedToFired = 0;
+
+			int secondContentPageAppearingFired = 0;
+			int secondNavigatedToFired = 0;
+
+			TaskCompletionSource<object> finishedSecondNavigation = new TaskCompletionSource<object>();
+			contentPage.Appearing += (_, _) =>
+			{
+				contentPageAppearingFired++;
+			};
+
+			secondContentPage.Appearing += (_, _) =>
+			{
+				secondContentPageAppearingFired++;
+				Assert.Equal(0, secondNavigatedToFired);
+			};
+
+			secondContentPage.NavigatedTo += (_, _) =>
+			{
+				secondNavigatedToFired++;
+			};
+
+			Shell shell = null;
+			contentPage.NavigatedTo += async (_, _) =>
+			{
+				navigatedToFired++;
+				await shell.Navigation.PushAsync(secondContentPage);
+				finishedSecondNavigation.SetResult(true);
+			};
+
+			shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							ContentTemplate = new DataTemplate(() => contentPage)
+						}
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await finishedSecondNavigation.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+				Assert.Equal(1, contentPageAppearingFired);
+				Assert.Equal(1, navigatedToFired);
+				Assert.Equal(1, secondContentPageAppearingFired);
+				Assert.Equal(1, secondNavigatedToFired);
+			});
+		}
+
+#if !IOS
 		[Fact(DisplayName = "Swap Shell Root Page for NavigationPage")]
 		public async Task SwapShellRootPageForNavigationPage()
 		{
@@ -68,6 +182,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(newPage.Frame.Height > 0);
 			});
 		}
+#endif
 
 		[Fact(DisplayName = "FlyoutContent Renderers When FlyoutBehavior Starts As Locked")]
 		public async Task FlyoutContentRenderersWhenFlyoutBehaviorStartsAsLocked()
@@ -191,8 +306,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
-
+#if !IOS
 		[Fact(DisplayName = "Correctly Adjust to Making Currently Visible Shell Page Invisible")]
 		public async Task CorrectlyAdjustToMakingCurrentlyVisibleShellPageInvisible()
 		{
@@ -229,6 +343,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(shell.CurrentPage, page2);
 			});
 		}
+#endif
 
 		[Fact(DisplayName = "Empty Shell")]
 		public async Task DetailsViewUpdates()
@@ -428,4 +543,3 @@ namespace Microsoft.Maui.DeviceTests
 			});
 	}
 }
-#endif

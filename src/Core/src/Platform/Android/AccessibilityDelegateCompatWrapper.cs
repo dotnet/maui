@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 			_originalDelegate = originalDelegate ?? BlankDelegate;
 		}
 
-		public override void OnInitializeAccessibilityNodeInfo(PlatformView? host, AccessibilityNodeInfoCompat? info)
+		public override void OnInitializeAccessibilityNodeInfo(PlatformView host, AccessibilityNodeInfoCompat info)
 		{
 			_originalDelegate.OnInitializeAccessibilityNodeInfo(host, info);
 		}
@@ -66,12 +66,12 @@ namespace Microsoft.Maui.Platform
 			return _originalDelegate.OnRequestSendAccessibilityEvent(host, child, e);
 		}
 
-		public override bool PerformAccessibilityAction(PlatformView host, int action, Bundle args)
+		public override bool PerformAccessibilityAction(PlatformView host, int action, Bundle? args)
 		{
 			return _originalDelegate.PerformAccessibilityAction(host, action, args);
 		}
 
-		public override AccessibilityNodeProviderCompat GetAccessibilityNodeProvider(PlatformView host)
+		public override AccessibilityNodeProviderCompat? GetAccessibilityNodeProvider(PlatformView host)
 		{
 			return _originalDelegate.GetAccessibilityNodeProvider(host);
 		}
