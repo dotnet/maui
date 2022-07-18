@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -19,17 +20,23 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Handlers Deallocate When No Longer Referenced")]
 		public async Task HandlersDeallocateWhenNoLongerReferenced()
 		{
-			// Once this includes all handlers we can't delete this
-			if (!typeof(TStub).IsAssignableTo(typeof(IEditor)))
+			// Once this includes all handlers we can delete this
+			Type[] testedTypes = new[]
+			{
+				typeof(EditorHandler),
+#if IOS
+				typeof(DatePickerHandler)
+#endif
+			};
+
+			if (!testedTypes.Any(t => t.IsAssignableTo(typeof(THandler))))
 				return;
 
-			var stub = new TStub();
-			WeakReference<TStub> weakView = new WeakReference<TStub>(stub);
+			var handler = await CreateHandlerAsync(new TStub()) as IPlatformViewHandler;
 
-			var handler = await CreateHandlerAsync(stub) as IPlatformViewHandler;
 			WeakReference<THandler> weakHandler = new WeakReference<THandler>((THandler)handler);
+			WeakReference<TStub> weakView = new WeakReference<TStub>((TStub)handler.VirtualView);
 
-			stub = null;
 			handler = null;
 
 			await AssertionExtensions.Wait(() =>
@@ -47,7 +54,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				return true;
 
-			}, 1000);
+			}, 1500);
 
 			if (weakHandler.TryGetTarget(out THandler _))
 				Assert.True(false, $"{typeof(THandler)} failed to collect");
@@ -56,6 +63,16 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(false, $"{typeof(TStub)} failed to collect");
 		}
 #endif
+
+		[Fact]
+		public async Task DisconnectHandlerDoesntCrash()
+		{
+			var handler = await CreateHandlerAsync(new TStub()) as IPlatformViewHandler;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				handler.DisconnectHandler();
+			});
+		}
 
 		[Fact(DisplayName = "Automation Id is set correctly")]
 		public async Task SetAutomationId()

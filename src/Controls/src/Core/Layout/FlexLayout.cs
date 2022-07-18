@@ -460,10 +460,9 @@ namespace Microsoft.Maui.Controls
 			item.Height = height < 0 ? float.NaN : (float)height;
 			item.IsVisible = GetIsVisible(view);
 
-			// TODO ezhart The Core layout interfaces don't have the padding property yet; when that's available, we should add a check for it here
-			if (view is FlexLayout && view is Controls.Layout layout)
+			if (view is IPadding viewWithPadding)
 			{
-				var (pleft, ptop, pright, pbottom) = (Thickness)layout.GetValue(Compatibility.Layout.PaddingProperty);
+				var (pleft, ptop, pright, pbottom) = viewWithPadding.Padding;
 				item.PaddingLeft = (float)pleft;
 				item.PaddingTop = (float)ptop;
 				item.PaddingRight = (float)pright;
@@ -558,6 +557,17 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
+		void EnsureFlexItemPropertiesUpdated() 
+		{
+			for (int n = 0; n < this.Count; n++)
+			{
+				var child = this[n];
+				var flexItem = GetFlexItem(child);
+
+				InitItemProperties(child, flexItem);
+			}
+		}
+
 		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='Layout']/Docs" />
 		public void Layout(double width, double height)
 		{
@@ -569,6 +579,8 @@ namespace Microsoft.Maui.Controls
 			{
 				PrepareMeasureHack();
 			}
+
+			EnsureFlexItemPropertiesUpdated();
 
 			_root.Width = !double.IsPositiveInfinity((width)) ? (float)width : 0;
 			_root.Height = !double.IsPositiveInfinity((height)) ? (float)height : 0;
