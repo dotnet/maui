@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 		}
 
 		public double GetFontSize(Font font, double defaultFontSize = 0) =>
-			font.Size <= 0
+			font.Size <= 0 || double.IsNaN(font.Size)
 				? (defaultFontSize > 0 ? defaultFontSize : DefaultFontSize)
 				: font.Size;
 

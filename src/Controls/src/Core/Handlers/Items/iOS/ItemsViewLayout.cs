@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			Initialize(scrollDirection);
 
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 			{
 				// `ContentInset` is actually the default value, but I'm leaving this here as a note to
 				// future maintainers; it's likely that someone will want a Platform Specific to change this behavior
@@ -172,6 +172,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool ShouldInvalidateLayout(UICollectionViewLayoutAttributes preferredAttributes, UICollectionViewLayoutAttributes originalAttributes)
 		{
+			// This is currently causing an infinite layout loop on iOS 15 https://github.com/dotnet/maui/issues/6566
+			if (preferredAttributes.RepresentedElementKind == "UICollectionElementKindSectionHeader" && OperatingSystem.IsIOSVersionAtLeast(15))
+				return base.ShouldInvalidateLayout(preferredAttributes, originalAttributes);
+
 			if (ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems)
 			{
 				if (preferredAttributes.Bounds != originalAttributes.Bounds)
@@ -372,7 +376,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (preferredAttributes.RepresentedElementKind != UICollectionElementKindSectionKey.Header
 				&& preferredAttributes.RepresentedElementKind != UICollectionElementKindSectionKey.Footer)
 			{
-				if (PlatformVersion.IsAtLeast(12))
+				if (OperatingSystem.IsIOSVersionAtLeast(12) || OperatingSystem.IsTvOSVersionAtLeast(12))
 				{
 					return base.GetInvalidationContext(preferredAttributes, originalAttributes);
 				}
@@ -559,7 +563,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
 			}
 
-			if (PlatformVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 			{
 				UpdateConstraints(CollectionView.AdjustedContentInset.InsetRect(newBounds).Size);
 			}

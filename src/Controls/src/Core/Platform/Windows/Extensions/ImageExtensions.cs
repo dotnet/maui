@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal static class ImageExtensions
+	internal static partial class ImageExtensions
 	{
 		public static Graphics.Size GetImageSourceSize(this WImageSource source)
 		{

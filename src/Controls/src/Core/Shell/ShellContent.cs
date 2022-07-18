@@ -156,12 +156,6 @@ namespace Microsoft.Maui.Controls
 			base.OnChildAdded(child);
 			if (child is Page page)
 			{
-				if (IsVisibleContent && page.IsVisible)
-				{
-					SendAppearing();
-					SendPageAppearing(page);
-				}
-
 				page.PropertyChanged += OnPagePropertyChanged;
 				_isPageVisibleChanged?.Invoke(this, EventArgs.Empty);
 			}
@@ -209,6 +203,11 @@ namespace Microsoft.Maui.Controls
 
 		public static implicit operator ShellContent(TemplatedPage page)
 		{
+			if (page.Parent != null)
+			{
+				return (ShellContent)page.Parent;
+			}
+
 			var shellContent = new ShellContent();
 
 			var pageRoute = Routing.GetRoute(page);

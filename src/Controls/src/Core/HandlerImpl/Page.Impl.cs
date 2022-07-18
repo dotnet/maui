@@ -7,6 +7,23 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.Page']/Docs" />
 	public partial class Page : IView, ITitledElement, IToolbarElement
 	{
+		internal bool HasNavigatedTo { get; private set; }
+
+		Paint IView.Background
+		{
+			get
+			{
+				if (!Brush.IsNullOrEmpty(Background))
+					return Background;
+				if (!ImageSource.IsNullOrEmpty(BackgroundImageSource))
+					return new ImageSourcePaint(BackgroundImageSource);
+				if (BackgroundColor.IsNotDefault())
+					return new SolidColorBrush(BackgroundColor);
+
+				return null;
+			}
+		}
+
 		Toolbar _toolbar;
 		IToolbar IToolbarElement.Toolbar
 		{
@@ -25,6 +42,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void SendNavigatedTo(NavigatedToEventArgs args)
 		{
+			HasNavigatedTo = true;
 			NavigatedTo?.Invoke(this, args);
 			OnNavigatedTo(args);
 		}
@@ -37,6 +55,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void SendNavigatedFrom(NavigatedFromEventArgs args)
 		{
+			HasNavigatedTo = false;
 			NavigatedFrom?.Invoke(this, args);
 			OnNavigatedFrom(args);
 		}

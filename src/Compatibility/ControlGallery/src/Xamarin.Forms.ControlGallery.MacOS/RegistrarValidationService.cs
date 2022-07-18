@@ -17,7 +17,7 @@ namespace Xamarin.Forms.ControlGallery.MacOS
 
 			var renderer = Platform.MacOS.Platform.CreateRenderer(element);
 
-			if (renderer == null 
+			if (renderer == null
 				|| renderer.GetType().Name == "DefaultRenderer"
 				)
 			{

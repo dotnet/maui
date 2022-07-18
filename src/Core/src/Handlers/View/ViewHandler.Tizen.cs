@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			get
 			{
-				if(VirtualView is IBorderView border)
+				if (VirtualView is IBorderView border)
 					return border?.Shape != null || border?.Stroke != null;
 
 				return false;

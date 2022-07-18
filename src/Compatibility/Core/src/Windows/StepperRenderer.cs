@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				UpdateMaximum();
 				UpdateMinimum();
 				UpdateValue();
-				UpdateIncrement(); 
+				UpdateIncrement();
 				UpdateFlowDirection();
 			}
 		}

@@ -109,6 +109,18 @@
 					x:Name="EvalResultLabel"
                     Text="..."
                     Style="{StaticResource Headline}"/>
+                <StackLayout
+                    IsVisible="{OnPlatform Android=True, Default=False}">
+                    <Label
+                        Text="Platform Specifics"
+                        Style="{StaticResource Headline}"/>
+                    <Button
+                        Text="Allow MixedContentMode"
+                        Clicked="OnAllowMixedContentClicked"/>
+                    <Button
+                        Text="Enable Zoom Controls"
+                        Clicked="OnEnableZoomControlsClicked"/>
+                </StackLayout>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

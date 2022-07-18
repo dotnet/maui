@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -6,6 +7,16 @@ namespace Microsoft.Maui.Controls
 	public partial class Button : IButton, ITextButton, IImageButton
 	{
 		bool _wasImageLoading;
+
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == BorderColorProperty.PropertyName)
+				Handler?.UpdateValue(nameof(IButtonStroke.StrokeColor));
+			else if (propertyName == BorderWidthProperty.PropertyName)
+				Handler?.UpdateValue(nameof(IButtonStroke.StrokeThickness));
+		}
 
 		void IButton.Clicked()
 		{

@@ -38,14 +38,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			formsStyle.Setters.Add(Label.FontSizeProperty, prototype.FontSize);
 			formsStyle.Setters.Add(Label.FontFamilyProperty, prototype.FontFamily.Source);
-			formsStyle.Setters.Add(Label.FontAttributesProperty, ToAttributes(prototype.FontWeight));			
+			formsStyle.Setters.Add(Label.FontAttributesProperty, ToAttributes(prototype.FontWeight));
 
 			return formsStyle;
 		}
 
 		static FontAttributes ToAttributes(FWeight fontWeight)
 		{
-			if (fontWeight.Weight == FontWeights.Bold.Weight || fontWeight.Weight == FontWeights.SemiBold.Weight 
+			if (fontWeight.Weight == FontWeights.Bold.Weight || fontWeight.Weight == FontWeights.SemiBold.Weight
 				|| fontWeight.Weight == FontWeights.ExtraBold.Weight)
 			{
 				return FontAttributes.Bold;

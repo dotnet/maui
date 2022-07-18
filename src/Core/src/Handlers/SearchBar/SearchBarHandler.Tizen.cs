@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override SearchBar CreatePlatformView()
 		{
-			var searchBar = new SearchBar(NativeParent)
+			var searchBar = new SearchBar(PlatformParent)
 			{
 				IsSingleLine = true
 			};
@@ -39,6 +39,12 @@ namespace Microsoft.Maui.Handlers
 			platformView.TextChanged -= OnTextChanged;
 			platformView.EntryLayoutFocused -= OnFocused;
 			platformView.EntryLayoutUnfocused -= OnUnfocused;
+		}
+
+		// TODO: NET7 make this public
+		internal static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateBackground(searchBar);
 		}
 
 		public static void MapText(ISearchBarHandler handler, ISearchBar searchBar)

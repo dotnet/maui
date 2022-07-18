@@ -53,7 +53,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (brush is SolidColorBrush solidColorBrush)
 			{
 				var backgroundColor = solidColorBrush.Color;
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 				paint.Color = backgroundColor.ToPlatform();
+#pragma warning restore CA1416
 			}
 
 			if (brush is LinearGradientBrush linearGradientBrush)

@@ -128,6 +128,7 @@ namespace Microsoft.Maui.Controls
 
 		void HandleFontChanged()
 		{
+			Handler?.UpdateValue(nameof(ITextStyle.Font));
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 

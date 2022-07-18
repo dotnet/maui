@@ -45,6 +45,8 @@ namespace Microsoft.Maui.Platform
 
 		internal void Connect(IView view, IMauiContext? mauiContext = null)
 		{
+			ClearPlatformParts();
+
 			mauiContext = mauiContext ?? _mauiContext;
 			var containerView = view.ToContainerView(mauiContext);
 			var navigationLayout = containerView.FindViewById(Resource.Id.navigation_layout);
@@ -97,7 +99,15 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
+			ClearPlatformParts();
 			SetContentView(null);
+		}
+
+		void ClearPlatformParts()
+		{
+			DrawerLayout = null;
+			_rootView = null;
+			_toolbarElement = null;
 		}
 
 		void SetContentView(AView? view)

@@ -301,6 +301,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				ScrollView.SendScrollFinished();
 		}
 
+		[PortHandler]
 		void UpdateDelaysContentTouches()
 		{
 			DelaysContentTouches = ((ScrollView)Element).OnThisPlatform().ShouldDelayContentTouches();
@@ -308,7 +309,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackgroundColor()
 		{
-			BackgroundColor = Element.BackgroundColor.ToUIColor(Colors.Transparent);
+			BackgroundColor = Element.BackgroundColor.ToPlatform(Colors.Transparent);
 		}
 
 		void UpdateBackground()

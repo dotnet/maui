@@ -126,28 +126,32 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
-		protected void UpdateAutoSizeOption()
-		{
-			if (AutoSize == EditorAutoSizeOption.TextChanges && this.IsShimmed())
-			{
-				InvalidateMeasure();
-			}
-		}
-
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
-			UpdateAutoSizeOption();
+			HandleFontChanged();
 
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
-			UpdateAutoSizeOption();
+			HandleFontChanged();
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			this.GetDefaultFontSize();
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
-			UpdateAutoSizeOption();
+			HandleFontChanged();
 
 		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) =>
+			HandleFontChanged();
+
+		void HandleFontChanged()
+		{
+			Handler?.UpdateValue(nameof(ITextStyle.Font));
 			UpdateAutoSizeOption();
+		}
+
+		void UpdateAutoSizeOption()
+		{
+			if (AutoSize == EditorAutoSizeOption.TextChanges && this.IsShimmed())
+				InvalidateMeasure();
+		}
 
 		public event EventHandler Completed;
 

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override MauiRadioButton CreatePlatformView()
 		{
-			return new MauiRadioButton(NativeParent)
+			return new MauiRadioButton(PlatformParent)
 			{
 				StateValue = 1
 			};

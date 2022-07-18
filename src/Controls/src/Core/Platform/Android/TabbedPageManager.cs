@@ -70,6 +70,8 @@ namespace Microsoft.Maui.Controls.Handlers
 				OverScrollMode = OverScrollMode.Never,
 				LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 			};
+
+			_viewPager.RegisterOnPageChangeCallback(_listeners);
 		}
 
 		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = _context.GetFragmentManager());
@@ -388,8 +390,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		internal void UpdateSwipePaging()
 		{
-			// TODO MAUI
-			//_viewPager.EnableGesture = Element.OnThisPlatform().IsSwipePagingEnabled();
+			_viewPager.UserInputEnabled = Element.OnThisPlatform().IsSwipePagingEnabled();
 		}
 
 		List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList()
@@ -743,10 +744,13 @@ namespace Microsoft.Maui.Controls.Handlers
 			states[1] = GetEmptyStateSet();
 			colors[1] = defaultColor;
 
+#pragma warning disable RS0030
+			//TODO: port this usage to Java, if this becomes a performance concern
 			return new ColorStateList(states, colors);
+#pragma warning restore RS0030
 		}
 
-		class Listeners : Java.Lang.Object,
+		class Listeners : ViewPager2.OnPageChangeCallback,
 #pragma warning disable CS0618 // Type or member is obsolete
 			TabLayout.IOnTabSelectedListener,
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -759,6 +763,28 @@ namespace Microsoft.Maui.Controls.Handlers
 			public Listeners(TabbedPageManager tabbedPageManager)
 			{
 				_tabbedPageManager = tabbedPageManager;
+			}
+
+			public override void OnPageSelected(int position)
+			{
+				base.OnPageSelected(position);
+
+				var _previousPage = _tabbedPageManager._previousPage;
+				var Element = _tabbedPageManager.Element;
+				var IsBottomTabPlacement = _tabbedPageManager.IsBottomTabPlacement;
+				var _bottomNavigationView = _tabbedPageManager._bottomNavigationView;
+
+				if (_previousPage != Element.CurrentPage)
+				{
+					_previousPage?.SendDisappearing();
+					_previousPage = Element.CurrentPage;
+					_tabbedPageManager._previousPage = Element.CurrentPage;
+				}
+				Element.CurrentPage = Element.Children[position];
+				Element.CurrentPage.SendAppearing();
+
+				if (IsBottomTabPlacement)
+					_bottomNavigationView.SelectedItemId = position;
 			}
 
 			void TabLayoutMediator.ITabConfigurationStrategy.OnConfigureTab(TabLayout.Tab p0, int p1)
@@ -817,25 +843,8 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 			}
 
-			void ViewPager.IOnPageChangeListener.OnPageSelected(int position)
-			{
-				var _previousPage = _tabbedPageManager._previousPage;
-				var Element = _tabbedPageManager.Element;
-				var IsBottomTabPlacement = _tabbedPageManager.IsBottomTabPlacement;
-				var _bottomNavigationView = _tabbedPageManager._bottomNavigationView;
-
-				if (_previousPage != Element.CurrentPage)
-				{
-					_previousPage?.SendDisappearing();
-					_previousPage = Element.CurrentPage;
-					_tabbedPageManager._previousPage = Element.CurrentPage;
-				}
-				Element.CurrentPage = Element.Children[position];
-				Element.CurrentPage.SendAppearing();
-
-				if (IsBottomTabPlacement)
-					_bottomNavigationView.SelectedItemId = position;
-			}
+			void ViewPager.IOnPageChangeListener.OnPageSelected(int position) =>
+				OnPageSelected(position);
 		}
 	}
 }

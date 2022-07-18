@@ -401,7 +401,7 @@ namespace Microsoft.Maui.Controls.Platform
 				global::Windows.Foundation.Point translationPoint = container.TransformToVisual(Container).TransformPoint(e.Position);
 				var scaleOriginPoint = new Point(translationPoint.X / view.Width, translationPoint.Y / view.Height);
 				IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
-				
+
 				foreach (IPinchGestureController recognizer in pinchGestures)
 				{
 					if (!_wasPinchGestureStartedSent)

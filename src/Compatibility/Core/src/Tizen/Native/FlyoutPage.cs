@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		EvasObject _detail;
 
 		/// <summary>
-		/// The main widget - either <see cref="_splitPlane"/> or <see cref="_detailPage"/>, depending on the mode.
+		/// The main widget - either <see cref="_splitPane"/> or <see cref="_detailCanvas"/>, depending on the mode.
 		/// </summary>
 		EvasObject _mainWidget;
 

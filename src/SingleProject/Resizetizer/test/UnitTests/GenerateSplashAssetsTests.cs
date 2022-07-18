@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using SkiaSharp;
@@ -32,16 +34,37 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		[InlineData("appiconfg", "#0000FF")]
 		public void FileIsGenerated(string image, string color)
 		{
-			var splash = new TaskItem($"images/{image}.svg");
-			splash.SetMetadata("Color", color);
-			var task = GetNewTask(splash);
+			var splash = new TaskItem($"images/{image}.svg", new Dictionary<string, string>
+			{
+				["Color"] = color,
+			});
 
+			var task = GetNewTask(splash);
 			var success = task.Execute();
-			Assert.True(success, $"{task.GetType()}.Execute() failed.");
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
 			AssertFile($"{image}SplashScreen.scale-100.png", 620, 300);
 			AssertFile($"{image}SplashScreen.scale-125.png", 775, 375);
 			AssertFile($"{image}SplashScreen.scale-200.png", 1240, 600);
+		}
+
+		[Theory]
+		[InlineData(null, "appiconfg")]
+		[InlineData("images/CustomAlias.svg", "CustomAlias")]
+		public void SplashScreenResectsAlias(string alias, string outputImage)
+		{
+			var splash = new TaskItem("images/appiconfg.svg", new Dictionary<string, string>
+			{
+				["Link"] = alias,
+			});
+
+			var task = GetNewTask(splash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFile($"{outputImage}SplashScreen.scale-100.png", 620, 300);
+			AssertFile($"{outputImage}SplashScreen.scale-125.png", 775, 375);
+			AssertFile($"{outputImage}SplashScreen.scale-200.png", 1240, 600);
 		}
 	}
 }

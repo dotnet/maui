@@ -7,6 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
+	[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 	public partial class MenuFlyoutItemHandler
 	{
 		static Dictionary<int, IMenuElement> menus = new Dictionary<int, IMenuElement>();

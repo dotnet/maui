@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 
 namespace Microsoft.Maui.Devices
 {
@@ -14,9 +14,7 @@ namespace Microsoft.Maui.Devices
 	{
 		/// <include file="../../docs/Microsoft.Maui.Essentials/HapticFeedback.xml" path="//Member[@MemberName='Perform']/Docs" />
 		public static void Perform(HapticFeedbackType type = HapticFeedbackType.Click) =>
-			Current.Perform(type);
-
-		public static IHapticFeedback Current => Devices.HapticFeedback.Default;
+			Default.Perform(type);
 
 		static IHapticFeedback? defaultImplementation;
 

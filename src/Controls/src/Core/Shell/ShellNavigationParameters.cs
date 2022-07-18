@@ -17,5 +17,6 @@ namespace Microsoft.Maui.Controls
 		// This is used to service Navigation.PushAsync style APIs where the user doesn't use routes at all
 		public Page PagePushing { get; set; }
 		public ShellRouteParameters Parameters { get; set; }
+		public bool? CanCancel { get; set; }
 	}
 }

@@ -156,6 +156,16 @@ namespace Microsoft.Maui.Layouts
 		{
 			var content = contentView.PresentedContent;
 
+			if (Dimension.IsExplicitSet(contentView.Width))
+			{
+				widthConstraint = contentView.Width;
+			}
+
+			if (Dimension.IsExplicitSet(contentView.Height))
+			{
+				heightConstraint = contentView.Height;
+			}
+
 			var contentSize = Size.Zero;
 
 			if (content != null)

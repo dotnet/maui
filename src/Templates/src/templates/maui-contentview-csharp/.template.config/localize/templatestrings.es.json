@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI ContentView (C#) (versión preliminar)",
+  "name": ".NET MAUI ContentView (C#)",
   "postActions/openInEditor/description": "Abre NewContent1.cs en el editor.",
   "symbols/namespace/description": "Espacio de nombres para el código generado."
 }

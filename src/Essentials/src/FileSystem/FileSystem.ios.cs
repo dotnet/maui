@@ -211,6 +211,7 @@ namespace Microsoft.Maui.Storage
 			FileName = originalFilename;
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios13.0")]
 		internal override Task<Stream> PlatformOpenReadAsync()
 		{
 			var tcsStream = new TaskCompletionSource<Stream>();

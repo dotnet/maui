@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, IndicatorView>
 	{
-		protected override IndicatorView CreatePlatformView() => new IndicatorView(NativeParent);
+		protected override IndicatorView CreatePlatformView() => new IndicatorView(PlatformParent);
 
 		protected override void ConnectHandler(IndicatorView platformView)
 		{
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapMaximumVisible(IIndicatorViewHandler handler, IIndicatorView indicator) { }
-		
+
 		[MissingMapper]
 		public static void MapIndicatorSize(IIndicatorViewHandler handler, IIndicatorView indicator) { }
 

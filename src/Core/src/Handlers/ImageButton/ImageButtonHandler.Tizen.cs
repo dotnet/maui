@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a ImageButton");
 
-			var view = new MauiImageButton(NativeParent);
+			var view = new MauiImageButton(PlatformParent);
 			return view;
 		}
 

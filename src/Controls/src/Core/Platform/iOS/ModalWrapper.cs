@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var result = style.ToPlatformModalPresentationStyle();
 
-				if (!PlatformVersion.IsAtLeast(13) && result == UIKit.UIModalPresentationStyle.Automatic)
+				if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)) && result == UIKit.UIModalPresentationStyle.Automatic)
 				{
 					result = UIKit.UIModalPresentationStyle.FullScreen;
 				}
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			modal.ViewController.DidMoveToParentViewController(this);
 
-			if (PlatformVersion.IsAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				PresentationController.Delegate = this;
 
 			((Page)modal.VirtualView).PropertyChanged += OnModalPagePropertyChanged;
@@ -55,24 +56,32 @@ namespace Microsoft.Maui.Controls.Platform
 
 		[Export("presentationControllerDidDismiss:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-		public async void DidDismiss(UIPresentationController presentationController)
+		public void DidDismiss(UIPresentationController _)
 		{
-			await Application.Current.NavigationProxy.PopModalAsync(false);
+			var window = (_modal.VirtualView as Page)?.Window;
+			if (window?.Page is Shell shell)
+			{
+				// The modal page might have a NavigationPage so it's not enough to just send
+				// GotoAsync(..) we need build up what the uri will be once the last modal page is removed
+				// and then submit that to shell
+				var modalStack = new List<Page>(shell.CurrentItem.CurrentItem.Navigation.ModalStack);
+				if (modalStack.Count > 0)
+					modalStack.RemoveAt(modalStack.Count - 1);
+
+				var result = ShellNavigationManager.GetNavigationParameters(
+					shell.CurrentItem,
+					shell.CurrentItem.CurrentItem,
+					shell.CurrentItem.CurrentItem.CurrentItem,
+					shell.CurrentItem.CurrentItem.Stack, modalStack);
+
+				shell.NavigationManager.GoToAsync(result).FireAndForget();
+			}
+			else
+				((Page)_modal.VirtualView).Navigation.PopModalAsync(false).FireAndForget();
 		}
 
 		public override void DismissViewController(bool animated, Action completionHandler)
 		{
-			if (PresentedViewController == null)
-			{
-				// After dismissing a UIDocumentMenuViewController, (for instance, if a WebView with an Upload button
-				// is asking the user for a source (camera roll, etc.)), the view controller accidentally calls dismiss
-				// again on itself before presenting the UIImagePickerController; this leaves the UIImagePickerController
-				// without an anchor to the view hierarchy and it doesn't show up. This appears to be an iOS bug.
-
-				// We can work around it by ignoring the dismiss call when PresentedViewController is null.
-				return;
-			}
-
 			base.DismissViewController(animated, completionHandler);
 		}
 
@@ -106,11 +115,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
 		{
+#pragma warning disable CA1416 // TODO: [UnsupportedOSPlatform("ios6.0")]
 			if ((ChildViewControllers != null) && (ChildViewControllers.Length > 0))
 			{
 				return ChildViewControllers[0].ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
 			}
 			return base.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+#pragma warning restore CA1416
 		}
 
 		public override bool ShouldAutomaticallyForwardRotationMethods => true;
@@ -152,7 +163,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
-			if (PlatformVersion.Supports(PlatformApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 

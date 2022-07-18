@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Build.Utilities;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -38,5 +39,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public ModuleDefinition Module { get; private set; }
 		public string XamlFilePath { get; internal set; }
+
+		public TaskLoggingHelper LoggingHelper { get; internal set; }
 	}
 }

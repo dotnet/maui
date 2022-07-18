@@ -398,15 +398,17 @@ namespace Microsoft.Maui.Platform
 			var imageSize = button.ImageView.Image.Size;
 
 			var titleEdgeInsets = new UIEdgeInsets(spacing, -imageSize.Width, -imageSize.Height, 0.0f);
+#pragma warning disable CA1416 // TODO: 'TitleEdgeInsets', 'ImageEdgeInsets' has [UnsupportedOSPlatform("ios15.0")]
 			button.TitleEdgeInsets = titleEdgeInsets;
 
 			var labelString = button.TitleLabel.Text ?? string.Empty;
 
-#pragma warning disable BI1234 // Type or member is obsolete
+#pragma warning disable BI1234 // Type or member is obsolete, unsupported from version 7.0
 			var titleSize = !string.IsNullOrEmpty(labelString) ? labelString.StringSize(button.TitleLabel.Font) : CGSize.Empty;
 #pragma warning restore BI1234 // Type or member is obsolete
 			var imageEdgeInsets = new UIEdgeInsets(-(titleSize.Height + spacing), 0.0f, 0.0f, -titleSize.Width);
 			button.ImageEdgeInsets = imageEdgeInsets;
+#pragma warning restore CA1416
 		}
 
 		void HandleTouchInteractions(GestureStatus status, CGPoint point)

@@ -35,7 +35,7 @@
                 <Setter Property="Stroke" Value="{StaticResource SectionItemBorderColor}" />
                 <Setter Property="HeightRequest" Value="120" />
                 <Setter Property="Padding" Value="12" />
-                <Setter Property="Margin" Value="0, 0, 12, 12" />
+                <Setter Property="Margin" Value="0" />
                 <Setter Property="FlexLayout.Basis" Value="50%"/>
                 <Setter Property="FlexLayout.Grow" Value="0"/>
             </Style>

@@ -29,6 +29,11 @@ namespace Microsoft.Extensions.DependencyInjection
 #elif WEBVIEW2_WPF
 		public static IWpfBlazorWebViewBuilder AddWpfBlazorWebView(this IServiceCollection services)
 #elif WEBVIEW2_MAUI
+#if ANDROID
+	    [System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
+#elif IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
+#endif
 		public static IMauiBlazorWebViewBuilder AddMauiBlazorWebView(this IServiceCollection services)
 #else
 #error Must define WEBVIEW2_WINFORMS, WEBVIEW2_WPF, WEBVIEW2_MAUI
@@ -49,14 +54,14 @@ namespace Microsoft.Extensions.DependencyInjection
 #endif
 		}
 
-		/// <summary>
-		/// Enables Developer tools on the underlying WebView controls.
-		/// </summary>
-		/// <param name="services">The <see cref="IServiceCollection"/>.</param>
-		/// <returns>The <see cref="IServiceCollection"/>.</returns>
-		public static IServiceCollection AddBlazorWebViewDeveloperTools(this IServiceCollection services)
-		{
-			return services.AddSingleton<BlazorWebViewDeveloperTools>(new BlazorWebViewDeveloperTools { Enabled = true });
-		}
+/// <summary>
+/// Enables Developer tools on the underlying WebView controls.
+/// </summary>
+/// <param name="services">The <see cref="IServiceCollection"/>.</param>
+/// <returns>The <see cref="IServiceCollection"/>.</returns>
+public static IServiceCollection AddBlazorWebViewDeveloperTools(this IServiceCollection services)
+{
+	return services.AddSingleton<BlazorWebViewDeveloperTools>(new BlazorWebViewDeveloperTools { Enabled = true });
+}
 	}
 }

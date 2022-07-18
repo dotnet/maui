@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI ContentView (XAML) (プレビュー)",
+  "name": ".NET MAUI ContentView (XAML)",
   "postActions/openInEditor/description": "エディターで NewContent1.xaml を開きます。",
   "symbols/namespace/description": "生成されたコードの名前空間。"
 }

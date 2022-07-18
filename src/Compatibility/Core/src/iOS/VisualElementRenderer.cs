@@ -385,7 +385,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 				BackgroundColor = _defaultColor;
 			else
-				BackgroundColor = color.ToUIColor();
+				BackgroundColor = color.ToPlatform();
 
 #else
 				Layer.BackgroundColor = _defaultColor.CGColor;

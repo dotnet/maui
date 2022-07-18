@@ -58,7 +58,7 @@ resources:
 stages:
 
   - stage: pack_net6
-    displayName: Pack .NET 6
+    displayName: Pack .NET MAUI
     dependsOn: []
     jobs:
       - ${{ each PackPlatform in parameters.PackPlatforms }}:

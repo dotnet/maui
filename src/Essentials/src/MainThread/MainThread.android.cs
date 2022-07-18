@@ -11,7 +11,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			get
 			{
-				if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
+				if (OperatingSystem.IsAndroidVersionAtLeast(23))
 					return Looper.MainLooper.IsCurrentThread;
 
 				return Looper.MyLooper() == Looper.MainLooper;

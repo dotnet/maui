@@ -5,6 +5,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
+#if ANDROID
+	[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
+#endif
 	public partial class VisualDiagnosticsOverlay : WindowOverlay, IVisualDiagnosticsOverlay
 	{
 		bool _enableElementSelector;

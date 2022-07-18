@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiWebView CreatePlatformView()
 		{
-			return new MauiWebView(NativeParent)
+			return new MauiWebView(PlatformParent)
 			{
 				MinimumHeight = MinimumSize.ToScaledPixel(),
 				MinimumWidth = MinimumSize.ToScaledPixel()

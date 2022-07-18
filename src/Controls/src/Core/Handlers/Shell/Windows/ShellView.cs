@@ -40,6 +40,8 @@ namespace Microsoft.Maui.Controls.Platform
 			// If we set it earlier than this then WinUI will transition it back to false
 			if (IsPaneOpen != Element.FlyoutIsPresented)
 				IsPaneOpen = Element.FlyoutIsPresented;
+
+			UpdateFlyoutBackdrop();
 		}
 
 		private protected override void UpdateFlyoutCustomContent()
@@ -70,6 +72,7 @@ namespace Microsoft.Maui.Controls.Platform
 			TogglePaneButton?.SetAutomationPropertiesAutomationId("OK");
 
 			base.OnApplyTemplateCore();
+			UpdateFlyoutBackdrop();
 		}
 
 		internal void UpdateFlyoutPosition()
@@ -149,7 +152,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		class FlyoutItemMenuSeparator : MenuFlyoutSeparator
+		class FlyoutItemMenuSeparator : Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator
 		{
 			public FlyoutItemMenuSeparator(int separatorNumber)
 			{
@@ -164,7 +167,21 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void SwitchShellItem(ShellItem newItem, bool animate = true)
 		{
-			SelectedItem = newItem;
+			// Implicit items aren't items that are surfaced to the user 
+			// or data structures. So, we just want to find the element
+			// the user defined on Shell
+			if (Routing.IsImplicit(newItem))
+			{
+				if (Routing.IsImplicit(newItem.CurrentItem))
+					SelectedItem = newItem.CurrentItem.CurrentItem;
+				else
+					SelectedItem = newItem.CurrentItem;
+			}
+			else
+			{
+				SelectedItem = newItem;
+			}
+
 			var handler = CreateShellItemView();
 			if (handler.VirtualView != newItem)
 				handler.SetVirtualView(newItem);

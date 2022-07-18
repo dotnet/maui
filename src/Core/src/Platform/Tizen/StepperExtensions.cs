@@ -4,31 +4,31 @@ namespace Microsoft.Maui.Platform
 {
 	public static class StepperExtensions
 	{
-		public static void UpdateMinimum(this Spinner nativeStepper, IStepper stepper)
+		public static void UpdateMinimum(this Spinner platformStepper, IStepper stepper)
 		{
-			nativeStepper.Minimum = stepper.Minimum;
+			platformStepper.Minimum = stepper.Minimum;
 		}
 
-		public static void UpdateMaximum(this Spinner nativeStepper, IStepper stepper)
+		public static void UpdateMaximum(this Spinner platformStepper, IStepper stepper)
 		{
-			nativeStepper.Maximum = stepper.Maximum;
+			platformStepper.Maximum = stepper.Maximum;
 		}
 
-		public static void UpdateIncrement(this Spinner nativeStepper, IStepper stepper)
+		public static void UpdateIncrement(this Spinner platformStepper, IStepper stepper)
 		{
 			var increment = stepper.Interval;
 
 			if (increment > 0)
 			{
-				nativeStepper.LabelFormat = string.Format("%.{0}f", GetRequiredPrecision(increment));
-				nativeStepper.Step = stepper.Interval;
+				platformStepper.LabelFormat = string.Format("%.{0}f", GetRequiredPrecision(increment));
+				platformStepper.Step = stepper.Interval;
 			}
 		}
 
-		public static void UpdateValue(this Spinner nativeStepper, IStepper stepper)
+		public static void UpdateValue(this Spinner platformStepper, IStepper stepper)
 		{
-			if (nativeStepper.Value != stepper.Value)
-				nativeStepper.Value = stepper.Value;
+			if (platformStepper.Value != stepper.Value)
+				platformStepper.Value = stepper.Value;
 		}
 
 		static int GetRequiredPrecision(double step)

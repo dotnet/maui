@@ -14,46 +14,52 @@ namespace Microsoft.Maui.Platform
 	public class LayoutViewGroup : ViewGroup
 	{
 		readonly ARect _clipRect = new();
+		readonly Context _context;
 
 		public bool InputTransparent { get; set; }
 
 		public LayoutViewGroup(Context context) : base(context)
 		{
+			_context = context;
 		}
 
 		public LayoutViewGroup(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
+			var context = Context;
+			ArgumentNullException.ThrowIfNull(context);
+			_context = context;
 		}
 
 		public LayoutViewGroup(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
+			_context = context;
 		}
 
 		public LayoutViewGroup(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
+			_context = context;
 		}
 
 		public LayoutViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
+			_context = context;
 		}
 
 		public bool ClipsToBounds { get; set; }
 
+		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
+		// If you make changes here please review if those changes should also
+		// apply to ViewHandlerExtensions.MeasureVirtualView
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			if (Context == null)
-			{
-				return;
-			}
-
 			if (CrossPlatformMeasure == null)
 			{
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 				return;
 			}
 
-			var deviceIndependentWidth = widthMeasureSpec.ToDouble(Context);
-			var deviceIndependentHeight = heightMeasureSpec.ToDouble(Context);
+			var deviceIndependentWidth = widthMeasureSpec.ToDouble(_context);
+			var deviceIndependentHeight = heightMeasureSpec.ToDouble(_context);
 
 			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
 			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
@@ -65,8 +71,8 @@ namespace Microsoft.Maui.Platform
 			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
 			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
 
-			var platformWidth = Context.ToPixels(width);
-			var platformHeight = Context.ToPixels(height);
+			var platformWidth = _context.ToPixels(width);
+			var platformHeight = _context.ToPixels(height);
 
 			// Minimum values win over everything
 			platformWidth = Math.Max(MinimumWidth, platformWidth);
@@ -75,14 +81,17 @@ namespace Microsoft.Maui.Platform
 			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
 		}
 
+		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
+		// If you make changes here please review if those changes should also
+		// apply to ViewHandlerExtensions.MeasureVirtualView
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
-			if (CrossPlatformArrange == null || Context == null)
+			if (CrossPlatformArrange == null || _context == null)
 			{
 				return;
 			}
 
-			var destination = Context!.ToCrossPlatformRectInReferenceFrame(l, t, r, b);
+			var destination = _context.ToCrossPlatformRectInReferenceFrame(l, t, r, b);
 
 			CrossPlatformArrange(destination);
 

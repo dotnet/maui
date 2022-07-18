@@ -56,13 +56,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Control == null)
 				return;
 
-			Control.TrackTintColor = color != null ? color.ToUIColor() : null;
+			Control.TrackTintColor = color != null ? color.ToPlatform() : null;
 		}
 
 		[PortHandler]
 		void UpdateProgressColor()
 		{
-			Control.ProgressTintColor = Element.ProgressColor == null ? null : Element.ProgressColor.ToUIColor();
+			Control.ProgressTintColor = Element.ProgressColor == null ? null : Element.ProgressColor.ToPlatform();
 		}
 
 		[PortHandler]

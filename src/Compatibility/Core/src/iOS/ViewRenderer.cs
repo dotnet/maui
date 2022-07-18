@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (color == null)
 				Control.BackgroundColor = _defaultColor;
 			else
-				Control.BackgroundColor = color.ToUIColor();
+				Control.BackgroundColor = color.ToPlatform();
 #else
 			Control.Layer.BackgroundColor = color == null ? _defaultColor : color.ToCGColor();
 #endif

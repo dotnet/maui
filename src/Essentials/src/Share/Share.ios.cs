@@ -11,8 +11,9 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
 	partial class ShareImplementation : IShare
 	{
-		Task PlatformRequestAsync(ShareTextRequest request)
+		async Task PlatformRequestAsync(ShareTextRequest request)
 		{
+			var src = new TaskCompletionSource<bool>();
 			var items = new List<NSObject>();
 			if (!string.IsNullOrWhiteSpace(request.Text))
 			{
@@ -24,7 +25,13 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 				items.Add(new ShareActivityItemSource(NSUrl.FromString(request.Uri), request.Title));
 			}
 
-			var activityController = new UIActivityViewController(items.ToArray(), null);
+			var activityController = new UIActivityViewController(items.ToArray(), null)
+			{
+				CompletionWithItemsHandler = (a, b, c, d) =>
+				{
+					src.TrySetResult(true);
+				}
+			};
 
 			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 
@@ -36,14 +43,16 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 					activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.AsCGRect();
 			}
 
-			return vc.PresentViewControllerAsync(activityController, true);
+			await vc.PresentViewControllerAsync(activityController, true);
+			await src.Task;
 		}
 
 		Task PlatformRequestAsync(ShareFileRequest request) =>
 			PlatformRequestAsync((ShareMultipleFilesRequest)request);
 
-		Task PlatformRequestAsync(ShareMultipleFilesRequest request)
+		async Task PlatformRequestAsync(ShareMultipleFilesRequest request)
 		{
+			var src = new TaskCompletionSource<bool>();
 			var items = new List<NSObject>();
 
 			var hasTitel = !string.IsNullOrWhiteSpace(request.Title);
@@ -56,7 +65,13 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 					items.Add(fileUrl); // No title specified
 			}
 
-			var activityController = new UIActivityViewController(items.ToArray(), null);
+			var activityController = new UIActivityViewController(items.ToArray(), null)
+			{
+				CompletionWithItemsHandler = (a, b, c, d) =>
+				{
+					src.TrySetResult(true);
+				}
+			};
 
 			var vc = WindowStateManager.Default.GetCurrentUIViewController();
 
@@ -68,7 +83,8 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 					activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.AsCGRect();
 			}
 
-			return vc.PresentViewControllerAsync(activityController, true);
+			await vc.PresentViewControllerAsync(activityController, true);
+			await src.Task;
 		}
 	}
 

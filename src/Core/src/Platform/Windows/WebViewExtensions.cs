@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 
 			platformWebView.UpdateCanGoBackForward(webView);
 		}
-		
+
 		public static void UpdateGoForward(this WebView2 platformWebView, IWebView webView)
 		{
 			if (platformWebView == null)
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Platform
 		{
 			platformWebView?.Reload();
 		}
-				
+
 		internal static void UpdateCanGoBackForward(this WebView2 platformWebView, IWebView webView)
 		{
 			webView.CanGoBack = platformWebView.CanGoBack;
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void Eval(this WebView2 platformWebView, IWebView webView, string script)
-		{ 
+		{
 			if (platformWebView == null)
 				return;
 
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Platform
 			});
 		}
 
-		public static void EvaluateJavaScript(this WebView2 webView, EvaluateJavaScriptAsyncRequest request) 
+		public static void EvaluateJavaScript(this WebView2 webView, EvaluateJavaScriptAsyncRequest request)
 		{
 			request.RunAndReport(webView.ExecuteScriptAsync(request.Script));
 		}

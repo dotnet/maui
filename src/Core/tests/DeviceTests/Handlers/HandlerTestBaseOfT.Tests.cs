@@ -1,4 +1,7 @@
+using System;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -9,8 +12,69 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
+
+		// This way of testing leaks currently doesn't seem to work on WinAppSDK
+		// If you set a break point and the app breaks then the test passes?!?
+		// Not sure if you can test this type of thing with WinAppSDK or not
+#if !WINDOWS
+		[Fact(DisplayName = "Handlers Deallocate When No Longer Referenced")]
+		public async Task HandlersDeallocateWhenNoLongerReferenced()
+		{
+			// Once this includes all handlers we can delete this
+			Type[] testedTypes = new[]
+			{
+				typeof(EditorHandler),
+#if IOS
+				typeof(DatePickerHandler)
+#endif
+			};
+
+			if (!testedTypes.Any(t => t.IsAssignableTo(typeof(THandler))))
+				return;
+
+			var handler = await CreateHandlerAsync(new TStub()) as IPlatformViewHandler;
+
+			WeakReference<THandler> weakHandler = new WeakReference<THandler>((THandler)handler);
+			WeakReference<TStub> weakView = new WeakReference<TStub>((TStub)handler.VirtualView);
+
+			handler = null;
+
+			await AssertionExtensions.Wait(() =>
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+
+				if (weakHandler.TryGetTarget(out THandler _) ||
+					weakView.TryGetTarget(out TStub _))
+				{
+					return false;
+				}
+
+				return true;
+
+			}, 1500);
+
+			if (weakHandler.TryGetTarget(out THandler _))
+				Assert.True(false, $"{typeof(THandler)} failed to collect");
+
+			if (weakView.TryGetTarget(out TStub _))
+				Assert.True(false, $"{typeof(TStub)} failed to collect");
+		}
+#endif
+
+		[Fact]
+		public async Task DisconnectHandlerDoesntCrash()
+		{
+			var handler = await CreateHandlerAsync(new TStub()) as IPlatformViewHandler;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				handler.DisconnectHandler();
+			});
+		}
+
 		[Fact(DisplayName = "Automation Id is set correctly")]
-		[InlineData()]
 		public async Task SetAutomationId()
 		{
 			var view = new TStub
@@ -189,6 +253,26 @@ namespace Microsoft.Maui.DeviceTests
 
 			var nativeBoundingBox = await GetValueAsync(view, handler => GetBoundingBox(handler));
 			Assert.NotEqual(nativeBoundingBox, new Graphics.Rect());
+
+
+			// Currently there's an issue with label/progress where they don't set the frame size to
+			// the explicit Width and Height values set
+			// https://github.com/dotnet/maui/issues/7935
+			if (view is ILabel || view is IProgress)
+			{
+				if (!CloseEnough(size, nativeBoundingBox.Size.Width))
+					Assert.Equal(new Size(size, size), nativeBoundingBox.Size);
+			}
+			else
+			{
+				if (!CloseEnough(size, nativeBoundingBox.Size.Height) || !CloseEnough(size, nativeBoundingBox.Size.Width))
+					Assert.Equal(new Size(size, size), nativeBoundingBox.Size);
+			}
+
+			bool CloseEnough(double value1, double value2)
+			{
+				return System.Math.Abs(value2 - value1) < 0.2;
+			}
 		}
 
 

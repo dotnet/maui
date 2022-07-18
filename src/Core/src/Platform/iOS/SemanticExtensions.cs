@@ -11,6 +11,16 @@ namespace Microsoft.Maui.Platform
 			if (semantics == null)
 				return;
 
+			if (platformView is UISearchBar searchBar)
+			{
+				var textField = searchBar.GetSearchTextField();
+
+				if (textField == null)
+					return;
+
+				platformView = textField;
+			}
+
 			platformView.AccessibilityLabel = semantics.Description;
 			platformView.AccessibilityHint = semantics.Hint;
 
@@ -19,9 +29,15 @@ namespace Microsoft.Maui.Platform
 				platformView.IsAccessibilityElement = true;
 
 			if (semantics.IsHeading)
-				platformView.AccessibilityTraits |= UIAccessibilityTrait.Header;
+			{
+				if ((platformView.AccessibilityTraits & UIAccessibilityTrait.Header) != UIAccessibilityTrait.Header)
+					platformView.AccessibilityTraits |= UIAccessibilityTrait.Header;
+			}
 			else
-				platformView.AccessibilityTraits &= ~UIAccessibilityTrait.Header;
+			{
+				if ((platformView.AccessibilityTraits & UIAccessibilityTrait.Header) == UIAccessibilityTrait.Header)
+					platformView.AccessibilityTraits &= ~UIAccessibilityTrait.Header;
+			}
 		}
 	}
 }

@@ -5,6 +5,9 @@
 		public static IPropertyMapper<IEditor, EditorHandler> ControlsEditorMapper =
 			new PropertyMapper<Editor, EditorHandler>(EditorHandler.Mapper)
 			{
+#if WINDOWS
+				[PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName] = MapDetectReadingOrderFromContent,
+#endif
 				[nameof(Text)] = MapText,
 				[nameof(TextTransform)] = MapText,
 			};

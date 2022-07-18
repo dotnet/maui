@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Devices
 			return new DisplayInfo(
 				width: displayMetrics?.WidthPixels ?? 0,
 				height: displayMetrics?.HeightPixels ?? 0,
-				density: displayMetrics?.Density ?? 0,
+				density: displayMetrics?.Density ?? 1,
 				orientation: CalculateOrientation(),
 				rotation: CalculateRotation(display),
 				rate: display?.RefreshRate ?? 0);

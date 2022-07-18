@@ -46,6 +46,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 						GalleryBuilder.NavButton("Add Items with timer to Empty Collection", () =>
 							new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0, addItemsWithTimer: true), Navigation),
 
+						GalleryBuilder.NavButton("Reset collection before adding Items with timer to Empty Collection", () =>
+							new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0, addItemsWithTimer: true, resetBeforeAddItemsWithTimer: true), Navigation),
+
 						GalleryBuilder.NavButton("Scroll mode Keep items in view", () =>
 							new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0, addItemsWithTimer: true, scrollMode: ItemsUpdatingScrollMode.KeepItemsInView), Navigation),
 

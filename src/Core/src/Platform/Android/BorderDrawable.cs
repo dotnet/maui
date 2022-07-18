@@ -277,7 +277,9 @@ namespace Microsoft.Maui.Platform
 					_borderPaint.StrokeWidth = _strokeThickness;
 
 					if (_borderColor != null)
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 						_borderPaint.Color = _borderColor.Value;
+#pragma warning restore CA1416
 					else
 					{
 						if (_stroke != null)
@@ -401,7 +403,9 @@ namespace Microsoft.Maui.Platform
 			if (platformPaint != null)
 			{
 				if (_backgroundColor != null)
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					platformPaint.Color = _backgroundColor.Value;
+#pragma warning restore CA1416
 				else
 				{
 					if (_background != null)
@@ -502,10 +506,10 @@ namespace Microsoft.Maui.Platform
 			float w = (float)(width - strokeThickness);
 			float h = (float)(height - strokeThickness);
 
-			float topLeftCornerRadius = (float)cornerRadius.TopLeft;
-			float topRightCornerRadius = (float)cornerRadius.TopRight;
-			float bottomLeftCornerRadius = (float)cornerRadius.BottomLeft;
-			float bottomRightCornerRadius = (float)cornerRadius.BottomRight;
+			float topLeftCornerRadius = _context.ToPixels(cornerRadius.TopLeft);
+			float topRightCornerRadius = _context.ToPixels(cornerRadius.TopRight);
+			float bottomLeftCornerRadius = _context.ToPixels(cornerRadius.BottomLeft);
+			float bottomRightCornerRadius = _context.ToPixels(cornerRadius.BottomRight);
 
 			path.AppendRoundedRectangle(x, y, w, h, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
 

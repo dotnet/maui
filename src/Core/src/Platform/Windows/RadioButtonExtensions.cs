@@ -47,12 +47,12 @@ namespace Microsoft.Maui.Platform
 		{
 			_ = radioButton.Handler?.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			if (radioButton.Content is IView view)
+			if (radioButton.PresentedContent is IView view)
 				platformRadioButton.Content = view.ToPlatform(radioButton.Handler.MauiContext);
 			else
 				platformRadioButton.Content = $"{radioButton.Content}";
 		}
-		
+
 		private static readonly string[] _borderColorKeys =
 		{
 			"RadioButtonBorderBrush",

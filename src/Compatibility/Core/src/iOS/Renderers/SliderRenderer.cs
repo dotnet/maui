@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (Element.MinimumTrackColor == null)
 					Control.MinimumTrackTintColor = defaultmintrackcolor;
 				else
-					Control.MinimumTrackTintColor = Element.MinimumTrackColor.ToUIColor();
+					Control.MinimumTrackTintColor = Element.MinimumTrackColor.ToPlatform();
 			}
 		}
 
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (Element.MaximumTrackColor == null)
 					Control.MaximumTrackTintColor = defaultmaxtrackcolor;
 				else
-					Control.MaximumTrackTintColor = Element.MaximumTrackColor.ToUIColor();
+					Control.MaximumTrackTintColor = Element.MaximumTrackColor.ToPlatform();
 			}
 		}
 
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (Element.ThumbColor == null)
 					Control.ThumbTintColor = defaultthumbcolor;
 				else
-					Control.ThumbTintColor = Element.ThumbColor.ToUIColor();
+					Control.ThumbTintColor = Element.ThumbColor.ToPlatform();
 			}
 		}
 

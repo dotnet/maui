@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override TEntry CreatePlatformView()
 		{
-			var entry = new EditfieldEntry(NativeParent)
+			var entry = new EditfieldEntry(PlatformParent)
 			{
 				IsSingleLine = true,
 				HorizontalTextAlignment = TTextAlignment.Center,
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 
 			_lazyDialog = new Lazy<IDateTimeDialog>(() =>
 			{
-				var dialog = new DateTimePickerDialog(NativeParent)
+				var dialog = new DateTimePickerDialog(PlatformParent)
 				{
 					Mode = DateTimePickerMode.Time,
 					Title = DialogTitle
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Handlers
 				var dialog = _lazyDialog.Value;
 				dialog.DateTime -= dialog.DateTime.TimeOfDay;
 				dialog.DateTime += VirtualView.Time;
-				
+
 				// You need to call Show() after ui thread occupation because of EFL problem.
 				// Otherwise, the content of the popup will not receive focus.
 				EcoreMainloop.Post(() => dialog.Show());

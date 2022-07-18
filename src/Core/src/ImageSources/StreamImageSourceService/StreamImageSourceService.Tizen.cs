@@ -25,7 +25,7 @@ namespace Microsoft.Maui
 					throw new InvalidOperationException("Unable to load image stream.");
 
 				var isLoadComplated = await image.LoadAsync(stream, cancellationToken);
-				
+
 				if (!isLoadComplated)
 					throw new InvalidOperationException("Unable to decode image from stream.");
 

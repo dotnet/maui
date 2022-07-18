@@ -473,7 +473,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			bool isRtl;
 
-			if (PlatformVersion.IsAtLeast(10))
+			if (OperatingSystem.IsIOSVersionAtLeast(10) || OperatingSystem.IsTvOSVersionAtLeast(10))
 				isRtl = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
 			else
 				isRtl = CollectionView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;

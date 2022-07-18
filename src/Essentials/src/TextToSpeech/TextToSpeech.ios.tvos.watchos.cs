@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Media
 {
 	partial class TextToSpeechImplementation : ITextToSpeech
 	{
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 		readonly Lazy<AVSpeechSynthesizer> speechSynthesizer = new(() => new AVSpeechSynthesizer());
 
 		Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
@@ -73,5 +74,6 @@ namespace Microsoft.Maui.Media
 					tcsUtterance?.TrySetResult(true);
 			}
 		}
+#pragma warning restore CA1416
 	}
 }

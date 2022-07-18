@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		TextBlock _textBlock = null;
 
 		FormsButton _button;
-		PointerEventHandler _pointerPressedHandler;		
+		PointerEventHandler _pointerPressedHandler;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Button> e)
 		{
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				UpdateTextColor();
 			}
-			else if (   e.PropertyName == FontElement.FontAttributesProperty.PropertyName
+			else if (e.PropertyName == FontElement.FontAttributesProperty.PropertyName
 					 || e.PropertyName == FontElement.FontAutoScalingEnabledProperty.PropertyName
 					 || e.PropertyName == FontElement.FontFamilyProperty.PropertyName
 					 || e.PropertyName == FontElement.FontSizeProperty.PropertyName)
@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				_button.Click -= OnButtonClick;
 				_button.RemoveHandler(PointerPressedEvent, _pointerPressedHandler);
-				_button.Loaded -= ButtonOnLoaded;				
+				_button.Loaded -= ButtonOnLoaded;
 
 				_pointerPressedHandler = null;
 			}

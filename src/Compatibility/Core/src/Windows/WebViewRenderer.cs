@@ -415,7 +415,7 @@ if(bases.length == 0){
 			Control.Reload();
 		}
 
-		[PortHandler("Partially ported")]
+		[PortHandler]
 		async void NavigationSucceeded(WWebView sender, Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
 		{
 			// TODO WINUI3
@@ -449,6 +449,7 @@ if(bases.length == 0){
 				NavigationFailed(sender, e);
 		}
 
+		[PortHandler]
 		async void OnWebMessageReceived(WWebView sender, Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
 		{
 			if (Element.OnThisPlatform().IsJavaScriptAlertEnabled())

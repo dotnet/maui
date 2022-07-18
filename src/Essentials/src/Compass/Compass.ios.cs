@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public bool ShouldDisplayHeadingCalibration { get; set; } = false;
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 		bool PlatformIsSupported =>
 			CLLocationManager.HeadingAvailable;
 
@@ -64,5 +65,6 @@ namespace Microsoft.Maui.Devices.Sensors
 			locationManager.Dispose();
 			locationManager = null;
 		}
+#pragma warning restore CA1416
 	}
 }

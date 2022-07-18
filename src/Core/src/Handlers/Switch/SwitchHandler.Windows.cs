@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnToggled(object sender, UI.Xaml.RoutedEventArgs e)
 		{
-			if (VirtualView == null || PlatformView == null)
+			if (VirtualView is null || PlatformView is null || VirtualView.IsOn == PlatformView.IsOn)
 				return;
 
 			VirtualView.IsOn = PlatformView.IsOn;

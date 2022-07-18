@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Devices;
@@ -387,7 +388,9 @@ namespace Microsoft.Maui.Controls
 		void IShellController.AddAppearanceObserver(IAppearanceObserver observer, Element pivot)
 		{
 			_appearanceObservers.Add((observer, pivot));
-			observer.OnAppearanceChanged(GetAppearanceForPivot(pivot));
+			var appearance = GetAppearanceForPivot(pivot);
+			UpdateToolbarAppearanceFeatures(pivot, appearance);
+			observer.OnAppearanceChanged(appearance);
 		}
 
 		void IShellController.AddFlyoutBehaviorObserver(IFlyoutBehaviorObserver observer)
@@ -400,6 +403,42 @@ namespace Microsoft.Maui.Controls
 				observer.OnFlyoutBehaviorChanged(GetEffectiveFlyoutBehavior());
 		}
 
+		void UpdateToolbarAppearanceFeatures(Element pivot, ShellAppearance appearance)
+		{
+			// Android sets these inside its renderer
+			// once we convert Android to be all handlers we can adjust
+			if (pivot is ShellContent || pivot is ShellSection || pivot is ContentPage)
+			{
+				appearance = appearance ?? GetAppearanceForPivot(pivot);
+				Toolbar.BarTextColor = appearance?.TitleColor ?? DefaultTitleColor;
+				Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				Toolbar.IconColor = appearance?.ForegroundColor ?? DefaultForegroundColor;
+			}
+		}
+
+#if ANDROID
+		static Color DefaultBackgroundColor => ResolveThemeColor(Color.FromArgb("#2c3e50"), Color.FromArgb("#1B3147"));
+		static readonly Color DefaultForegroundColor = Colors.White;
+		static readonly Color DefaultTitleColor = Colors.White;
+
+		static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
+
+		static Color ResolveThemeColor(Color light, Color dark)
+		{
+			if (IsDarkTheme)
+			{
+				return dark;
+			}
+
+			return light;
+		}
+#else
+		static Color DefaultBackgroundColor => null;
+		static readonly Color DefaultForegroundColor = null;
+		static readonly Color DefaultTitleColor = null;
+#endif
+
+
 		void IShellController.AppearanceChanged(Element source, bool appearanceSet)
 		{
 			if (!appearanceSet)
@@ -408,6 +447,8 @@ namespace Microsoft.Maui.Controls
 				// So its also quite useful for checking the FlyoutBehavior conditions
 				NotifyFlyoutBehaviorObservers();
 			}
+
+			UpdateToolbarAppearanceFeatures(source, null);
 
 			// here we wish to notify every element whose "pivot line" contains the source
 			// To do that we first need to find the leaf node in the line, and then walk up
@@ -439,7 +480,9 @@ namespace Microsoft.Maui.Controls
 				{
 					if (leaf == target)
 					{
-						observer.OnAppearanceChanged(GetAppearanceForPivot(pivot));
+						var appearance = GetAppearanceForPivot(pivot);
+						UpdateToolbarAppearanceFeatures(pivot, appearance);
+						observer.OnAppearanceChanged(appearance);
 						break;
 					}
 
@@ -503,10 +546,9 @@ namespace Microsoft.Maui.Controls
 				shellSection.PropertyChanged += OnShellItemPropertyChanged;
 			else
 			{
-				var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
-
 				if (this.CurrentItem == null)
 				{
+					var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
 					var requestBuilder = new RouteRequestBuilder(new List<string>()
 					{
 						shellItem.Route,
@@ -540,7 +582,10 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					return GoToAsync(state);
+					var navParameters = ShellNavigationManager.GetNavigationParameters(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
+
+					return _navigationManager
+						.GoToAsync(navParameters);
 				}
 			}
 
@@ -635,13 +680,17 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public Task GoToAsync(ShellNavigationState state, IDictionary<string, object> parameters)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(parameters));
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public Task GoToAsync(ShellNavigationState state, bool animate, IDictionary<string, object> parameters)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
@@ -807,10 +856,9 @@ namespace Microsoft.Maui.Controls
 				SetCurrentItem()
 					.FireAndForget();
 
-			((ShellElementCollection)Items).VisibleItemsChangedInternal += (s, e) =>
+			((ShellElementCollection)Items).VisibleItemsChangedInternal += async (s, e) =>
 			{
-				SetCurrentItem()
-					.FireAndForget();
+				await SetCurrentItem();
 
 				SendStructureChanged();
 				SendFlyoutItemsChanged();
@@ -1188,6 +1236,9 @@ namespace Microsoft.Maui.Controls
 
 			shell.ShellController.AppearanceChanged(shell, false);
 			shell.ShellController.UpdateCurrentState(ShellNavigationSource.ShellItemChanged);
+
+			if (shell.CurrentItem?.CurrentItem != null)
+				shell.ShellController.AppearanceChanged(shell.CurrentItem.CurrentItem, false);
 		}
 
 		static void OnCurrentItemChanging(BindableObject bindable, object oldValue, object newValue)

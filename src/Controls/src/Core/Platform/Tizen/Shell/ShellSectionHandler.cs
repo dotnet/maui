@@ -10,6 +10,7 @@ using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
 using EToolbarItem = ElmSharp.ToolbarItem;
 using EToolbarItemEventArgs = ElmSharp.ToolbarItemEventArgs;
+using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -31,8 +32,8 @@ namespace Microsoft.Maui.Controls.Platform
 		Dictionary<EToolbarItem, ShellContent> _itemToContent = new Dictionary<EToolbarItem, ShellContent>();
 		List<EToolbarItem> _tabsItems = new List<EToolbarItem>();
 
-		EColor _backgroundColor = ShellView.DefaultBackgroundColor;
-		EColor _foregroundColor = ShellView.DefaultForegroundColor;
+		EColor _backgroundColor = TThemeConstants.Shell.ColorClass.DefaultBackgroundColor;
+		EColor _foregroundColor = TThemeConstants.Shell.ColorClass.DefaultForegroundColor;
 
 		bool _disposed = false;
 
@@ -46,10 +47,10 @@ namespace Microsoft.Maui.Controls.Platform
 				collection.CollectionChanged += OnShellSectionCollectionChanged;
 			}
 
-			_mainLayout = new EBox(NativeParent);
+			_mainLayout = new EBox(PlatformParent);
 			_mainLayout.SetLayoutCallback(OnLayout);
 
-			_contentArea = new EBox(NativeParent);
+			_contentArea = new EBox(PlatformParent);
 			_contentArea.Show();
 			_mainLayout.PackEnd(_contentArea);
 
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected IMauiContext MauiContext { get; private set; }
 
-		protected EvasObject NativeParent => MauiContext.GetNativeParent();
+		protected EvasObject PlatformParent => MauiContext.GetPlatformParent();
 
 		protected virtual bool TabBarIsVisible
 		{
@@ -142,8 +143,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var backgroundColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
 			var foregroundColor = appearance?.ForegroundColor;
 
-			ToolbarBackgroundColor = backgroundColor.IsDefault() ? ShellView.DefaultBackgroundColor : (backgroundColor?.ToPlatformEFL()).GetValueOrDefault();
-			ToolbarForegroundColor = foregroundColor.IsDefault() ? ShellView.DefaultForegroundColor : (foregroundColor?.ToPlatformEFL()).GetValueOrDefault();
+			ToolbarBackgroundColor = backgroundColor.IsDefault() ? TThemeConstants.Shell.ColorClass.DefaultBackgroundColor : (backgroundColor?.ToPlatformEFL()).GetValueOrDefault();
+			ToolbarForegroundColor = foregroundColor.IsDefault() ? TThemeConstants.Shell.ColorClass.DefaultForegroundColor : (foregroundColor?.ToPlatformEFL()).GetValueOrDefault();
 		}
 
 		void UpdateDisplayedPage(Page page)
@@ -185,9 +186,9 @@ namespace Microsoft.Maui.Controls.Platform
 					ShellSection.PropertyChanged -= OnSectionPropertyChanged;
 					DeinitializeTabs();
 
-					foreach (var native in _contentCache.Values)
+					foreach (var platformView in _contentCache.Values)
 					{
-						native.Unrealize();
+						platformView.Unrealize();
 					}
 					_contentCache.Clear();
 					_contentToTabsItem.Clear();
@@ -204,7 +205,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				return;
 			}
-			_tabs = new Tabs(NativeParent);
+			_tabs = new Tabs(PlatformParent);
 			_tabs.Show();
 			_tabs.BackgroundColor = _backgroundColor;
 			_tabs.Scrollable = TabsType.Fixed;
@@ -284,8 +285,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				InsertTabsItem(content);
 			}
-			
-			if(_tabs !=null)
+
+			if (_tabs != null)
 				_tabs.Scrollable = ShellSection.Items.Count > 3 ? TabsType.Scrollable : TabsType.Fixed;
 		}
 
@@ -340,10 +341,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (!_contentCache.ContainsKey(content))
 			{
-				var native = CreateShellContent(content);
-				native.SetAlignment(-1, -1);
-				native.SetWeight(1, 1);
-				_contentCache[content] = native;
+				var platformView = CreateShellContent(content);
+				platformView.SetAlignment(-1, -1);
+				platformView.SetWeight(1, 1);
+				_contentCache[content] = platformView;
 			}
 			_currentContent = _contentCache[content];
 			_currentContent.Show();

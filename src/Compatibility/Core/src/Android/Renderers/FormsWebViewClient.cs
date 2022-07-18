@@ -101,6 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		[PortHandler]
+		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
 		public override void OnReceivedError(WView view, IWebResourceRequest request, WebResourceError error)
 		{
 			if (request.Url.ToString() == _renderer?.Control.Url)

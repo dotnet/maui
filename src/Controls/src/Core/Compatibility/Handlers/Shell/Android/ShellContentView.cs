@@ -6,6 +6,7 @@ using Android.Views;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	internal class ShellViewRenderer
 	{
 		public IViewHandler Handler { get; private set; }
-		View _view;
+		IView _view;
 		WeakReference<Context> _context;
 		readonly IMauiContext _mauiContext;
 		IView MauiView => View;
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			View = view;
 		}
 
-		public View View
+		public IView View
 		{
 			get { return _view; }
 			set
@@ -49,26 +50,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public void TearDown()
 		{
+			MauiView?.Handler?.DisconnectHandler();
 			View = null;
 			Handler = null;
 			_view = null;
 			_context = null;
 		}
 
-		public void Measure(int widthMeasureSpec, int heightMeasureSpec, int? maxHeightPixels, int? maxWidthPixels)
+		public Graphics.Size Measure(int widthMeasureSpec, int heightMeasureSpec, int? maxHeightPixels, int? maxWidthPixels)
 		{
-			//if (width == -1)
-			//	width = double.PositiveInfinity;
-
-			//if (height == -1)
-			//	height = double.PositiveInfinity;
-
-			//Width = width;
-			//Height = height;
-			//MaxWidth = maxWidth;
-			//MaxHeight = maxHeight;
-			//X = x;
-			//Y = y;
 			var width = widthMeasureSpec.GetSize();
 			var height = heightMeasureSpec.GetSize();
 			var maxWidth = maxWidthPixels;
@@ -77,23 +67,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			Context context;
 
 			if (Handler == null || !(_context.TryGetTarget(out context)) || !PlatformView.IsAlive())
-				return;
+				return Graphics.Size.Zero;
 
-			if (View == null)
-			{
-				//MauiView.Measure(0, 0);
-				//MauiView.Arrange(Rectangle.Zero);
-				return;
-			}
-
-			// PlatformView.Measure(widthMeasureSpec, heightMeasureSpec);
+			if (View?.Handler == null)
+				return Graphics.Size.Zero;
 
 			var layoutParams = PlatformView.LayoutParameters;
-			//if (double.IsInfinity(height))
-			//	height = request.Height;
-
-			//if (double.IsInfinity(width))
-			//	width = request.Width;
 
 			if (height > maxHeight)
 				heightMeasureSpec = MeasureSpecMode.AtMost.MakeMeasureSpec(maxHeight.Value);
@@ -112,88 +91,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				heightMeasureSpec = MeasureSpecMode.Unspecified.MakeMeasureSpec(0);
 
 			PlatformView.LayoutParameters = layoutParams;
-			//var c = PlatformView.Context;
-			//var l = (int)c.ToPixels(x);
-			//var t = (int)c.ToPixels(y);
-			//var r = (int)c.ToPixels(width) + l;
-			//var b = (int)c.ToPixels(height) + t;
 
-			//PlatformView.Layout(l, t, r, b);
-			PlatformView.Measure(widthMeasureSpec, heightMeasureSpec);
+			return ((IPlatformViewHandler)_view.Handler).MeasureVirtualView(widthMeasureSpec, heightMeasureSpec);
 		}
 
-		public void LayoutView(int l, int t, int r, int b)
+		public virtual void OnViewSet(IView view)
 		{
-			PlatformView.Layout(l, t, r, b);
+			if (view == View)
+				return;
 
-			//if (width == -1)
-			//	width = double.PositiveInfinity;
-
-			//if (height == -1)
-			//	height = double.PositiveInfinity;
-
-			//Width = width;
-			//Height = height;
-			//MaxWidth = maxWidth;
-			//MaxHeight = maxHeight;
-			//X = x;
-			//Y = y;
-
-			//Context context;
-
-			//if (Handler == null || !(_context.TryGetTarget(out context)) || !PlatformView.IsAlive())
-			//	return;
-
-			//if (View == null)
-			//{
-			//	MauiView.Measure(0, 0);
-			//	MauiView.Arrange(Rectangle.Zero);
-			//	return;
-			//}
-
-			//var request = MauiView.Measure(width, height);
-
-			//var layoutParams = PlatformView.LayoutParameters;
-			//if (double.IsInfinity(height))
-			//	height = request.Height;
-
-			//if (double.IsInfinity(width))
-			//	width = request.Width;
-
-			//if (height > maxHeight)
-			//	height = maxHeight.Value;
-
-			//if (width > maxWidth)
-			//	width = maxWidth.Value;
-
-			//if (layoutParams.Width != LP.MatchParent)
-			//	layoutParams.Width = (int)context.ToPixels(width);
-
-			//if (layoutParams.Height != LP.MatchParent)
-			//	layoutParams.Height = (int)context.ToPixels(height);
-
-			//PlatformView.LayoutParameters = layoutParams;
-			//var c = PlatformView.Context;
-			//var l = (int)c.ToPixels(x);
-			//var t = (int)c.ToPixels(y);
-			//var r = (int)c.ToPixels(width) + l;
-			//var b = (int)c.ToPixels(height) + t;
-
-			//PlatformView.Layout(l, t, r, b);
-		}
-
-		public virtual void OnViewSet(View view)
-		{
-			//if (View != null)
-			//	View.SizeChanged -= OnViewSizeChanged;
-
-			//if (View is VisualElement oldView)
-			//	oldView.MeasureInvalidated -= OnViewSizeChanged;
-
-			if (View != null)
+			if (View != null && PlatformView.IsAlive())
 			{
 				PlatformView.RemoveFromParent();
-				View.Handler = null;
+				View.Handler?.DisconnectHandler();
 			}
 
 			_view = view;
@@ -206,20 +116,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				PlatformView = view.ToPlatform(_mauiContext);
 				Handler = view.Handler;
-
-				//if (View is VisualElement ve)
-				//	ve.MeasureInvalidated += OnViewSizeChanged;
-				//else
-				//	View.SizeChanged += OnViewSizeChanged;
 			}
 			else
 			{
 				PlatformView = null;
 			}
 		}
-
-		//void OnViewSizeChanged(object sender, EventArgs e) =>
-		//	LayoutView(X, Y, Width, Height, MaxWidth, MaxHeight);
-
 	}
 }

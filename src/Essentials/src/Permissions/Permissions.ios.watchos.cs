@@ -139,6 +139,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 				if (OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsWatchOSVersionAtLeast(4, 0))
 				{
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 					switch (CMMotionActivityManager.AuthorizationStatus)
 					{
 						case CMAuthorizationStatus.Authorized:
@@ -150,6 +151,7 @@ namespace Microsoft.Maui.ApplicationModel
 						case CMAuthorizationStatus.Restricted:
 							return PermissionStatus.Restricted;
 					}
+#pragma warning restore CA1416
 				}
 
 				return PermissionStatus.Unknown;
@@ -201,7 +203,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 				EnsureMainThread();
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 				return await LocationWhenInUse.RequestLocationAsync(false, lm => lm.RequestAlwaysAuthorization());
+#pragma warning restore CA1416
 			}
 		}
 	}

@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (!PlatformView.IsLoaded)
 				return;
-				
+
 			// Setting the Left/Right Items before the view has loaded causes the Swipe Control
 			// to crash on the first layout pass. So we wait until the control has been loaded
 			// before propagating our Left/Right Items
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Handlers
 
 			try
 			{
-				if(wSwipeItems != null || items.Count > 0)
+				if (wSwipeItems != null || items.Count > 0)
 					setSwipeItems(items);
 			}
 			catch

@@ -30,11 +30,13 @@ namespace Microsoft.Maui.ApplicationModel
 			return OpenPlacemark(placemark, options);
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios11.0")]
 		public async Task OpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
 			await TryOpenAsync(placemark, options);
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios11.0")]
 		public async Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
 			if (placemark == null)
@@ -84,6 +86,7 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios11.0")]
 		static async Task<CLPlacemark[]> GetPlacemarksAsync(NSDictionary address)
 		{
 			using var geocoder = new CLGeocoder();

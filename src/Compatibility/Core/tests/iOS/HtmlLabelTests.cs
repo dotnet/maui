@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using NUnit.Framework;
 using ObjCRuntime;
 using UIKit;
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		public async Task LabelTextColorAppliesToHtml()
 		{
 			var label = new Label { TextColor = Colors.Red, Text = "<p>Hello</p>", TextType = TextType.Html };
-			var expected = Colors.Red.ToUIColor();
+			var expected = Colors.Red.ToPlatform();
 			var actual = await GetControlProperty(label, uiLabel => uiLabel.TextColor);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				TextType = TextType.Html,
 				VerticalOptions = LayoutOptions.Center
 			};
-			var expected = Colors.Blue.ToUIColor();
+			var expected = Colors.Blue.ToPlatform();
 
 			var actual = await GetControlProperty(label, uiLabel => uiLabel.TextColor);
 			Assert.That(actual, Is.EqualTo(expected).Using<UIColor>(ColorComparison.ARGBEquivalent));
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		public async Task LabelTextColorOverridesHtmlColors()
 		{
 			var label = new Label { Text = "<p style='color:blue;'>Hello</p>", TextType = TextType.Html, TextColor = Colors.Red };
-			var expected = Colors.Red.ToUIColor();
+			var expected = Colors.Red.ToPlatform();
 			var actual = await GetControlProperty(label, uiLabel => uiLabel.TextColor);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		public async Task LabelBackgroundColorAppliesToHtml()
 		{
 			var label = new Label { BackgroundColor = Colors.Red, Text = "<p>Hello</p>", TextType = TextType.Html };
-			var expected = Colors.Red.ToUIColor();
+			var expected = Colors.Red.ToPlatform();
 			var actual = await GetRendererProperty(label, r => r.NativeView.BackgroundColor);
 			Assert.That(actual, Is.EqualTo(expected));
 		}

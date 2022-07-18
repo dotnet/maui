@@ -13,6 +13,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		[MissingMapper]
-		public static void MapLineBreakMode(IButtonHandler handler, Button button) {}
+		public static void MapLineBreakMode(IButtonHandler handler, Button button) { }
 	}
 }

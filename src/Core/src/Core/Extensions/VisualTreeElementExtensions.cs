@@ -149,7 +149,7 @@ namespace Microsoft.Maui
 			{
 				if (visualElement is IView view)
 				{
-					Rect bounds = view.GetPlatformViewBounds();
+					Rect bounds = view.GetBoundingBox();
 					if (intersectElementBounds(bounds))
 						elements.Add(visualElement);
 				}

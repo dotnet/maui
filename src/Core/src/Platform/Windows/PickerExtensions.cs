@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 		{
 			nativeComboBox.Header = null;
 
-			nativeComboBox.HeaderTemplate = string.IsNullOrEmpty(picker.Title) ? null : 
+			nativeComboBox.HeaderTemplate = string.IsNullOrEmpty(picker.Title) ? null :
 				(UI.Xaml.DataTemplate)UI.Xaml.Application.Current.Resources["ComboBoxHeader"];
 
 			nativeComboBox.DataContext = picker;
@@ -74,8 +74,8 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateFont(this ComboBox nativeComboBox, IPicker picker, IFontManager fontManager) =>
-			nativeComboBox.UpdateFont(picker.Font, fontManager); 
-		
+			nativeComboBox.UpdateFont(picker.Font, fontManager);
+
 		public static void UpdateHorizontalTextAlignment(this ComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.HorizontalContentAlignment = picker.HorizontalTextAlignment.ToPlatformHorizontalAlignment();

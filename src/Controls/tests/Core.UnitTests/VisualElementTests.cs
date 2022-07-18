@@ -2,10 +2,10 @@
 using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public class VisualElementTests 
+	public class VisualElementTests
 	{
 		[Test(Description = "If WidthRequest has been set and is reset to -1, the Core Width should return to being Unset")]
-		public void SettingWidthRequestToNegativeOneShouldResetWidth() 
+		public void SettingWidthRequestToNegativeOneShouldResetWidth()
 		{
 			var visualElement = new Label();
 			var coreView = visualElement as IView;

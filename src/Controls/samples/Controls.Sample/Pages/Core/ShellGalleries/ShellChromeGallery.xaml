@@ -40,6 +40,10 @@
                 Text="Toggle TabBar"
                 Style="{StaticResource Headline}"/>
             <Button Text="Toggle TabBar" Clicked="OnToggleTabBar" />
+            <Label
+                Text="Flyout Header Behavior"
+                Style="{StaticResource Headline}"/>
+            <Picker x:Name="flyoutHeaderBehavior" />
         </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>

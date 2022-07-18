@@ -1,5 +1,6 @@
 #pragma warning disable CS0612 // Type or member is obsolete
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+using static Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Platform;
 #pragma warning disable CS0612 // Type or member is obsolete
 using Microsoft.Maui.Graphics;
 using Rect = Microsoft.Maui.Graphics.Rect;
@@ -25,8 +26,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (VisualElementRenderer == null)
 				return Size.Zero;
 
-			// TODO. It is workaroud code, Controls.VisualElement.MeasureOverride implementation is wrong. it does not apply Height/WidthRequest
-			return VisualElementRenderer.Element.Measure(widthConstraint, heightConstraint).Request;
+			widthConstraint = widthConstraint < 0 ? double.PositiveInfinity : widthConstraint;
+			heightConstraint = heightConstraint < 0 ? double.PositiveInfinity : heightConstraint;
+			return VisualElementRenderer.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		public override void UpdateValue(string property)

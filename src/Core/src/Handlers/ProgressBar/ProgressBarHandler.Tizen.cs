@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override EProgressBar CreatePlatformView()
 		{
-			var progressBar = new EProgressBar(NativeParent);
+			var progressBar = new EProgressBar(PlatformParent);
 			progressBar.Color = DefaultColor;
 			return progressBar;
 		}

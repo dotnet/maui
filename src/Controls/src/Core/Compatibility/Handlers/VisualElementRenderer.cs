@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.Background)] = MapBackground,
+			[nameof(IView.IsEnabled)] = MapIsEnabled,
 			[nameof(VisualElement.BackgroundColor)] = MapBackgroundColor,
 			[AutomationProperties.IsInAccessibleTreeProperty.PropertyName] = MapAutomationPropertiesIsInAccessibleTree,
 #if WINDOWS
@@ -185,6 +186,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ViewHandler.MapAutomationId(this, Element);
 		}
 
+		protected virtual void SetIsEnabled()
+		{
+			if (Element != null)
+				ViewHandler.MapIsEnabled(this, Element);
+		}
+
 #if WINDOWS
 		protected virtual void SetAutomationPropertiesAccessibilityView()
 #else
@@ -206,7 +213,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		IMauiContext? IElementHandler.MauiContext => _mauiContext;
 
-		PlatformView? IPlatformViewHandler.PlatformView => (Element?.Handler as IElementHandler)?.PlatformView as PlatformView;
+		PlatformView? IPlatformViewHandler.PlatformView
+		{
+			get => ((Element?.Handler)?.PlatformView as PlatformView) ?? this;
+		}
 
 		PlatformView? IPlatformViewHandler.ContainerView => this;
 
@@ -343,6 +353,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #else
 				ver.UpdateBackground();
 #endif
+		}
+
+		public static void MapIsEnabled(IPlatformViewHandler handler, TElement view)
+		{
+#if WINDOWS
+			if (handler is VisualElementRenderer<TElement, TPlatformElement> ver)
+#else
+			if (handler is VisualElementRenderer<TElement> ver)
+#endif
+				ver.SetIsEnabled();
 		}
 	}
 }

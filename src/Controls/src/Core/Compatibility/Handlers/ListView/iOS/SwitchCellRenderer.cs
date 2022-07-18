@@ -46,7 +46,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			tvc.Cell = item;
 			tvc.PropertyChanged += HandlePropertyChanged;
 			tvc.AccessoryView = uiSwitch;
+#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 			tvc.TextLabel.Text = boolCell.Text;
+#pragma warning restore CA1416
 
 			uiSwitch.On = boolCell.On;
 
@@ -71,7 +73,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateOnColor(realCell, boolCell);
 			}
 			else if (e.PropertyName == SwitchCell.TextProperty.PropertyName)
+#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 				realCell.TextLabel.Text = boolCell.Text;
+#pragma warning restore CA1416
 			else if (e.PropertyName == Cell.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled(realCell, boolCell);
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
@@ -106,8 +110,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateIsEnabled(CellTableViewCell cell, SwitchCell switchCell)
 		{
 			cell.UserInteractionEnabled = switchCell.IsEnabled;
+#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel', DetailTextLabel is unsupported on: 'ios' 14.0 and later
 			cell.TextLabel.Enabled = switchCell.IsEnabled;
 			cell.DetailTextLabel.Enabled = switchCell.IsEnabled;
+#pragma warning restore CA1416
 			var uiSwitch = cell.AccessoryView as UISwitch;
 			if (uiSwitch != null)
 				uiSwitch.Enabled = switchCell.IsEnabled;

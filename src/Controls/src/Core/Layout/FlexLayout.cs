@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Flex = Microsoft.Maui.Layouts.Flex;
 
@@ -459,10 +460,9 @@ namespace Microsoft.Maui.Controls
 			item.Height = height < 0 ? float.NaN : (float)height;
 			item.IsVisible = GetIsVisible(view);
 
-			// TODO ezhart The Core layout interfaces don't have the padding property yet; when that's available, we should add a check for it here
-			if (view is FlexLayout && view is Controls.Layout layout)
+			if (view is IPadding viewWithPadding)
 			{
-				var (pleft, ptop, pright, pbottom) = (Thickness)layout.GetValue(Compatibility.Layout.PaddingProperty);
+				var (pleft, ptop, pright, pbottom) = viewWithPadding.Padding;
 				item.PaddingLeft = (float)pleft;
 				item.PaddingTop = (float)ptop;
 				item.PaddingRight = (float)pright;
@@ -470,19 +470,49 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		// Until we can rewrite the FlexLayout engine to handle measurement properly (without the "in measure mode" hacks)
+		// we need to replace the default implementation of CrossPlatformMeasure.
+		// And we need to disable the public API analyzer briefly, because it doesn't understand hiding.
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		new public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			var layoutManager = _layoutManager ??= CreateLayoutManager();
+
+			InMeasureMode = true;
+			var result = layoutManager.Measure(widthConstraint, heightConstraint);
+			InMeasureMode = false;
+
+			return result;
+		}
+
+		internal bool InMeasureMode { get; set; }
+
 		void AddFlexItem(IView child)
 		{
 			if (_root == null)
 				return;
 			var item = (child as FlexLayout)?._root ?? new Flex.Item();
 			InitItemProperties(child, item);
-			if (!(child is FlexLayout))
-			{ //inner layouts don't get measured
+			if (child is not FlexLayout)
+			{
 				item.SelfSizing = (Flex.Item it, ref float w, ref float h) =>
 				{
 					var sizeConstraints = item.GetConstraints();
-					sizeConstraints.Width = (sizeConstraints.Width == 0) ? double.PositiveInfinity : sizeConstraints.Width;
-					sizeConstraints.Height = (sizeConstraints.Height == 0) ? double.PositiveInfinity : sizeConstraints.Height;
+
+					sizeConstraints.Width = (InMeasureMode && sizeConstraints.Width == 0) ? double.PositiveInfinity : sizeConstraints.Width;
+					sizeConstraints.Height = (InMeasureMode && sizeConstraints.Height == 0) ? double.PositiveInfinity : sizeConstraints.Height;
+
+					if (child is Image)
+					{
+						// This is a hack to get FlexLayout to behave like it did in Forms
+						// Forms always did its initial image measure unconstrained, which would return
+						// the intrinsic size of the image (no scaling or aspect ratio adjustments)
+
+						sizeConstraints.Width = double.PositiveInfinity;
+						sizeConstraints.Height = double.PositiveInfinity;
+					}
+
 					var request = child.Measure(sizeConstraints.Width, sizeConstraints.Height);
 					w = (float)request.Width;
 					h = (float)request.Height;
@@ -527,14 +557,39 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
+		void EnsureFlexItemPropertiesUpdated() 
+		{
+			for (int n = 0; n < this.Count; n++)
+			{
+				var child = this[n];
+				var flexItem = GetFlexItem(child);
+
+				InitItemProperties(child, flexItem);
+			}
+		}
+
 		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='Layout']/Docs" />
 		public void Layout(double width, double height)
 		{
 			if (_root.Parent != null)   //Layout is only computed at root level
 				return;
+
+			var useMeasureHack = NeedsMeasureHack(width, height);
+			if (useMeasureHack)
+			{
+				PrepareMeasureHack();
+			}
+
+			EnsureFlexItemPropertiesUpdated();
+
 			_root.Width = !double.IsPositiveInfinity((width)) ? (float)width : 0;
 			_root.Height = !double.IsPositiveInfinity((height)) ? (float)height : 0;
 			_root.Layout();
+
+			if (useMeasureHack)
+			{
+				RestoreValues();
+			}
 		}
 
 		protected override void OnParentSet()
@@ -599,6 +654,43 @@ namespace Microsoft.Maui.Controls
 			base.OnClear();
 			ClearLayout();
 			PopulateLayout();
+		}
+
+		static bool NeedsMeasureHack(double widthConstraint, double heightConstraint)
+		{
+			return double.IsInfinity(widthConstraint) || double.IsInfinity(heightConstraint);
+		}
+
+		void PrepareMeasureHack()
+		{
+			// FlexLayout's Shrink and Stretch features require a fixed area to measure/layout correctly;
+			// when the dimensions they are working in are infinite, they don't really make sense. We can
+			// get a sensible measure by temporarily setting the Shrink values of all items to 0 and the 
+			// Stretch alignment values to Start. So we prepare for that here.
+
+			foreach (var child in Children)
+			{
+				if (GetFlexItem(child) is Flex.Item item)
+				{
+					item.Shrink = 0;
+					item.AlignSelf = Flex.AlignSelf.Start;
+				}
+			}
+		}
+
+		void RestoreValues()
+		{
+			// If we had to modify the Shrink and Stretch values of the FlexItems for measurement, we 
+			// restore them to their original values.
+
+			foreach (var child in Children)
+			{
+				if (GetFlexItem(child) is Flex.Item item)
+				{
+					item.Shrink = GetShrink(child);
+					item.AlignSelf = (Flex.AlignSelf)GetAlignSelf(child);
+				}
+			}
 		}
 	}
 }

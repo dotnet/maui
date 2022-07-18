@@ -3,7 +3,6 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
 using Windows.Graphics.Display;
 using Windows.System.Display;
 
@@ -102,13 +101,22 @@ namespace Microsoft.Maui.Devices
 
 			var w = vDevMode.dmPelsWidth;
 			var h = vDevMode.dmPelsHeight;
-			var dpi = GetDpiForWindow(windowHandle) / DeviceDisplay.BaseLogicalDpi;
+
+			var dpi = (double)GetDpiForWindow(windowHandle);
+			if (dpi != 0)
+				dpi /= DeviceDisplay.BaseLogicalDpi;
+			else
+				dpi = 1.0;
+
+			var orientation = GetWindowOrientationWin32(appWindow) == DisplayOrientations.Landscape
+				? DisplayOrientation.Landscape
+				: DisplayOrientation.Portrait;
 
 			return new DisplayInfo(
 				width: perpendicular ? h : w,
 				height: perpendicular ? w : h,
 				density: dpi,
-				orientation: GetWindowOrientationWin32(appWindow) == DisplayOrientations.Landscape ? DisplayOrientation.Landscape : DisplayOrientation.Portrait,
+				orientation: orientation,
 				rotation: rotation,
 				rate: vDevMode.dmDisplayFrequency);
 		}

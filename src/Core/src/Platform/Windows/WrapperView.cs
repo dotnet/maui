@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Shapes;
+using WSize = Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Platform
 {
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Platform
 		readonly Canvas _shadowCanvas;
 		SpriteVisual? _shadowVisual;
 		DropShadow? _dropShadow;
+		WSize _shadowHostSize;
 		Path? _borderPath;
 
 		FrameworkElement? _child;
@@ -100,7 +102,7 @@ namespace Microsoft.Maui.Platform
 			var visual = ElementCompositionPreview.GetElementVisual(Child);
 			visual.Clip = null;
 		}
-		
+
 		void DisposeBorder()
 		{
 			_borderPath = null;
@@ -131,15 +133,13 @@ namespace Microsoft.Maui.Platform
 				await CreateShadowAsync();
 		}
 
-		async void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
+		void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
 		{
+			_shadowHostSize = e.NewSize;
+
 			UpdateClip();
 			UpdateBorder();
-
-			if (HasShadow)
-				UpdateShadowSize();
-			else
-				await CreateShadowAsync();
+			UpdateShadow();
 		}
 
 		void DisposeShadow()
@@ -156,10 +156,16 @@ namespace Microsoft.Maui.Platform
 				_shadowCanvas.Children.RemoveAt(0);
 
 			if (_shadowVisual != null)
+			{
 				_shadowVisual.Dispose();
+				_shadowVisual = null;
+			}
 
 			if (_dropShadow != null)
+			{
 				_dropShadow.Dispose();
+				_dropShadow = null;
+			}
 		}
 
 		async Task CreateShadowAsync()
@@ -167,15 +173,23 @@ namespace Microsoft.Maui.Platform
 			if (Child == null || Shadow == null || Shadow.Paint == null)
 				return;
 
-			double width = Child.ActualWidth;
-			double height = Child.ActualHeight;
+			var visual = ElementCompositionPreview.GetElementVisual(Child);
+
+			if (Clip != null && visual.Clip == null)
+				return;
+
+			double width = _shadowHostSize.Width;
+
+			if (width <= 0)
+				width = (float)ActualWidth;
+
+			double height = _shadowHostSize.Height;
+
+			if (height <= 0)
+				height = (float)ActualHeight;
 
 			if (height <= 0 && width <= 0)
 				return;
-
-			// TODO: Fix ArgumentException
-			if (Clip != null)
-				await Task.Delay(500);
 
 			var ttv = Child.TransformToVisual(_shadowCanvas);
 			global::Windows.Foundation.Point offset = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
@@ -202,6 +216,7 @@ namespace Microsoft.Maui.Platform
 
 			_shadowVisual = compositor.CreateSpriteVisual();
 			_shadowVisual.Size = new Vector2((float)width, (float)height);
+
 			_shadowVisual.Shadow = _dropShadow;
 
 			ElementCompositionPreview.SetElementChildVisual(shadowHost, _shadowVisual);
@@ -219,10 +234,17 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_shadowVisual != null)
 			{
-				if (Child is FrameworkElement child)
+				if (Child is FrameworkElement frameworkElement)
 				{
-					float width = (float)child.ActualWidth;
-					float height = (float)child.ActualHeight;
+					float width = (float)_shadowHostSize.Width;
+
+					if (width <= 0)
+						width = (float)frameworkElement.ActualWidth;
+
+					float height = (float)_shadowHostSize.Height;
+
+					if (height <= 0)
+						height = (float)frameworkElement.ActualHeight;
 
 					_shadowVisual.Size = new Vector2(width, height);
 				}

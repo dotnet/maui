@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		protected override void OnElementChanged(ElementChangedEventArgs<ProgressBar> e)
 		{
-			if (e.NewElement == null) return;
+			if (e.NewElement == null)
+				return;
 			if (Control == null)
 				SetNativeControl(new NSProgressIndicator
 				{

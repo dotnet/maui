@@ -102,10 +102,23 @@ namespace Microsoft.Maui.Controls
 
 				var displayedPage = shell.GetCurrentShellPage();
 
-				if (ShellItemController.GetItems().Count <= 1)
-					return false;
+				bool defaultShowTabs = true;
 
-				return shell.GetEffectiveValue<bool>(Shell.TabBarIsVisibleProperty, () => true, null, displayedPage);
+#if WINDOWS
+				// Windows supports nested tabs so we want the tabs to display
+				// if the current shell section has multiple contents
+				if (ShellItemController.GetItems().Count > 1 ||
+					(CurrentItem as IShellSectionController).GetItems().Count > 1)
+					defaultShowTabs = true;
+				else
+					defaultShowTabs = false;
+#else
+
+				if (ShellItemController.GetItems().Count <= 1)
+					defaultShowTabs = false;
+#endif
+
+				return shell.GetEffectiveValue<bool>(Shell.TabBarIsVisibleProperty, () => defaultShowTabs, null, displayedPage);
 			}
 		}
 
@@ -323,6 +336,13 @@ namespace Microsoft.Maui.Controls
 			{
 				CurrentItem.SendDisappearing();
 			}
+		}
+
+		protected override void OnParentSet()
+		{
+			base.OnParentSet();
+			if (this.IsVisibleItem && CurrentItem != null)
+				((IShellController)Parent)?.AppearanceChanged(CurrentItem, false);
 		}
 
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Items.ToList();

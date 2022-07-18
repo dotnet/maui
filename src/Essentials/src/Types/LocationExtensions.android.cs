@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Devices.Sensors
 					OperatingSystem.IsAndroidVersionAtLeast(26) && location.HasVerticalAccuracy
 						? location.VerticalAccuracyMeters
 						: null,
+				ReducedAccuracy = false,
 				Course = location.HasBearing ? location.Bearing : default(double?),
 				Speed = location.HasSpeed ? location.Speed : default(double?),
 				IsFromMockProvider =

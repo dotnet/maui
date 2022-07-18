@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
@@ -9,6 +11,9 @@ namespace Microsoft.Maui.Platform
 		public static void Unfocus(this object platformView, IView view) { }
 
 		public static void UpdateVisibility(this object platformView, IView view) { }
+
+		public static Task UpdateBackgroundImageSourceAsync(this object platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+			=> Task.CompletedTask;
 
 		public static void UpdateBackground(this object platformView, IView view) { }
 

@@ -19,7 +19,14 @@ namespace Microsoft.Maui.Devices.Sensors
 			var manager = new CLLocationManager();
 			var location = manager.Location;
 
-			return location?.ToLocation();
+			var reducedAccuracy = false;
+#if __IOS__
+			if (OperatingSystem.IsIOSVersionAtLeast(14, 0))
+			{
+				reducedAccuracy = manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy;
+			}
+#endif
+			return location?.ToLocation(reducedAccuracy);
 		}
 
 		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
@@ -48,14 +55,29 @@ namespace Microsoft.Maui.Devices.Sensors
 
 #if __IOS__
 			// we're only listening for a single update
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			manager.PausesLocationUpdatesAutomatically = false;
+#pragma warning restore CA1416
 #endif
 
 			manager.StartUpdatingLocation();
 
+			var reducedAccuracy = false;
+#if __IOS__
+			if (OperatingSystem.IsIOSVersionAtLeast(14, 0))
+			{
+				if (request.RequestFullAccuracy && manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy)
+				{
+					await manager.RequestTemporaryFullAccuracyAuthorizationAsync("TemporaryFullAccuracyUsageDescription");
+				}
+
+				reducedAccuracy = manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy;
+			}
+#endif
+
 			var clLocation = await tcs.Task;
 
-			return clLocation?.ToLocation();
+			return clLocation?.ToLocation(reducedAccuracy);
 
 			void HandleLocation(CLLocation location)
 			{

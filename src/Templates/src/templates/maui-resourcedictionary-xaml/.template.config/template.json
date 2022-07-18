@@ -2,8 +2,9 @@
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
     "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI", "Xaml", "Code" ],
-    "identity": "Microsoft.Maui.XamlResourceDictionary",
-    "name": ".NET MAUI ResourceDictionary (XAML) (Preview)",
+    "identity": "Microsoft.Maui.XamlResourceDictionary.DOTNET_TFM_VERSION_VALUE",
+    "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
+    "name": ".NET MAUI ResourceDictionary (XAML)",
     "shortName": "maui-dict-xaml",
     "tags": {
         "language": "C#",

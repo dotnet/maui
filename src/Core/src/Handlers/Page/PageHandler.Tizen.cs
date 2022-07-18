@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapTitle(IPageHandler handler, IContentView page) { }
-		
+
 		protected override ContentCanvas CreatePlatformView()
 		{
 			var view = base.CreatePlatformView();

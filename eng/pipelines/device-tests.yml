@@ -57,13 +57,16 @@ parameters:
   - name: androidPool
     type: object
     default:
-      name: 'Azure Pipelines'
-      vmImage: 'internal-macos12'
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Monterey
+        - macOS.Architecture -equals x64
   - name: iosPool
     type: object
     default:
-      name: 'Azure Pipelines'
-      vmImage: 'internal-macos12'
+      name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
 
 resources:
   repositories:

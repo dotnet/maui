@@ -88,6 +88,16 @@ namespace Microsoft.Maui.Handlers
 		void UpdateFlyout()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			// Once this issue has been taken care of
+			// https://github.com/dotnet/maui/issues/8456
+			// we can remove this code
+			if (VirtualView.Flyout.Handler?.MauiContext != null &&
+				VirtualView.Flyout.Handler.MauiContext != MauiContext)
+			{
+				VirtualView.Flyout.Handler.DisconnectHandler();
+			}
+
 			_ = VirtualView.Flyout.ToPlatform(MauiContext);
 
 			var newFlyoutView = VirtualView.Flyout.ToPlatform();
@@ -265,7 +275,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnDrawerStateChanged(object? sender, DrawerLayout.DrawerStateChangedEventArgs e)
 		{
-			if (e.NewState == DrawerLayout.StateIdle && VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout)
+			if (e.NewState == DrawerLayout.StateIdle && VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout && _flyoutView != null)
 				VirtualView.IsPresented = DrawerLayout.IsDrawerVisible(_flyoutView);
 		}
 

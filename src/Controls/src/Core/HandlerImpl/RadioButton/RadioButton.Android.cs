@@ -1,7 +1,4 @@
 ﻿#nullable enable
-using System;
-using Android.Views;
-using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls

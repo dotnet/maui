@@ -49,7 +49,7 @@
         IsDefaultItem="true"
     />
     <ImageAsset
-        Include="$(iOSProjectFolder)**/*.xcassets/**/*.png;$(iOSProjectFolder)**/*.xcassets/*/*.jpg;$(iOSProjectFolder)**/*.xcassets/**/*.pdf;$(iOSProjectFolder)**/*.xcassets/**/*.json"
+        Include="$(iOSProjectFolder)**/*.xcassets/**/*.*"
         Exclude="$(_SingleProjectiOSExcludes)"
         Link="%(RecursiveDir)%(FileName)%(Extension)"
         Visible="false"
@@ -84,7 +84,7 @@
         IsDefaultItem="true"
     />
     <ImageAsset
-        Include="$(MacCatalystProjectFolder)**/*.xcassets/**/*.png;$(MacCatalystProjectFolder)**/*.xcassets/*/*.jpg;$(MacCatalystProjectFolder)**/*.xcassets/**/*.pdf;$(MacCatalystProjectFolder)**/*.xcassets/**/*.json"
+        Include="$(MacCatalystProjectFolder)**/*.xcassets/**/*.*"
         Exclude="$(_SingleProjectMacCatalystExcludes)"
         Link="%(RecursiveDir)%(FileName)%(Extension)"
         Visible="false"

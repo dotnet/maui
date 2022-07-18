@@ -18,6 +18,20 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
+		protected override void ConnectHandler(ContentView platformView)
+		{
+			base.ConnectHandler(platformView);
+
+			platformView.LayoutSubviewsChanged += OnLayoutSubviewsChanged;
+		}
+
+		protected override void DisconnectHandler(ContentView platformView)
+		{
+			base.DisconnectHandler(platformView);
+
+			platformView.LayoutSubviewsChanged -= OnLayoutSubviewsChanged;
+		}
+
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
@@ -46,6 +60,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapContent(IBorderHandler handler, IBorderView border)
 		{
 			UpdateContent(handler);
+		}
+
+		void OnLayoutSubviewsChanged(object? sender, EventArgs e)
+		{
+			PlatformView?.UpdateMauiCALayer();
 		}
 	}
 }

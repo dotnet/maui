@@ -40,6 +40,9 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
+			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+				return new ImageBrush { ImageSource = imageSource };
+
 			return null;
 		}
 
@@ -76,6 +79,9 @@ namespace Microsoft.Maui.Controls
 					return new RadialGradientPaint { GradientStops = gradientStops, Center = center, Radius = radius };
 				}
 			}
+
+			if (brush is ImageBrush imageBrush)
+				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
 
 			return null;
 		}

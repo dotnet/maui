@@ -25,7 +25,8 @@ namespace Microsoft.Maui.Platform
 		public void Connect(IGraphicsView graphicsView)
 		{
 			this.graphicsView = graphicsView;
-			AddGestureRecognizer(hoverGesture = new UIHoverGestureRecognizer(OnHover));
+			if (OperatingSystem.IsIOSVersionAtLeast(13))
+				AddGestureRecognizer(hoverGesture = new UIHoverGestureRecognizer(OnHover));
 		}
 		public void Disconnect()
 		{

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Android.Text;
 using Android.Text.Style;
 using Android.Views;
@@ -60,7 +61,9 @@ namespace Microsoft.Maui.Platform
 				return new Java.Lang.String(title);
 
 			var spannableTitle = new SpannableString(title ?? string.Empty);
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 			spannableTitle.SetSpan(new ForegroundColorSpan(titleColor.ToPlatform()), 0, spannableTitle.Length(), SpanTypes.ExclusiveExclusive);
+#pragma warning restore CA1416
 			return spannableTitle;
 		}
 	}

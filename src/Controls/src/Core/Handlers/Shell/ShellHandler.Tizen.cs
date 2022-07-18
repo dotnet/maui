@@ -26,11 +26,11 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			if (DeviceInfo.GetDeviceType() == DeviceType.TV)
 			{
-				return new TVShellView(NativeParent);
+				return new TVShellView(PlatformParent);
 			}
 			else
 			{
-				return new ShellView(NativeParent);
+				return new ShellView(PlatformParent);
 			}
 		}
 	}

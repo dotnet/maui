@@ -1,9 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Threading.Tasks;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui.Platform
 {
@@ -38,17 +36,15 @@ namespace Microsoft.Maui.Platform
 		{
 			var brush = slider.MinimumTrackColor?.ToPlatform();
 
-			if (brush == null)
-			{
-				platformSlider.Resources.RemoveKeys(_minimumTrackColorResourceKeys);
-			}
+			if (brush is null)
+				platformSlider.Resources.RemoveKeys(MinimumTrackColorResourceKeys);
 			else
-			{
-				platformSlider.Resources.SetValueForAllKey(_minimumTrackColorResourceKeys, brush);
-			}
+				platformSlider.Resources.SetValueForAllKey(MinimumTrackColorResourceKeys, brush);
+
+			platformSlider.RefreshThemeResources();
 		}
 
-		static readonly string[] _minimumTrackColorResourceKeys =
+		static readonly string[] MinimumTrackColorResourceKeys =
 		{
 			"SliderTrackValueFill",
 			"SliderTrackValueFilllPointerOver",
@@ -61,16 +57,14 @@ namespace Microsoft.Maui.Platform
 			var brush = slider.MaximumTrackColor?.ToPlatform();
 
 			if (brush == null)
-			{
-				platformSlider.Resources.RemoveKeys(_maximumTrackColorResourceKeys);
-			}
+				platformSlider.Resources.RemoveKeys(MaximumTrackColorResourceKeys);
 			else
-			{
-				platformSlider.Resources.SetValueForAllKey(_maximumTrackColorResourceKeys, brush);
-			}
+				platformSlider.Resources.SetValueForAllKey(MaximumTrackColorResourceKeys, brush);
+
+			platformSlider.RefreshThemeResources();
 		}
 
-		static readonly string[] _maximumTrackColorResourceKeys =
+		static readonly string[] MaximumTrackColorResourceKeys =
 		{
 			"SliderTrackFill",
 			"SliderTrackFillPointerOver",
@@ -82,17 +76,15 @@ namespace Microsoft.Maui.Platform
 		{
 			var brush = slider.ThumbColor?.ToPlatform();
 
-			if (brush == null)
-			{
-				platformSlider.Resources.RemoveKeys(_thumbColorResourceKeys);
-			}
+			if (brush is null)
+				platformSlider.Resources.RemoveKeys(ThumbColorResourceKeys);
 			else
-			{
-				platformSlider.Resources.SetValueForAllKey(_thumbColorResourceKeys, brush);
-			}
+				platformSlider.Resources.SetValueForAllKey(ThumbColorResourceKeys, brush);
+
+			platformSlider.RefreshThemeResources();
 		}
 
-		static readonly string[] _thumbColorResourceKeys =
+		static readonly string[] ThumbColorResourceKeys =
 		{
 			"SliderThumbBackground",
 			"SliderThumbBackgroundPointerOver",

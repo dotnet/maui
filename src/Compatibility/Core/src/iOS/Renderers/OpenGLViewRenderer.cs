@@ -1,6 +1,7 @@
 #if !(MACCATALYST || MACOS)
 using System;
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using CoreAnimation;
 using Foundation;
 using GLKit;
@@ -11,6 +12,8 @@ using RectangleF = CoreGraphics.CGRect;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	[System.Obsolete]
+	[UnsupportedOSPlatform("ios12.0")]
+	[UnsupportedOSPlatform("tvos12.0")]
 	internal class OpenGLViewRenderer : ViewRenderer<OpenGLView, GLKView>
 	{
 		CADisplayLink _displayLink;

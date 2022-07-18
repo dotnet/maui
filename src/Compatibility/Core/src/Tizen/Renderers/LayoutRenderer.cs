@@ -5,10 +5,10 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	/// <summary>
 	/// Renderer of a Layout.
 	/// </summary>
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class LayoutRenderer : ViewRenderer<Layout, Native.Canvas>, SkiaSharp.IBackgroundCanvas, ILayoutRenderer
 	{
 		bool _layoutUpdatedRegistered = false;

@@ -156,7 +156,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			}
 		}
 
-		public void GenerateEmptyObservableCollectionAndAddItemsEverySecond()
+		public void GenerateEmptyObservableCollectionAndAddItemsEverySecond(bool resetBeforeAddItems)
 		{
 			if (int.TryParse(_entry.Text, out int count))
 			{
@@ -164,6 +164,11 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 				_cv.ItemsSource = items;
 				Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
 				{
+					//this test a issue with events firing out of order on IOS Obs Source
+					if (resetBeforeAddItems)
+					{
+						items.Clear();
+					}
 					var n = items.Count + 1;
 					items.Add(new CollectionViewGalleryTestItem(DateTime.Now.AddDays(n),
 						$"{_images[n % _images.Length]}, {n}", _images[n % _images.Length], n));

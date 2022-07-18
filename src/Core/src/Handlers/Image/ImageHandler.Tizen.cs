@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, Image>
 	{
-		protected override Image CreatePlatformView() => new Image(NativeParent);
+		protected override Image CreatePlatformView() => new Image(PlatformParent);
 
 		protected override void DisconnectHandler(Image platformView)
 		{
@@ -36,18 +36,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapSourceAsync(IImageHandler handler, IImage image)
-		{
-			if (handler.PlatformView == null)
-				return Task.CompletedTask;
-
-			handler.PlatformView.Clear();
-			return handler.SourceLoader.UpdateImageSourceAsync();
-		}
+		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
+			handler.SourceLoader.UpdateImageSourceAsync();
 
 		void OnSetImageSource(Image? obj)
 		{
-			//Empty on purpose
+			// Empty on purpose
 		}
 	}
 }

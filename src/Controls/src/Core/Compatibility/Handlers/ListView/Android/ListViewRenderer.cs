@@ -18,8 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	public class ListViewRenderer : ViewRenderer<ListView, AListView>
 	{
 		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
-				new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
-
+			new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
 
 		public static CommandMapper<ListView, ListViewRenderer> CommandMapper =
 			new CommandMapper<ListView, ListViewRenderer>(VisualElementRendererCommandMapper);
@@ -30,6 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		Container _headerView;
 		Container _footerView;
 		bool _isAttached;
+		bool _reattached;
 		ScrollToRequestedEventArgs _pendingScrollTo;
 
 		SwipeRefreshLayout _refresh;
@@ -62,6 +62,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_isAttached = true;
 			_adapter.IsAttachedToWindow = _isAttached;
 			UpdateIsRefreshing(isInitialValue: true);
+
+			// There might be a better way to go about doing this but from what I can tell 
+			// once you detach and then reattach a ListView the cells become unselectable 
+			// and the Android.ListView in general is left in an odd state.
+			// We didn't have to do this in XF because in XF there's an extra measure call that happens
+			// when the listview is reattached that essentially does the exact same thing.
+			// You can see this by adding back the legacy renderers and setting a breakpoint on the 
+			// adapter.GetView call. In MAUI this never gets called when navigating back vs XF it does
+			if (!_reattached)
+			{
+				_reattached = true;
+			}
+			else
+			{
+				Control?.InvalidateViews();
+			}
 		}
 
 		protected override void OnDetachedFromWindow()
@@ -220,6 +236,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateVerticalScrollBarVisibility();
 		}
 
+		/*
+		 * With Xamarin.Forms we never passed in an infinite height. The height was always constrained to something.
+		 * In MAUI if the Maui.ListView is inside a VerticalStackLayout then it basically has infinite height to occupy.
+		 * One of the quirks of the Androids platform ListView control is that if you give it infinite height
+		 * It will only measure the top cell. If you google "ListView only renders first cell" you'll find a bunch of hits
+		 * where people have put an Android.ListView inside an Android.ScrollView and the fix is to remove the Android.ScrollView
+		 * Our problem here is basically the same. So, in order to preserve behavior here from XF and make this work the same as 
+		 * Windows/iOS we measure every single cell and then return that as the height.
+		 * This will most likely cause the user to be frustrated that the ListView doesn't scroll :-) but at least now
+		 * it's consistent between platforms and for cases where it doesn't need to scroll (TableView).
+		 * */
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (double.IsInfinity(heightConstraint))
@@ -245,10 +272,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						// that in as the convert view so that GetView doesn't create
 						// an additional ConditionalFocusLayout
 						// We're basically faking re-use to the GetView call
-						AView currentParent = null;
-						if (cell.Handler?.PlatformView is AView aView)
-							currentParent = aView.Parent as AView;
-
+						AView currentParent = _adapter.GetConvertViewForMeasuringInfiniteHeight(i);
 						AView listItem = _adapter.GetView(i, currentParent, Control);
 						int widthSpec;
 

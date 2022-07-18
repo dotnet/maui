@@ -22,16 +22,6 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class NavigationPageTests : HandlerTestBase
 	{
 
-		public bool IsNavigationBarVisible(IElementHandler handler) =>
-			IsNavigationBarVisible(handler.MauiContext);
-
-		public bool IsNavigationBarVisible(IMauiContext mauiContext)
-		{
-			var navView = GetMauiNavigationView(mauiContext);
-			var header = navView?.Header as WFrameworkElement;
-			return header?.Visibility == UI.Xaml.Visibility.Visible;
-		}
-
 		string GetToolbarTitle(IElementHandler handler) =>
 			GetPlatformToolbar(handler).Title;
 

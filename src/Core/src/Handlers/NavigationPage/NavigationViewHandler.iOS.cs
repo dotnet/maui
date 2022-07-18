@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Handlers
 		////	var navController = handler._controlsNavigationController;
 		////	var NavigationBar = navController.NavigationBar;
 
-		////	if (PlatformVersion.IsAtLeast(13))
+		////	if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 		////	{
 		////		var navigationBarAppearance = NavigationBar.StandardAppearance;
 
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Handlers
 		////		//	parentingViewController?.SetupDefaultNavigationBarAppearance();
 		////		//}
 		////		//else
-		////		//	navigationBarAppearance.BackgroundColor = barBackgroundColor.ToUIColor();
+		////		//	navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
 
 		////		var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
 		////		navigationBarAppearance.BackgroundImage = backgroundImage;
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Handlers
 
 		////	// Determine new large title text attributes via global static data
 		////	var largeTitleTextAttributes = titleTextAttributes;
-		////	if (PlatformVersion.IsAtLeast(11))
+		////	if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 		////	{
 		////		var globalLargeTitleTextAttributes = UINavigationBar.Appearance.LargeTitleTextAttributes;
 
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Handlers
 		////		};
 		////	}
 
-		////	if (PlatformVersion.IsAtLeast(13))
+		////	if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 		////	{
 		////		if (NavigationBar.CompactAppearance != null)
 		////		{
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Handlers
 		////	{
 		////		NavigationBar.TitleTextAttributes = titleTextAttributes;
 
-		////		if (PlatformVersion.IsAtLeast(11))
+		////		if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 		////			NavigationBar.LargeTitleTextAttributes = largeTitleTextAttributes;
 		////	}
 
@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Handlers
 
 		////	//NavigationBar.TintColor = iconColor == null || NavPage.OnThisPlatform().GetStatusBarTextColorMode() == StatusBarTextColorMode.DoNotAdjust
 		////	//	? UINavigationBar.Appearance.TintColor
-		////	//	: iconColor.ToUIColor();
+		////	//	: iconColor.ToPlatform();
 		////}
 
 

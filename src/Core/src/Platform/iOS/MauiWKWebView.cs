@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Platform
 			var uri = new Uri(url ?? string.Empty);
 			var safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);
 			var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
-			NSUrlRequest request = new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri));
+			NSUrlRequest request = new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri)!);
 
 			LoadRequest(request);
 		}

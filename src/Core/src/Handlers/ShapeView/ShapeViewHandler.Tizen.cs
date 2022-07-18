@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiShapeView CreatePlatformView()
 		{
-			return new MauiShapeView(NativeParent)
+			return new MauiShapeView(PlatformParent)
 			{
 				MinimumWidth = MinimumSize.ToScaledPixel(),
 				MinimumHeight = MinimumSize.ToScaledPixel()
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.ContainerView is WrapperView wrapperView)
 				wrapperView.UpdateShape(shapeView.Shape);
 		}
-		
+
 		public static void MapAspect(IShapeViewHandler handler, IShapeView shapeView)
 		{
 			handler.PlatformView?.InvalidateShape(shapeView);

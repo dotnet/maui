@@ -13,6 +13,7 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		internal static partial class AVPermissions
 		{
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619			
 			internal static PermissionStatus CheckPermissionsStatus(AVAuthorizationMediaType mediaType)
 			{
 				var status = AVCaptureDevice.GetAuthorizationStatus(mediaType);
@@ -38,6 +39,7 @@ namespace Microsoft.Maui.ApplicationModel
 					return PermissionStatus.Unknown;
 				}
 			}
+#pragma warning restore CA1416
 		}
 
 		public partial class Camera : BasePlatformPermission
@@ -256,6 +258,7 @@ namespace Microsoft.Maui.ApplicationModel
 				return RequestSpeechPermission();
 			}
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			internal static PermissionStatus GetSpeechPermissionStatus()
 			{
 				var status = SFSpeechRecognizer.AuthorizationStatus;
@@ -293,6 +296,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 				return tcs.Task;
 			}
+#pragma warning restore CA1416
 		}
 	}
 }

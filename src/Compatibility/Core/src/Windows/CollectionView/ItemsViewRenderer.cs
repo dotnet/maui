@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		UwpScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		UwpScrollBarVisibility? _defaultVerticalScrollVisibility;
 		FrameworkElement _emptyView;
-		View _formsEmptyView; 
+		View _formsEmptyView;
 		bool _emptyViewDisplayed;
 		ScrollViewer _scrollViewer;
 		double _previousHorizontalOffset;
@@ -104,11 +104,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 
 			ListViewBase.ItemsSource = GetCollectionView(CollectionViewSource);
-			
+
 			UpdateEmptyViewVisibility();
 		}
 
-		protected virtual ICollectionView GetCollectionView(CollectionViewSource collectionViewSource) 
+		protected virtual ICollectionView GetCollectionView(CollectionViewSource collectionViewSource)
 		{
 			return collectionViewSource.View;
 		}
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					incc.CollectionChanged -= ItemsChanged;
 				}
 
-				CollectionViewSource.Source = null;		
+				CollectionViewSource.Source = null;
 				CollectionViewSource = null;
 			}
 
@@ -300,7 +300,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			listView.Loaded += ListViewLoaded;
 		}
 
-		protected virtual void OnScrollViewerFound(ScrollViewer scrollViewer) 
+		protected virtual void OnScrollViewerFound(ScrollViewer scrollViewer)
 		{
 			_scrollViewer = scrollViewer;
 			_scrollViewer.ViewChanged += OnScrollViewChanged;
@@ -400,7 +400,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 
 			(ListViewBase as IEmptyView)?.SetEmptyView(_emptyView, _formsEmptyView);
-			
+
 			UpdateEmptyViewVisibility();
 		}
 
@@ -530,7 +530,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Element.SendScrolled(itemsViewScrolledEventArgs);
 		}
 
-		protected virtual ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, ItemsLayoutOrientation orientation, bool advancing) 
+		protected virtual ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, ItemsLayoutOrientation orientation, bool advancing)
 		{
 			var (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex) = GetVisibleIndexes(orientation, advancing);
 
@@ -541,7 +541,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return args;
 		}
 
-		(int firstVisibleItemIndex, int lastVisibleItemIndex, int centerItemIndex) GetVisibleIndexes(ItemsLayoutOrientation itemsLayoutOrientation, bool advancing) 
+		(int firstVisibleItemIndex, int lastVisibleItemIndex, int centerItemIndex) GetVisibleIndexes(ItemsLayoutOrientation itemsLayoutOrientation, bool advancing)
 		{
 			int firstVisibleItemIndex = -1;
 			int lastVisibleItemIndex = -1;
@@ -607,7 +607,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected virtual int ItemCount => CollectionViewSource.View.Count;
 
-		protected virtual object GetItem(int index) 
+		protected virtual object GetItem(int index)
 		{
 			return CollectionViewSource.View[index];
 		}

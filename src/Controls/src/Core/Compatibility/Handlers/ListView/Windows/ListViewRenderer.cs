@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
 						HeaderTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
 						FooterTemplate = (Microsoft.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
-						ItemContainerStyle = (Microsoft.UI.Xaml.Style)WApp.Current.Resources["FormsListViewItem"],
+						ItemContainerStyle = (Microsoft.UI.Xaml.Style)WApp.Current.Resources["MauiListViewItem"],
 						GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
 					};
 
@@ -619,8 +619,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var semanticLocation = new SemanticZoomLocation { Item = c };
 
-			// async scrolling
-			await Control.Dispatcher.RunAsync(global::Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+			// NOTE: For now, WinUI Dispatcher and CoreDisptacher are null. We use DispatcherQueue instead.
+			Control.DispatcherQueue.TryEnqueue(UI.Dispatching.DispatcherQueuePriority.Normal, () =>
 			{
 				switch (toPosition)
 				{

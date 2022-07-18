@@ -170,6 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.BorderThickness = Element.BorderWidth == (double)RadioButton.BorderWidthProperty.DefaultValue ? WinUIHelpers.CreateThickness(3) : WinUIHelpers.CreateThickness(Element.BorderWidth);
 		}
 
+		[PortHandler]
 		void UpdateContent()
 		{
 			var content = Element?.Content;

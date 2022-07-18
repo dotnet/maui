@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// <summary>
 	/// A <see cref="View"/> that can render Blazor content.
 	/// </summary>
-	public class BlazorWebView : View, IBlazorWebView
+	public partial class BlazorWebView : View, IBlazorWebView
 	{
 		internal const string AppHostAddress = "0.0.0.0";
 
@@ -50,6 +50,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public event EventHandler<BlazorWebViewInitializedEventArgs>? BlazorWebViewInitialized;
 
 		/// <inheritdoc />
+#if ANDROID
+		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
+#elif IOS
+		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
+#endif
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
 			// Call into the platform-specific code to get that platform's asset file provider

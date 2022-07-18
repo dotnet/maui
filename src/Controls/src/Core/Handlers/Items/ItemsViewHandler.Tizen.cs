@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override TCollectionView CreatePlatformView()
 		{
-			return new TCollectionView(NativeParent);
+			return new TCollectionView(PlatformParent);
 		}
 
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)

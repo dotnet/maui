@@ -11,6 +11,7 @@ using RectangleF = CoreGraphics.CGRect;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 
 #if __MOBILE__
 using UIKit;
@@ -232,7 +233,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			mapPin = mapView.DequeueReusableAnnotation(defaultPinId);
 			if (mapPin == null)
 			{
+#pragma warning disable CA1416 // TODO: MKPinAnnotationView type has [UnsupportedOSPlatform("macos12.0")], [UnsupportedOSPlatform("ios15.0")], [UnsupportedOSPlatform("tvos15.0")]
 				mapPin = new MKPinAnnotationView(annotation, defaultPinId);
+#pragma warning restore CA1416
 				mapPin.CanShowCallout = true;
 			}
 
@@ -468,7 +471,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			if (((Map)Element).IsShowingUser)
 			{
 				_locationManager = new CLLocationManager();
+#pragma warning disable CA1416 // TODO: 'CLLocationManager.RequestWhenInUseAuthorization()' has [SupportedOSPlatform("macos11.0")]
 				_locationManager.RequestWhenInUseAuthorization();
+#pragma warning restore CA1416
 			}
 #endif
 			((MKMapView)Control).ShowsUserLocation = ((Map)Element).IsShowingUser;
@@ -615,7 +620,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			return new MKPolylineRenderer(mkPolyline)
 			{
 #if __MOBILE__
-				StrokeColor = targetPolyline.StrokeColor.ToUIColor(Colors.Black),
+				StrokeColor = targetPolyline.StrokeColor.ToPlatform(Colors.Black),
 #else
 				StrokeColor = targetPolyline.StrokeColor.ToNSColor(Colors.Black),
 #endif
@@ -646,8 +651,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			return new MKPolygonRenderer(mkPolygon)
 			{
 #if __MOBILE__
-				StrokeColor = targetPolygon.StrokeColor.ToUIColor(Colors.Black),
-				FillColor = targetPolygon.FillColor.ToUIColor(),
+				StrokeColor = targetPolygon.StrokeColor.ToPlatform(Colors.Black),
+				FillColor = targetPolygon.FillColor.ToPlatform(),
 #else
 				StrokeColor = targetPolygon.StrokeColor.ToNSColor(Colors.Black),
 				FillColor = targetPolygon.FillColor.ToNSColor(),
@@ -679,8 +684,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			return new MKCircleRenderer(mkCircle)
 			{
 #if __MOBILE__
-				StrokeColor = targetCircle.StrokeColor.ToUIColor(Colors.Black),
-				FillColor = targetCircle.FillColor.ToUIColor(),
+				StrokeColor = targetCircle.StrokeColor.ToPlatform(Colors.Black),
+				FillColor = targetCircle.FillColor.ToPlatform(),
 #else
 				StrokeColor = targetCircle.StrokeColor.ToNSColor(Colors.Black),
 				FillColor = targetCircle.FillColor.ToNSColor(),

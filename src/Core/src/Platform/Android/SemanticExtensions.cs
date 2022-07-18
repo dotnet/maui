@@ -89,6 +89,14 @@ namespace Microsoft.Maui.Platform
 
 			if (!string.IsNullOrWhiteSpace(newText))
 				info.Text = newText;
+
+			if (!string.IsNullOrWhiteSpace(virtualView.AutomationId) &&
+				platformView?.Context != null)
+			{
+				// This is used by Appium and other automation testing frameworks
+				// to locate views
+				info.ViewIdResourceName = $"{platformView.Context.PackageName}:id/{virtualView.AutomationId}";
+			}
 		}
 
 		public static void UpdateSemantics(this View platformView, IView view)

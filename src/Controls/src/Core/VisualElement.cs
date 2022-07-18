@@ -441,16 +441,10 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Bounds']/Docs" />
 		public Rect Bounds
 		{
-			get { return new Rect(X, Y, Width, Height); }
+			get { return IsMocked() ? new Rect(_mockX, _mockY, _mockWidth, _mockHeight) : _frame; }
 			private set
 			{
-				if (value.X == X && value.Y == Y && value.Height == Height && value.Width == Width)
-					return;
-				BatchBegin();
-				X = value.X;
-				Y = value.Y;
-				SetSize(value.Width, value.Height);
-				BatchCommit();
+				Frame = value;
 			}
 		}
 
@@ -738,7 +732,6 @@ namespace Microsoft.Maui.Controls
 			if (!Batched)
 			{
 				BatchCommitted?.Invoke(this, new EventArg<VisualElement>(this));
-				DependencyService.Get<IPlatformInvalidate>()?.Invalidate(this);
 			}
 		}
 
@@ -817,14 +810,14 @@ namespace Microsoft.Maui.Controls
 			Size request = result.Request;
 			Size minimum = result.Minimum;
 
-			if (heightRequest != -1)
+			if (heightRequest != -1 && !double.IsNaN(heightRequest))
 			{
 				request.Height = heightRequest;
 				if (!hasMinimum)
 					minimum.Height = heightRequest;
 			}
 
-			if (widthRequest != -1)
+			if (widthRequest != -1 && !double.IsNaN(widthRequest))
 			{
 				request.Width = widthRequest;
 				if (!hasMinimum)
@@ -905,7 +898,9 @@ namespace Microsoft.Maui.Controls
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
+
 			var view = child as View;
+
 			if (view != null)
 				ComputeConstraintForView(view);
 		}
@@ -913,6 +908,7 @@ namespace Microsoft.Maui.Controls
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
+
 			if (child is View view)
 				view.ComputedConstraint = LayoutConstraint.None;
 		}
@@ -967,7 +963,22 @@ namespace Microsoft.Maui.Controls
 		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_measureCache.Clear();
-			(this as IView)?.InvalidateMeasure();
+
+			// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 
+			// VerticalOptionsChanged will need to call ParentView.InvalidateArrange() instead
+
+			switch (trigger)
+			{
+				case InvalidationTrigger.MarginChanged:
+				case InvalidationTrigger.HorizontalOptionsChanged:
+				case InvalidationTrigger.VerticalOptionsChanged:
+					ParentView?.InvalidateMeasure();
+					break;
+				default:
+					(this as IView)?.InvalidateMeasure();
+					break;
+			}
+
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
 		}
 
@@ -996,7 +1007,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void MockBounds(Rect bounds)
 		{
-#if NETSTANDARD2_0 || NET6_0
+#if NETSTANDARD2_0 || NET6_0_OR_GREATER
 			(_mockX, _mockY, _mockWidth, _mockHeight) = bounds;
 #else
 			_mockX = bounds.X;
@@ -1004,6 +1015,11 @@ namespace Microsoft.Maui.Controls
 			_mockWidth = bounds.Width;
 			_mockHeight = bounds.Height;
 #endif
+		}
+
+		bool IsMocked()
+		{
+			return _mockX != -1 || _mockY != -1 || _mockWidth != -1 || _mockHeight != -1;
 		}
 
 		internal virtual void OnConstraintChanged(LayoutConstraint oldConstraint, LayoutConstraint newConstraint) => ComputeConstrainsForChildren();
@@ -1184,16 +1200,21 @@ namespace Microsoft.Maui.Controls
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
-		void SetSize(double width, double height)
+		void UpdateBoundsComponents(Rect bounds)
 		{
-			if (Width == width && Height == height)
-				return;
+			_frame = bounds;
 
-			Width = width;
-			Height = height;
+			BatchBegin();
 
-			SizeAllocated(width, height);
+			X = bounds.X;
+			Y = bounds.Y;
+			Width = bounds.Width;
+			Height = bounds.Height;
+
+			SizeAllocated(Width, Height);
 			SizeChanged?.Invoke(this, EventArgs.Empty);
+
+			BatchCommit();
 		}
 
 		public class FocusRequestArgs : EventArgs

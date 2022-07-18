@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
 
-			var view = new ContentCanvas(NativeParent, VirtualView)
+			var view = new ContentCanvas(PlatformParent, VirtualView)
 			{
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange

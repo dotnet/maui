@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Element.PropertyChanged += OnElementPropertyChanged;
 			(Element as ISearchHandlerController).ListProxyChanged += OnSearchResultListChanged;
 
-			Control = new TSearchBar(NativeParent)
+			Control = new TSearchBar(PlatformParent)
 			{
 				IsSingleLine = true,
 			};
@@ -49,15 +49,15 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		public SearchHandler Element { get; }
-		
+
 		public EvasObject? PlatformView => Control;
 
 		protected IMauiContext? MauiContext { get; private set; }
 
-		protected EvasObject NativeParent => MauiContext?.GetNativeParent() ?? throw new InvalidOperationException($"NativeParent cannot be null here");
+		protected EvasObject PlatformParent => MauiContext?.GetPlatformParent() ?? throw new InvalidOperationException($"PlatformParent cannot be null here");
 
 		ISearchHandlerController SearchHandlerController => Element;
-		
+
 		TSearchBar? Control { get; }
 
 		~ShellSearchView()

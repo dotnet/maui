@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (e.PropertyName == Button.TextColorProperty.PropertyName)
 				UpdateTextColor();
-			else if (   e.PropertyName == FontElement.FontAttributesProperty.PropertyName
+			else if (e.PropertyName == FontElement.FontAttributesProperty.PropertyName
 					 || e.PropertyName == FontElement.FontAutoScalingEnabledProperty.PropertyName
 					 || e.PropertyName == FontElement.FontFamilyProperty.PropertyName
 					 || e.PropertyName == FontElement.FontSizeProperty.PropertyName)
@@ -164,12 +164,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Control == null)
 				return;
 
-			UIColor backgroundColor = Element.BackgroundColor == null ? null : Element.BackgroundColor.ToUIColor();
+			UIColor backgroundColor = Element.BackgroundColor == null ? null : Element.BackgroundColor.ToPlatform();
 
 			if (!Brush.IsNullOrEmpty(brush))
 			{
 				if (brush is SolidColorBrush solidColorBrush)
-					backgroundColor = solidColorBrush.Color.ToUIColor();
+					backgroundColor = solidColorBrush.Color.ToPlatform();
 				else
 				{
 					var backgroundImage = this.GetBackgroundImage(brush);
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else
 			{
-				var color = Element.TextColor.ToUIColor();
+				var color = Element.TextColor.ToPlatform();
 
 				Control.SetTitleColor(color, UIControlState.Normal);
 				Control.SetTitleColor(color, UIControlState.Highlighted);

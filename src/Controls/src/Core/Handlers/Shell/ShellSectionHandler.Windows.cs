@@ -9,7 +9,7 @@ using WFrame = Microsoft.UI.Xaml.Controls.Frame;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class ShellSectionHandler : ElementHandler<ShellSection, WFrame>
+	public partial class ShellSectionHandler : ElementHandler<ShellSection, WFrame>, IAppearanceObserver
 	{
 		public static PropertyMapper<ShellSection, ShellSectionHandler> Mapper =
 				new PropertyMapper<ShellSection, ShellSectionHandler>(ElementMapper)
@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_shellSection != null)
 			{
 				((IShellSectionController)_shellSection).NavigationRequested -= OnNavigationRequested;
+				((IShellController)_shellSection.FindParentOfType<Shell>()!).RemoveAppearanceObserver(this);
 			}
 
 			// If we've already connected to the navigation manager
@@ -69,6 +70,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_shellSection != null)
 			{
 				((IShellSectionController)_shellSection).NavigationRequested += OnNavigationRequested;
+				((IShellController)_shellSection.FindParentOfType<Shell>()!).AddAppearanceObserver(this, _shellSection);
 			}
 		}
 
@@ -123,6 +125,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				throw new InvalidOperationException("Args must be NavigationRequest");
 			}
+		}
+
+		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
+		{
+			// I realize this is empty but it's necessary to register the active section as 
+			// an appearance observer so that shell fires appearance changes when shell section changes
 		}
 	}
 }

@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_defaultTintColor = Control.BarTintColor;
 			}
 
-			Control.BarTintColor = color.ToUIColor(_defaultTintColor);
+			Control.BarTintColor = color.ToPlatform(_defaultTintColor);
 
 			Control.SetBackgroundImage(new UIImage(), UIBarPosition.Any, UIBarMetrics.Default);
 
@@ -167,6 +167,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateCancelButton();
 		}
 
+		[PortHandler]
 		protected override void SetBackground(Brush brush)
 		{
 			base.SetBackground(brush);
@@ -175,7 +176,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			if (brush is SolidColorBrush solidColorBrush)
-				Control.BarTintColor = solidColorBrush.Color.ToUIColor(_defaultTintColor);
+				Control.BarTintColor = solidColorBrush.Color.ToPlatform(_defaultTintColor);
 		}
 
 		public override CoreGraphics.CGSize SizeThatFits(CoreGraphics.CGSize size)
@@ -285,8 +286,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else
 			{
-				cancelButton.SetTitleColor(Element.CancelButtonColor.ToUIColor(), UIControlState.Normal);
-				cancelButton.SetTitleColor(Element.CancelButtonColor.ToUIColor(), UIControlState.Highlighted);
+				cancelButton.SetTitleColor(Element.CancelButtonColor.ToPlatform(), UIControlState.Normal);
+				cancelButton.SetTitleColor(Element.CancelButtonColor.ToPlatform(), UIControlState.Highlighted);
 
 				if (_useLegacyColorManagement)
 				{
@@ -294,7 +295,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				else
 				{
-					cancelButton.SetTitleColor(Element.CancelButtonColor.ToUIColor(), UIControlState.Disabled);
+					cancelButton.SetTitleColor(Element.CancelButtonColor.ToPlatform(), UIControlState.Disabled);
 				}
 			}
 		}
@@ -377,11 +378,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_useLegacyColorManagement)
 			{
 				var color = Element.IsEnabled && targetColor != null ? targetColor : _defaultTextColor.ToColor();
-				_textField.TextColor = color.ToUIColor();
+				_textField.TextColor = color.ToPlatform();
 			}
 			else
 			{
-				_textField.TextColor = targetColor == null ? _defaultTextColor : targetColor.ToUIColor();
+				_textField.TextColor = targetColor == null ? _defaultTextColor : targetColor.ToPlatform();
 			}
 		}
 
@@ -440,6 +441,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return accessoryView;
 		}
 
+		[PortHandler]
 		void UpdateSearchBarStyle()
 		{
 			Control.SearchBarStyle = Element.OnThisPlatform().GetSearchBarStyle().ToPlatformSearchBarStyle();

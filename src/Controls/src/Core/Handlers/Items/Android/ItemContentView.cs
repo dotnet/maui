@@ -26,6 +26,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			Content = CreateHandler(view, itemsView);
 			var platformView = Content.ContainerView ?? Content.PlatformView;
+			//make sure we don't belong to a previous Holder
+			platformView.RemoveFromParent();
 			AddView(platformView);
 
 			//TODO: RUI IS THIS THE BEST WAY TO CAST? 
@@ -63,17 +65,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var size = Context.FromPixels(r - l, b - t);
+			var size = this.FromPixels(r - l, b - t);
 
 			//TODO: RUI Is this the best way?
 			//View.Arrange(new Rectangle(Point.Zero, size));
 			//Arrange doesn't seem to work as expected
 
-			var mauiControlsView = View as View;
-			if (mauiControlsView == null)
+			if (View?.Handler is not IPlatformViewHandler handler)
 				return;
 
-			mauiControlsView.Layout(new Rect(Point.Zero, size));
+			handler.LayoutVirtualView(l, t, r, b);
 
 			UpdateContentLayout();
 		}
@@ -98,22 +99,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var width = MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified
 				? double.PositiveInfinity
-				: Context.FromPixels(pixelWidth);
+				: this.FromPixels(pixelWidth);
 
 			var height = MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified
 				? double.PositiveInfinity
-				: Context.FromPixels(pixelHeight);
+				: this.FromPixels(pixelHeight);
 
-			SizeRequest measure = (View as VisualElement).Measure(width, height, MeasureFlags.IncludeMargins);
+
+			var measure = View.Measure(width, height);
 
 			if (pixelWidth == 0)
 			{
-				pixelWidth = (int)Context.ToPixels(measure.Request.Width);
+				pixelWidth = (int)this.ToPixels(measure.Width);
 			}
 
 			if (pixelHeight == 0)
 			{
-				pixelHeight = (int)Context.ToPixels(measure.Request.Height);
+				pixelHeight = (int)this.ToPixels(measure.Height);
 			}
 
 			_reportMeasure?.Invoke(new Size(pixelWidth, pixelHeight));
@@ -137,15 +139,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdateContentLayout()
 		{
 			VisualElement mauiControlsView = View as VisualElement;
-			AView aview = Content.ContainerView ?? Content.PlatformView;
+			AView aview = Content.ToPlatform();
 
 			if (mauiControlsView == null || aview == null)
 				return;
 
-			var x = (int)Context.ToPixels(mauiControlsView.X);
-			var y = (int)Context.ToPixels(mauiControlsView.Y);
-			var width = Math.Max(0, (int)Context.ToPixels(mauiControlsView.Width));
-			var height = Math.Max(0, (int)Context.ToPixels(mauiControlsView.Height));
+			var x = (int)this.ToPixels(mauiControlsView.X);
+			var y = (int)this.ToPixels(mauiControlsView.Y);
+			var width = Math.Max(0, (int)this.ToPixels(mauiControlsView.Width));
+			var height = Math.Max(0, (int)this.ToPixels(mauiControlsView.Height));
 
 			aview.Layout(x, y, width, height);
 

@@ -42,8 +42,10 @@ namespace Microsoft.Maui.Media
 
 		public async Task<FileResult> PhotoAsync(MediaPickerOptions options, bool photo, bool pickExisting)
 		{
+#pragma warning disable CA1416 // TODO: UIImagePickerControllerSourceType.PhotoLibrary, UTType.Image, UTType.Movie is supported on ios version 14 and above
 			var sourceType = pickExisting ? UIImagePickerControllerSourceType.PhotoLibrary : UIImagePickerControllerSourceType.Camera;
 			var mediaType = photo ? UTType.Image : UTType.Movie;
+#pragma warning restore CA1416
 
 			if (!UIImagePickerController.IsSourceTypeAvailable(sourceType))
 				throw new FeatureNotSupportedException();
@@ -55,7 +57,9 @@ namespace Microsoft.Maui.Media
 
 			// Check if picking existing or not and ensure permission accordingly as they can be set independently from each other
 			if (pickExisting && !OperatingSystem.IsIOSVersionAtLeast(11, 0))
+#pragma warning disable CA1416 // TODO: Permissions.Photos is supported on ios version 14 and above
 				await Permissions.EnsureGrantedAsync<Permissions.Photos>();
+#pragma warning restore CA1416
 
 			if (!pickExisting)
 				await Permissions.EnsureGrantedAsync<Permissions.Camera>();
@@ -133,12 +137,14 @@ namespace Microsoft.Maui.Media
 				{
 					if (!assetUrl.Scheme.Equals("assets-library", StringComparison.OrdinalIgnoreCase))
 						return new UIDocumentFileResult(assetUrl);
-
+#pragma warning disable CA1416 // TODO: 'UIImagePickerController.PHAsset' is only supported on: 'ios' from version 11.0 to 14.0
 					phAsset = info.ValueForKey(UIImagePickerController.PHAsset) as PHAsset;
+#pragma warning restore CA1416
 				}
 			}
 
 #if !MACCATALYST
+#pragma warning disable CA1416 // TODO: 'UIImagePickerController.ReferenceUrl' is unsupported on 'ios' 11.0 and later
 			if (phAsset == null)
 			{
 				assetUrl = info[UIImagePickerController.ReferenceUrl] as NSUrl;
@@ -146,6 +152,7 @@ namespace Microsoft.Maui.Media
 				if (assetUrl != null)
 					phAsset = PHAsset.FetchAssets(new NSUrl[] { assetUrl }, null)?.LastObject as PHAsset;
 			}
+#pragma warning restore CA1416 // 'PHAsset.FetchAssets(NSUrl[], PHFetchOptions?)' is unsupported on 'ios' 11.0 and later
 #endif
 
 			if (phAsset == null || assetUrl == null)
@@ -158,8 +165,9 @@ namespace Microsoft.Maui.Media
 
 			if (phAsset == null || assetUrl == null)
 				return null;
-
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			string originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
+#pragma warning restore CA1416
 			return new PHAssetFileResult(assetUrl, phAsset, originalFilename);
 		}
 

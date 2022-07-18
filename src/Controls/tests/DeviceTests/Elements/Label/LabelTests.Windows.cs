@@ -15,7 +15,7 @@ namespace Microsoft.Maui.DeviceTests
 		// But for now we have to preserve the old Forms behavior and make the tests pass, so
 		// these tests will consider Windows's "LineBreakMode" to be it's text trimming mode
 		TextTrimming GetPlatformLineBreakMode(LabelHandler labelHandler) =>
-			GetPlatformLabel(labelHandler).TextTrimming; 
+			GetPlatformLabel(labelHandler).TextTrimming;
 
 		int GetPlatformMaxLines(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).MaxLines;

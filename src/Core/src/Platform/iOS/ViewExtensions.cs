@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void Focus(this UIView platformView, FocusRequest request)
 		{
-			platformView.BecomeFirstResponder();
+			request.IsFocused = platformView.BecomeFirstResponder();
 		}
 
 		public static void Unfocus(this UIView platformView, IView view)
@@ -40,32 +40,20 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVisibility(this UIView platformView, Visibility visibility)
 		{
-			var shouldLayout = false;
-
 			switch (visibility)
 			{
 				case Visibility.Visible:
-					shouldLayout = platformView.Inflate();
+					platformView.Inflate();
 					platformView.Hidden = false;
 					break;
 				case Visibility.Hidden:
-					shouldLayout = platformView.Inflate();
+					platformView.Inflate();
 					platformView.Hidden = true;
 					break;
 				case Visibility.Collapsed:
 					platformView.Hidden = true;
 					platformView.Collapse();
-					shouldLayout = true;
 					break;
-			}
-
-			// If the view is just switching between Visible and Hidden, then a re-layout isn't necessary. The return value
-			// from Inflate will tell us if the view was previously collapsed. If the view is switching to or from a collapsed
-			// state, then we'll have to ask for a re-layout.
-
-			if (shouldLayout)
-			{
-				platformView.Superview?.SetNeedsLayout();
 			}
 		}
 
@@ -79,16 +67,24 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateBackground(this UIView platformView, IView view) =>
-			platformView.UpdateBackground(view.Background);
+		public static void UpdateBackground(this UIView platformView, IView view)
+		{
+			platformView.UpdateBackground(view.Background, view as IButtonStroke);
+		}
 
-		public static void UpdateBackground(this UIView platformView, Paint? paint)
+		public static void UpdateBackground(this UIView platformView, Paint? paint, IButtonStroke? stroke = null)
 		{
 			// Remove previous background gradient layer if any
 			platformView.RemoveBackgroundLayer();
 
 			if (paint.IsNullOrEmpty())
-				return;
+			{
+				if (platformView is LayoutView)
+					platformView.BackgroundColor = null;
+				else
+					return;
+			}
+
 
 			if (paint is SolidPaint solidPaint)
 			{
@@ -109,6 +105,9 @@ namespace Microsoft.Maui.Platform
 				{
 					backgroundLayer.Name = BackgroundLayerName;
 					platformView.BackgroundColor = UIColor.Clear;
+
+					backgroundLayer.UpdateLayerBorder(stroke);
+
 					platformView.InsertBackgroundLayer(backgroundLayer, 0);
 				}
 			}
@@ -264,6 +263,24 @@ namespace Microsoft.Maui.Platform
 			platformView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
 		}
 
+		public static async Task UpdateBackgroundImageSourceAsync(this UIView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		{
+			if (provider == null)
+				return;
+
+			if (imageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(imageSource);
+				var result = await service.GetImageAsync(imageSource);
+				var backgroundImage = result?.Value;
+
+				if (backgroundImage == null)
+					return;
+
+				platformView.BackgroundColor = UIColor.FromPatternImage(backgroundImage);
+			}
+		}
+
 		public static int IndexOfSubview(this UIView platformView, UIView subview)
 		{
 			if (platformView.Subviews.Length == 0)
@@ -376,6 +393,17 @@ namespace Microsoft.Maui.Platform
 		internal static Matrix4x4 GetViewTransform(this UIView view)
 			=> view.Layer.GetViewTransform();
 
+		internal static Point GetLocationOnScreen(this UIView view) =>
+			view.GetPlatformViewBounds().Location;
+
+		internal static Point? GetLocationOnScreen(this IElement element)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			return (element.ToPlatform())?.GetLocationOnScreen();
+		}
+
 		internal static Graphics.Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
 
@@ -394,16 +422,6 @@ namespace Microsoft.Maui.Platform
 		internal static UIView? GetParent(this UIView? view)
 		{
 			return view?.Superview;
-		}
-
-		internal static void LayoutToSize(this IView view, double width, double height)
-		{
-			var platformFrame = new CGRect(0, 0, width, height);
-
-			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
-				viewHandler.PlatformView.Frame = platformFrame;
-
-			view.Arrange(platformFrame.ToRectangle());
 		}
 
 		internal static Size LayoutToMeasuredSize(this IView view, double width, double height)
@@ -518,6 +536,21 @@ namespace Microsoft.Maui.Platform
 			};
 
 			return disposable;
+		}
+
+		internal static void UpdateLayerBorder(this CoreAnimation.CALayer layer, IButtonStroke? stroke)
+		{
+			if (stroke == null)
+				return;
+
+			if (stroke.StrokeColor != null)
+				layer.BorderColor = stroke.StrokeColor.ToCGColor();
+
+			if (stroke.StrokeThickness >= 0)
+				layer.BorderWidth = (float)stroke.StrokeThickness;
+
+			if (stroke.CornerRadius >= 0)
+				layer.CornerRadius = stroke.CornerRadius;
 		}
 	}
 }

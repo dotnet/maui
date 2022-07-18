@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						await stream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
 					}
 				}
-				
+
 				var hotReloadedContent = Stream.Null;
 				if (StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, requestUri, ref statusCode, ref hotReloadedContent, headers))
 				{

@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (textColor == null || (!Element.IsEnabled && _useLegacyColorManagement))
 				Control.TextColor = _defaultTextColor;
 			else
-				Control.TextColor = textColor.ToUIColor();
+				Control.TextColor = textColor.ToPlatform();
 
 			// HACK This forces the color to update; there's probably a more elegant way to make this happen
 			Control.Text = Control.Text;

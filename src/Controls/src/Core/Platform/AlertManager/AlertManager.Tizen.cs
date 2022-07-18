@@ -22,23 +22,23 @@ namespace Microsoft.Maui.Controls.Platform
 		internal void Subscribe(Window window)
 		{
 			IMauiContext mauiContext = window?.MauiContext;
-			EWindow nativeWindow = mauiContext.GetNativeWindow();
+			EWindow platformWindow = mauiContext.GetPlatformWindow();
 
-			if (mauiContext == null || nativeWindow == null)
+			if (mauiContext == null || platformWindow == null)
 				return;
 
-			if (Subscriptions.Any(s => s.Window == nativeWindow))
+			if (Subscriptions.Any(s => s.Window == platformWindow))
 			{
 				return;
 			}
 
-			Subscriptions.Add(new AlertRequestHelper(nativeWindow, mauiContext));
+			Subscriptions.Add(new AlertRequestHelper(platformWindow, mauiContext));
 		}
 
 		internal void Unsubscribe(Window window)
 		{
 			IMauiContext mauiContext = window?.MauiContext;
-			EWindow nativeWindow = mauiContext.GetNativeWindow();
+			EWindow nativeWindow = mauiContext.GetPlatformWindow();
 
 			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
 
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (null == _pageBusyDialog)
 			{
-				_pageBusyDialog = new Dialog(MauiContext.GetNativeParent())
+				_pageBusyDialog = new Dialog(MauiContext.GetPlatformParent())
 				{
 					Orientation = PopupOrientation.Center,
 					BackgroundColor = EColor.Transparent
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!PageIsInThisContext(sender))
 				return;
 
-			var alert = Dialog.CreateDialog(MauiContext.GetNativeParent(), (arguments.Accept != null));
+			var alert = Dialog.CreateDialog(MauiContext.GetPlatformParent(), (arguments.Accept != null));
 
 			alert.Title = arguments.Title;
 			var message = arguments.Message?.Replace("&", "&amp;", StringComparison.Ordinal).Replace("<", "&lt;", StringComparison.Ordinal).Replace(">", "&gt;", StringComparison.Ordinal).Replace(Environment.NewLine, "<br>", StringComparison.Ordinal);
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!PageIsInThisContext(sender))
 				return;
 
-			var alert = Dialog.CreateDialog(MauiContext.GetNativeParent());
+			var alert = Dialog.CreateDialog(MauiContext.GetPlatformParent());
 
 			alert.Title = arguments.Title;
 			var box = new EBox(alert);
@@ -236,7 +236,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!PageIsInThisContext(sender))
 				return;
 
-			var prompt = Dialog.CreateDialog(MauiContext.GetNativeParent(), (args.Accept != null));
+			var prompt = Dialog.CreateDialog(MauiContext.GetPlatformParent(), (args.Accept != null));
 			prompt.Title = args.Title;
 
 			var entry = new Entry
@@ -325,7 +325,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool PageIsInThisContext(IView sender)
 		{
 			var context = sender.Handler?.MauiContext ?? null;
-			return context?.GetNativeWindow() == Window;
+			return context?.GetPlatformWindow() == Window;
 		}
 	}
 }

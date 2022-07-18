@@ -11,13 +11,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var nativeContent = window.Content.ToContainerView(handler.MauiContext);
+			var platformContent = window.Content.ToContainerView(handler.MauiContext);
 
-			nativeContent.SetAlignment(-1, -1);
-			nativeContent.SetWeight(1, 1);
-			nativeContent.Show();
+			platformContent.SetAlignment(-1, -1);
+			platformContent.SetWeight(1, 1);
+			platformContent.Show();
 			handler.MauiContext.GetModalStack().Reset();
-			handler.MauiContext.GetModalStack().Push(nativeContent);
+			handler.MauiContext.GetModalStack().Push(platformContent);
 
 			if (window.VisualDiagnosticsOverlay != null)
 				window.VisualDiagnosticsOverlay.Initialize();

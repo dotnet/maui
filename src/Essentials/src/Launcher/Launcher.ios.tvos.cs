@@ -35,6 +35,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		Task<bool> PlatformOpenAsync(OpenFileRequest request)
 		{
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			documentController = new UIDocumentInteractionController()
 			{
 				Name = request.File.FileName,
@@ -58,6 +59,7 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 
 			documentController.PresentOpenInMenu(rect, view, true);
+#pragma warning restore CA1416
 			return Task.FromResult(true);
 		}
 

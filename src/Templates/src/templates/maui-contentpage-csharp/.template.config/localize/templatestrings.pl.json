@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI ContentPage (C#) (wersja zapoznawcza)",
+  "name": ".NET MAUI ContentPage (C#)",
   "postActions/openInEditor/description": "Otwiera plik NewPage1.cs w edytorze.",
   "symbols/namespace/description": "Przestrzeń nazw wygenerowanego kodu."
 }

@@ -32,11 +32,23 @@ namespace Microsoft.Maui.Platform
 		// TODO FromPixels/ToPixels is both not terribly descriptive and also possibly sort of inaccurate?
 		// These need better names. It's really To/From Device-Independent, but that doesn't exactly roll off the tongue.
 
+		internal static double FromPixels(this View view, double pixels)
+		{
+			if (s_displayDensity != float.MinValue)
+				return pixels / s_displayDensity;
+			return view.Context.FromPixels(pixels);
+		}
+
 		public static double FromPixels(this Context? self, double pixels)
 		{
 			EnsureMetrics(self);
 
 			return pixels / s_displayDensity;
+		}
+
+		internal static Size FromPixels(this View view, double width, double height)
+		{
+			return new Size(view.FromPixels(width), view.FromPixels(height));
 		}
 
 		public static Size FromPixels(this Context context, double width, double height)
@@ -51,6 +63,13 @@ namespace Microsoft.Maui.Platform
 				context.FromPixels(thickness.Right),
 				context.FromPixels(thickness.Bottom));
 
+		public static Rect FromPixels(this Context context, Rect rect) =>
+			new Rect(
+				context.FromPixels(rect.X),
+				context.FromPixels(rect.Y),
+				context.FromPixels(rect.Width),
+				context.FromPixels(rect.Height));
+
 		public static void HideKeyboard(this Context self, global::Android.Views.View view)
 		{
 			// Service may be null in the context of the Android Designer
@@ -63,6 +82,13 @@ namespace Microsoft.Maui.Platform
 			// Can happen in the context of the Android Designer
 			if (self.GetSystemService(Context.InputMethodService) is InputMethodManager service)
 				service.ShowSoftInput(view, ShowFlags.Implicit);
+		}
+
+		internal static float ToPixels(this View view, double dp)
+		{
+			if (s_displayDensity != float.MinValue)
+				return (float)Math.Ceiling(dp * s_displayDensity);
+			return view.Context.ToPixels(dp);
 		}
 
 		public static float ToPixels(this Context? self, double dp)
@@ -171,7 +197,7 @@ namespace Microsoft.Maui.Platform
 					{
 						if (context.Resources != null)
 						{
-							if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
+							if (OperatingSystem.IsAndroidVersionAtLeast(23))
 								return context.Resources.GetColor(mTypedValue.ResourceId, context.Theme);
 							else
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -369,8 +395,8 @@ namespace Microsoft.Maui.Platform
 			return mode.MakeMeasureSpec(deviceConstraint);
 		}
 
-		public static float GetDisplayDensity(this Context context) =>
-			context.Resources?.DisplayMetrics?.Density ?? 1.0f;
+		public static float GetDisplayDensity(this Context? context) =>
+			context?.Resources?.DisplayMetrics?.Density ?? 1.0f;
 
 		public static Rect ToCrossPlatformRectInReferenceFrame(this Context context, int left, int top, int right, int bottom)
 		{

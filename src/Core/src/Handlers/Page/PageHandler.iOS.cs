@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UIKit;
+
 
 namespace Microsoft.Maui.Handlers
 {

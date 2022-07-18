@@ -45,11 +45,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			if (_renderer == null || _renderer.View == null)
 				return;
-			
-			foreach(var modal in _modals)
+
+			foreach (var modal in _modals)
 			{
 				var modalRenderer = Platform.GetRenderer(modal);
-				if(modalRenderer != null)
+				if (modalRenderer != null)
 					modalRenderer.SetElementSize(new Size(_renderer.View.Bounds.Width, _renderer.View.Bounds.Height));
 			}
 		}
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				{
 					modal.DisposeModalAndChildRenderers();
 					var removingIndex = Array.IndexOf(_renderer.ChildViewControllers, controller);
-					if(removingIndex >= 0)
+					if (removingIndex >= 0)
 						_renderer.RemoveChildViewController(removingIndex);
 				}, modal);
 			return task;

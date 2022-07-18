@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
@@ -10,6 +11,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ApplicationExtensions
 	{
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("tvos13.0")]
 		public static void RequestNewWindow(this IUIApplicationDelegate platformApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext || args is null)
@@ -42,6 +45,8 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("tvos13.0")]
 		public static void CreatePlatformWindow(this IUIWindowSceneDelegate sceneDelegate, IApplication application, UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
 		{
 			// Find any userinfo/dictionaries we might pass into the activation state
@@ -75,7 +80,9 @@ namespace Microsoft.Maui.Platform
 				return null;
 
 			var uiWindow = windowScene is not null
+#pragma warning disable CA1416 // UIWindow(windowScene) is only supported on: ios 13.0 and later
 				? new UIWindow(windowScene)
+#pragma warning restore CA1416
 				: new UIWindow();
 
 			var mauiContext = applicationContext.MakeWindowScope(uiWindow, out var windowScope);

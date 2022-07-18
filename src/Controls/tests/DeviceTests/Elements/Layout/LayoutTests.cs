@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -91,6 +89,67 @@ namespace Microsoft.Maui.DeviceTests
 			_ = await CreateHandlerAsync<LayoutHandler>(control);
 
 			Assert.Equal(expected, child.InputTransparent);
+		}
+
+		[Theory(
+#if IOS
+			Skip = "Not able to debug iOS right now"
+#elif ANDROID
+			Skip = "Android stopped working in the tests, but works in real life..."
+#endif
+		)]
+		[InlineData(typeof(Grid), LayoutAlignment.Center)]
+		[InlineData(typeof(Grid), LayoutAlignment.Start)]
+		[InlineData(typeof(Grid), LayoutAlignment.End)]
+		[InlineData(typeof(VerticalStackLayout), LayoutAlignment.Center)]
+		[InlineData(typeof(VerticalStackLayout), LayoutAlignment.Start)]
+		[InlineData(typeof(VerticalStackLayout), LayoutAlignment.End)]
+		public async Task UpdatingLayoutOptionsTriggersParentToRepositionControl(Type layoutType, LayoutAlignment layoutAlignment)
+		{
+			var layoutOptions = new LayoutOptions(layoutAlignment, false);
+
+			// create a layout with the values all set before creating the handler
+			CreateLayout(layoutType, out var initialLayout, out var initialLabel);
+			initialLabel.HorizontalOptions = layoutOptions;
+
+			// create a layout that will update once attached
+			CreateLayout(layoutType, out var updatingLayout, out var updatingLabel);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				_ = CreateHandler<LabelHandler>(initialLabel);
+				var initialHandler = CreateHandler<LayoutHandler>(initialLayout);
+				var initialBitmap = await initialHandler.PlatformView.ToBitmap();
+
+				_ = CreateHandler<LabelHandler>(updatingLabel);
+				var updatingHandler = CreateHandler<LayoutHandler>(updatingLayout);
+				var updatingBitmap = await updatingHandler.PlatformView.AttachAndRun(() =>
+				{
+					updatingLabel.HorizontalOptions = layoutOptions;
+
+					return updatingHandler.PlatformView.ToBitmap();
+				});
+
+				await initialBitmap.AssertEqual(updatingBitmap);
+			});
+
+			static void CreateLayout(Type layoutType, out Layout layout, out Label label)
+			{
+				layout = Activator.CreateInstance(layoutType) as Layout;
+				layout.WidthRequest = 200;
+				layout.HeightRequest = 100;
+				layout.Background = Colors.Red;
+
+				label = new Label
+				{
+					WidthRequest = 50,
+					HeightRequest = 50,
+					Text = "Text",
+					TextColor = Colors.Blue,
+				};
+
+				layout.Add(label);
+			}
 		}
 	}
 }

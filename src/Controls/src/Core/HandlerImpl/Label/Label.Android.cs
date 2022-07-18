@@ -27,12 +27,11 @@ namespace Microsoft.Maui.Controls
 				if (_mauiTextView != null)
 				{
 					_mauiTextView.LayoutChanged -= OnLayoutChanged;
-					_mauiTextView.Dispose();
 					_mauiTextView = null;
 				}
 			}
 		}
-		
+
 		public static void MapTextType(LabelHandler handler, Label label)
 		{
 			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
@@ -40,6 +39,17 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapText(LabelHandler handler, Label label)
 		{
+			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
+		}
+
+		// TODO: NET7 make this public
+		internal static void MapTextColor(LabelHandler handler, Label label)
+		{
+			handler.PlatformView?.UpdateTextColor(label);
+
+			if (label?.HasFormattedTextSpans ?? false)
+				return;
+
 			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
 		}
 

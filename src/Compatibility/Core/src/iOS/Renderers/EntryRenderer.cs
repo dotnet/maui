@@ -278,14 +278,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (_useLegacyColorManagement)
 			{
-				Control.TextColor = textColor == null || !Element.IsEnabled ? _defaultTextColor : textColor.ToUIColor();
+				Control.TextColor = textColor == null || !Element.IsEnabled ? _defaultTextColor : textColor.ToPlatform();
 			}
 			else
 			{
-				Control.TextColor = textColor == null ? _defaultTextColor : textColor.ToUIColor();
+				Control.TextColor = textColor == null ? _defaultTextColor : textColor.ToPlatform();
 			}
 		}
 
+		[PortHandler]
 		void UpdateAdjustsFontSizeToFitWidth()
 		{
 			Control.AdjustsFontSizeToFitWidth = Element.OnThisPlatform().AdjustsFontSizeToFitWidth();
@@ -297,7 +298,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (initialSize == CGSize.Empty)
 			{
 				NSString testString = new NSString("Tj");
+#pragma warning disable CA1416 // TODO: API has [UnsupportedOSPlatform("ios7.0")]
 				initialSize = testString.StringSize(Control.Font);
+#pragma warning restore CA1416
 			}
 
 			Control.Font = Element.ToUIFont();
@@ -509,6 +512,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return start;
 		}
 
+		[PortHandler]
 		void UpdateCursorColor()
 		{
 			var control = Control;
@@ -521,7 +525,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (color == null)
 					control.TintColor = _defaultCursorColor;
 				else
-					control.TintColor = color.ToUIColor();
+					control.TintColor = color.ToPlatform();
 			}
 		}
 
