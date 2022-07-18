@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using Windows.UI;
 using Microsoft.UI;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
