@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Platform
 		DropShadow? _dropShadow;
 		WSize _shadowHostSize;
 		Path? _borderPath;
+		Path? _shadowPath;
 
 		FrameworkElement? _child;
 
@@ -50,6 +51,26 @@ namespace Microsoft.Maui.Platform
 				_child = value;
 				_child.SizeChanged += OnChildSizeChanged;
 				Children.Add(_child);
+			}
+		}
+
+		internal Path? ShadowPath
+		{
+			get { return _shadowPath; }
+			set
+			{
+				if (_shadowPath != null)
+				{
+					_shadowPath.SizeChanged -= OnChildSizeChanged;
+					Children.Remove(_shadowPath);
+				}
+
+				if (value == null)
+					return;
+
+				_shadowPath = value;
+				_shadowPath.SizeChanged += OnChildSizeChanged;
+				Children.Insert(0, _shadowPath);
 			}
 		}
 
@@ -128,18 +149,18 @@ namespace Microsoft.Maui.Platform
 		async partial void ShadowChanged()
 		{
 			if (HasShadow)
-				UpdateShadow();
+				await UpdateShadowAsync();
 			else
 				await CreateShadowAsync();
 		}
 
-		void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
+		async void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			_shadowHostSize = e.NewSize;
 
 			UpdateClip();
 			UpdateBorder();
-			UpdateShadow();
+			await UpdateShadowAsync();
 		}
 
 		void DisposeShadow()
@@ -166,6 +187,13 @@ namespace Microsoft.Maui.Platform
 				_dropShadow.Dispose();
 				_dropShadow = null;
 			}
+
+			if (_shadowPath != null)
+			{
+				_shadowPath.SizeChanged -= OnChildSizeChanged;
+				Children.Remove(_shadowPath);
+				_shadowPath = null;
+			}
 		}
 
 		async Task CreateShadowAsync()
@@ -173,7 +201,11 @@ namespace Microsoft.Maui.Platform
 			if (Child == null || Shadow == null || Shadow.Paint == null)
 				return;
 
-			var visual = ElementCompositionPreview.GetElementVisual(Child);
+			ShadowPath = GetShadowPath();
+
+			var platformShadow = ShadowPath ?? Child;
+
+			var visual = ElementCompositionPreview.GetElementVisual(platformShadow);
 
 			if (Clip != null && visual.Clip == null)
 				return;
@@ -191,7 +223,7 @@ namespace Microsoft.Maui.Platform
 			if (height <= 0 && width <= 0)
 				return;
 
-			var ttv = Child.TransformToVisual(_shadowCanvas);
+			var ttv = platformShadow.TransformToVisual(_shadowCanvas);
 			global::Windows.Foundation.Point offset = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
 
 			var shadowHost = new UI.Xaml.Shapes.Rectangle()
@@ -212,7 +244,7 @@ namespace Microsoft.Maui.Platform
 			_dropShadow = compositor.CreateDropShadow();
 			SetShadowProperties(_dropShadow, Shadow);
 
-			_dropShadow.Mask = await Child.GetAlphaMaskAsync();
+			_dropShadow.Mask = await platformShadow.GetAlphaMaskAsync();
 
 			_shadowVisual = compositor.CreateSpriteVisual();
 			_shadowVisual.Size = new Vector2((float)width, (float)height);
@@ -222,12 +254,23 @@ namespace Microsoft.Maui.Platform
 			ElementCompositionPreview.SetElementChildVisual(shadowHost, _shadowVisual);
 		}
 
-		void UpdateShadow()
+		async Task UpdateShadowAsync()
 		{
-			if (_dropShadow != null)
-				SetShadowProperties(_dropShadow, Shadow);
+			if (_shadowPath == null)
+			{
+				if (_dropShadow != null)
+					SetShadowProperties(_dropShadow, Shadow);
 
-			UpdateShadowSize();
+				UpdateShadowSize();
+			}
+			else
+			{
+				if (_shadowPath.Height == ActualHeight &&
+					_shadowPath.Width == ActualWidth)
+					return;
+
+				await CreateShadowAsync();
+			}
 		}
 
 		void UpdateShadowSize()
@@ -251,6 +294,44 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		Path? GetShadowPath()
+		{
+			if (Child == null || Shadow == null)
+				return null;
+
+			if (Child is not W2DGraphicsView graphicsView)
+				return null;
+
+			var drawable = graphicsView.Drawable;
+
+			if (drawable is not ShapeDrawable shapeDrawable)
+				return null;
+
+			var height = (int)graphicsView.ActualHeight;
+			var width = (int)graphicsView.ActualWidth;
+
+			if (height <= 0 && width <= 0)
+				return null;
+
+			var path = shapeDrawable.ShapeView?.Shape;
+			var pathSize = new Rect(0, 0, width, height);
+			var shapePath = path?.PathForBounds(pathSize).AsScaledPath(0.99f);
+			var geometry = shapePath.AsPathGeometry();
+
+			Color? shadowColor = Shadow.Paint.ToColor();
+			Color pathColor = shadowColor ?? Colors.Transparent;
+			var strokeThickness = shapeDrawable.ShapeView?.StrokeThickness ?? 0;
+
+			return new Path
+			{
+				Height = height,
+				Width = width,
+				Fill = new SolidColorBrush(pathColor.ToWindowsColor()),
+				StrokeThickness = strokeThickness,
+				Data = geometry
+			};
+		}
+				
 		static void SetShadowProperties(DropShadow dropShadow, IShadow? mauiShadow)
 		{
 			float blurRadius = 10f;

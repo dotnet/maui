@@ -1,5 +1,4 @@
 ﻿#nullable disable
-
 using System;
 using System.Diagnostics;
 using System.Numerics;
@@ -10,9 +9,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Shapes;
-using Windows.Foundation;
 using Windows.Graphics.Imaging;
-
+using Size = Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Platform
 {
@@ -24,8 +22,8 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
-				//For some reason, using  TextBlock and getting the AlphaMask
-				//generates a shadow with a size more smaller than the control size. 
+				// For some reason, using  TextBlock and getting the AlphaMask
+				// generates a shadow with a size more smaller than the control size. 
 				if (element is TextBlock textElement)
 				{
 					return textElement.GetAlphaMask();
