@@ -9,7 +9,7 @@
     <MicrosoftExtensionsServicingPackageVersion>6.0.1</MicrosoftExtensionsServicingPackageVersion>
     <SystemCodeDomPackageVersion>6.0.0</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>32.0.441</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>32.0.443</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftiOSSdkPackageVersion>15.4.440</MicrosoftiOSSdkPackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>15.4.440</MicrosoftMacCatalystSdkPackageVersion>
@@ -69,7 +69,7 @@
     <DotNetMauiManifestVersionBand>6.0.300</DotNetMauiManifestVersionBand>
     <DotNetMonoManifestVersionBand>6.0.300</DotNetMonoManifestVersionBand>
     <DotNetEmscriptenManifestVersionBand>6.0.300</DotNetEmscriptenManifestVersionBand>
-    <DotNetAndroidManifestVersionBand>6.0.300</DotNetAndroidManifestVersionBand>
+    <DotNetAndroidManifestVersionBand>6.0.400</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>6.0.400</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>6.0.400</DotNetTizenManifestVersionBand>
   </PropertyGroup>
