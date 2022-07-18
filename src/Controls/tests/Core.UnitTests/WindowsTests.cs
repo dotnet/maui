@@ -265,14 +265,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void WindowParentIsNotNull()
+		public void ApplicationIsSetOnWindowBeforeAppearingIsCalledOnPage()
 		{
-			var app = new TestApp();
-			var window = app.CreateWindow();
+			bool passed = false;
+			ContentPage cp = new ContentPage();
+			cp.Appearing += (_, _) =>
+			{
+				var findApplication = cp?.Parent?.Parent as IApplication;
+				Assert.NotNull(findApplication);
+				passed = true;
+			};
 
-			Assert.NotNull(window.Parent);
+			_ = new TestApp().CreateWindow(cp);
+
+			Assert.IsTrue(passed);
 		}
-		
+
 		public void DeActivatedFiresDisappearingEvent()
 		{
 			int disappear = 0;
@@ -345,12 +353,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public class TestApp : Application
 		{
+			ContentPage _withPage;
 			public TestWindow CreateWindow() =>
 				(TestWindow)(this as IApplication).CreateWindow(null);
 
 			protected override Window CreateWindow(IActivationState activationState)
 			{
-				return new TestWindow(new ContentPage());
+				return new TestWindow(_withPage ?? new ContentPage());
+			}
+
+			public TestWindow CreateWindow(ContentPage withPage)
+			{
+				_withPage = withPage;
+				return (TestWindow)(this as IApplication).CreateWindow(null);
 			}
 		}
 
