@@ -140,8 +140,8 @@ namespace Microsoft.Maui.Controls
 			if (window is NavigableElement ne)
 				ne.NavigationProxy.Inner = NavigationProxy;
 
-			// Once the window has been attached to the application the window
-			// will finish propagating events like `Appearing`.
+			// Once the window has been attached to the application. 
+			// The window will finish propagating events like `Appearing`.
 			//
 			// I could fire this from 'OnParentSet` inside Window but
 			// I'd rather wait until Application is done wiring itself
