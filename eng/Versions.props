@@ -69,7 +69,7 @@
     <DotNetMauiManifestVersionBand>6.0.300</DotNetMauiManifestVersionBand>
     <DotNetMonoManifestVersionBand>6.0.300</DotNetMonoManifestVersionBand>
     <DotNetEmscriptenManifestVersionBand>6.0.300</DotNetEmscriptenManifestVersionBand>
-    <DotNetAndroidManifestVersionBand>6.0.300</DotNetAndroidManifestVersionBand>
+    <DotNetAndroidManifestVersionBand>6.0.400</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>6.0.400</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>6.0.400</DotNetTizenManifestVersionBand>
   </PropertyGroup>
