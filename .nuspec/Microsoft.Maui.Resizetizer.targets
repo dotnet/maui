@@ -735,6 +735,7 @@
                 <_Parameter2>@(_MauiAppxManifestVersion)</_Parameter2>
             </AssemblyAttribute>
         </ItemGroup>
+    </Target>
 
     <Target Name="MauiGenerateTizenManifest"
             Condition="'$(_ResizetizerIsTizenApp)' == 'True'"
