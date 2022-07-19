@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
 	using Contacts = ApplicationModel.Communication.Contacts;
 
+	[Category("Contacts")]
 	public class Contacts_Tests
 	{
 		[Fact]

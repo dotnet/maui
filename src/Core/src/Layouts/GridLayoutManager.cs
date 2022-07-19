@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size ArrangeChildren(Rect bounds)
 		{
-			if (_gridStructure  == null)
+			if (_gridStructure == null)
 			{
 				_gridStructure = new GridStructure(Grid, bounds.Width, bounds.Height);
 			}
@@ -93,11 +94,12 @@ namespace Microsoft.Maui.Layouts
 			{
 				_grid = grid;
 
-				_gridWidthConstraint = widthConstraint;
-				_gridHeightConstraint = heightConstraint;
-
 				_explicitGridHeight = _grid.Height;
 				_explicitGridWidth = _grid.Width;
+
+				_gridWidthConstraint = Dimension.IsExplicitSet(_explicitGridWidth) ? _explicitGridWidth : widthConstraint;
+				_gridHeightConstraint = Dimension.IsExplicitSet(_explicitGridHeight) ? _explicitGridHeight : heightConstraint;
+				
 				_gridMaxHeight = _grid.MaximumHeight;
 				_gridMinHeight = _grid.MinimumHeight;
 				_gridMaxWidth = _grid.MaximumWidth;
@@ -111,11 +113,9 @@ namespace Microsoft.Maui.Layouts
 				_rowDefinitions = grid.RowDefinitions;
 				_columnDefinitions = grid.ColumnDefinitions;
 
-				// If the width/height constraints are infinity, then Star rows/columns won't really make any sense.
-				// And if the Grid's layout alignment is not Fill, they also don't really make sense.
-				// When that happens, we need to convert them to Auto rows/columns instead.
-				bool treatStarRowsAsAuto = double.IsInfinity(_gridHeightConstraint) || _grid.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill;
-				bool treatStarColumnsAsAuto = double.IsInfinity(_gridWidthConstraint) || _grid.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill;
+				// Determine whether "*" values make sense in each dimension, given our constraints
+				bool treatStarRowsAsAuto = ShouldTreatStarsAsAuto(_gridHeightConstraint, _explicitGridHeight, _grid.VerticalLayoutAlignment);
+				bool treatStarColumnsAsAuto = ShouldTreatStarsAsAuto(_gridWidthConstraint, _explicitGridWidth, _grid.HorizontalLayoutAlignment);
 
 				_rows = InitializeRows(treatStarRowsAsAuto);
 				_columns = InitializeColumns(treatStarColumnsAsAuto);
@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Layouts
 
 			public double MeasuredGridHeight()
 			{
-				var height = _explicitGridHeight > -1 ? _explicitGridHeight : GridHeight();
+				var height = Dimension.IsExplicitSet(_explicitGridHeight) ? _explicitGridHeight : GridHeight();
 
 				if (_gridMaxHeight >= 0 && height > _gridMaxHeight)
 				{
@@ -312,7 +312,7 @@ namespace Microsoft.Maui.Layouts
 
 			public double MeasuredGridWidth()
 			{
-				var width = _explicitGridWidth > -1 ? _explicitGridWidth : GridWidth();
+				var width = Dimension.IsExplicitSet(_explicitGridWidth) ? _explicitGridWidth : GridWidth();
 
 				if (_gridMaxWidth >= 0 && width > _gridMaxWidth)
 				{
@@ -693,7 +693,7 @@ namespace Microsoft.Maui.Layouts
 				return available + cellRowsHeight;
 			}
 
-			public void AdjustStarsForArrange(Size targetSize) 
+			public void AdjustStarsForArrange(Size targetSize)
 			{
 				if (_grid.VerticalLayoutAlignment == Primitives.LayoutAlignment.Fill)
 				{
@@ -722,7 +722,7 @@ namespace Microsoft.Maui.Layouts
 						ResolveStarRows(targetSize.Height);
 					}
 				}
-				
+
 				if (_grid.HorizontalLayoutAlignment == Primitives.LayoutAlignment.Fill)
 				{
 					if (_grid.DesiredSize.Width < targetSize.Width)
@@ -750,6 +750,33 @@ namespace Microsoft.Maui.Layouts
 						ResolveStarColumns(targetSize.Width);
 					}
 				}
+			}
+
+			static bool ShouldTreatStarsAsAuto(double constraint, double explicitDimension, LayoutAlignment layoutAlignment)
+			{
+				if (double.IsInfinity(constraint))
+				{
+					// If the constraint is infinite, then "*" doesn't really make any sense; we'll treat the 
+					// measurement as "Auto" instead
+					return true;
+				}
+
+				if (layoutAlignment == LayoutAlignment.Fill)
+				{
+					// If the constraint is not infinite and our Grid is supposed to Fill this dimension, then
+					// we can definitely come up with a meaningful value for "*", so don't treat this as "Auto"
+					return false;
+				}
+
+				if (Dimension.IsExplicitSet(explicitDimension))
+				{
+					// If we're not filling the dimension but our size in this dimension is fixed, then we 
+					// can definitely get a meaningful value for "*", so don't treat this as "Auto"
+					return false;
+				}
+
+				// We don't have the info to make "*" meaningful, so treat it as "Auto" instead
+				return true;
 			}
 		}
 

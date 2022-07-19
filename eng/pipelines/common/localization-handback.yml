@@ -15,12 +15,30 @@ stages:
             clean: true
 
           - powershell: |
+              $srcBranch = $(Build.SourceBranch)
+              Write-Host "Extracting branch name from $srcBranch..."
+              if ("$srcBranch" -eq "refs/heads/loc") {
+                $baseBranchName = "main"
+                $locBranchName = "loc"
+              } elseif ("$srcBranch".StartsWith("refs/heads/loc-")) {
+                $baseBranchName = "$srcBranch".SubString("refs/heads/loc-".Length)
+                $locBranchName = "loc-$baseBranchName"
+              } else {
+                throw "Invalid branch name $srcBranch."
+              }
+              Write-Host "Using base branch: $baseBranchName"
+              Write-Host "Using loc branch: $locBranchName"
+              Write-Host "##vso[task.setvariable variable=LOC_BASE_BRANCH_NAME;]$baseBranchName"
+              Write-Host "##vso[task.setvariable variable=LOC_BRANCH_NAME;]$locBranchName"
+            displayName: 'Extract branch name variables'
+
+          - powershell: |
               #-- Import Invoke-Git Module function
               Import-Module $(Build.SourcesDirectory)\eng\automation\scripts\Invoke-Git.psm1 -Force -DisableNameChecking
               git config user.email "vs-mobiletools-engineering-service2@microsoft.com"
               git config user.name "VS Mobile Engineering Serice Account"
-              Invoke-Git checkout main
-              Invoke-Git merge origin/$(LocBranch) --no-commit
+              Invoke-Git checkout $(LOC_BASE_BRANCH_NAME)
+              Invoke-Git merge origin/$(LOC_BRANCH_NAME) --no-commit
             displayName: 'Merge loc Branch'
 
           - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
@@ -44,7 +62,7 @@ stages:
               #--Clear Stage
               Invoke-Git reset HEAD -- .
               #-- Create new branch
-              $branchName = "$(LocBranchPrefix)/$(new-guid)"
+              $branchName = "$(LocBranchPrefix)/$(LOC_BASE_BRANCH_NAME)_$(new-guid)"
               Invoke-Git checkout -B ${branchName}
               Write-Host ("##vso[task.setvariable variable=HANDBACK_BRANCH_NAME;]$branchName")
               #-- Stage Build Changes
@@ -64,7 +82,7 @@ stages:
               $payload=@{
                 title = "[LOC_HB] checkin of localized string files"
                 head = "$(HANDBACK_BRANCH_NAME)"
-                base = "main"
+                base = "$(LOC_BASE_BRANCH_NAME)"
                 maintainer_can_modify = $true
               }
 

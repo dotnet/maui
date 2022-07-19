@@ -24,14 +24,15 @@ namespace Microsoft.Maui.DeviceTests
 			return platformView.AccessibilityElementsHidden;
 		}
 
-		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests)
+		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{
+			mauiContext ??= MauiContext;
 			return InvokeOnMainThreadAsync(async () =>
 			{
 				try
 				{
-					_ = window.ToHandler(MauiContext);
+					_ = window.ToHandler(mauiContext);
 					await runTests.Invoke();
 				}
 				finally
