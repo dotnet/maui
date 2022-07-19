@@ -7,6 +7,9 @@
     <views:BasePage.MenuBarItems>
         <MenuBarItem Text="Before File">
             <MenuFlyoutItem Clicked="ItemClicked" Text="Before File Action"></MenuFlyoutItem>
+            <MenuFlyoutItem Text="Cool item 1"></MenuFlyoutItem>
+            <MenuFlyoutSeparator />
+            <MenuFlyoutItem Text="Cool item 2"></MenuFlyoutItem>
         </MenuBarItem>
         <MenuBarItem Text="File">
             <MenuFlyoutItem Clicked="ItemClicked" Text="Custom File">

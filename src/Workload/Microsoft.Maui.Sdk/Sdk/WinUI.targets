@@ -18,4 +18,9 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
+  -->
+  <Import Project="WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' " />
+
 </Project>
