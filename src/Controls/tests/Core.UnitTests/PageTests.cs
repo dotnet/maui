@@ -335,7 +335,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.That(sent, Is.False, "Busy message sent while not visible");
 
-			_ = new Window(page);
+			_ = new TestWindow(page);
 
 			Assert.That(sent, Is.True, "Busy message not sent when visible");
 		}
@@ -344,7 +344,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void BusySentWhenBusyPageDisappears()
 		{
 			var page = new ContentPage { IsBusy = true };
-			_ = new Window(page);
+			_ = new TestWindow(page);
 			((IPageController)page).SendAppearing();
 
 			var sent = false;
@@ -366,7 +366,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) => sent = true);
 
 			var page = new ContentPage();
-			_ = new Window(page);
+			_ = new TestWindow(page);
 			((IPageController)page).SendAppearing();
 
 			Assert.That(sent, Is.False, "Busy message sent appearing while not busy");
@@ -465,7 +465,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool sent = false;
 			page.Appearing += (sender, args) => sent = true;
 
-			_ = new Window(page);
+			_ = new TestWindow(page);
 
 			Assert.True(sent);
 		}
@@ -474,7 +474,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SendDisappearing()
 		{
 			var page = new ContentPage();
-			_ = new Window(page);
+			_ = new TestWindow(page);
 
 			((IPageController)page).SendAppearing();
 
@@ -494,7 +494,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			int countAppearing = 0;
 			page.Appearing += (sender, args) => countAppearing++;
 
-			_ = new Window(page);
+			_ = new TestWindow(page);
 			((IPageController)page).SendAppearing();
 
 			Assert.That(countAppearing, Is.EqualTo(1));
@@ -524,7 +524,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			navPage.Appearing += (sender, e) => sentNav = true;
 
-			_ = new Window(navPage);
+			_ = new TestWindow(navPage);
 
 			Assert.True(sentNav);
 			Assert.True(sent);
@@ -537,7 +537,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage();
 
 			var navPage = new NavigationPage(page);
-			_ = new Window(navPage);
+			_ = new TestWindow(navPage);
 			((IPageController)navPage).SendAppearing();
 
 			bool sentNav = false;
