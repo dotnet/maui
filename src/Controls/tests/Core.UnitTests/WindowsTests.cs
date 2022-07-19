@@ -265,6 +265,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
+		public void ApplicationIsSetOnWindowBeforeAppearingIsCalledOnPage()
+		{
+			bool passed = false;
+			ContentPage cp = new ContentPage();
+			cp.Appearing += (_, _) =>
+			{
+				var findApplication = cp?.Parent?.Parent as IApplication;
+				Assert.NotNull(findApplication);
+				passed = true;
+			};
+
+			_ = new TestApp().CreateWindow(cp);
+
+			Assert.IsTrue(passed);
+		}
+
 		public void DeActivatedFiresDisappearingEvent()
 		{
 			int disappear = 0;
@@ -289,7 +305,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			int appear = 0;
 
 			var cp = new ContentPage();
-			IWindow window = new Window(cp);
+			IWindow window = new TestWindow(cp);
 			window.Activated();
 
 			cp.Appearing += (_, __) => appear++;
@@ -311,7 +327,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var cp = new ContentPage();
 			cp.Disappearing += (_, __) => disappear++;
 
-			Window window = new Window(cp);
+			Window window = new TestWindow(cp);
 			(window as IWindow).Activated();
 			Assert.AreEqual(0, disappear);
 			window.Page = new ContentPage();
@@ -333,24 +349,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(window.LogicalChildren.Count, 1);
 			Assert.AreEqual(app.NavigationProxy, window.NavigationProxy.Inner);
 			Assert.AreEqual(window.NavigationProxy, page.NavigationProxy.Inner);
-		}
-
-		public class TestApp : Application
-		{
-			public TestWindow CreateWindow() =>
-				(TestWindow)(this as IApplication).CreateWindow(null);
-
-			protected override Window CreateWindow(IActivationState activationState)
-			{
-				return new TestWindow(new ContentPage());
-			}
-		}
-
-		public class TestWindow : Window
-		{
-			public TestWindow(Page page) : base(page)
-			{
-			}
 		}
 	}
 }
