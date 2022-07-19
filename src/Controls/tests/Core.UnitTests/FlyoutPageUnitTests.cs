@@ -445,7 +445,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Detail = detail
 			};
 
-			_ = new Window(flyoutPage);
+			_ = new TestWindow(flyoutPage);
 
 			detail.Appearing += (_, __) => appearing++;
 			detail.Disappearing += (_, __) => disappearing++;

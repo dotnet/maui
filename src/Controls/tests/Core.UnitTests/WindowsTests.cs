@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			int appear = 0;
 
 			var cp = new ContentPage();
-			IWindow window = new Window(cp);
+			IWindow window = new TestWindow(cp);
 			window.Activated();
 
 			cp.Appearing += (_, __) => appear++;
@@ -327,7 +327,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var cp = new ContentPage();
 			cp.Disappearing += (_, __) => disappear++;
 
-			Window window = new Window(cp);
+			Window window = new TestWindow(cp);
 			(window as IWindow).Activated();
 			Assert.AreEqual(0, disappear);
 			window.Page = new ContentPage();
