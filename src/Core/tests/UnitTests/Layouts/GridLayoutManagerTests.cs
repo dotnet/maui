@@ -1930,7 +1930,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Auto row and get the height of the view
 			var measuredSize = manager.Measure(20, double.PositiveInfinity);
 			Assert.Equal(20, measuredSize.Height);
-			
+
 			grid.DesiredSize.Returns(measuredSize);
 
 			// We arrange at a height taller than the Grid's measurement; because the Grid
@@ -1967,5 +1967,60 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view0, new Rect(0, 0, 100, 20));
 		}
 
+		[Theory, Category(GridStarSizing)]
+		[InlineData(LayoutAlignment.Center)]
+		[InlineData(LayoutAlignment.Start)]
+		[InlineData(LayoutAlignment.End)]
+		[InlineData(LayoutAlignment.Fill)]
+		public void StarRowsShouldFitKnownDimensions(LayoutAlignment verticalAlignment)
+		{
+			var grid = CreateGridLayout(rows: "*");
+			grid.VerticalLayoutAlignment.Returns(verticalAlignment);
+			grid.Height.Returns(100);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			SubstituteChildren(grid, view0);
+
+			var manager = new GridLayoutManager(grid);
+			var gridMeasure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// Because the Grid has an explicit height, we expect the single Star row
+			// to have that height.
+			Assert.Equal(100, gridMeasure.Height);
+
+			manager.ArrangeChildren(new Rect(Point.Zero, gridMeasure));
+
+			// Because the child has VerticalAlignment.Fill, we expect it to fill up the 100
+			// units in the Star row
+			AssertArranged(view0, new Rect(0, 0, 20, 100));
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(LayoutAlignment.Center)]
+		[InlineData(LayoutAlignment.Start)]
+		[InlineData(LayoutAlignment.End)]
+		[InlineData(LayoutAlignment.Fill)]
+		public void StarColumnsShouldFitKnownDimensions(LayoutAlignment horizontalAlignment)
+		{
+			var grid = CreateGridLayout(columns: "*");
+			grid.HorizontalLayoutAlignment.Returns(horizontalAlignment);
+			grid.Width.Returns(100);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			SubstituteChildren(grid, view0);
+
+			var manager = new GridLayoutManager(grid);
+			var gridMeasure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// Because the Grid has an explicit width, we expect the single Star column
+			// to have that width.
+			Assert.Equal(100, gridMeasure.Width);
+
+			manager.ArrangeChildren(new Rect(Point.Zero, gridMeasure));
+
+			// Because the child has HorizontalAlignment.Fill, we expect it to fill up the 100
+			// units in the Star column
+			AssertArranged(view0, new Rect(0, 0, 100, 20));
+		}
 	}
 }

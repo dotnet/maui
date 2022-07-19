@@ -22,12 +22,8 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void Initialize(this AView platformView, IView view)
 		{
-			var context = platformView.Context;
-			if (context == null)
-				return;
-
-			var pivotX = (float)(view.AnchorX * context.ToPixels(view.Frame.Width));
-			var pivotY = (float)(view.AnchorY * context.ToPixels(view.Frame.Height));
+			var pivotX = (float)(view.AnchorX * platformView.ToPixels(view.Frame.Width));
+			var pivotY = (float)(view.AnchorY * platformView.ToPixels(view.Frame.Height));
 			int visibility;
 
 			if (view is IActivityIndicator a)
@@ -43,12 +39,12 @@ namespace Microsoft.Maui.Platform
 			PlatformInterop.Set(platformView,
 				visibility: visibility,
 				layoutDirection: (int)GetLayoutDirection(view),
-				minimumHeight: (int)context.ToPixels(view.MinimumHeight),
-				minimumWidth: (int)context.ToPixels(view.MinimumWidth),
+				minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
+				minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
 				enabled: view.IsEnabled,
 				alpha: (float)view.Opacity,
-				translationX: context.ToPixels(view.TranslationX),
-				translationY: context.ToPixels(view.TranslationY),
+				translationX: platformView.ToPixels(view.TranslationX),
+				translationY: platformView.ToPixels(view.TranslationY),
 				scaleX: (float)(view.Scale * view.ScaleX),
 				scaleY: (float)(view.Scale * view.ScaleY),
 				rotation: (float)view.Rotation,
@@ -149,7 +145,7 @@ namespace Microsoft.Maui.Platform
 								view.SetBackgroundColor(color);
 								break;
 							case "drawable":
-								using (Drawable drawable = ContextCompat.GetDrawable(context, background.ResourceId))
+								using (Drawable? drawable = ContextCompat.GetDrawable(context, background.ResourceId))
 									view.Background = drawable;
 								break;
 						}

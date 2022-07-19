@@ -744,7 +744,10 @@ namespace Microsoft.Maui.Controls.Handlers
 			states[1] = GetEmptyStateSet();
 			colors[1] = defaultColor;
 
+#pragma warning disable RS0030
+			//TODO: port this usage to Java, if this becomes a performance concern
 			return new ColorStateList(states, colors);
+#pragma warning restore RS0030
 		}
 
 		class Listeners : ViewPager2.OnPageChangeCallback,

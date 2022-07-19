@@ -33,15 +33,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		IPlatformElementConfiguration<PlatformConfiguration.Android, CheckBox> _platformElementConfiguration;
 		CheckBox _checkBox;
 
-		[PortHandler]
-		static int[][] _checkedStates = new int[][]
-					{
-						new int[] { AAttribute.StateEnabled, AAttribute.StateChecked },
-						new int[] { AAttribute.StateEnabled, -AAttribute.StateChecked },
-						new int[] { -AAttribute.StateEnabled, AAttribute.StateChecked },
-						new int[] { -AAttribute.StateEnabled, -AAttribute.StatePressed },
-					};
-
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
@@ -202,18 +193,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual ColorStateList GetColorStateList()
 		{
 			var tintColor = Element.Color == null ? Application.AccentColor.ToAndroid() : Element.Color.ToAndroid();
-
-			var list = new ColorStateList(
-					_checkedStates,
-					new int[]
-					{
-						tintColor,
-						tintColor,
-						tintColor,
-						tintColor
-					});
-
-			return list;
+			return ColorStateListExtensions.CreateCheckBox(tintColor);
 		}
 
 		[PortHandler]

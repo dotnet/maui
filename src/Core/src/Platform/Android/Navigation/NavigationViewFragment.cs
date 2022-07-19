@@ -30,15 +30,15 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+		public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 		{
 			var context =
-				(container.Context as StackNavigationManager.StackContext) ??
-				(container.Parent as AView)?.Context as StackNavigationManager.StackContext
+				(container?.Context as StackNavigationManager.StackContext) ??
+				(container?.Parent as AView)?.Context as StackNavigationManager.StackContext
 				 ?? throw new InvalidOperationException($"StackNavigationManager.StackContext not found");
 
 			_navigationManager = context.StackNavigationManager;
-			_fragmentContainerView ??= (FragmentContainerView)container;
+			_fragmentContainerView ??= container as FragmentContainerView;
 
 			// When shuffling around the back stack sometimes we'll need a page to detach and then reattach.
 			// This mainly happens when users are removing or inserting pages. If we only have one page

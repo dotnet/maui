@@ -8,17 +8,14 @@ namespace Microsoft.Maui.Handlers
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
 		UITextField? _editor;
-	
+
 		public UITextField? QueryEditor => _editor;
 
 		protected override MauiSearchBar CreatePlatformView()
 		{
 			var searchBar = new MauiSearchBar() { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13))
-				_editor = searchBar.SearchTextField;
-			else
-				_editor = searchBar.FindDescendantView<UITextField>();
+			_editor = searchBar.GetSearchTextField();
 
 			return searchBar;
 		}
