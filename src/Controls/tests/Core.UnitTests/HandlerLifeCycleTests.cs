@@ -13,6 +13,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class HandlerLifeCycleTests : BaseTestFixture
 	{
 		[Test]
+		public void SettingHandlerToNullDisconnectsHandlerFromVirtualView()
+		{
+			var mauiApp1 = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton, HandlerStub>())
+				.Build();
+
+			LifeCycleButton button = new LifeCycleButton();
+
+			MauiContext mauiContext1 = new MauiContext(mauiApp1.Services);
+			var handler1 = button.ToHandler(mauiContext1);
+			button.Handler = null;
+			Assert.AreNotEqual(button, handler1.VirtualView);
+		}
+
+		[Test]
 		public void SettingNewHandlerDisconnectsOldHandler()
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()

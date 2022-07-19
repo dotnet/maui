@@ -60,8 +60,7 @@ namespace Microsoft.Maui.Controls
 
 				_handler = newHandler;
 
-				if (newHandler != null)
-					_previousHandler?.DisconnectHandler();
+				_previousHandler?.DisconnectHandler();
 
 				if (_handler?.VirtualView != this)
 					_handler?.SetVirtualView(this);
