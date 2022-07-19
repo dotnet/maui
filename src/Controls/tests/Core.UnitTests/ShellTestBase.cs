@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public TestShell()
 			{
-				_ = new Window() { Page = this };
+				_ = new TestWindow() { Page = this };
 				Routing.RegisterRoute(nameof(TestPage1), typeof(TestPage1));
 				Routing.RegisterRoute(nameof(TestPage2), typeof(TestPage2));
 				Routing.RegisterRoute(nameof(TestPage3), typeof(TestPage3));

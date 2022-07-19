@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.ComponentModel;
 
@@ -6,9 +8,9 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.AdaptiveTrigger']/Docs" />
 	public sealed class AdaptiveTrigger : StateTriggerBase
 	{
-		VisualElement _visualElement;
-		Page _page;
-		Window _window;
+		VisualElement? _visualElement;
+		Page? _page;
+		Window? _window;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public AdaptiveTrigger()
@@ -66,11 +68,11 @@ namespace Microsoft.Maui.Controls
 			if (_visualElement is not null)
 				_visualElement.PropertyChanged += OnVisualElementPropertyChanged;
 
-			_window = _visualElement.Window;
+			_window = _visualElement?.Window;
 			if (_window is not null)
 				_window.PropertyChanged += OnVisualElementPropertyChanged;
 
-			_page = _window.Page;
+			_page = _window?.Page;
 			if (_page is not null)
 				_page.SizeChanged += OnPageSizeChanged;
 		}
@@ -90,7 +92,7 @@ namespace Microsoft.Maui.Controls
 			_page = null;
 		}
 
-		void OnVisualElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnVisualElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.WindowProperty.PropertyName)
 			{
@@ -99,7 +101,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnWindowPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnWindowPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Window.PageProperty.PropertyName)
 			{
@@ -108,7 +110,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnPageSizeChanged(object sender, EventArgs e)
+		void OnPageSizeChanged(object? sender, EventArgs e)
 		{
 			UpdateState();
 		}
@@ -118,8 +120,8 @@ namespace Microsoft.Maui.Controls
 			if (!knownAttached && !IsAttached)
 				return;
 
-			var w = _page.Width;
-			var h = _page.Height;
+			var w = _page?.Width ?? -1;
+			var h = _page?.Height ?? -1;
 
 			if (w == -1 || h == -1)
 				return;
