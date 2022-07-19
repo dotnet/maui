@@ -1498,6 +1498,9 @@ Microsoft.Maui.Platform.MauiPageControl.Measure(double availableWidth, double av
 Microsoft.Maui.Platform.MauiPageControl.ResetIndicators() -> void
 Microsoft.Maui.Platform.MauiPageControl.UpdateCount() -> void
 Microsoft.Maui.Platform.MauiPageControl.UpdatePosition() -> void
+Microsoft.Maui.Platform.MauiScrollView
+Microsoft.Maui.Platform.MauiScrollView.MauiScrollView(Microsoft.Maui.IScrollView! virtualView) -> void
+Microsoft.Maui.Platform.MauiScrollView.Measure(double availableWidth, double availableHeight) -> Tizen.UIExtensions.Common.Size
 Microsoft.Maui.Platform.MauiSearchBar
 Microsoft.Maui.Platform.MauiSearchBar.Entry.get -> Tizen.UIExtensions.NUI.Entry!
 Microsoft.Maui.Platform.MauiSearchBar.MauiSearchBar() -> void
@@ -1914,7 +1917,6 @@ override Microsoft.Maui.Handlers.RefreshViewHandler.CreatePlatformView() -> Tize
 override Microsoft.Maui.Handlers.ScrollViewHandler.ConnectHandler(Tizen.UIExtensions.NUI.ScrollView! platformView) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.ScrollView!
 override Microsoft.Maui.Handlers.ScrollViewHandler.DisconnectHandler(Tizen.UIExtensions.NUI.ScrollView! platformView) -> void
-override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.SearchBarHandler.ConnectHandler(Microsoft.Maui.Platform.MauiSearchBar! platformView) -> void
 override Microsoft.Maui.Handlers.SearchBarHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiSearchBar!
 override Microsoft.Maui.Handlers.SearchBarHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiSearchBar! platformView) -> void

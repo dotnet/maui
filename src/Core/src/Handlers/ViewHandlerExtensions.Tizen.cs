@@ -2,6 +2,8 @@
 using Microsoft.Maui.Graphics;
 using Tizen.UIExtensions.NUI;
 using IMeasurable = Tizen.UIExtensions.Common.IMeasurable;
+using NMeasuredSize = Tizen.NUI.MeasuredSize;
+using NLayoutLength = Tizen.NUI.LayoutLength;
 
 namespace Microsoft.Maui
 {
@@ -87,7 +89,14 @@ namespace Microsoft.Maui
 				// This is just some initial Forms value nonsense, nothing is actually laying out yet
 				return;
 			}
-			platformView.UpdateBounds(frame.ToPixel());
+
+			var bounds = frame.ToPixel();
+			if (platformView.Layout != null)
+			{
+				platformView.Layout.MeasuredWidth = new NMeasuredSize(new NLayoutLength((float)bounds.Width), NMeasuredSize.StateType.MeasuredSizeOK);
+				platformView.Layout.MeasuredHeight = new NMeasuredSize(new NLayoutLength((float)bounds.Height), NMeasuredSize.StateType.MeasuredSizeOK);
+			}
+			platformView.UpdateBounds(bounds);
 
 			viewHandler.Invoke(nameof(IView.Frame), frame);
 		}

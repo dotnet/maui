@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var platformGeometry = this.GetBounds().ToDP();
 
-			if (_needMeasureUpdate)
+			if (_needMeasureUpdate || _measureCache != platformGeometry.Size)
 			{
 				InvokeCrossPlatformMeasure(platformGeometry.Width, platformGeometry.Height);
 			}

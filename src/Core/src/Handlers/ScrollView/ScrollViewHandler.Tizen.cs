@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 		double _cachedHeight;
 		Graphics.Size _measureCache;
 
-		protected override ScrollView CreatePlatformView() => new();
+		protected override ScrollView CreatePlatformView() => new MauiScrollView(VirtualView);
 
 		protected override void ConnectHandler(ScrollView platformView)
 		{
@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.Scrolling += OnScrolled;
 			platformView.ScrollAnimationEnded += ScrollAnimationEnded;
+			platformView.Relayout += OnRelayout;
 		}
 
 		protected override void DisconnectHandler(ScrollView platformView)
@@ -25,11 +26,7 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 			platformView.Scrolling -= OnScrolled;
 			platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
-		}
-
-		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			return VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+			platformView.Relayout -= OnRelayout;
 		}
 
 		void ScrollAnimationEnded(object? sender, EventArgs e)
@@ -42,6 +39,11 @@ namespace Microsoft.Maui.Handlers
 			var region = PlatformView.ScrollBound.ToDP();
 			VirtualView.HorizontalOffset = region.X;
 			VirtualView.VerticalOffset = region.Y;
+		}
+
+		void OnRelayout(object? sender, EventArgs e)
+		{
+			OnContentLayoutUpdated();
 		}
 
 		void UpdateContentSize()
@@ -94,8 +96,14 @@ namespace Microsoft.Maui.Handlers
 
 		void OnContentLayoutUpdated(object? sender, Tizen.UIExtensions.Common.LayoutEventArgs e)
 		{
+			OnContentLayoutUpdated();
+		}
+
+		void OnContentLayoutUpdated()
+		{
 			var platformGeometry = PlatformView.GetBounds().ToDP();
 			var measuredSize = VirtualView.CrossPlatformMeasure(platformGeometry.Width, platformGeometry.Height);
+
 			if (_measureCache != measuredSize)
 			{
 				platformGeometry.X = 0;
