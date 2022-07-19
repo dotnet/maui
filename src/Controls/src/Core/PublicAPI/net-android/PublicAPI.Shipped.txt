@@ -6791,8 +6791,8 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~static readonly Microsoft.Maui.Controls.AbsoluteLayout.LayoutFlagsProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ActivityIndicator.ColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ActivityIndicator.IsRunningProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.AdaptiveTrigger.MinWindowHeightProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.AdaptiveTrigger.MinWindowWidthProperty -> Microsoft.Maui.Controls.BindableProperty
+static readonly Microsoft.Maui.Controls.AdaptiveTrigger.MinWindowHeightProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.AdaptiveTrigger.MinWindowWidthProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~static readonly Microsoft.Maui.Controls.AppLinkEntry.AppLinkUriProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.AppLinkEntry.DescriptionProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.AppLinkEntry.IsLinkActiveProperty -> Microsoft.Maui.Controls.BindableProperty

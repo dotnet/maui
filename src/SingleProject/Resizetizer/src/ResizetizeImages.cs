@@ -157,11 +157,6 @@ namespace Microsoft.Maui.Resizetizer
 
 				resizedImages.Add(windowsIconGen.Generate());
 			}
-			else if (PlatformType == "tizen")
-			{
-				var updator = new TizenIconManifestUpdater(appIconName, appIconDpis, this);
-				updator.Update();
-			}
 
 			LogDebugMessage($"Generating App Icon Bitmaps for DPIs");
 

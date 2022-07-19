@@ -463,8 +463,10 @@ namespace Microsoft.Maui.Controls
 		{
 			// Only fire appearing if the page has been added to the windows
 			// Visual Hierarchy
+			// The window/application will take care of re-firing this appearing 
+			// if it needs to
 			var window = this.FindParentOfType<Window>();
-			if (window == null)
+			if (window?.Parent == null)
 			{
 				return;
 			}
