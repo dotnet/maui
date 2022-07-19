@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// If we're going from empty to having stuff, it's possible that we've never actually measured
 				// a prototype cell and our itemSize or estimatedItemSize are wrong/unset
 				// So trigger a constraint update; if we need a measurement, that will make it happen
-				ConstrainToItemsView();
+				ItemsViewLayout.ConstrainTo(CollectionView.Bounds.Size);
 			}
 		}
 
