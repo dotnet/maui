@@ -36,18 +36,18 @@ namespace Microsoft.Maui.Platform
 			CreateCheckBox(all, all, all, all);
 
 		public static ColorStateList CreateCheckBox(int enabledChecked, int enabledUnchecked, int disabledChecked, int disabledUnchecked) =>
-			new ColorStateList(ColorStates.EditText, new[] { enabledChecked, enabledUnchecked, disabledChecked, disabledUnchecked });
+			new ColorStateList(ColorStates.CheckBox, new[] { enabledChecked, enabledUnchecked, disabledChecked, disabledUnchecked });
 
 		public static ColorStateList CreateSwitch(int all) =>
 			CreateSwitch(all, all, all);
 
 		public static ColorStateList CreateSwitch(int disabled, int on, int normal) =>
-			new ColorStateList(ColorStates.EditText, new[] { disabled, on, normal });
+			new ColorStateList(ColorStates.Switch, new[] { disabled, on, normal });
 
 		public static ColorStateList CreateButton(int all) =>
 			CreateButton(all, all, all, all);
 
 		public static ColorStateList CreateButton(int enabled, int disabled, int off, int pressed) =>
-			new ColorStateList(ColorStates.EditText, new[] { enabled, disabled, off, pressed });
+			new ColorStateList(ColorStates.Button, new[] { enabled, disabled, off, pressed });
 	}
 }

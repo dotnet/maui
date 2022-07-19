@@ -9,11 +9,21 @@ namespace Microsoft.Maui.Storage
 {
 	partial class FileSystemImplementation : IFileSystem
 	{
+		static string CleanPath(string path) =>
+			string.Join("_", path.Split(Path.GetInvalidFileNameChars()));
+
+		static string AppSpecificPath =>
+			Path.Combine(CleanPath(AppInfoImplementation.PublisherName), CleanPath(AppInfo.PackageName));
+
 		string PlatformCacheDirectory
-			=> ApplicationData.Current.LocalCacheFolder.Path;
+			=> AppInfoUtils.IsPackagedApp
+				? ApplicationData.Current.LocalCacheFolder.Path
+				: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppSpecificPath, "Cache");
 
 		string PlatformAppDataDirectory
-			=> ApplicationData.Current.LocalFolder.Path;
+			=> AppInfoUtils.IsPackagedApp
+				? ApplicationData.Current.LocalFolder.Path
+				: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSpecificPath, "Data");
 
 		Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
 		{

@@ -99,7 +99,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual INavigationDrawer CreateNavigationDrawer()
 		{
-			return new NavigationDrawer(PlatformParent);
+			return new NavigationDrawer(PlatformParent)
+			{
+				IsOpen = false
+			};
 		}
 
 		protected virtual ITNavigationView CreateNavigationView()
