@@ -34,16 +34,16 @@ namespace Microsoft.Maui.Handlers
 			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
 
 			if (platformView.IsAttachedToWindow)
-				DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+				OnViewAttachedToWindow();
 		}
 
-		void OnViewDetachedFromWindow(object? sender, View.ViewDetachedFromWindowEventArgs e)
+		void OnViewDetachedFromWindow(object? sender = null, View.ViewDetachedFromWindowEventArgs? e = null)
 		{
 			// I tested and this is called when an activity is destroyed
 			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 		}
 
-		void OnViewAttachedToWindow(object? sender, View.ViewAttachedToWindowEventArgs e)
+		void OnViewAttachedToWindow(object? sender = null, View.ViewAttachedToWindowEventArgs? e = null)
 		{
 			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 		}
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
-			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+			OnViewDetachedFromWindow();
 
 			base.DisconnectHandler(platformView);
 		}
