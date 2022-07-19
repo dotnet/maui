@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Text;
+using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.BrushTypeConverter']/Docs" />
+	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.BrushTypeConverter")]
 	public class BrushTypeConverter : TypeConverter
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='LinearGradient']/Docs" />
