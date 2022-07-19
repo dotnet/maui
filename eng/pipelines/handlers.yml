@@ -245,10 +245,6 @@ stages:
                   downloadPath: $(System.DefaultWorkingDirectory)/artifacts
               - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
                 displayName: Move the downloaded artifacts
-              - pwsh: New-Item -Type dir "bin\dotnet\library-packs" -Force
-                displayName: Make folder ready for Foldable-DualScreen artifact
-              - pwsh: Copy-Item -Path artifacts\*.nupkg -Destination "bin\dotnet\library-packs" -Filter *Foldable* -Force
-                displayName: Copy the Foldable-DualScreen artifact so the sample build will find it
               - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
                 retryCountOnTaskFailure: 3
