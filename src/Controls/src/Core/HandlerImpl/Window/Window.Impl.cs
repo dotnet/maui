@@ -264,13 +264,19 @@ namespace Microsoft.Maui.Controls
 				{
 					_visualChildren.Add(item);
 					OnChildAdded(item);
-					// TODO once we have better life cycle events on pages 
-					if (item is Page)
+
+					if (Parent != null && item is Page)
 					{
 						SendWindowAppearing();
 					}
 				}
 			}
+		}
+
+		internal void FinishedAddingWindowToApplication(Application application)
+		{
+			if (Parent != null)
+				SendWindowAppearing();
 		}
 
 		void SendWindowAppearing()
