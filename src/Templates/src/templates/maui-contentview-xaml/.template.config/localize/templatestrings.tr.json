@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI ContentView (XAML) (Önizleme)",
+  "name": ".NET MAUI ContentView (XAML)",
   "postActions/openInEditor/description": "Düzenleyicide NewContent1.xaml dosyasını açar.",
   "symbols/namespace/description": "Oluşturulan kod için ad alanı."
 }

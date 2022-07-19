@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform
 			platformLabel.BatchBegin();
 			platformLabel.FontSize = label.Font.Size > 0 ? label.Font.Size : 25.ToDPFont();
 			platformLabel.FontAttributes = label.Font.GetFontAttributes();
-			platformLabel.FontFamily = fontManager.GetFontFamily(label.Font.Family)??"";
+			platformLabel.FontFamily = fontManager.GetFontFamily(label.Font.Family) ?? "";
 			platformLabel.BatchCommit();
 		}
 
@@ -83,6 +83,6 @@ namespace Microsoft.Maui.Platform
 			else
 				return TTextDecorationse.None;
 		}
-		
+
 	}
 }

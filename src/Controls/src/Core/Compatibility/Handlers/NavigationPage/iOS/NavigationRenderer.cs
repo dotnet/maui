@@ -468,7 +468,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_defaultNavBarShadowImage == null)
 				_defaultNavBarShadowImage = NavigationBar.ShadowImage;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				if (shouldHide)
 				{
@@ -491,7 +491,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					NavigationBar.ShadowImage = _defaultNavBarShadowImage;
 			}
 
-			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
 			{
 				// For iOS 10 and lower, you need to set the background image.
 				// If you set this for iOS11, you'll remove the background color.
@@ -630,7 +630,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var barBackgroundColor = NavPage.BarBackgroundColor;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
 
@@ -730,7 +730,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor?.GetLuminosity() <= 0.5)
 			{
 				// Use dark text color for status bar
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 				{
 					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.DarkContent;
 				}
@@ -1189,7 +1189,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			internal void SetupDefaultNavigationBarAppearance()
 			{
-				if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)))
+				if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13)))
 					return;
 
 				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
@@ -1305,7 +1305,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				// on iOS 10 if the user hasn't set the back button text
 				// we set it to an empty string so it's consistent with iOS 11
-				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)) && !isBackButtonTextSet)
+				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)) && !isBackButtonTextSet)
 					backButtonText = "";
 
 				// First page and we have a flyout detail to contend with
@@ -1391,7 +1391,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (!_navigation.TryGetTarget(out n))
 					return;
 
-				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)) || n._parentFlyoutPage != null)
+				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)) || n._parentFlyoutPage != null)
 					UpdateTitleArea(Child);
 			}
 
@@ -1614,7 +1614,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public override void LayoutSubviews()
 			{
-				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
 				{
 					for (int i = 0; i < this.Subviews.Length; i++)
 					{
@@ -1654,7 +1654,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public Container(View view, UINavigationBar bar) : base(bar.Bounds)
 			{
-				if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
+				if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11))
 				{
 					TranslatesAutoresizingMaskIntoConstraints = false;
 				}
@@ -1701,7 +1701,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					if (Superview != null)
 					{
-						if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+						if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
 						{
 							value.Y = Superview.Bounds.Y;
 

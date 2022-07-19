@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 			return solidColorBrush.Color.ToColor();
 		}
 
-		public static bool IsDefault(this Graphics.Color? color) 
+		public static bool IsDefault(this Graphics.Color? color)
 		{
 			return color == null;
 		}

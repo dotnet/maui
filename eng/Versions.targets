@@ -73,9 +73,11 @@
       <VersionMetadataPlusLabel Condition="'$(VersionMetadataLabel)' != ''">+$(VersionMetadataLabel)</VersionMetadataPlusLabel>
       <Version>$(GitBaseVersionMajor).$(GitBaseVersionMinor).$(GitBaseVersionPatch)</Version>
       <PackageReferenceVersion>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</PackageReferenceVersion>
-      <PackageReferenceVersion Condition="$(CI)">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch)$(GitSemVerDashLabel).$(BUILDVERSION)</PackageReferenceVersion>
+      <PackageReferenceVersion Condition="$(CI) and '$(GitSemVerDashLabel)' != ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch)$(GitSemVerDashLabel).$(BUILDVERSION)</PackageReferenceVersion>
+      <PackageReferenceVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)</PackageReferenceVersion>
       <VSComponentVersion>$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch)</VSComponentVersion>
-      <VSComponentVersion Condition="$(CI)">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch).$(BUILDVERSION)</VSComponentVersion>
+      <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' != ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch).$(BUILDVERSION)</VSComponentVersion>
+      <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch).0</VSComponentVersion>
       <PackageVersion>$(PackageReferenceVersion)$(VersionMetadataPlusLabel)</PackageVersion>
     </PropertyGroup>
 

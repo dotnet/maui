@@ -281,7 +281,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
 		}
-	
+
 		[PortHandler]
 		void UpdateText()
 		{
@@ -323,6 +323,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Control.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 
+		[PortHandler]
 		void UpdateDetectReadingOrderFromContent()
 		{
 			if (Element.IsSet(Specifics.DetectReadingOrderFromContentProperty))

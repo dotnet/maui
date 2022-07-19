@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 	public class Entry : EEntry, IMeasurable, IBatchable, IEntry
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.MaterialEntry"/> class.
+		/// Initializes a new instance of the <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Entry"/> class.
 		/// </summary>
 		/// <param name="parent">Parent evas object.</param>
 		public Entry(EvasObject parent) : base(parent)

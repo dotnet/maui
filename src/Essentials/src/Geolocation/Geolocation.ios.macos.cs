@@ -21,12 +21,12 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			var reducedAccuracy = false;
 #if __IOS__
-            if (OperatingSystem.IsIOSVersionAtLeast(14, 0))
-            {
-                reducedAccuracy = manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy;
-            }
+			if (OperatingSystem.IsIOSVersionAtLeast(14, 0))
+			{
+				reducedAccuracy = manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy;
+			}
 #endif
-            return location?.ToLocation(reducedAccuracy);
+			return location?.ToLocation(reducedAccuracy);
 		}
 
 		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
@@ -64,15 +64,15 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			var reducedAccuracy = false;
 #if __IOS__
-            if (OperatingSystem.IsIOSVersionAtLeast(14, 0))
-            {
-                if (request.RequestFullAccuracy && manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy)
-                {
-                    await manager.RequestTemporaryFullAccuracyAuthorizationAsync("TemporaryFullAccuracyUsageDescription");
-                }
+			if (OperatingSystem.IsIOSVersionAtLeast(14, 0))
+			{
+				if (request.RequestFullAccuracy && manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy)
+				{
+					await manager.RequestTemporaryFullAccuracyAuthorizationAsync("TemporaryFullAccuracyUsageDescription");
+				}
 
-                reducedAccuracy = manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy;
-            }
+				reducedAccuracy = manager.AccuracyAuthorization == CLAccuracyAuthorization.ReducedAccuracy;
+			}
 #endif
 
 			var clLocation = await tcs.Task;

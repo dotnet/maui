@@ -109,12 +109,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override Size MeasureFooter(int widthConstraint, int heightConstraint)
 		{
-			return _footerCache?.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), double.PositiveInfinity).Request.ToEFLPixel() ?? new Size(0, 0);
+			return _footerCache?.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), DPExtensions.ConvertToScaledDP(heightConstraint)).Request.ToEFLPixel() ?? new Size(0, 0);
 		}
 
 		public override Size MeasureHeader(int widthConstraint, int heightConstraint)
 		{
-			return _headerCache?.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), double.PositiveInfinity).Request.ToEFLPixel() ?? new Size(0, 0);
+			return _headerCache?.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), DPExtensions.ConvertToScaledDP(heightConstraint)).Request.ToEFLPixel() ?? new Size(0, 0);
 		}
 
 		public override Size MeasureItem(int widthConstraint, int heightConstraint)
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var item = this[index];
 			if (item != null && _dataBindedViewTable.TryGetValue(item, out View? createdView) && createdView != null)
 			{
-				return createdView.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), double.PositiveInfinity, MeasureFlags.IncludeMargins).Request.ToEFLPixel();
+				return createdView.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), DPExtensions.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request.ToEFLPixel();
 			}
 
 			View? view = null;

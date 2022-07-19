@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Foldable.UnitTests
 			pane1 = pane1 ?? new BoxView();
 			pane2 = pane2 ?? new BoxView();
 			dualScreenService.IsSpanned = true;
-			
+
 			TwoPaneView view = new TwoPaneView(dualScreenService)
 			{
 				IsPlatformEnabled = true,

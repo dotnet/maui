@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateText(label);
-			
+
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, label);
 		}
@@ -65,12 +65,12 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapCharacterSpacing(ILabelHandler handler, ILabel label) {}
+		public static void MapCharacterSpacing(ILabelHandler handler, ILabel label) { }
 
 		[MissingMapper]
-		public static void MapLineHeight(ILabelHandler handler, ILabel label) {}
+		public static void MapLineHeight(ILabelHandler handler, ILabel label) { }
 
 		[MissingMapper]
-		public static void MapPadding(ILabelHandler handler, ILabel label) {}
+		public static void MapPadding(ILabelHandler handler, ILabel label) { }
 	}
 }

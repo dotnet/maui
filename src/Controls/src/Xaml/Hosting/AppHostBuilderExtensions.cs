@@ -146,7 +146,6 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.Register<Xaml.ResourcesLoader>();
 			DependencyService.Register<Xaml.ValueConverterProvider>();
 			DependencyService.Register<PlatformSizeService>();
-			DependencyService.Register<PlatformInvalidate>();
 
 #pragma warning disable CS0612, CA1416 // Type or member is obsolete, 'ResourcesProvider' is unsupported on: 'iOS' 14.0 and later
 			DependencyService.Register<ResourcesProvider>();
@@ -209,19 +208,26 @@ namespace Microsoft.Maui.Controls.Hosting
 		internal static MauiAppBuilder RemapForControls(this MauiAppBuilder builder)
 		{
 			// Update the mappings for IView/View to work specifically for Controls
+			Application.RemapForControls();
 			VisualElement.RemapForControls();
 			Label.RemapForControls();
 			Button.RemapForControls();
+			DatePicker.RemapForControls();
 			RadioButton.RemapForControls();
 			FlyoutPage.RemapForControls();
 			Toolbar.RemapForControls();
 			Window.RemapForControls();
 			Editor.RemapForControls();
 			Entry.RemapForControls();
+			Picker.RemapForControls();
 			SearchBar.RemapForControls();
 			TabbedPage.RemapForControls();
+			TimePicker.RemapForControls();
 			Layout.RemapForControls();
+			ScrollView.RemapForControls();
+			RefreshView.RemapForControls();
 			Shape.RemapForControls();
+			WebView.RemapForControls();
 
 			return builder;
 		}

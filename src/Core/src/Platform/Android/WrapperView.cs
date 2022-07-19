@@ -154,15 +154,17 @@ namespace Microsoft.Maui.Platform
 
 		void ClipChild(Canvas canvas)
 		{
-			var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
+			var density = Context.GetDisplayDensity();
+			var newSize = new SizeF(canvas.Width, canvas.Height);
+			var bounds = new Graphics.RectF(Graphics.Point.Zero, newSize / density);
 
-			if (_invalidateClip || _lastPathSize != bounds.Size || _currentPath == null)
+			if (_invalidateClip || _lastPathSize != newSize || _currentPath == null)
 			{
 				_invalidateClip = false;
 
 				var path = Clip.PathForBounds(bounds);
-				_currentPath = path?.AsAndroidPath();
-				_lastPathSize = bounds.Size;
+				_currentPath = path?.AsAndroidPath(scaleX: density, scaleY: density);
+				_lastPathSize = newSize;
 			}
 
 			if (_currentPath != null)

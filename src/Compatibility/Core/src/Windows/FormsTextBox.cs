@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public bool ClearButtonVisible
 		{
 			get { return (bool)GetValue(ClearButtonVisibleProperty); }
-			set { SetValue(ClearButtonVisibleProperty, value);}
+			set { SetValue(ClearButtonVisibleProperty, value); }
 		}
 
 		public WBrush BackgroundFocusBrush
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				UpdateClearButtonVisible();
 			}
 
-			_scrollViewer= GetTemplateChild("ContentElement") as ScrollViewer;
+			_scrollViewer = GetTemplateChild("ContentElement") as ScrollViewer;
 		}
 
 		void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -400,7 +400,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (ClearButtonVisible && !states.Contains(visibleState))
 					states.Add(visibleState);
-				else if(!ClearButtonVisible)
+				else if (!ClearButtonVisible)
 					states.Remove(visibleState);
 			}
 		}

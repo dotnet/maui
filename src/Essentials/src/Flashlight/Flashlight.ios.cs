@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Devices
 			}
 
 			captureDevice.UnlockForConfiguration();
-#pragma warning restore CA1416 
+#pragma warning restore CA1416
 			captureDevice.Dispose();
 			captureDevice = null;
 		}

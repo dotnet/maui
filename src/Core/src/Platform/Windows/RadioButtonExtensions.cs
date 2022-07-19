@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Platform
 			else
 				platformRadioButton.Content = $"{radioButton.Content}";
 		}
-		
+
 		private static readonly string[] _borderColorKeys =
 		{
 			"RadioButtonBorderBrush",

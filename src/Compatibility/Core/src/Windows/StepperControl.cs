@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public static readonly DependencyProperty ButtonBackgroundColorProperty = DependencyProperty.Register(nameof(ButtonBackgroundColor), typeof(Color), typeof(StepperControl), new PropertyMetadata(default(Color), OnButtonBackgroundColorChanged));
 
 		public static readonly DependencyProperty ButtonBackgroundProperty = DependencyProperty.Register(nameof(ButtonBackground), typeof(Brush), typeof(StepperControl), new PropertyMetadata(default(Brush), OnButtonBackgroundChanged));
-	
+
 		Microsoft.UI.Xaml.Controls.Button _plus;
 		Microsoft.UI.Xaml.Controls.Button _minus;
 		VisualStateCache _plusStateCache;

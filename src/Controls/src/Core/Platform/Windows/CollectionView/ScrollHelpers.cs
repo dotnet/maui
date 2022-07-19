@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return AdjustToEndVertical(point, itemSize, scrollViewer);
 			}
 
-			if (point.Y >= scrollViewer.VerticalOffset 
+			if (point.Y >= scrollViewer.VerticalOffset
 				&& point.Y < (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight - itemSize.Height))
 			{
 				// The target is already in the viewport, no reason to scroll at all
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return AdjustToEndHorizontal(point, itemSize, scrollViewer);
 			}
 
-			if (point.X >= scrollViewer.HorizontalOffset 
+			if (point.X >= scrollViewer.HorizontalOffset
 				&& point.X < (scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth - itemSize.Width))
 			{
 				// The target is already in the viewport, no reason to scroll at all
@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return transform.TransformPoint(Zero);
 		}
 
-		internal static void JumpToIndexAsync(ListViewBase list, int index, ScrollToPosition scrollToPosition) 
+		internal static void JumpToIndexAsync(ListViewBase list, int index, ScrollToPosition scrollToPosition)
 		{
 			var scrollViewer = list.GetFirstDescendant<ScrollViewer>();
 			var con = list.ContainerFromIndex(index);
@@ -222,7 +222,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				tcs.TrySetResult(null);
 			}
-			
+
 			try
 			{
 				scrollViewer.ViewChanged += ViewChanged;

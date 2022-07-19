@@ -1,0 +1,28 @@
+<Project>
+
+  <ItemGroup>
+    <PackageReference Remove="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="All" />
+  </ItemGroup>
+
+  <!-- for explicit TFMs -->
+  <ItemGroup Condition="'$(TargetFramework)' != '' and Exists('PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt') and Exists('PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt')">
+    <PublicAPIFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
+    <PublicAPIFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
+  <!-- for almost-explicit TFMs -->
+  <ItemGroup Condition="'$(TargetFramework)' != '' and !Exists('PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt') and !Exists('PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt')">
+    <PublicAPIFiles Include="PublicAPI\net\PublicAPI.Shipped.txt" Condition="'$(TargetPlatformIdentifier)' == ''" />
+    <PublicAPIFiles Include="PublicAPI\net\PublicAPI.Unshipped.txt" Condition="'$(TargetPlatformIdentifier)' == ''" />
+    <PublicAPIFiles Include="PublicAPI\net-$(TargetPlatformIdentifier.ToLower())\PublicAPI.Shipped.txt" Condition="'$(TargetPlatformIdentifier)' != '' and !$(TargetFramework.StartsWith('netstandard'))" />
+    <PublicAPIFiles Include="PublicAPI\net-$(TargetPlatformIdentifier.ToLower())\PublicAPI.Unshipped.txt" Condition="'$(TargetPlatformIdentifier)' != '' and !$(TargetFramework.StartsWith('netstandard'))" />
+    <PublicAPIFiles Include="PublicAPI\netstandard\PublicAPI.Shipped.txt" Condition="$(TargetFramework.StartsWith('netstandard'))" />
+    <PublicAPIFiles Include="PublicAPI\netstandard\PublicAPI.Unshipped.txt" Condition="$(TargetFramework.StartsWith('netstandard'))" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != ''">
+    <AdditionalFiles Include="@(PublicAPIFiles)" />
+  </ItemGroup>
+
+</Project>

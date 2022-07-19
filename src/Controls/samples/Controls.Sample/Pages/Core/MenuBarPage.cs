@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if (sender is MenuFlyoutItem mfi)
 			{
-				menuLabel.Text = $"You clicked on Menu Item: { mfi.Text}";
+				menuLabel.Text = $"You clicked on Menu Item: {mfi.Text}";
 			}
 		}
 

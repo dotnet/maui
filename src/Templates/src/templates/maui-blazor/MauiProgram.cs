@@ -16,11 +16,11 @@ public static class MauiProgram
 			});
 
 		builder.Services.AddMauiBlazorWebView();
-//-:cnd:noEmit
+		//-:cnd:noEmit
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
-//+:cnd:noEmit
+		//+:cnd:noEmit
 
 		builder.Services.AddSingleton<WeatherForecastService>();
 

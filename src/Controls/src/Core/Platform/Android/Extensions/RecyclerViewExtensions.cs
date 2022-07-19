@@ -11,8 +11,8 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateSelection(this RecyclerView recyclerView, SelectableItemsView selectableItemsView)
 		{
 			var mode = selectableItemsView.SelectionMode;
-
-			var adapter = (recyclerView.GetAdapter() as SelectableItemsViewAdapter<SelectableItemsView, IItemsViewSource>);
+			//TODO: on NET7 implement a ISelectableItemsViewAdapter interface on the adapter
+			var adapter = recyclerView.GetAdapter() as ReorderableItemsViewAdapter<ReorderableItemsView, IGroupableItemsViewSource>;
 			adapter?.ClearPlatformSelection();
 
 			switch (mode)

@@ -11,8 +11,6 @@ namespace Microsoft.Maui.Resizetizer
 {
 	public class ResizetizeImages : MauiAsyncTask, ILogger
 	{
-		internal bool AllowVectorAdaptiveIcons = false;
-
 		[Required]
 		public string PlatformType { get; set; } = "android";
 
@@ -32,8 +30,6 @@ namespace Microsoft.Maui.Resizetizer
 
 		public override System.Threading.Tasks.Task ExecuteAsync()
 		{
-			Svg.SvgDocument.SkipGdiPlusCapabilityCheck = true;
-
 			var images = ResizeImageInfo.Parse(Images);
 
 			var dpis = DpiPath.GetDpis(PlatformType);
@@ -136,7 +132,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				appIconName = appIconName.ToLowerInvariant();
 
-				var adaptiveIconGen = new AndroidAdaptiveIconGenerator(img, appIconName, IntermediateOutputPath, this, AllowVectorAdaptiveIcons);
+				var adaptiveIconGen = new AndroidAdaptiveIconGenerator(img, appIconName, IntermediateOutputPath, this);
 				var iconsGenerated = adaptiveIconGen.Generate();
 
 				foreach (var iconGenerated in iconsGenerated)
@@ -152,6 +148,14 @@ namespace Microsoft.Maui.Resizetizer
 
 				foreach (var assetGenerated in assetsGenerated)
 					resizedImages.Add(assetGenerated);
+			}
+			else if (PlatformType == "uwp")
+			{
+				LogDebugMessage($"Windows Icon Generator");
+
+				var windowsIconGen = new WindowsIconGenerator(img, IntermediateOutputPath, this);
+
+				resizedImages.Add(windowsIconGen.Generate());
 			}
 			else if (PlatformType == "tizen")
 			{
@@ -199,7 +203,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			LogDebugMessage($"Copying {img.Filename}");
 
-			var r = resizer.CopyFile(originalScaleDpi, InputsFile, PlatformType.Equals("android", StringComparison.OrdinalIgnoreCase));
+			var r = resizer.CopyFile(originalScaleDpi, InputsFile);
 			resizedImages.Add(r);
 
 			LogDebugMessage($"Copied {img.Filename}");

@@ -281,7 +281,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void ThorwsInSetIsPresentOnSplitPortraitModeOnTablet()
+		public void ThrowsInSetIsPresentOnSplitPortraitModeOnTablet()
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Portrait);
@@ -290,7 +290,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Flyout = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
 				Detail = new ContentPage { Content = new View(), IsPlatformEnabled = true },
-				IsPlatformEnabled = true,
 				FlyoutLayoutBehavior = FlyoutLayoutBehavior.SplitOnPortrait
 			};
 
@@ -400,6 +399,69 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var mdp = new FlyoutPage();
 			Assert.Throws<InvalidOperationException>(() => mdp.Flyout = Flyout);
+		}
+
+		[Test]
+		public void FlyoutPageAppearingAnDisappearingPropagatesToFlyout()
+		{
+			int disappearing = 0;
+			int appearing = 0;
+
+			var flyout = new ContentPage() { Title = "flyout" };
+			var flyoutPage = new FlyoutPage()
+			{
+				Flyout = flyout,
+				Detail = new ContentPage() { Title = "detail" }
+			};
+
+			_ = new Window(flyoutPage);
+			flyout.Appearing += (_, __) => appearing++;
+			flyout.Disappearing += (_, __) => disappearing++;
+
+			Assert.AreEqual(0, disappearing);
+			Assert.AreEqual(0, appearing);
+
+			flyoutPage.SendDisappearing();
+
+			Assert.AreEqual(1, disappearing);
+			Assert.AreEqual(0, appearing);
+
+			flyoutPage.SendAppearing();
+
+			Assert.AreEqual(1, disappearing);
+			Assert.AreEqual(1, appearing);
+		}
+
+		[Test]
+		public void FlyoutPageAppearingAnDisappearingPropagatesToDetail()
+		{
+			int disappearing = 0;
+			int appearing = 0;
+
+			var detail = new ContentPage() { Title = "detail" };
+			var flyoutPage = new FlyoutPage()
+			{
+				Flyout = new ContentPage() { Title = "flyout" },
+				Detail = detail
+			};
+
+			_ = new Window(flyoutPage);
+
+			detail.Appearing += (_, __) => appearing++;
+			detail.Disappearing += (_, __) => disappearing++;
+
+			Assert.AreEqual(0, disappearing);
+			Assert.AreEqual(0, appearing);
+
+			flyoutPage.SendDisappearing();
+
+			Assert.AreEqual(1, disappearing);
+			Assert.AreEqual(0, appearing);
+
+			flyoutPage.SendAppearing();
+
+			Assert.AreEqual(1, disappearing);
+			Assert.AreEqual(1, appearing);
 		}
 	}
 

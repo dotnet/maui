@@ -37,12 +37,30 @@ namespace Maui.Controls.Sample.Pages
 		void GraphicsView_EndHoverInteraction(object sender, EventArgs e)
 			=> UpdateInteractions("End Hover");
 
+		void GraphicsView_Tapped(object sender, EventArgs args)
+			=> UpdateGestures("TapGestureRecognizer");
+
+		void GraphicsView_PanUpdated(object sender, PanUpdatedEventArgs args)
+			=> UpdateGestures("PanGestureRecognizer");
+
+		void GraphicsView_PinchUpdated(object sender, PinchGestureUpdatedEventArgs args)
+			=> UpdateGestures("PinchGestureRecognizer ");
+
 		void UpdateInteractions(string name, TouchEventArgs e)
 		{
 			Dispatcher.DispatchAsync(() =>
 				labelInteractions.Text = $"{name}: "
 					+ string.Join(", ", e.Touches.Select(t => $"[{Math.Round(t.X, 1)},{Math.Round(t.Y, 1)}]"))
 					+ $" IsInsideBounds: {e.IsInsideBounds}");
+
+			Dispatcher.DispatchAsync(() =>
+				labelGestures.Text = string.Empty);
+		}
+
+		void UpdateGestures(string name)
+		{
+			Dispatcher.DispatchAsync(() =>
+				labelGestures.Text = $"{name}");
 		}
 
 		void UpdateInteractions(string name)

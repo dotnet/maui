@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			else if (e.PropertyName == Picker.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateHorizontalTextAlignment();
 			else if (e.PropertyName == Picker.VerticalTextAlignmentProperty.PropertyName)
-				UpdateVerticalTextAlignment();			
+				UpdateVerticalTextAlignment();
 		}
 
 		void ControlOnLoaded(object sender, RoutedEventArgs routedEventArgs)
@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			Control.HorizontalContentAlignment = Element.HorizontalTextAlignment.ToPlatformHorizontalAlignment();
 		}
-        [PortHandler]
+		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
 			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToPlatformVerticalAlignment();

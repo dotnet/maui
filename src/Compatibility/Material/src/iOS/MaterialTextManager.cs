@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.iOS
 			textField.ContainerScheme.ColorScheme.PrimaryColor = uIColor;
 		}
 
-		static Color AdjustTextColor(IMaterialEntryRenderer element) 
+		static Color AdjustTextColor(IMaterialEntryRenderer element)
 		{
 			if (Forms.IsiOS14OrNewer)
 			{

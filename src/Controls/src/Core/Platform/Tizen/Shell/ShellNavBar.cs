@@ -2,9 +2,10 @@
 
 using System;
 using ElmSharp;
+using Microsoft.Maui.Devices;
+using Tizen.UIExtensions.Common.GraphicsView;
 using Tizen.UIExtensions.ElmSharp;
 using Tizen.UIExtensions.ElmSharp.GraphicsView;
-using Microsoft.Maui.Devices;
 using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
 using TButton = Tizen.UIExtensions.ElmSharp.Button;
@@ -28,13 +29,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		FlyoutBehavior _flyoutBehavior = FlyoutBehavior.Flyout;
 
-		EColor _backgroudColor = ShellView.DefaultBackgroundColor;
-		EColor _foregroundColor = ShellView.DefaultForegroundColor;
-		EColor _titleColor = ShellView.DefaultTitleColor;
+		EColor _backgroudColor = TThemeConstants.Shell.ColorClass.DefaultBackgroundColor;
+		EColor _foregroundColor = TThemeConstants.Shell.ColorClass.DefaultForegroundColor;
+		EColor _titleColor = TThemeConstants.Shell.ColorClass.DefaultTitleColor;
 
 		bool _hasBackButton = false;
-		private bool disposedValue;
+		bool _disposedValue;
 		bool _isTV = DeviceInfo.Idiom == DeviceIdiom.TV;
+
+		bool IsMenuIconVisible => _flyoutBehavior == FlyoutBehavior.Flyout || HasBackButton;
 
 		public ShellNavBar(IMauiContext context) : base(context?.GetPlatformParent())
 		{
@@ -190,50 +193,46 @@ namespace Microsoft.Maui.Controls.Platform
 		public void SetPage(Page page)
 		{
 			_page = page;
-			Title = page.Title;
+			Title = string.IsNullOrEmpty(page.Title) ? Shell.Current.CurrentContent.Title : page.Title;
 			SearchHandler = Shell.GetSearchHandler(page);
 			TitleView = Shell.GetTitleView(page);
+
 			UpdateMenuIcon();
 		}
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposedValue)
+			if (!_disposedValue)
 			{
 				if (disposing)
 				{
 					Unrealize();
 				}
-				disposedValue = true;
+				_disposedValue = true;
 			}
 		}
 
 		void UpdateMenuIcon()
 		{
-			if (HasBackButton)
-			{
-				if (_isTV)
-				{
-					_menuButton.Style = TThemeConstants.Button.Styles.Default;
-				}
-				_menuIcon.IconType = Tizen.UIExtensions.Common.GraphicsView.MaterialIcons.ArrowBack;
-			}
-			else if (_flyoutBehavior != FlyoutBehavior.Flyout)
+			if (!IsMenuIconVisible)
 			{
 				_menuButton.Hide();
 			}
 			else
 			{
+				_menuIcon.IconType = HasBackButton ? MaterialIcons.ArrowBack : MaterialIcons.Menu;
+
 				if (_isTV)
 				{
 					_menuButton.Style = TThemeConstants.Button.Styles.Default;
 				}
-				_menuIcon.IconType = Tizen.UIExtensions.Common.GraphicsView.MaterialIcons.Menu;
+
+				_menuIcon?.Show();
+				_menuButton.SetIconPart(_menuIcon);
+				_menuButton.Show();
 			}
 
-			_menuIcon?.Show();
-			_menuButton.SetIconPart(_menuIcon);
-			_menuButton.Show();
+			OnLayout();
 		}
 
 		void OnMenuClicked(object? sender, EventArgs e)
@@ -318,14 +317,17 @@ namespace Microsoft.Maui.Controls.Platform
 			int titleVMargin = TDPExtensions.ConvertToScaledPixel(this.GetDefaultTitleVMargin());
 
 			var bound = Geometry;
+			var menuBound = new Rect(bound.X, bound.Y, 0, 0);
 
-			var menuBound = bound;
-			menuBound.X += menuMargin;
-			menuBound.Y += (menuBound.Height - menuSize) / 2;
-			menuBound.Width = menuSize;
-			menuBound.Height = menuSize;
+			if (IsMenuIconVisible)
+			{
+				menuBound.X += menuMargin;
+				menuBound.Y += (bound.Height - menuSize) / 2;
+				menuBound.Width = menuSize;
+				menuBound.Height = menuSize;
 
-			_menuButton.Geometry = menuBound;
+				_menuButton.Geometry = menuBound;
+			}
 
 			var contentBound = Geometry;
 			contentBound.X = menuBound.Right + titleHMargin;

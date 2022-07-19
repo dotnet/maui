@@ -158,10 +158,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		static internal void RefreshImage(IImageVisualElementRenderer renderer)
 		{
-			if(renderer.Element is IViewController element)
+			if (renderer.Element is IViewController element)
 				element?.InvalidateMeasure(InvalidationTrigger.RendererReady);
 
-			if(renderer.Element is IImageElement controller)
+			if (renderer.Element is IImageElement controller)
 				StartStopAnimation(renderer, controller);
 		}
 	}

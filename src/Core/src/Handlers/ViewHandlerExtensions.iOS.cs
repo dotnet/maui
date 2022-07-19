@@ -1,7 +1,7 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
-using CoreGraphics;
 
 namespace Microsoft.Maui
 {
@@ -101,7 +101,7 @@ namespace Microsoft.Maui
 			viewHandler.Invoke(nameof(IView.Frame), rect);
 		}
 
-		static double ResolveConstraints(double measured, double exact, double min, double max)
+		internal static double ResolveConstraints(double measured, double exact, double min, double max)
 		{
 			var resolved = measured;
 

@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 			try
 			{
 				var isLoadComplated = await image.LoadAsync(uri, cancellationToken);
-				
+
 				if (!isLoadComplated)
 					throw new InvalidOperationException($"Unable to load image URI '{uri}'.");
 

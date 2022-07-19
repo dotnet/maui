@@ -112,6 +112,13 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task InputTransparencyInitializesCorrectly(bool inputTransparent)
 		{
+			if (typeof(TStub) == typeof(LayoutStub))
+			{
+				// The platform type for Layouts (LayoutView) always has UserInteractionEnabled
+				// to allow for its children to be interacted with
+				return;
+			}
+
 			var view = new TStub()
 			{
 				InputTransparent = inputTransparent
@@ -166,10 +173,10 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected Maui.Graphics.Rect GetPlatformViewBounds(IViewHandler viewHandler) =>
-			((UIView)viewHandler.PlatformView).GetPlatformViewBounds();
+			viewHandler.VirtualView.ToPlatform().GetPlatformViewBounds();
 
 		protected Maui.Graphics.Rect GetBoundingBox(IViewHandler viewHandler) =>
-			((UIView)viewHandler.PlatformView).GetBoundingBox();
+			viewHandler.VirtualView.ToPlatform().GetBoundingBox();
 
 		protected System.Numerics.Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
 			((UIView)viewHandler.PlatformView).GetViewTransform();

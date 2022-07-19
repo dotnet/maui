@@ -99,14 +99,14 @@ namespace Microsoft.Maui.Controls.Design
 	{
 		protected override string[] KnownValues
 			=> new[] {
-			    "Auto",
+				"Auto",
 		};
 
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			if (KnownValues.Any(v => value?.ToString()?.Equals(v, StringComparison.Ordinal) ?? false))
 				return true;
-			
+
 			var strValue = value?.ToString().Trim();
 
 			if (strValue is null)
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Design
 
 			if (strValue.EndsWith("%", StringComparison.OrdinalIgnoreCase) && float.TryParse(strValue.Substring(0, strValue.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
 				return true;
-			
+
 			if (float.TryParse(strValue, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
 				return true;
 

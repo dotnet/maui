@@ -8,6 +8,7 @@ using ElmSharp.Accessible;
 using Tizen.UIExtensions.ElmSharp;
 using static Microsoft.Maui.Primitives.Dimension;
 using Rect = Microsoft.Maui.Graphics.Rect;
+using System.Linq;
 
 namespace Microsoft.Maui.Platform
 {
@@ -55,6 +56,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this EvasObject platformView, IView view)
 		{
+			if (view.Background is ImageSourcePaint image)
+			{
+				var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget();
+				return;
+			}
+
 			var paint = view.Background;
 
 			if (platformView is WrapperView wrapperView)
@@ -71,9 +80,33 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static Task UpdateBackgroundImageSourceAsync(this EvasObject platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		public static async Task UpdateBackgroundImageSourceAsync(this EvasObject platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
-			return Task.CompletedTask;
+			if (provider == null)
+				return;
+
+			if (platformView is WrapperView canvas)
+			{
+				if (imageSource != null)
+				{
+					var bgImage = canvas.Children.OfType<MauiBackgroundImage>().FirstOrDefault();
+					if (bgImage == null)
+					{
+						bgImage = new MauiBackgroundImage(canvas);
+					}
+					var service = provider.GetRequiredImageSourceService(imageSource);
+					await service.GetImageAsync(imageSource, bgImage);
+				}
+				else
+				{
+					var bgImage = canvas.Children.OfType<MauiBackgroundImage>().FirstOrDefault();
+					if (bgImage != null)
+					{
+						canvas.Children.Remove(bgImage);
+						bgImage?.Unrealize();
+					}
+				}
+			}
 		}
 
 		public static void UpdateBorder(this EvasObject platformView, IView view)

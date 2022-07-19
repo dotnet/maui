@@ -10,6 +10,8 @@
     <TizenRoot>Tizen\</TizenRoot>
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">

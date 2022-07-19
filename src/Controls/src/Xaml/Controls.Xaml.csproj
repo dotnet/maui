@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
 		<AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
 		<RootNamespace>Microsoft.Maui.Controls.Xaml</RootNamespace>
 		<IsPackable>false</IsPackable>
-		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
-		<NoWarn>$(NoWarn);CA2200</NoWarn>
+		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
+		<NoWarn>$(NoWarn);CA2200;CS1591;RS0041</NoWarn>
 		<PackageId>Microsoft.Maui.Controls.Xaml</PackageId>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
@@ -17,12 +19,10 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Controls.Core.csproj" />
 		<ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Diagnostics\" />
-		<Folder Include="Hosting\" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" />
 	</ItemGroup>
 
 	<PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
@@ -42,4 +42,7 @@
 			</BuildOutputInPackage>
 		</ItemGroup>
 	</Target>
+
+	<Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+
 </Project>

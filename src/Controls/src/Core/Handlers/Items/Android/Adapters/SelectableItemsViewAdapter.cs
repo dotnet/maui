@@ -136,7 +136,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					return;
 				case SelectionMode.Single:
 					ItemsView.SelectedItem = ItemsSource.GetItem(adapterPosition);
-					RefreshViewHolderSelection();
 					return;
 				case SelectionMode.Multiple:
 					var item = ItemsSource.GetItem(adapterPosition);
@@ -150,16 +149,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					{
 						selectedItems.Add(item);
 					}
-					RefreshViewHolderSelection();
 					return;
-			}
-
-			void RefreshViewHolderSelection()
-			{
-				for (int position = 0; position < _currentViewHolders.Count; position++)
-				{
-					_currentViewHolders[position].IsSelected = PositionIsSelected(position);
-				}
 			}
 		}
 	}

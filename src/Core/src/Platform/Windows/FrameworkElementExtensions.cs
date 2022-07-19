@@ -324,5 +324,19 @@ namespace Microsoft.Maui.Platform
 					.ToPlatform()
 					.GetLocationRelativeTo(relativeTo.ToPlatform());
 		}
+
+		internal static void RefreshThemeResources(this FrameworkElement nativeView)
+		{
+			var previous = nativeView.RequestedTheme;
+
+			// Workaround for https://github.com/dotnet/maui/issues/7820
+			nativeView.RequestedTheme = nativeView.ActualTheme switch
+			{
+				ElementTheme.Dark => ElementTheme.Light,
+				_ => ElementTheme.Dark
+			};
+
+			nativeView.RequestedTheme = previous;
+		}
 	}
 }

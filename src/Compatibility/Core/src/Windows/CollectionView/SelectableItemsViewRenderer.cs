@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			UpdateFormsSelection();
 		}
-			
+
 		void UpdateFormsSelection()
 		{
 			if (_ignoreNativeSelectionChange || ItemsView == null)

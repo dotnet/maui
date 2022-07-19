@@ -33,8 +33,8 @@ namespace Microsoft.Maui.Controls.Platform
 		List<EToolbarItem> _tabsItems = new List<EToolbarItem>();
 
 		bool _disposed = false;
-		Color _tabBarBackgroudColor = ShellView.DefaultBackgroundColor;
-		Color _tabBarTitleColor = ShellView.DefaultTitleColor;
+		Color _tabBarBackgroudColor = TThemeConstants.Shell.ColorClass.DefaultBackgroundColor;
+		Color _tabBarTitleColor = TThemeConstants.Shell.ColorClass.DefaultTitleColor;
 
 		const string _dotsIcon = TThemeConstants.Shell.Resources.DotsIcon;
 
@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					if (_moreTabItem != null)
 						_moreTabItem.IsSelected = true;
-					
+
 					_disableMoreItemOpen = false;
 				}
 
@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateCurrentItemFromUI(ShellSection? section)
 		{
-			if (section != null &&  ShellItem.CurrentItem != section)
+			if (section != null && ShellItem.CurrentItem != section)
 			{
 				ShellItem.SetValueFromRenderer(ShellItem.CurrentItemProperty, section);
 			}
@@ -287,8 +287,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var tabBarBackgroudColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
 			var tabBarTitleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor;
 
-			TabBarBackgroundColor = tabBarBackgroudColor.IsDefault() ? ShellView.DefaultBackgroundColor : (tabBarBackgroudColor?.ToPlatformEFL()).GetValueOrDefault();
-			TabBarTitleColor = tabBarTitleColor.IsDefault() ? ShellView.DefaultTitleColor : (tabBarTitleColor?.ToPlatformEFL()).GetValueOrDefault();
+			TabBarBackgroundColor = tabBarBackgroudColor.IsDefault() ? TThemeConstants.Shell.ColorClass.DefaultBackgroundColor : (tabBarBackgroudColor?.ToPlatformEFL()).GetValueOrDefault();
+			TabBarTitleColor = tabBarTitleColor.IsDefault() ? TThemeConstants.Shell.ColorClass.DefaultTitleColor : (tabBarTitleColor?.ToPlatformEFL()).GetValueOrDefault();
 		}
 
 		void UpdateTabsBackgroudColor(EColor color)

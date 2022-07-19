@@ -5,10 +5,10 @@
     <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
     <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
-    <_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
+    <_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
     <GitInfoReportImportance>high</GitInfoReportImportance>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027;RS0022</NoWarn>
   </PropertyGroup>
 
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
@@ -34,7 +34,7 @@
     <AndroidResource Include="Compatibility\Android\Resources\Layout\flyoutcontent.axml" />
     <AndroidResource Include="Compatibility\Android\Resources\Layout\shellcontent.axml" />
   </ItemGroup>
-  
+
   <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);
@@ -52,5 +52,7 @@
       </BuildOutputInPackage>
     </ItemGroup>
   </Target>
+
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 
 </Project>

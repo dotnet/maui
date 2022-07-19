@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public class ShellView : EBox, IFlyoutBehaviorObserver
 	{
+		// TODO: NET7 remove this for net7.0
 		public static readonly EColor DefaultBackgroundColor = TThemeConstants.Shell.ColorClass.DefaultBackgroundColor;
 		public static readonly EColor DefaultForegroundColor = TThemeConstants.Shell.ColorClass.DefaultForegroundColor;
 		public static readonly EColor DefaultTitleColor = TThemeConstants.Shell.ColorClass.DefaultTitleColor;
@@ -46,6 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_navigationView = CreateNavigationView();
 			_navigationView.LayoutUpdated += OnNavigationViewLayoutUpdated;
 			_navigationView.Content = _itemsView = CreateItemsView();
+			_navigationDrawer.DrawerWidth = ThemeConstants.Shell.Resources.DefaultFlyoutItemWidth;
 
 			_navigationDrawer.NavigationView = _navigationView.TargetView;
 			_navigationDrawer.Toggled += OnDrawerToggled;
@@ -70,13 +72,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected bool HeaderOnMenu => _headerBehavior == FlyoutHeaderBehavior.Scroll || _headerBehavior == FlyoutHeaderBehavior.CollapseOnScroll;
 
-		public  virtual void SetElement(Shell shell, IMauiContext context)
+		public virtual void SetElement(Shell shell, IMauiContext context)
 		{
 			Element = shell;
 			Element.PropertyChanged += OnElementPropertyChanged;
 			MauiContext = context;
 
 			((IShellController)Element).StructureChanged += OnShellStructureChanged;
+			((IShellController)Element).AddFlyoutBehaviorObserver(this);
 			_lastSelected = null;
 
 			UpdateFlyoutIsPresented();
@@ -96,7 +99,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual INavigationDrawer CreateNavigationDrawer()
 		{
-			return new NavigationDrawer(PlatformParent);
+			return new NavigationDrawer(PlatformParent)
+			{
+				IsOpen = false
+			};
 		}
 
 		protected virtual ITNavigationView CreateNavigationView()
@@ -176,6 +182,14 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_navigationDrawer.IsOpen = Element.FlyoutIsPresented;
 			});
+		}
+
+		// TODO: NET7 make this public for net7.0
+		internal virtual void UpdateFlyoutWidth()
+		{
+			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
+
+			_navigationDrawer.DrawerWidth = Element.FlyoutWidth;
 		}
 
 		protected void OnDrawerToggled(object? sender, EventArgs e)
@@ -381,7 +395,8 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnHeaderSizeChanged(object? sender, EventArgs e)
 		{
 			var bound = (_navigationView as EvasObject)?.Geometry;
-			Application.Current?.Dispatcher.Dispatch(()=> {
+			Application.Current?.Dispatcher.Dispatch(() =>
+			{
 				UpdateHeaderLayout((bound?.Width).GetValueOrDefault(), (bound?.Height).GetValueOrDefault());
 			});
 		}
@@ -389,7 +404,8 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnFooterSizeChanged(object? sender, EventArgs e)
 		{
 			var bound = (_navigationView as EvasObject)?.Geometry;
-			Application.Current?.Dispatcher.Dispatch(() => {
+			Application.Current?.Dispatcher.Dispatch(() =>
+			{
 				UpdateFooterLayout((bound?.Width).GetValueOrDefault(), (bound?.Height).GetValueOrDefault());
 			});
 		}
@@ -399,7 +415,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if ((!HeaderOnMenu) && (_headerView != null))
 			{
 				var requestSize = _headerView.Measure(widthConstraint, heightConstraint);
-				if(_navigationView.Header != null)
+				if (_navigationView.Header != null)
 					_navigationView.Header.MinimumHeight = TDPExtensions.ConvertToScaledPixel(requestSize.Request.Height);
 			}
 		}

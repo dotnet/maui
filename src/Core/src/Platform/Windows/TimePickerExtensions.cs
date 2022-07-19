@@ -30,28 +30,24 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this TimePicker platformTimePicker, ITimePicker timePicker)
 		{
-			Color textColor = timePicker.TextColor;
-
-			UI.Xaml.Media.Brush? brush = textColor?.ToPlatform();
+			var brush = timePicker.TextColor?.ToPlatform();
 
 			if (brush is null)
-			{
-				platformTimePicker.Resources.Remove("TimePickerButtonForeground");
-				platformTimePicker.Resources.Remove("TimePickerButtonForegroundPointerOver");
-				platformTimePicker.Resources.Remove("TimePickerButtonForegroundPressed");
-				platformTimePicker.Resources.Remove("TimePickerButtonForegroundDisabled");
-
-				platformTimePicker.ClearValue(TimePicker.ForegroundProperty);
-			}
+				platformTimePicker.Resources.RemoveKeys(TextColorResourceKeys);
 			else
-			{
-				platformTimePicker.Resources["TimePickerButtonForeground"] = brush;
-				platformTimePicker.Resources["TimePickerButtonForegroundPointerOver"] = brush;
-				platformTimePicker.Resources["TimePickerButtonForegroundPressed"] = brush;
-				platformTimePicker.Resources["TimePickerButtonForegroundDisabled"] = brush;
+				platformTimePicker.Resources.SetValueForAllKey(TextColorResourceKeys, brush);
 
-				platformTimePicker.Foreground = brush;
-			}
+			platformTimePicker.RefreshThemeResources();
 		}
+
+		static readonly string[] TextColorResourceKeys =
+		{
+			"TimePickerButtonForeground",
+			"TimePickerButtonForegroundDefault",
+			"TimePickerButtonForegroundPointerOver",
+			"TimePickerButtonForegroundPressed",
+			"TimePickerButtonForegroundDisabled",
+			"TimePickerButtonForegroundFocused",
+		};
 	}
 }

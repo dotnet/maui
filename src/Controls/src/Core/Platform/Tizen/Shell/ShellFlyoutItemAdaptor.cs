@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		Dictionary<EvasObject, View> _platformViewsTable = new Dictionary<EvasObject, View>();
 		Dictionary<object, View?> _dataBindedViewTable = new Dictionary<object, View?>();
-		
+
 		Shell _shell;
 		View? _headerCache;
 		IMauiContext _context;

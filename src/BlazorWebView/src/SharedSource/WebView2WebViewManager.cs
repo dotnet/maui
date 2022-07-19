@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="blazorWebViewInitializing">Callback invoked before the webview is initialized.</param>
 		/// <param name="blazorWebViewInitialized">Callback invoked after the webview is initialized.</param>
 		internal WebView2WebViewManager(
-			WebView2Control webview!!,
+			WebView2Control webview,
 			IServiceProvider services,
 			Dispatcher dispatcher,
 			IFileProvider fileProvider,
@@ -99,6 +99,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPagePathWithinFileProvider)
 
 		{
+			ArgumentNullException.ThrowIfNull(webview);
+
 #if WEBVIEW2_WINFORMS
 			if (services.GetService<WindowsFormsBlazorMarkerService>() is null)
 			{
@@ -143,7 +145,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="hostPagePathWithinFileProvider">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="blazorWebViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
 		internal WebView2WebViewManager(
-			WebView2Control webview!!,
+			WebView2Control webview,
 			IServiceProvider services,
 			Dispatcher dispatcher,
 			IFileProvider fileProvider,
@@ -154,6 +156,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		)
 			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPagePathWithinFileProvider)
 		{
+			ArgumentNullException.ThrowIfNull(webview);
+
 			if (services.GetService<MauiBlazorMarkerService>() is null)
 			{
 				throw new InvalidOperationException(

@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var result = new global::Windows.Foundation.Size(width, height);
 
 			Control?.Measure(result);
-			
+
 			return result;
 		}
 
@@ -199,7 +199,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void SetInitialRtlPosition(object sender, object e)
 		{
-			if (Control == null) return;
+			if (Control == null)
+				return;
 
 			if (Control.ActualWidth <= 0 || _checkedForRtlScroll || Control.Content == null)
 				return;

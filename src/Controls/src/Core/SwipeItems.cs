@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnSwipeItemsChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
-			if (notifyCollectionChangedEventArgs.NewItems != null) 
+			if (notifyCollectionChangedEventArgs.NewItems != null)
 			{
 				object bc = BindingContext;
 				foreach (BindableObject item in notifyCollectionChangedEventArgs.NewItems)

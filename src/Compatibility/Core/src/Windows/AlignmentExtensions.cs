@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 						return Microsoft.UI.Xaml.TextAlignment.Right;
 			}
 		}
-        [PortHandler]
+		[PortHandler]
 		internal static VerticalAlignment ToPlatformVerticalAlignment(this TextAlignment alignment)
 		{
 			switch (alignment)

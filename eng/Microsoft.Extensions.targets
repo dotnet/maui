@@ -115,15 +115,27 @@
     />
     <PackageReference
         Update="Svg.Skia"
-        Version="$(SvgSkiaVersion)"
+        Version="$(SvgSkiaPackageVersion)"
     />
     <PackageReference
         Update="Svg.Custom"
-        Version="$(SvgSkiaVersion)"
+        Version="$(SvgSkiaPackageVersion)"
     />
     <PackageReference
         Update="Svg.Picture"
-        Version="$(SvgSkiaVersion)"
+        Version="$(SvgSkiaPackageVersion)"
+    />
+    <PackageReference
+        Update="Svg.Model"
+        Version="$(SvgSkiaPackageVersion)"
+    />
+    <PackageReference
+        Update="ShimSkiaSharp"
+        Version="$(SvgSkiaPackageVersion)"
+    />
+    <PackageReference
+        Update="Fizzler"
+        Version="$(FizzlerPackageVersion)"
     />
   </ItemGroup>
 </Project>

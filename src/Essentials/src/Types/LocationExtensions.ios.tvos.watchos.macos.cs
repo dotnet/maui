@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Devices.Sensors
 				Altitude = placemark.Location.Altitude,
 				AltitudeReferenceSystem = AltitudeReferenceSystem.Geoid,
 				Timestamp = DateTimeOffset.UtcNow,
-                ReducedAccuracy = false,
+				ReducedAccuracy = false,
 			};
 
 		internal static IEnumerable<Location> ToLocations(this IEnumerable<CLPlacemark> placemarks) =>

@@ -257,7 +257,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 				return RequestSpeechPermission();
 			}
-			
+
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			internal static PermissionStatus GetSpeechPermissionStatus()
 			{

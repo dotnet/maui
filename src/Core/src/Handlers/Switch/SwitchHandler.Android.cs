@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnCheckedChanged(bool isOn)
 		{
-			if (VirtualView == null)
+			if (VirtualView is null || VirtualView.IsOn == isOn)
 				return;
 
 			VirtualView.IsOn = isOn;

@@ -1,5 +1,6 @@
 name: Daily code format check
 on:
+  workflow_dispatch:
   schedule:
     - cron: 0 0 * * * # Every day at midnight (UTC)
 
@@ -11,22 +12,13 @@ jobs:
   dotnet-format:
     runs-on: windows-latest
     steps:
-      - name: Install dotnet-format
-        run: dotnet tool install -g dotnet-format
-
       - name: Checkout repo
         uses: actions/checkout@v2
         with:
           ref: ${{ github.head_ref }}
 
       - name: Run dotnet format
-        id: format
-        uses: jfversluis/dotnet-format@v1.0.5
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          action: "fix"
-          #only-changed-files: true # only works for PRs
-          workspace: "Microsoft.Maui.sln"
+        run: dotnet format whitespace ./src --folder
     
       - name: Commit files
         if: steps.format.outputs.has-changes == 'true'

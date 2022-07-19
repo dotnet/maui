@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 		public string? LoadFont(EmbeddedFont font)
 		{
 			if (FontCacheDirectory == null)
-			{ 
+			{
 				FontCacheDirectory = Directory.CreateDirectory(IOPath.Combine(TApplication.Current.DirectoryInfo.Data, _fontCacheFolderName));
 				Utility.AppendGlobalFontPath(FontCacheDirectory.FullName);
 			}

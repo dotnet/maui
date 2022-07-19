@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform
 					Visibility = WVisibility.Collapsed;
 					return;
 				}
-			
+
 				// The title needs to be visible, but we're not allowed to show a toolbar
 				// So we need to hide the toolbar items
 
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// There *is* an OverflowButtonVisibility property that does more or less the same thing, 
 				// but it became available in 10.0.14393.0 and we have to support 10.0.10240
 			}
-			
+
 			if (frameworkElement != null && frameworkElement.Visibility != WVisibility.Collapsed)
 			{
 				// If there's a title to display, we have to be visible whether or not we have commands

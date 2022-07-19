@@ -71,7 +71,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			UpdateContentBackground();
 		}
-	
+
 		void UpdateBorderShape()
 		{
 			CornerRadiusLayout.IsVisible = BorderShapePicker.SelectedIndex == 1;

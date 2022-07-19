@@ -1,4 +1,7 @@
+bool isCleanSet = HasArgument("clean") || IsTarget("clean");
+
 Task("Clean")
+    .WithCriteria(isCleanSet)
     .Description("Deletes all the obj/bin directories")
     .Does(() =>
 {
@@ -21,7 +24,34 @@ Task("Clean")
     } 
 });
 
+DirectoryPath _artifactStagingDirectory;
+DirectoryPath GetArtifactStagingDirectory() =>
+    _artifactStagingDirectory ??= MakeAbsolute(Directory(EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", "artifacts")));
 
+DirectoryPath _logDirectory;
+DirectoryPath GetLogDirectory() => 
+    _logDirectory ??= MakeAbsolute(Directory(EnvironmentVariable("LogDirectory", $"{GetArtifactStagingDirectory()}/logs")));
+
+DirectoryPath _testResultsDirectory;
+DirectoryPath GetTestResultsDirectory() => 
+    _testResultsDirectory ??= MakeAbsolute(Directory(EnvironmentVariable("TestResultsDirectory", $"{GetArtifactStagingDirectory()}/test-results")));
+
+DirectoryPath _diffDirectory;
+DirectoryPath GetDiffDirectory() => 
+    _diffDirectory ??= MakeAbsolute(Directory(EnvironmentVariable("ApiDiffDirectory", $"{GetArtifactStagingDirectory()}/api-diff")));
+
+DirectoryPath _tempDirectory;
+DirectoryPath GetTempDirectory() => 
+    _tempDirectory ??= MakeAbsolute(Directory(EnvironmentVariable("AGENT_TEMPDIRECTORY", EnvironmentVariable("TEMP", EnvironmentVariable("TMPDIR", "../maui-temp")) + "/" + Guid.NewGuid())));
+
+string GetAgentName() =>
+    EnvironmentVariable("AGENT_NAME", "");
+
+bool IsCIBuild() =>
+    !String.IsNullOrWhiteSpace(GetAgentName());
+
+bool IsHostedAgent() =>
+    GetAgentName().StartsWith("Azure Pipelines") || GetAgentName().StartsWith("Hosted Agent");
 
 T GetBuildVariable<T>(string key, T defaultValue)
 {
@@ -85,3 +115,9 @@ void SetEnvironmentVariable(string name, string value, bool prepend = false)
 
     Information("Setting environment variable: {0} = '{1}'", name, value);
 }
+
+bool IsTarget(string target) =>
+    Argument<string>("target", "Default").Equals(target, StringComparison.InvariantCultureIgnoreCase);
+
+bool TargetStartsWith(string target) =>
+    Argument<string>("target", "Default").StartsWith(target, StringComparison.InvariantCultureIgnoreCase);

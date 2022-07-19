@@ -15,7 +15,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 {
 	public partial class LayoutHandlerTests
 	{
-		string GetNativeText(UIElement view) 
+		string GetNativeText(UIElement view)
 		{
 			return (view as TextBlock).Text;
 		}
@@ -47,12 +47,14 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			// Lots of ways we could compare the two lists, but dumping them both to comma-separated strings
 			// makes it easy to give the test useful output
 
-			string expected = await InvokeOnMainThreadAsync(() => {
+			string expected = await InvokeOnMainThreadAsync(() =>
+			{
 				return children.OrderBy(platformView => GetNativeText(platformView))
 					.Aggregate("", (str, platformView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(platformView));
 			});
 
-			string actual = await InvokeOnMainThreadAsync(() => {
+			string actual = await InvokeOnMainThreadAsync(() =>
+			{
 				return children.Aggregate("", (str, platformView) => str + (str.Length > 0 ? ", " : "") + GetNativeText(platformView));
 			});
 

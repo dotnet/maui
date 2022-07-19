@@ -44,7 +44,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			{
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
 				var tabbedPage = oldElement as TabbedPage;
-				if (tabbedPage != null) tabbedPage.PagesChanged -= OnPagesChanged;
+				if (tabbedPage != null)
+					tabbedPage.PagesChanged -= OnPagesChanged;
 			}
 
 			if (element != null)

@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 			try
 			{
 				//For some reason, using  TextBlock and getting the AlphaMask
-                //generates a shadow with a size more smaller than the control size. 
+				//generates a shadow with a size more smaller than the control size. 
 				if (element is TextBlock textElement)
 				{
 					return textElement.GetAlphaMask();
@@ -64,12 +64,12 @@ namespace Microsoft.Maui.Platform
 							bitmap.PixelHeight,
 							BitmapAlphaMode.Premultiplied))
 						{
-                            var brush = CompositionImageBrush.FromBGRASoftwareBitmap(
-                                visual.Compositor,
-                                softwareBitmap,
-                                new Size(bitmap.PixelWidth, bitmap.PixelHeight));
-                            mask = brush.Brush;
-                        }
+							var brush = CompositionImageBrush.FromBGRASoftwareBitmap(
+								visual.Compositor,
+								softwareBitmap,
+								new Size(bitmap.PixelWidth, bitmap.PixelHeight));
+							mask = brush.Brush;
+						}
 					}
 				}
 			}
