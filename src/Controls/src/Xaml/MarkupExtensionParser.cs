@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Controls.Xaml
 				markupExtension = new OnPlatformExtension();
 			else if (match == "OnIdiom")
 				markupExtension = new OnIdiomExtension();
+			else if (match == "AppTheme")
+				markupExtension = new AppThemeExtension();
 			else if (match == "AppThemeBinding")
 				markupExtension = new AppThemeBindingExtension();
 			else if (match == "DataTemplate")

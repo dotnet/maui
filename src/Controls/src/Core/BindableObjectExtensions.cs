@@ -59,5 +59,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObjectExtensions.xml" path="//Member[@MemberName='SetAppThemeColor']/Docs" />
 		public static void SetAppThemeColor(this BindableObject self, BindableProperty targetProperty, Color light, Color dark) => SetAppTheme(self, targetProperty, light, dark);
+
+		public static void SetAppThemeColor(this BindableObject self, BindableProperty targetProperty, AppThemeColor appThemeColor) =>
+			self.SetBinding(targetProperty, appThemeColor.GetBinding());
+
+		public static void SetAppTheme(this BindableObject self, BindableProperty targetProperty, AppThemeResource resource) =>
+			self.SetBinding(targetProperty, resource.GetBinding());
 	}
 }

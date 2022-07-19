@@ -28,10 +28,14 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				return color.GetBinding();
 			}
+			else if(resource is AppThemeResource themeResource)
+			{
+				return themeResource.GetBinding();
+			}
 			else
 			{
 				var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
-				throw new XamlParseException($"StaticResource for key {Key} is not an AppThemeColor", xmlLineInfo);
+				throw new XamlParseException($"StaticResource for key {Key} is not an AppThemeColor or AppThemeResource", xmlLineInfo);
 			}
 		}
 

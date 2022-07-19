@@ -1,4 +1,12 @@
 ﻿#nullable enable
+Microsoft.Maui.Controls.AppThemeResource
+Microsoft.Maui.Controls.AppThemeResource.AppThemeResource() -> void
+Microsoft.Maui.Controls.AppThemeResource.Dark.get -> object?
+Microsoft.Maui.Controls.AppThemeResource.Dark.set -> void
+Microsoft.Maui.Controls.AppThemeResource.Default.get -> object?
+Microsoft.Maui.Controls.AppThemeResource.Default.set -> void
+Microsoft.Maui.Controls.AppThemeResource.Light.get -> object?
+Microsoft.Maui.Controls.AppThemeResource.Light.set -> void
 Microsoft.Maui.Controls.MenuFlyoutSeparator
 Microsoft.Maui.Controls.MenuFlyoutSeparator.MenuFlyoutSeparator() -> void
 Microsoft.Maui.Controls.AppThemeColor
@@ -21,3 +29,5 @@ static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsof
 ~Microsoft.Maui.Controls.AppThemeColor.Default.set -> void
 ~Microsoft.Maui.Controls.AppThemeColor.Light.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.AppThemeColor.Light.set -> void
+~static Microsoft.Maui.Controls.BindableObjectExtensions.SetAppTheme(this Microsoft.Maui.Controls.BindableObject self, Microsoft.Maui.Controls.BindableProperty targetProperty, Microsoft.Maui.Controls.AppThemeResource resource) -> void
+~static Microsoft.Maui.Controls.BindableObjectExtensions.SetAppThemeColor(this Microsoft.Maui.Controls.BindableObject self, Microsoft.Maui.Controls.BindableProperty targetProperty, Microsoft.Maui.Controls.AppThemeColor appThemeColor) -> void

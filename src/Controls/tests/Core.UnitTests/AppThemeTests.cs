@@ -214,5 +214,93 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.AreEqual(Colors.Red, label.TextColor);
 		}
+
+		[Test]
+		public void AppThemeColorUsesCorrectColorForTheme()
+		{
+			var color = new AppThemeColor
+			{
+				Light = Colors.Green,
+				Dark = Colors.Red
+			};
+			var label = new Label
+			{
+				Text = "Green on Light, Red on Dark"
+			};
+			label.SetAppThemeColor(Label.TextColorProperty, color);
+
+			Application.Current = null;
+
+			Assert.AreEqual(Colors.Green, label.TextColor);
+
+			SetAppTheme(AppTheme.Dark);
+
+			Assert.AreEqual(Colors.Red, label.TextColor);
+		}
+
+		[Test]
+		public void AppThemeColorUsesDefaultColorWhenDarkColorNotSet()
+		{
+			var color = new AppThemeColor
+			{
+				Light = Colors.Green,
+				Default = Colors.Blue
+			};
+			var label = new Label
+			{
+				Text = "Green on Light, Red on Dark"
+			};
+			label.SetAppThemeColor(Label.TextColorProperty, color);
+
+			Application.Current = null;
+
+			Assert.AreEqual(Colors.Green, label.TextColor);
+
+			SetAppTheme(AppTheme.Dark);
+
+			Assert.AreEqual(Colors.Blue, label.TextColor);
+		}
+
+		[Test]
+		public void AppThemeColorUsesDefaultColorWhenLightColorNotSet()
+		{
+			var color = new AppThemeColor
+			{
+				Default = Colors.Blue,
+				Dark = Colors.Red
+			};
+			var label = new Label
+			{
+				Text = "Green on Light, Red on Dark"
+			};
+			label.SetAppThemeColor(Label.TextColorProperty, color);
+
+			Application.Current = null;
+
+			Assert.AreEqual(Colors.Blue, label.TextColor);
+
+			SetAppTheme(AppTheme.Dark);
+
+			Assert.AreEqual(Colors.Red, label.TextColor);
+		}
+
+		[Test]
+		public void AppThemeResourceUpdatesLabelText()
+		{
+			var label = new Label();
+			var resource = new AppThemeResource
+			{
+				Light = "Light Theme",
+				Dark = "Dark Theme"
+			};
+			label.SetAppTheme(Label.TextProperty, resource);
+
+			Application.Current = null;
+			Assert.AreEqual("Light Theme", label.Text);
+
+			SetAppTheme(AppTheme.Dark);
+
+			Assert.AreEqual("Dark Theme", label.Text);
+		}
 	}
 }
