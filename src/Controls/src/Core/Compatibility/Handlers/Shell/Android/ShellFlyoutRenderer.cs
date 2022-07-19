@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		#endregion IFlyoutBehaviorObserver
 
 		const uint DefaultScrimColor = 0x99000000;
-		readonly IShellContext _shellContext;
+		IShellContext _shellContext;
 		AView _content;
 		IShellFlyoutContentRenderer _flyoutContent;
 		int _flyoutWidthDefault;
@@ -391,6 +391,31 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		internal void Disconnect()
+		{
+			ShellController?.RemoveAppearanceObserver(this);
+
+			if (Shell != null)
+				Shell.PropertyChanged -= OnShellPropertyChanged;
+
+			if (this.IsAlive())
+			{
+				this.DrawerClosed -= OnDrawerClosed;
+				this.DrawerSlide -= OnDrawerSlide;
+				this.DrawerOpened -= OnDrawerOpened;
+				this.DrawerStateChanged -= OnDrawerStateChanged;
+			}
+
+			ShellController?.RemoveFlyoutBehaviorObserver(this);
+
+			if (_flyoutContent is ShellFlyoutTemplatedContentRenderer flyoutTemplatedContentRenderer)
+			{
+				flyoutTemplatedContentRenderer.Disconnect();
+			}
+
+			_shellContext = null;
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -400,15 +425,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (disposing)
 			{
-				ShellController.RemoveAppearanceObserver(this);
-				Shell.PropertyChanged -= OnShellPropertyChanged;
-
-				this.DrawerClosed -= OnDrawerClosed;
-				this.DrawerSlide -= OnDrawerSlide;
-				this.DrawerOpened -= OnDrawerOpened;
-				this.DrawerStateChanged -= OnDrawerStateChanged;
-
-				((IShellController)_shellContext.Shell).RemoveFlyoutBehaviorObserver(this);
+				Disconnect();
 
 				RemoveView(_content);
 

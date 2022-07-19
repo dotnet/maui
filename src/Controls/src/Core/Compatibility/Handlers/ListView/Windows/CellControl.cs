@@ -14,6 +14,7 @@ using Microsoft.Maui.Controls.Internals;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Windows.Foundation;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
@@ -246,15 +247,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		void OnClick(object sender, PointerRoutedEventArgs e)
-		{
-			var point = e.GetCurrentPoint(CellContent);
-			if (point.Properties.PointerUpdateKind != Microsoft.UI.Input.PointerUpdateKind.RightButtonReleased)
-				return;
-
-			OpenContextMenu();
-		}
-
 		void OnContextActionsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			var flyout = GetAttachedFlyout();
@@ -280,10 +272,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_newValue = args.NewValue;
 		}
 
-		void OnLongTap(object sender, HoldingRoutedEventArgs e)
+		private void OnCellContentRightTapped(object sender, RightTappedRoutedEventArgs e)
 		{
-			if (e.HoldingState == Microsoft.UI.Input.HoldingState.Started)
-				OpenContextMenu();
+			OpenContextMenu(e.GetPosition(relativeTo: CellContent));
+			e.Handled = true;
 		}
 
 		/// <summary>
@@ -307,7 +299,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return null;
 		}
 
-		void OpenContextMenu()
+		void OpenContextMenu(Point point)
 		{
 			if (GetAttachedFlyout() == null)
 			{
@@ -320,7 +312,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				FlyoutBase.SetAttachedFlyout(CellContent, flyout);
 			}
 
-			FlyoutBase.ShowAttachedFlyout(CellContent);
+			FlyoutBase
+				.GetAttachedFlyout(CellContent)
+				.ShowAt(
+					CellContent,
+					new FlyoutShowOptions
+					{
+						Position = point,
+					});
 		}
 
 		void SetCell(object newContext)
@@ -438,8 +437,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (!Cell.HasContextActions)
 			{
-				CellContent.Holding -= OnLongTap;
-				CellContent.PointerReleased -= OnClick;
+				CellContent.RightTapped -= OnCellContentRightTapped;
 				if (_contextActions != null)
 				{
 					((INotifyCollectionChanged)_contextActions).CollectionChanged -= OnContextActionsChanged;
@@ -450,8 +448,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			CellContent.PointerReleased += OnClick;
-			CellContent.Holding += OnLongTap;
+			CellContent.RightTapped += OnCellContentRightTapped;
 		}
 
 		void SetupMenuItems(MenuFlyout flyout)

@@ -138,6 +138,12 @@ Task("dotnet-templates")
                 ReplaceTextInFiles($"{dir}/*.csproj", "UseMaui", "UseMauiCore");
                 ReplaceTextInFiles($"{dir}/*.csproj", "SingleProject", "EnablePreviewMsixTooling");
             } },
+            { "mauiunpackaged:maui", dir => {
+                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
+            } },
+            { "mauiblazorunpackaged:maui-blazor", dir => {
+                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
+            } },
         };
 
         var alsoPack = new [] {
