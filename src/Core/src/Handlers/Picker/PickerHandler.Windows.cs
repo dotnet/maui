@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(ComboBox platformView)
 		{
-			PlatformView.SelectionChanged += OnControlSelectionChanged;
+			platformView.SelectionChanged += OnControlSelectionChanged;
 			platformView.DropDownOpened += OnMauiComboBoxDropDownOpened;
 		}
 
@@ -94,10 +94,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(IPickerHandler handler, IPicker picker)
 		{
-			if (handler is PickerHandler platformHandler)
-			{
-				platformHandler.PlatformView?.UpdateTextColor(picker);
-			}
+			handler.PlatformView.UpdateTextColor(picker);
 		}
 
 		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker picker)

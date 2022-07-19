@@ -125,6 +125,13 @@ namespace Microsoft.Maui.Handlers
 
 					string[] items = VirtualView.GetItemsAsArray();
 
+					for (var i = 0; i < items.Length; i++)
+					{
+						var item = items[i];
+						if (item == null)
+							items[i] = String.Empty;
+					}
+
 					builder.SetItems(items, (s, e) =>
 					{
 						var selectedIndex = e.Which;
