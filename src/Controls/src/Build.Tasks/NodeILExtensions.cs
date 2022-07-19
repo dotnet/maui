@@ -157,6 +157,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "EasingTypeConverter")), typeof(EasingTypeConverter) },
 					{ module.ImportReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics.Converters", "ColorTypeConverter")), typeof(ColorTypeConverter) },
 					{ module.ImportReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics.Converters", "PointTypeConverter")), typeof(PointTypeConverter) },
+					{ module.ImportReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics.Converters", "RectTypeConverter")), typeof(RectangleTypeConverter) },
 					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexJustifyTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexJustify>) },
 					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexDirectionTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexDirection>) },
 					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexAlignContentTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexAlignContent>) },
