@@ -140,6 +140,7 @@
           Condition="'$(WindowsPackageType)' == 'None' and '@(AppxManifest)' != ''">
 
     <ItemGroup>
+      <_MauiAppxManifest Include="@(AppxManifest)" />
       <AppxManifest Remove="@(AppxManifest)" />
     </ItemGroup>
 

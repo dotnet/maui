@@ -102,6 +102,8 @@ parameters:
     default:
       - name: default
         tfm: default
+      - name: net6
+        tfm: net6.0
 
 resources:
   repositories:

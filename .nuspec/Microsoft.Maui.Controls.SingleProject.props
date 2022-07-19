@@ -2,10 +2,11 @@
 
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
     <OutputType Condition="'$(OutputType)' == 'Exe'">WinExe</OutputType>
-    <WindowsPackageType Condition=" '$(WindowsPackageType)' == '' and '$(EnableMsixTooling)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') ">MSIX</WindowsPackageType>
-    <WindowsAppSdkBootstrapInitialize Condition=" '$(WindowsAppSdkBootstrapInitialize)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' != 'Exe' and '$(OutputType)' != 'WinExe' ">false</WindowsAppSdkBootstrapInitialize>
+    <WindowsPackageType Condition=" '$(WindowsPackageType)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' == 'WinExe' ">MSIX</WindowsPackageType>
+    <WindowsAppSDKSelfContained Condition=" '$(WindowsAppSDKSelfContained)' == '' and '$(WindowsPackageType)' == 'None' and '$(OutputType)' == 'WinExe' ">true</WindowsAppSDKSelfContained>
+    <WindowsAppSdkBootstrapInitialize Condition=" '$(WindowsAppSdkBootstrapInitialize)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' != 'WinExe' ">false</WindowsAppSdkBootstrapInitialize>
     <PublishAppXPackage Condition=" '$(PublishAppXPackage)' == '' and '$(EnableMsixTooling)' == 'true' and '$(WindowsPackageType)' == 'MSIX' ">true</PublishAppXPackage>
-    <_SingleProjectRIDRequired Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">true</_SingleProjectRIDRequired>
+    <_SingleProjectRIDRequired Condition="'$(OutputType)' == 'WinExe'">true</_SingleProjectRIDRequired>
     <_SingleProjectRIDSpecified Condition="'$(RuntimeIdentifier)' != '' or '$(RuntimeIdentifiers)' != ''">true</_SingleProjectRIDSpecified>
   </PropertyGroup>
 

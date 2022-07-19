@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Platform
 				mauiCALayer.SetBorderWidth(border?.StrokeThickness ?? 0);
 				mauiCALayer.SetBorderDash(border?.StrokeDashPattern, border?.StrokeDashOffset ?? 0);
 				mauiCALayer.SetBorderMiterLimit(border?.StrokeMiterLimit ?? 0);
-				
+
 				if (border != null)
 				{
 					mauiCALayer.SetBorderLineJoin(border.StrokeLineJoin);
@@ -144,6 +144,9 @@ namespace Microsoft.Maui.Platform
 
 				mauiCALayer.SetBorderShape(border?.Shape);
 			}
+
+			if (platformView is ContentView contentView)
+				contentView.Clip = border;
 		}
 
 		internal static void UpdateMauiCALayer(this UIView view)

@@ -1191,6 +1191,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task GetCurrentPageBetweenSections()
 		{
 			var shell = new Shell();
+			_ = new Window() { Page = shell };
 			var one = new ShellItem { Route = "one" };
 			var two = new ShellItem { Route = "two" };
 
@@ -1225,6 +1226,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void GetCurrentPageOnInit()
 		{
 			var shell = new Shell();
+			_ = new Window() { Page = shell };
 			Page page = null;
 			shell.Navigated += (_, __) =>
 			{
