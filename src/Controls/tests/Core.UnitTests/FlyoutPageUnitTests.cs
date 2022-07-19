@@ -402,7 +402,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void FlyoutPageAppearingAnDisappearingPropagatesToFlyout()
+		public void FlyoutPageAppearingAndDisappearingPropagatesToFlyout()
 		{
 			int disappearing = 0;
 			int appearing = 0;
@@ -414,7 +414,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Detail = new ContentPage() { Title = "detail" }
 			};
 
-			_ = new Window(flyoutPage);
+			_ = new TestWindow(flyoutPage);
 			flyout.Appearing += (_, __) => appearing++;
 			flyout.Disappearing += (_, __) => disappearing++;
 
@@ -433,7 +433,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void FlyoutPageAppearingAnDisappearingPropagatesToDetail()
+		public void FlyoutPageAppearingAndDisappearingPropagatesToDetail()
 		{
 			int disappearing = 0;
 			int appearing = 0;
@@ -445,7 +445,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Detail = detail
 			};
 
-			_ = new Window(flyoutPage);
+			_ = new TestWindow(flyoutPage);
 
 			detail.Appearing += (_, __) => appearing++;
 			detail.Disappearing += (_, __) => disappearing++;
