@@ -118,11 +118,6 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.MinWidth = 0;
 		}
 
-		void OnRowsCollectionChanged(object? sender, EventArgs e)
-		{
-			Reload(this);
-		}
-
 		static void OnMauiComboBoxDropDownOpened(object? sender, object e)
 		{
 			ComboBox? comboBox = sender as ComboBox;
