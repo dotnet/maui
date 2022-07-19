@@ -224,6 +224,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
+		public void TestNullItemDisplayBinding()
+		{
+			var obj = new PickerTestsContextFixture(null, "John Doe");
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("DisplayName"),
+				ItemsSource = new ObservableCollection<object>
+				{
+					obj
+				}
+			};
+
+			var thing = (picker as IPicker).GetItem(0);
+			Assert.IsNull(thing);
+		}
+
+		[Test]
 		public void TestItemsSourceCollectionChangedAppend()
 		{
 			var items = new ObservableCollection<object>

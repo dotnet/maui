@@ -21,9 +21,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange += OnFocusChange;
 			platformView.Click += OnClick;
 
-			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
-				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
-
 			base.ConnectHandler(platformView);
 		}
 
@@ -31,9 +28,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.FocusChange -= OnFocusChange;
 			platformView.Click -= OnClick;
-
-			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
-				notifyCollection.CollectionChanged -= OnRowsCollectionChanged;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -44,7 +38,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateBackground(picker);
 		}
 
+		// Uncomment me on NET7 [Obsolete]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
+
+		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
 
 		public static void MapTitle(IPickerHandler handler, IPicker picker)
 		{
@@ -147,7 +144,6 @@ namespace Microsoft.Maui.Handlers
 
 				_dialog.DismissEvent += (sender, args) =>
 				{
-					_dialog?.Dispose();
 					_dialog = null;
 				};
 
@@ -155,16 +151,8 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void OnRowsCollectionChanged(object? sender, EventArgs e)
-		{
-			Reload(this);
-		}
-
 		static void Reload(IPickerHandler handler)
 		{
-			if (handler.VirtualView == null || handler.PlatformView == null)
-				return;
-
 			handler.PlatformView.UpdatePicker(handler.VirtualView);
 		}
 	}
