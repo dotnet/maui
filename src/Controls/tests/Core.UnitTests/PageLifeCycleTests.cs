@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var previousPage = new LCPage();
 			var lcPage = new LCPage();
-			var window = new Window(previousPage);
+			var window = new TestWindow(previousPage);
 
 			await window.Navigation.PushModalAsync(lcPage);
 
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var firstPage = new LCPage();
 			var poppedPage = new LCPage();
 
-			var window = new Window(firstPage);
+			var window = new TestWindow(firstPage);
 			await window.Navigation.PushModalAsync(poppedPage);
 			await window.Navigation.PopModalAsync();
 
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var firstModalPage = new LCPage();
 			var secondModalPage = new LCPage();
 
-			var window = new Window(firstPage);
+			var window = new TestWindow(firstPage);
 			await window.Navigation.PushModalAsync(firstModalPage);
 			await window.Navigation.PushModalAsync(secondModalPage);
 
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var firstModalPage = new LCPage();
 			var secondModalPage = new LCPage();
 
-			var window = new Window(firstPage);
+			var window = new TestWindow(firstPage);
 			await window.Navigation.PushModalAsync(firstModalPage);
 
 			firstModalPage.ClearNavigationArgs();

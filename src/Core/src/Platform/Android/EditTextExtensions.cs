@@ -20,8 +20,8 @@ namespace Microsoft.Maui.Platform
 			// Therefore if:
 			// User Types => VirtualView Updated => Triggers Native Update
 			// Then it will cause the cursor to reset to position zero as the user typed
-			if (entry.Text != editText.Text)
-				editText.Text = entry.Text;
+			editText.Text = entry.Text;
+			editText.SetSelection(editText.Text?.Length ?? 0);
 
 			// TODO ezhart The renderer sets the text to selected and shows the keyboard if the EditText is focused
 		}
@@ -29,7 +29,6 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateText(this EditText editText, IEditor editor)
 		{
 			editText.Text = editor.Text;
-
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
@@ -42,9 +41,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (textColor != null)
 			{
-				var androidColor = textColor.ToPlatform();
-				if (!editText.TextColors.IsOneColor(ColorStates.EditText, androidColor))
-					editText.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
+				if (PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
+					editText.SetTextColor(c);
 			}
 		}
 
@@ -136,9 +134,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (placeholderTextColor != null)
 			{
-				var androidColor = placeholderTextColor.ToPlatform();
-				if (!editText.HintTextColors.IsOneColor(ColorStates.EditText, androidColor))
-					editText.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
+				if (PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
+					editText.SetHintTextColor(c);
 			}
 		}
 
@@ -221,6 +218,13 @@ namespace Microsoft.Maui.Platform
 			editText.ImeOptions = entry.ReturnType.ToPlatform();
 		}
 
+		// TODO: NET7 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
+		internal static int GetCursorPosition(this EditText editText, int cursorOffset = 0)
+		{
+			var newCursorPosition = editText.SelectionStart + cursorOffset;
+			return Math.Max(0, newCursorPosition);
+		}
+
 		public static void UpdateCursorPosition(this EditText editText, ITextInput entry)
 		{
 			if (editText.SelectionStart != entry.CursorPosition)
@@ -238,9 +242,6 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!entry.IsReadOnly)// && editText.HasFocus)// || editText.RequestFocus()))//&& editText.RequestFocus())
 			{
-				if (!editText.HasFocus)
-					editText.RequestFocus();
-
 				int start = GetSelectionStart(editText, entry);
 				int end = GetSelectionEnd(editText, entry, start);
 
@@ -280,8 +281,16 @@ namespace Microsoft.Maui.Platform
 			return end;
 		}
 
+		// TODO: NET7 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
+		internal static int GetSelectedTextLength(this EditText editText)
+		{
+			var selectedLength = editText.SelectionEnd - editText.SelectionStart;
+			return Math.Max(0, selectedLength);
+		}
+
 		internal static void SetInputType(this EditText editText, ITextInput textInput)
 		{
+			var previousCursorPosition = editText.SelectionStart;	
 			var keyboard = textInput.Keyboard;
 			var nativeInputTypeToUpdate = keyboard.ToInputType();
 
@@ -311,7 +320,7 @@ namespace Microsoft.Maui.Platform
 				if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
 					nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
 
-				hasPassword = true;
+					hasPassword = true;
 			}
 
 			editText.InputType = nativeInputTypeToUpdate;
@@ -329,6 +338,10 @@ namespace Microsoft.Maui.Platform
 				var fontManager = services.GetRequiredService<IFontManager>();
 				editText.UpdateFont(textInput, fontManager);
 			}
+			
+			// If we implement the OnSelectionChanged method, this method is called after a keyboard layout change with SelectionStart = 0,
+			// Let's restore the cursor position to its previous location.
+			editText.SetSelection(previousCursorPosition);
 		}
 
 		internal static bool IsCompletedAction(this EditorActionEventArgs e)
