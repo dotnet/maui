@@ -151,8 +151,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				_dialog.Hide();
 			}
-
-			_dialog = null;
 		}
 
 		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
