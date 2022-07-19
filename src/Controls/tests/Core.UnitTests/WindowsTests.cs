@@ -350,30 +350,5 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(app.NavigationProxy, window.NavigationProxy.Inner);
 			Assert.AreEqual(window.NavigationProxy, page.NavigationProxy.Inner);
 		}
-
-		public class TestApp : Application
-		{
-			ContentPage _withPage;
-			public TestWindow CreateWindow() =>
-				(TestWindow)(this as IApplication).CreateWindow(null);
-
-			protected override Window CreateWindow(IActivationState activationState)
-			{
-				return new TestWindow(_withPage ?? new ContentPage());
-			}
-
-			public TestWindow CreateWindow(ContentPage withPage)
-			{
-				_withPage = withPage;
-				return (TestWindow)(this as IApplication).CreateWindow(null);
-			}
-		}
-
-		public class TestWindow : Window
-		{
-			public TestWindow(Page page) : base(page)
-			{
-			}
-		}
 	}
 }
