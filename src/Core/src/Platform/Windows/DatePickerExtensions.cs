@@ -22,17 +22,17 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateDate(this CalendarDatePicker platformDatePicker, DateTime dateTime)
 		{
-			platformDatePicker.Date = dateTime;
+			platformDatePicker.Date = dateTime.ToDateTimeOffset();
 		}
 
 		public static void UpdateMinimumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.MinDate = datePicker.MinimumDate;
+			platformDatePicker.MinDate = datePicker.MinimumDate.ToDateTimeOffset();
 		}
 
 		public static void UpdateMaximumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.MaxDate = datePicker.MaximumDate;
+			platformDatePicker.MaxDate = datePicker.MaximumDate.ToDateTimeOffset();
 		}
 
 		public static void UpdateCharacterSpacing(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
@@ -50,9 +50,15 @@ namespace Microsoft.Maui.Platform
 			WBrush? brush = textColor?.ToPlatform();
 
 			if (brush is null)
+			{
 				platformDatePicker.Resources.RemoveKeys(TextColorResourceKeys);
+				platformDatePicker.Foreground = null;
+			}
 			else
+			{
 				platformDatePicker.Resources.SetValueForAllKey(TextColorResourceKeys, brush);
+				platformDatePicker.Foreground = brush;
+			}
 
 			platformDatePicker.RefreshThemeResources();
 		}
