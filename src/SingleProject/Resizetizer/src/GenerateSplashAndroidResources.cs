@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			WriteColors(info);
 			WriteDrawable(info);
-			
+
 			return !Log.HasLoggedErrors;
 		}
 

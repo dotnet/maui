@@ -638,9 +638,9 @@
             Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'" />
 
     <Target Name="MauiGeneratePackageAppxManifest"
-            Condition="('$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True') And '$(WindowsPackageType)' != 'None'"
+            Condition="('$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True') And ('@(AppxManifest)@(_MauiAppxManifest)' !='')"
             DependsOnTargets="$(MauiGeneratePackageAppxManifestDependsOnTargets)"
-            Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);@(AppxManifest)"
+            Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);@(AppxManifest);@(_MauiAppxManifest)"
             Outputs="$(_MauiManifestStampFile);$(_MauiIntermediateManifest)Package.appxmanifest">
 
         <PropertyGroup>
@@ -650,7 +650,7 @@
 
         <GeneratePackageAppxManifest
             IntermediateOutputPath="$(_MauiIntermediateManifest)"
-            AppxManifest="@(AppxManifest)"
+            AppxManifest="@(AppxManifest);@(_MauiAppxManifest)"
             GeneratedFilename="Package.appxmanifest"
             ApplicationId="$(_MauiWindowsApplicationId)"
             ApplicationDisplayVersion="$(ApplicationDisplayVersion)"
@@ -660,15 +660,78 @@
             SplashScreen="@(MauiSplashScreen)" />
 
         <!-- replace user manifest -->
-        <ItemGroup>
+        <ItemGroup Condition="'@(AppxManifest)' != ''">
             <AppxManifest Remove="@(AppxManifest)" />
             <AppxManifest Include="$(_MauiIntermediateManifest)Package.appxmanifest" />
+        </ItemGroup>
+        <ItemGroup Condition="'@(_MauiAppxManifest)' != ''">
+            <_MauiAppxManifest Remove="@(_MauiAppxManifest)" />
+            <_MauiAppxManifest Include="$(_MauiIntermediateManifest)Package.appxmanifest" />
         </ItemGroup>
 
         <!-- Stamp file for Outputs -->
         <Touch Files="$(_MauiManifestStampFile)" AlwaysCreate="True" />
         <ItemGroup>
             <FileWrites Include="$(_MauiManifestStampFile)" />
+        </ItemGroup>
+
+    </Target>
+
+    <!-- This is required because the "GetAssemblyAttributes" target does not have an open DependsOnTargets. -->
+    <Target Name="_GetAssemblyAttributesBeforeTarget"
+            BeforeTargets="GetAssemblyAttributes"
+            DependsOnTargets="MauiGeneratePackageAppxManifest;_MauiGetAssemblyAttributesFromAppxManifest"
+            Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'" />
+
+    <Target Name="_MauiGetAssemblyAttributesFromAppxManifest"
+            Condition="('@(AppxManifest)@(_MauiAppxManifest)' !='')">
+
+        <PropertyGroup>
+            <_MauiAppxManifestContents>$([System.IO.File]::ReadAllText('$(_MauiIntermediateManifest)Package.appxmanifest'))</_MauiAppxManifestContents>
+        </PropertyGroup>
+
+        <XmlPeek
+            Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10'/&gt;"
+            XmlContent="$(_MauiAppxManifestContents)"
+            Query="/ns:Package/ns:Identity/@Name">
+            <Output TaskParameter="Result" ItemName="_MauiAppxManifestIdentity" />
+        </XmlPeek>
+        <XmlPeek
+            Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10'/&gt;"
+            XmlContent="$(_MauiAppxManifestContents)"
+            Query="/ns:Package/ns:Identity/@Version">
+            <Output TaskParameter="Result" ItemName="_MauiAppxManifestVersion" />
+        </XmlPeek>
+        <XmlPeek
+            Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10'/&gt;"
+            XmlContent="$(_MauiAppxManifestContents)"
+            Query="/ns:Package/ns:Properties/ns:PublisherDisplayName/text()">
+            <Output TaskParameter="Result" ItemName="_MauiAppxManifestPublisher" />
+        </XmlPeek>
+        <XmlPeek
+            Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10'/&gt;"
+            XmlContent="$(_MauiAppxManifestContents)"
+            Query="/ns:Package/ns:Properties/ns:DisplayName/text()">
+            <Output TaskParameter="Result" ItemName="_MauiAppxManifestDisplayName" />
+        </XmlPeek>
+
+        <ItemGroup>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>Microsoft.Maui.ApplicationModel.AppInfo.PackageName</_Parameter1>
+                <_Parameter2>@(_MauiAppxManifestIdentity)</_Parameter2>
+            </AssemblyAttribute>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>Microsoft.Maui.ApplicationModel.AppInfo.PublisherName</_Parameter1>
+                <_Parameter2>@(_MauiAppxManifestPublisher)</_Parameter2>
+            </AssemblyAttribute>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>Microsoft.Maui.ApplicationModel.AppInfo.Name</_Parameter1>
+                <_Parameter2>@(_MauiAppxManifestDisplayName)</_Parameter2>
+            </AssemblyAttribute>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>Microsoft.Maui.ApplicationModel.AppInfo.Version</_Parameter1>
+                <_Parameter2>@(_MauiAppxManifestVersion)</_Parameter2>
+            </AssemblyAttribute>
         </ItemGroup>
 
     </Target>

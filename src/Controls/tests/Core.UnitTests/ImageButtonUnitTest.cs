@@ -200,6 +200,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsTrue(image.IsLoading);
 
 			image.Source = null;
+			mockImageRenderer.CompletionSource.Task.Wait();
 			Assert.IsFalse(image.IsLoading);
 			Assert.IsTrue(cancelled);
 
@@ -240,6 +241,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public ImageButton Element { get; set; }
 
+			public TaskCompletionSource<bool> CompletionSource { get; private set; } = new TaskCompletionSource<bool>();
+
 			public async void Load()
 			{
 				if (initialLoad && Element.Source != null)
@@ -257,6 +260,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					finally
 					{
 						Element.SetIsLoading(false);
+						CompletionSource.SetResult(true);
 					}
 				}
 			}
