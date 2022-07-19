@@ -478,9 +478,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void TestNullItemDisplayBinding()
+		public void NullItemReturnsEmptyStringFromInterface()
 		{
-			var obj = new PickerTestsContextFixture(null, "John Doe");
 			var picker = new Picker
 			{
 				ItemsSource = new ObservableCollection<object>
