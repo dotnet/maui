@@ -514,6 +514,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				cell = (Cell)(cellOwner as INativeElementView)?.Element;
 			}
 
+			// All our ListView's have called AddHeaderView. This effectively becomes index 0, so our index 0 is index 1 to the listView.
+			position--;
+
 			if (position < 0 || position >= Count)
 				return;
 

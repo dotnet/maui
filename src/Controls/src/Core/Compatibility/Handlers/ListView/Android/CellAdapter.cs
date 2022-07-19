@@ -138,12 +138,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void OnItemClick(AdapterView parent, AView view, int position, long id)
 		{
-			var listView = parent as AListView;
-			if (listView != null)
-				position -= listView.HeaderViewsCount;
-
 			if (_actionMode != null || _supportActionMode != null)
+			{
+				var listView = parent as AListView;
+				if (listView != null)
+					position -= listView.HeaderViewsCount;
 				HandleContextMode(view, position);
+			}
 			else
 				HandleItemClick(parent, view, position, id);
 		}
