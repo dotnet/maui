@@ -1,1 +1,6 @@
 ﻿#nullable enable
+Microsoft.Maui.Controls.Xaml.AppThemeExtension
+Microsoft.Maui.Controls.Xaml.AppThemeExtension.AppThemeExtension() -> void
+~Microsoft.Maui.Controls.Xaml.AppThemeExtension.Key.get -> string
+~Microsoft.Maui.Controls.Xaml.AppThemeExtension.Key.set -> void
+~Microsoft.Maui.Controls.Xaml.AppThemeExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.BindingBase

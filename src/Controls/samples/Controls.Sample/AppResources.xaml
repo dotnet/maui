@@ -13,7 +13,11 @@
     
     <!-- APP THEME COLORS -->
     <AppThemeColor Light="#5639b0" Dark="#7e2bea" x:Key="AccentColor" />
-    <AppThemeColor Light="#F9F8FF" Dark="#181819" x:Key="BackgroundColor" />
+    <AppThemeColor Light="#AB32FF" Dark="#181819" x:Key="BackgroundColor" />
+    <AppThemeColor Light="#F9F9FF" Dark="#313133" x:Key="BackgroundSecondaryColor" />
+    <AppThemeColor Light="#B0150303" Dark="#FCFCFC" x:Key="TextPrimaryColor" />
+    <AppThemeColor Light="#B01D1D1D" Dark="#F5F5F5" x:Key="TextSecondaryColor" />
+    <AppThemeColor Light="#C8C8C8" Dark="#FEFEFE" x:Key="BorderColor" />
 
     <!-- LIGHT COLORS -->
     <Color x:Key="LightAccentColor">#5639b0</Color>
@@ -33,7 +37,8 @@
 
     <!-- STYLES -->
     <Style x:Key="SearchBorderStyle" TargetType="Frame">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackgroundSecondaryColor}, Dark={StaticResource DarkBackgroundSecondaryColor}}" />
+        <!--<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackgroundSecondaryColor}, Dark={StaticResource DarkBackgroundSecondaryColor}}" />-->
+        <Setter Property="BackgroundColor" Value="{AppTheme BackgroundColor}" />
         <Setter Property="HasShadow" Value="True" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="HeightRequest" Value="40" />
@@ -42,8 +47,10 @@
     </Style>
 
     <Style x:Key="GalleryItemContainerStyle" TargetType="Border">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackgroundSecondaryColor}, Dark={StaticResource DarkBackgroundSecondaryColor}}" />
-        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightBorderColor}, Dark={StaticResource DarkBorderColor}}" />
+        <!--<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackgroundSecondaryColor}, Dark={StaticResource DarkBackgroundSecondaryColor}}" />-->
+        <Setter Property="BackgroundColor" Value="{AppTheme BackgroundSecondaryColor}" />
+        <!--<Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightBorderColor}, Dark={StaticResource DarkBorderColor}}" />-->
+        <Setter Property="Stroke" Value="{AppTheme BorderColor}" />
         <Setter Property="Padding" Value="12" />
         <Setter Property="Margin" Value="0" />
     </Style>
@@ -52,14 +59,16 @@
         <Setter Property="FontSize" Value="Small" />
         <Setter Property="FontFamily" Value="Segoe UI" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightAccentColor}, Dark={StaticResource DarkAccentColor}}" />
+        <!--<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightAccentColor}, Dark={StaticResource DarkAccentColor}}" />-->
+        <Setter Property="TextColor" Value="{AppTheme AccentColor}" />
         <Setter Property="Margin" Value="0, 0, 0, 6" />
     </Style>
 
     <Style x:Key="GalleryItemDescriptionStyle" TargetType="Label">
         <Setter Property="FontSize" Value="Caption" />
         <Setter Property="FontFamily" Value="Segoe UI" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightTextPrimaryColor}, Dark={StaticResource DarkTextPrimaryColor}}" />
+        <!--<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightTextPrimaryColor}, Dark={StaticResource DarkTextPrimaryColor}}" />-->
+        <Setter Property="TextColor" Value="{AppTheme TextPrimaryColor}" />
         <Setter Property="LineBreakMode" Value="WordWrap" />
     </Style>
 
@@ -69,19 +78,22 @@
         <Setter Property="HorizontalTextAlignment" Value="Center" />
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="VerticalOptions" Value="Center" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightTextPrimaryColor}, Dark={StaticResource DarkTextPrimaryColor}}" />
+        <!--<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightTextPrimaryColor}, Dark={StaticResource DarkTextPrimaryColor}}" />-->
+        <Setter Property="TextColor" Value="{AppTheme TextPrimaryColor}" />
     </Style>
 
     <Style x:Key="Headline" TargetType="Label">
         <Setter Property="FontFamily" Value="Segoe UI" />
         <Setter Property="FontSize" Value="10" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightTextPrimaryColor}, Dark={StaticResource DarkTextPrimaryColor}}" />
+        <!--<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightTextPrimaryColor}, Dark={StaticResource DarkTextPrimaryColor}}" />-->
+        <Setter Property="TextColor" Value="{AppTheme TextPrimaryColor}" />
     </Style>
 
     <Style x:Key="Subhead" TargetType="Label">
         <Setter Property="FontFamily" Value="Segoe UI" />
         <Setter Property="FontSize" Value="9" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightTextPrimaryColor}, Dark={StaticResource DarkTextPrimaryColor}}" />
+        <!--<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightTextPrimaryColor}, Dark={StaticResource DarkTextPrimaryColor}}" />-->
+        <Setter Property="TextColor" Value="{AppTheme TextPrimaryColor}" />
     </Style>
 
 </ResourceDictionary>

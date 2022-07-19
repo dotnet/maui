@@ -57,14 +57,5 @@ namespace Microsoft.Maui.Controls
 
 			return binding;
 		}
-
-		internal Color GetValue(AppTheme appTheme)
-		{
-			return appTheme switch
-			{
-				AppTheme.Dark => _isDarkSet ? Dark : Default,
-				_ => _isLightSet ? Light : Default,
-			};
-		}
 	}
 }
