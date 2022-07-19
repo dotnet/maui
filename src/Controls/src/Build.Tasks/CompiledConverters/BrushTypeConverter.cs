@@ -6,9 +6,9 @@ using Mono.Cecil.Cil;
 
 namespace Microsoft.Maui.Controls.XamlC;
 
-class BrushTypeConverter : ColorTypeConverter
+class BrushTypeConverter : ICompiledTypeConverter
 {
-	public override IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
+	public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
 	{
 		var module = context.Body.Method.Module;
 
@@ -18,7 +18,8 @@ class BrushTypeConverter : ColorTypeConverter
 
 			if (value.StartsWith("#", StringComparison.Ordinal))
 			{
-				foreach (var instruction in base.ConvertFromString(value, context, node))
+				var colorConverter = new ColorTypeConverter();
+				foreach (var instruction in colorConverter.ConvertFromString(value, context, node))
 					yield return instruction;
 
 				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SolidColorBrush"), parameterTypes: new[] {
