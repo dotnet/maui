@@ -195,5 +195,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			SetAppTheme(AppTheme.Dark);
 			Assert.AreEqual(Colors.Pink, shell.FlyoutBackgroundColor);
 		}
+
+		[Test]
+		public void NullApplicationCurrentFallsBackToEssentials()
+		{
+			var label = new Label
+			{
+				Text = "Green on Light, Red on Dark"
+			};
+
+			label.SetAppThemeColor(Label.TextColorProperty, Colors.Green, Colors.Red);
+
+			Application.Current = null;
+
+			Assert.AreEqual(Colors.Green, label.TextColor);
+
+			SetAppTheme(AppTheme.Dark);
+
+			Assert.AreEqual(Colors.Red, label.TextColor);
+		}
 	}
 }

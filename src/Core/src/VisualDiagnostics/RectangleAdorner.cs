@@ -1,4 +1,7 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System.Diagnostics;
+using System.Linq;
+using System.Numerics;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
@@ -7,6 +10,9 @@ namespace Microsoft.Maui
 	/// </summary>
 	public class RectangleAdorner : IAdorner
 	{
+
+		readonly AdornerModel model = new();
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="RectangleAdorner"/> class.
 		/// </summary>
@@ -22,7 +28,13 @@ namespace Microsoft.Maui
 			Offset = offset ?? Point.Zero;
 			VisualView = view;
 			Density = density;
-			DrawnRectangle = Rect.Zero;
+
+			// Sanity check
+			if (Density < 0.1)
+			{
+				Density = 1;
+				Debug.Fail($"Invalid density {density}");
+			}
 		}
 
 		/// <inheritdoc/>
@@ -37,27 +49,54 @@ namespace Microsoft.Maui
 
 		public Color StrokeColor { get; }
 
-		public Rect DrawnRectangle { get; private set; }
+		public Rect DrawnRectangle => model.BoundingBox;
 
 		/// <inheritdoc/>
-		public virtual bool Contains(Point point) =>
-			DrawnRectangle.Contains(point);
+		public virtual bool Contains(Point point)
+		{
+			if (model.BoundingBox.Contains(point))
+			{
+				return true;
+			}
+
+			if (model.MarginZones.Any(r => r.Contains(point)))
+			{
+				return true;
+			}
+
+			return false;
+		}
 
 		/// <inheritdoc/>
 		public virtual void Draw(ICanvas canvas, RectF dirtyRect)
 		{
+			UpdateModel();
+
+			// Draw highlight rectangle
 			canvas.FillColor = FillColor;
 			canvas.StrokeColor = StrokeColor;
+			canvas.FillRectangle(model.BoundingBox);
+		}
 
-			var boundingBox = VisualView.GetBoundingBox();
-			var x = (boundingBox.X / Density) + Offset.X;
-			var y = (boundingBox.Y / Density) + Offset.Y;
-			var width = boundingBox.Width / Density;
-			var height = boundingBox.Height / Density;
+		void UpdateModel()
+		{
+			Rect box = VisualView.GetBoundingBox();
 
-			DrawnRectangle = new Rect(x, y, width, height);
+			box.X = box.X + Offset.X;
+			box.Y = box.Y + Offset.Y;
 
-			canvas.FillRectangle(DrawnRectangle);
+			Matrix4x4 transform = VisualView.GetViewTransform();
+			Thickness margin;
+			if (VisualView is IView view)
+			{
+				margin = view.Margin;
+			}
+			else
+			{
+				margin = new Thickness();
+			}
+
+			model.Update(box, margin, transform, Density);
 		}
 	}
 }
