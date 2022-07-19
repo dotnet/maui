@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Resizetizer
 				Directory.Delete(splashFullPath, true);
 			Directory.CreateDirectory(splashFullPath);
 
+			splashDpiMap.Clear();
 			foreach (var dpi in DpiPath.Tizen.SplashScreen)
 			{
 				var imageOutputPath = Path.GetFullPath(Path.Combine(IntermediateOutputPath, dpi.Path));
@@ -46,6 +47,10 @@ namespace Microsoft.Maui.Resizetizer
 					foreach (var orientation in orientations)
 					{
 						var newImage = splashInfo.OutputName + "." + resolution + "." + orientation + ".png";
+						if (splashDpiMap.ContainsKey((resolution, orientation)))
+						{
+							splashDpiMap.Remove((resolution, orientation));
+						}
 						splashDpiMap.Add((resolution, orientation), $"{splashDirectoryName}/{newImage}");
 						UpdateColorAndMoveFile(splashInfo, GetScreenSize(resolution, orientation), imageFullPath, Path.Combine(splashFullPath, newImage));
 					}
