@@ -261,7 +261,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			imageSource.LoadImage(imageSource.FindMauiContext(), result =>
+			imageSource.LoadImage(_shellContext.Shell.FindMauiContext(), result =>
 			{
 				var nativeImage = result?.Value;
 				if (View == null || nativeImage == null)

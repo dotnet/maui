@@ -11,6 +11,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 		event EventHandler ActiveWindowDisplayChanged;
 
+		// TODO: NET7 make this public
+		// event EventHandler ActiveWindowThemeChanged;
+
 		Window? GetActiveWindow();
 
 		void OnActivated(Window window, WindowActivatedEventArgs args);
@@ -73,16 +76,19 @@ namespace Microsoft.Maui.ApplicationModel
 
 	class WindowStateManagerImplementation : IWindowStateManager
 	{
-		const uint DISPLAY_CHANGED = 126;
-		const uint DPI_CHANGED = 736;
-		const int WM_SETTINGCHANGE = 0x001A;
-		const int WM_THEMECHANGE = 0x031A;
+		const uint WM_DISPLAYCHANGE = 0x7E;
+		const uint WM_DPICHANGED = 0x02E0;
+		const uint WM_SETTINGCHANGE = 0x001A;
+		const uint WM_THEMECHANGE = 0x031A;
 
 		Window? _activeWindow;
+		IntPtr _activeWindowHandle;
 
 		public event EventHandler? ActiveWindowChanged;
 
 		public event EventHandler? ActiveWindowDisplayChanged;
+
+		public event EventHandler? ActiveWindowThemeChanged;
 
 		public Window? GetActiveWindow() =>
 			_activeWindow;
@@ -93,6 +99,10 @@ namespace Microsoft.Maui.ApplicationModel
 				return;
 
 			_activeWindow = window;
+			_activeWindowHandle = window is null
+				? IntPtr.Zero
+				: WinRT.Interop.WindowNative.GetWindowHandle(window);
+
 			ActiveWindowChanged?.Invoke(window, EventArgs.Empty);
 		}
 
@@ -108,18 +118,13 @@ namespace Microsoft.Maui.ApplicationModel
 		// Hopefully there will be a more public API for this down the road so we can just use that directly from Essentials
 		public void OnWindowMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
 		{
-			// TODO NET7 expose a theme changed event property?
-			if ((msg == WM_SETTINGCHANGE || msg == WM_THEMECHANGE) && AppInfo.Current is AppInfoImplementation ai)
-				ai.ThemeChanged();
-
-			if (ActiveWindowDisplayChanged == null)
+			// only track events if they come from the active window
+			if (_activeWindow is null || hWnd != _activeWindowHandle)
 				return;
 
-			// We only care about orientation or dpi changes
-			if (DISPLAY_CHANGED != msg && DPI_CHANGED != msg)
-				return;
-
-			if (_activeWindow != null && hWnd == WinRT.Interop.WindowNative.GetWindowHandle(_activeWindow))
+			if (msg == WM_SETTINGCHANGE || msg == WM_THEMECHANGE)
+				ActiveWindowThemeChanged?.Invoke(_activeWindow, EventArgs.Empty);
+			else if (msg == WM_DISPLAYCHANGE || msg == WM_DPICHANGED)
 				ActiveWindowDisplayChanged?.Invoke(_activeWindow, EventArgs.Empty);
 		}
 	}

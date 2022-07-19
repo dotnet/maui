@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("Connectivity")]
 	public class Connectivity_Tests
 	{
 		[Fact]
