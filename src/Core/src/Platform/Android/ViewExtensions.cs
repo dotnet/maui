@@ -7,6 +7,7 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
@@ -342,10 +343,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTooltipText(this AView view, string? text)
 		{
-			if (OperatingSystem.IsAndroidVersionAtLeast(26))
-			{
-				view.TooltipText = text;
-			}
+			TooltipCompat.SetTooltipText(view, text);
 		}
 
 		public static void RemoveFromParent(this AView view)
