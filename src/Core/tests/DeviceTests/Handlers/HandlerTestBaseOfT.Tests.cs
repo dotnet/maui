@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 				handler.DisconnectHandler();
 			});
 		}
-    
+
 		[Fact(DisplayName = "Automation Id is set correctly")]
 		public async Task SetAutomationId()
 		{
