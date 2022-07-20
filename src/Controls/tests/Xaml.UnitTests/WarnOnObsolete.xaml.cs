@@ -35,6 +35,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Obsolete("Can't touch this")]
 		public string ObsoleteProp { get; set; }
 
-		public string ObsoletePropSetter { get; [Obsolete("Can't touch this")]set; }
+		public string ObsoletePropSetter { get; [Obsolete("Can't touch this")] set; }
 	}
 }

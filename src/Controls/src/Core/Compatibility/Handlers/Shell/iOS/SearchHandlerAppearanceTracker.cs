@@ -64,8 +64,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_uiSearchBar.UpdateFlowDirection(shell);
 
 			// This UIToolbar variable is only initialized in case the platform is a Phone.
-			if (_numericAccessoryView != null)
-				_numericAccessoryView.UpdateFlowDirection(shell);
+			_numericAccessoryView?.UpdateFlowDirection(shell);
 
 			var uiTextField = _uiSearchBar.FindDescendantView<UITextField>();
 			UpdateSearchBarHorizontalTextAlignment(uiTextField, shell);
@@ -307,7 +306,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// iPhone does not have an enter key on numeric keyboards
 			if (DeviceInfo.Idiom == DeviceIdiom.Phone && (keyboard == Keyboard.Numeric || keyboard == Keyboard.Telephone))
 			{
-				_numericAccessoryView = _numericAccessoryView ?? CreateNumericKeyboardAccessoryView();
+				_numericAccessoryView ??= CreateNumericKeyboardAccessoryView();
 				_uiSearchBar.InputAccessoryView = _numericAccessoryView;
 			}
 			else

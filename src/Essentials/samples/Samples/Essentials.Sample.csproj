@@ -13,7 +13,17 @@
   <PropertyGroup>
     <ApplicationTitle>Essentials</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.essentials</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Uncomment the below to enabled unpackaged apps and change the
+      value of the "commandName" in the Properties\launchSettings.json
+      from "MsixPackage" to "Project".
+    -->
+    <!--<WindowsPackageType>None</WindowsPackageType>-->
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UseMaui)' != 'true' and $(TargetFramework.Contains('-tizen'))">
@@ -32,6 +42,7 @@
     <MauiImage Include="Resources\Images\*" />
     <MauiIcon Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\AppIcons\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
+    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />

@@ -216,7 +216,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var window = new Window()
+			var window = new TestWindow()
 			{
 				Page = page
 			};

@@ -3,5 +3,7 @@
   "name": "Application .NET MAUI",
   "description": "Projet de création d’une application .NET MAUI pour iOS, Android, Mac Catalyst, Tizen et WinUI",
   "postActions/openInEditor/description": "Ouvre MainPage.xaml dans l’éditeur.",
-  "symbols/applicationId/description": "Remplace $(ApplicationId) dans le projet"
+  "symbols/applicationId/description": "Remplace $(ApplicationId) dans le projet",
+  "symbols/Framework/description": "The target framework for the project.",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"
 }

@@ -6,6 +6,7 @@ using Android.Views;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	internal class ShellViewRenderer
 	{
 		public IViewHandler Handler { get; private set; }
-		View _view;
+		IView _view;
 		WeakReference<Context> _context;
 		readonly IMauiContext _mauiContext;
 		IView MauiView => View;
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			View = view;
 		}
 
-		public View View
+		public IView View
 		{
 			get { return _view; }
 			set
@@ -49,6 +50,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public void TearDown()
 		{
+			MauiView?.Handler?.DisconnectHandler();
 			View = null;
 			Handler = null;
 			_view = null;
@@ -89,15 +91,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				heightMeasureSpec = MeasureSpecMode.Unspecified.MakeMeasureSpec(0);
 
 			PlatformView.LayoutParameters = layoutParams;
+
 			return ((IPlatformViewHandler)_view.Handler).MeasureVirtualView(widthMeasureSpec, heightMeasureSpec);
 		}
 
-		public virtual void OnViewSet(View view)
+		public virtual void OnViewSet(IView view)
 		{
-			if (View != null)
+			if (view == View)
+				return;
+
+			if (View != null && PlatformView.IsAlive())
 			{
 				PlatformView.RemoveFromParent();
-				View.Handler = null;
+				View.Handler?.DisconnectHandler();
 			}
 
 			_view = view;

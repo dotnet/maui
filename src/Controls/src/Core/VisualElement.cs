@@ -889,7 +889,7 @@ namespace Microsoft.Maui.Controls
 		protected override void OnBindingContextChanged()
 		{
 			PropagateBindingContextToStateTriggers();
-
+			PropagateBindingContextToBrush();
 			PropagateBindingContextToShadow();
 
 			base.OnBindingContextChanged();

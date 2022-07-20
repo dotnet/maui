@@ -11,6 +11,12 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
+		public HandlerNotFoundException(IElement element) :
+			this($"Handler not found for view {element}.")
+		{
+
+		}
+
 		public HandlerNotFoundException(string message) : base(message)
 		{
 		}

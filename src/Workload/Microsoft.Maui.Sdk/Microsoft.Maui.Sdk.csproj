@@ -105,4 +105,28 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="_GenerateAutoImport"
+      BeforeTargets="Build;AssignTargetPaths"
+      DependsOnTargets="SetVersions"
+      Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/Versions.props;Sdk/AutoImport.in.props"
+      Outputs="$(IntermediateOutputPath)AutoImport.props">
+    <ReplaceText
+        Input="Sdk/AutoImport.in.props"
+        Output="$(IntermediateOutputPath)AutoImport.props"
+        OldValue="@MAUI_DOTNET_VERSION@"
+        NewValue="$(_MauiDotNetVersion)"
+    />
+    <ItemGroup>
+      <None
+          Include="$(IntermediateOutputPath)AutoImport.props"
+          Link="Sdk/AutoImport.props"
+          CopyToOutputDirectory="PreserveNewest"
+          Pack="true"
+          PackagePath="Sdk"
+          Visible="false"
+      />
+      <FileWrites Include="$(IntermediateOutputPath)AutoImport.props" />
+    </ItemGroup>
+  </Target>
+
 </Project>
