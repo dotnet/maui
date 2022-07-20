@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 			
 			var maxLength = textInput.MaxLength;
 
-			if (platformText.Length > maxLength)
+			if (maxLength >= 0 && platformText.Length > maxLength)
 				platformText = platformText.Substring(0, maxLength);
 
 			if (mauiText != platformText)
