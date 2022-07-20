@@ -71,5 +71,33 @@ namespace Microsoft.Maui.Platform
 			"CalendarDatePickerTextForegroundDisabled",
 			"CalendarDatePickerTextForegroundSelected"
 		};
+
+		// TODO NET7 add to public API
+		internal static void UpdateBackground(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
+		{
+			var brush = datePicker?.Background?.ToPlatform();
+
+			if (brush is null)
+			{
+				platformDatePicker.Resources.RemoveKeys(BackgroundColorResourceKeys);
+				platformDatePicker.Background = null;
+			}
+			else
+			{
+				platformDatePicker.Resources.SetValueForAllKey(BackgroundColorResourceKeys, brush);
+				platformDatePicker.Background = brush;
+			}
+
+			platformDatePicker.RefreshThemeResources();
+		}
+
+		static readonly string[] BackgroundColorResourceKeys =
+		{
+			"CalendarDatePickerBackground",
+			"CalendarDatePickerBackgroundPointerOver",
+			"CalendarDatePickerBackgroundPressed",
+			"CalendarDatePickerBackgroundDisabled",
+			"CalendarDatePickerBackgroundFocused",
+		};
 	}
 }

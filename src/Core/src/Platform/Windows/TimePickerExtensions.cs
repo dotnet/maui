@@ -57,5 +57,33 @@ namespace Microsoft.Maui.Platform
 			"TimePickerButtonForegroundPressed",
 			"TimePickerButtonForegroundDisabled"
 		};
+
+		// TODO NET7 add to public API
+		internal static void UpdateBackground(this TimePicker platformTimePicker, ITimePicker timePicker)
+		{
+			var brush = timePicker?.Background?.ToPlatform();
+
+			if (brush is null)
+			{
+				platformTimePicker.Resources.RemoveKeys(BackgroundColorResourceKeys);
+				platformTimePicker.Background = null;
+			}
+			else
+			{
+				platformTimePicker.Resources.SetValueForAllKey(BackgroundColorResourceKeys, brush);
+				platformTimePicker.Background = brush;
+			}
+
+			platformTimePicker.RefreshThemeResources();
+		}
+
+		static readonly string[] BackgroundColorResourceKeys =
+		{
+			"TimePickerButtonBackground",
+			"TimePickerButtonBackgroundPointerOver",
+			"TimePickerButtonBackgroundPressed",
+			"TimePickerButtonBackgroundDisabled",
+			"TimePickerButtonBackgroundFocused",
+		};
 	}
 }
