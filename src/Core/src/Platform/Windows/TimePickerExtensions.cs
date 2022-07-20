@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 			if (brush is null)
 			{
 				platformTimePicker.Resources.RemoveKeys(BackgroundColorResourceKeys);
-				platformTimePicker.Background = null;
+				platformTimePicker.ClearValue(TimePicker.BackgroundProperty);
 			}
 			else
 			{
