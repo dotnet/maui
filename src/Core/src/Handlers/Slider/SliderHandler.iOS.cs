@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using ObjCRuntime;
 using UIKit;
 
@@ -6,7 +6,15 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SliderHandler : ViewHandler<ISlider, UISlider>
 	{
-		protected override UISlider CreatePlatformView() => new UISlider { Continuous = true };
+		protected override UISlider CreatePlatformView()
+		{
+			var platformSlider = new UISlider { Continuous = true };
+
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15) && platformSlider.TraitCollection.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
+				platformSlider.PreferredBehavioralStyle = UIBehavioralStyle.Pad;
+
+			return platformSlider;
+		}
 
 		protected override void ConnectHandler(UISlider platformView)
 		{
