@@ -53,6 +53,7 @@
     <Compile Include="Handlers\Entry\*.cs" />
     <Compile Include="Handlers\Navigation\*.cs" />
     <Compile Include="Handlers\RadioButton\*.cs" />
+    <Compile Include="Handlers\Slider\*.cs" />
     <Compile Include="Handlers\Switch\*.cs" />
     <Compile Include="Handlers\TextInput\*.cs" />
     <Compile Include="Handlers\View\*.cs" />
