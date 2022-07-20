@@ -1,8 +1,6 @@
 ﻿#nullable enable
 Microsoft.Maui.Controls.Platform.FocusExtensions
-override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
-override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Controls.Platform.FocusExtensions.FocusSearch(this Android.Views.View! focused, Android.Views.FocusSearchDirection direction) -> Android.Views.View?
 static Microsoft.Maui.Platform.KeyboardExtensions.HideKeyboard(this Android.Views.View! inputView, bool overrideValidation = false) -> void
 Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler
