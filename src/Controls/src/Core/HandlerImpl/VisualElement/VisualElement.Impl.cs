@@ -102,6 +102,17 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ZIndexProperty, value); }
 		}
 
+		string ITooltip.TooltipText => TooltipText;
+
+		public static readonly BindableProperty TooltipTextProperty =
+ 			BindableProperty.Create(nameof(TooltipText), typeof(string), typeof(VisualElement), defaultValue: null);
+
+		public string TooltipText
+		{
+			get { return (string)GetValue(TooltipTextProperty); }
+			set { SetValue(TooltipTextProperty, value); }
+		}
+
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='DesiredSize']/Docs" />
 		public Size DesiredSize { get; protected set; }
 

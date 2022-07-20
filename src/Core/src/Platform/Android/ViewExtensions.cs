@@ -340,6 +340,14 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public static void UpdateTooltipText(this AView view, string? text)
+		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				view.TooltipText = text;
+			}
+		}
+
 		public static void RemoveFromParent(this AView view)
 		{
 			if (view != null)
