@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 			_aView = aView;
 		}
 
-		public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+		public override View OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 		{
 			return _aView;
 		}

@@ -21,6 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 			var clicked = false;
 
 			var button = new ImageButtonStub();
+
 			button.Clicked += delegate
 			{
 				clicked = true;

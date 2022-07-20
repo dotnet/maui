@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <UsingTask TaskName="ReplaceFileText" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
@@ -46,9 +46,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <TemplateJsonInput Include="templates\*\.template.config\template.in.json">
-      <PackageDestination>$([System.String]::Concat(%(RelativeDir), 'template.json'))</PackageDestination>
-      <IntermediateLocation>$(IntermediateOutputPath)$([System.String]::Concat(%(RelativeDir), 'template.json'))</IntermediateLocation>
+    <TemplateJsonInput Include="templates\*\.template.config\**\*.json">
+      <PackageDestination>$([System.String]::Concat(%(RelativeDir), '%(Filename)%(Extension)'))</PackageDestination>
+      <IntermediateLocation>$(IntermediateOutputPath)$([System.String]::Concat(%(RelativeDir), '%(Filename)%(Extension)'))</IntermediateLocation>
     </TemplateJsonInput>
     <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**;@(TemplateJsonInput)" />
     <Compile Remove="**\*" />
@@ -58,7 +58,7 @@
     <BeforePack>_UpdateTemplateVersions</BeforePack>
   </PropertyGroup>
 
-  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions"
+  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions;LocalizeTemplatesAfterBuild"
       Inputs="@(TemplateJsonInput)"
       Outputs="%(TemplateJsonInput.IntermediateLocation)">
 
@@ -67,17 +67,24 @@
         SourceFiles="%(TemplateJsonInput.Fullpath)"
         DestinationFiles="%(TemplateJsonInput.IntermediateLocation)" />
 
-    <!-- Replace WinAppSDK, Win2D, .NET TFM versions -->
+     <!-- Copy the templatestrings.en.json to templatestrings.json -->
+    <Copy
+        SourceFiles="%(TemplateJsonInput.Fullpath)"
+        DestinationFiles="%(TemplateJsonInput.RelativeDir)templatestrings.json"
+        Condition="'%(TemplateJsonInput.Filename)%(TemplateJsonInput.Extension)' == 'templatestrings.en.json'" />
+
+    <!-- Replace .NET TFM versions -->
     <ReplaceFileText
         InputFilename="%(TemplateJsonInput.IntermediateLocation)"
         OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
-        MatchExpression="WINDOWSAPPSDK_VERSION_VALUE;WIN2D_VERSION_VALUE;DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE"
-        ReplacementText="$(MicrosoftWindowsAppSDKPackageVersion);$(MicrosoftGraphicsWin2DPackageVersion);$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000" />
+        MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE;MS_EXT_VERSION_VALUE"
+        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(MicrosoftExtensionsPackageVersion)" />
 
     <ItemGroup>
       <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />
       <Content Include="%(TemplateJsonInput.IntermediateLocation)" PackagePath="$(ContentTargetFolders)\%(TemplateJsonInput.PackageDestination)" Pack="true" />
     </ItemGroup>
+
   </Target>
 
   <Target Name="_CopyToTemplatePacks" AfterTargets="Pack">
@@ -94,4 +101,8 @@
   <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
     <PackageReference Include="Microsoft.TemplateEngine.Tasks" Version="$(MicrosoftTemplateEngineTasksVersion)" PrivateAssets="all" IsImplicitlyDefined="true" />
   </ItemGroup>
+
+  <!-- this target will get replaced by the nuget -->
+  <Target Name="LocalizeTemplatesAfterBuild" />
+
 </Project>

@@ -42,5 +42,14 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(false, $"Message: {message} Failure: {e}");
 			}
 		}
+
+		public static void CloseEnough(double expected, double actual, double epsilon = 0.2, string? message = null)
+		{
+			if (!String.IsNullOrWhiteSpace(message))
+				message = " " + message;
+
+			var diff = Math.Abs(expected - actual);
+			Assert.True(diff <= epsilon, $"Expected: {expected}. Actual: {actual}. Diff: {diff} Epsilon: {epsilon}.{message}");
+		}
 	}
 }

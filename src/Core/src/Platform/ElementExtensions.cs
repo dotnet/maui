@@ -89,29 +89,14 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (handler == null)
-				throw new HandlerNotFoundException($"Handler not found for view {view}.");
+				throw new HandlerNotFoundException(view);
 
 			handler.SetMauiContext(context);
 
-			try
-			{
-				view.Handler = handler;
+			view.Handler = handler;
 
-				if (handler.VirtualView != view)
-					handler.SetVirtualView(view);
-			}
-			catch (ToPlatformException)
-			{
-				throw;
-			}
-			catch (HandlerNotFoundException)
-			{
-				throw;
-			}
-			catch (Exception exc)
-			{
-				throw new ToPlatformException($"{handler} found for {view} is incompatible", exc);
-			}
+			if (handler.VirtualView != view)
+				handler.SetVirtualView(view);
 
 			return handler;
 		}
