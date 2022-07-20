@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 				platformView.UpdateMauiCALayer(border);
 			}
 		}
-		
+
 		public static void UpdateBackground(this UIView platformView, IView view)
 		{
 			platformView.UpdateBackground(view.Background, view as IButtonStroke);
@@ -422,16 +422,6 @@ namespace Microsoft.Maui.Platform
 		internal static UIView? GetParent(this UIView? view)
 		{
 			return view?.Superview;
-		}
-
-		internal static void LayoutToSize(this IView view, double width, double height)
-		{
-			var platformFrame = new CGRect(0, 0, width, height);
-
-			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
-				viewHandler.PlatformView.Frame = platformFrame;
-
-			view.Arrange(platformFrame.ToRectangle());
 		}
 
 		internal static Size LayoutToMeasuredSize(this IView view, double width, double height)

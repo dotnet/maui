@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Controls
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
 		MenuBarTracker _menuBarTracker;
+		bool _isActivated;
 
 		IToolbar? IToolbarElement.Toolbar => Toolbar;
 		internal Toolbar? Toolbar
@@ -161,7 +162,25 @@ namespace Microsoft.Maui.Controls
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
 
-		internal bool IsActivated { get; private set; }
+		internal bool IsActivated
+		{
+			get
+			{
+				return _isActivated;
+			}
+			private set
+			{
+				if (_isActivated == value)
+					return;
+
+				_isActivated = value;
+
+				if (value)
+					SendWindowAppearing();
+				else
+					SendWindowDisppearing();
+			}
+		}
 
 		IFlowDirectionController FlowController => this;
 
@@ -245,8 +264,8 @@ namespace Microsoft.Maui.Controls
 				{
 					_visualChildren.Add(item);
 					OnChildAdded(item);
-					// TODO once we have better life cycle events on pages 
-					if (item is Page)
+
+					if (Parent != null && item is Page)
 					{
 						SendWindowAppearing();
 					}
@@ -254,9 +273,20 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		internal void FinishedAddingWindowToApplication(Application application)
+		{
+			if (Parent != null)
+				SendWindowAppearing();
+		}
+
 		void SendWindowAppearing()
 		{
 			Page?.SendAppearing();
+		}
+
+		void SendWindowDisppearing()
+		{
+			Page?.SendDisappearing();
 		}
 
 		void OnModalPopped(Page modalPage)
@@ -405,6 +435,9 @@ namespace Microsoft.Maui.Controls
 		{
 			if (bindable is not Window window)
 				return;
+
+			if (oldValue is Page oldPage)
+				oldPage.SendDisappearing();
 
 			if (newValue is IToolbarElement toolbarElement &&
 				toolbarElement.Toolbar is Toolbar tb &&

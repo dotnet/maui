@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.XamlC
 {
 	class ColorTypeConverter : ICompiledTypeConverter
 	{
-		public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
+		public virtual IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
 		{
 			var module = context.Body.Method.Module;
 

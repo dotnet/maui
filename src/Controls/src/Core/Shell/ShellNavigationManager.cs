@@ -209,8 +209,44 @@ namespace Microsoft.Maui.Controls
 				HandleNavigated(_accumulatedEvent);
 		}
 
+		ActionDisposable _waitingForWindow;
 		public void HandleNavigated(ShellNavigatedEventArgs args)
 		{
+			_waitingForWindow?.Dispose();
+			_waitingForWindow = null;
+
+			// we don't want to fire Navigated until shell is attached to an actual window
+			if (_shell.Window == null || _shell.CurrentPage == null)
+			{
+				_shell.PropertyChanged += WaitForWindowToSet;
+				var shellContent = _shell?.CurrentItem?.CurrentItem?.CurrentItem;
+
+				if (shellContent != null)
+					shellContent.ChildAdded += WaitForWindowToSet;
+
+				_waitingForWindow = new ActionDisposable(() =>
+				{
+					_shell.PropertyChanged -= WaitForWindowToSet;
+					if (shellContent != null)
+						shellContent.ChildAdded -= WaitForWindowToSet;
+				});
+
+				void WaitForWindowToSet(object sender, EventArgs e)
+				{
+					if (_shell.Window != null &&
+						_shell.CurrentPage != null)
+					{
+						_waitingForWindow?.Dispose();
+						_waitingForWindow = null;
+
+						_shell.CurrentItem?.SendAppearing();
+						HandleNavigated(args);
+					}
+				}
+
+				return;
+			}
+
 			if (AccumulateNavigatedEvents)
 			{
 				if (_accumulatedEvent == null)
