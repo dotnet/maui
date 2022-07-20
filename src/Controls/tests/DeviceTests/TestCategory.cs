@@ -4,6 +4,7 @@
 	{
 		public const string Behavior = "Behavior";
 		public const string Button = "Button";
+		public const string CheckBox = "CheckBox";
 		public const string Compatibility = "Compatibility";
 		public const string ContentView = "ContentView";
 		public const string Dispatcher = "Dispatcher";
