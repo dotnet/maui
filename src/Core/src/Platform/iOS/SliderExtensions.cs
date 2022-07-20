@@ -8,12 +8,12 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateMinimum(this UISlider uiSlider, ISlider slider)
 		{
-			uiSlider.MaxValue = (float)slider.Maximum;
+			uiSlider.MinValue = (float)slider.Minimum;
 		}
 
 		public static void UpdateMaximum(this UISlider uiSlider, ISlider slider)
 		{
-			uiSlider.MinValue = (float)slider.Minimum;
+			uiSlider.MaxValue = (float)slider.Maximum;
 		}
 
 		public static void UpdateValue(this UISlider uiSlider, ISlider slider)
