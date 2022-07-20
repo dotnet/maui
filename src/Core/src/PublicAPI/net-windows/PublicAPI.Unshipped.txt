@@ -1,3 +1,5 @@
 ﻿#nullable enable
+Microsoft.Maui.Platform.DateTimeExtensions
 override Microsoft.Maui.Handlers.EditorHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.EntryHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+static Microsoft.Maui.Platform.DateTimeExtensions.ToDateTimeOffset(this System.DateTime dateTime) -> System.DateTimeOffset

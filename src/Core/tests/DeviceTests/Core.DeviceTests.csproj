@@ -48,15 +48,26 @@
     <Compile Remove="Handlers\*\*.cs" />
     <Compile Include="Handlers\ActivityIndicator\*.cs" />
     <Compile Include="Handlers\Button\*.cs" />
+    <Compile Include="Handlers\CheckBox\*.cs" />
     <Compile Include="Handlers\DatePicker\*.cs" />
+    <Compile Include="Handlers\GraphicsView\*.cs" />
+    <Compile Include="Handlers\Label\*.cs" />
     <Compile Include="Handlers\Layout\*.cs" />
     <Compile Include="Handlers\Editor\*.cs" />
     <Compile Include="Handlers\Entry\*.cs" />
     <Compile Include="Handlers\Navigation\*.cs" />
+    <Compile Include="Handlers\Page\*.cs" />
+    <Compile Include="Handlers\Picker\*.cs" />
+    <Compile Include="Handlers\ProgressBar\*.cs" />
     <Compile Include="Handlers\RadioButton\*.cs" />
+    <Compile Include="Handlers\SearchBar\*.cs" />
+    <Compile Include="Handlers\Slider\*.cs" />
+    <Compile Include="Handlers\Stepper\*.cs" />
     <Compile Include="Handlers\Switch\*.cs" />
     <Compile Include="Handlers\TextInput\*.cs" />
+    <Compile Include="Handlers\TimePicker\*.cs" />
     <Compile Include="Handlers\View\*.cs" />
+    <Compile Include="Handlers\WebView\*.cs" />
     <Compile Include="Handlers\Window\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
@@ -70,5 +81,5 @@
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
-
+  
 </Project>

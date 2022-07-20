@@ -18,10 +18,12 @@ namespace Microsoft.Maui.Platform
 			if (tintBrush == null)
 			{
 				platformCheckBox.Resources.RemoveKeys(_tintColorResourceKeys);
+				platformCheckBox.Foreground = null;
 			}
 			else
 			{
 				platformCheckBox.Resources.SetValueForAllKey(_tintColorResourceKeys, tintBrush);
+				platformCheckBox.Foreground = tintBrush;
 			}
 		}
 

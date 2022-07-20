@@ -64,7 +64,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			UpdateColors(platformControl.Resources, _foregroundColorKeys, searchBar.TextColor?.ToPlatform());
+			var foreground = searchBar.TextColor?.ToPlatform();
+
+			if (foreground == null)
+				platformControl.Foreground = null;
+			else
+				platformControl.Foreground = foreground;
+
+			UpdateColors(platformControl.Resources, _foregroundColorKeys, foreground);
 		}
 
 		private static void UpdateColors(ResourceDictionary resource, string[] keys, Brush? brush)
