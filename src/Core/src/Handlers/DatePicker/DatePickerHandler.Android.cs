@@ -36,6 +36,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			// I tested and this is called when an activity is destroyed
 			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+			_dialog?.Hide();
+			_dialog = null;
 		}
 
 		void OnViewAttachedToWindow(object? sender = null, View.ViewAttachedToWindowEventArgs? e = null)
@@ -45,13 +47,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
-			if (_dialog != null)
-			{
-				_dialog.Hide();
-				_dialog.Dispose();
-				_dialog = null;
-			}
-
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
 			OnViewDetachedFromWindow();
