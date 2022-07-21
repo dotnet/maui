@@ -1,5 +1,4 @@
-﻿using ElmSharp;
-using Tizen.UIExtensions.NUI.GraphicsView;
+﻿using Tizen.UIExtensions.NUI.GraphicsView;
 
 namespace Microsoft.Maui.Platform
 {
