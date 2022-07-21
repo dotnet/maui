@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Xml;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using SkiaSharp;
@@ -17,49 +15,44 @@ namespace Microsoft.Maui.Resizetizer
 		[Required]
 		public string IntermediateOutputPath { get; set; }
 
-		public string ManifestFile { get; set; } = "tizen-manifest.xml";
-
 		public ILogger Logger { get; private set; }
+
+		static public Dictionary<(string Resolution, string Orientation), string> splashDpiMap = new Dictionary<(string, string), string>();
+
+		const string splashDirectoryName = "splash";
+		Size hdSize = new Size(720, 1080);
+		Size fhdSize = new Size(1080, 1920);
 
 		public override bool Execute()
 		{
-			if (UpdateSplashImage())
-				UpdateManifest();
-			return !Log.HasLoggedErrors;
-		}
-
-		const string namespaceURI = "http://tizen.org/ns/packages";
-		const string splashDirectoryName = "splash";
-		List<string> orientations = new List<string>() { "portrait", "landscape" };
-		Size hdSize = new Size(720, 1080);
-		Size fhdSize = new Size(1080, 1920);
-		Dictionary<(string Resolution, string Orientation), string> splashDpiMap = new Dictionary<(string, string), string>();
-
-		public bool UpdateSplashImage()
-		{
-			var splash = MauiSplashScreen[0];
-			var image = Path.GetFileNameWithoutExtension(splash.ItemSpec) + ".png";
+			var orientations = new List<string>() { "portrait", "landscape" };
+			var splashInfo = MauiSplashScreen?.Length > 0 ? ResizeImageInfo.Parse(MauiSplashScreen[0]) : null;
+			var image = splashInfo.OutputName + ".png";
 			var sharedResFullPath = Path.GetFullPath(Path.Combine(IntermediateOutputPath, "shared/res/"));
 			var splashFullPath = Path.Combine(sharedResFullPath, splashDirectoryName);
 
 			if (Directory.Exists(splashFullPath))
-			{
 				Directory.Delete(splashFullPath, true);
-			}
 			Directory.CreateDirectory(splashFullPath);
 
+			splashDpiMap.Clear();
 			foreach (var dpi in DpiPath.Tizen.SplashScreen)
 			{
 				var imageOutputPath = Path.GetFullPath(Path.Combine(IntermediateOutputPath, dpi.Path));
 				var imageFullPath = Path.Combine(imageOutputPath, image);
+
 				if (File.Exists(imageFullPath))
 				{
 					var resolution = dpi.Path.Split('-')[1].ToLower();
 					foreach (var orientation in orientations)
 					{
-						var newImage = Path.GetFileNameWithoutExtension(splash.ItemSpec) + "." + resolution + "." + orientation + ".png";
+						var newImage = splashInfo.OutputName + "." + resolution + "." + orientation + ".png";
+						if (splashDpiMap.ContainsKey((resolution, orientation)))
+						{
+							splashDpiMap.Remove((resolution, orientation));
+						}
 						splashDpiMap.Add((resolution, orientation), $"{splashDirectoryName}/{newImage}");
-						UpdateColorAndMoveFile(GetScreenSize(resolution, orientation), imageFullPath, Path.Combine(splashFullPath, newImage));
+						UpdateColorAndMoveFile(splashInfo, GetScreenSize(resolution, orientation), imageFullPath, Path.Combine(splashFullPath, newImage));
 					}
 				}
 				else
@@ -68,35 +61,35 @@ namespace Microsoft.Maui.Resizetizer
 					return false;
 				}
 			}
+
+			foreach (var dpi in DpiPath.Tizen.Image)
+			{
+				var imageOutputPath = Path.GetFullPath(Path.Combine(IntermediateOutputPath, dpi.Path));
+				var imageFullPath = Path.Combine(imageOutputPath, image);
+				if (File.Exists(imageFullPath))
+				{
+					File.Delete(imageFullPath);
+				}
+			}
+
 			return true;
 		}
 
-		Size GetScreenSize(string resolution, string orientation)
-		{
-			if (resolution == "mdpi")
+		Size GetScreenSize(string resolution, string orientation) =>
+			resolution switch
 			{
-				return orientation == "portrait" ? hdSize : new Size(hdSize.Height, hdSize.Width);
-			}
-			else
-			{
-				return orientation == "portrait" ? fhdSize : new Size(fhdSize.Height, fhdSize.Width);
-			}
-		}
+				"mdpi" => orientation == "portrait" ? hdSize : new Size(hdSize.Height, hdSize.Width),
+				_ => orientation == "portrait" ? fhdSize : new Size(fhdSize.Height, fhdSize.Width)
+			};
 
-		public void UpdateColorAndMoveFile(Size screenSize, string sourceFilePath, string destFilePath)
+		void UpdateColorAndMoveFile(ResizeImageInfo splashInfo, Size screenSize, string sourceFilePath, string destFilePath)
 		{
-			var splash = MauiSplashScreen[0];
-			var colorMetadata = splash.GetMetadata("Color");
-			var color = Utils.ParseColorString(colorMetadata);
+			var color = splashInfo.Color;
 			if (color == null)
 			{
-				if (!string.IsNullOrEmpty(colorMetadata))
-				{
-					Log.LogWarning($"Unable to parse color value '{colorMetadata}' for '{splash.ItemSpec}'.");
-				}
+				Log.LogWarning($"Unable to parse color for '{splashInfo.Filename}'.");
 				color = SKColors.White;
 			}
-
 			using (SKBitmap bmp = SKBitmap.Decode(sourceFilePath))
 			{
 				SKImageInfo info = new SKImageInfo(screenSize.Width, screenSize.Height);
@@ -116,7 +109,6 @@ namespace Microsoft.Maui.Resizetizer
 					var bottom = screenSize.Height <= bmp.Height ? top + screenSize.Height : top + bmp.Height;
 					canvas.DrawBitmap(bmp, new SKRect(left, top, right, bottom), paint);
 					canvas.Flush();
-
 					var updatedsplash = surface.Snapshot();
 					using (var data = updatedsplash.Encode(SKEncodedImageFormat.Png, 100))
 					{
@@ -127,67 +119,6 @@ namespace Microsoft.Maui.Resizetizer
 					}
 				}
 			}
-		}
-
-		public void UpdateManifest()
-		{
-			XmlDocument doc = new XmlDocument();
-			var xmlPath = Path.Combine(Environment.CurrentDirectory, ManifestFile);
-			try
-			{
-				doc.Load(xmlPath);
-			}
-			catch
-			{
-				Log.LogWarning($"Failed to load tizen-manifest.xml");
-				return;
-			}
-
-			var nsmgr = new XmlNamespaceManager(doc.NameTable);
-			nsmgr.AddNamespace("manifest", namespaceURI);
-			var uiApplicationNode = doc.SelectSingleNode("//manifest:ui-application", nsmgr);
-			if (uiApplicationNode == null)
-			{
-				Log.LogWarning($"Failed to find <ui-application>");
-				return;
-			}
-			var splashScreensNodeList = doc.SelectNodes("//manifest:splash-screens", nsmgr);
-			XmlNode splashScreensNode;
-			if (splashScreensNodeList.Count == 0)
-			{
-				splashScreensNode = doc.CreateElement("splash-screens", namespaceURI);
-				uiApplicationNode.AppendChild(splashScreensNode);
-			}
-			else
-			{
-				splashScreensNode = splashScreensNodeList[0];
-				List<XmlNode> nodesToRemove = new List<XmlNode>();
-				foreach (XmlNode splashScreenNode in splashScreensNode.ChildNodes)
-				{
-					var dpiValue = splashScreenNode.Attributes.GetNamedItem("dpi")?.Value;
-					if (dpiValue == "mdpi" || dpiValue == "hdpi")
-					{
-						nodesToRemove.Add(splashScreenNode);
-					}
-				}
-				foreach (XmlNode node in nodesToRemove)
-				{
-					splashScreensNode.RemoveChild(node);
-				}
-			}
-
-			foreach (var image in splashDpiMap)
-			{
-				var splashScreenNode = doc.CreateElement("splash-screen", namespaceURI);
-				splashScreenNode.SetAttribute("src", image.Value);
-				splashScreenNode.SetAttribute("type", "img");
-				splashScreenNode.SetAttribute("dpi", image.Key.Resolution);
-				splashScreenNode.SetAttribute("orientation", image.Key.Orientation);
-				splashScreenNode.SetAttribute("indicator-display", "false");
-				splashScreensNode.AppendChild(splashScreenNode);
-			}
-
-			doc.Save(xmlPath);
 		}
 	}
 }

@@ -4,7 +4,7 @@ using PlatformView = UIKit.UIStepper;
 using PlatformView = Microsoft.Maui.Platform.MauiStepper;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.MauiStepper;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif
 

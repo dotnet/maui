@@ -101,7 +101,7 @@ namespace Microsoft.Maui
 			viewHandler.Invoke(nameof(IView.Frame), rect);
 		}
 
-		static double ResolveConstraints(double measured, double exact, double min, double max)
+		internal static double ResolveConstraints(double measured, double exact, double min, double max)
 		{
 			var resolved = measured;
 

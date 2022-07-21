@@ -8,6 +8,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
 				async (handler) =>
 				{
-					var rootView = handler.PlatformView.Content;
+					var windowRootViewContainer = (WPanel)handler.PlatformView.Content;
 					ContentPage backgroundColorContentPage = new ContentPage();
 
 					if (useColor)
@@ -35,15 +36,18 @@ namespace Microsoft.Maui.DeviceTests
 
 					await navPage.CurrentPage.Navigation.PushModalAsync(backgroundColorContentPage);
 
-					// Root should now be a ContentPanel
-					var rootPanel = (ContentPanel)handler.PlatformView.Content;
-					Assert.Contains(rootView, rootPanel.Children);
 					var modalRootView =
 						backgroundColorContentPage.FindMauiContext().GetNavigationRootManager().RootView;
-					Assert.Contains(modalRootView, rootPanel.Children);
+					var rootPageRootView =
+						navPage.FindMauiContext().GetNavigationRootManager().RootView;
+
+					Assert.Equal(1, windowRootViewContainer.Children.IndexOf(modalRootView));
+					Assert.Equal(0, windowRootViewContainer.Children.IndexOf(rootPageRootView));
 
 					await navPage.CurrentPage.Navigation.PopModalAsync();
-					Assert.Equal(rootView, handler.PlatformView.Content);
+
+					Assert.Equal(0, windowRootViewContainer.Children.IndexOf(rootPageRootView));
+					Assert.DoesNotContain(modalRootView, windowRootViewContainer.Children);
 				});
 		}
 

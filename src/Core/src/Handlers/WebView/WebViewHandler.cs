@@ -6,7 +6,7 @@ using PlatformView = Android.Webkit.WebView;
 using PlatformView = Microsoft.UI.Xaml.Controls.WebView2;
 #elif TIZEN
 using PlatformView = Microsoft.Maui.Platform.MauiWebView;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 

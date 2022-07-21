@@ -1,7 +1,9 @@
 using System;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Devices;
@@ -11,14 +13,16 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase : TestBase, IDisposable
 	{
 		bool _isCreated;
-		MauiApp _mauiApp;
+		protected MauiApp MauiApp { get; private set; }
 		IMauiContext _mauiContext;
 
 		// In order to run any page level tests android needs to add itself to the decor view inside a new fragment
@@ -74,19 +78,20 @@ namespace Microsoft.Maui.DeviceTests
 
 			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
 			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
+			appBuilder.Services.TryAddSingleton<IApplication>((_) => new ApplicationStub());
 
 			additionalCreationActions?.Invoke(appBuilder);
 
-			_mauiApp = appBuilder.Build();
+			MauiApp = appBuilder.Build();
 
-			_mauiContext = new ContextStub(_mauiApp.Services);
+			_mauiContext = new ContextStub(MauiApp.Services);
 		}
 
 		public void Dispose()
 		{
-			((IDisposable)_mauiApp)?.Dispose();
+			((IDisposable)MauiApp)?.Dispose();
 
-			_mauiApp = null;
+			MauiApp = null;
 			_mauiContext = null;
 		}
 
@@ -166,6 +171,17 @@ namespace Microsoft.Maui.DeviceTests
 				return func(handler);
 			});
 		}
+
+		protected Task SetValueAsync<TValue, THandler>(IView view, TValue value, Action<THandler, TValue> func)
+			where THandler : IElementHandler
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<THandler>(view);
+				func(handler, value);
+			});
+		}
+
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Action<THandler> action)
 			where THandler : class, IElementHandler
 		{
@@ -177,12 +193,16 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		static SemaphoreSlim _takeOverMainContentSempahore = new SemaphoreSlim(1);
-		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
+		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{
+			mauiContext ??= MauiContext;
+
 			return InvokeOnMainThreadAsync(async () =>
 			{
 				IWindow window = null;
+
+				var application = mauiContext.Services.GetService<IApplication>();
 
 				if (view is IWindow w)
 				{
@@ -197,6 +217,14 @@ namespace Microsoft.Maui.DeviceTests
 					window = new Controls.Window(new ContentPage() { Content = (View)view });
 				}
 
+				if (application is ApplicationStub appStub)
+				{
+					appStub.SetWindow((Window)window);
+
+					// Trigger the work flow of creating a window
+					_ = application.CreateWindow(null);
+				}
+
 				try
 				{
 					await _takeOverMainContentSempahore.WaitAsync();
@@ -206,14 +234,27 @@ namespace Microsoft.Maui.DeviceTests
 						IView content = window.Content;
 
 						if (content is IPageContainer<Page> pc)
+						{
 							content = pc.CurrentPage;
+							if (content == null)
+							{
+								// This is mainly a timing issue with Shell.
+								// Basically the `CurrentPage` on Shell isn't initialized until it's
+								// actually navigated to because it's a DataTemplate.
+								// The CurrentPage doesn't come into existence until the platform requests it.
+								// The initial `Navigated` events on Shell all fire a bit too early as well.
+								// Ideally I'd just use that instead of having to add a delay.
+								await Task.Delay(100);
+								content = pc.CurrentPage;
+							}
+
+							_ = content ?? throw new InvalidOperationException("Current Page Not Initialized");
+						}
 
 						await OnLoadedAsync(content as VisualElement);
 #if WINDOWS
-
 						await Task.Delay(10);
 #endif
-
 						if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
 							await action((THandler)window.Handler);
 						else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
@@ -222,13 +263,97 @@ namespace Microsoft.Maui.DeviceTests
 							await action((THandler)cp.Content.Handler);
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
-					});
+					}, mauiContext);
 				}
 				finally
 				{
 					_takeOverMainContentSempahore.Release();
 				}
 			});
+		}
+
+		async protected Task ValidatePropertyInitValue<TValue, THandler>(
+			IView view,
+			Func<TValue> GetValue,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedValue)
+			where THandler : IElementHandler
+		{
+			var values = await GetValueAsync(view, (THandler handler) =>
+			{
+				return new
+				{
+					ViewValue = GetValue(),
+					PlatformViewValue = GetPlatformValue(handler)
+				};
+			});
+
+			Assert.Equal(expectedValue, values.ViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
+		}
+
+		async protected Task ValidatePropertyUpdatesValue<TValue, THandler>(
+			IView view,
+			string property,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+			where THandler : IElementHandler
+		{
+			var propInfo = view.GetType().GetProperty(property);
+
+			// set initial values
+
+			propInfo.SetValue(view, expectedSetValue);
+
+			var (handler, viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<THandler>(view);
+				return (handler, (TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedSetValue, viewVal);
+			Assert.Equal(expectedSetValue, nativeVal);
+
+			await ValidatePropertyUpdatesAfterInitValue(handler, property, GetPlatformValue, expectedSetValue, expectedUnsetValue);
+		}
+
+		async protected Task ValidatePropertyUpdatesAfterInitValue<TValue, THandler>(
+			THandler handler,
+			string property,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+			where THandler : IElementHandler
+		{
+			var view = handler.VirtualView;
+			var propInfo = handler.VirtualView.GetType().GetProperty(property);
+
+			// confirm can update
+
+			var (viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				propInfo.SetValue(view, expectedUnsetValue);
+				handler.UpdateValue(property);
+
+				return ((TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedUnsetValue, viewVal);
+			Assert.Equal(expectedUnsetValue, nativeVal);
+
+			// confirm can revert
+
+			(viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				propInfo.SetValue(view, expectedSetValue);
+				handler.UpdateValue(property);
+
+				return ((TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedSetValue, viewVal);
+			Assert.Equal(expectedSetValue, nativeVal);
 		}
 
 		protected void OnLoaded(VisualElement frameworkElement, Action action)
@@ -310,19 +435,24 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		protected Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		protected async Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			if (frameworkElement.Frame.Height > 0 &&
 				frameworkElement.Frame.Width > 0)
 			{
-				return Task.CompletedTask;
+				return;
 			}
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 			frameworkElement.BatchCommitted += OnBatchCommitted;
 
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			// Wait for the layout to propagate to the platform
+			await AssertionExtensions.Wait(
+				() => !frameworkElement.GetBoundingBox().Size.Equals(Size.Zero)
+			);
 
 			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
 			{

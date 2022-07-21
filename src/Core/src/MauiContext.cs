@@ -7,8 +7,13 @@ namespace Microsoft.Maui
 	public class MauiContext : IMauiContext
 	{
 		readonly WrappedServiceProvider _services;
+		readonly Lazy<IMauiHandlersFactory> _handlers;
 
-#if __ANDROID__
+#if ANDROID
+		readonly Lazy<Android.Content.Context?> _context;
+
+		public Android.Content.Context? Context => _context.Value;
+
 		public MauiContext(IServiceProvider services, Android.Content.Context context)
 			: this(services)
 		{
@@ -19,17 +24,15 @@ namespace Microsoft.Maui
 		public MauiContext(IServiceProvider services)
 		{
 			_services = new WrappedServiceProvider(services ?? throw new ArgumentNullException(nameof(services)));
+			_handlers = new Lazy<IMauiHandlersFactory>(() => _services.GetRequiredService<IMauiHandlersFactory>());
+#if ANDROID
+			_context = new Lazy<Android.Content.Context?>(() => _services.GetService<Android.Content.Context>());
+#endif
 		}
 
 		public IServiceProvider Services => _services;
 
-		public IMauiHandlersFactory Handlers =>
-			Services.GetRequiredService<IMauiHandlersFactory>();
-
-#if __ANDROID__
-		public Android.Content.Context? Context =>
-			Services.GetService<Android.Content.Context>();
-#endif
+		public IMauiHandlersFactory Handlers => _handlers.Value;
 
 		internal void AddSpecific<TService>(TService instance)
 			where TService : class

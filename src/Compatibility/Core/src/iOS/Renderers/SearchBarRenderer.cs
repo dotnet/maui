@@ -167,6 +167,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateCancelButton();
 		}
 
+		[PortHandler]
 		protected override void SetBackground(Brush brush)
 		{
 			base.SetBackground(brush);

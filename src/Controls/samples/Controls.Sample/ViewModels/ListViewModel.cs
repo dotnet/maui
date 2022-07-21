@@ -22,6 +22,8 @@ namespace Maui.Controls.Sample.ViewModels
 				"TextCell controls are used for displaying text with an optional second line for detail text."),
 			new SectionModel(typeof(ListViewViewCell), "View Cell",
 				"A ViewCell is a cell that can be added to a ListView or TableView, which contains a developer-defined view."),
+			new SectionModel(typeof(ListViewContextActions), "Context actions / menus",
+				"Context actions on view cells enable additional actions on a cell."),
 		};
 	}
 }

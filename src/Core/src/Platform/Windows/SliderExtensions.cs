@@ -36,14 +36,12 @@ namespace Microsoft.Maui.Platform
 		{
 			var brush = slider.MinimumTrackColor?.ToPlatform();
 
-			if (brush == null)
-			{
+			if (brush is null)
 				platformSlider.Resources.RemoveKeys(MinimumTrackColorResourceKeys);
-			}
 			else
-			{
 				platformSlider.Resources.SetValueForAllKey(MinimumTrackColorResourceKeys, brush);
-			}
+
+			platformSlider.RefreshThemeResources();
 		}
 
 		static readonly string[] MinimumTrackColorResourceKeys =
@@ -59,13 +57,11 @@ namespace Microsoft.Maui.Platform
 			var brush = slider.MaximumTrackColor?.ToPlatform();
 
 			if (brush == null)
-			{
 				platformSlider.Resources.RemoveKeys(MaximumTrackColorResourceKeys);
-			}
 			else
-			{
 				platformSlider.Resources.SetValueForAllKey(MaximumTrackColorResourceKeys, brush);
-			}
+
+			platformSlider.RefreshThemeResources();
 		}
 
 		static readonly string[] MaximumTrackColorResourceKeys =
@@ -80,14 +76,12 @@ namespace Microsoft.Maui.Platform
 		{
 			var brush = slider.ThumbColor?.ToPlatform();
 
-			if (brush == null)
-			{
+			if (brush is null)
 				platformSlider.Resources.RemoveKeys(ThumbColorResourceKeys);
-			}
 			else
-			{
 				platformSlider.Resources.SetValueForAllKey(ThumbColorResourceKeys, brush);
-			}
+
+			platformSlider.RefreshThemeResources();
 		}
 
 		static readonly string[] ThumbColorResourceKeys =

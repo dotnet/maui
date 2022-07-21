@@ -49,6 +49,10 @@
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.GeneratePackageAppxManifest" />
 
+  <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GenerateTizenManifest" />
+
     <PropertyGroup>
         <CleanDependsOn>
             $(CleanDependsOn);
@@ -84,9 +88,7 @@
 
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
-        <_ResizetizerDefaultInvalidFilenamesErrorMessage>
-            One or more invalid file names were detected.  File names must be lowercase, start and end with a letter character, and contain only alphanumeric characters or underscores: &#13;&#10;
-        </_ResizetizerDefaultInvalidFilenamesErrorMessage>
+        <_ResizetizerDefaultInvalidFilenamesErrorMessage>One or more invalid file names were detected.  File names must be lowercase, start and end with a letter character, and contain only alphanumeric characters or underscores: </_ResizetizerDefaultInvalidFilenamesErrorMessage>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -95,7 +97,7 @@
         <_ResizetizerIsiOSApp Condition="( '$(_ResizetizerPlatformIsiOS)' == 'True' OR '$(_ResizetizerPlatformIsMacCatalyst)' == 'True' ) And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSApp>
         <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(_ResizetizerPlatformIsWindows)' == 'True'">True</_ResizetizerIsWPFApp>
         <_ResizetizerIsWindowsAppSdk Condition="('$(ProjectReunionWinUI)'=='True' Or '$(WindowsAppSDKWinUI)'=='True') And '$(_ResizetizerPlatformIsWindows)' == 'True' And ('$(OutputType)' == 'WinExe' Or '$(OutputType)' == 'Exe')">True</_ResizetizerIsWindowsAppSdk>
-        <_ResizetizerIsTizenApp Condition="'$(_ResizetizerPlatformIsTizen)' == 'True'">True</_ResizetizerIsTizenApp>
+        <_ResizetizerIsTizenApp Condition="'$(_ResizetizerPlatformIsTizen)' == 'True' And ( '$(OutputType)' == 'Exe' )">True</_ResizetizerIsTizenApp>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True' Or '$(_ResizetizerIsTizenApp)' == 'True'">
@@ -306,7 +308,7 @@
 
         <WriteLinesToFile
             File="$(_MauiSplashInputsFile)"
-            Lines="@(MauiSplashScreen->'File=%(Identity);Color=%(Color)')"
+            Lines="@(MauiSplashScreen->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);ForegroundScale=%(ForegroundScale)')"
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
 
@@ -395,7 +397,7 @@
             <FileWrites Include="@(_MauiSplashAssets)" />
         </ItemGroup>
 
-      <!-- Tizen -->
+        <!-- Tizen -->
         <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
             <MauiImage Include="@(MauiSplashScreen)" />
         </ItemGroup>
@@ -530,7 +532,6 @@
         <TizenSplashUpdater
             Condition="'$(_ResizetizerIsTizenApp)' == 'True' And '@(MauiSplashScreen)' != ''"
             IntermediateOutputPath="$(_MauiIntermediateImages)"
-            ManifestFile="$(TizenManifestFile)"
             MauiSplashScreen="@(MauiSplashScreen)" />
 
         <ItemGroup>
@@ -636,12 +637,13 @@
          on "_ValidatePresenceOfAppxManifestItems" and we need to get in before then. -->
     <Target Name="_ValidatePresenceOfAppxManifestItemsBeforeTarget"
             BeforeTargets="_ValidatePresenceOfAppxManifestItems"
-            DependsOnTargets="MauiGeneratePackageAppxManifest" />
+            DependsOnTargets="MauiGeneratePackageAppxManifest"
+            Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'" />
 
     <Target Name="MauiGeneratePackageAppxManifest"
-            Condition="'$(WindowsPackageType)' != 'None'"
+            Condition="('$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True') And ('@(AppxManifest)@(_MauiAppxManifest)' !='')"
             DependsOnTargets="$(MauiGeneratePackageAppxManifestDependsOnTargets)"
-            Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);@(AppxManifest)"
+            Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);@(AppxManifest);@(_MauiAppxManifest)"
             Outputs="$(_MauiManifestStampFile);$(_MauiIntermediateManifest)Package.appxmanifest">
 
         <PropertyGroup>
@@ -651,7 +653,7 @@
 
         <GeneratePackageAppxManifest
             IntermediateOutputPath="$(_MauiIntermediateManifest)"
-            AppxManifest="@(AppxManifest)"
+            AppxManifest="@(AppxManifest);@(_MauiAppxManifest)"
             GeneratedFilename="Package.appxmanifest"
             ApplicationId="$(_MauiWindowsApplicationId)"
             ApplicationDisplayVersion="$(ApplicationDisplayVersion)"
@@ -661,15 +663,108 @@
             SplashScreen="@(MauiSplashScreen)" />
 
         <!-- replace user manifest -->
-        <ItemGroup>
+        <ItemGroup Condition="'@(AppxManifest)' != ''">
             <AppxManifest Remove="@(AppxManifest)" />
             <AppxManifest Include="$(_MauiIntermediateManifest)Package.appxmanifest" />
+        </ItemGroup>
+        <ItemGroup Condition="'@(_MauiAppxManifest)' != ''">
+            <_MauiAppxManifest Remove="@(_MauiAppxManifest)" />
+            <_MauiAppxManifest Include="$(_MauiIntermediateManifest)Package.appxmanifest" />
         </ItemGroup>
 
         <!-- Stamp file for Outputs -->
         <Touch Files="$(_MauiManifestStampFile)" AlwaysCreate="True" />
         <ItemGroup>
             <FileWrites Include="$(_MauiManifestStampFile)" />
+        </ItemGroup>
+
+    </Target>
+
+    <!-- This is required because the "GetAssemblyAttributes" target does not have an open DependsOnTargets. -->
+    <Target Name="_GetAssemblyAttributesBeforeTarget"
+            BeforeTargets="GetAssemblyAttributes"
+            DependsOnTargets="MauiGeneratePackageAppxManifest;_MauiGetAssemblyAttributesFromAppxManifest"
+            Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'" />
+
+    <Target Name="_MauiGetAssemblyAttributesFromAppxManifest"
+            Condition="('@(AppxManifest)@(_MauiAppxManifest)' !='')">
+
+        <PropertyGroup>
+            <_MauiAppxManifestContents>$([System.IO.File]::ReadAllText('$(_MauiIntermediateManifest)Package.appxmanifest'))</_MauiAppxManifestContents>
+        </PropertyGroup>
+
+        <XmlPeek
+            Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10'/&gt;"
+            XmlContent="$(_MauiAppxManifestContents)"
+            Query="/ns:Package/ns:Identity/@Name">
+            <Output TaskParameter="Result" ItemName="_MauiAppxManifestIdentity" />
+        </XmlPeek>
+        <XmlPeek
+            Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10'/&gt;"
+            XmlContent="$(_MauiAppxManifestContents)"
+            Query="/ns:Package/ns:Identity/@Version">
+            <Output TaskParameter="Result" ItemName="_MauiAppxManifestVersion" />
+        </XmlPeek>
+        <XmlPeek
+            Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10'/&gt;"
+            XmlContent="$(_MauiAppxManifestContents)"
+            Query="/ns:Package/ns:Properties/ns:PublisherDisplayName/text()">
+            <Output TaskParameter="Result" ItemName="_MauiAppxManifestPublisher" />
+        </XmlPeek>
+        <XmlPeek
+            Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10'/&gt;"
+            XmlContent="$(_MauiAppxManifestContents)"
+            Query="/ns:Package/ns:Properties/ns:DisplayName/text()">
+            <Output TaskParameter="Result" ItemName="_MauiAppxManifestDisplayName" />
+        </XmlPeek>
+
+        <ItemGroup>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>Microsoft.Maui.ApplicationModel.AppInfo.PackageName</_Parameter1>
+                <_Parameter2>@(_MauiAppxManifestIdentity)</_Parameter2>
+            </AssemblyAttribute>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>Microsoft.Maui.ApplicationModel.AppInfo.PublisherName</_Parameter1>
+                <_Parameter2>@(_MauiAppxManifestPublisher)</_Parameter2>
+            </AssemblyAttribute>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>Microsoft.Maui.ApplicationModel.AppInfo.Name</_Parameter1>
+                <_Parameter2>@(_MauiAppxManifestDisplayName)</_Parameter2>
+            </AssemblyAttribute>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>Microsoft.Maui.ApplicationModel.AppInfo.Version</_Parameter1>
+                <_Parameter2>@(_MauiAppxManifestVersion)</_Parameter2>
+            </AssemblyAttribute>
+        </ItemGroup>
+    </Target>
+
+    <Target Name="MauiGenerateTizenManifest"
+            Condition="'$(_ResizetizerIsTizenApp)' == 'True'"
+            BeforeTargets="$(ResizetizeBeforeTargets)"
+            AfterTargets="$(ResizetizeImages)"
+            Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);$(TizenManifestFile)"
+            Outputs="$(_MauiManifestStampFile);$(_MauiIntermediateManifest)tizen-manifest.xml">
+
+        <GenerateTizenManifest
+            IntermediateOutputPath="$(_MauiIntermediateManifest)"
+            TizenManifestFile="$(TizenManifestFile)"
+            GeneratedFilename="tizen-manifest.xml"
+            ApplicationId="$(ApplicationId)"
+            ApplicationDisplayVersion="$(ApplicationDisplayVersion)"
+            ApplicationVersion="$(ApplicationVersion)"
+            ApplicationTitle="$(ApplicationTitle)"
+            AppIcon="@(MauiImage->WithMetadataValue('IsAppIcon', 'true'))"
+            SplashScreen="@(MauiSplashScreen)" />
+
+        <!-- replace user manifest -->
+        <PropertyGroup>
+          <TizenManifestFile>$(_MauiIntermediateManifest)tizen-manifest.xml</TizenManifestFile>
+        </PropertyGroup>
+
+        <!-- Stamp file for Outputs -->
+        <Touch Files="$(_MauiManifestStampFile)" AlwaysCreate="True" />
+        <ItemGroup>
+          <FileWrites Include="$(_MauiManifestStampFile)" />
         </ItemGroup>
     </Target>
 

@@ -16,48 +16,54 @@ namespace Microsoft.Maui.Platform
 			var brush = buttonStroke.StrokeColor?.ToPlatform();
 
 			if (brush is null)
-			{
-				platformButton.Resources.Remove("ButtonBorderBrush");
-				platformButton.Resources.Remove("ButtonBorderBrushPointerOver");
-				platformButton.Resources.Remove("ButtonBorderBrushPressed");
-				platformButton.Resources.Remove("ButtonBorderBrushDisabled");
-
-				platformButton.ClearValue(Button.BorderBrushProperty);
-			}
+				platformButton.Resources.RemoveKeys(StrokeColorResourceKeys);
 			else
-			{
-				platformButton.Resources["ButtonBorderBrush"] = brush;
-				platformButton.Resources["ButtonBorderBrushPointerOver"] = brush;
-				platformButton.Resources["ButtonBorderBrushPressed"] = brush;
-				platformButton.Resources["ButtonBorderBrushDisabled"] = brush;
+				platformButton.Resources.SetValueForAllKey(StrokeColorResourceKeys, brush);
 
-				platformButton.BorderBrush = brush;
-			}
+			platformButton.RefreshThemeResources();
 		}
+
+		static readonly string[] StrokeColorResourceKeys =
+		{
+			"ButtonBorderBrush",
+			"ButtonBorderBrushPointerOver",
+			"ButtonBorderBrushPressed",
+			"ButtonBorderBrushDisabled",
+		};
 
 		public static void UpdateStrokeThickness(this Button platformButton, IButtonStroke buttonStroke)
 		{
-			if (buttonStroke.StrokeThickness >= 0)
-			{
-				platformButton.Resources["ButtonBorderThemeThickness"] = WinUIHelpers.CreateThickness(buttonStroke.StrokeThickness);
-			}
+			var thickness = buttonStroke.StrokeThickness;
+
+			if (thickness >= 0)
+				platformButton.Resources.SetValueForAllKey(StrokeThicknessResourceKeys, WinUIHelpers.CreateThickness(buttonStroke.StrokeThickness));
 			else
-			{
-				platformButton.Resources.Remove("ButtonBorderThemeThickness");
-			}
+				platformButton.Resources.RemoveKeys(StrokeThicknessResourceKeys);
+
+			platformButton.RefreshThemeResources();
 		}
+
+		static readonly string[] StrokeThicknessResourceKeys =
+		{
+			"ButtonBorderThemeThickness",
+		};
 
 		public static void UpdateCornerRadius(this Button platformButton, IButtonStroke buttonStroke)
 		{
-			if (buttonStroke.CornerRadius >= 0)
-			{
-				platformButton.Resources["ControlCornerRadius"] = WinUIHelpers.CreateCornerRadius(buttonStroke.CornerRadius);
-			}
+			var radius = buttonStroke.CornerRadius;
+
+			if (radius >= 0)
+				platformButton.Resources.SetValueForAllKey(CornerRadiusResourceKeys, WinUIHelpers.CreateCornerRadius(buttonStroke.CornerRadius));
 			else
-			{
-				platformButton.Resources.Remove("ControlCornerRadius");
-			}
+				platformButton.Resources.RemoveKeys(CornerRadiusResourceKeys);
+
+			platformButton.RefreshThemeResources();
 		}
+
+		static readonly string[] CornerRadiusResourceKeys =
+		{
+			"ControlCornerRadius",
+		};
 
 		public static void UpdateText(this Button platformButton, IText text)
 		{
@@ -80,24 +86,20 @@ namespace Microsoft.Maui.Platform
 			var brush = button.Background?.ToPlatform();
 
 			if (brush is null)
-			{
-				platformButton.Resources.Remove("ButtonBackground");
-				platformButton.Resources.Remove("ButtonBackgroundPointerOver");
-				platformButton.Resources.Remove("ButtonBackgroundPressed");
-				platformButton.Resources.Remove("ButtonBackgroundDisabled");
-
-				platformButton.ClearValue(Button.BackgroundProperty);
-			}
+				platformButton.Resources.RemoveKeys(BackgroundResourceKeys);
 			else
-			{
-				platformButton.Resources["ButtonBackground"] = brush;
-				platformButton.Resources["ButtonBackgroundPointerOver"] = brush;
-				platformButton.Resources["ButtonBackgroundPressed"] = brush;
-				platformButton.Resources["ButtonBackgroundDisabled"] = brush;
+				platformButton.Resources.SetValueForAllKey(BackgroundResourceKeys, brush);
 
-				platformButton.Background = brush;
-			}
+			platformButton.RefreshThemeResources();
 		}
+
+		static readonly string[] BackgroundResourceKeys =
+		{
+			"ButtonBackground",
+			"ButtonBackgroundPointerOver",
+			"ButtonBackgroundPressed",
+			"ButtonBackgroundDisabled",
+		};
 
 		public static void UpdateTextColor(this ButtonBase platformButton, ITextStyle button)
 		{
@@ -107,29 +109,32 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this ButtonBase platformButton, Color textColor)
 		{
 			var brush = textColor?.ToPlatform();
+
 			if (brush is null)
 			{
 				// Windows.Foundation.UniversalApiContract < 5
-				platformButton.Resources.Remove("ButtonForeground");
-				platformButton.Resources.Remove("ButtonForegroundPointerOver");
-				platformButton.Resources.Remove("ButtonForegroundPressed");
-				platformButton.Resources.Remove("ButtonForegroundDisabled");
-
+				platformButton.Resources.RemoveKeys(TextColorResourceKeys);
 				// Windows.Foundation.UniversalApiContract >= 5
 				platformButton.ClearValue(Button.ForegroundProperty);
 			}
 			else
 			{
 				// Windows.Foundation.UniversalApiContract < 5
-				platformButton.Resources["ButtonForeground"] = brush;
-				platformButton.Resources["ButtonForegroundPointerOver"] = brush;
-				platformButton.Resources["ButtonForegroundPressed"] = brush;
-				platformButton.Resources["ButtonForegroundDisabled"] = brush;
-
+				platformButton.Resources.SetValueForAllKey(TextColorResourceKeys, brush);
 				// Windows.Foundation.UniversalApiContract >= 5
 				platformButton.Foreground = brush;
 			}
+
+			platformButton.RefreshThemeResources();
 		}
+
+		static readonly string[] TextColorResourceKeys =
+		{
+			"ButtonForeground",
+			"ButtonForegroundPointerOver",
+			"ButtonForegroundPressed",
+			"ButtonForegroundDisabled",
+		};
 
 		public static void UpdatePadding(this Button platformButton, IPadding padding) =>
 			platformButton.UpdatePadding(padding, platformButton.GetResource<UI.Xaml.Thickness>("ButtonPadding"));

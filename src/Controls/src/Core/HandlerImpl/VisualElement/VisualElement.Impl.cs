@@ -83,8 +83,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ShadowProperty, value); }
 		}
 
-		internal static readonly BindableProperty ZIndexProperty =
-			BindableProperty.Create(nameof(ZIndex), typeof(int), typeof(View), default(int),
+		public static readonly BindableProperty ZIndexProperty =
+			BindableProperty.Create(nameof(ZIndex), typeof(int), typeof(VisualElement), default(int),
 				propertyChanged: ZIndexPropertyChanged);
 
 		static void ZIndexPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -322,6 +322,12 @@ namespace Microsoft.Maui.Controls
 		void OnShadowChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			OnPropertyChanged(nameof(Shadow));
+		}
+
+		void PropagateBindingContextToBrush()
+		{
+			if (Background != null)
+				SetInheritedBindingContext(Background, BindingContext);
 		}
 
 		void PropagateBindingContextToShadow()

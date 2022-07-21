@@ -259,5 +259,15 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Editable;
+    
+		int GetNativeSelectionLength(EditorHandler editorHandler)
+		{
+			var nativeEditor = GetNativeEditor(editorHandler);
+
+			if (nativeEditor != null && nativeEditor.SelectedTextRange != null)
+				return (int)nativeEditor.GetOffsetFromPosition(nativeEditor.SelectedTextRange.Start, nativeEditor.SelectedTextRange.End);
+
+			return -1;
+		}
 	}
 }

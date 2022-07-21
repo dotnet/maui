@@ -301,10 +301,10 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected Maui.Graphics.Rect GetPlatformViewBounds(IViewHandler viewHandler) =>
-			((View)viewHandler.PlatformView).GetPlatformViewBounds();
+			viewHandler.VirtualView.ToPlatform().GetPlatformViewBounds();
 
 		protected Maui.Graphics.Rect GetBoundingBox(IViewHandler viewHandler) =>
-			((View)viewHandler.PlatformView).GetBoundingBox();
+			viewHandler.VirtualView.ToPlatform().GetBoundingBox();
 
 		protected Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
 			((View)viewHandler.PlatformView).GetViewTransform();

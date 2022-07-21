@@ -138,7 +138,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task<Maui.Graphics.Rect> GetPlatformViewBounds(IViewHandler viewHandler)
 		{
-			var fe = (FrameworkElement)viewHandler.PlatformView;
+			var fe = viewHandler.VirtualView.ToPlatform();
 			return fe.AttachAndRun(() => fe.GetPlatformViewBounds());
 		}
 
@@ -147,7 +147,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task<Maui.Graphics.Rect> GetBoundingBox(IViewHandler viewHandler)
 		{
-			var fe = (FrameworkElement)viewHandler.PlatformView;
+			var fe = viewHandler.VirtualView.ToPlatform();
 			return fe.AttachAndRun(() => fe.GetBoundingBox());
 		}
 

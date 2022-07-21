@@ -22,12 +22,8 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void Initialize(this AView platformView, IView view)
 		{
-			var context = platformView.Context;
-			if (context == null)
-				return;
-
-			var pivotX = (float)(view.AnchorX * context.ToPixels(view.Frame.Width));
-			var pivotY = (float)(view.AnchorY * context.ToPixels(view.Frame.Height));
+			var pivotX = (float)(view.AnchorX * platformView.ToPixels(view.Frame.Width));
+			var pivotY = (float)(view.AnchorY * platformView.ToPixels(view.Frame.Height));
 			int visibility;
 
 			if (view is IActivityIndicator a)
@@ -43,12 +39,12 @@ namespace Microsoft.Maui.Platform
 			PlatformInterop.Set(platformView,
 				visibility: visibility,
 				layoutDirection: (int)GetLayoutDirection(view),
-				minimumHeight: (int)context.ToPixels(view.MinimumHeight),
-				minimumWidth: (int)context.ToPixels(view.MinimumWidth),
+				minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
+				minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
 				enabled: view.IsEnabled,
 				alpha: (float)view.Opacity,
-				translationX: context.ToPixels(view.TranslationX),
-				translationY: context.ToPixels(view.TranslationY),
+				translationX: platformView.ToPixels(view.TranslationX),
+				translationY: platformView.ToPixels(view.TranslationY),
 				scaleX: (float)(view.Scale * view.ScaleX),
 				scaleY: (float)(view.Scale * view.ScaleY),
 				rotation: (float)view.Rotation,
@@ -149,7 +145,7 @@ namespace Microsoft.Maui.Platform
 								view.SetBackgroundColor(color);
 								break;
 							case "drawable":
-								using (Drawable drawable = ContextCompat.GetDrawable(context, background.ResourceId))
+								using (Drawable? drawable = ContextCompat.GetDrawable(context, background.ResourceId))
 									view.Background = drawable;
 								break;
 						}
@@ -168,6 +164,29 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this AView platformView, IView view) =>
 			platformView.UpdateBackground(view.Background);
+
+		// TODO: NET7 make this public for net7.0
+		internal static void UpdateBackground(this EditText platformView, IView view)
+		{
+			var paint = view.Background;
+
+			if (paint.IsNullOrEmpty())
+			{
+				return;
+			}
+
+			// Remove previous background gradient if any
+			if (platformView.Background is MauiDrawable mauiDrawable)
+			{
+				platformView.Background = null;
+				mauiDrawable.Dispose();
+			}
+
+			var previousDrawable = platformView.Background;
+			var backgroundDrawable = paint!.ToDrawable(platformView.Context);
+			LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable! });
+			platformView.Background = layer;
+		}
 
 		public static void UpdateBackground(this AView platformView, Paint? background)
 		{
@@ -408,12 +427,18 @@ namespace Microsoft.Maui.Platform
 
 		internal static Graphics.Rect GetBoundingBox(this View? platformView)
 		{
-			if (platformView == null)
+			if (platformView?.Context == null)
 				return new Rect();
 
+			var context = platformView.Context;
 			var rect = new Android.Graphics.Rect();
 			platformView.GetGlobalVisibleRect(rect);
-			return new Rect(rect.ExactCenterX() - (rect.Width() / 2), rect.ExactCenterY() - (rect.Height() / 2), (float)rect.Width(), (float)rect.Height());
+
+			return new Rect(
+				context.FromPixels(rect.ExactCenterX() - (rect.Width() / 2)),
+				context.FromPixels(rect.ExactCenterY() - (rect.Height() / 2)),
+				context.FromPixels((float)rect.Width()),
+				context.FromPixels((float)rect.Height()));
 		}
 
 		internal static bool IsLoaded(this View frameworkElement) =>
@@ -557,6 +582,25 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+
+		internal static Rect GetFrameRelativeTo(this View view, View relativeTo)
+		{
+			var viewWindowLocation = view.GetLocationOnScreen();
+			var relativeToLocation = relativeTo.GetLocationOnScreen();
+
+			return
+				new Rect(
+						new Point(viewWindowLocation.X - relativeToLocation.X, viewWindowLocation.Y - relativeToLocation.Y),
+						new Graphics.Size(view.Context.FromPixels(view.MeasuredWidth), view.Context.FromPixels(view.MeasuredHeight))
+					);
+		}
+
+		internal static Rect GetFrameRelativeToWindow(this View view)
+		{
+			return
+				new Rect(view.GetLocationOnScreen(),
+				new(view.Context.FromPixels(view.MeasuredHeight), view.Context.FromPixels(view.MeasuredWidth)));
 		}
 
 		internal static Point GetLocationOnScreen(this View view)

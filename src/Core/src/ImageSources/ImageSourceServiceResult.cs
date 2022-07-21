@@ -8,7 +8,7 @@ using PlatformView = Android.Graphics.Drawables.Drawable;
 using PlatformView = Microsoft.UI.Xaml.Media.ImageSource;
 #elif TIZEN
 using PlatformView = Tizen.UIExtensions.ElmSharp.Image;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 

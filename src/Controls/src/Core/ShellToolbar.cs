@@ -113,8 +113,7 @@ namespace Microsoft.Maui.Controls
 			{
 				var flyoutBehavior = (_shell as IFlyoutView).FlyoutBehavior;
 #if WINDOWS
-				IsVisible = (BackButtonVisible ||
-					!String.IsNullOrEmpty(Title) ||
+				IsVisible = (!String.IsNullOrEmpty(Title) ||
 					TitleView != null ||
 					_toolbarTracker.ToolbarItems.Count > 0 ||
 					_menuBarTracker.ToolbarItems.Count > 0 ||

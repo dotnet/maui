@@ -4,7 +4,7 @@
 		<AssemblyName>Microsoft.Maui.Controls.DesignTools</AssemblyName>
 		<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
 		<IsPackable>False</IsPackable>
-		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
+		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' ">
 		<Reference Include="System.Xaml" />
