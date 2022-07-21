@@ -4,9 +4,7 @@ Microsoft.Maui.Platform.IMauiEditText.OnKeyboardBackPressed -> System.EventHandl
 Microsoft.Maui.Platform.IMauiEditText.OnKeyPreIme(Android.Views.Keycode keyCode, Android.Views.KeyEvent! e) -> bool
 Microsoft.Maui.Platform.KeyboardManager
 Microsoft.Maui.Platform.MauiEditText
-override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
-override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 ~Microsoft.Maui.Platform.MauiEditText.MauiEditText(Android.Content.Context context) -> void
 ~override Microsoft.Maui.Platform.MauiEditText.OnKeyPreIme(Android.Views.Keycode keyCode, Android.Views.KeyEvent e) -> bool
 ~static Microsoft.Maui.Platform.KeyboardManager.HideKeyboard(this Android.Views.View inputView, bool overrideValidation = false) -> void
