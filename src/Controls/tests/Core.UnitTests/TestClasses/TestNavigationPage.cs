@@ -62,8 +62,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var newStack = CurrentNavigationRequest.NavigationStack.ToList();
 			CurrentNavigationRequest = null;
-			(VirtualView as IStackNavigation)
-				.NavigationFinished(newStack);
+
+			if (VirtualView is IStackNavigation sn)
+				sn.NavigationFinished(newStack);
 		}
 
 		async void RequestNavigation(NavigationRequest navigationRequest)
