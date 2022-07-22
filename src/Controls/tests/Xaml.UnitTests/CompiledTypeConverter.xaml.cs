@@ -29,6 +29,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		public Brush BrushByRGB { get; set; }
 
+		public ImageSource ImageByUrl { get; set; }
+
+		public ImageSource ImageByName { get; set; }
+
 		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> List { get; set; }
 
@@ -54,6 +58,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual(Brush.Red, p.BrushByName);
 				Assert.AreEqual(new Color(1, 2, 3, 0), ((SolidColorBrush)p.BrushByARGB).Color);
 				Assert.AreEqual(new Color(1, 2, 3), ((SolidColorBrush)p.BrushByRGB).Color);
+				Assert.AreEqual("https://picsum.photos/200/300", ((UriImageSource)p.ImageByUrl).Uri.AbsoluteUri);
+				Assert.AreEqual("foo.png", ((FileImageSource)p.ImageByName).File);
 				Assert.AreEqual(Colors.Pink, p.BackgroundColor);
 				Assert.AreEqual(LayoutOptions.EndAndExpand, p.label.GetValue(View.HorizontalOptionsProperty));
 				var xConstraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetXConstraint(p.label);
@@ -65,6 +71,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[Test]
 			[TestCase(typeof(Microsoft.Maui.Controls.BrushTypeConverter))]
+			[TestCase(typeof(Microsoft.Maui.Controls.ImageSourceConverter))]
 			[TestCase(typeof(Microsoft.Maui.Graphics.Converters.PointTypeConverter))]
 			[TestCase(typeof(Microsoft.Maui.Graphics.Converters.RectTypeConverter))]
 			public void ConvertersAreReplaced(Type converterType)

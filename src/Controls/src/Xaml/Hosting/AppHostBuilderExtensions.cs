@@ -213,6 +213,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			VisualElement.RemapForControls();
 			Label.RemapForControls();
 			Button.RemapForControls();
+			CheckBox.RemapForControls();
 			DatePicker.RemapForControls();
 			RadioButton.RemapForControls();
 			FlyoutPage.RemapForControls();
