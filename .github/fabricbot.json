@@ -373,6 +373,17 @@
                           }
                         }
                       ]
+                    },
+                    {
+                      "operator": "not",
+                      "operands": [
+                        {
+                          "name": "activitySenderHasPermissions",
+                          "parameters": {
+                            "permissions": "admin"
+                          }
+                        }
+                      ]
                     }
                   ]
                 },
