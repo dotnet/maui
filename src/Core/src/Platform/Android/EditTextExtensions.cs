@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void SetInputType(this EditText editText, ITextInput textInput)
 		{
-			var previousCursorPosition = editText.SelectionStart;	
+			var previousCursorPosition = editText.SelectionStart;
 			var keyboard = textInput.Keyboard;
 			var nativeInputTypeToUpdate = keyboard.ToInputType();
 
@@ -320,7 +320,7 @@ namespace Microsoft.Maui.Platform
 				if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
 					nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
 
-					hasPassword = true;
+				hasPassword = true;
 			}
 
 			editText.InputType = nativeInputTypeToUpdate;
@@ -338,7 +338,7 @@ namespace Microsoft.Maui.Platform
 				var fontManager = services.GetRequiredService<IFontManager>();
 				editText.UpdateFont(textInput, fontManager);
 			}
-			
+
 			// If we implement the OnSelectionChanged method, this method is called after a keyboard layout change with SelectionStart = 0,
 			// Let's restore the cursor position to its previous location.
 			editText.SetSelection(previousCursorPosition);

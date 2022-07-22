@@ -1937,7 +1937,6 @@ override Microsoft.Maui.Handlers.PageHandler.DisconnectHandler(Microsoft.Maui.Pl
 override Microsoft.Maui.Handlers.PickerHandler.ConnectHandler(Microsoft.Maui.Platform.MauiPicker! platformView) -> void
 override Microsoft.Maui.Handlers.PickerHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiPicker!
 override Microsoft.Maui.Handlers.PickerHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiPicker! platformView) -> void
-override Microsoft.Maui.Handlers.PickerSource.Dispose(bool disposing) -> void
 override Microsoft.Maui.Handlers.PickerSource.GetComponentCount(UIKit.UIPickerView! picker) -> nint
 override Microsoft.Maui.Handlers.PickerSource.GetRowsInComponent(UIKit.UIPickerView! pickerView, nint component) -> nint
 override Microsoft.Maui.Handlers.PickerSource.GetTitle(UIKit.UIPickerView! picker, nint row, nint component) -> string!
