@@ -13,12 +13,23 @@ namespace Microsoft.Maui.Controls
 		string IItemDelegate<string>.GetItem(int index)
 		{
 			if (index < 0)
-				return "";
+				return string.Empty;
 			if (index < Items?.Count)
-				return Items[index];
+				return GetItem(index);
 			if (index < ItemsSource?.Count)
 				return GetDisplayMember(ItemsSource[index]);
-			return "";
+			return string.Empty;
+		}
+
+		string GetItem(int index)
+		{
+			if (index < Items?.Count)
+			{
+				var item = Items[index];
+				return item == null ? string.Empty : item;
+			}
+
+			return string.Empty;
 		}
 	}
 }

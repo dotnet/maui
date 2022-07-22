@@ -476,5 +476,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(-1, picker.SelectedIndex);
 			Assert.AreEqual(null, picker.SelectedItem);
 		}
+
+		[Test]
+		public void NullItemReturnsEmptyStringFromInterface()
+		{
+			var picker = new Picker
+			{
+				ItemsSource = new ObservableCollection<object>
+				{
+					(string)null, "John Doe"
+				}
+			};
+
+			var thing = (picker as IPicker).GetItem(0);
+			Assert.IsNotNull(thing);
+		}
 	}
 }
