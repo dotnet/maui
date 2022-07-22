@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls
 
 			_window = _visualElement?.Window;
 			if (_window is not null)
-				_window.PropertyChanged += OnVisualElementPropertyChanged;
+				_window.PropertyChanged += OnWindowPropertyChanged;
 
 			_page = _window?.Page;
 			if (_page is not null)
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls
 			_visualElement = null;
 
 			if (_window is not null)
-				_window.PropertyChanged -= OnVisualElementPropertyChanged;
+				_window.PropertyChanged -= OnWindowPropertyChanged;
 			_window = null;
 
 			if (_page is not null)

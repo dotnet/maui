@@ -170,8 +170,8 @@ namespace Microsoft.Maui.Handlers
 					var scrollViewBounds = scrollView.Bounds;
 					var containerBounds = container.Bounds;
 
-					container.Bounds = new CGRect(0, 0, 
-						Math.Max(containerBounds.Width, scrollViewBounds.Width), 
+					container.Bounds = new CGRect(0, 0,
+						Math.Max(containerBounds.Width, scrollViewBounds.Width),
 						Math.Max(containerBounds.Height, scrollViewBounds.Height));
 					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
 				}

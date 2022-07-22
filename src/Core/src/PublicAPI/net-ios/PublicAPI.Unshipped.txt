@@ -24,3 +24,4 @@ static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.Mapper -> Microsoft.Ma
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this UIKit.UIView! platformView, Microsoft.Maui.Graphics.Paint? paint, Microsoft.Maui.IButtonStroke? stroke = null) -> void
 override Microsoft.Maui.Platform.MauiTextField.SelectedTextRange.get -> UIKit.UITextRange?
 override Microsoft.Maui.Platform.MauiTextField.SelectedTextRange.set -> void
+*REMOVED* override Microsoft.Maui.Handlers.PickerSource.Dispose(bool disposing) -> void
