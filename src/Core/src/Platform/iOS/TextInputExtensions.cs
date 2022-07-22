@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 			return Math.Max(0, newCursorPosition);
 		}
 
-		internal static void SetTextRange(this IUITextInput platformView, int start, int selectedTextLength) 
+		internal static void SetTextRange(this IUITextInput platformView, int start, int selectedTextLength)
 		{
 			int end = start + selectedTextLength;
 

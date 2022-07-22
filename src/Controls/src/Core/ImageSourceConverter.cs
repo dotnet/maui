@@ -1,10 +1,12 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ImageSourceConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ImageSourceConverter']/Docs" />
+	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.ImageSourceTypeConverter")]
 	public sealed class ImageSourceConverter : TypeConverter
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSourceConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs" />
