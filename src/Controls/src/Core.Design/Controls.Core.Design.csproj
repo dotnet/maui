@@ -39,10 +39,10 @@
 	<!-- using a defined format. That format is "{platform}.{imagename}". We will look up images using   -->
 	<!-- exact-match logic so there's no guessework to figure out which image we need to load.           -->
 	<PropertyGroup>
-		<AssignTargetPathsDependsOn>
-			$(AssignTargetPathsDependsOn);
+		<PrepareResourcesDependsOn>
 			IncludeToolboxImages
-		</AssignTargetPathsDependsOn>
+			$(PrepareResourcesDependsOn);
+		</PrepareResourcesDependsOn>
 	</PropertyGroup>
 	<Target Name="IncludeToolboxImages">
 		<!-- Be explicit about the prefix rather than relying on the directory name being exactly what we need -->
