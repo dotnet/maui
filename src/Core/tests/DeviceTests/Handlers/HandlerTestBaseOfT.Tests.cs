@@ -209,6 +209,10 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				// TODO:
 			}
+			else if (view is IBorderView)
+			{
+				// TODO:
+			}
 			else if (view is IProgress)
 			{
 				if (!CloseEnough(size, nativeBoundingBox.Size.Width))

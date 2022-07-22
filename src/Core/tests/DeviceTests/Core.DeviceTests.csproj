@@ -47,6 +47,8 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
     <Compile Remove="Handlers\*\*.cs" />
     <Compile Include="Handlers\ActivityIndicator\*.cs" />
+    <Compile Include="Handlers\Border\*.cs" />
+    <Compile Include="Handlers\BoxView\*.cs" />
     <Compile Include="Handlers\Button\*.cs" />
     <Compile Include="Handlers\CheckBox\*.cs" />
     <Compile Include="Handlers\DatePicker\*.cs" />
