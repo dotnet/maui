@@ -231,6 +231,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				footerHeight = FooterView.Frame.Height;
 
 			var contentViewYOffset = HeaderView?.Frame.Height ?? 0;
+
 			if (ScrollView != null)
 			{
 				if (Content == null)
@@ -240,10 +241,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else
 				{
-					ContentView.Frame =
-							new CGRect(parent.Bounds.X, HeaderTopMargin, parent.Bounds.Width, parent.Bounds.Height - HeaderTopMargin - footerHeight);
-
-					Content?.LayoutToSize(ContentView.Frame.Width, ContentView.Frame.Height - contentViewYOffset);
+					var contentFrame = new Rect(parent.Bounds.X, HeaderTopMargin, parent.Bounds.Width, parent.Bounds.Height - HeaderTopMargin - footerHeight);
+					(Content as IView)?.Arrange(contentFrame);
 				}
 			}
 			else
@@ -257,12 +256,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					topMargin = (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
 				}
+				else
+					contentViewYOffset -= (nfloat)HeaderTopMargin;
 
-				ContentView.Frame =
-						new CGRect(parent.Bounds.X, topMargin + contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - topMargin - footerHeight - contentViewYOffset);
-
-
-				Content?.LayoutToSize(ContentView.Frame.Width, ContentView.Frame.Height);
+				var contentFrame = new Rect(parent.Bounds.X, topMargin + contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - topMargin - footerHeight - contentViewYOffset);
+				(Content as IView)?.Arrange(contentFrame);
 			}
 
 			if (HeaderView != null && !double.IsNaN(HeaderSize))

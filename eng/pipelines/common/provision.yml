@@ -117,11 +117,6 @@ steps:
       displayName: 'Setup MSBuild Paths'
       condition: eq(variables['provisioningVS'], 'true')
 
-  # Prepare Both
-  - pwsh: ./build.ps1 --target provision
-    displayName: 'Cake Provision'
-    condition: eq(variables['provisioningCake'], 'true')
-
   - task: PowerShell@2
     condition: eq(variables['PrivateBuild'], 'true')
     displayName: Setup Private Feeds Credentials

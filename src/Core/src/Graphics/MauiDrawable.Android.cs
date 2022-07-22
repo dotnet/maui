@@ -353,7 +353,7 @@ namespace Microsoft.Maui.Graphics
 			InvalidateSelf();
 		}
 
-		protected override void OnBoundsChange(ARect? bounds)
+		protected override void OnBoundsChange(ARect bounds)
 		{
 			if (_bounds != bounds)
 			{

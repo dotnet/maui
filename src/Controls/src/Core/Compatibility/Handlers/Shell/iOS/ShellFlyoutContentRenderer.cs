@@ -262,7 +262,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			var mauiContext = _shellContext.Shell.FindMauiContext();
-
 			if (mauiContext == null)
 				return;
 

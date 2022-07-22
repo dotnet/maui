@@ -140,6 +140,12 @@ Task("dotnet-templates")
                 ReplaceTextInFiles($"{dir}/*.csproj", "UseMaui", "UseMauiCore");
                 ReplaceTextInFiles($"{dir}/*.csproj", "SingleProject", "EnablePreviewMsixTooling");
             } },
+            { "mauiunpackaged:maui", dir => {
+                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
+            } },
+            { "mauiblazorunpackaged:maui-blazor", dir => {
+                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
+            } },
         };
 
         var alsoPack = new [] {
@@ -161,7 +167,7 @@ Task("dotnet-templates")
                 var framework = string.IsNullOrWhiteSpace(TestTFM) ? "" : $"--framework {TestTFM}";
 
                 projectName = $"{tempDir}/{projectName}_{type}";
-                projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM}";
+                projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM.Replace('.', '_')}";
 
                 // Create
                 StartProcess(dn, $"new {templateName} -o \"{projectName}\" {framework}");
@@ -177,6 +183,21 @@ Task("dotnet-templates")
                 ReplaceTextInFiles($"{projectName}/*.csproj",
                     "</TargetFrameworks> -->",
                     "</TargetFrameworks>");
+
+                // TODO: remove this once issues are fixed
+                if (TestTFM.StartsWith("net6"))
+                {
+                    // Mac Catalyst/iOS does not yet support net6 from the net7 SDK.
+                    ReplaceTextInFiles($"{projectName}/*.csproj",
+                        ";net6.0-ios;net6.0-maccatalyst",
+                        "");
+
+                    // Android does not yet support net6 from the net7 SDK in Release builds
+                    if (configuration == "Release")
+                        ReplaceTextInFiles($"{projectName}/*.csproj",
+                            "net6.0-android",
+                            "");
+                }
 
                 // Build
                 RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);

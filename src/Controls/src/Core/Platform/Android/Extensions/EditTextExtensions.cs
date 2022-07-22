@@ -1,7 +1,10 @@
-﻿using Android.Widget;
+﻿using Android.Text;
+using Android.Widget;
+using AndroidX.Core.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.Android;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -16,30 +19,28 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateText(this EditText editText, InputView inputView)
 		{
-			// Is UpdateText being called only to transform the text
-			// that's already set on the platform element?
-			// If so then we want to retain the cursor position
-			bool transformingPlatformText =
-				(editText.Text == inputView.Text);
+			bool isPasswordEnabled =
+				(editText.InputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
+				(editText.InputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
 
-			var value = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
+			// Setting the text causes the cursor to be reset to position zero.
+			// So, let's retain the current cursor position and calculate a new cursor
+			// position if the text was modified by a Converter.
+			var oldText = editText.Text ?? string.Empty;
+			var newText = TextTransformUtilites.GetTransformedText(
+				inputView?.Text,
+				isPasswordEnabled ? TextTransform.None : inputView.TextTransform
+				);
 
-			if (!transformingPlatformText)
-			{
-				editText.Text = value;
-			}
-			else
-			{
-				// Setting the text causes the cursor to reset to position zero
-				// so if we are transforming the text and then setting it to a 
-				// new value then we need to retain the cursor position
-				if (value == editText.Text)
-					return;
+			// Re-calculate the cursor offset position if the text was modified by a Converter.
+			// but if the text is being set by code, let's just move the cursor to the end.
+			var cursorOffset = newText.Length - oldText.Length;
+			int cursorPosition = editText.IsFocused ? editText.GetCursorPosition(cursorOffset) : newText.Length;
 
-				int selectionStart = editText.SelectionStart;
-				editText.Text = value;
-				editText.SetSelection(selectionStart);
-			}
+			if (oldText != newText)
+				editText.Text = newText;
+
+			editText.SetSelection(cursorPosition, cursorPosition);
 		}
 	}
 }

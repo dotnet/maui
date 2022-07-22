@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -9,8 +11,17 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
+		[Fact]
+		public async Task DisconnectHandlerDoesntCrash()
+		{
+			var handler = await CreateHandlerAsync(new TStub()) as IPlatformViewHandler;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				handler.DisconnectHandler();
+			});
+		}
+
 		[Fact(DisplayName = "Automation Id is set correctly")]
-		[InlineData()]
 		public async Task SetAutomationId()
 		{
 			var view = new TStub

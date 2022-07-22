@@ -88,6 +88,15 @@ namespace Microsoft.Maui.DeviceTests
 			return handler;
 		}
 
+
+		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType)
+		{
+			var handler = (IPlatformViewHandler)Activator.CreateInstance(handlerType);
+			InitializeViewHandler(view, handler, MauiContext);
+			return handler;
+
+		}
+
 		public void Dispose()
 		{
 			((IDisposable)_mauiApp).Dispose();
