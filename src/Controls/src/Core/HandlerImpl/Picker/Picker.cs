@@ -7,6 +7,7 @@
 #if IOS
 			[PlatformConfiguration.iOSSpecific.Picker.UpdateModeProperty.PropertyName] = MapUpdateMode,
 #endif
+			[nameof(Picker.ItemsSource)] = (handler, _) => handler.UpdateValue(nameof(IPicker.Items))
 		};
 
 		internal static new void RemapForControls()

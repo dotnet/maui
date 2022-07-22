@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			// Measure and arrange the layout while the first view is visible
 			var measure = manager.Measure(1000, 1000);
 			manager.ArrangeChildren(new Rect(Point.Zero, measure));
-			
+
 			// Keep track of where the second view is arranged
 			var whenVisible = view2.Frame.X;
 

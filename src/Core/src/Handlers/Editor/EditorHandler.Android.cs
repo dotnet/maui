@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 			_set = false;
 		}
 
-		public static void MapBackground(IEditorHandler handler, IEditor editor) =>		
+		public static void MapBackground(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateBackground(editor);
 
 		public static void MapText(IEditorHandler handler, IEditor editor) =>
