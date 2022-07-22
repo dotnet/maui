@@ -83,13 +83,15 @@ Task("android-aar")
         if (IsRunningOnWindows())
             gradlew += ".bat";
 
-        StartProcess(
+        var exitCode = StartProcess(
             MakeAbsolute((FilePath)gradlew),
             new ProcessSettings
             {
                 Arguments = $"createAar --rerun-tasks",
                 WorkingDirectory = root
             });
+        if (exitCode != 0)
+            throw new Exception("Gradle failed to build maui.aar: " + exitCode);
     });
 
 Task("dotnet-build")
