@@ -231,6 +231,12 @@ Task("Test")
 		Information("Waited {0} seconds for the emulator to boot up.", waited);
 	}
 
+	Information("Setting the ADB properties...");
+	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", adbSettings);
+	Information("{0}", string.Join("\n", lines));
+	lines = AdbShell("getprop debug.mono.log", adbSettings);
+	Information("{0}", string.Join("\n", lines));
+
 	var settings = new DotNetCoreToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args=>args.Append("run xharness android test " +

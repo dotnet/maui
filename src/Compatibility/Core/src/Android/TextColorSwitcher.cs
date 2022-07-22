@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	/// </summary>
 	internal class TextColorSwitcher
 	{
-		static readonly int[] s_disabledColorState = new [] { -global::Android.Resource.Attribute.StateEnabled };
+		static readonly int[] s_disabledColorState = new[] { -global::Android.Resource.Attribute.StateEnabled };
 
 		readonly ColorStateList _defaultTextColors;
 		readonly bool _useLegacyColorManagement;

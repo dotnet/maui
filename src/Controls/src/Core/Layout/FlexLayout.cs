@@ -557,7 +557,7 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		void EnsureFlexItemPropertiesUpdated() 
+		void EnsureFlexItemPropertiesUpdated()
 		{
 			for (int n = 0; n < this.Count; n++)
 			{

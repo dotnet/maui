@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 			int contentPageAppearingFired = 0;
 			int navigatedToFired = 0;
 			int shellNavigatedToFired = 0;
-			
+
 			// If you fail these from the events then
 			// an exception is raised in the middle of the platform
 			// doing platform things which often leads to a crash
