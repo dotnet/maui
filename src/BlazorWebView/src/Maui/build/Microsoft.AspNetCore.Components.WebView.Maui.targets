@@ -11,6 +11,10 @@
     <Content Remove="**\*.razor" />
     <RazorComponent Include="**\*.razor" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Content Update="@(Content)" Condition="'@(Content->FileName)' == 'global' and '@(Content->Extension)' == '.json'" PublishFolderType="None" />
+  </ItemGroup>
 
   <PropertyGroup>
     <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
@@ -67,8 +71,6 @@
       <!-- Add Scoped CSS files in the app to the list of hidden items -->
       <_TemporaryHiddenContent Include="Pages\**\*.razor.css" />
       <_TemporaryHiddenContent Include="Shared\**\*.razor.css" />
-      <!-- Add global.json to the list of hidden items -->
-      <_TemporaryHiddenContent Include="global.json" />
       <!-- Temporarily remove the items -->
       <Content Remove="@(_TemporaryHiddenContent)" />
     </ItemGroup>
