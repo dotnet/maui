@@ -9,8 +9,12 @@ public partial class MainPage : ContentPage
 	public MainPage()
 	{
 		InitializeComponent();
-		Start();;
-		this.Loaded += OnMainPageLoaded;
+
+		if (Application.Current.MainPage is not AppFlyoutPage)
+		{
+			Start();
+			this.Loaded += OnMainPageLoaded;
+		}
 	}
 
 	private async void Start()
