@@ -8,25 +8,25 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>705ec75fc00dc5d62ffeae1b6d5439fd14ada9b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="32.0.444">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="32.0.445">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>f6ba44c7d00a18bfb76ac8f53a71ecaf14e5cf31</Sha>
+      <Sha>8d5cd7f82cb2cd9cf33577e2d41870496526e177</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.4.441">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.4.442">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>334dbdb94c36ecf75426eac315ed04c727775894</Sha>
+      <Sha>8c207acf2ad85fd939c23163aa2282a6a629c09e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk" Version="15.4.441">
+    <Dependency Name="Microsoft.iOS.Sdk" Version="15.4.442">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>334dbdb94c36ecf75426eac315ed04c727775894</Sha>
+      <Sha>8c207acf2ad85fd939c23163aa2282a6a629c09e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.4.441">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.4.442">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>334dbdb94c36ecf75426eac315ed04c727775894</Sha>
+      <Sha>8c207acf2ad85fd939c23163aa2282a6a629c09e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk" Version="12.3.441">
+    <Dependency Name="Microsoft.macOS.Sdk" Version="12.3.442">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>334dbdb94c36ecf75426eac315ed04c727775894</Sha>
+      <Sha>8c207acf2ad85fd939c23163aa2282a6a629c09e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.300" Version="6.0.4" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
@@ -76,17 +76,17 @@
       <Uri>https://github.com/dotnet/Microsoft.Maui.Graphics</Uri>
       <Sha>691c654ff69df33f16f43b390ad6ef9b4ec03e6e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="1.0.0-prerelease.22358.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="1.0.0-prerelease.22369.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>7871eb473366b7246d628ba30bfc70dd84f8dbb9</Sha>
+      <Sha>1809c14bb7e843baaf129f0f70368da6003251ce</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.22358.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.22369.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>7871eb473366b7246d628ba30bfc70dd84f8dbb9</Sha>
+      <Sha>1809c14bb7e843baaf129f0f70368da6003251ce</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="1.0.0-prerelease.22358.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="1.0.0-prerelease.22369.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>7871eb473366b7246d628ba30bfc70dd84f8dbb9</Sha>
+      <Sha>1809c14bb7e843baaf129f0f70368da6003251ce</Sha>
     </Dependency>
   </ProductDependencies>
 </Dependencies>

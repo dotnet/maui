@@ -5,6 +5,7 @@ using System.Linq;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WGradientStop = Microsoft.UI.Xaml.Media.GradientStop;
 using WLinearGradientBrush = Microsoft.UI.Xaml.Media.LinearGradientBrush;
+using WPoint = Windows.Foundation.Point;
 using WRadialGradientBrush = Microsoft.UI.Xaml.Media.RadialGradientBrush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
@@ -59,6 +60,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			var brush = new WRadialGradientBrush
 			{
+				GradientOrigin = new WPoint(radialGradientPaint.Center.X, radialGradientPaint.Center.Y),
 				Center = radialGradientPaint.Center.ToPlatform(),
 				RadiusX = radialGradientPaint.Radius,
 				RadiusY = radialGradientPaint.Radius
@@ -88,6 +90,7 @@ namespace Microsoft.Maui.Graphics
 					Color = stop.Color.ToWindowsColor(),
 					Offset = stop.Offset
 				};
+
 				nativeStops.Add(nativeStop);
 			}
 		}

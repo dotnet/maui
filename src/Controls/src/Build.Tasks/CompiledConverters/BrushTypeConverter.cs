@@ -12,7 +12,7 @@ class BrushTypeConverter : ICompiledTypeConverter
 	{
 		var module = context.Body.Method.Module;
 
-		if (!string.IsNullOrEmpty (value))
+		if (!string.IsNullOrEmpty(value))
 		{
 			value = value.Trim();
 
