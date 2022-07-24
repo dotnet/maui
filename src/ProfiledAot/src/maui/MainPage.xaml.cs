@@ -30,10 +30,11 @@ public partial class MainPage : ContentPage
 		LoadFlyoutPage();
 	}
 
-	void LoadFlyoutPage()
+	async void LoadFlyoutPage()
 	{
 		if (_isLoaded && _startCompleted)
 		{
+			await Task.Delay(500);
 			Application.Current.MainPage = new AppFlyoutPage();
 		}
 	}
