@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Platform
 {
@@ -16,23 +17,23 @@ namespace Microsoft.Maui.Platform
 
 			if (!string.IsNullOrEmpty(dateFormat))
 				platformDatePicker.DateFormat = dateFormat;
-				
+
 			platformDatePicker.UpdateTextColor(datePicker);
 		}
 
 		public static void UpdateDate(this CalendarDatePicker platformDatePicker, DateTime dateTime)
 		{
-			platformDatePicker.Date = dateTime.ToDateTimeOffset();
+			platformDatePicker.Date = dateTime;
 		}
 
 		public static void UpdateMinimumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.MinDate = datePicker.MinimumDate.ToDateTimeOffset();
+			platformDatePicker.MinDate = datePicker.MinimumDate;
 		}
 
 		public static void UpdateMaximumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.MaxDate = datePicker.MaximumDate.ToDateTimeOffset();
+			platformDatePicker.MaxDate = datePicker.MaximumDate;
 		}
 
 		public static void UpdateCharacterSpacing(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
