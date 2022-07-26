@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='SegmentsProperty']/Docs" />
-		public static readonly BindableProperty SegmentsProperty =	
+		public static readonly BindableProperty SegmentsProperty =
 			BindableProperty.Create(nameof(Segments), typeof(PathSegmentCollection), typeof(PathFigure), null,
 				propertyChanged: OnPathSegmentCollectionChanged);
 
