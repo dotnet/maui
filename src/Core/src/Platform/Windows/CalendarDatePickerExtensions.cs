@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace Microsoft.Maui.Platform
 {
+	//TODO make this public on NET7
 	internal static class CalendarDatePickerExtensions
 	{
 		internal static string ToDateFormat(this string dateFormat)
