@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Hosting
 
 		private sealed class NullLogger<T> : ILogger<T>, IDisposable
 		{
-			public IDisposable BeginScope<TState>(TState state) => this;
+			public IDisposable BeginScope<TState>(TState state) where TState : notnull => this;
 
 			public void Dispose() { }
 
