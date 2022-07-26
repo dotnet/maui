@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace>GraphicsTester.Skia.Gtk</RootNamespace>
     <PackageId>GraphicsTester.Skia.Gtk</PackageId>

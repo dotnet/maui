@@ -6,7 +6,7 @@
     <RootNamespace>GraphicsTester.WPF.Skia</RootNamespace>
     <AssemblyName>GraphicsTester.WPF.Skia</AssemblyName>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)-windows$(WindowsTargetFrameworkVersion)</TargetFramework>
     <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
