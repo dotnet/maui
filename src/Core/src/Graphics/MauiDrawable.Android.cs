@@ -542,9 +542,12 @@ namespace Microsoft.Maui.Graphics
 			if (platformPaint != null)
 			{
 				if (_backgroundColor != null)
+				{
+					platformPaint.SetShader(null);
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					platformPaint.Color = _backgroundColor.Value;
 #pragma warning restore CA1416
+				}
 				else
 				{
 					if (_background != null)

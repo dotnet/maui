@@ -3,9 +3,10 @@ using System.Linq;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class CalendarDatePickerExtensions
+	//TODO make this public on NET7
+	internal static class CalendarDatePickerExtensions
 	{
-		public static string ToDateFormat(this string dateFormat)
+		internal static string ToDateFormat(this string dateFormat)
 		{
 			// The WinUI CalendarDatePicker DateFormat property use this formatter:
 			// https://docs.microsoft.com/en-us/uwp/api/Windows.Globalization.DateTimeFormatting.DateTimeFormatter?redirectedfrom=MSDN&view=winrt-22621#code-snippet-2
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.Platform
 
 			return separator;
 		}
-		
+
 		internal static string GetPart(string format)
 		{
 			if (IsDay(format))
